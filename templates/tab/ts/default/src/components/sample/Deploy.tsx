@@ -16,11 +16,11 @@ export function Deploy(props: { docsUrl?: string }) {
       </p>
       <p>
         To provision your resources, you can either use our CLI command "teamsfx provision" or apply
-        "Teams: Provision in the Cloud" in Command palette.
+        "Teams: Provision in the cloud" in Command palette.
       </p>
       <p>
         To deploy your app, you can either use our CLI command "teamsfx deploy" or apply "Teams:
-        Deploy to the cloud" in Command palette.
+        Deploy to the Cloud" in Command palette.
       </p>
       <Image src="deploy.png" />
       <p>

@@ -1,7 +1,7 @@
 export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
-  ArmSupportEnabled = "armSupportEnabled",
   BicepEnvCheckerEnable = "validateBicep",
+  InsiderPreview = "insiderPreview",
 }
 
 export const migrateV1DocUrl = "https://aka.ms/teamsfx-migrate-v1";
@@ -13,5 +13,3 @@ export enum SyncedState {
 export enum UserState {
   IsExisting = "teamsToolkit:user:isExisting",
 }
-
-export const LocalEnvironment = "local";

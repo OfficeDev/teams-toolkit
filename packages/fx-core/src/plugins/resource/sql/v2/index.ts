@@ -5,8 +5,10 @@ import {
   AzureSolutionSettings,
   err,
   FxError,
+  Inputs,
   Json,
   PluginContext,
+  QTreeNode,
   Result,
   Stage,
   TokenProvider,
@@ -16,6 +18,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   Context,
+  DeepReadonly,
   ProvisionInputs,
   ResourcePlugin,
   ResourceProvisionOutput,
@@ -29,6 +32,7 @@ import {
 import {
   configureResourceAdapter,
   convert2PluginContext,
+  getQuestionsAdapter,
   provisionResourceAdapter,
 } from "../../utils4v2";
 
@@ -50,17 +54,17 @@ export class SqlPluginV2 implements ResourcePlugin {
     tokenProvider: TokenProvider
   ): Promise<Result<ResourceProvisionOutput, FxError>> {
     // run question model for publish
-    const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
-    const getQuestionRes = await this.plugin.getQuestions(Stage.provision, pluginContext);
-    if (getQuestionRes.isOk()) {
-      const node = getQuestionRes.value;
-      if (node) {
-        const res = await traverse(node, inputs, ctx.userInteraction);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-      }
-    }
+    // const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+    // const getQuestionRes = await this.plugin.getQuestions(Stage.provision, pluginContext);
+    // if (getQuestionRes.isOk()) {
+    //   const node = getQuestionRes.value;
+    //   if (node) {
+    //     const res = await traverse(node, inputs, ctx.userInteraction);
+    //     if (res.isErr()) {
+    //       return err(res.error);
+    //     }
+    //   }
+    // }
 
     return await provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
@@ -72,5 +76,14 @@ export class SqlPluginV2 implements ResourcePlugin {
     tokenProvider: TokenProvider
   ): Promise<Result<ResourceProvisionOutput, FxError>> {
     return await configureResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
+  }
+
+  async getQuestions(
+    ctx: Context,
+    inputs: Inputs,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await getQuestionsAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 }

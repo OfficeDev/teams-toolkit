@@ -23,6 +23,7 @@ import {
 import path, { basename } from "path";
 import fs from "fs-extra";
 import jsum from "jsum";
+import * as dotenv from "dotenv";
 import {
   deserializeDict,
   dataNeedEncryption,
@@ -44,12 +45,7 @@ import { isMultiEnvEnabled } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
-import {
-  InvalidProjectError,
-  InvalidProjectSettingsFileError,
-  isValidProject,
-  ReadFileError,
-} from ".";
+import { InvalidProjectSettingsFileError } from ".";
 
 export interface EnvProfileFiles {
   envProfile: string;
@@ -58,8 +54,8 @@ export interface EnvProfileFiles {
 
 class EnvironmentManager {
   public readonly envNameRegex = /^[\w\d-_]+$/;
-  public readonly envConfigNameRegex = /config\.(?<envName>[\w\d-_]+)\.json/i;
-  public readonly envProfileNameRegex = /profile\.(?<envName>[\w\d-_]+)\.json/i;
+  public readonly envConfigNameRegex = /^config\.(?<envName>[\w\d-_]+)\.json$/i;
+  public readonly envProfileNameRegex = /^profile\.(?<envName>[\w\d-_]+)\.json$/i;
 
   private readonly defaultEnvName = "default";
   private readonly defaultEnvNameNew = "dev";
@@ -67,8 +63,8 @@ class EnvironmentManager {
   private readonly checksumKey = "_checksum";
   private readonly schema =
     "https://raw.githubusercontent.com/OfficeDev/TeamsFx/dev/packages/api/src/schemas/envConfig.json";
-  private readonly manifestConfigDescription =
-    `You can customize the 'values' object to customize Teams app manifest for different environments.` +
+  private readonly envConfigDescription =
+    `You can customize the TeamsFx config for different environments.` +
     ` Visit https://aka.ms/teamsfx-config to learn more about this.`;
 
   constructor() {
@@ -78,8 +74,8 @@ class EnvironmentManager {
 
   public async loadEnvInfo(
     projectPath: string,
-    envName?: string,
-    cryptoProvider?: CryptoProvider
+    cryptoProvider: CryptoProvider,
+    envName?: string
   ): Promise<Result<EnvInfo, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
@@ -102,13 +98,11 @@ class EnvironmentManager {
   public newEnvConfigData(appName: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
+      description: this.envConfigDescription,
       manifest: {
-        description: this.manifestConfigDescription,
-        values: {
-          appName: {
-            short: appName,
-            full: `Full name for ${appName}`,
-          },
+        appName: {
+          short: appName,
+          full: `Full name for ${appName}`,
         },
       },
     };
@@ -145,8 +139,8 @@ class EnvironmentManager {
   public async writeEnvProfile(
     envData: Map<string, any> | Json,
     projectPath: string,
-    envName?: string,
-    cryptoProvider?: CryptoProvider
+    cryptoProvider: CryptoProvider,
+    envName?: string
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
@@ -162,9 +156,7 @@ class EnvironmentManager {
 
     const data = envData instanceof Map ? mapToJson(envData) : envData;
     const secrets = sperateSecretData(data);
-    if (cryptoProvider) {
-      this.encrypt(secrets, cryptoProvider);
-    }
+    this.encrypt(secrets, cryptoProvider);
     if (Object.keys(secrets).length) {
       secrets[this.checksumKey] = jsum.digest(secrets, "SHA256", "hex");
     }
@@ -209,6 +201,20 @@ class EnvironmentManager {
     }
   }
 
+  public isEnvConfig(projectPath: string, filePath: string): boolean {
+    const fileName = path.basename(filePath);
+    const fileDirname = path.dirname(filePath);
+    const configFolder = this.getEnvConfigsFolder(projectPath);
+    const relativeFilePath = path.relative(configFolder, fileDirname);
+
+    if (relativeFilePath !== "") {
+      return false;
+    }
+
+    const match = fileName.match(environmentManager.envConfigNameRegex);
+    return match !== null;
+  }
+
   public getEnvConfigPath(envName: string, projectPath: string): string {
     const basePath = this.getEnvConfigsFolder(projectPath);
     return path.resolve(basePath, EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName));
@@ -233,7 +239,7 @@ class EnvironmentManager {
   ): Promise<Result<EnvConfig, FxError>> {
     if (!isMultiEnvEnabled()) {
       return ok({
-        manifest: { values: { appName: { short: "" } } },
+        manifest: { appName: { short: "" } },
       });
     }
 
@@ -243,7 +249,12 @@ class EnvironmentManager {
     }
 
     const validate = this.ajv.compile<EnvConfig>(envConfigSchema);
-    const data = await fs.readJson(envConfigPath);
+    let data;
+    try {
+      data = await fs.readJson(envConfigPath);
+    } catch (error) {
+      return err(InvalidEnvConfigError(envName, `Failed to read env config JSON: ${error}`));
+    }
     if (validate(data)) {
       return ok(data);
     }
@@ -254,7 +265,7 @@ class EnvironmentManager {
   private async loadEnvProfile(
     projectPath: string,
     envName: string,
-    cryptoProvider?: CryptoProvider
+    cryptoProvider: CryptoProvider
   ): Promise<Result<Map<string, any>, FxError>> {
     const envFiles = this.getEnvProfileFilesPath(envName, projectPath);
     const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
@@ -300,13 +311,13 @@ class EnvironmentManager {
       : this.getConfigFolder(projectPath);
   }
 
-  private getEnvConfigsFolder(projectPath: string): string {
+  public getEnvConfigsFolder(projectPath: string): string {
     return path.resolve(this.getConfigFolder(projectPath), InputConfigsFolderName);
   }
 
   private async loadUserData(
     userDataPath: string,
-    cryptoProvider?: CryptoProvider
+    cryptoProvider: CryptoProvider
   ): Promise<Result<Record<string, string>, FxError>> {
     if (!(await fs.pathExists(userDataPath))) {
       return ok({});
@@ -314,9 +325,6 @@ class EnvironmentManager {
 
     const content = await fs.readFile(userDataPath, "UTF-8");
     const secrets = deserializeDict(content);
-    if (!cryptoProvider) {
-      return ok(secrets);
-    }
 
     const res = this.decrypt(secrets, cryptoProvider);
     if (res.isErr()) {

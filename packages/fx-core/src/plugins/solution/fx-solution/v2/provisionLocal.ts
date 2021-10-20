@@ -17,10 +17,12 @@ import {
   getSelectedPlugins,
   loadTeamsAppTenantIdForLocal,
 } from "./utils";
-import { PluginNames, SolutionError } from "../constants";
+import { PluginNames, SolutionError, SolutionSource } from "../constants";
 import { isUndefined } from "lodash";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
+import { environmentManager } from "../../../../core/environment";
+import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 
 export async function provisionLocalResource(
   ctx: v2.Context,
@@ -28,10 +30,22 @@ export async function provisionLocalResource(
   localSettings: Json,
   tokenProvider: TokenProvider
 ): Promise<v2.FxResult<Json, FxError>> {
+  if (inputs.projectPath === undefined) {
+    return new v2.FxFailure(
+      returnSystemError(
+        new Error("projectPath is undefined"),
+        "Solution",
+        SolutionError.InternelError
+      )
+    );
+  }
   const azureSolutionSettings = getAzureSolutionSettings(ctx);
+  if (ctx.permissionRequestProvider === undefined) {
+    ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
+  }
   const result = await ensurePermissionRequest(
     azureSolutionSettings,
-    ctx.permissionRequestProvider!
+    ctx.permissionRequestProvider
   );
   if (result.isErr()) {
     return new v2.FxFailure(result.error);
@@ -61,11 +75,18 @@ export async function provisionLocalResource(
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
   if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
-    const result = await aadPlugin.executeUserTask(ctx, inputs, {
-      namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-      method: "setApplicationInContext",
-      params: { isLocal: true },
-    });
+    const result = await aadPlugin.executeUserTask(
+      ctx,
+      inputs,
+      {
+        namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+        method: "setApplicationInContext",
+        params: { isLocal: true },
+      },
+      localSettings,
+      { envName: environmentManager.getDefaultEnvName(), config: {}, profile: {} },
+      tokenProvider
+    );
     if (result.isErr()) {
       return new v2.FxPartialSuccess(localSettings, result.error);
     }
@@ -73,7 +94,7 @@ export async function provisionLocalResource(
     return new v2.FxFailure(
       returnSystemError(
         new Error("AAD plugin not selected or executeUserTask is undefined"),
-        "Solution",
+        SolutionSource,
         SolutionError.InternelError
       )
     );
@@ -103,7 +124,10 @@ export async function provisionLocalResource(
     ctx.logProvider
   );
   if (configureResourceResult.kind !== "success") {
-    return configureResourceResult;
+    if (configureResourceResult.kind === "partialSuccess") {
+      return new v2.FxPartialSuccess(localSettings, configureResourceResult.error);
+    }
+    return new v2.FxFailure(configureResourceResult.error);
   }
 
   return new v2.FxSuccess(localSettings);

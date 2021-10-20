@@ -12,6 +12,7 @@ import * as uuid from "uuid";
 import { glob } from "glob";
 import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
+import SharepointTokenInstance from "../commonlib/sharepointLogin";
 import { runCommand } from "../handlers";
 import { returnSystemError, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { globalStateGet, globalStateUpdate, Correlator } from "@microsoft/teamsfx-core";
@@ -237,24 +238,28 @@ export class WebviewPanel {
   }
 
   private setStatusChangeMap() {
-    AppStudioTokenInstance.setStatusChangeMap(
-      "quick-start-webview",
-      (status, token, accountInfo) => {
-        let email = undefined;
-        if (status === "SignedIn") {
-          email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
-        }
-
-        if (this.panel && this.panel.webview) {
-          this.panel.webview.postMessage({
-            message: "m365AccountChange",
-            data: email,
-          });
-        }
-
-        return Promise.resolve();
+    const m365WebviewCallback = (
+      status: string,
+      token: string | undefined,
+      accountInfo: Record<string, unknown> | undefined
+    ) => {
+      let email = undefined;
+      if (status === "SignedIn") {
+        email = (accountInfo as any).upn ? (accountInfo as any).upn : undefined;
       }
-    );
+
+      if (this.panel && this.panel.webview) {
+        this.panel.webview.postMessage({
+          message: "m365AccountChange",
+          data: email,
+        });
+      }
+
+      return Promise.resolve();
+    };
+
+    AppStudioTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
+    //SharepointTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
 
     AzureAccountManager.setStatusChangeMap(
       "quick-start-webview",

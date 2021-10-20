@@ -26,7 +26,9 @@ export class Constants {
 
   public static readonly azureSqlScope: string = "https://database.windows.net//.default";
 
+  public static readonly resourceGroupName: string = "resourceGroupName";
   public static readonly sqlEndpoint: string = "sqlEndpoint";
+  public static readonly sqlResourceId: string = "sqlResourceId";
   public static readonly databaseName: string = "databaseName";
   public static readonly skipAddingUser: string = "skipAddingUser";
   public static readonly admin: string = "admin";
@@ -45,7 +47,7 @@ export class Constants {
   };
 
   public static readonly identityPlugin: string = "fx-resource-identity";
-  public static readonly identity: string = "identity";
+  public static readonly identityName: string = "identityName";
 
   public static readonly userQuestion = {
     adminName: "Admin name of SQL",
@@ -101,6 +103,7 @@ export class AzureSqlBicep {
 }
 
 export class AzureSqlArmOutput {
+  static readonly sqlResourceId: string = "azureSql_sqlResourceId";
   static readonly sqlEndpoint: string = "azureSql_sqlEndpoint";
   static readonly databaseName: string = "azureSql_databaseName";
 }

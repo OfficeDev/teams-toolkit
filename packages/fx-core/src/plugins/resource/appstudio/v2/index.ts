@@ -13,6 +13,7 @@ import {
   Json,
   ok,
   PluginContext,
+  QTreeNode,
   Result,
   Stage,
   TokenProvider,
@@ -22,6 +23,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   Context,
+  DeepReadonly,
   DeploymentInputs,
   ProvisionInputs,
   ResourcePlugin,
@@ -42,6 +44,7 @@ import {
   deployAdapter,
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
+  getQuestionsAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
@@ -100,47 +103,58 @@ export class AppStudioPluginV2 implements ResourcePlugin {
       this.plugin
     );
   }
-  async deploy(
-    ctx: Context,
-    inputs: DeploymentInputs,
-    provisionOutput: Json,
-    tokenProvider: AzureAccountProvider
-  ): Promise<Result<Void, FxError>> {
-    return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
-  }
 
   async executeUserTask(
     ctx: Context,
     inputs: Inputs,
-    func: Func
+    func: Func,
+    localSettings: Json,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
   ): Promise<Result<unknown, FxError>> {
-    return await executeUserTaskAdapter(ctx, inputs, func, this.plugin);
+    return await executeUserTaskAdapter(
+      ctx,
+      inputs,
+      func,
+      localSettings,
+      envInfo,
+      tokenProvider,
+      this.plugin
+    );
+  }
+
+  async getQuestions(
+    ctx: Context,
+    inputs: Inputs,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return await getQuestionsAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async publishApplication(
     ctx: Context,
     inputs: Inputs,
-    provisionInputConfig: Json,
-    provisionOutputs: Json,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: AppStudioTokenProvider
   ): Promise<Result<Void, FxError>> {
-    const pluginContext: PluginContext = convert2PluginContext(ctx, inputs);
+    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
     pluginContext.appStudioToken = tokenProvider;
 
     // run question model for publish
-    const getQuestionRes = await this.plugin.getQuestions(Stage.publish, pluginContext);
-    if (getQuestionRes.isOk()) {
-      const node = getQuestionRes.value;
-      if (node) {
-        const res = await traverse(node, inputs, ctx.userInteraction);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-      }
-    }
+    // const getQuestionRes = await this.plugin.getQuestions(Stage.publish, pluginContext);
+    // if (getQuestionRes.isOk()) {
+    //   const node = getQuestionRes.value;
+    //   if (node) {
+    //     const res = await traverse(node, inputs, ctx.userInteraction);
+    //     if (res.isErr()) {
+    //       return err(res.error);
+    //     }
+    //   }
+    // }
     const configsOfOtherPlugins = new Map<string, ConfigMap>();
-    for (const key in provisionOutputs) {
-      const output = provisionOutputs[key];
+    for (const key in envInfo.profile) {
+      const output = envInfo.profile[key];
       const configMap = ConfigMap.fromJSON(output);
       if (configMap) configsOfOtherPlugins.set(key, configMap);
     }

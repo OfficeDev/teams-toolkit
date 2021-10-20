@@ -1,11 +1,11 @@
 {
-  "name": "teamsfx-template-api",
-  "version": "1.0.0",
-  "scripts": {
-    "start": "npx func start"
-  },
-  "dependencies": {
-    "@microsoft/teamsfx": "^0.2.0",
-    "isomorphic-fetch": "^3.0.0"
-  }
+    "name": "teamsfx-template-api",
+    "version": "1.0.0",
+    "scripts": {
+        "start": "npx func start"
+    },
+    "dependencies": {
+        "@microsoft/teamsfx": "^0.3.0",
+        "isomorphic-fetch": "^3.0.0"
+    }
 }

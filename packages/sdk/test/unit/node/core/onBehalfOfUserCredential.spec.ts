@@ -22,6 +22,12 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
   const scope = "fake_scope";
   const clientId = "fake_client_id";
   const clientSecret = "fake_client_secret";
+  const certificateContent = `-----BEGIN PRIVATE KEY-----
+fakeKey
+-----END PRIVATE KEY-----
+-----BEGIN CERTIFICATE-----
+fakeCert
+-----END CERTIFICATE-----`;
   const authorityHost = "fake_authority_host";
   const tenantId = "fake_tenant_id";
   const accessToken = "fake_access_token";
@@ -97,6 +103,56 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     mockedEnvRestore();
   });
 
+  it("create OnBehalfOfUserCredential instance should not throw InvalidConfiguration Error when clientSecret not found", async function () {
+    loadConfiguration({
+      authentication: {
+        clientId: clientId,
+        certificateContent: certificateContent,
+        authorityHost: authorityHost,
+        tenantId: tenantId,
+      },
+    });
+
+    expect(() => {
+      new OnBehalfOfUserCredential(ssoToken);
+    }).to.not.throw();
+  });
+
+  it("create OnBehalfOfUserCredential instance should not throw InvalidConfiguration Error when certificateContent not found", async function () {
+    mockedEnvRestore = mockedEnv({
+      M365_CLIENT_ID: clientId,
+      M365_CLIENT_SECRET: clientSecret,
+      M365_AUTHORITY_HOST: authorityHost,
+      M365_TENANT_ID: tenantId,
+    });
+    loadConfiguration();
+
+    expect(() => {
+      new OnBehalfOfUserCredential(ssoToken);
+    }).to.not.throw();
+  });
+
+  it("create OnBehalfOfUserCredential instance should not throw InvalidConfiguration Error and respect certificateContent when clientSecret and certificateContent are both set", async function () {
+    loadConfiguration({
+      authentication: {
+        clientId: clientId,
+        clientSecret: clientSecret,
+        certificateContent: certificateContent,
+        authorityHost: authorityHost,
+        tenantId: tenantId,
+      },
+    });
+
+    const oboCredential: any = new OnBehalfOfUserCredential(ssoToken);
+
+    // certificateContent has higher priority than clientSecret
+    assert.strictEqual(
+      oboCredential.msalClient.config.auth.clientCertificate.thumbprint,
+      "06BA994A93FF2138DC51E669EB284ABAB8112153" // thumbprint is calculated from certificate content "fakeCert"
+    );
+    assert.strictEqual(oboCredential.msalClient.config.auth.clientSecret, "");
+  });
+
   it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId not found", async function () {
     mockedEnvRestore = mockedEnv(
       {
@@ -133,7 +189,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       .with.property("code", InvalidConfiguration);
   });
 
-  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientSecret not found", async function () {
+  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientSecret, certificateContent not found", async function () {
     mockedEnvRestore = mockedEnv(
       {
         M365_CLIENT_ID: clientId,
@@ -147,7 +203,10 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     expect(() => {
       new OnBehalfOfUserCredential(ssoToken);
     })
-      .to.throw(ErrorWithCode, "clientSecret in configuration is invalid: undefined")
+      .to.throw(
+        ErrorWithCode,
+        "clientSecret or certificateContent in configuration is invalid: undefined"
+      )
       .with.property("code", InvalidConfiguration);
   });
 
@@ -169,7 +228,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
       .with.property("code", InvalidConfiguration);
   });
 
-  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId, clientSecret, authorityHost, tenantId not found", async function () {
+  it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId, clientSecret, certificateContent, authorityHost, tenantId not found", async function () {
     mockedEnvRestore = mockedEnv({}, { clear: true });
     loadConfiguration();
 
@@ -178,7 +237,7 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     })
       .to.throw(
         ErrorWithCode,
-        "clientId, authorityHost, clientSecret, tenantId in configuration is invalid: undefined"
+        "clientId, authorityHost, clientSecret or certificateContent, tenantId in configuration is invalid: undefined"
       )
       .with.property("code", InvalidConfiguration);
   });
@@ -192,6 +251,21 @@ describe("OnBehalfOfUserCredential Tests - Node", () => {
     })
       .to.throw(ErrorWithCode, "Parse jwt token failed in node env with error: ")
       .with.property("code", InternalError);
+  });
+
+  it("getToken should success for client certificate", async function () {
+    loadConfiguration({
+      authentication: {
+        clientId: clientId,
+        certificateContent: certificateContent,
+        authorityHost: authorityHost,
+        tenantId: tenantId,
+      },
+    });
+    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
+    const token = await oboCredential.getToken(scope);
+    assert.strictEqual(token!.token, accessToken);
+    assert.strictEqual(token!.expiresOnTimestamp, accessTokenExpNumber);
   });
 
   it("getToken should success when scopes is empty string", async function () {

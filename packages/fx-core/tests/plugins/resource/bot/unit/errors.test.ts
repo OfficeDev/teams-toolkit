@@ -11,6 +11,8 @@ import {
   ConfigUpdatingError,
   ConfigValidationError,
   PackDirExistenceError,
+  TemplateZipFallbackError,
+  UnzipError,
 } from "../../../../../src/plugins/resource/bot/errors";
 
 describe("Test Errors", () => {
@@ -55,6 +57,30 @@ describe("Test Errors", () => {
       // Assert
       chai.assert.isTrue(myError instanceof PluginError);
       chai.assert.isTrue(myError.errorType === ErrorType.System);
+    });
+  });
+
+  describe("TemplateZipFallbackError", () => {
+    it("Happy Path", () => {
+      // Arrange
+      // Act
+      const myError = new TemplateZipFallbackError();
+
+      // Assert
+      chai.assert.isTrue(myError instanceof PluginError);
+      chai.assert.isTrue(myError.errorType === ErrorType.User);
+    });
+  });
+
+  describe("UnzipError", () => {
+    it("Happy Path", () => {
+      // Arrange
+      // Act
+      const myError = new UnzipError();
+
+      // Assert
+      chai.assert.isTrue(myError instanceof PluginError);
+      chai.assert.isTrue(myError.errorType === ErrorType.User);
     });
   });
 

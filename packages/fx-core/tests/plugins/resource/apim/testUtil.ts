@@ -13,6 +13,7 @@ import {
   SubscriptionInfo,
   Inputs,
   EnvInfo,
+  CryptoProvider,
 } from "@microsoft/teamsfx-api";
 import {
   AadOperationError,
@@ -36,6 +37,7 @@ import { IAadInfo } from "../../../../src/plugins/resource/apim/interfaces/IAadR
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import dotenv from "dotenv";
 import { newEnvInfo } from "../../../../src";
+import { LocalCrypto } from "../../../../src/core/crypto";
 
 dotenv.config();
 
@@ -179,6 +181,7 @@ export class MockPluginContext implements PluginContext {
   graphTokenProvider: MockGraphTokenProvider;
   answers: Inputs | undefined;
   platform: Platform = Platform.VSCode;
+  cryptoProvider: CryptoProvider = new LocalCrypto("");
 
   constructor(
     appName: string,

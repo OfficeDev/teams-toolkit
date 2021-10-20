@@ -14,7 +14,12 @@ import {
   Json,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { SolutionError } from "../constants";
+import {
+  GLOBAL_CONFIG,
+  SolutionError,
+  SOLUTION_PROVISION_SUCCEEDED,
+  SolutionSource,
+} from "../constants";
 import {
   AzureResourceApim,
   AzureResourceFunction,
@@ -57,6 +62,8 @@ export function extractSolutionInputs(record: Json): v2.SolutionInputs {
     location: record["location"],
     teamsAppTenantId: record["teamsAppTenantId"],
     remoteTeamsAppId: undefined,
+    subscriptionId: record["subscriptionId"],
+    provisionSucceeded: record[SOLUTION_PROVISION_SUCCEEDED],
   };
 }
 
@@ -68,7 +75,7 @@ export function reloadV2Plugins(solutionSettings: AzureSolutionSettings): v2.Res
 
 export async function ensurePermissionRequest(
   solutionSettings: AzureSolutionSettings,
-  permissionRequestProvider?: PermissionRequestProvider
+  permissionRequestProvider: PermissionRequestProvider
 ): Promise<Result<Void, FxError>> {
   if (solutionSettings.migrateFromV1) {
     return ok(Void);
@@ -78,13 +85,13 @@ export async function ensurePermissionRequest(
     return err(
       returnUserError(
         new Error("Cannot update permission for SPFx project"),
-        "Solution",
+        SolutionSource,
         SolutionError.CannotUpdatePermissionForSPFx
       )
     );
   }
 
-  const result = await permissionRequestProvider?.checkPermissionRequest();
+  const result = await permissionRequestProvider.checkPermissionRequest();
   if (result && result.isErr()) {
     return result.map(err);
   }
@@ -99,7 +106,7 @@ export function parseTeamsAppTenantId(
     return err(
       returnSystemError(
         new Error("Graph token json is undefined"),
-        "Solution",
+        SolutionSource,
         SolutionError.NoAppStudioToken
       )
     );
@@ -114,12 +121,36 @@ export function parseTeamsAppTenantId(
     return err(
       returnSystemError(
         new Error("Cannot find teams app tenant id"),
-        "Solution",
+        SolutionSource,
         SolutionError.NoTeamsAppTenantId
       )
     );
   }
   return ok(teamsAppTenantId);
+}
+
+export function parseUserName(appStudioToken?: Record<string, unknown>): Result<string, FxError> {
+  if (appStudioToken === undefined) {
+    return err(
+      returnSystemError(
+        new Error("Graph token json is undefined"),
+        "Solution",
+        SolutionError.NoAppStudioToken
+      )
+    );
+  }
+
+  const userName = appStudioToken["upn"];
+  if (userName === undefined || !(typeof userName === "string") || userName.length === 0) {
+    return err(
+      returnSystemError(
+        new Error("Cannot find user name from App Studio token."),
+        "Solution",
+        SolutionError.NoUserName
+      )
+    );
+  }
+  return ok(userName);
 }
 
 // Loads teams app tenant id into local settings.
@@ -141,7 +172,7 @@ export function blockV1Project(solutionSettings?: SolutionSettings): Result<Void
     return err(
       returnUserError(
         new Error("Command is not supported in Teams Toolkit V1 Project"),
-        "Solution",
+        SolutionSource,
         SolutionError.V1ProjectNotSupported
       )
     );
@@ -156,7 +187,11 @@ export function fillInSolutionSettings(
   const capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
   if (!capabilities || capabilities.length === 0) {
     return err(
-      returnSystemError(new Error("capabilities is empty"), "Solution", SolutionError.InternelError)
+      returnSystemError(
+        new Error("capabilities is empty"),
+        SolutionSource,
+        SolutionError.InternelError
+      )
     );
   }
   let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
@@ -164,7 +199,11 @@ export function fillInSolutionSettings(
     hostType = HostTypeOptionAzure.id;
   if (!hostType) {
     return err(
-      returnSystemError(new Error("hostType is undefined"), "Solution", SolutionError.InternelError)
+      returnSystemError(
+        new Error("hostType is undefined"),
+        SolutionSource,
+        SolutionError.InternelError
+      )
     );
   }
   solutionSettings.hostType = hostType;
@@ -184,4 +223,8 @@ export function fillInSolutionSettings(
   solutionSettings.azureResources = azureResources || [];
   solutionSettings.capabilities = capabilities || [];
   return ok(Void);
+}
+
+export function checkWetherProvisionSucceeded(config: Json): boolean {
+  return config[GLOBAL_CONFIG] && config[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
 }

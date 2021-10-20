@@ -7,10 +7,14 @@ import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/so
 import {
   ConfigFolderName,
   ConfigMap,
-  SolutionConfig,
   SolutionContext,
   Plugin,
   Platform,
+  v2,
+  ProjectSettings,
+  Inputs,
+  ok,
+  Void,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -34,12 +38,23 @@ import {
   HostTypeOptionSPFx,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
-import { mockPublishThatAlwaysSucceed, validManifest } from "./util";
+import {
+  MockedAppStudioProvider,
+  MockedV2Context,
+  mockPublishThatAlwaysSucceed,
+  validManifest,
+} from "./util";
 import _ from "lodash";
 import * as uuid from "uuid";
-import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import {
+  ResourcePlugins,
+  ResourcePluginsV2,
+} from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import { newEnvInfo } from "../../../src";
+import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
+import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
+import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -48,12 +63,20 @@ const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
 const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
 const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
 const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
+
+const aadPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
+const spfxPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
+const fehostPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
+const appStudioPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
+const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
+
 function mockSolutionContext(): SolutionContext {
   return {
     root: ".",
     envInfo: newEnvInfo(),
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
+    cryptoProvider: new LocalCrypto(""),
   };
 }
 
@@ -243,5 +266,43 @@ describe("publish()", () => {
       const result = await solution.publish(mockedCtx);
       expect(result.isOk()).to.be.true;
     });
+  });
+});
+
+describe("v2 implementation for publish()", () => {
+  it("should work on happy path for Azure projects", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [spfxPluginV2.name],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      projectPath: "./",
+    };
+    const mockedTokenProvider: AppStudioTokenProvider = new MockedAppStudioProvider();
+    const mockedEnvInfo: v2.EnvInfoV2 = {
+      envName: "default",
+      config: { manifest: { appName: { short: "test-app" } } },
+      profile: { solution: {} },
+    };
+
+    const solution = new TeamsAppSolutionV2();
+    appStudioPluginV2.publishApplication = async function () {
+      return ok(Void);
+    };
+    const result = await solution.publishApplication(
+      mockedCtx,
+      mockedInputs,
+      mockedEnvInfo,
+      mockedTokenProvider
+    );
+    expect(result.isOk()).to.be.true;
   });
 });

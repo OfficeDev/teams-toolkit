@@ -9,6 +9,7 @@ import {
   Json,
   Result,
   TokenProvider,
+  v2,
   Void,
 } from "@microsoft/teamsfx-api";
 import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
@@ -72,8 +73,19 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
   async executeUserTask(
     ctx: Context,
     inputs: Inputs,
-    func: Func
+    func: Func,
+    localSettings: Json,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
   ): Promise<Result<unknown, FxError>> {
-    return await executeUserTaskAdapter(ctx, inputs, func, this.plugin);
+    return await executeUserTaskAdapter(
+      ctx,
+      inputs,
+      func,
+      localSettings,
+      envInfo,
+      tokenProvider,
+      this.plugin
+    );
   }
 }

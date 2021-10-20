@@ -20,11 +20,12 @@ namespace Microsoft.Extensions.DependencyInjection
         /// <returns></returns>
         public static IServiceCollection AddTeamsFx(this IServiceCollection services, IConfiguration config)
         {
+            services.AddHttpClient();
             services.AddOptions();
             services.AddScoped<TeamsFx.TeamsFx>();
             services.AddScoped<TeamsUserCredential>();
 
-            services.Configure<AuthenticationOptions>(config.GetSection(AuthenticationOptions.Authentication));
+            services.AddOptions<AuthenticationOptions>().Bind(config.GetSection(AuthenticationOptions.Authentication)).ValidateDataAnnotations();
 
             return services;
         }

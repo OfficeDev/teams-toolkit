@@ -13,10 +13,10 @@ import {
 import { getValidationFunction, validate } from "./validation";
 import {
   assembleError,
+  EmptyOptionError,
   FxError,
   returnSystemError,
   returnUserError,
-  SystemError,
   UserCancelError,
 } from "../error";
 import { Inputs, Void } from "../types";
@@ -38,7 +38,7 @@ export function isAutoSkipSelect(q: Question): boolean {
 export async function loadOptions(
   q: Question,
   inputs: Inputs
-): Promise<{ autoSkip: boolean; options?: StaticOptions }> {
+): Promise<Result<{ autoSkip: boolean; options?: StaticOptions }, FxError>> {
   if (q.type === "singleSelect" || q.type === "multiSelect") {
     const selectQuestion = q as SingleSelectQuestion | MultiSelectQuestion;
     let option: StaticOptions;
@@ -46,12 +46,12 @@ export async function loadOptions(
       option = (await getCallFuncValue(inputs, selectQuestion.dynamicOptions)) as StaticOptions;
     else option = selectQuestion.staticOptions;
     if (!option || option.length === 0) {
-      throw returnSystemError(new Error("Select option is empty!"), "API", "EmptySelectOption");
+      return err(new EmptyOptionError());
     }
     if (selectQuestion.skipSingleOption && option.length === 1)
-      return { autoSkip: true, options: option };
-    else return { autoSkip: false, options: option };
-  } else return { autoSkip: false };
+      return ok({ autoSkip: true, options: option });
+    else return ok({ autoSkip: false, options: option });
+  } else return ok({ autoSkip: false });
 }
 
 export function getSingleOption(
@@ -69,14 +69,6 @@ export function getSingleOption(
   if (q.type === "singleSelect") return returnResult;
   else return [returnResult];
 }
-
-// type QuestionVistor = (
-//   question: Question,
-//   ui: UserInteraction,
-//   inputs: Inputs ,
-//   step?: number,
-//   totalSteps?: number,
-// ) => Promise<InputResult<any>>;
 
 export async function getCallFuncValue(inputs: Inputs, raw?: unknown): Promise<unknown> {
   if (raw && typeof raw === "function") {
@@ -141,13 +133,15 @@ const questionVisitor = async function (
       });
     } else if (question.type === "singleSelect" || question.type === "multiSelect") {
       const selectQuestion = question as SingleSelectQuestion | MultiSelectQuestion;
-      const res = await loadOptions(selectQuestion, inputs);
-      if (!res.options || res.options.length === 0) {
-        return err(
-          returnSystemError(new Error("Select option is empty!"), "API", "EmptySelectOption")
-        );
+      const loadRes = await loadOptions(selectQuestion, inputs);
+      if (loadRes.isErr()) {
+        return err(loadRes.error);
       }
       // Skip single/mulitple option select
+      const res = loadRes.value;
+      if (!res.options || res.options.length === 0) {
+        return err(new EmptyOptionError());
+      }
       if (res.autoSkip === true) {
         const returnResult = getSingleOption(selectQuestion, res.options);
         return ok({ type: "skip", result: returnResult });
@@ -256,13 +250,18 @@ export async function traverse(
     if (curr.data.type !== "group") {
       const question = curr.data as Question;
       totalStep = step + stack.length;
-      const qvres = await questionVisitor(question, ui, inputs, step, totalStep);
-      sendTelemetryEvent(telemetryReporter, qvres, question, inputs);
-      if (qvres.isErr()) {
-        // Cancel or Error
-        return err(qvres.error);
+      let qvRes;
+      try {
+        qvRes = await questionVisitor(question, ui, inputs, step, totalStep);
+        sendTelemetryEvent(telemetryReporter, qvRes, question, inputs);
+      } catch (e) {
+        return err(assembleError(e));
       }
-      const inputResult = qvres.value;
+      if (qvRes.isErr()) {
+        // Cancel or Error
+        return err(qvRes.error);
+      }
+      const inputResult = qvRes.value;
       if (inputResult.type === "back") {
         //go back
         // if (curr.children) {

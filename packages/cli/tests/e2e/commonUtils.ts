@@ -5,8 +5,11 @@ import {
   ConfigFolderName,
   EnvNamePlaceholder,
   EnvProfileFileNameTemplate,
+  FxError,
   InputConfigsFolderName,
   PublishProfilesFolderName,
+  Result,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { deserializeDict } from "@microsoft/teamsfx-core";
 import { exec } from "child_process";
@@ -73,27 +76,25 @@ export function getSubscriptionId() {
 }
 
 const envFilePathSuffix = path.join(".fx", "env.default.json");
-const envFilePathSuffixMultiEnv = path.join(
-  ".fx",
-  PublishProfilesFolderName,
-  EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, "dev")
-);
-const defaultBicepParameterFileSuffix = path.join(
-  `.${ConfigFolderName}`,
-  InputConfigsFolderName,
-  "azure.parameters.dev.json"
-);
 
-function getEnvFilePathSuffix(isMultiEnvEnabled: boolean) {
+function getEnvFilePathSuffix(isMultiEnvEnabled: boolean, envName: string) {
   if (isMultiEnvEnabled) {
-    return envFilePathSuffixMultiEnv;
+    return path.join(
+      ".fx",
+      PublishProfilesFolderName,
+      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, envName)
+    );
   } else {
     return envFilePathSuffix;
   }
 }
 
-export function getConfigFileName(appName: string, isMultiEnvEnabled = false): string {
-  return path.resolve(testFolder, appName, getEnvFilePathSuffix(isMultiEnvEnabled));
+export function getConfigFileName(
+  appName: string,
+  isMultiEnvEnabled = false,
+  envName = "dev"
+): string {
+  return path.resolve(testFolder, appName, getEnvFilePathSuffix(isMultiEnvEnabled, envName));
 }
 
 const aadPluginName = "fx-resource-aad-app-for-teams";
@@ -108,8 +109,13 @@ export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
-export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string) {
-  const parametersFilePath = path.resolve(projectPath, defaultBicepParameterFileSuffix);
+export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string, envName: string) {
+  const bicepParameterFile = path.join(
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    `azure.parameters.${envName}.json`
+  );
+  const parametersFilePath = path.resolve(projectPath, bicepParameterFile);
   const parameters = await fs.readJSON(parametersFilePath);
   parameters["parameters"]["simpleAuth_sku"] = { value: "B1" };
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
@@ -127,9 +133,10 @@ export async function cleanUpAadApp(
   hasAadPlugin?: boolean,
   hasBotPlugin?: boolean,
   hasApimPlugin?: boolean,
-  isMultiEnvEnabled = false
+  isMultiEnvEnabled = false,
+  envName = "dev"
 ) {
-  const envFilePath = path.resolve(projectPath, getEnvFilePathSuffix(isMultiEnvEnabled));
+  const envFilePath = path.resolve(projectPath, getEnvFilePathSuffix(isMultiEnvEnabled, envName));
   const context = await fs.readJSON(envFilePath);
   const manager = await AadManager.init();
   const promises: Promise<boolean>[] = [];
@@ -206,14 +213,16 @@ export async function cleanUp(
   hasAadPlugin = true,
   hasBotPlugin = false,
   hasApimPlugin = false,
-  isMultiEnvEnabled = false
+  isMultiEnvEnabled = false,
+  envName = "dev"
 ) {
   const cleanUpAadAppPromise = cleanUpAadApp(
     projectPath,
     hasAadPlugin,
     hasBotPlugin,
     hasApimPlugin,
-    isMultiEnvEnabled
+    isMultiEnvEnabled,
+    envName
   );
   return Promise.all([
     // delete aad app
@@ -296,13 +305,43 @@ export async function readContext(projectPath: string): Promise<any> {
 
 export function mockTeamsfxMultiEnvFeatureFlag() {
   const env = Object.assign({}, process.env);
-  env["TEAMSFX_MULTI_ENV"] = "true";
-  env["TEAMSFX_ARM_SUPPORT"] = "true";
   env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = "true";
+  env["TEAMSFX_INSIDER_PREVIEW"] = "true";
   return env;
 }
 
 function isSecretPattern(value: string) {
   console.log(value);
   return value.startsWith("{{") && value.endsWith("}}");
+}
+
+// Load envProfile with userdata (not decrypted)
+export async function loadContext(projectPath: string, env: string): Promise<Result<any, FxError>> {
+  const context = await fs.readJson(
+    path.join(
+      projectPath,
+      `.${ConfigFolderName}`,
+      PublishProfilesFolderName,
+      EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, env)
+    )
+  );
+  const userdataContent = await fs.readFile(
+    path.join(projectPath, `.${ConfigFolderName}`, PublishProfilesFolderName, `${env}.userdata`),
+    "utf8"
+  );
+  const userdata = deserializeDict(userdataContent);
+
+  const regex = /\{\{([^{}]+)\}\}/;
+  for (const component in context) {
+    for (const key in context[component]) {
+      const matchResult = regex.exec(context[component][key]);
+      if (matchResult) {
+        const userdataKey = matchResult[1];
+        if (userdataKey in userdata) {
+          context[component][key] = userdata[key];
+        }
+      }
+    }
+  }
+  return ok(context);
 }

@@ -4,21 +4,18 @@ import * as faker from "faker";
 import { ApplicationTokenCredentials, TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import {
   AzureAccountProvider,
-  LogLevel,
-  LogProvider,
   ConfigMap,
   PluginContext,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import { v4 as uuid } from "uuid";
 
-import { AxiosResponse } from "axios";
 import { AzureStorageClient } from "../../../../src/plugins/resource/frontend/clients";
 import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/constants";
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
-import * as templates from "../../../../src/common/templates";
 import { StorageAccountsCreateResponse } from "@azure/arm-storage/esm/models";
 import { newEnvInfo } from "../../../../src";
+import { LocalCrypto } from "../../../../src/core/crypto";
 
 export class TestHelper {
   static appName = "app-test";
@@ -60,54 +57,33 @@ export class TestHelper {
     },
   } as AzureAccountProvider;
 
-  static fakeLogProvider: LogProvider = {
-    async log(logLevel: LogLevel, message: string): Promise<boolean> {
-      return true;
-    },
-    async trace(message: string): Promise<boolean> {
-      return true;
-    },
-    async debug(message: string): Promise<boolean> {
-      return true;
-    },
-    async info(message: string | Array<any>): Promise<boolean> {
-      return true;
-    },
-    async warning(message: string): Promise<boolean> {
-      return true;
-    },
-    async error(message: string): Promise<boolean> {
-      return true;
-    },
-    async fatal(message: string): Promise<boolean> {
-      return true;
-    },
-  };
-
   static getFakePluginContext(): PluginContext {
-    const solutionConfig = new Map();
-    solutionConfig.set(DependentPluginInfo.SubscriptionId, TestHelper.fakeSubscriptionId);
-    solutionConfig.set(DependentPluginInfo.ResourceNameSuffix, TestHelper.storageSuffix);
-    solutionConfig.set(DependentPluginInfo.ResourceGroupName, TestHelper.rgName);
-    solutionConfig.set(DependentPluginInfo.Location, TestHelper.location);
-    solutionConfig.set(DependentPluginInfo.ProgrammingLanguage, TestHelper.tabLanguage);
+    const solutionConfig = new Map([
+      [DependentPluginInfo.SubscriptionId, TestHelper.fakeSubscriptionId],
+      [DependentPluginInfo.ResourceNameSuffix, TestHelper.storageSuffix],
+      [DependentPluginInfo.ResourceGroupName, TestHelper.rgName],
+      [DependentPluginInfo.Location, TestHelper.location],
+      [DependentPluginInfo.ProgrammingLanguage, TestHelper.tabLanguage],
+    ]);
 
-    const functionConfig = new Map();
-    functionConfig.set(DependentPluginInfo.FunctionEndpoint, TestHelper.functionEndpoint);
+    const functionConfig = new Map<string, string>([
+      [DependentPluginInfo.FunctionEndpoint, TestHelper.functionEndpoint],
+    ]);
 
-    const runtimeConfig = new Map();
-    runtimeConfig.set(DependentPluginInfo.RuntimeEndpoint, TestHelper.runtimeEndpoint);
-    runtimeConfig.set(DependentPluginInfo.StartLoginPageURL, TestHelper.startLoginPage);
+    const runtimeConfig = new Map<string, string>([
+      [DependentPluginInfo.RuntimeEndpoint, TestHelper.runtimeEndpoint],
+      [DependentPluginInfo.StartLoginPageURL, TestHelper.startLoginPage],
+    ]);
 
-    const aadConfig = new Map();
-    aadConfig.set(DependentPluginInfo.ClientID, TestHelper.fakeClientId);
+    const aadConfig = new Map<string, string>([
+      [DependentPluginInfo.ClientID, TestHelper.fakeClientId],
+    ]);
 
     const localDebugConfig = new Map();
     localDebugConfig.set(DependentPluginInfo.LocalTabEndpoint, TestHelper.localTabEndpoint);
 
     const pluginContext = {
       azureAccountProvider: TestHelper.fakeAzureAccountProvider,
-      logProvider: TestHelper.fakeLogProvider,
       envInfo: newEnvInfo(
         undefined,
         undefined,
@@ -141,6 +117,7 @@ export class TestHelper {
         },
       } as TeamsAppManifest,
       root: TestHelper.rootDir,
+      cryptoProvider: new LocalCrypto(""),
     } as PluginContext;
 
     return pluginContext;
@@ -154,35 +131,5 @@ export class TestHelper {
     ctx ??= TestHelper.getFakePluginContext();
     const config = await TestHelper.getFakeFrontendConfig(ctx);
     return new AzureStorageClient(config);
-  }
-
-  static candidateTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "0");
-  static targetTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "1");
-  static templateCompose = "a.b.c";
-  static latestTemplateURL: string = templates.templateURL(
-    TestHelper.targetTag,
-    TestHelper.templateCompose
-  );
-
-  static getFakeAxiosResponse(data: any, status = 200): AxiosResponse<any> {
-    return {
-      status: status,
-      data: data,
-      statusText: "OK",
-      config: {},
-      headers: {},
-    };
-  }
-
-  static getFakeTemplateManifest(): string {
-    return `
-templates@0.2.0
-templates@0.1.1
-templates@0.1.1-alpha
-templates@0.2.1
-templates@0.3.1
-${TestHelper.candidateTag}
-${TestHelper.targetTag}
-`;
   }
 }

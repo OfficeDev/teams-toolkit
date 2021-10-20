@@ -11,6 +11,8 @@ import {
   SystemError,
   UserError,
   Json,
+  EnvConfigFileNameTemplate,
+  EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
 
 export const CoreSource = "Core";
@@ -27,6 +29,22 @@ export function ProjectFolderNotExistError(path: string): UserError {
   return new UserError(
     "ProjectFolderNotExistError",
     `Path ${path} does not exist. Select a different folder.`,
+    CoreSource
+  );
+}
+
+export function ArchiveUserFileError(path: string, reason: string): UserError {
+  return new UserError(
+    "ArchiveUserFileError",
+    `Failed to archive path '${path}'. ${reason}. You can refer to .archive.log which provides detailed information about the archive process.`,
+    CoreSource
+  );
+}
+
+export function ArchiveProjectError(reason: string): UserError {
+  return new UserError(
+    "ArchiveProjectError",
+    `Failed to archive the project. ${reason}. You can refer to .archive.log which provides detailed information about the archive process.`,
     CoreSource
   );
 }
@@ -89,16 +107,6 @@ export function InvalidProjectError(msg?: string): UserError {
   );
 }
 
-export class ConcurrentError extends UserError {
-  constructor() {
-    super(
-      new.target.name,
-      "Concurrent operation error, please wait until the running task finish or you can reload the window to cancel it.",
-      CoreSource
-    );
-  }
-}
-
 export function InvalidProjectSettingsFileError(msg?: string): UserError {
   return new UserError(
     "InvalidProjectSettingsFile",
@@ -107,8 +115,10 @@ export function InvalidProjectSettingsFileError(msg?: string): UserError {
   );
 }
 
-export function TaskNotSupportError(task: Stage | string): SystemError {
-  return new SystemError("TaskNotSupport", `Task is not supported yet: ${task}`, CoreSource);
+export class TaskNotSupportError extends SystemError {
+  constructor(task: string) {
+    super(new.target.name, `Task is not supported yet: ${task}`, CoreSource);
+  }
 }
 
 export function FetchSampleError(): UserError {
@@ -180,7 +190,7 @@ export function ProjectSettingsUndefinedError(): SystemError {
 export function ProjectEnvNotExistError(env: string): UserError {
   return new UserError(
     "ProjectEnvNotExistError",
-    `The specified env ${env} does not exist. Select an existing env.`,
+    `Environment ${env} not found. Make sure the config.${env}.json file exist.`,
     CoreSource
   );
 }
@@ -204,7 +214,10 @@ export function ProjectEnvAlreadyExistError(env: string): FxError {
 export function InvalidEnvConfigError(env: string, errorMsg: string): UserError {
   return new UserError(
     "InvalidEnvConfigError",
-    `The configuration config.${env}.json is invalid, details: ${errorMsg}.`,
+    `The configuration ${EnvConfigFileNameTemplate.replace(
+      EnvNamePlaceholder,
+      env
+    )} is invalid, details: ${errorMsg}.`,
     CoreSource
   );
 }

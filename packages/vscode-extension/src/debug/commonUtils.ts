@@ -109,12 +109,11 @@ export async function getLocalDebugEnvs(): Promise<Record<string, string>> {
   return localDebugEnvs as Record<string, string>;
 }
 
-export async function getLocalDebugTeamsAppId(
+export async function getDebugConfig(
   isLocalSideloadingConfiguration: boolean
-): Promise<string | undefined> {
+): Promise<{ appId: string; env?: string } | undefined> {
   const params = isLocalSideloadingConfiguration ? "local" : "remote";
-  const localDebugTeamsAppId = await executeLocalDebugUserTask("getLaunchInput", params);
-  return localDebugTeamsAppId as string;
+  return await executeLocalDebugUserTask("getLaunchInput", params);
 }
 
 export async function getProgrammingLanguage(): Promise<string | undefined> {
@@ -303,7 +302,7 @@ function getLocalSetting(jsonSelector: (jsonObject: any) => any): string | undef
 export function getTeamsAppTenantId(): string | undefined {
   try {
     if (isMultiEnvEnabled()) {
-      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp.tenantId);
+      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp?.tenantId);
     } else {
       return getSettingWithUserData((envJson) => envJson.solution.teamsAppTenantId);
     }
@@ -316,7 +315,7 @@ export function getTeamsAppTenantId(): string | undefined {
 export function getLocalTeamsAppId(): string | undefined {
   try {
     if (isMultiEnvEnabled()) {
-      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp.teamsAppId);
+      return getLocalSetting((localSettingsJson) => localSettingsJson.teamsApp?.teamsAppId);
     } else {
       return getSettingWithUserData((envJson) => envJson.solution.localDebugTeamsAppId);
     }

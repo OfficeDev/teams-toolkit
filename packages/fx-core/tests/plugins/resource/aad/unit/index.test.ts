@@ -20,9 +20,18 @@ import { getAppStudioToken, getGraphToken } from "../tokenProvider";
 import { ConfigKeys } from "../../../../../src/plugins/resource/aad/constants";
 import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/configs";
 import faker from "faker";
+import { IUserList } from "../../../../../src/plugins/resource/appstudio/interfaces/IAppDefinition";
 
 dotenv.config();
 const testWithAzure: boolean = process.env.UT_TEST_ON_AZURE ? true : false;
+
+const userList: IUserList = {
+  tenantId: faker.datatype.uuid(),
+  aadId: faker.datatype.uuid(),
+  displayName: "displayName",
+  userPrincipalName: "userPrincipalName",
+  isAdministrator: true,
+};
 
 describe("AadAppForTeamsPlugin: CI", () => {
   let plugin: AadAppForTeamsPlugin;
@@ -132,7 +141,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     context = await TestHelper.pluginContext(config, true, false, false);
     context.graphTokenProvider = mockTokenProviderGraph();
 
-    const checkPermission = await plugin.checkPermission(context);
+    const checkPermission = await plugin.checkPermission(context, userList);
     chai.assert.isTrue(checkPermission.isOk());
   });
 
@@ -142,7 +151,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     context = await TestHelper.pluginContext(config, true, false, false);
     context.graphTokenProvider = mockTokenProviderGraph();
 
-    const grantPermission = await plugin.grantPermission(context);
+    const grantPermission = await plugin.grantPermission(context, userList);
     chai.assert.isTrue(grantPermission.isOk());
   });
 

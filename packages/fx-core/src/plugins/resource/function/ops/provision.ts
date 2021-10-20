@@ -170,7 +170,7 @@ export class FunctionProvision {
     identityId: string,
     databaseName: string,
     sqlEndpoint: string,
-    identityName: string
+    identityResourceId: string
   ): void {
     this.pushAppSettings(site, FunctionAppSettingKeys.identityId, identityId);
     this.pushAppSettings(site, FunctionAppSettingKeys.databaseName, databaseName);
@@ -179,7 +179,7 @@ export class FunctionProvision {
     site.identity = {
       type: DefaultProvisionConfigs.siteIdentityTypeUserAssigned,
       userAssignedIdentities: {
-        [identityName]: {},
+        [identityResourceId]: {},
       },
     };
   }

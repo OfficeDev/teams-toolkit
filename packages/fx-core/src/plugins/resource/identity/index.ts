@@ -77,21 +77,7 @@ export class IdentityPlugin implements Plugin {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.provision + Telemetry.startSuffix);
 
-    ContextUtils.init(ctx);
-    this.config.azureSubscriptionId = ContextUtils.getConfigString(
-      Constants.solution,
-      Constants.subscriptionId
-    );
-    this.config.resourceGroup = ContextUtils.getConfigString(
-      Constants.solution,
-      Constants.resourceGroupName
-    );
-    this.config.resourceNameSuffix = ContextUtils.getConfigString(
-      Constants.solution,
-      Constants.resourceNameSuffix
-    );
-    this.config.location = ContextUtils.getConfigString(Constants.solution, Constants.location);
-
+    this.loadConfig(ctx);
     try {
       ctx.logProvider?.info(Message.checkProvider);
       const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
@@ -105,14 +91,14 @@ export class IdentityPlugin implements Plugin {
 
     let defaultIdentity = `${ctx.projectSettings!.appName}-msi-${this.config.resourceNameSuffix}`;
     defaultIdentity = formatEndpoint(defaultIdentity);
-    this.config.identity = defaultIdentity;
-    this.config.identityName = `/subscriptions/${this.config.azureSubscriptionId}/resourcegroups/${this.config.resourceGroup}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${this.config.identity}`;
-    ctx.logProvider?.debug(Message.identityName(this.config.identityName));
+    this.config.identityName = defaultIdentity;
+    this.config.identityResourceId = `/subscriptions/${this.config.azureSubscriptionId}/resourcegroups/${this.config.resourceGroup}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${this.config.identityName}`;
+    ctx.logProvider?.debug(Message.identityResourceId(this.config.identityResourceId));
 
     try {
       await this.loadArmTemplate(ctx);
       this.parameters.parameters.location.value = this.config.location;
-      this.parameters.parameters.identityName.value = this.config.identity;
+      this.parameters.parameters.identityName.value = this.config.identityName;
       await this.provisionWithArmTemplate(ctx);
     } catch (error) {
       const errorCode = error.source + "." + error.name;
@@ -126,8 +112,8 @@ export class IdentityPlugin implements Plugin {
     }
 
     ctx.config.set(Constants.identityName, this.config.identityName);
-    ctx.config.set(Constants.identityId, this.config.identityId);
-    ctx.config.set(Constants.identity, this.config.identity);
+    ctx.config.set(Constants.identityClientId, this.config.identityClientId);
+    ctx.config.set(Constants.identityResourceId, this.config.identityResourceId);
     TelemetryUtils.sendEvent(Telemetry.stage.provision, true);
     ctx.logProvider?.info(Message.endProvision);
     return ok(undefined);
@@ -184,8 +170,8 @@ export class IdentityPlugin implements Plugin {
           Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
           Outputs: {
             identityName: IdentityBicep.identityName,
-            identityId: IdentityBicep.identityId,
-            identity: IdentityBicep.identity,
+            identityClientId: IdentityBicep.identityClientId,
+            identityResourceId: IdentityBicep.identityResourceId,
           },
         },
         OutputTemplate: {
@@ -235,17 +221,17 @@ export class IdentityPlugin implements Plugin {
 
       ctx.logProvider?.info(Message.getIdentityId);
       const response = await client.resources.getById(
-        this.config.identityName,
+        this.config.identityResourceId,
         Constants.apiVersion
       );
-      this.config.identityId = response.properties.clientId;
+      this.config.identityClientId = response.properties.clientId;
     } catch (_error) {
       ctx.logProvider?.error(
-        ErrorMessage.IdentityProvisionError.message(this.config.identity) + `:${_error.message}`
+        ErrorMessage.IdentityProvisionError.message(this.config.identityName) + `:${_error.message}`
       );
       const error = ResultFactory.UserError(
         ErrorMessage.IdentityProvisionError.name,
-        ErrorMessage.IdentityProvisionError.message(this.config.identity),
+        ErrorMessage.IdentityProvisionError.message(this.config.identityName),
         _error
       );
       throw error;
@@ -254,8 +240,43 @@ export class IdentityPlugin implements Plugin {
 
   private syncArmOutput(ctx: PluginContext) {
     ctx.config.set(Constants.identityName, getArmOutput(ctx, IdentityArmOutput.identityName));
-    ctx.config.set(Constants.identityId, getArmOutput(ctx, IdentityArmOutput.identityId));
-    ctx.config.set(Constants.identity, getArmOutput(ctx, IdentityArmOutput.identity));
+    ctx.config.set(
+      Constants.identityClientId,
+      getArmOutput(ctx, IdentityArmOutput.identityClientId)
+    );
+    ctx.config.set(
+      Constants.identityResourceId,
+      getArmOutput(ctx, IdentityArmOutput.identityResourceId)
+    );
+  }
+
+  private loadConfig(ctx: PluginContext) {
+    this.config.azureSubscriptionId = ContextUtils.getConfig<string>(
+      ctx,
+      Constants.solution,
+      Constants.subscriptionId
+    );
+    this.loadConfigResourceGroup(ctx);
+    this.config.resourceNameSuffix = ContextUtils.getConfig<string>(
+      ctx,
+      Constants.solution,
+      Constants.resourceNameSuffix
+    );
+    this.config.location = ContextUtils.getConfig<string>(
+      ctx,
+      Constants.solution,
+      Constants.location
+    );
+  }
+
+  private loadConfigResourceGroup(ctx: PluginContext) {
+    if (!isArmSupportEnabled()) {
+      this.config.resourceGroup = ContextUtils.getConfig<string>(
+        ctx,
+        Constants.solution,
+        Constants.resourceGroupName
+      );
+    }
   }
 }
 

@@ -91,11 +91,7 @@ describe("Bot Generates Arm Templates", () => {
         )
       );
       chai.assert.strictEqual(
-        JSON.stringify(
-          compiledResult.Orchestration.ParameterTemplate!.ParameterJson,
-          undefined,
-          2
-        ) + "\n",
+        JSON.stringify(compiledResult.Orchestration.ParameterTemplate!.ParameterJson, undefined, 2),
         fs.readFileSync(
           path.join(expectedBicepFileDirectory, "parameters.json"),
           ConstantString.UTF8Encoding
@@ -157,8 +153,8 @@ describe("Bot Generates Arm Templates", () => {
         },
         "fx-resource-identity": {
           Outputs: {
-            identityId: "test_identity_id",
-            identityName: "test_identity_name",
+            identityClientId: "test_identity_id",
+            identityResourceId: "test_identity_resource_id",
           },
         },
       },
@@ -207,11 +203,7 @@ describe("Bot Generates Arm Templates", () => {
         )
       );
       chai.assert.strictEqual(
-        JSON.stringify(
-          compiledResult.Orchestration.ParameterTemplate!.ParameterJson,
-          undefined,
-          2
-        ) + "\n",
+        JSON.stringify(compiledResult.Orchestration.ParameterTemplate!.ParameterJson, undefined, 2),
         fs.readFileSync(
           path.join(expectedBicepFileDirectory, "parameters.json"),
           ConstantString.UTF8Encoding

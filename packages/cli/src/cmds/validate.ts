@@ -5,11 +5,11 @@
 
 import { Argv, Options } from "yargs";
 import * as path from "path";
-import { FxError, err, ok, Result, Func } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Func, Inputs } from "@microsoft/teamsfx-api";
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
 import { getSystemInputs } from "../utils";
-import CliTelemetry from "../telemetry/cliTelemetry";
+import CliTelemetry, { makeEnvProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -43,15 +43,15 @@ export default class Validate extends YargsCommand {
       return err(result.error);
     }
     const core = result.value;
+    let inputs: Inputs;
     {
       const func: Func = {
         namespace: "fx-solution-azure",
         method: "validateManifest",
       };
-      const result = await core.executeUserTask!(
-        func,
-        getSystemInputs(rootFolder, args.env as any)
-      );
+
+      inputs = getSystemInputs(rootFolder, args.env as any);
+      const result = await core.executeUserTask!(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, result.error);
         return err(result.error);
@@ -60,6 +60,7 @@ export default class Validate extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.ValidateManifest, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      ...makeEnvProperty(inputs.env),
     });
     return ok(null);
   }

@@ -84,6 +84,17 @@ export class AADAppCheckingError extends PluginError {
   }
 }
 
+export class TemplateZipFallbackError extends PluginError {
+  constructor() {
+    super(
+      ErrorType.User,
+      "TemplateZipFallbackError",
+      "Failed to download zip package and open local zip package.",
+      [Messages.CheckOutputLogAndTryToFix, Messages.RetryTheCurrentStep]
+    );
+  }
+}
+
 export class ClientCreationError extends PluginError {
   constructor(clientName: string, innerError?: Error) {
     super(
@@ -118,6 +129,16 @@ export class MissingSubscriptionRegistrationError extends PluginError {
       undefined,
       true
     );
+  }
+}
+
+export class UnzipError extends PluginError {
+  constructor(path?: string) {
+    super(ErrorType.User, "UnzipError", "Failed to unzip templates and write to disk.", [
+      Messages.CheckOutputLogAndTryToFix,
+      Messages.ReopenWorkingDir(path),
+      Messages.RetryTheCurrentStep,
+    ]);
   }
 }
 
@@ -274,18 +295,6 @@ export class MigrateV1ProjectError extends PluginError {
       "MigrateV1ProjectError",
       `Failed to migrate Teams Toolkit V1 project into '${CommonStrings.BOT_WORKING_DIR_NAME}'.`,
       [Messages.RollbackToV1Project, Messages.CheckOutputLogAndTryToFix],
-      innerError
-    );
-  }
-}
-
-export class ExtractZipError extends PluginError {
-  constructor(path: string, innerError?: Error) {
-    super(
-      ErrorType.User,
-      "ExtractZipError",
-      `Failed to extract zip, please check the input: ${path}`,
-      [Messages.CheckOutputLogAndTryToFix, Messages.ReopenWorkingDir],
       innerError
     );
   }

@@ -18,4 +18,5 @@ export enum ExtensionErrors {
   FetchSampleError = "FetchSampleError",
   OpenEnvProfileError = "OpenEnvProfileError",
   EnvProfileNotFoundError = "EnvProfileNotFoundError",
+  NoWorkspaceError = "NoWorkSpaceError",
 }

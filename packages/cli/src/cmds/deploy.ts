@@ -6,12 +6,13 @@
 import * as path from "path";
 import { Argv, Options } from "yargs";
 
-import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Stage, Inputs } from "@microsoft/teamsfx-api";
+import { getHashedEnv } from "@microsoft/teamsfx-core";
 
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
 import { getSystemInputs, toLocaleLowerCase } from "../utils";
-import CliTelemetry from "../telemetry/cliTelemetry";
+import CliTelemetry, { makeEnvProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -81,8 +82,10 @@ export default class Deploy extends YargsCommand {
       }
     }
 
+    let inputs: Inputs;
     {
-      const result = await core.deployArtifacts(getSystemInputs(rootFolder, args.env as any));
+      inputs = getSystemInputs(rootFolder, args.env as any);
+      const result = await core.deployArtifacts(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
         return err(result.error);
@@ -91,6 +94,7 @@ export default class Deploy extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Deploy, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      ...makeEnvProperty(inputs.env),
     });
     return ok(null);
   }

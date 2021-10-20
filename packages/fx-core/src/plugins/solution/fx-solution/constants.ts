@@ -59,11 +59,6 @@ export const SUBSCRIPTION_ID = "subscriptionId";
  */
 export const SUBSCRIPTION_NAME = "subscriptionName";
 
-/**
- * Config key whose value is the user info of collaborator
- */
-export const USER_INFO = "userInfo";
-
 export const DEFAULT_PERMISSION_REQUEST = [
   {
     resource: "Microsoft Graph",
@@ -96,6 +91,7 @@ export enum SolutionError {
   NoResourcePluginSelected = "NoResourcePluginSelected",
   NoAppStudioToken = "NoAppStudioToken",
   NoTeamsAppTenantId = "NoTeamsAppTenantId",
+  NoUserName = "NoUserName",
   FailedToCheckResourceGroupExistence = "FailedToCheckResourceGroupExistence",
   FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
   FailedToListResourceGroup = "FailedToListResourceGrouop",
@@ -126,6 +122,7 @@ export enum SolutionError {
   UnknownSolutionRunningState = "UnknownSolutionRunningState",
   CannotDeployBeforeProvision = "CannotDeployBeforeProvision",
   CannotPublishBeforeProvision = "CannotPublishBeforeProvision",
+  CannotLocalDebugInDifferentTenant = "CannotLocalDebugInDifferentTenant",
   NoSubscriptionFound = "NoSubscriptionFound",
   NoSubscriptionSelected = "NoSubscriptionSelected",
   FailedToGetParamForRegisterTeamsAppAndAad = "FailedToGetParamForRegisterTeamsAppAndAad",
@@ -138,10 +135,11 @@ export enum SolutionError {
   InvalidInput = "InvalidInput",
   FailedToCompileBicepFiles = "FailedToCompileBicepFiles",
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
+  FailedToGenerateArmTemplates = "FailedToGenerateArmTemplates",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
   V1ProjectNotSupported = "V1ProjectNotSupported",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
-  M365AccountNotMatch = "M365AccountNotMatch",
+  M365TenantNotMatch = "M365TenantNotMatch",
   FeatureNotSupported = "FeatureNotSupported",
   CannotProcessBeforeProvision = "CannotProcessBeforeProvision",
   CannotFindUserInCurrentTenant = "CannotFindUserInCurrentTenant",
@@ -150,6 +148,8 @@ export enum SolutionError {
   FailedToListCollaborator = "FailedToListCollaborator",
   EmailCannotBeEmptyOrSame = "EmailCannotBeEmptyOrSame",
   FailedToExecuteTasks = "FailedToExecuteTasks",
+  FailedToGetEnvName = "FailedToGetEnvName",
+  TeamsAppTenantIdNotRight = "TeamsAppTenantIdNotRight",
 }
 
 export const LOCAL_DEBUG_TAB_ENDPOINT = "localTabEndpoint";
@@ -203,6 +203,9 @@ export enum SolutionTelemetryEvent {
   ListCollaboratorStart = "list-collaborator-start",
   ListCollaborator = "list-collaborator",
 
+  ListAllCollaboratorsStart = "list-all-collaborators-start",
+  ListAllCollaborators = "list-all-collaborators",
+
   GenerateArmTemplateStart = "generate-armtemplate-start",
   GenerateArmTemplate = "generate-armtemplate",
 
@@ -220,6 +223,7 @@ export enum SolutionTelemetryProperty {
   AadPermission = "aad-permission",
   TeamsAppPermission = "teams-app-permission",
   ProgrammingLanguage = "programming-language",
+  Env = "env",
 }
 
 export enum SolutionTelemetrySuccess {
@@ -228,3 +232,4 @@ export enum SolutionTelemetrySuccess {
 }
 
 export const SolutionTelemetryComponentName = "solution";
+export const SolutionSource = "Solution";

@@ -20,7 +20,7 @@ export interface Context {
   userInteraction: UserInteraction;
   logProvider: LogProvider;
   telemetryReporter: TelemetryReporter;
-  cryptoProvider?: CryptoProvider;
+  cryptoProvider: CryptoProvider;
   projectSetting: ProjectSettings;
   permissionRequestProvider?: PermissionRequestProvider;
 }
@@ -41,7 +41,11 @@ export type SolutionInputs = {
   // default to East US for now
   location: string;
   teamsAppTenantId: string;
+  subscriptionId: string;
   remoteTeamsAppId?: string;
+  // Used to track whether at least one successful provision has been made.
+  // Useful for fail fast when deploying in a fresh project.
+  provisionSucceeded?: boolean;
 };
 
 export type ProvisionInputs = Inputs & SolutionInputs & { projectPath: string };

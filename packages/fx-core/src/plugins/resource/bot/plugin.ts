@@ -2,15 +2,9 @@
 // Licensed under the MIT license.
 import {
   PluginContext,
-  Result,
-  Stage,
-  QTreeNode,
-  FxError,
-  Func,
   ArchiveFolderName,
   ArchiveLogFileName,
   AppPackageFolderName,
-  ok,
 } from "@microsoft/teamsfx-api";
 
 import { AADRegistration } from "./aadRegistration";
@@ -23,13 +17,11 @@ import {
   ProgressBarConstants,
   DeployConfigs,
   FolderNames,
-  QuestionNames,
   WebAppConstants,
   TemplateProjectsConstants,
   AuthEnvNames,
   AuthValues,
   MaxLengths,
-  Links,
   IdentityConstants,
   AzureConstants,
   PathInfo,
@@ -41,18 +33,14 @@ import { getZipDeployEndpoint } from "./utils/zipDeploy";
 import * as appService from "@azure/arm-appservice";
 import * as fs from "fs-extra";
 import { CommonStrings, PluginBot, ConfigNames, PluginLocalDebug } from "./resources/strings";
-import { DialogUtils } from "./utils/dialog";
 import {
   CheckThrowSomethingMissing,
   MigrateV1ProjectError,
   PackDirExistenceError,
   PreconditionError,
   SomethingMissingError,
-  UserInputsError,
-  ExtractZipError,
 } from "./errors";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
-import AdmZip from "adm-zip";
 import { ProgressBarFactory } from "./progressBars";
 import { PluginActRoles } from "./enums/pluginActRoles";
 import { ResourceNameFactory } from "./utils/resourceNameFactory";
@@ -67,7 +55,14 @@ import path from "path";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
-import { copyFiles, generateBicepFiles, isArmSupportEnabled } from "../../../common";
+import {
+  copyFiles,
+  generateBicepFiles,
+  getResourceGroupNameFromResourceId,
+  getSiteNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+  isArmSupportEnabled,
+} from "../../../common";
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { getArmOutput } from "../utils4v2";
 
@@ -115,17 +110,7 @@ export class TeamsBotImpl {
     }
 
     await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);
-    const zipContent: AdmZip = await LanguageStrategy.getTemplateProjectZip(
-      this.config.scaffold.programmingLanguage!,
-      group_name
-    );
-
-    await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_UNZIP);
-    try {
-      zipContent.extractAllTo(this.config.scaffold.workingDir!, true);
-    } catch (err) {
-      throw new ExtractZipError(this.config.scaffold.workingDir!, err);
-    }
+    await LanguageStrategy.getTemplateProject(group_name, this.config);
 
     this.config.saveConfigIntoContext(context);
     Logger.info(Messages.SuccessfullyScaffoldedBot);
@@ -191,10 +176,10 @@ export class TeamsBotImpl {
     // 1. Do bot registration.
     await handler?.next(ProgressBarConstants.PROVISION_STEP_BOT_REG);
     const botAuthCreds = await this.createOrGetBotAppRegistration();
+
     if (!isArmSupportEnabled()) {
       await this.provisionBotServiceOnAzure(botAuthCreds);
-    }
-    if (!isArmSupportEnabled()) {
+
       await handler?.next(ProgressBarConstants.PROVISION_STEP_WEB_APP);
       // 2. Provision azure web app for hosting bot project.
       await this.provisionWebApp();
@@ -353,29 +338,42 @@ export class TeamsBotImpl {
     );
   }
 
+  private async syncArmOutput(context: PluginContext) {
+    await this.config.restoreConfigFromContext(context);
+
+    this.config.provision.validDomain = getArmOutput(context, BotArmOutput.Domain) as string;
+    this.config.provision.appServicePlan = getArmOutput(
+      context,
+      BotArmOutput.AppServicePlanName
+    ) as string;
+    this.config.provision.botChannelRegName = getArmOutput(
+      context,
+      BotArmOutput.BotServiceName
+    ) as string;
+    this.config.provision.botWebAppResourceId = getArmOutput(
+      context,
+      BotArmOutput.BotWebAppResourceId
+    ) as string;
+    this.config.provision.siteEndpoint = getArmOutput(
+      context,
+      BotArmOutput.WebAppEndpoint
+    ) as string;
+    this.config.provision.skuName = getArmOutput(context, BotArmOutput.WebAppSKU) as string;
+    this.config.provision.siteName = getArmOutput(context, BotArmOutput.WebAppName) as string;
+
+    this.config.saveConfigIntoContext(context);
+  }
+
   public async postProvision(context: PluginContext): Promise<FxResult> {
     Logger.info(Messages.PostProvisioningStart);
 
     this.ctx = context;
-    await this.config.restoreConfigFromContext(context);
 
     if (isArmSupportEnabled()) {
-      this.config.provision.validDomain = getArmOutput(context, BotArmOutput.Domain) as string;
-      this.config.provision.appServicePlan = getArmOutput(
-        context,
-        BotArmOutput.AppServicePlanName
-      ) as string;
-      this.config.provision.botChannelRegName = getArmOutput(
-        context,
-        BotArmOutput.BotServiceName
-      ) as string;
-      this.config.provision.siteEndpoint = getArmOutput(
-        context,
-        BotArmOutput.WebAppEndpoint
-      ) as string;
-      this.config.provision.skuName = getArmOutput(context, BotArmOutput.WebAppSKU) as string;
-      this.config.provision.siteName = getArmOutput(context, BotArmOutput.WebAppName) as string;
+      await this.syncArmOutput(context);
     } else {
+      await this.config.restoreConfigFromContext(context);
+
       // 1. Get required config items from other plugins.
       // 2. Update bot hosting env"s app settings.
       const botId = this.config.scaffold.botId;
@@ -439,10 +437,10 @@ export class TeamsBotImpl {
           value: this.config.provision.sqlPassword,
         });
       }
-      if (this.config.provision.identityId) {
+      if (this.config.provision.identityClientId) {
         appSettings.push({
           name: AuthEnvNames.IDENTITY_ID,
-          value: this.config.provision.identityId,
+          value: this.config.provision.identityClientId,
         });
       }
       if (this.config.provision.functionEndpoint) {
@@ -460,11 +458,11 @@ export class TeamsBotImpl {
           appSettings
         );
 
-      if (this.config.provision.identityName) {
+      if (this.config.provision.identityResourceId) {
         siteEnvelope.identity = {
           type: IdentityConstants.IDENTITY_TYPE_USER_ASSIGNED,
           userAssignedIdentities: {
-            [this.config.provision.identityName]: {},
+            [this.config.provision.identityResourceId]: {},
           },
         };
       }
@@ -483,8 +481,10 @@ export class TeamsBotImpl {
       await this.updateMessageEndpointOnAzure(
         `${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
       );
+
+      this.config.saveConfigIntoContext(context);
     }
-    this.config.saveConfigIntoContext(context);
+
     return ResultFactory.Success();
   }
 
@@ -494,9 +494,7 @@ export class TeamsBotImpl {
     Logger.info(Messages.PreDeployingBot);
 
     // Preconditions checking.
-    const packDir = this.config.scaffold.workingDir!;
-
-    const packDirExisted = await fs.pathExists(packDir);
+    const packDirExisted = await fs.pathExists(this.config.scaffold.workingDir!);
     if (!packDirExisted) {
       throw new PackDirExistenceError();
     }
@@ -506,6 +504,13 @@ export class TeamsBotImpl {
       ConfigNames.PROGRAMMING_LANGUAGE,
       this.config.scaffold.programmingLanguage
     );
+
+    if (isArmSupportEnabled()) {
+      CheckThrowSomethingMissing(
+        ConfigNames.BOT_SERVICE_RESOURCE_ID,
+        this.config.provision.botWebAppResourceId
+      );
+    }
     CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
     CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
 
@@ -517,17 +522,31 @@ export class TeamsBotImpl {
   public async deploy(context: PluginContext): Promise<FxResult> {
     this.ctx = context;
     await this.config.restoreConfigFromContext(context);
+
+    if (isArmSupportEnabled()) {
+      this.config.provision.subscriptionId = getSubscriptionIdFromResourceId(
+        this.config.provision.botWebAppResourceId!
+      );
+      this.config.provision.resourceGroup = getResourceGroupNameFromResourceId(
+        this.config.provision.botWebAppResourceId!
+      );
+      this.config.provision.siteName = getSiteNameFromResourceId(
+        this.config.provision.botWebAppResourceId!
+      );
+    }
+
     Logger.info(Messages.DeployingBot);
 
-    if (!this.config.scaffold.workingDir) {
+    const workingDir = this.config.scaffold.workingDir;
+    if (!workingDir) {
       throw new PreconditionError(Messages.WorkingDirIsMissing, []);
     }
 
     const deployTimeCandidate = Date.now();
-    const deployMgr = new DeployMgr(this.config.scaffold.workingDir);
+    const deployMgr = new DeployMgr(workingDir);
     await deployMgr.init();
-    const needsRedeploy = await deployMgr.needsToRedeploy();
-    if (!needsRedeploy) {
+
+    if (!(await deployMgr.needsToRedeploy())) {
       Logger.debug(Messages.SkipDeployNoUpdates);
       return ResultFactory.Success();
     }
@@ -540,28 +559,21 @@ export class TeamsBotImpl {
 
     await handler?.start(ProgressBarConstants.DEPLOY_STEP_START);
 
-    const packDir = this.config.scaffold.workingDir;
-
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_NPM_INSTALL);
-
     await LanguageStrategy.localBuild(
       this.config.scaffold.programmingLanguage!,
-      packDir,
+      workingDir,
       this.config.deploy.unPackFlag === "true" ? true : false
     );
 
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
-    const zipBuffer = utils.zipAFolder(packDir, DeployConfigs.UN_PACK_DIRS, [
+    const zipBuffer = utils.zipAFolder(workingDir, DeployConfigs.UN_PACK_DIRS, [
       `${FolderNames.NODE_MODULES}/${FolderNames.KEYTAR}`,
     ]);
 
     // 2.2 Retrieve publishing credentials.
-    let publishingUserName = "";
-    let publishingPassword: string | undefined = undefined;
-
-    const serviceClientCredentials = await this.getAzureAccountCredenial();
     const webSiteMgmtClient = new appService.WebSiteManagementClient(
-      serviceClientCredentials,
+      await this.getAzureAccountCredenial(),
       this.config.provision.subscriptionId!
     );
     const listResponse = await AzureOperations.ListPublishingCredentials(
@@ -570,9 +582,12 @@ export class TeamsBotImpl {
       this.config.provision.siteName!
     );
 
-    publishingUserName = listResponse.publishingUserName;
-    publishingPassword = listResponse.publishingPassword;
-
+    const publishingUserName = listResponse.publishingUserName
+      ? listResponse.publishingUserName
+      : "";
+    const publishingPassword = listResponse.publishingPassword
+      ? listResponse.publishingPassword
+      : "";
     const encryptedCreds: string = utils.toBase64(`${publishingUserName}:${publishingPassword}`);
 
     const config = {
@@ -727,7 +742,9 @@ export class TeamsBotImpl {
       Logger.info(Messages.ProvisioningBotRegistration);
       botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
         appStudioToken!,
-        aadDisplayName
+        aadDisplayName,
+        this.config.localDebug.localObjectId,
+        this.config.localDebug.localBotId
       );
       Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
     }
@@ -774,18 +791,15 @@ export class TeamsBotImpl {
       );
       botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
         appStudioToken!,
-        aadDisplayName
+        aadDisplayName,
+        this.config.scaffold.objectId,
+        this.config.scaffold.botId
       );
 
-      if (!this.config.scaffold.botId) {
-        this.config.scaffold.botId = botAuthCreds.clientId;
-      }
-      if (!this.config.scaffold.botPassword) {
-        this.config.scaffold.botPassword = botAuthCreds.clientSecret;
-      }
-      if (!this.config.scaffold.objectId) {
-        this.config.scaffold.objectId = botAuthCreds.objectId;
-      }
+      this.config.scaffold.botId = botAuthCreds.clientId;
+      this.config.scaffold.botPassword = botAuthCreds.clientSecret;
+      this.config.scaffold.objectId = botAuthCreds.objectId;
+
       this.config.saveConfigIntoContext(this.ctx!); // Checkpoint for aad app provision.
       Logger.info(Messages.SuccessfullyCreatedBotAadApp);
     } else {

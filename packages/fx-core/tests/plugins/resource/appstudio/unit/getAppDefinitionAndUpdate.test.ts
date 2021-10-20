@@ -38,6 +38,7 @@ import sinon from "sinon";
 import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
 import { MockedAppStudioTokenProvider } from "../helper";
 import { newEnvInfo } from "../../../../../src";
+import { LocalCrypto } from "../../../../../src/core/crypto";
 
 describe("Get AppDefinition and Update", () => {
   let plugin: AppStudioPlugin;
@@ -87,6 +88,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -109,11 +111,7 @@ describe("Get AppDefinition and Update", () => {
       );
 
     sandbox.stub(ctx.appStudioToken!, "getAccessToken").resolves("anything");
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -127,6 +125,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -137,11 +136,7 @@ describe("Get AppDefinition and Update", () => {
         capabilities: ["Bot"],
       },
     };
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -160,6 +155,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -170,11 +166,7 @@ describe("Get AppDefinition and Update", () => {
         capabilities: ["Bot"],
       },
     };
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -196,6 +188,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -206,11 +199,7 @@ describe("Get AppDefinition and Update", () => {
         capabilities: ["Bot"],
       },
     };
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -232,6 +221,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -242,11 +232,7 @@ describe("Get AppDefinition and Update", () => {
         capabilities: ["Bot"],
       },
     };
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -270,6 +256,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -280,11 +267,7 @@ describe("Get AppDefinition and Update", () => {
         capabilities: ["Bot"],
       },
     };
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -304,6 +287,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -325,11 +309,7 @@ describe("Get AppDefinition and Update", () => {
           )
         )
       );
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
       chai
@@ -346,6 +326,7 @@ describe("Get AppDefinition and Update", () => {
       root: "./tests/plugins/resource/appstudio/resources/",
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -357,11 +338,7 @@ describe("Get AppDefinition and Update", () => {
       },
     };
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
@@ -380,6 +357,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -402,11 +380,7 @@ describe("Get AppDefinition and Update", () => {
     });
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
@@ -425,6 +399,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -465,11 +440,7 @@ describe("Get AppDefinition and Update", () => {
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
     sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
@@ -488,6 +459,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -530,11 +502,7 @@ describe("Get AppDefinition and Update", () => {
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
     sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "localDebug",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isOk());
   });
@@ -548,6 +516,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -559,11 +528,7 @@ describe("Get AppDefinition and Update", () => {
       },
     };
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "remote",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, false, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
@@ -582,6 +547,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -622,11 +588,7 @@ describe("Get AppDefinition and Update", () => {
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
     sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "remote",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, false, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isErr());
     if (getAppDefinitionAndResult.isErr()) {
@@ -645,6 +607,7 @@ describe("Get AppDefinition and Update", () => {
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -687,11 +650,7 @@ describe("Get AppDefinition and Update", () => {
     sandbox.stub(axios, "create").returns(fakeAxiosInstance);
     sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
 
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(
-      ctx,
-      "remote",
-      manifest
-    );
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, false, manifest);
 
     chai.assert.isTrue(getAppDefinitionAndResult.isOk());
   });

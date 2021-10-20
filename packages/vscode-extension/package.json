@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.7.0",
+  "version": "2.8.0-rc.4",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -83,6 +83,14 @@
       {
         "view": "teamsfx-empty-project",
         "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
+      },
+      {
+        "view": "teamsfx-empty-project-top",
+        "contents": "The Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a 'zero-configuration' approach to the developer experience.\n[Quick Start](command:fx-extension.openWelcome)\nTo start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
+      },
+      {
+        "view": "teamsfx-empty-project-bottom",
+        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\nThe Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a 'zero-configuration' approach to the developer experience.\n[Quick Start](command:fx-extension.openWelcome)"
       }
     ],
     "views": {
@@ -90,7 +98,7 @@
         {
           "id": "teamsfx-accounts",
           "name": "Accounts",
-          "when": "!fx-extension.sidebarWelcome"
+          "when": "fx-extension.sidebarWelcome.treeview"
         },
         {
           "id": "teamsfx-environment",
@@ -100,34 +108,44 @@
         {
           "id": "teamsfx-development",
           "name": "Development",
-          "when": "!fx-extension.sidebarWelcome && !fx-extension.customizedTreeview"
+          "when": "fx-extension.sidebarWelcome.treeview && !fx-extension.customizedTreeview"
         },
         {
           "type": "webview",
           "id": "teamsfx-development-webview",
           "name": "Development",
-          "when": "!fx-extension.sidebarWelcome && fx-extension.customizedTreeview"
+          "when": "fx-extension.sidebarWelcome.treeview && fx-extension.customizedTreeview"
         },
         {
           "id": "teamsfx-deployment",
           "name": "Deployment",
-          "when": "!fx-extension.sidebarWelcome && !fx-extension.customizedTreeview"
+          "when": "fx-extension.sidebarWelcome.treeview && !fx-extension.customizedTreeview"
         },
         {
           "type": "webview",
           "id": "teamsfx-deployment-webview",
           "name": "Deployment",
-          "when": "!fx-extension.sidebarWelcome && fx-extension.customizedTreeview"
+          "when": "fx-extension.sidebarWelcome.treeview && fx-extension.customizedTreeview"
         },
         {
           "id": "teamsfx-help-and-feedback",
           "name": "Help and feedback",
-          "when": "!fx-extension.sidebarWelcome"
+          "when": "fx-extension.sidebarWelcome.treeview"
         },
         {
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome"
+          "when": "fx-extension.sidebarWelcome.default"
+        },
+        {
+          "id": "teamsfx-empty-project-top",
+          "name": "Teams Toolkit",
+          "when": "fx-extension.sidebarWelcome.top"
+        },
+        {
+          "id": "teamsfx-empty-project-bottom",
+          "name": "Teams Toolkit",
+          "when": "fx-extension.sidebarWelcome.bottom"
         }
       ]
     },
@@ -137,6 +155,11 @@
           "command": "fx-extension.addEnvironment",
           "when": "view == teamsfx-environment",
           "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.refreshEnvironment",
+          "when": "view == teamsfx-environment",
+          "group": "navigation@2"
         }
       ],
       "view/item/context": [
@@ -190,17 +213,8 @@
           "group": "inline@3"
         },
         {
-          "command": "fx-extension.activateEnvironment",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/"
-        },
-        {
-          "command": "fx-extension.activateEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/",
-          "group": "inline@3"
-        },
-        {
           "command": "fx-extension.grantPermission",
-          "when": "view == teamsfx-environment && viewItem == environmentWithPermission",
+          "when": "view == teamsfx-environment && viewItem == addCollaborator",
           "group": "inline@3"
         }
       ],
@@ -253,19 +267,15 @@
           "when": "false"
         },
         {
+          "command": "fx-extension.refreshEnvironment",
+          "when": "false"
+        },
+        {
           "command": "fx-extension.viewEnvironment",
           "when": "false"
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.activateEnvironment",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.activateEnvironmentWithIcon",
           "when": "false"
         },
         {
@@ -323,7 +333,7 @@
       },
       {
         "command": "fx-extension.openSamples",
-        "title": "Teams: Samples"
+        "title": "Teams: View samples"
       },
       {
         "command": "fx-extension.openDocument",
@@ -331,35 +341,35 @@
       },
       {
         "command": "fx-extension.create",
-        "title": "Teams: Create New Project"
+        "title": "Teams: Create a new Teams app"
       },
       {
         "command": "fx-extension.update",
-        "title": "Teams: Add Resources"
+        "title": "Teams: Add cloud resources"
       },
       {
         "command": "fx-extension.addCapability",
-        "title": "Teams: Add Capability"
+        "title": "Teams: Add capabilities"
       },
       {
         "command": "fx-extension.openManifest",
-        "title": "Teams: Manifest Editor"
+        "title": "Teams: Edit manifest file"
       },
       {
         "command": "fx-extension.validateManifest",
-        "title": "Teams: Validate App Manifest File"
+        "title": "Teams: Validate manifest file"
       },
       {
         "command": "fx-extension.build",
-        "title": "Teams: Build Teams Package"
+        "title": "Teams: Zip Teams metadata package"
       },
       {
         "command": "fx-extension.provision",
-        "title": "Teams: Provision in the Cloud"
+        "title": "Teams: Provision in the cloud"
       },
       {
         "command": "fx-extension.deploy",
-        "title": "Teams: Deploy to the Cloud"
+        "title": "Teams: Deploy to the cloud"
       },
       {
         "command": "fx-extension.publish",
@@ -367,11 +377,11 @@
       },
       {
         "command": "fx-extension.openAppManagement",
-        "title": "Teams: Developer Portal"
+        "title": "Teams: Developer Portal for Teams"
       },
       {
         "command": "fx-extension.openReportIssues",
-        "title": "Teams: Report issues"
+        "title": "Teams: Report issues on GitHub"
       },
       {
         "command": "fx-extension.validate-dependencies",
@@ -414,6 +424,12 @@
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
+        "command": "fx-extension.refreshEnvironment",
+        "title": "Refresh",
+        "icon": "$(refresh)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
         "command": "fx-extension.viewEnvironment",
         "title": "View environment",
         "enablement": "fx-extension.isMultiEnvEnabled"
@@ -422,17 +438,6 @@
         "command": "fx-extension.viewEnvironmentWithIcon",
         "title": "View environment",
         "icon": "$(file-symlink-directory)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
-      },
-      {
-        "command": "fx-extension.activateEnvironment",
-        "title": "Activate environment",
-        "enablement": "fx-extension.isMultiEnvEnabled"
-      },
-      {
-        "command": "fx-extension.activateEnvironmentWithIcon",
-        "title": "Activate environment",
-        "icon": "$(check)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
@@ -586,9 +591,9 @@
       {
         "title": "Teams Toolkit",
         "properties": {
-          "fx-extension.armSupportEnabled": {
+          "fx-extension.insiderPreview": {
             "type": "boolean",
-            "description": "Enable provision Azure resources with ARM templates. (Requires reload of VS Code)",
+            "description": "Enable insider preview features. (requires reload of VS Code)",
             "default": false
           },
           "fx-extension.validateNode": {
@@ -609,7 +614,7 @@
           "fx-extension.validateBicep": {
             "type": "boolean",
             "description": "Ensure Bicep CLI is installed.",
-            "default": false
+            "default": true
           },
           "fx-extension.stopTeamsToolkitTasksPostDebug": {
             "type": "boolean",
@@ -642,8 +647,7 @@
     "copy-whatisnew-files": "copyfiles WHATISNEW.md out/resource",
     "copy-test-files": "copyfiles -u 1 test/**/*.ps1 test/**/*.sh out/test/",
     "compile": "tsc -p ./ && npm run copy-files && npm run copy-whatisnew-files",
-    "build": "rimraf out && npm run compile",
-    "build-webpack": "rimraf out && webpack --mode development --config ./webpack.config.js",
+    "build": "rimraf out && webpack --mode development --config ./webpack.config.js && npm run compile",
     "build-failpoint": "rimraf out && npx ttsc -p ./",
     "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
     "package": "rimraf out && webpack --mode production --config ./webpack.config.js",
@@ -700,6 +704,7 @@
     "css-loader": "^5.1.3",
     "decache": "^4.6.0",
     "eslint": "^7.22.0",
+    "eslint-plugin-prettier": "^4.0.0",
     "find-process": "^1.4.4",
     "fs-extra": "^9.0.1",
     "glob": "^7.1.7",
@@ -714,6 +719,7 @@
     "node-loader": "^2.0.0",
     "node-sass": "^6.0.1",
     "nyc": "^15.1.0",
+    "prettier": "^2.4.1",
     "react": "^17.0.2",
     "react-dom": "^17.0.2",
     "react-intl": "^5.13.5",
@@ -742,12 +748,13 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.8.0",
-    "@microsoft/teamsfx-core": "^0.8.0",
+    "@microsoft/teamsfx-api": "^0.9.0",
+    "@microsoft/teamsfx-core": "^0.9.1-rc.0",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jsonschema": "^1.4.0",
+    "log4js": "^6.3.0",
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
     "vscode-extension-telemetry": "^0.2.9",
@@ -764,9 +771,6 @@
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"
-    ],
-    "*": [
-      "npx prettier --config .prettierrc.js --ignore-unknown --write --ignore-path .prettierignore "
     ]
   }
 }

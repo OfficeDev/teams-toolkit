@@ -4,27 +4,22 @@
 
 import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
 import {
+  ConcurrentError,
   ConfigFolderName,
   CoreCallbackEvent,
   err,
+  Func,
   Inputs,
-  ProductName,
-  StaticPlatforms,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import * as os from "os";
 import * as path from "path";
 import { lock, unlock } from "proper-lockfile";
+import { promisify } from "util";
 import { FxCore } from "..";
 import { CallbackRegistry } from "../callback";
-import {
-  ConcurrentError,
-  InvalidProjectError,
-  NoProjectOpenedError,
-  PathNotExistError,
-} from "../error";
-import { base64Encode } from "../tools";
-
+import { CoreSource, InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";
+import { getLockFolder } from "../tools";
+import { shouldIgnored } from "./projectSettingsLoader";
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
   const core = ctx.self as FxCore;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
@@ -32,55 +27,64 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     core !== undefined && core.tools !== undefined && core.tools.logProvider !== undefined
       ? core.tools.logProvider
       : undefined;
-  const ignoreLock = inputs.ignoreLock === true || StaticPlatforms.includes(inputs.platform);
-  if (ignoreLock === false) {
-    if (!inputs.projectPath) {
-      ctx.result = err(NoProjectOpenedError());
-      return;
-    }
-    if (!(await fs.pathExists(inputs.projectPath))) {
-      ctx.result = err(PathNotExistError(inputs.projectPath));
-      return;
-    }
-    const lf = path.join(inputs.projectPath, `.${ConfigFolderName}`);
-    if (!(await fs.pathExists(lf))) {
-      ctx.result = err(InvalidProjectError());
-      return;
-    }
+  const ignoreLock = shouldIgnored(ctx);
+  if (ignoreLock) {
+    await next();
+    return;
+  }
+  if (!inputs.projectPath) {
+    ctx.result = err(NoProjectOpenedError());
+    return;
+  }
+  if (!(await fs.pathExists(inputs.projectPath))) {
+    ctx.result = err(PathNotExistError(inputs.projectPath));
+    return;
+  }
+  const configFolder = path.join(inputs.projectPath, `.${ConfigFolderName}`);
+  if (!(await fs.pathExists(configFolder))) {
+    ctx.result = err(InvalidProjectError());
+    return;
+  }
 
-    const lockFileDir = path.join(
-      os.tmpdir(),
-      `${ProductName}-${base64Encode(inputs.projectPath)}`
-    );
-    await fs.ensureDir(lockFileDir);
-
-    await lock(lf, { lockfilePath: path.join(lockFileDir, `${ConfigFolderName}.lock`) })
-      .then(async () => {
-        if (logger) logger.debug(`[core] success to acquire lock on: ${lf}`);
-        for (const f of CallbackRegistry.get(CoreCallbackEvent.lock)) {
+  const lockFileDir = getLockFolder(inputs.projectPath);
+  const lockfilePath = path.join(lockFileDir, `${ConfigFolderName}.lock`);
+  await fs.ensureDir(lockFileDir);
+  const taskName = `${ctx.method} ${
+    ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
+  }`;
+  const sleep = promisify(setTimeout);
+  let acquired = false;
+  for (let i = 0; i < 10; ++i) {
+    try {
+      await lock(configFolder, { lockfilePath: lockfilePath });
+      acquired = true;
+      logger?.debug(`[core] success to acquire lock for task ${taskName} on: ${configFolder}`);
+      for (const f of CallbackRegistry.get(CoreCallbackEvent.lock)) {
+        f();
+      }
+      try {
+        await next();
+      } finally {
+        await unlock(configFolder, { lockfilePath: lockfilePath });
+        for (const f of CallbackRegistry.get(CoreCallbackEvent.unlock)) {
           f();
         }
-        try {
-          await next();
-        } finally {
-          await unlock(lf, { lockfilePath: path.join(lockFileDir, `${ConfigFolderName}.lock`) });
-          await fs.rmdir(lockFileDir);
-
-          for (const f of CallbackRegistry.get(CoreCallbackEvent.unlock)) {
-            f();
-          }
-          if (logger) logger.debug(`[core] lock released on ${lf}`);
-        }
-      })
-      .catch((e: any) => {
-        if (e["code"] === "ELOCKED") {
-          if (logger) logger.warning(`[core] failed to acquire lock on: ${lf}`);
-          ctx.result = err(new ConcurrentError());
-          return;
-        }
-        throw e;
-      });
-  } else {
-    await next();
+        logger?.debug(`[core] lock released on ${configFolder}`);
+      }
+      break;
+    } catch (e) {
+      if (e["code"] === "ELOCKED") {
+        logger?.warning(
+          `[core] failed to acquire lock for task ${taskName} on: ${configFolder}, error: ${e} try again ... `
+        );
+        await sleep(1000);
+        continue;
+      }
+      throw e;
+    }
+  }
+  if (!acquired) {
+    logger?.error(`[core] failed to acquire lock for task ${taskName} on: ${configFolder}`);
+    ctx.result = err(new ConcurrentError(CoreSource));
   }
 };

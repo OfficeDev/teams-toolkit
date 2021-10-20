@@ -24,9 +24,12 @@ import {
   Json,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
-
-import { environmentManager, isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
-
+import {
+  environmentManager,
+  isMultiEnvEnabled,
+  isValidProject,
+  PluginNames,
+} from "@microsoft/teamsfx-core";
 import { workspace, WorkspaceConfiguration } from "vscode";
 
 import * as commonUtils from "../debug/commonUtils";
@@ -90,7 +93,7 @@ export function getTeamsAppId() {
         ws,
 
         isMultiEnvEnabled()
-          ? `.${ConfigFolderName}/${InputConfigsFolderName}/${EnvProfileFileNameTemplate.replace(
+          ? `.${ConfigFolderName}/${PublishProfilesFolderName}/${EnvProfileFileNameTemplate.replace(
               "@envName",
 
               envResult.value
@@ -99,8 +102,24 @@ export function getTeamsAppId() {
       );
 
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
+      return isMultiEnvEnabled()
+        ? envJson[PluginNames.APPST].teamsAppId
+        : envJson.solution.remoteTeamsAppId;
+    }
+  } catch (e) {
+    return undefined;
+  }
+}
 
-      return envJson.solution.remoteTeamsAppId;
+// Only used for telemetry when multi-env is enabled
+export function getTeamsAppIdByEnv(env: string) {
+  try {
+    const ws = ext.workspaceUri.fsPath;
+
+    if (isValidProject(ws)) {
+      const result = environmentManager.getEnvProfileFilesPath(env, ws);
+      const envJson = JSON.parse(fs.readFileSync(result.envProfile, "utf8"));
+      return envJson[PluginNames.APPST].teamsAppId;
     }
   } catch (e) {
     return undefined;
@@ -218,10 +237,8 @@ export function getConfiguration(key: string): boolean {
 }
 
 export function syncFeatureFlags() {
-  // Sync arm support
-
-  process.env["TEAMSFX_ARM_SUPPORT"] = getConfiguration(
-    ConfigurationKey.ArmSupportEnabled
+  process.env["TEAMSFX_INSIDER_PREVIEW"] = getConfiguration(
+    ConfigurationKey.InsiderPreview
   ).toString();
 
   process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = getConfiguration(
@@ -230,11 +247,9 @@ export function syncFeatureFlags() {
 }
 
 export class FeatureFlags {
-  static readonly RemoteCollaboration = "TEAMSFX_REMOTE_COL";
+  static readonly InsiderPreview = "TEAMSFX_INSIDER_PREVIEW";
 
-  static readonly MultiEnv = "TEAMSFX_MULTI_ENV";
-
-  static readonly ArmSupport = "TEAMSFX_ARM_SUPPORT";
+  static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
 }
 
 // Determine whether feature flag is enabled based on environment variable setting

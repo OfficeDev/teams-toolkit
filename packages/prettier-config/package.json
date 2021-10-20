@@ -3,8 +3,5 @@
   "version": "0.1.0",
   "description": "Shared Prettier configuration",
   "main": "index.js",
-  "private": true,
-  "devDependencies": {
-    "prettier": "^2.2.1"
-  }
+  "private": true
 }

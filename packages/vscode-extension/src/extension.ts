@@ -27,11 +27,7 @@ import {
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./utils/migrateV1";
 import { isTeamsfx, syncFeatureFlags } from "./utils/commonUtils";
-import {
-  ConfigFolderName,
-  InputConfigsFolderName,
-  PublishProfilesFolderName,
-} from "@microsoft/teamsfx-api";
+import { ConfigFolderName, InputConfigsFolderName, StatesFolderName } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { registerEnvTreeHandler } from "./envTree";
 import { getWorkspacePath } from "./handlers";
@@ -268,7 +264,7 @@ export async function activate(context: vscode.ExtensionContext) {
     language: "plaintext",
     scheme: "file",
     pattern: isMultiEnvEnabled()
-      ? `**/.${ConfigFolderName}/${PublishProfilesFolderName}/*.userdata`
+      ? `**/.${ConfigFolderName}/${StatesFolderName}/*.userdata`
       : `**/.${ConfigFolderName}/*.userdata`,
   };
   const localDebugDataSelector = {

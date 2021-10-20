@@ -45,19 +45,19 @@ export class ConfigUtils {
       case ConfigKeysOfOtherPlugin.localDebugTabDomain:
         return isMultiEnvEnable
           ? ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain)
-          : ctx.envInfo.profile.get(Plugins.localDebug)?.get(key);
+          : ctx.envInfo.state.get(Plugins.localDebug)?.get(key);
       case ConfigKeysOfOtherPlugin.localDebugTabEndpoint:
         return isMultiEnvEnable
           ? ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint)
-          : ctx.envInfo.profile.get(Plugins.localDebug)?.get(key);
+          : ctx.envInfo.state.get(Plugins.localDebug)?.get(key);
       case ConfigKeysOfOtherPlugin.localDebugBotEndpoint:
         return isMultiEnvEnable
           ? ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotEndpoint)
-          : ctx.envInfo.profile.get(Plugins.localDebug)?.get(key);
+          : ctx.envInfo.state.get(Plugins.localDebug)?.get(key);
       case ConfigKeysOfOtherPlugin.teamsBotIdLocal:
         return isMultiEnvEnable
           ? ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
-          : ctx.envInfo.profile.get(Plugins.teamsBot)?.get(key);
+          : ctx.envInfo.state.get(Plugins.teamsBot)?.get(key);
       default:
         return undefined;
     }
@@ -204,7 +204,7 @@ export class SetApplicationInContextConfig {
         if (isArmSupportEnabled()) {
           frontendDomain = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingDomainArm);
         } else {
-          frontendDomain = ctx.envInfo.profile
+          frontendDomain = ctx.envInfo.state
             .get(Plugins.frontendHosting)
             ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
         }
@@ -217,7 +217,7 @@ export class SetApplicationInContextConfig {
 
     const botId: ConfigValue = this.isLocalDebug
       ? ConfigUtils.getLocalDebugConfigOfOtherPlugins(ctx, ConfigKeysOfOtherPlugin.teamsBotIdLocal)
-      : ctx.envInfo.profile.get(Plugins.teamsBot)?.get(ConfigKeysOfOtherPlugin.teamsBotId);
+      : ctx.envInfo.state.get(Plugins.teamsBot)?.get(ConfigKeysOfOtherPlugin.teamsBotId);
     if (botId) {
       this.botId = format(botId as string, Formats.UUID);
     }
@@ -271,7 +271,7 @@ export class PostProvisionConfig {
         if (isArmSupportEnabled()) {
           frontendEndpoint = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingEndpointArm);
         } else {
-          frontendEndpoint = ctx.envInfo.profile
+          frontendEndpoint = ctx.envInfo.state
             .get(Plugins.frontendHosting)
             ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
         }
@@ -287,7 +287,7 @@ export class PostProvisionConfig {
           ctx,
           ConfigKeysOfOtherPlugin.localDebugBotEndpoint
         )
-      : ctx.envInfo.profile.get(Plugins.teamsBot)?.get(ConfigKeysOfOtherPlugin.teamsBotEndpoint);
+      : ctx.envInfo.state.get(Plugins.teamsBot)?.get(ConfigKeysOfOtherPlugin.teamsBotEndpoint);
     if (botEndpoint) {
       this.botEndpoint = format(botEndpoint as string, Formats.Endpoint);
     }

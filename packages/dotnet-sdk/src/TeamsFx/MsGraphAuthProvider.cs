@@ -38,7 +38,7 @@ namespace Microsoft.TeamsFx
                 scopes = DefaultScope;
             }
             _scopes = scopes.Split(' ');
-            _logger?.LogInformation("Create Microsoft Graph Authentication Provider with {scopes}", _scopes);
+            _logger?.LogInformation($"Create Microsoft Graph Authentication Provider with scopes: {_scopes}");
         }
 
         /// <summary>
@@ -62,7 +62,7 @@ namespace Microsoft.TeamsFx
             {
                 _scopes = scopes;
             }
-            _logger?.LogInformation("Create Microsoft Graph Authentication Provider with {scopes}", _scopes);
+            _logger?.LogInformation($"Create Microsoft Graph Authentication Provider with scopes: {_scopes}");
         }
 
         /// <summary>
@@ -87,7 +87,7 @@ namespace Microsoft.TeamsFx
         /// <exception cref="ExceptionCode.ServiceError">When failed to get access token from simple auth or AAD server.</exception>
         public async Task<string> GetAccessTokenAsync()
         {
-            _logger?.LogInformation("Get Graph Access token with {scopes}", _scopes);
+            _logger?.LogInformation($"Get Graph Access token with {_scopes}");
             var tokenRequestContext = new TokenRequestContext(_scopes);
 
             var accessToken = await _credential.GetTokenAsync(tokenRequestContext, new CancellationToken()).ConfigureAwait(false);

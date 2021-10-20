@@ -12,7 +12,7 @@ import {
   Platform,
   ProjectSettings,
   ProjectSettingsFileName,
-  PublishProfilesFolderName,
+  StatesFolderName,
   returnSystemError,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
@@ -253,9 +253,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
 }
 
 async function migrateMultiEnv(projectPath: string): Promise<void> {
-  const { fx, fxConfig, templateAppPackage, fxPublishProfile } = await getMultiEnvFolders(
-    projectPath
-  );
+  const { fx, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   const {
     hasFrontend,
     hasBackend,
@@ -293,24 +291,24 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   manifestString = manifestString.replace(new RegExp("{version}", "g"), "1.0.0");
   manifestString = manifestString.replace(
     new RegExp("{baseUrl}", "g"),
-    "{{{profile.fx-resource-frontend-hosting.endpoint}}}"
+    "{{{state.fx-resource-frontend-hosting.endpoint}}}"
   );
   manifestString = manifestString.replace(
     new RegExp("{appClientId}", "g"),
-    "{{profile.fx-resource-aad-app-for-teams.clientId}}"
+    "{{state.fx-resource-aad-app-for-teams.clientId}}"
   );
   manifestString = manifestString.replace(
     new RegExp("{webApplicationInfoResource}", "g"),
-    "{{{profile.fx-resource-aad-app-for-teams.applicationIdUris}}}"
+    "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}"
   );
   manifestString = manifestString.replace(
     new RegExp("{botId}", "g"),
-    "{{profile.fx-resource-bot.botId}}"
+    "{{state.fx-resource-bot.botId}}"
   );
   const manifest: TeamsAppManifest = JSON.parse(manifestString);
   manifest.name.short = "{{config.manifest.appName.short}}";
   manifest.name.full = "{{config.manifest.appName.full}}";
-  manifest.id = "{{profile.fx-resource-appstudio.teamsAppId}}";
+  manifest.id = "{{state.fx-resource-appstudio.teamsAppId}}";
   await fs.writeFile(targetManifestFile, JSON.stringify(manifest, null, 4));
   await moveIconsToResourceFolder(templateAppPackage);
 
@@ -326,11 +324,11 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   }
 
   if (hasProvision) {
-    const devProfile = path.join(fxPublishProfile, "profile.dev.json");
-    const devUserData = path.join(fxPublishProfile, "dev.userdata");
-    await fs.copy(path.join(fx, "new.env.default.json"), devProfile);
+    const devState = path.join(fxState, "state.dev.json");
+    const devUserData = path.join(fxState, "dev.userdata");
+    await fs.copy(path.join(fx, "new.env.default.json"), devState);
     await fs.copy(path.join(fx, "default.userdata"), devUserData);
-    await removeExpiredFields(devProfile, devUserData);
+    await removeExpiredFields(devState, devUserData);
   }
 }
 
@@ -365,14 +363,13 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
   );
 }
 
-async function removeExpiredFields(devProfile: string, devUserData: string): Promise<void> {
-  const profileData = await readJson(devProfile);
+async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
+  const stateData = await readJson(devState);
   const secrets: Record<string, string> = deserializeDict(await fs.readFile(devUserData, "UTF-8"));
 
-  profileData[PluginNames.APPST]["teamsAppId"] =
-    profileData[PluginNames.SOLUTION]["remoteTeamsAppId"];
+  stateData[PluginNames.APPST]["teamsAppId"] = stateData[PluginNames.SOLUTION]["remoteTeamsAppId"];
 
-  const expiredProfileKeys: [string, string][] = [
+  const expiredStateKeys: [string, string][] = [
     [PluginNames.LDEBUG, ""],
     [PluginNames.SOLUTION, programmingLanguage],
     [PluginNames.SOLUTION, defaultFunctionName],
@@ -387,12 +384,12 @@ async function removeExpiredFields(devProfile: string, devUserData: string): Pro
     [PluginNames.SA, "filePath"],
     [PluginNames.SA, "environmentVariableParams"],
   ];
-  for (const [k, v] of expiredProfileKeys) {
-    if (profileData[k]) {
+  for (const [k, v] of expiredStateKeys) {
+    if (stateData[k]) {
       if (!v) {
-        delete profileData[k];
-      } else if (profileData[k][v]) {
-        delete profileData[k][v];
+        delete stateData[k];
+      } else if (stateData[k][v]) {
+        delete stateData[k][v];
       }
     }
   }
@@ -402,7 +399,7 @@ async function removeExpiredFields(devProfile: string, devUserData: string): Pro
   }
   deleteUserDataKey(secrets, `${PluginNames.AAD}.local_clientSecret`);
 
-  await fs.writeFile(devProfile, JSON.stringify(profileData, null, 4), { encoding: "UTF-8" });
+  await fs.writeFile(devState, JSON.stringify(stateData, null, 4), { encoding: "UTF-8" });
   await fs.writeFile(devUserData, serializeDict(secrets), { encoding: "UTF-8" });
 }
 
@@ -448,10 +445,10 @@ async function getMultiEnvFolders(projectPath: string): Promise<any> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
   const fxConfig = path.join(fx, InputConfigsFolderName);
   const templateAppPackage = path.join(projectPath, "templates", AppPackageFolderName);
-  const fxPublishProfile = path.join(fx, PublishProfilesFolderName);
+  const fxState = path.join(fx, StatesFolderName);
   await fs.ensureDir(fxConfig);
   await fs.ensureDir(templateAppPackage);
-  return { fx, fxConfig, templateAppPackage, fxPublishProfile };
+  return { fx, fxConfig, templateAppPackage, fxState };
 }
 
 async function backup(projectPath: string): Promise<void> {
@@ -518,12 +515,10 @@ async function getAppName(projectSettingPath: string): Promise<string> {
 }
 
 async function cleanup(projectPath: string): Promise<void> {
-  const { _, fxConfig, templateAppPackage, fxPublishProfile } = await getMultiEnvFolders(
-    projectPath
-  );
+  const { _, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   await fs.remove(fxConfig);
   await fs.remove(templateAppPackage);
-  await fs.remove(fxPublishProfile);
+  await fs.remove(fxState);
   await fs.remove(path.join(templateAppPackage, ".."));
   if (await fs.pathExists(path.join(fxConfig, "..", "new.env.default.json"))) {
     await fs.remove(path.join(fxConfig, "..", "new.env.default.json"));

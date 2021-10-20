@@ -619,13 +619,11 @@ export class LocalDebugPlugin implements Plugin {
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     if (func.method == "getLaunchInput") {
       const env = func.params as string;
-      const solutionConfigs = ctx.envInfo.profile.get(SolutionPlugin.Name);
+      const solutionConfigs = ctx.envInfo.state.get(SolutionPlugin.Name);
       if (env === "remote") {
         // return remote teams app id
         const remoteId = isMultiEnvEnabled()
-          ? (ctx.envInfo.profile
-              .get(AppStudioPlugin.Name)
-              ?.get(AppStudioPlugin.TeamsAppId) as string)
+          ? (ctx.envInfo.state.get(AppStudioPlugin.Name)?.get(AppStudioPlugin.TeamsAppId) as string)
           : (solutionConfigs?.get(SolutionPlugin.RemoteTeamsAppId) as string);
         if (/^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(remoteId)) {
           return ok({

@@ -84,7 +84,7 @@ export async function provisionLocalResource(
         params: { isLocal: true },
       },
       localSettings,
-      { envName: environmentManager.getDefaultEnvName(), config: {}, profile: {} },
+      { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} },
       tokenProvider
     );
     if (result.isErr()) {

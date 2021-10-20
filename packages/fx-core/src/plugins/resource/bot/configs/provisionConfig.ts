@@ -39,43 +39,43 @@ export class ProvisionConfig {
   public functionEndpoint?: string;
 
   public async restoreConfigFromContext(context: PluginContext): Promise<void> {
-    this.subscriptionId = context.envInfo.profile
+    this.subscriptionId = context.envInfo.state
       .get(PluginSolution.PLUGIN_NAME)
       ?.get(PluginSolution.SUBSCRIPTION_ID) as string;
 
-    this.resourceGroup = context.envInfo.profile
+    this.resourceGroup = context.envInfo.state
       .get(PluginSolution.PLUGIN_NAME)
       ?.get(PluginSolution.RESOURCE_GROUP_NAME) as string;
 
-    this.location = context.envInfo.profile
+    this.location = context.envInfo.state
       .get(PluginSolution.PLUGIN_NAME)
       ?.get(PluginSolution.LOCATION) as string;
 
-    this.sqlEndpoint = context.envInfo.profile
+    this.sqlEndpoint = context.envInfo.state
       .get(PluginSql.PLUGIN_NAME)
       ?.get(PluginSql.SQL_ENDPOINT) as string;
 
-    this.sqlDatabaseName = context.envInfo.profile
+    this.sqlDatabaseName = context.envInfo.state
       .get(PluginSql.PLUGIN_NAME)
       ?.get(PluginSql.SQL_DATABASE_NAME) as string;
 
-    this.sqlUserName = context.envInfo.profile
+    this.sqlUserName = context.envInfo.state
       .get(PluginSql.PLUGIN_NAME)
       ?.get(PluginSql.SQL_USERNAME) as string;
 
-    this.sqlPassword = context.envInfo.profile
+    this.sqlPassword = context.envInfo.state
       .get(PluginSql.PLUGIN_NAME)
       ?.get(PluginSql.SQL_PASSWORD) as string;
 
-    this.identityClientId = context.envInfo.profile
+    this.identityClientId = context.envInfo.state
       .get(PluginIdentity.PLUGIN_NAME)
       ?.get(PluginIdentity.IDENTITY_ClIENT_ID) as string;
 
-    this.identityResourceId = context.envInfo.profile
+    this.identityResourceId = context.envInfo.state
       .get(PluginIdentity.PLUGIN_NAME)
       ?.get(PluginIdentity.IDENTITY_RESOURCE_ID) as string;
 
-    this.functionEndpoint = context.envInfo.profile
+    this.functionEndpoint = context.envInfo.state
       .get(PluginFunction.PLUGIN_NAME)
       ?.get(PluginFunction.ENDPOINT) as string;
 

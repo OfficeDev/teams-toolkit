@@ -1,10 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { ConfigMap, LocalSettings, PluginContext } from "@microsoft/teamsfx-api";
 import faker from "faker";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { Constants } from "../../../../src/plugins/resource/simpleauth/constants";
-import { newEnvInfo } from "../../../../src";
+import { newEnvInfo } from "../../../../src/core/tools";
+import { ARM_TEMPLATE_OUTPUT, isMultiEnvEnabled } from "../../../../src";
+import {
+  LocalSettingsAuthKeys,
+  LocalSettingsFrontendKeys,
+} from "../../../../src/common/localSettingsConstants";
+import { SOLUTION } from "../../../../src/plugins/resource/appstudio/constants";
+import { ConfigKeysOfOtherPlugin } from "../../../../src/plugins/resource/aad/constants";
 
 export class TestHelper {
   static async pluginContext(
@@ -136,8 +143,44 @@ export class TestHelper {
           ],
         },
       },
+      localSettings: isMultiEnvEnabled()
+        ? ({
+            teamsApp: new ConfigMap(),
+            auth: new ConfigMap([
+              [LocalSettingsAuthKeys.ClientId, "mock-local-clientId"],
+              [LocalSettingsAuthKeys.ClientSecret, "mock-local-clientSecret"],
+              [
+                LocalSettingsAuthKeys.OauthAuthority,
+                "https://login.microsoftonline.com/mock-teamsAppTenantId",
+              ],
+              [LocalSettingsAuthKeys.ApplicationIdUris, "mock-local-applicationIdUris"],
+            ]),
+            frontend: new ConfigMap([[LocalSettingsFrontendKeys.TabEndpoint, mockEndpoint]]),
+          } as LocalSettings)
+        : undefined,
     } as unknown as PluginContext;
 
     return pluginContext;
   }
+}
+
+export function mockArmOutput(context: PluginContext, simpleAuthUrl: string) {
+  // set context.envInfo.state.get(SOLUTION)[ARM_TEMPLATE_OUTPUT]["domain"] = some fake value
+  const solutionProfile = context.envInfo.state.get(SOLUTION) ?? new Map();
+  const armOutput = solutionProfile[ARM_TEMPLATE_OUTPUT] ?? {};
+
+  armOutput[ConfigKeysOfOtherPlugin.frontendHostingDomainArm] = {
+    type: "String",
+    value: "fake.storage.domain.test",
+  };
+  armOutput[ConfigKeysOfOtherPlugin.frontendHostingEndpointArm] = {
+    type: "String",
+    value: "https://fake.storage.domain.test",
+  };
+  armOutput[Constants.ArmOutput.simpleAuthEndpoint] = {
+    type: "String",
+    value: simpleAuthUrl,
+  };
+  solutionProfile.set(ARM_TEMPLATE_OUTPUT, armOutput);
+  context.envInfo.state.set(SOLUTION, solutionProfile);
 }

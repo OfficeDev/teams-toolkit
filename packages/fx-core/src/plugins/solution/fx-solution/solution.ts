@@ -2880,12 +2880,18 @@ export class TeamsAppSolution implements Solution {
         baseURL: "https://graph.microsoft.com/v1.0",
       });
       instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
-      const res = await instance.get(`/users?$filter=startsWith(mail,'${email}')`);
+      const res = await instance.get(
+        `/users?$filter=startsWith(mail,'${email}') or startsWith(userPrincipalName, '${email}')`
+      );
       if (!res || !res.data || !res.data.value) {
         return undefined;
       }
 
-      const collaborator = res.data.value.find((user: any) => user.mail === email);
+      const collaborator = res.data.value.find(
+        (user: any) =>
+          user.mail.toLowerCase() === email.toLowerCase() ||
+          user.userPrincipalName.toLowerCase() === email.toLowerCase()
+      );
 
       if (!collaborator) {
         return undefined;

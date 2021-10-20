@@ -30,7 +30,7 @@ const tips = {
   migrateV1Project: `Rollback your project from '${ArchiveFolderName}' folder.`,
 };
 
-export class FrontendPluginError extends Error {
+export class BlazorPluginError extends Error {
   public code: string;
   public message: string;
   public suggestions: string[];
@@ -66,7 +66,7 @@ export class FrontendPluginError extends Error {
   }
 }
 
-export class UnauthenticatedError extends FrontendPluginError {
+export class UnauthenticatedError extends BlazorPluginError {
   constructor() {
     super(ErrorType.User, "UnauthenticatedError", "Failed to get user login information.", [
       tips.doLogin,
@@ -74,13 +74,13 @@ export class UnauthenticatedError extends FrontendPluginError {
   }
 }
 
-export class NoPreStepError extends FrontendPluginError {
+export class NoPreStepError extends BlazorPluginError {
   constructor() {
     super(ErrorType.System, "NoPreStepError", "The pre-step is not done.", [tips.checkLog]);
   }
 }
 
-export class InvalidConfigError extends FrontendPluginError {
+export class InvalidConfigError extends BlazorPluginError {
   constructor(key: string, detailedErrorMessage?: string) {
     const detailedMsg = detailedErrorMessage ? ` Error message: ${detailedErrorMessage}` : "";
     super(ErrorType.User, "InvalidConfigError", `Get invalid ${key}.${detailedMsg}`, [
@@ -89,7 +89,7 @@ export class InvalidConfigError extends FrontendPluginError {
   }
 }
 
-export class CheckResourceGroupError extends FrontendPluginError {
+export class CheckResourceGroupError extends BlazorPluginError {
   constructor() {
     super(ErrorType.User, "CheckResourceGroupError", "Failed to check resource group existence.", [
       tips.checkLog,
@@ -97,7 +97,7 @@ export class CheckResourceGroupError extends FrontendPluginError {
   }
 }
 
-export class NoResourceGroupError extends FrontendPluginError {
+export class NoResourceGroupError extends BlazorPluginError {
   constructor() {
     super(ErrorType.User, "NoResourceGroupError", "Failed to find resource group.", [
       tips.ensureResourceGroup,
@@ -105,7 +105,7 @@ export class NoResourceGroupError extends FrontendPluginError {
   }
 }
 
-export class CheckStorageError extends FrontendPluginError {
+export class CheckStorageError extends BlazorPluginError {
   constructor() {
     super(
       ErrorType.User,
@@ -116,7 +116,7 @@ export class CheckStorageError extends FrontendPluginError {
   }
 }
 
-export class NoStorageError extends FrontendPluginError {
+export class NoStorageError extends BlazorPluginError {
   constructor() {
     super(ErrorType.User, "NoStorageError", "Failed to find Azure Storage Account.", [
       tips.reProvision,
@@ -124,7 +124,7 @@ export class NoStorageError extends FrontendPluginError {
   }
 }
 
-export class InvalidStorageNameError extends FrontendPluginError {
+export class InvalidStorageNameError extends BlazorPluginError {
   constructor() {
     super(ErrorType.User, "InvalidStorageNameError", "Azure Storage Name is invalid.", [
       tips.ensureAppNameValid,
@@ -132,7 +132,7 @@ export class InvalidStorageNameError extends FrontendPluginError {
   }
 }
 
-export class StorageAccountAlreadyTakenError extends FrontendPluginError {
+export class StorageAccountAlreadyTakenError extends BlazorPluginError {
   constructor() {
     super(
       ErrorType.User,
@@ -143,7 +143,7 @@ export class StorageAccountAlreadyTakenError extends FrontendPluginError {
   }
 }
 
-export class CreateStorageAccountError extends FrontendPluginError {
+export class CreateStorageAccountError extends BlazorPluginError {
   constructor(innerErrorCode?: string) {
     super(
       ErrorType.User,
@@ -154,7 +154,7 @@ export class CreateStorageAccountError extends FrontendPluginError {
   }
 }
 
-export class ClearStorageError extends FrontendPluginError {
+export class ClearStorageError extends BlazorPluginError {
   constructor() {
     super(ErrorType.User, "ClearStorageError", "Failed to clear Azure Storage Account.", [
       tips.checkSystemTime,
@@ -163,7 +163,7 @@ export class ClearStorageError extends FrontendPluginError {
   }
 }
 
-export class UnknownScaffoldError extends FrontendPluginError {
+export class UnknownScaffoldError extends BlazorPluginError {
   constructor() {
     super(
       ErrorType.System,
@@ -174,7 +174,7 @@ export class UnknownScaffoldError extends FrontendPluginError {
   }
 }
 
-export class TemplateManifestError extends FrontendPluginError {
+export class TemplateManifestError extends BlazorPluginError {
   constructor(msg: string) {
     super(
       ErrorType.User,
@@ -185,7 +185,7 @@ export class TemplateManifestError extends FrontendPluginError {
   }
 }
 
-export class TemplateZipFallbackError extends FrontendPluginError {
+export class TemplateZipFallbackError extends BlazorPluginError {
   constructor() {
     super(
       ErrorType.System,
@@ -196,7 +196,7 @@ export class TemplateZipFallbackError extends FrontendPluginError {
   }
 }
 
-export class UnzipTemplateError extends FrontendPluginError {
+export class UnzipTemplateError extends BlazorPluginError {
   constructor() {
     super(ErrorType.User, "UnzipTemplateError", "Failed to unzip template package.", [
       tips.checkFsPermissions,
@@ -204,7 +204,7 @@ export class UnzipTemplateError extends FrontendPluginError {
   }
 }
 
-export class InvalidTabLanguageError extends FrontendPluginError {
+export class InvalidTabLanguageError extends BlazorPluginError {
   constructor() {
     super(
       ErrorType.User,
@@ -215,7 +215,7 @@ export class InvalidTabLanguageError extends FrontendPluginError {
   }
 }
 
-export class InvalidAuthPluginConfigError extends FrontendPluginError {
+export class InvalidAuthPluginConfigError extends BlazorPluginError {
   constructor() {
     super(
       ErrorType.User,
@@ -226,7 +226,7 @@ export class InvalidAuthPluginConfigError extends FrontendPluginError {
   }
 }
 
-export class InvalidAadPluginConfigError extends FrontendPluginError {
+export class InvalidAadPluginConfigError extends BlazorPluginError {
   constructor() {
     super(
       ErrorType.User,
@@ -237,7 +237,7 @@ export class InvalidAadPluginConfigError extends FrontendPluginError {
   }
 }
 
-export class UserTaskNotImplementedError extends FrontendPluginError {
+export class UserTaskNotImplementedError extends BlazorPluginError {
   constructor(taskName: string) {
     super(
       ErrorType.System,
@@ -252,7 +252,7 @@ export const UnhandledErrorCode = "UnhandledError";
 export const UnhandledErrorMessage = "Unhandled error.";
 
 export async function runWithErrorCatchAndThrow<T>(
-  error: FrontendPluginError,
+  error: BlazorPluginError,
   fn: () => T | Promise<T>
 ): Promise<T> {
   try {
@@ -266,7 +266,7 @@ export async function runWithErrorCatchAndThrow<T>(
 }
 
 export async function runWithErrorCatchAndWrap<T>(
-  wrap: (error: any) => FrontendPluginError,
+  wrap: (error: any) => BlazorPluginError,
   fn: () => T | Promise<T>
 ): Promise<T> {
   try {

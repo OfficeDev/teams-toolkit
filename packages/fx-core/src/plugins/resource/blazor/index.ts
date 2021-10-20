@@ -11,7 +11,7 @@ import {
 
 import {
   ErrorType,
-  FrontendPluginError,
+  BlazorPluginError,
   UnhandledErrorCode,
   UnhandledErrorMessage,
 } from "./resources/errors";
@@ -19,7 +19,7 @@ import { Logger } from "./utils/logger";
 import { ProgressHelper } from "./utils/progress-helper";
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
-import { Service, Inject } from "typedi";
+import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { BlazorPluginImpl } from "./plugin";
 
@@ -35,6 +35,11 @@ export class BlazorPlugin implements Plugin {
 
   private static setContext(ctx: PluginContext): void {
     Logger.setLogger(ctx.logProvider);
+  }
+
+  public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
+    BlazorPlugin.setContext(ctx);
+    return await this.runWithErrorHandling(() => this.blazorPluginImpl.preProvision(ctx));
   }
 
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -59,7 +64,7 @@ export class BlazorPlugin implements Plugin {
     } catch (e) {
       await ProgressHelper.endAllHandlers(false);
 
-      if (e instanceof FrontendPluginError) {
+      if (e instanceof BlazorPluginError) {
         const error =
           e.errorType === ErrorType.User
             ? ErrorFactory.UserError(e.code, e.getMessage(), undefined, undefined, e.helpLink)

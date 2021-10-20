@@ -211,8 +211,8 @@ jobs:
           # replace with this eventually: xvfb-run -a npx lerna run test:unit
           cd packages/fx-core
           xvfb-run -a npx nyc mocha \
-            "tests/core/**/*.test.ts"
-            "tests/plugins/resource/aad/**/*.test.ts"
+            "tests/core/**/*.test.ts" \
+            "tests/plugins/resource/aad/**/*.test.ts" \
             "tests/plugins/resource/simpleauth/**/*.test.ts"
           cd -
 

@@ -54,7 +54,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
-import { getTemplatesFolder } from "../../..";
+import { getTemplatesFolder, isMultiEnvEnabled } from "../../..";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
 
@@ -192,7 +192,9 @@ export class AadAppForTeamsImpl {
       isLocalDebug
     );
 
-    const skip: boolean = ctx.config.get(ConfigKeys.skip) as boolean;
+    const skip: boolean = isMultiEnvEnabled()
+      ? (ctx.envInfo.config.auth?.[ConfigKeys.skip] as boolean)
+      : (ctx.config.get(ConfigKeys.skip) as boolean);
     if (skip) {
       ctx.logProvider?.info(Messages.SkipProvision);
       Utils.addLogAndTelemetryWithLocalDebug(

@@ -85,3 +85,11 @@ export function GetTenantFailedError(username?: string, error?: Error): SystemEr
     "GetTenantFailedError"
   );
 }
+
+export function UploadAppPackageFailedError(error: Error): SystemError {
+  return returnSystemError(
+    new Error(`Failed to upload app package, due to ${error.message}`),
+    Constants.PLUGIN_NAME,
+    "UploadAppCatalogFailed"
+  );
+}

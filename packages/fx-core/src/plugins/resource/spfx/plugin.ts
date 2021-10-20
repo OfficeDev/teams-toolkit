@@ -17,6 +17,7 @@ import {
   NoSPPackageError,
   ScaffoldError,
   GetTenantFailedError,
+  UploadAppPackageFailedError,
 } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
@@ -190,7 +191,7 @@ export class SPFxPluginImpl {
     }
   }
 
-  private async buildSPPackge(ctx: PluginContext): Promise<Result<any, FxError>> {
+  private async buildSPPackage(ctx: PluginContext): Promise<Result<any, FxError>> {
     const progressHandler = await ProgressHelper.startPreDeployProgressHandler(ctx);
     if (ctx.answers?.platform === Platform.VSCode) {
       (ctx.logProvider as any).outputChannel.show();
@@ -246,7 +247,7 @@ export class SPFxPluginImpl {
   }
 
   public async preDeploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    return this.buildSPPackge(ctx);
+    return this.buildSPPackage(ctx);
   }
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -309,6 +310,8 @@ export class SPFxPluginImpl {
     } catch (e: any) {
       if (e.response?.status === 403) {
         return err(InsufficientPermissionError(appCatalogSite!));
+      } else {
+        return err(UploadAppPackageFailedError(e));
       }
     }
 

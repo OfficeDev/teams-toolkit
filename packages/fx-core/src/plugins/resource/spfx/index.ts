@@ -44,16 +44,29 @@ export class SpfxPlugin implements Plugin {
     });
 
     if (stage === Stage.create) {
+      let refineOrder: boolean | undefined = undefined;
+      if (ctx.expServiceProvider) {
+        refineOrder = await ctx.expServiceProvider.getTreatmentVariableAsync(
+          "vscode",
+          "refinescaffoldorder",
+          true
+        );
+      }
       const spfx_framework_type = new QTreeNode({
         type: "singleSelect",
         name: SPFXQuestionNames.framework_type,
         title: "Framework",
-        staticOptions: [
-          { id: "none", label: "None" },
-          { id: "react", label: "React" },
-        ],
+        staticOptions: refineOrder
+          ? [
+              { id: "react", label: "React" },
+              { id: "none", label: "None" },
+            ]
+          : [
+              { id: "none", label: "None" },
+              { id: "react", label: "React" },
+            ],
         placeholder: "Select an option",
-        default: "none",
+        default: refineOrder ? "react" : "none",
       });
       spfx_frontend_host.addChild(spfx_framework_type);
 

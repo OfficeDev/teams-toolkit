@@ -92,6 +92,8 @@ describe("deploy() for Azure projects", () => {
   it("should return error if manifest file is not found", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
+    const mockedProvider = new MockedAzureAccountProvider();
+    mockedCtx.azureAccountProvider = mockedProvider;
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -128,6 +130,8 @@ describe("deploy() for Azure projects", () => {
     it("should return error if no resource is selected to deploy", async () => {
       const solution = new TeamsAppSolution();
       const mockedCtx = mockSolutionContext();
+      const mockedProvider = new MockedAzureAccountProvider();
+      mockedCtx.azureAccountProvider = mockedProvider;
       mockedCtx.projectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -147,6 +151,8 @@ describe("deploy() for Azure projects", () => {
     it("should return ok on happy path and set solution status to idle", async () => {
       const solution = new TeamsAppSolution();
       const mockedCtx = mockSolutionContext();
+      const mockedProvider = new MockedAzureAccountProvider();
+      mockedCtx.azureAccountProvider = mockedProvider;
       mockedCtx.projectSettings = {
         appName: "my app",
         projectId: uuid.v4(),

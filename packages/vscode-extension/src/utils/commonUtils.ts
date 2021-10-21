@@ -109,7 +109,7 @@ export function getTeamsAppIdByEnv(env: string) {
 
     if (isValidProject(ws)) {
       const result = environmentManager.getEnvStateFilesPath(env, ws);
-      const envJson = JSON.parse(fs.readFileSync(result.envProfile, "utf8"));
+      const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
       return envJson[PluginNames.APPST].teamsAppId;
     }
   } catch (e) {

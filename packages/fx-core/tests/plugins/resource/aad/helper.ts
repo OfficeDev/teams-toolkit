@@ -304,29 +304,54 @@ export function mockProvisionResult(
   }
 }
 
-export function mockSkipFlag(context: PluginContext) {
+export function mockSkipFlag(context: PluginContext, isLocalDebug = false) {
   if (isMultiEnvEnabled()) {
-    const config: EnvConfig = {
-      auth: {
-        clientId: faker.datatype.uuid(),
-        objectId: faker.datatype.uuid(),
-        clientSecret: faker.datatype.uuid(),
-        accessAsUserScopeId: faker.datatype.uuid(),
-      },
-      manifest: {
-        appName: {
-          short: "appName",
+    if (isLocalDebug) {
+      const aadInfo = new ConfigMap();
+      aadInfo.set(ConfigKeys.clientId, faker.datatype.uuid());
+      aadInfo.set(ConfigKeys.objectId, faker.datatype.uuid());
+      aadInfo.set(ConfigKeys.clientSecret, faker.datatype.uuid());
+      aadInfo.set(ConfigKeys.oauth2PermissionScopeId, faker.datatype.uuid());
+      const localSettings: LocalSettings = {
+        teamsApp: new ConfigMap(),
+        auth: aadInfo,
+      };
+      context.localSettings = localSettings;
+    } else {
+      const config: EnvConfig = {
+        auth: {
+          clientId: faker.datatype.uuid(),
+          objectId: faker.datatype.uuid(),
+          clientSecret: faker.datatype.uuid(),
+          accessAsUserScopeId: faker.datatype.uuid(),
         },
-      },
-    };
-    context.envInfo.config = config;
-    context.envInfo.state.set(Plugins.pluginNameComplex, new Map());
+        manifest: {
+          appName: {
+            short: "appName",
+          },
+        },
+      };
+      context.envInfo.config = config;
+      context.envInfo.state.set(Plugins.pluginNameComplex, new Map());
+    }
   } else {
     context.config.set(ConfigKeys.skip, true);
-    context.config.set(ConfigKeys.objectId, faker.datatype.uuid());
-    context.config.set(ConfigKeys.clientId, faker.datatype.uuid());
-    context.config.set(ConfigKeys.clientSecret, faker.datatype.uuid());
-    context.config.set(ConfigKeys.oauth2PermissionScopeId, faker.datatype.uuid());
+    context.config.set(
+      Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.objectId),
+      faker.datatype.uuid()
+    );
+    context.config.set(
+      Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientId),
+      faker.datatype.uuid()
+    );
+    context.config.set(
+      Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.clientSecret),
+      faker.datatype.uuid()
+    );
+    context.config.set(
+      Utils.addLocalDebugPrefix(isLocalDebug, ConfigKeys.oauth2PermissionScopeId),
+      faker.datatype.uuid()
+    );
   }
 }
 

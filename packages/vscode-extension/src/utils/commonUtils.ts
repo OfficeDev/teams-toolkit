@@ -108,7 +108,7 @@ export function getTeamsAppIdByEnv(env: string) {
     const ws = ext.workspaceUri.fsPath;
 
     if (isValidProject(ws)) {
-      const result = environmentManager.getEnvProfileFilesPath(env, ws);
+      const result = environmentManager.getEnvStateFilesPath(env, ws);
       const envJson = JSON.parse(fs.readFileSync(result.envProfile, "utf8"));
       return envJson[PluginNames.APPST].teamsAppId;
     }

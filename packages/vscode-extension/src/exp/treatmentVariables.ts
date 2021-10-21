@@ -4,6 +4,7 @@ export class TreatmentVariables {
   public static readonly CustomizeTreeview = "customizetreeview";
   public static readonly QuickStartInSidebar = "quickstartinsidebar";
   public static readonly RefineScaffoldTooltip = "refinescaffoldhint";
+  public static readonly RefineScaffoldOrder = "refinescaffoldorder";
   public static readonly ShowLocalDebug = "showlocaldebug";
 }
 

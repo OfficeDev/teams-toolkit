@@ -76,8 +76,8 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
         const secretName = "clientSecret";
         const secretText = "test";
         configMap.set(secretName, secretText);
-        solutionContext.envInfo.profile.set("solution", new ConfigMap());
-        solutionContext.envInfo.profile.set(pluginName, configMap);
+        solutionContext.envInfo.state.set("solution", new ConfigMap());
+        solutionContext.envInfo.state.set(pluginName, configMap);
 
         solutionContext.projectSettings = projectSettings;
         solutionContext.cryptoProvider = cryptoProvider;
@@ -91,17 +91,17 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
           projectSetting: projectSettings,
         };
         const envInfoV1 = newEnvInfo();
-        envInfoV1.profile = solutionContext.envInfo.profile;
+        envInfoV1.state = solutionContext.envInfo.state;
         const envInfoV2: v2.EnvInfoV2 = {
           envName: envInfoV1.envName,
           config: envInfoV1.config,
-          profile: {},
+          state: {},
         };
-        for (const key of envInfoV1.profile.keys()) {
-          const map = envInfoV1.profile.get(key) as ConfigMap;
+        for (const key of envInfoV1.state.keys()) {
+          const map = envInfoV1.state.get(key) as ConfigMap;
           const value = map?.toJSON();
           if (value) {
-            envInfoV2.profile[key] = value;
+            envInfoV2.state[key] = value;
           }
         }
         class MyClass {
@@ -190,13 +190,13 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
             if (isV2()) {
               assert.isTrue(
                 ctx.envInfoV2 &&
-                  ctx.envInfoV2.profile &&
-                  ctx.envInfoV2.profile[pluginName][secretName] === secretText
+                  ctx.envInfoV2.state &&
+                  ctx.envInfoV2.state[pluginName][secretName] === secretText
               );
             } else {
               assert.isTrue(
                 ctx.solutionContext &&
-                  (ctx.solutionContext.envInfo.profile.get(pluginName) as ConfigMap).get(
+                  (ctx.solutionContext.envInfo.state.get(pluginName) as ConfigMap).get(
                     secretName
                   ) === secretText
               );

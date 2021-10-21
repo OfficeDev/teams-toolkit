@@ -2,7 +2,12 @@ import "mocha";
 import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { ConfigFolderName, Json, LocalSettings } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  InputConfigsFolderName,
+  Json,
+  LocalSettings,
+} from "@microsoft/teamsfx-api";
 import { LocalSettingsProvider } from "../../src/common/localSettingsProvider";
 import {
   LocalSettingsAuthKeys,
@@ -12,10 +17,16 @@ import {
   LocalSettingsTeamsAppKeys,
 } from "../../src/common/localSettingsConstants";
 import { assert } from "console";
+import { isMultiEnvEnabled } from "../../src/common/tools";
 
 describe("LocalSettings provider APIs", () => {
   const workspaceFolder = path.resolve(__dirname, "./data/");
-  const testFilePath = path.resolve(__dirname, `./data/.${ConfigFolderName}/localSettings.json`);
+  const testFilePath = path.resolve(
+    __dirname,
+    `./data/.${ConfigFolderName}/${
+      isMultiEnvEnabled() ? InputConfigsFolderName : ""
+    }/localSettings.json`
+  );
 
   let hasFrontend: boolean;
   let hasBackend: boolean;

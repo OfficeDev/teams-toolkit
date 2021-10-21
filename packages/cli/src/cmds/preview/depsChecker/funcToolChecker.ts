@@ -85,6 +85,10 @@ export class FuncToolChecker implements IDepsChecker {
         portableFuncVersion !== null && supportedVersions.includes(portableFuncVersion);
       // to avoid "func -v" and "func new" work well, but "func start" fail.
       hasSentinel = await fs.pathExists(FuncToolChecker.getSentinelPath());
+
+      if (isWindows() && isVersionSupported && hasSentinel) {
+        await this.cleanupPortablePs1();
+      }
     } catch (error) {
       // do nothing
       return false;
@@ -190,6 +194,13 @@ export class FuncToolChecker implements IDepsChecker {
     return "npx azure-functions-core-tools@3";
   }
 
+  public getPortableFuncBinFolders(): string[] {
+    return [
+      FuncToolChecker.getDefaultInstallPath(), // npm 6 (windows) https://github.com/npm/cli/issues/3489
+      path.join(FuncToolChecker.getDefaultInstallPath(), "node_modules", ".bin"),
+    ];
+  }
+
   private async queryFuncVersion(path: string): Promise<FuncVersion | null> {
     const output = await cpUtils.executeCommand(
       undefined,
@@ -249,6 +260,17 @@ export class FuncToolChecker implements IDepsChecker {
     }
   }
 
+  private async cleanupPortablePs1(): Promise<void> {
+    // delete func.ps1 from portable function
+    for (const funcFolder of this.getPortableFuncBinFolders()) {
+      const funcPath = path.join(funcFolder, "func.ps1");
+      if (await fs.pathExists(funcPath)) {
+        await this._logger.debug(`deleting func.ps1 from ${funcPath}`);
+        await fs.remove(funcPath);
+      }
+    }
+  }
+
   private async installFunc(): Promise<void> {
     await this._telemetry.sendEventWithDuration(
       DepsCheckerEvent.funcInstallScriptCompleted,
@@ -288,6 +310,8 @@ export class FuncToolChecker implements IDepsChecker {
           await this._logger.debug(`deleting func.ps1 from ${funcPSScript}`);
           await fs.remove(funcPSScript);
         }
+
+        await this.cleanupPortablePs1();
       }
     } catch (error) {
       this._telemetry.sendSystemErrorEvent(

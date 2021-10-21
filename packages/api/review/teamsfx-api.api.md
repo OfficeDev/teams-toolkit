@@ -135,6 +135,8 @@ export interface Context {
     // (undocumented)
     cryptoProvider: CryptoProvider;
     // (undocumented)
+    expServiceProvider?: ExpServiceProvider;
+    // (undocumented)
     graphTokenProvider?: GraphTokenProvider;
     // (undocumented)
     localSettings?: LocalSettings;
@@ -160,6 +162,8 @@ export interface Context {
 interface Context_2 {
     // (undocumented)
     cryptoProvider: CryptoProvider;
+    // (undocumented)
+    expServiceProvider?: ExpServiceProvider;
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)
@@ -303,12 +307,12 @@ export interface EnvInfo {
     // (undocumented)
     envName: string;
     // (undocumented)
-    profile: Map<string, any>;
+    state: Map<string, any>;
 }
 
 // @public (undocumented)
-type EnvInfoV2 = Omit<EnvInfo, "profile" | "config"> & {
-    profile: Json;
+type EnvInfoV2 = Omit<EnvInfo, "state" | "config"> & {
+    state: Json;
 } & {
     config: Json;
 };
@@ -341,6 +345,12 @@ export interface ErrorOptionBase {
     source?: string;
     // (undocumented)
     userData?: any;
+}
+
+// @public (undocumented)
+export interface ExpServiceProvider {
+    // (undocumented)
+    getTreatmentVariableAsync<T extends boolean | number | string>(configId: string, name: string, checkCache?: boolean): Promise<T | undefined>;
 }
 
 // @public (undocumented)
@@ -1477,6 +1487,8 @@ export type TokenProvider = {
 export interface Tools {
     // (undocumented)
     cryptoProvider?: CryptoProvider;
+    // (undocumented)
+    expServiceProvider?: ExpServiceProvider;
     // (undocumented)
     logProvider: LogProvider;
     // (undocumented)

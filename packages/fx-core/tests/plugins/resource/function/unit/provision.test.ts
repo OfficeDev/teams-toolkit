@@ -18,7 +18,7 @@ import {
 import { NodeVersion } from "../../../../../src/plugins/resource/function/enums";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
 import { Platform } from "@microsoft/teamsfx-api";
-import { newEnvInfo } from "../../../../../src";
+import { isArmSupportEnabled, newEnvInfo } from "../../../../../src";
 
 const context: any = {
   envInfo: newEnvInfo(
@@ -111,6 +111,10 @@ const context: any = {
 
 describe(FunctionPluginInfo.pluginName, () => {
   describe("Function Provision Test", () => {
+    if (isArmSupportEnabled()) {
+      // provision lifecycle is skipped for ARM support
+      return;
+    }
     before(() => {
       fs.mkdirSync(path.join(context.root, FunctionPluginPathInfo.solutionFolderName));
     });

@@ -108,6 +108,7 @@ import { ext } from "./extensionVariables";
 import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
 import { CoreCallbackEvent } from "@microsoft/teamsfx-api";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
+import graphLogin from "./commonlib/graphLogin";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -200,11 +201,12 @@ export async function activate(): Promise<Result<Void, FxError>> {
       return Promise.resolve();
     };
     appstudioLogin.setStatusChangeMap("successfully-sign-in-m365", m365NotificationCallback, false);
-    // sharepointLogin.setStatusChangeMap(
-    //   "successfully-sign-in-m365",
-    //   m365NotificationCallback,
-    //   false
-    // );
+    sharepointLogin.setStatusChangeMap(
+      "successfully-sign-in-m365",
+      m365NotificationCallback,
+      false
+    );
+    graphLogin.setStatusChangeMap("successfully-sign-in-m365", m365NotificationCallback, false);
     tools = {
       logProvider: VsCodeLogInstance,
       tokenProvider: {
@@ -216,6 +218,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
       telemetryReporter: telemetry,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
       ui: VS_CODE_UI,
+      expServiceProvider: exp.getExpService(),
     };
     core = new FxCore(tools);
     registerCoreEvents();
@@ -1050,9 +1053,17 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       throw result.error;
     }
     if (result.value.state === CollaborationState.OK) {
-      window.showInformationMessage(
-        `Added account: '${inputs.email}' to the environment '${env}' as a collaborator`
+      const grantSucceededMsg = util.format(
+        StringResources.vsc.commandsTreeViewProvider.grantPermissionSucceeded,
+        inputs.email,
+        env
       );
+
+      const warningMsg = StringResources.vsc.commandsTreeViewProvider.grantPermissionWarning;
+      window.showInformationMessage(grantSucceededMsg + " " + warningMsg);
+
+      VsCodeLogInstance.info(grantSucceededMsg);
+      VsCodeLogInstance.warning(warningMsg);
 
       await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {

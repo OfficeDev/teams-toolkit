@@ -368,7 +368,7 @@ describe("Teams Bot Resource Plugin", () => {
       botAuthCreds.clientId = "anything";
       botAuthCreds.clientSecret = "anything";
       botAuthCreds.objectId = "anything";
-      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByAppStudio").resolves(botAuthCreds);
+      sinon.stub(AADRegistration, "registerAADAppAndGetSecretByGraph").resolves(botAuthCreds);
       sinon.stub(AppStudio, "createBotRegistration").resolves();
 
       // Act

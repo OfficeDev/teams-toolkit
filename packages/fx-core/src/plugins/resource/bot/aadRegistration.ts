@@ -13,7 +13,9 @@ import { BotAuthCredential } from "./botAuthCredential";
 export class AADRegistration {
   public static async registerAADAppAndGetSecretByGraph(
     graphToken: string,
-    displayName: string
+    displayName: string,
+    objectId?: string,
+    msAppId?: string
   ): Promise<BotAuthCredential> {
     const axiosInstance: AxiosInstance = axios.create({
       headers: {
@@ -25,29 +27,34 @@ export class AADRegistration {
 
     const result = new BotAuthCredential();
 
-    // 1. Register a new AAD App.
-    let regResponse = undefined;
-    try {
-      regResponse = await axiosInstance.post(
-        `${AADRegistrationConstants.GRAPH_REST_BASE_URL}/applications`,
-        {
-          displayName: displayName,
-          signInAudience: AADRegistrationConstants.AZURE_AD_MULTIPLE_ORGS,
-        }
-      );
-    } catch (e) {
-      throw new ProvisionError(CommonStrings.AAD_APP, e);
-    }
+    if (!objectId && !msAppId) {
+      // 1. Register a new AAD App.
+      let regResponse = undefined;
+      try {
+        regResponse = await axiosInstance.post(
+          `${AADRegistrationConstants.GRAPH_REST_BASE_URL}/applications`,
+          {
+            displayName: displayName,
+            signInAudience: AADRegistrationConstants.AZURE_AD_MULTIPLE_ORGS,
+          }
+        );
+      } catch (e) {
+        throw new ProvisionError(CommonStrings.AAD_APP, e);
+      }
 
-    if (!regResponse || !utils.isHttpCodeOkOrCreated(regResponse.status)) {
-      throw new ProvisionError(CommonStrings.AAD_APP);
+      if (!regResponse || !utils.isHttpCodeOkOrCreated(regResponse.status)) {
+        throw new ProvisionError(CommonStrings.AAD_APP);
+      }
+      result.clientId = regResponse.data.appId;
+      result.objectId = regResponse.data.id;
+    } else {
+      CheckThrowSomethingMissing("objectId", objectId);
+      CheckThrowSomethingMissing("msAppId", msAppId);
+      result.objectId = objectId;
+      result.clientId = msAppId;
     }
-
-    result.clientId = regResponse.data.appId;
-    result.objectId = regResponse.data.id;
 
     // 2. Generate client secret.
-
     let genResponse = undefined;
     try {
       genResponse = await axiosInstance.post(
@@ -93,7 +100,7 @@ export class AADRegistration {
       result.clientId = msAppId;
     }
 
-    // if has objectId, just create password for this AAD
+    // create password for this AAD
     const password = await AppStudio.createAADAppPassword(appStudioToken, result.objectId);
 
     if (!password || !password.value) {

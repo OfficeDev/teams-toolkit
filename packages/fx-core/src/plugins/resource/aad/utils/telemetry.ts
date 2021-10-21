@@ -72,7 +72,7 @@ export class TelemetryUtils {
     properties: { [key: string]: string },
     ctx: PluginContext
   ): void {
-    const appId = ctx.envInfo.profile
+    const appId = ctx.envInfo.state
       .get(Plugins.solution)
       ?.get(ConfigKeysOfOtherPlugin.remoteTeamsAppId);
     if (appId) {

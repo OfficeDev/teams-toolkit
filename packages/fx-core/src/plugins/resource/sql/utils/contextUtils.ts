@@ -4,7 +4,7 @@ import { PluginContext } from "@microsoft/teamsfx-api";
 
 export class ContextUtils {
   public static getConfig<T>(ctx: PluginContext, plugin: string, key: string): T {
-    const pluginConfig = ctx.envInfo.profile.get(plugin);
+    const pluginConfig = ctx.envInfo.state.get(plugin);
     return pluginConfig!.get(key) as T;
   }
 }

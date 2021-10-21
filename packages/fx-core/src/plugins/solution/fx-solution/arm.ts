@@ -64,7 +64,7 @@ const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 // constant string
 const resourceBaseName = "resourceBaseName";
 const parameterName = "parameters";
-const profileName = "profile";
+const stateName = "state";
 const solutionName = "solution";
 
 // Get ARM template content from each resource plugin and output to project folder
@@ -172,7 +172,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   // update parameters
   const parameterJson = await getParameterJson(ctx);
 
-  const resourceGroupName = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
+  const resourceGroupName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
     return err(
       returnSystemError(
@@ -228,9 +228,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
             deploymentName
           )
         );
-        ctx.envInfo.profile
-          .get(GLOBAL_CONFIG)
-          ?.set(ARM_TEMPLATE_OUTPUT, result.properties?.outputs);
+        ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, result.properties?.outputs);
         return result;
       })
       .finally(() => {
@@ -297,11 +295,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
     }
   } catch (error) {
     result = err(
-      returnUserError(
-        error,
-        PluginDisplayName.Solution,
-        SolutionError.FailedToDeployArmTemplatesToAzure
-      )
+      returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
     );
     sendErrorTelemetryThenReturnError(
       SolutionTelemetryEvent.ArmDeployment,
@@ -432,13 +426,13 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
     }
 
     // Output parameter file
-    const envProfilesResult = await environmentManager.listEnvConfigs(ctx.root);
-    if (envProfilesResult.isErr()) {
-      return err(envProfilesResult.error);
+    const envListResult = await environmentManager.listEnvConfigs(ctx.root);
+    if (envListResult.isErr()) {
+      return err(envListResult.error);
     }
     const parameterEnvFolderPath = path.join(ctx.root, configsFolder);
     await fs.ensureDir(parameterEnvFolderPath);
-    for (const env of envProfilesResult.value) {
+    for (const env of envListResult.value) {
       const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, env);
       const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
       const parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
@@ -485,7 +479,7 @@ async function getResourceManagementClientForArmDeployment(
     );
   }
 
-  const subscriptionId = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as
+  const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as
     | string
     | undefined;
   if (!subscriptionId) {
@@ -640,8 +634,8 @@ function generateBicepModuleFilePath(moduleFileName: string) {
 function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: string): string {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
-  const profileVariables: Record<string, Record<string, any>> = {};
-  const availableVariables: Record<string, Record<string, any>> = { profile: profileVariables };
+  const stateVariables: Record<string, Record<string, any>> = {};
+  const availableVariables: Record<string, Record<string, any>> = { state: stateVariables };
   // Add plugin contexts to available variables
   for (const plugin of plugins) {
     const pluginContext = getPluginContext(ctx, plugin.name);
@@ -652,10 +646,10 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
         pluginVariables[configItem[0]] = configItem[1];
       }
     }
-    profileVariables[plugin.name] = pluginVariables;
+    stateVariables[plugin.name] = pluginVariables;
   }
   // Add solution config to available variables
-  const solutionConfig = ctx.envInfo.profile.get(GLOBAL_CONFIG);
+  const solutionConfig = ctx.envInfo.state.get(GLOBAL_CONFIG);
   if (solutionConfig) {
     const solutionVariables: Record<string, string> = {};
     for (const configItem of solutionConfig) {
@@ -664,12 +658,12 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
         solutionVariables[configItem[0]] = configItem[1];
       }
     }
-    profileVariables[solutionName] = solutionVariables;
+    stateVariables[solutionName] = solutionVariables;
   }
 
   // Add environment variable to available variables
   const processVariables: Record<string, string> = Object.keys(process.env)
-    .filter((key) => !profileName.includes(key))
+    .filter((key) => !stateName.includes(key))
     .reduce((obj: Record<string, string>, key: string) => {
       obj[key] = process.env[key] as string;
       return obj;

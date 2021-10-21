@@ -105,7 +105,7 @@ class ArmParameters {
   static readonly SimpleAuthWebAppName = "simpleAuth_webAppName";
   static readonly SimpleAuthServerFarm = "simpleAuth_serverFarmsName";
 }
-
+// TODO: delete it to enable migration
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await needMigrateToArmAndMultiEnv(ctx)) && checkMethod(ctx)) {
     const core = ctx.self as FxCore;

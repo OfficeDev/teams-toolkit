@@ -33,6 +33,7 @@ import { funcPluginLogger } from "../utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "../utils/telemetry-helper";
 import { sendRequestWithRetry } from "../../../../common/templatesUtils";
+import { isArmSupportEnabled, isMultiEnvEnabled } from "../../../..";
 
 export class FunctionDeploy {
   public static async getLastDeploymentTime(componentPath: string): Promise<Date> {
@@ -57,6 +58,11 @@ export class FunctionDeploy {
     componentPath: string,
     language: FunctionLanguage
   ): Promise<boolean> {
+    // TODO: always do deployment until we integrate with these preview feature
+    if (isArmSupportEnabled() || isMultiEnvEnabled()) {
+      return true;
+    }
+
     const folderFilter = LanguageStrategyFactory.getStrategy(language).hasUpdatedContentFilter;
 
     try {

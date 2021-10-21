@@ -102,6 +102,21 @@ export function getTeamsAppId() {
   }
 }
 
+// Only used for telemetry when multi-env is enabled
+export function getTeamsAppIdByEnv(env: string) {
+  try {
+    const ws = ext.workspaceUri.fsPath;
+
+    if (isValidProject(ws)) {
+      const result = environmentManager.getEnvProfileFilesPath(env, ws);
+      const envJson = JSON.parse(fs.readFileSync(result.envProfile, "utf8"));
+      return envJson[PluginNames.APPST].teamsAppId;
+    }
+  } catch (e) {
+    return undefined;
+  }
+}
+
 export function getProjectId(): string | undefined {
   try {
     const ws = ext.workspaceUri.fsPath;

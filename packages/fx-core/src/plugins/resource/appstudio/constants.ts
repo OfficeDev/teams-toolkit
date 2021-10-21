@@ -31,8 +31,8 @@ export class ErrorMessages {
  * Config keys that are useful for generating remote teams app manifest
  */
 export const REMOTE_MANIFEST = "manifest.source.json";
-export const MANIFEST_TEMPLATE = "manifest.template.json";
-export const MANIFEST_LOCAL = "manifest.local.json";
+export const MANIFEST_TEMPLATE = "manifest.remote.template.json";
+export const MANIFEST_LOCAL = "manifest.local.template.json";
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
 export const FRONTEND_ENDPOINT_ARM = "frontendHosting_endpoint";

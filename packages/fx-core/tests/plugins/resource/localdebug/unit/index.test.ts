@@ -10,6 +10,7 @@ import { LocalDebugPluginInfo } from "../../../../../src/plugins/resource/locald
 import { LocalDebugPlugin } from "../../../../../src/plugins/resource/localdebug";
 import * as uuid from "uuid";
 import { newEnvInfo } from "../../../../../src/core/tools";
+import { FeatureFlagName } from "../../../../../src/common/constants";
 chai.use(chaiAsPromised);
 
 interface TestParameter {
@@ -29,6 +30,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
   describe("scaffold", () => {
     let pluginContext: PluginContext;
     let plugin: LocalDebugPlugin;
+    let flagInsiderPreview: string | undefined;
 
     beforeEach(() => {
       pluginContext = {
@@ -39,6 +41,11 @@ describe(LocalDebugPluginInfo.pluginName, () => {
       } as PluginContext;
       plugin = new LocalDebugPlugin();
       fs.emptyDirSync(pluginContext.root);
+      flagInsiderPreview = process.env[FeatureFlagName.InsiderPreview];
+    });
+
+    afterEach(() => {
+      process.env[FeatureFlagName.InsiderPreview] = flagInsiderPreview;
     });
 
     const parameters1: TestParameter[] = [
@@ -474,6 +481,41 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
         chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
       });
+    });
+
+    it("multi env", async () => {
+      pluginContext.envInfo = newEnvInfo(
+        undefined,
+        undefined,
+        new Map([["solution", new Map([["programmingLanguage", "javascript"]])]])
+      );
+      pluginContext.projectSettings = {
+        appName: "",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          name: "",
+          version: "",
+          activeResourcePlugins: [
+            "fx-resource-aad-app-for-teams",
+            "fx-resource-simple-auth",
+            "fx-resource-frontend-hosting",
+            "fx-resource-function",
+            "fx-resource-bot",
+          ],
+        },
+      };
+
+      const packageJsonPath = path.resolve(__dirname, "../data/package.json");
+      fs.writeFileSync(packageJsonPath, "{}");
+      process.env[FeatureFlagName.InsiderPreview] = "true";
+
+      const result = await plugin.scaffold(pluginContext);
+      chai.assert.isTrue(result.isOk());
+
+      //assert output package
+      const packageJson = fs.readJSONSync(packageJsonPath);
+      const scripts: [] = packageJson["scripts"];
+      chai.assert.isTrue(scripts !== undefined);
     });
   });
 

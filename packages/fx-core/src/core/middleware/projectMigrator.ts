@@ -313,11 +313,12 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   await moveIconsToResourceFolder(templateAppPackage);
 
   if (!isSPFx) {
-    const localManifest: TeamsAppManifest = createLocalManifest(
+    const localManifest: TeamsAppManifest = await createLocalManifest(
       appName,
       hasFrontend,
       hasBotCapability,
-      hasMessageExtensionCapability
+      hasMessageExtensionCapability,
+      false
     );
     const localManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
     await fs.writeFile(localManifestFile, JSON.stringify(localManifest, null, 4));

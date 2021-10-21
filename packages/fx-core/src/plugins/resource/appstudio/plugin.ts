@@ -521,6 +521,16 @@ export class AppStudioPluginImpl {
         : path.resolve(templateManifestFolder, "./solution/manifest.json");
       const manifestString = (await fs.readFile(manifestFile)).toString();
       manifest = JSON.parse(manifestString);
+      if (isMultiEnvEnabled()) {
+        const localManifest = await createLocalManifest(
+          ctx.projectSettings!.appName,
+          false,
+          false,
+          false,
+          true
+        );
+        await fs.writeFile(`${appDir}/${MANIFEST_LOCAL}`, JSON.stringify(localManifest, null, 4));
+      }
     } else {
       manifest = await this.createManifest(ctx.projectSettings!);
       if (isMultiEnvEnabled()) {
@@ -533,7 +543,8 @@ export class AppStudioPluginImpl {
           ctx.projectSettings!.appName,
           hasFrontend,
           hasBot,
-          hasMessageExtension
+          hasMessageExtension,
+          false
         );
         await fs.writeFile(
           `${appDir}/${MANIFEST_LOCAL}`,
@@ -1752,31 +1763,41 @@ export class AppStudioPluginImpl {
   }
 }
 
-export function createLocalManifest(
+export async function createLocalManifest(
   appName: string,
   hasFrontend: boolean,
   hasBot: boolean,
-  hasMessageExtension: boolean
-): TeamsAppManifest {
-  let manifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG;
+  hasMessageExtension: boolean,
+  isSPFx: boolean
+): Promise<TeamsAppManifest> {
   let name = appName;
   const suffix = "-local-debug";
   if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
     name = name + suffix;
   }
-  manifestString = replaceConfigValue(manifestString, "appName", name);
-  manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
-  const manifest: TeamsAppManifest = JSON.parse(manifestString);
-  if (hasFrontend) {
-    manifest.staticTabs = STATIC_TABS_TPL_LOCAL_DEBUG;
-    manifest.configurableTabs = CONFIGURABLE_TABS_TPL_LOCAL_DEBUG;
-  }
-  if (hasBot) {
-    manifest.bots = BOTS_TPL_LOCAL_DEBUG;
-  }
-  if (hasMessageExtension) {
-    manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG;
-  }
+  if (isSPFx) {
+    const templateManifestFolder = path.join(getTemplatesFolder(), "plugins", "resource", "spfx");
+    const localManifestFile = path.resolve(templateManifestFolder, `./solution/${MANIFEST_LOCAL}`);
+    let manifestString = (await fs.readFile(localManifestFile)).toString();
+    manifestString = replaceConfigValue(manifestString, "appName", name);
+    const manifest: TeamsAppManifest = JSON.parse(manifestString);
+    return manifest;
+  } else {
+    let manifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG;
 
-  return manifest;
+    manifestString = replaceConfigValue(manifestString, "appName", name);
+    manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
+    const manifest: TeamsAppManifest = JSON.parse(manifestString);
+    if (hasFrontend) {
+      manifest.staticTabs = STATIC_TABS_TPL_LOCAL_DEBUG;
+      manifest.configurableTabs = CONFIGURABLE_TABS_TPL_LOCAL_DEBUG;
+    }
+    if (hasBot) {
+      manifest.bots = BOTS_TPL_LOCAL_DEBUG;
+    }
+    if (hasMessageExtension) {
+      manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG;
+    }
+    return manifest;
+  }
 }

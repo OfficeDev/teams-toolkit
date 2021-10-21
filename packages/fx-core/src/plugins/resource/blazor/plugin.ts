@@ -55,7 +55,7 @@ export class BlazorPluginImpl {
   config: WebAppConfig = {};
 
   private syncConfigFromContext(ctx: PluginContext): void {
-    const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get("solution");
+    const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get("solution");
     this.config.resourceNameSuffix = solutionConfig?.get("resourceNameSuffix") as string;
     this.config.resourceGroupName = solutionConfig?.get("resourceGroupName") as string;
     this.config.subscriptionId = solutionConfig?.get("subscriptionId") as string;
@@ -170,7 +170,7 @@ export class BlazorPluginImpl {
       });
     }
 
-    const aadConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
+    const aadConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
       DependentPluginInfo.AADPluginName
     );
     if (this.isPluginEnabled(ctx, DependentPluginInfo.AADPluginName) && aadConfig) {
@@ -206,7 +206,7 @@ export class BlazorPluginImpl {
       );
     }
 
-    const botConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
+    const botConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
       DependentPluginInfo.BotPluginName
     );
     if (this.isPluginEnabled(ctx, DependentPluginInfo.BotPluginName) && botConfig) {

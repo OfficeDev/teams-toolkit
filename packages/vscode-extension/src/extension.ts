@@ -287,10 +287,11 @@ export async function activate(context: vscode.ExtensionContext) {
   };
 
   const adaptiveCardCodeLensProvider = new AdaptiveCardCodeLensProvider();
+  const adaptiveCardFilePattern = `**/${AdaptiveCardsFolderName}/*.json`;
   const adaptiveCardFileSelector = {
     language: "json",
     scheme: "file",
-    pattern: `**/${AdaptiveCardsFolderName}/*.json`,
+    pattern: adaptiveCardFilePattern,
   };
 
   context.subscriptions.push(

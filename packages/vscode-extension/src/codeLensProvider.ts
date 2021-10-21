@@ -1,8 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import glob = require("glob");
 import * as vscode from "vscode";
 import { localSettingsJsonName } from "./debug/constants";
+import * as StringResources from "./resources/Strings.json";
+import * as fs from "fs";
+import { getWorkspacePath } from "./handlers";
 
 /**
  * CodelensProvider
@@ -61,11 +65,28 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
 }
 
 export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
+  public static async getAdaptiveCardFiles(): Promise<string[]> {
+    console.log("ACSTUDIO - Searching for Cards");
+    const adaptiveCardFiles: string[] = [];
+    const folder = getWorkspacePath();
+    if (!folder) return [];
+
+    vscode.window.showInformationMessage("Searching for Adaptive Cards in your workspace");
+    const files = await glob.sync(folder + "/**/*.json", {});
+    files.forEach((file) => {
+      const searchTerm = "adaptivecards.io/schemas/adaptive-card.json";
+      const content = fs.readFileSync(file, "utf8");
+      if (content.includes(searchTerm)) {
+        adaptiveCardFiles.push(file);
+      }
+    });
+    return adaptiveCardFiles;
+  }
   provideCodeLenses(_document: vscode.TextDocument): vscode.ProviderResult<vscode.CodeLens[]> {
     const codeLenses: vscode.CodeLens[] = [];
     const topOfFile = new vscode.Range(0, 0, 0, 0);
     const command = {
-      title: "👀Preview and Edit Adaptive Cards",
+      title: `👀${StringResources.vsc.commandsTreeViewProvider.previewAdaptiveCard}`,
       command: "fx-extension.OpenAdaptiveCardExt",
     };
     codeLenses.push(new vscode.CodeLens(topOfFile, command));

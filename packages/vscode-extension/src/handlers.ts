@@ -1448,14 +1448,13 @@ export async function openAdaptiveCardExt() {
       .showInformationMessage(StringResources.vsc.handlers.installAdaptiveCardExt, "Yes", "No")
       .then(async (selection) => {
         if (selection == "Yes") {
-          await vscode.commands.executeCommand(
-            "workmadewithcardsio.adaptivecardsstudiobetabench.extensions.installExtension",
-            acExtId
-          );
+          await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId);
+          await vscode.commands.executeCommand("workbench.view.extension.cardLists");
         }
       });
+  } else {
+    await vscode.commands.executeCommand("workbench.view.extension.cardLists");
   }
-  await vscode.commands.executeCommand("workbench.view.extension.cardLists");
 }
 
 export async function signOutAzure(isFromTreeView: boolean) {

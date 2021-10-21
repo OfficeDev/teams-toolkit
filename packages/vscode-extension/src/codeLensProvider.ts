@@ -59,3 +59,16 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
     return codeLenses;
   }
 }
+
+export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
+  provideCodeLenses(_document: vscode.TextDocument): vscode.ProviderResult<vscode.CodeLens[]> {
+    const codeLenses: vscode.CodeLens[] = [];
+    const topOfFile = new vscode.Range(0, 0, 0, 0);
+    const command = {
+      title: "👀Preview and Edit Adaptive Cards",
+      command: "fx-extension.OpenAdaptiveCardExt",
+    };
+    codeLenses.push(new vscode.CodeLens(topOfFile, command));
+    return codeLenses;
+  }
+}

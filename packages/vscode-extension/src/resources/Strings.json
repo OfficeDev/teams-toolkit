@@ -99,7 +99,8 @@
       "openEnvFailed": "Can not open project environment %s.",
       "findEnvFailed": "Can not find project environment %s.",
       "localDebugDescription": "Preview your project by running local debug",
-      "localDebugTitle": "Local debug"
+      "localDebugTitle": "Local debug",
+      "installAdaptiveCardExt": "To preview and install Adaptive Cards, would you like to install the recommanded extension \"AdaptiveCard Studio\""
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",

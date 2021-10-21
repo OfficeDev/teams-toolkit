@@ -86,6 +86,7 @@ export class Plugins {
   static teamsBot = "fx-resource-bot";
   static localDebug = "fx-resource-local-debug";
   static solution = "solution";
+  static auth = "auth";
 }
 
 export class ConfigKeys {
@@ -102,6 +103,7 @@ export class ConfigKeys {
   static oauthHost = "oauthHost";
   static tenantId = "tenantId";
   static skip = "skipProvision";
+  static accessAsUserScopeId = "accessAsUserScopeId";
 }
 
 export class ConfigKeysOfOtherPlugin {

@@ -54,7 +54,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
-import { getTemplatesFolder } from "../../..";
+import { getTemplatesFolder, isMultiEnvEnabled } from "../../..";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
 
@@ -73,7 +73,9 @@ export class AadAppForTeamsImpl {
       : Messages.EndProvision.telemetry;
 
     await TokenProvider.init(ctx);
-    const skip: boolean = ctx.config.get(ConfigKeys.skip) as boolean;
+
+    // Move objectId etc. from input to output.
+    const skip = Utils.skipAADProvision(ctx);
     if (skip) {
       ctx.logProvider?.info(Messages.getLog(Messages.SkipProvision));
 
@@ -190,7 +192,7 @@ export class AadAppForTeamsImpl {
       isLocalDebug
     );
 
-    const skip: boolean = ctx.config.get(ConfigKeys.skip) as boolean;
+    const skip = Utils.skipAADProvision(ctx);
     if (skip) {
       ctx.logProvider?.info(Messages.SkipProvision);
       Utils.addLogAndTelemetryWithLocalDebug(

@@ -212,8 +212,10 @@ jobs:
           cd packages/fx-core
           xvfb-run -a npx nyc mocha \
             "tests/core/**/*.test.ts" \
+            "tests/plugins/resource/function/**/*.test.ts" \
             "tests/plugins/resource/aad/**/*.test.ts" \
-            "tests/plugins/resource/simpleauth/**/*.test.ts"
+            "tests/plugins/resource/simpleauth/**/*.test.ts" \
+            "tests/plugins/resource/frontend/**/*.test.ts"
           cd -
 
           coverages="{}"

@@ -451,11 +451,26 @@
       {
         "type": "teamsfx",
         "required": [
-          "command"
+          "command",
+          "component"
         ],
         "properties": {
           "command": {
-            "type": "string"
+            "type": "string",
+            "description": "The command to be executed on a teamsfx component.",
+            "enum": [
+              "dev",
+              "watch"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "description": "The teamsfx component.",
+            "enum": [
+              "frontend",
+              "backend",
+              "bot"
+            ]
           }
         }
       }
@@ -463,7 +478,7 @@
     "problemMatchers": [
       {
         "name": "teamsfx-frontend-watch",
-        "label": "%teamsfx.problemMatchers.teamsfxFrontendWatch%",
+        "label": "TeamsFx Frontend Problems",
         "owner": "Teams Toolkit",
         "source": "teamsfx",
         "applyTo": "allDocuments",
@@ -492,7 +507,7 @@
       },
       {
         "name": "teamsfx-backend-watch",
-        "label": "%teamsfx.problemMatchers.teamsfxbackendWatch%",
+        "label": "TeamsFx Backend Problems",
         "owner": "Teams Toolkit",
         "source": "teamsfx",
         "applyTo": "allDocuments",
@@ -516,7 +531,7 @@
       },
       {
         "name": "teamsfx-auth-watch",
-        "label": "%teamsfx.problemMatchers.teamsfxAuthWatch%",
+        "label": "TeamsFx SimpleAuth Problems",
         "owner": "Teams Toolkit",
         "source": "teamsfx",
         "applyTo": "allDocuments",
@@ -540,7 +555,7 @@
       },
       {
         "name": "teamsfx-ngrok-watch",
-        "label": "%teamsfx.problemMatchers.teamsfxNgrokWatch%",
+        "label": "TeamsFx Ngrok Problems",
         "owner": "Teams Toolkit",
         "source": "teamsfx",
         "applyTo": "allDocuments",
@@ -564,7 +579,7 @@
       },
       {
         "name": "teamsfx-bot-watch",
-        "label": "%teamsfx.problemMatchers.teamsfxBotWatch%",
+        "label": "TeamsFx Bot Problems",
         "owner": "Teams Toolkit",
         "source": "teamsfx",
         "applyTo": "allDocuments",

@@ -3,7 +3,9 @@
 import "mocha";
 import { SystemError } from "@microsoft/teamsfx-api";
 import { UserError } from "@microsoft/teamsfx-api";
-import { expect } from "chai";
+import { expect, use as chaiUse } from "chai";
+import chaiPromises from "chai-as-promised";
+chaiUse(chaiPromises);
 
 import {
   ErrorType,

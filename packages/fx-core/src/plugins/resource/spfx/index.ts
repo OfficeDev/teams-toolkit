@@ -44,29 +44,16 @@ export class SpfxPlugin implements Plugin {
     });
 
     if (stage === Stage.create) {
-      let refineOrder: boolean | undefined = undefined;
-      if (ctx.expServiceProvider) {
-        refineOrder = await ctx.expServiceProvider.getTreatmentVariableAsync(
-          "vscode",
-          "refinescaffoldorder",
-          true
-        );
-      }
       const spfx_framework_type = new QTreeNode({
         type: "singleSelect",
         name: SPFXQuestionNames.framework_type,
         title: "Framework",
-        staticOptions: refineOrder
-          ? [
-              { id: "react", label: "React" },
-              { id: "none", label: "None" },
-            ]
-          : [
-              { id: "none", label: "None" },
-              { id: "react", label: "React" },
-            ],
+        staticOptions: [
+          { id: "react", label: "React" },
+          { id: "none", label: "None" },
+        ],
         placeholder: "Select an option",
-        default: refineOrder ? "react" : "none",
+        default: "react",
       });
       spfx_frontend_host.addChild(spfx_framework_type);
 
@@ -122,7 +109,11 @@ export class SpfxPlugin implements Plugin {
     try {
       telemetryHelper.sendSuccessEvent(ctx, stage + TelemetryEvent.StartSuffix);
       const result = await fn();
-      telemetryHelper.sendSuccessEvent(ctx, stage);
+      if (result.isOk()) {
+        telemetryHelper.sendSuccessEvent(ctx, stage);
+      } else {
+        telemetryHelper.sendErrorEvent(ctx, stage, result.error);
+      }
       return result;
     } catch (error) {
       await ProgressHelper.endAllHandlers(false);

@@ -253,6 +253,26 @@ fakeCert
       .with.property("code", InternalError);
   });
 
+  it("create OnBehalfOfUserCredential instance should throw InvalidCertificate with invalid certificate", async function () {
+    loadConfiguration({
+      authentication: {
+        clientId: clientId,
+        certificateContent: "invalid_certificate_content",
+        authorityHost: authorityHost,
+        tenantId: tenantId,
+      },
+    });
+
+    expect(() => {
+      new OnBehalfOfUserCredential(ssoToken);
+    })
+      .to.throw(
+        ErrorWithCode,
+        "The certificate content does not contain a PEM-encoded certificate."
+      )
+      .with.property("code", ErrorCode.InvalidCertificate);
+  });
+
   it("getToken should success for client certificate", async function () {
     loadConfiguration({
       authentication: {

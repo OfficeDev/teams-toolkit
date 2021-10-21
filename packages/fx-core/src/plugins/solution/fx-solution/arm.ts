@@ -502,7 +502,7 @@ async function compileBicepToJson(
     const result = await executeCommand(
       undefined,
       logger,
-      undefined,
+      { shell: false },
       bicepCommand,
       "build",
       bicepOrchestrationFilePath,

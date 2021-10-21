@@ -73,7 +73,6 @@ async function tryExecuteCommand(
       childProc.stdout?.on("data", (data: string | Buffer) => {
         data = data.toString();
         cmdOutput = cmdOutput.concat(data);
-        cmdOutputIncludingStderr = cmdOutputIncludingStderr.concat(data);
       });
 
       childProc.stderr?.on("data", (data: string | Buffer) => {
@@ -91,9 +90,7 @@ async function tryExecuteCommand(
         reject(error);
       });
       childProc.on("close", (code: number) => {
-        logger?.debug(
-          `Command finished with outputs, cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}'`
-        );
+        logger?.debug("Command finished.");
         if (timer) {
           clearTimeout(timer);
         }
@@ -113,12 +110,4 @@ interface ICommandResult {
   cmdOutput: string;
   cmdOutputIncludingStderr: string;
   formattedArgs: string;
-}
-
-const quotationMark: string = process.platform === "win32" ? '"' : "'";
-/**
- * Ensures spaces and special characters (most notably $) are preserved
- */
-export function wrapArgInQuotes(arg: string): string {
-  return quotationMark + arg + quotationMark;
 }

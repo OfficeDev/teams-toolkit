@@ -75,7 +75,7 @@ export class AadAppForTeamsImpl {
     await TokenProvider.init(ctx);
 
     // Move objectId etc. from input to output.
-    const skip = Utils.skipAADProvision(ctx);
+    const skip = Utils.skipAADProvision(ctx, isLocalDebug);
     if (skip && !isMultiEnvEnabled()) {
       ctx.logProvider?.info(Messages.getLog(Messages.SkipProvision));
 
@@ -195,7 +195,7 @@ export class AadAppForTeamsImpl {
       isLocalDebug
     );
 
-    const skip = Utils.skipAADProvision(ctx);
+    const skip = Utils.skipAADProvision(ctx, isLocalDebug);
     if (skip && !isMultiEnvEnabled()) {
       ctx.logProvider?.info(Messages.SkipProvision);
       Utils.addLogAndTelemetryWithLocalDebug(

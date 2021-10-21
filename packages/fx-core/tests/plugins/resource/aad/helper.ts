@@ -172,7 +172,7 @@ export class TestHelper {
     if (isMultiEnvEnabled()) {
       const localSettings: LocalSettings = {
         teamsApp: new ConfigMap(),
-        auth: new ConfigMap([[ConfigKeys.clientId, faker.datatype.uuid()]]),
+        auth: new ConfigMap(),
       };
       if (frontend) {
         localSettings.frontend = new ConfigMap([
@@ -285,6 +285,22 @@ export function mockProvisionResult(
 
     context.envInfo.state.set(SOLUTION, solutionProfile);
     context.envInfo.state.set(Plugins.pluginNameComplex, aadProfile);
+  } else if (isMultiEnvEnabled()) {
+    const aadInfo = new ConfigMap();
+    aadInfo.set(ConfigKeys.clientId, faker.datatype.uuid());
+    aadInfo.set(ConfigKeys.objectId, faker.datatype.uuid());
+    aadInfo.set(ConfigKeys.clientSecret, faker.datatype.uuid());
+    aadInfo.set(ConfigKeys.oauth2PermissionScopeId, faker.datatype.uuid());
+
+    const frontendInfo = new ConfigMap();
+    frontendInfo.set("tabDomain", "fake.storage.domain.test");
+    frontendInfo.set("tabEndpoint", "https://fake.storage.domain.test");
+    const localSettings: LocalSettings = {
+      teamsApp: new ConfigMap(),
+      auth: aadInfo,
+      frontend: frontendInfo,
+    };
+    context.localSettings = localSettings;
   }
 }
 

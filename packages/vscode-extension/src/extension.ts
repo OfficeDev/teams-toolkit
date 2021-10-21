@@ -26,7 +26,7 @@ import {
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./utils/migrateV1";
-import { isTeamsfx, syncFeatureFlags } from "./utils/commonUtils";
+import { canUpgradeToArmAndMultiEnv, isTeamsfx, syncFeatureFlags } from "./utils/commonUtils";
 import { ConfigFolderName, InputConfigsFolderName, StatesFolderName } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { registerEnvTreeHandler } from "./envTree";
@@ -147,11 +147,13 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openWelcomeCmd);
 
-  const checkUpgradeCmd = vscode.commands.registerCommand(
-    "fx-extension.checkProjectUpgrade",
-    (...args) => Correlator.run(handlers.checkUpgrade, args)
-  );
-  context.subscriptions.push(checkUpgradeCmd);
+  if (await canUpgradeToArmAndMultiEnv(getWorkspacePath())) {
+    const checkUpgradeCmd = vscode.commands.registerCommand(
+      "fx-extension.checkProjectUpgrade",
+      (...args) => Correlator.run(handlers.checkUpgrade, args)
+    );
+    context.subscriptions.push(checkUpgradeCmd);
+  }
 
   const openSurveyCmd = vscode.commands.registerCommand("fx-extension.openSurvey", (...args) =>
     Correlator.run(handlers.openSurveyHandler, args)
@@ -256,6 +258,12 @@ export async function activate(context: vscode.ExtensionContext) {
     "setContext",
     "fx-extension.isMultiEnvEnabled",
     isMultiEnvEnabled() && isValidProject(workspacePath)
+  );
+
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.canUpgradeToArmAndMultiEnv",
+    await canUpgradeToArmAndMultiEnv(workspacePath)
   );
 
   vscode.commands.executeCommand(

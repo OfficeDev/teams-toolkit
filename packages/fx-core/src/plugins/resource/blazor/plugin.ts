@@ -251,6 +251,8 @@ export class BlazorPluginImpl {
     Logger.info(Messages.StartDeploy(PluginInfo.DisplayName));
     await ProgressHelper.startDeployProgressHandler(ctx);
 
+    this.syncConfigFromContext(ctx);
+
     const workingPath = ctx.root;
     const webAppName = this.checkAndGet(this.config.webAppName, "web app name");
     const resourceGroupName = this.checkAndGet(

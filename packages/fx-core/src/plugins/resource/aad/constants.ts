@@ -239,6 +239,8 @@ export class Messages {
     "Azure AD app provision skipped. You need to mannual provision and config Azure AD app.";
   static readonly OwnerAlreadyAdded = (userObjectId: string, objectId: string) =>
     `User ${userObjectId} is already added as owner of Azure AD app ${objectId}.`;
+  static readonly StepFailedAndSkipped = (stage: string) =>
+    `Failed in step: ${stage}. You need to mannual update config for the provided Azure AD app.`;
 }
 
 export class ProgressTitle {
@@ -276,4 +278,10 @@ export class ConfigFilePath {
   static readonly LocalSettings = "localSettings.json";
   static readonly State = (env: string) => `state.${env}.json`;
   static readonly Input = (env: string) => `config.${env}.json`;
+}
+
+export class UILevels {
+  static readonly Info = "info";
+  static readonly Warn = "warn";
+  static readonly Error = "error";
 }

@@ -1,0 +1,93 @@
+# This is just an example workflow for continuous deployment.
+# You should customize it to meet your own requirements.
+name: 'Continuous Deployment'
+on:
+  # When new commits are pushed onto the main branch.
+  push:
+    branches:
+      - main
+jobs:
+  buildAndPublish:
+    runs-on: ubuntu-latest
+    # You can uncomment the line below to use environments (refer to https://docs.github.com/en/actions/reference/environments). 
+    #environment: test_environment
+    env:
+      AZURE_ACCOUNT_NAME: ${{secrets.AZURE_ACCOUNT_NAME}}
+      AZURE_ACCOUNT_PASSWORD: ${{secrets.AZURE_ACCOUNT_PASSWORD}}
+      AZURE_SUBSCRIPTION_ID: ${{secrets.AZURE_SUBSCRIPTION_ID}}
+      AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
+      M365_ACCOUNT_NAME: ${{secrets.M365_ACCOUNT_NAME}}
+      M365_ACCOUNT_PASSWORD: ${{secrets.M365_ACCOUNT_PASSWORD}}
+
+    steps:
+      # Setup environment.
+      - uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+          
+      - name: Checkout the code
+        uses: actions/checkout@v2
+        
+      # Build the project.
+      # The way to build the current project depends on how you scaffold it.
+      # Different folder structures require different commands set.
+      # 'npm ci' is used here to install dependencies and it depends on package-lock.json.
+      # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
+      - name: Build the project
+        run: cd tabs && npm ci && npm run build
+
+      # Run unit test.
+      # Currently, no opinioned solution for unit test provided during scaffolding, so,
+      # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
+      - name: Run Unit Test
+        run: cd tabs && npm run test
+
+      # We suggest to do the `teamsfx provision` step manually or in a separate workflow. The following steps are for your reference.
+      # After provisioning, you should commit .fx/env.default.json into the repository.
+      # You should pick required secrets from .fx/default.userdata, and save them in the repository secrets (https://docs.github.com/en/actions/reference/encrypted-secrets) which can be refered by the step with name 'Generate default.userdata'. 
+      #- name: Provision hosting environment
+      #  uses: OfficeDev/teamsfx-cli-action@v1
+      #  with:
+      #    commands: provision
+      #    subscription: ${{env.AZURE_SUBSCRIPTION_ID}}
+
+      #- name: Commit provision configs if necessary
+      #  uses: stefanzweifel/git-auto-commit-action@v4
+      #  with:
+      #    commit_message: "chore: commit provision configs"
+      #    file_pattern: .fx/env.default.json
+      
+      #- name: Upload default.userdata as artifact
+      #  uses: actions/upload-artifact@v2
+      #  with:
+      #    name: defaultUserData
+      #    path: .fx/default.userdata
+      
+      - name: Generate default.userdata
+        env:
+          USERDATA_CONTENT: ${{ secrets.USERDATA_CONTENT }}
+        run: |
+          [ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/default.userdata
+        
+      - name: Deploy to hosting environment
+        uses: OfficeDev/teamsfx-cli-action@v1
+        with:
+          commands: deploy
+
+      # This step is to pack the Teams App as zip file,
+      # which can be used to be uploaded onto Teams Client for installation.
+      - name: Package Teams App for publishing
+        uses: OfficeDev/teamsfx-cli-action@v1
+        with:
+          commands: package
+
+      - name: Upload Teams App's package as artifact
+        uses: actions/upload-artifact@v2
+        with:
+          name: appPackage
+          path: appPackage/appPackage.zip
+
+      - name: Publish Teams App
+        uses: OfficeDev/teamsfx-cli-action@v1
+        with:
+          commands: publish

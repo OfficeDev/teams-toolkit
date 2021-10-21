@@ -13,6 +13,7 @@ import {
   TestHelper,
   mockTokenProviderAzureGraph,
   mockTokenProviderGraph,
+  mockSkipFlag,
 } from "../helper";
 import sinon from "sinon";
 import { AadAppClient } from "../../../../../src/plugins/resource/aad/aadAppClient";
@@ -75,6 +76,17 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
     const postProvision = await plugin.postProvision(context);
     chai.assert.isTrue(postProvision.isOk());
+  });
+
+  it("provision: skip provision", async function () {
+    context = await TestHelper.pluginContext(new Map(), true, false, false);
+    context.appStudioToken = mockTokenProvider();
+    context.graphTokenProvider = mockTokenProviderGraph();
+    mockSkipFlag(context);
+    console.log(context.envInfo.config);
+
+    const provision = await plugin.provision(context);
+    chai.assert.isTrue(provision.isOk());
   });
 
   it("provision: tab and bot", async function () {
@@ -161,6 +173,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     config.set(ConfigKeys.objectId, faker.datatype.uuid());
     context = await TestHelper.pluginContext(config, true, false, false);
     context.graphTokenProvider = mockTokenProviderGraph();
+    mockProvisionResult(context, false);
 
     const listCollaborator = await plugin.listCollaborator(context);
     chai.assert.isTrue(listCollaborator.isOk());

@@ -386,7 +386,7 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
       preLaunchTask: "gulp serve",
       postDebugTask: "Terminate All Tasks",
       presentation: {
-        group: "all",
+        group: "local",
         order: edgeOrder,
       },
     },
@@ -407,7 +407,7 @@ export function generateSpfxConfigurations(): Record<string, unknown>[] {
       preLaunchTask: "gulp serve",
       postDebugTask: "Terminate All Tasks",
       presentation: {
-        group: "all",
+        group: "local",
         order: chromeOrder,
       },
     },
@@ -506,7 +506,7 @@ export function generateSpfxCompounds(): Record<string, unknown>[] {
       configurations: ["Start Teams workbench (Edge)"],
       preLaunchTask: "prepare dev env",
       presentation: {
-        group: "teams",
+        group: "forteams",
         order: edgeOrder,
       },
       stopAll: true,
@@ -516,7 +516,7 @@ export function generateSpfxCompounds(): Record<string, unknown>[] {
       configurations: ["Start Teams workbench (Chrome)"],
       preLaunchTask: "prepare dev env",
       presentation: {
-        group: "teams",
+        group: "forteams",
         order: chromeOrder,
       },
       stopAll: true,

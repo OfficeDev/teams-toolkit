@@ -508,7 +508,7 @@ async function compileBicepToJson(
       bicepOrchestrationFilePath,
       "--stdout"
     );
-    return JSON.parse(result as string);
+    return JSON.parse(result);
   } catch (err) {
     throw new Error(`Failed to compile bicep files to Json arm templates file: ${err.message}`);
   }

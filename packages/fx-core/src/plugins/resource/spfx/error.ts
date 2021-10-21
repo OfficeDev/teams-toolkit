@@ -37,3 +37,59 @@ export function NoManifestFileError(distFolder: string): UserError {
     "NoManifestFile"
   );
 }
+
+export function GetSPOTokenFailedError(): SystemError {
+  return returnSystemError(
+    new Error("Cannot get SPO access token"),
+    Constants.PLUGIN_NAME,
+    "GetSPOTokenFailed"
+  );
+}
+
+export function GetGraphTokenFailedError(): SystemError {
+  return returnSystemError(
+    new Error("Cannot get Graph access token"),
+    Constants.PLUGIN_NAME,
+    "GetGraphTokenFailed"
+  );
+}
+
+export function InsufficientPermissionError(appCatalog: string): UserError {
+  return returnUserError(
+    new Error(
+      `You don't have permission to upload and deploy package to App Catalog ${appCatalog}, please use site admin account.`
+    ),
+    Constants.PLUGIN_NAME,
+    "InsufficientPermission"
+  );
+}
+
+export function CreateAppCatalogFailedError(error: Error): SystemError {
+  return returnSystemError(
+    new Error(
+      `Failed to create tenant app catalog, due to ${error.message}, stack: ${error.stack}`
+    ),
+    Constants.PLUGIN_NAME,
+    "CreateAppCatalogFailed"
+  );
+}
+
+export function GetTenantFailedError(username?: string, error?: Error): SystemError {
+  return returnSystemError(
+    new Error(
+      `Cannot get tenant ` +
+        (username ? `for user ${username} ` : "") +
+        (error ? `due to error ${error.message}` : "")
+    ),
+    Constants.PLUGIN_NAME,
+    "GetTenantFailedError"
+  );
+}
+
+export function UploadAppPackageFailedError(error: Error): SystemError {
+  return returnSystemError(
+    new Error(`Failed to upload app package, due to ${error.message}`),
+    Constants.PLUGIN_NAME,
+    "UploadAppCatalogFailed"
+  );
+}

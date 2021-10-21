@@ -122,7 +122,11 @@ export class SpfxPlugin implements Plugin {
     try {
       telemetryHelper.sendSuccessEvent(ctx, stage + TelemetryEvent.StartSuffix);
       const result = await fn();
-      telemetryHelper.sendSuccessEvent(ctx, stage);
+      if (result.isOk()) {
+        telemetryHelper.sendSuccessEvent(ctx, stage);
+      } else {
+        telemetryHelper.sendErrorEvent(ctx, stage, result.error);
+      }
       return result;
     } catch (error) {
       await ProgressHelper.endAllHandlers(false);

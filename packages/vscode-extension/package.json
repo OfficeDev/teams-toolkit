@@ -285,6 +285,10 @@
         {
           "command": "fx-extension.openSurvey",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.checkProjectUpgrade",
+          "when": "fx-extension.canUpgradeToArmAndMultiEnv"
         }
       ]
     },

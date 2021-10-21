@@ -201,16 +201,6 @@ export class LocalDebugPlugin implements Plugin {
             ctx.config.set(LocalDebugConfigKeys.SkipNgrok, "false");
             ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, "");
           }
-        } else {
-          // multi-env, prepare .env.teamsfx.local
-          const localEnvMultiProvider = new LocalEnvMultiProvider(ctx.root);
-          await localEnvMultiProvider.saveLocalEnvs(
-            includeFrontend
-              ? localEnvMultiProvider.initFrontendLocalEnvs(includeBackend, includeAuth)
-              : undefined,
-            includeBackend ? localEnvMultiProvider.initBackendLocalEnvs() : undefined,
-            includeBot ? localEnvMultiProvider.initBotLocalEnvs(isMigrateFromV1) : undefined
-          );
         }
 
         if (includeBackend) {

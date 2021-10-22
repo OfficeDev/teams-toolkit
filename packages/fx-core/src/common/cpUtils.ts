@@ -5,47 +5,46 @@ import * as cp from "child_process";
 import * as os from "os";
 
 export async function executeCommand(
-  workingDirectory: string | undefined,
-  logger: LogProvider | undefined,
-  options: cp.SpawnOptions | undefined,
   command: string,
-  ...args: string[]
+  args: string[],
+  logger?: LogProvider,
+  options?: cp.SpawnOptions,
+  workingDirectory?: string
 ): Promise<string> {
   const result: ICommandResult = await tryExecuteCommand(
-    workingDirectory,
+    command,
+    args,
     logger,
     options,
-    command,
-    ...args
+    workingDirectory
   );
   if (result.code !== 0) {
-    const errorMessage = `Failed to run command: "${command} ${result.formattedArgs}", code: "${result.code}",
-                            output: "${result.cmdOutput}", error: "${result.cmdOutputIncludingStderr}"`;
+    const errorMessage = `Failed to execute ${command} with arguments: ${JSON.stringify(
+      args
+    )}. stdout: ${result.stdout}, stderr: ${result.stderr}, code: ${result.code}`;
     await logger?.debug(errorMessage);
     throw new Error(errorMessage);
   } else {
-    await logger?.debug(`Finished running command: "${command} ${result.formattedArgs}".`);
+    await logger?.debug(`Finished execute ${command} with arguments: ${JSON.stringify(args)}.`);
   }
 
-  return result.cmdOutput;
+  return result.stdout;
 }
 
 async function tryExecuteCommand(
-  workingDirectory: string | undefined,
-  logger: LogProvider | undefined,
-  additionalOptions: cp.SpawnOptions | undefined,
   command: string,
-  ...args: string[]
+  args: string[],
+  logger?: LogProvider,
+  additionalOptions?: cp.SpawnOptions,
+  workingDirectory?: string
 ): Promise<ICommandResult> {
   return await new Promise(
     (resolve: (res: ICommandResult) => void, reject: (e: Error) => void): void => {
-      let cmdOutput = "";
-      let cmdOutputIncludingStderr = "";
-      const formattedArgs: string = args.join(" ");
+      let stdout = "";
+      let stderr = "";
 
-      workingDirectory = workingDirectory || os.tmpdir();
       const options: cp.SpawnOptions = {
-        cwd: workingDirectory,
+        cwd: workingDirectory || os.tmpdir(),
         shell: true,
       };
       Object.assign(options, additionalOptions);
@@ -57,32 +56,38 @@ async function tryExecuteCommand(
         timer = setTimeout(() => {
           childProc.kill();
           logger?.debug(
-            `Stop exec due to timeout, command: "${command} ${formattedArgs}", options = '${JSON.stringify(
-              options
-            )}'`
+            `Stop command execution due to timeout, command: ${command}, arguments: ${JSON.stringify(
+              args
+            )}, options: '${JSON.stringify(options)}'`
           );
           reject(
-            new Error(`Exec command: "${command} ${formattedArgs}" timeout, ${options.timeout} ms`)
+            new Error(
+              `Execute ${command} with arguments ${JSON.stringify(args)} timeout, ${
+                options.timeout
+              } ms`
+            )
           );
         }, options.timeout);
       }
       logger?.debug(
-        `Running command: "${command} ${formattedArgs}", options = '${JSON.stringify(options)}'`
+        `Executing ${command}, arguments = ${JSON.stringify(args)}, options = '${JSON.stringify(
+          options
+        )}'`
       );
 
       childProc.stdout?.on("data", (data: string | Buffer) => {
-        data = data.toString();
-        cmdOutput = cmdOutput.concat(data);
+        stdout = stdout.concat(data.toString());
       });
 
       childProc.stderr?.on("data", (data: string | Buffer) => {
-        data = data.toString();
-        cmdOutputIncludingStderr = cmdOutputIncludingStderr.concat(data);
+        stderr = stderr.concat(data.toString());
       });
 
       childProc.on("error", (error) => {
         logger?.debug(
-          `Failed to run command '${command} ${formattedArgs}': cmdOutputIncludingStderr: '${cmdOutputIncludingStderr}', error: ${error}`
+          `Failed to execute ${command} with arguments: ${JSON.stringify(
+            args
+          )}. stderr: ${stderr}, error: ${error}`
         );
         if (timer) {
           clearTimeout(timer);
@@ -96,9 +101,8 @@ async function tryExecuteCommand(
         }
         resolve({
           code,
-          cmdOutput,
-          cmdOutputIncludingStderr,
-          formattedArgs,
+          stdout: stdout,
+          stderr: stderr,
         });
       });
     }
@@ -107,7 +111,6 @@ async function tryExecuteCommand(
 
 interface ICommandResult {
   code: number;
-  cmdOutput: string;
-  cmdOutputIncludingStderr: string;
-  formattedArgs: string;
+  stdout: string;
+  stderr: string;
 }

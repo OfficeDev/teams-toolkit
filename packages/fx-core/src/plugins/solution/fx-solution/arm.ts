@@ -500,13 +500,10 @@ async function compileBicepToJson(
 ): Promise<JSON> {
   try {
     const result = await executeCommand(
-      undefined,
-      logger,
-      { shell: false },
       bicepCommand,
-      "build",
-      bicepOrchestrationFilePath,
-      "--stdout"
+      ["build", bicepOrchestrationFilePath, "--stdout"],
+      logger,
+      { shell: false }
     );
     return JSON.parse(result);
   } catch (err) {

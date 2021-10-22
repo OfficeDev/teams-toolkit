@@ -4,7 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import { TestHelper } from "../helper";
 import { SqlPlugin } from "../../../../../src/plugins/resource/sql";
 import * as dotenv from "dotenv";
-import { ConfigMap, Platform, PluginContext, Stage } from "@microsoft/teamsfx-api";
+import { Platform, PluginContext, Stage } from "@microsoft/teamsfx-api";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as faker from "faker";
 import * as sinon from "sinon";
@@ -17,6 +17,7 @@ import { Constants } from "../../../../../src/plugins/resource/sql/constants";
 import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/commonUtils";
 import { UserType } from "../../../../../src/plugins/resource/sql/utils/commonUtils";
 import { ManagementClient } from "../../../../../src/plugins/resource/sql/managementClient";
+import { SqlPluginImpl } from "../../../../../src/plugins/resource/sql/plugin";
 
 chai.use(chaiAsPromised);
 
@@ -64,7 +65,8 @@ describe("sqlPlugin", () => {
 
   it("preProvision", async function () {
     // Arrange
-    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: false });
+    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: true });
+    sinon.stub(SqlPluginImpl.prototype, "askInputs").resolves();
     sinon
       .stub(ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
@@ -87,7 +89,8 @@ describe("sqlPlugin", () => {
 
   it("preProvision failed for no answer", async function () {
     // Arrange
-    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: false });
+    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: true });
+    sinon.stub(SqlPluginImpl.prototype, "askInputs").resolves();
     sinon
       .stub(ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);

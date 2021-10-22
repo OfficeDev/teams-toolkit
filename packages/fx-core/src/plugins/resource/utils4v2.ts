@@ -157,7 +157,7 @@ export async function provisionResourceAdapter(
 }
 
 // flattens output/secrets fields in config map for backward compatibility
-function flattenConfigMap(configMap: ConfigMap): ConfigMap {
+export function flattenConfigMap(configMap: ConfigMap): ConfigMap {
   const map = new ConfigMap();
   for (const [k, v] of configMap.entries()) {
     if (v instanceof ConfigMap) {
@@ -178,7 +178,7 @@ function flattenConfigMap(configMap: ConfigMap): ConfigMap {
 }
 
 // Convert legacy config map to env state with output and secrets fields
-function legacyConfig2EnvState(
+export function legacyConfig2EnvState(
   config: ConfigMap,
   pluginName: string
 ): { output: Json; secrets: Json } {

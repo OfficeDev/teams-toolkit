@@ -13,11 +13,10 @@ The SharePoint Framework (SPFx) is a page and web part model that provides full 
 - [SharePoint Framework](https://aka.ms/spfx)
 - [Microsoft 365 tenant](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-developer-tenant)
 
-> Get your own free development tenant by subscribing to [Microsoft 365 developer program](http://aka.ms/o365devprogram)
-
 ## Prerequisites
 
-> Any special pre-requisites?
+> - Node.js v10/12/14
+> - An M365 account. Get your own free Microsoft 365 tenant from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 
 ## Solution
 
@@ -55,21 +54,25 @@ Version|Date|Comments
     Or you can use TeamsFx CLI with running this cmd under your project path:
         `teamsfx deploy`
 
-    - Upload or drag and drop the *.sppkg to the SharePoint App Catalog site, please follow the instruction: [Deploy the HelloWorld package to App Catalog](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/serve-your-web-part-in-a-sharepoint-page#deploy-the-helloworld-package-to-app-catalog)
-5. Go back to Teams Toolkit V2, and in the sidebar, click `Publish to Teams`. 
+    - After building the *.sppkg, the Teams Toolkit V2 will upload and deploy it to your tenant App Catalog. Only tenant App Catalog site admin has permission to do it. You can create your test tenant following [Setup your Microsoft 365 tenant](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-developer-tenant).
+5. Go back to Teams Toolkit V2, click `Teams: Publish to Teams` in DEPLOYMENT panel.
 
     Or you can use TeamsFx CLI with running this cmd under your project path:
         `teamsfx publish`
 
     You will find your app in [Microsoft Teams admin center](https://admin.teams.microsoft.com/policies/manage-apps). Enter your app name in the search box. Click the item and select `Publish` in the Publishing status.
 
-6. You may need to wait for a few minutes after publishing your teams app.And then login to Teams, and you will find your app in the `Apps - Built for {your-tenant-name}` category.
+6. You may need to wait for a few minutes after publishing your teams app. And then login to Teams, and you will find your app in the `Apps - Built for {your-tenant-name}` category.
 
 7. Click "Add" to use the app as a personal tab. Click "Add to a team" to use the app as a group tab.
 
 ## Debug
 
 Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
+
+- `Teams workbench` is the default debug configuration. Using this configuration, you can install and debug the teams app.
+- `Local workbench` providing a SPFx workbench to view and debug the webpart before actually deploying solutions to the tenant. 
+- `Hosted workbench`. You need to navigate to [launch.json](.vscode/launch.json), replace `enter-your-SharePoint-site` with your SharePoint site, eg. `https://{your-tenant-name}.sharepoint.com/sites/{your-team-name}/_layouts/workbench.aspx`.
 
 ## References
 

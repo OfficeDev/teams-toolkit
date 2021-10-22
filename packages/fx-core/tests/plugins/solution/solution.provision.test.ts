@@ -83,7 +83,7 @@ import {
   ResourcePlugins,
   ResourcePluginsV2,
 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { AadAppForTeamsPlugin, newEnvInfo } from "../../../src";
+import { AadAppForTeamsPlugin, Executor, isArmSupportEnabled, newEnvInfo } from "../../../src";
 import Container from "typedi";
 import { askResourceGroupInfo } from "../../../src/plugins/solution/fx-solution/commonQuestions";
 import { ResourceManagementModels } from "@azure/arm-resources";
@@ -98,6 +98,7 @@ import { EnvInfoV2, ResourceProvisionOutput } from "@microsoft/teamsfx-api/build
 import frontend from "../../../src/plugins/resource/frontend";
 import { UnknownObject } from "@azure/core-http/types/latest/src/util/utils";
 import { LocalCrypto } from "../../../src/core/crypto";
+import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -207,9 +208,9 @@ class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
   }
 }
 
-const mockedSubscriptionName = "subname";
-const mockedSubscriptionId = "111";
-const mockedTenantId = "222";
+const mockedSubscriptionName = "mocked subscription id";
+const mockedSubscriptionId = "mocked subscription id";
+const mockedTenantId = "mocked tenant id";
 
 class MockedAzureTokenProvider implements AzureAccountProvider {
   getAccountCredential(showDialog?: boolean): TokenCredentialsBase {
@@ -339,6 +340,19 @@ function mockCtxWithResourceGroupQuestions(createNew: boolean, name: string, new
     } else {
       throw new Error("not implemented");
     }
+  };
+  mockedCtx.ui!.createProgressBar = (title: string, totalSteps: number): IProgressHandler => {
+    return {
+      start: async (detail?: string) => {
+        return;
+      },
+      end: async (success: boolean) => {
+        return;
+      },
+      next: async (detail?: string) => {
+        return;
+      },
+    };
   };
   return mockedCtx;
 }
@@ -599,13 +613,24 @@ describe("Resource group creation failed for provision() in Azure projects", () 
       },
     };
 
-    const result = await solution.provision(mockedCtx);
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr() instanceof UserError).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToCreateResourceGroup);
-    expect(result._unsafeUnwrapErr().message).contains(
-      "Failed to create resource group my_app-rg due to some error"
-    );
+    if (!isArmSupportEnabled()) {
+      const result = await solution.provision(mockedCtx);
+      expect(result.isErr()).to.be.true;
+      expect(result._unsafeUnwrapErr() instanceof UserError).to.be.true;
+      expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToCreateResourceGroup);
+      expect(result._unsafeUnwrapErr().message).contains(
+        "Failed to create resource group my_app-rg due to some error"
+      );
+    } else {
+      mockedCtx!.answers!.targetResourceGroupName = "test-new-rg";
+      const result = await solution.provision(mockedCtx);
+      expect(result.isErr()).to.be.true;
+      expect(result._unsafeUnwrapErr() instanceof UserError).to.be.true;
+      expect(result._unsafeUnwrapErr().name).equals(SolutionError.ResourceGroupNotFound);
+      expect(result._unsafeUnwrapErr().message).contains(
+        "please specify an existing resource group."
+      );
+    }
   });
 });
 
@@ -625,6 +650,9 @@ describe("provision() happy path for Azure projects", () => {
   beforeEach(() => {
     mockAzureProjectDeps(mocker, permissionsJsonPath, mockedManifest, mockedAppDef);
     mocker.stub(ResourceGroups.prototype, "createOrUpdate").resolves({ name: resourceGroupName });
+    mocker
+      .stub(ResourceGroups.prototype, "get")
+      .resolves({ name: "my_app-rg", location: "West US" });
   });
 
   afterEach(() => {
@@ -633,7 +661,15 @@ describe("provision() happy path for Azure projects", () => {
 
   it("should succeed if app studio returns successfully", async () => {
     const solution = new TeamsAppSolution();
-    const mockedCtx = mockSolutionContext();
+    // const mockedCtx = mockSolutionContext();
+    const mockNewResourceGroupName = "test-new-rg";
+    const mockNewResourceGroupLocation = "West US";
+    const mockedCtx = mockCtxWithResourceGroupQuestions(
+      true,
+      mockNewResourceGroupName,
+      mockNewResourceGroupLocation
+    );
+    mockedCtx!.answers!.targetResourceGroupName = "test-new-rg";
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -673,6 +709,7 @@ describe("provision() happy path for Azure projects", () => {
       return ok(Void);
     };
     const spy = mocker.spy(aadPlugin, "setApplicationInContext");
+    const stub = sinon.stub(arm, "deployArmTemplates");
 
     expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .undefined;
@@ -691,13 +728,17 @@ describe("provision() happy path for Azure projects", () => {
       })
     );
     const result = await solution.provision(mockedCtx);
-    expect(result.isOk()).to.be.true;
-    expect(spy.calledOnce).to.be.true;
-    expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
-      .true;
-    // expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
-    //   mockedAppDef.teamsAppId
-    // );
+    if (!isArmSupportEnabled()) {
+      expect(result.isOk()).to.be.true;
+      expect(spy.calledOnce).to.be.true;
+      expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+        .true;
+      // expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
+      //   mockedAppDef.teamsAppId
+      // );
+    } else {
+      expect(stub.called).to.be.true;
+    }
   });
 });
 
@@ -983,6 +1024,9 @@ describe("API v2 implementation", () => {
     });
 
     it("should work on happy path", async () => {
+      if (isArmSupportEnabled()) {
+        return;
+      }
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),

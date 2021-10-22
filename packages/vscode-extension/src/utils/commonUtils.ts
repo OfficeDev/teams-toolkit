@@ -302,11 +302,7 @@ export async function getM365TenantFromEnv(env: string): Promise<string | undefi
     return undefined;
   }
 
-  if (provisionResult[PluginNames.AAD] && provisionResult[PluginNames.AAD].tenantId) {
-    return provisionResult[PluginNames.AAD].tenantId;
-  } else {
-    return undefined;
-  }
+  return provisionResult?.[PluginNames.AAD]?.tenantId;
 }
 
 export async function getResourceGroupNameFromEnv(env: string): Promise<string | undefined> {

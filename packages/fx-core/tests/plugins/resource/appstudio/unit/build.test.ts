@@ -4,7 +4,6 @@
 import "mocha";
 import * as chai from "chai";
 import fs from "fs-extra";
-import path from "path";
 import sinon from "sinon";
 import {
   ConfigMap,
@@ -20,6 +19,7 @@ import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import AdmZip from "adm-zip";
 import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
+import { getAzureProjectRoot } from "../helper";
 
 describe("Build Teams Package", () => {
   let plugin: AppStudioPlugin;
@@ -31,7 +31,7 @@ describe("Build Teams Package", () => {
   beforeEach(async () => {
     plugin = new AppStudioPlugin();
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },

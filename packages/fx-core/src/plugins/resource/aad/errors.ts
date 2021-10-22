@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { isMultiEnvEnabled } from "../../../common/tools";
 import { ConfigKeys, Plugins } from "./constants";
 
 const referHelpLink = "Please refer to the help link for further steps.";
@@ -33,7 +34,9 @@ export const GetSkipAppConfigError: AadError = {
   name: "AadGetSkipAppConfigError",
   message: (fileName: string) =>
     `Failed to get all necessary info. You need to set ${ConfigKeys.objectId}, ${ConfigKeys.clientId}, ${ConfigKeys.clientSecret}, ` +
-    `${ConfigKeys.oauth2PermissionScopeId} under ${Plugins.pluginNameComplex} in ${fileName}.`,
+    `${
+      isMultiEnvEnabled() ? ConfigKeys.accessAsUserScopeId : ConfigKeys.oauth2PermissionScopeId
+    } under ${isMultiEnvEnabled() ? Plugins.auth : Plugins.pluginNameComplex} in ${fileName}.`,
   helpLink: aadHelpLink,
 };
 

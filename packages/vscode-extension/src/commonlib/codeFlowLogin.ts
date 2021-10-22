@@ -10,7 +10,7 @@ import * as http from "http";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
-import { UserError, SystemError, returnUserError } from "@microsoft/teamsfx-api";
+import { UserError, returnUserError } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
@@ -135,7 +135,9 @@ export class CodeFlowLogin {
         .catch((error) => {
           this.status = loggedOut;
           VsCodeLogInstance.error("[Login] " + error.message);
-          deferredRedirect.reject(error);
+          deferredRedirect.reject(
+            new UserError(error, StringResources.vsc.codeFlowLogin.loginComponent)
+          );
           res.status(500).send(error);
         });
     });
@@ -338,8 +340,8 @@ export function LoginFailureError(innerError?: any): UserError {
   );
 }
 
-export function LoginCodeFlowError(innerError?: any): SystemError {
-  return new SystemError(
+export function LoginCodeFlowError(innerError?: any): UserError {
+  return new UserError(
     StringResources.vsc.codeFlowLogin.loginCodeFlowFailureTitle,
     StringResources.vsc.codeFlowLogin.loginCodeFlowFailureDescription,
     StringResources.vsc.codeFlowLogin.loginComponent,

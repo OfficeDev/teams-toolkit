@@ -64,6 +64,7 @@ export class FunctionDeploy {
       const lastFunctionDeployTime = await this.getLastDeploymentTime(componentPath, envName);
       // Always ignore node_modules folder and the file ignored both by git and func.
       const defaultIgnore = ignore().add(FunctionPluginPathInfo.npmPackageFolderName);
+      defaultIgnore.add(FunctionPluginPathInfo.functionExtensionsFolderName);
       const funcIgnore = await this.prepareIgnore(
         componentPath,
         FunctionPluginPathInfo.funcIgnoreFileName

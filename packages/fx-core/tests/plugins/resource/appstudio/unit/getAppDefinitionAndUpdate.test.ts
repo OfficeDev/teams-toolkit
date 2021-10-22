@@ -27,23 +27,37 @@ import {
 } from "./../../../../../src/plugins/solution/fx-solution/constants";
 import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
 import {
-  AppStudioTokenProvider,
   ConfigMap,
   PluginContext,
   TeamsAppManifest,
   err,
+  LocalSettings,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import sinon from "sinon";
 import { AppStudioResultFactory } from "../../../../../src/plugins/resource/appstudio/results";
-import { MockedAppStudioTokenProvider } from "../helper";
-import { newEnvInfo } from "../../../../../src";
+import { getAzureProjectRoot, MockedAppStudioTokenProvider } from "../helper";
+import { isMultiEnvEnabled } from "../../../../../src/common/tools";
+import { newEnvInfo } from "../../../../../src/core/tools";
 import { LocalCrypto } from "../../../../../src/core/crypto";
+import {
+  LocalSettingsAuthKeys,
+  LocalSettingsBotKeys,
+  LocalSettingsFrontendKeys,
+} from "../../../../../src/common/localSettingsConstants";
 
 describe("Get AppDefinition and Update", () => {
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
   let manifest: TeamsAppManifest;
+  let localSettings: LocalSettings;
+
+  const localDebugApplicationIdUris = "local web application info source";
+  const localDebugClientId = uuid.v4();
+  const localDebugTabEndpoint = "local debug tab endpoint";
+  const localDebugTabDomain = "local debug tab domain";
+  const localDebugBotId = uuid.v4();
+  const localDebugBotDomain = "local debug bot domain";
 
   let AAD_ConfigMap: ConfigMap;
   let BOT_ConfigMap: ConfigMap;
@@ -57,21 +71,44 @@ describe("Get AppDefinition and Update", () => {
     manifest = new TeamsAppManifest();
     configOfOtherPlugins = new Map();
 
+    if (isMultiEnvEnabled()) {
+      localSettings = {
+        auth: new ConfigMap([
+          [LocalSettingsAuthKeys.ApplicationIdUris, localDebugApplicationIdUris],
+          [LocalSettingsAuthKeys.ClientId, localDebugClientId],
+        ]),
+        bot: new ConfigMap([
+          [LocalSettingsBotKeys.BotId, localDebugBotId],
+          [LocalSettingsBotKeys.BotDomain, localDebugBotDomain],
+        ]),
+        frontend: new ConfigMap([
+          [LocalSettingsFrontendKeys.TabEndpoint, localDebugTabEndpoint],
+          [LocalSettingsFrontendKeys.TabDomain, localDebugTabDomain],
+        ]),
+      };
+    }
+
     AAD_ConfigMap = new ConfigMap();
-    AAD_ConfigMap.set(LOCAL_DEBUG_AAD_ID, uuid.v4());
     AAD_ConfigMap.set(REMOTE_AAD_ID, uuid.v4());
-    AAD_ConfigMap.set(LOCAL_WEB_APPLICATION_INFO_SOURCE, "local web application info source");
+    if (!isMultiEnvEnabled()) {
+      AAD_ConfigMap.set(LOCAL_DEBUG_AAD_ID, localDebugBotId);
+      AAD_ConfigMap.set(LOCAL_WEB_APPLICATION_INFO_SOURCE, localDebugApplicationIdUris);
+    }
     AAD_ConfigMap.set(WEB_APPLICATION_INFO_SOURCE, "web application info source");
 
     BOT_ConfigMap = new ConfigMap();
-    BOT_ConfigMap.set(LOCAL_BOT_ID, uuid.v4());
+    if (!isMultiEnvEnabled()) {
+      BOT_ConfigMap.set(LOCAL_BOT_ID, localDebugBotId);
+    }
     BOT_ConfigMap.set(BOT_ID, uuid.v4());
     BOT_ConfigMap.set(BOT_DOMAIN, "bot domain");
 
-    LDEBUG_ConfigMap = new ConfigMap();
-    LDEBUG_ConfigMap.set(LOCAL_DEBUG_TAB_ENDPOINT, "local debug tab endpoint");
-    LDEBUG_ConfigMap.set(LOCAL_DEBUG_TAB_DOMAIN, "local debug tab domain");
-    LDEBUG_ConfigMap.set(LOCAL_DEBUG_BOT_DOMAIN, "local debug bot domain");
+    if (!isMultiEnvEnabled()) {
+      LDEBUG_ConfigMap = new ConfigMap();
+      LDEBUG_ConfigMap.set(LOCAL_DEBUG_TAB_ENDPOINT, localDebugTabEndpoint);
+      LDEBUG_ConfigMap.set(LOCAL_DEBUG_TAB_DOMAIN, localDebugTabDomain);
+      LDEBUG_ConfigMap.set(LOCAL_DEBUG_BOT_DOMAIN, localDebugBotDomain);
+    }
 
     FE_ConfigMap = new ConfigMap();
     FE_ConfigMap.set(FRONTEND_ENDPOINT, "frontend endpoint");
@@ -84,11 +121,12 @@ describe("Get AppDefinition and Update", () => {
 
   it("should return maybeAppDefinition error", async () => {
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
       cryptoProvider: new LocalCrypto(""),
+      localSettings,
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -122,7 +160,7 @@ describe("Get AppDefinition and Update", () => {
 
   it("failed to get webApplicationInfoResource from local config and should return error", async () => {
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
@@ -149,13 +187,18 @@ describe("Get AppDefinition and Update", () => {
   });
 
   it("failed to get clientId from local config and should return error", async () => {
-    AAD_ConfigMap.delete(LOCAL_DEBUG_AAD_ID);
-    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+    if (isMultiEnvEnabled()) {
+      localSettings.auth?.delete(LocalSettingsAuthKeys.ClientId);
+    } else {
+      AAD_ConfigMap.delete(LOCAL_DEBUG_AAD_ID);
+      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+    }
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
+      localSettings: localSettings,
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -179,16 +222,22 @@ describe("Get AppDefinition and Update", () => {
   });
 
   it("failed to get tab endpoint and botId from local config and should return error", async () => {
-    LDEBUG_ConfigMap.delete(LOCAL_DEBUG_TAB_ENDPOINT);
-    BOT_ConfigMap.delete(LOCAL_BOT_ID);
-    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
-    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
-    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    if (isMultiEnvEnabled()) {
+      localSettings.frontend?.delete(LocalSettingsFrontendKeys.TabEndpoint);
+      localSettings.bot?.delete(LocalSettingsBotKeys.BotId);
+    } else {
+      LDEBUG_ConfigMap.delete(LOCAL_DEBUG_TAB_ENDPOINT);
+      BOT_ConfigMap.delete(LOCAL_BOT_ID);
+      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    }
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
+      localSettings,
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -213,15 +262,20 @@ describe("Get AppDefinition and Update", () => {
   });
 
   it("doesn't have both tab endpoint and tab domain in local config and should return error", async () => {
-    LDEBUG_ConfigMap.delete(LOCAL_DEBUG_TAB_ENDPOINT);
-    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
-    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
-    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    if (isMultiEnvEnabled()) {
+      localSettings.frontend?.delete(LocalSettingsFrontendKeys.TabEndpoint);
+    } else {
+      LDEBUG_ConfigMap.delete(LOCAL_DEBUG_TAB_ENDPOINT);
+      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    }
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
+      localSettings,
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -248,15 +302,20 @@ describe("Get AppDefinition and Update", () => {
   });
 
   it("failed to get bot domain from local config and should return error", async () => {
-    LDEBUG_ConfigMap.delete(LOCAL_DEBUG_BOT_DOMAIN);
-    configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
-    configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
-    configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    if (isMultiEnvEnabled()) {
+      localSettings.bot?.delete(LocalSettingsBotKeys.BotDomain);
+    } else {
+      LDEBUG_ConfigMap.delete(LOCAL_DEBUG_BOT_DOMAIN);
+      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    }
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
+      localSettings,
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -284,10 +343,11 @@ describe("Get AppDefinition and Update", () => {
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
+      localSettings,
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -323,10 +383,11 @@ describe("Get AppDefinition and Update", () => {
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
+      localSettings,
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -353,11 +414,12 @@ describe("Get AppDefinition and Update", () => {
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
       cryptoProvider: new LocalCrypto(""),
+      localSettings,
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -395,11 +457,12 @@ describe("Get AppDefinition and Update", () => {
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
       cryptoProvider: new LocalCrypto(""),
+      localSettings,
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -455,11 +518,12 @@ describe("Get AppDefinition and Update", () => {
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
       cryptoProvider: new LocalCrypto(""),
+      localSettings,
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -483,8 +547,8 @@ describe("Get AppDefinition and Update", () => {
           isAdministrator: true,
         },
       ],
-      outlineIcon: "outline.png",
-      colorIcon: "color.png",
+      outlineIcon: isMultiEnvEnabled() ? "resources/outline.png" : "outline.png",
+      colorIcon: isMultiEnvEnabled() ? "resources/color.png" : "color.png",
     };
 
     const fakeAxiosInstance = axios.create();
@@ -512,11 +576,12 @@ describe("Get AppDefinition and Update", () => {
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
       cryptoProvider: new LocalCrypto(""),
+      localSettings,
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -543,11 +608,12 @@ describe("Get AppDefinition and Update", () => {
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
       cryptoProvider: new LocalCrypto(""),
+      localSettings,
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -603,11 +669,12 @@ describe("Get AppDefinition and Update", () => {
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
     configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
       cryptoProvider: new LocalCrypto(""),
+      localSettings,
     };
     ctx.projectSettings = {
       appName: "my app",
@@ -631,8 +698,8 @@ describe("Get AppDefinition and Update", () => {
           isAdministrator: true,
         },
       ],
-      outlineIcon: "outline.png",
-      colorIcon: "color.png",
+      outlineIcon: isMultiEnvEnabled() ? "resources/outline.png" : "outline.png",
+      colorIcon: isMultiEnvEnabled() ? "resources/color.png" : "color.png",
     };
 
     const fakeAxiosInstance = axios.create();

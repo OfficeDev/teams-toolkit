@@ -146,6 +146,26 @@ fakeCert
       .with.property("code", ErrorCode.InvalidConfiguration);
   });
 
+  it("create M365TenantCredential instance should throw InvalidCertificate with invalid certificate", async function () {
+    loadConfiguration({
+      authentication: {
+        clientId: clientId,
+        certificateContent: "invalid_certificate_content",
+        authorityHost: authorityHost,
+        tenantId: tenantId,
+      },
+    });
+
+    expect(() => {
+      new M365TenantCredential();
+    })
+      .to.throw(
+        ErrorWithCode,
+        "The certificate content does not contain a PEM-encoded certificate."
+      )
+      .with.property("code", ErrorCode.InvalidCertificate);
+  });
+
   it("getToken should success with valid config for Client Secret", async function () {
     sinon
       .stub(ConfidentialClientApplication.prototype, "acquireTokenByClientCredential")

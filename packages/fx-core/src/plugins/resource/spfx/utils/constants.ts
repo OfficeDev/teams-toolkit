@@ -15,6 +15,8 @@ export class Constants {
   public static readonly CANCEL = "Cancel";
   public static readonly DEPLOY_GUIDE =
     "https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-spfx?tabs=vscode#deploy-your-app-to-sharepoint";
+  public static readonly CREATE_APP_CATALOG_GUIDE =
+    "https://docs.microsoft.com/en-us/sharepoint/use-app-catalog#create-the-app-catalog";
 }
 
 export class PlaceHolders {

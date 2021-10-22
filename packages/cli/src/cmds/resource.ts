@@ -22,7 +22,13 @@ import CLILogProvider from "../commonlib/log";
 import HelpParamGenerator from "../helpParamGenerator";
 import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import { EnvNodeNoCreate } from "../constants";
-import { EnvNotFound, EnvNotProvisioned, EnvNotSpecified, InvalidEnvFile } from "../error";
+import {
+  EnvNotFound,
+  EnvNotProvisioned,
+  EnvNotSpecified,
+  InvalidEnvFile,
+  NotSupportedProjectType,
+} from "../error";
 import { existsSync, readJson } from "fs-extra";
 
 async function checkAndReadEnvJson(
@@ -38,6 +44,9 @@ async function checkAndReadEnvJson(
   }
   const envsResult = await environmentManager.listEnvConfigs(rootFolder);
   if (envsResult.isErr()) {
+    if (envsResult.error.name === "PathNotExist") {
+      return err(NotSupportedProjectType());
+    }
     return envsResult;
   }
   if (!envsResult.value.includes(env)) {
@@ -48,7 +57,7 @@ async function checkAndReadEnvJson(
     return err(new EnvNotProvisioned(env));
   }
   try {
-    const result = readJson(envStatePathResult.envState);
+    const result = await readJson(envStatePathResult.envState);
     return ok(result);
   } catch (error) {
     return err(InvalidEnvFile("Failed to read env state", envStatePathResult.envState));

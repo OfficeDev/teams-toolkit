@@ -259,7 +259,7 @@ export class FunctionDeploy {
       // It's fine if failed to read json from the deployment file.
     }
 
-    lastFunctionDeployJson[envName] = lastFunctionDeployJson[envName] ?? {};
+    lastFunctionDeployJson[envName] ??= {};
     lastFunctionDeployJson[envName].time = deployTime;
 
     try {

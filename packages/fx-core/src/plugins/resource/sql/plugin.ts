@@ -404,7 +404,7 @@ export class SqlPluginImpl {
     }
   }
 
-  private async askInputs(ctx: PluginContext) {
+  public async askInputs(ctx: PluginContext) {
     const node = this.buildQuestionNode();
     const res = await traverse(node, ctx.answers!, ctx.ui!);
     if (res.isErr()) {

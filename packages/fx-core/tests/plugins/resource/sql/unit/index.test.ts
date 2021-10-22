@@ -4,7 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import { TestHelper } from "../helper";
 import { SqlPlugin } from "../../../../../src/plugins/resource/sql";
 import * as dotenv from "dotenv";
-import { ConfigMap, Platform, PluginContext, Stage } from "@microsoft/teamsfx-api";
+import { Platform, PluginContext, Stage } from "@microsoft/teamsfx-api";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as faker from "faker";
 import * as sinon from "sinon";
@@ -17,6 +17,8 @@ import { Constants } from "../../../../../src/plugins/resource/sql/constants";
 import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/commonUtils";
 import { UserType } from "../../../../../src/plugins/resource/sql/utils/commonUtils";
 import { ManagementClient } from "../../../../../src/plugins/resource/sql/managementClient";
+import { SqlPluginImpl } from "../../../../../src/plugins/resource/sql/plugin";
+import { isArmSupportEnabled } from "../../../../../src";
 
 chai.use(chaiAsPromised);
 
@@ -64,7 +66,8 @@ describe("sqlPlugin", () => {
 
   it("preProvision", async function () {
     // Arrange
-    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: false });
+    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: true });
+    sinon.stub(SqlPluginImpl.prototype, "askInputs").resolves();
     sinon
       .stub(ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
@@ -87,7 +90,8 @@ describe("sqlPlugin", () => {
 
   it("preProvision failed for no answer", async function () {
     // Arrange
-    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: false });
+    sinon.stub(Servers.prototype, "checkNameAvailability").resolves({ available: true });
+    sinon.stub(SqlPluginImpl.prototype, "askInputs").resolves();
     sinon
       .stub(ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
@@ -101,6 +105,10 @@ describe("sqlPlugin", () => {
   });
 
   it("provision", async function () {
+    if (isArmSupportEnabled()) {
+      // plugin provision is skipped with ARM
+      return;
+    }
     sqlPlugin.sqlImpl.config.existSql = false;
     sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
 
@@ -131,6 +139,9 @@ describe("sqlPlugin", () => {
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
     sinon.stub(SqlClient.prototype, "existUser").resolves(false);
     sinon.stub(SqlClient.prototype, "addDatabaseUser").resolves();
+    if (isArmSupportEnabled()) {
+      TestHelper.mockArmOutput(pluginContext);
+    }
 
     // Act
     const postProvisionResult = await sqlPlugin.postProvision(pluginContext);
@@ -148,6 +159,10 @@ describe("sqlPlugin", () => {
     sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
     sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
     sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    if (isArmSupportEnabled()) {
+      TestHelper.mockArmOutput(pluginContext);
+    }
+
     // Act
     const postProvisionResult = await sqlPlugin.postProvision(pluginContext);
 
@@ -164,6 +179,10 @@ describe("sqlPlugin", () => {
     sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
     sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
     sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    if (isArmSupportEnabled()) {
+      TestHelper.mockArmOutput(pluginContext);
+    }
+
     // Act
     const postProvisionResult = await sqlPlugin.postProvision(pluginContext);
 

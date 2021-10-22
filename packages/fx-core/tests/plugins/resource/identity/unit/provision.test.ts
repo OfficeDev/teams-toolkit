@@ -9,12 +9,17 @@ import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import * as faker from "faker";
 import * as sinon from "sinon";
 import { Constants } from "../../../../../src/plugins/resource/identity/constants";
+import { isArmSupportEnabled } from "../../../../../src";
 
 chai.use(chaiAsPromised);
 
 dotenv.config();
 
 describe("identityPlugin", () => {
+  if (isArmSupportEnabled()) {
+    // plugin provision is skipped when using ARM
+    return;
+  }
   let identityPlugin: IdentityPlugin;
   let pluginContext: PluginContext;
   let credentials: msRestNodeAuth.TokenCredentialsBase;

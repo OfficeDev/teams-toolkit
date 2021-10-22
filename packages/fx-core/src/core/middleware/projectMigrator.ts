@@ -60,6 +60,9 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
+import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
+import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
+import { SPFxConfigError } from "../error";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -312,16 +315,27 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   await fs.writeFile(targetManifestFile, JSON.stringify(manifest, null, 4));
   await moveIconsToResourceFolder(templateAppPackage);
 
-  if (!isSPFx) {
-    const localManifest: TeamsAppManifest = await createLocalManifest(
-      appName,
-      hasFrontend,
-      hasBotCapability,
-      hasMessageExtensionCapability,
-      false
-    );
-    const localManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
-    await fs.writeFile(localManifestFile, JSON.stringify(localManifest, null, 4));
+  // generate manifest.local.template.json
+  const localManifest: TeamsAppManifest = await createLocalManifest(
+    appName,
+    hasFrontend,
+    hasBotCapability,
+    hasMessageExtensionCapability,
+    isSPFx
+  );
+  const localManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
+  await fs.writeFile(localManifestFile, JSON.stringify(localManifest, null, 4));
+
+  if (isSPFx) {
+    const replaceMap: Map<string, string> = new Map();
+    const packageSolutionFile = `${projectPath}/SPFx/config/package-solution.json`;
+    if (!(await fs.pathExists(packageSolutionFile))) {
+      throw SPFxConfigError(packageSolutionFile);
+    }
+    const solutionConfig = await fs.readJson(packageSolutionFile);
+    replaceMap.set(PlaceHolders.componentId, solutionConfig.solution.id);
+    replaceMap.set(PlaceHolders.componentNameUnescaped, manifest.packageName!);
+    await SPFxUtils.configure(localManifestFile, replaceMap);
   }
 
   if (hasProvision) {

@@ -18,8 +18,8 @@
         "full": "{appName}"
     },
     "icons": {
-        "outline": "outline.png",
-        "color": "color.png"
+        "outline": "resources/outline.png",
+        "color": "resources/color.png"
     },
     "accentColor": "#004578",
     "staticTabs": [

@@ -164,6 +164,13 @@ class SampleAppCard extends React.Component<any, any> {
         <h3>{this.props.description}</h3>
         <div className="section buttons">
           <PrimaryButton
+            text="Repository"
+            className="right-aligned"
+            onClick={() => {
+              this.viewSampleApp(this.props.sampleAppFolder);
+            }}
+          />
+          <PrimaryButton
             text="Download"
             className="right-aligned"
             onClick={() => {
@@ -187,6 +194,14 @@ class SampleAppCard extends React.Component<any, any> {
         appUrl: sampleAppUrl,
         appFolder: sampleAppFolder,
       },
+    });
+  };
+
+  viewSampleApp = (sampleAppFolder: string) => {
+    const sampleBaseUrl = "https://github.com/OfficeDev/TeamsFx-Samples/tree/main/";
+    vscode.postMessage({
+      command: Commands.OpenExternalLink,
+      data: sampleBaseUrl + sampleAppFolder,
     });
   };
 }

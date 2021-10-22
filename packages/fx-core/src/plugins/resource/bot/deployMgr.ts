@@ -8,6 +8,7 @@ import { PreconditionError, SomethingMissingError } from "./errors";
 import { Logger } from "./logger";
 import { forEachFileAndDir } from "./utils/dir-walk";
 import { Messages } from "./resources/messages";
+import { isArmSupportEnabled, isMultiEnvEnabled } from "../../..";
 
 export class DeployMgr {
   private workingDir: string;
@@ -39,6 +40,11 @@ export class DeployMgr {
   }
 
   public async needsToRedeploy(): Promise<boolean> {
+    // TODO: always do deployment until we integrate with these preview feature
+    if (isArmSupportEnabled() || isMultiEnvEnabled()) {
+      return true;
+    }
+
     // Iterate all source files and config files to determine if anything changed.
     if (!this.workingDir) {
       throw new PreconditionError(Messages.WorkingDirIsMissing, []);

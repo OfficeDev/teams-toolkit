@@ -23,10 +23,15 @@ import {
   STATIC_TABS_TPL,
 } from "../../../../../src/plugins/resource/appstudio/constants";
 import path from "path";
-import { newEnvInfo } from "../../../../../src";
+import { newEnvInfo } from "../../../../../src/core/tools";
+import { isMultiEnvEnabled } from "../../../../../src/common/tools";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 
 describe("Migrate", () => {
+  if (isMultiEnvEnabled()) {
+    // TODO: skip because migrate V1 to multi-env is not ready yet.
+    return;
+  }
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
   const sandbox = sinon.createSandbox();

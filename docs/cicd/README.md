@@ -2,6 +2,9 @@
 
 TeamsFx helps automate your development workflow when building a Teams application. These documents provide some templates for you to quickly get started with CI/CD.
 
+> Note:
+The current CI/CD Support doesn't support the insider preview features (multi-env, arm support, and collaboration), so don't enable insider feature flag with CI/CD. CI/CD support for insider preview features will be coming soon.
+
 |Tools and Templates|Description|
 |---|---|
 |[teamsfx-cli-action](https://github.com/OfficeDev/teamsfx-cli-action)|A ready-to-use GitHub Action.|

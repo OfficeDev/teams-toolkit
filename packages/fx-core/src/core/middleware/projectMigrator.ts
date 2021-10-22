@@ -51,7 +51,7 @@ import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
-import { MANIFEST_LOCAL } from "../../plugins/resource/appstudio/constants";
+import { MANIFEST_LOCAL, MANIFEST_TEMPLATE } from "../../plugins/resource/appstudio/constants";
 import {
   Component,
   ProjectMigratorGuideStatus,
@@ -283,7 +283,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
 
   // appPackage
   await fs.copy(path.join(projectPath, AppPackageFolderName), templateAppPackage);
-  const targetManifestFile = path.join(templateAppPackage, "manifest.template.json");
+  const targetManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
   await fs.rename(path.join(templateAppPackage, "manifest.source.json"), targetManifestFile);
 
   // update manifest to mustache template
@@ -335,7 +335,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
 async function moveIconsToResourceFolder(templateAppPackage: string): Promise<void> {
   // see AppStudioPluginImpl.buildTeamsAppPackage()
   const manifest: TeamsAppManifest = await readJson(
-    path.join(templateAppPackage, "manifest.template.json")
+    path.join(templateAppPackage, MANIFEST_TEMPLATE)
   );
   const hasColorIcon = manifest.icons.color && !manifest.icons.color.startsWith("https://");
   const hasOutlineIcon = manifest.icons.outline && !manifest.icons.outline.startsWith("https://");
@@ -358,7 +358,7 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
   manifest.icons.color = `resources/${manifest.icons.color}`;
   manifest.icons.outline = `resources/${manifest.icons.outline}`;
   await fs.writeFile(
-    path.join(templateAppPackage, "manifest.template.json"),
+    path.join(templateAppPackage, MANIFEST_TEMPLATE),
     JSON.stringify(manifest, null, 4)
   );
 }

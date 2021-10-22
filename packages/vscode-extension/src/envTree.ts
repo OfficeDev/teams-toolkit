@@ -32,86 +32,72 @@ import {
   getSubscriptionInfoFromEnv,
 } from "./utils/commonUtils";
 import AzureAccountManager from "./commonlib/azureLogin";
+import { Mutex } from "async-mutex";
 
 const showEnvList: Array<string> = [];
 let environmentTreeProvider: CommandsTreeViewProvider;
 let collaboratorsRecordCache: Record<string, TreeItem[]> = {};
 let permissionCache: Record<string, boolean> = {};
+const mutex = new Mutex();
 
 export async function registerEnvTreeHandler(
   forceUpdateCollaboratorList = true
 ): Promise<Result<Void, FxError>> {
   if (isMultiEnvEnabled() && vscode.workspace.workspaceFolders) {
-    const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
-    const workspacePath: string = workspaceFolder.uri.fsPath;
-    const envNamesResult = await environmentManager.listEnvConfigs(workspacePath);
-    if (envNamesResult.isErr()) {
-      return err(envNamesResult.error);
-    }
-    environmentTreeProvider = TreeViewManagerInstance.getTreeView("teamsfx-environment")!;
-    if (showEnvList.length > 0) {
-      showEnvList.forEach(async (item) => {
-        environmentTreeProvider.removeById("fx-extension.environment." + item);
-      });
-    }
-    showEnvList.splice(0);
+    mutex.runExclusive(async () => {
+      const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders![0];
+      const workspacePath: string = workspaceFolder.uri.fsPath;
+      const envNamesResult = await environmentManager.listEnvConfigs(workspacePath);
+      if (envNamesResult.isErr()) {
+        return err(envNamesResult.error);
+      }
+      environmentTreeProvider = TreeViewManagerInstance.getTreeView("teamsfx-environment")!;
+      if (showEnvList.length > 0) {
+        showEnvList.forEach(async (item) => {
+          environmentTreeProvider.removeById("fx-extension.environment." + item);
+        });
+      }
+      showEnvList.splice(0);
 
-    const envNames = (await localSettingsExists(workspacePath))
-      ? [LocalEnvironmentName].concat(envNamesResult.value)
-      : envNamesResult.value;
-    for (const item of envNames) {
-      showEnvList.push(item);
-      environmentTreeProvider.add([
-        {
-          commandId: "fx-extension.environment." + item,
-          label: item,
-          parent: TreeCategory.Environment,
-          contextValue: item === LocalEnvironmentName ? "local" : "environment",
-          icon: "symbol-folder",
-          isCustom: false,
-          expanded: true,
-        },
-      ]);
-    }
-    const m365NotMatchEnvList: Array<string> = [];
-    await checkAllEnv(envNamesResult.value, m365NotMatchEnvList);
+      const envNames = (await localSettingsExists(workspacePath))
+        ? [LocalEnvironmentName].concat(envNamesResult.value)
+        : envNamesResult.value;
+      for (const item of envNames) {
+        showEnvList.push(item);
+        environmentTreeProvider.add([
+          {
+            commandId: "fx-extension.environment." + item,
+            label: item,
+            parent: TreeCategory.Environment,
+            contextValue: item === LocalEnvironmentName ? "local" : "environment",
+            icon: "symbol-folder",
+            isCustom: false,
+            expanded: true,
+          },
+        ]);
+      }
+      await checkAllEnv(envNamesResult.value);
 
-    const collaboratorsItem = await getAllCollaboratorList(
-      envNamesResult.value,
-      forceUpdateCollaboratorList,
-      m365NotMatchEnvList
-    );
-    await environmentTreeProvider.add(collaboratorsItem);
+      const collaboratorsItem = await getAllCollaboratorList(
+        envNamesResult.value,
+        forceUpdateCollaboratorList
+      );
+      await environmentTreeProvider.add(collaboratorsItem);
+    });
   }
   return ok(Void);
 }
 
-async function checkAllEnv(itemList: Array<string>, m365NotMatchEnvList: Array<string>) {
+async function checkAllEnv(itemList: Array<string>) {
   for (const item of itemList) {
     let envSubItems: TreeItem[] = [];
 
-    const m365WarningItem = await checkM365AccountStatus(item);
-    if (m365WarningItem) {
-      envSubItems.push(m365WarningItem);
-    }
-
-    const warningItem = checkAzureAccountStatus(item);
-    if (warningItem) {
-      envSubItems.push(warningItem);
-    }
-
-    envSubItems = envSubItems.concat(
-      await getSubscriptionAndResourceGroupNode(item, m365NotMatchEnvList)
-    );
+    envSubItems = envSubItems.concat(await getSubscriptionAndResourceGroupNode(item));
     await environmentTreeProvider.add(envSubItems);
   }
 }
 
-export async function getAllCollaboratorList(
-  envs: string[],
-  force = false,
-  m365NotMatchEnvList: Array<string>
-): Promise<TreeItem[]> {
+export async function getAllCollaboratorList(envs: string[], force = false): Promise<TreeItem[]> {
   let result: TreeItem[] = [];
 
   if (environmentTreeProvider && isRemoteCollaborateEnabled()) {
@@ -133,9 +119,6 @@ export async function getAllCollaboratorList(
 
       result.push(collaboratorParentNode);
 
-      if (m365NotMatchEnvList.indexOf(env) >= 0) {
-        continue;
-      }
       if (loginStatus.status === signedIn) {
         const canAddCollaborator = permissionCache[env] ?? (await checkPermission(env));
         permissionCache[env] = canAddCollaborator;
@@ -195,7 +178,7 @@ export function generateCollaboratorNode(
   return {
     commandId: `fx-extension.listcollaborator.${env}.${userObjectId}`,
     label: email,
-    icon: isAadOwner ? "person" : "warning",
+    icon: isAadOwner ? "person" : "",
     isCustom: !isAadOwner,
     tooltip: {
       value: isAadOwner ? "" : "This account doesn't have the AAD permission.",
@@ -213,7 +196,7 @@ export function generateCollaboratorWarningNode(
   return {
     commandId: `fx-extension.listcollaborator.${env}`,
     label: nodeLabel,
-    icon: "warning",
+    icon: "",
     tooltip: {
       value: toolTip ?? nodeLabel,
       isMarkdown: false,
@@ -239,10 +222,7 @@ async function localSettingsExists(projectRoot: string): Promise<boolean> {
   return await fs.pathExists(provider.localSettingsFilePath);
 }
 
-export async function getSubscriptionAndResourceGroupNode(
-  env: string,
-  m365NotMatchEnvList: Array<string>
-): Promise<TreeItem[]> {
+export async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeItem[]> {
   if (
     environmentTreeProvider &&
     environmentTreeProvider.findCommand("fx-extension.environment." + env) &&
@@ -284,7 +264,6 @@ export async function getSubscriptionAndResourceGroupNode(
     if (m365TenantId) {
       const warningItem = await checkM365Permission(env, m365TenantId);
       if (warningItem) {
-        m365NotMatchEnvList.push(env);
         envSubItems = [warningItem].concat(envSubItems);
       }
     }

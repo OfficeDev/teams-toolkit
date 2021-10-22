@@ -186,6 +186,29 @@ export class AppStudioPluginImpl {
       manifest.id = "";
       createIfNotExist = true;
     }
+
+    const suffix = "-local-debug";
+    let appName = ctx.projectSettings!.appName;
+    if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
+      appName = appName + suffix;
+    }
+
+    if (isMultiEnvEnabled()) {
+      const view = {
+        config: {
+          manifest: {
+            appName: {
+              short: appName,
+              full: appName,
+            },
+          },
+        },
+      };
+      const manifestString = Mustache.render(JSON.stringify(manifest), view);
+      manifest = JSON.parse(manifestString);
+    } else {
+      manifest.name.short = appName;
+    }
     if (manifest.configurableTabs) {
       for (const tab of manifest.configurableTabs) {
         const reg = /[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/;
@@ -767,15 +790,21 @@ export class AppStudioPluginImpl {
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
-    const manifestPath = await this.getManifestTemplatePath(ctx.root, true);
-    const manifest = await this.reloadManifestAndCheckRequiredFields(manifestPath);
-    if (manifest.isErr()) {
-      return err(manifest.error);
-    }
     let teamsAppId;
     if (isSPFxProject(ctx.projectSettings)) {
+      // Currently SPFx doesn't have manifest for local, use remote manifest as well
+      const manifestPath = await this.getManifestTemplatePath(ctx.root, false);
+      const manifest = await this.reloadManifestAndCheckRequiredFields(manifestPath);
+      if (manifest.isErr()) {
+        return err(manifest.error);
+      }
       teamsAppId = await this.getSPFxLocalDebugAppDefinitionAndUpdate(ctx, manifest.value);
     } else {
+      const manifestPath = await this.getManifestTemplatePath(ctx.root, true);
+      const manifest = await this.reloadManifestAndCheckRequiredFields(manifestPath);
+      if (manifest.isErr()) {
+        return err(manifest.error);
+      }
       teamsAppId = await this.getAppDefinitionAndUpdate(ctx, true, manifest.value);
     }
     if (teamsAppId.isErr()) {
@@ -1467,8 +1496,12 @@ export class AppStudioPluginImpl {
         AppStudioError.NotADirectoryError.message(appDirectory)
       );
     }
+    // Currently multi-env SPFx doesn't have manifest for local, use remote manifest as well
     const manifest: TeamsAppManifest = await fs.readJSON(
-      await this.getManifestTemplatePath(ctx.root, isLocalDebug)
+      await this.getManifestTemplatePath(
+        ctx.root,
+        isLocalDebug && !isSPFxProject(ctx.projectSettings)
+      )
     );
     manifest.bots = undefined;
     manifest.composeExtensions = undefined;

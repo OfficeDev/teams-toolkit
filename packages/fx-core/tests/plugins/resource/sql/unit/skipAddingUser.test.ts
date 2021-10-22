@@ -52,9 +52,6 @@ describe("skipAddingUser", () => {
       userType: commonUtils.UserType.User,
     };
     sinon.stub(commonUtils, "parseToken").returns(mockInfo);
-    pluginContext.answers = { platform: Platform.VSCode };
-    pluginContext.answers[Constants.questionKey.adminName] = "test-admin";
-    pluginContext.answers[Constants.questionKey.adminPassword] = "test-password";
 
     // Act
     let preProvisionResult = await sqlPlugin.preProvision(pluginContext);

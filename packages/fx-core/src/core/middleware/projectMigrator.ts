@@ -24,6 +24,7 @@ import {
   SolutionConfigError,
   ProjectSettingError,
   environmentManager,
+  SPFxConfigError,
 } from "../..";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
@@ -62,7 +63,6 @@ import {
 } from "../../common/telemetry";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
-import { SPFxConfigError } from "../error";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";

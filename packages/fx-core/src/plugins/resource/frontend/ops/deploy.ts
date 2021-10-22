@@ -19,7 +19,6 @@ import { Utils } from "../utils";
 import fs from "fs-extra";
 import path from "path";
 import { TelemetryHelper } from "../utils/telemetry-helper";
-import { isArmSupportEnabled, isMultiEnvEnabled } from "../../../..";
 
 interface DeploymentInfo {
   lastBuildTime?: string;
@@ -36,11 +35,6 @@ export class FrontendDeployment {
   }
 
   public static async needDeploy(componentPath: string): Promise<boolean> {
-    // TODO: always do deployment until we integrate with these preview feature
-    if (isArmSupportEnabled() || isMultiEnvEnabled()) {
-      return true;
-    }
-
     const lastBuildTime = await FrontendDeployment.getLastBuildTime(componentPath);
     const lastDeployTime = await FrontendDeployment.getLastDeploymentTime(componentPath);
     if (!lastBuildTime || !lastDeployTime) {

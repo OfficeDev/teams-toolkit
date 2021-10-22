@@ -1,7 +1,7 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-namespace Microsoft.TeamsFx.Model
+namespace Microsoft.TeamsFx
 {
     /// <summary>
     /// UserInfo with user displayName, objectId and preferredUserName.

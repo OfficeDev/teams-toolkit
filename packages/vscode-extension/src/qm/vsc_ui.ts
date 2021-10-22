@@ -131,17 +131,7 @@ export class VsCodeUI implements UserInteraction {
     const disposables: Disposable[] = [];
     try {
       const quickPick = window.createQuickPick<FxQuickPickItem>();
-      if (
-        (await exp
-          .getExpService()
-          .getTreatmentVariableAsync(
-            TreatmentVariables.VSCodeConfig,
-            TreatmentVariables.RefineScaffoldTooltip,
-            true
-          )) &&
-        option.step &&
-        option.step > 1
-      ) {
+      if (option.step && option.step > 1) {
         quickPick.title = option.title
           ? option.title + StringResources.vsc.qm.backKeyboard
           : StringResources.vsc.qm.backKeyboard;
@@ -231,17 +221,7 @@ export class VsCodeUI implements UserInteraction {
     const disposables: Disposable[] = [];
     try {
       const quickPick: QuickPick<FxQuickPickItem> = window.createQuickPick<FxQuickPickItem>();
-      if (
-        (await exp
-          .getExpService()
-          .getTreatmentVariableAsync(
-            TreatmentVariables.VSCodeConfig,
-            TreatmentVariables.RefineScaffoldTooltip,
-            true
-          )) &&
-        option.step &&
-        option.step > 1
-      ) {
+      if (option.step && option.step > 1) {
         quickPick.title = option.title
           ? option.title + StringResources.vsc.qm.backKeyboard
           : StringResources.vsc.qm.backKeyboard;
@@ -250,21 +230,9 @@ export class VsCodeUI implements UserInteraction {
       }
       if (option.step && option.step > 1) quickPick.buttons = [QuickInputButtons.Back, okButton];
       else quickPick.buttons = [okButton];
-      if (
-        await exp
-          .getExpService()
-          .getTreatmentVariableAsync(
-            TreatmentVariables.VSCodeConfig,
-            TreatmentVariables.RefineScaffoldTooltip,
-            true
-          )
-      ) {
-        quickPick.placeholder = option.placeholder
-          ? option.placeholder + StringResources.vsc.qm.multiSelectKeyboard
-          : StringResources.vsc.qm.multiSelectKeyboard;
-      } else {
-        quickPick.placeholder = option.placeholder;
-      }
+      quickPick.placeholder = option.placeholder
+        ? option.placeholder + StringResources.vsc.qm.multiSelectKeyboard
+        : StringResources.vsc.qm.multiSelectKeyboard;
       quickPick.ignoreFocusOut = true;
       quickPick.matchOnDescription = true;
       quickPick.matchOnDetail = true;
@@ -373,17 +341,7 @@ export class VsCodeUI implements UserInteraction {
     const disposables: Disposable[] = [];
     try {
       const inputBox: InputBox = window.createInputBox();
-      if (
-        (await exp
-          .getExpService()
-          .getTreatmentVariableAsync(
-            TreatmentVariables.VSCodeConfig,
-            TreatmentVariables.RefineScaffoldTooltip,
-            true
-          )) &&
-        option.step &&
-        option.step > 1
-      ) {
+      if (option.step && option.step > 1) {
         inputBox.title = option.title
           ? option.title + StringResources.vsc.qm.backKeyboard
           : StringResources.vsc.qm.backKeyboard;
@@ -486,17 +444,7 @@ export class VsCodeUI implements UserInteraction {
     const disposables: Disposable[] = [];
     try {
       const quickPick: QuickPick<QuickPickItem> = window.createQuickPick();
-      if (
-        (await exp
-          .getExpService()
-          .getTreatmentVariableAsync(
-            TreatmentVariables.VSCodeConfig,
-            TreatmentVariables.RefineScaffoldTooltip,
-            true
-          )) &&
-        config.step &&
-        config.step > 1
-      ) {
+      if (config.step && config.step > 1) {
         quickPick.title = config.title
           ? config.title + StringResources.vsc.qm.backKeyboard
           : StringResources.vsc.qm.backKeyboard;

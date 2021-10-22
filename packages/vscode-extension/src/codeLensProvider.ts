@@ -7,6 +7,7 @@ import { localSettingsJsonName } from "./debug/constants";
 import * as StringResources from "./resources/Strings.json";
 import * as fs from "fs";
 import { getWorkspacePath } from "./handlers";
+import path = require("path");
 
 /**
  * CodelensProvider
@@ -19,7 +20,7 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
     this.userDataRegex =
       /fx-resource-[a-zA-Z\-]+\.[a-zA-Z\-_]+(?:Secret|Password|VariableParams)=(.*)/g;
     this.localDebugRegex =
-      /(?: *|\t*)"(?:clientSecret|SimpleAuthEnvironmentVariableParams|botPassword)": "(.*)"/g;
+      /(?: *|\t*)"(?:clientSecret|SimpleAuthEnvironmentVariableParams|botPassword)": "(crypto_.*)"/g;
   }
 
   public provideCodeLenses(
@@ -70,9 +71,7 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
     const adaptiveCardFiles: string[] = [];
     const folder = getWorkspacePath();
     if (!folder) return [];
-
-    vscode.window.showInformationMessage("Searching for Adaptive Cards in your workspace");
-    const files = await glob.sync(folder + "/**/*.json", {});
+    const files = await glob.sync(path.join(folder, "/**/*.json"), {});
     files.forEach((file) => {
       const searchTerm = "adaptivecards.io/schemas/adaptive-card.json";
       const content = fs.readFileSync(file, "utf8");

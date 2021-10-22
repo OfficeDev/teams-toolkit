@@ -66,6 +66,9 @@ import {
 import { TeamsClientId } from "../../../common/constants";
 import { ProjectSettingLoader } from "./projectSettingLoader";
 import "./v2";
+
+const PackageJson = require("@npmcli/package-json");
+
 @Service(ResourcePlugins.LocalDebugPlugin)
 export class LocalDebugPlugin implements Plugin {
   name = "fx-resource-local-debug";
@@ -202,15 +205,37 @@ export class LocalDebugPlugin implements Plugin {
             ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, "");
           }
         } else {
-          // multi-env, prepare .env.teamsfx.local
-          const localEnvMultiProvider = new LocalEnvMultiProvider(ctx.root);
-          await localEnvMultiProvider.saveLocalEnvs(
-            includeFrontend
-              ? localEnvMultiProvider.initFrontendLocalEnvs(includeBackend, includeAuth)
-              : undefined,
-            includeBackend ? localEnvMultiProvider.initBackendLocalEnvs() : undefined,
-            includeBot ? localEnvMultiProvider.initBotLocalEnvs(isMigrateFromV1) : undefined
-          );
+          // add 'npm install' scripts into root package.json
+          const packageJsonPath = ctx.root;
+          let packageJson: any = undefined;
+          try {
+            packageJson = await PackageJson.load(packageJsonPath);
+          } catch (error) {
+            ctx.logProvider?.error(`Cannot load package.json from ${ctx.root}. ${error}`);
+          }
+
+          if (packageJson !== undefined) {
+            const scripts = packageJson.content.scripts ?? {};
+            const installAll: string[] = [];
+
+            if (includeBackend) {
+              scripts["install:api"] = "cd api && npm install";
+              installAll.push("npm run install:api");
+            }
+            if (includeBot) {
+              scripts["install:bot"] = "cd bot && npm install";
+              installAll.push("npm run install:bot");
+            }
+            if (includeFrontend) {
+              scripts["install:tabs"] = "cd tabs && npm install";
+              installAll.push("npm run install:tabs");
+            }
+
+            scripts["installAll"] = installAll.join(" & ");
+
+            packageJson.update({ scripts: scripts });
+            await packageJson.save();
+          }
         }
 
         if (includeBackend) {
@@ -619,13 +644,11 @@ export class LocalDebugPlugin implements Plugin {
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     if (func.method == "getLaunchInput") {
       const env = func.params as string;
-      const solutionConfigs = ctx.envInfo.profile.get(SolutionPlugin.Name);
+      const solutionConfigs = ctx.envInfo.state.get(SolutionPlugin.Name);
       if (env === "remote") {
         // return remote teams app id
         const remoteId = isMultiEnvEnabled()
-          ? (ctx.envInfo.profile
-              .get(AppStudioPlugin.Name)
-              ?.get(AppStudioPlugin.TeamsAppId) as string)
+          ? (ctx.envInfo.state.get(AppStudioPlugin.Name)?.get(AppStudioPlugin.TeamsAppId) as string)
           : (solutionConfigs?.get(SolutionPlugin.RemoteTeamsAppId) as string);
         if (/^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(remoteId)) {
           return ok({

@@ -70,12 +70,18 @@ export class ApimManager {
     const currentUserId = await apimService.getUserId();
 
     if (isArmSupportEnabled()) {
-      if (!apimConfig.publisherEmail) {
-        apimConfig.publisherEmail = currentUserId;
-      }
-      if (!apimConfig.publisherName) {
-        apimConfig.publisherName = currentUserId;
-      }
+      const apimServiceResource = apimConfig.serviceResourceId
+        ? await apimService.getService(
+            getResourceGroupNameFromResourceId(apimConfig.serviceResourceId),
+            getApimServiceNameFromResourceId(apimConfig.serviceResourceId)
+          )
+        : undefined;
+      apimConfig.publisherEmail = apimServiceResource?.publisherEmail
+        ? apimServiceResource.publisherEmail
+        : currentUserId;
+      apimConfig.publisherName = apimServiceResource?.publisherName
+        ? apimServiceResource.publisherName
+        : currentUserId;
     } else {
       await apimService.ensureResourceProvider();
 
@@ -110,10 +116,8 @@ export class ApimManager {
       apimConfig.serviceResourceId = getArmOutput(ctx, ApimArmOutput.ServiceResourceId);
       apimConfig.productResourceId = getArmOutput(ctx, ApimArmOutput.ProductResourceId);
       apimConfig.authServerResourceId = getArmOutput(ctx, ApimArmOutput.AuthServerResourceId);
-      apimConfig.publisherEmail = getArmOutput(ctx, ApimArmOutput.PublisherEmail);
-      apimConfig.publisherName = getArmOutput(ctx, ApimArmOutput.PublisherName);
     } else {
-      const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
+      const solutionConfig = new SolutionConfig(ctx.envInfo.state);
       const apimService: ApimService = await this.lazyApimService.getValue();
       const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
       const apimServiceName = AssertConfigNotEmpty(

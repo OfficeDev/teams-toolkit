@@ -72,7 +72,7 @@ describe("Solution create()", async () => {
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isErr()).equals(true);
     // expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
-    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).to.be.not.undefined;
+    expect(mockedSolutionCtx.envInfo.state.get(GLOBAL_CONFIG)).to.be.not.undefined;
   });
 
   it("should fail if projectSettings.solutionSettings is undefined", async () => {
@@ -122,7 +122,7 @@ describe("Solution create()", async () => {
     answers[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
-    expect(mockedSolutionCtx.envInfo.profile.get(GLOBAL_CONFIG)).is.not.undefined;
+    expect(mockedSolutionCtx.envInfo.state.get(GLOBAL_CONFIG)).is.not.undefined;
   });
 
   it("should set programmingLanguage in config if programmingLanguage is in answers", async () => {
@@ -165,7 +165,7 @@ describe("Solution create()", async () => {
     answers[AzureSolutionQuestionNames.Capabilities as string] = [BotOptionItem.id];
     const result = await solution.create(mockedSolutionCtx);
     expect(result.isOk()).equals(true);
-    const lang = mockedSolutionCtx.envInfo.profile
+    const lang = mockedSolutionCtx.envInfo.state
       .get(GLOBAL_CONFIG)
       ?.getString(PROGRAMMING_LANGUAGE);
     expect(lang).to.be.undefined;

@@ -402,7 +402,7 @@ describe("provision() simple cases", () => {
   it("should return false even if provisionSucceeded is true", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
     const result = await solution.provision(mockedCtx);
     expect(result.isOk()).to.be.false;
   });
@@ -524,20 +524,20 @@ describe("provision() happy path for SPFx projects", () => {
       return { TEAMSFX_INSIDER_PREVIEW: insiderEnabled.toString() };
     });
 
-    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+    expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .undefined;
-    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
+    expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
     const result = await solution.provision(mockedCtx);
     expect(result.isOk()).to.be.true;
-    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+    expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .true;
 
     if (insiderEnabled) {
-      expect(mockedCtx.envInfo.profile.get("fx-resource-appstudio")?.get("teamsAppId")).equals(
+      expect(mockedCtx.envInfo.state.get("fx-resource-appstudio")?.get("teamsAppId")).equals(
         mockedAppDef.teamsAppId
       );
     } else {
-      expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
+      expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
         mockedAppDef.teamsAppId
       );
     }
@@ -674,12 +674,12 @@ describe("provision() happy path for Azure projects", () => {
     };
     const spy = mocker.spy(aadPlugin, "setApplicationInContext");
 
-    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+    expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .undefined;
-    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
-    // mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set("resourceGroupName", resourceGroupName);
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set("subscriptionId", mockedSubscriptionId);
-    mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.set("tenantId", mockedTenantId);
+    expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).to.be.undefined;
+    // mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set("resourceGroupName", resourceGroupName);
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set("subscriptionId", mockedSubscriptionId);
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set("tenantId", mockedTenantId);
     mocker.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
       ok({
         tabEndpoint: "tabEndpoint",
@@ -693,9 +693,9 @@ describe("provision() happy path for Azure projects", () => {
     const result = await solution.provision(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(spy.calledOnce).to.be.true;
-    expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
+    expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .true;
-    // expect(mockedCtx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
+    // expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
     //   mockedAppDef.teamsAppId
     // );
   });
@@ -956,7 +956,7 @@ describe("API v2 implementation", () => {
       const mockedEnvInfo: EnvInfoV2 = {
         envName: "default",
         config: { manifest: { appName: { short: "test-app" } } },
-        profile: {},
+        state: {},
       };
       mockProvisionV2ThatAlwaysSucceed(spfxPluginV2);
       mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);
@@ -1008,7 +1008,7 @@ describe("API v2 implementation", () => {
       const mockedEnvInfo: EnvInfoV2 = {
         envName: "default",
         config: { manifest: { appName: { short: "test-app" } } },
-        profile: {},
+        state: {},
       };
       mockProvisionV2ThatAlwaysSucceed(fehostPluginV2);
       mockProvisionV2ThatAlwaysSucceed(appStudioPluginV2);

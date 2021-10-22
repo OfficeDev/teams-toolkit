@@ -128,7 +128,7 @@ export class FunctionPluginImpl {
     if (isArmSupportEnabled()) {
       this.config.functionAppId = ctx.config.get(FunctionConfigKey.functionAppId) as string;
     } else {
-      const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
+      const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
         DependentPluginInfo.solutionPluginName
       );
       this.config.resourceNameSuffix = solutionConfig?.get(
@@ -882,7 +882,7 @@ export class FunctionPluginImpl {
     if (!isArmSupportEnabled()) {
       FunctionProvision.updateFunctionSettingsSelf(site, functionEndpoint);
 
-      const aadConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
+      const aadConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
         DependentPluginInfo.aadPluginName
       );
       if (this.isPluginEnabled(ctx, DependentPluginInfo.aadPluginName) && aadConfig) {
@@ -919,7 +919,7 @@ export class FunctionPluginImpl {
         );
       }
 
-      const frontendConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
+      const frontendConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
         DependentPluginInfo.frontendPluginName
       );
       if (this.isPluginEnabled(ctx, DependentPluginInfo.frontendPluginName) && frontendConfig) {
@@ -933,10 +933,10 @@ export class FunctionPluginImpl {
         FunctionProvision.updateFunctionSettingsForFrontend(site, frontendEndpoint);
       }
 
-      const sqlConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
+      const sqlConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
         DependentPluginInfo.sqlPluginName
       );
-      const identityConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
+      const identityConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
         DependentPluginInfo.identityPluginName
       );
       if (
@@ -975,7 +975,7 @@ export class FunctionPluginImpl {
       }
     }
 
-    const apimConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
+    const apimConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
       DependentPluginInfo.apimPluginName
     );
     if (this.isPluginEnabled(ctx, DependentPluginInfo.apimPluginName) && apimConfig) {
@@ -991,10 +991,10 @@ export class FunctionPluginImpl {
   }
 
   private collectFunctionAppAuthSettings(ctx: PluginContext): SiteAuthSettings | undefined {
-    const aadConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
+    const aadConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
       DependentPluginInfo.aadPluginName
     );
-    const frontendConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.profile.get(
+    const frontendConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
       DependentPluginInfo.frontendPluginName
     );
 

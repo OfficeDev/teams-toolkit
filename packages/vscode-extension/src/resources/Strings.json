@@ -72,7 +72,9 @@
       "noAzureAccountSignedIn": "No Azure account signed in. Please sign in to Azure.",
       "noSubscriptionFoundInAzureAccount": "The subscription not found or you don't have permission to access it with current Azure account.",
       "previewAdaptiveCard": "Preview and Debug Adaptive Cards",
-      "previewACDesciption": "Preview and author Adaptive Cards directly in Visual Studio Code"
+      "previewACDesciption": "Preview and author Adaptive Cards directly in Visual Studio Code",
+      "grantPermissionSucceeded": "Added account: '%s' to the environment '%s' as a collaborator.",
+      "grantPermissionWarning": "You need to handle Azure resource permissions manually on Azure Portal."
     },
     "handlers": {
       "concurrentTriggerTask": "Task '%s' is still running. Wait for it to complete before starting another task.",

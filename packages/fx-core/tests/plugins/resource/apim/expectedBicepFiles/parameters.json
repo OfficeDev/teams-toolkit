@@ -1,14 +1,14 @@
 {
   "apimClientId": {
-    "value": "{{profile.fx-resource-apim.apimClientAADClientId}}"
+    "value": "{{state.fx-resource-apim.apimClientAADClientId}}"
   },
   "apimClientSecret": {
-    "value": "{{profile.fx-resource-apim.apimClientAADClientSecret}}"
+    "value": "{{state.fx-resource-apim.apimClientAADClientSecret}}"
   },
   "apimPublisherEmail": {
-    "value": "{{profile.fx-resource-apim.publisherEmail}}"
+    "value": "{{state.fx-resource-apim.publisherEmail}}"
   },
   "apimPublisherName": {
-    "value": "{{profile.fx-resource-apim.publisherName}}"
+    "value": "{{state.fx-resource-apim.publisherName}}"
   }
 }

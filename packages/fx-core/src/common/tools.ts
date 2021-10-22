@@ -31,7 +31,7 @@ import * as uuid from "uuid";
 import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
 import * as crypto from "crypto";
-import { FailedToParseResourceIdError } from "..";
+import { FailedToParseResourceIdError, SolutionError } from "..";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -346,6 +346,14 @@ export function isUserCancelError(error: Error): boolean {
   );
 }
 
+export function isCheckAccountError(error: Error): boolean {
+  const errorName = "name" in error ? (error as any)["name"] : "";
+  return (
+    errorName === SolutionError.TeamsAppTenantIdNotRight ||
+    errorName === SolutionError.SubscriptionNotFound
+  );
+}
+
 export async function askSubscription(
   azureAccountProvider: AzureAccountProvider,
   ui: UserInteraction,
@@ -447,7 +455,7 @@ export function compileHandlebarsTemplateString(templateString: string, context:
 
 export async function getAppDirectory(projectRoot: string): Promise<string> {
   const REMOTE_MANIFEST = "manifest.source.json";
-  const MANIFEST_TEMPLATE = "manifest.template.json";
+  const MANIFEST_TEMPLATE = "manifest.remote.template.json";
   const appDirNewLocForMultiEnv = `${projectRoot}/templates/${AppPackageFolderName}`;
   const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
   const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;

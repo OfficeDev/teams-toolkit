@@ -31,8 +31,8 @@ export class ErrorMessages {
  * Config keys that are useful for generating remote teams app manifest
  */
 export const REMOTE_MANIFEST = "manifest.source.json";
-export const MANIFEST_TEMPLATE = "manifest.template.json";
-export const MANIFEST_LOCAL = "manifest.local.json";
+export const MANIFEST_TEMPLATE = "manifest.remote.template.json";
+export const MANIFEST_LOCAL = "manifest.local.template.json";
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
 export const FRONTEND_ENDPOINT_ARM = "frontendHosting_endpoint";
@@ -47,8 +47,8 @@ export const SOLUTION = "solution";
 export const SOLUTION_USERINFO = "userinfo";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.9",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.11",
   "version": "{version}",
   "id": "{appid}",
   "packageName": "com.microsoft.teams.extension",
@@ -87,16 +87,16 @@ export const TEAMS_APP_MANIFEST_TEMPLATE = `{
 }`;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.9",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.11",
   "version": "1.0.0",
-  "id": "{{profile.fx-resource-appstudio.teamsAppId}}",
+  "id": "{{state.fx-resource-appstudio.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{{{profile.fx-resource-frontend-hosting.endpoint}}}",
-      "privacyUrl": "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/privacy",
-      "termsOfUseUrl": "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/termsofuse"
+      "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}",
+      "privacyUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/privacy",
+      "termsOfUseUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -121,14 +121,14 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
   ],
   "validDomains": [],
   "webApplicationInfo": {
-      "id": "{{profile.fx-resource-aad-app-for-teams.clientId}}",
-      "resource": "{{{profile.fx-resource-aad-app-for-teams.applicationIdUris}}}"
+      "id": "{{state.fx-resource-aad-app-for-teams.clientId}}",
+      "resource": "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}"
   }
 }`;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.9",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.11",
   "version": "1.0.0",
   "id": "{{localSettings.teamsApp.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
@@ -283,15 +283,15 @@ export const STATIC_TABS_TPL_FOR_MULTI_ENV: IStaticTab[] = [
   {
     entityId: "index",
     name: "Personal Tab",
-    contentUrl: "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/tab",
-    websiteUrl: "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/tab",
+    contentUrl: "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/tab",
+    websiteUrl: "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/tab",
     scopes: ["personal"],
   },
 ];
 
 export const CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV: IConfigurableTab[] = [
   {
-    configurationUrl: "{{{profile.fx-resource-frontend-hosting.endpoint}}}/index.html#/config",
+    configurationUrl: "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/config",
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },
@@ -299,7 +299,7 @@ export const CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV: IConfigurableTab[] = [
 
 export const COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV: IComposeExtension[] = [
   {
-    botId: "{{profile.fx-resource-bot.botId}}",
+    botId: "{{state.fx-resource-bot.botId}}",
     commands: [
       {
         id: "createCard",
@@ -371,7 +371,7 @@ export const COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV: IComposeExtension[] = [
 ];
 export const BOTS_TPL_FOR_MULTI_ENV: IBot[] = [
   {
-    botId: "{{profile.fx-resource-bot.botId}}",
+    botId: "{{state.fx-resource-bot.botId}}",
     scopes: ["personal", "team", "groupchat"],
     supportsFiles: false,
     isNotificationOnly: false,

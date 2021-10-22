@@ -100,19 +100,19 @@ describe("Start a new project", function () {
       AppStudioValidator.validateTeamsAppExist(appStudio);
     }
 
-    // deploy
-    await execAsyncWithRetry(`teamsfx deploy --env ${env}`, {
-      cwd: projectPath,
-      env: processEnv,
-      timeout: 0,
-    });
+    // // deploy
+    // await execAsyncWithRetry(`teamsfx deploy --env ${env}`, {
+    //   cwd: projectPath,
+    //   env: processEnv,
+    //   timeout: 0,
+    // });
 
-    {
-      // Validate sharepoint package, see fx-core/src/plugins/resource/spfx/plugin.ts: SPFxPluginImpl.buildSPPackge()
-      const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
-      const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
-      expect(await fs.pathExists(sharepointPackage)).to.be.true;
-    }
+    // {
+    //   // Validate sharepoint package, see fx-core/src/plugins/resource/spfx/plugin.ts: SPFxPluginImpl.buildSPPackge()
+    //   const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
+    //   const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
+    //   expect(await fs.pathExists(sharepointPackage)).to.be.true;
+    // }
 
     // validate manifest
     result = await execAsyncWithRetry(`teamsfx validate --env ${env}`, {

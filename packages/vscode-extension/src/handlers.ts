@@ -73,7 +73,12 @@ import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
-import { anonymizeFilePaths, isSPFxProject, syncFeatureFlags } from "./utils/commonUtils";
+import {
+  anonymizeFilePaths,
+  getTeamsAppIdByEnv,
+  isSPFxProject,
+  syncFeatureFlags,
+} from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { DepsChecker } from "./debug/depsChecker/checker";
@@ -108,6 +113,7 @@ import { ext } from "./extensionVariables";
 import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
 import { CoreCallbackEvent } from "@microsoft/teamsfx-api";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
+import graphLogin from "./commonlib/graphLogin";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -200,11 +206,12 @@ export async function activate(): Promise<Result<Void, FxError>> {
       return Promise.resolve();
     };
     appstudioLogin.setStatusChangeMap("successfully-sign-in-m365", m365NotificationCallback, false);
-    // sharepointLogin.setStatusChangeMap(
-    //   "successfully-sign-in-m365",
-    //   m365NotificationCallback,
-    //   false
-    // );
+    sharepointLogin.setStatusChangeMap(
+      "successfully-sign-in-m365",
+      m365NotificationCallback,
+      false
+    );
+    graphLogin.setStatusChangeMap("successfully-sign-in-m365", m365NotificationCallback, false);
     tools = {
       logProvider: VsCodeLogInstance,
       tokenProvider: {
@@ -216,6 +223,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
       telemetryReporter: telemetry,
       treeProvider: TreeViewManagerInstance.getTreeView("teamsfx-accounts")!,
       ui: VS_CODE_UI,
+      expServiceProvider: exp.getExpService(),
     };
     core = new FxCore(tools);
     registerCoreEvents();
@@ -378,7 +386,7 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
     namespace: "fx-solution-azure",
     method: "addResource",
   };
-  return await runUserTask(func, TelemetryEvent.AddResource, true);
+  return await runUserTask(func, TelemetryEvent.AddResource, isMultiEnvEnabled());
 }
 
 export async function addCapabilityHandler(args: any[]): Promise<Result<null, FxError>> {
@@ -573,6 +581,9 @@ async function processResult(
   const envProperty: { [key: string]: string } = {};
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
+    if (isMultiEnvEnabled()) {
+      envProperty[TelemetryProperty.AapId] = getTeamsAppIdByEnv(inputs.env);
+    }
   }
 
   if (result.isErr()) {
@@ -755,6 +766,11 @@ export async function openDocumentHandler(args: any[]): Promise<boolean> {
 export async function openWelcomeHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
   WebviewPanel.createOrShow(PanelType.QuickStart);
+}
+
+export async function checkUpgrade(args?: any[]) {
+  // just for triggering upgrade check for multi-env && bicep.
+  await runCommand(Stage.listCollaborator);
 }
 
 export async function openSurveyHandler(args?: any[]) {
@@ -1050,9 +1066,17 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       throw result.error;
     }
     if (result.value.state === CollaborationState.OK) {
-      window.showInformationMessage(
-        `Added account: '${inputs.email}' to the environment '${env}' as a collaborator`
+      const grantSucceededMsg = util.format(
+        StringResources.vsc.commandsTreeViewProvider.grantPermissionSucceeded,
+        inputs.email,
+        env
       );
+
+      const warningMsg = StringResources.vsc.commandsTreeViewProvider.grantPermissionWarning;
+      window.showInformationMessage(grantSucceededMsg + " " + warningMsg);
+
+      VsCodeLogInstance.info(grantSucceededMsg);
+      VsCodeLogInstance.warning(warningMsg);
 
       await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {
@@ -1445,7 +1469,11 @@ export async function openAdaptiveCardExt() {
   const extension = vscode.extensions.getExtension(acExtId);
   if (!extension) {
     vscode.window
-      .showInformationMessage(StringResources.vsc.handlers.installAdaptiveCardExt, "Yes", "No")
+      .showInformationMessage(
+        StringResources.vsc.handlers.installAdaptiveCardExt,
+        "Install",
+        "Cancel"
+      )
       .then(async (selection) => {
         if (selection == "Yes") {
           await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId);

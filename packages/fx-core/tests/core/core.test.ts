@@ -148,6 +148,10 @@ describe("Core basic APIs", () => {
   });
 
   describe("migrateV1", () => {
+    if (commonTools.isMultiEnvEnabled()) {
+      // TODO: add multi-env test case after migrateV1 for mult-env implemented
+      return;
+    }
     let mockedEnvRestore: RestoreFn;
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });
@@ -238,7 +242,7 @@ describe("Core basic APIs", () => {
           const validRes = validateProject(solutionContext);
           assert.isTrue(validRes === undefined);
 
-          const solutioConfig = solutionContext.envInfo.profile.get("solution");
+          const solutioConfig = solutionContext.envInfo.state.get("solution");
           assert.isTrue(solutioConfig !== undefined);
         }
       });

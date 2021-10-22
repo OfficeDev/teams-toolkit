@@ -17,7 +17,7 @@ describe("tools", () => {
     expect(result).to.be.not.null;
     expect(result.envName).to.be.not.empty;
     expect(result.config).to.be.not.null;
-    expect(result.profile).to.be.not.null;
+    expect(result.state).to.be.not.null;
   });
 
   it("is not valid project", () => {

@@ -59,7 +59,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.base_ref }}
-          repository: ${{github.event.pull_request.head.repo.full_name}}
+          repository: ${{github.event.pull_request.base.repo.full_name}}
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -176,3 +176,53 @@ jobs:
             --entity PartitionKey=TeamsFx RowKey=${{ github.run_id }}_fx-core_fx-solution Package=solution/fx-solution GitBranch=${{ github.ref }} Type=unit_test LinesPct=$(get_pct solution/fx-solution 'Lines') BranchesPct=$(get_pct solution/fx-solution 'Branches') StatementsPct=$(get_pct solution/fx-solution 'Statements') FunctionsPct=$(get_pct solution/fx-solution 'Functions') \
             --if-exists replace \
             --table-name TestCoverage
+
+  multi-env-test:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    outputs:
+      coverages: ${{ steps.unit-test.outputs.coverages }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.head_ref }}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: Unit Test
+        id: unit-test
+        shell: bash
+        run: |
+          export TEAMSFX_INSIDER_PREVIEW=true
+          # replace with this eventually: xvfb-run -a npx lerna run test:unit
+          cd packages/fx-core
+          xvfb-run -a npx nyc mocha \
+            "tests/core/**/*.test.ts" \
+            "tests/plugins/resource/appstudio/**/*.test.ts" \
+            "tests/plugins/resource/function/**/*.test.ts" \
+            "tests/plugins/resource/sql/**/*.test.ts" \
+            "tests/plugins/resource/aad/**/*.test.ts" \
+            "tests/plugins/resource/simpleauth/**/*.test.ts" \
+            "tests/plugins/resource/frontend/**/*.test.ts"
+          cd -
+
+          coverages="{}"
+          for i in $(find . -name coverage-summary.json); do
+            coverages=$(echo $coverages | jq -rc --arg package $(basename $(dirname $(dirname $i))) --argjson total $(jq -cr '.total' $i) '.[$package]= $total')
+          done  
+          echo $coverages
+          echo "::set-output name=coverages::$coverages"

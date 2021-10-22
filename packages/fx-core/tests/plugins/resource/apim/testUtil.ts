@@ -205,18 +205,15 @@ export class MockPluginContext implements PluginContext {
     );
     this.azureAccountProvider = new MockAzureAccountProvider();
     this.envInfo = newEnvInfo();
-    this.envInfo.profile.set(
-      TeamsToolkitComponent.Solution,
-      new Map(Object.entries(solutionConfig))
-    );
+    this.envInfo.state.set(TeamsToolkitComponent.Solution, new Map(Object.entries(solutionConfig)));
     this.app.name.short = appName;
 
     if (aadConfig) {
-      this.envInfo.profile.set(TeamsToolkitComponent.AadPlugin, new Map(Object.entries(aadConfig)));
+      this.envInfo.state.set(TeamsToolkitComponent.AadPlugin, new Map(Object.entries(aadConfig)));
     }
 
     if (functionConfig) {
-      this.envInfo.profile.set(
+      this.envInfo.state.set(
         TeamsToolkitComponent.FunctionPlugin,
         new Map(Object.entries(functionConfig))
       );

@@ -119,7 +119,7 @@ export async function isMigrateFromV1Project(workspacePath?: string): Promise<bo
 export function newEnvInfo(
   envName?: string,
   config?: EnvConfig,
-  profile?: Map<string, any>
+  state?: Map<string, any>
 ): EnvInfo {
   return {
     envName: envName ?? environmentManager.getDefaultEnvName(),
@@ -130,7 +130,7 @@ export function newEnvInfo(
         },
       },
     },
-    profile: profile ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
+    state: state ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
   };
 }
 

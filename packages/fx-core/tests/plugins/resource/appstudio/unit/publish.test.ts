@@ -7,25 +7,14 @@ import sinon from "sinon";
 import fs from "fs-extra";
 import path from "path";
 import { v4 as uuid } from "uuid";
-import {
-  ConfigMap,
-  PluginContext,
-  ok,
-  Platform,
-  TeamsAppManifest,
-  Plugin,
-} from "@microsoft/teamsfx-api";
+import { ConfigMap, PluginContext, ok, Platform, Plugin } from "@microsoft/teamsfx-api";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
-import { AppStudioError } from "./../../../../../src/plugins/resource/appstudio/errors";
 import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { PublishingState } from "./../../../../../src/plugins/resource/appstudio/interfaces/IPublishingAppDefinition";
 import { mockTokenProvider } from "./../../aad/helper";
-import { MockUserInteraction } from "./../helper";
+import { getAzureProjectRoot, MockUserInteraction } from "./../helper";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
-import { ResourcePlugins } from "../../../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import Container from "typedi";
-import { environmentManager } from "../../../../../src/core/environment";
 import { newEnvInfo } from "../../../../../src";
 import * as core from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
@@ -41,7 +30,7 @@ describe("Publish Teams app with Azure", () => {
   beforeEach(async () => {
     plugin = new AppStudioPlugin();
     ctx = {
-      root: path.resolve(__dirname, "./../resources"),
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       appStudioToken: mockTokenProvider(),
@@ -58,6 +47,7 @@ describe("Publish Teams app with Azure", () => {
         activeResourcePlugins: ["fx-resource-bot"],
       },
     };
+
     const botplugin: Plugin = new TeamsBot();
     BotPlugin = botplugin as Plugin;
     BotPlugin.name = "fx-resource-bot";

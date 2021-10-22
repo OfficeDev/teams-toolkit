@@ -18,3 +18,4 @@ node_modules
 !out/templates/**
 coverage
 .coverconfig.json
+img/**

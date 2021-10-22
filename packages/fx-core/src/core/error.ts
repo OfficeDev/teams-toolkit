@@ -255,6 +255,14 @@ export function ProjectSettingError(): UserError {
   return new UserError("ProjectSettingError", "Load project settings failed.", CoreSource);
 }
 
+export function UpgradeCanceledError(): UserError {
+  return new UserError(
+    "UpgradeCanceledError",
+    "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 2.7.0).",
+    CoreSource
+  );
+}
+
 export function FailedToParseResourceIdError(name: string, resourceId: string): UserError {
   return new UserError(
     "FailedToParseResourceIdError",

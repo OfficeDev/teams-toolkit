@@ -203,7 +203,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       ]);
     }
 
-    await registerEnvTreeHandler();
     return ok(null);
   };
 
@@ -242,7 +241,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       }
     }
 
-    await registerEnvTreeHandler();
     return ok(null);
   };
 
@@ -307,6 +305,26 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   tools.tokenProvider.sharepointTokenProvider?.setStatusChangeMap("tree-view", m365AccountCallback);
   tools.tokenProvider.graphTokenProvider?.setStatusChangeMap("tree-view", m365AccountCallback);
 
+  tools.tokenProvider.appStudioToken?.setStatusChangeMap(
+    "refresh-environment",
+    async (status: string) => {
+      if (status === "SignedIn" || status === "SignedOut") {
+        await registerEnvTreeHandler();
+      }
+    },
+    false
+  );
+
+  tools.tokenProvider.azureAccountProvider?.setStatusChangeMap(
+    "refresh-environment",
+    async (status: string) => {
+      if (status === "SignedIn" || status === "SignedOut") {
+        await registerEnvTreeHandler(false);
+      }
+    },
+    false
+  );
+
   tools.tokenProvider.azureAccountProvider?.setStatusChangeMap(
     "tree-view",
     async (
@@ -358,7 +376,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
             parent: "fx-extension.signinAzure",
           },
         ]);
-        await registerEnvTreeHandler();
       }
 
       return Promise.resolve();

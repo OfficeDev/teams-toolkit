@@ -66,6 +66,9 @@ import {
 import { TeamsClientId } from "../../../common/constants";
 import { ProjectSettingLoader } from "./projectSettingLoader";
 import "./v2";
+
+const PackageJson = require("@npmcli/package-json");
+
 @Service(ResourcePlugins.LocalDebugPlugin)
 export class LocalDebugPlugin implements Plugin {
   name = "fx-resource-local-debug";
@@ -202,15 +205,37 @@ export class LocalDebugPlugin implements Plugin {
             ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, "");
           }
         } else {
-          // multi-env, prepare .env.teamsfx.local
-          const localEnvMultiProvider = new LocalEnvMultiProvider(ctx.root);
-          await localEnvMultiProvider.saveLocalEnvs(
-            includeFrontend
-              ? localEnvMultiProvider.initFrontendLocalEnvs(includeBackend, includeAuth)
-              : undefined,
-            includeBackend ? localEnvMultiProvider.initBackendLocalEnvs() : undefined,
-            includeBot ? localEnvMultiProvider.initBotLocalEnvs(isMigrateFromV1) : undefined
-          );
+          // add 'npm install' scripts into root package.json
+          const packageJsonPath = ctx.root;
+          let packageJson: any = undefined;
+          try {
+            packageJson = await PackageJson.load(packageJsonPath);
+          } catch (error) {
+            ctx.logProvider?.error(`Cannot load package.json from ${ctx.root}. ${error}`);
+          }
+
+          if (packageJson !== undefined) {
+            const scripts = packageJson.content.scripts ?? {};
+            const installAll: string[] = [];
+
+            if (includeBackend) {
+              scripts["install:api"] = "cd api && npm install";
+              installAll.push("npm run install:api");
+            }
+            if (includeBot) {
+              scripts["install:bot"] = "cd bot && npm install";
+              installAll.push("npm run install:bot");
+            }
+            if (includeFrontend) {
+              scripts["install:tabs"] = "cd tabs && npm install";
+              installAll.push("npm run install:tabs");
+            }
+
+            scripts["installAll"] = installAll.join(" & ");
+
+            packageJson.update({ scripts: scripts });
+            await packageJson.save();
+          }
         }
 
         if (includeBackend) {

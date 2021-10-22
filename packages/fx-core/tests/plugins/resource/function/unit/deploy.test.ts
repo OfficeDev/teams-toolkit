@@ -20,7 +20,7 @@ import { FunctionDeploy } from "../../../../../src/plugins/resource/function/ops
 import { FunctionLanguage } from "../../../../../src/plugins/resource/function/enums";
 import { FunctionPlugin } from "../../../../../src/plugins/resource/function";
 import { Platform } from "@microsoft/teamsfx-api";
-import { newEnvInfo } from "../../../../../src";
+import { isArmSupportEnabled, newEnvInfo } from "../../../../../src";
 
 const context: any = {
   envInfo: newEnvInfo(
@@ -83,7 +83,17 @@ const context: any = {
     appName: "ut",
     programmingLanguage: "javascript",
   },
-  config: new Map<string, string>([["functionAppName", "ut"]]),
+  config: new Map<string, string>([
+    ["functionAppName", "ut"],
+    ...((isArmSupportEnabled()
+      ? [
+          [
+            "functionAppId",
+            "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Web/sites/ut",
+          ],
+        ]
+      : ([] as [string, string][])) as [string, string][]),
+  ]),
   azureAccountProvider: {
     getAccountCredentialAsync: async () => ({
       signRequest: () => {

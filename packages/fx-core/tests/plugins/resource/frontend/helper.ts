@@ -11,10 +11,14 @@ import {
 import { v4 as uuid } from "uuid";
 
 import { AzureStorageClient } from "../../../../src/plugins/resource/frontend/clients";
-import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/constants";
+import {
+  ArmOutput,
+  DependentPluginInfo,
+  FrontendConfigInfo,
+} from "../../../../src/plugins/resource/frontend/constants";
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
 import { StorageAccountsCreateResponse } from "@azure/arm-storage/esm/models";
-import { newEnvInfo } from "../../../../src";
+import { ARM_TEMPLATE_OUTPUT, isArmSupportEnabled, newEnvInfo } from "../../../../src";
 import { LocalCrypto } from "../../../../src/core/crypto";
 
 export class TestHelper {
@@ -24,6 +28,7 @@ export class TestHelper {
   static rootDir: string = faker.system.directoryPath();
   static storageSuffix: string = uuid().substr(0, 6);
   static storageEndpoint: string = faker.internet.url();
+  static storageResourceId = `/subscriptions/${uuid()}/resourceGroups/app-test-rg/providers/Microsoft.Storage/storageAccounts/teststorage`;
   static functionDefaultEntry = "httpTrigger";
   static functionEndpoint: string = faker.internet.url();
   static runtimeEndpoint: string = faker.internet.url();
@@ -129,7 +134,23 @@ export class TestHelper {
 
   static async getFakeAzureStorageClient(ctx?: PluginContext): Promise<AzureStorageClient> {
     ctx ??= TestHelper.getFakePluginContext();
+    if (isArmSupportEnabled()) {
+      ctx.config.set(FrontendConfigInfo.StorageResourceId, TestHelper.storageResourceId);
+    }
     const config = await TestHelper.getFakeFrontendConfig(ctx);
     return new AzureStorageClient(config);
+  }
+
+  static mockArmOutput(ctx: PluginContext, key: string, value: string) {
+    const solutionProfile = ctx.envInfo.state.get("solution") ?? new Map();
+    const armOutput = solutionProfile[ARM_TEMPLATE_OUTPUT] ?? {};
+
+    armOutput[key] = {
+      type: "String",
+      value: value,
+    };
+
+    solutionProfile.set(ARM_TEMPLATE_OUTPUT, armOutput);
+    ctx.envInfo.state.set("solution", solutionProfile);
   }
 }

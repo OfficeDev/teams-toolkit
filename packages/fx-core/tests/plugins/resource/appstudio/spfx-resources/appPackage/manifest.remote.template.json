@@ -1,6 +1,6 @@
 {
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.9",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.11",
   "packageName": "<%= componentNameUnescaped %>",
   "id": "{{state.fx-resource-appstudio.teamsAppId}}",
   "version": "1.0.0",

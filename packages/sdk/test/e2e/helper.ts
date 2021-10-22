@@ -107,6 +107,16 @@ export function MockEnvironmentVariable(): () => void {
 export function RestoreEnvironmentVariable(restore: () => void): void {
   restore();
 }
+
+/**
+ * Convert one-line certificate content to original format
+ * @param content - certificate content of one-line format
+ * @returns
+ */
+export function convertCertificateContent(content: string): string {
+  return content.replace(/\\n/g, "\n");
+}
+
 export interface AADJwtPayLoad extends JwtPayload {
   appid?: string;
   idtyp?: string;

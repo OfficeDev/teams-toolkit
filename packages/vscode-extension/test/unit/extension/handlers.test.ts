@@ -443,7 +443,6 @@ suite("handlers", () => {
       const result = await handlers.listAllCollaborators(["env"]);
       chai.assert.equal(result["env"][0].label, "error");
       chai.assert.equal(result["env"][0].commandId, "fx-extension.listcollaborator.env");
-      chai.assert.equal(result["env"][0].icon, "warning");
       chai.assert.equal(result["env"][0].isCustom, true);
       sinon.restore();
     });
@@ -466,7 +465,6 @@ suite("handlers", () => {
       const result = await handlers.listAllCollaborators(["env"]);
       chai.assert.equal(result["env"][0].label, "No permission to list collaborators");
       chai.assert.equal(result["env"][0].commandId, "fx-extension.listcollaborator.env");
-      chai.assert.equal(result["env"][0].icon, "warning");
       chai.assert.equal(result["env"][0].isCustom, true);
       sinon.restore();
     });

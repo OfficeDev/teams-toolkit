@@ -1,19 +1,19 @@
 {
-  "name": "teamsfx-template-api",
-  "version": "1.0.0",
-  "scripts": {
-    "build": "tsc",
-    "watch": "tsc -w",
-    "prestart": "npm run build",
-    "start": "npx func start"
-  },
-  "dependencies": {
-    "@azure/functions": "^1.2.2",
-    "@microsoft/microsoft-graph-client": "^2.2.1",
-    "@microsoft/teamsfx": "^0.2.0",
-    "isomorphic-fetch": "^3.0.0"
-  },
-  "devDependencies": {
-    "typescript": "^3.3.3"
-  }
+    "name": "teamsfx-template-api",
+    "version": "1.0.0",
+    "scripts": {
+        "build": "tsc",
+        "watch": "tsc -w",
+        "prestart": "npm run build",
+        "start": "npx func start"
+    },
+    "dependencies": {
+        "@azure/functions": "^1.2.2",
+        "@microsoft/microsoft-graph-client": "^2.2.1",
+        "@microsoft/teamsfx": "^0.3.0",
+        "isomorphic-fetch": "^3.0.0"
+    },
+    "devDependencies": {
+        "typescript": "^3.3.3"
+    }
 }

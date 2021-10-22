@@ -768,6 +768,11 @@ export async function openWelcomeHandler(args?: any[]) {
   WebviewPanel.createOrShow(PanelType.QuickStart);
 }
 
+export async function checkUpgrade(args?: any[]) {
+  // just for triggering upgrade check for multi-env && bicep.
+  await runCommand(Stage.listCollaborator);
+}
+
 export async function openSurveyHandler(args?: any[]) {
   WebviewPanel.createOrShow(PanelType.Survey);
 }

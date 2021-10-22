@@ -26,6 +26,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   environmentManager,
+  isArmSupportEnabled,
   isMultiEnvEnabled,
   isValidProject,
   PluginNames,
@@ -356,5 +357,24 @@ async function getProvisionResultJson(env: string): Promise<Json | undefined> {
     const provisionResult = await fs.readJSON(provisionOutputFile);
 
     return provisionResult;
+  }
+}
+
+export async function canUpgradeToArmAndMultiEnv(workspacePath?: string): Promise<boolean> {
+  if (!workspacePath) return false;
+  try {
+    if (!isArmSupportEnabled() || !isMultiEnvEnabled()) return false;
+    const fx = path.join(workspacePath, ".fx");
+    if (!(await fs.pathExists(fx))) {
+      return false;
+    }
+    const envFileExist = await fs.pathExists(path.join(fx, "env.default.json"));
+    const configDirExist = await fs.pathExists(path.join(fx, "configs"));
+    const armParameterExist = await fs.pathExists(
+      path.join(fx, "configs", "azure.parameters.dev.json")
+    );
+    return envFileExist && (!armParameterExist || !configDirExist);
+  } catch (err) {
+    return false;
   }
 }

@@ -226,6 +226,10 @@ jobs:
           xvfb-run -a npm run test:unit
           cd -
 
+          cd packages/vscode-extension
+          xvfb-run -a npm run test:unit
+          cd -
+
           coverages="{}"
           for i in $(find . -name coverage-summary.json); do
             coverages=$(echo $coverages | jq -rc --arg package $(basename $(dirname $(dirname $i))) --argjson total $(jq -cr '.total' $i) '.[$package]= $total')

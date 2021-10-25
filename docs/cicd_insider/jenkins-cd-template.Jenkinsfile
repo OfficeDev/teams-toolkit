@@ -42,7 +42,7 @@ pipeline {
         // If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
         stage('Build the project') {
             steps {
-                sh 'cd tabs && npm ci && npm run build'
+                sh 'cd tabs && npm ci && npm run build && cd -'
             }
         }
 
@@ -51,13 +51,13 @@ pipeline {
         // set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
         stage('Run unit test') {
             steps {
-                sh 'cd tabs && npm run test'
+                sh 'cd tabs && npm run test && cd -'
             }
         }
 
         // We suggest to do the `npx teamsfx provision` step manually or in a separate pipeline. The following steps are for your reference.
         // After provisioning, you should commit necessary files under .fx into the repository.
-        // You should copy content of .fx/publishProfiles/${TEAMSFX_ENV_NAME}.userdata into credentials (https://www.jenkins.io/doc/book/using/using-credentials/) which can be refered by the stage with name 'Generate userdata'. 
+        // You should copy content of .fx/states/${TEAMSFX_ENV_NAME}.userdata into credentials (https://www.jenkins.io/doc/book/using/using-credentials/) which can be refered by the stage with name 'Generate userdata'. 
         // stage('Provision hosting environment') {
         //     steps {
         //         sh 'npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID} --env ${TEAMSFX_ENV_NAME}'
@@ -74,7 +74,7 @@ pipeline {
 
         // stage('Upload userdata as artifact') {
         //     steps {
-        //         archiveArtifacts artifacts: '.fx/staging.userdata'
+        //         archiveArtifacts artifacts: '.fx/states/staging.userdata'
         //     }
         // }
 
@@ -83,7 +83,7 @@ pipeline {
                 USERDATA_CONTENT = credentials('USERDATA_CONTENT')
             }
             steps {
-                sh '[ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/publishProfiles/${TEAMSFX_ENV_NAME}.userdata'
+                sh '[ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/states/${TEAMSFX_ENV_NAME}.userdata'
             }
         }
 

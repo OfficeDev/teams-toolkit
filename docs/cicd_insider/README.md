@@ -29,7 +29,7 @@ You may want to change:
 1. Change the build scripts if necessary.
 1. Remove the test scripts if you don't have tests.
 
-> Note: The provision step is expected to run separately by hand or by workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save the file content of `.fx/publishProfiles/{YOUR_ENV_NAME}.userdata` into GitHub [repository secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) for future usage.
+> Note: The provision step is expected to run separately by hand or by workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save the file content of `.fx/states/{YOUR_ENV_NAME}.userdata` into GitHub [repository secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) for future usage.
 
 ### Environment Variables
 Steps to create environment variables in GitHub:
@@ -76,7 +76,7 @@ You may want to change:
 1. Change the build scripts if necessary.
 1. Remove the test scripts if you don't have tests.
 
-> Note: The provision step is expected to run separately by hand or by pipeline. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save the file content of `.fx/publishProfiles/{YOUR_ENV_NAME}.userdata` into Jenkins credentials for future usage.
+> Note: The provision step is expected to run separately by hand or by pipeline. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save the file content of `.fx/states/{YOUR_ENV_NAME}.userdata` into Jenkins credentials for future usage.
 
 ### Environment Variables
 Please follow [using-credentials](https://www.jenkins.io/doc/book/using/using-credentials/) to create credentials on Jenkins.

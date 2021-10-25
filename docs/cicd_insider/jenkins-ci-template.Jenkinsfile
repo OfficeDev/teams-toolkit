@@ -16,7 +16,7 @@ pipeline {
         // If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
         stage('Build the project') {
             steps {
-                sh 'cd tabs && npm ci && npm run build'
+                sh 'cd tabs && npm ci && npm run build && cd -'
             }
         }
 
@@ -25,7 +25,7 @@ pipeline {
         // set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
         stage('Run Unit Test') {
             steps {
-                sh 'cd tabs && npm run test'
+                sh 'cd tabs && npm run test && cd -'
             }
         }
     }

@@ -22,6 +22,7 @@ export TEAMSFX_ENV_NAME=staging
 
 # Setup environment.
 # Sufficient permissions are required to run the commands below.
+# The following command is expected to run on Ubuntu 16.04 or newer versions, and please adapt it if necessary.
 apt install -y nodejs npm git
 
 # Checkout the code.
@@ -38,16 +39,16 @@ npm ci
 # Build the project.
 # The way to build the current project depends on how you scaffold it.
 # Different folder structures require different commands set.
-cd tabs && npm ci && npm run build
+cd tabs && npm ci && npm run build && cd -
 
 # Run unit test.
 # Currently, no opinioned solution for unit test provided during scaffolding, so,
 # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
-npm run test
+cd tabs && npm run test && cd -
 
 # We suggest to do the provision steps by case manually or in a separated workflow, so just comment the following steps for references.
 # After provisioning, you should commit necessary files under .fx into the repository.
-# You should copy content of .fx/publishProfiles/${TEAMSFX_ENV_NAME}.userdata, and export them in your environment which can be refered by the step with name 'Generate userdata'. 
+# You should copy content of .fx/states/${TEAMSFX_ENV_NAME}.userdata, and export them in your environment which can be refered by the step with name 'Generate userdata'. 
 
 # Provision hosting environment.
 # npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID} --env ${TEAMSFX_ENV_NAME}
@@ -58,10 +59,10 @@ npm run test
 # git push
 
 # Generate userdata
-[ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/publishProfiles/${TEAMSFX_ENV_NAME}.userdata
+[ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/states/${TEAMSFX_ENV_NAME}.userdata
 
 # Deploy to hosting environment.
-cd .. && npx teamsfx deploy --env ${TEAMSFX_ENV_NAME}
+npx teamsfx deploy --env ${TEAMSFX_ENV_NAME}
 
 # This step is to pack the Teams App as zip file,
 # which can be used to be uploaded onto Teams Client for installation.

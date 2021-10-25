@@ -24,11 +24,11 @@ jobs:
       # 'npm ci' is used here to install dependencies and it depends on package-lock.json.
       # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
       - name: Build the project
-        run: cd tabs && npm ci && npm run build
+        run: cd tabs && npm ci && npm run build && cd -
 
       # Run unit test.
       # Currently, no opinionated solution for unit test provided during scaffolding, so,
       # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
       - name: Run Unit Test
-        run: cd tabs && npm run test
+        run: cd tabs && npm run test && cd -
  

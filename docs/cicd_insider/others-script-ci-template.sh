@@ -8,6 +8,7 @@ set -euxo pipefail
 # The `apt install` command is supposed to run inside the latest ubuntu system.
 # If you're using other platforms, please customize the command to set up your environment.
 # Sufficient permissions are required to run the command below.
+# The following command is expected to run on Ubuntu 16.04 or newer versions, and please adapt it if necessary.
 apt install -y nodejs npm
 
 # Checkout the code.
@@ -21,9 +22,9 @@ cd {FolderName}
 # Different folder structures require different commands set.
 # 'npm ci' is used here to install dependencies and it depends on package-lock.json.
 # If you prefer to use 'npm ci', please make sure to commit package-lock.json first, or just change it to 'npm install'.
-cd tabs && npm ci && npm run build
+cd tabs && npm ci && npm run build && cd -
 
 # Run unit test.
 # Currently, no opinionated solution for unit test provided during scaffolding, so,
 # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
-npm run test
+cd tabs && npm run test && cd -

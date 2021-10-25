@@ -91,7 +91,7 @@ export async function provisionResource(
 
   const newEnvInfo: EnvInfoV2 = _.cloneDeep(envInfo);
   if (!newEnvInfo.state[GLOBAL_CONFIG]) {
-    newEnvInfo.state[GLOBAL_CONFIG] = {};
+    newEnvInfo.state[GLOBAL_CONFIG] = { output: {}, secrets: {} };
   }
   if (isAzureProject(azureSolutionSettings)) {
     const appName = ctx.projectSetting.appName;

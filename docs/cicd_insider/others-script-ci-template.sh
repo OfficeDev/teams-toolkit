@@ -5,8 +5,6 @@ set -euxo pipefail
 # You should customize it to meet your own requirements.
 
 # Setup environment.
-# The `apt install` command is supposed to run inside the latest ubuntu system.
-# If you're using other platforms, please customize the command to set up your environment.
 # Sufficient permissions are required to run the command below.
 # The following command is expected to run on Ubuntu 16.04 or newer versions, and please adapt it if necessary.
 apt install -y nodejs npm

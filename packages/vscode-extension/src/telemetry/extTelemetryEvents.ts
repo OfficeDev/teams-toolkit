@@ -121,6 +121,7 @@ export enum TelemetryEvent {
 
   ShowLocalDebugNotification = "show-local-debug-notification",
   ClickLocalDebug = "click-local-debug",
+  ClickChangeLocation = "click-change-location",
 }
 
 export enum TelemetryProperty {

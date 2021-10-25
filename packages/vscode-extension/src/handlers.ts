@@ -875,15 +875,29 @@ async function showLocalDebugMessage() {
       },
     };
 
+    const config = {
+      title: StringResources.vsc.handlers.configTitle,
+      run: async (): Promise<void> => {
+        commands.executeCommand(
+          "workbench.action.openSettings",
+          "fx-extension.defaultProjectRootDirectory"
+        );
+      },
+    };
+
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
     vscode.window
       .showInformationMessage(
-        util.format(StringResources.vsc.handlers.localDebugDescription),
+        util.format(StringResources.vsc.handlers.localDebugDescription, getWorkspacePath()),
+        config,
         localDebug
       )
       .then((selection) => {
         if (selection?.title === StringResources.vsc.handlers.localDebugTitle) {
           ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
+          selection.run();
+        } else if (selection?.title === StringResources.vsc.handlers.configTitle) {
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickChangeLocation);
           selection.run();
         }
       });

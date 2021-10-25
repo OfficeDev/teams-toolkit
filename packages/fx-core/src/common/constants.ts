@@ -37,4 +37,5 @@ export class FeatureFlagName {
   static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
   static readonly APIV2 = "TEAMSFX_APIV2";
   static readonly InsiderPreview = "TEAMSFX_INSIDER_PREVIEW";
+  static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
 }

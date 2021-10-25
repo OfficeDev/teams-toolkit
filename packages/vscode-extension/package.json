@@ -643,6 +643,10 @@
             "type": "boolean",
             "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
             "default": true
+          },
+          "fx-extension.defaultProjectRootDirectory":{
+            "type":"string",
+            "description": "Set the location to create new projects. By default, the root directory is $HOME/TeamsApps. (requries reload of VS Code)"
           }
         }
       }

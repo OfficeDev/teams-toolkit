@@ -474,9 +474,6 @@ describe("Deploy ARM Template to Azure", () => {
     // Assert
     chai.assert.isTrue(result.isOk());
     expect(armTemplateJson).to.deep.equals(JSON.parse(mockedArmTemplateJson));
-    // chai.assert.equal(armTemplateJson, JSON.parse(mockedArmTemplateJson));
-    // console.log(armTemplateJson);
-    // console.log(JSON.parse(mockedArmTemplateJson));
     chai.assert.isNotNull(parameterAfterDeploy);
     expect(parameterAfterDeploy).to.deep.equals(
       JSON.parse(`{

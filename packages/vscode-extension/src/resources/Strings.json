@@ -155,6 +155,7 @@
     "localDebug": {
       "portAlreadyInUse": "Port: %s is already in use. Close this port and try again.",
       "portsAlreadyInUse": "Ports: %s are already in use. Close these ports and try again.",
+      "portWarning": "Changing port(s) in package.json may break local debug. Ensure all port changes are expected or refer to documentation by clicking `Learn More` button. (%s package.json location: %s)",
       "sideloadingHintDoNotShowAgain": "Don't Show Again",
       "openFAQ": "Open FAQ",
       "sideloadingHintMessage": "If any error occurs during local debug, you can refer to the FAQ page by clicking 'Open FAQ' button.",

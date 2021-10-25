@@ -7,6 +7,7 @@ import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
 import { ConfigFolderName, Func, InputConfigsFolderName } from "@microsoft/teamsfx-api";
+import VsCodeLogInstance from "../commonlib/log";
 import { core, getSystemInputs, showError } from "../handlers";
 import * as net from "net";
 import { ext } from "../extensionVariables";
@@ -258,11 +259,22 @@ export async function getPortsInUse(): Promise<number[]> {
     }
     const backendRoot = await getProjectRoot(workspacePath, constants.backendFolderName);
     if (backendRoot) {
-      ports.push(...constants.backendPorts);
+      ports.push(...constants.backendServicePorts);
+      const backendDevScript = await loadTeamsFxDevScript(backendRoot);
+      if (
+        backendDevScript === undefined ||
+        constants.backendDebugPortRegex.test(backendDevScript)
+      ) {
+        ports.push(...constants.backendDebugPorts);
+      }
     }
     const botRoot = await getProjectRoot(workspacePath, constants.botFolderName);
     if (botRoot) {
-      ports.push(...constants.botPorts);
+      ports.push(...constants.botServicePorts);
+      const botDevScript = await loadTeamsFxDevScript(botRoot);
+      if (botDevScript === undefined || constants.botDebugPortRegex.test(botDevScript)) {
+        ports.push(...constants.botDebugPorts);
+      }
     }
   }
 
@@ -347,6 +359,35 @@ export function getLocalTeamsAppId(): string | undefined {
     }
   } catch {
     // in case structure changes
+    return undefined;
+  }
+}
+
+export async function loadPackageJson(path: string): Promise<any> {
+  if (!(await fs.pathExists(path))) {
+    VsCodeLogInstance.error(`Cannot load package.json from ${path}. File not found.`);
+    return undefined;
+  }
+
+  return new Promise((resolve) => {
+    const readJson = require("read-package-json");
+    readJson(path, (er: any, data: any) => {
+      if (er) {
+        VsCodeLogInstance.error(`Cannot load package.json from ${path}. Error: ${er}`);
+        resolve(undefined);
+      }
+
+      resolve(data);
+    });
+  });
+}
+
+export async function loadTeamsFxDevScript(componentRoot: string): Promise<string | undefined> {
+  const packageJson = await loadPackageJson(path.join(componentRoot, "package.json"));
+  if (packageJson && packageJson.scripts && packageJson.scripts["dev:teamsfx"]) {
+    const devTeamsfx: string = packageJson.scripts["dev:teamsfx"];
+    constants.npmRunDevRegex.test(devTeamsfx) ? packageJson.scripts["dev"] : devTeamsfx;
+  } else {
     return undefined;
   }
 }

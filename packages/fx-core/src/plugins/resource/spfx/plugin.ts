@@ -339,6 +339,7 @@ export class SPFxPluginImpl {
       const guidance = util.format(
         getStrings().plugins.SPFx.deployNotice,
         appPackage,
+        appCatalogSite,
         appCatalogSite
       );
       ctx.ui?.showMessage("info", guidance, false, "OK");

@@ -3,7 +3,7 @@
 
 import { createMessageConnection } from "vscode-jsonrpc/node";
 import WebSocket from "ws";
-import { createProject, initCore } from "./handler";
+import { createProject, initCore, provisionResources } from "./handler";
 import { Namespaces } from "./namespace";
 
 const port = 7920;
@@ -18,6 +18,7 @@ wss.on("connection", async function cb(ws) {
     console.log(`recv:${ms.toString()}`);
   });
   connection.onRequest(`${Namespaces.Core}/createProject`, createProject);
+  connection.onRequest(`${Namespaces.Core}/provisionResources`, provisionResources);
   connection.listen();
 });
 

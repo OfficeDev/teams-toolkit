@@ -42,10 +42,15 @@ import {
 } from "@microsoft/teamsfx-api";
 import { MessageConnection } from "vscode-jsonrpc";
 import { TokenCredential } from "../../api/node_modules/@azure/core-auth/types/latest/core-auth";
-import { TokenCredentialsBase } from "../../api/node_modules/@azure/ms-rest-nodeauth/dist/lib/msRestNodeAuth";
+import {
+  TokenCredentialsBase,
+  DeviceTokenCredentials,
+} from "../../api/node_modules/@azure/ms-rest-nodeauth/dist/lib/msRestNodeAuth";
 import { Namespaces } from "./namespace";
 import { Rpc, setFunc } from "./questionAdapter";
 import { sendNotification, sendRequest } from "./utils";
+import { MemoryCache } from "./memoryCache";
+import { env } from "./constant";
 
 export class RemoteLogProvider implements LogProvider {
   connection: MessageConnection;
@@ -53,34 +58,34 @@ export class RemoteLogProvider implements LogProvider {
     this.connection = connection;
   }
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
-    sendNotification(this.connection, `${Namespaces.Logger}/log`, logLevel, message);
+    sendNotification(this.connection, `LogAsync`, logLevel, message);
     return true;
   }
   async trace(message: string): Promise<boolean> {
-    sendNotification(this.connection, `${Namespaces.Logger}/trace`, message);
-    return true;
+    return this.log(LogLevel.Trace, message);
   }
   async debug(message: string): Promise<boolean> {
-    sendNotification(this.connection, `${Namespaces.Logger}/debug`, message);
-    return true;
+    return this.log(LogLevel.Debug, message);
   }
   info(message: string): Promise<boolean>;
   info(message: { content: string; color: Colors }[]): Promise<boolean>;
   async info(message: any): Promise<boolean> {
-    sendNotification(this.connection, `${Namespaces.Logger}/info`, message);
-    return true;
+    if (typeof message === "string") {
+      return this.log(LogLevel.Info, message);
+    }
+    return this.log(
+      LogLevel.Info,
+      (message as Array<{ content: string; color: Colors }>).map((item) => item.content).join("")
+    );
   }
   async warning(message: string): Promise<boolean> {
-    sendNotification(this.connection, `${Namespaces.Logger}/warning`, message);
-    return true;
+    return this.log(LogLevel.Warning, message);
   }
   async error(message: string): Promise<boolean> {
-    sendNotification(this.connection, `${Namespaces.Logger}/error`, message);
-    return true;
+    return this.log(LogLevel.Error, message);
   }
   async fatal(message: string): Promise<boolean> {
-    sendNotification(this.connection, `${Namespaces.Logger}/fatal`, message);
-    return true;
+    return this.log(LogLevel.Fatal, message);
   }
 }
 
@@ -89,20 +94,53 @@ export class RemoteAzureAccountProvider implements AzureAccountProvider {
   constructor(connection: MessageConnection) {
     this.connection = connection;
   }
-  getAccountCredentialAsync(
+  async getAccountCredentialAsync(
     showDialog?: boolean,
     tenantId?: string
   ): Promise<TokenCredentialsBase | undefined> {
-    throw new NotImplementedError(
-      "FxServer",
-      `${Namespaces.AzureAccountProvider}/getAccountCredentialAsync`
+    const result = await sendRequest(this.connection, `AzureGetAccountCredential`);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    const { accessToken, tokenJsonString } = result.value;
+    const tokenJson = JSON.parse(tokenJsonString);
+    const newTokenJson = (function ConvertTokenToJson(token: string) {
+      const array = token!.split(".");
+      const buff = Buffer.from(array[1], "base64");
+      return JSON.parse(buff.toString("utf8"));
+    })(accessToken);
+    const tokenExpiresIn = Math.round(new Date().getTime() / 1000) - (newTokenJson.iat as number);
+
+    const memoryCache = new (MemoryCache as any)();
+    memoryCache.add(
+      [
+        {
+          tokenType: "Bearer",
+          expiresIn: tokenExpiresIn,
+          expiresOn: {},
+          resource: env.activeDirectoryResourceId,
+          accessToken: accessToken,
+          userId: (newTokenJson as any).upn ?? (newTokenJson as any).unique_name,
+          _clientId: "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
+          _authority: env.activeDirectoryEndpointUrl + newTokenJson.tid,
+        },
+      ],
+      function () {
+        const _ = 1;
+      }
     );
+    const credential = new DeviceTokenCredentials(
+      "7ea7c24c-b1f6-4a20-9d11-9ae12e9e7ac0",
+      tokenJson.tid,
+      tokenJson.upn ?? tokenJson.unique_name,
+      undefined,
+      env,
+      memoryCache
+    );
+    return Promise.resolve(credential);
   }
-  getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined> {
-    throw new NotImplementedError(
-      "FxServer",
-      `${Namespaces.AzureAccountProvider}/getIdentityCredentialAsync`
-    );
+  async getIdentityCredentialAsync(showDialog?: boolean): Promise<TokenCredential | undefined> {
+    return undefined;
   }
   signout(): Promise<boolean> {
     throw new Error(`Method not implemented:${Namespaces.AzureAccountProvider}/signout`);
@@ -127,26 +165,35 @@ export class RemoteAzureAccountProvider implements AzureAccountProvider {
       `${Namespaces.AzureAccountProvider}/removeStatusChangeMap`
     );
   }
-  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    throw new NotImplementedError("FxServer", `${Namespaces.AzureAccountProvider}/getJsonObject`);
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
+    const result = await sendRequest(this.connection, `AzureGetJsonObject`);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    return JSON.parse(result.value);
   }
-  listSubscriptions(): Promise<SubscriptionInfo[]> {
-    throw new NotImplementedError(
-      "FxServer",
-      `${Namespaces.AzureAccountProvider}/listSubscriptions`
-    );
+  async listSubscriptions(): Promise<SubscriptionInfo[]> {
+    const result = await sendRequest(this.connection, `AzureListSubscriptions`);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    return result.value;
   }
-  setSubscription(subscriptionId: string): Promise<void> {
-    throw new NotImplementedError("FxServer", `${Namespaces.AzureAccountProvider}/setSubscription`);
+  async setSubscription(subscriptionId: string): Promise<void> {
+    const result = await sendRequest(this.connection, `AzureSetSubscription`);
+    if (result.isErr()) {
+      throw result.error;
+    }
   }
   getAccountInfo(): Record<string, string> | undefined {
     throw new NotImplementedError("FxServer", `${Namespaces.AzureAccountProvider}/getAccountInfo`);
   }
-  getSelectedSubscription(triggerUI?: boolean): Promise<SubscriptionInfo | undefined> {
-    throw new NotImplementedError(
-      "FxServer",
-      `${Namespaces.AzureAccountProvider}/getSelectedSubscription`
-    );
+  async getSelectedSubscription(triggerUI?: boolean): Promise<SubscriptionInfo | undefined> {
+    const result = await sendRequest(this.connection, `AzureGetSelectedSubscription`);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    return result.value;
   }
 }
 
@@ -155,11 +202,19 @@ export class RemoteGraphTokenProvider implements GraphTokenProvider {
   constructor(connection: MessageConnection) {
     this.connection = connection;
   }
-  getAccessToken(showDialog?: boolean): Promise<string | undefined> {
-    throw new NotImplementedError("FxServer", `${Namespaces.GraphTokenProvider}/getAccessToken`);
+  async getAccessToken(showDialog?: boolean): Promise<string | undefined> {
+    const result = await sendRequest(this.connection, `GraphGetAccessToken`);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    return result.value;
   }
-  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    throw new NotImplementedError("FxServer", `${Namespaces.GraphTokenProvider}/getJsonObject`);
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
+    const result = await sendRequest(this.connection, `GraphGetJsonObject`);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    return JSON.parse(result.value);
   }
   signout(): Promise<boolean> {
     throw new NotImplementedError("FxServer", `${Namespaces.GraphTokenProvider}/signout`);
@@ -191,14 +246,19 @@ export class RemoteAppStudioTokenProvider implements AppStudioTokenProvider {
   constructor(connection: MessageConnection) {
     this.connection = connection;
   }
-  getAccessToken(showDialog?: boolean): Promise<string | undefined> {
-    throw new NotImplementedError(
-      "FxServer",
-      `${Namespaces.AppStudioTokenProvider}/getAccessToken`
-    );
+  async getAccessToken(showDialog?: boolean): Promise<string | undefined> {
+    const result = await sendRequest(this.connection, `AppStudioGetAccessToken`);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    return result.value;
   }
-  getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    throw new NotImplementedError("FxServer", `${Namespaces.AppStudioTokenProvider}/getJsonObject`);
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
+    const result = await sendRequest(this.connection, `AppStudioGetJsonObject`);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    return JSON.parse(result.value);
   }
   signout(): Promise<boolean> {
     throw new NotImplementedError("FxServer", `${Namespaces.AppStudioTokenProvider}/signout`);
@@ -285,12 +345,13 @@ export class RemoteUserInteraction implements UserInteraction {
     this.connection = connection;
   }
   async selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
+    console.log("selectOption");
     this.convertConfigToJson(config);
-    return sendRequest(this.connection, `${Namespaces.UserInteraction}/selectOption`, config);
+    return sendRequest(this.connection, `SelectOptionAsync`, config);
   }
   async inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
     this.convertConfigToJson(config);
-    return sendRequest(this.connection, `${Namespaces.UserInteraction}/inputText`, config);
+    return sendRequest(this.connection, `InputTextAsync`, config);
   }
   openUrl(link: string): Promise<Result<boolean, FxError>> {
     throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/openUrl`);
@@ -304,7 +365,7 @@ export class RemoteUserInteraction implements UserInteraction {
   }
   selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
     this.convertConfigToJson(config);
-    return sendRequest(this.connection, `${Namespaces.UserInteraction}/selectOptions`, config);
+    return sendRequest(this.connection, `SelectOptionsAsync`, config);
   }
   selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
     throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectFile`);
@@ -314,7 +375,7 @@ export class RemoteUserInteraction implements UserInteraction {
   }
   selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
     this.convertConfigToJson(config);
-    return sendRequest(this.connection, `${Namespaces.UserInteraction}/selectFolder`, config);
+    return sendRequest(this.connection, `SelectFolderAsync`, config);
   }
   public async showMessage(
     level: "info" | "warn" | "error",
@@ -336,14 +397,7 @@ export class RemoteUserInteraction implements UserInteraction {
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>> {
-    return sendRequest(
-      this.connection,
-      `${Namespaces.UserInteraction}/showMessage`,
-      level,
-      message,
-      modal,
-      items
-    );
+    return sendRequest(this.connection, `ShowMessage`, level, message, modal, items);
   }
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
     // throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/createProgressBar`);

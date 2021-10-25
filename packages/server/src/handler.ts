@@ -21,3 +21,12 @@ export async function createProject(
   const res = await Core.createProject(inputs);
   return convertToHandlerResult(res);
 }
+
+export async function provisionResources(
+  inputs: Inputs,
+  token?: CancellationToken
+): Promise<string | ResponseError<FxError>> {
+  console.log(`provisionResources:${JSON.stringify(inputs)}`);
+  const res = await Core.provisionResources(inputs);
+  return convertToHandlerResult<any>(res);
+}

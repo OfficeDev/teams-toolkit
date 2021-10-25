@@ -11,7 +11,7 @@ export async function sendRequest(
 ): Promise<Result<any, FxError>> {
   return new Promise(async (resolve) => {
     let promise;
-    if (!args) {
+    if (args.length === 0) {
       promise = connection.sendRequest(type);
     } else if (args.length === 1) promise = connection.sendRequest(type, args[0]);
     else if (args.length === 2) promise = connection.sendRequest(type, args[0], args[1]);
@@ -73,7 +73,7 @@ export async function sendRequest(
 }
 
 export function sendNotification(connection: MessageConnection, type: any, ...args: any[]): void {
-  if (!args) {
+  if (args.length === 0) {
     connection.sendNotification(type);
   } else if (args.length === 1) connection.sendNotification(type, args[0]);
   else if (args.length === 2) connection.sendNotification(type, args[0], args[1]);

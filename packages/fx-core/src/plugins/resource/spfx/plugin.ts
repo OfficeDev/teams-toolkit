@@ -1,6 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, FxError, Result, ok, Platform, Colors, err } from "@microsoft/teamsfx-api";
+import {
+  PluginContext,
+  FxError,
+  Result,
+  ok,
+  Platform,
+  Colors,
+  err,
+  UserCancelError,
+} from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
 import * as fs from "fs-extra";
@@ -13,7 +22,6 @@ import {
   CreateAppCatalogFailedError,
   GetGraphTokenFailedError,
   GetSPOTokenFailedError,
-  InsufficientPermissionError,
   NoSPPackageError,
   ScaffoldError,
   GetTenantFailedError,
@@ -253,81 +261,92 @@ export class SPFxPluginImpl {
   }
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const tenant = await this.getTenant(ctx);
-    if (tenant.isErr()) {
-      return tenant;
-    }
-    SPOClient.setBaseUrl(tenant.value);
-
-    const spoToken = await ctx.sharepointTokenProvider?.getAccessToken();
-    if (!spoToken) {
-      return err(GetSPOTokenFailedError());
-    }
-
-    let appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
-    if (appCatalogSite) {
-      SPOClient.setBaseUrl(appCatalogSite);
-    } else {
-      const res = await ctx.ui?.showMessage(
-        "warn",
-        util.format(getStrings().plugins.SPFx.createAppCatalogNotice, tenant.value),
-        true,
-        "OK",
-        Constants.READ_MORE
-      );
-      const confirm = res?.isOk() ? res.value : undefined;
-      switch (confirm) {
-        case "OK":
-          try {
-            await SPOClient.createAppCatalog(spoToken);
-          } catch (e: any) {
-            return err(CreateAppCatalogFailedError(e));
-          }
-          appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
-          if (!appCatalogSite) {
-            return err(
-              CreateAppCatalogFailedError(
-                new Error("Cannot get app catalog site url after creation.")
-              )
-            );
-          }
-          break;
-        case Constants.READ_MORE:
-          ctx.ui?.openUrl(Constants.CREATE_APP_CATALOG_GUIDE);
-          break;
-        default:
-          return ok(undefined);
-      }
-    }
-
-    const appPackage = await this.getPackage(ctx.root);
-    if (!(await fs.pathExists(appPackage))) {
-      return err(NoSPPackageError(appPackage));
-    }
-
-    const fileName = path.parse(appPackage).base;
-    const bytes = await fs.readFile(appPackage);
+    const progressHandler = await ProgressHelper.startDeployProgressHandler(ctx);
     try {
-      await SPOClient.uploadAppPackage(spoToken, fileName, bytes);
-    } catch (e: any) {
-      if (e.response?.status === 403) {
-        return err(InsufficientPermissionError(appCatalogSite!));
-      } else {
-        return err(UploadAppPackageFailedError(e));
+      const tenant = await this.getTenant(ctx);
+      if (tenant.isErr()) {
+        return tenant;
       }
+      SPOClient.setBaseUrl(tenant.value);
+
+      const spoToken = await ctx.sharepointTokenProvider?.getAccessToken();
+      if (!spoToken) {
+        return err(GetSPOTokenFailedError());
+      }
+
+      let appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
+      if (appCatalogSite) {
+        SPOClient.setBaseUrl(appCatalogSite);
+      } else {
+        const res = await ctx.ui?.showMessage(
+          "warn",
+          util.format(getStrings().plugins.SPFx.createAppCatalogNotice, tenant.value),
+          true,
+          "OK",
+          Constants.READ_MORE
+        );
+        const confirm = res?.isOk() ? res.value : undefined;
+        switch (confirm) {
+          case "OK":
+            try {
+              await SPOClient.createAppCatalog(spoToken);
+            } catch (e: any) {
+              return err(CreateAppCatalogFailedError(e));
+            }
+            appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
+            if (!appCatalogSite) {
+              return err(
+                CreateAppCatalogFailedError(
+                  new Error("Cannot get app catalog site url after creation.")
+                )
+              );
+            }
+            break;
+          case Constants.READ_MORE:
+            ctx.ui?.openUrl(Constants.CREATE_APP_CATALOG_GUIDE);
+            break;
+          default:
+            return ok(undefined);
+        }
+      }
+
+      const appPackage = await this.getPackage(ctx.root);
+      if (!(await fs.pathExists(appPackage))) {
+        return err(NoSPPackageError(appPackage));
+      }
+
+      const fileName = path.parse(appPackage).base;
+      const bytes = await fs.readFile(appPackage);
+      try {
+        await SPOClient.uploadAppPackage(spoToken, fileName, bytes);
+      } catch (e: any) {
+        if (e.response?.status === 403) {
+          ctx.ui?.showMessage(
+            "error",
+            util.format(getStrings().plugins.SPFx.deployFailedNotice, appCatalogSite!),
+            false,
+            "OK"
+          );
+          return ok(UserCancelError);
+        } else {
+          return err(UploadAppPackageFailedError(e));
+        }
+      }
+
+      const appID = await this.getAppID(ctx.root);
+      await SPOClient.deployAppPackage(spoToken, appID);
+
+      const guidance = util.format(
+        getStrings().plugins.SPFx.deployNotice,
+        appPackage,
+        appCatalogSite
+      );
+      ctx.ui?.showMessage("info", guidance, false, "OK");
+
+      return ok(undefined);
+    } finally {
+      await ProgressHelper.endDeployProgress(false);
     }
-
-    const appID = await this.getAppID(ctx.root);
-    await SPOClient.deployAppPackage(spoToken, appID);
-
-    const guidance = util.format(
-      getStrings().plugins.SPFx.deployNotice,
-      appPackage,
-      appCatalogSite
-    );
-    ctx.ui?.showMessage("info", guidance, false, "OK");
-
-    return ok(undefined);
   }
 
   private async getTenant(ctx: PluginContext): Promise<Result<string, FxError>> {

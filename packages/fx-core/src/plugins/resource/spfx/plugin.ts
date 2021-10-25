@@ -327,7 +327,7 @@ export class SPFxPluginImpl {
             false,
             "OK"
           );
-          return ok(UserCancelError);
+          return err(UserCancelError);
         } else {
           return err(UploadAppPackageFailedError(e));
         }

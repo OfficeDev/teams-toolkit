@@ -19,6 +19,10 @@ pipeline {
         // To enable @microsoft/teamsfx-cli running in CI mode, turn on CI_ENABLED like below.
         // In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
         CI_ENABLED = 'true'
+        // The following line is to enable insider preview features.
+        TEAMSFX_INSIDER_PREVIEW = 'true'
+        // To specify the env name for multi-env feature.
+        TEAMSFX_ENV_NAME = 'staging'
     }
 
     stages {
@@ -52,11 +56,11 @@ pipeline {
         }
 
         // We suggest to do the `npx teamsfx provision` step manually or in a separate pipeline. The following steps are for your reference.
-        // After provisioning, you should commit .fx/env.default.json into the repository.
-        // You should save the content of .fx/default.userdata into credentials (https://www.jenkins.io/doc/book/using/using-credentials/) which can be refered by the stage with name 'Generate default.userdata'. 
+        // After provisioning, you should commit necessary files under .fx into the repository.
+        // You should copy content of .fx/publishProfiles/${TEAMSFX_ENV_NAME}.userdata into credentials (https://www.jenkins.io/doc/book/using/using-credentials/) which can be refered by the stage with name 'Generate userdata'. 
         // stage('Provision hosting environment') {
         //     steps {
-        //         sh 'npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID}'
+        //         sh 'npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID} --env ${TEAMSFX_ENV_NAME}'
         //     }
         // }
 
@@ -68,24 +72,24 @@ pipeline {
         //     }
         // }
 
-        // stage('Upload default.userdata as artifact') {
+        // stage('Upload userdata as artifact') {
         //     steps {
-        //         archiveArtifacts artifacts: '.fx/default.userdata'
+        //         archiveArtifacts artifacts: '.fx/staging.userdata'
         //     }
         // }
 
-        stage('Generate default.userdata') {
+        stage('Generate userdata') {
             environment {
                 USERDATA_CONTENT = credentials('USERDATA_CONTENT')
             }
             steps {
-                sh '[ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/default.userdata'
+                sh '[ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/publishProfiles/${TEAMSFX_ENV_NAME}.userdata'
             }
         }
 
         stage('Deploy to hosting environment') {
             steps {
-                sh 'npx teamsfx deploy'
+                sh 'npx teamsfx deploy --env ${TEAMSFX_ENV_NAME}'
             }
         }
 
@@ -93,7 +97,7 @@ pipeline {
         // which can be used to be uploaded onto Teams Client for installation.
         stage('Package Teams App for publishing') {
             steps {
-                sh 'npx teamsfx package'
+                sh 'npx teamsfx package --env ${TEAMSFX_ENV_NAME}'
             }
         }
 
@@ -105,7 +109,7 @@ pipeline {
 
         stage('Publish Teams App') {
             steps {
-                sh 'npx teamsfx publish'
+                sh 'npx teamsfx publish --env ${TEAMSFX_ENV_NAME}'
             }
         }
     }

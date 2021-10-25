@@ -15,6 +15,11 @@ set -euxo pipefail
 # In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
 export CI_ENABLED=true
 
+# The following line is to enable insider preview features.
+export TEAMSFX_INSIDER_PREVIEW=true
+# To specify the env name for multi-env feature.
+export TEAMSFX_ENV_NAME=staging
+
 # Setup environment.
 # Sufficient permissions are required to run the commands below.
 apt install -y nodejs npm git
@@ -41,31 +46,31 @@ cd tabs && npm ci && npm run build
 npm run test
 
 # We suggest to do the provision steps by case manually or in a separated workflow, so just comment the following steps for references.
-# After provision, you should commit .fx/env.default.json into the repository for later use.
-# You should pick required secrets from .fx/default.userdata, and export them in your environment which can be refered by the step with name 'Generate default.userdata'. 
+# After provisioning, you should commit necessary files under .fx into the repository.
+# You should copy content of .fx/publishProfiles/${TEAMSFX_ENV_NAME}.userdata, and export them in your environment which can be refered by the step with name 'Generate userdata'. 
 
 # Provision hosting environment.
-# npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID}
+# npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID} --env ${TEAMSFX_ENV_NAME}
 
 # Commit provision configs if necessary.
 # git add .fx/env.default.json
 # git commit -m "chore: commit provision configs"
 # git push
 
-# Generate default.userdata
-[ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/default.userdata
+# Generate userdata
+[ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/publishProfiles/${TEAMSFX_ENV_NAME}.userdata
 
 # Deploy to hosting environment.
-cd .. && npx teamsfx deploy
+cd .. && npx teamsfx deploy --env ${TEAMSFX_ENV_NAME}
 
 # This step is to pack the Teams App as zip file,
 # which can be used to be uploaded onto Teams Client for installation.
 # Build Teams App's Package.
-npx teamsfx package
+npx teamsfx package --env ${TEAMSFX_ENV_NAME}
 
 # Upload Teams App's Package as artifacts.
 # Choose what your workflow/pipeline platform provided to
 # upload appPackage/appPackage.zip as artifacts.
 
 # Publish Teams App.
-npx teamsfx publish
+npx teamsfx publish --env ${TEAMSFX_ENV_NAME}

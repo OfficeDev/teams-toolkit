@@ -19,6 +19,11 @@ jobs:
       M365_ACCOUNT_NAME: ${{secrets.M365_ACCOUNT_NAME}}
       M365_ACCOUNT_PASSWORD: ${{secrets.M365_ACCOUNT_PASSWORD}}
 
+      # The following line is to enable insider preview features.
+      TEAMSFX_INSIDER_PREVIEW: true
+      # To specify the env name for multi-env feature.
+      TEAMSFX_ENV_NAME: staging
+
     steps:
       # Setup environment.
       - uses: actions/setup-node@v2
@@ -37,19 +42,20 @@ jobs:
         run: cd tabs && npm ci && npm run build
 
       # Run unit test.
-      # Currently, no opinioned solution for unit test provided during scaffolding, so,
+      # Currently, no opinionated solution for unit test provided during scaffolding, so,
       # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
       - name: Run Unit Test
         run: cd tabs && npm run test
 
       # We suggest to do the `teamsfx provision` step manually or in a separate workflow. The following steps are for your reference.
-      # After provisioning, you should commit .fx/env.default.json into the repository.
-      # You should pick required secrets from .fx/default.userdata, and save them in the repository secrets (https://docs.github.com/en/actions/reference/encrypted-secrets) which can be refered by the step with name 'Generate default.userdata'. 
+      # After provisioning, you should commit necessary files under .fx into the repository.
+      # You should copy content of .fx/publishProfiles/${TEAMSFX_ENV_NAME}.userdata, and save it in the repository secrets (https://docs.github.com/en/actions/reference/encrypted-secrets) which can be refered by the step with name 'Generate userdata'. 
       #- name: Provision hosting environment
       #  uses: OfficeDev/teamsfx-cli-action@v1
       #  with:
       #    commands: provision
       #    subscription: ${{env.AZURE_SUBSCRIPTION_ID}}
+      #    env: ${{env.TEAMSFX_ENV_NAME}}
 
       #- name: Commit provision configs if necessary
       #  uses: stefanzweifel/git-auto-commit-action@v4
@@ -57,22 +63,23 @@ jobs:
       #    commit_message: "chore: commit provision configs"
       #    file_pattern: .fx/env.default.json
       
-      #- name: Upload default.userdata as artifact
+      #- name: Upload userdata as artifact
       #  uses: actions/upload-artifact@v2
       #  with:
       #    name: defaultUserData
-      #    path: .fx/default.userdata
+      #    path: .fx/publishProfiles/staging.userdata
       
-      - name: Generate default.userdata
+      - name: Generate userdata
         env:
           USERDATA_CONTENT: ${{ secrets.USERDATA_CONTENT }}
         run: |
-          [ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/default.userdata
+          [ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/publishProfiles/${TEAMSFX_ENV_NAME}.userdata
         
       - name: Deploy to hosting environment
         uses: OfficeDev/teamsfx-cli-action@v1
         with:
           commands: deploy
+          env: ${{env.TEAMSFX_ENV_NAME}}
 
       # This step is to pack the Teams App as zip file,
       # which can be used to be uploaded onto Teams Client for installation.
@@ -80,6 +87,7 @@ jobs:
         uses: OfficeDev/teamsfx-cli-action@v1
         with:
           commands: package
+          env: ${{env.TEAMSFX_ENV_NAME}}
 
       - name: Upload Teams App's package as artifact
         uses: actions/upload-artifact@v2
@@ -91,3 +99,4 @@ jobs:
         uses: OfficeDev/teamsfx-cli-action@v1
         with:
           commands: publish
+          env: ${{env.TEAMSFX_ENV_NAME}}

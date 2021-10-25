@@ -115,7 +115,10 @@ export class AadAppClient {
       }
     } catch (error) {
       if (skip) {
-        const message = Messages.StepFailedAndSkipped(ProgressDetail.UpdateRedirectUri);
+        const message = Messages.StepFailedAndSkipped(
+          ProgressDetail.UpdateRedirectUri,
+          Messages.UpdateRedirectUriHelpMessage(redirectUris.join(", "))
+        );
         ctx.logProvider?.warning(Messages.getLog(message));
         DialogUtils.show(message, UILevels.Warn);
       } else {
@@ -152,7 +155,10 @@ export class AadAppClient {
       }
     } catch (error) {
       if (skip) {
-        const message = Messages.StepFailedAndSkipped(ProgressDetail.UpdateAppIdUri);
+        const message = Messages.StepFailedAndSkipped(
+          ProgressDetail.UpdateAppIdUri,
+          Messages.UpdateAppIdUriHelpMessage(applicationIdUri)
+        );
         ctx.logProvider?.warning(Messages.getLog(message));
         DialogUtils.show(message, UILevels.Warn);
       } else {
@@ -189,7 +195,10 @@ export class AadAppClient {
       }
     } catch (error) {
       if (skip) {
-        const message = Messages.StepFailedAndSkipped(ProgressDetail.UpdatePermission);
+        const message = Messages.StepFailedAndSkipped(
+          ProgressDetail.UpdatePermission,
+          Messages.UpdatePermissionHelpMessage
+        );
         ctx.logProvider?.warning(Messages.getLog(message));
         DialogUtils.show(message, UILevels.Warn);
       } else {

@@ -239,8 +239,13 @@ export class Messages {
     "Azure AD app provision skipped. You need to mannual provision and config Azure AD app.";
   static readonly OwnerAlreadyAdded = (userObjectId: string, objectId: string) =>
     `User ${userObjectId} is already added as owner of Azure AD app ${objectId}.`;
-  static readonly StepFailedAndSkipped = (stage: string) =>
-    `Failed in step: ${stage}. You need to mannual update config for the provided Azure AD app.`;
+  static readonly StepFailedAndSkipped = (stage: string, helpMessage: string) =>
+    `Failed in step: ${stage}. You need to go to Azure Protal and mannually ${helpMessage} for the provided Azure AD app.`;
+  static readonly UpdatePermissionHelpMessage = `update the permission under "API permissions"`;
+  static readonly UpdateAppIdUriHelpMessage = (appIdUri: string) =>
+    `set "${appIdUri}" as "Application ID URI" under "Expose an API"`;
+  static readonly UpdateRedirectUriHelpMessage = (redirectUri: string) =>
+    `set "${redirectUri}" as "Redirect URIs" under "Authentication"`;
 }
 
 export class ProgressTitle {

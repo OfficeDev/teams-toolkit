@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.7.0",
+  "version": "2.8.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -82,15 +82,15 @@
     "viewsWelcome": [
       {
         "view": "teamsfx-empty-project",
-        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
+        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\n\nTeams Toolkit can upgrade your project to support the latest features.\n[Project upgrade check](command:fx-extension.checkProjectUpgrade)"
       },
       {
         "view": "teamsfx-empty-project-top",
-        "contents": "The Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a 'zero-configuration' approach to the developer experience.\n[Quick Start](command:fx-extension.openWelcome)\nTo start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
+        "contents": "The Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a 'zero-configuration' approach to the developer experience.\n[Quick Start](command:fx-extension.openWelcome)\nTo start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\n\nTeams Toolkit can upgrade your project to support the latest features.\n[Project upgrade check](command:fx-extension.checkProjectUpgrade)"
       },
       {
         "view": "teamsfx-empty-project-bottom",
-        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\nThe Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a 'zero-configuration' approach to the developer experience.\n[Quick Start](command:fx-extension.openWelcome)"
+        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\nThe Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a 'zero-configuration' approach to the developer experience.\n[Quick Start](command:fx-extension.openWelcome)\n\nTeams Toolkit can upgrade your project to support the latest features.\n[Project upgrade check](command:fx-extension.checkProjectUpgrade)"
       }
     ],
     "views": {
@@ -285,6 +285,10 @@
         {
           "command": "fx-extension.openSurvey",
           "when": "false"
+        },
+        {
+          "command": "fx-extension.checkProjectUpgrade",
+          "when": "fx-extension.canUpgradeToArmAndMultiEnv"
         }
       ]
     },
@@ -366,6 +370,10 @@
       {
         "command": "fx-extension.provision",
         "title": "Teams: Provision in the cloud"
+      },
+      {
+        "command": "fx-extension.checkProjectUpgrade",
+        "title": "Teams: Check project upgrade"
       },
       {
         "command": "fx-extension.deploy",
@@ -451,11 +459,26 @@
       {
         "type": "teamsfx",
         "required": [
-          "command"
+          "command",
+          "component"
         ],
         "properties": {
           "command": {
-            "type": "string"
+            "type": "string",
+            "description": "The command to be executed on a teamsfx component.",
+            "enum": [
+              "dev",
+              "watch"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "description": "The teamsfx component.",
+            "enum": [
+              "frontend",
+              "backend",
+              "bot"
+            ]
           }
         }
       }
@@ -463,7 +486,7 @@
     "problemMatchers": [
       {
         "name": "teamsfx-frontend-watch",
-        "label": "%teamsfx.problemMatchers.teamsfxFrontendWatch%",
+        "label": "TeamsFx Frontend Problems",
         "owner": "Teams Toolkit",
         "source": "teamsfx",
         "applyTo": "allDocuments",
@@ -492,7 +515,7 @@
       },
       {
         "name": "teamsfx-backend-watch",
-        "label": "%teamsfx.problemMatchers.teamsfxbackendWatch%",
+        "label": "TeamsFx Backend Problems",
         "owner": "Teams Toolkit",
         "source": "teamsfx",
         "applyTo": "allDocuments",
@@ -516,7 +539,7 @@
       },
       {
         "name": "teamsfx-auth-watch",
-        "label": "%teamsfx.problemMatchers.teamsfxAuthWatch%",
+        "label": "TeamsFx SimpleAuth Problems",
         "owner": "Teams Toolkit",
         "source": "teamsfx",
         "applyTo": "allDocuments",
@@ -540,7 +563,7 @@
       },
       {
         "name": "teamsfx-ngrok-watch",
-        "label": "%teamsfx.problemMatchers.teamsfxNgrokWatch%",
+        "label": "TeamsFx Ngrok Problems",
         "owner": "Teams Toolkit",
         "source": "teamsfx",
         "applyTo": "allDocuments",
@@ -564,7 +587,7 @@
       },
       {
         "name": "teamsfx-bot-watch",
-        "label": "%teamsfx.problemMatchers.teamsfxBotWatch%",
+        "label": "TeamsFx Bot Problems",
         "owner": "Teams Toolkit",
         "source": "teamsfx",
         "applyTo": "allDocuments",
@@ -704,6 +727,7 @@
     "css-loader": "^5.1.3",
     "decache": "^4.6.0",
     "eslint": "^7.22.0",
+    "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-prettier": "^4.0.0",
     "find-process": "^1.4.4",
     "fs-extra": "^9.0.1",
@@ -748,8 +772,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.8.0",
-    "@microsoft/teamsfx-core": "^0.8.0",
+    "@microsoft/teamsfx-api": "^0.9.0",
+    "@microsoft/teamsfx-core": "^0.9.1",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",

@@ -24,6 +24,7 @@ import {
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
 import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/configs";
 import {
+  ArmOutput,
   AzureErrorCode,
   FrontendConfigInfo,
   FrontendPathInfo,
@@ -35,7 +36,7 @@ import { StorageAccounts } from "@azure/arm-storage";
 import { AzureLib } from "../../../../../src/plugins/resource/frontend/utils/azure-client";
 import * as core from "../../../../../src";
 import { EnvironmentUtils } from "../../../../../src/plugins/resource/frontend/utils/environment-utils";
-import { getTemplatesFolder } from "../../../../../src";
+import { getTemplatesFolder, isArmSupportEnabled } from "../../../../../src";
 import mock from "mock-fs";
 import * as path from "path";
 
@@ -101,6 +102,10 @@ describe("FrontendPlugin", () => {
   });
 
   describe("preProvision", () => {
+    if (isArmSupportEnabled()) {
+      // preProvision lifecycle is skipped with ARM
+      return;
+    }
     let frontendPlugin: FrontendPlugin;
     let pluginContext: PluginContext;
 
@@ -133,6 +138,10 @@ describe("FrontendPlugin", () => {
   });
 
   describe("provision", () => {
+    if (isArmSupportEnabled()) {
+      // provision lifecycle is skipped with ARM
+      return;
+    }
     let frontendPlugin: FrontendPlugin;
     let pluginContext: PluginContext;
 
@@ -207,7 +216,18 @@ describe("FrontendPlugin", () => {
 
     beforeEach(async () => {
       pluginContext = TestHelper.getFakePluginContext();
-      pluginContext.config.set(FrontendConfigInfo.Endpoint, TestHelper.storageEndpoint);
+      if (isArmSupportEnabled()) {
+        sinon
+          .stub(AzureStorageClient.prototype, "enableStaticWebsite")
+          .returns(Promise.resolve(undefined));
+        TestHelper.mockArmOutput(
+          pluginContext,
+          ArmOutput.FrontendStorageResourceId,
+          TestHelper.storageResourceId
+        );
+      } else {
+        pluginContext.config.set(FrontendConfigInfo.Endpoint, TestHelper.storageEndpoint);
+      }
       frontendPlugin = new FrontendPlugin();
     });
 
@@ -232,6 +252,12 @@ describe("FrontendPlugin", () => {
     beforeEach(async () => {
       frontendPlugin = new FrontendPlugin();
       pluginContext = TestHelper.getFakePluginContext();
+      if (isArmSupportEnabled()) {
+        pluginContext.config.set(
+          FrontendConfigInfo.StorageResourceId,
+          TestHelper.storageResourceId
+        );
+      }
       sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "readFile").resolves(Buffer.from(""));
       sinon.stub(fs, "writeFile").resolves();
@@ -282,6 +308,12 @@ describe("FrontendPlugin", () => {
     beforeEach(async () => {
       frontendPlugin = new FrontendPlugin();
       pluginContext = TestHelper.getFakePluginContext();
+      if (isArmSupportEnabled()) {
+        pluginContext.config.set(
+          FrontendConfigInfo.StorageResourceId,
+          TestHelper.storageResourceId
+        );
+      }
       sinon.stub(AzureStorageClient.prototype, "getContainer").resolves({} as any);
       sinon.stub(AzureStorageClient.prototype, "deleteAllBlobs").resolves();
       sinon.stub(AzureStorageClient.prototype, "uploadFiles").resolves();

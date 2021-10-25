@@ -5,6 +5,7 @@ import "mocha";
 import * as chai from "chai";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import chaiAsPromised from "chai-as-promised";
+import { v4 as uuid } from "uuid";
 
 import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/configs";
 import { FrontendConfigInfo } from "../../../../../src/plugins/resource/frontend/constants";
@@ -14,7 +15,7 @@ import {
   UnauthenticatedError,
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
 import { TestHelper } from "../helper";
-import { newEnvInfo } from "../../../../../src";
+import { isArmSupportEnabled, newEnvInfo } from "../../../../../src";
 
 chai.use(chaiAsPromised);
 
@@ -57,7 +58,14 @@ describe("FrontendConfig", () => {
 
     it("invalid storage name", async () => {
       const invalidStorageName = "dangerous.com/";
-      pluginContext.config.set(FrontendConfigInfo.StorageName, invalidStorageName);
+      if (isArmSupportEnabled()) {
+        const invalidStorageResourceId = `/subscriptions/${uuid()}/resourceGroups/app-test-rg/providers/Microsoft.Storage/storageAccounts/${encodeURIComponent(
+          invalidStorageName
+        )}`;
+        pluginContext.config.set(FrontendConfigInfo.StorageResourceId, invalidStorageResourceId);
+      } else {
+        pluginContext.config.set(FrontendConfigInfo.StorageName, invalidStorageName);
+      }
       await assertRejected(
         () => FrontendConfig.fromPluginContext(pluginContext),
         new InvalidStorageNameError().code

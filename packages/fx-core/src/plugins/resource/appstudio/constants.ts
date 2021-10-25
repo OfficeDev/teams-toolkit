@@ -31,8 +31,8 @@ export class ErrorMessages {
  * Config keys that are useful for generating remote teams app manifest
  */
 export const REMOTE_MANIFEST = "manifest.source.json";
-export const MANIFEST_TEMPLATE = "manifest.template.json";
-export const MANIFEST_LOCAL = "manifest.local.json";
+export const MANIFEST_TEMPLATE = "manifest.remote.template.json";
+export const MANIFEST_LOCAL = "manifest.local.template.json";
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
 export const FRONTEND_ENDPOINT_ARM = "frontendHosting_endpoint";
@@ -47,8 +47,8 @@ export const SOLUTION = "solution";
 export const SOLUTION_USERINFO = "userinfo";
 
 export const TEAMS_APP_MANIFEST_TEMPLATE = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.9",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.11",
   "version": "{version}",
   "id": "{appid}",
   "packageName": "com.microsoft.teams.extension",
@@ -87,8 +87,8 @@ export const TEAMS_APP_MANIFEST_TEMPLATE = `{
 }`;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.9",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.11",
   "version": "1.0.0",
   "id": "{{state.fx-resource-appstudio.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
@@ -127,8 +127,8 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
 }`;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.9/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.9",
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.11",
   "version": "1.0.0",
   "id": "{{localSettings.teamsApp.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",

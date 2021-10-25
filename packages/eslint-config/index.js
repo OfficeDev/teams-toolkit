@@ -10,7 +10,10 @@ module.exports = {
     },
     extends: [
         "plugin:@typescript-eslint/recommended",
-        "prettier"
+        "prettier",
+        "plugin:import/errors",
+        "plugin:import/warnings",
+        "plugin:import/typescript"
     ],
     plugins: [
         "@typescript-eslint/eslint-plugin",
@@ -22,5 +25,12 @@ module.exports = {
         semi: ["error", "always"],
         '@typescript-eslint/no-var-requires': 0,
         '@typescript-eslint/no-empty-function': 0,
+        "import/no-cycle": [
+            "error",
+            {
+                "maxDepth": 10,
+                "ignoreExternal": true
+            }
+        ]
     },
 };

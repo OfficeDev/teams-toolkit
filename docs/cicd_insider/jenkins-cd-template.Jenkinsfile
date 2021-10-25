@@ -1,4 +1,5 @@
 // This is just an example workflow for continuous deployment.
+// The example workflow is expected to run on Ubuntu stable versions, for example, 20.04lts and later.
 // You should customize it to meet your own requirements.
 // The file may be renamed to Jenkinsfile, and put into main branch.
 pipeline {

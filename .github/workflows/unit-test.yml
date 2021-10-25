@@ -59,7 +59,7 @@ jobs:
         uses: actions/checkout@v2
         with:
           ref: ${{ github.base_ref }}
-          repository: ${{github.event.pull_request.head.repo.full_name}}
+          repository: ${{github.event.pull_request.base.repo.full_name}}
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -212,10 +212,18 @@ jobs:
           cd packages/fx-core
           xvfb-run -a npx nyc mocha \
             "tests/core/**/*.test.ts" \
+            "tests/plugins/resource/appstudio/**/*.test.ts" \
+            "tests/plugins/resource/bot/**/*.test.ts" \
             "tests/plugins/resource/function/**/*.test.ts" \
+            "tests/plugins/resource/sql/**/*.test.ts" \
             "tests/plugins/resource/aad/**/*.test.ts" \
             "tests/plugins/resource/simpleauth/**/*.test.ts" \
-            "tests/plugins/resource/frontend/**/*.test.ts"
+            "tests/plugins/resource/frontend/**/*.test.ts" \
+            "tests/plugins/solution/*.test.ts"
+          cd -
+
+          cd packages/cli
+          xvfb-run -a npm run test:unit
           cd -
 
           coverages="{}"

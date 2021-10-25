@@ -73,7 +73,12 @@ import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
-import { anonymizeFilePaths, isSPFxProject, syncFeatureFlags } from "./utils/commonUtils";
+import {
+  anonymizeFilePaths,
+  getTeamsAppIdByEnv,
+  isSPFxProject,
+  syncFeatureFlags,
+} from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { DepsChecker } from "./debug/depsChecker/checker";
@@ -383,7 +388,7 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
     namespace: "fx-solution-azure",
     method: "addResource",
   };
-  return await runUserTask(func, TelemetryEvent.AddResource, true);
+  return await runUserTask(func, TelemetryEvent.AddResource, isMultiEnvEnabled());
 }
 
 export async function addCapabilityHandler(args: any[]): Promise<Result<null, FxError>> {
@@ -588,6 +593,9 @@ async function processResult(
   const envProperty: { [key: string]: string } = {};
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
+    if (isMultiEnvEnabled()) {
+      envProperty[TelemetryProperty.AapId] = getTeamsAppIdByEnv(inputs.env);
+    }
   }
 
   if (result.isErr()) {
@@ -770,6 +778,11 @@ export async function openDocumentHandler(args: any[]): Promise<boolean> {
 export async function openWelcomeHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
   WebviewPanel.createOrShow(PanelType.QuickStart);
+}
+
+export async function checkUpgrade(args?: any[]) {
+  // just for triggering upgrade check for multi-env && bicep.
+  await runCommand(Stage.listCollaborator);
 }
 
 export async function openSurveyHandler(args?: any[]) {

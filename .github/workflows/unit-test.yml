@@ -213,6 +213,7 @@ jobs:
           xvfb-run -a npx nyc mocha \
             "tests/core/**/*.test.ts" \
             "tests/plugins/resource/appstudio/**/*.test.ts" \
+            "tests/plugins/resource/bot/**/*.test.ts" \
             "tests/plugins/resource/function/**/*.test.ts" \
             "tests/plugins/resource/sql/**/*.test.ts" \
             "tests/plugins/resource/aad/**/*.test.ts" \

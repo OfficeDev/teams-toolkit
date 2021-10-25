@@ -13,11 +13,10 @@ The SharePoint Framework (SPFx) is a page and web part model that provides full 
 - [SharePoint Framework](https://aka.ms/spfx)
 - [Microsoft 365 tenant](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-developer-tenant)
 
-> Get your own free development tenant by subscribing to [Microsoft 365 developer program](http://aka.ms/o365devprogram)
-
 ## Prerequisites
 
-> Any special pre-requisites?
+> - Node.js v10/12/14
+> - An M365 account. Get your own free Microsoft 365 tenant from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)
 
 ## Solution
 
@@ -41,8 +40,8 @@ Version|Date|Comments
 ## Minimal Path to Awesome
 
 1. <b>Install the latest version of [Node.js LTS 14.x]</b>(https://nodejs.org/en/download/releases/)(Note: SPFx v1.12.1 support Node.js v10/12/14)
-2. You can either download [Visual Studio Code](https://code.visualstudio.com) and install Teams Toolkit V2 or download TeamsFx CLI.
-3. Open the project with VSCode and in the Teams Toolkit V2 sidebar, click `Provision in the Cloud` under PROJECT.
+2. You can either download [Visual Studio Code](https://code.visualstudio.com) and install [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or download TeamsFx CLI.
+3. Open the project with VSCode, click `Provision in the Cloud` in PROJECT panel of Teams Toolkit extension.
 
     Or you can use TeamsFx CLI with running this cmd under your project path:
     `teamsfx provision`
@@ -50,26 +49,30 @@ Version|Date|Comments
     It will provision an app in Teams App Studio. You may need to login with your M365 tenant admin account.
 
 4. Build and Deploy your SharePoint Package.
-    - Click `Deploy to the cloud` in Teams Toolkit V2 sidebar, or run `Teams: Deploy to the cloud` from command palette. This will generate a SharePoint package(*.sppkg) under sharepoint/solution folder.
+    - Click `Deploy to the cloud` in DEPLOYMENT panel of Teams Toolkit extension, or run `Teams: Deploy to the cloud` from command palette. This will generate a SharePoint package(*.sppkg) under sharepoint/solution folder.
   
     Or you can use TeamsFx CLI with running this cmd under your project path:
         `teamsfx deploy`
 
-    - Upload or drag and drop the *.sppkg to the SharePoint App Catalog site, please follow the instruction: [Deploy the HelloWorld package to App Catalog](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/web-parts/get-started/serve-your-web-part-in-a-sharepoint-page#deploy-the-helloworld-package-to-app-catalog)
-5. Go back to Teams Toolkit V2, and in the sidebar, click `Publish to Teams`. 
+    - After building the *.sppkg, the Teams Toolkit extension will upload and deploy it to your tenant App Catalog. Only tenant App Catalog site admin has permission to do it. You can create your test tenant following [Setup your Microsoft 365 tenant](https://docs.microsoft.com/en-us/sharepoint/dev/spfx/set-up-your-developer-tenant).
+5. Go back to Teams Toolkit extension, click `Teams: Publish to Teams` in DEPLOYMENT panel.
 
     Or you can use TeamsFx CLI with running this cmd under your project path:
         `teamsfx publish`
 
     You will find your app in [Microsoft Teams admin center](https://admin.teams.microsoft.com/policies/manage-apps). Enter your app name in the search box. Click the item and select `Publish` in the Publishing status.
 
-6. You may need to wait for a few minutes after publishing your teams app.And then login to Teams, and you will find your app in the `Apps - Built for {your-tenant-name}` category.
+6. You may need to wait for a few minutes after publishing your teams app. And then login to Teams, and you will find your app in the `Apps - Built for {your-tenant-name}` category.
 
 7. Click "Add" to use the app as a personal tab. Click "Add to a team" to use the app as a group tab.
 
 ## Debug
 
 Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button.
+
+- `Teams workbench` is the default debug configuration. Using this configuration, you can install the SPFx app within Teams context as a Teams app.
+- `Local workbench` providing a SPFx local workbench to view and debug the webpart locally on your machine before actually deploying solutions to the tenant.
+- `Hosted workbench`. You need to navigate to [launch.json](.vscode/launch.json), replace `enter-your-SharePoint-site` with your SharePoint site, eg. `https://{your-tenant-name}.sharepoint.com/sites/{your-team-name}/_layouts/workbench.aspx`.
 
 ## References
 

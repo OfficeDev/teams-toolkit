@@ -137,11 +137,11 @@ export async function activate(): Promise<Result<Void, FxError>> {
       const expService = exp.getExpService();
       if (expService) {
         switch (
-          await expService.getTreatmentVariableAsync(
-            TreatmentVariables.VSCodeConfig,
-            TreatmentVariables.QuickStartInSidebar,
-            true
-          )
+        await expService.getTreatmentVariableAsync(
+          TreatmentVariables.VSCodeConfig,
+          TreatmentVariables.QuickStartInSidebar,
+          true
+        )
         ) {
           case TreatmentVariableValue.TopSidebar:
             vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.top", true);
@@ -1330,9 +1330,8 @@ export async function showError(e: UserError | SystemError) {
     const path = "https://github.com/OfficeDev/TeamsFx/issues/new?";
     const param = `title=bug+report: ${errorCode}&body=${anonymizeFilePaths(
       e.message
-    )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${
-      sysError.userData ? anonymizeFilePaths(sysError.userData) : ""
-    }`;
+    )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${sysError.userData ? anonymizeFilePaths(sysError.userData) : ""
+      }`;
     const issue = {
       title: StringResources.vsc.handlers.reportIssue,
       run: async (): Promise<void> => {
@@ -1464,7 +1463,8 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
   }
 }
 
-export async function openAdaptiveCardExt() {
+export async function openAdaptiveCardExt(args: any[] = [TelemetryTiggerFrom.TreeView]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewAdaptiveCard, getTriggerFromProperty(args));
   const acExtId = "madewithcardsio.adaptivecardsstudiobeta";
   const extension = vscode.extensions.getExtension(acExtId);
   if (!extension) {
@@ -1475,7 +1475,7 @@ export async function openAdaptiveCardExt() {
         "Cancel"
       )
       .then(async (selection) => {
-        if (selection == "Yes") {
+        if (selection === "Install") {
           await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId);
           await vscode.commands.executeCommand("workbench.view.extension.cardLists");
         }

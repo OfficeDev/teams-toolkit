@@ -1,13 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
-import glob = require("glob");
 import * as vscode from "vscode";
 import { localSettingsJsonName } from "./debug/constants";
 import * as StringResources from "./resources/Strings.json";
-import * as fs from "fs";
-import { getWorkspacePath } from "./handlers";
-import path = require("path");
+import * as fs from "fs-extra";
+import { AdaptiveCardsFolderName } from "@microsoft/teamsfx-api";
+import { TelemetryTiggerFrom } from "./telemetry/extTelemetryEvents";
 
 /**
  * CodelensProvider
@@ -66,20 +64,16 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
 }
 
 export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
-  public static async getAdaptiveCardFiles(): Promise<string[]> {
-    console.log("ACSTUDIO - Searching for Cards");
-    const adaptiveCardFiles: string[] = [];
-    const folder = getWorkspacePath();
-    if (!folder) return [];
-    const files = await glob.sync(path.join(folder, "/**/*.json"), {});
-    files.forEach((file) => {
-      const searchTerm = "adaptivecards.io/schemas/adaptive-card.json";
-      const content = fs.readFileSync(file, "utf8");
+  public static async detectedAdaptiveCards(): Promise<boolean> {
+    const searchTerm = "adaptivecards.io/schemas/adaptive-card.json";
+    const files: vscode.Uri[] = await vscode.workspace.findFiles(`**/${AdaptiveCardsFolderName}/*.json`);
+    for (const file of files) {
+      const content = await fs.readFile(file.fsPath, "utf8");
       if (content.includes(searchTerm)) {
-        adaptiveCardFiles.push(file);
+        return true;
       }
-    });
-    return adaptiveCardFiles;
+    };
+    return false;
   }
   provideCodeLenses(_document: vscode.TextDocument): vscode.ProviderResult<vscode.CodeLens[]> {
     const codeLenses: vscode.CodeLens[] = [];
@@ -87,6 +81,7 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
     const command = {
       title: `👀${StringResources.vsc.commandsTreeViewProvider.previewAdaptiveCard}`,
       command: "fx-extension.OpenAdaptiveCardExt",
+      arguments: [TelemetryTiggerFrom.CodeLens]
     };
     codeLenses.push(new vscode.CodeLens(topOfFile, command));
     return codeLenses;

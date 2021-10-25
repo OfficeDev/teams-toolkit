@@ -120,6 +120,8 @@ export enum TelemetryEvent {
 
   ShowLocalDebugNotification = "show-local-debug-notification",
   ClickLocalDebug = "click-local-debug",
+
+  PreviewAdaptiveCard = "open-adaptivecard-preview",
 }
 
 export enum TelemetryProperty {
@@ -173,6 +175,7 @@ export enum TelemetryTiggerFrom {
   CommandPalette = "CommandPalette",
   TreeView = "TreeView",
   Webview = "Webview",
+  CodeLens = "CodeLens",
   Other = "Other",
   Unknow = "Unknow",
 }

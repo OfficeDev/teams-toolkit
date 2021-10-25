@@ -216,7 +216,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const adaptiveCardCodeLensCmd = vscode.commands.registerCommand(
     "fx-extension.OpenAdaptiveCardExt",
-    () => Correlator.run(handlers.openAdaptiveCardExt)
+    (...args) => Correlator.run(handlers.openAdaptiveCardExt, args)
   );
   context.subscriptions.push(adaptiveCardCodeLensCmd);
 

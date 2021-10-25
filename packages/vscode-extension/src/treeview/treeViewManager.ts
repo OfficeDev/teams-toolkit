@@ -82,7 +82,7 @@ class TreeViewManager {
       ),
     ];
 
-    if ((await AdaptiveCardCodeLensProvider.getAdaptiveCardFiles()).length) {
+    if (await AdaptiveCardCodeLensProvider.detectedAdaptiveCards()) {
       developmentCommand.push(
         new TreeViewCommand(
           StringResources.vsc.commandsTreeViewProvider.previewAdaptiveCard,

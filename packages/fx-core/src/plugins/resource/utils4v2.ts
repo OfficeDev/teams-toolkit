@@ -208,8 +208,6 @@ export async function configureResourceAdapter(
   if (!state) {
     return err(InvalidStateError(plugin.name, envInfo.state));
   }
-  const solutionInputs: SolutionInputs = inputs;
-  state.set(GLOBAL_CONFIG, ConfigMap.fromJSON(solutionInputs));
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
@@ -370,6 +368,9 @@ export async function getQuestionsForUserTaskAdapter(
 export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
   const solutionConfig = ctx.envInfo.state.get("solution");
   const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);
+  if (output instanceof Map) {
+    return output?.get(key)?.get("value");
+  }
   return output?.[key]?.value;
 }
 

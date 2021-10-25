@@ -13,6 +13,7 @@ import {
   ConfigFolderName,
   returnUserError,
   EnvNamePlaceholder,
+  LogProvider,
 } from "@microsoft/teamsfx-api";
 import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
@@ -22,12 +23,7 @@ import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
 import { ArmHelpLink, ConstantString, PluginDisplayName } from "../../../common/constants";
-import {
-  Executor,
-  getResourceGroupNameFromResourceId,
-  waitSeconds,
-  getUuid,
-} from "../../../common/tools";
+import { getResourceGroupNameFromResourceId, waitSeconds, getUuid } from "../../../common/tools";
 import { environmentManager } from "../../..";
 import {
   ARM_TEMPLATE_OUTPUT,
@@ -48,6 +44,7 @@ import dateFormat from "dateformat";
 import { getTemplatesFolder } from "../../../folder";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { Utils } from "../../resource/frontend/utils";
+import { executeCommand } from "../../../common/cpUtils";
 
 // Old folder structure constants
 const templateFolder = "templates";
@@ -188,7 +185,11 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   // Compile bicep file to json
   const templateDir = path.join(ctx.root, templatesFolder);
   const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
-  const armTemplateJson = await compileBicepToJson(bicepCommand, bicepOrchestrationFilePath);
+  const armTemplateJson = await compileBicepToJson(
+    bicepCommand,
+    bicepOrchestrationFilePath,
+    ctx.logProvider
+  );
   ctx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.CompileBicepSuccessNotice,
@@ -494,12 +495,17 @@ async function getResourceManagementClientForArmDeployment(
 
 async function compileBicepToJson(
   bicepCommand: string,
-  bicepOrchestrationFilePath: string
+  bicepOrchestrationFilePath: string,
+  logger: LogProvider | undefined
 ): Promise<JSON> {
-  const command = `${bicepCommand} build "${bicepOrchestrationFilePath}" --stdout`;
   try {
-    const result = await Executor.execCommandAsync(command);
-    return JSON.parse(result.stdout as string);
+    const result = await executeCommand(
+      bicepCommand,
+      ["build", bicepOrchestrationFilePath, "--stdout"],
+      logger,
+      { shell: false }
+    );
+    return JSON.parse(result);
   } catch (err) {
     throw new Error(`Failed to compile bicep files to Json arm templates file: ${err.message}`);
   }

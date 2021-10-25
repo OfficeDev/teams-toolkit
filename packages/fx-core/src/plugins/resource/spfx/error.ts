@@ -54,6 +54,16 @@ export function GetGraphTokenFailedError(): SystemError {
   );
 }
 
+export function InsufficientPermissionError(appCatalog: string): UserError {
+  return returnUserError(
+    new Error(
+      `You don't have permission to upload and deploy package to App Catalog ${appCatalog}, please use site admin account.`
+    ),
+    Constants.PLUGIN_NAME,
+    "InsufficientPermission"
+  );
+}
+
 export function CreateAppCatalogFailedError(error: Error): SystemError {
   return returnSystemError(
     new Error(

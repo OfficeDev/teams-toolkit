@@ -1,15 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  PluginContext,
-  FxError,
-  Result,
-  ok,
-  Platform,
-  Colors,
-  err,
-  UserCancelError,
-} from "@microsoft/teamsfx-api";
+import { PluginContext, FxError, Result, ok, Platform, Colors, err } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
 import * as fs from "fs-extra";
@@ -26,6 +17,7 @@ import {
   ScaffoldError,
   GetTenantFailedError,
   UploadAppPackageFailedError,
+  InsufficientPermissionError,
 } from "./error";
 import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
@@ -327,7 +319,7 @@ export class SPFxPluginImpl {
             false,
             "OK"
           );
-          return err(UserCancelError);
+          return err(InsufficientPermissionError(appCatalogSite!));
         } else {
           return err(UploadAppPackageFailedError(e));
         }

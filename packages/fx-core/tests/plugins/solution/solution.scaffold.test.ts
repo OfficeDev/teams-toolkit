@@ -117,6 +117,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     };
     mockScaffoldThatAlwaysSucceed(fehostPlugin);
     mockScaffoldThatAlwaysSucceed(localdebugPlugin);
+    mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
   });
@@ -140,6 +141,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mockScaffoldThatAlwaysSucceed(fehostPlugin);
     mockScaffoldThatAlwaysSucceed(botPlugin);
     mockScaffoldThatAlwaysSucceed(localdebugPlugin);
+    mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(fileContent.get(`${mockedCtx.root}/README.md`)).equals(mockedReadMeContent);
@@ -164,6 +166,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mockScaffoldThatAlwaysSucceed(fehostPlugin);
     mockScaffoldThatAlwaysSucceed(botPlugin);
     mockScaffoldThatAlwaysSucceed(localdebugPlugin);
+    mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     expect(fileContent.get(`${mockedCtx.root}/README.md`)).equals(mockedReadMeContent);

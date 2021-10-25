@@ -16,7 +16,7 @@ import * as constants from "../../../src/constants";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
 import * as Utils from "../../../src/utils";
-import { UserSettings } from "../../../src/userSetttings";
+import { CliConfigOptions, UserSettings } from "../../../src/userSetttings";
 import { NonTeamsFxProjectFolder } from "../../../src/error";
 
 describe("Config Command Tests", function () {
@@ -318,6 +318,27 @@ describe("Config Get Command Check", () => {
       expect(e.name).equals("NonTeamsFxProjectFolder");
     }
   });
+
+  it("successfully print global config when running 'config get xxx' and xxx is a global option", async () => {
+    await cmd.subCommands[0].handler({
+      option: "telemetry",
+    });
+    expect(logs.length).equals(2);
+    expect(logs[1]).equals('"on"');
+    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
+  });
+
+  it("successfully print global config when running 'config get xxx --env' and xxx is a global option", async () => {
+    if (isMultiEnvEnabled()) {
+      await cmd.subCommands[0].handler({
+        option: "telemetry",
+        env: "dev",
+      });
+      expect(logs.length).equals(2);
+      expect(logs[1]).equals('"on"');
+      expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
+    }
+  });
 });
 
 describe("Config Set Command Check", () => {
@@ -327,6 +348,7 @@ describe("Config Set Command Check", () => {
   let logs: string[] = [];
   let encrypted: string[] = [];
   let secretFile: dotenv.DotenvParseOutput;
+  let globalSettings: { [key: string]: string } = {};
   const config = {
     telemetry: "on",
     envCheckerValidateDotnetSdk: "true",
@@ -388,6 +410,7 @@ describe("Config Set Command Check", () => {
     telemetryEvents = [];
     logs = [];
     encrypted = [];
+    globalSettings = {};
   });
 
   it("has configured proper parameters", () => {
@@ -542,5 +565,33 @@ describe("Config Set Command Check", () => {
       expect(e).instanceOf(UserError);
       expect(e.name).equals("ConfigNameNotFound");
     }
+  });
+
+  it("successfullly set global config when running 'config set a b' when 'a' is a global option and in a project folder", async () => {
+    await cmd.subCommands[1].handler({
+      option: CliConfigOptions.Telemetry,
+      value: "off",
+      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+    });
+    expect(logs.length).equals(2);
+    expect(logs[1]).includes(`Successfully configured user setting telemetry.`);
+    expect(config.telemetry).equals("off");
+    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
+  });
+
+  it("successfullly set global config when running 'config set a b --env dev' when 'a' is a global option and in a project folder", async () => {
+    if (!isMultiEnvEnabled()) {
+      return;
+    }
+    await cmd.subCommands[1].handler({
+      option: CliConfigOptions.Telemetry,
+      value: "off",
+      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+      [constants.RootFolderNode.data.name as string]: "dev",
+    });
+    expect(logs.length).equals(2);
+    expect(logs[1]).includes(`Successfully configured user setting telemetry.`);
+    expect(config.telemetry).equals("off");
+    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
   });
 });

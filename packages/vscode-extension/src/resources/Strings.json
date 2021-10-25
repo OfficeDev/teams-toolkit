@@ -74,7 +74,7 @@
       "grantPermissionSucceeded": "Added account: '%s' to the environment '%s' as a collaborator.",
       "grantPermissionWarning": "You need to handle Azure resource permissions manually on Azure Portal.",
       "noM365AccountSignedIn": "No M365 account signed in. Please sign in to M365.",
-      "m365TenantNotMatch": "The M365 tenant id(which is used to provision before)  does not match the current account"
+      "m365TenantNotMatch": "The M365 tenant id(which is used to provision before) does not match the current account"
     },
     "handlers": {
       "concurrentTriggerTask": "Task '%s' is still running. Wait for it to complete before starting another task.",

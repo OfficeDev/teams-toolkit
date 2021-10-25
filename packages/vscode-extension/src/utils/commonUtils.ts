@@ -322,6 +322,24 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
   return provisionResult.solution.resourceGroupName;
 }
 
+export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
+  let provisionResult: Json | undefined;
+
+  try {
+    provisionResult = await getProvisionResultJson(env);
+  } catch (error) {
+    // ignore error on tree view when load provision result failed.
+
+    return undefined;
+  }
+
+  if (!provisionResult) {
+    return undefined;
+  }
+
+  return provisionResult.solution.provisionSucceeded;
+}
+
 async function getProvisionResultJson(env: string): Promise<Json | undefined> {
   if (vscode.workspace.workspaceFolders) {
     const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];

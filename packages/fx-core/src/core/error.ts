@@ -270,3 +270,7 @@ export function FailedToParseResourceIdError(name: string, resourceId: string): 
     CoreSource
   );
 }
+
+export function SPFxConfigError(file: string): UserError {
+  return new UserError("SPFxConfigError", `Load SPFx config ${file} failed.`, CoreSource);
+}

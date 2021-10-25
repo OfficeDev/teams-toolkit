@@ -32,7 +32,7 @@ import {
 } from "../../src/utils";
 import { expect } from "./utils";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
 const staticOptions2: apis.StaticOptions = [
@@ -411,7 +411,11 @@ describe("Utils Tests", function () {
     it("Fake Path", async () => {
       const result = await setSubscriptionId("fake", "fake");
       expect(result.isOk() ? result.value : result.error).instanceOf(UserError);
-      expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
+      if (isMultiEnvEnabled()) {
+        expect(result.isOk() ? result.value : result.error.name).equals("WorkspaceNotSupported");
+      } else {
+        expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
+      }
     });
   });
 
@@ -474,6 +478,10 @@ describe("Utils Tests", function () {
   });
 
   describe("getLocalTeamsAppId", async () => {
+    if (isMultiEnvEnabled()) {
+      // This function is deprecated in multi-env
+      return;
+    }
     const sandbox = sinon.createSandbox();
 
     before(() => {

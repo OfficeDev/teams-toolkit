@@ -23,7 +23,7 @@ import * as util from "util";
 import { ProgressHelper } from "./utils/progress-helper";
 import { getStrings, getAppDirectory, isMultiEnvEnabled } from "../../../common/tools";
 import { getTemplatesFolder } from "../../..";
-import { MANIFEST_TEMPLATE, REMOTE_MANIFEST } from "../appstudio/constants";
+import { MANIFEST_LOCAL, MANIFEST_TEMPLATE, REMOTE_MANIFEST } from "../appstudio/constants";
 import axios from "axios";
 import { SPOClient } from "./spoClient";
 
@@ -181,10 +181,12 @@ export class SPFxPluginImpl {
 
       const appDirectory = await getAppDirectory(ctx.root);
       await Utils.configure(outputFolderPath, replaceMap);
-      const manifestTemplatePath = isMultiEnvEnabled()
-        ? path.join(appDirectory, MANIFEST_TEMPLATE)
-        : path.join(appDirectory, REMOTE_MANIFEST);
-      await Utils.configure(manifestTemplatePath, replaceMap);
+      if (isMultiEnvEnabled()) {
+        await Utils.configure(path.join(appDirectory, MANIFEST_TEMPLATE), replaceMap);
+        await Utils.configure(path.join(appDirectory, MANIFEST_LOCAL), replaceMap);
+      } else {
+        await Utils.configure(path.join(appDirectory, REMOTE_MANIFEST), replaceMap);
+      }
       return ok(undefined);
     } catch (error) {
       return err(ScaffoldError(error));

@@ -20,13 +20,29 @@ import {
 } from "../../../../../src/plugins/solution/fx-solution/question";
 import {
   BOTS_TPL,
+  BOTS_TPL_FOR_MULTI_ENV,
   COMPOSE_EXTENSIONS_TPL,
+  COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
   CONFIGURABLE_TABS_TPL,
+  CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
+  MANIFEST_TEMPLATE,
   REMOTE_MANIFEST,
   STATIC_TABS_TPL,
+  STATIC_TABS_TPL_FOR_MULTI_ENV,
 } from "../../../../../src/plugins/resource/appstudio/constants";
-import { newEnvInfo } from "../../../../../src";
+import { newEnvInfo } from "../../../../../src/core/tools";
+import { isMultiEnvEnabled } from "../../../../../src/common/tools";
 import { LocalCrypto } from "../../../../../src/core/crypto";
+import { getAzureProjectRoot } from "../helper";
+import * as path from "path";
+
+function getRemoteManifestPath(projectRoot: string): string {
+  if (isMultiEnvEnabled()) {
+    return `${projectRoot}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE}`;
+  } else {
+    return `${projectRoot}/${AppPackageFolderName}/${REMOTE_MANIFEST}`;
+  }
+}
 
 describe("Scaffold", () => {
   let plugin: AppStudioPlugin;
@@ -38,7 +54,7 @@ describe("Scaffold", () => {
     plugin = new AppStudioPlugin();
 
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources",
+      root: getAzureProjectRoot(),
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
@@ -46,8 +62,8 @@ describe("Scaffold", () => {
       cryptoProvider: new LocalCrypto(""),
     };
 
-    sandbox.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
-      fileContent.set(path.toString(), data);
+    sandbox.stub(fs, "writeFile").callsFake((file: number | PathLike, data: any) => {
+      fileContent.set(file.toString(), data);
     });
 
     sandbox.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
@@ -79,11 +95,15 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
 
-    const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`)
-    );
-    chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL);
-    chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL);
+    const manifest: TeamsAppManifest = JSON.parse(fileContent.get(getRemoteManifestPath(ctx.root)));
+    chai
+      .expect(manifest.staticTabs)
+      .to.deep.equal(isMultiEnvEnabled() ? STATIC_TABS_TPL_FOR_MULTI_ENV : STATIC_TABS_TPL);
+    chai
+      .expect(manifest.configurableTabs)
+      .to.deep.equal(
+        isMultiEnvEnabled() ? CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV : CONFIGURABLE_TABS_TPL
+      );
     chai
       .expect(manifest.bots, "Bots should be empty, because only tab is chosen")
       .to.deep.equal([]);
@@ -94,8 +114,33 @@ describe("Scaffold", () => {
       )
       .to.deep.equal([]);
 
-    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/color.png`)).to.be.true;
-    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/outline.png`)).to.be.true;
+    // NOTE(aochengwang):
+    // The `path.normalize` is a simple workaround.
+    //
+    // We need to normalize the file path when multi-env is turned on
+    //  because the code in appstudio plugin will use `path.join` to generate these file path (only when multi-env is enabled)
+    //  which implicitly calls `path.normalize`
+    //  and it removes the leading "./" in "./tests/plugins/resource/appstudio/...",
+    //  causing the test to fail.
+    // However the test case should not fail because these paths are essentially the same.
+    // A better approach to solve this issue is to write helper functions to:
+    //   1. normalize all paths in `fileContent.set`
+    //   2. normalize all paths before checking path existence in `fileContent`
+    // Maybe we can refactor this later.
+    chai.expect(
+      fileContent.has(
+        isMultiEnvEnabled()
+          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+          : `${ctx.root}/${AppPackageFolderName}/color.png`
+      )
+    ).to.be.true;
+    chai.expect(
+      fileContent.has(
+        isMultiEnvEnabled()
+          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+          : `${ctx.root}/${AppPackageFolderName}/outline.png`
+      )
+    ).to.be.true;
   });
 
   it("should generate manifest for bot", async () => {
@@ -112,9 +157,7 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`)
-    );
+    const manifest: TeamsAppManifest = JSON.parse(fileContent.get(getRemoteManifestPath(ctx.root)));
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only bot is chosen")
       .to.deep.equal([]);
@@ -124,7 +167,9 @@ describe("Scaffold", () => {
         "configurableTabs should be empty, because only bot is chosen"
       )
       .to.deep.equal([]);
-    chai.expect(manifest.bots).to.deep.equal(BOTS_TPL);
+    chai
+      .expect(manifest.bots)
+      .to.deep.equal(isMultiEnvEnabled() ? BOTS_TPL_FOR_MULTI_ENV : BOTS_TPL);
     chai
       .expect(
         manifest.composeExtensions,
@@ -132,8 +177,20 @@ describe("Scaffold", () => {
       )
       .to.deep.equal([]);
 
-    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/color.png`)).to.be.true;
-    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/outline.png`)).to.be.true;
+    chai.expect(
+      fileContent.has(
+        isMultiEnvEnabled()
+          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+          : `${ctx.root}/${AppPackageFolderName}/color.png`
+      )
+    ).to.be.true;
+    chai.expect(
+      fileContent.has(
+        isMultiEnvEnabled()
+          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+          : `${ctx.root}/${AppPackageFolderName}/outline.png`
+      )
+    ).to.be.true;
   });
 
   it("should generate manifest for messaging extension", async () => {
@@ -150,9 +207,7 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`)
-    );
+    const manifest: TeamsAppManifest = JSON.parse(fileContent.get(getRemoteManifestPath(ctx.root)));
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only msgext is chosen")
       .to.deep.equal([]);
@@ -165,10 +220,26 @@ describe("Scaffold", () => {
     chai
       .expect(manifest.bots, "Bots should be empty, because only msgext is chosen")
       .to.deep.equal([]);
-    chai.expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL);
+    chai
+      .expect(manifest.composeExtensions)
+      .to.deep.equal(
+        isMultiEnvEnabled() ? COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV : COMPOSE_EXTENSIONS_TPL
+      );
 
-    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/color.png`)).to.be.true;
-    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/outline.png`)).to.be.true;
+    chai.expect(
+      fileContent.has(
+        isMultiEnvEnabled()
+          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+          : `${ctx.root}/${AppPackageFolderName}/color.png`
+      )
+    ).to.be.true;
+    chai.expect(
+      fileContent.has(
+        isMultiEnvEnabled()
+          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+          : `${ctx.root}/${AppPackageFolderName}/outline.png`
+      )
+    ).to.be.true;
   });
 
   it("should generate manifest for tab, bot and messaging extension", async () => {
@@ -186,16 +257,38 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`)
-    );
-    chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL);
-    chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL);
-    chai.expect(manifest.bots).to.deep.equal(BOTS_TPL);
-    chai.expect(manifest.composeExtensions).to.deep.equal(COMPOSE_EXTENSIONS_TPL);
+    const manifest: TeamsAppManifest = JSON.parse(fileContent.get(getRemoteManifestPath(ctx.root)));
+    chai
+      .expect(manifest.staticTabs)
+      .to.deep.equal(isMultiEnvEnabled() ? STATIC_TABS_TPL_FOR_MULTI_ENV : STATIC_TABS_TPL);
+    chai
+      .expect(manifest.configurableTabs)
+      .to.deep.equal(
+        isMultiEnvEnabled() ? CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV : CONFIGURABLE_TABS_TPL
+      );
+    chai
+      .expect(manifest.bots)
+      .to.deep.equal(isMultiEnvEnabled() ? BOTS_TPL_FOR_MULTI_ENV : BOTS_TPL);
+    chai
+      .expect(manifest.composeExtensions)
+      .to.deep.equal(
+        isMultiEnvEnabled() ? COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV : COMPOSE_EXTENSIONS_TPL
+      );
 
-    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/color.png`)).to.be.true;
-    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/outline.png`)).to.be.true;
+    chai.expect(
+      fileContent.has(
+        isMultiEnvEnabled()
+          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+          : `${ctx.root}/${AppPackageFolderName}/color.png`
+      )
+    ).to.be.true;
+    chai.expect(
+      fileContent.has(
+        isMultiEnvEnabled()
+          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+          : `${ctx.root}/${AppPackageFolderName}/outline.png`
+      )
+    ).to.be.true;
   });
 
   it("shouldn't generate manifest for SPFx project", async () => {
@@ -214,10 +307,22 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest = fileContent.get(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`);
+    const manifest = fileContent.get(getRemoteManifestPath(ctx.root));
     chai.expect(manifest).to.be.not.undefined;
 
-    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/color.png`)).to.be.true;
-    chai.expect(fileContent.has(`${ctx.root}/${AppPackageFolderName}/outline.png`)).to.be.true;
+    chai.expect(
+      fileContent.has(
+        isMultiEnvEnabled()
+          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
+          : `${ctx.root}/${AppPackageFolderName}/color.png`
+      )
+    ).to.be.true;
+    chai.expect(
+      fileContent.has(
+        isMultiEnvEnabled()
+          ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
+          : `${ctx.root}/${AppPackageFolderName}/outline.png`
+      )
+    ).to.be.true;
   });
 });

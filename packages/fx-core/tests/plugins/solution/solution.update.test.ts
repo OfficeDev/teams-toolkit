@@ -194,18 +194,6 @@ describe("update()", () => {
     ): Promise<Result<any, FxError>> {
       return ok(Void);
     };
-
-    let confirmDialogDisplayed = false;
-    mockedCtx.ui = new MockUserInteraction();
-    mockedCtx.ui.showMessage = async (
-      level: "info" | "warn" | "error",
-      message: string | any,
-      modal: boolean,
-      ...items: string[]
-    ): Promise<Result<string | undefined, FxError>> => {
-      confirmDialogDisplayed = true;
-      return ok("Ok");
-    };
     const result = await solution.update(mockedCtx);
     expect(result.isOk()).equals(true);
     expect(mockedCtx.projectSettings?.solutionSettings?.azureResources as string[]).contains(
@@ -239,17 +227,6 @@ describe("update()", () => {
     ): Promise<Result<any, FxError>> {
       return ok(Void);
     };
-    let confirmDialogDisplayed = false;
-    mockedCtx.ui = new MockUserInteraction();
-    mockedCtx.ui.showMessage = async (
-      level: "info" | "warn" | "error",
-      message: string | any,
-      modal: boolean,
-      ...items: string[]
-    ): Promise<Result<string | undefined, FxError>> => {
-      confirmDialogDisplayed = true;
-      return ok("Ok");
-    };
     const result = await solution.update(mockedCtx);
     expect(result.isOk()).equals(true);
     expect(mockedCtx.projectSettings?.solutionSettings?.azureResources as string[]).contains(
@@ -282,17 +259,6 @@ describe("update()", () => {
       _selectedPlugins
     ): Promise<Result<any, FxError>> {
       return ok(Void);
-    };
-    let confirmDialogDisplayed = false;
-    mockedCtx.ui = new MockUserInteraction();
-    mockedCtx.ui.showMessage = async (
-      level: "info" | "warn" | "error",
-      message: string | any,
-      modal: boolean,
-      ...items: string[]
-    ): Promise<Result<string | undefined, FxError>> => {
-      confirmDialogDisplayed = true;
-      return ok("Ok");
     };
     // mock that provision already succeeded
     mockedCtx.envInfo.state.set(GLOBAL_CONFIG, new ConfigMap());
@@ -331,17 +297,6 @@ describe("update()", () => {
       _selectedPlugins
     ): Promise<Result<any, FxError>> {
       return err(returnSystemError(new Error("Some fake error"), "SolutionTest", "FakeError"));
-    };
-    let confirmDialogDisplayed = false;
-    mockedCtx.ui = new MockUserInteraction();
-    mockedCtx.ui.showMessage = async (
-      level: "info" | "warn" | "error",
-      message: string | any,
-      modal: boolean,
-      ...items: string[]
-    ): Promise<Result<string | undefined, FxError>> => {
-      confirmDialogDisplayed = true;
-      return ok("Ok");
     };
     // mock that provision already succeeded
     mockedCtx.envInfo.state.set(GLOBAL_CONFIG, new ConfigMap());
@@ -412,17 +367,6 @@ describe("update()", () => {
       _selectedPlugins
     ): Promise<Result<any, FxError>> {
       return ok(Void);
-    };
-    let confirmDialogDisplayed = false;
-    mockedCtx.ui = new MockUserInteraction();
-    mockedCtx.ui.showMessage = async (
-      level: "info" | "warn" | "error",
-      message: string | any,
-      modal: boolean,
-      ...items: string[]
-    ): Promise<Result<string | undefined, FxError>> => {
-      confirmDialogDisplayed = true;
-      return ok("Ok");
     };
     // mock that provision already succeeded
     mockedCtx.envInfo.state.set(GLOBAL_CONFIG, new ConfigMap());

@@ -52,7 +52,7 @@ import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
-import { AppStudioPlugin, isArmSupportEnabled, newEnvInfo } from "../../../src";
+import { AppStudioPlugin, newEnvInfo } from "../../../src";
 import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { MockGraphTokenProvider } from "../../core/utils";
@@ -397,9 +397,6 @@ describe("V2 implementation", () => {
   });
 
   it("should return ok when adding APIM", async () => {
-    if (isArmSupportEnabled()) {
-      return;
-    }
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -517,9 +514,6 @@ describe("V2 implementation", () => {
     });
 
     it("createEnv", async () => {
-      if (isArmSupportEnabled()) {
-        return;
-      }
       const mockedCtx = new MockedV2Context(projectSettings);
       const mockedInputs: Inputs = {
         platform: Platform.VSCode,

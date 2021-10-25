@@ -26,9 +26,9 @@ module.exports = {
         '@typescript-eslint/no-var-requires': 0,
         '@typescript-eslint/no-empty-function': 0,
         "import/no-cycle": [
-            "error",
+            "warn",
             {
-                "maxDepth": 10,
+                "maxDepth": Infinity,
                 "ignoreExternal": true
             }
         ]

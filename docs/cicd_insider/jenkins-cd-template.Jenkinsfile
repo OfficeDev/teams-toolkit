@@ -67,7 +67,7 @@ pipeline {
 
         // stage('Commit provision configs if necessary') {
         //     steps {
-        //         sh 'git add .fx/env.default.json'
+        //         sh 'git add .fx'
         //         sh 'git commit -m "chore: commit provision configs"'
         //         sh 'git push'
         //     }

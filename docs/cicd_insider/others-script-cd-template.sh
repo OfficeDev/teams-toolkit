@@ -54,7 +54,7 @@ cd tabs && npm run test && cd -
 # npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID} --env ${TEAMSFX_ENV_NAME}
 
 # Commit provision configs if necessary.
-# git add .fx/env.default.json
+# git add .fx
 # git commit -m "chore: commit provision configs"
 # git push
 

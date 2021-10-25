@@ -8,6 +8,7 @@ import * as fs from "fs-extra";
 import { DeployMgr } from "../../../../../src/plugins/resource/bot/deployMgr";
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { genTomorrow, genYesterday } from "./utils";
+import { isArmSupportEnabled, isMultiEnvEnabled } from "../../../../../src";
 
 describe("Deploy Manager", () => {
   describe("Test init", () => {
@@ -84,7 +85,11 @@ describe("Deploy Manager", () => {
       const needsRedeploy = await deployMgr.needsToRedeploy();
 
       // Assert
-      chai.assert.isFalse(needsRedeploy);
+      if (isArmSupportEnabled() || isMultiEnvEnabled()) {
+        chai.assert.isTrue(needsRedeploy);
+      } else {
+        chai.assert.isFalse(needsRedeploy);
+      }
     });
 
     it("needsToRedeploy True", async () => {

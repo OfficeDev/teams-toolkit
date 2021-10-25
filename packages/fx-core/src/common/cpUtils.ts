@@ -31,7 +31,7 @@ export async function executeCommand(
   return result.stdout;
 }
 
-async function tryExecuteCommand(
+export async function tryExecuteCommand(
   command: string,
   args: string[],
   logger?: LogProvider,

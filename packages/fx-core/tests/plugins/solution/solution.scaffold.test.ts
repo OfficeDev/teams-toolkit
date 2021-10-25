@@ -210,7 +210,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(6);
+    expect(fileContent.size).equals(5);
     expect(fileContent.has(path.join("./templates/azure", "main.bicep"))).to.be.true;
     expect(
       fileContent.has(path.join("./templates/azure/modules", "frontendHostingProvision.bicep"))
@@ -249,9 +249,6 @@ describe("Solution scaffold() reading valid manifest file", () => {
 
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
-    // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(1);
-
     restore();
   });
   it("getQuestionsForScaffolding", async () => {

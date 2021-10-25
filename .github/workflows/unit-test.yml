@@ -219,6 +219,7 @@ jobs:
             "tests/plugins/resource/aad/**/*.test.ts" \
             "tests/plugins/resource/simpleauth/**/*.test.ts" \
             "tests/plugins/resource/frontend/**/*.test.ts" \
+            "tests/plugins/resource/localdebug/**/*.test.ts" \
             "tests/plugins/solution/*.test.ts"
           cd -
 

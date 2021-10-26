@@ -35,7 +35,7 @@ jobs:
           fi
 
       - name: Search comment
-        if: ${{ steps.check_title.outputs.included == "true" }}
+        if: ${{ steps.check_title.outputs.included == 'true' }}
         uses: peter-evans/find-comment@v1
         id: comments
         with:
@@ -43,7 +43,7 @@ jobs:
           body-includes: "E2E TEST:"
 
       - name: Check if test is included in comments
-        if: ${{ steps.check_title.outputs.included == "true" }}
+        if: ${{ steps.check_title.outputs.included == 'true' }}
         run: |
           if [ -z "${{ steps.comments.outputs.comment-id }}" ]; then
             echo "E2E TEST undefined."

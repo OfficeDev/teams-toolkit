@@ -29,9 +29,9 @@ jobs:
           declare -a types=("fix" "feat" "refactor")
           type=`echo "${{ github.event.pull_request.title }}" |  conventional-commits-parser | jq -r '.[].type'`
           if [[ " ${types[*]} " =~ " ${type} " ]]; then
-            echo "::set-output included=true"
+            echo "::set-output name=included::true"
           else
-            echo "::set-output included=false"
+            echo "::set-output name=included::false"
           fi
 
       - name: Search comment

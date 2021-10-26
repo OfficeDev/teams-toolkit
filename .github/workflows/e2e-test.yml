@@ -141,6 +141,7 @@ jobs:
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/report.json cli $version
 
   report-stat:
+    if: ${{ github.event_name != 'pull_request' }}
     env:
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
     runs-on: ubuntu-latest

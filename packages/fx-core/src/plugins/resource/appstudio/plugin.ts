@@ -15,7 +15,6 @@ import {
   IComposeExtension,
   IBot,
   AppPackageFolderName,
-  AppPackageFolderNameForMultiEnv,
   ArchiveFolderName,
   V1ManifestFileName,
   ConfigMap,
@@ -90,6 +89,7 @@ import {
   DEFAULT_COLOR_PNG_FILENAME,
   DEFAULT_OUTLINE_PNG_FILENAME,
   MANIFEST_RESOURCES,
+  APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -517,7 +517,7 @@ export class AppStudioPluginImpl {
 
     // cannot use getAppDirectory before creating the manifest file
     const newAppPackageFolder = isMultiEnvEnabled()
-      ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}`
+      ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}`
       : `${ctx.root}/${AppPackageFolderName}`;
 
     await fs.ensureDir(newAppPackageFolder);
@@ -573,7 +573,7 @@ export class AppStudioPluginImpl {
 
     // cannot use getAppDirectory before creating the manifest file
     const appDir = isMultiEnvEnabled()
-      ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}`
+      ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}`
       : `${ctx.root}/${AppPackageFolderName}`;
 
     if (isSPFxProject(ctx.projectSettings)) {
@@ -733,19 +733,19 @@ export class AppStudioPluginImpl {
       await fs.move(
         `${appDirectory}/${manifest.icons.color}`,
         isMultiEnvEnabled()
-          ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_RESOURCES}/${manifest.icons.color}`
+          ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${manifest.icons.color}`
           : `${ctx.root}/${AppPackageFolderName}/${manifest.icons.color}`
       );
       await fs.move(
         `${appDirectory}/${manifest.icons.outline}`,
         isMultiEnvEnabled()
-          ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_RESOURCES}/${manifest.icons.outline}`
+          ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${manifest.icons.outline}`
           : `${ctx.root}/${AppPackageFolderName}/${manifest.icons.outline}`
       );
       await fs.move(
         `${appDirectory}/${REMOTE_MANIFEST}`,
         isMultiEnvEnabled()
-          ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_TEMPLATE}`
+          ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_TEMPLATE}`
           : `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
       );
     }

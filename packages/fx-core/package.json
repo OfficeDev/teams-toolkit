@@ -18,7 +18,7 @@
     "test:appstudio": "nyc mocha \"tests/plugins/resource/appstudio/**/*.test.ts\"",
     "test:spfx": "nyc mocha \"tests/plugins/resource/spfx/**/*.test.ts\"",
     "test:apim": "nyc mocha \"tests/plugins/resource/apim/**/*.test.ts\"",
-    "test:unit": "nyc mocha \"tests/**/*.test.ts\"",
+    "test:unit": "nyc --no-clean mocha \"tests/**/*.test.ts\"",
     "test:solution": "nyc mocha \"tests/plugins/solution/*.test.ts\"",
     "test:core": "nyc mocha \"tests/core/*.test.ts\"",
     "test:core-mw": "nyc mocha \"tests/core/middleware/*.test.ts\"",

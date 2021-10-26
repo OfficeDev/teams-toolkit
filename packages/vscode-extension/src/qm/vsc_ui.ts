@@ -168,18 +168,19 @@ export class VsCodeUI implements UserInteraction {
           }
 
           const onDidAccept = async () => {
-            let selectedItems = quickPick.selectedItems;
-            if (!selectedItems || selectedItems.length === 0) selectedItems = [quickPick.items[0]];
-            const item = selectedItems[0];
-            let result: string | OptionItem;
-            if (
-              typeof option.options[0] === "string" ||
-              option.returnObject === undefined ||
-              option.returnObject === false
-            )
-              result = item.id;
-            else result = getOptionItem(item);
-            resolve(ok({ type: "success", result: result }));
+            const selectedItems = quickPick.selectedItems;
+            if (selectedItems && selectedItems.length > 0) {
+              const item = selectedItems[0];
+              let result: string | OptionItem;
+              if (
+                typeof option.options[0] === "string" ||
+                option.returnObject === undefined ||
+                option.returnObject === false
+              )
+                result = item.id;
+              else result = getOptionItem(item);
+              resolve(ok({ type: "success", result: result }));
+            }
           };
 
           disposables.push(

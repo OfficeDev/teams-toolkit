@@ -982,7 +982,7 @@ export class TeamsAppSolution implements Solution {
       }
 
       // 1.1.2 Azure Tab
-      const tabRes = await this.getTabScaffoldQuestions(ctx, true);
+      const tabRes = await this.getTabScaffoldQuestions(ctx, false);
       if (tabRes.isErr()) return tabRes;
       if (tabRes.value) {
         const tabNode = tabRes.value;

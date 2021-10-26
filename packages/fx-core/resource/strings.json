@@ -50,7 +50,8 @@
   "plugins": {
     "SPFx": {
       "buildNotice": "SharePoint package successfully built at %s.",
-      "deployNotice": "SharePoint package %s has been successfully deployed to %s.",
+      "deployNotice": "SharePoint package %s has been successfully deployed to [%s](%s).",
+      "deployFailedNotice": "You don't have permission to upload and deploy package to App Catalog %s, please use site admin account, or you can get your own free Microsoft 365 tenant from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",
       "createAppCatalogNotice": "There is no tenant app catalog under %s, do you want to create one?"
     }
   }

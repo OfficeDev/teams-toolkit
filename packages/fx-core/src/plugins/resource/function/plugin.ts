@@ -78,7 +78,7 @@ import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { generateBicepFiles, getTemplatesFolder } from "../../..";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ArmTemplateResult, ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import {
   getResourceGroupNameFromResourceId,
@@ -696,44 +696,82 @@ export class FunctionPluginImpl {
       throw configurationModuleContentResult.error;
     }
 
-    const parameterTemplateFilePath = path.join(
+    // const parameterTemplateFilePath = path.join(
+    //   bicepTemplateDirectory,
+    //   Bicep.ParameterOrchestrationFileName
+    // );
+    // const moduleOrchestrationFilePath = path.join(
+    //   bicepTemplateDirectory,
+    //   Bicep.ModuleOrchestrationFileName
+    // );
+    // const outputTemplateFilePath = path.join(
+    //   bicepTemplateDirectory,
+    //   Bicep.OutputOrchestrationFileName
+    // );
+
+    const provisionTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Bicep.ParameterOrchestrationFileName
-    );
-    const moduleOrchestrationFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.ModuleOrchestrationFileName
-    );
-    const outputTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.OutputOrchestrationFileName
+      "provision.template.v2.bicep"
     );
 
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        functionProvision: {
-          Content: provisionModuleContentResult.value,
-        },
-        functionConfiguration: {
-          Content: configurationModuleContentResult.value,
+    const configTemplateFilePath = path.join(bicepTemplateDirectory, "config.template.v2.bicep");
+
+    const provisionFuncTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      "functionProvision.template.v2.bicep"
+    );
+
+    const configFuncTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      "functionConfiguration.template.v2.bicep"
+    );
+
+    const result1: ArmTemplateResult = {
+      Provision: {
+        Orchestration: await fs.readFile(provisionTemplateFilePath, ConstantString.UTF8Encoding),
+        Modules: {
+          functionProvision: await fs.readFile(
+            provisionFuncTemplateFilePath,
+            ConstantString.UTF8Encoding
+          ),
         },
       },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
-        },
-        ModuleTemplate: {
-          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
-          Outputs: {
-            functionEndpoint: FunctionBicep.functionEndpoint,
-          },
-        },
-        OutputTemplate: {
-          Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
+      Configuration: {
+        Orchestration: await fs.readFile(configTemplateFilePath, ConstantString.UTF8Encoding),
+        Modules: {
+          functionConfig: await fs.readFile(
+            configFuncTemplateFilePath,
+            ConstantString.UTF8Encoding
+          ),
         },
       },
     };
-    return ResultFactory.Success(result);
+
+    // const result: ScaffoldArmTemplateResult = {
+    //   Modules: {
+    //     functionProvision: {
+    //       Content: provisionModuleContentResult.value,
+    //     },
+    //     functionConfiguration: {
+    //       Content: configurationModuleContentResult.value,
+    //     },
+    //   },
+    //   Orchestration: {
+    //     ParameterTemplate: {
+    //       Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
+    //     },
+    //     ModuleTemplate: {
+    //       Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
+    //       Outputs: {
+    //         functionEndpoint: FunctionBicep.functionEndpoint,
+    //       },
+    //     },
+    //     OutputTemplate: {
+    //       Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
+    //     },
+    //   },
+    // };
+    return ResultFactory.Success(result1);
   }
 
   public async deploy(ctx: PluginContext): Promise<FxResult> {

@@ -4,6 +4,7 @@
 
 export const ConfigFolderName = "fx";
 export const AppPackageFolderName = "appPackage";
+export const AppPackageFolderNameForMultiEnv = "templates/appPackage";
 export const InputConfigsFolderName = "configs";
 export const StatesFolderName = "states";
 export const ProjectSettingsFileName = "projectSettings.json";

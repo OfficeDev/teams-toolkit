@@ -12,6 +12,7 @@ import {
   AppPackageFolderName,
   V1ManifestFileName,
   ArchiveFolderName,
+  AppPackageFolderNameForMultiEnv,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import fs, { PathLike } from "fs-extra";
@@ -185,7 +186,7 @@ describe("Migrate", () => {
       fileContent.get(
         path.normalize(
           isMultiEnvEnabled()
-            ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_LOCAL}`
+            ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_LOCAL}`
             : `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
         )
       )
@@ -196,7 +197,7 @@ describe("Migrate", () => {
       fileContent.has(
         path.normalize(
           isMultiEnvEnabled()
-            ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_RESOURCES}/${DEFAULT_COLOR_PNG_FILENAME}`
+            ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_RESOURCES}/${DEFAULT_COLOR_PNG_FILENAME}`
             : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_COLOR_PNG_FILENAME}`
         )
       )
@@ -206,7 +207,7 @@ describe("Migrate", () => {
       fileContent.has(
         path.normalize(
           isMultiEnvEnabled()
-            ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_RESOURCES}/${DEFAULT_OUTLINE_PNG_FILENAME}`
+            ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_RESOURCES}/${DEFAULT_OUTLINE_PNG_FILENAME}`
             : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_OUTLINE_PNG_FILENAME}`
         )
       )
@@ -241,7 +242,7 @@ describe("Migrate", () => {
       fileContent.get(
         path.normalize(
           isMultiEnvEnabled()
-            ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_LOCAL}`
+            ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_LOCAL}`
             : `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
         )
       )
@@ -275,7 +276,7 @@ describe("Migrate", () => {
       fileContent.has(
         path.normalize(
           isMultiEnvEnabled()
-            ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_RESOURCES}/${DEFAULT_COLOR_PNG_FILENAME}`
+            ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_RESOURCES}/${DEFAULT_COLOR_PNG_FILENAME}`
             : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_COLOR_PNG_FILENAME}`
         )
       )
@@ -284,7 +285,7 @@ describe("Migrate", () => {
       fileContent.has(
         path.normalize(
           isMultiEnvEnabled()
-            ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_RESOURCES}/${DEFAULT_OUTLINE_PNG_FILENAME}`
+            ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_RESOURCES}/${DEFAULT_OUTLINE_PNG_FILENAME}`
             : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_OUTLINE_PNG_FILENAME}`
         )
       )
@@ -330,7 +331,7 @@ describe("Migrate", () => {
       fileContent.get(
         path.normalize(
           isMultiEnvEnabled()
-            ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_LOCAL}`
+            ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_LOCAL}`
             : `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
         )
       )
@@ -341,7 +342,7 @@ describe("Migrate", () => {
       fileContent.has(
         path.normalize(
           isMultiEnvEnabled()
-            ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_RESOURCES}/${DEFAULT_COLOR_PNG_FILENAME}`
+            ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_RESOURCES}/${DEFAULT_COLOR_PNG_FILENAME}`
             : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_COLOR_PNG_FILENAME}`
         )
       )
@@ -350,7 +351,7 @@ describe("Migrate", () => {
       fileContent.has(
         path.normalize(
           isMultiEnvEnabled()
-            ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_RESOURCES}/${DEFAULT_OUTLINE_PNG_FILENAME}`
+            ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_RESOURCES}/${DEFAULT_OUTLINE_PNG_FILENAME}`
             : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_OUTLINE_PNG_FILENAME}`
         )
       )

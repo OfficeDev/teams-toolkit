@@ -15,6 +15,7 @@ import {
   IComposeExtension,
   IBot,
   AppPackageFolderName,
+  AppPackageFolderNameForMultiEnv,
   ArchiveFolderName,
   V1ManifestFileName,
   ConfigMap,
@@ -516,7 +517,7 @@ export class AppStudioPluginImpl {
 
     // cannot use getAppDirectory before creating the manifest file
     const newAppPackageFolder = isMultiEnvEnabled()
-      ? `${ctx.root}/templates/${AppPackageFolderName}`
+      ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}`
       : `${ctx.root}/${AppPackageFolderName}`;
 
     await fs.ensureDir(newAppPackageFolder);
@@ -572,7 +573,7 @@ export class AppStudioPluginImpl {
 
     // cannot use getAppDirectory before creating the manifest file
     const appDir = isMultiEnvEnabled()
-      ? `${ctx.root}/templates/${AppPackageFolderName}`
+      ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}`
       : `${ctx.root}/${AppPackageFolderName}`;
 
     if (isSPFxProject(ctx.projectSettings)) {
@@ -732,19 +733,19 @@ export class AppStudioPluginImpl {
       await fs.move(
         `${appDirectory}/${manifest.icons.color}`,
         isMultiEnvEnabled()
-          ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_RESOURCES}/${manifest.icons.color}`
+          ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_RESOURCES}/${manifest.icons.color}`
           : `${ctx.root}/${AppPackageFolderName}/${manifest.icons.color}`
       );
       await fs.move(
         `${appDirectory}/${manifest.icons.outline}`,
         isMultiEnvEnabled()
-          ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_RESOURCES}/${manifest.icons.outline}`
+          ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_RESOURCES}/${manifest.icons.outline}`
           : `${ctx.root}/${AppPackageFolderName}/${manifest.icons.outline}`
       );
       await fs.move(
         `${appDirectory}/${REMOTE_MANIFEST}`,
         isMultiEnvEnabled()
-          ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE}`
+          ? `${ctx.root}/${AppPackageFolderNameForMultiEnv}/${MANIFEST_TEMPLATE}`
           : `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
       );
     }

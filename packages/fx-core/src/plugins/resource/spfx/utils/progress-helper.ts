@@ -6,6 +6,7 @@ import { ProgressTitleMessage, PreDeployProgressMessage } from "./constants";
 
 export class ProgressHelper {
   static preDeployProgress: IProgressHandler | undefined;
+  static deployProgress: IProgressHandler | undefined;
 
   static async startPreDeployProgressHandler(
     ctx: PluginContext
@@ -25,5 +26,18 @@ export class ProgressHelper {
   static async endPreDeployProgress(success: boolean): Promise<void> {
     await this.preDeployProgress?.end(success);
     this.preDeployProgress = undefined;
+  }
+
+  static async startDeployProgressHandler(
+    ctx: PluginContext
+  ): Promise<IProgressHandler | undefined> {
+    this.deployProgress = ctx.ui?.createProgressBar(ProgressTitleMessage.DeployProgressTitle, 1);
+    await this.deployProgress?.start("");
+    return this.deployProgress;
+  }
+
+  static async endDeployProgress(success: boolean): Promise<void> {
+    await this.deployProgress?.end(success);
+    this.deployProgress = undefined;
   }
 }

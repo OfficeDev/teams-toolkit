@@ -332,7 +332,6 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     hasMessageExtensionCapability,
     isSPFx,
     hasProvision,
-    migrateFromV1,
   } = await queryProjectStatus(fx);
 
   //localSettings.json
@@ -369,7 +368,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     hasBotCapability,
     hasMessageExtensionCapability,
     isSPFx,
-    migrateFromV1
+    false
   );
   const localManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
   await fs.writeFile(localManifestFile, JSON.stringify(localManifest, null, 4));
@@ -496,7 +495,6 @@ async function queryProjectStatus(fx: string): Promise<any> {
   );
   const isSPFx = plugins?.some((plugin) => plugin.name === PluginNames.SPFX);
   const hasProvision = envDefaultJson.solution?.provisionSucceeded as boolean;
-  const migrateFromV1 = !!solutionSettings.migrateFromV1;
   return {
     hasFrontend,
     hasBackend,
@@ -505,7 +503,6 @@ async function queryProjectStatus(fx: string): Promise<any> {
     hasMessageExtensionCapability,
     isSPFx,
     hasProvision,
-    migrateFromV1,
   };
 }
 

@@ -173,7 +173,7 @@ describe(FunctionPluginInfo.pluginName, () => {
       sinon.stub(dirWalk, "forEachFileAndDir").resolves(undefined);
 
       // Act
-      const res = await FunctionDeploy.hasUpdatedContent("ut", FunctionLanguage.JavaScript);
+      const res = await FunctionDeploy.hasUpdatedContent("ut", FunctionLanguage.JavaScript, "ut");
 
       // Assert
       chai.assert.isFalse(res);
@@ -184,7 +184,7 @@ describe(FunctionPluginInfo.pluginName, () => {
       sinon.stub(dirWalk, "forEachFileAndDir").resolves(undefined);
 
       // Act
-      const res = await FunctionDeploy.hasUpdatedContent("ut", FunctionLanguage.JavaScript);
+      const res = await FunctionDeploy.hasUpdatedContent("ut", FunctionLanguage.JavaScript, "ut");
 
       // Assert
       chai.assert.isTrue(res);

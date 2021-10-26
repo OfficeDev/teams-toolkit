@@ -31,6 +31,9 @@ module.exports = {
                 "maxDepth": Infinity,
                 "ignoreExternal": true
             }
+        ],
+        "import/no-unresolved": [
+            "warn"
         ]
     },
 };

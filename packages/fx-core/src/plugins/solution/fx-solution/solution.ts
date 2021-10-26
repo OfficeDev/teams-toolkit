@@ -146,7 +146,7 @@ import {
   parseUserName,
 } from "./v2/utils";
 import { askForProvisionConsent } from "./v2/provision";
-import { scaffoldReadmeAndLocalSettings } from "./v2/scaffolding";
+import { scaffoldReadme } from "./v2/scaffolding";
 import { environmentManager } from "../../..";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 
@@ -365,13 +365,7 @@ export class TeamsAppSolution implements Solution {
       .capabilities;
     const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .azureResources;
-    await scaffoldReadmeAndLocalSettings(
-      capabilities,
-      azureResources,
-      ctx.root,
-      ctx.localSettings,
-      true
-    );
+    await scaffoldReadme(capabilities, azureResources, ctx.root, true);
 
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Migrate, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -461,12 +455,7 @@ export class TeamsAppSolution implements Solution {
       const azureResources = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
         .azureResources;
 
-      await scaffoldReadmeAndLocalSettings(
-        capabilities,
-        azureResources,
-        ctx.root,
-        ctx.localSettings
-      );
+      await scaffoldReadme(capabilities, azureResources, ctx.root);
     }
 
     if (isArmSupportEnabled() && generateResourceTemplate && this.isAzureProject(ctx)) {

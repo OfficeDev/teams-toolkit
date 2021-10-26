@@ -83,7 +83,7 @@ export async function scaffoldSourceCode(
     const azureResources = solutionSettings.azureResources;
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await scaffoldReadmeAndLocalSettings(capabilities, azureResources, inputs.projectPath!);
+    await scaffoldReadme(capabilities, azureResources, inputs.projectPath!);
 
     ctx.userInteraction.showMessage(
       "info",
@@ -138,12 +138,7 @@ export async function scaffoldByPlugins(
     const azureResources = solutionSettings.azureResources;
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-    await scaffoldReadmeAndLocalSettings(
-      capabilities,
-      azureResources,
-      inputs.projectPath!,
-      localSettings
-    );
+    await scaffoldReadme(capabilities, azureResources, inputs.projectPath!);
 
     ctx.userInteraction.showMessage(
       "info",
@@ -156,11 +151,10 @@ export async function scaffoldByPlugins(
   }
 }
 
-export async function scaffoldReadmeAndLocalSettings(
+export async function scaffoldReadme(
   capabilities: string[],
   azureResources: string[],
   projectPath: string,
-  localSettings?: Json,
   migrateFromV1?: boolean
 ): Promise<void> {
   capabilities = capabilities || [];
@@ -179,25 +173,6 @@ export async function scaffoldReadmeAndLocalSettings(
     const readme = path.join(getTemplatesFolder(), "plugins", "solution", "v1", "README.md");
     if (await fs.pathExists(readme)) {
       await fs.copy(readme, `${projectPath}/README.md`);
-    }
-  }
-
-  const hasBackend = azureResources.includes(AzureResourceFunction.id);
-
-  if (isMultiEnvEnabled()) {
-    const localSettingsProvider = new LocalSettingsProvider(projectPath);
-
-    if (localSettings !== undefined) {
-      // Add local settings for the new added capability/resource
-      localSettings = localSettingsProvider.incrementalInit(localSettings!, hasBackend, hasBot);
-      await localSettingsProvider.saveJson(
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        localSettings
-      );
-    } else {
-      // Initialize a local settings on scaffolding
-      localSettings = localSettingsProvider.init(hasTab, hasBackend, hasBot || hasMsgExt);
-      await localSettingsProvider.save(localSettings);
     }
   }
 }

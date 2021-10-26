@@ -126,6 +126,7 @@
     "copy-webpack-plugin": "^6.4.1",
     "dotenv": "^8.2.0",
     "eslint": "^7.22.0",
+    "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-prettier": "^4.0.0",
     "faker": "^5.5.2",
     "lint-staged": "^10.5.4",

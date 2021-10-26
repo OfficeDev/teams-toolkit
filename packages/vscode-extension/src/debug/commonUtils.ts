@@ -369,24 +369,20 @@ export async function loadPackageJson(path: string): Promise<any> {
     return undefined;
   }
 
-  return new Promise((resolve) => {
-    const readJson = require("read-package-json");
-    readJson(path, (er: any, data: any) => {
-      if (er) {
-        VsCodeLogInstance.error(`Cannot load package.json from ${path}. Error: ${er}`);
-        resolve(undefined);
-      }
-
-      resolve(data);
-    });
-  });
+  const rpj = require("read-package-json-fast");
+  try {
+    return await rpj(path);
+  } catch (error) {
+    VsCodeLogInstance.error(`Cannot load package.json from ${path}. Error: ${error}`);
+    return undefined;
+  }
 }
 
 export async function loadTeamsFxDevScript(componentRoot: string): Promise<string | undefined> {
   const packageJson = await loadPackageJson(path.join(componentRoot, "package.json"));
   if (packageJson && packageJson.scripts && packageJson.scripts["dev:teamsfx"]) {
     const devTeamsfx: string = packageJson.scripts["dev:teamsfx"];
-    constants.npmRunDevRegex.test(devTeamsfx) ? packageJson.scripts["dev"] : devTeamsfx;
+    return constants.npmRunDevRegex.test(devTeamsfx) ? packageJson.scripts["dev"] : devTeamsfx;
   } else {
     return undefined;
   }

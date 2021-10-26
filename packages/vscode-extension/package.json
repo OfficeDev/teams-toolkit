@@ -646,7 +646,7 @@
           },
           "fx-extension.defaultProjectRootDirectory":{
             "type":"string",
-            "description": "Set the location to create new projects. By default, the root directory is $HOME/TeamsApps. (requries reload of VS Code)"
+            "description": "Set the default root directory for creating new teams app project. By default, the root directory is $HOME_DIR/TeamsApps. (requries reload of VS Code)"
           }
         }
       }

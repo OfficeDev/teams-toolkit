@@ -432,7 +432,7 @@ export function isRemoteCollaborateEnabled(): boolean {
 export function getRootDirectory(): string {
   const root = process.env[FeatureFlagName.rootDirectory];
   if (root === undefined || root === "") {
-    return path.join(os.homedir(), "TeamsApps");
+    return path.join(os.homedir(), ConstantString.rootFolder);
   } else {
     return root;
   }

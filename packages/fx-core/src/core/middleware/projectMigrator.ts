@@ -19,12 +19,13 @@ import {
 import {
   CoreHookContext,
   deserializeDict,
-  NoProjectOpenedError,
   serializeDict,
   SolutionConfigError,
   ProjectSettingError,
   environmentManager,
+  SPFxConfigError,
 } from "../..";
+import { UpgradeCanceledError } from "../error";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
@@ -60,16 +61,21 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
+import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
+import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
 const learnMoreText = "Learn More";
 const reloadText = "Reload";
+const upgradeButton = "Upgrade";
 const solutionName = "solution";
 const subscriptionId = "subscriptionId";
 const resourceGroupName = "resourceGroupName";
 const migrationGuideUrl = "https://aka.ms/teamsfx-migration-guide";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
+const learnMoreLink =
+  "https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features";
 let updateNotificationFlag = false;
 let fromReloadFlag = false;
 
@@ -115,13 +121,20 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       "warn",
       getStrings().solution.MigrationToArmAndMultiEnvMessage,
       true,
-      "OK"
+      upgradeButton
     );
     const answer = res?.isOk() ? res.value : undefined;
-    if (!answer || answer != "OK") {
+    if (!answer || answer != upgradeButton) {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
         [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
       });
+      ctx.result = err(UpgradeCanceledError());
+      core.tools.logProvider.warning(
+        `[core] Upgrade canceled. If you don't want to upgrade your project, please install another version of Teams Toolkit(version <= 2.7.0). Read this wiki(${learnMoreLink}) to learn how to downgrade Teams Toolkit.`
+      );
+      core.tools.logProvider.warning(
+        `[core] You can also reload VSCode or run command (Teams: Check project upgrade) to trigger upgrade check.`
+      );
       return;
     }
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
@@ -129,12 +142,15 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
     });
 
     await migrateToArmAndMultiEnv(ctx);
+    core.tools.logProvider.warning(
+      `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your project or learn more about this upgrade.`
+    );
   } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
     // TODO: delete before Arm && Multi-env version released
     // only for arm && multi-env project with unreleased teams toolkit version
     updateNotificationFlag = true;
     const core = ctx.self as FxCore;
-    await core.tools.ui.showMessage(
+    core.tools.ui.showMessage(
       "info",
       getStrings().solution.NeedToUpdateTeamsToolkitVersionMessage,
       false,
@@ -312,22 +328,36 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   await fs.writeFile(targetManifestFile, JSON.stringify(manifest, null, 4));
   await moveIconsToResourceFolder(templateAppPackage);
 
-  if (!isSPFx) {
-    const localManifest: TeamsAppManifest = createLocalManifest(
-      appName,
-      hasFrontend,
-      hasBotCapability,
-      hasMessageExtensionCapability
-    );
-    const localManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
-    await fs.writeFile(localManifestFile, JSON.stringify(localManifest, null, 4));
+  // generate manifest.local.template.json
+  const localManifest: TeamsAppManifest = await createLocalManifest(
+    appName,
+    hasFrontend,
+    hasBotCapability,
+    hasMessageExtensionCapability,
+    isSPFx
+  );
+  const localManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
+  await fs.writeFile(localManifestFile, JSON.stringify(localManifest, null, 4));
+
+  if (isSPFx) {
+    const replaceMap: Map<string, string> = new Map();
+    const packageSolutionFile = `${projectPath}/SPFx/config/package-solution.json`;
+    if (!(await fs.pathExists(packageSolutionFile))) {
+      throw SPFxConfigError(packageSolutionFile);
+    }
+    const solutionConfig = await fs.readJson(packageSolutionFile);
+    replaceMap.set(PlaceHolders.componentId, solutionConfig.solution.id);
+    replaceMap.set(PlaceHolders.componentNameUnescaped, manifest.packageName!);
+    await SPFxUtils.configure(localManifestFile, replaceMap);
   }
 
   if (hasProvision) {
     const devState = path.join(fxState, "state.dev.json");
     const devUserData = path.join(fxState, "dev.userdata");
     await fs.copy(path.join(fx, "new.env.default.json"), devState);
-    await fs.copy(path.join(fx, "default.userdata"), devUserData);
+    if (await fs.pathExists(path.join(fx, "default.userdata"))) {
+      await fs.copy(path.join(fx, "default.userdata"), devUserData);
+    }
     await removeExpiredFields(devState, devUserData);
   }
 }
@@ -451,10 +481,22 @@ async function getMultiEnvFolders(projectPath: string): Promise<any> {
   return { fx, fxConfig, templateAppPackage, fxState };
 }
 
+async function getBackupFolder(projectPath: string): Promise<string> {
+  const backupName = ".backup";
+  const backup = path.join(projectPath, backupName);
+  if (!(await fs.pathExists(backup))) {
+    return backup;
+  }
+  // avoid conflict(rarely)
+  return path.join(projectPath, `.teamsfx${backupName}`);
+}
 async function backup(projectPath: string): Promise<void> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
-  const backup = path.join(fx, "migrationbackup");
-  await fs.ensureDir(backup);
+  const backup = await getBackupFolder(projectPath);
+  const backupFx = path.join(backup, `.${ConfigFolderName}`);
+  const backupAppPackage = path.join(backup, AppPackageFolderName);
+  await fs.ensureDir(backupFx);
+  await fs.ensureDir(backupAppPackage);
   const fxFiles = [
     "env.default.json",
     "default.userdata",
@@ -465,17 +507,14 @@ async function backup(projectPath: string): Promise<void> {
 
   for (const file of fxFiles) {
     if (await fs.pathExists(path.join(fx, file))) {
-      await fs.copy(path.join(fx, file), path.join(backup, file));
+      await fs.copy(path.join(fx, file), path.join(backupFx, file));
     }
   }
   if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
-    await fs.copy(
-      path.join(projectPath, AppPackageFolderName),
-      path.join(backup, AppPackageFolderName)
-    );
+    await fs.copy(path.join(projectPath, AppPackageFolderName), backupAppPackage);
   } else if (await fs.pathExists(path.join(fx, AppPackageFolderName))) {
     // version <= 2.4.1
-    await fs.copy(path.join(fx, AppPackageFolderName), path.join(backup, AppPackageFolderName));
+    await fs.copy(path.join(fx, AppPackageFolderName), backupAppPackage);
   }
 }
 

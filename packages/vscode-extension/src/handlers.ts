@@ -73,7 +73,12 @@ import * as commonUtils from "./debug/commonUtils";
 import { ExtensionErrors, ExtensionSource } from "./error";
 import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
-import { anonymizeFilePaths, isSPFxProject, syncFeatureFlags } from "./utils/commonUtils";
+import {
+  anonymizeFilePaths,
+  getTeamsAppIdByEnv,
+  isSPFxProject,
+  syncFeatureFlags,
+} from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import * as vscode from "vscode";
 import { DepsChecker } from "./debug/depsChecker/checker";
@@ -109,6 +114,8 @@ import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
 import { CoreCallbackEvent } from "@microsoft/teamsfx-api";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
+import { getConfiguration } from "./utils/commonUtils";
+import { ConfigurationKey } from "./constants";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -381,7 +388,7 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
     namespace: "fx-solution-azure",
     method: "addResource",
   };
-  return await runUserTask(func, TelemetryEvent.AddResource, true);
+  return await runUserTask(func, TelemetryEvent.AddResource, isMultiEnvEnabled());
 }
 
 export async function addCapabilityHandler(args: any[]): Promise<Result<null, FxError>> {
@@ -434,8 +441,18 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
 }
 
 export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CICDGuide, getTriggerFromProperty(args));
-  return await env.openExternal(Uri.parse("https://aka.ms/teamsfx-cicd-guide"));
+  const isInsiderEnabled = getConfiguration(ConfigurationKey.InsiderPreview);
+
+  ExtTelemetry.sendTelemetryEvent(
+    isInsiderEnabled ? TelemetryEvent.CICDInsiderGuide : TelemetryEvent.CICDGuide,
+    getTriggerFromProperty(args)
+  );
+
+  const cicdGuideLink = isInsiderEnabled
+    ? "https://aka.ms/teamsfx-cicd-insider-guide"
+    : "https://aka.ms/teamsfx-cicd-guide";
+
+  return await env.openExternal(Uri.parse(cicdGuideLink));
 }
 
 export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
@@ -576,6 +593,9 @@ async function processResult(
   const envProperty: { [key: string]: string } = {};
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
+    if (isMultiEnvEnabled()) {
+      envProperty[TelemetryProperty.AapId] = getTeamsAppIdByEnv(inputs.env);
+    }
   }
 
   if (result.isErr()) {
@@ -758,6 +778,11 @@ export async function openDocumentHandler(args: any[]): Promise<boolean> {
 export async function openWelcomeHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
   WebviewPanel.createOrShow(PanelType.QuickStart);
+}
+
+export async function checkUpgrade(args?: any[]) {
+  // just for triggering upgrade check for multi-env && bicep.
+  await runCommand(Stage.listCollaborator);
 }
 
 export async function openSurveyHandler(args?: any[]) {

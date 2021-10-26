@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-api",
-  "version": "0.8.0",
+  "version": "0.9.0",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -45,6 +45,7 @@
     "chai-spies": "^1.0.0",
     "cpy-cli": "^3.1.1",
     "eslint": "^7.22.0",
+    "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-prettier": "^4.0.0",
     "json-schema-to-typescript": "^10.1.4",
     "lint-staged": "^10.5.4",

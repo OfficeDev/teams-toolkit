@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "0.2.7",
+  "version": "0.3.0",
   "description": "Microsoft Teams Framework for Node.js and browser.",
   "main": "dist/index.js",
   "module": "dist-esm/src/index.js",
@@ -111,6 +111,7 @@
     "cross-env": "^7.0.2",
     "dotenv": "^8.2.0",
     "eslint": "^7.32.0",
+    "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-prettier": "^4.0.0",
     "fs-extra": "^9.1.0",
     "got": "^11.8.2",

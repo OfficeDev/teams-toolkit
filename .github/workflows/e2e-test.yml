@@ -46,7 +46,7 @@ jobs:
         if: ${{ steps.check_title.outputs.included == 'true' }}
         run: |
           if [ -z "${{ steps.comments.outputs.comment-id }}" ]; then
-            echo "E2E TEST undefined."
+            echo "E2E TEST not found."
             exit 1
           fi
 

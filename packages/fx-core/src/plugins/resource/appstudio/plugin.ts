@@ -84,6 +84,11 @@ import {
   CONFIGURABLE_TABS_TPL_LOCAL_DEBUG,
   BOTS_TPL_LOCAL_DEBUG,
   COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG,
+  COLOR_TEMPLATE,
+  OUTLINE_TEMPLATE,
+  DEFAULT_COLOR_PNG_FILENAME,
+  DEFAULT_OUTLINE_PNG_FILENAME,
+  MANIFEST_RESOURCES,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -320,10 +325,10 @@ export class AppStudioPluginImpl {
     manifestString = this.replaceExistingValueToPlaceholder(
       manifestString,
       manifestSource.developer.websiteUrl,
-      "baseUrl"
+      isMultiEnvEnabled() ? "{{{localSettings.frontend.tabEndpoint}}}" : "{baseUrl}"
     );
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
-    manifest.id = "{appid}";
+    manifest.id = isMultiEnvEnabled() ? "{{localSettings.teamsApp.teamsAppId}}" : "{appid}";
     manifest.validDomains = [];
 
     const includeBot = (
@@ -332,12 +337,16 @@ export class AppStudioPluginImpl {
     if (includeBot) {
       if (manifest.bots !== undefined && manifest.bots.length > 0) {
         for (let index = 0; index < manifest.bots.length; ++index) {
-          manifest.bots[index].botId = `{${BOT_ID}}`;
+          manifest.bots[index].botId = isMultiEnvEnabled()
+            ? "{{state.fx-resource-bot.botId}}"
+            : `{${BOT_ID}}`;
         }
       }
       if (manifest.composeExtensions !== undefined && manifest.composeExtensions.length > 0) {
         for (let index = 0; index < manifest.composeExtensions.length; ++index) {
-          manifest.composeExtensions[index].botId = `{${BOT_ID}}`;
+          manifest.composeExtensions[index].botId = isMultiEnvEnabled()
+            ? "{{state.fx-resource-bot.botId}}"
+            : `{${BOT_ID}}`;
         }
       }
     }
@@ -504,24 +513,52 @@ export class AppStudioPluginImpl {
     let manifest: TeamsAppManifest | undefined;
     const archiveAppPackageFolder = path.join(ctx.root, ArchiveFolderName, AppPackageFolderName);
     const archiveManifestPath = path.join(archiveAppPackageFolder, V1ManifestFileName);
-    const newAppPackageFolder = path.join(ctx.root, AppPackageFolderName);
+
+    // cannot use getAppDirectory before creating the manifest file
+    const newAppPackageFolder = isMultiEnvEnabled()
+      ? `${ctx.root}/templates/${AppPackageFolderName}`
+      : `${ctx.root}/${AppPackageFolderName}`;
+
     await fs.ensureDir(newAppPackageFolder);
     if (await this.checkFileExist(archiveManifestPath)) {
       manifest = await this.createV1Manifest(ctx);
-      const newManifestPath = path.join(newAppPackageFolder, REMOTE_MANIFEST);
-      await fs.writeFile(newManifestPath, JSON.stringify(manifest, null, 4));
+
+      const resourcesDir = isMultiEnvEnabled()
+        ? path.join(newAppPackageFolder, MANIFEST_RESOURCES)
+        : newAppPackageFolder;
+      await fs.ensureDir(resourcesDir);
 
       const archiveColorFile = path.join(archiveAppPackageFolder, manifest.icons.color);
-      const newColorFile = path.join(newAppPackageFolder, manifest.icons.color);
-      if (await this.checkFileExist(archiveColorFile)) {
-        await fs.copyFile(archiveColorFile, newColorFile);
-      }
+      const existColorFile = await this.checkFileExist(archiveColorFile);
+      const newColorFileName = existColorFile
+        ? path.basename(manifest.icons.color)
+        : DEFAULT_COLOR_PNG_FILENAME;
+      await fs.copyFile(
+        existColorFile ? archiveColorFile : path.join(getTemplatesFolder(), COLOR_TEMPLATE),
+        path.join(resourcesDir, newColorFileName)
+      );
+      manifest.icons.color = isMultiEnvEnabled()
+        ? `${MANIFEST_RESOURCES}/${newColorFileName}`
+        : newColorFileName;
 
       const archiveOutlineFile = path.join(archiveAppPackageFolder, manifest.icons.outline);
-      const newOutlineFile = path.join(newAppPackageFolder, manifest.icons.outline);
-      if (await this.checkFileExist(archiveOutlineFile)) {
-        await fs.copyFile(archiveOutlineFile, newOutlineFile);
-      }
+      const existOutlineFile = await this.checkFileExist(archiveOutlineFile);
+      const newOutlineFileName = existOutlineFile
+        ? path.basename(manifest.icons.outline)
+        : DEFAULT_OUTLINE_PNG_FILENAME;
+      await fs.copyFile(
+        existOutlineFile ? archiveOutlineFile : path.join(getTemplatesFolder(), OUTLINE_TEMPLATE),
+        path.join(resourcesDir, newOutlineFileName)
+      );
+      manifest.icons.outline = isMultiEnvEnabled()
+        ? `${MANIFEST_RESOURCES}/${newOutlineFileName}`
+        : newOutlineFileName;
+
+      await fs.writeFile(
+        path.join(newAppPackageFolder, isMultiEnvEnabled() ? MANIFEST_LOCAL : REMOTE_MANIFEST),
+        JSON.stringify(manifest, null, 4)
+      );
+
       return { enableAuth: !!manifest?.webApplicationInfo?.id };
     } else {
       await this.scaffold(ctx);
@@ -551,7 +588,8 @@ export class AppStudioPluginImpl {
           false,
           false,
           false,
-          true
+          true,
+          false
         );
         await fs.writeFile(`${appDir}/${MANIFEST_LOCAL}`, JSON.stringify(localManifest, null, 4));
       }
@@ -568,7 +606,8 @@ export class AppStudioPluginImpl {
           hasFrontend,
           hasBot,
           hasMessageExtension,
-          false
+          false,
+          !!solutionSettings?.migrateFromV1
         );
         await fs.writeFile(
           `${appDir}/${MANIFEST_LOCAL}`,
@@ -583,24 +622,12 @@ export class AppStudioPluginImpl {
       : `${appDir}/${REMOTE_MANIFEST}`;
     await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, 4));
 
-    const defaultColorPath = path.join(
-      templatesFolder,
-      "plugins",
-      "resource",
-      "appstudio",
-      "defaultIcon.png"
-    );
-    const defaultOutlinePath = path.join(
-      templatesFolder,
-      "plugins",
-      "resource",
-      "appstudio",
-      "defaultOutline.png"
-    );
-    const resourcesDir = isMultiEnvEnabled() ? path.join(appDir, "resources") : appDir;
+    const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
+    const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
+    const resourcesDir = isMultiEnvEnabled() ? path.join(appDir, MANIFEST_RESOURCES) : appDir;
     await fs.ensureDir(resourcesDir);
-    await fs.copy(defaultColorPath, `${resourcesDir}/color.png`);
-    await fs.copy(defaultOutlinePath, `${resourcesDir}/outline.png`);
+    await fs.copy(defaultColorPath, `${resourcesDir}/${DEFAULT_COLOR_PNG_FILENAME}`);
+    await fs.copy(defaultOutlinePath, `${resourcesDir}/${DEFAULT_OUTLINE_PNG_FILENAME}`);
 
     return undefined;
   }
@@ -686,8 +713,8 @@ export class AppStudioPluginImpl {
 
     const zip = new AdmZip();
     zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
-    zip.addLocalFile(colorFile, isMultiEnvEnabled() ? "resources" : "");
-    zip.addLocalFile(outlineFile, isMultiEnvEnabled() ? "resources" : "");
+    zip.addLocalFile(colorFile, isMultiEnvEnabled() ? MANIFEST_RESOURCES : "");
+    zip.addLocalFile(outlineFile, isMultiEnvEnabled() ? MANIFEST_RESOURCES : "");
     zip.writeZip(zipFileName);
 
     if (isSPFxProject(ctx.projectSettings)) {
@@ -705,13 +732,13 @@ export class AppStudioPluginImpl {
       await fs.move(
         `${appDirectory}/${manifest.icons.color}`,
         isMultiEnvEnabled()
-          ? `${ctx.root}/templates/${AppPackageFolderName}/resources/${manifest.icons.color}`
+          ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_RESOURCES}/${manifest.icons.color}`
           : `${ctx.root}/${AppPackageFolderName}/${manifest.icons.color}`
       );
       await fs.move(
         `${appDirectory}/${manifest.icons.outline}`,
         isMultiEnvEnabled()
-          ? `${ctx.root}/templates/${AppPackageFolderName}/resources/${manifest.icons.outline}`
+          ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_RESOURCES}/${manifest.icons.outline}`
           : `${ctx.root}/${AppPackageFolderName}/${manifest.icons.outline}`
       );
       await fs.move(
@@ -1018,7 +1045,7 @@ export class AppStudioPluginImpl {
     placeholderName: string
   ): string {
     if (config && value && placeholderName) {
-      config = config.split(value).join(`{${placeholderName}}`);
+      config = config.split(value).join(placeholderName);
     }
 
     return config;
@@ -1792,7 +1819,8 @@ export async function createLocalManifest(
   hasFrontend: boolean,
   hasBot: boolean,
   hasMessageExtension: boolean,
-  isSPFx: boolean
+  isSPFx: boolean,
+  migrateFromV1: boolean
 ): Promise<TeamsAppManifest> {
   let name = appName;
   const suffix = "-local-debug";
@@ -1821,6 +1849,9 @@ export async function createLocalManifest(
     }
     if (hasMessageExtension) {
       manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG;
+    }
+    if (migrateFromV1) {
+      manifest.webApplicationInfo = undefined;
     }
     return manifest;
   }

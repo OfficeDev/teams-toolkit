@@ -53,7 +53,7 @@ import { AzureOperations } from "./azureOps";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import path from "path";
 import { getTemplatesFolder } from "../../..";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ArmTemplateResult, ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import {
   copyFiles,
@@ -198,82 +198,46 @@ export class TeamsBotImpl {
 
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
 
-    const selectedPlugins = (this.ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
-    const handleBarsContext = {
-      Plugins: selectedPlugins,
-    };
-
-    const provisionModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateFileName),
-      handleBarsContext
-    );
-    if (provisionModuleContentResult.isErr()) {
-      throw provisionModuleContentResult.error;
-    }
-
-    const configurationModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
-      handleBarsContext
-    );
-    if (configurationModuleContentResult.isErr()) {
-      throw configurationModuleContentResult.error;
-    }
-
-    const inputParameterContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.ParameterOrchestrationFileName),
-      handleBarsContext
-    );
-    if (inputParameterContentResult.isErr()) {
-      throw inputParameterContentResult.error;
-    }
-
-    const moduleOrchestrationContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.ModuleOrchestrationFileName),
-      handleBarsContext
-    );
-    if (moduleOrchestrationContentResult.isErr()) {
-      throw moduleOrchestrationContentResult.error;
-    }
-
-    const outputOrchestrationContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.OutputOrchestrationFileName),
-      handleBarsContext
-    );
-    if (outputOrchestrationContentResult.isErr()) {
-      throw outputOrchestrationContentResult.error;
-    }
-
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        botProvision: {
-          Content: provisionModuleContentResult.value,
-        },
-        botConfiguration: {
-          Content: configurationModuleContentResult.value,
-        },
-      },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: inputParameterContentResult.value,
-          ParameterJson: JSON.parse(
-            await fs.readFile(
-              path.join(bicepTemplateDir, Bicep.ParameterFileName),
-              ConstantString.UTF8Encoding
-            )
+    const result1: ArmTemplateResult = {
+      Provision: {
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ProvisionV2FileName),
+          ConstantString.UTF8Encoding
+        ),
+        Modules: {
+          botProvision: await fs.readFile(
+            path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateV2FileName),
+            ConstantString.UTF8Encoding
           ),
         },
-        ModuleTemplate: {
-          Content: moduleOrchestrationContentResult.value,
-        },
-        OutputTemplate: {
-          Content: outputOrchestrationContentResult.value,
+        Reference: {
+          resourceId: "webAppResourceId",
+          hostName: "webAppHostName",
+          webAppEndpoint: "webAppEndpoint",
         },
       },
+      Configuration: {
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ConfigV2FileName),
+          ConstantString.UTF8Encoding
+        ),
+        Modules: {
+          botConfiguration: await fs.readFile(
+            path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateV2FileName),
+            ConstantString.UTF8Encoding
+          ),
+        },
+      },
+      Parameters: JSON.parse(
+        await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ParameterFileName),
+          ConstantString.UTF8Encoding
+        )
+      ),
     };
 
     Logger.info(Messages.SuccessfullyGenerateArmTemplatesBot);
-    return ResultFactory.Success(result);
+    return ResultFactory.Success(result1);
   }
 
   private async provisionWebApp() {

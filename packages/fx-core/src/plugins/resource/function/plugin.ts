@@ -78,7 +78,7 @@ import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { generateBicepFiles, getTemplatesFolder } from "../../..";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ArmTemplateResult, ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import {
   getResourceGroupNameFromResourceId,
@@ -663,12 +663,6 @@ export class FunctionPluginImpl {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
-    const context = {
-      Plugins: selectedPlugins,
-    };
-
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -676,68 +670,45 @@ export class FunctionPluginImpl {
       "function",
       "bicep"
     );
+    const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName);
 
-    const provisionModuleTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      FunctionBicepFile.provisionModuleTemplateFileName
-    );
-    const provisionModuleContentResult = await generateBicepFiles(
-      provisionModuleTemplateFilePath,
-      context
-    );
-    if (provisionModuleContentResult.isErr()) {
-      throw provisionModuleContentResult.error;
-    }
-    const configurationModuleTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      FunctionBicepFile.configurationTemplateFileName
-    );
-    const configurationModuleContentResult = await generateBicepFiles(
-      configurationModuleTemplateFilePath,
-      context
-    );
-    if (configurationModuleContentResult.isErr()) {
-      throw configurationModuleContentResult.error;
-    }
+    const configTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ConfigV2FileName);
 
-    const parameterTemplateFilePath = path.join(
+    const provisionFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Bicep.ParameterOrchestrationFileName
-    );
-    const moduleOrchestrationFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.ModuleOrchestrationFileName
-    );
-    const outputTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.OutputOrchestrationFileName
+      FunctionBicepFile.provisionModuleTemplateV2FileName
     );
 
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        functionProvision: {
-          Content: provisionModuleContentResult.value,
+    const configFuncTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      FunctionBicepFile.provisionModuleTemplateV2FileName
+    );
+
+    const result1: ArmTemplateResult = {
+      Provision: {
+        Orchestration: await fs.readFile(provisionTemplateFilePath, ConstantString.UTF8Encoding),
+        Modules: {
+          functionProvision: await fs.readFile(
+            provisionFuncTemplateFilePath,
+            ConstantString.UTF8Encoding
+          ),
         },
-        functionConfiguration: {
-          Content: configurationModuleContentResult.value,
+        Reference: {
+          endpoint: FunctionBicep.functionEndpoint,
         },
       },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
-        },
-        ModuleTemplate: {
-          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
-          Outputs: {
-            functionEndpoint: FunctionBicep.functionEndpoint,
-          },
-        },
-        OutputTemplate: {
-          Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
+      Configuration: {
+        Orchestration: await fs.readFile(configTemplateFilePath, ConstantString.UTF8Encoding),
+        Modules: {
+          functionConfig: await fs.readFile(
+            configFuncTemplateFilePath,
+            ConstantString.UTF8Encoding
+          ),
         },
       },
     };
-    return ResultFactory.Success(result);
+
+    return ResultFactory.Success(result1);
   }
 
   public async deploy(ctx: PluginContext): Promise<FxResult> {

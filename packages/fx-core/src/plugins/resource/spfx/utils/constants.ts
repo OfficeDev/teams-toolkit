@@ -55,7 +55,7 @@ export class TelemetryEvent {
 
 export class ProgressTitleMessage {
   static readonly PreDeployProgressTitle = "Building SharePoint package";
-  static readonly DeployProgressTitle = `[${Constants.PLUGIN_NAME}] Deploy SharePoint Package`;
+  static readonly DeployProgressTitle = `Upload and deploy SharePoint Package`;
 }
 
 export class PreDeployProgressMessage {

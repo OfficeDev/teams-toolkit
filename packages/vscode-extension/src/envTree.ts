@@ -133,7 +133,9 @@ export async function getAllCollaboratorList(envs: string[], force = false): Pro
         result.push(
           generateCollaboratorWarningNode(
             env,
-            StringResources.vsc.commandsTreeViewProvider.loginM365AccountToViewCollaborators
+            StringResources.vsc.commandsTreeViewProvider.loginM365AccountToViewCollaborators,
+            undefined,
+            false
           )
         );
       }
@@ -146,7 +148,9 @@ export async function updateNewEnvCollaborators(env: string): Promise<void> {
   const parentNode = generateCollaboratorParentNode(env);
   const notProvisionedNode = generateCollaboratorWarningNode(
     env,
-    StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration
+    StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration,
+    undefined,
+    false
   );
 
   collaboratorsRecordCache[env] = [parentNode, notProvisionedNode];
@@ -178,7 +182,7 @@ export function generateCollaboratorNode(
   return {
     commandId: `fx-extension.listcollaborator.${env}.${userObjectId}`,
     label: email,
-    icon: isAadOwner ? "person" : "",
+    icon: isAadOwner ? "person" : "warning",
     isCustom: !isAadOwner,
     tooltip: {
       value: isAadOwner ? "" : "This account doesn't have the AAD permission.",
@@ -191,12 +195,13 @@ export function generateCollaboratorNode(
 export function generateCollaboratorWarningNode(
   env: string,
   nodeLabel: string,
-  toolTip?: string
+  toolTip?: string,
+  showWarning?: boolean
 ): TreeItem {
   return {
     commandId: `fx-extension.listcollaborator.${env}`,
     label: nodeLabel,
-    icon: "",
+    icon: showWarning ? "warning" : "",
     tooltip: {
       value: toolTip ?? nodeLabel,
       isMarkdown: false,
@@ -279,21 +284,6 @@ function checkAzureAccountStatus(env: string): TreeItem | undefined {
     return {
       commandId: `fx-extension.environment.${env}.checkAzureAccount`,
       label: StringResources.vsc.commandsTreeViewProvider.noAzureAccountSignedIn,
-      icon: "warning",
-      isCustom: true,
-      parent: `fx-extension.environment.${env}`,
-    };
-  } else {
-    return undefined;
-  }
-}
-
-async function checkM365AccountStatus(env: string): Promise<TreeItem | undefined> {
-  const loginStatus = await AppStudioLogin.getInstance().getStatus();
-  if (loginStatus.status !== signedIn) {
-    return {
-      commandId: `fx-extension.environment.${env}.checkM365Account`,
-      label: StringResources.vsc.commandsTreeViewProvider.noM365AccountSignedIn,
       icon: "warning",
       isCustom: true,
       parent: `fx-extension.environment.${env}`,

@@ -114,6 +114,8 @@ import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
 import { CoreCallbackEvent } from "@microsoft/teamsfx-api";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
+import { getConfiguration } from "./utils/commonUtils";
+import { ConfigurationKey } from "./constants";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -439,8 +441,18 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
 }
 
 export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CICDGuide, getTriggerFromProperty(args));
-  return await env.openExternal(Uri.parse("https://aka.ms/teamsfx-cicd-guide"));
+  const isInsiderEnabled = getConfiguration(ConfigurationKey.InsiderPreview);
+
+  ExtTelemetry.sendTelemetryEvent(
+    isInsiderEnabled ? TelemetryEvent.CICDInsiderGuide : TelemetryEvent.CICDGuide,
+    getTriggerFromProperty(args)
+  );
+
+  const cicdGuideLink = isInsiderEnabled
+    ? "https://aka.ms/teamsfx-cicd-insider-guide"
+    : "https://aka.ms/teamsfx-cicd-guide";
+
+  return await env.openExternal(Uri.parse(cicdGuideLink));
 }
 
 export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {

@@ -310,7 +310,7 @@ async function checkSubscriptionPermission(
     if (!checkSucceeded) {
       const warningTreeItem: TreeItem = {
         commandId: `fx-extension.environment.${env}.checkSubscription`,
-        label: "The Azure account does not match.",
+        label: StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
         tooltip: {
           value: StringResources.vsc.commandsTreeViewProvider.noSubscriptionFoundInAzureAccount,
           isMarkdown: false,
@@ -342,7 +342,7 @@ async function checkM365Permission(
     if (!checkSucceeded) {
       const warningTreeItem: TreeItem = {
         commandId: `fx-extension.environment.${env}.checkM365Tenant`,
-        label: "The M365 account does not match.",
+        label: StringResources.vsc.commandsTreeViewProvider.m365AccountNotMatch,
         tooltip: {
           value: StringResources.vsc.commandsTreeViewProvider.m365TenantNotMatch,
           isMarkdown: false,

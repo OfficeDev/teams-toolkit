@@ -26,8 +26,9 @@ jobs:
       - name: Check PR title
         id: check_title
         run: |
+          declare -a types=("fix" "feat" "refactor")
           type=`echo "${{ github.event.pull_request.title }}" |  conventional-commits-parser | jq -r '.[].type'`
-          if [[ " ${array[*]} " =~ " ${type} " ]]; then
+          if [[ " ${types[*]} " =~ " ${type} " ]]; then
             echo "::set-output included=true"
           else
             echo "::set-output included=false"

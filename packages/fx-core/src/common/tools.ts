@@ -32,7 +32,6 @@ import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
 import * as crypto from "crypto";
 import { FailedToParseResourceIdError, SolutionError } from "..";
-import { MANIFEST_LOCAL } from "../plugins/resource/appstudio/constants";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -457,6 +456,7 @@ export function compileHandlebarsTemplateString(templateString: string, context:
 export async function getAppDirectory(projectRoot: string): Promise<string> {
   const REMOTE_MANIFEST = "manifest.source.json";
   const MANIFEST_TEMPLATE = "manifest.remote.template.json";
+  const MANIFEST_LOCAL = "manifest.local.template.json";
   const appDirNewLocForMultiEnv = `${projectRoot}/templates/${AppPackageFolderName}`;
   const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
   const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;

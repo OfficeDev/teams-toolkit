@@ -61,6 +61,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
+import * as util from "util";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 
@@ -72,10 +73,9 @@ const upgradeButton = "Upgrade";
 const solutionName = "solution";
 const subscriptionId = "subscriptionId";
 const resourceGroupName = "resourceGroupName";
-const migrationGuideUrl = "https://aka.ms/teamsfx-migration-guide";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
-const learnMoreLink =
-  "https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features";
+const learnMoreLink = "https://aka.ms/teamsfx-migration-guide";
+const manualUpgradeLink = `${learnMoreLink}#upgrade-your-project-manually`;
 let updateNotificationFlag = false;
 let fromReloadFlag = false;
 
@@ -217,9 +217,11 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   await backup(projectPath);
   try {
     await updateConfig(ctx);
+
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnvStart);
     await migrateMultiEnv(projectPath);
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnv);
+
     const loadRes = await loadProjectSettings(inputs);
     if (loadRes.isErr()) {
       throw ProjectSettingError();
@@ -231,9 +233,35 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
-    await cleanup(projectPath);
+    await handleError(err, projectPath, ctx);
     throw err;
   }
+  await postMigration(projectPath, ctx, inputs);
+}
+
+async function handleError(err: Error, projectPath: string, ctx: CoreHookContext) {
+  await cleanup(projectPath);
+  const core = ctx.self as FxCore;
+  core.tools.ui
+    .showMessage(
+      "info",
+      util.format(getStrings().solution.MigrationToArmAndMultiEnvErrorMessage, err),
+      false,
+      learnMoreText
+    )
+    .then((result) => {
+      const userSelected = result.isOk() ? result.value : undefined;
+      if (userSelected === learnMoreText) {
+        core.tools.ui!.openUrl(manualUpgradeLink);
+      }
+    });
+}
+
+async function postMigration(
+  projectPath: string,
+  ctx: CoreHookContext,
+  inputs: Inputs
+): Promise<void> {
   await removeOldProjectFiles(projectPath);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrate);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
@@ -252,7 +280,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
         sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
           [TelemetryProperty.Status]: ProjectMigratorGuideStatus.LearnMore,
         });
-        core.tools.ui!.openUrl(migrationGuideUrl);
+        core.tools.ui!.openUrl(learnMoreLink);
       } else if (userSelected === reloadText) {
         sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
           [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
@@ -266,6 +294,32 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
         });
       }
     });
+}
+
+async function generateRemoteTemplate(targetManifestFile: string) {
+  let manifestString = (await fs.readFile(targetManifestFile)).toString();
+  manifestString = manifestString.replace(new RegExp("{version}", "g"), "1.0.0");
+  manifestString = manifestString.replace(
+    new RegExp("{baseUrl}", "g"),
+    "{{{state.fx-resource-frontend-hosting.endpoint}}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{appClientId}", "g"),
+    "{{state.fx-resource-aad-app-for-teams.clientId}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{webApplicationInfoResource}", "g"),
+    "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{botId}", "g"),
+    "{{state.fx-resource-bot.botId}}"
+  );
+  const manifest: TeamsAppManifest = JSON.parse(manifestString);
+  manifest.name.short = "{{config.manifest.appName.short}}";
+  manifest.name.full = "{{config.manifest.appName.full}}";
+  manifest.id = "{{state.fx-resource-appstudio.teamsAppId}}";
+  return manifest;
 }
 
 async function migrateMultiEnv(projectPath: string): Promise<void> {
@@ -303,29 +357,8 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   const targetManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
   await fs.rename(path.join(templateAppPackage, "manifest.source.json"), targetManifestFile);
 
-  // update manifest to mustache template
-  let manifestString = (await fs.readFile(targetManifestFile)).toString();
-  manifestString = manifestString.replace(new RegExp("{version}", "g"), "1.0.0");
-  manifestString = manifestString.replace(
-    new RegExp("{baseUrl}", "g"),
-    "{{{state.fx-resource-frontend-hosting.endpoint}}}"
-  );
-  manifestString = manifestString.replace(
-    new RegExp("{appClientId}", "g"),
-    "{{state.fx-resource-aad-app-for-teams.clientId}}"
-  );
-  manifestString = manifestString.replace(
-    new RegExp("{webApplicationInfoResource}", "g"),
-    "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}"
-  );
-  manifestString = manifestString.replace(
-    new RegExp("{botId}", "g"),
-    "{{state.fx-resource-bot.botId}}"
-  );
-  const manifest: TeamsAppManifest = JSON.parse(manifestString);
-  manifest.name.short = "{{config.manifest.appName.short}}";
-  manifest.name.full = "{{config.manifest.appName.full}}";
-  manifest.id = "{{state.fx-resource-appstudio.teamsAppId}}";
+  // generate manifest.remote.template.json
+  const manifest = await generateRemoteTemplate(targetManifestFile);
   await fs.writeFile(targetManifestFile, JSON.stringify(manifest, null, 4));
   await moveIconsToResourceFolder(templateAppPackage);
 
@@ -374,21 +407,22 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
   if (!hasColorIcon || !hasOutlineIcon) {
     return;
   }
+
   // move to resources
   const resource = path.join(templateAppPackage, "resources");
+  const iconColor = path.join(templateAppPackage, manifest.icons.color);
+  const iconOutline = path.join(templateAppPackage, manifest.icons.outline);
   await fs.ensureDir(resource);
-  await fs.move(
-    path.join(templateAppPackage, manifest.icons.color),
-    path.join(resource, manifest.icons.color)
-  );
+  if (await fs.pathExists(iconColor)) {
+    await fs.move(iconColor, path.join(resource, manifest.icons.color));
+    manifest.icons.color = `resources/${manifest.icons.color}`;
+  }
+  if (await fs.pathExists(iconOutline)) {
+    await fs.move(iconOutline, path.join(resource, manifest.icons.outline));
+    manifest.icons.outline = `resources/${manifest.icons.outline}`;
+  }
 
-  await fs.move(
-    path.join(templateAppPackage, manifest.icons.outline),
-    path.join(resource, manifest.icons.outline)
-  );
   // update icons
-  manifest.icons.color = `resources/${manifest.icons.color}`;
-  manifest.icons.outline = `resources/${manifest.icons.outline}`;
   await fs.writeFile(
     path.join(templateAppPackage, MANIFEST_TEMPLATE),
     JSON.stringify(manifest, null, 4)

@@ -23,7 +23,7 @@
     "prepare": "npm run build",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
     "doc": "typedoc",
-    "test:unit": "nyc mocha --no-timeouts --require ts-node/register \"tests/**/*.ts\"",
+    "test:unit": "nyc --no-clean mocha --no-timeouts --require ts-node/register \"tests/**/*.ts\"",
     "prepublishOnly": "npm run test:unit && npm run build",
     "precommit": "lint-staged"
   },
@@ -45,6 +45,7 @@
     "chai-spies": "^1.0.0",
     "cpy-cli": "^3.1.1",
     "eslint": "^7.22.0",
+    "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-prettier": "^4.0.0",
     "json-schema-to-typescript": "^10.1.4",
     "lint-staged": "^10.5.4",

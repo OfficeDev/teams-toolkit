@@ -157,7 +157,7 @@ export async function provisionResourceAdapter(
 }
 
 // flattens output/secrets fields in config map for backward compatibility
-function flattenConfigMap(configMap: ConfigMap): ConfigMap {
+export function flattenConfigMap(configMap: ConfigMap): ConfigMap {
   const map = new ConfigMap();
   for (const [k, v] of configMap.entries()) {
     if (v instanceof ConfigMap) {
@@ -178,7 +178,7 @@ function flattenConfigMap(configMap: ConfigMap): ConfigMap {
 }
 
 // Convert legacy config map to env state with output and secrets fields
-function legacyConfig2EnvState(
+export function legacyConfig2EnvState(
   config: ConfigMap,
   pluginName: string
 ): { output: Json; secrets: Json } {
@@ -208,8 +208,6 @@ export async function configureResourceAdapter(
   if (!state) {
     return err(InvalidStateError(plugin.name, envInfo.state));
   }
-  const solutionInputs: SolutionInputs = inputs;
-  state.set(GLOBAL_CONFIG, ConfigMap.fromJSON(solutionInputs));
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
@@ -370,6 +368,9 @@ export async function getQuestionsForUserTaskAdapter(
 export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
   const solutionConfig = ctx.envInfo.state.get("solution");
   const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);
+  if (output instanceof Map) {
+    return output?.get(key)?.get("value");
+  }
   return output?.[key]?.value;
 }
 

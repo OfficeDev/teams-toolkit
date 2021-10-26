@@ -24,7 +24,6 @@ import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
 import { glob } from "glob";
 import * as Handlebars from "handlebars";
-import md5 from "md5";
 import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";

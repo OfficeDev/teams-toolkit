@@ -91,7 +91,7 @@ export async function provisionResource(
 
   const newEnvInfo: EnvInfoV2 = _.cloneDeep(envInfo);
   if (!newEnvInfo.state[GLOBAL_CONFIG]) {
-    newEnvInfo.state[GLOBAL_CONFIG] = {};
+    newEnvInfo.state[GLOBAL_CONFIG] = { output: {}, secrets: {} };
   }
   if (isAzureProject(azureSolutionSettings)) {
     const appName = ctx.projectSetting.appName;
@@ -107,7 +107,7 @@ export async function provisionResource(
       return new v2.FxFailure(res.error);
     }
     // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
-    newEnvInfo.state = (contextAdaptor.envInfo.state as ConfigMap).toJSON();
+    newEnvInfo.state = contextAdaptor.getEnvStateJson();
     const consentResult = await askForProvisionConsent(contextAdaptor);
     if (consentResult.isErr()) {
       return new v2.FxFailure(consentResult.error);
@@ -115,21 +115,25 @@ export async function provisionResource(
   }
 
   const plugins = getSelectedPlugins(azureSolutionSettings);
-  const solutionInputs = extractSolutionInputs(newEnvInfo.state[GLOBAL_CONFIG]);
+  const solutionInputs = extractSolutionInputs(newEnvInfo.state[GLOBAL_CONFIG]["output"]);
   const provisionThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionResource))
     .map((plugin) => {
       return {
         pluginName: `${plugin.name}`,
         taskName: "provisionResource",
-        thunk: () =>
+        thunk: () => {
+          if (!newEnvInfo.state[plugin.name]) {
+            newEnvInfo.state[plugin.name] = {};
+          }
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          plugin.provisionResource!(
+          return plugin.provisionResource!(
             ctx,
             { ...inputs, ...solutionInputs, projectPath: projectPath },
             { ...newEnvInfo, state: newEnvInfo.state },
             tokenProvider
-          ),
+          );
+        },
       };
     });
 
@@ -140,9 +144,12 @@ export async function provisionResource(
   if (provisionResult.kind === "failure") {
     return provisionResult;
   } else if (provisionResult.kind === "partialSuccess") {
-    return new v2.FxPartialSuccess(combineRecords(provisionResult.output), provisionResult.error);
+    return new v2.FxPartialSuccess(
+      { ...newEnvInfo.state, ...combineRecords(provisionResult.output) },
+      provisionResult.error
+    );
   } else {
-    newEnvInfo.state = combineRecords(provisionResult.output);
+    newEnvInfo.state = { ...newEnvInfo.state, ...combineRecords(provisionResult.output) };
   }
 
   ctx.logProvider?.info(
@@ -159,7 +166,7 @@ export async function provisionResource(
       );
     }
     // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
-    newEnvInfo.state = (contextAdaptor.envInfo.state as ConfigMap).toJSON();
+    newEnvInfo.state = contextAdaptor.getEnvStateJson();
   }
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
@@ -188,6 +195,10 @@ export async function provisionResource(
   const configureResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureResource))
     .map((plugin) => {
+      if (!newEnvInfo.state[plugin.name]) {
+        newEnvInfo.state[plugin.name] = {};
+      }
+
       return {
         pluginName: `${plugin.name}`,
         taskName: "configureLocalResource",

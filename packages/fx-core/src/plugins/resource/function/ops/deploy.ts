@@ -35,7 +35,7 @@ import { TelemetryHelper } from "../utils/telemetry-helper";
 import { sendRequestWithRetry } from "../../../../common/templatesUtils";
 
 export class FunctionDeploy {
-  public static async getLastDeploymentTime(componentPath: string): Promise<Date> {
+  public static async getLastDeploymentTime(componentPath: string, envName: string): Promise<Date> {
     const deploymentInfoDir = path.join(
       componentPath,
       FunctionPluginPathInfo.funcDeploymentFolderName
@@ -46,7 +46,7 @@ export class FunctionDeploy {
     );
     try {
       const lastFunctionDeployJson = await fs.readJSON(deploymentInfoPath);
-      return new Date(lastFunctionDeployJson.time);
+      return new Date(lastFunctionDeployJson[envName].time);
     } catch (err) {
       TelemetryHelper.sendGeneralEvent(FunctionEvent.DeploymentInfoNotFound);
       throw err;
@@ -55,14 +55,16 @@ export class FunctionDeploy {
 
   public static async hasUpdatedContent(
     componentPath: string,
-    language: FunctionLanguage
+    language: FunctionLanguage,
+    envName: string
   ): Promise<boolean> {
     const folderFilter = LanguageStrategyFactory.getStrategy(language).hasUpdatedContentFilter;
 
     try {
-      const lastFunctionDeployTime = await this.getLastDeploymentTime(componentPath);
-      // Always ignore node_modules folder and the file ignored both by git and func.
+      const lastFunctionDeployTime = await this.getLastDeploymentTime(componentPath, envName);
+      // Always ignore node_modules folder and bin folder and the file ignored both by git and func.
       const defaultIgnore = ignore().add(FunctionPluginPathInfo.npmPackageFolderName);
+      defaultIgnore.add(FunctionPluginPathInfo.functionExtensionsFolderName);
       const funcIgnore = await this.prepareIgnore(
         componentPath,
         FunctionPluginPathInfo.funcIgnoreFileName
@@ -140,7 +142,8 @@ export class FunctionDeploy {
     componentPath: string,
     functionAppName: string,
     language: FunctionLanguage,
-    resourceGroupName: string
+    resourceGroupName: string,
+    envName: string
   ): Promise<void> {
     const deployTime: Date = new Date();
 
@@ -226,13 +229,14 @@ export class FunctionDeploy {
         )
     );
 
-    await this.saveDeploymentInfo(componentPath, zipContent, deployTime);
+    await this.saveDeploymentInfo(componentPath, zipContent, deployTime, envName);
   }
 
   private static async saveDeploymentInfo(
     componentPath: string,
     zipContent: Buffer,
-    deployTime: Date
+    deployTime: Date,
+    envName: string
   ): Promise<void> {
     const deploymentInfoDir = path.join(
       componentPath,
@@ -255,7 +259,8 @@ export class FunctionDeploy {
       // It's fine if failed to read json from the deployment file.
     }
 
-    lastFunctionDeployJson.time = deployTime;
+    lastFunctionDeployJson[envName] ??= {};
+    lastFunctionDeployJson[envName].time = deployTime;
 
     try {
       await fs.writeJSON(deploymentInfoPath, lastFunctionDeployJson);

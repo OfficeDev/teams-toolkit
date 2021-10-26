@@ -5,7 +5,7 @@ import { FxError } from "@microsoft/teamsfx-api";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { AadOwner } from "../../../common/permissionInterface";
 import { AppStudio } from "./appStudio";
-import { ConfigKeys, Constants, Messages, Telemetry } from "./constants";
+import { ConfigKeys, Constants, Messages, ProgressDetail, Telemetry, UILevels } from "./constants";
 import { GraphErrorCodes } from "./errorCodes";
 import {
   AppStudioErrorMessage,
@@ -27,6 +27,7 @@ import { IAADDefinition, RequiredResourceAccess } from "./interfaces/IAADDefinit
 import { ResultFactory } from "./results";
 import { Utils } from "./utils/common";
 import { ProvisionConfig } from "./utils/configs";
+import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
 
@@ -90,7 +91,8 @@ export class AadAppClient {
     ctx: PluginContext,
     stage: string,
     objectId: string,
-    redirectUris: string[]
+    redirectUris: string[],
+    skip = false
   ): Promise<void> {
     try {
       const updateRedirectUriObject = AadAppClient.getAadUrlObject(redirectUris);
@@ -112,7 +114,16 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      throw AadAppClient.handleError(error, UpdateRedirectUriError);
+      if (skip) {
+        const message = Messages.StepFailedAndSkipped(
+          ProgressDetail.UpdateRedirectUri,
+          Messages.UpdateRedirectUriHelpMessage(redirectUris.join(", "))
+        );
+        ctx.logProvider?.warning(Messages.getLog(message));
+        DialogUtils.show(message, UILevels.Warn);
+      } else {
+        throw AadAppClient.handleError(error, UpdateRedirectUriError);
+      }
     }
   }
 
@@ -120,7 +131,8 @@ export class AadAppClient {
     ctx: PluginContext,
     stage: string,
     objectId: string,
-    applicationIdUri: string
+    applicationIdUri: string,
+    skip = false
   ): Promise<void> {
     try {
       const updateAppIdObject = AadAppClient.getAadApplicationIdObject(applicationIdUri);
@@ -142,7 +154,16 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      throw AadAppClient.handleError(error, UpdateAppIdUriError);
+      if (skip) {
+        const message = Messages.StepFailedAndSkipped(
+          ProgressDetail.UpdateAppIdUri,
+          Messages.UpdateAppIdUriHelpMessage(applicationIdUri)
+        );
+        ctx.logProvider?.warning(Messages.getLog(message));
+        DialogUtils.show(message, UILevels.Warn);
+      } else {
+        throw AadAppClient.handleError(error, UpdateAppIdUriError);
+      }
     }
   }
 
@@ -150,7 +171,8 @@ export class AadAppClient {
     ctx: PluginContext,
     stage: string,
     objectId: string,
-    permissions: RequiredResourceAccess[]
+    permissions: RequiredResourceAccess[],
+    skip = false
   ): Promise<void> {
     try {
       const updatePermissionObject = AadAppClient.getAadPermissionObject(permissions);
@@ -172,7 +194,16 @@ export class AadAppClient {
         );
       }
     } catch (error) {
-      throw AadAppClient.handleError(error, UpdatePermissionError);
+      if (skip) {
+        const message = Messages.StepFailedAndSkipped(
+          ProgressDetail.UpdatePermission,
+          Messages.UpdatePermissionHelpMessage
+        );
+        ctx.logProvider?.warning(Messages.getLog(message));
+        DialogUtils.show(message, UILevels.Warn);
+      } else {
+        throw AadAppClient.handleError(error, UpdatePermissionError);
+      }
     }
   }
 
@@ -181,7 +212,8 @@ export class AadAppClient {
     stage: string,
     objectId: string,
     islocalDebug: boolean,
-    clientSecret: string | undefined
+    clientSecret: string | undefined,
+    skip = false
   ): Promise<ProvisionConfig> {
     let getAppObject: IAADDefinition;
     try {

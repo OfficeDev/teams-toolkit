@@ -260,7 +260,7 @@ class BicepChecker {
 
   public async getBicepCommand(): Promise<string> {
     if (await this.isInstalled()) {
-      return `"${this.getBicepExecPath()}"`;
+      return this.getBicepExecPath();
     }
     return "bicep";
   }

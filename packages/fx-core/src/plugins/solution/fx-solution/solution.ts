@@ -685,9 +685,6 @@ export class TeamsAppSolution implements Solution {
             }
           }
         }
-        ctx.logProvider?.info(
-          util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
-        );
 
         if (isArmSupportEnabled() && this.isAzureProject(ctx)) {
           const armDeploymentResult = await deployArmTemplates(ctx);
@@ -695,6 +692,10 @@ export class TeamsAppSolution implements Solution {
             return armDeploymentResult;
           }
         }
+
+        ctx.logProvider?.info(
+          util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
+        );
 
         const aadPlugin = this.AadPlugin as AadAppForTeamsPlugin;
         if (selectedPlugins.some((plugin) => plugin.name === aadPlugin.name)) {

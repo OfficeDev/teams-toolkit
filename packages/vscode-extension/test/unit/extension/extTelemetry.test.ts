@@ -4,6 +4,7 @@ import { Stage, returnUserError } from "@microsoft/teamsfx-api";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../src/telemetry/extTelemetryEvents";
 import { NoneFxError } from "../../../../fx-core/build";
+import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import sinon = require("sinon");
 import * as commonUtils from "../../../src/utils/commonUtils";
 
@@ -104,9 +105,9 @@ suite("ExtTelemetry", () => {
         "sampleEvent",
         {
           stringProp: "some string",
-          appid: undefined,
           component: "extension",
           "is-existing-user": "",
+          ...(isMultiEnvEnabled() ? {} : { appid: undefined }),
         },
         { numericMeasure: 123 }
       );
@@ -126,13 +127,13 @@ suite("ExtTelemetry", () => {
         "sampleEvent",
         {
           stringProp: "some string",
-          appid: undefined,
           component: "extension",
           success: "no",
           "is-existing-user": "",
           "error-type": "user",
           "error-message": `${error.message}${error.stack ? "\nstack:\n" + error.stack : ""}`,
           "error-code": "test.UserTestError",
+          ...(isMultiEnvEnabled() ? {} : { appid: undefined }),
         },
         { numericMeasure: 123 },
         ["errorProps"]
@@ -151,9 +152,9 @@ suite("ExtTelemetry", () => {
         error,
         {
           stringProp: "some string",
-          appid: undefined,
           component: "extension",
           "is-existing-user": "",
+          ...(isMultiEnvEnabled() ? {} : { appid: undefined }),
         },
         { numericMeasure: 123 }
       );

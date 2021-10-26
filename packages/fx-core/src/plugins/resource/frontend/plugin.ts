@@ -55,7 +55,7 @@ import { TemplateInfo } from "./resources/templateInfo";
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
 import { getArmOutput } from "../utils4v2";
 import { getTemplatesFolder, isArmSupportEnabled } from "../../..";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ScaffoldArmTemplateResult, ArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { EnvironmentUtils } from "./utils/environment-utils";
@@ -186,48 +186,68 @@ export class FrontendPluginImpl {
       FrontendPathInfo.BicepTemplateRelativeDir
     );
 
-    const moduleFilePath = path.join(bicepTemplateDir, FrontendPathInfo.ModuleFileName);
+    // const moduleFilePath = path.join(bicepTemplateDir, FrontendPathInfo.ModuleFileName);
+    const provisionFilePath = path.join(bicepTemplateDir, FrontendPathInfo.ProvisionV2FileName);
+    const moduleProvisionFilePath = path.join(
+      bicepTemplateDir,
+      FrontendPathInfo.ModuleProvisionV2FileName
+    );
+    // const inputParameterOrchestrationFilePath = path.join(
+    //   bicepTemplateDir,
+    //   Bicep.ParameterOrchestrationFileName
+    // );
+    // const moduleOrchestrationFilePath = path.join(
+    //   bicepTemplateDir,
+    //   Bicep.ModuleOrchestrationFileName
+    // );
+    // const outputOrchestrationFilePath = path.join(
+    //   bicepTemplateDir,
+    //   Bicep.OutputOrchestrationFileName
+    // );
 
-    const inputParameterOrchestrationFilePath = path.join(
-      bicepTemplateDir,
-      Bicep.ParameterOrchestrationFileName
-    );
-    const moduleOrchestrationFilePath = path.join(
-      bicepTemplateDir,
-      Bicep.ModuleOrchestrationFileName
-    );
-    const outputOrchestrationFilePath = path.join(
-      bicepTemplateDir,
-      Bicep.OutputOrchestrationFileName
-    );
-
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        frontendHostingProvision: {
-          Content: await fs.readFile(moduleFilePath, ConstantString.UTF8Encoding),
-        },
-      },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(
-            inputParameterOrchestrationFilePath,
+    const result2: ArmTemplateResult = {
+      Provision: {
+        Orchestration: await fs.readFile(provisionFilePath, ConstantString.UTF8Encoding),
+        Reference: JSON.stringify({
+          endpoint: FrontendOutputBicepSnippet.Endpoint,
+          domain: FrontendOutputBicepSnippet.Domain,
+        }),
+        Modules: {
+          frontendHostingProvision: await fs.readFile(
+            moduleProvisionFilePath,
             ConstantString.UTF8Encoding
           ),
-        },
-        ModuleTemplate: {
-          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
-          Outputs: {
-            endpoint: FrontendOutputBicepSnippet.Endpoint,
-            domain: FrontendOutputBicepSnippet.Domain,
-          },
-        },
-        OutputTemplate: {
-          Content: await fs.readFile(outputOrchestrationFilePath, ConstantString.UTF8Encoding),
         },
       },
     };
 
-    return ok(result);
+    // const result: ScaffoldArmTemplateResult = {
+    //   Modules: {
+    //     frontendHostingProvision: {
+    //       Content: await fs.readFile(moduleFilePath, ConstantString.UTF8Encoding),
+    //     },
+    //   },
+    //   Orchestration: {
+    //     ParameterTemplate: {
+    //       Content: await fs.readFile(
+    //         inputParameterOrchestrationFilePath,
+    //         ConstantString.UTF8Encoding
+    //       ),
+    //     },
+    //     ModuleTemplate: {
+    //       Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
+    //       Outputs: {
+    //         endpoint: FrontendOutputBicepSnippet.Endpoint,
+    //         domain: FrontendOutputBicepSnippet.Domain,
+    //       },
+    //     },
+    //     OutputTemplate: {
+    //       Content: await fs.readFile(outputOrchestrationFilePath, ConstantString.UTF8Encoding),
+    //     },
+    //   },
+    // };
+
+    return ok(result2);
   }
 
   private async syncArmOutput(ctx: PluginContext) {

@@ -60,6 +60,13 @@ export class Constants {
   static readonly configurationModuleTemplateFileName: string =
     "simpleAuthConfiguration.template.bicep";
 
+  static readonly provisionModuleTemplateFileNameV2: string =
+    "simpleAuthProvision.template.v2.bicep";
+  static readonly configModuleTemplateFileNameV2: string =
+    "simpleAuthConfiguration.template.v2.bicep";
+  static readonly provisionTemplateFileNameV2: string = "provision.template.v2.bicep";
+  static readonly configTemplateFileNameV2: string = "config.template.v2.bicep";
+
   static readonly SimpleAuthBicepOutputSkuName: string = "simpleAuthProvision.outputs.skuName";
   static readonly SimpleAuthBicepOutputEndpoint: string = "simpleAuthProvision.outputs.endpoint";
 

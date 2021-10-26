@@ -14,7 +14,11 @@ import {
   returnUserError,
   EnvNamePlaceholder,
 } from "@microsoft/teamsfx-api";
-import { ScaffoldArmTemplateResult, ArmResourcePlugin } from "../../../common/armInterface";
+import {
+  ScaffoldArmTemplateResult,
+  ArmResourcePlugin,
+  ArmTemplateResult,
+} from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import { format } from "util";
@@ -64,7 +68,7 @@ const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 // constant string
 const resourceBaseName = "resourceBaseName";
 const parameterName = "parameters";
-const stateName = "state";
+const valueName = "resourceBaseName";
 const solutionName = "solution";
 
 // Get ARM template content from each resource plugin and output to project folder
@@ -382,16 +386,32 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
       // find method using method name
       const pluginContext = getPluginContext(ctx, pluginWithArm.name);
       const result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
-        ScaffoldArmTemplateResult,
+        ArmTemplateResult,
         FxError
       >;
+      // if (result.isOk()) {
+      //   bicepOrchestrationTemplate.applyTemplate(pluginWithArm.name, result.value);
+      //   if (result.value.Modules) {
+      //     for (const module of Object.entries(result.value.Modules)) {
+      //       const moduleFileName = module[0];
+      //       const moduleFileContent = module[1].Content;
+      //       moduleFiles.set(generateBicepModuleFilePath(moduleFileName), moduleFileContent);
+      //     }
+      //   }
       if (result.isOk()) {
-        bicepOrchestrationTemplate.applyTemplate(pluginWithArm.name, result.value);
-        if (result.value.Modules) {
-          for (const module of Object.entries(result.value.Modules)) {
-            const moduleFileName = module[0];
-            const moduleFileContent = module[1].Content;
-            moduleFiles.set(generateBicepModuleFilePath(moduleFileName), moduleFileContent);
+        bicepOrchestrationTemplate.applyTemplateV2(pluginWithArm.name, result.value);
+        if (result.value.Provision?.Modules) {
+          for (const module of Object.entries(result.value.Provision.Modules)) {
+            const moduleName = module[0];
+            const moduleValue = module[1];
+            moduleFiles.set(generateBicepModuleProvisionFilePath(moduleName), moduleValue);
+          }
+        }
+        if (result.value.Configuration?.Modules) {
+          for (const module of Object.entries(result.value.Configuration.Modules)) {
+            const moduleName = module[0];
+            const moduleValue = module[1];
+            moduleFiles.set(generateBicepModuleConfigFilePath(moduleName), moduleValue);
           }
         }
       } else {
@@ -412,14 +432,14 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
     const bicepOrchestrationFileContent = bicepOrchestrationTemplate.getOrchestrationFileContent();
     const templateFolderPath = path.join(ctx.root, templatesFolder);
     await fs.ensureDir(templateFolderPath);
+    await fs.ensureDir(path.join(templateFolderPath, "configuration"));
+    await fs.ensureDir(path.join(templateFolderPath, "provision"));
     await fs.writeFile(
       path.join(templateFolderPath, bicepOrchestrationFileName),
       bicepOrchestrationFileContent
     );
 
     // Output bicep module files from each resource plugin
-    const modulesFolderPath = path.join(templateFolderPath, modulesFolder);
-    await fs.ensureDir(modulesFolderPath);
     for (const module of moduleFiles) {
       // module[0] contains relative path to template folder, e.g. "./modules/frontendHosting.bicep"
       await fs.writeFile(path.join(templateFolderPath, module[0]), module[1]);
@@ -554,9 +574,22 @@ class BicepOrchestrationContent {
   private RenderContenxt: ArmTemplateRenderContext;
   private TemplateAdded = false;
 
+  private ProvisionTemplate = "";
+  private ConfigTemplate = "";
+  private ParameterReference = "";
+
   constructor(pluginNames: string[], baseName: string) {
     this.ParameterJsonTemplate[resourceBaseName] = { value: baseName };
     this.RenderContenxt = new ArmTemplateRenderContext(pluginNames);
+  }
+
+  public applyTemplateV2(pluginName: string, armResult: ArmTemplateResult): void {
+    this.ProvisionTemplate += this.normalizeTemplateSnippet(armResult.Provision?.Orchestration);
+    this.ConfigTemplate += this.normalizeTemplateSnippet(armResult.Configuration?.Orchestration);
+    // update context to render the template
+    // this.RenderContenxt.addPluginOutput(pluginName, scaffoldResult);
+
+    Object.assign(this.ParameterJsonTemplate, armResult.Parameters);
   }
 
   public applyTemplate(pluginName: string, scaffoldResult: ScaffoldArmTemplateResult): void {
@@ -595,7 +628,7 @@ class BicepOrchestrationContent {
     const parameterObject = {
       $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
       contentVersion: "1.0.0.0",
-      parameters: this.ParameterJsonTemplate,
+      provisionParameters: { state: this.ParameterJsonTemplate },
     };
     return JSON.stringify(parameterObject, undefined, 2);
   }
@@ -627,6 +660,14 @@ interface PluginModuleProperties {
   Path: string;
 }
 
+function generateBicepModuleProvisionFilePath(moduleFileName: string) {
+  return `./provision/${moduleFileName}.bicep`;
+}
+
+function generateBicepModuleConfigFilePath(moduleFileName: string) {
+  return `./configuration/${moduleFileName}.bicep`;
+}
+
 function generateBicepModuleFilePath(moduleFileName: string) {
   return `./modules/${moduleFileName}.bicep`;
 }
@@ -635,7 +676,9 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
   const stateVariables: Record<string, Record<string, any>> = {};
-  const availableVariables: Record<string, Record<string, any>> = { state: stateVariables };
+  const availableVariables: Record<string, Record<string, any>> = {
+    provisionParameters: { state: stateVariables },
+  };
   // Add plugin contexts to available variables
   for (const plugin of plugins) {
     const pluginContext = getPluginContext(ctx, plugin.name);
@@ -663,14 +706,14 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
 
   // Add environment variable to available variables
   const processVariables: Record<string, string> = Object.keys(process.env)
-    .filter((key) => !stateName.includes(key))
+    .filter((key) => !valueName.includes(key))
     .reduce((obj: Record<string, string>, key: string) => {
       obj[key] = process.env[key] as string;
       return obj;
     }, {});
   Object.assign(availableVariables, processVariables); // The environment variable has higher priority
 
-  return compileHandlebarsTemplateString(parameterContent, availableVariables);
+  return compileHandlebarsTemplateString(parameterContent, availableVariables.provisionParameters);
 }
 
 function generateResourceBaseName(appName: string, envName: string): string {

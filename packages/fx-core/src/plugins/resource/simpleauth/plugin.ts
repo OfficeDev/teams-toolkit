@@ -11,7 +11,7 @@ import { WebAppClient } from "./webAppClient";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ScaffoldArmTemplateResult, ArmTemplateResult } from "../../../common/armInterface";
 import { generateBicepFiles, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
 import { getArmOutput } from "../utils4v2";
 import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
@@ -126,7 +126,7 @@ export class SimpleAuthPluginImpl {
 
   public async generateArmTemplates(
     ctx: PluginContext
-  ): Promise<Result<ScaffoldArmTemplateResult, FxError>> {
+  ): Promise<Result<ArmTemplateResult, FxError>> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
 
@@ -176,39 +176,79 @@ export class SimpleAuthPluginImpl {
       bicepTemplateDirectory,
       Bicep.ModuleOrchestrationFileName
     );
-    const outputTemplateFilePath = path.join(
+    // const outputTemplateFilePath = path.join(
+    //   bicepTemplateDirectory,
+    //   Bicep.OutputOrchestrationFileName
+    // );
+
+    const provisionV2Result = path.join(
       bicepTemplateDirectory,
-      Bicep.OutputOrchestrationFileName
+      Constants.provisionTemplateFileNameV2
+    );
+    const configV2Result = path.join(bicepTemplateDirectory, Constants.configTemplateFileNameV2);
+
+    const provisionModuleV2Result = path.join(
+      bicepTemplateDirectory,
+      Constants.provisionModuleTemplateFileNameV2
+    );
+    const configModuleV2Result = path.join(
+      bicepTemplateDirectory,
+      Constants.configModuleTemplateFileNameV2
     );
 
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        simpleAuthProvision: {
-          Content: provisionModuleContentResult.value,
-        },
-        simpleAuthConfiguration: {
-          Content: configurationModuleContentResult.value,
+    const result2: ArmTemplateResult = {
+      Provision: {
+        Orchestration: await fs.readFile(provisionV2Result, ConstantString.UTF8Encoding),
+        Reference: JSON.stringify({
+          skuName: Constants.SimpleAuthBicepOutputSkuName,
+          endpoint: Constants.SimpleAuthBicepOutputEndpoint,
+        }),
+        Modules: {
+          simpleAuthProvision: await fs.readFile(
+            provisionModuleV2Result,
+            ConstantString.UTF8Encoding
+          ),
         },
       },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
-        },
-        ModuleTemplate: {
-          Content: await fs.readFile(resourceTemplateFilePath, ConstantString.UTF8Encoding),
-          Outputs: {
-            skuName: Constants.SimpleAuthBicepOutputSkuName,
-            endpoint: Constants.SimpleAuthBicepOutputEndpoint,
-          },
-        },
-        OutputTemplate: {
-          Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
+      Configuration: {
+        Orchestration: await fs.readFile(configV2Result, ConstantString.UTF8Encoding),
+        Modules: {
+          simpleAuthConfiguration: await fs.readFile(
+            configModuleV2Result,
+            ConstantString.UTF8Encoding
+          ),
         },
       },
     };
 
+    // const result: ScaffoldArmTemplateResult = {
+    //   Modules: {
+    //     simpleAuthProvision: {
+    //       Content: provisionModuleContentResult.value,
+    //     },
+    //     simpleAuthConfiguration: {
+    //       Content: configurationModuleContentResult.value,
+    //     },
+    //   },
+    //   Orchestration: {
+    //     ParameterTemplate: {
+    //       Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
+    //     },
+    //     ModuleTemplate: {
+    //       Content: await fs.readFile(resourceTemplateFilePath, ConstantString.UTF8Encoding),
+    //       Outputs: {
+    //         skuName: Constants.SimpleAuthBicepOutputSkuName,
+    //         endpoint: Constants.SimpleAuthBicepOutputEndpoint,
+    //       },
+    //     },
+    //     OutputTemplate: {
+    //       Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
+    //     },
+    //   },
+    // };
+
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
-    return ResultFactory.Success(result);
+    return ResultFactory.Success(result2);
   }
 
   private async initWebAppClient(ctx: PluginContext) {

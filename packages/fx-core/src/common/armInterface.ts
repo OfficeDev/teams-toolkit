@@ -37,3 +37,13 @@ export interface ScaffoldArmTemplateResult extends Record<string, unknown> {
   Modules?: { [moduleFileName: string]: BicepModule };
   Orchestration: BicepOrchestration;
 }
+
+export interface ArmTemplateResult extends Record<string, unknown> {
+  Provision?: {
+    Orchestration: string;
+    Reference?: string;
+    Modules?: { [moduleFileName: string]: string };
+  };
+  Configuration?: { Orchestration: string; Modules?: { [moduleFileName: string]: string } };
+  Parameters?: string;
+}

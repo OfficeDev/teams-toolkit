@@ -56,6 +56,8 @@ export class FrontendPathInfo {
   static TemplatePackageExt = ".zip";
 
   static ModuleFileName = "frontendHosting.bicep";
+  static ProvisionV2FileName = "provision.v2.bicep";
+  static ModuleProvisionV2FileName = "frontendHostingProvision.v2.bicep";
 
   static BuildFolderName = "build";
   static BuildPath = `${FrontendPathInfo.BuildFolderName}${path.sep}`;

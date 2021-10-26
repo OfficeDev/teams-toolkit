@@ -450,28 +450,23 @@ export class AppStudioPluginImpl {
   public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     let manifestString: string | undefined = undefined;
-    const appDirectory = await getAppDirectory(ctx.root);
     if (isSPFxProject(ctx.projectSettings)) {
       manifestString = (await fs.readFile(await this.getManifestTemplatePath(ctx.root))).toString();
       if (isMultiEnvEnabled()) {
-        const teamsAppId = await this.getTeamsAppId(ctx, false);
-        if (!teamsAppId) {
-          return err(
-            AppStudioResultFactory.UserError(
-              AppStudioError.GetRemoteConfigError.name,
-              AppStudioError.GetRemoteConfigError.message("Manifest validation failed")
-            )
-          );
-        }
         const view = {
           config: ctx.envInfo.config,
           state: {
             "fx-resource-appstudio": {
-              teamsAppId: teamsAppId,
+              teamsAppId: this.getTeamsAppId(ctx, false),
             },
           },
         };
         manifestString = Mustache.render(manifestString, view);
+        const manifest = JSON.parse(manifestString);
+        if (!isUUID(manifest.id)) {
+          manifest.id = v4();
+        }
+        manifestString = JSON.stringify(manifest, null, 4);
       }
     } else {
       const appDefinitionAndManifest = await this.getAppDefinitionAndManifest(ctx, false);
@@ -629,6 +624,11 @@ export class AppStudioPluginImpl {
           },
         };
         manifestString = Mustache.render(manifestString, view);
+        const manifest = JSON.parse(manifestString);
+        if (!isUUID(manifest.id)) {
+          manifest.id = v4();
+        }
+        manifestString = JSON.stringify(manifest, null, 4);
       }
     } else {
       const manifest = await this.getAppDefinitionAndManifest(ctx, false);
@@ -653,7 +653,6 @@ export class AppStudioPluginImpl {
       }
     }
     const status = await fs.lstat(appDirectory);
-
     if (!status.isDirectory()) {
       throw AppStudioResultFactory.UserError(
         AppStudioError.NotADirectoryError.name,

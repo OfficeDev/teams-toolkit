@@ -57,6 +57,8 @@ import { Utils } from "../../resource/frontend/utils";
 const templateFolder = "templates";
 const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
+const bicepOrchestrationProvisionFileName = "provision.bicep";
+const bicepOrchestrationConfigFileName = "config.bicep";
 const solutionLevelParameters = `param resourceBaseName string\n`;
 
 // New folder structure constants
@@ -429,14 +431,41 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
     await backupExistingFilesIfNecessary(ctx);
     // Output main.bicep file
-    const bicepOrchestrationFileContent = bicepOrchestrationTemplate.getOrchestrationFileContent();
+    // const bicepOrchestrationFileContent = bicepOrchestrationTemplate.getOrchestrationFileContent();
+    let bicepOrchestrationProvisionContent = await fs.readFile(
+      path.join(getTemplatesFolder(), "plugins", "solution", "provision.bicep"),
+      ConstantString.UTF8Encoding
+    );
+    let bicepOrchestrationConfigContent = await fs.readFile(
+      path.join(getTemplatesFolder(), "plugins", "solution", "config.bicep"),
+      ConstantString.UTF8Encoding
+    );
+    bicepOrchestrationProvisionContent +=
+      bicepOrchestrationTemplate.getOrchestractionProvisionContent();
+    bicepOrchestrationConfigContent += bicepOrchestrationTemplate.getOrchestractionConfigContent();
     const templateFolderPath = path.join(ctx.root, templatesFolder);
     await fs.ensureDir(templateFolderPath);
-    await fs.ensureDir(path.join(templateFolderPath, "configuration"));
+    await fs.ensureDir(path.join(templateFolderPath, "teamsFxConfiguration"));
     await fs.ensureDir(path.join(templateFolderPath, "provision"));
+
+    // await fs.writeFile(
+    //   path.join(templateFolderPath, bicepOrchestrationFileName),
+    //   bicepOrchestrationFileContent
+    // );
+
+    await fs.copyFile(
+      path.join(getTemplatesFolder(), "plugins", "solution", "main.bicep"),
+      path.join(templateFolderPath, bicepOrchestrationFileName)
+    );
+
     await fs.writeFile(
-      path.join(templateFolderPath, bicepOrchestrationFileName),
-      bicepOrchestrationFileContent
+      path.join(templateFolderPath, bicepOrchestrationProvisionFileName),
+      bicepOrchestrationProvisionContent
+    );
+
+    await fs.writeFile(
+      path.join(templateFolderPath, bicepOrchestrationConfigFileName),
+      bicepOrchestrationConfigContent
     );
 
     // Output bicep module files from each resource plugin
@@ -614,13 +643,14 @@ class BicepOrchestrationContent {
     );
   }
 
-  public getOrchestrationFileContent(): string {
-    let orchestrationTemplate = "";
-    orchestrationTemplate += this.normalizeTemplateSnippet(this.ParameterTemplate, false) + "\n";
-    orchestrationTemplate += this.normalizeTemplateSnippet(this.VariableTemplate, false) + "\n";
-    orchestrationTemplate += this.normalizeTemplateSnippet(this.ModuleTemplate, false) + "\n";
-    orchestrationTemplate += this.normalizeTemplateSnippet(this.OutputTemplate, false);
+  public getOrchestractionProvisionContent(): string {
+    const orchestrationTemplate =
+      this.normalizeTemplateSnippet(this.ProvisionTemplate, false) + "\n";
+    return compileHandlebarsTemplateString(orchestrationTemplate, this.RenderContenxt).trim();
+  }
 
+  public getOrchestractionConfigContent(): string {
+    const orchestrationTemplate = this.normalizeTemplateSnippet(this.ConfigTemplate, false) + "\n";
     return compileHandlebarsTemplateString(orchestrationTemplate, this.RenderContenxt).trim();
   }
 
@@ -665,7 +695,7 @@ function generateBicepModuleProvisionFilePath(moduleFileName: string) {
 }
 
 function generateBicepModuleConfigFilePath(moduleFileName: string) {
-  return `./configuration/${moduleFileName}.bicep`;
+  return `./teamsFxConfiguration/${moduleFileName}.bicep`;
 }
 
 function generateBicepModuleFilePath(moduleFileName: string) {

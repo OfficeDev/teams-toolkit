@@ -129,11 +129,13 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
         [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
       });
       ctx.result = err(UpgradeCanceledError());
+      core.tools.logProvider.warning(`[core] Upgrade canceled.`);
       core.tools.logProvider.warning(
-        `[core] Upgrade canceled. If you don't want to upgrade your project, please install another version of Teams Toolkit(version <= 2.7.0). Read this wiki(${learnMoreLink}) to learn how to downgrade Teams Toolkit.`
+        `[core] Notice upgrade to new configuration schema is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Check project upgrade) or click the “Upgrade project schema” button on tree view to trigger the upgrade.`
       );
+
       core.tools.logProvider.warning(
-        `[core] You can also reload VSCode or run command (Teams: Check project upgrade) to trigger upgrade check.`
+        `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.7.0`
       );
       return;
     }
@@ -143,7 +145,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
 
     await migrateToArmAndMultiEnv(ctx);
     core.tools.logProvider.warning(
-      `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your project or learn more about this upgrade.`
+      `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your project schema or learn more about this upgrade.`
     );
   } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
     // TODO: delete before Arm && Multi-env version released
@@ -352,7 +354,12 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   );
 
   // appPackage
-  await fs.copy(path.join(projectPath, AppPackageFolderName), templateAppPackage);
+  if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
+    await fs.copy(path.join(projectPath, AppPackageFolderName), templateAppPackage);
+  } else if (await fs.pathExists(path.join(fx, AppPackageFolderName))) {
+    // version <= 2.4.1
+    await fs.copy(path.join(fx, AppPackageFolderName), templateAppPackage);
+  }
   const targetManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
   await fs.rename(path.join(templateAppPackage, "manifest.source.json"), targetManifestFile);
 

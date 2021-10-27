@@ -29,7 +29,6 @@ import {
   MigrateV1ProjectError,
 } from "./resources/errors";
 import {
-  ArmOutput,
   AzureErrorCode,
   AzureInfo,
   DependentPluginInfo,
@@ -53,8 +52,7 @@ import {
 } from "./utils/progress-helper";
 import { TemplateInfo } from "./resources/templateInfo";
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
-import { getArmOutput } from "../utils4v2";
-import { getTemplatesFolder, isArmSupportEnabled } from "../../..";
+import { getTemplatesFolder } from "../../../folder";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { Bicep, ConstantString } from "../../../common/constants";
@@ -140,10 +138,6 @@ export class FrontendPluginImpl {
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (isArmSupportEnabled()) {
-      await this.syncArmOutput(ctx);
-    }
-
     return ok(undefined);
   }
 
@@ -228,20 +222,6 @@ export class FrontendPluginImpl {
     };
 
     return ok(result);
-  }
-
-  private async syncArmOutput(ctx: PluginContext) {
-    const config = await FrontendConfig.fromPluginContext(ctx, true);
-    config.storageResourceId = getArmOutput(ctx, ArmOutput.FrontendStorageResourceId) as string;
-    config.endpoint = getArmOutput(ctx, ArmOutput.FrontendEndpoint) as string;
-    config.domain = getArmOutput(ctx, ArmOutput.FrontendDomain) as string;
-    config.syncToPluginContext(ctx);
-
-    const client = new AzureStorageClient(config);
-    await runWithErrorCatchAndThrow(
-      new EnableStaticWebsiteError(),
-      async () => await client.enableStaticWebsite()
-    );
   }
 
   private async updateDotenv(ctx: PluginContext): Promise<void> {

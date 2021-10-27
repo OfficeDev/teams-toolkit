@@ -38,6 +38,7 @@ export const DEFAULT_FUNC_NAME = "defaultFunctionName";
  * Config key whose value is output of ARM templates deployment.
  */
 export const ARM_TEMPLATE_OUTPUT = "armTemplateOutput";
+export const TEAMS_FX_RESOURCE_ID_KEY = "teamsFxPluginId";
 
 /**
  * Config key whose value is the resource group name of project.

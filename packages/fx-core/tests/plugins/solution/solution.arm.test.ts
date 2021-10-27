@@ -77,6 +77,10 @@ const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const fileEncoding = "UTF8";
 const templateFolder = path.join(baseFolder, templateFolderName);
 
+const TEST_SUBSCRIPTION_ID = "test_subscription_id";
+const TEST_RESOURCE_GROUP_NAME = "test_resource_group_name";
+const FRONTEND_HOSTING_PLUGIN_ID = "fx-resource-frontend-hosting";
+
 function mockSolutionContext(): SolutionContext {
   return {
     root: "./",
@@ -278,19 +282,17 @@ describe("Deploy ARM Template to Azure", () => {
   const testClientSecret = "test_client_secret";
   const testEnvValue = "test env value";
   const testResourceSuffix = "-testSuffix";
+  const testStorageName = "test_storage_name";
   let parameterFileName: string;
   const testArmTemplateOutput = {
-    frontendHosting_storageResourceId: {
-      type: "String",
-      value: "test_storage_resource_id",
-    },
-    frontendHosting_endpoint: {
-      type: "String",
-      value: "https://test_frontendhosting_domain/",
-    },
-    frontendHosting_domain: {
-      type: "String",
-      value: "test_frontendhosting_domain",
+    frontendHostingOutput: {
+      type: "Object",
+      value: {
+        teamsFxPluginId: FRONTEND_HOSTING_PLUGIN_ID,
+        storageResourceId: `/subscriptions/${TEST_SUBSCRIPTION_ID}/resourceGroups/${TEST_RESOURCE_GROUP_NAME}/providers/Microsoft.Storage/storageAccounts/${testStorageName}`,
+        endpoint: `https://${testStorageName}.z13.web.core.windows.net`,
+        domain: `${testStorageName}.z13.web.core.windows.net`,
+      },
     },
     simpleAuth_skuName: {
       type: "String",
@@ -386,7 +388,7 @@ describe("Deploy ARM Template to Azure", () => {
       SOLUTION_CONFIG,
       new ConfigMap([
         ["resource-base-name", "mocked resource base name"],
-        ["resourceGroupName", "mocked resource group name"],
+        ["resourceGroupName", TEST_RESOURCE_GROUP_NAME],
       ])
     );
 
@@ -566,9 +568,9 @@ describe("Deploy ARM Template to Azure", () => {
     mockedCtx.envInfo.state.set(
       SOLUTION_CONFIG,
       new ConfigMap([
-        ["resourceGroupName", "mocked resource group name"],
+        ["resourceGroupName", TEST_RESOURCE_GROUP_NAME],
         ["resourceNameSuffix", testResourceSuffix],
-        ["subscriptionId", "mocked subscription id"],
+        ["subscriptionId", TEST_SUBSCRIPTION_ID],
       ])
     );
 
@@ -584,7 +586,7 @@ describe("Deploy ARM Template to Azure", () => {
 
     mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
       const subscriptionInfo = {
-        subscriptionId: "test_subsctiption_id",
+        subscriptionId: TEST_SUBSCRIPTION_ID,
         subscriptionName: "test_subsctiption_name",
       } as SubscriptionInfo;
       return subscriptionInfo;

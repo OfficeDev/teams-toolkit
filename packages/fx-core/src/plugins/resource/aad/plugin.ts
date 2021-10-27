@@ -35,7 +35,6 @@ import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
 import {
   ConfigKeys,
-  ConfigKeysOfOtherPlugin,
   Constants,
   Messages,
   Plugins,
@@ -54,7 +53,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
-import { getTemplatesFolder, isMultiEnvEnabled } from "../../..";
+import { getTemplatesFolder } from "../../..";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
 

@@ -87,12 +87,7 @@ export class Utils {
     const teamsMobileDesktopAppId = TeamsClientId.MobileDesktop;
     const teamsWebAppId = TeamsClientId.Web;
 
-    let endpoint: string;
-    if (!isArmSupportEnabled() || isLocalDebug) {
-      endpoint = this.getFrontendEndpoint(ctx, isLocalDebug);
-    } else {
-      endpoint = getArmOutput(ctx, Constants.ArmOutput.frontendEndpoint) as string;
-    }
+    const endpoint = this.getFrontendEndpoint(ctx, isLocalDebug);
 
     const allowedAppIds = [teamsMobileDesktopAppId, teamsWebAppId].join(";");
     const aadMetadataAddress = `${oauthAuthority}/v2.0/.well-known/openid-configuration`;

@@ -92,20 +92,20 @@ describe("Migrate", () => {
     sandbox
       .stub<any, any>(fs, "copy")
       .callsFake(async (originPath: PathLike, filePath: PathLike) => {
-        if (!fileContent.has(originPath.toString())) {
+        if (!fileContent.has(path.normalize(originPath.toString()))) {
           throw new Error(`${originPath.toString()} is not found.`);
         }
-        const content = fileContent.get(originPath.toString());
+        const content = fileContent.get(path.normalize(originPath.toString()));
         fileContent.set(path.normalize(filePath.toString()), content ?? filePath.toString());
       });
 
     sandbox
       .stub<any, any>(fs, "copyFile")
       .callsFake(async (originPath: PathLike, filePath: PathLike) => {
-        if (!fileContent.has(originPath.toString())) {
+        if (!fileContent.has(path.normalize(originPath.toString()))) {
           throw new Error(`${originPath.toString()} is not found.`);
         }
-        const content = fileContent.get(originPath.toString());
+        const content = fileContent.get(path.normalize(originPath.toString()));
         fileContent.set(path.normalize(filePath.toString()), content ?? filePath.toString());
       });
 

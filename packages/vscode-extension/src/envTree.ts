@@ -27,6 +27,7 @@ import { signedIn } from "./commonlib/common/constant";
 import { AppStudioLogin } from "./commonlib/appStudioLogin";
 import * as fs from "fs-extra";
 import {
+  getProvisionSucceedFromEnv,
   getM365TenantFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
@@ -64,13 +65,15 @@ export async function registerEnvTreeHandler(
         : envNamesResult.value;
       for (const item of envNames) {
         showEnvList.push(item);
+        const provisionSucceeded = await getProvisionSucceedFromEnv(item);
         environmentTreeProvider.add([
           {
             commandId: "fx-extension.environment." + item,
             label: item,
+            description: provisionSucceeded ? "(Provisioned)" : "",
             parent: TreeCategory.Environment,
             contextValue: item === LocalEnvironmentName ? "local" : "environment",
-            icon: "symbol-folder",
+            icon: provisionSucceeded ? "folder-active" : "symbol-folder",
             isCustom: false,
             expanded: true,
           },

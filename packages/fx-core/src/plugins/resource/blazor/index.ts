@@ -21,7 +21,8 @@ import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { BlazorPluginImpl } from "./plugin";
+import { BlazorPluginImpl as PluginImpl } from "./plugin";
+import { BlazorPluginInfo as PluginInfo } from "./constants";
 
 @Service(ResourcePlugins.BlazorPlugin)
 export class BlazorPlugin implements Plugin {
@@ -31,10 +32,10 @@ export class BlazorPlugin implements Plugin {
     const hostType = solutionSettings?.hostType || "";
     return hostType === HostTypeOptionAzure.id;
   }
-  blazorPluginImpl = new BlazorPluginImpl();
+  blazorPluginImpl = new PluginImpl();
 
   private static setContext(ctx: PluginContext): void {
-    Logger.setLogger(ctx.logProvider);
+    Logger.setLogger(PluginInfo.PluginName, ctx.logProvider);
   }
 
   public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -59,9 +60,8 @@ export class BlazorPlugin implements Plugin {
 
   private async runWithErrorHandling(fn: () => Promise<TeamsFxResult>): Promise<TeamsFxResult> {
     try {
-      const result = await fn();
-      return result;
-    } catch (e) {
+      return await fn();
+    } catch (e: any) {
       await ProgressHelper.endAllHandlers(false);
 
       if (e instanceof BlazorPluginError) {
@@ -81,7 +81,12 @@ export class BlazorPlugin implements Plugin {
         return err(e);
       }
 
-      const error = ErrorFactory.SystemError(UnhandledErrorCode, UnhandledErrorMessage, e, e.stack);
+      const error = ErrorFactory.SystemError(
+        UnhandledErrorCode,
+        UnhandledErrorMessage,
+        e,
+        e?.stack
+      );
       return err(error);
     }
   }

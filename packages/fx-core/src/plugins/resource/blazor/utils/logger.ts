@@ -2,28 +2,32 @@
 // Licensed under the MIT license.
 import { LogProvider } from "@microsoft/teamsfx-api";
 
-import { BlazorPluginInfo } from "../constants";
-
 export class Logger {
   static logger: LogProvider | undefined;
+  static component: string | undefined;
 
-  public static setLogger(_logger?: LogProvider): void {
+  public static setLogger(component?: string, _logger?: LogProvider): void {
     this.logger = _logger;
+    this.component = component;
+  }
+
+  private static format(message: string): string {
+    return this.component ? `[${this.component}] ${message}` : message;
   }
 
   public static debug(message: string): void {
-    this.logger?.debug(`[${BlazorPluginInfo.DisplayName}] ${message}`);
+    this.logger?.debug(this.format(message));
   }
 
   public static info(message: string): void {
-    this.logger?.info(`[${BlazorPluginInfo.DisplayName}] ${message}`);
+    this.logger?.info(this.format(message));
   }
 
   public static warning(message: string): void {
-    this.logger?.warning(`[${BlazorPluginInfo.DisplayName}] ${message}`);
+    this.logger?.warning(this.format(message));
   }
 
   public static error(message: string): void {
-    this.logger?.error(`[${BlazorPluginInfo.DisplayName}] ${message}`);
+    this.logger?.error(this.format(message));
   }
 }

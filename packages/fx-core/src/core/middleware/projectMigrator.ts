@@ -233,19 +233,19 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
-    await handleError(err, projectPath, ctx);
+    await handleError(projectPath, ctx);
     throw err;
   }
   await postMigration(projectPath, ctx, inputs);
 }
 
-async function handleError(err: Error, projectPath: string, ctx: CoreHookContext) {
+async function handleError(projectPath: string, ctx: CoreHookContext) {
   await cleanup(projectPath);
   const core = ctx.self as FxCore;
   core.tools.ui
     .showMessage(
       "info",
-      util.format(getStrings().solution.MigrationToArmAndMultiEnvErrorMessage, err),
+      getStrings().solution.MigrationToArmAndMultiEnvErrorMessage,
       false,
       learnMoreText
     )

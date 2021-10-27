@@ -633,7 +633,11 @@ export class FunctionPluginImpl {
       FunctionConfigKey.functionLanguage
     );
 
-    const updated: boolean = await FunctionDeploy.hasUpdatedContent(workingPath, functionLanguage);
+    const updated: boolean = await FunctionDeploy.hasUpdatedContent(
+      workingPath,
+      functionLanguage,
+      ctx.envInfo.envName
+    );
     if (!updated) {
       Logger.info(InfoMessages.noChange);
       this.config.skipDeploy = true;
@@ -769,7 +773,8 @@ export class FunctionPluginImpl {
       workingPath,
       functionAppName,
       functionLanguage,
-      resourceGroupName
+      resourceGroupName,
+      ctx.envInfo.envName
     );
 
     return ResultFactory.Success();

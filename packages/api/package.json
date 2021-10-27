@@ -23,7 +23,7 @@
     "prepare": "npm run build",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
     "doc": "typedoc",
-    "test:unit": "nyc mocha --no-timeouts --require ts-node/register \"tests/**/*.ts\"",
+    "test:unit": "nyc --no-clean mocha --no-timeouts --require ts-node/register \"tests/**/*.ts\"",
     "prepublishOnly": "npm run test:unit && npm run build",
     "precommit": "lint-staged"
   },

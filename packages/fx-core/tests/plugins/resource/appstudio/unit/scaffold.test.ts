@@ -63,15 +63,15 @@ describe("Scaffold", () => {
     };
 
     sandbox.stub(fs, "writeFile").callsFake((file: number | PathLike, data: any) => {
-      fileContent.set(file.toString(), data);
+      fileContent.set(path.normalize(file.toString()), data);
     });
 
     sandbox.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
-      fileContent.set(file, JSON.stringify(obj));
+      fileContent.set(path.normalize(file), JSON.stringify(obj));
     });
     // Uses stub<any, any> to circumvent type check. Beacuse sinon fails to mock my target overload of readJson.
     sandbox.stub<any, any>(fs, "copy").callsFake((originPath: string, filePath: string) => {
-      fileContent.set(filePath, JSON.stringify(filePath));
+      fileContent.set(path.normalize(filePath), JSON.stringify(filePath));
     });
   });
 
@@ -95,7 +95,9 @@ describe("Scaffold", () => {
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
 
-    const manifest: TeamsAppManifest = JSON.parse(fileContent.get(getRemoteManifestPath(ctx.root)));
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+    );
     chai
       .expect(manifest.staticTabs)
       .to.deep.equal(isMultiEnvEnabled() ? STATIC_TABS_TPL_FOR_MULTI_ENV : STATIC_TABS_TPL);
@@ -131,14 +133,14 @@ describe("Scaffold", () => {
       fileContent.has(
         isMultiEnvEnabled()
           ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
-          : `${ctx.root}/${AppPackageFolderName}/color.png`
+          : path.normalize(`${ctx.root}/${AppPackageFolderName}/color.png`)
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
         isMultiEnvEnabled()
           ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
-          : `${ctx.root}/${AppPackageFolderName}/outline.png`
+          : path.normalize(`${ctx.root}/${AppPackageFolderName}/outline.png`)
       )
     ).to.be.true;
   });
@@ -157,7 +159,9 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest: TeamsAppManifest = JSON.parse(fileContent.get(getRemoteManifestPath(ctx.root)));
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+    );
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only bot is chosen")
       .to.deep.equal([]);
@@ -181,14 +185,14 @@ describe("Scaffold", () => {
       fileContent.has(
         isMultiEnvEnabled()
           ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
-          : `${ctx.root}/${AppPackageFolderName}/color.png`
+          : path.normalize(`${ctx.root}/${AppPackageFolderName}/color.png`)
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
         isMultiEnvEnabled()
           ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
-          : `${ctx.root}/${AppPackageFolderName}/outline.png`
+          : path.normalize(`${ctx.root}/${AppPackageFolderName}/outline.png`)
       )
     ).to.be.true;
   });
@@ -207,7 +211,9 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest: TeamsAppManifest = JSON.parse(fileContent.get(getRemoteManifestPath(ctx.root)));
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+    );
     chai
       .expect(manifest.staticTabs, "staticTabs should be empty, because only msgext is chosen")
       .to.deep.equal([]);
@@ -230,14 +236,14 @@ describe("Scaffold", () => {
       fileContent.has(
         isMultiEnvEnabled()
           ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
-          : `${ctx.root}/${AppPackageFolderName}/color.png`
+          : path.normalize(`${ctx.root}/${AppPackageFolderName}/color.png`)
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
         isMultiEnvEnabled()
           ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
-          : `${ctx.root}/${AppPackageFolderName}/outline.png`
+          : path.normalize(`${ctx.root}/${AppPackageFolderName}/outline.png`)
       )
     ).to.be.true;
   });
@@ -257,7 +263,9 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest: TeamsAppManifest = JSON.parse(fileContent.get(getRemoteManifestPath(ctx.root)));
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)))
+    );
     chai
       .expect(manifest.staticTabs)
       .to.deep.equal(isMultiEnvEnabled() ? STATIC_TABS_TPL_FOR_MULTI_ENV : STATIC_TABS_TPL);
@@ -279,14 +287,14 @@ describe("Scaffold", () => {
       fileContent.has(
         isMultiEnvEnabled()
           ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
-          : `${ctx.root}/${AppPackageFolderName}/color.png`
+          : path.normalize(`${ctx.root}/${AppPackageFolderName}/color.png`)
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
         isMultiEnvEnabled()
           ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
-          : `${ctx.root}/${AppPackageFolderName}/outline.png`
+          : path.normalize(`${ctx.root}/${AppPackageFolderName}/outline.png`)
       )
     ).to.be.true;
   });
@@ -307,21 +315,21 @@ describe("Scaffold", () => {
 
     const result = await plugin.scaffold(ctx);
     chai.expect(result.isOk()).equals(true);
-    const manifest = fileContent.get(getRemoteManifestPath(ctx.root));
+    const manifest = fileContent.get(path.normalize(getRemoteManifestPath(ctx.root)));
     chai.expect(manifest).to.be.not.undefined;
 
     chai.expect(
       fileContent.has(
         isMultiEnvEnabled()
           ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/color.png`)
-          : `${ctx.root}/${AppPackageFolderName}/color.png`
+          : path.normalize(`${ctx.root}/${AppPackageFolderName}/color.png`)
       )
     ).to.be.true;
     chai.expect(
       fileContent.has(
         isMultiEnvEnabled()
           ? path.normalize(`${ctx.root}/templates/${AppPackageFolderName}/resources/outline.png`)
-          : `${ctx.root}/${AppPackageFolderName}/outline.png`
+          : path.normalize(`${ctx.root}/${AppPackageFolderName}/outline.png`)
       )
     ).to.be.true;
   });

@@ -70,14 +70,14 @@ describe("Migrate", () => {
     sandbox
       .stub<any, any>(fs, "copy")
       .callsFake(async (originPath: PathLike, filePath: PathLike) => {
-        const content = fileContent.get(originPath.toString());
+        const content = fileContent.get(path.normalize(originPath.toString()));
         fileContent.set(path.normalize(filePath.toString()), content ?? filePath.toString());
       });
 
     sandbox
       .stub<any, any>(fs, "copyFile")
       .callsFake(async (originPath: PathLike, filePath: PathLike) => {
-        const content = fileContent.get(originPath.toString());
+        const content = fileContent.get(path.normalize(originPath.toString()));
         fileContent.set(path.normalize(filePath.toString()), content ?? filePath.toString());
       });
 

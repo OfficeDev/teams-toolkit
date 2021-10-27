@@ -23,19 +23,23 @@ jobs:
         run: |
           npm install --global conventional-commits-parser
 
-      - name: Check PR title
-        id: check_title
+      - name: Check PR
+        id: check_pr
         run: |
           declare -a types=("fix" "feat" "refactor")
           type=`echo "${{ github.event.pull_request.title }}" |  conventional-commits-parser | jq -r '.[].type'`
           if [[ " ${types[*]} " =~ " ${type} " ]]; then
-            echo "::set-output name=included::true"
+            if [[ ${{ github.event.pull_request.body }} == *"E2E TEST:"* ]]; then
+              echo "::set-output name=passed::true"
+            else
+              echo "::set-output name=passed::false"
+            fi
           else
-            echo "::set-output name=included::false"
+            echo "::set-output name=passed::true"
           fi
 
       - name: Search comment
-        if: ${{ steps.check_title.outputs.included == 'true' }}
+        if: ${{ steps.check_pr.outputs.passed == 'false' }}
         uses: peter-evans/find-comment@v1
         id: comments
         with:
@@ -43,7 +47,7 @@ jobs:
           body-includes: "E2E TEST:"
 
       - name: Check if test is included in comments
-        if: ${{ steps.check_title.outputs.included == 'true' }}
+        if: ${{ steps.check_pr.outputs.passed == 'false' }}
         run: |
           if [ -z "${{ steps.comments.outputs.comment-id }}" ]; then
             echo "E2E TEST not found."

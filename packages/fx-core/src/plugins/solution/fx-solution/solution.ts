@@ -1220,7 +1220,8 @@ export class TeamsAppSolution implements Solution {
           const errorMessage: string = util.format(
             getStrings().solution.LocalDebugTenantConfirmNotice,
             localDebugTenantId,
-            m365UserAccount.value
+            m365UserAccount.value,
+            isMultiEnvEnabled() ? "localSettings.json" : "default.userdata"
           );
 
           return err(

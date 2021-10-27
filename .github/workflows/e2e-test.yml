@@ -26,10 +26,11 @@ jobs:
       - name: Check PR
         id: check_pr
         run: |
+          echo ${{ github.event.pull_request }}
           declare -a types=("fix" "feat" "refactor")
           type=`echo "${{ github.event.pull_request.title }}" |  conventional-commits-parser | jq -r '.[].type'`
           if [[ " ${types[*]} " =~ " ${type} " ]]; then
-            if [[ ${{ github.event.pull_request.body }} == *"E2E TEST:"* ]]; then
+            if [[ "${{ github.event.pull_request.body }}" == *"E2E TEST:"* ]]; then
               echo "::set-output name=passed::true"
             else
               echo "::set-output name=passed::false"

@@ -149,6 +149,7 @@ import { askForProvisionConsent } from "./v2/provision";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { environmentManager } from "../../..";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
+import { LOCAL_TENANT_ID } from ".";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -1201,10 +1202,10 @@ export class TeamsAppSolution implements Solution {
       await ctx.appStudioToken?.getAccessToken();
 
       // Pop-up window to confirm if local debug in another tenant
-      const localDebugTenantId = ctx.localSettings?.teamsApp?.get(
-        LocalSettingsTeamsAppKeys.TenantId
-      );
-      if (isMultiEnvEnabled() && localDebugTenantId) {
+      const localDebugTenantId = isMultiEnvEnabled()
+        ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TenantId)
+        : ctx.envInfo.state.get(PluginNames.AAD)?.get(LOCAL_TENANT_ID);
+      if (localDebugTenantId) {
         const m365TenantId = parseTeamsAppTenantId(await ctx.appStudioToken?.getJsonObject());
         if (m365TenantId.isErr()) {
           throw err(m365TenantId.error);
@@ -1219,7 +1220,8 @@ export class TeamsAppSolution implements Solution {
           const errorMessage: string = util.format(
             getStrings().solution.LocalDebugTenantConfirmNotice,
             localDebugTenantId,
-            m365UserAccount.value
+            m365UserAccount.value,
+            isMultiEnvEnabled() ? "localSettings.json" : "default.userdata"
           );
 
           return err(

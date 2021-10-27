@@ -779,6 +779,7 @@
     "express": "^4.17.1",
     "jsonschema": "^1.4.0",
     "log4js": "^6.3.0",
+    "read-package-json-fast": "^2.0.3",
     "sudo-prompt": "^9.2.1",
     "underscore": "^1.12.1",
     "vscode-extension-telemetry": "^0.2.9",

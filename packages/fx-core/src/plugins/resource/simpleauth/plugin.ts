@@ -144,48 +144,20 @@ export class SimpleAuthPluginImpl {
       "bicep"
     );
 
-    const provisionModuleTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Constants.provisionModuleTemplateFileName
-    );
-    const provisionModuleContentResult = await generateBicepFiles(
-      provisionModuleTemplateFilePath,
+    const provisionV2Result = await generateBicepFiles(
+      path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName),
       context
     );
-    if (provisionModuleContentResult.isErr()) {
-      throw provisionModuleContentResult.error;
-    }
-
-    const configurationModuleTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Constants.configurationModuleTemplateFileName
-    );
-    const configurationModuleContentResult = await generateBicepFiles(
-      configurationModuleTemplateFilePath,
+    const configV2Result = await generateBicepFiles(
+      path.join(bicepTemplateDirectory, Bicep.ConfigV2FileName),
       context
     );
-    if (configurationModuleContentResult.isErr()) {
-      throw configurationModuleContentResult.error;
+    if (provisionV2Result.isErr()) {
+      throw provisionV2Result.error;
     }
-
-    const parameterTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.ParameterOrchestrationFileName
-    );
-    const resourceTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.ModuleOrchestrationFileName
-    );
-    // const outputTemplateFilePath = path.join(
-    //   bicepTemplateDirectory,
-    //   Bicep.OutputOrchestrationFileName
-    // );
-
-    const provisionV2Result = path.join(
-      bicepTemplateDirectory,
-      Constants.provisionTemplateFileNameV2
-    );
-    const configV2Result = path.join(bicepTemplateDirectory, Constants.configTemplateFileNameV2);
+    if (configV2Result.isErr()) {
+      throw configV2Result.error;
+    }
 
     const provisionModuleV2Result = path.join(
       bicepTemplateDirectory,
@@ -196,13 +168,13 @@ export class SimpleAuthPluginImpl {
       Constants.configModuleTemplateFileNameV2
     );
 
-    const result2: ArmTemplateResult = {
+    const result: ArmTemplateResult = {
       Provision: {
-        Orchestration: await fs.readFile(provisionV2Result, ConstantString.UTF8Encoding),
-        Reference: JSON.stringify({
+        Orchestration: provisionV2Result.value,
+        Reference: {
           skuName: Constants.SimpleAuthBicepOutputSkuName,
           endpoint: Constants.SimpleAuthBicepOutputEndpoint,
-        }),
+        },
         Modules: {
           simpleAuthProvision: await fs.readFile(
             provisionModuleV2Result,
@@ -211,7 +183,7 @@ export class SimpleAuthPluginImpl {
         },
       },
       Configuration: {
-        Orchestration: await fs.readFile(configV2Result, ConstantString.UTF8Encoding),
+        Orchestration: configV2Result.value,
         Modules: {
           simpleAuthConfiguration: await fs.readFile(
             configModuleV2Result,
@@ -221,34 +193,8 @@ export class SimpleAuthPluginImpl {
       },
     };
 
-    // const result: ScaffoldArmTemplateResult = {
-    //   Modules: {
-    //     simpleAuthProvision: {
-    //       Content: provisionModuleContentResult.value,
-    //     },
-    //     simpleAuthConfiguration: {
-    //       Content: configurationModuleContentResult.value,
-    //     },
-    //   },
-    //   Orchestration: {
-    //     ParameterTemplate: {
-    //       Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
-    //     },
-    //     ModuleTemplate: {
-    //       Content: await fs.readFile(resourceTemplateFilePath, ConstantString.UTF8Encoding),
-    //       Outputs: {
-    //         skuName: Constants.SimpleAuthBicepOutputSkuName,
-    //         endpoint: Constants.SimpleAuthBicepOutputEndpoint,
-    //       },
-    //     },
-    //     OutputTemplate: {
-    //       Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
-    //     },
-    //   },
-    // };
-
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
-    return ResultFactory.Success(result2);
+    return ResultFactory.Success(result);
   }
 
   private async initWebAppClient(ctx: PluginContext) {

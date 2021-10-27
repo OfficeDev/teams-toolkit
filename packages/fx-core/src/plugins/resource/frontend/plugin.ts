@@ -186,32 +186,19 @@ export class FrontendPluginImpl {
       FrontendPathInfo.BicepTemplateRelativeDir
     );
 
-    // const moduleFilePath = path.join(bicepTemplateDir, FrontendPathInfo.ModuleFileName);
-    const provisionFilePath = path.join(bicepTemplateDir, FrontendPathInfo.ProvisionV2FileName);
+    const provisionFilePath = path.join(bicepTemplateDir, Bicep.ProvisionV2FileName);
     const moduleProvisionFilePath = path.join(
       bicepTemplateDir,
       FrontendPathInfo.ModuleProvisionV2FileName
     );
-    // const inputParameterOrchestrationFilePath = path.join(
-    //   bicepTemplateDir,
-    //   Bicep.ParameterOrchestrationFileName
-    // );
-    // const moduleOrchestrationFilePath = path.join(
-    //   bicepTemplateDir,
-    //   Bicep.ModuleOrchestrationFileName
-    // );
-    // const outputOrchestrationFilePath = path.join(
-    //   bicepTemplateDir,
-    //   Bicep.OutputOrchestrationFileName
-    // );
 
-    const result2: ArmTemplateResult = {
+    const result: ArmTemplateResult = {
       Provision: {
         Orchestration: await fs.readFile(provisionFilePath, ConstantString.UTF8Encoding),
-        Reference: JSON.stringify({
+        Reference: {
           endpoint: FrontendOutputBicepSnippet.Endpoint,
           domain: FrontendOutputBicepSnippet.Domain,
-        }),
+        },
         Modules: {
           frontendHostingProvision: await fs.readFile(
             moduleProvisionFilePath,
@@ -221,33 +208,7 @@ export class FrontendPluginImpl {
       },
     };
 
-    // const result: ScaffoldArmTemplateResult = {
-    //   Modules: {
-    //     frontendHostingProvision: {
-    //       Content: await fs.readFile(moduleFilePath, ConstantString.UTF8Encoding),
-    //     },
-    //   },
-    //   Orchestration: {
-    //     ParameterTemplate: {
-    //       Content: await fs.readFile(
-    //         inputParameterOrchestrationFilePath,
-    //         ConstantString.UTF8Encoding
-    //       ),
-    //     },
-    //     ModuleTemplate: {
-    //       Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
-    //       Outputs: {
-    //         endpoint: FrontendOutputBicepSnippet.Endpoint,
-    //         domain: FrontendOutputBicepSnippet.Domain,
-    //       },
-    //     },
-    //     OutputTemplate: {
-    //       Content: await fs.readFile(outputOrchestrationFilePath, ConstantString.UTF8Encoding),
-    //     },
-    //   },
-    // };
-
-    return ok(result2);
+    return ok(result);
   }
 
   private async syncArmOutput(ctx: PluginContext) {

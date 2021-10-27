@@ -250,11 +250,11 @@ export class TeamsBotImpl {
         Modules: {
           botProvision: provisionModuleContentResult.value,
         },
-        Reference: JSON.stringify({
+        Reference: {
           resourceId: "webAppResourceId",
           hostName: "webAppHostName",
           webAppEndpoint: "webAppEndpoint",
-        }),
+        },
       },
       Configuration: {
         Orchestration: ConfigFileName.value,

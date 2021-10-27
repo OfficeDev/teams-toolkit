@@ -306,41 +306,13 @@ export class AadAppForTeamsImpl {
       getTemplatesFolder(),
       TemplatePathInfo.BicepTemplateRelativeDir
     );
-    // const inputParameterOrchestrationFilePath = path.join(
-    //   bicepTemplateDir,
-    //   Bicep.ParameterOrchestrationFileName
-    // );
-    // const variablesOrchestrationFilePath = path.join(
-    //   bicepTemplateDir,
-    //   Bicep.VariablesOrchestrationFileName
-    // );
     const parameterFilePath = path.join(bicepTemplateDir, Bicep.ParameterFileName);
 
-    const result1: ArmTemplateResult = {
+    const result: ArmTemplateResult = {
       Parameters: JSON.parse(await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)),
     };
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
-    return ResultFactory.Success(result1);
-
-    // const result: ScaffoldArmTemplateResult = {
-    //   Orchestration: {
-    //     ParameterTemplate: {
-    //       Content: await fs.readFile(
-    //         inputParameterOrchestrationFilePath,
-    //         ConstantString.UTF8Encoding
-    //       ),
-    //       ParameterJson: JSON.parse(
-    //         await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)
-    //       ),
-    //     },
-    //     VariableTemplate: {
-    //       Content: await fs.readFile(variablesOrchestrationFilePath, ConstantString.UTF8Encoding),
-    //     },
-    //   },
-    // };
-
-    // Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
-    // return ResultFactory.Success(result);
+    return ResultFactory.Success(result);
   }
 
   public async checkPermission(

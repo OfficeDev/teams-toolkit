@@ -50,11 +50,11 @@ describe("Start a new project", function () {
     // validation succeed without provision
     command = "teamsfx validate";
     const validationResult = await execAsync(command, {
-      cwd: testFolder,
+      cwd: path.join(testFolder, appName),
       env: process.env,
       timeout: 0,
     });
-    expect(result.stderr).to.eq("");
+    expect(validationResult.stderr).to.eq("");
   });
 
   after(async () => {

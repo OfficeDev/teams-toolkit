@@ -1484,6 +1484,28 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
   }
 }
 
+export async function openAdaptiveCardExt(args: any[] = [TelemetryTiggerFrom.TreeView]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewAdaptiveCard, getTriggerFromProperty(args));
+  const acExtId = "madewithcardsio.adaptivecardsstudiobeta";
+  const extension = vscode.extensions.getExtension(acExtId);
+  if (!extension) {
+    vscode.window
+      .showInformationMessage(
+        StringResources.vsc.handlers.installAdaptiveCardExt,
+        "Install",
+        "Cancel"
+      )
+      .then(async (selection) => {
+        if (selection === "Install") {
+          await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId);
+          await vscode.commands.executeCommand("workbench.view.extension.cardLists");
+        }
+      });
+  } else {
+    await vscode.commands.executeCommand("workbench.view.extension.cardLists");
+  }
+}
+
 export async function signOutAzure(isFromTreeView: boolean) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOutStart, {
     [TelemetryProperty.TriggerFrom]: isFromTreeView

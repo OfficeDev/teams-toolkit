@@ -543,7 +543,7 @@ export class TeamsBotImpl {
     }
 
     const deployTimeCandidate = Date.now();
-    const deployMgr = new DeployMgr(workingDir);
+    const deployMgr = new DeployMgr(workingDir, this.ctx.envInfo.envName);
     await deployMgr.init();
 
     if (!(await deployMgr.needsToRedeploy())) {

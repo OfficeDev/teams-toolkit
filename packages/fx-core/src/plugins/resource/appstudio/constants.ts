@@ -39,7 +39,12 @@ export const FRONTEND_ENDPOINT_ARM = "frontendHosting_endpoint";
 export const FRONTEND_DOMAIN_ARM = "frontendHosting_domain";
 export const BOT_ID = "botId";
 export const LOCAL_BOT_ID = "localBotId";
-
+export const COLOR_TEMPLATE = "plugins/resource/appstudio/defaultIcon.png";
+export const OUTLINE_TEMPLATE = "plugins/resource/appstudio/defaultOutline.png";
+export const DEFAULT_COLOR_PNG_FILENAME = "color.png";
+export const DEFAULT_OUTLINE_PNG_FILENAME = "outline.png";
+export const MANIFEST_RESOURCES = "resources";
+export const APP_PACKAGE_FOLDER_FOR_MULTI_ENV = "templates/appPackage";
 /**
  * Config Keys that are useful for remote collaboration
  */

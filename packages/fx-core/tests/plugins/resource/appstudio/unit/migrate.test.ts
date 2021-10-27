@@ -18,29 +18,45 @@ import fs, { PathLike } from "fs-extra";
 import sinon from "sinon";
 import { HostTypeOptionAzure } from "../../../../../src/plugins/solution/fx-solution/question";
 import {
+  APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
+  COLOR_TEMPLATE,
   CONFIGURABLE_TABS_TPL,
+  CONFIGURABLE_TABS_TPL_LOCAL_DEBUG,
+  DEFAULT_COLOR_PNG_FILENAME,
+  DEFAULT_OUTLINE_PNG_FILENAME,
+  MANIFEST_LOCAL,
+  MANIFEST_RESOURCES,
+  OUTLINE_TEMPLATE,
   REMOTE_MANIFEST,
   STATIC_TABS_TPL,
+  STATIC_TABS_TPL_LOCAL_DEBUG,
 } from "../../../../../src/plugins/resource/appstudio/constants";
 import path from "path";
 import { newEnvInfo } from "../../../../../src/core/tools";
-import { isMultiEnvEnabled } from "../../../../../src/common/tools";
 import { LocalCrypto } from "../../../../../src/core/crypto";
+import { getTemplatesFolder } from "../../../../../src/folder";
+import { isMultiEnvEnabled } from "../../../../../src";
 
 describe("Migrate", () => {
-  if (isMultiEnvEnabled()) {
-    // TODO: skip because migrate V1 to multi-env is not ready yet.
-    return;
-  }
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
   const sandbox = sinon.createSandbox();
   const fileContent: Map<string, any> = new Map();
 
-  const manifestFile = path.resolve(__dirname, "../resources/valid.manifest.json");
+  const manifestFile = path.resolve(
+    __dirname,
+    isMultiEnvEnabled()
+      ? "../resources-multi-env/valid.manifest.json"
+      : "../resources/valid.manifest.json"
+  );
   const manifestStr = fs.readFileSync(manifestFile);
 
-  const targetManifestFile = path.resolve(__dirname, "../resources/migrate.manifest.json");
+  const targetManifestFile = path.resolve(
+    __dirname,
+    isMultiEnvEnabled()
+      ? "../resources-multi-env/migrate.manifest.json"
+      : "../resources/migrate.manifest.json"
+  );
   const targetManifest = fs.readJsonSync(targetManifestFile);
 
   beforeEach(async () => {
@@ -60,30 +76,45 @@ describe("Migrate", () => {
     });
 
     sandbox.stub(fs, "readFile").callsFake(async (filePath: number | PathLike) => {
+      if (!fileContent.has(filePath.toString())) {
+        throw new Error(`${filePath.toString()} is not found.`);
+      }
       return fileContent.get(path.normalize(filePath.toString()));
     });
 
     sandbox.stub(fs, "writeJSON").callsFake(async (filePath: PathLike, obj: any) => {
+      if (!fileContent.has(filePath.toString())) {
+        throw new Error(`${filePath.toString()} is not found.`);
+      }
       fileContent.set(path.normalize(filePath.toString()), JSON.stringify(obj));
     });
     // Uses stub<any, any> to circumvent type check. Beacuse sinon fails to mock my target overload of readJson.
     sandbox
       .stub<any, any>(fs, "copy")
       .callsFake(async (originPath: PathLike, filePath: PathLike) => {
-        const content = fileContent.get(originPath.toString());
+        if (!fileContent.has(path.normalize(originPath.toString()))) {
+          throw new Error(`${originPath.toString()} is not found.`);
+        }
+        const content = fileContent.get(path.normalize(originPath.toString()));
         fileContent.set(path.normalize(filePath.toString()), content ?? filePath.toString());
       });
 
     sandbox
       .stub<any, any>(fs, "copyFile")
       .callsFake(async (originPath: PathLike, filePath: PathLike) => {
-        const content = fileContent.get(originPath.toString());
+        if (!fileContent.has(path.normalize(originPath.toString()))) {
+          throw new Error(`${originPath.toString()} is not found.`);
+        }
+        const content = fileContent.get(path.normalize(originPath.toString()));
         fileContent.set(path.normalize(filePath.toString()), content ?? filePath.toString());
       });
 
     sandbox
       .stub(fs, "move")
       .callsFake(async (originPath: PathLike, filePath: PathLike, options: fs.MoveOptions) => {
+        if (!fileContent.has(originPath.toString())) {
+          throw new Error(`${originPath.toString()} is not found.`);
+        }
         const content = fileContent.get(path.normalize(originPath.toString()));
         fileContent.set(path.normalize(filePath.toString()), content);
         fileContent.delete(path.normalize(originPath.toString()));
@@ -114,7 +145,7 @@ describe("Migrate", () => {
   it("should generate manifest from an existing manifest.json file", async () => {
     fileContent.clear();
     sandbox.stub<any, any>(fs, "readdir").callsFake(async (filePath: fs.PathLike) => {
-      return [V1ManifestFileName, "color.png"];
+      return [V1ManifestFileName, DEFAULT_COLOR_PNG_FILENAME, DEFAULT_COLOR_PNG_FILENAME];
     });
 
     fileContent.set(
@@ -124,8 +155,16 @@ describe("Migrate", () => {
       manifestStr
     );
     fileContent.set(
-      path.normalize(`${ctx.root}/${ArchiveFolderName}/${AppPackageFolderName}/color.png`),
+      path.normalize(
+        `${ctx.root}/${ArchiveFolderName}/${AppPackageFolderName}/${DEFAULT_COLOR_PNG_FILENAME}`
+      ),
       "color"
+    );
+    fileContent.set(
+      path.normalize(
+        `${ctx.root}/${ArchiveFolderName}/${AppPackageFolderName}/${DEFAULT_OUTLINE_PNG_FILENAME}`
+      ),
+      "outline"
     );
 
     ctx.projectSettings = {
@@ -144,14 +183,35 @@ describe("Migrate", () => {
     chai.expect(result.isOk()).equals(true);
 
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`))
+      fileContent.get(
+        path.normalize(
+          isMultiEnvEnabled()
+            ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_LOCAL}`
+            : `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
+        )
+      )
     );
     chai.expect(manifest).to.deep.equal(targetManifest);
 
-    chai.expect(fileContent.has(path.normalize(`${ctx.root}/${AppPackageFolderName}/color.png`))).to
-      .be.true;
-    chai.expect(fileContent.has(path.normalize(`${ctx.root}/${AppPackageFolderName}/outline.png`)))
-      .to.be.false;
+    chai.expect(
+      fileContent.has(
+        path.normalize(
+          isMultiEnvEnabled()
+            ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${DEFAULT_COLOR_PNG_FILENAME}`
+            : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_COLOR_PNG_FILENAME}`
+        )
+      )
+    ).to.be.true;
+
+    chai.expect(
+      fileContent.has(
+        path.normalize(
+          isMultiEnvEnabled()
+            ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${DEFAULT_OUTLINE_PNG_FILENAME}`
+            : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_OUTLINE_PNG_FILENAME}`
+        )
+      )
+    ).to.be.true;
   });
 
   it("should generate new manifest", async () => {
@@ -160,6 +220,9 @@ describe("Migrate", () => {
       return [];
     });
 
+    fileContent.set(path.normalize(`${getTemplatesFolder()}/${COLOR_TEMPLATE}`), "color");
+    fileContent.set(path.normalize(`${getTemplatesFolder()}/${OUTLINE_TEMPLATE}`), "outline");
+
     ctx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -176,10 +239,22 @@ describe("Migrate", () => {
     chai.expect(result.isOk()).equals(true);
 
     const manifest: TeamsAppManifest = JSON.parse(
-      fileContent.get(path.normalize(`${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`))
+      fileContent.get(
+        path.normalize(
+          isMultiEnvEnabled()
+            ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_LOCAL}`
+            : `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
+        )
+      )
     );
-    chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL);
-    chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL);
+    chai
+      .expect(manifest.staticTabs)
+      .to.deep.equal(isMultiEnvEnabled() ? STATIC_TABS_TPL_LOCAL_DEBUG : STATIC_TABS_TPL);
+    chai
+      .expect(manifest.configurableTabs)
+      .to.deep.equal(
+        isMultiEnvEnabled() ? CONFIGURABLE_TABS_TPL_LOCAL_DEBUG : CONFIGURABLE_TABS_TPL
+      );
     chai
       .expect(manifest.bots, "Bots should be empty, because only tab is chosen")
       .to.deep.equal([]);
@@ -197,9 +272,89 @@ describe("Migrate", () => {
       )
       .to.deep.equal(undefined);
 
-    chai.expect(fileContent.has(path.normalize(`${ctx.root}/${AppPackageFolderName}/color.png`))).to
-      .be.true;
-    chai.expect(fileContent.has(path.normalize(`${ctx.root}/${AppPackageFolderName}/outline.png`)))
-      .to.be.true;
+    chai.expect(
+      fileContent.has(
+        path.normalize(
+          isMultiEnvEnabled()
+            ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${DEFAULT_COLOR_PNG_FILENAME}`
+            : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_COLOR_PNG_FILENAME}`
+        )
+      )
+    ).to.be.true;
+    chai.expect(
+      fileContent.has(
+        path.normalize(
+          isMultiEnvEnabled()
+            ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${DEFAULT_OUTLINE_PNG_FILENAME}`
+            : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_OUTLINE_PNG_FILENAME}`
+        )
+      )
+    ).to.be.true;
+  });
+
+  it("should generate new color.png and outline.png", async () => {
+    fileContent.clear();
+    sandbox.stub<any, any>(fs, "readdir").callsFake(async (filePath: fs.PathLike) => {
+      return [V1ManifestFileName, "color.png"];
+    });
+
+    fileContent.set(
+      path.normalize(
+        `${ctx.root}/${ArchiveFolderName}/${AppPackageFolderName}/${V1ManifestFileName}`
+      ),
+      manifestStr
+    );
+    fileContent.set(
+      path.normalize(
+        `${ctx.root}/${ArchiveFolderName}/${AppPackageFolderName}/${DEFAULT_COLOR_PNG_FILENAME}`
+      ),
+      "color"
+    );
+    fileContent.set(path.normalize(`${getTemplatesFolder()}/${OUTLINE_TEMPLATE}`), "outline");
+
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Tab"],
+        migrateFromV1: true,
+      },
+    };
+
+    const result = await plugin.migrateV1Project(ctx);
+    chai.expect(result.isOk()).equals(true);
+
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(
+        path.normalize(
+          isMultiEnvEnabled()
+            ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_LOCAL}`
+            : `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
+        )
+      )
+    );
+    chai.expect(manifest).to.deep.equal(targetManifest);
+
+    chai.expect(
+      fileContent.has(
+        path.normalize(
+          isMultiEnvEnabled()
+            ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${DEFAULT_COLOR_PNG_FILENAME}`
+            : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_COLOR_PNG_FILENAME}`
+        )
+      )
+    ).to.be.true;
+    chai.expect(
+      fileContent.has(
+        path.normalize(
+          isMultiEnvEnabled()
+            ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${DEFAULT_OUTLINE_PNG_FILENAME}`
+            : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_OUTLINE_PNG_FILENAME}`
+        )
+      )
+    ).to.be.true;
   });
 });

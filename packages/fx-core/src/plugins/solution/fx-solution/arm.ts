@@ -658,7 +658,7 @@ class BicepOrchestrationContent {
     const parameterObject = {
       $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
       contentVersion: "1.0.0.0",
-      provisionParameters: { state: this.ParameterJsonTemplate },
+      parameters: { provisionParameters: { value: this.ParameterJsonTemplate } },
     };
     return JSON.stringify(parameterObject, undefined, 2);
   }
@@ -707,7 +707,7 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
   const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
   const stateVariables: Record<string, Record<string, any>> = {};
   const availableVariables: Record<string, Record<string, any>> = {
-    provisionParameters: { state: stateVariables },
+    provisionParameters: { value: stateVariables },
   };
   // Add plugin contexts to available variables
   for (const plugin of plugins) {

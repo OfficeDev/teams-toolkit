@@ -53,7 +53,7 @@ import { AzureOperations } from "./azureOps";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import path from "path";
 import { getTemplatesFolder } from "../../..";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ArmTemplateResult, ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import {
   copyFiles,
@@ -205,7 +205,7 @@ export class TeamsBotImpl {
     };
 
     const provisionModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateFileName),
+      path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateV2FileName),
       handleBarsContext
     );
     if (provisionModuleContentResult.isErr()) {
@@ -213,7 +213,7 @@ export class TeamsBotImpl {
     }
 
     const configurationModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
+      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateV2FileName),
       handleBarsContext
     );
     if (configurationModuleContentResult.isErr()) {
@@ -228,52 +228,78 @@ export class TeamsBotImpl {
       throw inputParameterContentResult.error;
     }
 
-    const moduleOrchestrationContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.ModuleOrchestrationFileName),
+    const ProvisionFileName = await generateBicepFiles(
+      path.join(bicepTemplateDir, Bicep.ProvisionV2FileName),
       handleBarsContext
     );
-    if (moduleOrchestrationContentResult.isErr()) {
-      throw moduleOrchestrationContentResult.error;
+    if (ProvisionFileName.isErr()) {
+      throw ProvisionFileName.error;
     }
 
-    const outputOrchestrationContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.OutputOrchestrationFileName),
+    const ConfigFileName = await generateBicepFiles(
+      path.join(bicepTemplateDir, Bicep.ConfigV2FileName),
       handleBarsContext
     );
-    if (outputOrchestrationContentResult.isErr()) {
-      throw outputOrchestrationContentResult.error;
+    if (ConfigFileName.isErr()) {
+      throw ConfigFileName.error;
     }
 
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        botProvision: {
-          Content: provisionModuleContentResult.value,
+    const result1: ArmTemplateResult = {
+      Provision: {
+        Orchestration: ProvisionFileName.value,
+        Modules: {
+          botProvision: provisionModuleContentResult.value,
         },
-        botConfiguration: {
-          Content: configurationModuleContentResult.value,
+        Reference: JSON.stringify({
+          resourceId: "webAppResourceId",
+          hostName: "webAppHostName",
+          webAppEndpoint: "webAppEndpoint",
+        }),
+      },
+      Configuration: {
+        Orchestration: ConfigFileName.value,
+        Modules: {
+          botConfiguration: configurationModuleContentResult.value,
         },
       },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: inputParameterContentResult.value,
-          ParameterJson: JSON.parse(
-            await fs.readFile(
-              path.join(bicepTemplateDir, Bicep.ParameterFileName),
-              ConstantString.UTF8Encoding
-            )
-          ),
-        },
-        ModuleTemplate: {
-          Content: moduleOrchestrationContentResult.value,
-        },
-        OutputTemplate: {
-          Content: outputOrchestrationContentResult.value,
-        },
-      },
+      Parameters: JSON.parse(
+        await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ParameterFileName),
+          ConstantString.UTF8Encoding
+        )
+      ),
     };
 
+    // const result: ScaffoldArmTemplateResult = {
+    //   Modules: {
+    //     botProvision: {
+    //       Content: provisionModuleContentResult.value,
+    //     },
+    //     botConfiguration: {
+    //       Content: configurationModuleContentResult.value,
+    //     },
+    //   },
+    //   Orchestration: {
+    //     ParameterTemplate: {
+    //       Content: inputParameterContentResult.value,
+    //       ParameterJson: JSON.parse(
+    //         await fs.readFile(
+    //           path.join(bicepTemplateDir, Bicep.ParameterFileName),
+    //           ConstantString.UTF8Encoding
+    //         )
+    //       ),
+    //     },
+    //     ModuleTemplate: {
+    //       Content: moduleOrchestrationContentResult.value,
+    //     },
+    //     OutputTemplate: {
+    // Content: outputOrchestrationContentResult.value,
+    //     },
+    //   },
+    // };
+
     Logger.info(Messages.SuccessfullyGenerateArmTemplatesBot);
-    return ResultFactory.Success(result);
+    return ResultFactory.Success(result1);
   }
 
   private async provisionWebApp() {

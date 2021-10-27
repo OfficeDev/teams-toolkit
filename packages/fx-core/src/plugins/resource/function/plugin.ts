@@ -735,6 +735,10 @@ export class FunctionPluginImpl {
             ConstantString.UTF8Encoding
           ),
         },
+        Reference: JSON.stringify({
+          endpoint: "functionAppEndpoint",
+          resourceId: "functionAppResourceId",
+        }),
       },
       Configuration: {
         Orchestration: await fs.readFile(configTemplateFilePath, ConstantString.UTF8Encoding),

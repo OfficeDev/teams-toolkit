@@ -8,7 +8,6 @@ import * as fs from "fs-extra";
 import { DeployMgr } from "../../../../../src/plugins/resource/bot/deployMgr";
 import * as utils from "../../../../../src/plugins/resource/bot/utils/common";
 import { genTomorrow, genYesterday } from "./utils";
-import { isArmSupportEnabled, isMultiEnvEnabled } from "../../../../../src";
 
 describe("Deploy Manager", () => {
   describe("Test init", () => {
@@ -24,7 +23,7 @@ describe("Deploy Manager", () => {
 
     it("Config File Existing", async () => {
       // Arrange
-      const deployMgr = new DeployMgr(testDir);
+      const deployMgr = new DeployMgr(testDir, "ut");
       await deployMgr.init();
 
       // Act
@@ -48,7 +47,7 @@ describe("Deploy Manager", () => {
 
     it("Happy Path", async () => {
       // Arrange
-      const deployMgr = new DeployMgr(testDir);
+      const deployMgr = new DeployMgr(testDir, "ut");
       await deployMgr.init();
 
       const time = Date.now();
@@ -75,7 +74,7 @@ describe("Deploy Manager", () => {
 
     it("Happy Path", async () => {
       // Arrange
-      const deployMgr = new DeployMgr(testDir);
+      const deployMgr = new DeployMgr(testDir, "ut");
       await deployMgr.init();
 
       await fs.writeFile(path.join(testDir, "index.js"), "anything");
@@ -85,16 +84,12 @@ describe("Deploy Manager", () => {
       const needsRedeploy = await deployMgr.needsToRedeploy();
 
       // Assert
-      if (isArmSupportEnabled() || isMultiEnvEnabled()) {
-        chai.assert.isTrue(needsRedeploy);
-      } else {
-        chai.assert.isFalse(needsRedeploy);
-      }
+      chai.assert.isFalse(needsRedeploy);
     });
 
     it("needsToRedeploy True", async () => {
       // Arrange
-      const deployMgr = new DeployMgr(testDir);
+      const deployMgr = new DeployMgr(testDir, "ut");
       await deployMgr.init();
 
       await fs.writeFile(path.join(testDir, "index.js"), "anything");

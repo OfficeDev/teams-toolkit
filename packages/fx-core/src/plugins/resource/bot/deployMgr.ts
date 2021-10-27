@@ -8,15 +8,16 @@ import { PreconditionError, SomethingMissingError } from "./errors";
 import { Logger } from "./logger";
 import { forEachFileAndDir } from "./utils/dir-walk";
 import { Messages } from "./resources/messages";
-import { isArmSupportEnabled, isMultiEnvEnabled } from "../../..";
 
 export class DeployMgr {
   private workingDir: string;
   private deploymentDir: string;
+  private envName: string;
 
-  public constructor(workingDir: string) {
+  public constructor(workingDir: string, envName: string) {
     this.workingDir = workingDir;
     this.deploymentDir = path.join(workingDir, DeployConfigs.DEPLOYMENT_FOLDER);
+    this.envName = envName;
   }
 
   public async init(): Promise<void> {
@@ -28,7 +29,8 @@ export class DeployMgr {
       return;
     }
 
-    const botDeployJson = { time: 0 };
+    const botDeployJson: any = {};
+    botDeployJson[this.envName] = { time: 0 };
     try {
       await fs.writeJSON(configFile, botDeployJson);
     } catch (e) {
@@ -40,11 +42,6 @@ export class DeployMgr {
   }
 
   public async needsToRedeploy(): Promise<boolean> {
-    // TODO: always do deployment until we integrate with these preview feature
-    if (isArmSupportEnabled() || isMultiEnvEnabled()) {
-      return true;
-    }
-
     // Iterate all source files and config files to determine if anything changed.
     if (!this.workingDir) {
       throw new PreconditionError(Messages.WorkingDirIsMissing, []);
@@ -80,7 +77,14 @@ export class DeployMgr {
     }
 
     const configFile = path.join(this.deploymentDir, DeployConfigs.DEPLOYMENT_CONFIG_FILE);
-    const botDeployJson = {
+
+    let botDeployJson: any = {};
+    try {
+      botDeployJson = await fs.readJSON(configFile);
+    } catch (e) {
+      Logger.debug(`readJson ${configFile} failed with error: ${e}.`);
+    }
+    botDeployJson[this.envName] = {
       time: time,
     };
 
@@ -108,13 +112,14 @@ export class DeployMgr {
 
     if (
       !botDeployJson ||
-      !botDeployJson.time ||
-      typeof botDeployJson.time !== TypeNames.NUMBER ||
-      botDeployJson.time < 0
+      !botDeployJson[this.envName] ||
+      !botDeployJson[this.envName].time ||
+      typeof botDeployJson[this.envName].time !== TypeNames.NUMBER ||
+      botDeployJson[this.envName].time < 0
     ) {
       return 0;
     }
 
-    return botDeployJson.time;
+    return botDeployJson[this.envName].time;
   }
 }

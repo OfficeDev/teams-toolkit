@@ -30,7 +30,7 @@ jobs:
           ref: ${{ github.ref }}
           clean: false
 
-      - name: Setup node
+      - name: echos
         run: |
           echo ${{ github.event.pull_request.body }}
 

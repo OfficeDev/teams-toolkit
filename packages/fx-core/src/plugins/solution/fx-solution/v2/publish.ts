@@ -38,7 +38,8 @@ export async function publishApplication(
           util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSetting.appName)
         ),
         SolutionSource,
-        SolutionError.CannotDeployBeforeProvision
+        SolutionError.CannotDeployBeforeProvision,
+        "https://www.bing.com" //todo replace this link
       )
     );
   }

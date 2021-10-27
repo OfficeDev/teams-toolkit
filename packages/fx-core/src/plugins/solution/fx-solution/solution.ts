@@ -726,7 +726,8 @@ export class TeamsAppSolution implements Solution {
             util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSettings?.appName)
           ),
           SolutionSource,
-          SolutionError.CannotDeployBeforeProvision
+          SolutionError.CannotDeployBeforeProvision,
+          "https://www.bing.com" //todo replace this link
         )
       );
     }
@@ -850,7 +851,9 @@ export class TeamsAppSolution implements Solution {
             util.format(getStrings().solution.NotProvisionedNotice, ctx.projectSettings?.appName)
           ),
           SolutionSource,
-          SolutionError.CannotPublishBeforeProvision
+          SolutionError.CannotPublishBeforeProvision,
+          "",
+          "https://www.bing.com" //todo replace this link
         )
       );
     }
@@ -1059,7 +1062,8 @@ export class TeamsAppSolution implements Solution {
             returnUserError(
               new Error(getStrings().solution.FailedToDeployBeforeProvision),
               SolutionSource,
-              SolutionError.CannotDeployBeforeProvision
+              SolutionError.CannotDeployBeforeProvision,
+              "https://www.bing.com" //todo replace this link
             )
           );
         }
@@ -1134,7 +1138,9 @@ export class TeamsAppSolution implements Solution {
               isAzureProject
                 ? getStrings().solution.FailedToPublishBeforeProvision
                 : getStrings().solution.SPFxAskProvisionBeforePublish,
-              SolutionSource
+              SolutionSource,
+              "",
+              "https://www.bing.com" //todo replace this link
             )
           );
         }

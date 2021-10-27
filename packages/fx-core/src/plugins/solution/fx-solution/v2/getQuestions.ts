@@ -224,7 +224,8 @@ export async function getQuestions(
           returnUserError(
             new Error(getStrings().solution.FailedToDeployBeforeProvision),
             SolutionSource,
-            SolutionError.CannotDeployBeforeProvision
+            SolutionError.CannotDeployBeforeProvision,
+            "https://www.bing.com" //todo replace this link
           )
         );
       }
@@ -287,7 +288,9 @@ export async function getQuestions(
             isAzure
               ? getStrings().solution.FailedToPublishBeforeProvision
               : getStrings().solution.SPFxAskProvisionBeforePublish,
-            SolutionSource
+            SolutionSource,
+            "",
+            "https://www.bing.com" //todo replace this link
           )
         );
       }

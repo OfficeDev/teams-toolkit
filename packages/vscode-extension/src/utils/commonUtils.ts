@@ -304,6 +304,23 @@ export async function getSubscriptionInfoFromEnv(
   }
 }
 
+export async function getM365TenantFromEnv(env: string): Promise<string | undefined> {
+  let provisionResult: Json | undefined;
+
+  try {
+    provisionResult = await getProvisionResultJson(env);
+  } catch (error) {
+    // ignore error on tree view when load provision result failed.
+    return undefined;
+  }
+
+  if (!provisionResult) {
+    return undefined;
+  }
+
+  return provisionResult?.[PluginNames.AAD]?.tenantId;
+}
+
 export async function getResourceGroupNameFromEnv(env: string): Promise<string | undefined> {
   let provisionResult: Json | undefined;
 

@@ -28,73 +28,76 @@ import { AppStudioLogin } from "./commonlib/appStudioLogin";
 import * as fs from "fs-extra";
 import {
   getProvisionSucceedFromEnv,
+  getM365TenantFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
 } from "./utils/commonUtils";
 import AzureAccountManager from "./commonlib/azureLogin";
+import { Mutex } from "async-mutex";
 
 const showEnvList: Array<string> = [];
 let environmentTreeProvider: CommandsTreeViewProvider;
 let collaboratorsRecordCache: Record<string, TreeItem[]> = {};
 let permissionCache: Record<string, boolean> = {};
+const mutex = new Mutex();
 
 export async function registerEnvTreeHandler(
   forceUpdateCollaboratorList = true
 ): Promise<Result<Void, FxError>> {
   if (isMultiEnvEnabled() && vscode.workspace.workspaceFolders) {
-    const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
-    const workspacePath: string = workspaceFolder.uri.fsPath;
-    const envNamesResult = await environmentManager.listEnvConfigs(workspacePath);
-    if (envNamesResult.isErr()) {
-      return err(envNamesResult.error);
-    }
-    environmentTreeProvider = TreeViewManagerInstance.getTreeView("teamsfx-environment")!;
-    if (showEnvList.length > 0) {
-      showEnvList.forEach(async (item) => {
-        environmentTreeProvider.removeById("fx-extension.environment." + item);
-      });
-    }
-    showEnvList.splice(0);
-
-    const envNames = (await localSettingsExists(workspacePath))
-      ? [LocalEnvironmentName].concat(envNamesResult.value)
-      : envNamesResult.value;
-    for (const item of envNames) {
-      showEnvList.push(item);
-      const provisionSucceeded = await getProvisionSucceedFromEnv(item);
-      environmentTreeProvider.add([
-        {
-          commandId: "fx-extension.environment." + item,
-          label: item,
-          description: provisionSucceeded ? "(Provisioned)" : "",
-          parent: TreeCategory.Environment,
-          contextValue: item === LocalEnvironmentName ? "local" : "environment",
-          icon: provisionSucceeded ? "folder-active" : "symbol-folder",
-          isCustom: false,
-          expanded: true,
-        },
-      ]);
-    }
-
-    for (const item of envNamesResult.value) {
-      let envSubItems: TreeItem[] = [];
-
-      const warningItem = checkAzureAccountStatus(item);
-      if (warningItem) {
-        envSubItems.push(warningItem);
+    mutex.runExclusive(async () => {
+      const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders![0];
+      const workspacePath: string = workspaceFolder.uri.fsPath;
+      const envNamesResult = await environmentManager.listEnvConfigs(workspacePath);
+      if (envNamesResult.isErr()) {
+        return err(envNamesResult.error);
       }
+      environmentTreeProvider = TreeViewManagerInstance.getTreeView("teamsfx-environment")!;
+      if (showEnvList.length > 0) {
+        showEnvList.forEach(async (item) => {
+          environmentTreeProvider.removeById("fx-extension.environment." + item);
+        });
+      }
+      showEnvList.splice(0);
 
-      envSubItems = envSubItems.concat(await getSubscriptionAndResourceGroupNode(item));
-      await environmentTreeProvider.add(envSubItems);
-    }
+      const envNames = (await localSettingsExists(workspacePath))
+        ? [LocalEnvironmentName].concat(envNamesResult.value)
+        : envNamesResult.value;
+      for (const item of envNames) {
+        showEnvList.push(item);
+        const provisionSucceeded = await getProvisionSucceedFromEnv(item);
+        environmentTreeProvider.add([
+          {
+            commandId: "fx-extension.environment." + item,
+            label: item,
+            description: provisionSucceeded ? "(Provisioned)" : "",
+            parent: TreeCategory.Environment,
+            contextValue: item === LocalEnvironmentName ? "local" : "environment",
+            icon: provisionSucceeded ? "folder-active" : "symbol-folder",
+            isCustom: false,
+            expanded: true,
+          },
+        ]);
+      }
+      await checkAllEnv(envNamesResult.value);
 
-    const collaboratorsItem = await getAllCollaboratorList(
-      envNamesResult.value,
-      forceUpdateCollaboratorList
-    );
-    await environmentTreeProvider.add(collaboratorsItem);
+      const collaboratorsItem = await getAllCollaboratorList(
+        envNamesResult.value,
+        forceUpdateCollaboratorList
+      );
+      await environmentTreeProvider.add(collaboratorsItem);
+    });
   }
   return ok(Void);
+}
+
+async function checkAllEnv(itemList: Array<string>) {
+  for (const item of itemList) {
+    let envSubItems: TreeItem[] = [];
+
+    envSubItems = envSubItems.concat(await getSubscriptionAndResourceGroupNode(item));
+    await environmentTreeProvider.add(envSubItems);
+  }
 }
 
 export async function getAllCollaboratorList(envs: string[], force = false): Promise<TreeItem[]> {
@@ -133,7 +136,9 @@ export async function getAllCollaboratorList(envs: string[], force = false): Pro
         result.push(
           generateCollaboratorWarningNode(
             env,
-            StringResources.vsc.commandsTreeViewProvider.loginM365AccountToViewCollaborators
+            StringResources.vsc.commandsTreeViewProvider.loginM365AccountToViewCollaborators,
+            undefined,
+            false
           )
         );
       }
@@ -146,7 +151,9 @@ export async function updateNewEnvCollaborators(env: string): Promise<void> {
   const parentNode = generateCollaboratorParentNode(env);
   const notProvisionedNode = generateCollaboratorWarningNode(
     env,
-    StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration
+    StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration,
+    undefined,
+    false
   );
 
   collaboratorsRecordCache[env] = [parentNode, notProvisionedNode];
@@ -191,12 +198,13 @@ export function generateCollaboratorNode(
 export function generateCollaboratorWarningNode(
   env: string,
   nodeLabel: string,
-  toolTip?: string
+  toolTip?: string,
+  showWarning?: boolean
 ): TreeItem {
   return {
     commandId: `fx-extension.listcollaborator.${env}`,
     label: nodeLabel,
-    icon: "warning",
+    icon: showWarning ? "warning" : "",
     tooltip: {
       value: toolTip ?? nodeLabel,
       isMarkdown: false,
@@ -260,6 +268,14 @@ export async function getSubscriptionAndResourceGroupNode(env: string): Promise<
       }
     }
 
+    const m365TenantId = await getM365TenantFromEnv(env);
+    if (m365TenantId) {
+      const warningItem = await checkM365Permission(env, m365TenantId);
+      if (warningItem) {
+        envSubItems = [warningItem].concat(envSubItems);
+      }
+    }
+
     return envSubItems;
   }
 
@@ -297,7 +313,43 @@ async function checkSubscriptionPermission(
     if (!checkSucceeded) {
       const warningTreeItem: TreeItem = {
         commandId: `fx-extension.environment.${env}.checkSubscription`,
-        label: StringResources.vsc.commandsTreeViewProvider.noSubscriptionFoundInAzureAccount,
+        label: StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
+        tooltip: {
+          value: StringResources.vsc.commandsTreeViewProvider.noSubscriptionFoundInAzureAccount,
+          isMarkdown: false,
+        },
+        icon: "warning",
+        isCustom: true,
+        parent: `fx-extension.environment.${env}`,
+      };
+
+      return warningTreeItem;
+    }
+  }
+
+  return undefined;
+}
+
+async function checkM365Permission(
+  env: string,
+  m365TenantId: string
+): Promise<TreeItem | undefined> {
+  const loginStatus = await AppStudioLogin.getInstance().getStatus();
+  if (loginStatus.status === signedIn) {
+    let checkSucceeded = false;
+
+    if ((loginStatus.accountInfo as any).tid === m365TenantId) {
+      checkSucceeded = true;
+    }
+
+    if (!checkSucceeded) {
+      const warningTreeItem: TreeItem = {
+        commandId: `fx-extension.environment.${env}.checkM365Tenant`,
+        label: StringResources.vsc.commandsTreeViewProvider.m365AccountNotMatch,
+        tooltip: {
+          value: StringResources.vsc.commandsTreeViewProvider.m365TenantNotMatch,
+          isMarkdown: false,
+        },
         icon: "warning",
         isCustom: true,
         parent: `fx-extension.environment.${env}`,

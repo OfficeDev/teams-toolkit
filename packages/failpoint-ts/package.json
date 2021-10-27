@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/failpoint-ts",
-  "version": "0.0.4-rc.0",
+  "version": "0.0.3",
   "description": "Fault Injection for TypeScript",
   "keywords": [
     "Fault Injection"

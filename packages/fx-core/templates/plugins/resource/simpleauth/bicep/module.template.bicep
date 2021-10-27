@@ -21,6 +21,6 @@ module simpleAuthConfiguration '{{PluginOutput.fx-resource-simple-auth.Modules.s
     {{/contains}}
     m365TenantId: m365TenantId
     oauthAuthorityHost: m365OauthAuthorityHost
-    simpelAuthPackageUri: simpleAuth_packageUri
+    simpleAuthPackageUri: simpleAuth_packageUri
   }
 }

@@ -60,6 +60,9 @@ pipeline {
         // After provisioning, you should commit necessary files under .fx into the repository.
         // You should copy content of .fx/states/${TEAMSFX_ENV_NAME}.userdata into credentials (https://www.jenkins.io/doc/book/using/using-credentials/) which can be refered by the stage with name 'Generate userdata'. 
         // stage('Provision hosting environment') {
+        //     environment {
+        //         TEAMSFX_BICEP_ENV_CHECKER_ENABLE = 'true'
+        //     }
         //     steps {
         //         sh 'npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID} --env ${TEAMSFX_ENV_NAME}'
         //     }

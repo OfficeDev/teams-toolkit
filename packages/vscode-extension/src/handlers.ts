@@ -139,11 +139,11 @@ export async function activate(): Promise<Result<Void, FxError>> {
       const expService = exp.getExpService();
       if (expService) {
         switch (
-        await expService.getTreatmentVariableAsync(
-          TreatmentVariables.VSCodeConfig,
-          TreatmentVariables.QuickStartInSidebar,
-          true
-        )
+          await expService.getTreatmentVariableAsync(
+            TreatmentVariables.VSCodeConfig,
+            TreatmentVariables.QuickStartInSidebar,
+            true
+          )
         ) {
           case TreatmentVariableValue.TopSidebar:
             vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.top", true);
@@ -1350,8 +1350,9 @@ export async function showError(e: UserError | SystemError) {
     const path = "https://github.com/OfficeDev/TeamsFx/issues/new?";
     const param = `title=bug+report: ${errorCode}&body=${anonymizeFilePaths(
       e.message
-    )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${sysError.userData ? anonymizeFilePaths(sysError.userData) : ""
-      }`;
+    )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${
+      sysError.userData ? anonymizeFilePaths(sysError.userData) : ""
+    }`;
     const issue = {
       title: StringResources.vsc.handlers.reportIssue,
       run: async (): Promise<void> => {

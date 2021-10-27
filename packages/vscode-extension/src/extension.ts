@@ -27,7 +27,12 @@ import {
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./utils/migrateV1";
 import { canUpgradeToArmAndMultiEnv, isTeamsfx, syncFeatureFlags } from "./utils/commonUtils";
-import { ConfigFolderName, InputConfigsFolderName, StatesFolderName, AdaptiveCardsFolderName } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  InputConfigsFolderName,
+  StatesFolderName,
+  AdaptiveCardsFolderName,
+} from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { registerEnvTreeHandler } from "./envTree";
 import { getWorkspacePath } from "./handlers";

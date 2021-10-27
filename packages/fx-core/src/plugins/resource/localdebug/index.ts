@@ -66,6 +66,7 @@ import {
 import { TeamsClientId } from "../../../common/constants";
 import { ProjectSettingLoader } from "./projectSettingLoader";
 import "./v2";
+import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 
 const PackageJson = require("@npmcli/package-json");
 
@@ -205,6 +206,9 @@ export class LocalDebugPlugin implements Plugin {
             ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, "");
           }
         } else {
+          // generate localSettings.json
+          await this.scaffoldLocalSettingsJson(ctx);
+
           // add 'npm install' scripts into root package.json
           const packageJsonPath = ctx.root;
           let packageJson: any = undefined;
@@ -679,6 +683,28 @@ export class LocalDebugPlugin implements Plugin {
     }
 
     return ok(undefined);
+  }
+
+  async scaffoldLocalSettingsJson(ctx: PluginContext): Promise<void> {
+    const localSettingsProvider = new LocalSettingsProvider(ctx.root);
+
+    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
+    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
+    const includeBot = ProjectSettingLoader.includeBot(ctx);
+
+    if (ctx.localSettings !== undefined) {
+      // Add local settings for the new added capability/resource
+      ctx.localSettings = localSettingsProvider.incrementalInit(
+        ctx.localSettings,
+        includeBackend,
+        includeBot
+      );
+      await localSettingsProvider.saveJson(ctx.localSettings);
+    } else {
+      // Initialize a local settings on scaffolding
+      ctx.localSettings = localSettingsProvider.init(includeFrontend, includeBackend, includeBot);
+      await localSettingsProvider.saveJson(ctx.localSettings);
+    }
   }
 }
 

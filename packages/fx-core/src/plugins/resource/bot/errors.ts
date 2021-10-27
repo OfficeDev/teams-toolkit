@@ -49,10 +49,7 @@ export class PreconditionError extends PluginError {
 
 export class SomethingMissingError extends PreconditionError {
   constructor(something: string) {
-    super(Messages.SomethingIsMissing(something), [
-      Messages.ClickHelpButtonForDetails,
-      Messages.RetryTheCurrentStep,
-    ]);
+    super(Messages.SomethingIsMissing(something), [Messages.RetryTheCurrentStep]);
   }
 }
 export function CheckThrowSomethingMissing(name: string, value: any): void {
@@ -125,7 +122,7 @@ export class MissingSubscriptionRegistrationError extends PluginError {
       ErrorType.User,
       ErrorNames.MISSING_SUBSCRIPTION_REGISTRATION_ERROR,
       Messages.TheSubsNotRegisterToUseBotService,
-      [Messages.RegisterYouSubsToUseBot],
+      [Messages.RegisterYouSubsToUseBot, Messages.ClickHelpButtonForDetails],
       undefined,
       true
     );
@@ -253,7 +250,7 @@ export class FreeServerFarmsQuotaError extends PluginError {
       ErrorType.User,
       ErrorNames.FREE_SERVER_FARMS_QUOTA_ERROR,
       Messages.MaxFreeAppServicePlanIsTen,
-      [Messages.DeleteFreeAppServicePlanOrChangeSku],
+      [Messages.DeleteFreeAppServicePlanOrChangeSku, Messages.ClickHelpButtonForDetails],
       innerError,
       true
     );

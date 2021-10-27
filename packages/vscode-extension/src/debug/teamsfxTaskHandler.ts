@@ -4,7 +4,7 @@
 import { ProductName } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 
-import { getLocalTeamsAppId } from "./commonUtils";
+import { getLocalTeamsAppId, loadTeamsFxDevScript } from "./commonUtils";
 import { ext } from "../extensionVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
@@ -82,7 +82,55 @@ function displayTerminal(taskName: string): boolean {
   return false;
 }
 
-function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void {
+async function checkCustomizedPort(component: string, componentRoot: string, checklist: RegExp[]) {
+  const devScript = await loadTeamsFxDevScript(componentRoot);
+  if (devScript) {
+    let showWarning = false;
+    for (const check of checklist) {
+      if (!check.test(devScript)) {
+        showWarning = true;
+        break;
+      }
+    }
+
+    if (showWarning) {
+      VsCodeLogInstance.info(`Customized port detected in ${component}.`);
+      if (!globalStateGet(constants.PortWarningStateKeys.DoNotShowAgain, false)) {
+        const doNotShowAgain = "Don't Show Again";
+        const editPackageJson = "Edit package.json";
+        const learnMore = "Learn More";
+        vscode.window
+          .showWarningMessage(
+            util.format(
+              StringResources.vsc.localDebug.portWarning,
+              component,
+              path.join(componentRoot, "package.json")
+            ),
+            doNotShowAgain,
+            editPackageJson,
+            learnMore
+          )
+          .then(async (selected) => {
+            if (selected === doNotShowAgain) {
+              await globalStateUpdate(constants.PortWarningStateKeys.DoNotShowAgain, true);
+            } else if (selected === editPackageJson) {
+              vscode.commands.executeCommand(
+                "vscode.open",
+                vscode.Uri.file(path.join(componentRoot, "package.json"))
+              );
+            } else if (selected === learnMore) {
+              vscode.commands.executeCommand(
+                "vscode.open",
+                vscode.Uri.parse(constants.localDebugHelpDoc)
+              );
+            }
+          });
+      }
+    }
+  }
+}
+
+async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): Promise<void> {
   if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
     const task = event.execution.task;
     if (task.scope !== undefined && isTeamsfxTask(task)) {
@@ -90,6 +138,25 @@ function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): void
         { source: task.source, name: task.name, scope: task.scope },
         event.processId
       );
+
+      // check customized port
+      const command = task.definition.command as string;
+      if (command !== undefined && command.trim().toLowerCase() === "dev") {
+        const component = task.definition.component as string;
+        if (component.trim().toLowerCase() === "backend") {
+          await checkCustomizedPort(
+            "Function",
+            path.join(ext.workspaceUri.fsPath, constants.backendFolderName),
+            [constants.backendDebugPortRegex, constants.backendServicePortRegex]
+          );
+        } else if (component.trim().toLowerCase() === "bot") {
+          await checkCustomizedPort(
+            "Bot",
+            path.join(ext.workspaceUri.fsPath, constants.botFolderName),
+            [constants.backendDebugPortRegex, constants.backendServicePortRegex]
+          );
+        }
+      }
     } else if (isNpmInstallTask(task)) {
       try {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {

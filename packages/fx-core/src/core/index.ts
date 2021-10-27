@@ -1273,7 +1273,7 @@ export class FxCore implements Core {
     node.addChild(sampleNode);
     sampleNode.condition = { equals: ScratchOptionNo.id };
     if (inputs.platform !== Platform.VSCode) {
-      createNew.addChild(new QTreeNode(QuestionRootFolder));
+      sampleNode.addChild(new QTreeNode(QuestionRootFolder));
     }
     return ok(node.trim());
   }

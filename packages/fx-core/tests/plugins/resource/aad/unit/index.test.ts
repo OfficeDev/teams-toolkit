@@ -13,6 +13,7 @@ import {
   TestHelper,
   mockTokenProviderAzureGraph,
   mockTokenProviderGraph,
+  mockSkipFlag,
 } from "../helper";
 import sinon from "sinon";
 import { AadAppClient } from "../../../../../src/plugins/resource/aad/aadAppClient";
@@ -77,6 +78,16 @@ describe("AadAppForTeamsPlugin: CI", () => {
     chai.assert.isTrue(postProvision.isOk());
   });
 
+  it("provision: skip provision", async function () {
+    context = await TestHelper.pluginContext(new Map(), true, false, false);
+    context.appStudioToken = mockTokenProvider();
+    context.graphTokenProvider = mockTokenProviderGraph();
+    mockSkipFlag(context);
+
+    const provision = await plugin.provision(context);
+    chai.assert.isTrue(provision.isOk());
+  });
+
   it("provision: tab and bot", async function () {
     context = await TestHelper.pluginContext(new Map(), true, true, false);
     context.appStudioToken = mockTokenProvider();
@@ -101,7 +112,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     const provision = await plugin.provision(context);
     chai.assert.isTrue(provision.isOk());
 
-    mockProvisionResult(context);
+    mockProvisionResult(context, false, false);
     const setAppId = plugin.setApplicationInContext(context);
     chai.assert.isTrue(setAppId.isErr());
 
@@ -112,6 +123,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     const provisionSecond = await plugin.provision(context);
     chai.assert.isTrue(provisionSecond.isOk());
 
+    mockProvisionResult(context, false, true);
     const setAppIdSecond = plugin.setApplicationInContext(context);
     chai.assert.isTrue(setAppIdSecond.isOk());
 
@@ -133,6 +145,16 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
     const postProvision = await plugin.postLocalDebug(context);
     chai.assert.isTrue(postProvision.isOk());
+  });
+
+  it("local debug: skip local debug", async function () {
+    context = await TestHelper.pluginContext(new Map(), true, false, true);
+    context.appStudioToken = mockTokenProvider();
+    context.graphTokenProvider = mockTokenProviderGraph();
+    mockSkipFlag(context, true);
+
+    const localDebug = await plugin.localDebug(context);
+    chai.assert.isTrue(localDebug.isOk());
   });
 
   it("check permission", async function () {
@@ -160,6 +182,7 @@ describe("AadAppForTeamsPlugin: CI", () => {
     config.set(ConfigKeys.objectId, faker.datatype.uuid());
     context = await TestHelper.pluginContext(config, true, false, false);
     context.graphTokenProvider = mockTokenProviderGraph();
+    mockProvisionResult(context, false);
 
     const listCollaborator = await plugin.listCollaborator(context);
     chai.assert.isTrue(listCollaborator.isOk());

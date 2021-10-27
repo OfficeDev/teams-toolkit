@@ -6,6 +6,7 @@ import { TreeContainerType } from "./treeContainerType";
 import * as StringResources from "../resources/Strings.json";
 import { CommandsTreeViewProvider, TreeViewCommand } from "./commandsTreeViewProvider";
 import { TreeCategory } from "@microsoft/teamsfx-api";
+import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -80,6 +81,20 @@ class TreeViewManager {
         { name: "edit", custom: false }
       ),
     ];
+
+    if (await AdaptiveCardCodeLensProvider.detectedAdaptiveCards()) {
+      developmentCommand.push(
+        new TreeViewCommand(
+          StringResources.vsc.commandsTreeViewProvider.previewAdaptiveCard,
+          StringResources.vsc.commandsTreeViewProvider.previewACDesciption,
+          "fx-extension.OpenAdaptiveCardExt",
+          vscode.TreeItemCollapsibleState.None,
+          undefined,
+          undefined,
+          { name: "eye", custom: false }
+        )
+      );
+    }
 
     let developmentProvider: any;
     if (

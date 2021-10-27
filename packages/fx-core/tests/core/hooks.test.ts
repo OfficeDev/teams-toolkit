@@ -9,19 +9,24 @@ import {
   CryptoProvider,
   EnvConfig,
   EnvInfo,
+  EnvNamePlaceholder,
+  EnvStateFileNameTemplate,
   Err,
   err,
   FxError,
+  InputConfigsFolderName,
   Inputs,
   Json,
   Ok,
   ok,
   Platform,
+  ProjectSettingsFileName,
   Result,
   SingleSelectConfig,
   SingleSelectResult,
   SolutionContext,
   Stage,
+  StatesFolderName,
   Tools,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
@@ -38,7 +43,7 @@ import * as commonTools from "../../src/common/tools";
 import { environmentManager } from "../../src/core/environment";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
 import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
-import * as migrator from "../../src/core/middleware/projectMigrator";
+import { migrateArm, ProjectMigratorMW } from "../../src/core/middleware/projectMigrator";
 import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
 import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import {
@@ -75,10 +80,30 @@ describe("Middleware - others", () => {
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = path.join(os.tmpdir(), appName);
     const envName = environmentManager.getDefaultEnvName();
-    const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(confFolderPath, "settings.json");
-    const envJsonFile = path.resolve(confFolderPath, `env.${envName}.json`);
-    const userDataFile = path.resolve(confFolderPath, `${envName}.userdata`);
+    const confFolderPath = path.resolve(
+      inputs.projectPath,
+      commonTools.isMultiEnvEnabled()
+        ? path.resolve(`.${ConfigFolderName}`, InputConfigsFolderName)
+        : `.${ConfigFolderName}`
+    );
+    const statesFolderPath = path.resolve(
+      inputs.projectPath,
+      `.${ConfigFolderName}`,
+      StatesFolderName
+    );
+    const settingsFile = path.resolve(
+      confFolderPath,
+      commonTools.isMultiEnvEnabled() ? ProjectSettingsFileName : "settings.json"
+    );
+    const envJsonFile = commonTools.isMultiEnvEnabled()
+      ? path.resolve(
+          statesFolderPath,
+          EnvStateFileNameTemplate.replace(EnvNamePlaceholder, envName)
+        )
+      : path.resolve(confFolderPath, `env.${envName}.json`);
+    const userDataFile = commonTools.isMultiEnvEnabled()
+      ? path.resolve(statesFolderPath, `${envName}.userdata`)
+      : path.resolve(confFolderPath, `${envName}.userdata`);
 
     function MockFunctions() {
       sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
@@ -97,6 +122,13 @@ describe("Middleware - others", () => {
       sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
         if (userDataFile === file) return serializeDict(userData);
         return {};
+      });
+      sandbox.stub<any, any>(fs, "stat").callsFake(async (file: string) => {
+        if ([settingsFile, envJsonFile, userDataFile].includes(file)) {
+          return {};
+        } else {
+          throw new Error("file not found");
+        }
       });
     }
 
@@ -522,6 +554,7 @@ describe("Middleware - others", () => {
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, ".fx"));
+      sandbox.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
       await fs.copy(
         path.join(__dirname, "../samples/migration/.fx/env.default.json"),
         path.join(projectPath, ".fx", "env.default.json")
@@ -547,7 +580,7 @@ describe("Middleware - others", () => {
         }
       }
       hooks(MyClass, {
-        other: [migrator.migrateArm],
+        other: [migrateArm],
       });
       const my = new MyClass();
       const inputs: Inputs = {
@@ -599,7 +632,7 @@ describe("Middleware - others", () => {
       mockedEnvRestore = mockedEnv({
         TEAMSFX_INSIDER_PREVIEW: "true",
       });
-      sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("OK"));
+      sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
     });
 
     afterEach(async () => {
@@ -616,8 +649,7 @@ describe("Middleware - others", () => {
         }
       }
       hooks(MyClass, {
-        // TODO: recover it to enable migration
-        other: [migrator.migrate],
+        other: [ProjectMigratorMW],
       });
 
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -645,7 +677,6 @@ describe("Middleware - others", () => {
           solutionSettings: {
             name: "fx-solution-azure",
           },
-          activeEnvironment: "test",
         };
         await next();
       };
@@ -686,11 +717,11 @@ describe("Middleware - others", () => {
                 },
               },
             };
-            const envProfile = new Map<string, any>();
+            const envState = new Map<string, any>();
             const envInfo = {
               envName: envName,
               config: envConfig,
-              profile: envProfile,
+              state: envState,
             };
             return ok(envInfo);
           }
@@ -992,8 +1023,7 @@ describe("Middleware - others", () => {
       let tools: Tools;
       const inputsEnv = "inputs";
       const askUserEnv = "askUser";
-      const activeEnv = "active";
-      const envs = [inputsEnv, askUserEnv, activeEnv];
+      const envs = [inputsEnv, askUserEnv];
       class MyClass {
         tools: Tools = tools;
         async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {

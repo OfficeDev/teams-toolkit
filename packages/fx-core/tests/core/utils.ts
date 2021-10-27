@@ -74,32 +74,32 @@ export class MockSolution implements Solution {
     ctx.projectSettings!.solutionSettings = solutionSettings();
     const config = new ConfigMap();
     config.set("create", true);
-    ctx.envInfo.profile.set("solution", config);
+    ctx.envInfo.state.set("solution", config);
     return ok(Void);
   }
 
   async scaffold(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.envInfo.profile.get("solution")!.set("scaffold", true);
+    ctx.envInfo.state.get("solution")!.set("scaffold", true);
     return ok(Void);
   }
 
   async provision(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.envInfo.profile.get("solution")!.set("provision", true);
+    ctx.envInfo.state.get("solution")!.set("provision", true);
     return ok(Void);
   }
 
   async deploy(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.envInfo.profile.get("solution")!.set("deploy", true);
+    ctx.envInfo.state.get("solution")!.set("deploy", true);
     return ok(Void);
   }
 
   async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.envInfo.profile.get("solution")!.set("publish", true);
+    ctx.envInfo.state.get("solution")!.set("publish", true);
     return ok(Void);
   }
 
   async localDebug(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.envInfo.profile.get("solution")!.set("localDebug", true);
+    ctx.envInfo.state.get("solution")!.set("localDebug", true);
     return ok(Void);
   }
 
@@ -118,14 +118,14 @@ export class MockSolution implements Solution {
   }
 
   async executeUserTask(func: Func, ctx: SolutionContext): Promise<Result<any, FxError>> {
-    ctx.envInfo.profile.get("solution")!.set("executeUserTask", true);
+    ctx.envInfo.state.get("solution")!.set("executeUserTask", true);
     return ok(Void);
   }
 
   async migrate(ctx: SolutionContext): Promise<Result<any, FxError>> {
     ctx.projectSettings!.solutionSettings = solutionSettings();
     const config = new ConfigMap();
-    ctx.envInfo.profile.set("solution", config);
+    ctx.envInfo.state.set("solution", config);
     return ok(Void);
   }
 }
@@ -579,7 +579,6 @@ export function MockProjectSettings(appName: string): ProjectSettings {
         PluginNames.APPST,
       ],
     } as AzureSolutionSettings,
-    activeEnvironment: environmentManager.getDefaultEnvName(),
   };
 }
 

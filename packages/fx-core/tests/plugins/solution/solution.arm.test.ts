@@ -13,7 +13,7 @@ import {
   ok,
   Platform,
   PluginContext,
-  SolutionConfig,
+  Plugin,
   SolutionContext,
   SubscriptionInfo,
   EnvNamePlaceholder,
@@ -38,17 +38,15 @@ import path from "path";
 import { ArmResourcePlugin } from "../../../src/common/armInterface";
 import mockedEnv from "mocked-env";
 import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
-import { ResourceManagementModels, Deployments, DeploymentOperations } from "@azure/arm-resources";
+import { ResourceManagementModels, Deployments } from "@azure/arm-resources";
 import { WebResourceLike, HttpHeaders } from "@azure/ms-rest-js";
 import {
   mockedAadScaffoldArmResult,
   mockedFehostScaffoldArmResult,
   mockedSimpleAuthScaffoldArmResult,
 } from "./util";
-import { ExecOptions } from "child_process";
-import { Executor } from "../../../src/common/tools";
 import * as tools from "../../../src/common/tools";
-
+import * as cpUtils from "../../../src/common/cpUtils";
 import * as os from "os";
 
 import "../../../src/plugins/resource/frontend";
@@ -56,7 +54,6 @@ import "../../../src/plugins/resource/simpleauth";
 import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
 import { environmentManager } from "../../../src";
-import { assert } from "sinon";
 import { LocalCrypto } from "../../../src/core/crypto";
 
 let mockedEnvRestore: () => void;
@@ -85,7 +82,7 @@ function mockSolutionContext(): SolutionContext {
     root: "./",
     envInfo: {
       envName: "default",
-      profile: new Map<string, any>(),
+      state: new Map<string, any>(),
       config: environmentManager.newEnvConfigData("myApp"),
     },
     answers: { platform: Platform.VSCode },
@@ -148,6 +145,7 @@ describe("Generate ARM Template for project", () => {
         capabilities: [TabOptionItem.id],
       },
     };
+    mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["default"]));
 
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
@@ -305,6 +303,7 @@ describe("Deploy ARM Template to Azure", () => {
   };
   const SOLUTION_CONFIG = "solution";
   let fileContent: Map<string, any>;
+  const mockedArmTemplateJson = `{"test_key": "test_value"}`;
 
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
@@ -344,10 +343,10 @@ describe("Deploy ARM Template to Azure", () => {
       "value": "mytestappdefault"
     },
     "aadClientId": {
-      "value": "{{profile.fx-resource-aad-app-for-teams.clientId}}"
+      "value": "{{state.fx-resource-aad-app-for-teams.clientId}}"
     },
     "aadClientSecret": {
-      "value": "{{profile.fx-resource-aad-app-for-teams.clientSecret}}"
+      "value": "{{state.fx-resource-aad-app-for-teams.clientSecret}}"
     },
     "envValue": {
       "value": "{{MOCKED_EXPAND_VAR_TEST}}"
@@ -379,11 +378,11 @@ describe("Deploy ARM Template to Azure", () => {
         capabilities: [TabOptionItem.id],
       },
     };
-    mockedCtx.envInfo.profile.set(
+    mockedCtx.envInfo.state.set(
       "fx-resource-aad-app-for-teams",
       new ConfigMap([["clientId", testClientId]])
     );
-    mockedCtx.envInfo.profile.set(
+    mockedCtx.envInfo.state.set(
       SOLUTION_CONFIG,
       new ConfigMap([
         ["resource-base-name", "mocked resource base name"],
@@ -411,6 +410,7 @@ describe("Deploy ARM Template to Azure", () => {
     // Arrange
     const mockedCtx = mockSolutionContext();
     let parameterAfterDeploy = "";
+    let armTemplateJson = "";
     mockedCtx.projectSettings = {
       appName: testAppName,
       projectId: uuid.v4(),
@@ -424,7 +424,7 @@ describe("Deploy ARM Template to Azure", () => {
     };
     mockArmDeploymentDependencies(mockedCtx);
 
-    mockedCtx.envInfo.profile.set(
+    mockedCtx.envInfo.state.set(
       "fx-resource-aad-app-for-teams",
       new ConfigMap([
         ["clientId", testClientId],
@@ -443,11 +443,12 @@ describe("Deploy ARM Template to Azure", () => {
           deploymentName: string,
           parameters: ResourceManagementModels.Deployment
         ) => {
+          armTemplateJson = parameters.properties.template;
           parameterAfterDeploy = parameters.properties.parameters;
           chai.assert.exists(parameters.properties.parameters?.aadClientSecret);
           chai.assert.notStrictEqual(
             parameters.properties.parameters?.aadClientSecret,
-            "{{profile.fx-resource-aad-app-for-teams.clientSecret}}"
+            "{{state.fx-resource-aad-app-for-teams.clientSecret}}"
           );
 
           return new Promise((resolve) => {
@@ -472,6 +473,7 @@ describe("Deploy ARM Template to Azure", () => {
 
     // Assert
     chai.assert.isTrue(result.isOk());
+    expect(armTemplateJson).to.deep.equals(JSON.parse(mockedArmTemplateJson));
     chai.assert.isNotNull(parameterAfterDeploy);
     expect(parameterAfterDeploy).to.deep.equals(
       JSON.parse(`{
@@ -490,7 +492,7 @@ describe("Deploy ARM Template to Azure", () => {
       }`)
     );
     chai.assert.strictEqual(
-      mockedCtx.envInfo.profile.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
+      mockedCtx.envInfo.state.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
       testArmTemplateOutput
     );
   });
@@ -561,7 +563,7 @@ describe("Deploy ARM Template to Azure", () => {
   });
 
   function mockArmDeploymentDependencies(mockedCtx: SolutionContext) {
-    mockedCtx.envInfo.profile.set(
+    mockedCtx.envInfo.state.set(
       SOLUTION_CONFIG,
       new ConfigMap([
         ["resourceGroupName", "mocked resource group name"],
@@ -588,16 +590,11 @@ describe("Deploy ARM Template to Azure", () => {
       return subscriptionInfo;
     };
 
-    mocker
-      .stub(Executor, "execCommandAsync")
-      .callsFake((command: string, options?: ExecOptions): Promise<any> => {
-        return new Promise((resolve) => {
-          resolve({
-            stdout: `{"test_key": "test_value"}`,
-            stderr: "",
-          });
-        });
-      });
+    mocker.stub(cpUtils, "executeCommand").returns(
+      new Promise((resolve) => {
+        resolve(mockedArmTemplateJson);
+      })
+    );
   }
 });
 

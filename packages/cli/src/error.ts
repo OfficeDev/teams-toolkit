@@ -4,6 +4,7 @@
 "use strict";
 
 import { returnSystemError, returnUserError, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 import * as constants from "./constants";
 
@@ -124,4 +125,32 @@ export function InvalidEnvFile(msg: string, path: string): UserError {
     constants.cliSource,
     "InvalidEnvFile"
   );
+}
+
+export class EnvUndefined extends SystemError {
+  constructor() {
+    super(
+      new.target.name,
+      `env is undefined, isMultiEnvEnabled = ${isMultiEnvEnabled()}`,
+      constants.cliSource
+    );
+  }
+}
+
+export class EnvNotSpecified extends UserError {
+  constructor() {
+    super(new.target.name, `The --env argument is not specified`, constants.cliSource);
+  }
+}
+
+export class EnvNotFound extends UserError {
+  constructor(env: string) {
+    super(new.target.name, `The environment "${env}" is not found`, constants.cliSource);
+  }
+}
+
+export class EnvNotProvisioned extends UserError {
+  constructor(env: string) {
+    super(new.target.name, `The environment "${env}" is not provisioned`, constants.cliSource);
+  }
 }

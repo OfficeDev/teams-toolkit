@@ -1,0 +1,37 @@
+{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.11",
+  "version": "1.0.0",
+  "id": "{{localSettings.teamsApp.teamsAppId}}",
+  "packageName": "com.microsoft.teams.extension",
+  "developer": {
+    "name": "Teams App, Inc.",
+    "websiteUrl": "{{{localSettings.frontend.tabEndpoint}}}",
+    "privacyUrl": "{{{localSettings.frontend.tabEndpoint}}}/privacy",
+    "termsOfUseUrl": "{{{localSettings.frontend.tabEndpoint}}}/termsofuse"
+  },
+  "icons": {
+    "color": "resources/color.png",
+    "outline": "resources/outline.png"
+  },
+  "name": {
+    "short": "manifest-validation",
+    "full": ""
+  },
+  "description": {
+    "short": "Short description for Personal App.",
+    "full": "Full description of Personal App."
+  },
+  "accentColor": "#FFFFFF",
+  "staticTabs": [
+    {
+      "entityId": "index",
+      "name": "Personal Tab",
+      "contentUrl": "{{{localSettings.frontend.tabEndpoint}}}/tab",
+      "websiteUrl": "{{{localSettings.frontend.tabEndpoint}}}/tab",
+      "scopes": ["personal"]
+    }
+  ],
+  "permissions": ["identity", "messageTeamMembers"],
+  "validDomains": []
+}

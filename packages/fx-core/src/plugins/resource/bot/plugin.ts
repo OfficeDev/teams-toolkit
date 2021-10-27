@@ -205,7 +205,7 @@ export class TeamsBotImpl {
     };
 
     const provisionModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.provisionModuleTemplateFileName),
+      path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateFileName),
       handleBarsContext
     );
     if (provisionModuleContentResult.isErr()) {
@@ -213,7 +213,7 @@ export class TeamsBotImpl {
     }
 
     const configurationModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.configurationModuleTemplateFileName),
+      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
       handleBarsContext
     );
     if (configurationModuleContentResult.isErr()) {
@@ -543,7 +543,7 @@ export class TeamsBotImpl {
     }
 
     const deployTimeCandidate = Date.now();
-    const deployMgr = new DeployMgr(workingDir);
+    const deployMgr = new DeployMgr(workingDir, this.ctx.envInfo.envName);
     await deployMgr.init();
 
     if (!(await deployMgr.needsToRedeploy())) {
@@ -717,8 +717,8 @@ export class TeamsBotImpl {
   }
 
   private async createNewBotRegistrationOnAppStudio() {
-    const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
-    CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
+    const token = await this.ctx?.graphTokenProvider?.getAccessToken();
+    CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, token);
     CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.projectSettings?.appName);
 
     // 1. Create a new AAD App Registraion with client secret.
@@ -740,8 +740,8 @@ export class TeamsBotImpl {
       Logger.debug(Messages.SuccessfullyGetExistingBotAadAppCredential);
     } else {
       Logger.info(Messages.ProvisioningBotRegistration);
-      botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
-        appStudioToken!,
+      botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByGraph(
+        token!,
         aadDisplayName,
         this.config.localDebug.localObjectId,
         this.config.localDebug.localBotId
@@ -760,6 +760,8 @@ export class TeamsBotImpl {
     };
 
     Logger.info(Messages.ProvisioningBotRegistration);
+    const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
+    CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
     await AppStudio.createBotRegistration(appStudioToken!, botReg);
     Logger.info(Messages.SuccessfullyProvisionedBotRegistration);
 
@@ -777,8 +779,8 @@ export class TeamsBotImpl {
   }
 
   private async createOrGetBotAppRegistration(): Promise<BotAuthCredential> {
-    const appStudioToken = await this.ctx?.appStudioToken?.getAccessToken();
-    CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
+    const token = await this.ctx?.graphTokenProvider?.getAccessToken();
+    CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, token);
     CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx?.projectSettings?.appName);
 
     let botAuthCreds = new BotAuthCredential();
@@ -789,8 +791,8 @@ export class TeamsBotImpl {
         this.ctx?.projectSettings?.appName,
         MaxLengths.AAD_DISPLAY_NAME
       );
-      botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByAppStudio(
-        appStudioToken!,
+      botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByGraph(
+        token!,
         aadDisplayName,
         this.config.scaffold.objectId,
         this.config.scaffold.botId

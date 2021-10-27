@@ -259,7 +259,7 @@ export class FrontendPluginImpl {
       addToEnvs(EnvironmentVariables.FuncName, ctx.projectSettings?.defaultFunctionName);
       addToEnvs(
         EnvironmentVariables.FuncEndpoint,
-        ctx.envInfo.profile
+        ctx.envInfo.state
           .get(DependentPluginInfo.FunctionPluginName)
           ?.get(DependentPluginInfo.FunctionEndpoint) as string
       );
@@ -268,7 +268,7 @@ export class FrontendPluginImpl {
     if (solutionSettings?.activeResourcePlugins?.includes(DependentPluginInfo.RuntimePluginName)) {
       addToEnvs(
         EnvironmentVariables.RuntimeEndpoint,
-        ctx.envInfo.profile
+        ctx.envInfo.state
           .get(DependentPluginInfo.RuntimePluginName)
           ?.get(DependentPluginInfo.RuntimeEndpoint) as string
       );
@@ -278,7 +278,7 @@ export class FrontendPluginImpl {
     if (solutionSettings?.activeResourcePlugins?.includes(DependentPluginInfo.AADPluginName)) {
       addToEnvs(
         EnvironmentVariables.ClientID,
-        ctx.envInfo.profile
+        ctx.envInfo.state
           .get(DependentPluginInfo.AADPluginName)
           ?.get(DependentPluginInfo.ClientID) as string
       );

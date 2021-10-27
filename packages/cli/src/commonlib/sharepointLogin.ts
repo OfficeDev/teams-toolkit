@@ -196,4 +196,10 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
   }
 }
 
-export default SharepointLogin.getInstance();
+import sharepointLoginUserPassword from "./sharepointLoginUserPassword";
+
+const ciEnabled = process.env.CI_ENABLED;
+const sharepointLogin =
+  ciEnabled && ciEnabled === "true" ? sharepointLoginUserPassword : SharepointLogin.getInstance();
+
+export default sharepointLogin;

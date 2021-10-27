@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { parseFromResourceId } from "../../../..";
 import { ProjectConstants } from "../constants";
+import { BuildError, FailedToParseResourceIdError } from "../error";
 
 export function getFileExtension(filePath: string): string {
   const basename = filePath.split(/[\\/]/).pop();
@@ -72,4 +74,31 @@ export class Lazy<T> {
     }
     return this.factoryOutput;
   }
+}
+
+export function getApimServiceNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(
+    /providers\/Microsoft.ApiManagement\/service\/([^\/]*)/i,
+    resourceId
+  );
+  if (!result) {
+    throw BuildError(FailedToParseResourceIdError, "API Management service name", resourceId);
+  }
+  return result;
+}
+
+export function getproductNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(/products\/([^\/]*)/i, resourceId);
+  if (!result) {
+    throw BuildError(FailedToParseResourceIdError, "product name", resourceId);
+  }
+  return result;
+}
+
+export function getAuthServiceNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(/authorizationServers\/([^\/]*)/i, resourceId);
+  if (!result) {
+    throw BuildError(FailedToParseResourceIdError, " auth server name", resourceId);
+  }
+  return result;
 }

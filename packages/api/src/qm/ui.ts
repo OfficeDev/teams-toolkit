@@ -3,7 +3,7 @@
 
 import { err, ok, Result } from "neverthrow";
 import { FxError, UserCancelError } from "../error";
-import { OptionItem, StaticOptions } from "../qm/question";
+import { OnSelectionChangeFunc, OptionItem, StaticOptions } from "../qm/question";
 import { Colors } from "./../utils/log";
 
 /**
@@ -84,10 +84,7 @@ export interface MultiSelectConfig extends UIConfig<string[]> {
    * @param previousSelectedIds previous selected option ids
    * @returns the final selected option ids
    */
-  onDidChangeSelection?: (
-    currentSelectedIds: Set<string>,
-    previousSelectedIds: Set<string>
-  ) => Promise<Set<string>>;
+  onDidChangeSelection?: OnSelectionChangeFunc;
 }
 
 /**

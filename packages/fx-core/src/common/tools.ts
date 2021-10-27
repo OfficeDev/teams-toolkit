@@ -24,13 +24,14 @@ import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
 import { glob } from "glob";
 import * as Handlebars from "handlebars";
-import md5 from "md5";
 import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
 import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
 import * as crypto from "crypto";
+import { FailedToParseResourceIdError, SolutionError } from "..";
+import * as os from "os";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -345,6 +346,14 @@ export function isUserCancelError(error: Error): boolean {
   );
 }
 
+export function isCheckAccountError(error: Error): boolean {
+  const errorName = "name" in error ? (error as any)["name"] : "";
+  return (
+    errorName === SolutionError.TeamsAppTenantIdNotRight ||
+    errorName === SolutionError.SubscriptionNotFound
+  );
+}
+
 export async function askSubscription(
   azureAccountProvider: AzureAccountProvider,
   ui: UserInteraction,
@@ -420,6 +429,15 @@ export function isRemoteCollaborateEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
 }
 
+export function getRootDirectory(): string {
+  const root = process.env[FeatureFlagName.rootDirectory];
+  if (root === undefined || root === "") {
+    return path.join(os.homedir(), ConstantString.rootFolder);
+  } else {
+    return root;
+  }
+}
+
 export async function generateBicepFiles(
   templateFilePath: string,
   context: any
@@ -446,13 +464,17 @@ export function compileHandlebarsTemplateString(templateString: string, context:
 
 export async function getAppDirectory(projectRoot: string): Promise<string> {
   const REMOTE_MANIFEST = "manifest.source.json";
-  const MANIFEST_TEMPLATE = "manifest.template.json";
+  const MANIFEST_TEMPLATE = "manifest.remote.template.json";
+  const MANIFEST_LOCAL = "manifest.local.template.json";
   const appDirNewLocForMultiEnv = `${projectRoot}/templates/${AppPackageFolderName}`;
   const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
   const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;
 
   if (isMultiEnvEnabled()) {
-    if (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) {
+    if (
+      (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) ||
+      (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_LOCAL}`))
+    ) {
       return appDirNewLocForMultiEnv;
     } else if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
       return appDirNewLoc;
@@ -511,7 +533,7 @@ export function getStorageAccountNameFromResourceId(resourceId: string): string 
     resourceId
   );
   if (!result) {
-    throw new Error("Failed to get storage accounts name from resource id: " + resourceId);
+    throw FailedToParseResourceIdError("storage accounts name", resourceId);
   }
   return result;
 }
@@ -519,7 +541,7 @@ export function getStorageAccountNameFromResourceId(resourceId: string): string 
 export function getSiteNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/providers\/Microsoft.Web\/sites\/([^\/]*)/i, resourceId);
   if (!result) {
-    throw new Error("Failed to get site name from resource id: " + resourceId);
+    throw FailedToParseResourceIdError("site name", resourceId);
   }
   return result;
 }
@@ -527,7 +549,7 @@ export function getSiteNameFromResourceId(resourceId: string): string {
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);
   if (!result) {
-    throw new Error("Failed to get resource group name from resource id: " + resourceId);
+    throw FailedToParseResourceIdError("resource group name", resourceId);
   }
   return result;
 }
@@ -535,7 +557,7 @@ export function getResourceGroupNameFromResourceId(resourceId: string): string {
 export function getSubscriptionIdFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/subscriptions\/([^\/]*)\//i, resourceId);
   if (!result) {
-    throw new Error("Failed to get subscription id from resource id: " + resourceId);
+    throw FailedToParseResourceIdError("subscription id", resourceId);
   }
   return result;
 }

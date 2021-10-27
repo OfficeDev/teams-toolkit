@@ -86,6 +86,7 @@ export class Plugins {
   static teamsBot = "fx-resource-bot";
   static localDebug = "fx-resource-local-debug";
   static solution = "solution";
+  static auth = "auth";
 }
 
 export class ConfigKeys {
@@ -102,6 +103,7 @@ export class ConfigKeys {
   static oauthHost = "oauthHost";
   static tenantId = "tenantId";
   static skip = "skipProvision";
+  static accessAsUserScopeId = "accessAsUserScopeId";
 }
 
 export class ConfigKeysOfOtherPlugin {
@@ -237,6 +239,13 @@ export class Messages {
     "Azure AD app provision skipped. You need to mannual provision and config Azure AD app.";
   static readonly OwnerAlreadyAdded = (userObjectId: string, objectId: string) =>
     `User ${userObjectId} is already added as owner of Azure AD app ${objectId}.`;
+  static readonly StepFailedAndSkipped = (stage: string, helpMessage: string) =>
+    `Failed in step: ${stage}. You need to go to Azure Protal and mannually ${helpMessage} for the provided Azure AD app.`;
+  static readonly UpdatePermissionHelpMessage = `update the permission under "API permissions"`;
+  static readonly UpdateAppIdUriHelpMessage = (appIdUri: string) =>
+    `set "${appIdUri}" as "Application ID URI" under "Expose an API"`;
+  static readonly UpdateRedirectUriHelpMessage = (redirectUri: string) =>
+    `set "${redirectUri}" as "Redirect URIs" under "Authentication"`;
 }
 
 export class ProgressTitle {
@@ -272,6 +281,12 @@ export class TemplatePathInfo {
 export class ConfigFilePath {
   static readonly Default = "env.default.json";
   static readonly LocalSettings = "localSettings.json";
-  static readonly Profile = (env: string) => `profile.${env}.json`;
+  static readonly State = (env: string) => `state.${env}.json`;
   static readonly Input = (env: string) => `config.${env}.json`;
+}
+
+export class UILevels {
+  static readonly Info = "info";
+  static readonly Warn = "warn";
+  static readonly Error = "error";
 }

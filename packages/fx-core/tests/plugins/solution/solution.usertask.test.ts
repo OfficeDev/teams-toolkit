@@ -52,7 +52,7 @@ import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
-import { AppStudioPlugin, newEnvInfo } from "../../../src";
+import { AppStudioPlugin, isArmSupportEnabled, newEnvInfo } from "../../../src";
 import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { MockGraphTokenProvider } from "../../core/utils";
@@ -167,7 +167,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "someInvalidNamespace", method: "invalid" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -195,7 +195,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addCapability" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -224,7 +224,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addResource" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -254,7 +254,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addCapability" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -289,7 +289,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addCapability" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
@@ -318,7 +318,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addResource" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -350,7 +350,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addResource" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isErr()).to.be.true;
@@ -390,13 +390,16 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addResource" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
   });
 
   it("should return ok when adding APIM", async () => {
+    if (isArmSupportEnabled()) {
+      return;
+    }
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -430,7 +433,7 @@ describe("V2 implementation", () => {
       mockedInputs,
       { namespace: "solution", method: "addResource" },
       {},
-      { envName: "default", config: {}, profile: {} },
+      { envName: "default", config: {}, state: {} },
       mockedProvider
     );
     expect(result.isOk()).to.be.true;
@@ -464,7 +467,7 @@ describe("V2 implementation", () => {
         mockedInputs,
         { namespace: "solution", method: "VSpublish" },
         {},
-        { envName: "default", config: {}, profile: {} },
+        { envName: "default", config: {}, state: {} },
         mockedProvider
       );
       expect(result.isErr()).to.be.true;
@@ -476,7 +479,7 @@ describe("V2 implementation", () => {
           mockedInputs,
           { namespace: "solution", method: "VSpublish" },
           {},
-          { envName: "default", config: {}, profile: {} },
+          { envName: "default", config: {}, state: {} },
           mockedProvider
         ));
       expect(result.isErr()).to.be.true;
@@ -505,7 +508,7 @@ describe("V2 implementation", () => {
           mockedInputs,
           { namespace: "solution", method: "VSpublish" },
           {},
-          { envName: "default", config: {}, profile: {} },
+          { envName: "default", config: {}, state: {} },
           mockedProvider
         );
         expect(result.isOk()).to.be.true;
@@ -514,6 +517,9 @@ describe("V2 implementation", () => {
     });
 
     it("createEnv", async () => {
+      if (isArmSupportEnabled()) {
+        return;
+      }
       const mockedCtx = new MockedV2Context(projectSettings);
       const mockedInputs: Inputs = {
         platform: Platform.VSCode,

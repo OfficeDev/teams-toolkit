@@ -3,7 +3,10 @@
 
 import { LogProvider, PluginContext } from "@microsoft/teamsfx-api";
 import { isMultiEnvEnabled } from "../../../..";
-import { ConfigFilePath, Constants, Messages } from "../constants";
+import { ConfigFilePath, ConfigKeys, Constants, Messages } from "../constants";
+import { GetSkipAppConfigError } from "../errors";
+import { ResultFactory } from "../results";
+import { ConfigUtils } from "./configs";
 import { TelemetryUtils } from "./telemetry";
 
 export class Utils {
@@ -47,7 +50,7 @@ export class Utils {
       if (isLocalDebug) {
         return ConfigFilePath.LocalSettings;
       } else {
-        return ConfigFilePath.Profile(ctx.envInfo.envName);
+        return ConfigFilePath.State(ctx.envInfo.envName);
       }
     } else {
       return ConfigFilePath.Default;
@@ -62,5 +65,46 @@ export class Utils {
     const tokenObject = await ctx.graphTokenProvider?.getJsonObject();
     const tenantId: string = (tokenObject as any).tid;
     return tenantId;
+  }
+
+  public static skipAADProvision(ctx: PluginContext, isLocalDebug = false): boolean {
+    if (!isMultiEnvEnabled()) {
+      const skip = ctx.config.get(ConfigKeys.skip) as boolean;
+      return skip;
+    }
+
+    const objectId = isLocalDebug
+      ? ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, true)
+      : ctx.envInfo.config.auth?.objectId;
+    const clientId = isLocalDebug
+      ? ConfigUtils.getAadConfig(ctx, ConfigKeys.clientId, true)
+      : ctx.envInfo.config.auth?.clientId;
+    const oauth2PermissionScopeId = isLocalDebug
+      ? ConfigUtils.getAadConfig(ctx, ConfigKeys.oauth2PermissionScopeId, true)
+      : ctx.envInfo.config.auth?.accessAsUserScopeId;
+    const clientSecret = isLocalDebug
+      ? ConfigUtils.getAadConfig(ctx, ConfigKeys.clientSecret, true)
+      : ctx.envInfo.config.auth?.clientSecret;
+
+    if (objectId && clientId && oauth2PermissionScopeId && clientSecret) {
+      if (!isLocalDebug) {
+        ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.objectId, objectId as string);
+        ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.clientId, clientId as string);
+        ConfigUtils.checkAndSaveConfig(ctx, ConfigKeys.clientSecret, clientSecret as string);
+        ConfigUtils.checkAndSaveConfig(
+          ctx,
+          ConfigKeys.oauth2PermissionScopeId,
+          oauth2PermissionScopeId as string
+        );
+      }
+      return true;
+    } else if (objectId || clientId || oauth2PermissionScopeId || clientSecret) {
+      throw ResultFactory.UserError(
+        GetSkipAppConfigError.name,
+        GetSkipAppConfigError.message(Utils.getInputFileName(ctx))
+      );
+    } else {
+      return false;
+    }
   }
 }

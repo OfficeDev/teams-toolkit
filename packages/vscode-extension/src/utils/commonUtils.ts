@@ -18,14 +18,15 @@ import {
   ConfigFolderName,
   InputConfigsFolderName,
   ProjectSettingsFileName,
-  EnvProfileFileNameTemplate,
-  PublishProfilesFolderName,
+  EnvStateFileNameTemplate,
+  StatesFolderName,
   EnvNamePlaceholder,
   Json,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
 import {
   environmentManager,
+  isArmSupportEnabled,
   isMultiEnvEnabled,
   isValidProject,
   PluginNames,
@@ -76,29 +77,20 @@ export function isLinux() {
   return os.type() === "Linux";
 }
 
+// Only used for telemetry when multi-env is disable
 export function getTeamsAppId() {
+  if (isMultiEnvEnabled()) {
+    return undefined;
+  }
+
   try {
     const ws = ext.workspaceUri.fsPath;
 
     if (isValidProject(ws)) {
-      const envResult = environmentManager.getActiveEnv(ws);
-
-      // ignore env error for telemetry
-
-      if (envResult.isErr()) {
-        return undefined;
-      }
-
       const envJsonPath = path.join(
         ws,
-
-        isMultiEnvEnabled()
-          ? `.${ConfigFolderName}/${PublishProfilesFolderName}/${EnvProfileFileNameTemplate.replace(
-              "@envName",
-
-              envResult.value
-            )}`
-          : `.${ConfigFolderName}/env.${envResult.value}.json`
+        `.${ConfigFolderName}`,
+        `env.${environmentManager.getDefaultEnvName()}.json`
       );
 
       const envJson = JSON.parse(fs.readFileSync(envJsonPath, "utf8"));
@@ -117,8 +109,8 @@ export function getTeamsAppIdByEnv(env: string) {
     const ws = ext.workspaceUri.fsPath;
 
     if (isValidProject(ws)) {
-      const result = environmentManager.getEnvProfileFilesPath(env, ws);
-      const envJson = JSON.parse(fs.readFileSync(result.envProfile, "utf8"));
+      const result = environmentManager.getEnvStateFilesPath(env, ws);
+      const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
       return envJson[PluginNames.APPST].teamsAppId;
     }
   } catch (e) {
@@ -244,6 +236,10 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
+
+  process.env["TEAMSFX_ROOT_DIRECTORY"] = getConfiguration(
+    ConfigurationKey.RootDirectory
+  ).toString();
 }
 
 export class FeatureFlags {
@@ -312,6 +308,23 @@ export async function getSubscriptionInfoFromEnv(
   }
 }
 
+export async function getM365TenantFromEnv(env: string): Promise<string | undefined> {
+  let provisionResult: Json | undefined;
+
+  try {
+    provisionResult = await getProvisionResultJson(env);
+  } catch (error) {
+    // ignore error on tree view when load provision result failed.
+    return undefined;
+  }
+
+  if (!provisionResult) {
+    return undefined;
+  }
+
+  return provisionResult?.[PluginNames.AAD]?.tenantId;
+}
+
 export async function getResourceGroupNameFromEnv(env: string): Promise<string | undefined> {
   let provisionResult: Json | undefined;
 
@@ -328,6 +341,24 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
   }
 
   return provisionResult.solution.resourceGroupName;
+}
+
+export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
+  let provisionResult: Json | undefined;
+
+  try {
+    provisionResult = await getProvisionResultJson(env);
+  } catch (error) {
+    // ignore error on tree view when load provision result failed.
+
+    return undefined;
+  }
+
+  if (!provisionResult) {
+    return undefined;
+  }
+
+  return provisionResult.solution.provisionSucceeded;
 }
 
 async function getProvisionResultJson(env: string): Promise<Json | undefined> {
@@ -351,9 +382,9 @@ async function getProvisionResultJson(env: string): Promise<Json | undefined> {
 
       isMultiEnvEnabled()
         ? path.join(
-            PublishProfilesFolderName,
+            StatesFolderName,
 
-            EnvProfileFileNameTemplate.replace(EnvNamePlaceholder, env)
+            EnvStateFileNameTemplate.replace(EnvNamePlaceholder, env)
           )
         : envDefaultJsonFile
     );
@@ -365,5 +396,24 @@ async function getProvisionResultJson(env: string): Promise<Json | undefined> {
     const provisionResult = await fs.readJSON(provisionOutputFile);
 
     return provisionResult;
+  }
+}
+
+export async function canUpgradeToArmAndMultiEnv(workspacePath?: string): Promise<boolean> {
+  if (!workspacePath) return false;
+  try {
+    if (!isArmSupportEnabled() || !isMultiEnvEnabled()) return false;
+    const fx = path.join(workspacePath, ".fx");
+    if (!(await fs.pathExists(fx))) {
+      return false;
+    }
+    const envFileExist = await fs.pathExists(path.join(fx, "env.default.json"));
+    const configDirExist = await fs.pathExists(path.join(fx, "configs"));
+    const armParameterExist = await fs.pathExists(
+      path.join(fx, "configs", "azure.parameters.dev.json")
+    );
+    return envFileExist && (!armParameterExist || !configDirExist);
+  } catch (err) {
+    return false;
   }
 }

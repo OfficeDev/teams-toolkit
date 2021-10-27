@@ -1,6 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigMap, LogProvider, PluginContext, LogLevel, Platform } from "@microsoft/teamsfx-api";
+import {
+  ConfigMap,
+  LogProvider,
+  PluginContext,
+  LogLevel,
+  Platform,
+  GraphTokenProvider,
+} from "@microsoft/teamsfx-api";
 import { ResourceGroups, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ServiceClientCredentials } from "@azure/ms-rest-js";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
@@ -34,8 +41,10 @@ import {
   TaskConfig,
   UserInteraction,
 } from "@microsoft/teamsfx-api";
-import { newEnvInfo } from "../../../../../src";
+import { isMultiEnvEnabled, newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
+import faker from "faker";
+import sinon from "sinon";
 
 export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
@@ -209,6 +218,7 @@ export function newPluginContext(): PluginContext {
       },
     },
     cryptoProvider: new LocalCrypto(""),
+    graphTokenProvider: mockTokenProviderGraph(),
     appStudioToken: {
       getAccessToken: (showDialog?: boolean) => {
         return Promise.resolve(undefined);
@@ -262,7 +272,27 @@ export function newPluginContext(): PluginContext {
         });
       },
     },
+    localSettings: isMultiEnvEnabled()
+      ? {
+          bot: new ConfigMap(),
+          teamsApp: new ConfigMap(),
+          auth: new ConfigMap(),
+          frontend: new ConfigMap(),
+          backend: new ConfigMap(),
+        }
+      : undefined,
   };
+}
+
+export function mockTokenProviderGraph(): GraphTokenProvider {
+  const provider = <GraphTokenProvider>{};
+  const mockTokenObject = {
+    tid: faker.datatype.uuid(),
+  };
+
+  provider.getAccessToken = sinon.stub().returns("token");
+  provider.getJsonObject = sinon.stub().returns(mockTokenObject);
+  return provider;
 }
 
 export function genTomorrow(): number {

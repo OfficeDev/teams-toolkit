@@ -10,9 +10,9 @@ import {
   LogProvider,
   TelemetryReporter,
   PermissionRequestProvider,
+  ExpServiceProvider,
 } from "../utils";
 import { EnvInfo } from "../context";
-import { SolutionProvisionOutput } from "./solutionPlugin";
 
 export type PluginName = string;
 
@@ -23,6 +23,7 @@ export interface Context {
   cryptoProvider: CryptoProvider;
   projectSetting: ProjectSettings;
   permissionRequestProvider?: PermissionRequestProvider;
+  expServiceProvider?: ExpServiceProvider;
 }
 
 export interface LocalSettings extends Json {
@@ -42,6 +43,8 @@ export type SolutionInputs = {
   location: string;
   teamsAppTenantId: string;
   subscriptionId: string;
+  // Azure tenantId
+  tenantId: string;
   remoteTeamsAppId?: string;
   // Used to track whether at least one successful provision has been made.
   // Useful for fail fast when deploying in a fresh project.
@@ -85,7 +88,7 @@ export type FxResult<T, Error = FxError> =
   | FxPartialSuccess<T, Error>
   | FxFailure<Error>;
 
-export type EnvInfoV2 = Omit<EnvInfo, "profile" | "config"> & { profile: Json } & { config: Json };
+export type EnvInfoV2 = Omit<EnvInfo, "state" | "config"> & { state: Json } & { config: Json };
 
 // This type has not been supported by TypeScript yet.
 // Check here https://github.com/microsoft/TypeScript/issues/13923.

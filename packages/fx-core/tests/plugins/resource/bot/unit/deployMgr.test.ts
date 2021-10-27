@@ -23,7 +23,7 @@ describe("Deploy Manager", () => {
 
     it("Config File Existing", async () => {
       // Arrange
-      const deployMgr = new DeployMgr(testDir);
+      const deployMgr = new DeployMgr(testDir, "ut");
       await deployMgr.init();
 
       // Act
@@ -47,7 +47,7 @@ describe("Deploy Manager", () => {
 
     it("Happy Path", async () => {
       // Arrange
-      const deployMgr = new DeployMgr(testDir);
+      const deployMgr = new DeployMgr(testDir, "ut");
       await deployMgr.init();
 
       const time = Date.now();
@@ -74,7 +74,7 @@ describe("Deploy Manager", () => {
 
     it("Happy Path", async () => {
       // Arrange
-      const deployMgr = new DeployMgr(testDir);
+      const deployMgr = new DeployMgr(testDir, "ut");
       await deployMgr.init();
 
       await fs.writeFile(path.join(testDir, "index.js"), "anything");
@@ -89,7 +89,7 @@ describe("Deploy Manager", () => {
 
     it("needsToRedeploy True", async () => {
       // Arrange
-      const deployMgr = new DeployMgr(testDir);
+      const deployMgr = new DeployMgr(testDir, "ut");
       await deployMgr.init();
 
       await fs.writeFile(path.join(testDir, "index.js"), "anything");

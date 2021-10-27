@@ -1,7 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Microsoft.TeamsFx.Model;
 using System;
 using System.IdentityModel.Tokens.Jwt;
 

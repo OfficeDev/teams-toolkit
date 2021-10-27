@@ -52,6 +52,7 @@ export enum TelemetryEvent {
   Publish = "publish",
 
   CICDGuide = "cicd-guide",
+  CICDInsiderGuide = "cicd-insider-guide",
 
   ManageTeamsApp = "manage-teams-app",
 
@@ -120,6 +121,8 @@ export enum TelemetryEvent {
 
   ShowLocalDebugNotification = "show-local-debug-notification",
   ClickLocalDebug = "click-local-debug",
+  ClickChangeLocation = "click-change-location",
+  PreviewAdaptiveCard = "open-adaptivecard-preview",
 }
 
 export enum TelemetryProperty {
@@ -173,6 +176,7 @@ export enum TelemetryTiggerFrom {
   CommandPalette = "CommandPalette",
   TreeView = "TreeView",
   Webview = "Webview",
+  CodeLens = "CodeLens",
   Other = "Other",
   Unknow = "Unknow",
 }

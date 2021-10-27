@@ -22,11 +22,12 @@
     "NotProvisionedNotice": "'%s' is not provisioned in the cloud yet. Please provision first.",
     "GenerateArmTemplateFailNotice": "'%s' Failed to create ARM template for required Azure services.",
     "RegenerateArmTemplateConfirmNotice": "We will update your Azure resource template based on your resource and capability selection. The existing template file will be moved to backup folder under Azure resource template folder for your reference. We recommend to initialize your project workspace with git init to track all changes.",
-    "LocalDebugTenantConfirmNotice": "You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the localSettings.json file and re-run local debug.",
+    "LocalDebugTenantConfirmNotice": "You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the %s file and re-run local debug.",
     "MigrateSuccessNotice": "Your project is now initialized with Teams Toolkit! You can debug your application by pressing F5. If you wish to host your application in Azure, we recommend you to re-create your project directly using the latest Teams Toolkit.",
-    "MigrationToArmAndMultiEnvMessage": "Teams Toolkit will migrate your project to support the latest features. This process will change the contents of the '.fx' folder. Backup this folder or put your project in source control if you want to revert your project back below Teams Toolkit 2.7.0.",
-    "MigrationToArmAndMultiEnvSuccessMessage": "Migration Success! please reload VSCode and run provision command before executing other commands, otherwise the commands may fail. Provision may create new resource, click the link for more information",
+    "MigrationToArmAndMultiEnvMessage": "Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version <= 2.7.0",
+    "MigrationToArmAndMultiEnvSuccessMessage": "Upgrade succeeded. Your project is upgraded to new configuration files. Reload Visual Studio Code for the change to take effect.",
     "NeedToUpdateTeamsToolkitVersionMessage": "Your project is not supported. Please update Teams Toolkit to the latest version from the VSCode Extension Marketplace and make sure the setting (fx-extension: Insider Preview) is enabled",
+    "MigrationToArmAndMultiEnvErrorMessage": "Upgrade Failed. Please check the error message in Output window to troubleshoot and fix. You can also click Learn More for the FAQ and how to upgrade manually.",
     "DeployArmTemplates": {
       "StartNotice": "[%s] Start deploying ARM templates.",
       "CompileBicepSuccessNotice": "[%s] Successfully compile bicep files to JSON.",
@@ -48,8 +49,10 @@
   },
   "plugins": {
     "SPFx": {
-      "buildNotice": "[Teams Toolkit] The automatic deployment is not currently supported for SPFx app. You can manually upload and deploy SharePoint package file to SharePoint App Catalog site.",
-      "deployNotice": "[Teams Toolkit] SharePoint package successfully built at %s. Visit [Microsoft Admin Center](https://admin.microsoft.com) and go to your tenant's SharePoint App Catalog site to upload the %s."
+      "buildNotice": "SharePoint package successfully built at %s.",
+      "deployNotice": "SharePoint package %s has been successfully deployed to [%s](%s).",
+      "deployFailedNotice": "You don't have permission to upload and deploy package to App Catalog %s, please use site admin account, or you can get your own free Microsoft 365 tenant from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",
+      "createAppCatalogNotice": "There is no tenant app catalog under %s, do you want to create one?"
     }
   }
 }

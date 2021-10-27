@@ -51,6 +51,10 @@ export class HelpParamGenerator {
     Stage.checkPermission,
     "validate",
     Stage.createEnv,
+    "ResourceShowFunction",
+    "ResourceShowSQL",
+    "ResourceShowApim",
+    "ResourceList",
   ];
 
   private static instance: HelpParamGenerator;

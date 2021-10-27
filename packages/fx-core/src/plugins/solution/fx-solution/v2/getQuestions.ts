@@ -85,7 +85,11 @@ export async function getQuestionsForScaffolding(
   }
 
   // 1.1.2 Azure Tab
-  const tabRes = await getTabScaffoldQuestionsV2(ctx, inputs, true);
+  const tabRes = await getTabScaffoldQuestionsV2(
+    ctx,
+    inputs,
+    inputs.platform === Platform.VSCode ? false : true
+  );
   if (tabRes.isErr()) return tabRes;
   if (tabRes.value) {
     const tabNode = tabRes.value;
@@ -191,7 +195,7 @@ export async function getQuestions(
       if (v1Blocked.isErr()) {
         return err(v1Blocked.error);
       }
-      const provisioned = checkWetherProvisionSucceeded(envInfo.profile);
+      const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (provisioned) return ok(undefined);
     }
     let plugins: v2.ResourcePlugin[] = [];
@@ -218,7 +222,7 @@ export async function getQuestions(
         return err(v1Blocked.error);
       }
       const isAzure = isAzureProject(solutionSettings);
-      const provisioned = checkWetherProvisionSucceeded(envInfo.profile);
+      const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (isAzure && !provisioned) {
         return err(
           returnUserError(
@@ -279,7 +283,7 @@ export async function getQuestions(
         return err(v1Blocked.error);
       }
       const isAzure = isAzureProject(solutionSettings);
-      const provisioned = checkWetherProvisionSucceeded(envInfo.profile);
+      const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (!provisioned) {
         return err(
           new UserError(

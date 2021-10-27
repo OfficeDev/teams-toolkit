@@ -13,6 +13,7 @@ import { glob } from "glob";
 import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import SharepointTokenInstance from "../commonlib/sharepointLogin";
+import GraphTokenInstance from "../commonlib/graphLogin";
 import { runCommand } from "../handlers";
 import { returnSystemError, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
 import { globalStateGet, globalStateUpdate, Correlator } from "@microsoft/teamsfx-core";
@@ -86,7 +87,9 @@ export class WebviewPanel {
             vscode.env.openExternal(vscode.Uri.parse(msg.data));
             break;
           case Commands.CloneSampleApp:
-            await this.downloadSampleApp(msg);
+            Correlator.run(async () => {
+              await this.downloadSampleApp(msg);
+            });
             break;
           case Commands.DisplayCommands:
             vscode.commands.executeCommand("workbench.action.quickOpen", `>${msg.data}`);
@@ -110,7 +113,10 @@ export class WebviewPanel {
             });
             break;
           case Commands.CreateNewProject:
-            await runCommand(Stage.create);
+            await vscode.commands.executeCommand(
+              "fx-extension.create",
+              TelemetryTiggerFrom.Webview
+            );
             break;
           case Commands.SwitchPanel:
             WebviewPanel.createOrShow(msg.data);
@@ -259,7 +265,8 @@ export class WebviewPanel {
     };
 
     AppStudioTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
-    //SharepointTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
+    SharepointTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
+    GraphTokenInstance.setStatusChangeMap("quick-start-webview", m365WebviewCallback);
 
     AzureAccountManager.setStatusChangeMap(
       "quick-start-webview",

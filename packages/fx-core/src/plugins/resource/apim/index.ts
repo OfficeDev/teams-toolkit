@@ -25,6 +25,7 @@ import {
   ProjectConstants,
   OperationStatus,
   UserTask,
+  ApimPluginConfigKeys,
 } from "./constants";
 import { Factory } from "./factory";
 import { ProgressBar } from "./utils/progressBar";
@@ -34,6 +35,8 @@ import { AzureResourceApim } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
+import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+
 @Service(ResourcePlugins.ApimPlugin)
 export class ApimPlugin implements Plugin {
   name = "fx-resource-apim";
@@ -71,6 +74,14 @@ export class ApimPlugin implements Plugin {
     return await this.executeWithFxError(PluginLifeCycle.Scaffold, _scaffold, ctx);
   }
 
+  public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return await this.executeWithFxError(
+      PluginLifeCycle.GenerateArmTemplates,
+      _generateArmTemplates,
+      ctx
+    );
+  }
+
   public async provision(ctx: PluginContext): Promise<Result<any, FxError>> {
     return await this.executeWithFxError(PluginLifeCycle.Provision, _provision, ctx);
   }
@@ -100,14 +111,14 @@ export class ApimPlugin implements Plugin {
       await this.progressBar.init(PluginLifeCycleToProgressStep[lifeCycle], ctx);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.envInfo.profile,
+        ctx.envInfo.state,
         lifeCycle,
         OperationStatus.Started
       );
       const result = await fn(ctx, this.progressBar, ...params);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.envInfo.profile,
+        ctx.envInfo.state,
         lifeCycle,
         OperationStatus.Succeeded
       );
@@ -126,7 +137,7 @@ export class ApimPlugin implements Plugin {
       ctx.logProvider?.error(`[${ProjectConstants.pluginDisplayName}] ${error.message}`);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.envInfo.profile,
+        ctx.envInfo.state,
         lifeCycle,
         OperationStatus.Failed,
         packagedError
@@ -188,7 +199,7 @@ async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<
 }
 
 async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
+  const solutionConfig = new SolutionConfig(ctx.envInfo.state);
   const apimConfig = new ApimPluginConfig(ctx.config);
 
   const apimManager = await Factory.buildApimManager(ctx);
@@ -209,10 +220,18 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
   await aadManager.provision(apimConfig, appName);
 }
 
+async function _generateArmTemplates(
+  ctx: PluginContext,
+  progressBar: ProgressBar
+): Promise<ScaffoldArmTemplateResult> {
+  const apimManager = await Factory.buildApimManager(ctx);
+  const solutionConfig = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+  return await apimManager.generateArmTemplates(solutionConfig);
+}
+
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
   const apimConfig = new ApimPluginConfig(ctx.config);
-  const aadConfig = new AadPluginConfig(ctx.envInfo.profile);
+  const aadConfig = new AadPluginConfig(ctx.envInfo.state);
 
   const apimManager = await Factory.buildApimManager(ctx);
   const aadManager = await Factory.buildAadManager(ctx);
@@ -230,19 +249,23 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
     ProgressStep.PostProvision,
     ProgressMessages[ProgressStep.PostProvision].ConfigApim
   );
-  await apimManager.postProvision(apimConfig, solutionConfig, aadConfig, appName);
+  await apimManager.postProvision(apimConfig, ctx, aadConfig, appName);
 
   await progressBar.next(
     ProgressStep.PostProvision,
     ProgressMessages[ProgressStep.PostProvision].ConfigAppAad
   );
   await teamsAppAadManager.postProvision(aadConfig, apimConfig);
+
+  // Delete user sensitive configuration
+  ctx.config.delete(ApimPluginConfigKeys.publisherEmail);
+  ctx.config.delete(ApimPluginConfigKeys.publisherName);
 }
 
 async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.envInfo.profile);
+  const solutionConfig = new SolutionConfig(ctx.envInfo.state);
   const apimConfig = new ApimPluginConfig(ctx.config);
-  const functionConfig = new FunctionPluginConfig(ctx.envInfo.profile);
+  const functionConfig = new FunctionPluginConfig(ctx.envInfo.state);
   const answer = buildAnswer(ctx.answers);
 
   if (answer.validate) {

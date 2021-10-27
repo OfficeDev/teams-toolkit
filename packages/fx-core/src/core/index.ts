@@ -26,7 +26,7 @@ import {
   Platform,
   ProjectConfig,
   ProjectSettings,
-  PublishProfilesFolderName,
+  StatesFolderName,
   QTreeNode,
   Result,
   RunnableTask,
@@ -127,6 +127,7 @@ import {
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
 import { flattenConfigJson, newEnvInfo } from "./tools";
+import { getRootDirectory } from "../common/tools";
 import { LocalCrypto } from "./crypto";
 
 export interface CoreHookContext extends HookContext {
@@ -185,7 +186,11 @@ export class FxCore implements Core {
     }
     currentStage = Stage.create;
     inputs.stage = Stage.create;
-    const folder = inputs[QuestionRootFolder.name] as string;
+    let folder = inputs[QuestionRootFolder.name] as string;
+    if (inputs.platform === Platform.VSCode) {
+      folder = getRootDirectory();
+      await fs.ensureDir(folder);
+    }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     let globalStateDescription = "openReadme";
@@ -236,7 +241,6 @@ export class FxCore implements Core {
           version: "1.0.0",
         },
         version: "1.0.0",
-        activeEnvironment: multiEnv ? environmentManager.getDefaultEnvName() : "default",
         isFromSample: false,
       };
       ctx.projectSettings = projectSettings;
@@ -283,15 +287,15 @@ export class FxCore implements Core {
           }
         } else {
           //TODO lagacy env.default.json
-          const profile: Json = { solution: {} };
+          const state: Json = { solution: {} };
           for (const plugin of getAllV2ResourcePlugins()) {
-            profile[plugin.name] = {};
+            state[plugin.name] = {};
           }
-          profile[PluginNames.LDEBUG]["trustDevCert"] = "true";
+          state[PluginNames.LDEBUG]["trustDevCert"] = "true";
           ctx.envInfoV2 = {
             envName: environmentManager.getDefaultEnvName(),
             config: {},
-            profile: profile,
+            state: state,
           };
         }
       } else {
@@ -474,51 +478,45 @@ export class FxCore implements Core {
     currentStage = Stage.provision;
     inputs.stage = Stage.provision;
     // provision is not ready yet, so use API v1
-    // if (isV2()) {
-    //   if (
-    //     !ctx ||
-    //     !ctx.solutionV2 ||
-    //     !ctx.contextV2 ||
-    //     !ctx.envInfoV2
-    //   ) {
-    //     return err(new ObjectIsUndefinedError("Provision input stuff"));
-    //   }
-    //   const envInfo = ctx.envInfoV2;
-    //   const result = await ctx.solutionV2.provisionResources(
-    //     ctx.contextV2,
-    //     inputs,
-    //     envInfo,
-    //     this.tools.tokenProvider
-    //   );
-    //   if (result.kind === "success") {
-    //     // Remove all "output" and "secret" fields for backward compatibility.
-    //     // todo(yefuwang): handle "output" and "secret" fields in middlewares.
-    //     const profile = flattenConfigJson(result.output);
-    //     ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
-    //     return ok(Void);
-    //   } else if (result.kind === "partialSuccess") {
-    //     const profile = flattenConfigJson(result.output);
-    //     ctx.envInfoV2.profile = { ...ctx.envInfoV2.profile, ...profile };
-    //     return err(result.error);
-    //   } else {
-    //     return err(result.error);
-    //   }
-    // }
-    // else {
-    if (!ctx || !ctx.solution || !ctx.solutionContext) {
-      const name = undefinedName(
-        [ctx, ctx?.solution, ctx?.solutionContext],
-        ["ctx", "ctx.solution", "ctx.solutionContext"]
+    if (isV2()) {
+      if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
+        return err(new ObjectIsUndefinedError("Provision input stuff"));
+      }
+      const envInfo = ctx.envInfoV2;
+      const result = await ctx.solutionV2.provisionResources(
+        ctx.contextV2,
+        inputs,
+        envInfo,
+        this.tools.tokenProvider
       );
-      return err(new ObjectIsUndefinedError(`Provision input stuff: ${name}`));
-    }
-    const provisionRes = await ctx.solution.provision(ctx.solutionContext);
-    if (provisionRes.isErr()) {
+      if (result.kind === "success") {
+        // Remove all "output" and "secret" fields for backward compatibility.
+        // todo(yefuwang): handle "output" and "secret" fields in middlewares.
+        const state = flattenConfigJson(result.output);
+        ctx.envInfoV2.state = { ...ctx.envInfoV2.state, ...state };
+        return ok(Void);
+      } else if (result.kind === "partialSuccess") {
+        const state = flattenConfigJson(result.output);
+        ctx.envInfoV2.state = { ...ctx.envInfoV2.state, ...state };
+        return err(result.error);
+      } else {
+        return err(result.error);
+      }
+    } else {
+      if (!ctx || !ctx.solution || !ctx.solutionContext) {
+        const name = undefinedName(
+          [ctx, ctx?.solution, ctx?.solutionContext],
+          ["ctx", "ctx.solution", "ctx.solutionContext"]
+        );
+        return err(new ObjectIsUndefinedError(`Provision input stuff: ${name}`));
+      }
+      const provisionRes = await ctx.solution.provision(ctx.solutionContext);
+      if (provisionRes.isErr()) {
+        return provisionRes;
+      }
+      this._setEnvInfoV2(ctx);
       return provisionRes;
     }
-    this._setEnvInfoV2(ctx);
-    return provisionRes;
-    // }
   }
 
   @hooks([
@@ -549,7 +547,7 @@ export class FxCore implements Core {
         return await ctx.solutionV2.deploy(
           ctx.contextV2,
           inputs,
-          ctx.envInfoV2.profile,
+          ctx.envInfoV2.state,
           this.tools.tokenProvider.azureAccountProvider
         );
       else return ok(Void);
@@ -623,11 +621,11 @@ export class FxCore implements Core {
     }
 
     upgradeProgrammingLanguage(
-      ctx.solutionContext.envInfo.profile as SolutionConfig,
+      ctx.solutionContext.envInfo.state as SolutionConfig,
       ctx.projectSettings
     );
     upgradeDefaultFunctionName(
-      ctx.solutionContext.envInfo.profile as SolutionConfig,
+      ctx.solutionContext.envInfo.state as SolutionConfig,
       ctx.projectSettings
     );
     const res = await ctx.solution.localDebug(ctx.solutionContext);
@@ -641,9 +639,9 @@ export class FxCore implements Core {
       ctx.envInfoV2 = {
         envName: ctx.solutionContext.envInfo.envName,
         config: ctx.solutionContext.envInfo.config,
-        profile: {},
+        state: {},
       };
-      ctx.envInfoV2.profile = mapToJson(ctx.solutionContext.envInfo.profile);
+      ctx.envInfoV2.state = mapToJson(ctx.solutionContext.envInfo.state);
     }
   }
 
@@ -774,7 +772,7 @@ export class FxCore implements Core {
         const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
         const envInfoV2 = ctx.envInfoV2
           ? ctx.envInfoV2
-          : { envName: environmentManager.getDefaultEnvName(), config: {}, profile: {} };
+          : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
         inputs.stage = stage;
         return await this._getQuestions(contextV2, solutionV2, stage, inputs, envInfoV2);
       } else {
@@ -809,7 +807,7 @@ export class FxCore implements Core {
       const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
       const envInfoV2 = ctx.envInfoV2
         ? ctx.envInfoV2
-        : { envName: environmentManager.getDefaultEnvName(), config: {}, profile: {} };
+        : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
       return await this._getQuestionsForUserTask(contextV2, solutionV2, func, inputs, envInfoV2);
     } else {
       const solutionContext = ctx.solutionContext
@@ -839,13 +837,13 @@ export class FxCore implements Core {
     if (isV2()) {
       return ok({
         settings: ctx!.projectSettings,
-        config: ctx!.envInfoV2?.profile,
+        config: ctx!.envInfoV2?.state,
         localSettings: ctx!.localSettings,
       });
     } else {
       return ok({
         settings: ctx!.projectSettings,
-        config: ctx!.solutionContext?.envInfo.profile,
+        config: ctx!.solutionContext?.envInfo.state,
         localSettings: ctx!.solutionContext?.localSettings,
       });
     }
@@ -902,7 +900,6 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -1139,9 +1136,9 @@ export class FxCore implements Core {
       return err(writeEnvResult.error);
     }
     this.tools.logProvider.debug(
-      `[core] persist ${targetEnvName} env profile to path ${
-        writeEnvResult.value
-      }: ${JSON.stringify(newEnvConfig)}`
+      `[core] persist ${targetEnvName} env state to path ${writeEnvResult.value}: ${JSON.stringify(
+        newEnvConfig
+      )}`
     );
     return ok(Void);
   }
@@ -1216,7 +1213,7 @@ export class FxCore implements Core {
       if (isV2()) {
         //TODO core should not know the details of envInfo
         ctx!.provisionInputConfig = solutionContext.value.envInfo.config;
-        ctx!.provisionOutputs = solutionContext.value.envInfo.profile;
+        ctx!.provisionOutputs = solutionContext.value.envInfo.state;
         ctx!.envName = solutionContext.value.envInfo.envName;
       } else {
         ctx!.solutionContext = solutionContext.value;
@@ -1266,14 +1263,18 @@ export class FxCore implements Core {
         if (solutionNode.data) solutionSelectNode.addChild(solutionNode);
       }
     }
-    createNew.addChild(new QTreeNode(QuestionRootFolder));
+    if (inputs.platform !== Platform.VSCode) {
+      createNew.addChild(new QTreeNode(QuestionRootFolder));
+    }
     createNew.addChild(new QTreeNode(QuestionAppName));
 
     // create from sample
     const sampleNode = new QTreeNode(SampleSelect);
     node.addChild(sampleNode);
     sampleNode.condition = { equals: ScratchOptionNo.id };
-    sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+    if (inputs.platform !== Platform.VSCode) {
+      sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+    }
     return ok(node.trim());
   }
 }
@@ -1310,10 +1311,12 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
         ? [
             "node_modules",
             `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
-            `.${ConfigFolderName}/${PublishProfilesFolderName}/*.userdata`,
+            `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
             ".DS_Store",
             `${ArchiveFolderName}`,
             `${ArchiveLogFileName}`,
+            ".env.teamsfx.local",
+            "subscriptionInfo.json",
           ].join("\n")
         : `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
     );
@@ -1326,7 +1329,11 @@ export async function downloadSample(
   fxcore: FxCore,
   inputs: Inputs
 ): Promise<Result<string, FxError>> {
-  const folder = inputs[QuestionRootFolder.name] as string;
+  let folder = inputs[QuestionRootFolder.name] as string;
+  if (inputs.platform === Platform.VSCode) {
+    folder = getRootDirectory();
+    await fs.ensureDir(folder);
+  }
   const sample = inputs[CoreQuestionNames.Samples] as OptionItem;
   if (sample && sample.data && folder) {
     const url = sample.data as string;

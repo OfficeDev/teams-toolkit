@@ -11,6 +11,7 @@ import {
   QTreeNode,
   Result,
   Stage,
+  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { HostTypeOptionSPFx } from "../../solution/fx-solution/question";
@@ -49,11 +50,11 @@ export class SpfxPlugin implements Plugin {
         name: SPFXQuestionNames.framework_type,
         title: "Framework",
         staticOptions: [
-          { id: "none", label: "None" },
           { id: "react", label: "React" },
+          { id: "none", label: "None" },
         ],
         placeholder: "Select an option",
-        default: "none",
+        default: "react",
       });
       spfx_frontend_host.addChild(spfx_framework_type);
 
@@ -96,9 +97,16 @@ export class SpfxPlugin implements Plugin {
   }
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
-    return await this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
-      this.spfxPluginImpl.deploy(ctx)
-    );
+    const result = await this.spfxPluginImpl.deploy(ctx);
+    if (result.isOk()) {
+      telemetryHelper.sendSuccessEvent(ctx, "deploy");
+    } else {
+      telemetryHelper.sendErrorEvent(ctx, "deploy", result.error);
+      if (result.error.name === "InsufficientPermission") {
+        return err(UserCancelError);
+      }
+    }
+    return result;
   }
 
   private async runWithErrorHandling(
@@ -109,7 +117,11 @@ export class SpfxPlugin implements Plugin {
     try {
       telemetryHelper.sendSuccessEvent(ctx, stage + TelemetryEvent.StartSuffix);
       const result = await fn();
-      telemetryHelper.sendSuccessEvent(ctx, stage);
+      if (result.isOk()) {
+        telemetryHelper.sendSuccessEvent(ctx, stage);
+      } else {
+        telemetryHelper.sendErrorEvent(ctx, stage, result.error);
+      }
       return result;
     } catch (error) {
       await ProgressHelper.endAllHandlers(false);

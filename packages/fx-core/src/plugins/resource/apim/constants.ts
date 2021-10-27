@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import path from "path";
 import { IName } from "./interfaces/IName";
 
 export class ProjectConstants {
@@ -153,6 +154,16 @@ export class ValidationConstants {
   };
 }
 
+export class ApimPathInfo {
+  public static readonly BicepTemplateRelativeDir = path.join(
+    "plugins",
+    "resource",
+    "apim",
+    "bicep"
+  );
+  public static readonly ProvisionModuleTemplateFileName = "apimProvision.bicep";
+}
+
 export class ApimPluginConfigKeys {
   public static readonly resourceGroupName: string = "resourceGroupName";
   public static readonly serviceName: string = "serviceName";
@@ -165,6 +176,11 @@ export class ApimPluginConfigKeys {
   public static readonly versionSetId: string = "versionSetId";
   public static readonly apiPath: string = "apiPath";
   public static readonly apiDocumentPath: string = "apiDocumentPath";
+  public static readonly serviceResourceId: string = "serviceResourceId";
+  public static readonly productResourceId: string = "productResourceId";
+  public static readonly authServerResourceId: string = "authServerResourceId";
+  public static readonly publisherEmail: string = "publisherEmail";
+  public static readonly publisherName: string = "publisherName";
 }
 
 export class FunctionPluginConfigKeys {
@@ -236,6 +252,11 @@ export const ConfigRetryOperations: {
     [ApimPluginConfigKeys.apimClientAADObjectId]: RetryOperation.Provision,
     [ApimPluginConfigKeys.apimClientAADClientId]: RetryOperation.Provision,
     [ApimPluginConfigKeys.apimClientAADClientSecret]: RetryOperation.Provision,
+    [ApimPluginConfigKeys.serviceResourceId]: RetryOperation.Provision,
+    [ApimPluginConfigKeys.productResourceId]: RetryOperation.Provision,
+    [ApimPluginConfigKeys.authServerResourceId]: RetryOperation.Provision,
+    [ApimPluginConfigKeys.publisherEmail]: RetryOperation.Provision,
+    [ApimPluginConfigKeys.publisherName]: RetryOperation.Provision,
     [ApimPluginConfigKeys.apiPrefix]: RetryOperation.Deploy,
     [ApimPluginConfigKeys.versionSetId]: RetryOperation.Deploy,
     [ApimPluginConfigKeys.apiPath]: RetryOperation.Deploy,
@@ -248,6 +269,7 @@ export enum PluginLifeCycle {
   GetQuestions = "get-questions",
   Scaffold = "scaffold",
   Provision = "provision",
+  GenerateArmTemplates = "generate-arm-templates",
   PostProvision = "post-provision",
   Deploy = "deploy",
   GetQuestionsForUserTask = "get-questions-for-user-task",
@@ -266,6 +288,7 @@ export const PluginLifeCycleToProgressStep: { [key in PluginLifeCycle]: Progress
   [PluginLifeCycle.GetQuestions]: ProgressStep.None,
   [PluginLifeCycle.Scaffold]: ProgressStep.Scaffold,
   [PluginLifeCycle.Provision]: ProgressStep.Provision,
+  [PluginLifeCycle.GenerateArmTemplates]: ProgressStep.None,
   [PluginLifeCycle.PostProvision]: ProgressStep.PostProvision,
   [PluginLifeCycle.Deploy]: ProgressStep.Deploy,
   [PluginLifeCycle.GetQuestionsForUserTask]: ProgressStep.None,
@@ -402,4 +425,10 @@ export enum OpenApiSchemaVersion {
 
 export class UserTask {
   static addResourceFuncName = "addResource";
+}
+
+export class ApimArmOutput {
+  static readonly ServiceResourceId = "apimServiceResourceId";
+  static readonly ProductResourceId = "apimProductResourceId";
+  static readonly AuthServerResourceId = "apimAuthServiceResourceId";
 }

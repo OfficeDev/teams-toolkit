@@ -85,14 +85,14 @@ export class ApimService {
   public async createService(
     resourceGroupName: string,
     serviceName: string,
-    location: string
+    location: string,
+    userId: string
   ): Promise<void> {
     const existingService = await this.getService(resourceGroupName, serviceName);
     if (existingService) {
       return;
     }
 
-    const userId = await this.getUserId();
     const apimService: ApiManagementServiceResource = {
       publisherName: userId,
       publisherEmail: userId,
@@ -437,7 +437,7 @@ export class ApimService {
     await this.execute(Operation.Create, AzureResource.ProductAPI, id, fn, validationErrorHandler);
   }
 
-  private async getUserId(): Promise<string> {
+  public async getUserId(): Promise<string> {
     const token = await this.credential?.getToken();
     if (!token?.userId) {
       this.logger?.warning(LogMessages.useDefaultUserId);

@@ -7,7 +7,7 @@ import { Argv } from "yargs";
 import * as path from "path";
 import { YargsCommand } from "../yargsCommand";
 import { FxError, Question, Result, ok, err, LogLevel } from "@microsoft/teamsfx-api";
-import { dataNeedEncryption } from "@microsoft/teamsfx-core";
+import { dataNeedEncryption, environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import { UserSettings, CliConfigOptions, CliConfigTelemetry } from "../userSetttings";
 import CLILogProvider from "../commonlib/log";
 import {
@@ -16,6 +16,7 @@ import {
   getSystemInputs,
   readEnvJsonFile,
   toYargsOptions,
+  readSettingsFileSync,
 } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
@@ -24,7 +25,7 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import activate from "../activate";
-import { NonTeamsFxProjectFolder, ConfigNameNotFound } from "../error";
+import { NonTeamsFxProjectFolder, ConfigNameNotFound, EnvNotSpecified } from "../error";
 import * as constants from "../constants";
 
 const GlobalOptions = new Set([
@@ -41,15 +42,24 @@ export class ConfigGet extends YargsCommand {
   public readonly description = "Get user settings.";
 
   public builder(yargs: Argv): Argv<any> {
-    return yargs.positional("option", {
+    const result = yargs.positional("option", {
       description: "User settings option",
       type: "string",
     });
+
+    if (isMultiEnvEnabled()) {
+      return result.option("env", {
+        description: "Environment name",
+        type: "string",
+      });
+    } else {
+      return result;
+    }
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
-    const inProject = (await readEnvJsonFile(rootFolder)).isOk();
+    const inProject = readSettingsFileSync(rootFolder).isOk();
 
     if (args.option === undefined) {
       // print all
@@ -58,7 +68,18 @@ export class ConfigGet extends YargsCommand {
         return globalResult;
       }
       if (!args.global && inProject) {
-        const projectResult = await this.printProjectConfig(rootFolder);
+        let env: string | undefined = undefined;
+        if (isMultiEnvEnabled()) {
+          if (args.env) {
+            env = args.env;
+          } else {
+            return err(new EnvNotSpecified());
+          }
+        } else {
+          env = environmentManager.getDefaultEnvName();
+        }
+
+        const projectResult = await this.printProjectConfig(rootFolder, env);
         if (projectResult.isErr()) {
           return projectResult;
         }
@@ -79,7 +100,17 @@ export class ConfigGet extends YargsCommand {
       } else {
         // project config
         if (inProject) {
-          const projectResult = await this.printProjectConfig(rootFolder, args.option);
+          let env: string | undefined = undefined;
+          if (isMultiEnvEnabled()) {
+            if (args.env) {
+              env = args.env;
+            } else {
+              return err(new EnvNotSpecified());
+            }
+          } else {
+            env = environmentManager.getDefaultEnvName();
+          }
+          const projectResult = await this.printProjectConfig(rootFolder, env, args.option);
           if (projectResult.isErr()) {
             return projectResult;
           }
@@ -141,10 +172,12 @@ export class ConfigGet extends YargsCommand {
 
   private async printProjectConfig(
     rootFolder: string,
+    env: string | undefined,
     option?: string
   ): Promise<Result<null, FxError>> {
     let found = false;
-    const result = await readProjectSecrets(rootFolder);
+    // TODO: check file not found error before provision
+    const result = await readProjectSecrets(rootFolder, env);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, result.error);
       return err(result.error);
@@ -167,7 +200,7 @@ export class ConfigGet extends YargsCommand {
         found = true;
         const secretValue = secretData[secretKey];
         if (dataNeedEncryption(secretKey)) {
-          const decrypted = await core.value.decrypt(secretValue, getSystemInputs(rootFolder));
+          const decrypted = await core.value.decrypt(secretValue, getSystemInputs(rootFolder, env));
           if (decrypted.isOk()) {
             CLILogProvider.necessaryLog(LogLevel.Info, `${secretKey}: ${decrypted.value}`, true);
           } else {
@@ -194,7 +227,7 @@ export class ConfigSet extends YargsCommand {
   public readonly description = "Set user settings.";
 
   public builder(yargs: Argv): Argv<any> {
-    return yargs
+    const result = yargs
       .positional("option", {
         describe: "User settings option",
         type: "string",
@@ -203,11 +236,18 @@ export class ConfigSet extends YargsCommand {
         describe: "Option value",
         type: "string",
       });
+    if (isMultiEnvEnabled()) {
+      return result.option("env", {
+        description: "Environment name",
+        type: "string",
+      });
+    } else {
+      return result;
+    }
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
-    const inProject = (await readEnvJsonFile(rootFolder)).isOk();
 
     if (GlobalOptions.has(args.option) || args.global) {
       // global config
@@ -223,9 +263,22 @@ export class ConfigSet extends YargsCommand {
         return globalResult;
       }
     } else {
+      let env: string | undefined = undefined;
+      if (isMultiEnvEnabled()) {
+        if (!args.global) {
+          if (args.env) {
+            env = args.env;
+          } else {
+            return err(new EnvNotSpecified());
+          }
+        }
+      } else {
+        env = environmentManager.getDefaultEnvName();
+      }
+      const inProject = (await readEnvJsonFile(rootFolder, env)).isOk();
       // project config
       if (inProject) {
-        const projectResult = await this.setProjectConfig(rootFolder, args.option, args.value);
+        const projectResult = await this.setProjectConfig(rootFolder, args.option, args.value, env);
         if (projectResult.isErr()) {
           return projectResult;
         }
@@ -272,9 +325,10 @@ export class ConfigSet extends YargsCommand {
   private async setProjectConfig(
     rootFolder: string,
     option: string,
-    value: string
+    value: string,
+    env: string | undefined
   ): Promise<Result<null, FxError>> {
-    const result = await readProjectSecrets(rootFolder);
+    const result = await readProjectSecrets(rootFolder, env);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigSet, result.error);
       return err(result.error);
@@ -300,7 +354,7 @@ export class ConfigSet extends YargsCommand {
       }
       secretData[option] = encrypted.value;
     }
-    const writeFileResult = writeSecretToFile(secretData, rootFolder);
+    const writeFileResult = writeSecretToFile(secretData, rootFolder, env);
     if (writeFileResult.isErr()) {
       return writeFileResult;
     }

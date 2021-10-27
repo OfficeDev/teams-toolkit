@@ -32,14 +32,6 @@ export function validateSettings(projectSettings?: ProjectSettings): string | un
   if (!projectSettings.solutionSettings) return "empty solutionSettings";
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (solutionSettings.hostType === undefined) return "empty solutionSettings.hostType";
-  if (isMultiEnvEnabled()) {
-    if (
-      !projectSettings.activeEnvironment ||
-      typeof projectSettings.activeEnvironment !== "string"
-    ) {
-      return `activeEnvironment is missing or not a string in ${ProjectSettingsFileName}`;
-    }
-  }
   return undefined;
 }
 
@@ -127,7 +119,7 @@ export async function isMigrateFromV1Project(workspacePath?: string): Promise<bo
 export function newEnvInfo(
   envName?: string,
   config?: EnvConfig,
-  profile?: Map<string, any>
+  state?: Map<string, any>
 ): EnvInfo {
   return {
     envName: envName ?? environmentManager.getDefaultEnvName(),
@@ -138,7 +130,7 @@ export function newEnvInfo(
         },
       },
     },
-    profile: profile ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
+    state: state ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
   };
 }
 

@@ -233,7 +233,17 @@ export default class Preview extends YargsCommand {
       return err(errors.RequiredPathNotExists(botRoot));
     }
 
-    const envCheckerResult = await this.handleDependences(includeBackend);
+    let skipNgrok: boolean;
+    if (isMultiEnvEnabled()) {
+      skipNgrok = config?.localSettings?.bot?.get(constants.skipNgrokConfigKey) as boolean;
+    } else {
+      const skipNgrokConfig = config?.config
+        ?.get(constants.localDebugPluginName)
+        ?.get(constants.skipNgrokConfigKey) as string;
+      skipNgrok = skipNgrokConfig !== undefined && skipNgrokConfig.trim() === "true";
+    }
+
+    const envCheckerResult = await this.handleDependences(includeBackend, includeBot, skipNgrok);
     if (envCheckerResult.isErr()) {
       return err(envCheckerResult.error);
     }
@@ -246,16 +256,6 @@ export default class Preview extends YargsCommand {
     await this.serviceLogWriter.init();
 
     /* === start ngrok === */
-    let skipNgrok: boolean;
-    if (isMultiEnvEnabled()) {
-      skipNgrok = config?.localSettings?.bot?.get(constants.skipNgrokConfigKey) as boolean;
-    } else {
-      const skipNgrokConfig = config?.config
-        ?.get(constants.localDebugPluginName)
-        ?.get(constants.skipNgrokConfigKey) as string;
-      skipNgrok = skipNgrokConfig !== undefined && skipNgrokConfig.trim() === "true";
-    }
-
     if (includeBot && !skipNgrok) {
       const result = await this.startNgrok(botRoot);
       if (result.isErr()) {
@@ -784,9 +784,11 @@ export default class Preview extends YargsCommand {
     dotnetChecker: DotnetChecker,
     funcToolChecker: FuncToolChecker
   ): Promise<Result<null, FxError>> {
+    const localEnv = await commonUtils.getLocalEnv(core, workspaceFolder);
+
     let frontendStartTask: Task | undefined;
     if (frontendRoot !== undefined) {
-      const env = await commonUtils.getFrontendLocalEnv(core, workspaceFolder);
+      const env = commonUtils.getFrontendLocalEnv(localEnv);
       frontendStartTask = new Task(
         constants.frontendStartTitle,
         true,
@@ -803,8 +805,8 @@ export default class Preview extends YargsCommand {
 
     let authStartTask: Task | undefined;
     if (frontendRoot !== undefined) {
-      const cwd = await commonUtils.getAuthServicePath(core, workspaceFolder);
-      const env = await commonUtils.getAuthLocalEnv(core, workspaceFolder);
+      const cwd = commonUtils.getAuthServicePath(localEnv);
+      const env = commonUtils.getAuthLocalEnv(localEnv);
       authStartTask = new Task(
         constants.authStartTitle,
         true,
@@ -823,7 +825,7 @@ export default class Preview extends YargsCommand {
     let backendStartTask: Task | undefined;
     let backendWatchTask: Task | undefined;
     if (backendRoot !== undefined) {
-      const env = await commonUtils.getBackendLocalEnv(core, workspaceFolder);
+      const env = commonUtils.getBackendLocalEnv(localEnv);
       const mergedEnv = commonUtils.mergeProcessEnv(env);
       const command =
         programmingLanguage === constants.ProgrammingLanguage.typescript
@@ -865,7 +867,7 @@ export default class Preview extends YargsCommand {
         programmingLanguage === constants.ProgrammingLanguage.typescript
           ? constants.botStartTsCommand
           : constants.botStartJsCommand;
-      const env = await commonUtils.getBotLocalEnv(core, workspaceFolder);
+      const env = commonUtils.getBotLocalEnv(localEnv);
       botStartTask = new Task(constants.botStartTitle, true, command, undefined, {
         shell: true,
         cwd: botRoot,
@@ -1052,9 +1054,11 @@ export default class Preview extends YargsCommand {
   }
 
   private async handleDependences(
-    hasBackend: boolean
+    hasBackend: boolean,
+    hasBot: boolean,
+    skipNgrok: boolean
   ): Promise<Result<[FuncToolChecker, DotnetChecker], FxError>> {
-    const cliAdapter = new CLIAdapter(hasBackend, cliEnvCheckerTelemetry);
+    const cliAdapter = new CLIAdapter(hasBackend, hasBot, !skipNgrok, cliEnvCheckerTelemetry);
     const nodeChecker = new AzureNodeChecker(
       cliAdapter,
       cliEnvCheckerLogger,

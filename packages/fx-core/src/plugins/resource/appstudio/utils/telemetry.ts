@@ -39,7 +39,7 @@ export enum TelemetryEventName {
   checkPermission = "check-permission",
   grantPermission = "grant-permission",
   listCollaborator = "list-collaborator",
-  localDebug = "localdebug",
+  localDebug = "local-debug",
 }
 
 export class TelemetryUtils {
@@ -59,8 +59,8 @@ export class TelemetryUtils {
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     const teamsAppId = isMultiEnvEnabled()
-      ? (this.ctx.envInfo.profile.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
-      : (this.ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string);
+      ? (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
+      : (this.ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string);
     if (teamsAppId) {
       properties[TelemetryPropertyKey.appId] = teamsAppId;
     }
@@ -82,8 +82,8 @@ export class TelemetryUtils {
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
     const teamsAppId = isMultiEnvEnabled()
-      ? (this.ctx.envInfo.profile.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
-      : (this.ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string);
+      ? (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
+      : (this.ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string);
     if (teamsAppId) {
       properties[TelemetryPropertyKey.appId] = teamsAppId;
     }
@@ -110,8 +110,8 @@ export class TelemetryUtils {
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.failure;
 
     const teamsAppId = isMultiEnvEnabled()
-      ? (this.ctx.envInfo.profile.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
-      : (this.ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string);
+      ? (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
+      : (this.ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string);
     if (teamsAppId) {
       properties[TelemetryPropertyKey.appId] = teamsAppId;
     }

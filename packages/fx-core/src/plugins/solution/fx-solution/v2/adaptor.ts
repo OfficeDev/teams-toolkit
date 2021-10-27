@@ -15,10 +15,13 @@ import {
   ConfigMap,
   EnvConfig,
   PermissionRequestProvider,
+  Json,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { LocalCrypto } from "../../../../core/crypto";
 import { newEnvInfo } from "../../../../core/tools";
+import { flattenConfigMap, legacyConfig2EnvState } from "../../../resource/utils4v2";
+import { combineRecords } from "./utils";
 
 class BaseSolutionContextAdaptor implements SolutionContext {
   envInfo = newEnvInfo();
@@ -85,14 +88,22 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
     this.ui = v2context.userInteraction;
     this.cryptoProvider = v2context.cryptoProvider;
     this.permissionRequestProvider = v2context.permissionRequestProvider;
-    const profile = ConfigMap.fromJSON(envInfo.profile);
-    if (!profile) {
-      throw new Error(`failed to convert profile ${JSON.stringify(envInfo.profile)}`);
+    const state = ConfigMap.fromJSON(envInfo.state);
+    if (!state) {
+      throw new Error(`failed to convert profile ${JSON.stringify(envInfo.state)}`);
     }
     this.envInfo = {
       envName: envInfo.envName,
       config: envInfo.config as EnvConfig,
-      profile: profile,
+      state: flattenConfigMap(state),
     };
+  }
+
+  getEnvStateJson(): Json {
+    return combineRecords(
+      [...this.envInfo.state].map(([pluginName, state]) => {
+        return { name: pluginName, result: legacyConfig2EnvState(state, pluginName) };
+      })
+    );
   }
 }

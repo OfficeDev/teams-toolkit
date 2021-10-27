@@ -6,7 +6,7 @@ import yargs, { Options } from "yargs";
 import * as dotenv from "dotenv";
 
 import { FxError, Inputs, LogLevel, Result, ok, err, UserError } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 import Config from "../../../src/cmds/config";
 import CliTelemetry from "../../../src/telemetry/cliTelemetry";
@@ -16,7 +16,7 @@ import * as constants from "../../../src/constants";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
 import * as Utils from "../../../src/utils";
-import { UserSettings } from "../../../src/userSetttings";
+import { CliConfigOptions, UserSettings } from "../../../src/userSetttings";
 import { NonTeamsFxProjectFolder } from "../../../src/error";
 
 describe("Config Command Tests", function () {
@@ -143,6 +143,14 @@ describe("Config Get Command Check", () => {
         return err(NonTeamsFxProjectFolder());
       });
     sandbox
+      .stub(Utils, "readSettingsFileSync")
+      .callsFake((rootFolder: string): Result<any, FxError> => {
+        if (rootFolder.endsWith("testProjectFolder")) {
+          return ok({});
+        }
+        return err(NonTeamsFxProjectFolder());
+      });
+    sandbox
       .stub(Utils, "readProjectSecrets")
       .returns(Promise.resolve(ok(dotenv.parse("fx-resource-bot.botPassword=password\ntest=abc"))));
   });
@@ -163,7 +171,13 @@ describe("Config Get Command Check", () => {
   });
 
   it("only prints all global config when running 'config get' and not in a project folder", async () => {
-    await cmd.subCommands[0].handler({});
+    if (isMultiEnvEnabled()) {
+      await cmd.subCommands[0].handler({
+        [constants.EnvNodeNoCreate.data.name as string]: "dev",
+      });
+    } else {
+      await cmd.subCommands[0].handler({});
+    }
 
     expect(logs.length).equals(1);
     expect(logs[0]).includes(JSON.stringify(config, null, 2));
@@ -178,18 +192,27 @@ describe("Config Get Command Check", () => {
     });
 
     expect(logs.length).equals(1);
-    expect(logs[0]).includes(JSON.stringify(config, null, 2));
+    const result = JSON.parse(logs[0]);
+    expect(result).to.deep.equal(config);
 
     expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
   });
 
   it("prints all global config and project config when running 'config get' in a project folder", async () => {
-    await cmd.subCommands[0].handler({
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-    });
+    if (isMultiEnvEnabled()) {
+      await cmd.subCommands[0].handler({
+        [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+        [constants.EnvNodeNoCreate.data.name as string]: "dev",
+      });
+    } else {
+      await cmd.subCommands[0].handler({
+        [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+      });
+    }
 
     expect(logs.length).equals(3);
-    expect(logs[0]).includes(JSON.stringify(config, null, 2));
+    const globalConfig = JSON.parse(logs[0]);
+    expect(globalConfig).to.deep.equal(config);
     expect(logs[1]).includes("fx-resource-bot.botPassword: decrypted");
     expect(logs[2]).includes("test: abc");
 
@@ -199,9 +222,16 @@ describe("Config Get Command Check", () => {
   });
 
   it("only prints specific global config when running 'config get telemetry' and not in a project folder", async () => {
-    await cmd.subCommands[0].handler({
-      option: "telemetry",
-    });
+    if (isMultiEnvEnabled()) {
+      await cmd.subCommands[0].handler({
+        [constants.EnvNodeNoCreate.data.name as string]: "dev",
+        option: "telemetry",
+      });
+    } else {
+      await cmd.subCommands[0].handler({
+        option: "telemetry",
+      });
+    }
 
     expect(logs.length).equals(2);
     expect(logs[0]).includes("Showing global config. You can add '-g' to specify global scope.");
@@ -223,10 +253,18 @@ describe("Config Get Command Check", () => {
   });
 
   it("only prints specific project config that doesn't need decryption when running 'config get test' in a project folder", async () => {
-    await cmd.subCommands[0].handler({
-      option: "test",
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-    });
+    if (isMultiEnvEnabled()) {
+      await cmd.subCommands[0].handler({
+        option: "test",
+        [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+        [constants.EnvNodeNoCreate.data.name as string]: "dev",
+      });
+    } else {
+      await cmd.subCommands[0].handler({
+        option: "test",
+        [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+      });
+    }
 
     expect(logs.length).equals(1);
     expect(logs[0]).includes("test: abc");
@@ -235,10 +273,18 @@ describe("Config Get Command Check", () => {
   });
 
   it("only prints specific project config that needs decryption when running 'config get test' in a project folder", async () => {
-    await cmd.subCommands[0].handler({
-      option: "fx-resource-bot.botPassword",
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-    });
+    if (isMultiEnvEnabled()) {
+      await cmd.subCommands[0].handler({
+        option: "fx-resource-bot.botPassword",
+        [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+        [constants.EnvNodeNoCreate.data.name as string]: "dev",
+      });
+    } else {
+      await cmd.subCommands[0].handler({
+        option: "fx-resource-bot.botPassword",
+        [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+      });
+    }
 
     expect(logs.length).equals(1);
     expect(logs[0]).includes("fx-resource-bot.botPassword: decrypted");
@@ -248,9 +294,16 @@ describe("Config Get Command Check", () => {
 
   it("fails to print when running 'config get xxx' in a non-project folder", async () => {
     try {
-      await cmd.subCommands[0].handler({
-        option: "fx-resource-bot.botPassword",
-      });
+      if (isMultiEnvEnabled()) {
+        await cmd.subCommands[0].handler({
+          option: "fx-resource-bot.botPassword",
+          [constants.EnvNodeNoCreate.data.name as string]: "dev",
+        });
+      } else {
+        await cmd.subCommands[0].handler({
+          option: "fx-resource-bot.botPassword",
+        });
+      }
     } catch (e) {
       expect(logs.length).equals(2);
       expect(logs[0]).equals(
@@ -265,6 +318,27 @@ describe("Config Get Command Check", () => {
       expect(e.name).equals("NonTeamsFxProjectFolder");
     }
   });
+
+  it("successfully print global config when running 'config get xxx' and xxx is a global option", async () => {
+    await cmd.subCommands[0].handler({
+      option: "telemetry",
+    });
+    expect(logs.length).equals(2);
+    expect(logs[1]).equals('"on"');
+    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
+  });
+
+  it("successfully print global config when running 'config get xxx --env' and xxx is a global option", async () => {
+    if (isMultiEnvEnabled()) {
+      await cmd.subCommands[0].handler({
+        option: "telemetry",
+        env: "dev",
+      });
+      expect(logs.length).equals(2);
+      expect(logs[1]).equals('"on"');
+      expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigGet]);
+    }
+  });
 });
 
 describe("Config Set Command Check", () => {
@@ -274,6 +348,7 @@ describe("Config Set Command Check", () => {
   let logs: string[] = [];
   let encrypted: string[] = [];
   let secretFile: dotenv.DotenvParseOutput;
+  let globalSettings: { [key: string]: string } = {};
   const config = {
     telemetry: "on",
     envCheckerValidateDotnetSdk: "true",
@@ -335,6 +410,7 @@ describe("Config Set Command Check", () => {
     telemetryEvents = [];
     logs = [];
     encrypted = [];
+    globalSettings = {};
   });
 
   it("has configured proper parameters", () => {
@@ -343,10 +419,18 @@ describe("Config Set Command Check", () => {
   });
 
   it("successfully sets global config when running 'config set xx xx' and not in a project folder", async () => {
-    await cmd.subCommands[1].handler({
-      option: "telemetry",
-      value: "off",
-    });
+    if (isMultiEnvEnabled()) {
+      await cmd.subCommands[1].handler({
+        option: "telemetry",
+        value: "off",
+        [constants.EnvNodeNoCreate.data.name as string]: "dev",
+      });
+    } else {
+      await cmd.subCommands[1].handler({
+        option: "telemetry",
+        value: "off",
+      });
+    }
 
     expect(config.telemetry).equals("off");
     expect(logs.length).equals(2);
@@ -373,10 +457,18 @@ describe("Config Set Command Check", () => {
 
   it("fail to set global config when running 'config set test off' and not in a project folder", async () => {
     try {
-      await cmd.subCommands[1].handler({
-        option: "test",
-        value: "off",
-      });
+      if (isMultiEnvEnabled()) {
+        await cmd.subCommands[1].handler({
+          option: "test",
+          value: "off",
+          [constants.EnvNodeNoCreate.data.name as string]: "dev",
+        });
+      } else {
+        await cmd.subCommands[1].handler({
+          option: "test",
+          value: "off",
+        });
+      }
     } catch (e) {
       expect(logs.length).equals(2);
       expect(logs[0]).includes(
@@ -401,11 +493,20 @@ describe("Config Set Command Check", () => {
   });
 
   it("successfully set non-secret project config when running 'config set test off' in a project folder", async () => {
-    await cmd.subCommands[1].handler({
-      option: "test",
-      value: "off",
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-    });
+    if (isMultiEnvEnabled()) {
+      await cmd.subCommands[1].handler({
+        option: "test",
+        value: "off",
+        [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+        [constants.EnvNodeNoCreate.data.name as string]: "dev",
+      });
+    } else {
+      await cmd.subCommands[1].handler({
+        option: "test",
+        value: "off",
+        [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+      });
+    }
 
     expect(logs.length).equals(1);
     expect(logs[0]).includes("Successfully configured project setting test.");
@@ -414,11 +515,20 @@ describe("Config Set Command Check", () => {
   });
 
   it("successfully set secret project config when running 'config set fx-resource-bot.botPassword pwd' in a project folder", async () => {
-    await cmd.subCommands[1].handler({
-      option: "fx-resource-bot.botPassword",
-      value: "pwd",
-      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-    });
+    if (isMultiEnvEnabled()) {
+      await cmd.subCommands[1].handler({
+        option: "fx-resource-bot.botPassword",
+        value: "pwd",
+        [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+        [constants.EnvNodeNoCreate.data.name as string]: "dev",
+      });
+    } else {
+      await cmd.subCommands[1].handler({
+        option: "fx-resource-bot.botPassword",
+        value: "pwd",
+        [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+      });
+    }
 
     expect(logs.length).equals(1);
     expect(logs[0]).includes(
@@ -432,11 +542,20 @@ describe("Config Set Command Check", () => {
 
   it("fail to set project config when running 'config set xx off' and in a project folder", async () => {
     try {
-      await cmd.subCommands[1].handler({
-        option: "xx",
-        value: "off",
-        [constants.RootFolderNode.data.name as string]: "testProjectFolder",
-      });
+      if (isMultiEnvEnabled()) {
+        await cmd.subCommands[1].handler({
+          option: "xx",
+          value: "off",
+          [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+          [constants.EnvNodeNoCreate.data.name as string]: "dev",
+        });
+      } else {
+        await cmd.subCommands[1].handler({
+          option: "xx",
+          value: "off",
+          [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+        });
+      }
     } catch (e) {
       expect(logs.length).equals(1);
       expect(logs[0]).includes(
@@ -446,5 +565,33 @@ describe("Config Set Command Check", () => {
       expect(e).instanceOf(UserError);
       expect(e.name).equals("ConfigNameNotFound");
     }
+  });
+
+  it("successfullly set global config when running 'config set a b' when 'a' is a global option and in a project folder", async () => {
+    await cmd.subCommands[1].handler({
+      option: CliConfigOptions.Telemetry,
+      value: "off",
+      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+    });
+    expect(logs.length).equals(2);
+    expect(logs[1]).includes(`Successfully configured user setting telemetry.`);
+    expect(config.telemetry).equals("off");
+    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
+  });
+
+  it("successfullly set global config when running 'config set a b --env dev' when 'a' is a global option and in a project folder", async () => {
+    if (!isMultiEnvEnabled()) {
+      return;
+    }
+    await cmd.subCommands[1].handler({
+      option: CliConfigOptions.Telemetry,
+      value: "off",
+      [constants.RootFolderNode.data.name as string]: "testProjectFolder",
+      [constants.RootFolderNode.data.name as string]: "dev",
+    });
+    expect(logs.length).equals(2);
+    expect(logs[1]).includes(`Successfully configured user setting telemetry.`);
+    expect(config.telemetry).equals("off");
+    expect(telemetryEvents).deep.equals([TelemetryEvent.ConfigSet]);
   });
 });

@@ -90,8 +90,8 @@ export async function provisionResource(
   }
 
   const newEnvInfo: EnvInfoV2 = _.cloneDeep(envInfo);
-  if (!newEnvInfo.profile[GLOBAL_CONFIG]) {
-    newEnvInfo.profile[GLOBAL_CONFIG] = {};
+  if (!newEnvInfo.state[GLOBAL_CONFIG]) {
+    newEnvInfo.state[GLOBAL_CONFIG] = { output: {}, secrets: {} };
   }
   if (isAzureProject(azureSolutionSettings)) {
     const appName = ctx.projectSetting.appName;
@@ -99,7 +99,7 @@ export async function provisionResource(
     const res = await fillInCommonQuestions(
       contextAdaptor,
       appName,
-      contextAdaptor.envInfo.profile,
+      contextAdaptor.envInfo.state,
       tokenProvider.azureAccountProvider,
       await tokenProvider.appStudioToken.getJsonObject()
     );
@@ -107,7 +107,7 @@ export async function provisionResource(
       return new v2.FxFailure(res.error);
     }
     // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
-    newEnvInfo.profile = (contextAdaptor.envInfo.profile as ConfigMap).toJSON();
+    newEnvInfo.state = contextAdaptor.getEnvStateJson();
     const consentResult = await askForProvisionConsent(contextAdaptor);
     if (consentResult.isErr()) {
       return new v2.FxFailure(consentResult.error);
@@ -115,21 +115,25 @@ export async function provisionResource(
   }
 
   const plugins = getSelectedPlugins(azureSolutionSettings);
-  const solutionInputs = extractSolutionInputs(newEnvInfo.profile[GLOBAL_CONFIG]);
+  const solutionInputs = extractSolutionInputs(newEnvInfo.state[GLOBAL_CONFIG]["output"]);
   const provisionThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionResource))
     .map((plugin) => {
       return {
         pluginName: `${plugin.name}`,
         taskName: "provisionResource",
-        thunk: () =>
+        thunk: () => {
+          if (!newEnvInfo.state[plugin.name]) {
+            newEnvInfo.state[plugin.name] = {};
+          }
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          plugin.provisionResource!(
+          return plugin.provisionResource!(
             ctx,
             { ...inputs, ...solutionInputs, projectPath: projectPath },
-            { ...newEnvInfo, profile: newEnvInfo.profile },
+            { ...newEnvInfo, state: newEnvInfo.state },
             tokenProvider
-          ),
+          );
+        },
       };
     });
 
@@ -140,9 +144,12 @@ export async function provisionResource(
   if (provisionResult.kind === "failure") {
     return provisionResult;
   } else if (provisionResult.kind === "partialSuccess") {
-    return new v2.FxPartialSuccess(combineRecords(provisionResult.output), provisionResult.error);
+    return new v2.FxPartialSuccess(
+      { ...newEnvInfo.state, ...combineRecords(provisionResult.output) },
+      provisionResult.error
+    );
   } else {
-    newEnvInfo.profile = combineRecords(provisionResult.output);
+    newEnvInfo.state = { ...newEnvInfo.state, ...combineRecords(provisionResult.output) };
   }
 
   ctx.logProvider?.info(
@@ -159,7 +166,7 @@ export async function provisionResource(
       );
     }
     // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
-    newEnvInfo.profile = (contextAdaptor.envInfo.profile as ConfigMap).toJSON();
+    newEnvInfo.state = contextAdaptor.getEnvStateJson();
   }
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
@@ -183,11 +190,15 @@ export async function provisionResource(
 
   if (isV2()) {
     solutionInputs.remoteTeamsAppId =
-      newEnvInfo.profile[PluginNames.APPST]["output"][Constants.TEAMS_APP_ID];
+      newEnvInfo.state[PluginNames.APPST]["output"][Constants.TEAMS_APP_ID];
   }
   const configureResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureResource))
     .map((plugin) => {
+      if (!newEnvInfo.state[plugin.name]) {
+        newEnvInfo.state[plugin.name] = {};
+      }
+
       return {
         pluginName: `${plugin.name}`,
         taskName: "configureLocalResource",
@@ -196,7 +207,7 @@ export async function provisionResource(
           plugin.configureResource!(
             ctx,
             { ...inputs, ...solutionInputs, projectPath: projectPath },
-            { ...newEnvInfo, profile: newEnvInfo.profile },
+            { ...newEnvInfo, state: newEnvInfo.state },
             tokenProvider
           ),
       };
@@ -225,11 +236,8 @@ export async function provisionResource(
       return new v2.FxPartialSuccess(combineRecords(output), configureResourceResult.error);
     }
   } else {
-    if (
-      newEnvInfo.profile[GLOBAL_CONFIG] &&
-      newEnvInfo.profile[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT]
-    ) {
-      delete newEnvInfo.profile[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
+    if (newEnvInfo.state[GLOBAL_CONFIG] && newEnvInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT]) {
+      delete newEnvInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
     }
 
     const msg = util.format(
@@ -251,8 +259,8 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
 
   // Only Azure project requires this confirm dialog
   const username = (azureToken as any).username ? (azureToken as any).username : "";
-  const subscriptionId = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
-  const subscriptionName = ctx.envInfo.profile.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_NAME) as string;
+  const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
+  const subscriptionName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_NAME) as string;
 
   const msg = util.format(
     getStrings().solution.ProvisionConfirmNotice,

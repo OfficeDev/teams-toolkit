@@ -25,10 +25,10 @@ import { LocalCrypto } from "../../../../src/core/crypto";
 import {
   assignJsonInc,
   provisionResourceAdapter,
-  setEnvInfoV1ByProfileV2,
+  setEnvInfoV1ByStateV2,
   setLocalSettingsV1,
   setLocalSettingsV2,
-  setProfileV2ByConfigMapInc,
+  setStateV2ByConfigMapInc,
 } from "../../../../src/plugins/resource/utils4v2";
 import {
   MockAppStudioTokenProvider,
@@ -100,9 +100,9 @@ describe("API V2 adapter", () => {
       plugin1: { k1: "v1" },
       plugin2: { k2: "v2" },
     };
-    setEnvInfoV1ByProfileV2("plugin1", pluginContext, provisionOutputs);
+    setEnvInfoV1ByStateV2("plugin1", pluginContext, provisionOutputs);
     assert.equal(pluginContext.config.get("k1"), "v1");
-    assert.equal((pluginContext.envInfo.profile.get("plugin2") as ConfigMap).get("k2"), "v2");
+    assert.equal((pluginContext.envInfo.state.get("plugin2") as ConfigMap).get("k2"), "v2");
   });
 
   it("setProfileV2ByConfigMapInc", async () => {
@@ -114,7 +114,7 @@ describe("API V2 adapter", () => {
       plugin1: { k1: "", k2: "" },
       plugin2: { k2: "v2" },
     };
-    setProfileV2ByConfigMapInc("plugin1", provisionOutputs, config);
+    setStateV2ByConfigMapInc("plugin1", provisionOutputs, config);
     assert.deepEqual(provisionOutputs["plugin1"], { k1: "v1", k2: "v2" });
   });
 
@@ -143,6 +143,7 @@ describe("API V2 adapter", () => {
       location: "US",
       teamsAppTenantId: "123",
       subscriptionId: "xxx",
+      tenantId: "xxxx",
     };
     const projectSettings: ProjectSettings = {
       appName: appName,
@@ -173,7 +174,7 @@ describe("API V2 adapter", () => {
     const envInfo: EnvInfoV2 = {
       envName: "default",
       config: provisionInputConfig,
-      profile: {},
+      state: {},
     };
     const tokenProvider: TokenProvider = {
       appStudioToken: new MockAppStudioTokenProvider(),

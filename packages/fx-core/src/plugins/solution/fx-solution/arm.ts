@@ -609,7 +609,7 @@ class BicepOrchestrationContent {
   }
 
   public applyReference(configContent: string): string {
-    return compileHandlebarsTemplateString(configContent, this.ReferencePluginsResult).trim();
+    return compileHandlebarsTemplateString(configContent, this.RenderContenxt).trim();
   }
 
   public applyTemplate(pluginName: string, scaffoldResult: ScaffoldArmTemplateResult): void {

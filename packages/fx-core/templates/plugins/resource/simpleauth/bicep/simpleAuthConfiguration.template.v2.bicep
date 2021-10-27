@@ -15,7 +15,7 @@ var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
 var aadMetadataAddress = uri(m365OauthAuthorityHost, '${m365TenantId}/v2.0/.well-known/openid-configuration')
 // var tabAppDomain = provisionOutputs.frontendHostingOutput.value.domain
-var tabAppDomain = ${{teams-fx-front-end-hosting.endpoint}}
+var tabAppDomain = {{PluginOutput.fx-resource-frontend-hosting.References.domain}}
 var botId = provisionParameters['botAadAppClientId']
 var m365ApplicationIdUri = 'api://${tabAppDomain}}/botid-${botId}'
 

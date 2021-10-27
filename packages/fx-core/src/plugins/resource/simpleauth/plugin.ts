@@ -170,7 +170,10 @@ export class SimpleAuthPluginImpl {
 
     const result: ArmTemplateResult = {
       Provision: {
-        Orchestration: provisionV2Result.value,
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName),
+          ConstantString.UTF8Encoding
+        ),
         Reference: {
           skuName: Constants.SimpleAuthBicepOutputSkuName,
           endpoint: Constants.SimpleAuthBicepOutputEndpoint,
@@ -183,7 +186,10 @@ export class SimpleAuthPluginImpl {
         },
       },
       Configuration: {
-        Orchestration: configV2Result.value,
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDirectory, Bicep.ConfigV2FileName),
+          ConstantString.UTF8Encoding
+        ),
         Modules: {
           simpleAuthConfiguration: await fs.readFile(
             configModuleV2Result,

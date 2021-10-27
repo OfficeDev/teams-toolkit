@@ -1,4 +1,4 @@
-module frontendHostingProvision './provision/frontendHostingProvision.bicep' = {
+module frontendHostingProvision '{{PluginOutput.fx-resource-frontend-hosting.Modules.frontendHostingProvision.Path}}' = {
   name: 'frontendHostingProvision'
   params: {
     provisionParameters: provisionParameters

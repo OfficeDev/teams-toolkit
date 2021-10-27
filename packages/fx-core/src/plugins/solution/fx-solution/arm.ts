@@ -453,10 +453,7 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
       bicepOrchestrationProvisionContent
     );
     const res = bicepOrchestrationTemplate.applyReference(bicepOrchestrationConfigContent);
-    await fs.writeFile(
-      path.join(templateFolderPath, bicepOrchestrationConfigFileName),
-      bicepOrchestrationTemplate.applyReference(bicepOrchestrationConfigContent)
-    );
+    await fs.writeFile(path.join(templateFolderPath, bicepOrchestrationConfigFileName), res);
 
     // Output bicep module files from each resource plugin
     for (const module of moduleFiles) {
@@ -555,13 +552,13 @@ export class ArmTemplateRenderContext {
     this.PluginOutput = {};
   }
 
-  public addPluginOutput(pluginName: string, scaffoldResult: ScaffoldArmTemplateResult) {
+  public addPluginOutput(pluginName: string, armResult: ArmTemplateResult) {
     const pluginOutputContext: PluginOutputContext = {
       Modules: {},
-      Outputs: {},
+      References: {},
     };
-    const modules = scaffoldResult.Modules;
-    const outputs = scaffoldResult.Orchestration.ModuleTemplate?.Outputs;
+    const modules = armResult.Provision?.Modules;
+    const references = armResult.Provision?.Reference;
 
     if (modules) {
       for (const module of Object.entries(modules)) {
@@ -572,11 +569,11 @@ export class ArmTemplateRenderContext {
       }
     }
 
-    if (outputs) {
-      for (const output of Object.entries(outputs)) {
+    if (references) {
+      for (const output of Object.entries(references)) {
         const outputKey = output[0];
-        const outputValue = output[1];
-        pluginOutputContext.Outputs![outputKey] = outputValue;
+        const outputValue = output[1] as string;
+        pluginOutputContext.References![outputKey] = outputValue;
       }
     }
 
@@ -607,12 +604,12 @@ class BicepOrchestrationContent {
   public applyTemplateV2(pluginName: string, armResult: ArmTemplateResult): void {
     this.ProvisionTemplate += this.normalizeTemplateSnippet(armResult.Provision?.Orchestration);
     this.ConfigTemplate += this.normalizeTemplateSnippet(armResult.Configuration?.Orchestration);
-    this.ReferencePluginsResult[pluginName] = armResult.Provision?.Reference;
+    this.RenderContenxt.addPluginOutput(pluginName, armResult);
     Object.assign(this.ParameterJsonTemplate, armResult.Parameters);
   }
 
   public applyReference(configContent: string): string {
-    return compileHandlebarsTemplateString(configContent, this.ReferencePluginsResult);
+    return compileHandlebarsTemplateString(configContent, this.ReferencePluginsResult).trim();
   }
 
   public applyTemplate(pluginName: string, scaffoldResult: ScaffoldArmTemplateResult): void {
@@ -677,7 +674,7 @@ class BicepOrchestrationContent {
 
 interface PluginOutputContext {
   Modules?: { [ModuleName: string]: PluginModuleProperties };
-  Outputs?: { [Key: string]: string };
+  References?: { [Key: string]: string };
 }
 
 interface PluginModuleProperties {

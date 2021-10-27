@@ -58,7 +58,7 @@ export class RemoteLogProvider implements LogProvider {
     this.connection = connection;
   }
   async log(logLevel: LogLevel, message: string): Promise<boolean> {
-    sendNotification(this.connection, `LogAsync`, logLevel, message);
+    sendNotification(this.connection, `${Namespaces.Logger}/Log`, logLevel, message);
     return true;
   }
   async trace(message: string): Promise<boolean> {
@@ -98,7 +98,10 @@ export class RemoteAzureAccountProvider implements AzureAccountProvider {
     showDialog?: boolean,
     tenantId?: string
   ): Promise<TokenCredentialsBase | undefined> {
-    const result = await sendRequest(this.connection, `AzureGetAccountCredential`);
+    const result = await sendRequest(
+      this.connection,
+      `${Namespaces.AzureAccountProvider}/GetAccountCredential`
+    );
     if (result.isErr()) {
       throw result.error;
     }
@@ -166,21 +169,30 @@ export class RemoteAzureAccountProvider implements AzureAccountProvider {
     );
   }
   async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    const result = await sendRequest(this.connection, `AzureGetJsonObject`);
+    const result = await sendRequest(
+      this.connection,
+      `${Namespaces.AzureAccountProvider}/GetJsonObject`
+    );
     if (result.isErr()) {
       throw result.error;
     }
     return JSON.parse(result.value);
   }
   async listSubscriptions(): Promise<SubscriptionInfo[]> {
-    const result = await sendRequest(this.connection, `AzureListSubscriptions`);
+    const result = await sendRequest(
+      this.connection,
+      `${Namespaces.AzureAccountProvider}/ListSubscriptions`
+    );
     if (result.isErr()) {
       throw result.error;
     }
     return result.value;
   }
   async setSubscription(subscriptionId: string): Promise<void> {
-    const result = await sendRequest(this.connection, `AzureSetSubscription`);
+    const result = await sendRequest(
+      this.connection,
+      `${Namespaces.AzureAccountProvider}/SetSubscription`
+    );
     if (result.isErr()) {
       throw result.error;
     }
@@ -189,7 +201,10 @@ export class RemoteAzureAccountProvider implements AzureAccountProvider {
     throw new NotImplementedError("FxServer", `${Namespaces.AzureAccountProvider}/getAccountInfo`);
   }
   async getSelectedSubscription(triggerUI?: boolean): Promise<SubscriptionInfo | undefined> {
-    const result = await sendRequest(this.connection, `AzureGetSelectedSubscription`);
+    const result = await sendRequest(
+      this.connection,
+      `${Namespaces.AzureAccountProvider}/GetSelectedSubscription`
+    );
     if (result.isErr()) {
       throw result.error;
     }
@@ -203,14 +218,20 @@ export class RemoteGraphTokenProvider implements GraphTokenProvider {
     this.connection = connection;
   }
   async getAccessToken(showDialog?: boolean): Promise<string | undefined> {
-    const result = await sendRequest(this.connection, `GraphGetAccessToken`);
+    const result = await sendRequest(
+      this.connection,
+      `${Namespaces.GraphTokenProvider}/GetAccessToken`
+    );
     if (result.isErr()) {
       throw result.error;
     }
     return result.value;
   }
   async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    const result = await sendRequest(this.connection, `GraphGetJsonObject`);
+    const result = await sendRequest(
+      this.connection,
+      `${Namespaces.GraphTokenProvider}/GetJsonObject`
+    );
     if (result.isErr()) {
       throw result.error;
     }
@@ -247,14 +268,20 @@ export class RemoteAppStudioTokenProvider implements AppStudioTokenProvider {
     this.connection = connection;
   }
   async getAccessToken(showDialog?: boolean): Promise<string | undefined> {
-    const result = await sendRequest(this.connection, `AppStudioGetAccessToken`);
+    const result = await sendRequest(
+      this.connection,
+      `${Namespaces.AppStudioTokenProvider}/GetAccessToken`
+    );
     if (result.isErr()) {
       throw result.error;
     }
     return result.value;
   }
   async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
-    const result = await sendRequest(this.connection, `AppStudioGetJsonObject`);
+    const result = await sendRequest(
+      this.connection,
+      `${Namespaces.AppStudioTokenProvider}/GetJsonObject`
+    );
     if (result.isErr()) {
       throw result.error;
     }
@@ -347,14 +374,14 @@ export class RemoteUserInteraction implements UserInteraction {
   async selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
     console.log("selectOption");
     this.convertConfigToJson(config);
-    return sendRequest(this.connection, `SelectOptionAsync`, config);
+    return sendRequest(this.connection, `${Namespaces.UserInteraction}/SelectOption`, config);
   }
   async inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
     this.convertConfigToJson(config);
-    return sendRequest(this.connection, `InputTextAsync`, config);
+    return sendRequest(this.connection, `${Namespaces.UserInteraction}/InputText`, config);
   }
   openUrl(link: string): Promise<Result<boolean, FxError>> {
-    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/openUrl`);
+    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/OpenUrl`);
   }
   runWithProgress<T>(
     task: RunnableTask<T>,
@@ -365,17 +392,17 @@ export class RemoteUserInteraction implements UserInteraction {
   }
   selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
     this.convertConfigToJson(config);
-    return sendRequest(this.connection, `SelectOptionsAsync`, config);
+    return sendRequest(this.connection, `${Namespaces.UserInteraction}/SelectOptions`, config);
   }
   selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
-    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectFile`);
+    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/SelectFile`);
   }
   selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult, FxError>> {
-    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/selectFiles`);
+    throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/SelectFiles`);
   }
   selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
     this.convertConfigToJson(config);
-    return sendRequest(this.connection, `SelectFolderAsync`, config);
+    return sendRequest(this.connection, `${Namespaces.UserInteraction}/SelectFolder`, config);
   }
   public async showMessage(
     level: "info" | "warn" | "error",
@@ -397,7 +424,14 @@ export class RemoteUserInteraction implements UserInteraction {
     modal: boolean,
     ...items: string[]
   ): Promise<Result<string | undefined, FxError>> {
-    return sendRequest(this.connection, `ShowMessage`, level, message, modal, items);
+    return sendRequest(
+      this.connection,
+      `${Namespaces.UserInteraction}/ShowMessage`,
+      level,
+      message,
+      modal,
+      items
+    );
   }
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
     // throw new NotImplementedError("FxServer", `${Namespaces.UserInteraction}/createProgressBar`);

@@ -131,7 +131,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       ctx.result = err(UpgradeCanceledError());
       core.tools.logProvider.warning(`[core] Upgrade cancelled.`);
       core.tools.logProvider.warning(
-        `[core] Notice upgrade to new configuration schema is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Check project upgrade) or click the “Upgrade project schema” button on tree view to trigger the upgrade.`
+        `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Check project upgrade) or click the “Upgrade configuration files” button on tree view to trigger the upgrade.`
       );
 
       core.tools.logProvider.warning(
@@ -145,7 +145,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
 
     await migrateToArmAndMultiEnv(ctx);
     core.tools.logProvider.warning(
-      `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your project schema or learn more about this upgrade.`
+      `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your configuration files or learn more about this upgrade.`
     );
   } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
     // TODO: delete before Arm && Multi-env version released

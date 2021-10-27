@@ -127,6 +127,7 @@ import {
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
 import { flattenConfigJson, newEnvInfo } from "./tools";
+import { getRootDirectory } from "../common/tools";
 import { LocalCrypto } from "./crypto";
 
 export interface CoreHookContext extends HookContext {
@@ -185,7 +186,11 @@ export class FxCore implements Core {
     }
     currentStage = Stage.create;
     inputs.stage = Stage.create;
-    const folder = inputs[QuestionRootFolder.name] as string;
+    let folder = inputs[QuestionRootFolder.name] as string;
+    if (inputs.platform === Platform.VSCode) {
+      folder = getRootDirectory();
+      await fs.ensureDir(folder);
+    }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     let globalStateDescription = "openReadme";
@@ -1258,14 +1263,18 @@ export class FxCore implements Core {
         if (solutionNode.data) solutionSelectNode.addChild(solutionNode);
       }
     }
-    createNew.addChild(new QTreeNode(QuestionRootFolder));
+    if (inputs.platform !== Platform.VSCode) {
+      createNew.addChild(new QTreeNode(QuestionRootFolder));
+    }
     createNew.addChild(new QTreeNode(QuestionAppName));
 
     // create from sample
     const sampleNode = new QTreeNode(SampleSelect);
     node.addChild(sampleNode);
     sampleNode.condition = { equals: ScratchOptionNo.id };
-    sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+    if (inputs.platform !== Platform.VSCode) {
+      sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+    }
     return ok(node.trim());
   }
 }
@@ -1320,7 +1329,11 @@ export async function downloadSample(
   fxcore: FxCore,
   inputs: Inputs
 ): Promise<Result<string, FxError>> {
-  const folder = inputs[QuestionRootFolder.name] as string;
+  let folder = inputs[QuestionRootFolder.name] as string;
+  if (inputs.platform === Platform.VSCode) {
+    folder = getRootDirectory();
+    await fs.ensureDir(folder);
+  }
   const sample = inputs[CoreQuestionNames.Samples] as OptionItem;
   if (sample && sample.data && folder) {
     const url = sample.data as string;

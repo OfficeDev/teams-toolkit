@@ -31,6 +31,7 @@ import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
 import * as crypto from "crypto";
 import { FailedToParseResourceIdError, SolutionError } from "..";
+import * as os from "os";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -426,6 +427,15 @@ export function isBicepEnvCheckerEnabled(): boolean {
 
 export function isRemoteCollaborateEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
+}
+
+export function getRootDirectory(): string {
+  const root = process.env[FeatureFlagName.rootDirectory];
+  if (root === undefined || root === "") {
+    return path.join(os.homedir(), ConstantString.rootFolder);
+  } else {
+    return root;
+  }
 }
 
 export async function generateBicepFiles(

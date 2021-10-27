@@ -699,11 +699,11 @@ export class LocalDebugPlugin implements Plugin {
         includeBackend,
         includeBot
       );
-      await localSettingsProvider.saveJson(ctx.localSettings);
+      await localSettingsProvider.save(ctx.localSettings);
     } else {
       // Initialize a local settings on scaffolding
       ctx.localSettings = localSettingsProvider.init(includeFrontend, includeBackend, includeBot);
-      await localSettingsProvider.saveJson(ctx.localSettings);
+      await localSettingsProvider.save(ctx.localSettings);
     }
   }
 }

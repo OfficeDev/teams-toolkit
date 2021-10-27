@@ -85,7 +85,11 @@ export async function getQuestionsForScaffolding(
   }
 
   // 1.1.2 Azure Tab
-  const tabRes = await getTabScaffoldQuestionsV2(ctx, inputs, false);
+  const tabRes = await getTabScaffoldQuestionsV2(
+    ctx,
+    inputs,
+    inputs.platform === Platform.VSCode ? false : true
+  );
   if (tabRes.isErr()) return tabRes;
   if (tabRes.value) {
     const tabNode = tabRes.value;

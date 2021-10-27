@@ -1143,18 +1143,26 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
           result[env] = [
             generateCollaboratorWarningNode(
               env,
-              StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators
+              StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
+              undefined,
+              true
             ),
           ];
         }
       } else if (userList.state !== CollaborationState.ERROR) {
         let label = userList.message;
         const toolTip = userList.message;
+        let showWarning = true;
         if (userList.state === CollaborationState.NotProvisioned) {
           label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
+          showWarning = false;
         }
 
-        result[env] = [generateCollaboratorWarningNode(env, label, toolTip)];
+        if (userList.state === CollaborationState.M365TenantNotMatch) {
+          showWarning = false;
+        }
+
+        result[env] = [generateCollaboratorWarningNode(env, label, toolTip, showWarning)];
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
           [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         });
@@ -1166,7 +1174,7 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
       VsCodeLogInstance.warning(
         `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
       );
-      result[env] = [generateCollaboratorWarningNode(env, e.message)];
+      result[env] = [generateCollaboratorWarningNode(env, e.message, undefined, true)];
     }
   }
 

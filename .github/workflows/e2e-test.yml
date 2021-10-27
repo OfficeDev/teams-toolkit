@@ -31,6 +31,10 @@ jobs:
           clean: false
 
       - name: Setup node
+        run: |
+          echo ${{ github.event.pull_request.body }}
+
+      - name: Setup node
         uses: actions/setup-node@v2.1.2
         with:
           node-version: 14

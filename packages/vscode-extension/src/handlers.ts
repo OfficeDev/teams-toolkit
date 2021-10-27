@@ -1149,18 +1149,26 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
           result[env] = [
             generateCollaboratorWarningNode(
               env,
-              StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators
+              StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
+              undefined,
+              true
             ),
           ];
         }
       } else if (userList.state !== CollaborationState.ERROR) {
         let label = userList.message;
         const toolTip = userList.message;
+        let showWarning = true;
         if (userList.state === CollaborationState.NotProvisioned) {
           label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
+          showWarning = false;
         }
 
-        result[env] = [generateCollaboratorWarningNode(env, label, toolTip)];
+        if (userList.state === CollaborationState.M365TenantNotMatch) {
+          showWarning = false;
+        }
+
+        result[env] = [generateCollaboratorWarningNode(env, label, toolTip, showWarning)];
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
           [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         });
@@ -1172,7 +1180,7 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
       VsCodeLogInstance.warning(
         `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
       );
-      result[env] = [generateCollaboratorWarningNode(env, e.message)];
+      result[env] = [generateCollaboratorWarningNode(env, e.message, undefined, true)];
     }
   }
 
@@ -1487,6 +1495,28 @@ export async function decryptSecret(cipher: string, selection: vscode.Range): Pr
   } else {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.EditSecret, result.error);
     window.showErrorMessage(StringResources.vsc.handlers.decryptFailed);
+  }
+}
+
+export async function openAdaptiveCardExt(args: any[] = [TelemetryTiggerFrom.TreeView]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewAdaptiveCard, getTriggerFromProperty(args));
+  const acExtId = "madewithcardsio.adaptivecardsstudiobeta";
+  const extension = vscode.extensions.getExtension(acExtId);
+  if (!extension) {
+    vscode.window
+      .showInformationMessage(
+        StringResources.vsc.handlers.installAdaptiveCardExt,
+        "Install",
+        "Cancel"
+      )
+      .then(async (selection) => {
+        if (selection === "Install") {
+          await vscode.commands.executeCommand("workbench.extensions.installExtension", acExtId);
+          await vscode.commands.executeCommand("workbench.view.extension.cardLists");
+        }
+      });
+  } else {
+    await vscode.commands.executeCommand("workbench.view.extension.cardLists");
   }
 }
 

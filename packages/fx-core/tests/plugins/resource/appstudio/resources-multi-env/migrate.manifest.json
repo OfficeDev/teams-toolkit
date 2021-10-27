@@ -2,17 +2,17 @@
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
   "manifestVersion": "1.11",
   "version": "1.0.0",
-  "id": "{appid}",
+  "id": "{{localSettings.teamsApp.teamsAppId}}",
   "packageName": "com.microsoft.teams.extension",
   "developer": {
     "name": "Teams App, Inc.",
-    "websiteUrl": "{baseUrl}",
-    "privacyUrl": "{baseUrl}/privacy",
-    "termsOfUseUrl": "{baseUrl}/termsofuse"
+    "websiteUrl": "{{{localSettings.frontend.tabEndpoint}}}",
+    "privacyUrl": "{{{localSettings.frontend.tabEndpoint}}}/privacy",
+    "termsOfUseUrl": "{{{localSettings.frontend.tabEndpoint}}}/termsofuse"
   },
   "icons": {
-    "color": "color.png",
-    "outline": "outline.png"
+    "color": "resources/color.png",
+    "outline": "resources/outline.png"
   },
   "name": {
     "short": "manifest-validation",
@@ -27,8 +27,8 @@
     {
       "entityId": "index",
       "name": "Personal Tab",
-      "contentUrl": "{baseUrl}/tab",
-      "websiteUrl": "{baseUrl}/tab",
+      "contentUrl": "{{{localSettings.frontend.tabEndpoint}}}/tab",
+      "websiteUrl": "{{{localSettings.frontend.tabEndpoint}}}/tab",
       "scopes": ["personal"]
     }
   ],

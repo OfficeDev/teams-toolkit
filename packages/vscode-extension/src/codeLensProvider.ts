@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-
 import * as vscode from "vscode";
 import { localSettingsJsonName } from "./debug/constants";
+import * as StringResources from "./resources/Strings.json";
+import * as fs from "fs-extra";
+import { AdaptiveCardsFolderName } from "@microsoft/teamsfx-api";
+import { TelemetryTiggerFrom } from "./telemetry/extTelemetryEvents";
 
 /**
  * CodelensProvider
@@ -56,6 +59,33 @@ export class CryptoCodeLensProvider implements vscode.CodeLensProvider {
         codeLenses.push(new vscode.CodeLens(range, command));
       }
     }
+    return codeLenses;
+  }
+}
+
+export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
+  public static async detectedAdaptiveCards(): Promise<boolean> {
+    const searchTerm = "adaptivecards.io/schemas/adaptive-card.json";
+    const files: vscode.Uri[] = await vscode.workspace.findFiles(
+      `**/${AdaptiveCardsFolderName}/*.json`
+    );
+    for (const file of files) {
+      const content = await fs.readFile(file.fsPath, "utf8");
+      if (content.includes(searchTerm)) {
+        return true;
+      }
+    }
+    return false;
+  }
+  provideCodeLenses(_document: vscode.TextDocument): vscode.ProviderResult<vscode.CodeLens[]> {
+    const codeLenses: vscode.CodeLens[] = [];
+    const topOfFile = new vscode.Range(0, 0, 0, 0);
+    const command = {
+      title: `👀${StringResources.vsc.commandsTreeViewProvider.previewAdaptiveCard}`,
+      command: "fx-extension.OpenAdaptiveCardExt",
+      arguments: [TelemetryTiggerFrom.CodeLens],
+    };
+    codeLenses.push(new vscode.CodeLens(topOfFile, command));
     return codeLenses;
   }
 }

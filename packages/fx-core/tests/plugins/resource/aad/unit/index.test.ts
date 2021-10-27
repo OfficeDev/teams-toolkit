@@ -83,7 +83,6 @@ describe("AadAppForTeamsPlugin: CI", () => {
     context.appStudioToken = mockTokenProvider();
     context.graphTokenProvider = mockTokenProviderGraph();
     mockSkipFlag(context);
-    console.log(context.envInfo.config);
 
     const provision = await plugin.provision(context);
     chai.assert.isTrue(provision.isOk());
@@ -146,6 +145,16 @@ describe("AadAppForTeamsPlugin: CI", () => {
 
     const postProvision = await plugin.postLocalDebug(context);
     chai.assert.isTrue(postProvision.isOk());
+  });
+
+  it("local debug: skip local debug", async function () {
+    context = await TestHelper.pluginContext(new Map(), true, false, true);
+    context.appStudioToken = mockTokenProvider();
+    context.graphTokenProvider = mockTokenProviderGraph();
+    mockSkipFlag(context, true);
+
+    const localDebug = await plugin.localDebug(context);
+    chai.assert.isTrue(localDebug.isOk());
   });
 
   it("check permission", async function () {

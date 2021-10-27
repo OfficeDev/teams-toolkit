@@ -9,6 +9,9 @@ import { TokenCredential } from '@azure/core-http';
 import { TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
 
 // @public (undocumented)
+export const AdaptiveCardsFolderName = "adaptiveCards";
+
+// @public (undocumented)
 export const AppPackageFolderName = "appPackage";
 
 // @public

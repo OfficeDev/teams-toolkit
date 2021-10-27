@@ -129,7 +129,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
         [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
       });
       ctx.result = err(UpgradeCanceledError());
-      core.tools.logProvider.warning(`[core] Upgrade canceled.`);
+      core.tools.logProvider.warning(`[core] Upgrade cancelled.`);
       core.tools.logProvider.warning(
         `[core] Notice upgrade to new configuration schema is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Check project upgrade) or click the “Upgrade project schema” button on tree view to trigger the upgrade.`
       );
@@ -273,17 +273,11 @@ async function postMigration(
       "info",
       getStrings().solution.MigrationToArmAndMultiEnvSuccessMessage,
       false,
-      reloadText,
-      learnMoreText
+      reloadText
     )
     .then((result) => {
       const userSelected = result.isOk() ? result.value : undefined;
-      if (userSelected === learnMoreText) {
-        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
-          [TelemetryProperty.Status]: ProjectMigratorGuideStatus.LearnMore,
-        });
-        core.tools.ui!.openUrl(learnMoreLink);
-      } else if (userSelected === reloadText) {
+      if (userSelected === reloadText) {
         sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
           [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
         });

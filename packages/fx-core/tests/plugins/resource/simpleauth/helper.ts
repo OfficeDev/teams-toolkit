@@ -169,18 +169,20 @@ export function mockArmOutput(context: PluginContext, simpleAuthUrl: string) {
   const solutionProfile = context.envInfo.state.get(SOLUTION) ?? new Map();
   const armOutput = solutionProfile[ARM_TEMPLATE_OUTPUT] ?? {};
 
-  armOutput[ConfigKeysOfOtherPlugin.frontendHostingDomainArm] = {
-    type: "String",
-    value: "fake.storage.domain.test",
-  };
-  armOutput[ConfigKeysOfOtherPlugin.frontendHostingEndpointArm] = {
-    type: "String",
-    value: "https://fake.storage.domain.test",
+  armOutput["frontendHostingOutput"] = {
+    type: "Object",
+    value: {
+      teamsFxPluginId: "fx-resource-frontend-hosting",
+      storageResourceId: `/subscriptions/test_subscription_id/resourceGroups/test_resource_group_name/providers/Microsoft.Storage/storageAccounts/test_storage_name`,
+      endpoint: `https://test_storage_name.z13.web.core.windows.net`,
+      domain: `test_storage_name.z13.web.core.windows.net`,
+    },
   };
   armOutput[Constants.ArmOutput.simpleAuthEndpoint] = {
     type: "String",
     value: simpleAuthUrl,
   };
+
   solutionProfile.set(ARM_TEMPLATE_OUTPUT, armOutput);
   context.envInfo.state.set(SOLUTION, solutionProfile);
 }

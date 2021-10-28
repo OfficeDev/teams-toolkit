@@ -205,13 +205,9 @@ export class SetApplicationInContextConfig {
     } else {
       frontendDomain = ctx.config.get(ConfigKeys.domain);
       if (!frontendDomain) {
-        if (isArmSupportEnabled()) {
-          frontendDomain = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingDomainArm);
-        } else {
-          frontendDomain = ctx.envInfo.state
-            .get(Plugins.frontendHosting)
-            ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
-        }
+        frontendDomain = ctx.envInfo.state
+          .get(Plugins.frontendHosting)
+          ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
       }
     }
 
@@ -272,13 +268,9 @@ export class PostProvisionConfig {
     } else {
       frontendEndpoint = ctx.config.get(ConfigKeys.endpoint);
       if (!frontendEndpoint) {
-        if (isArmSupportEnabled()) {
-          frontendEndpoint = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingEndpointArm);
-        } else {
-          frontendEndpoint = ctx.envInfo.state
-            .get(Plugins.frontendHosting)
-            ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
-        }
+        frontendEndpoint = ctx.envInfo.state
+          .get(Plugins.frontendHosting)
+          ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
       }
     }
 

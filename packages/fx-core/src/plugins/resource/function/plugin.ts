@@ -659,12 +659,6 @@ export class FunctionPluginImpl {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
-    const context = {
-      Plugins: selectedPlugins,
-    };
-
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -672,58 +666,18 @@ export class FunctionPluginImpl {
       "function",
       "bicep"
     );
+    const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName);
 
-    const provisionModuleTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      FunctionBicepFile.provisionModuleTemplateFileName
-    );
-    const provisionModuleContentResult = await generateBicepFiles(
-      provisionModuleTemplateFilePath,
-      context
-    );
-    if (provisionModuleContentResult.isErr()) {
-      throw provisionModuleContentResult.error;
-    }
-    const configurationModuleTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      FunctionBicepFile.configurationTemplateFileName
-    );
-    const configurationModuleContentResult = await generateBicepFiles(
-      configurationModuleTemplateFilePath,
-      context
-    );
-    if (configurationModuleContentResult.isErr()) {
-      throw configurationModuleContentResult.error;
-    }
-
-    // const parameterTemplateFilePath = path.join(
-    //   bicepTemplateDirectory,
-    //   Bicep.ParameterOrchestrationFileName
-    // );
-    // const moduleOrchestrationFilePath = path.join(
-    //   bicepTemplateDirectory,
-    //   Bicep.ModuleOrchestrationFileName
-    // );
-    // const outputTemplateFilePath = path.join(
-    //   bicepTemplateDirectory,
-    //   Bicep.OutputOrchestrationFileName
-    // );
-
-    const provisionTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      "provision.template.v2.bicep"
-    );
-
-    const configTemplateFilePath = path.join(bicepTemplateDirectory, "config.template.v2.bicep");
+    const configTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ConfigV2FileName);
 
     const provisionFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      "functionProvision.template.v2.bicep"
+      FunctionBicepFile.provisionModuleTemplateV2FileName
     );
 
     const configFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      "functionConfiguration.template.v2.bicep"
+      FunctionBicepFile.provisionModuleTemplateV2FileName
     );
 
     const result1: ArmTemplateResult = {
@@ -750,30 +704,6 @@ export class FunctionPluginImpl {
       },
     };
 
-    // const result: ScaffoldArmTemplateResult = {
-    //   Modules: {
-    //     functionProvision: {
-    //       Content: provisionModuleContentResult.value,
-    //     },
-    //     functionConfiguration: {
-    //       Content: configurationModuleContentResult.value,
-    //     },
-    //   },
-    //   Orchestration: {
-    //     ParameterTemplate: {
-    //       Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
-    //     },
-    //     ModuleTemplate: {
-    //       Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
-    //       Outputs: {
-    //         functionEndpoint: FunctionBicep.functionEndpoint,
-    //       },
-    //     },
-    //     OutputTemplate: {
-    //       Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
-    //     },
-    //   },
-    // };
     return ResultFactory.Success(result1);
   }
 

@@ -151,10 +151,6 @@ export class SimpleAuthPluginImpl {
       bicepTemplateDirectory,
       Constants.configModuleTemplateFileNameV2
     );
-    const moduleConfigFileContent = await generateBicepFiles(configModuleV2FilePath, context);
-    if (moduleConfigFileContent.isErr()) {
-      throw moduleConfigFileContent.error;
-    }
 
     const result: ArmTemplateResult = {
       Provision: {
@@ -179,7 +175,10 @@ export class SimpleAuthPluginImpl {
           ConstantString.UTF8Encoding
         ),
         Modules: {
-          simpleAuthConfiguration: moduleConfigFileContent.value,
+          simpleAuthConfiguration: await fs.readFile(
+            configModuleV2FilePath,
+            ConstantString.UTF8Encoding
+          ),
         },
       },
     };

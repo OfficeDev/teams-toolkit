@@ -1,5 +1,5 @@
 // Resources for Azure Functions
-module functionProvision './provision/functionProvision.bicep' = {
+module functionProvision '{{PluginOutput.fx-resource-function.Modules.functionConfiguration.ProvisionPath}}' = {
   name: 'functionProvision'
   params: {
     provisionParameters: provisionParameters

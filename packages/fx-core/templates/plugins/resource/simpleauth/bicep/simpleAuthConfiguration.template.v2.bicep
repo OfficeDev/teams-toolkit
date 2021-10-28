@@ -17,10 +17,23 @@ var aadMetadataAddress = uri(m365OauthAuthorityHost, '${m365TenantId}/v2.0/.well
 var botId = provisionParameters['botAadAppClientId']
 // var tabAppDomain = provisionOutputs.frontendHostingOutput.value.domain
 {{#contains 'fx-resource-frontend-hosting' Plugins}}
-var tabAppDomain = \{{PluginOutput.fx-resource-frontend-hosting.References.domain}}
-var tabAppEndpoint = \{{PluginOutput.fx-resource-frontend-hosting.References.endpoint}}
+var tabAppDomain = {{../PluginOutput.fx-resource-frontend-hosting.References.domain}}
+var tabAppEndpoint = {{../PluginOutput.fx-resource-frontend-hosting.References.endpoint}} 
 {{/contains}}
-var m365ApplicationIdUri = 'api://${tabAppDomain}}/botid-${botId}'
+
+{{#contains 'fx-resource-frontend-hosting' Plugins}}
+{{#notContains 'fx-resource-bot' ../Plugins}}
+var m365ApplicationIdUri = 'api://${ {{~../PluginOutput.fx-resource-frontend-hosting.References.domain~}} }/${m365ClientId}'
+{{/notContains}}
+{{#contains 'fx-resource-bot' ../Plugins}}
+var m365ApplicationIdUri = 'api://${ {{~../PluginOutput.fx-resource-frontend-hosting.References.domain~}} }/botid-${bot_aadClientId}'
+{{/contains}}
+{{/contains}}
+{{#notContains 'fx-resource-frontend-hosting' Plugins}}
+{{#contains 'fx-resource-bot' ../Plugins}}
+var m365ApplicationIdUri = 'api://botid-${bot_aadClientId}'
+{{/contains}}
+{{/notContains}}
 
 var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
 var teamsWebAppClientId = '5e3ce6c0-2b1f-4285-8d4b-75ee78787346'

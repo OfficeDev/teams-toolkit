@@ -198,57 +198,17 @@ export class TeamsBotImpl {
 
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
 
-    const selectedPlugins = (this.ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
-    const handleBarsContext = {
-      Plugins: selectedPlugins,
-    };
-
-    const provisionModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateV2FileName),
-      handleBarsContext
-    );
-    if (provisionModuleContentResult.isErr()) {
-      throw provisionModuleContentResult.error;
-    }
-
-    const configurationModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateV2FileName),
-      handleBarsContext
-    );
-    if (configurationModuleContentResult.isErr()) {
-      throw configurationModuleContentResult.error;
-    }
-
-    const inputParameterContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.ParameterOrchestrationFileName),
-      handleBarsContext
-    );
-    if (inputParameterContentResult.isErr()) {
-      throw inputParameterContentResult.error;
-    }
-
-    const ProvisionFileName = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.ProvisionV2FileName),
-      handleBarsContext
-    );
-    if (ProvisionFileName.isErr()) {
-      throw ProvisionFileName.error;
-    }
-
-    const ConfigFileName = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.ConfigV2FileName),
-      handleBarsContext
-    );
-    if (ConfigFileName.isErr()) {
-      throw ConfigFileName.error;
-    }
-
     const result1: ArmTemplateResult = {
       Provision: {
-        Orchestration: ProvisionFileName.value,
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ProvisionV2FileName),
+          ConstantString.UTF8Encoding
+        ),
         Modules: {
-          botProvision: provisionModuleContentResult.value,
+          botProvision: await fs.readFile(
+            path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateV2FileName),
+            ConstantString.UTF8Encoding
+          ),
         },
         Reference: {
           resourceId: "webAppResourceId",
@@ -257,9 +217,15 @@ export class TeamsBotImpl {
         },
       },
       Configuration: {
-        Orchestration: ConfigFileName.value,
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ConfigV2FileName),
+          ConstantString.UTF8Encoding
+        ),
         Modules: {
-          botConfiguration: configurationModuleContentResult.value,
+          botConfiguration: await fs.readFile(
+            path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateV2FileName),
+            ConstantString.UTF8Encoding
+          ),
         },
       },
       Parameters: JSON.parse(
@@ -269,34 +235,6 @@ export class TeamsBotImpl {
         )
       ),
     };
-
-    // const result: ScaffoldArmTemplateResult = {
-    //   Modules: {
-    //     botProvision: {
-    //       Content: provisionModuleContentResult.value,
-    //     },
-    //     botConfiguration: {
-    //       Content: configurationModuleContentResult.value,
-    //     },
-    //   },
-    //   Orchestration: {
-    //     ParameterTemplate: {
-    //       Content: inputParameterContentResult.value,
-    //       ParameterJson: JSON.parse(
-    //         await fs.readFile(
-    //           path.join(bicepTemplateDir, Bicep.ParameterFileName),
-    //           ConstantString.UTF8Encoding
-    //         )
-    //       ),
-    //     },
-    //     ModuleTemplate: {
-    //       Content: moduleOrchestrationContentResult.value,
-    //     },
-    //     OutputTemplate: {
-    // Content: outputOrchestrationContentResult.value,
-    //     },
-    //   },
-    // };
 
     Logger.info(Messages.SuccessfullyGenerateArmTemplatesBot);
     return ResultFactory.Success(result1);

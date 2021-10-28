@@ -2,14 +2,14 @@
 // Licensed under the MIT license.
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
-import { BlazorPluginInfo } from "./constants";
+import { BlazorPluginInfo as PluginInfo } from "./constants";
 
 export type TeamsFxResult = Result<any, FxError>;
 
 export class ErrorFactory {
-  static readonly source: string = BlazorPluginInfo.ShortName;
-  static readonly issueLink: string = BlazorPluginInfo.IssueLink;
-  static readonly helpLink: string = BlazorPluginInfo.HelpLink;
+  static readonly source: string = PluginInfo.alias;
+  static readonly issueLink: string = PluginInfo.issueLink;
+  static readonly helpLink: string = PluginInfo.helpLink;
 
   public static UserError(
     name: string,

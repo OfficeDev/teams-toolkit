@@ -442,23 +442,22 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
     await fs.ensureDir(templateFolderPath);
     await fs.ensureDir(path.join(templateFolderPath, "teamsFxConfiguration"));
     await fs.ensureDir(path.join(templateFolderPath, "provision"));
-
+    // main.bicep
     await fs.copyFile(
       path.join(getTemplatesFolder(), "plugins", "solution", "main.bicep"),
       path.join(templateFolderPath, bicepOrchestrationFileName)
     );
-
-    await fs.writeFile(
-      path.join(templateFolderPath, bicepOrchestrationProvisionFileName),
-      bicepOrchestrationProvisionContent
-    );
-    const res = bicepOrchestrationTemplate.applyReference(bicepOrchestrationConfigContent);
+    // provision.bicep
+    let res = bicepOrchestrationTemplate.applyReference(bicepOrchestrationProvisionContent);
+    await fs.writeFile(path.join(templateFolderPath, bicepOrchestrationProvisionFileName), res);
+    // config.bicep
+    res = bicepOrchestrationTemplate.applyReference(bicepOrchestrationConfigContent);
     await fs.writeFile(path.join(templateFolderPath, bicepOrchestrationConfigFileName), res);
 
     // Output bicep module files from each resource plugin
     for (const module of moduleFiles) {
       // module[0] contains relative path to template folder, e.g. "./modules/frontendHosting.bicep"
-      const res = bicepOrchestrationTemplate.applyReference(module[1]);
+      res = bicepOrchestrationTemplate.applyReference(module[1]);
       await fs.writeFile(path.join(templateFolderPath, module[0]), res);
     }
 

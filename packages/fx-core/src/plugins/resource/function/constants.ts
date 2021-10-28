@@ -181,7 +181,8 @@ export class QuestionValidationFunc {
 }
 
 export class FunctionBicep {
-  static readonly functionEndpoint: string = "functionProvision.outputs.functionEndpoint";
+  static readonly functionEndpoint: string =
+    "provisionOutputs.functionProvision.outputs.functionEndpoint";
 }
 
 export class FunctionArmOutput {

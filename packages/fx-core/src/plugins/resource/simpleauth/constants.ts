@@ -65,8 +65,10 @@ export class Constants {
   static readonly configModuleTemplateFileNameV2: string =
     "simpleAuthConfiguration.template.v2.bicep";
 
-  static readonly SimpleAuthBicepOutputSkuName: string = "simpleAuthProvision.outputs.skuName";
-  static readonly SimpleAuthBicepOutputEndpoint: string = "simpleAuthProvision.outputs.endpoint";
+  static readonly SimpleAuthBicepOutputSkuName: string =
+    "provisionOutputs.simpleAuthProvision.outputs.skuName";
+  static readonly SimpleAuthBicepOutputEndpoint: string =
+    "provisionOutputs.simpleAuthProvision.outputs.endpoint";
 
   static readonly SimpleAuthFileName: string = "SimpleAuth.zip";
   static readonly SimpleAuthZipName = (version: string): string =>

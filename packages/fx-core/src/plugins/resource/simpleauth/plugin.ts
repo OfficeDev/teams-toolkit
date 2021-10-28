@@ -132,7 +132,9 @@ export class SimpleAuthPluginImpl {
 
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .activeResourcePlugins;
-
+    const context = {
+      Plugins: selectedPlugins,
+    };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -145,10 +147,14 @@ export class SimpleAuthPluginImpl {
       bicepTemplateDirectory,
       Constants.provisionModuleTemplateFileNameV2
     );
-    const configModuleV2Result = path.join(
+    const configModuleV2FilePath = path.join(
       bicepTemplateDirectory,
       Constants.configModuleTemplateFileNameV2
     );
+    const moduleConfigFileContent = await generateBicepFiles(configModuleV2FilePath, context);
+    if (moduleConfigFileContent.isErr()) {
+      throw moduleConfigFileContent.error;
+    }
 
     const result: ArmTemplateResult = {
       Provision: {
@@ -173,10 +179,7 @@ export class SimpleAuthPluginImpl {
           ConstantString.UTF8Encoding
         ),
         Modules: {
-          simpleAuthConfiguration: await fs.readFile(
-            configModuleV2Result,
-            ConstantString.UTF8Encoding
-          ),
+          simpleAuthConfiguration: moduleConfigFileContent.value,
         },
       },
     };

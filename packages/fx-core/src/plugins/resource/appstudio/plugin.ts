@@ -15,6 +15,7 @@ import {
   IComposeExtension,
   IBot,
   AppPackageFolderName,
+  BuildFolderName,
   ArchiveFolderName,
   V1ManifestFileName,
   ConfigMap,
@@ -637,7 +638,7 @@ export class AppStudioPluginImpl {
 
     const appDirectory = await getAppDirectory(ctx.root);
     const zipFileName: string = isMultiEnvEnabled()
-      ? `${ctx.root}/${AppPackageFolderName}/appPackage.${ctx.envInfo.envName}.zip`
+      ? `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${ctx.envInfo.envName}.zip`
       : `${ctx.root}/${AppPackageFolderName}/appPackage.zip`;
 
     if (isSPFxProject(ctx.projectSettings)) {
@@ -709,6 +710,8 @@ export class AppStudioPluginImpl {
 
     if (isMultiEnvEnabled()) {
       await fs.ensureDir(path.dirname(zipFileName));
+      const manifestFileName = `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/manifest.${ctx.envInfo.envName}.json`;
+      await fs.writeFile(manifestFileName, manifestString);
     }
 
     const zip = new AdmZip();

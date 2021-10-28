@@ -10,11 +10,13 @@ import {
   ReadonlyPluginConfig,
 } from "@microsoft/teamsfx-api";
 import {
-  AppSettingsKey,
   AzureInfo,
   BlazorPluginInfo as PluginInfo,
+  BlazorConfigInfo as ConfigInfo,
   DefaultProvisionConfigs,
   DependentPluginInfo,
+  BlazorPathInfo as PathInfo,
+  BlazorCommands as Commands,
 } from "./constants";
 import { Logger } from "./utils/logger";
 import { Messages } from "./resources/messages";
@@ -22,19 +24,18 @@ import { TeamsFxResult } from "./error-factory";
 import { ProgressHelper } from "./utils/progress-helper";
 import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
 import { v4 as uuid } from "uuid";
-import { BlazorNaming, BlazorProvision } from "./ops/provision";
+import { BlazorNaming as Naming, BlazorProvision as Provision } from "./ops/provision";
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
 import { NameValuePair } from "@azure/arm-appservice/esm/models";
 import { execute } from "./utils/execute";
 import { forEachFileAndDir } from "./utils/dir-walk";
 import { sendRequestWithRetry } from "../../../common/templatesUtils";
 import axios from "axios";
+import { BlazorConfigKey as ConfigKey, AppSettingsKey } from "./enum";
 
 type Site = WebSiteManagementModels.Site;
-type AppServicePlan = WebSiteManagementModels.AppServicePlan;
-type SiteAuthSettings = WebSiteManagementModels.SiteAuthSettings;
 
-export interface WebAppConfig {
+export interface BlazorPluginConfig {
   /* Config from solution */
   resourceGroupName?: string;
   subscriptionId?: string;
@@ -52,22 +53,28 @@ export interface WebAppConfig {
 }
 
 export class BlazorPluginImpl {
-  config: WebAppConfig = {};
+  config: BlazorPluginConfig = {};
 
   private syncConfigFromContext(ctx: PluginContext): void {
-    const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get("solution");
-    this.config.resourceNameSuffix = solutionConfig?.get("resourceNameSuffix") as string;
-    this.config.resourceGroupName = solutionConfig?.get("resourceGroupName") as string;
-    this.config.subscriptionId = solutionConfig?.get("subscriptionId") as string;
-    this.config.location = solutionConfig?.get("location") as string;
+    const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
+      DependentPluginInfo.solutionPluginName
+    );
+    this.config.resourceNameSuffix = solutionConfig?.get(
+      DependentPluginInfo.resourceNameSuffix
+    ) as string;
+    this.config.resourceGroupName = solutionConfig?.get(
+      DependentPluginInfo.resourceGroupName
+    ) as string;
+    this.config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
+    this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
 
-    this.config.webAppName = ctx.config.get("webAppName") as string;
-    this.config.appServicePlanName = ctx.config.get("appServicePlanName") as string;
+    this.config.webAppName = ctx.config.get(ConfigInfo.webAppName) as string;
+    this.config.appServicePlanName = ctx.config.get(ConfigInfo.appServicePlanName) as string;
   }
 
   private syncConfigToContext(ctx: PluginContext): void {
     Object.entries(this.config)
-      .filter((kv) => PluginInfo.PersistentConfig.find((x: string) => x === kv[0]))
+      .filter((kv) => PluginInfo.persistentConfig.find((x: string) => x === kv[0]))
       .forEach((kv) => {
         if (kv[1]) {
           ctx.config.set(kv[0], kv[1]);
@@ -93,7 +100,7 @@ export class BlazorPluginImpl {
     const teamsAppName: string = ctx.projectSettings?.appName ?? "MyTeamsApp";
     const suffix: string = this.config.resourceNameSuffix ?? uuid().substr(0, 6);
 
-    this.config.webAppName ??= BlazorNaming.generateWebAppName(teamsAppName, suffix, "bz");
+    this.config.webAppName ??= Naming.generateWebAppName(teamsAppName, PluginInfo.alias, suffix);
     this.config.appServicePlanName ??= this.config.webAppName;
 
     this.syncConfigToContext(ctx);
@@ -101,20 +108,23 @@ export class BlazorPluginImpl {
   }
 
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.info(Messages.StartProvision(PluginInfo.DisplayName));
+    Logger.info(Messages.StartProvision(PluginInfo.displayName));
     const progressHandler = await ProgressHelper.startProvisionProgressHandler(ctx);
 
-    const resourceGroupName = this.checkAndGet(this.config.resourceGroupName, "resourceGroupName");
-    const subscriptionId = this.checkAndGet(this.config.subscriptionId, "subscriptionId");
-    const location = this.checkAndGet(this.config.location, "location");
+    const resourceGroupName = this.checkAndGet(
+      this.config.resourceGroupName,
+      ConfigKey.resourceGroupName
+    );
+    const subscriptionId = this.checkAndGet(this.config.subscriptionId, ConfigKey.subscriptionId);
+    const location = this.checkAndGet(this.config.location, ConfigKey.location);
     const appServicePlanName = this.checkAndGet(
       this.config.appServicePlanName,
-      "appServicePlanName"
+      ConfigKey.appServicePlanName
     );
-    const webAppName = this.checkAndGet(this.config.webAppName, "webAppName");
+    const webAppName = this.checkAndGet(this.config.webAppName, ConfigKey.webAppName);
     const credential = this.checkAndGet(
       await ctx.azureAccountProvider?.getAccountCredentialAsync(),
-      "credential"
+      ConfigKey.credential
     );
 
     const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);
@@ -129,7 +139,7 @@ export class BlazorPluginImpl {
       throw new Error("app service plan id");
     }
 
-    const site = await BlazorProvision.ensureWebApp(
+    const site = await Provision.ensureWebApp(
       client,
       resourceGroupName,
       location,
@@ -145,21 +155,24 @@ export class BlazorPluginImpl {
     this.syncConfigToContext(ctx);
 
     await ProgressHelper.endProvisionProgress(true);
-    Logger.info(Messages.EndProvision(PluginInfo.DisplayName));
+    Logger.info(Messages.EndProvision(PluginInfo.displayName));
     return ok(undefined);
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    const webAppName = this.checkAndGet(this.config.webAppName, "webAppName");
-    const resourceGroupName = this.checkAndGet(this.config.resourceGroupName, "resourceGroupName");
-    const subscriptionId = this.checkAndGet(this.config.subscriptionId, "subscription");
+    const resourceGroupName = this.checkAndGet(
+      this.config.resourceGroupName,
+      ConfigKey.resourceGroupName
+    );
+    const subscriptionId = this.checkAndGet(this.config.subscriptionId, ConfigKey.subscriptionId);
+    const webAppName = this.checkAndGet(this.config.webAppName, ConfigKey.webAppName);
     const credential = this.checkAndGet(
       await ctx.azureAccountProvider?.getAccountCredentialAsync(),
-      "credential"
+      ConfigKey.credential
     );
-    const endpoint = this.checkAndGet(this.config.webAppEndpoint, "endpoint");
+    const endpoint = this.checkAndGet(this.config.webAppEndpoint, ConfigKey.webAppEndpoint);
 
-    const site = this.checkAndGet(this.config.site, "site");
+    const site = this.checkAndGet(this.config.site, ConfigKey.site);
     this.config.site = undefined;
 
     const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);
@@ -171,28 +184,28 @@ export class BlazorPluginImpl {
     }
 
     const aadConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
-      DependentPluginInfo.AADPluginName
+      DependentPluginInfo.aadPluginName
     );
-    if (this.isPluginEnabled(ctx, DependentPluginInfo.AADPluginName) && aadConfig) {
+    if (this.isPluginEnabled(ctx, DependentPluginInfo.aadPluginName) && aadConfig) {
       const clientId: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.ClientID) as string,
-        "AAD client Id"
+        aadConfig.get(DependentPluginInfo.clientID) as string,
+        DependentPluginInfo.clientID
       );
       const clientSecret: string = this.checkAndGet(
         aadConfig.get(DependentPluginInfo.aadClientSecret) as string,
-        "AAD secret"
+        DependentPluginInfo.aadClientSecret
       );
       const oauthHost: string = this.checkAndGet(
         aadConfig.get(DependentPluginInfo.oauthHost) as string,
-        "OAuth Host"
+        DependentPluginInfo.oauthHost
       );
       const tenantId: string = this.checkAndGet(
         aadConfig.get(DependentPluginInfo.tenantId) as string,
-        "Tenant Id"
+        DependentPluginInfo.tenantId
       );
       const applicationIdUris: string = this.checkAndGet(
         aadConfig.get(DependentPluginInfo.applicationIdUris) as string,
-        "Application Id URI"
+        DependentPluginInfo.applicationIdUris
       );
 
       this.pushAppSettings(site, AppSettingsKey.clientId, clientId);
@@ -202,18 +215,21 @@ export class BlazorPluginImpl {
       this.pushAppSettings(
         site,
         AppSettingsKey.aadMetadataAddress,
-        `https://login.microsoftonline.com/${tenantId}/v2.0/.well-known/openid-configuration`
+        AzureInfo.aadMetadataAddress(tenantId)
       );
     }
 
     const botConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
-      DependentPluginInfo.BotPluginName
+      DependentPluginInfo.botPluginName
     );
-    if (this.isPluginEnabled(ctx, DependentPluginInfo.BotPluginName) && botConfig) {
-      const botId = this.checkAndGet(botConfig.get(DependentPluginInfo.botId) as string, "bot id");
+    if (this.isPluginEnabled(ctx, DependentPluginInfo.botPluginName) && botConfig) {
+      const botId = this.checkAndGet(
+        botConfig.get(DependentPluginInfo.botId) as string,
+        DependentPluginInfo.botId
+      );
       const botPassword = this.checkAndGet(
         botConfig.get(DependentPluginInfo.botPassword) as string,
-        "bot password"
+        DependentPluginInfo.botPassword
       );
 
       this.pushAppSettings(site, AppSettingsKey.botId, botId);
@@ -248,47 +264,42 @@ export class BlazorPluginImpl {
   }
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.info(Messages.StartDeploy(PluginInfo.DisplayName));
+    Logger.info(Messages.StartDeploy(PluginInfo.displayName));
     await ProgressHelper.startDeployProgressHandler(ctx);
 
     this.syncConfigFromContext(ctx);
 
     const workingPath = ctx.root;
-    const webAppName = this.checkAndGet(this.config.webAppName, "web app name");
+    const webAppName = this.checkAndGet(this.config.webAppName, ConfigKey.webAppName);
     const resourceGroupName = this.checkAndGet(
       this.config.resourceGroupName,
-      "resource group name"
+      ConfigKey.resourceGroupName
     );
-    const subscriptionId = this.checkAndGet(this.config.subscriptionId, "subscription id");
+    const subscriptionId = this.checkAndGet(this.config.subscriptionId, ConfigKey.subscriptionId);
     const credential = this.checkAndGet(
       await ctx.azureAccountProvider?.getAccountCredentialAsync(),
-      "credential"
+      ConfigKey.credential
     );
 
-    const runtime = "win-x86";
-    const framework = "net5.0";
+    // ? Do we support user customize framework and runtime? If yes, how?
+    // * If we support user customize runtime, we need to validate its value because we use it to concat build command.
+    const framework = PluginInfo.defaultFramework;
+    const runtime = PluginInfo.defaultRuntime;
 
     const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);
 
     await this.build(workingPath, runtime);
 
-    const folderToBeZipped = path.join(
-      workingPath,
-      "bin",
-      "Release",
-      framework,
-      runtime,
-      "publish"
-    );
+    const folderToBeZipped = PathInfo.publishFolderPath(workingPath, framework, runtime);
     this.zipDeploy(client, resourceGroupName, webAppName, folderToBeZipped);
 
     await ProgressHelper.endDeployProgress(true);
-    Logger.info(Messages.EndDeploy(PluginInfo.DisplayName));
+    Logger.info(Messages.EndDeploy(PluginInfo.displayName));
     return ok(undefined);
   }
 
   private async build(path: string, runtime: string) {
-    const command = `dotnet publish --configuration Release --runtime ${runtime} --self-contained`;
+    const command = Commands.buildRelease(runtime);
     await execute(command, path);
   }
 

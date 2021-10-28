@@ -35,7 +35,7 @@ export class BlazorPlugin implements Plugin {
   blazorPluginImpl = new PluginImpl();
 
   private static setContext(ctx: PluginContext): void {
-    Logger.setLogger(PluginInfo.PluginName, ctx.logProvider);
+    Logger.setLogger(PluginInfo.pluginName, ctx.logProvider);
   }
 
   public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {

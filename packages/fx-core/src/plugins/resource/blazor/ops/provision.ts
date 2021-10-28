@@ -1,15 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { NameValuePair, Site } from "@azure/arm-appservice/esm/models/mappers";
+import { Site } from "@azure/arm-appservice/esm/models/mappers";
 import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
 
 import { AzureInfo, Constants, DefaultProvisionConfigs, RegularExpr } from "../constants";
 import { AzureLib } from "../utils/azure-client";
-import { TeamsClientId } from "../../../../common/constants";
 
 type Site = WebSiteManagementModels.Site;
-type NameValuePair = WebSiteManagementModels.NameValuePair;
-type SiteAuthSettings = WebSiteManagementModels.SiteAuthSettings;
 
 export class BlazorNaming {
   private static normalize(raw: string): string {
@@ -18,7 +15,7 @@ export class BlazorNaming {
 
   private static concatName(appName: string, mergedSuffix: string): string {
     const suffix = this.normalize(mergedSuffix).substr(0, AzureInfo.suffixLenMax);
-    const paddingLength = AzureInfo.resourceNameLenMax - suffix.length;
+    const paddingLength = AzureInfo.webappNameLenMax - suffix.length;
     const normalizedAppName = this.normalize(appName).substr(0, paddingLength);
     return normalizedAppName + suffix;
   }

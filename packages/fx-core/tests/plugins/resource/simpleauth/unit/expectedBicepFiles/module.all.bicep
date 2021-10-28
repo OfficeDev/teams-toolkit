@@ -19,6 +19,6 @@ module simpleAuthConfiguration './simple_auth_configuration.all.bicep' = {
     frontendHostingStorageEndpoint: frontend_hosting_test_endpoint
     m365TenantId: m365TenantId
     oauthAuthorityHost: m365OauthAuthorityHost
-    simpelAuthPackageUri: simpleAuth_packageUri
+    simpleAuthPackageUri: simpleAuth_packageUri
   }
 }

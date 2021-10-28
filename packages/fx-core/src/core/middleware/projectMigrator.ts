@@ -275,7 +275,7 @@ async function generateUpgradeReport(ctx: CoreHookContext) {
 
     await fs.writeFile(
       report,
-      `${header}${EOL}${EOL}${projectStructure}${EOL}${EOL}${bicep}${EOL}{EOL}${restore}`,
+      `${header}${EOL}${EOL}${projectStructure}${EOL}${EOL}${bicep}${EOL}${EOL}${restore}`,
       { encoding: "utf8" }
     );
   } catch (error) {

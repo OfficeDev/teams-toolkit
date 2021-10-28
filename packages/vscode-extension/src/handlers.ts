@@ -1090,23 +1090,93 @@ function getSubscriptionUrl(subscriptionInfo: SubscriptionInfo): string {
   return `${AzurePortalUrl}/#@${tenantId}/resource/subscriptions/${subscriptionId}`;
 }
 
-export async function openSubscriptionInPortal(env: string): Promise<void> {
+enum ResourceInfo {
+  Subscription = "Subscription",
+  ResourceGroup = "Resource Group",
+}
+
+export async function openSubscriptionInPortal(env: string): Promise<Result<Void, FxError>> {
+  const telemetryProperties: { [p: string]: string } = {};
+  telemetryProperties[TelemetryProperty.Env] =
+    env === LocalEnvironmentName ? LocalEnvironmentName : getHashedEnv(env);
+
   const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
   if (subscriptionInfo) {
-    const url = getSubscriptionUrl(subscriptionInfo);
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSubscriptionInPortal, telemetryProperties);
 
+    const url = getSubscriptionUrl(subscriptionInfo);
     await vscode.env.openExternal(vscode.Uri.parse(url));
+
+    return ok(Void);
+  } else {
+    const resourceInfoNotFoundError = new UserError(
+      ExtensionErrors.EnvResourceInfoNotFoundError,
+      util.format(
+        StringResources.vsc.handlers.resourceInfoNotFound,
+        ResourceInfo.Subscription,
+        env
+      ),
+      ExtensionSource
+    );
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.OpenSubscriptionInPortal,
+      resourceInfoNotFoundError,
+      telemetryProperties
+    );
+
+    return err(resourceInfoNotFoundError);
   }
 }
 
-export async function openResourceGroupInPortal(env: string): Promise<void> {
+export async function openResourceGroupInPortal(env: string): Promise<Result<Void, FxError>> {
+  const telemetryProperties: { [p: string]: string } = {};
+  telemetryProperties[TelemetryProperty.Env] =
+    env === LocalEnvironmentName ? LocalEnvironmentName : getHashedEnv(env);
+
   const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
   const resourceGroupName = await getResourceGroupNameFromEnv(env);
 
   if (subscriptionInfo && resourceGroupName) {
-    const url = `${getSubscriptionUrl(subscriptionInfo)}/resourceGroups/${resourceGroupName}`;
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenResourceGroupInPortal, telemetryProperties);
 
+    const url = `${getSubscriptionUrl(subscriptionInfo)}/resourceGroups/${resourceGroupName}`;
     await vscode.env.openExternal(vscode.Uri.parse(url));
+
+    return ok(Void);
+  } else {
+    let errorMessage = "";
+    if (subscriptionInfo) {
+      errorMessage = util.format(
+        StringResources.vsc.handlers.resourceInfoNotFound,
+        ResourceInfo.ResourceGroup,
+        env
+      );
+    } else if (resourceGroupName) {
+      errorMessage = util.format(
+        StringResources.vsc.handlers.resourceInfoNotFound,
+        ResourceInfo.Subscription,
+        env
+      );
+    } else {
+      errorMessage = util.format(
+        StringResources.vsc.handlers.resourceInfoNotFound,
+        `${ResourceInfo.Subscription} and ${ResourceInfo.ResourceGroup}`,
+        env
+      );
+    }
+
+    const resourceInfoNotFoundError = new UserError(
+      ExtensionErrors.EnvResourceInfoNotFoundError,
+      errorMessage,
+      ExtensionSource
+    );
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.OpenSubscriptionInPortal,
+      resourceInfoNotFoundError,
+      telemetryProperties
+    );
+
+    return err(resourceInfoNotFoundError);
   }
 }
 

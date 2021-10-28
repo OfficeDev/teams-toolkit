@@ -106,6 +106,7 @@
       "decryptFailed": "Failed to decrypt secrect.",
       "openEnvFailed": "Can not open project environment %s.",
       "findEnvFailed": "Can not find project environment %s.",
+      "resourceInfoNotFound": "Can not load %s info for environment %s.",
       "localDebugDescription": "Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.",
       "localDebugTitle": "Local debug",
       "configTitle": "Change location",

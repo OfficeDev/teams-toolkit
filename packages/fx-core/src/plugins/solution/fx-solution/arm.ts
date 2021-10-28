@@ -467,19 +467,20 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
       path.join(templateFolderPath, bicepOrchestrationFileName)
     );
     // generate provision.bicep
-    let res = bicepOrchestrationTemplate.applyReference(bicepOrchestrationProvisionContent);
     await fs.writeFile(
       path.join(templateFolderPath, bicepOrchestrationProvisionFileName),
       bicepOrchestrationProvisionContent
     );
     // generate config.bicep
-    res = bicepOrchestrationTemplate.applyReference(bicepOrchestrationConfigContent);
-    await fs.writeFile(path.join(templateFolderPath, bicepOrchestrationConfigFileName), res);
+    await fs.writeFile(
+      path.join(templateFolderPath, bicepOrchestrationConfigFileName),
+      bicepOrchestrationConfigContent
+    );
 
     // Output bicep module files from each resource plugin
     for (const module of moduleFiles) {
       // module[0] contains relative path to template folder, e.g. "./modules/frontendHosting.bicep"
-      res = bicepOrchestrationTemplate.applyReference(module[1]);
+      const res = bicepOrchestrationTemplate.applyReference(module[1]);
       await fs.writeFile(path.join(templateFolderPath, module[0]), res);
     }
 
@@ -723,10 +724,6 @@ function generateBicepModuleProvisionFilePath(moduleFileName: string) {
 
 function generateBicepModuleConfigFilePath(moduleFileName: string) {
   return `./teamsFxConfiguration/${moduleFileName}.bicep`;
-}
-
-function generateBicepModuleFilePath(moduleFileName: string) {
-  return `./modules/${moduleFileName}.bicep`;
 }
 
 function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: string): string {

@@ -1097,8 +1097,7 @@ enum ResourceInfo {
 
 export async function openSubscriptionInPortal(env: string): Promise<Result<Void, FxError>> {
   const telemetryProperties: { [p: string]: string } = {};
-  telemetryProperties[TelemetryProperty.Env] =
-    env === LocalEnvironmentName ? LocalEnvironmentName : getHashedEnv(env);
+  telemetryProperties[TelemetryProperty.Env] = getHashedEnv(env);
 
   const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
   if (subscriptionInfo) {
@@ -1130,8 +1129,7 @@ export async function openSubscriptionInPortal(env: string): Promise<Result<Void
 
 export async function openResourceGroupInPortal(env: string): Promise<Result<Void, FxError>> {
   const telemetryProperties: { [p: string]: string } = {};
-  telemetryProperties[TelemetryProperty.Env] =
-    env === LocalEnvironmentName ? LocalEnvironmentName : getHashedEnv(env);
+  telemetryProperties[TelemetryProperty.Env] = getHashedEnv(env);
 
   const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
   const resourceGroupName = await getResourceGroupNameFromEnv(env);

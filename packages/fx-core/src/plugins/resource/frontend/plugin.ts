@@ -45,6 +45,7 @@ import { FrontendScaffold as Scaffold } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import {
   MigrateSteps,
+  PostProvisionSteps,
   PreDeploySteps,
   ProgressHelper,
   ProvisionSteps,
@@ -122,13 +123,6 @@ export class FrontendPluginImpl {
       createStorageErrorWrapper,
       async () => await client.createStorageAccount()
     );
-
-    await progressHandler?.next(ProvisionSteps.Configure);
-    await runWithErrorCatchAndThrow(
-      new EnableStaticWebsiteError(),
-      async () => await client.enableStaticWebsite()
-    );
-
     config.domain = new URL(config.endpoint).hostname;
     config.syncToPluginContext(ctx);
 
@@ -138,6 +132,18 @@ export class FrontendPluginImpl {
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
+    Logger.info(Messages.StartPostProvision(PluginInfo.DisplayName));
+    const progressHandler = await ProgressHelper.startPostProvisionProgressHandler(ctx);
+    await progressHandler?.next(PostProvisionSteps.EnableStaticWebsite);
+
+    const client = new AzureStorageClient(await FrontendConfig.fromPluginContext(ctx));
+    await runWithErrorCatchAndThrow(
+      new EnableStaticWebsiteError(),
+      async () => await client.enableStaticWebsite()
+    );
+
+    await ProgressHelper.endPostProvisionProgress(true);
+    Logger.info(Messages.EndPostProvision(PluginInfo.DisplayName));
     return ok(undefined);
   }
 

@@ -1,5 +1,7 @@
-
-output simpleAuth_skuName string = simpleAuthProvision.outputs.skuName
-output simpleAuth_endpoint string = simpleAuthProvision.outputs.endpoint
-output simpleAuth_webAppName string = simpleAuthProvision.outputs.webAppName
-output simpleAuth_appServicePlanName string = simpleAuthProvision.outputs.appServicePlanName
+output simpleAuthOutput object = {
+  teamsFxPluginId: 'fx-resource-simple-auth'
+  skuName: simpleAuthProvision.outputs.skuName
+  endpoint: simpleAuthProvision.outputs.endpoint
+  webAppName: simpleAuthProvision.outputs.webAppName
+  appServicePlanName: simpleAuthProvision.outputs.appServicePlanName
+}

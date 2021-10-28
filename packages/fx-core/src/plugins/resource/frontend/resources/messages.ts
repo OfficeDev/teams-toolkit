@@ -8,6 +8,7 @@ export class Messages {
   // Progress bar messages
   static readonly ScaffoldProgressTitle = "Scaffolding Tab";
   static readonly ProvisionProgressTitle = "Provisioning Tab";
+  static readonly PostProvisionProgressTitle = "Configuring Tab";
   static readonly PreDeployProgressTitle = "Building Tab";
   static readonly DeployProgressTitle = "Deploying Tab";
   static readonly MigrateProgressTitle = "Migrating Tab";
@@ -17,6 +18,7 @@ export class Messages {
   static readonly ProgressRegisterRP = "Registering required resource provider.";
   static readonly ProgressCreateStorage = "Creating Azure Storage account.";
   static readonly ProgressConfigure = "Configuring.";
+  static readonly ProgressEnableStaticWebsite = "Enabling Azure Storage account static website.";
   static readonly ProgressNPMInstall = `Running "npm install" for Tab frontend project.`;
   static readonly ProgressBuild = "Building Tab frontend project.";
   static readonly ProgressCheckStorage = "Checking Azure Storage account availability.";
@@ -32,6 +34,8 @@ export class Messages {
   static readonly EndPreProvision = (name: string) => `Successfully pre-provisioned '${name}'.`;
   static readonly StartProvision = (name: string) => `Provisioning '${name}'.`;
   static readonly EndProvision = (name: string) => `Successfully provisioned '${name}'.`;
+  static readonly StartPostProvision = (name: string) => `Post-provisioning '${name}'.`;
+  static readonly EndPostProvision = (name: string) => `Successfully post-provisioned '${name}'.`;
   static readonly StartPreDeploy = (name: string) => `Pre-deploying '${name}'.`;
   static readonly EndPreDeploy = (name: string) => `Pre-deployed '${name}'.`;
   static readonly StartDeploy = (name: string) => `Deploying '${name}'.`;

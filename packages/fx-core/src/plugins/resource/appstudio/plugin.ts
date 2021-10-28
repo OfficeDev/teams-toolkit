@@ -68,8 +68,6 @@ import {
   LOCAL_BOT_ID,
   BOT_ID,
   REMOTE_MANIFEST,
-  FRONTEND_ENDPOINT_ARM,
-  FRONTEND_DOMAIN_ARM,
   ErrorMessages,
   SOLUTION,
   MANIFEST_TEMPLATE,
@@ -95,13 +93,7 @@ import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import { getTemplatesFolder, isV2 } from "../../..";
 import path from "path";
-import { getArmOutput } from "../utils4v2";
-import {
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-  getAppDirectory,
-  isSPFxProject,
-} from "../../../common";
+import { isMultiEnvEnabled, getAppDirectory, isSPFxProject } from "../../../common";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
@@ -1167,22 +1159,8 @@ export class AppStudioPluginImpl {
       FxError
     >
   > {
-    let tabEndpoint, tabDomain;
-    if (isArmSupportEnabled()) {
-      // getConfigForCreatingManifest is called in post-provision and validate manifest
-      // only in post stage, we find the value from arm output.
-      // Here is a walk-around way, try to get from arm output first and then get from ctx config.
-      // todo: use the specific function to read config in post stage.
-      tabEndpoint = getArmOutput(ctx, FRONTEND_ENDPOINT_ARM) as string;
-      tabDomain = getArmOutput(ctx, FRONTEND_DOMAIN_ARM) as string;
-      if (!tabEndpoint) {
-        tabEndpoint = this.getTabEndpoint(ctx, localDebug);
-        tabDomain = this.getTabDomain(ctx, localDebug);
-      }
-    } else {
-      tabEndpoint = this.getTabEndpoint(ctx, localDebug);
-      tabDomain = this.getTabDomain(ctx, localDebug);
-    }
+    const tabEndpoint = this.getTabEndpoint(ctx, localDebug);
+    const tabDomain = this.getTabDomain(ctx, localDebug);
     const aadId = this.getAadClientId(ctx, localDebug);
     const botId = this.getBotId(ctx, localDebug);
     const botDomain = this.getBotDomain(ctx, localDebug);
@@ -1223,90 +1201,46 @@ export class AppStudioPluginImpl {
     }
 
     if (!tabEndpoint && !botId) {
-      if (isArmSupportEnabled()) {
-        return err(
-          localDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.GetLocalDebugConfigFailedError.name,
-                AppStudioError.GetLocalDebugConfigFailedError.message(
-                  LOCAL_DEBUG_TAB_ENDPOINT + ", " + LOCAL_BOT_ID,
-                  false
-                )
+      return err(
+        localDebug
+          ? AppStudioResultFactory.SystemError(
+              AppStudioError.GetLocalDebugConfigFailedError.name,
+              AppStudioError.GetLocalDebugConfigFailedError.message(
+                LOCAL_DEBUG_TAB_ENDPOINT + ", " + LOCAL_BOT_ID,
+                false
               )
-            : AppStudioResultFactory.UserError(
-                AppStudioError.GetRemoteConfigFailedError.name,
-                AppStudioError.GetRemoteConfigFailedError.message(
-                  FRONTEND_ENDPOINT_ARM + ", " + BOT_ID,
-                  false
-                )
+            )
+          : AppStudioResultFactory.UserError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(
+                FRONTEND_ENDPOINT + ", " + BOT_ID,
+                false
               )
-        );
-      } else {
-        return err(
-          localDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.GetLocalDebugConfigFailedError.name,
-                AppStudioError.GetLocalDebugConfigFailedError.message(
-                  LOCAL_DEBUG_TAB_ENDPOINT + ", " + LOCAL_BOT_ID,
-                  false
-                )
-              )
-            : AppStudioResultFactory.UserError(
-                AppStudioError.GetRemoteConfigFailedError.name,
-                AppStudioError.GetRemoteConfigFailedError.message(
-                  FRONTEND_ENDPOINT + ", " + BOT_ID,
-                  false
-                )
-              )
-        );
-      }
+            )
+      );
     }
     if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
-      if (isArmSupportEnabled()) {
-        return err(
-          localDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.InvalidLocalDebugConfigurationDataError.name,
-                AppStudioError.InvalidLocalDebugConfigurationDataError.message(
-                  LOCAL_DEBUG_TAB_ENDPOINT,
-                  tabEndpoint,
-                  LOCAL_DEBUG_TAB_DOMAIN,
-                  tabDomain
-                )
+      return err(
+        localDebug
+          ? AppStudioResultFactory.SystemError(
+              AppStudioError.InvalidLocalDebugConfigurationDataError.name,
+              AppStudioError.InvalidLocalDebugConfigurationDataError.message(
+                LOCAL_DEBUG_TAB_ENDPOINT,
+                tabEndpoint,
+                LOCAL_DEBUG_TAB_DOMAIN,
+                tabDomain
               )
-            : AppStudioResultFactory.SystemError(
-                AppStudioError.InvalidRemoteConfigurationDataError.name,
-                AppStudioError.InvalidRemoteConfigurationDataError.message(
-                  FRONTEND_ENDPOINT_ARM,
-                  tabEndpoint,
-                  FRONTEND_DOMAIN_ARM,
-                  tabDomain
-                )
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.InvalidRemoteConfigurationDataError.name,
+              AppStudioError.InvalidRemoteConfigurationDataError.message(
+                FRONTEND_ENDPOINT,
+                tabEndpoint,
+                FRONTEND_DOMAIN,
+                tabDomain
               )
-        );
-      } else {
-        return err(
-          localDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.InvalidLocalDebugConfigurationDataError.name,
-                AppStudioError.InvalidLocalDebugConfigurationDataError.message(
-                  LOCAL_DEBUG_TAB_ENDPOINT,
-                  tabEndpoint,
-                  LOCAL_DEBUG_TAB_DOMAIN,
-                  tabDomain
-                )
-              )
-            : AppStudioResultFactory.SystemError(
-                AppStudioError.InvalidRemoteConfigurationDataError.name,
-                AppStudioError.InvalidRemoteConfigurationDataError.message(
-                  FRONTEND_ENDPOINT,
-                  tabEndpoint,
-                  FRONTEND_DOMAIN,
-                  tabDomain
-                )
-              )
-        );
-      }
+            )
+      );
     }
     if (botId) {
       if (!botDomain) {

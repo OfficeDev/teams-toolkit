@@ -63,6 +63,7 @@ import {
 import {
   downloadSampleHook,
   fetchCodeZip,
+  isFeatureFlagEnabled,
   isMultiEnvEnabled,
   mapToJson,
   saveFilesRecursively,
@@ -149,6 +150,12 @@ export function isV2() {
   } else {
     return false;
   }
+}
+
+export function getProjectSettingsVersion() {
+  const isInsider = isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
+  if (isInsider) return "2.0.0";
+  else return "1.0.0";
 }
 
 export let Logger: LogProvider;
@@ -240,7 +247,7 @@ export class FxCore implements Core {
           name: "",
           version: "1.0.0",
         },
-        version: "1.0.0",
+        version: getProjectSettingsVersion(),
         isFromSample: false,
       };
       ctx.projectSettings = projectSettings;
@@ -262,7 +269,6 @@ export class FxCore implements Core {
         }
         ctx.solutionV2 = solution;
         projectSettings.solutionSettings.name = solution.name;
-        projectSettings.version = "2.0.0";
         const contextV2 = createV2Context(this, projectSettings);
         ctx.contextV2 = contextV2;
         const scaffoldSourceCodeRes = await solution.scaffoldSourceCode(contextV2, inputs);

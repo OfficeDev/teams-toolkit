@@ -64,6 +64,7 @@ import {
 import * as util from "util";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
+import { EOL } from "os";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -76,6 +77,7 @@ const resourceGroupName = "resourceGroupName";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
 const learnMoreLink = "https://aka.ms/teamsfx-migration-guide";
 const manualUpgradeLink = `${learnMoreLink}#upgrade-your-project-manually`;
+const upgradeReportName = `upgrade-change-logs.md`;
 let updateNotificationFlag = false;
 let fromReloadFlag = false;
 
@@ -259,6 +261,28 @@ async function handleError(projectPath: string, ctx: CoreHookContext) {
     });
 }
 
+async function generateUpgradeReport(ctx: CoreHookContext) {
+  try {
+    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+    const projectPath = inputs.projectPath as string;
+    const report = path.join(projectPath, upgradeReportName);
+    await fs.ensureFile(report);
+
+    const header = `# Upgrade Change Logs${EOL}${EOL}Congratulation on your upgrade!${EOL}We have updated your configuration files with latest Teams Toolkit features.${EOL}Please check sections below to learn about upgrade details.`;
+    const projectStructure = `## Project Structure${EOL}${EOL}All old files in .fx and appPackage folder have been deleted and backed up to the ".backup" folder.${EOL}You can delete ".backup" folder.`;
+    const bicep = `## Bicep${EOL}`;
+    const restore = `## Restore${EOL}${EOL}Read this [wiki](https://aka.ms/teamsfx-migration-guide) if you want to restore your configuration files or learn more about this upgrade.`;
+
+    await fs.writeFile(
+      report,
+      `${header}${EOL}${EOL}${projectStructure}${EOL}${EOL}${bicep}${EOL}{EOL}${restore}`,
+      { encoding: "utf8" }
+    );
+  } catch (error) {
+    // do nothing
+  }
+}
+
 async function postMigration(
   projectPath: string,
   ctx: CoreHookContext,
@@ -267,6 +291,7 @@ async function postMigration(
   await removeOldProjectFiles(projectPath);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrate);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
+  await generateUpgradeReport(ctx);
   const core = ctx.self as FxCore;
   core.tools.ui
     .showMessage(

@@ -149,6 +149,9 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
     core.tools.logProvider.warning(
       `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your configuration files or learn more about this upgrade.`
     );
+    core.tools.logProvider.warning(
+      `[core] Read upgrade-change-logs.md to learn about details for this upgrade.`
+    );
   } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
     // TODO: delete before Arm && Multi-env version released
     // only for arm && multi-env project with unreleased teams toolkit version

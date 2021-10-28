@@ -9,10 +9,12 @@ Incremental version for Teams Toolkit with multiple bugs fixes and the following
 
 Preview Features:
 - Enable CI/CD for multiple environment scenario.
+- Preview features in 2.8.0 release are still in preview.
 
 Enhancement:
 
 - Improve UI: more friendly user experience to create a new Teams project.
+- Improve UI: add links to source code for samples.
 - Support one-click deployment of SharePoint framework based Teams app.
 - Integrate Adaptive Card Studio with previewing and debugging Adaptive Card in VS Code.
 

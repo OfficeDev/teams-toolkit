@@ -10,6 +10,7 @@ Preview Features:
 Enhancement:
 
 - Improve UI: more friendly user experience to create a new Teams project.
+- Improve UI: add links to source code for samples.
 - Support one-click deployment of SharePoint framework based Teams app.
 - Integrate Adaptive Card Studio with previewing and debugging Adaptive Card in VS Code.
 

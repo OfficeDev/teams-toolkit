@@ -814,6 +814,7 @@ async function openMarkdownHandler() {
   const afterScaffold = globalStateGet("openReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     await globalStateUpdate("openReadme", false);
+    showChangeLocationMessage();
     showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
@@ -855,6 +856,7 @@ async function openSampleReadmeHandler() {
   const afterScaffold = globalStateGet("openSampleReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     globalStateUpdate("openSampleReadme", false);
+    showChangeLocationMessage();
     showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
@@ -864,6 +866,31 @@ async function openSampleReadmeHandler() {
       commands.executeCommand(PreviewMarkdownCommand, uri);
     });
   }
+}
+
+async function showChangeLocationMessage() {
+  const config = {
+    title: StringResources.vsc.handlers.configTitle,
+    run: async (): Promise<void> => {
+      commands.executeCommand(
+        "workbench.action.openSettings",
+        "fx-extension.defaultProjectRootDirectory"
+      );
+    },
+  };
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowChangeLocationNotification);
+  vscode.window
+    .showInformationMessage(
+      util.format(StringResources.vsc.handlers.configLocationDescription, getWorkspacePath()),
+      config
+    )
+    .then((selection) => {
+      if (selection?.title === StringResources.vsc.handlers.configTitle) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickChangeLocation);
+        selection.run();
+      }
+    });
 }
 
 async function showLocalDebugMessage() {
@@ -883,29 +910,15 @@ async function showLocalDebugMessage() {
       },
     };
 
-    const config = {
-      title: StringResources.vsc.handlers.configTitle,
-      run: async (): Promise<void> => {
-        commands.executeCommand(
-          "workbench.action.openSettings",
-          "fx-extension.defaultProjectRootDirectory"
-        );
-      },
-    };
-
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
     vscode.window
       .showInformationMessage(
-        util.format(StringResources.vsc.handlers.localDebugDescription, getWorkspacePath()),
-        config,
+        util.format(StringResources.vsc.handlers.localDebugDescription),
         localDebug
       )
       .then((selection) => {
         if (selection?.title === StringResources.vsc.handlers.localDebugTitle) {
           ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
-          selection.run();
-        } else if (selection?.title === StringResources.vsc.handlers.configTitle) {
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickChangeLocation);
           selection.run();
         }
       });

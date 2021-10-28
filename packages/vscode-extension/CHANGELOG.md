@@ -6,6 +6,7 @@ Incremental version for Teams Toolkit with multiple bugs fixes and the following
 
 Preview Features:
 - Enable CI/CD for multiple environment scenario.
+- Preview features in 2.8.0 release are still in preview.
 
 Enhancement:
 

@@ -1,5 +1,18 @@
 # Changelog
 
+## 2.9.0 - Nov 01, 2021 
+
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+Preview Features:
+- Enable CI/CD for multiple evironment scenario.
+
+Enhancement:
+
+- Improve UI: more friendly user experienc to create a new Teams project.
+- Support one-click deployment of SharePoint framework based Teams app.
+- Integrate Adaptive Card Studio with previewing and debugging Adaptive Card in VS Code.
+
 
 ## 2.8.0 - Oct 18, 2021
 

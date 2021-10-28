@@ -1126,7 +1126,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
 
 export async function listAllCollaborators(envs: string[]): Promise<Record<string, TreeItem[]>> {
   const result: Record<string, TreeItem[]> = {};
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListAllCollaboratorsStart);
 
   const checkCoreRes = checkCoreNotEmpty();
   if (checkCoreRes.isErr()) {
@@ -1177,14 +1177,17 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
         }
 
         result[env] = [generateCollaboratorWarningNode(env, label, toolTip, showWarning)];
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListAllCollaborators, {
           [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         });
       } else {
         throw userList.error.error;
       }
     } catch (e) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ListCollaborator, e);
+      if (!(e instanceof SystemError || e instanceof UserError)) {
+        e = wrapError(e);
+      }
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ListAllCollaborators, e);
       VsCodeLogInstance.warning(
         `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
       );

@@ -53,7 +53,7 @@ import {
 import { TemplateInfo } from "./resources/templateInfo";
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
 import { getTemplatesFolder } from "../../../folder";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { EnvironmentUtils } from "./utils/environment-utils";

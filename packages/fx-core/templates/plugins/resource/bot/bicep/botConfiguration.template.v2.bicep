@@ -25,7 +25,7 @@ var m365ApplicationIdUri = 'api://${ {{~../PluginOutput.fx-resource-frontend-hos
 {{/contains}}
 {{#notContains 'fx-resource-frontend-hosting' Plugins}}
 {{#contains 'fx-resource-bot' ../Plugins}}
-var m365ApplicationIdUri = 'api://botid-${bot_aadClientId}'
+var m365ApplicationIdUri = 'api://botid-${botId}'
 {{/contains}}
 {{/notContains}}
 

@@ -3,7 +3,7 @@ module botProvision '\{{PluginOutput.fx-resource-bot.Modules.botProvision.Provis
   name: 'botProvision'
   params: {
     provisionParameters: provisionParameters
-    userAssignedIdentityId: userAssignedIdentityProvision.outputs.resourceId
+    userAssignedIdentityId: {{PluginOutput.fx-resource-identity.References.identityProvision.identityResourceId}}
   }
 }
 

@@ -93,12 +93,6 @@ export class DependentPluginInfo {
   static readonly LocalTabEndpoint = "localTabEndpoint";
 }
 
-export class ArmOutput {
-  static readonly FrontendEndpoint = "frontendHosting_endpoint";
-  static readonly FrontendDomain = "frontendHosting_domain";
-  static readonly FrontendStorageResourceId = "frontendHosting_storageResourceId";
-}
-
 export class FrontendConfigInfo {
   static readonly StorageName = "storageName"; // TODO: Remove this storageName config when arm-disabled scenario removed
   static readonly StorageResourceId = "storageResourceId";

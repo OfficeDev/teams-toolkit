@@ -45,6 +45,7 @@ import { getTemplatesFolder } from "../../../folder";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { Utils } from "../../resource/frontend/utils";
 import { executeCommand } from "../../../common/cpUtils";
+import { TEAMS_FX_RESOURCE_ID_KEY } from ".";
 
 // Old folder structure constants
 const templateFolder = "templates";
@@ -229,7 +230,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
             deploymentName
           )
         );
-        ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, result.properties?.outputs);
+        syncArmOutput(ctx, result.properties?.outputs);
         return result;
       })
       .finally(() => {
@@ -269,6 +270,25 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       return result;
     }
   }
+}
+
+function syncArmOutput(ctx: SolutionContext, armOutput: any) {
+  // todo: delete this line after solution helps all resource plugin fill in arm output
+  ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, armOutput);
+
+  Object.keys(armOutput).forEach((key) => {
+    const output = armOutput[key].value;
+    if (output instanceof Object) {
+      const pluginId = output[TEAMS_FX_RESOURCE_ID_KEY];
+      if (pluginId) {
+        Object.keys(output).forEach((key) => {
+          if (key != TEAMS_FX_RESOURCE_ID_KEY) {
+            ctx.envInfo.state.get(pluginId)?.set(key, output[key]);
+          }
+        });
+      }
+    }
+  });
 }
 
 export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {

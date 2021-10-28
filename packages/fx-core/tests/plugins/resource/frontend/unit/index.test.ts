@@ -24,7 +24,6 @@ import {
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
 import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/configs";
 import {
-  ArmOutput,
   AzureErrorCode,
   FrontendConfigInfo,
   FrontendPathInfo,
@@ -220,11 +219,7 @@ describe("FrontendPlugin", () => {
         sinon
           .stub(AzureStorageClient.prototype, "enableStaticWebsite")
           .returns(Promise.resolve(undefined));
-        TestHelper.mockArmOutput(
-          pluginContext,
-          ArmOutput.FrontendStorageResourceId,
-          TestHelper.storageResourceId
-        );
+        TestHelper.mockArmOutput(pluginContext);
       } else {
         pluginContext.config.set(FrontendConfigInfo.Endpoint, TestHelper.storageEndpoint);
       }

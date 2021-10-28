@@ -1,0 +1,36 @@
+{
+    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/main/",
+    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
+    "samples": [
+        {
+            "id": "todo-list-with-Azure-backend",
+            "title": "Todo List with backend on Azure",
+            "description": "Todo List app with Azure Function backend and Azure SQL database",
+            "tags": ["React", "Azure function", "Azure SQL", "JS", "CI/CD"]
+        },
+        {
+            "id": "todo-list-SPFx",
+            "title": "Todo List with SPFx",
+            "description": "Todo List app hosting on SharePoint",
+            "tags": ["SharePoint", "SPFx", "TS"]
+        },
+        {
+            "id": "share-now",
+            "title": "Share Now",
+            "description": "Knowledge sharing app contains a Tab and a Message Extension",
+            "tags": ["Tab", "Message Extension", "TS"]
+        },
+        {
+            "id": "in-meeting-app",
+            "title": "In-meeting App",
+            "description": "A template for apps using only in the context of a Teams meeting",
+            "tags": ["Meeting extension", "JS"]
+        },
+        {
+            "id": "faq-plus",
+            "title": "FAQ Plus",
+            "description": "Conversational Bot which answers common questions, looping human when bots unable to help",
+            "tags": ["Easy QnA", "Bot", "JS"]
+        }
+    ]
+}

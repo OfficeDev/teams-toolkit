@@ -5,7 +5,7 @@ param m365ClientId string
 param m365ClientSecret string
 param m365ApplicationIdUri string
 param oauthAuthorityHost string
-param simpelAuthPackageUri string
+param simpleAuthPackageUri string
 
 var aadMetadataAddress = uri(oauthAuthorityHost, '${m365TenantId}/v2.0/.well-known/openid-configuration')
 var oauthAuthority = uri(oauthAuthorityHost, m365TenantId)
@@ -16,7 +16,7 @@ var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teams
 resource simpleAuthDeploy 'Microsoft.Web/sites/extensions@2021-01-15' = {
   name: '${simpleAuthWebAppName}/MSDeploy'
   properties: {
-    packageUri: simpelAuthPackageUri
+    packageUri: simpleAuthPackageUri
   }
 }
 

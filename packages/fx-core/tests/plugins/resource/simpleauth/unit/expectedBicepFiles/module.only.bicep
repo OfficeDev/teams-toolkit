@@ -18,6 +18,6 @@ module simpleAuthConfiguration './simple_auth_configuration.only.bicep' = {
     m365ApplicationIdUri: m365ApplicationIdUri
     m365TenantId: m365TenantId
     oauthAuthorityHost: m365OauthAuthorityHost
-    simpelAuthPackageUri: simpleAuth_packageUri
+    simpleAuthPackageUri: simpleAuth_packageUri
   }
 }

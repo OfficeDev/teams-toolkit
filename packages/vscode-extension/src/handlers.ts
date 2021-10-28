@@ -86,6 +86,7 @@ import { DepsChecker } from "./debug/depsChecker/checker";
 import { BackendExtensionsInstaller } from "./debug/depsChecker/backendExtensionsInstall";
 import { DotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
+import { NgrokChecker } from "./debug/depsChecker/ngrokChecker";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { vscodeAdapter } from "./debug/depsChecker/vscodeAdapter";
@@ -681,7 +682,12 @@ export async function validateSpfxDependenciesHandler(): Promise<void> {
 }
 
 async function validateDependenciesCore(depsChecker: DepsChecker): Promise<void> {
-  const shouldContinue = await depsChecker.resolve();
+  let shouldContinue = await depsChecker.resolve();
+
+  // TODO: integrate into DepsChecker after all checkers support linux
+  const ngrokChecker = new NgrokChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+  shouldContinue = shouldContinue && (await ngrokChecker.resolve());
+
   if (!shouldContinue) {
     await debug.stopDebugging();
     // TODO: better mechanism to stop the tasks and debug session.

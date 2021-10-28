@@ -111,6 +111,9 @@ export class FrontendOutputBicepSnippet {
   static readonly StorageName = "frontendHostingProvision.outputs.storageName";
   static readonly Endpoint = "frontendHostingProvision.outputs.endpoint";
   static readonly Domain = "frontendHostingProvision.outputs.domain";
+  static readonly Domain2 = "frontendHostingOutput.value.domain";
+  static readonly Endpoint2 = "frontendHostingOutput.value.endpoint";
+  static readonly StorageName2 = "frontendHostingOutput.value.storageName";
 }
 
 export class TelemetryEvent {

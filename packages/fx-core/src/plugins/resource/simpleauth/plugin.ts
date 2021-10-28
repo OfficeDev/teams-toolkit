@@ -132,9 +132,6 @@ export class SimpleAuthPluginImpl {
 
     const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
       .activeResourcePlugins;
-    const context = {
-      Plugins: selectedPlugins,
-    };
 
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
@@ -143,21 +140,6 @@ export class SimpleAuthPluginImpl {
       "simpleauth",
       "bicep"
     );
-
-    const provisionV2Result = await generateBicepFiles(
-      path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName),
-      context
-    );
-    const configV2Result = await generateBicepFiles(
-      path.join(bicepTemplateDirectory, Bicep.ConfigV2FileName),
-      context
-    );
-    if (provisionV2Result.isErr()) {
-      throw provisionV2Result.error;
-    }
-    if (configV2Result.isErr()) {
-      throw configV2Result.error;
-    }
 
     const provisionModuleV2Result = path.join(
       bicepTemplateDirectory,

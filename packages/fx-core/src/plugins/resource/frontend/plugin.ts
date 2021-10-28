@@ -196,8 +196,8 @@ export class FrontendPluginImpl {
       Provision: {
         Orchestration: await fs.readFile(provisionFilePath, ConstantString.UTF8Encoding),
         Reference: {
-          endpoint: FrontendOutputBicepSnippet.Endpoint,
-          domain: FrontendOutputBicepSnippet.Domain,
+          endpoint: FrontendOutputBicepSnippet.Endpoint2,
+          domain: FrontendOutputBicepSnippet.Domain2,
         },
         Modules: {
           frontendHostingProvision: await fs.readFile(

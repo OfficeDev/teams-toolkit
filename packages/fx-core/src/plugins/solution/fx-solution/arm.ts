@@ -559,12 +559,22 @@ export class ArmTemplateRenderContext {
     };
     const modules = armResult.Provision?.Modules;
     const references = armResult.Provision?.Reference;
+    const configs = armResult.Configuration?.Modules;
 
     if (modules) {
       for (const module of Object.entries(modules)) {
         const moduleFileName = module[0];
         pluginOutputContext.Modules![moduleFileName] = {
-          Path: generateBicepModuleFilePath(moduleFileName),
+          ProvisionPath: generateBicepModuleProvisionFilePath(moduleFileName),
+        };
+      }
+    }
+
+    if (configs) {
+      for (const module of Object.entries(configs)) {
+        const moduleFileName = module[0];
+        pluginOutputContext.Modules![moduleFileName] = {
+          ConfigPath: generateBicepModuleConfigFilePath(moduleFileName),
         };
       }
     }
@@ -678,7 +688,7 @@ interface PluginOutputContext {
 }
 
 interface PluginModuleProperties {
-  Path: string;
+  [PathName: string]: string;
 }
 
 function generateBicepModuleProvisionFilePath(moduleFileName: string) {

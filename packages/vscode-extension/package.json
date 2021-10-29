@@ -241,6 +241,16 @@
           "group": "inline@3"
         },
         {
+          "command": "fx-extension.openSubscriptionInPortal",
+          "when": "view == teamsfx-environment && viewItem == openSubscriptionInPortal",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.openResourceGroupInPortal",
+          "when": "view == teamsfx-environment && viewItem == openResourceGroupInPortal",
+          "group": "inline@3"
+        },
+        {
           "command": "fx-extension.grantPermission",
           "when": "view == teamsfx-environment && viewItem == addCollaborator",
           "group": "inline@3"
@@ -304,6 +314,14 @@
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openSubscriptionInPortal",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openResourceGroupInPortal",
           "when": "false"
         },
         {
@@ -474,6 +492,18 @@
         "command": "fx-extension.viewEnvironmentWithIcon",
         "title": "View environment",
         "icon": "$(file-symlink-directory)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.openSubscriptionInPortal",
+        "title": "Open in Portal",
+        "icon": "$(ports-open-browser-icon)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+	    {
+        "command": "fx-extension.openResourceGroupInPortal",
+        "title": "Open in Portal",
+        "icon": "$(ports-open-browser-icon)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {

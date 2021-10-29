@@ -33,6 +33,7 @@ import * as crypto from "crypto";
 import * as os from "os";
 import { FailedToParseResourceIdError } from "../core/error";
 import { SolutionError } from "../plugins/solution/fx-solution/constants";
+import Mustache from "mustache";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -167,7 +168,7 @@ export function dataNeedEncryption(key: string): boolean {
   return CryptoDataMatchers.has(key);
 }
 
-export function sperateSecretData(configJson: Json): Record<string, string> {
+export function separateSecretData(configJson: Json): Record<string, string> {
   const res: Record<string, string> = {};
   for (const matcher of SecretDataMatchers) {
     const splits = matcher.split(".");
@@ -196,37 +197,32 @@ export function sperateSecretData(configJson: Json): Record<string, string> {
   return res;
 }
 
-export function mergeSerectData(dict: Record<string, string>, configJson: Json): void {
-  for (const matcher of SecretDataMatchers) {
-    const splits = matcher.split(".");
-    const resourceId = splits[0];
-    const item = splits[1];
-    const resourceConfig: any = configJson[resourceId];
-    if (!resourceConfig) continue;
-    if ("*" !== item) {
-      const originalItemValue: string | undefined = resourceConfig[item] as string | undefined;
-      if (
-        originalItemValue &&
-        originalItemValue.startsWith("{{") &&
-        originalItemValue.endsWith("}}")
-      ) {
-        const keyName = `${resourceId}.${item}`;
-        resourceConfig[item] = dict[keyName];
+export function convertDotenvToEmbeddedJson(dict: Record<string, string>): Json {
+  const result: Json = {};
+  for (const key of Object.keys(dict)) {
+    const array = key.split(".");
+    let obj = result;
+    for (let i = 0; i < array.length - 1; ++i) {
+      const subKey = array[i];
+      let subObj = obj[subKey];
+      if (!subObj) {
+        subObj = {};
+        obj[subKey] = subObj;
       }
-    } else {
-      for (const itemName of Object.keys(resourceConfig)) {
-        const originalItemValue = resourceConfig[itemName];
-        if (
-          originalItemValue &&
-          originalItemValue.startsWith("{{") &&
-          originalItemValue.endsWith("}}")
-        ) {
-          const keyName = `${resourceId}.${itemName}`;
-          resourceConfig[itemName] = dict[keyName];
-        }
-      }
+      obj = subObj;
     }
+    obj[array[array.length - 1]] = dict[key];
   }
+  return result;
+}
+
+export function replaceTemplateWithUserData(
+  template: string,
+  userData: Record<string, string>
+): string {
+  const view = convertDotenvToEmbeddedJson(userData);
+  const result = Mustache.render(template, view);
+  return result;
 }
 
 export function serializeDict(dict: Record<string, string>): string {
@@ -236,20 +232,6 @@ export function serializeDict(dict: Record<string, string>): string {
     array.push(`${key}=${value}`);
   }
   return array.join("\n");
-}
-
-export function deserializeDict(data: string): Record<string, string> {
-  const lines = data.split("\n");
-  const dict: Record<string, string> = {};
-  for (const line of lines) {
-    const index = line.indexOf("=");
-    if (index > 0) {
-      const key = line.substr(0, index);
-      const value = line.substr(index + 1);
-      dict[key] = value;
-    }
-  }
-  return dict;
 }
 
 export async function fetchCodeZip(url: string) {

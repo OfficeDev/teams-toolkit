@@ -200,8 +200,14 @@ export async function askResourceGroupInfo(
   defaultResourceGroupName: string
 ): Promise<Result<ResourceGroupInfo, FxError>> {
   if (!isMultiEnvEnabled()) {
+    const exist = await checkResourceGroupExistence(rmClient, defaultResourceGroupName);
+    if (exist.isErr()) {
+      ctx.logProvider?.warning(
+        `Failed to check resource group existence ${defaultResourceGroupName}, assume non-existent, error '${exist.isErr}'`
+      );
+    }
     return ok({
-      createNewResourceGroup: true,
+      createNewResourceGroup: !(exist.isOk() && exist.value),
       name: defaultResourceGroupName,
       location: DefaultResourceGroupLocation,
     });

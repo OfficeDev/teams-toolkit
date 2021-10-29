@@ -339,9 +339,8 @@ async function generateLocalTemplate(manifestString: string) {
     "{{localSettings.bot.botId}}"
   );
   const manifest: TeamsAppManifest = JSON.parse(manifestString);
-  manifest.name.full = manifest.name.full
-    ? manifest.name.full
-    : manifest.name.short + "-local-debug";
+  manifest.name.full =
+    (manifest.name.full ? manifest.name.full : manifest.name.short) + "-local-debug";
   manifest.name.short = manifest.name.short.substr(0, 18) + "-local-debug";
   manifest.id = "{{localSettings.teamsApp.teamsAppId}}";
   return manifest;

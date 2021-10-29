@@ -5,8 +5,9 @@
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
 Preview Features:
-- Enable CI/CD for multiple environment scenario.
-- Preview features in 2.8.0 release are still in preview.
+- Enable CI/CD for multiple environments scenario.
+- Insider Preview features in 2.8.0 release are still in preview. Refer to [Enable insider preview featuers](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit) for how to use.
+- Upgrade existing projects to support preview features, refer to [Upgrade existing project to use latest features](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features) for more information.
 
 Enhancement:
 

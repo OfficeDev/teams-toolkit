@@ -53,7 +53,7 @@ pipeline {
 
         // We suggest to do the `npx teamsfx provision` step manually or in a separate pipeline. The following steps are for your reference.
         // After provisioning, you should commit .fx/env.default.json into the repository.
-        // You should save the content of .fx/default.userdata into credentials (https://www.jenkins.io/doc/book/using/using-credentials/) which can be refered by the stage with name 'Generate default.userdata'. 
+        // You should upload .fx/default.userdata into credentials (https://www.jenkins.io/doc/book/using/using-credentials/) in type of `Secret file` which can be refered by the stage with name 'Generate default.userdata'. 
         // stage('Provision hosting environment') {
         //     steps {
         //         sh 'npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID}'
@@ -79,7 +79,7 @@ pipeline {
                 USERDATA_CONTENT = credentials('USERDATA_CONTENT')
             }
             steps {
-                sh '[ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/default.userdata'
+                sh '[ ! -z "${USERDATA_CONTENT}" ] && cp ${USERDATA_CONTENT} .fx/default.userdata'
             }
         }
 

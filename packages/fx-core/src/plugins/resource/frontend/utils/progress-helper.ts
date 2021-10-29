@@ -14,7 +14,7 @@ export const ProvisionSteps = {
 };
 
 export const PostProvisionSteps = {
-  EnableStaticWebsite: Messages.ProgressEnableStaticWebsite,
+  EnableStaticWebsite: Messages.ProgressEnableStorageStaticWebsite,
 };
 
 export const PreDeploySteps = {

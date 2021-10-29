@@ -18,7 +18,8 @@ export class Messages {
   static readonly ProgressRegisterRP = "Registering required resource provider.";
   static readonly ProgressCreateStorage = "Creating Azure Storage account.";
   static readonly ProgressConfigure = "Configuring.";
-  static readonly ProgressEnableStaticWebsite = "Enabling Azure Storage account static website.";
+  static readonly ProgressEnableStorageStaticWebsite =
+    "Enabling Azure Storage account static website.";
   static readonly ProgressNPMInstall = `Running "npm install" for Tab frontend project.`;
   static readonly ProgressBuild = "Building Tab frontend project.";
   static readonly ProgressCheckStorage = "Checking Azure Storage account availability.";

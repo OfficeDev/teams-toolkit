@@ -39,7 +39,7 @@ import { Providers, ResourceManagementClientContext } from "@azure/arm-resources
 import path from "path";
 import { generateBicepFiles, getTemplatesFolder } from "../../..";
 import { Bicep, ConstantString } from "../../../common/constants";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ArmTemplateResult, ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { getArmOutput } from "../utils4v2";
 import {
@@ -254,12 +254,6 @@ export class SqlPluginImpl {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
-    const context = {
-      Plugins: selectedPlugins,
-    };
-
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -268,53 +262,30 @@ export class SqlPluginImpl {
       "bicep"
     );
 
-    const moduleTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      AzureSqlBicepFile.moduleTemplateFileName
-    );
-    const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
-    if (moduleContentResult.isErr()) {
-      throw moduleContentResult.error;
-    }
-
-    const parameterTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.ParameterOrchestrationFileName
-    );
-    const moduleOrchestrationFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.ModuleOrchestrationFileName
-    );
-    const outputTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.OutputOrchestrationFileName
-    );
-    const parameterFilePath = path.join(bicepTemplateDirectory, Bicep.ParameterFileName);
-
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        azureSqlProvision: {
-          Content: moduleContentResult.value,
-        },
-      },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
-          ParameterJson: JSON.parse(
-            await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName),
+          ConstantString.UTF8Encoding
+        ),
+        Modules: {
+          azureSqlProvision: await fs.readFile(
+            path.join(bicepTemplateDirectory, AzureSqlBicepFile.ProvisionModuleTemplateV2FileName),
+            ConstantString.UTF8Encoding
           ),
         },
-        ModuleTemplate: {
-          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
-          Outputs: {
-            sqlEndpoint: AzureSqlBicep.sqlEndpoint,
-            databaseName: AzureSqlBicep.databaseName,
-          },
-        },
-        OutputTemplate: {
-          Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
+        Reference: {
+          sqlServerResourceId: AzureSqlBicep.sqlResourceId,
+          sqlServerEndpoint: AzureSqlBicep.sqlEndpoint,
+          sqlDatabaseName: AzureSqlBicep.databaseName,
         },
       },
+      Parameters: JSON.parse(
+        await fs.readFile(
+          path.join(bicepTemplateDirectory, Bicep.ParameterFileName),
+          ConstantString.UTF8Encoding
+        )
+      ),
     };
     return ok(result);
   }

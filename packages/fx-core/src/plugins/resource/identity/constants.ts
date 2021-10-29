@@ -44,9 +44,9 @@ export class Telemetry {
 export class IdentityBicep {
   static readonly identityName: string = "userAssignedIdentityProvision.outputs.identityName";
   static readonly identityClientId: string =
-    "userAssignedIdentityProvision.outputs.identityClientId";
+    "provisionOutputs.userAssignedIdentityProvision.outputs.identityClientId";
   static readonly identityResourceId: string =
-    "userAssignedIdentityProvision.outputs.identityResourceId";
+    "provisionOutputs.userAssignedIdentityProvision.outputs.identityResourceId";
 }
 
 export class IdentityArmOutput {
@@ -57,5 +57,5 @@ export class IdentityArmOutput {
 
 export class IdentityBicepFile {
   static readonly moduleTemplateFileName: string = "userAssignedIdentity.template.bicep";
-  static readonly moduleTempalteV2Filename: string = "identity.template.v2.bicep";
+  static readonly moduleTempalteV2Filename: string = "identityProvision.template.v2.bicep";
 }

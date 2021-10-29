@@ -1,0 +1,78 @@
+{
+    "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.8/MicrosoftTeams.schema.json",
+    "manifestVersion": "1.8",
+    "version": "1.0.0",
+    "id": "{appid}",
+    "packageName": "com.microsoft.teams.extension",
+    "developer": {
+        "name": "Teams App, Inc.",
+        "websiteUrl": "{baseUrl}",
+        "privacyUrl": "{baseUrl}/privacy",
+        "termsOfUseUrl": "{baseUrl}/termsofuse"
+    },
+    "icons": {
+        "color": "color.png",
+        "outline": "outline.png"
+    },
+    "name": {
+        "short": "v1bot",
+        "full": ""
+    },
+    "description": {
+        "short": "Short description for Conversation Bot.",
+        "full": "Full description of Conversation Bot."
+    },
+    "accentColor": "#FFFFFF",
+    "bots": [
+        {
+            "botId": "{botId}",
+            "scopes": [
+                "personal",
+                "groupchat",
+                "team"
+            ],
+            "commandLists": [
+                {
+                    "scopes": [
+                        "personal"
+                    ],
+                    "commands": [
+                        {
+                            "title": "Hello",
+                            "description": "Sends a hello message and @mention the sender"
+                        }
+                    ]
+                },
+                {
+                    "scopes": [
+                        "team"
+                    ],
+                    "commands": [
+                        {
+                            "title": "Hello",
+                            "description": "Sends a hello message and @mention the sender"
+                        }
+                    ]
+                },
+                {
+                    "scopes": [
+                        "groupchat"
+                    ],
+                    "commands": [
+                        {
+                            "title": "Hello",
+                            "description": "Sends a hello message and @mention the sender"
+                        }
+                    ]
+                }
+            ],
+            "supportsFiles": false,
+            "isNotificationOnly": false
+        }
+    ],
+    "permissions": [
+        "identity",
+        "messageTeamMembers"
+    ],
+    "validDomains": []
+}

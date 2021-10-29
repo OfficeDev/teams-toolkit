@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 import { Logger } from "../utils/logger";
-import path from "path";
-import { ConfigFolderName, ArchiveFolderName } from "@microsoft/teamsfx-api";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 export enum ErrorType {
   User,
@@ -12,22 +11,12 @@ export enum ErrorType {
 
 const tips = {
   checkLog: "Check log for more information.",
-  reScaffold: `Run 'Start A New Project' again.`,
   doProvision: `Run 'Provision Resource' before this command.`,
-  doLogin: "Login to Azure.",
-  reLogin: "Sign out and login to Azure again.",
-  reProvision: `Run 'Provision Resource' again.`,
-  ensureResourceGroup: "Ensure your resource group exists.",
-  ensureAppNameValid:
-    "Ensure your app name only contains alphabetical and numeric characters, and does not contain trademark or reserved words.",
-  deleteSameNameStorage:
-    "Delete your Azure Storage Account with same name in another resource group or subscription.",
+  reProvision: `Run 'Provision' command again.`,
+  reDeploy: "Run 'Deploy' command again.",
   checkNetwork: "Check your network connection.",
   checkFsPermissions: "Check if you have Read/Write permissions to your file system.",
-  checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
-  checkSystemTime: "You may get expired credentials, check if your system time is correct.",
   restoreEnvironment: `If you manually updated configuration files (under directory .${ConfigFolderName}), recover them.`,
-  migrateV1Project: `Rollback your project from '${ArchiveFolderName}' folder.`,
 };
 
 export class BlazorPluginError extends Error {
@@ -43,7 +32,8 @@ export class BlazorPluginError extends Error {
     code: string,
     message: string,
     suggestions: string[],
-    helpLink?: string
+    helpLink?: string,
+    innerError?: Error
   ) {
     super(message);
     this.code = code;
@@ -51,6 +41,7 @@ export class BlazorPluginError extends Error {
     this.suggestions = suggestions;
     this.errorType = errorType;
     this.helpLink = helpLink;
+    this.innerError = innerError;
   }
 
   getMessage(): string {
@@ -66,185 +57,77 @@ export class BlazorPluginError extends Error {
   }
 }
 
-export class UnauthenticatedError extends BlazorPluginError {
-  constructor() {
-    super(ErrorType.User, "UnauthenticatedError", "Failed to get user login information.", [
-      tips.doLogin,
-    ]);
-  }
-}
-
-export class NoPreStepError extends BlazorPluginError {
-  constructor() {
-    super(ErrorType.System, "NoPreStepError", "The pre-step is not done.", [tips.checkLog]);
-  }
-}
-
-export class InvalidConfigError extends BlazorPluginError {
-  constructor(key: string, detailedErrorMessage?: string) {
-    const detailedMsg = detailedErrorMessage ? ` Error message: ${detailedErrorMessage}` : "";
-    super(ErrorType.User, "InvalidConfigError", `Get invalid ${key}.${detailedMsg}`, [
+export class FetchConfigError extends BlazorPluginError {
+  constructor(key: string) {
+    super(ErrorType.User, "FetchConfigError", `Failed to find ${key} from configuration`, [
       tips.restoreEnvironment,
     ]);
   }
 }
 
-export class CheckResourceGroupError extends BlazorPluginError {
-  constructor() {
-    super(ErrorType.User, "CheckResourceGroupError", "Failed to check resource group existence.", [
-      tips.checkLog,
-    ]);
-  }
-}
-
-export class NoResourceGroupError extends BlazorPluginError {
-  constructor() {
-    super(ErrorType.User, "NoResourceGroupError", "Failed to find resource group.", [
-      tips.ensureResourceGroup,
-    ]);
-  }
-}
-
-export class CheckStorageError extends BlazorPluginError {
-  constructor() {
+export class ProvisionError extends BlazorPluginError {
+  constructor(resource: string, innerErrorCode?: string) {
     super(
       ErrorType.User,
-      "CheckStorageError",
-      "Failed to check Azure Storage Account availability.",
-      [tips.checkSystemTime, tips.checkLog]
+      "ProvisionError",
+      `Failed to check/create '${resource}' for blazor app${
+        innerErrorCode ? `: ${innerErrorCode}` : ""
+      }.`,
+      [tips.reProvision]
     );
   }
 }
 
-export class NoStorageError extends BlazorPluginError {
-  constructor() {
-    super(ErrorType.User, "NoStorageError", "Failed to find Azure Storage Account.", [
-      tips.reProvision,
-    ]);
-  }
-}
-
-export class InvalidStorageNameError extends BlazorPluginError {
-  constructor() {
-    super(ErrorType.User, "InvalidStorageNameError", "Azure Storage Name is invalid.", [
-      tips.ensureAppNameValid,
-    ]);
-  }
-}
-
-export class StorageAccountAlreadyTakenError extends BlazorPluginError {
-  constructor() {
-    super(
-      ErrorType.User,
-      "StorageAccountAlreadyTakenError",
-      "Azure Storage Name is already in use.",
-      [tips.deleteSameNameStorage]
-    );
-  }
-}
-
-export class CreateStorageAccountError extends BlazorPluginError {
+export class ConfigureWebAppError extends BlazorPluginError {
   constructor(innerErrorCode?: string) {
     super(
       ErrorType.User,
-      "CreateStorageAccountError",
-      `Failed to create Azure Storage Account${innerErrorCode ? `: ${innerErrorCode}` : ""}.`,
-      [tips.checkLog]
+      "ConfigureWebAppError",
+      `Failed to retrieve or update Azure Web App Settings${
+        innerErrorCode ? `: ${innerErrorCode}` : ""
+      }.`,
+      [tips.reProvision]
     );
   }
 }
 
-export class ClearStorageError extends BlazorPluginError {
-  constructor() {
-    super(ErrorType.User, "ClearStorageError", "Failed to clear Azure Storage Account.", [
-      tips.checkSystemTime,
-      tips.checkNetwork,
-    ]);
-  }
-}
-
-export class UnknownScaffoldError extends BlazorPluginError {
-  constructor() {
-    super(
-      ErrorType.System,
-      "UnknownScaffoldError",
-      "Failed to scaffold project causes unknown reason.",
-      [tips.checkLog]
-    );
-  }
-}
-
-export class TemplateManifestError extends BlazorPluginError {
-  constructor(msg: string) {
+export class BuildError extends BlazorPluginError {
+  constructor(innerError?: Error) {
     super(
       ErrorType.User,
-      "TemplateManifestError ",
-      `Failed to find template from manifest: ${msg}`,
-      [tips.checkNetwork]
+      "BuildError",
+      "Failed to build Blazor project.",
+      [tips.checkLog, tips.reDeploy],
+      undefined,
+      innerError
     );
   }
 }
 
-export class TemplateZipFallbackError extends BlazorPluginError {
+export class ZipError extends BlazorPluginError {
   constructor() {
-    super(
-      ErrorType.System,
-      "TemplateZipFallbackError",
-      "Failed to download zip package and open local zip package.",
-      [tips.checkLog, tips.checkNetwork]
-    );
-  }
-}
-
-export class UnzipTemplateError extends BlazorPluginError {
-  constructor() {
-    super(ErrorType.User, "UnzipTemplateError", "Failed to unzip template package.", [
+    super(ErrorType.User, "ZipError", "Failed to generate zip package.", [
       tips.checkFsPermissions,
+      tips.reDeploy,
     ]);
   }
 }
 
-export class InvalidTabLanguageError extends BlazorPluginError {
+export class PublishCredentialError extends BlazorPluginError {
   constructor() {
-    super(
-      ErrorType.User,
-      "InvalidTabLanguageError",
-      "The selected programming language yet is not supported by Tab.",
-      [tips.restoreEnvironment, tips.reScaffold]
-    );
+    super(ErrorType.User, "PublishCredentialError", "Failed to retrieve publish credential.", [
+      tips.doProvision,
+      tips.reDeploy,
+    ]);
   }
 }
 
-export class InvalidAuthPluginConfigError extends BlazorPluginError {
+export class UploadZipError extends BlazorPluginError {
   constructor() {
-    super(
-      ErrorType.User,
-      "InvalidAuthPluginConfigError",
-      "The auth plugin configuration is invalid.",
-      [tips.restoreEnvironment, tips.reProvision]
-    );
-  }
-}
-
-export class InvalidAadPluginConfigError extends BlazorPluginError {
-  constructor() {
-    super(
-      ErrorType.User,
-      "InvalidAadPluginConfigError",
-      "The aad plugin configuration is invalid.",
-      [tips.restoreEnvironment, tips.reProvision]
-    );
-  }
-}
-
-export class UserTaskNotImplementedError extends BlazorPluginError {
-  constructor(taskName: string) {
-    super(
-      ErrorType.System,
-      "UserTaskNotImplementedError",
-      `User task '${taskName}' is not implemented.`,
-      []
-    );
+    super(ErrorType.User, "UploadZipError", "Failed to upload zip package.", [
+      tips.checkNetwork,
+      tips.reDeploy,
+    ]);
   }
 }
 
@@ -256,9 +139,8 @@ export async function runWithErrorCatchAndThrow<T>(
   fn: () => T | Promise<T>
 ): Promise<T> {
   try {
-    const res = await Promise.resolve(fn());
-    return res;
-  } catch (e) {
+    return await Promise.resolve(fn());
+  } catch (e: any) {
     Logger.error(e.toString());
     error.setInnerError(e);
     throw error;
@@ -270,9 +152,8 @@ export async function runWithErrorCatchAndWrap<T>(
   fn: () => T | Promise<T>
 ): Promise<T> {
   try {
-    const res = await Promise.resolve(fn());
-    return res;
-  } catch (e) {
+    return await Promise.resolve(fn());
+  } catch (e: any) {
     Logger.error(e.toString());
     const error = wrap(e);
     error.setInnerError(e);

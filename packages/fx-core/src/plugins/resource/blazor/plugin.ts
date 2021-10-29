@@ -31,7 +31,18 @@ import { execute } from "./utils/execute";
 import { forEachFileAndDir } from "./utils/dir-walk";
 import { sendRequestWithRetry } from "../../../common/templatesUtils";
 import axios from "axios";
-import { BlazorConfigKey as ConfigKey, AppSettingsKey } from "./enum";
+import { BlazorConfigKey as ConfigKey, AppSettingsKey, ResourceType } from "./enum";
+import {
+  ConfigureWebAppError,
+  FetchConfigError,
+  ProvisionError,
+  BuildError,
+  runWithErrorCatchAndThrow,
+  runWithErrorCatchAndWrap,
+  ZipError,
+  PublishCredentialError,
+  UploadZipError,
+} from "./resources/errors";
 
 type Site = WebSiteManagementModels.Site;
 
@@ -59,13 +70,13 @@ export class BlazorPluginImpl {
     const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
       DependentPluginInfo.solutionPluginName
     );
-    this.config.resourceNameSuffix = solutionConfig?.get(
-      DependentPluginInfo.resourceNameSuffix
-    ) as string;
     this.config.resourceGroupName = solutionConfig?.get(
       DependentPluginInfo.resourceGroupName
     ) as string;
     this.config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
+    this.config.resourceNameSuffix = solutionConfig?.get(
+      DependentPluginInfo.resourceNameSuffix
+    ) as string;
     this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
 
     this.config.webAppName = ctx.config.get(ConfigInfo.webAppName) as string;
@@ -75,6 +86,7 @@ export class BlazorPluginImpl {
   private syncConfigToContext(ctx: PluginContext): void {
     Object.entries(this.config)
       .filter((kv) => PluginInfo.persistentConfig.find((x: string) => x === kv[0]))
+      // TODO: .filter((kv) => PluginInfo.persistentConfig.find((x: string) => x === kv[0] && kv[1]))
       .forEach((kv) => {
         if (kv[1]) {
           ctx.config.set(kv[0], kv[1]);
@@ -86,7 +98,7 @@ export class BlazorPluginImpl {
     if (v) {
       return v;
     }
-    throw new Error(`No value: ${key}`);
+    throw new FetchConfigError(key);
   }
 
   private isPluginEnabled(ctx: PluginContext, plugin: string): boolean {
@@ -109,7 +121,7 @@ export class BlazorPluginImpl {
 
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartProvision(PluginInfo.displayName));
-    const progressHandler = await ProgressHelper.startProvisionProgressHandler(ctx);
+    // TODO: const progressHandler = await ProgressHelper.startProvisionProgressHandler(ctx);
 
     const resourceGroupName = this.checkAndGet(
       this.config.resourceGroupName,
@@ -128,24 +140,39 @@ export class BlazorPluginImpl {
     );
 
     const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);
-    const appServicePlan = await AzureLib.ensureAppServicePlans(
-      client,
-      resourceGroupName,
-      appServicePlanName,
-      DefaultProvisionConfigs.appServicePlansConfig(location)
+
+    const appServicePlan = await runWithErrorCatchAndWrap(
+      (error) => new ProvisionError(ResourceType.appServicePlan, error.code),
+      async () =>
+        await AzureLib.ensureAppServicePlans(
+          client,
+          resourceGroupName,
+          appServicePlanName,
+          DefaultProvisionConfigs.appServicePlansConfig(location)
+        )
     );
     const appServicePlanId: string | undefined = appServicePlan.id;
     if (!appServicePlanId) {
-      throw new Error("app service plan id");
+      // TODO: Logger.error("failToGetAppServicePlanId");
+      throw new ProvisionError(ResourceType.appServicePlan);
     }
 
-    const site = await Provision.ensureWebApp(
-      client,
-      resourceGroupName,
-      location,
-      webAppName,
-      appServicePlanId
+    const site = await runWithErrorCatchAndWrap(
+      (error) => new ProvisionError(ResourceType.webApp, error.code),
+      async () =>
+        await Provision.ensureWebApp(
+          client,
+          resourceGroupName,
+          location,
+          webAppName,
+          appServicePlanId
+        )
     );
+
+    if (!site.defaultHostName) {
+      // TODO: Logger.error("failToGetWebAppEndpoint");
+      throw new ProvisionError(ResourceType.webApp);
+    }
 
     this.config.site = site;
     if (!this.config.webAppEndpoint) {
@@ -170,75 +197,98 @@ export class BlazorPluginImpl {
       await ctx.azureAccountProvider?.getAccountCredentialAsync(),
       ConfigKey.credential
     );
-    const endpoint = this.checkAndGet(this.config.webAppEndpoint, ConfigKey.webAppEndpoint);
 
     const site = this.checkAndGet(this.config.site, ConfigKey.site);
     this.config.site = undefined;
 
     const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);
-    const res = await client.webApps.listApplicationSettings(resourceGroupName, webAppName);
+    const res = await runWithErrorCatchAndWrap(
+      (error) => new ConfigureWebAppError(error.code),
+      async () => await client.webApps.listApplicationSettings(resourceGroupName, webAppName)
+    );
     if (res.properties) {
       Object.entries(res.properties).forEach((kv: [string, string]) => {
         this.pushAppSettings(site, kv[0], kv[1]);
       });
     }
 
+    this.collectAppSettings(ctx, site);
+    await runWithErrorCatchAndWrap(
+      (error) => new ConfigureWebAppError(error.code),
+      async () => await client.webApps.update(resourceGroupName, webAppName, site)
+    );
+
+    return ok(undefined);
+  }
+
+  public collectAppSettings(ctx: PluginContext, site: Site) {
+    this.collectAppSettingsSelf(site);
+
     const aadConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
       DependentPluginInfo.aadPluginName
     );
     if (this.isPluginEnabled(ctx, DependentPluginInfo.aadPluginName) && aadConfig) {
-      const clientId: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.clientID) as string,
-        DependentPluginInfo.clientID
-      );
-      const clientSecret: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.aadClientSecret) as string,
-        DependentPluginInfo.aadClientSecret
-      );
-      const oauthHost: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.oauthHost) as string,
-        DependentPluginInfo.oauthHost
-      );
-      const tenantId: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.tenantId) as string,
-        DependentPluginInfo.tenantId
-      );
-      const applicationIdUris: string = this.checkAndGet(
-        aadConfig.get(DependentPluginInfo.applicationIdUris) as string,
-        DependentPluginInfo.applicationIdUris
-      );
-
-      this.pushAppSettings(site, AppSettingsKey.clientId, clientId);
-      this.pushAppSettings(site, AppSettingsKey.clientSecret, clientSecret);
-      this.pushAppSettings(site, AppSettingsKey.oauthHost, `${oauthHost}/${tenantId}`);
-      this.pushAppSettings(site, AppSettingsKey.identifierUri, applicationIdUris);
-      this.pushAppSettings(
-        site,
-        AppSettingsKey.aadMetadataAddress,
-        AzureInfo.aadMetadataAddress(tenantId)
-      );
+      this.collectAppSettingsFromAAD(site, aadConfig);
     }
 
     const botConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
       DependentPluginInfo.botPluginName
     );
     if (this.isPluginEnabled(ctx, DependentPluginInfo.botPluginName) && botConfig) {
-      const botId = this.checkAndGet(
-        botConfig.get(DependentPluginInfo.botId) as string,
-        DependentPluginInfo.botId
-      );
-      const botPassword = this.checkAndGet(
-        botConfig.get(DependentPluginInfo.botPassword) as string,
-        DependentPluginInfo.botPassword
-      );
-
-      this.pushAppSettings(site, AppSettingsKey.botId, botId);
-      this.pushAppSettings(site, AppSettingsKey.botPassword, botPassword);
+      this.collectAppSettingsFromBot(site, botConfig);
     }
+  }
 
+  public collectAppSettingsSelf(site: Site) {
+    const endpoint = this.checkAndGet(this.config.webAppEndpoint, ConfigKey.webAppEndpoint);
     this.pushAppSettings(site, AppSettingsKey.tabAppEndpoint, endpoint);
-    await client.webApps.update(resourceGroupName, webAppName, site);
-    return ok(undefined);
+  }
+
+  public collectAppSettingsFromBot(site: Site, botConfig: ReadonlyPluginConfig) {
+    const botId = this.checkAndGet(
+      botConfig.get(DependentPluginInfo.botId) as string,
+      DependentPluginInfo.botId
+    );
+    const botPassword = this.checkAndGet(
+      botConfig.get(DependentPluginInfo.botPassword) as string,
+      DependentPluginInfo.botPassword
+    );
+
+    this.pushAppSettings(site, AppSettingsKey.botId, botId);
+    this.pushAppSettings(site, AppSettingsKey.botPassword, botPassword);
+  }
+
+  public collectAppSettingsFromAAD(site: Site, aadConfig: ReadonlyPluginConfig) {
+    const clientId: string = this.checkAndGet(
+      aadConfig.get(DependentPluginInfo.clientID) as string,
+      DependentPluginInfo.clientID
+    );
+    const clientSecret: string = this.checkAndGet(
+      aadConfig.get(DependentPluginInfo.aadClientSecret) as string,
+      DependentPluginInfo.aadClientSecret
+    );
+    const oauthHost: string = this.checkAndGet(
+      aadConfig.get(DependentPluginInfo.oauthHost) as string,
+      DependentPluginInfo.oauthHost
+    );
+    const tenantId: string = this.checkAndGet(
+      aadConfig.get(DependentPluginInfo.tenantId) as string,
+      DependentPluginInfo.tenantId
+    );
+    const applicationIdUris: string = this.checkAndGet(
+      aadConfig.get(DependentPluginInfo.applicationIdUris) as string,
+      DependentPluginInfo.applicationIdUris
+    );
+
+    this.pushAppSettings(site, AppSettingsKey.clientId, clientId);
+    this.pushAppSettings(site, AppSettingsKey.clientSecret, clientSecret);
+    this.pushAppSettings(site, AppSettingsKey.oauthHost, `${oauthHost}/${tenantId}`);
+    this.pushAppSettings(site, AppSettingsKey.identifierUri, applicationIdUris);
+    this.pushAppSettings(
+      site,
+      AppSettingsKey.aadMetadataAddress,
+      AzureInfo.aadMetadataAddress(tenantId)
+    );
   }
 
   public pushAppSettings(site: Site, newName: string, newValue: string, replace = true): void {
@@ -288,10 +338,13 @@ export class BlazorPluginImpl {
 
     const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);
 
-    await this.build(workingPath, runtime);
+    await runWithErrorCatchAndWrap(
+      (error) => new BuildError(error),
+      async () => await this.build(workingPath, runtime)
+    );
 
     const folderToBeZipped = PathInfo.publishFolderPath(workingPath, framework, runtime);
-    this.zipDeploy(client, resourceGroupName, webAppName, folderToBeZipped);
+    await this.zipDeploy(client, resourceGroupName, webAppName, folderToBeZipped);
 
     await ProgressHelper.endDeployProgress(true);
     Logger.info(Messages.EndDeploy(PluginInfo.displayName));
@@ -309,36 +362,44 @@ export class BlazorPluginImpl {
     webAppName: string,
     componentPath: string
   ) {
-    const zip = await this.generateZip(componentPath);
+    const zip = await runWithErrorCatchAndThrow(
+      new ZipError(),
+      async () => await this.generateZip(componentPath)
+    );
     const zipContent = zip.toBuffer();
 
-    const publishCred = await client.webApps.listPublishingCredentials(
-      resourceGroupName,
-      webAppName
+    const publishCred = await runWithErrorCatchAndThrow(
+      new PublishCredentialError(),
+      async () => await client.webApps.listPublishingCredentials(resourceGroupName, webAppName)
     );
     const username = publishCred.publishingUserName;
     const password = publishCred.publishingPassword;
 
     if (!password) {
-      throw new Error(password);
+      // TODO: Logger.error("Filaed to query publish cred.");
+      throw new PublishCredentialError();
     }
 
-    await sendRequestWithRetry(
+    await runWithErrorCatchAndThrow(
+      new UploadZipError(),
       async () =>
-        await axios.post(AzureInfo.zipDeployURL(webAppName), zipContent, {
-          headers: {
-            "Content-Type": "application/octet-stream",
-            "Cache-Control": "no-cache",
-          },
-          auth: {
-            username: username,
-            password: password,
-          },
-          maxContentLength: Infinity,
-          maxBodyLength: Infinity,
-          timeout: 10 * 60 * 1000,
-        }),
-      3
+        await sendRequestWithRetry(
+          async () =>
+            await axios.post(AzureInfo.zipDeployURL(webAppName), zipContent, {
+              headers: {
+                "Content-Type": "application/octet-stream",
+                "Cache-Control": "no-cache",
+              },
+              auth: {
+                username: username,
+                password: password,
+              },
+              maxContentLength: Infinity,
+              maxBodyLength: Infinity,
+              timeout: 10 * 60 * 1000,
+            }),
+          3
+        )
     );
   }
 

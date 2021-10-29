@@ -11,6 +11,7 @@ export const ScaffoldSteps = {
 export const ProvisionSteps = {
   RegisterResourceProvider: Messages.ProgressRegisterRP,
   CreateStorage: Messages.ProgressCreateStorage,
+  Configure: Messages.ProgressConfigure,
 };
 
 export const PostProvisionSteps = {

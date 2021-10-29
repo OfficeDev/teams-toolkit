@@ -323,7 +323,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   const {
     hasFrontend,
     hasBackend,
-    hasBotPlugin,
+    hasBot,
     hasBotCapability,
     hasMessageExtensionCapability,
     isSPFx,
@@ -332,9 +332,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
 
   //localSettings.json
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
-  await localSettingsProvider.save(
-    localSettingsProvider.init(hasFrontend, hasBackend, hasBotPlugin)
-  );
+  await localSettingsProvider.save(localSettingsProvider.init(hasFrontend, hasBackend, hasBot));
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
   await fs.copy(path.join(fx, "settings.json"), projectSettings);

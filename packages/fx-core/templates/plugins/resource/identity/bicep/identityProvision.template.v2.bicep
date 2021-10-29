@@ -7,5 +7,6 @@ resource managedIdentity 'Microsoft.ManagedIdentity/userAssignedIdentities@2018-
   location: resourceGroup().location
 }
 
-output resourceId string = managedIdentity.id
-output clientId string = managedIdentity.properties.clientId
+output identityName string = identityName
+output identityClientId string = managedIdentity.properties.clientId
+output identityResourceId string = managedIdentity.id

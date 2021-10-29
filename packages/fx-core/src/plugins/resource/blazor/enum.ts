@@ -26,3 +26,8 @@ export enum AppSettingsKey {
   botPassword = "BOT_PASSWORD",
   identifierUri = "IDENTIFIER_URI",
 }
+
+export enum ResourceType {
+  webApp = "Azure Web App",
+  appServicePlan = "Azure App Service Plan",
+}

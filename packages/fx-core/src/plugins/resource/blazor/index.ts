@@ -16,7 +16,6 @@ import {
   UnhandledErrorMessage,
 } from "./resources/errors";
 import { Logger } from "./utils/logger";
-import { ProgressHelper } from "./utils/progress-helper";
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
@@ -62,8 +61,6 @@ export class BlazorPlugin implements Plugin {
     try {
       return await fn();
     } catch (e: any) {
-      await ProgressHelper.endAllHandlers(false);
-
       if (e instanceof BlazorPluginError) {
         const error =
           e.errorType === ErrorType.User

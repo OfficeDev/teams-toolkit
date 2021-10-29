@@ -18,7 +18,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   CoreHookContext,
-  deserializeDict,
   serializeDict,
   SolutionConfigError,
   ProjectSettingError,
@@ -61,7 +60,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
-import * as util from "util";
+import * as dotenv from "dotenv";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 
@@ -323,7 +322,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   const {
     hasFrontend,
     hasBackend,
-    hasBotPlugin,
+    hasBot,
     hasBotCapability,
     hasMessageExtensionCapability,
     isSPFx,
@@ -332,9 +331,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
 
   //localSettings.json
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
-  await localSettingsProvider.save(
-    localSettingsProvider.init(hasFrontend, hasBackend, hasBotPlugin)
-  );
+  await localSettingsProvider.save(localSettingsProvider.init(hasFrontend, hasBackend, hasBot));
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
   await fs.copy(path.join(fx, "settings.json"), projectSettings);
@@ -431,7 +428,7 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
 
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
   const stateData = await readJson(devState);
-  const secrets: Record<string, string> = deserializeDict(await fs.readFile(devUserData, "UTF-8"));
+  const secrets: Record<string, string> = dotenv.parse(await fs.readFile(devUserData, "UTF-8"));
 
   stateData[PluginNames.APPST]["teamsAppId"] = stateData[PluginNames.SOLUTION]["remoteTeamsAppId"];
 

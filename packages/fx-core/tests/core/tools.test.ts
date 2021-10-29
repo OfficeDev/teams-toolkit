@@ -103,15 +103,18 @@ describe("redactObject", () => {
   });
 
   it("replaceTemplateWithUserData", () => {
-    const str = "solution.teamsAppTenantId=abcdesdfs234fg" + "\nsolution.provisionSuccess=true";
-    "\nfx-resource-aad-app-for-teams.clientSecret=sdfsfsdfwerwer" +
+    const str =
+      "solution.teamsAppTenantId=abcdesdfs234fg" +
+      "\nsolution.provisionSuccess=true" +
+      "\nfx-resource-aad-app-for-teams.clientSecret=sdfsfsdfwerwer" +
       "\nfx-resource-bot.botPassword=sdfsd23wfw324sfd";
-    const userData = dotenv.parse(str);
-    assert.equal("abcdesdfs234fg", userData["solution.teamsAppTenantId"]);
-    assert.equal("sdfsfsdfwerwer", userData["fx-resource-aad-app-for-teams.clientSecret"]);
-    const template =
-      '{"solution": {"teamsAppTenantId": "{{solution.teamsAppTenantId}}", provisionSuccess:"{{solution.provisionSuccess}}"},"fx-resource-bot": {"botPassword": "{{fx-resource-bot.botPassword}}"},"fx-resource-aad-app-for-teams": {"clientSecret": "{{fx-resource-aad-app-for-teams.clientSecret}}"}}';
-    const expected: Json = {
+    const userDateExpected = {
+      "solution.teamsAppTenantId": "abcdesdfs234fg",
+      "solution.provisionSuccess": "true",
+      "fx-resource-aad-app-for-teams.clientSecret": "sdfsfsdfwerwer",
+      "fx-resource-bot.botPassword": "sdfsd23wfw324sfd",
+    };
+    const expectedResult: Json = {
       solution: {
         teamsAppTenantId: "abcdesdfs234fg",
         provisionSuccess: "true",
@@ -123,10 +126,15 @@ describe("redactObject", () => {
         clientSecret: "sdfsfsdfwerwer",
       },
     };
+    const template =
+      '{"solution": {"teamsAppTenantId": "{{solution.teamsAppTenantId}}", "provisionSuccess":"{{solution.provisionSuccess}}"},' +
+      '"fx-resource-bot": {"botPassword": "{{fx-resource-bot.botPassword}}"},"fx-resource-aad-app-for-teams": {"clientSecret": "{{fx-resource-aad-app-for-teams.clientSecret}}"}}';
+    const userData = dotenv.parse(str);
+    assert.deepEqual(userData, userDateExpected);
     const view = convertDotenvToEmbeddedJson(userData);
-    assert.deepEqual(view, expected);
+    assert.deepEqual(view, expectedResult);
     const result = replaceTemplateWithUserData(template, userData);
     const actual = JSON.parse(result);
-    assert.deepEqual(actual, expected);
+    assert.deepEqual(actual, expectedResult);
   });
 });

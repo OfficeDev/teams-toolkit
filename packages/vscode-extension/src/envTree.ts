@@ -230,7 +230,7 @@ async function localSettingsExists(projectRoot: string): Promise<boolean> {
   return await fs.pathExists(provider.localSettingsFilePath);
 }
 
-export async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeItem[]> {
+async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeItem[]> {
   if (
     environmentTreeProvider &&
     environmentTreeProvider.findCommand("fx-extension.environment." + env) &&
@@ -240,7 +240,8 @@ export async function getSubscriptionAndResourceGroupNode(env: string): Promise<
     const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
     if (subscriptionInfo) {
       const subscriptionTreeItem: TreeItem = {
-        commandId: `fx-extension.environment.${env}.subscription`,
+        commandId: `fx-extension.environment.subscription.${env}`,
+        contextValue: "openSubscriptionInPortal",
         label: subscriptionInfo.subscriptionName,
         icon: "key",
         isCustom: false,
@@ -252,11 +253,12 @@ export async function getSubscriptionAndResourceGroupNode(env: string): Promise<
       const resourceGroupName = await getResourceGroupNameFromEnv(env);
       if (resourceGroupName) {
         const resourceGroupTreeItem: TreeItem = {
-          commandId: `fx-extension.environment.${env}.resourceGroup`,
+          commandId: `fx-extension.environment.resourceGroup.${env}`,
+          contextValue: "openResourceGroupInPortal",
           label: resourceGroupName,
           icon: "symbol-method",
           isCustom: false,
-          parent: `fx-extension.environment.${env}.subscription`,
+          parent: `fx-extension.environment.subscription.${env}`,
         };
 
         envSubItems.push(resourceGroupTreeItem);
@@ -285,7 +287,7 @@ export async function getSubscriptionAndResourceGroupNode(env: string): Promise<
 function checkAzureAccountStatus(env: string): TreeItem | undefined {
   if (AzureAccountManager.getAccountInfo() === undefined) {
     return {
-      commandId: `fx-extension.environment.${env}.checkAzureAccount`,
+      commandId: `fx-extension.environment.checkAzureAccount.${env}`,
       label: StringResources.vsc.commandsTreeViewProvider.noAzureAccountSignedIn,
       icon: "warning",
       isCustom: true,
@@ -312,7 +314,7 @@ async function checkSubscriptionPermission(
 
     if (!checkSucceeded) {
       const warningTreeItem: TreeItem = {
-        commandId: `fx-extension.environment.${env}.checkSubscription`,
+        commandId: `fx-extension.environment.checkSubscription.${env}`,
         label: StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
         tooltip: {
           value: StringResources.vsc.commandsTreeViewProvider.noSubscriptionFoundInAzureAccount,

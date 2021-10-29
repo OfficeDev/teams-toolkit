@@ -86,6 +86,7 @@ import { DepsChecker } from "./debug/depsChecker/checker";
 import { BackendExtensionsInstaller } from "./debug/depsChecker/backendExtensionsInstall";
 import { DotnetChecker } from "./debug/depsChecker/dotnetChecker";
 import { FuncToolChecker } from "./debug/depsChecker/funcToolChecker";
+import { NgrokChecker } from "./debug/depsChecker/ngrokChecker";
 import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { vscodeAdapter } from "./debug/depsChecker/vscodeAdapter";
@@ -681,7 +682,12 @@ export async function validateSpfxDependenciesHandler(): Promise<void> {
 }
 
 async function validateDependenciesCore(depsChecker: DepsChecker): Promise<void> {
-  const shouldContinue = await depsChecker.resolve();
+  let shouldContinue = await depsChecker.resolve();
+
+  // TODO: integrate into DepsChecker after all checkers support linux
+  const ngrokChecker = new NgrokChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
+  shouldContinue = shouldContinue && (await ngrokChecker.resolve());
+
   if (!shouldContinue) {
     await debug.stopDebugging();
     // TODO: better mechanism to stop the tasks and debug session.
@@ -1126,7 +1132,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
 
 export async function listAllCollaborators(envs: string[]): Promise<Record<string, TreeItem[]>> {
   const result: Record<string, TreeItem[]> = {};
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListAllCollaboratorsStart);
 
   const checkCoreRes = checkCoreNotEmpty();
   if (checkCoreRes.isErr()) {
@@ -1177,14 +1183,17 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
         }
 
         result[env] = [generateCollaboratorWarningNode(env, label, toolTip, showWarning)];
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaborator, {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListAllCollaborators, {
           [TelemetryProperty.Success]: TelemetrySuccess.Yes,
         });
       } else {
         throw userList.error.error;
       }
     } catch (e) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ListCollaborator, e);
+      if (!(e instanceof SystemError || e instanceof UserError)) {
+        e = wrapError(e);
+      }
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ListAllCollaborators, e);
       VsCodeLogInstance.warning(
         `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
       );

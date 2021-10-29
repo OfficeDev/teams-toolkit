@@ -12,7 +12,7 @@ export class AzureInfo {
   static readonly suffixLenMax = 12;
   static readonly zipDeployURL = (appName: string) =>
     `https://${appName}.scm.azurewebsites.net/api/zipdeploy`;
-  static readonly requiredResourceProviders = ["Microsoft.Web"];
+  // TODO: static readonly requiredResourceProviders = ["Microsoft.Web"];
   static readonly aadMetadataAddress = (tenantId: string) =>
     `https://login.microsoftonline.com/${tenantId}/v2.0/.well-known/openid-configuration`;
 }

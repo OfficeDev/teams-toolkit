@@ -1,8 +1,5 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import * as fs from "fs-extra";
-import * as path from "path";
-import AdmZip from "adm-zip";
 import {
   PluginContext,
   AzureSolutionSettings,
@@ -13,36 +10,24 @@ import {
   AzureInfo,
   BlazorPluginInfo as PluginInfo,
   BlazorConfigInfo as ConfigInfo,
-  DefaultProvisionConfigs,
   DependentPluginInfo,
   BlazorPathInfo as PathInfo,
-  BlazorCommands as Commands,
 } from "./constants";
 import { Logger } from "./utils/logger";
 import { Messages } from "./resources/messages";
 import { TeamsFxResult } from "./error-factory";
-import { ProgressHelper } from "./utils/progress-helper";
-import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
+import { WebSiteManagementModels } from "@azure/arm-appservice";
 import { v4 as uuid } from "uuid";
-import { BlazorNaming as Naming, BlazorProvision as Provision } from "./ops/provision";
-import { AzureClientFactory, AzureLib } from "./utils/azure-client";
+import * as Provision from "./ops/provision";
+import { AzureClientFactory } from "./utils/azure-client";
 import { NameValuePair } from "@azure/arm-appservice/esm/models";
-import { execute } from "./utils/execute";
-import { forEachFileAndDir } from "./utils/dir-walk";
-import { sendRequestWithRetry } from "../../../common/templatesUtils";
-import axios from "axios";
 import { BlazorConfigKey as ConfigKey, AppSettingsKey, ResourceType } from "./enum";
 import {
   ConfigureWebAppError,
   FetchConfigError,
-  ProvisionError,
-  BuildError,
-  runWithErrorCatchAndThrow,
   runWithErrorCatchAndWrap,
-  ZipError,
-  PublishCredentialError,
-  UploadZipError,
 } from "./resources/errors";
+import * as Deploy from "./ops/deploy";
 
 type Site = WebSiteManagementModels.Site;
 
@@ -85,13 +70,8 @@ export class BlazorPluginImpl {
 
   private syncConfigToContext(ctx: PluginContext): void {
     Object.entries(this.config)
-      .filter((kv) => PluginInfo.persistentConfig.find((x: string) => x === kv[0]))
-      // TODO: .filter((kv) => PluginInfo.persistentConfig.find((x: string) => x === kv[0] && kv[1]))
-      .forEach((kv) => {
-        if (kv[1]) {
-          ctx.config.set(kv[0], kv[1]);
-        }
-      });
+      .filter((kv) => PluginInfo.persistentConfig.find((x: string) => x === kv[0] && kv[1]))
+      .forEach((kv) => ctx.config.set(kv[0], kv[1]));
   }
 
   private checkAndGet<T>(v: T | undefined, key: string) {
@@ -112,7 +92,7 @@ export class BlazorPluginImpl {
     const teamsAppName: string = ctx.projectSettings?.appName ?? "MyTeamsApp";
     const suffix: string = this.config.resourceNameSuffix ?? uuid().substr(0, 6);
 
-    this.config.webAppName ??= Naming.generateWebAppName(teamsAppName, PluginInfo.alias, suffix);
+    this.config.webAppName ??= Provision.generateWebAppName(teamsAppName, PluginInfo.alias, suffix);
     this.config.appServicePlanName ??= this.config.webAppName;
 
     this.syncConfigToContext(ctx);
@@ -141,38 +121,19 @@ export class BlazorPluginImpl {
 
     const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);
 
-    const appServicePlan = await runWithErrorCatchAndWrap(
-      (error) => new ProvisionError(ResourceType.appServicePlan, error.code),
-      async () =>
-        await AzureLib.ensureAppServicePlans(
-          client,
-          resourceGroupName,
-          appServicePlanName,
-          DefaultProvisionConfigs.appServicePlansConfig(location)
-        )
+    const appServicePlanId = await Provision.ensureAppServicePlan(
+      client,
+      resourceGroupName,
+      appServicePlanName,
+      location
     );
-    const appServicePlanId: string | undefined = appServicePlan.id;
-    if (!appServicePlanId) {
-      // TODO: Logger.error("failToGetAppServicePlanId");
-      throw new ProvisionError(ResourceType.appServicePlan);
-    }
-
-    const site = await runWithErrorCatchAndWrap(
-      (error) => new ProvisionError(ResourceType.webApp, error.code),
-      async () =>
-        await Provision.ensureWebApp(
-          client,
-          resourceGroupName,
-          location,
-          webAppName,
-          appServicePlanId
-        )
+    const site = await Provision.ensureWebApp(
+      client,
+      resourceGroupName,
+      location,
+      webAppName,
+      appServicePlanId
     );
-
-    if (!site.defaultHostName) {
-      // TODO: Logger.error("failToGetWebAppEndpoint");
-      throw new ProvisionError(ResourceType.webApp);
-    }
 
     this.config.site = site;
     if (!this.config.webAppEndpoint) {
@@ -181,7 +142,7 @@ export class BlazorPluginImpl {
 
     this.syncConfigToContext(ctx);
 
-    await ProgressHelper.endProvisionProgress(true);
+    // TODO: await ProgressHelper.endProvisionProgress(true);
     Logger.info(Messages.EndProvision(PluginInfo.displayName));
     return ok(undefined);
   }
@@ -315,7 +276,6 @@ export class BlazorPluginImpl {
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartDeploy(PluginInfo.displayName));
-    await ProgressHelper.startDeployProgressHandler(ctx);
 
     this.syncConfigFromContext(ctx);
 
@@ -338,94 +298,12 @@ export class BlazorPluginImpl {
 
     const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);
 
-    await runWithErrorCatchAndWrap(
-      (error) => new BuildError(error),
-      async () => await this.build(workingPath, runtime)
-    );
+    await Deploy.build(workingPath, runtime);
 
     const folderToBeZipped = PathInfo.publishFolderPath(workingPath, framework, runtime);
-    await this.zipDeploy(client, resourceGroupName, webAppName, folderToBeZipped);
+    await Deploy.zipDeploy(client, resourceGroupName, webAppName, folderToBeZipped);
 
-    await ProgressHelper.endDeployProgress(true);
     Logger.info(Messages.EndDeploy(PluginInfo.displayName));
     return ok(undefined);
-  }
-
-  private async build(path: string, runtime: string) {
-    const command = Commands.buildRelease(runtime);
-    await execute(command, path);
-  }
-
-  private async zipDeploy(
-    client: WebSiteManagementClient,
-    resourceGroupName: string,
-    webAppName: string,
-    componentPath: string
-  ) {
-    const zip = await runWithErrorCatchAndThrow(
-      new ZipError(),
-      async () => await this.generateZip(componentPath)
-    );
-    const zipContent = zip.toBuffer();
-
-    const publishCred = await runWithErrorCatchAndThrow(
-      new PublishCredentialError(),
-      async () => await client.webApps.listPublishingCredentials(resourceGroupName, webAppName)
-    );
-    const username = publishCred.publishingUserName;
-    const password = publishCred.publishingPassword;
-
-    if (!password) {
-      // TODO: Logger.error("Filaed to query publish cred.");
-      throw new PublishCredentialError();
-    }
-
-    await runWithErrorCatchAndThrow(
-      new UploadZipError(),
-      async () =>
-        await sendRequestWithRetry(
-          async () =>
-            await axios.post(AzureInfo.zipDeployURL(webAppName), zipContent, {
-              headers: {
-                "Content-Type": "application/octet-stream",
-                "Cache-Control": "no-cache",
-              },
-              auth: {
-                username: username,
-                password: password,
-              },
-              maxContentLength: Infinity,
-              maxBodyLength: Infinity,
-              timeout: 10 * 60 * 1000,
-            }),
-          3
-        )
-    );
-  }
-
-  private async generateZip(componentPath: string) {
-    const zip = new AdmZip();
-    const tasks: Promise<void>[] = [];
-    const zipFiles = new Set<string>();
-
-    const addFileIntoZip = async (zip: AdmZip, filePath: string, zipPath: string) => {
-      const content = await fs.readFile(filePath);
-      zip.addFile(zipPath, content);
-    };
-
-    await forEachFileAndDir(componentPath, (itemPath: string, stats: fs.Stats) => {
-      const relativePath: string = path.relative(componentPath, itemPath);
-      if (relativePath && !stats.isDirectory()) {
-        zipFiles.add(relativePath);
-
-        // If fail to reuse cached entry, load it from disk.
-        const fullPath = path.join(componentPath, relativePath);
-        const task = addFileIntoZip(zip, fullPath, relativePath);
-        tasks.push(task);
-      }
-    });
-
-    await Promise.all(tasks);
-    return zip;
   }
 }

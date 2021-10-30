@@ -53,17 +53,15 @@ import { AzureOperations } from "./azureOps";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import path from "path";
 import { getTemplatesFolder } from "../../..";
-import { ArmTemplateResult, ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import {
   copyFiles,
-  generateBicepFiles,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
   isArmSupportEnabled,
 } from "../../../common";
-import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { getArmOutput } from "../utils4v2";
 
 export class TeamsBotImpl {
@@ -198,7 +196,7 @@ export class TeamsBotImpl {
 
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
 
-    const result1: ArmTemplateResult = {
+    const result: ArmTemplateResult = {
       Provision: {
         Orchestration: await fs.readFile(
           path.join(bicepTemplateDir, Bicep.ProvisionV2FileName),
@@ -237,7 +235,7 @@ export class TeamsBotImpl {
     };
 
     Logger.info(Messages.SuccessfullyGenerateArmTemplatesBot);
-    return ResultFactory.Success(result1);
+    return ResultFactory.Success(result);
   }
 
   private async provisionWebApp() {

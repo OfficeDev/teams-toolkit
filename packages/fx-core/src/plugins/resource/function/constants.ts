@@ -182,7 +182,7 @@ export class QuestionValidationFunc {
 
 export class FunctionBicep {
   static readonly functionEndpoint: string =
-    "provisionOutputs.functionProvision.outputs.functionEndpoint";
+    "provisionOutputs.functionProvision.value.functionEndpoint";
   static readonly functionResourceId: string =
     "provisionOutputs.functionOutput.value.functionAppResourceId";
 }

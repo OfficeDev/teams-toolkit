@@ -45,5 +45,5 @@ export interface ArmTemplateResult extends Record<string, unknown> {
     Modules?: { [moduleFileName: string]: string };
   };
   Configuration?: { Orchestration: string; Modules?: { [moduleFileName: string]: string } };
-  Parameters?: string;
+  Parameters?: Record<string, string>;
 }

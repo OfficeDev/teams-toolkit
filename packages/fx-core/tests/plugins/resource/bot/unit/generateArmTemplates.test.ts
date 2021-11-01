@@ -54,45 +54,33 @@ describe("Bot Generates Arm Templates", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      // const compiledResult = mockSolutionUpdateArmTemplates(
-      //   mockedSolutionDataContext,
-      //   result.value
-      // );
-
       const compiledResult = mockSolutionUpdateArmTemplatesV2(
         mockedSolutionDataContext,
         result.value
       );
 
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
-      // chai.assert.strictEqual(
-      //   compiledResult.Modules!.botProvision.Content,
-      //   fs.readFileSync(
-      //     path.join(expectedBicepFileDirectory, provisionModuleFileName),
-      //     ConstantString.UTF8Encoding
-      //   )
-      // );
-      chai.assert.strictEqual(
-        compiledResult.Provision!.Modules!.botProvision,
-        fs.readFileSync(
-          path.join(expectedBicepFileDirectory, provisionModuleFileName),
-          ConstantString.UTF8Encoding
-        )
+      const provisionModuleFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, provisionModuleFileName),
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(compiledResult.Provision!.Modules!.botProvision, provisionModuleFile);
+
+      const configModuleFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, configurationModuleFileName),
+        ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(
         compiledResult.Configuration!.Modules!.botConfiguration,
-        fs.readFileSync(
-          path.join(expectedBicepFileDirectory, configurationModuleFileName),
-          ConstantString.UTF8Encoding
-        )
+        configModuleFile
       );
-      chai.assert.strictEqual(
-        compiledResult.Provision!.Orchestration,
-        fs.readFileSync(
-          path.join(expectedBicepFileDirectory, "provision.result.v2.bicep"),
-          ConstantString.UTF8Encoding
-        )
+
+      const orchestrationProvisionFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, "provision.result.v2.bicep"),
+        ConstantString.UTF8Encoding
       );
+      chai.assert.strictEqual(compiledResult.Provision!.Orchestration, orchestrationProvisionFile);
+
       chai.assert.strictEqual(
         compiledResult.Configuration!.Orchestration,
         fs.readFileSync(

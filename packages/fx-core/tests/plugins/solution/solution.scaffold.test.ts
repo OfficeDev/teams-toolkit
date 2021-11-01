@@ -37,7 +37,7 @@ import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/Resou
 import Container from "typedi";
 import mockedEnv from "mocked-env";
 import { ArmResourcePlugin } from "../../../src/common/armInterface";
-import { mockedFehostScaffoldArmResult, mockedSimpleAuthScaffoldArmResult } from "./util";
+import { mockedFehostScaffoldArmResultV2, mockedSimpleAuthScaffoldArmResultV2 } from "./util";
 import { getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
 import { MockTools } from "../../core/utils";
 import { assert } from "console";
@@ -93,6 +93,9 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mocker.stub<any, any>(fs, "pathExists").withArgs(readmePath).resolves(true);
     mocker.stub(fs, "copy").callsFake((src: string, dest: string) => {
       fileContent.set(dest, mockedReadMeContent);
+    });
+    mocker.stub(fs, "appendFile").callsFake(async (path: number | PathLike, data: any) => {
+      fileContent.set(path.toString(), data);
     });
   });
 
@@ -201,23 +204,24 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedFehostScaffoldArmResult);
+      return ok(mockedFehostScaffoldArmResultV2);
     });
 
     mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedSimpleAuthScaffoldArmResult);
+      return ok(mockedSimpleAuthScaffoldArmResultV2);
     });
 
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(5);
-    expect(fileContent.has(path.join("./templates/azure", "main.bicep"))).to.be.true;
+    expect(fileContent.size).equals(6);
+    expect(fileContent.has(path.join("./templates/azure", "provision.bicep"))).to.be.true;
+    expect(fileContent.has(path.join("./templates/azure", "config.bicep"))).to.be.true;
     expect(
-      fileContent.has(path.join("./templates/azure/modules", "frontendHostingProvision.bicep"))
+      fileContent.has(path.join("./templates/azure/provision", "frontendHostingProvision.bicep"))
     ).to.be.true;
-    expect(fileContent.has(path.join("./templates/azure/modules", "simpleAuthProvision.bicep"))).to
-      .be.true;
+    expect(fileContent.has(path.join("./templates/azure/provision", "simpleAuthProvision.bicep")))
+      .to.be.true;
     expect(fileContent.has(path.join("./.fx/configs", "azure.parameters.dev.json"))).to.be.true;
 
     restore();

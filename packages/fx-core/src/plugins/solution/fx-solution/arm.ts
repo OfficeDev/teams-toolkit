@@ -68,7 +68,7 @@ const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 // constant string
 const resourceBaseName = "resourceBaseName";
 const parameterName = "parameters";
-const valueName = "resourceBaseName";
+const stateName = "state";
 const solutionName = "solution";
 
 // Get ARM template content from each resource plugin and output to project folder
@@ -175,7 +175,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
 
   // update parameters
   const parameterJson = await getParameterJson(ctx);
-
+  console.log("================== parameterJson", parameterJson);
   const resourceGroupName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
     return err(
@@ -242,7 +242,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       .finally(() => {
         deployCtx.finished = true;
       });
-
+    console.log(result);
     await pollDeploymentStatus(deployCtx);
     await result;
     return ok(undefined);
@@ -757,14 +757,14 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
 
   // Add environment variable to available variables
   const processVariables: Record<string, string> = Object.keys(process.env)
-    .filter((key) => !valueName.includes(key))
+    .filter((key) => !stateName.includes(key))
     .reduce((obj: Record<string, string>, key: string) => {
       obj[key] = process.env[key] as string;
       return obj;
     }, {});
   Object.assign(availableVariables, processVariables); // The environment variable has higher priority
 
-  return compileHandlebarsTemplateString(parameterContent, availableVariables.provisionParameters);
+  return compileHandlebarsTemplateString(parameterContent, availableVariables);
 }
 
 function generateResourceBaseName(appName: string, envName: string): string {

@@ -101,7 +101,7 @@ describe("simpleAuthPlugin", () => {
     const generateArmTemplatesResult = await simpleAuthPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testProvisionModuleFileName = "simepleAuthProvision.result.v2.bicep";
+    const testProvisionModuleFileName = "simpleAuthProvision.result.v2.bicep";
     const testConfigurationModuleFileName = "simpleAuthConfig.result.v2.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
@@ -131,34 +131,47 @@ describe("simpleAuthPlugin", () => {
         expectedBicepFileDirectory,
         testProvisionModuleFileName
       );
+      const provisionMpduleFile = await fs.readFile(
+        expectedProvisionModuleFilePath,
+        ConstantString.UTF8Encoding
+      );
       chai.assert.strictEqual(
         expectedResult.Provision!.Modules!.simpleAuthProvision,
-        fs.readFileSync(expectedProvisionModuleFilePath, ConstantString.UTF8Encoding)
+        provisionMpduleFile
       );
       const expectedConfigurationModuleFilePath = path.join(
         expectedBicepFileDirectory,
         testConfigurationModuleFileName
       );
+
+      const configModuleFile = await fs.readFile(
+        expectedConfigurationModuleFilePath,
+        ConstantString.UTF8Encoding
+      );
       chai.assert.strictEqual(
         expectedResult.Configuration!.Modules!.simpleAuthConfiguration,
-        fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
+        configModuleFile
       );
       const expectedPrvosionSnippetFilePath = path.join(
         expectedBicepFileDirectory,
         "provision.result.v2.bicep"
       );
-      chai.assert.strictEqual(
-        expectedResult.Provision!.Orchestration,
-        fs.readFileSync(expectedPrvosionSnippetFilePath, ConstantString.UTF8Encoding)
+
+      const orchestrationProvisionFile = await fs.readFile(
+        expectedPrvosionSnippetFilePath,
+        ConstantString.UTF8Encoding
       );
+      chai.assert.strictEqual(expectedResult.Provision!.Orchestration, orchestrationProvisionFile);
       const expectedConfigFilePath = path.join(
         expectedBicepFileDirectory,
         "Config.result.v2.bicep"
       );
-      chai.assert.strictEqual(
-        expectedResult.Configuration!.Orchestration,
-        fs.readFileSync(expectedConfigFilePath, ConstantString.UTF8Encoding)
+
+      const OrchestrationConfigFile = await fs.readFile(
+        expectedConfigFilePath,
+        ConstantString.UTF8Encoding
       );
+      chai.assert.strictEqual(expectedResult.Configuration!.Orchestration, OrchestrationConfigFile);
       // const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
       // chai.assert.strictEqual(
       //   expectedResult.Orchestration.OutputTemplate!.Content,

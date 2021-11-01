@@ -103,7 +103,7 @@ describe("Frontend hosting V2", () => {
         "fx-resource-frontend-hosting": {
           Modules: {
             frontendHostingProvision: {
-              Path: `./${testModuleFileName}`,
+              ProvisionPath: `./${testModuleFileName}`,
             },
           },
         },
@@ -111,10 +111,6 @@ describe("Frontend hosting V2", () => {
     };
     assert.isTrue(result.isOk());
     if (result.isOk()) {
-      // const expectedResult = mockSolutionUpdateArmTemplates(
-      //   mockedSolutionDataContext,
-      //   result.value.template as ScaffoldArmTemplateResult
-      // );
       const expectedResult = mockSolutionUpdateArmTemplatesV2(
         mockedSolutionDataContext,
         result.value.template as ArmTemplateResult
@@ -122,18 +118,17 @@ describe("Frontend hosting V2", () => {
 
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
       const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
-      assert.strictEqual(
-        expectedResult.Provision!.Modules!.frontendHostingProvision,
-        fs.readFileSync(expectedModuleFilePath, ConstantString.UTF8Encoding)
-      );
+      const moduleFile = await fs.readFile(expectedModuleFilePath, ConstantString.UTF8Encoding);
+      assert.strictEqual(expectedResult.Provision!.Modules!.frontendHostingProvision, moduleFile);
       const expectedModuleSnippetFilePath = path.join(
         expectedBicepFileDirectory,
         "provision.result.v2.bicep"
       );
-      assert.strictEqual(
-        expectedResult.Provision!.Orchestration,
-        fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
+      const OrchestrationConfigFile = await fs.readFile(
+        expectedModuleSnippetFilePath,
+        ConstantString.UTF8Encoding
       );
+      assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationConfigFile);
       assert.isNotNull(expectedResult.Provision!.Reference);
       assert.isUndefined(expectedResult.Parameters);
     }

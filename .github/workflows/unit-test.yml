@@ -5,10 +5,12 @@ on:
     branches:
       - main
       - dev
+      - feat/arm-support
   push:
     branches:
       - main
       - dev
+      - feat/arm-support
 
 jobs:
   source-branch-test:

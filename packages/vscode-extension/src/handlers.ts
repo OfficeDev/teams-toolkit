@@ -1010,7 +1010,6 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
     await registerEnvTreeHandler(false);
-    await updateNewEnvCollaborators(result.value);
   }
   return result;
 }

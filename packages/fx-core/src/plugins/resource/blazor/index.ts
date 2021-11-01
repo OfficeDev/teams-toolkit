@@ -28,6 +28,7 @@ export class BlazorPlugin implements Plugin {
   name = "fx-resource-blazor";
   displayName = "Blazor";
   activate(solutionSettings: AzureSolutionSettings): boolean {
+    // TODO: Change activate condition after integrating with solution
     const hostType = solutionSettings?.hostType || "";
     return hostType === HostTypeOptionAzure.id;
   }

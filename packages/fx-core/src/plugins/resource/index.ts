@@ -13,4 +13,3 @@ export * from "./localdebug";
 export * from "./simpleauth";
 export * from "./spfx";
 export * from "./sql";
-export * from "./blazor";

@@ -19,6 +19,8 @@ Enhancement:
 - Support one-click deployment of SharePoint framework based Teams app.
 - Integrate Adaptive Card Studio with previewing and debugging Adaptive Card in VS Code.
 
+  ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/adaptive-card.gif)
+
 ## 2.8.0 - Oct 18 2021
 
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:

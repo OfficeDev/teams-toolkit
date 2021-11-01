@@ -18,12 +18,9 @@ import {
 import { Logger } from "./utils/logger";
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
-import { Service } from "typedi";
-import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { BlazorPluginImpl as PluginImpl } from "./plugin";
 import { BlazorPluginInfo as PluginInfo } from "./constants";
 
-@Service(ResourcePlugins.BlazorPlugin)
 export class BlazorPlugin implements Plugin {
   name = "fx-resource-blazor";
   displayName = "Blazor";

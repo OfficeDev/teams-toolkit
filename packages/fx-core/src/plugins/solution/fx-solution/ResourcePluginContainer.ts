@@ -17,7 +17,6 @@ export const ResourcePlugins = {
   ApimPlugin: "ApimPlugin",
   AppStudioPlugin: "AppStudioPlugin",
   SimpleAuthPlugin: "SimpleAuthPlugin",
-  BlazorPlugin: "BlazorPlugin",
 };
 
 export const ResourcePluginsV2 = {
@@ -32,7 +31,6 @@ export const ResourcePluginsV2 = {
   ApimPlugin: "ApimPluginV2",
   AppStudioPlugin: "AppStudioPluginV2",
   SimpleAuthPlugin: "SimpleAuthPluginV2",
-  BlazorPlugin: "BlazorPlugin",
 };
 
 /**

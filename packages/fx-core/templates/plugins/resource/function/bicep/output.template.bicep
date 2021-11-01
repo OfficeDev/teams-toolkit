@@ -1,3 +1,5 @@
-
-output function_functionEndpoint string = functionProvision.outputs.functionEndpoint
-output function_appResourceId string = functionProvision.outputs.functionAppResourceId
+output functionOutput object = {
+  teamsFxPluginId: 'fx-resource-function'
+  functionEndpoint: 'https://${functionProvision.outputs.functionEndpoint}'
+  functionAppResourceId: functionProvision.outputs.functionAppResourceId
+}

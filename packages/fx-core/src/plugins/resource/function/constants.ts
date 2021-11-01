@@ -25,7 +25,7 @@ export class FunctionPluginInfo {
     FunctionConfigKey.storageAccountName,
     FunctionConfigKey.appServicePlanName,
     FunctionConfigKey.functionEndpoint,
-    FunctionConfigKey.functionAppId,
+    FunctionConfigKey.functionAppResourceId,
   ];
 
   public static readonly templateBaseGroupName: string = "function-base";
@@ -182,11 +182,6 @@ export class QuestionValidationFunc {
 
 export class FunctionBicep {
   static readonly functionEndpoint: string = "functionProvision.outputs.functionEndpoint";
-}
-
-export class FunctionArmOutput {
-  static readonly Endpoint: string = "function_functionEndpoint";
-  static readonly AppResourceId: string = "function_appResourceId";
 }
 
 export class FunctionBicepFile {

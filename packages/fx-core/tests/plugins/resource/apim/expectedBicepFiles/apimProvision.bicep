@@ -69,4 +69,4 @@ resource apimServiceAuthServer 'Microsoft.ApiManagement/service/authorizationSer
 
 output serviceResourceId string = apimService.id
 output productResourceId string = apimServiceProduct.id
-output authServiceResourceId string = apimServiceAuthServer.id
+output authServerResourceId string = apimServiceAuthServer.id

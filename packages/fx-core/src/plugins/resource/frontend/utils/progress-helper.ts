@@ -14,6 +14,10 @@ export const ProvisionSteps = {
   Configure: Messages.ProgressConfigure,
 };
 
+export const PostProvisionSteps = {
+  EnableStaticWebsite: Messages.ProgressEnableStorageStaticWebsite,
+};
+
 export const PreDeploySteps = {
   CheckStorage: Messages.ProgressCheckStorage,
 };
@@ -33,6 +37,7 @@ export const MigrateSteps = {
 export class ProgressHelper {
   static scaffoldProgress: IProgressHandler | undefined;
   static provisionProgress: IProgressHandler | undefined;
+  static postProvisionProgress: IProgressHandler | undefined;
   static preDeployProgress: IProgressHandler | undefined;
   static deployProgress: IProgressHandler | undefined;
   static migrateProgress: IProgressHandler | undefined;
@@ -48,6 +53,19 @@ export class ProgressHelper {
     );
     await this.scaffoldProgress?.start(Messages.ProgressStart);
     return this.scaffoldProgress;
+  }
+
+  static async startPostProvisionProgressHandler(
+    ctx: PluginContext
+  ): Promise<IProgressHandler | undefined> {
+    await this.postProvisionProgress?.end(true);
+
+    this.postProvisionProgress = ctx.ui?.createProgressBar(
+      Messages.PostProvisionProgressTitle,
+      Object.entries(PostProvisionSteps).length
+    );
+    await this.postProvisionProgress?.start(Messages.ProgressStart);
+    return this.postProvisionProgress;
   }
 
   static async startProvisionProgressHandler(
@@ -118,6 +136,11 @@ export class ProgressHelper {
   static async endProvisionProgress(success: boolean): Promise<void> {
     await this.provisionProgress?.end(success);
     this.provisionProgress = undefined;
+  }
+
+  static async endPostProvisionProgress(success: boolean): Promise<void> {
+    await this.postProvisionProgress?.end(success);
+    this.postProvisionProgress = undefined;
   }
 
   static async endPreDeployProgress(success: boolean): Promise<void> {

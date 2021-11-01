@@ -105,7 +105,6 @@ export class AadAppClient {
           )
         );
       } else {
-        /*
         await AadAppClient.retryHanlder(ctx, stage, () =>
           GraphClient.updateAADApp(
             TokenProvider.token as string,
@@ -113,7 +112,6 @@ export class AadAppClient {
             updateRedirectUriObject
           )
         );
-        */
       }
     } catch (error) {
       if (skip) {

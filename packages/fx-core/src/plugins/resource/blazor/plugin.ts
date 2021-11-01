@@ -21,7 +21,7 @@ import { v4 as uuid } from "uuid";
 import * as Provision from "./ops/provision";
 import { AzureClientFactory } from "./utils/azure-client";
 import { NameValuePair } from "@azure/arm-appservice/esm/models";
-import { BlazorConfigKey as ConfigKey, AppSettingsKey, ResourceType } from "./enum";
+import { BlazorConfigKey as ConfigKey, AppSettingsKey } from "./enum";
 import {
   ConfigureWebAppError,
   FetchConfigError,
@@ -89,7 +89,7 @@ export class BlazorPluginImpl {
 
   public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
     this.syncConfigFromContext(ctx);
-    const teamsAppName: string = ctx.projectSettings?.appName ?? "MyTeamsApp";
+    const teamsAppName = this.checkAndGet(ctx.projectSettings?.appName, ConfigKey.teamsAppName);
     const suffix: string = this.config.resourceNameSuffix ?? uuid().substr(0, 6);
 
     this.config.webAppName ??= Provision.generateWebAppName(teamsAppName, PluginInfo.alias, suffix);
@@ -291,7 +291,7 @@ export class BlazorPluginImpl {
       ConfigKey.credential
     );
 
-    // ? Do we support user customize framework and runtime? If yes, how?
+    // ? Do we support user customize build? If yes, how?
     // * If we support user customize runtime, we need to validate its value because we use it to concat build command.
     const framework = PluginInfo.defaultFramework;
     const runtime = PluginInfo.defaultRuntime;

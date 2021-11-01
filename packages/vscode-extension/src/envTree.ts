@@ -148,16 +148,18 @@ export async function getAllCollaboratorList(envs: string[], force = false): Pro
 }
 
 export async function updateNewEnvCollaborators(env: string): Promise<void> {
-  const parentNode = generateCollaboratorParentNode(env);
-  const notProvisionedNode = generateCollaboratorWarningNode(
-    env,
-    StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration,
-    undefined,
-    false
-  );
+  mutex.runExclusive(async () => {
+    const parentNode = generateCollaboratorParentNode(env);
+    const notProvisionedNode = generateCollaboratorWarningNode(
+      env,
+      StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration,
+      undefined,
+      false
+    );
 
-  collaboratorsRecordCache[env] = [parentNode, notProvisionedNode];
-  await environmentTreeProvider.add(collaboratorsRecordCache[env]);
+    collaboratorsRecordCache[env] = [parentNode, notProvisionedNode];
+    await environmentTreeProvider.add(collaboratorsRecordCache[env]);
+  });
 }
 
 export async function addCollaboratorToEnv(

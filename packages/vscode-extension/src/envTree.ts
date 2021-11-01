@@ -45,7 +45,7 @@ export async function registerEnvTreeHandler(
   forceUpdateCollaboratorList = true
 ): Promise<Result<Void, FxError>> {
   if (isMultiEnvEnabled() && vscode.workspace.workspaceFolders) {
-    mutex.runExclusive(async () => {
+    await mutex.runExclusive(async () => {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders![0];
       const workspacePath: string = workspaceFolder.uri.fsPath;
       const envNamesResult = await environmentManager.listEnvConfigs(workspacePath);
@@ -148,7 +148,7 @@ export async function getAllCollaboratorList(envs: string[], force = false): Pro
 }
 
 export async function updateNewEnvCollaborators(env: string): Promise<void> {
-  mutex.runExclusive(async () => {
+  await mutex.runExclusive(async () => {
     const parentNode = generateCollaboratorParentNode(env);
     const notProvisionedNode = generateCollaboratorWarningNode(
       env,

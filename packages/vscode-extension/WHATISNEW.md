@@ -12,6 +12,8 @@ Preview Features:
 - Insider Preview features in 2.8.0 release are still in preview. Refer to [Enable insider preview featuers](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit) for how to use.
 - Upgrade existing projects to support preview features, refer to [Upgrade existing project to use latest features](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features) for more information.
 
+  ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/adaptive-card.gif)
+
 Enhancement:
 
 - Improve UI: more friendly user experience to create a new Teams project.

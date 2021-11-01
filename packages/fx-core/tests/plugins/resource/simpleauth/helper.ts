@@ -178,9 +178,15 @@ export function mockArmOutput(context: PluginContext, simpleAuthUrl: string) {
       domain: `test_storage_name.z13.web.core.windows.net`,
     },
   };
-  armOutput[Constants.ArmOutput.simpleAuthEndpoint] = {
-    type: "String",
-    value: simpleAuthUrl,
+  armOutput["simpleAuthOutput"] = {
+    type: "Object",
+    value: {
+      teamsFxPluginId: "fx-resource-simple-auth",
+      skuName: "B1",
+      endpoint: simpleAuthUrl,
+      webAppName: "test_simple_auth_web_app_name",
+      appServicePlanName: "test_simple_auth_app_service_plan_name",
+    },
   };
 
   solutionProfile.set(ARM_TEMPLATE_OUTPUT, armOutput);

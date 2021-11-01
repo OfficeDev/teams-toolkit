@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ApimArmOutput, ApimDefaultValues, ApimPathInfo, ApimPluginConfigKeys } from "../constants";
+import { ApimDefaultValues, ApimPathInfo, ApimPluginConfigKeys } from "../constants";
 import { AssertNotEmpty } from "../error";
 import {
   IAadPluginConfig,
@@ -29,7 +29,6 @@ import path from "path";
 import { Bicep, ConstantString } from "../../../../common/constants";
 import { ScaffoldArmTemplateResult } from "../../../../common/armInterface";
 import * as fs from "fs-extra";
-import { getArmOutput } from "../../utils4v2";
 import {
   generateBicepFiles,
   getResourceGroupNameFromResourceId,
@@ -106,11 +105,7 @@ export class ApimManager {
     aadConfig: IAadPluginConfig,
     appName: string
   ): Promise<void> {
-    if (isArmSupportEnabled()) {
-      apimConfig.serviceResourceId = getArmOutput(ctx, ApimArmOutput.ServiceResourceId);
-      apimConfig.productResourceId = getArmOutput(ctx, ApimArmOutput.ProductResourceId);
-      apimConfig.authServerResourceId = getArmOutput(ctx, ApimArmOutput.AuthServerResourceId);
-    } else {
+    if (!isArmSupportEnabled()) {
       const solutionConfig = new SolutionConfig(ctx.envInfo);
       const apimService: ApimService = await this.lazyApimService.getValue();
       const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;

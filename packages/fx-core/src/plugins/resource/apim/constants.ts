@@ -8,9 +8,9 @@ export class ProjectConstants {
   public static readonly pluginShortName: string = "APIM";
   public static readonly pluginName: string = "fx-resource-apim";
   public static readonly pluginDisplayName: string = "API Management";
-  public static readonly configFilePath: string = "env.default.json";
   public static readonly configFilePathArmSupported = (envName: string): string =>
     `state.${envName}.json`;
+  public static readonly configFilePath: string = "state.xxx.json";
   public static readonly workingDir: string = "openapi";
   public static readonly openApiDocumentFileName: string = "openapi.json";
   public static readonly readMeFileName: string = "README.md";
@@ -427,10 +427,4 @@ export enum OpenApiSchemaVersion {
 
 export class UserTask {
   static addResourceFuncName = "addResource";
-}
-
-export class ApimArmOutput {
-  static readonly ServiceResourceId = "apimServiceResourceId";
-  static readonly ProductResourceId = "apimProductResourceId";
-  static readonly AuthServerResourceId = "apimAuthServiceResourceId";
 }

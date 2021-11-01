@@ -12,8 +12,7 @@ import { format, Formats } from "./format";
 import { Utils } from "./common";
 import { ResultFactory } from "../results";
 import { v4 as uuidv4 } from "uuid";
-import { isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common";
-import { getArmOutput } from "../../utils4v2";
+import { isMultiEnvEnabled } from "../../../../common";
 import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,

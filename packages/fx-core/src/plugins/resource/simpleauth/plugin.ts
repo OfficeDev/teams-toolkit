@@ -13,7 +13,6 @@ import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { generateBicepFiles, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
-import { getArmOutput } from "../utils4v2";
 import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
 import { Bicep, ConstantString } from "../../../common/constants";
 

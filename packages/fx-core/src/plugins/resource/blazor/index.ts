@@ -29,7 +29,7 @@ export class BlazorPlugin implements Plugin {
     const hostType = solutionSettings?.hostType || "";
     return hostType === HostTypeOptionAzure.id;
   }
-  blazorPluginImpl = new PluginImpl();
+  pluginImpl = new PluginImpl();
 
   private static setContext(ctx: PluginContext): void {
     Logger.setLogger(PluginInfo.pluginName, ctx.logProvider);
@@ -37,22 +37,22 @@ export class BlazorPlugin implements Plugin {
 
   public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
     BlazorPlugin.setContext(ctx);
-    return await this.runWithErrorHandling(() => this.blazorPluginImpl.preProvision(ctx));
+    return await this.runWithErrorHandling(() => this.pluginImpl.preProvision(ctx));
   }
 
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
     BlazorPlugin.setContext(ctx);
-    return await this.runWithErrorHandling(() => this.blazorPluginImpl.provision(ctx));
+    return await this.runWithErrorHandling(() => this.pluginImpl.provision(ctx));
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
     BlazorPlugin.setContext(ctx);
-    return await this.runWithErrorHandling(() => this.blazorPluginImpl.postProvision(ctx));
+    return await this.runWithErrorHandling(() => this.pluginImpl.postProvision(ctx));
   }
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
     BlazorPlugin.setContext(ctx);
-    return await this.runWithErrorHandling(() => this.blazorPluginImpl.deploy(ctx));
+    return await this.runWithErrorHandling(() => this.pluginImpl.deploy(ctx));
   }
 
   private async runWithErrorHandling(fn: () => Promise<TeamsFxResult>): Promise<TeamsFxResult> {

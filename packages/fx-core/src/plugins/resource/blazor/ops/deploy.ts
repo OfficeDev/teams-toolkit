@@ -1,7 +1,6 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import AdmZip from "adm-zip";
-import { forEachFileAndDir } from "../utils/dir-walk";
 import { sendRequestWithRetry } from "../../../../common/templatesUtils";
 import axios from "axios";
 import {
@@ -14,7 +13,8 @@ import {
 } from "../resources/errors";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import { AzureInfo, BlazorCommands as Commands } from "../constants";
-import { execute } from "../utils/execute";
+import { execute } from "../../function/utils/execute";
+import { forEachFileAndDir } from "../../function/utils/dir-walk";
 
 export async function build(path: string, runtime: string) {
   const command = Commands.buildRelease(runtime);

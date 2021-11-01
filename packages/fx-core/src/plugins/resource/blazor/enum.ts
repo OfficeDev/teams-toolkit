@@ -5,6 +5,7 @@ export enum BlazorConfigKey {
   resourceNameSuffix = "resourceNameSuffix",
   location = "location",
   credential = "credential",
+  teamsAppName = "teamsAppName",
 
   /* Config exported by Blazor plugin */
   webAppName = "webAppName",

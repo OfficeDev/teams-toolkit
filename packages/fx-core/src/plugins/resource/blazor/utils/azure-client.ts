@@ -69,7 +69,7 @@ export class AzureLib {
     return appServicePlansRes.find((plan) => plan.name === appServicePlanName);
   }
 
-  public static async ensureAppServicePlans(
+  public static async ensureAppServicePlan(
     client: WebSiteManagementClient,
     resourceGroupName: string,
     appServicePlanName: string,

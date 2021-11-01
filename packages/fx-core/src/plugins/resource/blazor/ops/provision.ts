@@ -64,7 +64,7 @@ export async function ensureAppServicePlan(
   const appServicePlan = await runWithErrorCatchAndWrap(
     (error) => new ProvisionError(ResourceType.appServicePlan, error.code),
     async () =>
-      await AzureLib.ensureAppServicePlans(
+      await AzureLib.ensureAppServicePlan(
         client,
         resourceGroupName,
         appServicePlanName,

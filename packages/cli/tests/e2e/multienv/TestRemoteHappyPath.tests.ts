@@ -40,7 +40,7 @@ import {
   AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 
-describe("Create single tab/bot/function", function () {
+describe("Multi Env Happy Path for Azure", function () {
   const env = "e2e";
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -48,8 +48,7 @@ describe("Create single tab/bot/function", function () {
   const projectPath = path.resolve(testFolder, appName);
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
 
-  it(`Happy path`, async function () {
-    // new a project (tab + bot + function)
+  it(`Can create/provision/deploy/build/validate/launch remote a azure tab/function/sql/bot project`, async function () {
     try {
       let result;
       result = await execAsync(

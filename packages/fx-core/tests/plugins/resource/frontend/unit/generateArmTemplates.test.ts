@@ -52,11 +52,6 @@ describe("FrontendGenerateArmTemplates", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      // const expectedResult = mockSolutionUpdateArmTemplates(
-      //   mockedSolutionDataContext,
-      //   result.value
-      // );
-
       const expectedResult = mockSolutionUpdateArmTemplatesV2(
         mockedSolutionDataContext,
         result.value
@@ -79,7 +74,6 @@ describe("FrontendGenerateArmTemplates", () => {
       );
       chai.assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationConfigFile);
       chai.assert.isNotNull(expectedResult.Provision!.Reference);
-      // chai.assert.isUndefined(expectedResult.Configuration?.Modules);
       chai.assert.isUndefined(expectedResult.Parameters);
     }
   });

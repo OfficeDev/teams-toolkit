@@ -81,8 +81,9 @@ describe("Solution scaffold() reading valid manifest file", () => {
   const fileContent: Map<string, any> = new Map();
   const readmePath = path.join(getTemplatesFolder(), "plugins", "solution", "README.md");
   const mockedReadMeContent = "mocked readme content";
-
-  beforeEach(() => {
+  const testFolder = "./tests/plugins/solution/testproject";
+  beforeEach(async () => {
+    await fs.ensureDir(testFolder);
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
     });
@@ -99,14 +100,16 @@ describe("Solution scaffold() reading valid manifest file", () => {
     });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     mocker.restore();
+    fs.remove(testFolder);
   });
 
   it("should work for happy path with only tab", async () => {
     fileContent.clear();
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -130,6 +133,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     fileContent.clear();
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -155,6 +159,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     fileContent.clear();
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -185,6 +190,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     fileContent.clear();
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -215,14 +221,21 @@ describe("Solution scaffold() reading valid manifest file", () => {
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
     expect(fileContent.size).equals(6);
-    expect(fileContent.has(path.join("./templates/azure", "provision.bicep"))).to.be.true;
-    expect(fileContent.has(path.join("./templates/azure", "config.bicep"))).to.be.true;
+    expect(fileContent.has(path.join(testFolder, "./templates/azure", "provision.bicep"))).to.be
+      .true;
+    expect(fileContent.has(path.join(testFolder, "./templates/azure", "config.bicep"))).to.be.true;
     expect(
-      fileContent.has(path.join("./templates/azure/provision", "frontendHostingProvision.bicep"))
+      fileContent.has(
+        path.join(testFolder, "./templates/azure/provision", "frontendHostingProvision.bicep")
+      )
     ).to.be.true;
-    expect(fileContent.has(path.join("./templates/azure/provision", "simpleAuthProvision.bicep")))
-      .to.be.true;
-    expect(fileContent.has(path.join("./.fx/configs", "azure.parameters.dev.json"))).to.be.true;
+    expect(
+      fileContent.has(
+        path.join(testFolder, "./templates/azure/provision", "simpleAuthProvision.bicep")
+      )
+    ).to.be.true;
+    expect(fileContent.has(path.join(testFolder, "./.fx/configs", "azure.parameters.dev.json"))).to
+      .be.true;
 
     restore();
   });
@@ -236,6 +249,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     fileContent.clear();
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),

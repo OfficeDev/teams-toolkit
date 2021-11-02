@@ -241,7 +241,6 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       .finally(() => {
         deployCtx.finished = true;
       });
-    console.log(result);
     await pollDeploymentStatus(deployCtx);
     await result;
     return ok(undefined);

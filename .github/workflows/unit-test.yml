@@ -5,10 +5,14 @@ on:
     branches:
       - main
       - dev
+      # delete this want merge into dev branch
+      - feat/arm-support
   push:
     branches:
       - main
       - dev
+      # delete this want merge into dev branch
+      - feat/arm-support
 
 jobs:
   source-branch-test:

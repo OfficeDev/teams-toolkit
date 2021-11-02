@@ -106,8 +106,10 @@
       "decryptFailed": "Failed to decrypt secrect.",
       "openEnvFailed": "Can not open project environment %s.",
       "findEnvFailed": "Can not find project environment %s.",
-      "localDebugDescription": "Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.",
+      "resourceInfoNotFound": "Can not load %s info for environment %s.",
+      "localDebugDescription": "Preview your project by running local debug",
       "localDebugTitle": "Local debug",
+      "configLocationDescription": "Your project is successfully created at %s (You can change default location in settings).",
       "configTitle": "Change location",
       "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension."
     },

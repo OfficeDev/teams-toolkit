@@ -38,24 +38,6 @@ export async function getLocalEnv(): Promise<{ [key: string]: string } | undefin
   if (isMultiEnvEnabled()) {
     // use localSettings.json as input to generate the local debug envs
     env = await getLocalDebugEnvs();
-
-    // try load .env.teamsfx.local for tab/func/bot
-    // TODO: remove this workaround after fully supporting custom local debug
-    env = await appendEnvWithPrefix(
-      env,
-      path.join(workspacePath, constants.frontendFolderName, ".env.teamsfx.local"),
-      "FRONTEND_"
-    );
-    env = await appendEnvWithPrefix(
-      env,
-      path.join(workspacePath, constants.backendFolderName, ".env.teamsfx.local"),
-      "BACKEND_"
-    );
-    env = await appendEnvWithPrefix(
-      env,
-      path.join(workspacePath, constants.botFolderName, ".env.teamsfx.local"),
-      "BOT_"
-    );
   } else {
     // use local.env file as input to generate the local debug envs
     if (!(await fs.pathExists(localEnvFilePath))) {
@@ -65,29 +47,6 @@ export async function getLocalEnv(): Promise<{ [key: string]: string } | undefin
     const contents = await fs.readFile(localEnvFilePath);
     env = dotenv.parse(contents);
   }
-  return env;
-}
-
-async function appendEnvWithPrefix(
-  env: { [key: string]: string },
-  envPath: string,
-  prefix: string
-): Promise<{ [key: string]: string }> {
-  try {
-    if (await fs.pathExists(envPath)) {
-      const loadedEnv = dotenv.parse(await fs.readFile(envPath));
-      for (const key of Object.keys(loadedEnv)) {
-        const prefixKey = `${prefix}${key}`;
-        if (env[prefixKey] === undefined) {
-          // only append and do not override
-          env[prefixKey] = loadedEnv[key];
-        }
-      }
-    }
-  } catch (err) {
-    VsCodeLogInstance.error(`Cannot load ${envPath}. Error: ${err}`);
-  }
-
   return env;
 }
 

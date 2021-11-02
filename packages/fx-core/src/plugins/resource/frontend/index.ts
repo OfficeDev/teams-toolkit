@@ -29,6 +29,8 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { isArmSupportEnabled } from "../../..";
 import { ArmResourcePlugin } from "../../../common/armInterface";
 import "./v2";
+import { Platform } from "@microsoft/teamsfx-api";
+import { BlazorPluginImpl } from "../blazor/plugin";
 
 @Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin, ArmResourcePlugin {
@@ -39,6 +41,7 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
     return solutionSettings.hostType === HostTypeOptionAzure.id && cap.includes(TabOptionItem.id);
   }
   frontendPluginImpl = new FrontendPluginImpl();
+  blazorPluginImpl = new BlazorPluginImpl();
 
   private static setContext(ctx: PluginContext): void {
     Logger.setLogger(ctx.logProvider);
@@ -46,6 +49,9 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   }
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (ctx.answers?.platform === Platform.VSCode) {
+      return ok(undefined);
+    }
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Scaffold, () =>
       this.frontendPluginImpl.scaffold(ctx)
@@ -53,6 +59,13 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   }
 
   public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (ctx.answers?.platform === Platform.VSCode) {
+      FrontendPlugin.setContext(ctx);
+      return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
+        this.blazorPluginImpl.preProvision(ctx)
+      );
+    }
+
     if (isArmSupportEnabled()) {
       return ok(undefined);
     }
@@ -64,6 +77,13 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   }
 
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (ctx.answers?.platform === Platform.VSCode) {
+      FrontendPlugin.setContext(ctx);
+      return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
+        this.blazorPluginImpl.provision(ctx)
+      );
+    }
+
     if (isArmSupportEnabled()) {
       return ok(undefined);
     }
@@ -75,6 +95,13 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (ctx.answers?.platform === Platform.VSCode) {
+      FrontendPlugin.setContext(ctx);
+      return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
+        this.blazorPluginImpl.postProvision(ctx)
+      );
+    }
+
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PostProvision, () =>
       this.frontendPluginImpl.postProvision(ctx)
@@ -82,6 +109,10 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   }
 
   public async preDeploy(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (ctx.answers?.platform === Platform.VSCode) {
+      return ok(undefined);
+    }
+
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PreDeploy, () =>
       this.frontendPluginImpl.preDeploy(ctx)
@@ -89,6 +120,13 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   }
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (ctx.answers?.platform === Platform.VSCode) {
+      FrontendPlugin.setContext(ctx);
+      return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
+        this.blazorPluginImpl.deploy(ctx)
+      );
+    }
+
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
       this.frontendPluginImpl.deploy(ctx)
@@ -96,6 +134,10 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (ctx.answers?.platform === Platform.VSCode) {
+      return ok(undefined);
+    }
+
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.GenerateArmTemplates, () =>
       this.frontendPluginImpl.generateArmTemplates(ctx)
@@ -103,6 +145,10 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   }
 
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<TeamsFxResult> {
+    if (ctx.answers?.platform === Platform.VSCode) {
+      return ok(undefined);
+    }
+
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(
       ctx,

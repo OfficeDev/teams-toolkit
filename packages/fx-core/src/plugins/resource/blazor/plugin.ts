@@ -41,8 +41,8 @@ export interface BlazorPluginConfig {
   /* Config exported by Blazor plugin */
   webAppName?: string;
   appServicePlanName?: string;
-  webAppEndpoint?: string;
-  webAppId?: string;
+  endpoint?: string;
+  domain?: string;
 
   /* Intermediate  */
   site?: Site;
@@ -136,8 +136,9 @@ export class BlazorPluginImpl {
     );
 
     this.config.site = site;
-    if (!this.config.webAppEndpoint) {
-      this.config.webAppEndpoint = `https://${site.defaultHostName}`;
+    if (!this.config.endpoint) {
+      this.config.endpoint = `https://${site.defaultHostName}`;
+      this.config.domain = site.defaultHostName;
     }
 
     this.syncConfigToContext(ctx);
@@ -201,7 +202,7 @@ export class BlazorPluginImpl {
   }
 
   public collectAppSettingsSelf(site: Site) {
-    const endpoint = this.checkAndGet(this.config.webAppEndpoint, ConfigKey.webAppEndpoint);
+    const endpoint = this.checkAndGet(this.config.endpoint, ConfigKey.webAppEndpoint);
     this.pushAppSettings(site, AppSettingsKey.tabAppEndpoint, endpoint);
   }
 

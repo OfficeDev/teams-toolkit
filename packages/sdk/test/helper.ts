@@ -142,7 +142,7 @@ async function loginTestUser(): Promise<void> {
   await page.goto(TEAMS_URL, { timeout: E2E_TIMEOUT });
   await page.waitForSelector(selectors.username, { timeout: E2E_TIMEOUT });
   await page.click(selectors.username);
-  await page.type(selectors.username, process.env.TEST_USER_NAME);
+  await page.type(selectors.username, process.env.TEST_USER_NAME!);
   await page.press(selectors.username, "Enter");
   await page.waitForSelector(selectors.passwordOption2, { timeout: E2E_TIMEOUT, state: "visible" });
   try {
@@ -152,7 +152,7 @@ async function loginTestUser(): Promise<void> {
   } catch (e) {}
   await page.waitForSelector(selectors.password, { timeout: E2E_TIMEOUT });
   await page.click(selectors.password);
-  await page.type(selectors.password, process.env.TEST_USER_PASSWORD);
+  await page.type(selectors.password, process.env.TEST_USER_PASSWORD!);
   await page.press(selectors.password, "Enter");
   await page.waitForSelector(selectors.submit);
   await page.click(selectors.submit);

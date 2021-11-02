@@ -1,4 +1,4 @@
-module azureSqlProvision '{{PluginOutput.fx-resource-azure-sql.Modules.azureSqlProvision.ProvisionPath}}' = {
+module azureSqlProvision './sqlProvision.result.bicep' = {
   name: 'azureSqlProvision'
   params: {
     provisionParameters: provisionParameters

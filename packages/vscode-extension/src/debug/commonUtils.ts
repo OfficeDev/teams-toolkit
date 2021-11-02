@@ -252,11 +252,12 @@ export async function getPortsInUse(): Promise<number[]> {
     const frontendRoot = await getProjectRoot(workspacePath, constants.frontendFolderName);
     if (frontendRoot) {
       ports.push(...constants.frontendPorts);
+      const migrateFromV1 = await isMigrateFromV1Project(workspacePath);
+      if (!migrateFromV1) {
+        ports.push(...constants.simpleAuthPorts);
+      }
     }
-    const migrateFromV1 = await isMigrateFromV1Project(workspacePath);
-    if (!migrateFromV1) {
-      ports.push(...constants.simpleAuthPorts);
-    }
+
     const backendRoot = await getProjectRoot(workspacePath, constants.backendFolderName);
     if (backendRoot) {
       ports.push(...constants.backendServicePorts);

@@ -5,7 +5,7 @@ param m365ClientId string
 param m365ClientSecret string
 param m365ApplicationIdUri string
 param oauthAuthorityHost string
-param simpelAuthPackageUri string
+param simpleAuthPackageUri string
 
 param frontendHostingStorageEndpoint string
 
@@ -18,7 +18,7 @@ var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teams
 resource simpleAuthDeploy 'Microsoft.Web/sites/extensions@2021-01-15' = {
   name: '${simpleAuthWebAppName}/MSDeploy'
   properties: {
-    packageUri: simpelAuthPackageUri
+    packageUri: simpleAuthPackageUri
   }
 }
 

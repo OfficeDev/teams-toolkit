@@ -112,7 +112,7 @@ import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import Mustache from "mustache";
-import { replaceConfigValue } from "./utils/utils";
+import { checkAndConfig, replaceConfigValue } from "./utils/utils";
 
 export class AppStudioPluginImpl {
   public async getAppDefinitionAndUpdate(
@@ -1153,20 +1153,15 @@ export class AppStudioPluginImpl {
   private async getConfigForCreatingManifest(
     ctx: PluginContext,
     localDebug: boolean
-  ): Promise<
-    Result<
-      {
-        tabEndpoint?: string;
-        tabDomain?: string;
-        aadId: string;
-        botDomain?: string;
-        botId?: string;
-        webApplicationInfoResource?: string;
-        teamsAppId: string;
-      },
-      FxError
-    >
-  > {
+  ): Promise<{
+    tabEndpoint?: string;
+    tabDomain?: string;
+    aadId: string;
+    botDomain?: string;
+    botId?: string;
+    webApplicationInfoResource?: string;
+    teamsAppId: string;
+  }> {
     let tabEndpoint, tabDomain;
     if (isArmSupportEnabled()) {
       // getConfigForCreatingManifest is called in post-provision and validate manifest
@@ -1191,140 +1186,8 @@ export class AppStudioPluginImpl {
     // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
 
     const webApplicationInfoResource = this.getApplicationIdUris(ctx, localDebug);
-    if (!ctx?.projectSettings?.solutionSettings?.migrateFromV1 && !webApplicationInfoResource) {
-      return err(
-        localDebug
-          ? AppStudioResultFactory.SystemError(
-              AppStudioError.GetLocalDebugConfigFailedError.name,
-              AppStudioError.GetLocalDebugConfigFailedError.message(
-                "webApplicationInfoResource",
-                true
-              )
-            )
-          : AppStudioResultFactory.UserError(
-              AppStudioError.GetRemoteConfigFailedError.name,
-              AppStudioError.GetRemoteConfigFailedError.message("webApplicationInfoResource", true)
-            )
-      );
-    }
 
-    if (!ctx?.projectSettings?.solutionSettings?.migrateFromV1 && !aadId) {
-      return err(
-        localDebug
-          ? AppStudioResultFactory.SystemError(
-              AppStudioError.GetLocalDebugConfigFailedError.name,
-              AppStudioError.GetLocalDebugConfigFailedError.message(LOCAL_DEBUG_AAD_ID, true)
-            )
-          : AppStudioResultFactory.UserError(
-              AppStudioError.GetRemoteConfigFailedError.name,
-              AppStudioError.GetRemoteConfigFailedError.message(REMOTE_AAD_ID, true)
-            )
-      );
-    }
-
-    if (!tabEndpoint && !botId) {
-      if (isArmSupportEnabled()) {
-        return err(
-          localDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.GetLocalDebugConfigFailedError.name,
-                AppStudioError.GetLocalDebugConfigFailedError.message(
-                  LOCAL_DEBUG_TAB_ENDPOINT + ", " + LOCAL_BOT_ID,
-                  false
-                )
-              )
-            : AppStudioResultFactory.UserError(
-                AppStudioError.GetRemoteConfigFailedError.name,
-                AppStudioError.GetRemoteConfigFailedError.message(
-                  FRONTEND_ENDPOINT_ARM + ", " + BOT_ID,
-                  false
-                )
-              )
-        );
-      } else {
-        return err(
-          localDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.GetLocalDebugConfigFailedError.name,
-                AppStudioError.GetLocalDebugConfigFailedError.message(
-                  LOCAL_DEBUG_TAB_ENDPOINT + ", " + LOCAL_BOT_ID,
-                  false
-                )
-              )
-            : AppStudioResultFactory.UserError(
-                AppStudioError.GetRemoteConfigFailedError.name,
-                AppStudioError.GetRemoteConfigFailedError.message(
-                  FRONTEND_ENDPOINT + ", " + BOT_ID,
-                  false
-                )
-              )
-        );
-      }
-    }
-    if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
-      if (isArmSupportEnabled()) {
-        return err(
-          localDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.InvalidLocalDebugConfigurationDataError.name,
-                AppStudioError.InvalidLocalDebugConfigurationDataError.message(
-                  LOCAL_DEBUG_TAB_ENDPOINT,
-                  tabEndpoint,
-                  LOCAL_DEBUG_TAB_DOMAIN,
-                  tabDomain
-                )
-              )
-            : AppStudioResultFactory.SystemError(
-                AppStudioError.InvalidRemoteConfigurationDataError.name,
-                AppStudioError.InvalidRemoteConfigurationDataError.message(
-                  FRONTEND_ENDPOINT_ARM,
-                  tabEndpoint,
-                  FRONTEND_DOMAIN_ARM,
-                  tabDomain
-                )
-              )
-        );
-      } else {
-        return err(
-          localDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.InvalidLocalDebugConfigurationDataError.name,
-                AppStudioError.InvalidLocalDebugConfigurationDataError.message(
-                  LOCAL_DEBUG_TAB_ENDPOINT,
-                  tabEndpoint,
-                  LOCAL_DEBUG_TAB_DOMAIN,
-                  tabDomain
-                )
-              )
-            : AppStudioResultFactory.SystemError(
-                AppStudioError.InvalidRemoteConfigurationDataError.name,
-                AppStudioError.InvalidRemoteConfigurationDataError.message(
-                  FRONTEND_ENDPOINT,
-                  tabEndpoint,
-                  FRONTEND_DOMAIN,
-                  tabDomain
-                )
-              )
-        );
-      }
-    }
-    if (botId) {
-      if (!botDomain) {
-        return err(
-          localDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.GetLocalDebugConfigFailedError.name,
-                AppStudioError.GetLocalDebugConfigFailedError.message(LOCAL_DEBUG_BOT_DOMAIN, false)
-              )
-            : AppStudioResultFactory.UserError(
-                AppStudioError.GetRemoteConfigFailedError.name,
-                AppStudioError.GetRemoteConfigFailedError.message(BOT_DOMAIN, false)
-              )
-        );
-      }
-    }
-
-    return ok({
+    return {
       tabEndpoint,
       tabDomain,
       aadId,
@@ -1332,7 +1195,7 @@ export class AppStudioPluginImpl {
       botId,
       webApplicationInfoResource,
       teamsAppId,
-    });
+    };
   }
 
   private getTabEndpoint(ctx: PluginContext, isLocalDebug: boolean): string {
@@ -1670,11 +1533,6 @@ export class AppStudioPluginImpl {
     ctx: PluginContext,
     isLocalDebug: boolean
   ): Promise<Result<[IAppDefinition, TeamsAppManifest], FxError>> {
-    const configs = await this.getConfigForCreatingManifest(ctx, isLocalDebug);
-    if (configs.isErr()) {
-      return err(configs.error);
-    }
-
     const {
       tabEndpoint,
       tabDomain,
@@ -1683,7 +1541,7 @@ export class AppStudioPluginImpl {
       botId,
       webApplicationInfoResource,
       teamsAppId,
-    } = configs.value;
+    } = await this.getConfigForCreatingManifest(ctx, isLocalDebug);
 
     const validDomains: string[] = [];
     if (tabDomain) {
@@ -1734,30 +1592,45 @@ export class AppStudioPluginImpl {
         },
       };
       manifest = Mustache.render(manifest, view);
-    }
+    } else {
+      const appName = ctx.projectSettings?.appName;
+      if (appName) {
+        manifest = replaceConfigValue(manifest, "appName", appName);
+      }
 
-    const appName = ctx.projectSettings?.appName;
-    if (appName) {
-      manifest = replaceConfigValue(manifest, "appName", appName);
-    }
+      if (teamsAppId) {
+        manifest = replaceConfigValue(manifest, "appid", teamsAppId);
+      }
 
-    if (botId) {
-      manifest = replaceConfigValue(manifest, "botId", botId);
-    }
-
-    if (tabEndpoint) {
-      manifest = replaceConfigValue(manifest, "baseUrl", tabEndpoint);
-    }
-
-    manifest = replaceConfigValue(manifest, "appClientId", aadId);
-    manifest = replaceConfigValue(manifest, "appid", teamsAppId);
-
-    if (webApplicationInfoResource) {
-      manifest = replaceConfigValue(
-        manifest,
-        "webApplicationInfoResource",
-        webApplicationInfoResource
-      );
+      try {
+        manifest = checkAndConfig(
+          manifest,
+          "webApplicationInfoResource",
+          webApplicationInfoResource
+        );
+        manifest = checkAndConfig(manifest, "appClientId", aadId);
+        manifest = checkAndConfig(manifest, "baseUrl", tabEndpoint);
+        manifest = checkAndConfig(manifest, "botId", botId);
+      } catch (e) {
+        if (isLocalDebug) {
+          return err(
+            AppStudioResultFactory.SystemError(
+              AppStudioError.GetLocalDebugConfigFailedError.name,
+              AppStudioError.GetLocalDebugConfigFailedError.message(e)
+            )
+          );
+        } else {
+          const isProvisionSucceeded = !!(ctx.envInfo.state
+            .get("solution")
+            ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(e, isProvisionSucceeded)
+            )
+          );
+        }
+      }
     }
 
     let updatedManifest: TeamsAppManifest;

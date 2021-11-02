@@ -644,8 +644,8 @@
             "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
             "default": true
           },
-          "fx-extension.defaultProjectRootDirectory":{
-            "type":"string",
+          "fx-extension.defaultProjectRootDirectory": {
+            "type": "string",
             "description": "Set the default root directory for creating new teams app project. By default, the root directory is $HOME_DIR/TeamsApps. (requries reload of VS Code)"
           }
         }
@@ -776,8 +776,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.9.0",
-    "@microsoft/teamsfx-core": "^0.9.1",
+    "@microsoft/teamsfx-api": "file:../api",
+    "@microsoft/teamsfx-core": "file:../fx-core",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",

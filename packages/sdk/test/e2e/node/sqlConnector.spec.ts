@@ -83,6 +83,7 @@ async function getSQLConnection(): Promise<Connection> {
       }
       resolve(connection);
     });
+    connection.connect();
   });
 }
 

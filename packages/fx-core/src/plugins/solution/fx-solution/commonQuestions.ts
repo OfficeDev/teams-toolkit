@@ -45,7 +45,7 @@ import {
   QuestionNewResourceGroupName,
   QuestionSelectResourceGroup,
 } from "../../../core/question";
-import { getHashedEnv } from "../../../common/tools";
+import { getHashedEnv, isArmSupportEnabled } from "../../../common/tools";
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
 import { SUBSCRIPTION_ID } from ".";
@@ -598,6 +598,9 @@ export async function fillInCommonQuestions(
     const globalConfig = config.get(GLOBAL_CONFIG)!;
     result.map((commonQuestions) => {
       for (const [k, v] of Object.entries(commonQuestions)) {
+        if (isArmSupportEnabled() && k === "resourceNameSuffix") {
+          continue;
+        }
         globalConfig.set(k, v);
       }
     });

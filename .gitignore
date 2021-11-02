@@ -351,7 +351,7 @@ packages/failpoint-ts/build/
 packages/fx-core/build/
 packages/vscode-extension/out/
 packages/failpoint-ts/build/
-
+packages/server/lib/
 ## tmp files
 .nyc_output
 coverage

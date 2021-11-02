@@ -181,10 +181,16 @@ export class QuestionValidationFunc {
 }
 
 export class FunctionBicep {
-  static readonly functionEndpoint: string = "functionProvision.outputs.functionEndpoint";
+  static readonly functionEndpoint: string =
+    "provisionOutputs.functionProvision.value.functionEndpoint";
+  static readonly functionResourceId: string =
+    "provisionOutputs.functionOutput.value.functionAppResourceId";
 }
 
 export class FunctionBicepFile {
   static readonly provisionModuleTemplateFileName: string = "functionProvision.template.bicep";
   static readonly configurationTemplateFileName: string = "functionConfiguration.template.bicep";
+  static readonly provisionModuleTemplateV2FileName: string = "functionProvision.template.v2.bicep";
+  static readonly configuraitonTemplateV2FileName: string =
+    "functionConfiguration.template.v2.bicep";
 }

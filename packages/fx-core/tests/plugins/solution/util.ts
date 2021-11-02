@@ -40,6 +40,7 @@ import {
   SharepointTokenProvider,
 } from "@microsoft/teamsfx-api";
 import { MockPermissionRequestProvider } from "../../core/utils";
+import { ArmTemplateResult } from "../../../src/common/armInterface";
 
 export const validManifest = {
   $schema:
@@ -105,6 +106,22 @@ export function mockExecuteUserTaskThatAlwaysSucceeds(plugin: v2.ResourcePlugin)
   };
 }
 
+export const mockedFehostScaffoldArmResultV2: ArmTemplateResult = {
+  Provision: {
+    Orchestration:
+      "Mocked frontend hosting module content. Module path: {{PluginOutput.fx-resource-frontend-hosting.Modules.frontendHostingProvision.Path}}. Variable: {{PluginOutput.fx-resource-simple-auth.Outputs.endpoint}}",
+    Modules: {
+      frontendHostingProvision: "Mocked frontend hosting provision module content",
+    },
+  },
+  Configuration: {
+    Orchestration: "",
+  },
+  Parameters: {
+    FrontendParameter: "FrontendParameterValue",
+  },
+};
+
 export const mockedFehostScaffoldArmResult = {
   Modules: {
     frontendHostingProvision: {
@@ -129,6 +146,25 @@ export const mockedFehostScaffoldArmResult = {
     OutputTemplate: {
       Content: "Mocked frontend hosting output content",
     },
+  },
+};
+
+export const mockedSimpleAuthScaffoldArmResultV2: ArmTemplateResult = {
+  Provision: {
+    Orchestration:
+      "Mocked simple auth module content. Module path: {{PluginOutput.fx-resource-simple-auth.Modules.simpleAuthProvision.Path}}. Variable: {{PluginOutput.fx-resource-frontend-hosting.Outputs.endpoint}}",
+    Modules: {
+      simpleAuthProvision: "Mocked simple auth provision module content",
+    },
+    Reference: {
+      endpoint: "Mocked simple auth endpoint",
+    },
+  },
+  Configuration: {
+    Orchestration: "",
+  },
+  Parameters: {
+    SimpleAuthParameter: "SimpleAuthParameterValue",
   },
 };
 
@@ -159,6 +195,14 @@ export const mockedSimpleAuthScaffoldArmResult = {
   },
 };
 
+export const mockedAadScaffoldArmResultV2: ArmTemplateResult = {
+  Provision: {
+    Orchestration: "",
+  },
+  Configuration: {
+    Orchestration: "",
+  },
+};
 export const mockedAadScaffoldArmResult = {
   Orchestration: {},
 };

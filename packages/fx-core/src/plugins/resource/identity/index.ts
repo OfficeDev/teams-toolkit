@@ -30,7 +30,7 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 import { Bicep, ConstantString } from "../../../common/constants";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ScaffoldArmTemplateResult, ArmTemplateResult } from "../../../common/armInterface";
 import { isArmSupportEnabled } from "../../../common";
 import { getArmOutput } from "../utils4v2";
 import "./v2";
@@ -136,49 +136,24 @@ export class IdentityPlugin implements Plugin {
 
     const moduleTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      IdentityBicepFile.moduleTemplateFileName
+      IdentityBicepFile.moduleTempalteV2Filename
     );
-    const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
-    if (moduleContentResult.isErr()) {
-      throw moduleContentResult.error;
-    }
+    const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName);
 
-    const parameterTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.ParameterOrchestrationFileName
-    );
-    const moduleOrchestrationFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.ModuleOrchestrationFileName
-    );
-    const outputTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.OutputOrchestrationFileName
-    );
-
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        userAssignedIdentityProvision: {
-          Content: moduleContentResult.value,
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: await fs.readFile(provisionTemplateFilePath, ConstantString.UTF8Encoding),
+        Reference: {
+          identityName: IdentityBicep.identityName,
+          identityClientId: IdentityBicep.identityClientId,
+          identityResourceId: IdentityBicep.identityResourceId,
         },
-      },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
-        },
-        ModuleTemplate: {
-          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
-          Outputs: {
-            identityName: IdentityBicep.identityName,
-            identityClientId: IdentityBicep.identityClientId,
-            identityResourceId: IdentityBicep.identityResourceId,
-          },
-        },
-        OutputTemplate: {
-          Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
+        Modules: {
+          identityProvision: await fs.readFile(moduleTemplateFilePath, ConstantString.UTF8Encoding),
         },
       },
     };
+
     return ok(result);
   }
 

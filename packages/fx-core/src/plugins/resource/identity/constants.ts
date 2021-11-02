@@ -57,4 +57,5 @@ export class IdentityArmOutput {
 
 export class IdentityBicepFile {
   static readonly moduleTemplateFileName: string = "userAssignedIdentity.template.bicep";
+  static readonly moduleTempalteV2Filename: string = "identityProvision.template.v2.bicep";
 }

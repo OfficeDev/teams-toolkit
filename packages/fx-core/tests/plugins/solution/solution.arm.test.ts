@@ -41,9 +41,9 @@ import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { ResourceManagementModels, Deployments } from "@azure/arm-resources";
 import { WebResourceLike, HttpHeaders } from "@azure/ms-rest-js";
 import {
-  mockedAadScaffoldArmResult,
-  mockedFehostScaffoldArmResult,
-  mockedSimpleAuthScaffoldArmResult,
+  mockedAadScaffoldArmResultV2,
+  mockedFehostScaffoldArmResultV2,
+  mockedSimpleAuthScaffoldArmResultV2,
 } from "./util";
 import * as tools from "../../../src/common/tools";
 import * as cpUtils from "../../../src/common/cpUtils";
@@ -53,8 +53,9 @@ import "../../../src/plugins/resource/frontend";
 import "../../../src/plugins/resource/simpleauth";
 import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
-import { environmentManager } from "../../../src";
+import { environmentManager } from "../../../src/core/environment";
 import { LocalCrypto } from "../../../src/core/crypto";
+import { ConfigKeysOfOtherPlugin } from "../../../src/plugins/resource/aad/constants";
 
 let mockedEnvRestore: () => void;
 
@@ -153,15 +154,15 @@ describe("Generate ARM Template for project", () => {
 
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedFehostScaffoldArmResult);
+      return ok(mockedFehostScaffoldArmResultV2);
     });
 
     mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedSimpleAuthScaffoldArmResult);
+      return ok(mockedSimpleAuthScaffoldArmResultV2);
     });
 
     mocker.stub(aadPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedAadScaffoldArmResult);
+      return ok(mockedAadScaffoldArmResultV2);
     });
 
     mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
@@ -174,28 +175,36 @@ describe("Generate ARM Template for project", () => {
     expect(
       await fs.readFile(path.join(projectArmTemplateFolder, "../main.bicep"), fileEncoding)
     ).equals(
-      `param resourceBaseName string
-Mocked frontend hosting parameter content
-Mocked simple auth parameter content
+      `@secure()
+param provisionParameters object
 
-Mocked frontend hosting variable content
-Mocked simple auth variable content
+module provision './provision.bicep' = {
+  name: 'provisionResources'
+  params: {
+    provisionParameters: provisionParameters
+  }
+}
 
-Mocked frontend hosting module content. Module path: ./modules/frontendHostingProvision.bicep. Variable: Mocked simple auth endpoint
-Mocked simple auth module content. Module path: ./modules/simpleAuthProvision.bicep. Variable: Mocked frontend hosting endpoint
+module teamsFxConfig './config.bicep' = {
+  name: 'addTeamsFxConfigurations'
+  params: {
+    provisionParameters: provisionParameters
+    provisionOutputs: provision
+  }
+}
 
-Mocked frontend hosting output content
-Mocked simple auth output content`
+output provisionOutput object = provision
+output teamsFxConfigurationOutput object = teamsFxConfig`
     );
     expect(
       await fs.readFile(
-        path.join(projectArmTemplateFolder, "frontendHostingProvision.bicep"),
+        path.join(projectArmTemplateFolder, "../provision/frontendHostingProvision.bicep"),
         fileEncoding
       )
     ).equals("Mocked frontend hosting provision module content");
     expect(
       await fs.readFile(
-        path.join(projectArmTemplateFolder, "simpleAuthProvision.bicep"),
+        path.join(projectArmTemplateFolder, "../provision/simpleAuthProvision.bicep"),
         fileEncoding
       )
     ).equals("Mocked simple auth provision module content");
@@ -206,11 +215,15 @@ Mocked simple auth output content`
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "resourceBaseName": {
-      "value": "mytestappdefa000000"
-    },
-    "FrontendParameter": "FrontendParameterValue",
-    "SimpleAuthParameter": "SimpleAuthParameterValue"
+    "provisionParameters": {
+      "value": {
+        "resourceBaseName": {
+          "value": "mytestappdefa000000"
+        },
+        "FrontendParameter": "FrontendParameterValue",
+        "SimpleAuthParameter": "SimpleAuthParameterValue"
+      }
+    }
   }
 }`
     );

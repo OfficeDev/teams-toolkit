@@ -99,7 +99,7 @@ class EnvConfigName {
   static readonly StorageAccountName = "storageAccountName";
   static readonly StorageResourceId = "storageResourceId";
   static readonly FuncAppName = "functionAppName";
-  static readonly FunctionId = "functionAppId";
+  static readonly FunctionAppResourceId = "functionAppResourceId";
   static readonly Endpoint = "endpoint";
 }
 
@@ -813,7 +813,7 @@ async function updateConfig(ctx: CoreHookContext) {
   }
   if (needUpdate && envConfig[ResourcePlugins.Function]?.[EnvConfigName.FuncAppName]) {
     envConfig[ResourcePlugins.Function][
-      EnvConfigName.FunctionId
+      EnvConfigName.FunctionAppResourceId
     ] = `${configPrefix}/providers/Microsoft.Web/${
       envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]
     }`;

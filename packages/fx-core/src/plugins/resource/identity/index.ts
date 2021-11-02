@@ -25,7 +25,7 @@ import { Message } from "./utils/messages";
 import { TelemetryUtils } from "./utils/telemetryUtil";
 import { formatEndpoint } from "./utils/commonUtils";
 import { generateBicepFiles, getTemplatesFolder } from "../../..";
-import { AzureResourceSQL } from "../../solution/fx-solution/question";
+import { AzureResourceSQL, HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
@@ -39,8 +39,7 @@ export class IdentityPlugin implements Plugin {
   name = "fx-resource-identity";
   displayName = "Microsoft Identity";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
-    return azureResources.includes(AzureResourceSQL.id);
+    return solutionSettings.hostType === HostTypeOptionAzure.id;
   }
   template: any;
   parameters: any;

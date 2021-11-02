@@ -42,9 +42,9 @@ export class Telemetry {
   };
 }
 export class IdentityBicep {
-  static readonly identityName: string = "userAssignedIdentityProvision.outputs.identityName";
+  static readonly identityName: string = "provisionOutputs.identityOutput.value.identityName";
   static readonly identityClientId: string =
-    "userAssignedIdentityProvision.outputs.identityClientId";
+    "provisionOutputs.identityOutput.value.identityClientId";
   static readonly identityResourceId: string =
     "userAssignedIdentityProvision.outputs.identityResourceId";
 }

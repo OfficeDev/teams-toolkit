@@ -672,19 +672,19 @@ export class FunctionPluginImpl {
     );
     const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName);
 
-    const configTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ConfigV2FileName);
-
     const provisionFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
       FunctionBicepFile.provisionModuleTemplateV2FileName
     );
 
+    const configTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ConfigV2FileName);
+
     const configFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      FunctionBicepFile.provisionModuleTemplateV2FileName
+      FunctionBicepFile.configuraitonTemplateV2FileName
     );
 
-    const result1: ArmTemplateResult = {
+    const result: ArmTemplateResult = {
       Provision: {
         Orchestration: await fs.readFile(provisionTemplateFilePath, ConstantString.UTF8Encoding),
         Modules: {
@@ -694,13 +694,14 @@ export class FunctionPluginImpl {
           ),
         },
         Reference: {
+          functionAppResourceId: FunctionBicep.functionAppResourceId,
           endpoint: FunctionBicep.functionEndpoint,
         },
       },
       Configuration: {
         Orchestration: await fs.readFile(configTemplateFilePath, ConstantString.UTF8Encoding),
         Modules: {
-          functionConfig: await fs.readFile(
+          functionConfiguration: await fs.readFile(
             configFuncTemplateFilePath,
             ConstantString.UTF8Encoding
           ),
@@ -708,7 +709,7 @@ export class FunctionPluginImpl {
       },
     };
 
-    return ResultFactory.Success(result1);
+    return ResultFactory.Success(result);
   }
 
   public async deploy(ctx: PluginContext): Promise<FxResult> {

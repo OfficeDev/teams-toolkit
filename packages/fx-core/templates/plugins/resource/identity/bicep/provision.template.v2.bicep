@@ -7,6 +7,7 @@ module userAssignedIdentityProvision '{{PluginOutput.fx-resource-identity.Module
 
 output identityOutput object = {
   teamsFxPluginId: 'fx-resource-identity'
-  resourceId: {{PluginOutput.fx-resource-identity.Modules.identityProvision.References.identityResourceId}}
-  clientId: {{PluginOutput.fx-resource-identity.Modules.identityProvision.References.identityClientId}}
+  identityName: userAssignedIdentityProvision.outputs.identityName
+  identityResourceId: userAssignedIdentityProvision.outputs.identityResourceId
+  identityClientId: userAssignedIdentityProvision.outputs.identityClientId
 }

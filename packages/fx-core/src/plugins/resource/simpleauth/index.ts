@@ -24,6 +24,7 @@ export class SimpleAuthPlugin implements Plugin {
   name = "fx-resource-simple-auth";
   displayName = "Simple Auth";
   activate(solutionSettings: AzureSolutionSettings): boolean {
+    // TODO: we need to disable simple auth plugin when in VS
     if (solutionSettings?.migrateFromV1) {
       return false;
     }

@@ -16,12 +16,7 @@ import SharepointTokenInstance from "../commonlib/sharepointLogin";
 import GraphTokenInstance from "../commonlib/graphLogin";
 import { runCommand } from "../handlers";
 import { returnSystemError, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
-import {
-  globalStateGet,
-  globalStateUpdate,
-  Correlator,
-  sampleProvider,
-} from "@microsoft/teamsfx-core";
+import { globalStateGet, globalStateUpdate, Correlator } from "@microsoft/teamsfx-core";
 import { PanelType } from "./PanelType";
 import { execSync } from "child_process";
 import { isMacOS } from "../utils/commonUtils";
@@ -39,7 +34,6 @@ import * as util from "util";
 import { VS_CODE_UI } from "../extension";
 import { exp } from "../exp/index";
 import { TreatmentVariables, TreatmentVariableValue } from "../exp/treatmentVariables";
-import { EventMessages } from "./messages";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -138,9 +132,6 @@ export class WebviewPanel {
             break;
           case Commands.SendTelemetryEvent:
             ExtTelemetry.sendTelemetryEvent(msg.data.eventName, msg.data.properties);
-          case Commands.LoadSampleCollection:
-            this.LoadSampleCollection();
-            break;
           default:
             break;
         }
@@ -237,15 +228,6 @@ export class WebviewPanel {
       this.panel.webview.postMessage({
         message: "updateStepsDone",
         data: globalStepsDone,
-      });
-    }
-  }
-
-  private LoadSampleCollection() {
-    if (this.panel && this.panel.webview) {
-      this.panel.webview.postMessage({
-        message: EventMessages.LoadSampleCollection,
-        data: sampleProvider.SampleCollection,
       });
     }
   }

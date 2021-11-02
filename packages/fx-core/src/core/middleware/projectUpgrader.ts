@@ -1,18 +1,22 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   ConfigFolderName,
-  EnvStateFileNameTemplate,
+  StatesFolderName,
   err,
   FxError,
-  InputConfigsFolderName,
   Inputs,
   Json,
   ok,
+  ProjectSettings,
   Result,
-  StatesFolderName,
+  SystemError,
+  ProjectSettingsFileName,
+  InputConfigsFolderName,
+  EnvStateFileNameTemplate,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
+import { basename } from "path";
 import {
   ContextUpgradeError,
   CoreHookContext,
@@ -22,7 +26,7 @@ import {
   ReadFileError,
   WriteFileError,
 } from "..";
-import { serializeDict } from "../..";
+import { dataNeedEncryption, deserializeDict, serializeDict } from "../..";
 import { isMultiEnvEnabled } from "../../common";
 import { readJson } from "../../common/fileUtils";
 import {
@@ -33,8 +37,9 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../common/telemetry";
+import { LocalCrypto } from "../crypto";
 import { environmentManager } from "../environment";
-import * as dotenv from "dotenv";
+
 const resourceContext = [
   {
     plugin: "fx-resource-aad-app-for-teams",
@@ -183,7 +188,7 @@ async function readUserData(userDataPath: string): Promise<Record<string, string
     return undefined;
   } else {
     const dictContent = await fs.readFile(userDataPath, "UTF-8");
-    dict = dotenv.parse(dictContent);
+    dict = deserializeDict(dictContent);
   }
 
   return dict;

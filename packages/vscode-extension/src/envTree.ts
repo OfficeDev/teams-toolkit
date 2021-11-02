@@ -45,7 +45,7 @@ export async function registerEnvTreeHandler(
   forceUpdateCollaboratorList = true
 ): Promise<Result<Void, FxError>> {
   if (isMultiEnvEnabled() && vscode.workspace.workspaceFolders) {
-    await mutex.runExclusive(async () => {
+    mutex.runExclusive(async () => {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders![0];
       const workspacePath: string = workspaceFolder.uri.fsPath;
       const envNamesResult = await environmentManager.listEnvConfigs(workspacePath);
@@ -148,18 +148,16 @@ export async function getAllCollaboratorList(envs: string[], force = false): Pro
 }
 
 export async function updateNewEnvCollaborators(env: string): Promise<void> {
-  await mutex.runExclusive(async () => {
-    const parentNode = generateCollaboratorParentNode(env);
-    const notProvisionedNode = generateCollaboratorWarningNode(
-      env,
-      StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration,
-      undefined,
-      false
-    );
+  const parentNode = generateCollaboratorParentNode(env);
+  const notProvisionedNode = generateCollaboratorWarningNode(
+    env,
+    StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration,
+    undefined,
+    false
+  );
 
-    collaboratorsRecordCache[env] = [parentNode, notProvisionedNode];
-    await environmentTreeProvider.add(collaboratorsRecordCache[env]);
-  });
+  collaboratorsRecordCache[env] = [parentNode, notProvisionedNode];
+  await environmentTreeProvider.add(collaboratorsRecordCache[env]);
 }
 
 export async function addCollaboratorToEnv(
@@ -232,7 +230,7 @@ async function localSettingsExists(projectRoot: string): Promise<boolean> {
   return await fs.pathExists(provider.localSettingsFilePath);
 }
 
-async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeItem[]> {
+export async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeItem[]> {
   if (
     environmentTreeProvider &&
     environmentTreeProvider.findCommand("fx-extension.environment." + env) &&
@@ -242,8 +240,7 @@ async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeIte
     const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
     if (subscriptionInfo) {
       const subscriptionTreeItem: TreeItem = {
-        commandId: `fx-extension.environment.subscription.${env}`,
-        contextValue: "openSubscriptionInPortal",
+        commandId: `fx-extension.environment.${env}.subscription`,
         label: subscriptionInfo.subscriptionName,
         icon: "key",
         isCustom: false,
@@ -255,12 +252,11 @@ async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeIte
       const resourceGroupName = await getResourceGroupNameFromEnv(env);
       if (resourceGroupName) {
         const resourceGroupTreeItem: TreeItem = {
-          commandId: `fx-extension.environment.resourceGroup.${env}`,
-          contextValue: "openResourceGroupInPortal",
+          commandId: `fx-extension.environment.${env}.resourceGroup`,
           label: resourceGroupName,
           icon: "symbol-method",
           isCustom: false,
-          parent: `fx-extension.environment.subscription.${env}`,
+          parent: `fx-extension.environment.${env}.subscription`,
         };
 
         envSubItems.push(resourceGroupTreeItem);
@@ -289,7 +285,7 @@ async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeIte
 function checkAzureAccountStatus(env: string): TreeItem | undefined {
   if (AzureAccountManager.getAccountInfo() === undefined) {
     return {
-      commandId: `fx-extension.environment.checkAzureAccount.${env}`,
+      commandId: `fx-extension.environment.${env}.checkAzureAccount`,
       label: StringResources.vsc.commandsTreeViewProvider.noAzureAccountSignedIn,
       icon: "warning",
       isCustom: true,
@@ -316,7 +312,7 @@ async function checkSubscriptionPermission(
 
     if (!checkSucceeded) {
       const warningTreeItem: TreeItem = {
-        commandId: `fx-extension.environment.checkSubscription.${env}`,
+        commandId: `fx-extension.environment.${env}.checkSubscription`,
         label: StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
         tooltip: {
           value: StringResources.vsc.commandsTreeViewProvider.noSubscriptionFoundInAzureAccount,

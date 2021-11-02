@@ -16,7 +16,7 @@ import {
   setSimpleAuthSkuNameToB1,
 } from "../commonUtils";
 
-describe("Collaboration", function () {
+describe("Permission", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
@@ -25,7 +25,7 @@ describe("Collaboration", function () {
   const creator = process.env["M365_ACCOUNT_NAME"];
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
 
-  it("Collaboration: CLI with permission status and permission grant", async function () {
+  it("Permissions", async function () {
     // new a project
     await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
       cwd: testFolder,

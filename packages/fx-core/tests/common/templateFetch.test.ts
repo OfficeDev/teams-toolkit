@@ -31,10 +31,6 @@ const timeout = 1000;
 
 describe("template-helper", () => {
   describe("Template Fetch Test", () => {
-    beforeEach(() => {
-      sinon.stub(templates, "preRelease").value("");
-    });
-
     afterEach(() => {
       sinon.restore();
     });

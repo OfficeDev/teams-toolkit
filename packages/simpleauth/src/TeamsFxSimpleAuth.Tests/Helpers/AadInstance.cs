@@ -11,7 +11,7 @@ using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Graph;
-using Azure.Identity;
+using Microsoft.Graph.Auth;
 using Microsoft.Identity.Client;
 using Microsoft.IdentityModel.Tokens;
 using Microsoft.TeamsFx.SimpleAuth.Tests.Models;
@@ -44,8 +44,13 @@ namespace Microsoft.TeamsFx.SimpleAuth.Tests.Helpers
                 IntegrationTestSettings = new IntegrationTestSettings();
                 Configuration.GetSection("IntegrationTestSettings").Bind(IntegrationTestSettings);
 
-                var authProvider = new ClientSecretCredential(IntegrationTestSettings.TenantId,
-                    IntegrationTestSettings.AdminClientId, IntegrationTestSettings.AdminClientSecret);
+                var confidentialClientApplication = ConfidentialClientApplicationBuilder
+                    .Create(IntegrationTestSettings.AdminClientId)
+                    .WithTenantId(IntegrationTestSettings.TenantId)
+                    .WithClientSecret(IntegrationTestSettings.AdminClientSecret)
+                    .Build();
+
+                var authProvider = new ClientCredentialProvider(confidentialClientApplication);
                 _graphClient = new GraphServiceClient(authProvider);
 
                 // Create aad apps

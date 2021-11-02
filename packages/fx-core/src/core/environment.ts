@@ -25,11 +25,12 @@ import fs from "fs-extra";
 import jsum from "jsum";
 import * as dotenv from "dotenv";
 import {
+  deserializeDict,
   dataNeedEncryption,
-  replaceTemplateWithUserData,
+  mergeSerectData,
   PathNotExistError,
   serializeDict,
-  separateSecretData,
+  sperateSecretData,
   WriteFileError,
   mapToJson,
   objectToMap,
@@ -44,7 +45,6 @@ import { isMultiEnvEnabled } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
-import Mustache from "mustache";
 
 export interface EnvStateFiles {
   envState: string;
@@ -153,7 +153,7 @@ class EnvironmentManager {
     const envFiles = this.getEnvStateFilesPath(envName, projectPath);
 
     const data = envData instanceof Map ? mapToJson(envData) : envData;
-    const secrets = separateSecretData(data);
+    const secrets = sperateSecretData(data);
     this.encrypt(secrets, cryptoProvider);
     if (Object.keys(secrets).length) {
       secrets[this.checksumKey] = jsum.digest(secrets, "SHA256", "hex");
@@ -278,13 +278,10 @@ class EnvironmentManager {
       return ok(data);
     }
 
-    const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });
+    const envData = await readJson(envFiles.envState);
 
-    const result = replaceTemplateWithUserData(template, userData);
-
-    const resultJson: Json = JSON.parse(result);
-
-    const data = objectToMap(resultJson);
+    mergeSerectData(userData, envData);
+    const data = objectToMap(envData);
 
     return ok(data);
   }
@@ -325,7 +322,7 @@ class EnvironmentManager {
     }
 
     const content = await fs.readFile(userDataPath, "UTF-8");
-    const secrets = dotenv.parse(content);
+    const secrets = deserializeDict(content);
 
     const res = this.decrypt(secrets, cryptoProvider);
     if (res.isErr()) {

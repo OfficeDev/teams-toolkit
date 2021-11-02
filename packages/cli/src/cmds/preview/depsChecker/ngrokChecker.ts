@@ -12,13 +12,7 @@ import {
   IDepsLogger,
   IDepsTelemetry,
 } from "./checker";
-import {
-  ngrokInstallHelpLink,
-  DepsCheckerEvent,
-  isWindows,
-  Messages,
-  TelemtryMessages,
-} from "./common";
+import { defaultHelpLink, DepsCheckerEvent, isWindows, Messages, TelemtryMessages } from "./common";
 import { DepsCheckerError } from "./errors";
 import * as os from "os";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
@@ -123,7 +117,7 @@ export class NgrokChecker implements IDepsChecker {
     );
     throw new DepsCheckerError(
       Messages.failToInstallNgrok.split("@NameVersion").join(displayNgrokName),
-      ngrokInstallHelpLink
+      defaultHelpLink
     );
   }
 
@@ -155,7 +149,7 @@ export class NgrokChecker implements IDepsChecker {
     this._telemetry.sendEvent(DepsCheckerEvent.npmNotFound);
     throw new DepsCheckerError(
       Messages.needInstallNgrok.replace("@NameVersion", displayNgrokName),
-      ngrokInstallHelpLink
+      defaultHelpLink
     );
   }
 

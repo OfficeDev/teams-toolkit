@@ -434,15 +434,14 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(MockCore.prototype, "listAllCollaborators").returns(
-        Promise.resolve(
-          ok({
-            env: {
-              state: CollaborationState.ERROR,
-              error: err(new UserError("error", "error", "extensionTest", new Error().stack)),
-            },
-          })
-        )
+      sinon.stub(MockCore.prototype, "listAllCollaborators").resolves(
+        err({
+          name: "error",
+          source: "extensionTest",
+          message: "error",
+          stack: new Error().stack,
+          timestamp: new Date(),
+        })
       );
 
       const result = await handlers.listAllCollaborators(["env"]);

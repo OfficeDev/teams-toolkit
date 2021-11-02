@@ -9,7 +9,6 @@ import * as commonUtils from "./commonUtils";
 import { ProductName, VsCodeEnv } from "@microsoft/teamsfx-api";
 import { DotnetChecker } from "./depsChecker/dotnetChecker";
 import { FuncToolChecker } from "./depsChecker/funcToolChecker";
-import { NgrokChecker } from "./depsChecker/ngrokChecker";
 import { detectVsCodeEnv } from "../handlers";
 import { vscodeAdapter } from "./depsChecker/vscodeAdapter";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
@@ -300,13 +299,6 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const options: vscode.ShellExecutionOptions = {
       cwd: projectRoot,
     };
-
-    // prepare PATH to execute `ngrok`
-    const ngrokChecker = new NgrokChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
-    options.env = {
-      PATH: `${ngrokChecker.getNgrokBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`,
-    };
-
     const task = new vscode.Task(
       definition,
       workspaceFolder,

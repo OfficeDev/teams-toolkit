@@ -190,10 +190,7 @@ export class VsCodeUI implements UserInteraction {
             }),
             quickPick.onDidTriggerButton((button) => {
               if (button === QuickInputButtons.Back) resolve(ok({ type: "back" }));
-              else {
-                quickPick.selectedItems = quickPick.activeItems;
-                onDidAccept();
-              }
+              else onDidAccept();
             })
           );
 

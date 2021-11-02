@@ -38,8 +38,8 @@ interface TestSuite {
 }
 
 enum TestPointOutCome {
-  passed = 3,
-  failed = 2,
+  passed = 2,
+  failed = 3,
 }
 
 interface TestPoint {

@@ -11,6 +11,7 @@ import {
   Result,
   ok,
 } from "@microsoft/teamsfx-api";
+import { deserializeDict } from "@microsoft/teamsfx-core";
 import { exec } from "child_process";
 import fs from "fs-extra";
 import os from "os";
@@ -18,7 +19,7 @@ import path from "path";
 import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
 import { sleep } from "../../src/utils";
-import * as dotenv from "dotenv";
+
 import { cfg, AadManager, ResourceGroupManager } from "../commonlib";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
@@ -285,7 +286,7 @@ export async function readContext(projectPath: string): Promise<any> {
   let userData: Record<string, string> = {};
   if (await fs.pathExists(userDataFilePath)) {
     const dictContent = await fs.readFile(userDataFilePath, "UTF-8");
-    userData = dotenv.parse(dictContent);
+    userData = deserializeDict(dictContent);
   }
 
   // Read from userdata.
@@ -328,7 +329,7 @@ export async function loadContext(projectPath: string, env: string): Promise<Res
     path.join(projectPath, `.${ConfigFolderName}`, StatesFolderName, `${env}.userdata`),
     "utf8"
   );
-  const userdata = dotenv.parse(userdataContent);
+  const userdata = deserializeDict(userdataContent);
 
   const regex = /\{\{([^{}]+)\}\}/;
   for (const component in context) {

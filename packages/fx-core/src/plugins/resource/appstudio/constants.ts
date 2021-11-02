@@ -9,8 +9,6 @@ export class Constants {
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
   public static readonly READ_MORE = "Read more";
   public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";
-  public static readonly TEAMS_ADMIN_PORTAL =
-    "https://admin.teams.microsoft.com/policies/manage-apps";
   public static readonly TEAMS_APP_ID = "teamsAppId";
 
   public static readonly PERMISSIONS = {

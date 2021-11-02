@@ -58,7 +58,7 @@ pipeline {
 
         // We suggest to do the `npx teamsfx provision` step manually or in a separate pipeline. The following steps are for your reference.
         // After provisioning, you should commit necessary files under .fx into the repository.
-        // You should upload .fx/states/${TEAMSFX_ENV_NAME}.userdata into credentials (https://www.jenkins.io/doc/book/using/using-credentials/) in type of `Secret file` which can be refered by the stage with name 'Generate userdata'. 
+        // You should copy content of .fx/states/${TEAMSFX_ENV_NAME}.userdata into credentials (https://www.jenkins.io/doc/book/using/using-credentials/) which can be refered by the stage with name 'Generate userdata'. 
         // stage('Provision hosting environment') {
         //     environment {
         //         TEAMSFX_BICEP_ENV_CHECKER_ENABLE = 'true'
@@ -87,7 +87,7 @@ pipeline {
                 USERDATA_CONTENT = credentials('USERDATA_CONTENT')
             }
             steps {
-                sh '[ ! -z "${USERDATA_CONTENT}" ] && cp ${USERDATA_CONTENT} .fx/states/${TEAMSFX_ENV_NAME}.userdata'
+                sh '[ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/states/${TEAMSFX_ENV_NAME}.userdata'
             }
         }
 

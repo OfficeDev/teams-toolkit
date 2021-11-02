@@ -1,11 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AppPackageFolderName } from "@microsoft/teamsfx-api";
-import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import { expect } from "chai";
+
 import {
   AadValidator,
   AppStudioValidator,
@@ -15,6 +14,7 @@ import {
   SimpleAuthValidator,
   SqlValidator,
 } from "../../commonlib";
+
 import {
   cleanUp,
   execAsync,
@@ -26,8 +26,21 @@ import {
   mockTeamsfxMultiEnvFeatureFlag,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
+import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import { deserializeDict } from "@microsoft/teamsfx-core";
+import {
+  err,
+  FxError,
+  Result,
+  ok,
+  ConfigFolderName,
+  StatesFolderName,
+  EnvStateFileNameTemplate,
+  EnvNamePlaceholder,
+  AppPackageFolderName,
+} from "@microsoft/teamsfx-api";
 
-describe("Multi Env Happy Path for Azure", function () {
+describe("Create single tab/bot/function", function () {
   const env = "e2e";
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -35,7 +48,8 @@ describe("Multi Env Happy Path for Azure", function () {
   const projectPath = path.resolve(testFolder, appName);
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
 
-  it(`Can create/provision/deploy/build/validate/launch remote a azure tab/function/sql/bot project`, async function () {
+  it(`Happy path`, async function () {
+    // new a project (tab + bot + function)
     try {
       let result;
       result = await execAsync(

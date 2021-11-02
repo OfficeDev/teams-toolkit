@@ -18,6 +18,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   CoreHookContext,
+  deserializeDict,
   serializeDict,
   SolutionConfigError,
   ProjectSettingError,
@@ -60,7 +61,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
-import * as dotenv from "dotenv";
+import * as util from "util";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 
@@ -322,7 +323,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   const {
     hasFrontend,
     hasBackend,
-    hasBot,
+    hasBotPlugin,
     hasBotCapability,
     hasMessageExtensionCapability,
     isSPFx,
@@ -331,7 +332,9 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
 
   //localSettings.json
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
-  await localSettingsProvider.save(localSettingsProvider.init(hasFrontend, hasBackend, hasBot));
+  await localSettingsProvider.save(
+    localSettingsProvider.init(hasFrontend, hasBackend, hasBotPlugin)
+  );
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
   await fs.copy(path.join(fx, "settings.json"), projectSettings);
@@ -428,7 +431,7 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
 
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
   const stateData = await readJson(devState);
-  const secrets: Record<string, string> = dotenv.parse(await fs.readFile(devUserData, "UTF-8"));
+  const secrets: Record<string, string> = deserializeDict(await fs.readFile(devUserData, "UTF-8"));
 
   stateData[PluginNames.APPST]["teamsAppId"] = stateData[PluginNames.SOLUTION]["remoteTeamsAppId"];
 
@@ -570,10 +573,8 @@ async function ensureProjectSettings(
   const settings: ProjectSettings = await readJson(projectSettingPath);
   if (!settings.programmingLanguage || !settings.defaultFunctionName) {
     const envDefault = await readJson(envDefaultPath);
-    settings.programmingLanguage =
-      settings.programmingLanguage || envDefault[PluginNames.SOLUTION]?.[programmingLanguage];
-    settings.defaultFunctionName =
-      settings.defaultFunctionName || envDefault[PluginNames.FUNC]?.[defaultFunctionName];
+    settings.programmingLanguage = envDefault[PluginNames.SOLUTION][programmingLanguage];
+    settings.defaultFunctionName = envDefault[PluginNames.FUNC]?.[defaultFunctionName];
   }
   if (!settings.version) {
     settings.version = "1.0.0";

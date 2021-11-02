@@ -173,7 +173,6 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
         });
         sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
           if (userdataFile === file) return content;
-          if (envJsonFile === file) return fileMap.get(envJsonFile);
           return {};
         });
         const configsFolder = environmentManager.getEnvConfigsFolder(projectPath);

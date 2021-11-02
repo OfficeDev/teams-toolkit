@@ -1,87 +1,80 @@
-param functionAppName string
-param functionStorageName string
-param m365ClientId string
-@secure()
-param m365ClientSecret string
-param m365TenantId string
-param m365ApplicationIdUri string
-param m365OauthAuthorityHost string
+// Auto generated content, please customize files under provision folder
 
+@secure()
+param provisionParameters object
+param provisionOutputs object
+@secure()
+param currentConfigs object
+@secure()
+param currentAppSettings object
+
+var functionAppName = split({{PluginOutput.fx-resource-function.References.functionAppResourceId}}, '/')[8]
+
+var m365ClientId = provisionParameters['m365ClientId']
+var m365ClientSecret = provisionParameters['m365ClientSecret']
+var m365TenantId = provisionParameters['m365TenantId']
+var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
+var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
 {{#contains 'fx-resource-frontend-hosting' Plugins}}
-param frontendHostingStorageEndpoint string
+var tabAppDomain = {{../PluginOutput.fx-resource-frontend-hosting.References.domain}}
+var tabAppEndpoint = {{../PluginOutput.fx-resource-frontend-hosting.References.endpoint}} 
 {{/contains}}
-{{#contains 'fx-resource-azure-sql' Plugins}}
-param sqlDatabaseName string
-param sqlEndpoint string
+{{#contains 'fx-resource-bot' Plugins}}
+var botId = provisionParameters['botAadAppClientId']
 {{/contains}}
-{{#contains 'fx-resource-identity' Plugins}}
-param identityClientId string
+{{#contains 'fx-resource-frontend-hosting' Plugins}}
+{{#notContains 'fx-resource-bot' ../Plugins}}
+var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'
+{{/notContains}}
+{{#contains 'fx-resource-bot' ../Plugins}}
+var m365ApplicationIdUri = 'api://${tabAppDomain}/botid-${bot_aadClientId}'
 {{/contains}}
+{{/contains}}
+{{#notContains 'fx-resource-frontend-hosting' Plugins}}
+{{#contains 'fx-resource-bot' ../Plugins}}
+var m365ApplicationIdUri = 'api://botid-${bot_aadClientId}'
+{{/contains}}
+{{/notContains}}
 
 var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
 var teamsWebAppClientId = '5e3ce6c0-2b1f-4285-8d4b-75ee78787346'
 var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teamsWebAppClientId}'
 
-resource functionApp 'Microsoft.Web/sites@2021-01-15' existing = {
-  name: functionAppName
-}
-
-resource functionStorage 'Microsoft.Storage/storageAccounts@2021-04-01' existing = {
-  name: functionStorageName
-}
-
-var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
+var currentAllowedOrigins = empty(currentConfigs.cors) ? [] : currentConfigs.cors.allowedOrigins
 
 {{#contains 'fx-resource-frontend-hosting' Plugins}}
-resource functionAppConfig 'Microsoft.Web/sites/config@2021-01-15' = {
-  parent: functionApp
-  name: 'web'
+resource appConfig 'Microsoft.Web/sites/config@2021-01-15' = {
+  name: '${functionAppName}/web'
   kind: 'functionapp'
   properties: {
     cors: {
-      allowedOrigins: [
-        frontendHostingStorageEndpoint
-      ]
+      allowedOrigins: union(currentAllowedOrigins, [
+        tabAppEndpoint
+      ])
     }
   }
 }
 {{/contains}}
-
-resource functionAppAppSettings 'Microsoft.Web/sites/config@2021-01-15' = {
-  parent: functionApp
-  name: 'appsettings'
-  dependsOn: [
-    functionAppConfig
-    functionAppAuthSettings
-  ]
-  properties: {
-    API_ENDPOINT: 'https://${functionApp.properties.hostNames[0]}'
+resource appSettings 'Microsoft.Web/sites/config@2021-01-15' = {
+  name: '${functionAppName}/appsettings'
+  properties: union({
+    API_ENDPOINT: 'https://${ {{~PluginOutput.fx-resource-function.References.functionAppResourceId~}} }'
     ALLOWED_APP_IDS: authorizedClientApplicationIds
-    AzureWebJobsDashboard: 'DefaultEndpointsProtocol=https;AccountName=${functionStorage.name};AccountKey=${listKeys(functionStorage.id, functionStorage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
-    AzureWebJobsStorage: 'DefaultEndpointsProtocol=https;AccountName=${functionStorage.name};AccountKey=${listKeys(functionStorage.id, functionStorage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
-    FUNCTIONS_EXTENSION_VERSION: '~3'
-    FUNCTIONS_WORKER_RUNTIME: 'node'
-    M365_APPLICATION_ID_URI: m365ApplicationIdUri
     M365_CLIENT_ID: m365ClientId
     M365_CLIENT_SECRET: m365ClientSecret
     M365_TENANT_ID: m365TenantId
     M365_AUTHORITY_HOST: m365OauthAuthorityHost
-    WEBSITE_CONTENTAZUREFILECONNECTIONSTRING: 'DefaultEndpointsProtocol=https;AccountName=${functionStorage.name};AccountKey=${listKeys(functionStorage.id, functionStorage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
-    WEBSITE_RUN_FROM_PACKAGE: '1'
-    WEBSITE_CONTENTSHARE: toLower(functionAppName)
-    {{#contains 'fx-resource-identity' Plugins}}
-    IDENTITY_ID: identityClientId
-    {{/contains}}
+    M365_APPLICATION_ID_URI: m365ApplicationIdUri
+    IDENTITY_ID: {{PluginOutput.fx-resource-identity.References.identityClientId}}
     {{#contains 'fx-resource-azure-sql' Plugins}}
-    SQL_DATABASE_NAME: sqlDatabaseName
-    SQL_ENDPOINT: sqlEndpoint
+    SQL_DATABASE_NAME: {{../PluginOutput.fx-resource-azure-sql.References.sqlDatabaseName}}
+    SQL_ENDPOINT: {{../PluginOutput.fx-resource-azure-sql.References.sqlServerEndpoint}}
     {{/contains}}
-  }
+  }, currentAppSettings)
 }
 
-resource functionAppAuthSettings 'Microsoft.Web/sites/config@2021-01-15' = {
-  parent: functionApp
-  name: 'authsettings'
+resource authSettings 'Microsoft.Web/sites/config@2021-01-15' = {
+  name: '${functionAppName}/authsettings'
   properties: {
     enabled: true
     defaultProvider: 'AzureActiveDirectory'

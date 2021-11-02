@@ -670,18 +670,18 @@ export class FunctionPluginImpl {
       "function",
       "bicep"
     );
-    const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName);
+    const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionFileName);
 
     const provisionFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      FunctionBicepFile.provisionModuleTemplateV2FileName
+      FunctionBicepFile.provisionModuleTemplateFileName
     );
 
-    const configTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ConfigV2FileName);
+    const configTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ConfigFileName);
 
     const configFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      FunctionBicepFile.configuraitonTemplateV2FileName
+      FunctionBicepFile.configuraitonTemplateFileName
     );
 
     const result: ArmTemplateResult = {

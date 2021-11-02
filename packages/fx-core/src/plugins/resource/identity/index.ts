@@ -135,9 +135,9 @@ export class IdentityPlugin implements Plugin {
 
     const moduleTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      IdentityBicepFile.moduleTempalteV2Filename
+      IdentityBicepFile.moduleTempalteFilename
     );
-    const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName);
+    const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionFileName);
 
     const result: ArmTemplateResult = {
       Provision: {

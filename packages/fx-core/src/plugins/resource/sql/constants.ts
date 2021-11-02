@@ -111,5 +111,5 @@ export class AzureSqlArmOutput {
 
 export class AzureSqlBicepFile {
   static readonly moduleTemplateFileName: string = "sql.template.bicep";
-  static readonly ProvisionModuleTemplateV2FileName = "sqlProvision.template.v2.bicep";
+  static readonly ProvisionModuleTemplateFileName = "sqlProvision.template.bicep";
 }

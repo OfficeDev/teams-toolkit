@@ -265,12 +265,12 @@ export class SqlPluginImpl {
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: await fs.readFile(
-          path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName),
+          path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
           ConstantString.UTF8Encoding
         ),
         Modules: {
           azureSqlProvision: await fs.readFile(
-            path.join(bicepTemplateDirectory, AzureSqlBicepFile.ProvisionModuleTemplateV2FileName),
+            path.join(bicepTemplateDirectory, AzureSqlBicepFile.ProvisionModuleTemplateFileName),
             ConstantString.UTF8Encoding
           ),
         },

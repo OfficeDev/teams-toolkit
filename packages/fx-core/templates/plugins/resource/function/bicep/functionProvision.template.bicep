@@ -1,12 +1,13 @@
-param functionServerfarmsName string
-param functionAppName string
-param functionStorageName string
-{{#contains 'fx-resource-identity' Plugins}}
-param identityResourceId string
-{{/contains}}
+param provisionParameters object
+param userAssignedIdentityId string
 
-resource functionServerfarms 'Microsoft.Web/serverfarms@2020-06-01' = {
-  name: functionServerfarmsName
+var resourceBaseName = provisionParameters.resourceBaseName
+var serverfarmsName = contains(provisionParameters, 'functionServerfarmsName') ? provisionParameters['functionServerfarmsName'] : '${resourceBaseName}-function-serverfarms'
+var functionAppName = contains(provisionParameters, 'functionWebappName') ? provisionParameters['functionWebappName'] : '${resourceBaseName}-function-webapp'
+var storageName = contains(provisionParameters, 'functionStorageName') ? provisionParameters['functionStorageName'] : 'functionstg${uniqueString(resourceBaseName)}'
+
+resource serverfarms 'Microsoft.Web/serverfarms@2021-01-15' = {
+  name: serverfarmsName
   kind: 'functionapp'
   location: resourceGroup().location
   sku: {
@@ -14,35 +15,65 @@ resource functionServerfarms 'Microsoft.Web/serverfarms@2020-06-01' = {
   }
 }
 
-resource functionApp 'Microsoft.Web/sites@2020-06-01' = {
+resource functionApp 'Microsoft.Web/sites@2021-01-15' = {
   name: functionAppName
   kind: 'functionapp'
   location: resourceGroup().location
   properties: {
-    serverFarmId: functionServerfarms.id
+    serverFarmId: serverfarms.id
+    siteConfig: {
+      appSettings: [
+        {
+          name: 'AzureWebJobsDashboard'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+        }
+        {
+          name: 'AzureWebJobsStorage'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+        }
+        {
+          name: 'FUNCTIONS_EXTENSION_VERSION'
+          value: '~3'
+        }
+        {
+          name: 'FUNCTIONS_WORKER_RUNTIME'
+          value: 'node'
+        }
+        {
+          name: 'WEBSITE_CONTENTAZUREFILECONNECTIONSTRING'
+          value: 'DefaultEndpointsProtocol=https;AccountName=${storage.name};AccountKey=${listKeys(storage.id, storage.apiVersion).keys[0].value};EndpointSuffix=${environment().suffixes.storage}'
+        }
+        {
+          name: 'WEBSITE_RUN_FROM_PACKAGE'
+          value: '1'
+        }
+        {
+          name: 'WEBSITE_CONTENTSHARE'
+          value: toLower(functionAppName)
+        }
+        {
+          name: 'WEBSITE_NODE_DEFAULT_VERSION'
+          value: '~14'
+        }
+      ]
+    }
   }
-  {{#contains 'fx-resource-identity' Plugins}}
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${identityResourceId}':{}
+      '${userAssignedIdentityId}': {}
     }
   }
-  {{/contains}}
 }
 
-resource functionStorage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
-  name: functionStorageName
+resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
+  name: storageName
   kind: 'StorageV2'
   location: resourceGroup().location
-  properties: {
-    accessTier: 'Hot'
-    supportsHttpsTrafficOnly: true
-  }
   sku: {
     name: 'Standard_LRS'
   }
 }
 
-output functionEndpoint string = functionApp.properties.hostNames[0]
+output functionAppEndpoint string = functionApp.properties.defaultHostName
 output functionAppResourceId string = functionApp.id

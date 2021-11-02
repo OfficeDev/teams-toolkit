@@ -597,7 +597,10 @@ describe("Middleware - others", () => {
       assert.isTrue(
         await fs.pathExists(path.join(projectPath, "templates", "azure", "main.bicep"))
       );
-      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure", "modules")));
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure", "provision")));
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, "templates", "azure", "teamsFxConfiguration"))
+      );
       const armParam = await fs.readJson(
         path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json")
       );

@@ -13,6 +13,8 @@ export class Bicep {
   static readonly OutputOrchestrationFileName: string = "output.template.bicep";
   static readonly VariablesOrchestrationFileName: string = "variables.template.bicep";
   static readonly ParameterFileName: string = "parameters.json";
+  static readonly ProvisionV2FileName: string = "provision.template.v2.bicep";
+  static readonly ConfigV2FileName: string = "config.template.v2.bicep";
 }
 
 export class TeamsClientId {

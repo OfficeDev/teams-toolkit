@@ -22,6 +22,7 @@
     "test:solution": "nyc mocha \"tests/plugins/solution/*.test.ts\"",
     "test:core": "nyc mocha \"tests/core/*.test.ts\"",
     "test:core-mw": "nyc mocha \"tests/core/middleware/*.test.ts\"",
+    "test:core-tools": "nyc mocha \"tests/core/tools.test.ts\"",
     "test:apiv2": "nyc mocha \"tests/plugins/resource/apiv2/*.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",

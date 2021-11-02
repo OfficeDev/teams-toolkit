@@ -252,7 +252,7 @@ export class AppStudioPlugin implements Plugin {
       ctx.logProvider?.info(`Publish success!`);
       ctx.ui?.showMessage(
         "info",
-        `Success: ${result.name} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
+        `Success: ${result.name} successfully published to the [admin portal](${Constants.TEAMS_ADMIN_PORTAL}). Once approved, your app will be available for your organization.`,
         false
       );
       const properties: { [key: string]: string } = {};

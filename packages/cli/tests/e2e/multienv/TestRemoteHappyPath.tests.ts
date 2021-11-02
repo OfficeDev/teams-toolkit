@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { AppPackageFolderName } from "@microsoft/teamsfx-api";
+import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
-import { expect } from "chai";
-
+import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import {
   AadValidator,
   AppStudioValidator,
@@ -14,7 +15,6 @@ import {
   SimpleAuthValidator,
   SqlValidator,
 } from "../../commonlib";
-
 import {
   cleanUp,
   execAsync,
@@ -26,19 +26,6 @@ import {
   mockTeamsfxMultiEnvFeatureFlag,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
-import { deserializeDict } from "@microsoft/teamsfx-core";
-import {
-  err,
-  FxError,
-  Result,
-  ok,
-  ConfigFolderName,
-  StatesFolderName,
-  EnvStateFileNameTemplate,
-  EnvNamePlaceholder,
-  AppPackageFolderName,
-} from "@microsoft/teamsfx-api";
 
 describe("Create single tab/bot/function", function () {
   const env = "e2e";

@@ -30,14 +30,10 @@ import {
   ResourceTemplate,
   SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
-import { CryptoDataMatchers, mapToJson } from "../../common";
+import { CryptoDataMatchers, mapToJson } from "../../common/tools";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
-import {
-  InvalidStateError,
-  newEnvInfo,
-  NoProjectOpenedError,
-  PluginHasNoTaskImpl,
-} from "../../core";
+import { InvalidStateError, NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core/error";
+import { newEnvInfo } from "../../core/tools";
 import { ARM_TEMPLATE_OUTPUT, GLOBAL_CONFIG } from "../solution/fx-solution/constants";
 
 export function convert2PluginContext(

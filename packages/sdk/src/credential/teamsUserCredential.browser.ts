@@ -404,7 +404,7 @@ export class TeamsUserCredential implements TokenCredential {
     });
 
     axiosInstance.interceptors.request.use((config) => {
-      config.headers.Authorization = "Bearer " + ssoToken.token;
+      config.headers!.Authorization = "Bearer " + ssoToken.token;
       return config;
     });
 

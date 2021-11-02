@@ -36,7 +36,7 @@ export interface ComputingResource {
   innerLoopPlugins: string;
   hostingPlugin: string;
   runtimeStack: string;
-  resources: string[];
+  dependencies: string[];
   programmingLanguage: string;
 }
 
@@ -49,5 +49,5 @@ export interface TeamsAppProjectSettings {
   capabilities: ("Tab" | "Bot" | "MessagingExtension")[];
   tab: ComputingResource;
   bot: ComputingResource;
-  resources: (DatabaseResource | ComputingResource)[];
+  dependencies: (DatabaseResource | ComputingResource)[];
 }

@@ -39,7 +39,7 @@ export const templates = sampleProvider.SampleCollection.samples.map((sample) =>
   return {
     tags: sample.tags,
     title: sample.title,
-    description: sample.description,
+    description: sample.shortDescription,
     sampleAppName: sample.id,
     sampleAppUrl: sample.link,
   };

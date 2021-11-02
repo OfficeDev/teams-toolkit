@@ -257,7 +257,7 @@ export const SampleSelect: SingleSelectQuestion = {
     return {
       id: sample.id,
       label: sample.title,
-      description: sample.description,
+      description: sample.shortDescription,
       data: sample.link,
     } as OptionItem;
   }),

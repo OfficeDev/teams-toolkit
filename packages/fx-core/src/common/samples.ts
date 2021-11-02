@@ -3,7 +3,8 @@ import sampleConfig from "./samples-config.json";
 export interface SampleInfo {
   id: string;
   title: string;
-  description: string;
+  shortDescription: string;
+  fullDescription: string;
   tags: string[];
   link: string;
 }
@@ -22,7 +23,8 @@ class SampleProvider {
         return {
           id: sample.id,
           title: sample.title,
-          description: sample.description,
+          shortDescription: sample.shortDescription,
+          fullDescription: sample.fullDescription,
           tags: sample.tags,
           link: sampleConfig.defaultPackageLink,
         } as SampleInfo;

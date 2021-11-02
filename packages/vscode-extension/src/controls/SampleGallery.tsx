@@ -12,7 +12,8 @@ import { EventMessages } from "./messages";
 interface SampleInfo {
   id: string;
   title: string;
-  description: string;
+  shortDescription: string;
+  fullDescription: string;
   tags: string[];
   link: string;
 }
@@ -110,7 +111,7 @@ class SampleAppCardList extends React.Component<any, any> {
             image={imageMapping[sample.id]}
             tags={sample.tags}
             title={sample.title}
-            description={sample.description}
+            description={sample.fullDescription}
             sampleAppFolder={sample.id}
             sampleAppUrl={sample.link}
           />

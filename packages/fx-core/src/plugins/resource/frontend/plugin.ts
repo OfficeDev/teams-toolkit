@@ -45,6 +45,7 @@ import { FrontendScaffold as Scaffold } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import {
   MigrateSteps,
+  PostProvisionSteps,
   PreDeploySteps,
   ProgressHelper,
   ProvisionSteps,
@@ -57,7 +58,7 @@ import { ArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { EnvironmentUtils } from "./utils/environment-utils";
-import { copyFiles } from "../../../common";
+import { copyFiles, isArmSupportEnabled } from "../../../common";
 import { AzureResourceFunction } from "../../solution/fx-solution/question";
 
 export class FrontendPluginImpl {
@@ -138,6 +139,20 @@ export class FrontendPluginImpl {
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (isArmSupportEnabled()) {
+      Logger.info(Messages.StartPostProvision(PluginInfo.DisplayName));
+      const progressHandler = await ProgressHelper.startPostProvisionProgressHandler(ctx);
+      await progressHandler?.next(PostProvisionSteps.EnableStaticWebsite);
+
+      const client = new AzureStorageClient(await FrontendConfig.fromPluginContext(ctx));
+      await runWithErrorCatchAndThrow(
+        new EnableStaticWebsiteError(),
+        async () => await client.enableStaticWebsite()
+      );
+
+      await ProgressHelper.endPostProvisionProgress(true);
+      Logger.info(Messages.EndPostProvision(PluginInfo.DisplayName));
+    }
     return ok(undefined);
   }
 

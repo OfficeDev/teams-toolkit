@@ -426,9 +426,3 @@ export enum OpenApiSchemaVersion {
 export class UserTask {
   static addResourceFuncName = "addResource";
 }
-
-export class ApimArmOutput {
-  static readonly ServiceResourceId = "apimServiceResourceId";
-  static readonly ProductResourceId = "apimProductResourceId";
-  static readonly AuthServerResourceId = "apimAuthServiceResourceId";
-}

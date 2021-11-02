@@ -13,7 +13,6 @@ import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import { ScaffoldArmTemplateResult, ArmTemplateResult } from "../../../common/armInterface";
 import { generateBicepFiles, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
-import { getArmOutput } from "../utils4v2";
 import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
 import { Bicep, ConstantString } from "../../../common/constants";
 
@@ -106,15 +105,7 @@ export class SimpleAuthPluginImpl {
 
     const configs = Utils.getWebAppConfig(ctx, false);
 
-    if (isArmSupportEnabled()) {
-      const endpoint = getArmOutput(ctx, Constants.ArmOutput.simpleAuthEndpoint) as string;
-      ctx.config.set(Constants.SimpleAuthPlugin.configKeys.endpoint, endpoint);
-
-      const sku = getArmOutput(ctx, Constants.ArmOutput.simpleAuthSkuName) as string;
-      if (sku) {
-        ctx.config.set(Constants.SimpleAuthPlugin.configKeys.skuName, sku);
-      }
-    } else {
+    if (!isArmSupportEnabled()) {
       await this.webAppClient.configWebApp(configs);
     }
 
@@ -215,18 +206,8 @@ export class SimpleAuthPluginImpl {
       Constants.SolutionPlugin.configKeys.location
     ) as string;
 
-    let webAppName: string;
-    let appServicePlanName: string;
-    if (isArmSupportEnabled()) {
-      webAppName = getArmOutput(ctx, Constants.ArmOutput.simpleAuthWebAppName) as string;
-      appServicePlanName = getArmOutput(
-        ctx,
-        Constants.ArmOutput.simpleAuthAppServicePlanName
-      ) as string;
-    } else {
-      webAppName = Utils.generateResourceName(ctx.projectSettings!.appName, resourceNameSuffix);
-      appServicePlanName = webAppName;
-    }
+    const webAppName = Utils.generateResourceName(ctx.projectSettings!.appName, resourceNameSuffix);
+    const appServicePlanName = webAppName;
 
     this.webAppClient = new WebAppClient(
       credentials,

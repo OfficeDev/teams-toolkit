@@ -35,7 +35,6 @@ import {
   FindAppError,
 } from "./resources/errors";
 import {
-  FunctionArmOutput,
   AzureInfo,
   FunctionBicep,
   DefaultProvisionConfigs,
@@ -87,7 +86,6 @@ import {
   isArmSupportEnabled,
 } from "../../../common";
 import { functionNameQuestion } from "./question";
-import { getArmOutput } from "../utils4v2";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -108,7 +106,7 @@ export interface FunctionConfig {
   storageAccountName?: string;
   appServicePlanName?: string;
   functionEndpoint?: string;
-  functionAppId?: string;
+  functionAppResourceId?: string;
 
   /* Intermediate  */
   skipDeploy: boolean;
@@ -126,7 +124,9 @@ export class FunctionPluginImpl {
 
     this.config.functionEndpoint = ctx.config.get(FunctionConfigKey.functionEndpoint) as string;
     if (isArmSupportEnabled()) {
-      this.config.functionAppId = ctx.config.get(FunctionConfigKey.functionAppId) as string;
+      this.config.functionAppResourceId = ctx.config.get(
+        FunctionConfigKey.functionAppResourceId
+      ) as string;
     } else {
       const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
         DependentPluginInfo.solutionPluginName
@@ -400,8 +400,8 @@ export class FunctionPluginImpl {
   }
 
   public async provision(ctx: PluginContext): Promise<FxResult> {
-    const resourceGroupName = this.getFunctionAppResourceGroupName(ctx);
-    const subscriptionId = this.getFunctionAppSubscriptionId(ctx);
+    const resourceGroupName = this.getFunctionAppResourceGroupName();
+    const subscriptionId = this.getFunctionAppSubscriptionId();
     const location = this.checkAndGet(this.config.location, FunctionConfigKey.location);
     const appServicePlanName = this.checkAndGet(
       this.config.appServicePlanName,
@@ -552,9 +552,11 @@ export class FunctionPluginImpl {
   }
 
   public async postProvision(ctx: PluginContext): Promise<FxResult> {
-    const functionAppName = this.getFunctionAppName(ctx, true);
-    const resourceGroupName = this.getFunctionAppResourceGroupName(ctx, true);
-    const subscriptionId = this.getFunctionAppSubscriptionId(ctx, true);
+    await this.syncConfigFromContext(ctx);
+
+    const functionAppName = this.getFunctionAppName();
+    const resourceGroupName = this.getFunctionAppResourceGroupName();
+    const subscriptionId = this.getFunctionAppSubscriptionId();
     const credential = this.checkAndGet(
       await ctx.azureAccountProvider?.getAccountCredentialAsync(),
       FunctionConfigKey.credential
@@ -564,10 +566,6 @@ export class FunctionPluginImpl {
       new InitAzureSDKError(),
       () => AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId)
     );
-
-    if (isArmSupportEnabled()) {
-      this.syncArmOutput(ctx);
-    }
 
     const site = await this.getSite(
       ctx,
@@ -719,9 +717,9 @@ export class FunctionPluginImpl {
     }
 
     const workingPath: string = this.getFunctionProjectRootPath(ctx);
-    const functionAppName = this.getFunctionAppName(ctx);
-    const resourceGroupName = this.getFunctionAppResourceGroupName(ctx);
-    const subscriptionId = this.getFunctionAppSubscriptionId(ctx);
+    const functionAppName = this.getFunctionAppName();
+    const resourceGroupName = this.getFunctionAppResourceGroupName();
+    const subscriptionId = this.getFunctionAppSubscriptionId();
     const functionLanguage: FunctionLanguage = this.checkAndGet(
       this.config.functionLanguage,
       FunctionConfigKey.functionLanguage
@@ -768,37 +766,37 @@ export class FunctionPluginImpl {
     return selectedPlugins.includes(plugin);
   }
 
-  private getFunctionAppId(ctx: PluginContext, getFromArmOutput = false): string {
-    if (getFromArmOutput) {
-      return getArmOutput(ctx, FunctionArmOutput.AppResourceId)!;
-    }
-    return this.checkAndGet(this.config.functionAppId, FunctionConfigKey.functionAppId);
+  private getFunctionAppName(): string {
+    return isArmSupportEnabled()
+      ? getSiteNameFromResourceId(
+          this.checkAndGet(
+            this.config.functionAppResourceId,
+            FunctionConfigKey.functionAppResourceId
+          )
+        )
+      : this.checkAndGet(this.config.functionAppName, FunctionConfigKey.functionAppName);
   }
 
-  private getFunctionAppName(ctx: PluginContext, getFromArmOutput = false): string {
-    if (isArmSupportEnabled()) {
-      return getSiteNameFromResourceId(this.getFunctionAppId(ctx, getFromArmOutput));
-    }
-    return this.checkAndGet(this.config.functionAppName, FunctionConfigKey.functionAppName);
+  private getFunctionAppResourceGroupName(): string {
+    return isArmSupportEnabled()
+      ? getResourceGroupNameFromResourceId(
+          this.checkAndGet(
+            this.config.functionAppResourceId,
+            FunctionConfigKey.functionAppResourceId
+          )
+        )
+      : this.checkAndGet(this.config.resourceGroupName, FunctionConfigKey.resourceGroupName);
   }
 
-  private getFunctionAppResourceGroupName(ctx: PluginContext, getFromArmOutput = false): string {
-    if (isArmSupportEnabled()) {
-      return getResourceGroupNameFromResourceId(this.getFunctionAppId(ctx, getFromArmOutput));
-    }
-    return this.checkAndGet(this.config.resourceGroupName, FunctionConfigKey.resourceGroupName);
-  }
-
-  private getFunctionAppSubscriptionId(ctx: PluginContext, getFromArmOutput = false): string {
-    if (isArmSupportEnabled()) {
-      return getSubscriptionIdFromResourceId(this.getFunctionAppId(ctx, getFromArmOutput));
-    }
-    return this.checkAndGet(this.config.subscriptionId, FunctionConfigKey.subscriptionId);
-  }
-
-  private syncArmOutput(ctx: PluginContext) {
-    this.config.functionEndpoint = `https://${getArmOutput(ctx, FunctionArmOutput.Endpoint)}`;
-    this.config.functionAppId = getArmOutput(ctx, FunctionArmOutput.AppResourceId);
+  private getFunctionAppSubscriptionId(): string {
+    return isArmSupportEnabled()
+      ? getSubscriptionIdFromResourceId(
+          this.checkAndGet(
+            this.config.functionAppResourceId,
+            FunctionConfigKey.functionAppResourceId
+          )
+        )
+      : this.checkAndGet(this.config.subscriptionId, FunctionConfigKey.subscriptionId);
   }
 
   private async getSite(

@@ -12,8 +12,8 @@ import {
 } from "../errors";
 import { ResultFactory } from "../result";
 import { TelemetryUtils } from "./telemetry";
-import { getArmOutput } from "../../utils4v2";
-import { getTemplatesFolder, isArmSupportEnabled, isMultiEnvEnabled } from "../../../..";
+import { isMultiEnvEnabled } from "../../../../common/tools";
+import { getTemplatesFolder } from "../../../../folder";
 import got from "got";
 import {
   LocalSettingsAuthKeys,

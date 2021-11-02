@@ -48,13 +48,6 @@ export class Constants {
     },
   };
 
-  static readonly ArmOutput = {
-    simpleAuthEndpoint: "simpleAuth_endpoint",
-    simpleAuthSkuName: "simpleAuth_skuName",
-    simpleAuthWebAppName: "simpleAuth_webAppName",
-    simpleAuthAppServicePlanName: "simpleAuth_appServicePlanName",
-  };
-
   static readonly provisionModuleTemplateFileName: string = "simpleAuthProvision.template.bicep";
   static readonly configurationModuleTemplateFileName: string =
     "simpleAuthConfiguration.template.bicep";

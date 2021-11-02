@@ -1,4 +1,6 @@
-output apimServiceResourceId string = apimProvision.outputs.serviceResourceId
-output apimProductResourceId string = apimProvision.outputs.productResourceId
-output apimAuthServiceResourceId string = apimProvision.outputs.authServiceResourceId
-
+output apimOutput object = {
+  teamsFxPluginId: 'fx-resource-apim'
+  serviceResourceId: apimProvision.outputs.serviceResourceId
+  productResourceId: apimProvision.outputs.productResourceId
+  authServerResourceId: apimProvision.outputs.authServerResourceId
+}

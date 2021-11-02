@@ -1,6 +1,25 @@
 
+- [2.9.0 - Nov 01 2021](#290---nov-01-2021)
 - [2.8.0 - Oct 18 2021](#280---oct-18-2021)
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
+
+## 2.9.0 - Nov 01, 2021 
+
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+Preview Features:
+- Enable CI/CD for multiple environments scenario.
+- Insider Preview features in 2.8.0 release are still in preview. Refer to [Enable insider preview featuers](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit) for how to use.
+- Upgrade existing projects to support preview features, refer to [Upgrade existing project to use latest features](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features) for more information.
+
+Enhancement:
+
+- Improve UI: more friendly user experience to create a new Teams project.
+- Improve UI: add links to source code for samples.
+- Support one-click deployment of SharePoint framework based Teams app.
+- Integrate Adaptive Card Studio with previewing and debugging Adaptive Card in VS Code.
+
+  ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/adaptive-card.gif)
 
 ## 2.8.0 - Oct 18 2021
 

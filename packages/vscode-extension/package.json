@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.8.0",
+  "version": "2.9.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -174,7 +174,6 @@
           "name": "Teams Toolkit",
           "when": "fx-extension.sidebarWelcome.bottom && fx-extension.canUpgradeToArmAndMultiEnv"
         }
-
       ]
     },
     "menus": {
@@ -241,6 +240,16 @@
           "group": "inline@3"
         },
         {
+          "command": "fx-extension.openSubscriptionInPortal",
+          "when": "view == teamsfx-environment && viewItem == openSubscriptionInPortal",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.openResourceGroupInPortal",
+          "when": "view == teamsfx-environment && viewItem == openResourceGroupInPortal",
+          "group": "inline@3"
+        },
+        {
           "command": "fx-extension.grantPermission",
           "when": "view == teamsfx-environment && viewItem == addCollaborator",
           "group": "inline@3"
@@ -304,6 +313,14 @@
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openSubscriptionInPortal",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openResourceGroupInPortal",
           "when": "false"
         },
         {
@@ -474,6 +491,18 @@
         "command": "fx-extension.viewEnvironmentWithIcon",
         "title": "View environment",
         "icon": "$(file-symlink-directory)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.openSubscriptionInPortal",
+        "title": "Open in Portal",
+        "icon": "$(ports-open-browser-icon)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+	    {
+        "command": "fx-extension.openResourceGroupInPortal",
+        "title": "Open in Portal",
+        "icon": "$(ports-open-browser-icon)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
@@ -672,8 +701,8 @@
             "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
             "default": true
           },
-          "fx-extension.defaultProjectRootDirectory":{
-            "type":"string",
+          "fx-extension.defaultProjectRootDirectory": {
+            "type": "string",
             "description": "Set the default root directory for creating new teams app project. By default, the root directory is $HOME_DIR/TeamsApps. (requries reload of VS Code)"
           }
         }
@@ -804,8 +833,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.9.0",
-    "@microsoft/teamsfx-core": "^0.9.1",
+    "@microsoft/teamsfx-api": "^0.10.0",
+    "@microsoft/teamsfx-core": "^0.10.0",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",

@@ -2,10 +2,10 @@
 // Licensed under the MIT license.
 import { Json } from "@microsoft/teamsfx-api";
 import { assert, expect } from "chai";
+import * as dotenv from "dotenv";
 import "mocha";
-import { redactObject } from "../../src";
+import { convertDotenvToEmbeddedJson, redactObject, replaceTemplateWithUserData } from "../../src";
 import { flattenConfigJson, isValidProject, newEnvInfo } from "../../src/core/tools";
-
 describe("tools", () => {
   // it("base64 encode", () => {
   //   const source = "Hello, World!";
@@ -100,5 +100,41 @@ describe("redactObject", () => {
     (jsonSchema.properties as any).a = jsonSchema;
     const actualResult = redactObject(input, jsonSchema, 1);
     expect(actualResult).to.deep.equal({ a: null });
+  });
+
+  it("replaceTemplateWithUserData", () => {
+    const str =
+      "solution.teamsAppTenantId=abcdesdfs234fg" +
+      "\nsolution.provisionSuccess=true" +
+      "\nfx-resource-aad-app-for-teams.clientSecret=sdfsfsdfwerwer" +
+      "\nfx-resource-bot.botPassword=sdfsd23wfw324sfd";
+    const userDateExpected = {
+      "solution.teamsAppTenantId": "abcdesdfs234fg",
+      "solution.provisionSuccess": "true",
+      "fx-resource-aad-app-for-teams.clientSecret": "sdfsfsdfwerwer",
+      "fx-resource-bot.botPassword": "sdfsd23wfw324sfd",
+    };
+    const expectedResult: Json = {
+      solution: {
+        teamsAppTenantId: "abcdesdfs234fg",
+        provisionSuccess: "true",
+      },
+      "fx-resource-bot": {
+        botPassword: "sdfsd23wfw324sfd",
+      },
+      "fx-resource-aad-app-for-teams": {
+        clientSecret: "sdfsfsdfwerwer",
+      },
+    };
+    const template =
+      '{"solution": {"teamsAppTenantId": "{{solution.teamsAppTenantId}}", "provisionSuccess":"{{solution.provisionSuccess}}"},' +
+      '"fx-resource-bot": {"botPassword": "{{fx-resource-bot.botPassword}}"},"fx-resource-aad-app-for-teams": {"clientSecret": "{{fx-resource-aad-app-for-teams.clientSecret}}"}}';
+    const userData = dotenv.parse(str);
+    assert.deepEqual(userData, userDateExpected);
+    const view = convertDotenvToEmbeddedJson(userData);
+    assert.deepEqual(view, expectedResult);
+    const result = replaceTemplateWithUserData(template, userData);
+    const actual = JSON.parse(result);
+    assert.deepEqual(actual, expectedResult);
   });
 });

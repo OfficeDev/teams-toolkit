@@ -6,3 +6,4 @@ export * from "./tools";
 export * from "./correlator";
 export * from "./globalState";
 export * from "./permissionInterface";
+export * from "./samples";

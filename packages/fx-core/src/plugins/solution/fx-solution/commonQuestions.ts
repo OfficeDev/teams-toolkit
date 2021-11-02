@@ -639,6 +639,7 @@ async function createNewResourceGroup(
   try {
     response = await rmClient.resourceGroups.createOrUpdate(rgInfo.name, {
       location: rgInfo.location,
+      tags: { "created-by": "teamsfx" },
     });
   } catch (e) {
     let errMsg: string;

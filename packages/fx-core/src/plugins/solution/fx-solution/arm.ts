@@ -175,7 +175,6 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
 
   // update parameters
   const parameterJson = await getParameterJson(ctx);
-  console.log("================== parameterJson", parameterJson);
   const resourceGroupName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (!resourceGroupName) {
     return err(

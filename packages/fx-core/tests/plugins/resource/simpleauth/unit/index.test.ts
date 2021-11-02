@@ -164,7 +164,7 @@ describe("simpleAuthPlugin", () => {
       chai.assert.strictEqual(expectedResult.Provision!.Orchestration, orchestrationProvisionFile);
       const expectedConfigFilePath = path.join(
         expectedBicepFileDirectory,
-        "Config.result.v2.bicep"
+        "config.result.v2.bicep"
       );
 
       const OrchestrationConfigFile = await fs.readFile(

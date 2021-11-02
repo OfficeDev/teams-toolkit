@@ -138,24 +138,8 @@ export class IdentityPlugin implements Plugin {
       bicepTemplateDirectory,
       IdentityBicepFile.moduleTempalteV2Filename
     );
-    // const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
-    // if (moduleContentResult.isErr()) {
-    //   throw moduleContentResult.error;
-    // }
     const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName);
 
-    // const parameterTemplateFilePath = path.join(
-    //   bicepTemplateDirectory,
-    //   Bicep.ParameterOrchestrationFileName
-    // );
-    // const moduleOrchestrationFilePath = path.join(
-    //   bicepTemplateDirectory,
-    //   Bicep.ModuleOrchestrationFileName
-    // );
-    // const outputTemplateFilePath = path.join(
-    //   bicepTemplateDirectory,
-    //   Bicep.OutputOrchestrationFileName
-    // );
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: await fs.readFile(provisionTemplateFilePath, ConstantString.UTF8Encoding),
@@ -170,29 +154,6 @@ export class IdentityPlugin implements Plugin {
       },
     };
 
-    // const result: ScaffoldArmTemplateResult = {
-    //   Modules: {
-    //     userAssignedIdentityProvision: {
-    //       Content: moduleContentResult.value,
-    //     },
-    //   },
-    //   Orchestration: {
-    //     ParameterTemplate: {
-    //       Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
-    //     },
-    //     ModuleTemplate: {
-    //       Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
-    //       Outputs: {
-    //         identityName: IdentityBicep.identityName,
-    //         identityClientId: IdentityBicep.identityClientId,
-    //         identityResourceId: IdentityBicep.identityResourceId,
-    //       },
-    //     },
-    //     OutputTemplate: {
-    //       Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
-    //     },
-    //   },
-    // };
     return ok(result);
   }
 

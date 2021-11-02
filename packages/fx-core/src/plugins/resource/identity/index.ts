@@ -25,7 +25,7 @@ import { Message } from "./utils/messages";
 import { TelemetryUtils } from "./utils/telemetryUtil";
 import { formatEndpoint } from "./utils/commonUtils";
 import { generateBicepFiles, getTemplatesFolder } from "../../..";
-import { AzureResourceSQL } from "../../solution/fx-solution/question";
+import { AzureResourceSQL, HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
@@ -39,8 +39,7 @@ export class IdentityPlugin implements Plugin {
   name = "fx-resource-identity";
   displayName = "Microsoft Identity";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
-    return azureResources.includes(AzureResourceSQL.id);
+    return solutionSettings.hostType === HostTypeOptionAzure.id;
   }
   template: any;
   parameters: any;
@@ -138,24 +137,9 @@ export class IdentityPlugin implements Plugin {
       bicepTemplateDirectory,
       IdentityBicepFile.moduleTempalteV2Filename
     );
-    // const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
-    // if (moduleContentResult.isErr()) {
-    //   throw moduleContentResult.error;
-    // }
+
     const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName);
 
-    // const parameterTemplateFilePath = path.join(
-    //   bicepTemplateDirectory,
-    //   Bicep.ParameterOrchestrationFileName
-    // );
-    // const moduleOrchestrationFilePath = path.join(
-    //   bicepTemplateDirectory,
-    //   Bicep.ModuleOrchestrationFileName
-    // );
-    // const outputTemplateFilePath = path.join(
-    //   bicepTemplateDirectory,
-    //   Bicep.OutputOrchestrationFileName
-    // );
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: await fs.readFile(provisionTemplateFilePath, ConstantString.UTF8Encoding),
@@ -170,29 +154,6 @@ export class IdentityPlugin implements Plugin {
       },
     };
 
-    // const result: ScaffoldArmTemplateResult = {
-    //   Modules: {
-    //     userAssignedIdentityProvision: {
-    //       Content: moduleContentResult.value,
-    //     },
-    //   },
-    //   Orchestration: {
-    //     ParameterTemplate: {
-    //       Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
-    //     },
-    //     ModuleTemplate: {
-    //       Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
-    //       Outputs: {
-    //         identityName: IdentityBicep.identityName,
-    //         identityClientId: IdentityBicep.identityClientId,
-    //         identityResourceId: IdentityBicep.identityResourceId,
-    //       },
-    //     },
-    //     OutputTemplate: {
-    //       Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
-    //     },
-    //   },
-    // };
     return ok(result);
   }
 

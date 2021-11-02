@@ -684,7 +684,7 @@ export class FunctionPluginImpl {
       FunctionBicepFile.provisionModuleTemplateV2FileName
     );
 
-    const result1: ArmTemplateResult = {
+    const result: ArmTemplateResult = {
       Provision: {
         Orchestration: await fs.readFile(provisionTemplateFilePath, ConstantString.UTF8Encoding),
         Modules: {
@@ -708,7 +708,7 @@ export class FunctionPluginImpl {
       },
     };
 
-    return ResultFactory.Success(result1);
+    return ResultFactory.Success(result);
   }
 
   public async deploy(ctx: PluginContext): Promise<FxResult> {

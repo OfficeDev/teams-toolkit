@@ -73,7 +73,7 @@ describe("M365TenantCredential Tests - Node", () => {
       authentication: {
         clientId: process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
         certificateContent: convertCertificateContent(
-          process.env.SDK_INTEGRATION_TEST_M365_AAD_CERTIFICATE_CONTENT
+          process.env.SDK_INTEGRATION_TEST_M365_AAD_CERTIFICATE_CONTENT!
         ),
         authorityHost: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST,
         tenantId: process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID,

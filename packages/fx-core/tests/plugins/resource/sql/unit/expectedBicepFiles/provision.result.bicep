@@ -1,0 +1,13 @@
+module azureSqlProvision './sqlProvision.result.bicep' = {
+  name: 'azureSqlProvision'
+  params: {
+    provisionParameters: provisionParameters
+  }
+}
+
+output azureSqlOutput object = {
+  teamsFxPluginId: 'fx-resource-azure-sql'
+  sqlServerResourceId: azureSqlProvision.outputs.resourceId
+  sqlServerEndpoint: azureSqlProvision.outputs.sqlEndpoint
+  sqlDatabaseName: azureSqlProvision.outputs.databaseName
+}

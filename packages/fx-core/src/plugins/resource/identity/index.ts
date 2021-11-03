@@ -25,7 +25,7 @@ import { Message } from "./utils/messages";
 import { TelemetryUtils } from "./utils/telemetryUtil";
 import { formatEndpoint } from "./utils/commonUtils";
 import { generateBicepFiles, getTemplatesFolder } from "../../..";
-import { AzureResourceSQL } from "../../solution/fx-solution/question";
+import { AzureResourceSQL, HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
@@ -39,8 +39,12 @@ export class IdentityPlugin implements Plugin {
   name = "fx-resource-identity";
   displayName = "Microsoft Identity";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
-    return azureResources.includes(AzureResourceSQL.id);
+    if (!isArmSupportEnabled()) {
+      const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
+      return azureResources.includes(AzureResourceSQL.id);
+    } else {
+      return solutionSettings.hostType === HostTypeOptionAzure.id;
+    }
   }
   template: any;
   parameters: any;
@@ -136,9 +140,9 @@ export class IdentityPlugin implements Plugin {
 
     const moduleTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      IdentityBicepFile.moduleTempalteV2Filename
+      IdentityBicepFile.moduleTempalteFilename
     );
-    const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName);
+    const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionFileName);
 
     const result: ArmTemplateResult = {
       Provision: {

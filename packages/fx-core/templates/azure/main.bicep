@@ -15,7 +15,3 @@ module teamsFxConfig './config.bicep' = {
     provisionOutputs: provision
   }
 }
-
-output provisionOutput object = provision
-output teamsFxConfigurationOutput object = teamsFxConfig
-

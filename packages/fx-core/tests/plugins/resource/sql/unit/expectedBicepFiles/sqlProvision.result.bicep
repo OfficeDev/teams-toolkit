@@ -1,8 +1,10 @@
-param sqlServerName string
-param sqlDatabaseName string
-param administratorLogin string
 @secure()
-param administratorLoginPassword string
+param provisionParameters object
+var resourceBaseName = provisionParameters.resourceBaseName
+var sqlServerName = contains(provisionParameters, 'sqlServerName') ? provisionParameters['sqlServerName'] : '${resourceBaseName}-sql-server'
+var sqlDatabaseName = contains(provisionParameters, 'sqlDatabaseName') ? provisionParameters['sqlDatabaseName'] : '${resourceBaseName}-database'
+var administratorLogin = contains(provisionParameters, 'administratorLogin') ? provisionParameters['administratorLogin'] : ''
+var administratorLoginPassword = contains(provisionParameters, 'administratorLoginPassword') ? provisionParameters['administratorLoginPassword'] : ''
 
 resource sqlServer 'Microsoft.Sql/servers@2021-02-01-preview' = {
   location: resourceGroup().location

@@ -394,18 +394,6 @@ export async function getParameterJson(ctx: SolutionContext) {
   return parameterJson;
 }
 
-async function doUpdateArmTemplate(
-  ctx: SolutionContext,
-  selectedPlugins: Plugins[]
-): Promise<Result<any, FxError>> {
-  for (const plugin of selectedPlugins) {
-    const pluginWithArm = plugin as Plugin & ArmResourcePlugin;
-    if (pluginWithArm.updateArmTempaltes) {
-    }
-  }
-  return ok(undefined);
-}
-
 async function doGenerateArmTemplate(
   ctx: SolutionContext,
   selectedPlugins: Plugin[]
@@ -422,10 +410,44 @@ async function doGenerateArmTemplate(
   // Get bicep content from each resource plugin
   for (const plugin of plugins) {
     const pluginWithArm = plugin as Plugin & ArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
-    if (pluginWithArm.generateArmTemplates) {
+    if (
+      pluginWithArm.generateArmTemplates &&
+      selectedPlugins.find(({ name }) => name === pluginWithArm.name)
+    ) {
       // find method using method name
       const pluginContext = getPluginContext(ctx, pluginWithArm.name);
       const result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
+        ArmTemplateResult,
+        FxError
+      >;
+      if (result.isOk()) {
+        bicepOrchestrationTemplate.applyTemplateV2(pluginWithArm.name, result.value);
+        if (result.value.Configuration?.Modules) {
+          for (const module of Object.entries(result.value.Configuration.Modules)) {
+            const moduleName = module[0];
+            const moduleValue = module[1] as string;
+            moduleConfigFiles.set(generateBicepModuleConfigFilePath(moduleName), moduleValue);
+          }
+        }
+
+        if (result.value.Provision?.Modules) {
+          for (const module of Object.entries(result.value.Provision.Modules)) {
+            const moduleName = module[0];
+            const moduleValue = module[1] as string;
+            moduleProvisionFiles.set(generateBicepModuleProvisionFilePath(moduleName), moduleValue);
+          }
+        }
+      } else {
+        const msg = format(
+          getStrings().solution.GenerateArmTemplateFailNotice,
+          ctx.projectSettings?.appName
+        );
+        ctx.logProvider?.error(msg);
+        return result;
+      }
+    } else if (pluginWithArm.updateArmTemplates) {
+      const pluginContext = getPluginContext(ctx, pluginWithArm.name);
+      const result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,
         FxError
       >;
@@ -435,18 +457,6 @@ async function doGenerateArmTemplate(
             const moduleName = module[0];
             const moduleValue = module[1] as string;
             moduleConfigFiles.set(generateBicepModuleConfigFilePath(moduleName), moduleValue);
-          }
-        }
-        const pluginSelected = selectedPlugins.find(({ name }) => pluginWithArm.name === name);
-        if (!pluginSelected) {
-          continue;
-        }
-        bicepOrchestrationTemplate.applyTemplateV2(pluginWithArm.name, result.value);
-        if (result.value.Provision?.Modules) {
-          for (const module of Object.entries(result.value.Provision.Modules)) {
-            const moduleName = module[0];
-            const moduleValue = module[1] as string;
-            moduleProvisionFiles.set(generateBicepModuleProvisionFilePath(moduleName), moduleValue);
           }
         }
       } else {

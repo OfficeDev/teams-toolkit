@@ -41,7 +41,7 @@ Version|Date|Comments
 
 1. <b>Install the latest version of [Node.js LTS 14.x]</b>(https://nodejs.org/en/download/releases/)(Note: SPFx v1.12.1 support Node.js v10/12/14)
 2. You can either download [Visual Studio Code](https://code.visualstudio.com) and install [Teams Toolkit Visual Studio Code Extension](https://aka.ms/teams-toolkit) or download TeamsFx CLI.
-3. Open the project with VSCode, click `Provision in the Cloud` in PROJECT panel of Teams Toolkit extension.
+3. Open the project with VSCode, click `Provision in the cloud` in DEPLOYMENT panel of Teams Toolkit extension.
 
     Or you can use TeamsFx CLI with running this cmd under your project path:
     `teamsfx provision`

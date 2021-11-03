@@ -1,0 +1,20 @@
+{
+    "appName": "v1bot",
+    "projectId": "5d965d44-a820-4791-ac65-ec78e7fa70e4",
+    "solutionSettings": {
+        "name": "fx-solution-azure",
+        "version": "1.0.0",
+        "hostType": "Azure",
+        "capabilities": [
+            "Bot"
+        ],
+        "azureResources": [],
+        "activeResourcePlugins": [
+            "fx-resource-bot",
+            "fx-resource-local-debug",
+            "fx-resource-appstudio"
+        ],
+        "migrateFromV1": true
+    },
+    "programmingLanguage": "javascript"
+}

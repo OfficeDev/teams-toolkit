@@ -478,8 +478,11 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
+          await processResult(eventName, result, inputs);
         } else {
           const uri = Uri.file(tmpResult.value);
+          // 15% events are lost due to open other vs code instance, so collect the data before open folder.
+          await processResult(eventName, result, inputs);
           commands.executeCommand("vscode.openFolder", uri);
           result = ok(null);
         }
@@ -535,7 +538,11 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
   } catch (e) {
     result = wrapError(e);
   }
-  await processResult(eventName, result, inputs);
+
+  // already process result before open folder durning create stage. so skip "processResult" here.
+  if (stage !== Stage.create) {
+    await processResult(eventName, result, inputs);
+  }
 
   return result;
 }
@@ -823,6 +830,7 @@ async function openMarkdownHandler() {
   const afterScaffold = globalStateGet("openReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     await globalStateUpdate("openReadme", false);
+    showChangeLocationMessage();
     showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
@@ -864,6 +872,7 @@ async function openSampleReadmeHandler() {
   const afterScaffold = globalStateGet("openSampleReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     globalStateUpdate("openSampleReadme", false);
+    showChangeLocationMessage();
     showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
@@ -873,6 +882,31 @@ async function openSampleReadmeHandler() {
       commands.executeCommand(PreviewMarkdownCommand, uri);
     });
   }
+}
+
+async function showChangeLocationMessage() {
+  const config = {
+    title: StringResources.vsc.handlers.configTitle,
+    run: async (): Promise<void> => {
+      commands.executeCommand(
+        "workbench.action.openSettings",
+        "fx-extension.defaultProjectRootDirectory"
+      );
+    },
+  };
+
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowChangeLocationNotification);
+  vscode.window
+    .showInformationMessage(
+      util.format(StringResources.vsc.handlers.configLocationDescription, getWorkspacePath()),
+      config
+    )
+    .then((selection) => {
+      if (selection?.title === StringResources.vsc.handlers.configTitle) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickChangeLocation);
+        selection.run();
+      }
+    });
 }
 
 async function showLocalDebugMessage() {
@@ -892,29 +926,15 @@ async function showLocalDebugMessage() {
       },
     };
 
-    const config = {
-      title: StringResources.vsc.handlers.configTitle,
-      run: async (): Promise<void> => {
-        commands.executeCommand(
-          "workbench.action.openSettings",
-          "fx-extension.defaultProjectRootDirectory"
-        );
-      },
-    };
-
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
     vscode.window
       .showInformationMessage(
-        util.format(StringResources.vsc.handlers.localDebugDescription, getWorkspacePath()),
-        config,
+        util.format(StringResources.vsc.handlers.localDebugDescription),
         localDebug
       )
       .then((selection) => {
         if (selection?.title === StringResources.vsc.handlers.localDebugTitle) {
           ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
-          selection.run();
-        } else if (selection?.title === StringResources.vsc.handlers.configTitle) {
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickChangeLocation);
           selection.run();
         }
       });

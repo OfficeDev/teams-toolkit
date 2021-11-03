@@ -814,7 +814,7 @@ function getTriggerFromProperty(args?: any[]) {
     return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CommandPalette };
   }
 
-  switch (args.toString()) {
+  switch (args[0].toString()) {
     case TelemetryTiggerFrom.TreeView:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
     case TelemetryTiggerFrom.Webview:

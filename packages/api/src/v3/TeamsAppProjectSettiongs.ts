@@ -25,9 +25,10 @@ export interface ComputingResource {
   programmingLanguage: string;
 }
 
-export interface DatabaseResource {
-  type: "database";
+export interface AdditionalResourceSettings {
+  type: "additional";
   hostingPlugin: string;
+  dependentResources: string[];
 }
 
 /**
@@ -38,38 +39,40 @@ export interface DatabaseResource {
  */
 export interface TeamsAppSolutionSettings {
   capabilities: ("Tab" | "Bot" | "MessagingExtension")[];
-  tab: ComputingResource;
-  bot: ComputingResource;
+  tab: string;
+  bot: string;
   resources: {
-    [key: string]: DatabaseResource | ComputingResource;
+    [key: string]: AdditionalResourceSettings | ComputingResource;
   };
 }
 
 const projectSettings: TeamsAppSolutionSettings = {
-  capabilities: ["Tab"],
-  tab: {
-    type: "compute",
-    innerLoopPlugin: "TabReactPluginName",
-    runtimeStack: RuntimeStacks.Node12LTS,
-    hostingPlugin: "AzureStoragePluginName",
-    dependentResources: ["FunctionApp#1", "FunctionApp#2"],
-    programmingLanguage: "javascript",
-  },
-  bot: {
-    type: "compute",
-    innerLoopPlugin: "BotScaffoldPluginName",
-    runtimeStack: RuntimeStacks.Node12LTS,
-    hostingPlugin: "AzureWebAppPluginName", // bot plugin is built-in plugin
-    dependentResources: [],
-    programmingLanguage: "javascript",
-  },
+  capabilities: ["Tab", "Bot"],
+  tab: "Tab#1",
+  bot: "Bot#1",
   resources: {
+    "Tab#1": {
+      type: "compute",
+      innerLoopPlugin: "TabReactPluginName",
+      runtimeStack: RuntimeStacks.Node12LTS,
+      hostingPlugin: "AzureStoragePluginName",
+      dependentResources: ["FunctionApp#1", "FunctionApp#2"],
+      programmingLanguage: "javascript",
+    },
+    "Bot#1": {
+      type: "compute",
+      innerLoopPlugin: "BotScaffoldPluginName",
+      runtimeStack: RuntimeStacks.Node12LTS,
+      hostingPlugin: "AzureWebAppPluginName", // bot plugin is built-in plugin
+      dependentResources: ["AzureSql#1"],
+      programmingLanguage: "javascript",
+    },
     "FunctionApp#1": {
       type: "compute",
       innerLoopPlugin: "AzureFunctionPlugin",
       hostingPlugin: "AzureFunctionPlugin",
       runtimeStack: RuntimeStacks.Node12LTS,
-      dependentResources: ["AzureSql#1"],
+      dependentResources: ["AzureSql#1", "Tab#1"],
       programmingLanguage: "javascript",
     },
     "FunctionApp#2": {
@@ -77,14 +80,27 @@ const projectSettings: TeamsAppSolutionSettings = {
       innerLoopPlugin: "AzureFunctionPlugin",
       hostingPlugin: "AzureFunctionPlugin",
       runtimeStack: RuntimeStacks.Node12LTS,
-      dependentResources: [],
+      dependentResources: ["Tab#1"],
       programmingLanguage: "javascript",
     },
     "AzureSql#1": {
-      type: "database",
+      type: "additional",
       hostingPlugin: "AzureSQLPluginName",
+      dependentResources: ["ManagedIdentity#1"],
+    },
+    "ManagedIdentity#1": {
+      type: "additional",
+      hostingPlugin: "ManagedIdentityPluginName",
+      dependentResources: [],
     },
   },
 };
 
 console.log(projectSettings);
+
+/**
+ * 1. One scaffold plugin can scaffold both Tab and Bot
+ * 2. Both Tab and Bot reuse one Web app instance
+ * 3. How to define cycle dependencies of config, function app depends on Tab endpoint
+ * 4. SQL database depends on identity?
+ */

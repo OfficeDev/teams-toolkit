@@ -1,3 +1,4 @@
+@secure()
 param provisionParameters object
 param userAssignedIdentityId string
 

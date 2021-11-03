@@ -1,3 +1,4 @@
+@secure()
 param provisionParameters object
 var resourceBaseName = provisionParameters.resourceBaseName
 var identityName = contains(provisionParameters, 'userAssignedIdentityName') ? provisionParameters['userAssignedIdentityName'] : '${resourceBaseName}-managedIdentity'

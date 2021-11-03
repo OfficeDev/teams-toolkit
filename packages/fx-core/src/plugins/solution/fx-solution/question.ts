@@ -38,6 +38,14 @@ export const MessageExtensionItem: OptionItem = {
   detail: "Inserting app content or acting on a message without leaving the conversation",
 };
 
+export const TabSPFxItem: OptionItem = {
+  id: "TabSPFx",
+  label: "Tab SPFx",
+  cliName: "tab-spfx",
+  description: "create tab spfx",
+  detail: "azure spfx description",
+};
+
 export enum AzureSolutionQuestionNames {
   Capabilities = "capabilities",
   V1Capability = "v1-capability",
@@ -85,10 +93,25 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
     name: AzureSolutionQuestionNames.Capabilities,
     title: "Select capabilities",
     type: "multiSelect",
-    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
+    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
     default: [TabOptionItem.id],
     placeholder: "Select at least 1 capability",
     validation: { minItems: 1 },
+    onDidChangeSelection: async function (
+      currentSelectedIds: Set<string>,
+      previousSelectedIds: Set<string>
+    ): Promise<Set<string>> {
+      if (currentSelectedIds.size > 1 && currentSelectedIds.has(TabSPFxItem.id)) {
+        if (previousSelectedIds.has(TabSPFxItem.id)) {
+          currentSelectedIds.delete(TabSPFxItem.id);
+        } else {
+          currentSelectedIds.clear();
+          currentSelectedIds.add(TabSPFxItem.id);
+        }
+      }
+
+      return currentSelectedIds;
+    },
   };
 }
 
@@ -97,7 +120,7 @@ export function createV1CapabilityQuestion(): SingleSelectQuestion {
     name: AzureSolutionQuestionNames.V1Capability,
     title: "Select capability",
     type: "singleSelect",
-    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
+    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
     default: TabOptionItem.id,
     placeholder: "Select the same capability as your existing project",
     validation: { minItems: 1 },

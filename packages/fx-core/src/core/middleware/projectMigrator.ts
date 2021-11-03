@@ -570,8 +570,10 @@ async function ensureProjectSettings(
   const settings: ProjectSettings = await readJson(projectSettingPath);
   if (!settings.programmingLanguage || !settings.defaultFunctionName) {
     const envDefault = await readJson(envDefaultPath);
-    settings.programmingLanguage = envDefault[PluginNames.SOLUTION][programmingLanguage];
-    settings.defaultFunctionName = envDefault[PluginNames.FUNC]?.[defaultFunctionName];
+    settings.programmingLanguage =
+      settings.programmingLanguage || envDefault[PluginNames.SOLUTION]?.[programmingLanguage];
+    settings.defaultFunctionName =
+      settings.defaultFunctionName || envDefault[PluginNames.FUNC]?.[defaultFunctionName];
   }
   if (!settings.version) {
     settings.version = "1.0.0";

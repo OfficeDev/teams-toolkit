@@ -329,6 +329,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           ]);
           const subItem = await getSelectSubItem!(token);
           tools.treeProvider?.add([subItem[0]]);
+          await registerEnvTreeHandler();
         }
       } else if (status === "SigningIn") {
         tools.treeProvider?.refresh([

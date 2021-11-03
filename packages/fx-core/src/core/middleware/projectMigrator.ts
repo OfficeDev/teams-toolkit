@@ -437,12 +437,12 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
 async function moveIconsToResourceFolder(
   templateAppPackage: string,
   manifest: TeamsAppManifest
-): Promise<TeamsAppManifest> {
+): Promise<void> {
   // see AppStudioPluginImpl.buildTeamsAppPackage()
   const hasColorIcon = manifest.icons.color && !manifest.icons.color.startsWith("https://");
   const hasOutlineIcon = manifest.icons.outline && !manifest.icons.outline.startsWith("https://");
   if (!hasColorIcon || !hasOutlineIcon) {
-    return manifest;
+    return;
   }
 
   // move to resources
@@ -459,7 +459,7 @@ async function moveIconsToResourceFolder(
     manifest.icons.outline = `resources/${manifest.icons.outline}`;
   }
 
-  return manifest;
+  return;
 }
 
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {

@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
+
+import { RuntimeStacks } from "./AzureResource";
+
 // Licensed under the MIT license.
-
-import { AzureResourceTypes, RuntimeStacks } from "./AzureResource";
-
 export interface TeamsAppPluginSettings {
   tab: {
     innerLoopPlugins: string[];
@@ -30,7 +30,13 @@ export interface DatabaseResource {
   hostingPlugin: string;
 }
 
-export interface TeamsAppProjectSettings {
+/**
+ * solution settings will defines:
+ * 1. the resource structure that TeamsApp consists of
+ * 2. what extensible plugin (innerLoop or hosting) is used for each resource, built-in plugins will not appear in this settings
+ * 3. the dependencies between resources
+ */
+export interface TeamsAppSolutionSettings {
   capabilities: ("Tab" | "Bot" | "MessagingExtension")[];
   tab: ComputingResource;
   bot: ComputingResource;
@@ -39,7 +45,7 @@ export interface TeamsAppProjectSettings {
   };
 }
 
-const projectSettings: TeamsAppProjectSettings = {
+const projectSettings: TeamsAppSolutionSettings = {
   capabilities: ["Tab"],
   tab: {
     type: "compute",

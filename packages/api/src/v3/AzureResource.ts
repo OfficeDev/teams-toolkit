@@ -94,6 +94,9 @@ export interface TeamsAppResource {
   tenantId: string;
 }
 
+/**
+ * defines: provision instance values for all resources
+ */
 export interface TeamsAppResourceSettings {
   solution: AzureCommonConfig;
   tab: {

@@ -39,7 +39,12 @@ export class IdentityPlugin implements Plugin {
   name = "fx-resource-identity";
   displayName = "Microsoft Identity";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    return solutionSettings.hostType === HostTypeOptionAzure.id;
+    if (!isArmSupportEnabled()) {
+      const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
+      return azureResources.includes(AzureResourceSQL.id);
+    } else {
+      return solutionSettings.hostType === HostTypeOptionAzure.id;
+    }
   }
   template: any;
   parameters: any;

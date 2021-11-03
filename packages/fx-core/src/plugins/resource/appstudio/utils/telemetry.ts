@@ -20,6 +20,7 @@ export enum TelemetryPropertyKey {
   success = "success",
   appId = "appid",
   publishedAppId = "published-app-id",
+  customizedKeys = "customized-manifest-keys",
 }
 
 enum TelemetryPropertyValue {

@@ -194,7 +194,9 @@ module teamsFxConfig './config.bicep' = {
 }
 
 output provisionOutput object = provision
-output teamsFxConfigurationOutput object = teamsFxConfig`
+output teamsFxConfigurationOutput object = teamsFxConfig
+
+`
     );
     expect(
       await fs.readFile(

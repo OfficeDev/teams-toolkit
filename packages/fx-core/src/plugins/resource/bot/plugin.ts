@@ -26,6 +26,7 @@ import {
   AzureConstants,
   PathInfo,
   BotArmOutput,
+  BotBicep,
   Alias,
 } from "./constants";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
@@ -209,9 +210,9 @@ export class TeamsBotImpl {
           ),
         },
         Reference: {
-          resourceId: "webAppResourceId",
-          hostName: "webAppHostName",
-          webAppEndpoint: "webAppEndpoint",
+          resourceId: BotBicep.resourceId,
+          hostName: BotBicep.hostName,
+          webAppEndpoint: BotBicep.webAppEndpoint,
         },
       },
       Configuration: {

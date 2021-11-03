@@ -274,6 +274,12 @@ export class PathInfo {
     "botConfiguration.template.v2.bicep";
 }
 
+export class BotBicep {
+  static readonly resourceId: string = "provisionOutputs.botOutput.value.webAppResourceId";
+  static readonly hostName: string = "provisionOutputs.botOutput.value.webAppHostName";
+  static readonly webAppEndpoint: string = "provisionOutputs.botOutputs.value.webAppEndpoint";
+}
+
 export class BotArmOutput {
   static readonly WebAppSKU = "bot_webAppSKU";
   static readonly ServiceSKU = "bot_serviceSKU";

@@ -460,7 +460,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     if (isArmSupportEnabled() && generateResourceTemplate && this.isAzureProject(ctx)) {
-      return await generateArmTemplate(ctx);
+      return await generateArmTemplate(ctx, selectedPlugins);
     } else {
       return res;
     }

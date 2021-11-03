@@ -75,6 +75,7 @@ describe("generateArmTemplates", () => {
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
       const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
       const moduleFile = await fs.readFile(expectedModuleFilePath, ConstantString.UTF8Encoding);
+
       chai.assert.strictEqual(expectedResult.Provision!.Modules!.azureSqlProvision, moduleFile);
       const expectedModuleSnippetFilePath = path.join(
         expectedBicepFileDirectory,

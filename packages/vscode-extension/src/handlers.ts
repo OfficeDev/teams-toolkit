@@ -372,7 +372,6 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null
     getTriggerFromProperty(args)
   );
   const result = await runCommand(Stage.migrateV1);
-  await openMarkdownHandler();
   await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
   await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.top", false);
   await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.bottom", false);
@@ -830,16 +829,17 @@ async function openMarkdownHandler() {
   const afterScaffold = globalStateGet("openReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     await globalStateUpdate("openReadme", false);
-    showChangeLocationMessage();
-    showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
+    showLocalDebugMessage();
     if (await isMigrateFromV1Project(workspacePath)) {
       targetFolder = workspacePath;
     } else if (await isSPFxProject(workspacePath)) {
+      showChangeLocationMessage();
       targetFolder = `${workspacePath}/SPFx`;
     } else {
+      showChangeLocationMessage();
       const tabFolder = await commonUtils.getProjectRoot(
         workspacePath,
         constants.frontendFolderName
@@ -917,7 +917,7 @@ async function showLocalDebugMessage() {
         TreatmentVariables.VSCodeConfig,
         TreatmentVariables.ShowLocalDebug,
         true
-      )
+      ) || true
   ) {
     const localDebug = {
       title: StringResources.vsc.handlers.localDebugTitle,

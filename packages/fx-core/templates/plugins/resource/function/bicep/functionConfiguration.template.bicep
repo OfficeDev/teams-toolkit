@@ -27,12 +27,12 @@ var botId = provisionParameters['botAadAppClientId']
 var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'
 {{/notContains}}
 {{#contains 'fx-resource-bot' ../Plugins}}
-var m365ApplicationIdUri = 'api://${tabAppDomain}/botid-${bot_aadClientId}'
+var m365ApplicationIdUri = 'api://${tabAppDomain}/botid-${botId}'
 {{/contains}}
 {{/contains}}
 {{#notContains 'fx-resource-frontend-hosting' Plugins}}
 {{#contains 'fx-resource-bot' ../Plugins}}
-var m365ApplicationIdUri = 'api://botid-${bot_aadClientId}'
+var m365ApplicationIdUri = 'api://botid-${botId}'
 {{/contains}}
 {{/notContains}}
 

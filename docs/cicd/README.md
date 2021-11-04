@@ -61,7 +61,7 @@ You can set up automated pipelines in Azure DevOps, and make a reference on the 
 
 ### Set up CI Pipeline
 1. Add [CI Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-ci-template.sh) into your Azure DevOps repository, and customize it as needed to fit your requirements.
-1. Follow the [steps to create your Azure DevOps Pipeline for CI]((https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops&tabs=java%2Ctfs-2018-2%2Cbrowser#create-your-first-pipeline-1)). 
+1. Follow the [steps to create your Azure DevOps Pipeline for CI](https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops&tabs=java%2Ctfs-2018-2%2Cbrowser#create-your-first-pipeline-1). 
 
 Here is an example of a common CI pipeline scripts:
 

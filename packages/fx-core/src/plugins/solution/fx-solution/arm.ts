@@ -618,21 +618,15 @@ export class ArmTemplateRenderContext {
 
 // Stores the bicep orchestration information for all resource plugins
 class BicepOrchestrationContent {
-  private ParameterTemplate: string = solutionLevelParameters;
-  private VariableTemplate = "";
-  private ModuleTemplate = "";
-  private OutputTemplate = "";
-  private ParameterJsonTemplate: Record<string, unknown> = {};
-  private ReferencePluginsResult: Record<string, unknown> = {};
+  private ParameterJsonTemplate: Record<string, string> = {};
   private RenderContenxt: ArmTemplateRenderContext;
   private TemplateAdded = false;
 
   private ProvisionTemplate = "";
   private ConfigTemplate = "";
-  private ParameterReference = "";
 
   constructor(pluginNames: string[], baseName: string) {
-    this.ParameterJsonTemplate[resourceBaseName] = { value: baseName };
+    this.ParameterJsonTemplate[resourceBaseName] = baseName;
     this.RenderContenxt = new ArmTemplateRenderContext(pluginNames);
   }
 
@@ -645,28 +639,6 @@ class BicepOrchestrationContent {
 
   public applyReference(configContent: string): string {
     return compileHandlebarsTemplateString(configContent, this.RenderContenxt).trim();
-  }
-
-  public applyTemplate(pluginName: string, scaffoldResult: ScaffoldArmTemplateResult): void {
-    this.ParameterTemplate += this.normalizeTemplateSnippet(
-      scaffoldResult.Orchestration.ParameterTemplate?.Content
-    );
-    this.VariableTemplate += this.normalizeTemplateSnippet(
-      scaffoldResult.Orchestration.VariableTemplate?.Content
-    );
-    this.ModuleTemplate += this.normalizeTemplateSnippet(
-      scaffoldResult.Orchestration.ModuleTemplate?.Content
-    );
-    this.OutputTemplate += this.normalizeTemplateSnippet(
-      scaffoldResult.Orchestration.OutputTemplate?.Content
-    );
-    // update context to render the template
-    this.RenderContenxt.addPluginOutput(pluginName, scaffoldResult);
-    // Update parameters for bicep file
-    Object.assign(
-      this.ParameterJsonTemplate,
-      scaffoldResult.Orchestration.ParameterTemplate?.ParameterJson
-    );
   }
 
   public getOrchestractionProvisionContent(): string {

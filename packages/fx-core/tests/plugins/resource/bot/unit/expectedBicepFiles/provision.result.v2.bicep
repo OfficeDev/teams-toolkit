@@ -3,7 +3,7 @@ module botProvision './botProvision.result.v2.bicep' = {
   name: 'botProvision'
   params: {
     provisionParameters: provisionParameters
-    userAssignedIdentityId: 
+    userAssignedIdentityId: userAssignedIdentityProvision.outputs.identityResourceId
   }
 }
 

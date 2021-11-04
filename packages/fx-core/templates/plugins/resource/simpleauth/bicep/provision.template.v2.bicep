@@ -3,6 +3,7 @@ module simpleAuthProvision '{{PluginOutput.fx-resource-simple-auth.Modules.simpl
   name: 'simpleAuthProvision'
   params: {
     provisionParameters: provisionParameters
+    userAssignedIdentityId: userAssignedIdentityProvision.outputs.identityResourceId
   }
 }
 

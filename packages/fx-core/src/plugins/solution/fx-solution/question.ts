@@ -42,8 +42,8 @@ export const TabSPFxItem: OptionItem = {
   id: "TabSPFx",
   label: "Tab SPFx",
   cliName: "tab-spfx",
-  description: "create tab spfx",
-  detail: "azure spfx description",
+  description: "UI-base app with SPFx framework",
+  detail: "Teams-aware webpages with SPFx framework embedded in Microsoft Teams",
 };
 
 export enum AzureSolutionQuestionNames {

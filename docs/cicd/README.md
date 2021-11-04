@@ -85,6 +85,7 @@ The potential changes you can make for the script or workflow definition:
 ### Set up CD Pipeline
 1. Add [CD Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-cd-template.sh) into your Azure DevOps repository, and do necessary customizations as you may infer from the comments in the script file.
 1. Create your Azure DevOps Pipeline for CD, as you may refer to [this link](https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops&tabs=java%2Ctfs-2018-2%2Cbrowser#create-your-first-pipeline-1). The Pipeline's definition can be referred to the following example definition for CI Pipeline.
+1. Add necessary variables by [Define variables](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch), and make them as secrets if necessary.
 ```
 trigger:
 - main 
@@ -120,7 +121,6 @@ steps:
   inputs:
     filePath: './others-script-cd-template.sh'
 ```
-1. Add necessary variables by [Define variables](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch), and make them as secrets if necessary.
 
 The potential changes you can make for the script or workflow definition:
 1. How the CD flow is triggered. By default it happens when new commits are made to the `main` branch.

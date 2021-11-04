@@ -4,17 +4,19 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
-
-import { cleanUpLocalProject, execAsync, getTestFolder, getUniqueAppName } from "../commonUtils";
+import { cleanUpLocalProject, cleanupSharePointPackage, execAsync, getTestFolder, getUniqueAppName, loadContext } from "../commonUtils";
+import { AppStudioValidator, SharepointValidator } from "../../commonlib";
 
 describe("Start a new project", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
+  const env = "e2e";
+  let appId: string;
 
-  it("Create, provision and run SPFx project with React framework - Test Plan ID 9426251", async function () {
+  it("Create, provision and run SPFx project with React framework", async function () {
     let command = `teamsfx new --interactive false --app-name ${appName} --host-type spfx --spfx-framework-type react --spfx-webpart-name helloworld --programming-language typescript`;
-    const result = await execAsync(command, {
+    let result = await execAsync(command, {
       cwd: testFolder,
       env: process.env,
       timeout: 0,
@@ -51,15 +53,56 @@ describe("Start a new project", function () {
 
     // validation succeed without provision
     command = "teamsfx validate";
-    const validationResult = await execAsync(command, {
+    result = await execAsync(command, {
       cwd: path.join(testFolder, appName),
       env: process.env,
       timeout: 0,
     });
-    expect(validationResult.stderr).to.eq("");
+    expect(result.stderr).to.eq("");
+
+    // provision
+    result = await execAsync(`teamsfx provision`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+    console.log(`[Successfully] provision, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
+    expect(result.stderr).to.eq("");
+
+    {
+      // Get context
+      const contextResult = await loadContext(projectPath, env);
+      if (contextResult.isErr()) {
+        throw contextResult.error;
+      }
+      const context = contextResult.value;
+
+      // Only check Teams App existence
+      const appStudio = AppStudioValidator.init(context);
+      AppStudioValidator.validateTeamsAppExist(appStudio);
+    }
+
+    // deploy
+    result = await execAsync(`teamsfx deploy`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+
+    {
+      // Validate sharepoint package
+      const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
+      const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
+      appId = solutionConfig["solution"]["id"];
+      expect(await fs.pathExists(sharepointPackage)).to.be.true;
+
+      // Check if package exsist in App Catalog
+      SharepointValidator.init();
+      SharepointValidator.validateDeploy(appId);
+    }
   });
 
-  it("Create SPFx project without framework - Test Plan ID 9426243", async function () {
+  it("Create SPFx project without framework", async function () {
     const command = `teamsfx new --interactive false --app-name ${appName} --host-type spfx --spfx-framework-type none --spfx-webpart-name helloworld --programming-language typescript`;
     const result = await execAsync(command, {
       cwd: testFolder,
@@ -97,5 +140,6 @@ describe("Start a new project", function () {
   after(async () => {
     // clean up
     await cleanUpLocalProject(projectPath);
+    await cleanupSharePointPackage(appId);
   });
 });

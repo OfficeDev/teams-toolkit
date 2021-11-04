@@ -606,22 +606,28 @@ describe("Middleware - others", () => {
       );
       assert.isNotNull(armParam.parameters.resourceBaseName);
       assert.isNotNull(armParam.parameters.azureSql_admin);
-      assert.strictEqual(armParam.parameters.frontendHosting_storageName.value, "test");
-      assert.strictEqual(armParam.parameters.identity_managedIdentityName.value, "test");
-      assert.strictEqual(armParam.parameters.azureSql_serverName.value, "test");
-      assert.strictEqual(armParam.parameters.azureSql_databaseName.value, "test");
-      assert.strictEqual(armParam.parameters.function_serverfarmsName.value, "test");
-      assert.strictEqual(armParam.parameters.function_storageName.value, "test");
-      assert.strictEqual(armParam.parameters.function_webappName.value, "test");
-
-      // const newEnv = await fs.readJson(path.join(projectPath, ".fx", "new.env.default.json"));
-      // const envFile = await fs.readJson(path.join(projectPath, ".fx", "env.default.json"));
-      // assert.strictEqual(
-      //   newEnv["fx-resource-bot"].wayToRegisterBot,
-      //   envFile["fx-resource-bot"].wayToRegisterBot
-      // );
-      // assert.isUndefined(newEnv["fx-resource-bot"].skuName);
-      // assert.isNotNull(envFile["fx-resource-bot"].skuName);
+      assert.strictEqual(
+        armParam.parameters.provisionParameters.value.frontendHosting_storageName,
+        "test"
+      );
+      assert.strictEqual(
+        armParam.parameters.provisionParameters.value.identity_managedIdentityName,
+        "test"
+      );
+      assert.strictEqual(armParam.parameters.provisionParameters.value.azureSql_serverName, "test");
+      assert.strictEqual(
+        armParam.parameters.provisionParameters.value.azureSql_databaseName,
+        "test"
+      );
+      assert.strictEqual(
+        armParam.parameters.provisionParameters.value.function_serverfarmsName,
+        "test"
+      );
+      assert.strictEqual(
+        armParam.parameters.provisionParameters.value.function_storageName,
+        "test"
+      );
+      assert.strictEqual(armParam.parameters.provisionParameters.value.function_webappName, "test");
     });
   });
 

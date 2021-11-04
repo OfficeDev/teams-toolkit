@@ -17,4 +17,4 @@ module teamsFxConfig './config.bicep' = {
 }
 
 output provisionOutput object = provision
-output teamsFxConfigurationOutput object = teamsFxConfig
+output teamsFxConfigurationOutput object = contains(reference(resourceId('Microsoft.Resources/deployments', teamsFxConfig.name), '2020-06-01'), 'outputs') ? teamsFxConfig : {}

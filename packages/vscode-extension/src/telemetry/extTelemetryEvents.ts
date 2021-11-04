@@ -103,11 +103,16 @@ export enum TelemetryEvent {
   MigrateV1ProjectNotification = "migrate-v1-project-notification",
 
   ViewEnvironment = "view-environment",
+  OpenSubscriptionInPortal = "open-subscription-in-portal",
+  OpenResourceGroupInPortal = "open-resource-group-in-portal",
 
   CheckSideloading = "check-sideloading",
 
   ListCollaboratorStart = "list-collaborator-start",
   ListCollaborator = "list-collaborator",
+
+  ListAllCollaboratorsStart = "list-all-collaborators-start",
+  ListAllCollaborators = "list-all-collaborators",
 
   GrantPermissionStart = "grant-permission-start",
   GrantPermission = "grant-permission",
@@ -121,6 +126,7 @@ export enum TelemetryEvent {
 
   ShowLocalDebugNotification = "show-local-debug-notification",
   ClickLocalDebug = "click-local-debug",
+  ShowChangeLocationNotification = "show-change-location-notification",
   ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
 }

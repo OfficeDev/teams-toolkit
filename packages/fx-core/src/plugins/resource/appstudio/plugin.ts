@@ -112,9 +112,12 @@ import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import Mustache from "mustache";
-import { replaceConfigValue } from "./utils/utils";
+import { getCustomizedKeys, replaceConfigValue } from "./utils/utils";
+import { TelemetryPropertyKey } from "./utils/telemetry";
 
 export class AppStudioPluginImpl {
+  public commonProperties: { [key: string]: string } = {};
+
   public async getAppDefinitionAndUpdate(
     ctx: PluginContext,
     isLocalDebug: boolean,
@@ -524,31 +527,35 @@ export class AppStudioPluginImpl {
         : newAppPackageFolder;
       await fs.ensureDir(resourcesDir);
 
-      const archiveColorFile = path.join(archiveAppPackageFolder, manifest.icons.color);
-      const existColorFile = await this.checkFileExist(archiveColorFile);
-      const newColorFileName = existColorFile
-        ? path.basename(manifest.icons.color)
-        : DEFAULT_COLOR_PNG_FILENAME;
-      await fs.copyFile(
-        existColorFile ? archiveColorFile : path.join(getTemplatesFolder(), COLOR_TEMPLATE),
-        path.join(resourcesDir, newColorFileName)
-      );
-      manifest.icons.color = isMultiEnvEnabled()
-        ? `${MANIFEST_RESOURCES}/${newColorFileName}`
-        : newColorFileName;
+      if (manifest?.icons?.color && !manifest.icons.color.startsWith("https://")) {
+        const archiveColorFile = path.join(archiveAppPackageFolder, manifest.icons.color);
+        const existColorFile = await this.checkFileExist(archiveColorFile);
+        const newColorFileName = existColorFile
+          ? path.basename(manifest.icons.color)
+          : DEFAULT_COLOR_PNG_FILENAME;
+        await fs.copyFile(
+          existColorFile ? archiveColorFile : path.join(getTemplatesFolder(), COLOR_TEMPLATE),
+          path.join(resourcesDir, newColorFileName)
+        );
+        manifest.icons.color = isMultiEnvEnabled()
+          ? `${MANIFEST_RESOURCES}/${newColorFileName}`
+          : newColorFileName;
+      }
 
-      const archiveOutlineFile = path.join(archiveAppPackageFolder, manifest.icons.outline);
-      const existOutlineFile = await this.checkFileExist(archiveOutlineFile);
-      const newOutlineFileName = existOutlineFile
-        ? path.basename(manifest.icons.outline)
-        : DEFAULT_OUTLINE_PNG_FILENAME;
-      await fs.copyFile(
-        existOutlineFile ? archiveOutlineFile : path.join(getTemplatesFolder(), OUTLINE_TEMPLATE),
-        path.join(resourcesDir, newOutlineFileName)
-      );
-      manifest.icons.outline = isMultiEnvEnabled()
-        ? `${MANIFEST_RESOURCES}/${newOutlineFileName}`
-        : newOutlineFileName;
+      if (manifest?.icons?.outline && !manifest.icons.outline.startsWith("https://")) {
+        const archiveOutlineFile = path.join(archiveAppPackageFolder, manifest.icons.outline);
+        const existOutlineFile = await this.checkFileExist(archiveOutlineFile);
+        const newOutlineFileName = existOutlineFile
+          ? path.basename(manifest.icons.outline)
+          : DEFAULT_OUTLINE_PNG_FILENAME;
+        await fs.copyFile(
+          existOutlineFile ? archiveOutlineFile : path.join(getTemplatesFolder(), OUTLINE_TEMPLATE),
+          path.join(resourcesDir, newOutlineFileName)
+        );
+        manifest.icons.outline = isMultiEnvEnabled()
+          ? `${MANIFEST_RESOURCES}/${newOutlineFileName}`
+          : newOutlineFileName;
+      }
 
       await fs.writeFile(
         path.join(newAppPackageFolder, isMultiEnvEnabled() ? MANIFEST_LOCAL : REMOTE_MANIFEST),
@@ -1698,6 +1705,10 @@ export class AppStudioPluginImpl {
     ).toString();
 
     if (isMultiEnvEnabled()) {
+      const customizedKeys = getCustomizedKeys("", JSON.parse(manifest));
+      this.commonProperties = {
+        [TelemetryPropertyKey.customizedKeys]: JSON.stringify(customizedKeys),
+      };
       const view = {
         config: ctx.envInfo.config,
         state: {

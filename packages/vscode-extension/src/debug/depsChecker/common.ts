@@ -35,6 +35,8 @@ export const dotnetFailToInstallHelpLink = `${defaultHelpLink}#failtoinstalldotn
 export const dotnetManualInstallHelpLink = `${defaultHelpLink}#dotnetnotfound`;
 export const dotnetNotSupportTargetVersionHelpLink = `${defaultHelpLink}#dotnetnotsupporttargetversion`;
 
+export const ngrokInstallHelpLink = `${defaultHelpLink}#failtoinstallngrok`;
+
 export const Messages = {
   learnMoreButtonText: "Learn more",
   continueButtonText: "Continue anyway",

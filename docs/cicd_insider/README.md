@@ -125,6 +125,7 @@ steps:
 The potential changes you can make for the script or workflow definition:
 1. How the CD flow is triggered. By default it happens when new commits are made to the `main` branch.
 1. Change the way of how to install node and npm.
+1. Change the environment name, by default it's `staging`.
 1. Ensure you have a npm build script, or customize the way you build in the automation code.
 1. Ensure you have a npm test script which returns zero for success, and/or change the test commands.
 

@@ -58,6 +58,7 @@ The support for Azure DevOps is based on the scripts support as you may see from
 ### Set up CI Pipeline
 1. Add [CI Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-ci-template.sh) into your Azure DevOps repository, and do necessary customizations as you may infer from the comments in the script file.
 1. Create your Azure DevOps Pipeline for CI, as you may refer to [this link](https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops&tabs=java%2Ctfs-2018-2%2Cbrowser#create-your-first-pipeline-1). The Pipeline's definition can be referred to the following example definition for CI Pipeline.
+
 ```
 trigger:
 - dev 
@@ -86,6 +87,7 @@ The potential changes you can make for the script or workflow definition:
 1. Add [CD Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-cd-template.sh) into your Azure DevOps repository, and do necessary customizations as you may infer from the comments in the script file.
 1. Create your Azure DevOps Pipeline for CD, as you may refer to [this link](https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops&tabs=java%2Ctfs-2018-2%2Cbrowser#create-your-first-pipeline-1). The Pipeline's definition can be referred to the following example definition for CI Pipeline.
 1. Add necessary variables by [Define variables](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch), and make them as secrets if necessary.
+
 ```
 trigger:
 - main 
@@ -102,13 +104,12 @@ steps:
 - task: DownloadSecureFile@1
   name: userdata
   inputs:
-    secureFile: 'staging.userdata'
+    secureFile: 'default.userdata'
 - task: Bash@3
   inputs:
     targetType: 'inline'
     script: |
-      mkdir -p .fx/states/
-      cp $(userdata.secureFilePath) .fx/states/staging.userdata
+      cp $(userdata.secureFilePath) .fx/default.userdata
   
 - task: Bash@3
   env:
@@ -128,7 +129,7 @@ The potential changes you can make for the script or workflow definition:
 1. Ensure you have a npm build script, or customize the way you build in the automation code.
 1. Ensure you have a npm test script which returns zero for success, and/or change the test commands.
 
-> Note: The provision step is expected to run separately by hand or by workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and upload `.fx/states/{YOUR_ENV_NAME}.userdata` into Azure DevOps [secure files](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/secure-files?view=azure-devops) for future usage.
+> Note: The provision step is expected to run separately by hand or by workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and upload `.fx/default.userdata` into Azure DevOps [secure files](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/secure-files?view=azure-devops) for future usage.
 
 ### Environment Variables
 Steps to create Pipeline variables in Azure DevOps:

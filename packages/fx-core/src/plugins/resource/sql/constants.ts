@@ -98,8 +98,9 @@ export class HelpLinks {
 }
 
 export class AzureSqlBicep {
-  static readonly sqlResourceId: string = "provisionOutputs.azureSqlOutput.value.sqlResourceId";
-  static readonly sqlEndpoint: string = "provisionOutputs.azureSqlOutput.value.sqlEndpoint";
+  static readonly sqlResourceId: string =
+    "provisionOutputs.azureSqlOutput.value.sqlServerResourceId";
+  static readonly sqlEndpoint: string = "provisionOutputs.azureSqlOutput.value.sqlServerEndpoint";
   static readonly databaseName: string = "provisionOutputs.azureSqlOutput.value.sqlDatabaseName";
 }
 

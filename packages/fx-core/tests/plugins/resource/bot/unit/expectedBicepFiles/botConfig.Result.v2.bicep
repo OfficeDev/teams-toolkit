@@ -24,6 +24,6 @@ resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-15' = {
     M365_CLIENT_SECRET: m365ClientSecret
     M365_TENANT_ID: m365TenantId
     M365_APPLICATION_ID_URI: m365ApplicationIdUri
-    IDENTITY_ID: provisionOutputs.identityOutput.value.resourceId
+    IDENTITY_ID: provisionOutputs.identityOutput.value.identityClientId
   }, currentAppSettings)
 }

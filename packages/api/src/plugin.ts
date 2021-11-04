@@ -5,7 +5,7 @@
 import { Context, PluginContext } from "./context";
 import { Result } from "neverthrow";
 import { FxError } from "./error";
-import { Stage } from "./constants";
+import { Stage, Platform } from "./constants";
 import { Func, QTreeNode } from "./qm";
 import { AzureSolutionSettings } from "./types";
 /**
@@ -20,7 +20,7 @@ export interface Plugin {
    * resource plugin decide whether it need to be activated
    * @param solutionSettings solution settings
    */
-  activate(solutionSettings: AzureSolutionSettings): boolean;
+  activate(solutionSettings: AzureSolutionSettings, platform?: Platform): boolean;
 
   /**
    * prerequisiteCheck will check the whether required software has been installed. e.g. dotnet runtime of a required version.

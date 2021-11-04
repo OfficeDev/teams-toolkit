@@ -27,6 +27,7 @@ export enum Platform {
   CLI = "cli",
   VS = "vs",
   CLI_HELP = "cli_help",
+  VS_CALL_CLI = "vs_call_cli", // The first version of VS extension will call CLI. We assign it a special platform different from VS and CLI.
 }
 
 export const StaticPlatforms = [Platform.VS, Platform.CLI_HELP];

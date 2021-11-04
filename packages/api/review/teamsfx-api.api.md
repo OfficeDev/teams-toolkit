@@ -902,12 +902,14 @@ export enum Platform {
     // (undocumented)
     VS = "vs",
     // (undocumented)
+    VS_CALL_CLI = "vs_call_cli",
+    // (undocumented)
     VSCode = "vsc"
 }
 
 // @public
 interface Plugin_2 {
-    activate(solutionSettings: AzureSolutionSettings): boolean;
+    activate(solutionSettings: AzureSolutionSettings, platform?: Platform): boolean;
     callFunc?: (func: Func, ctx: PluginContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     checkPermission?: (ctx: PluginContext, userInfo: Record<string, any>) => Promise<Result<any, FxError>>;

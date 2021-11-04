@@ -95,6 +95,8 @@ describe("Start a new project", function () {
       env: process.env,
       timeout: 0,
     });
+    console.log(`[Successfully] provision, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
+    expect(result.stderr).to.eq("");
 
     {
       // Validate sharepoint package

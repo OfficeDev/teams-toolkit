@@ -133,7 +133,12 @@ export async function setBotSkuNameToB1(projectPath: string) {
 }
 
 export async function cleanupSharePointPackage(appId: string) {
-  await SharepointManager.deleteApp(appId);
+  try {
+    await SharepointManager.deleteApp(appId);
+    console.log(`[Successfully] clean up sharepoint package ${appId}`);
+  } catch (error) {
+    console.log(`[Failed] clean up sharepoint package ${appId}, Error: ${error.message}`);
+  }
 }
 
 export async function cleanUpAadApp(

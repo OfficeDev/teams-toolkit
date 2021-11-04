@@ -4,7 +4,14 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
-import { cleanUpLocalProject, cleanupSharePointPackage, execAsync, getTestFolder, getUniqueAppName, loadContext } from "../commonUtils";
+import {
+  cleanUpLocalProject,
+  cleanupSharePointPackage,
+  execAsync,
+  getTestFolder,
+  getUniqueAppName,
+  loadContext,
+} from "../commonUtils";
 import { AppStudioValidator, SharepointValidator } from "../../commonlib";
 
 describe("Start a new project", function () {

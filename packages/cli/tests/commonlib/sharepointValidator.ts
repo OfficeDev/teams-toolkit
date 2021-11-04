@@ -15,14 +15,14 @@ export class SharepointValidator {
   }
 
   public static async validateDeploy(appId: string) {
-      const token = await this.provider.getAccessToken();
-      chai.assert.isNotEmpty(token);
+    const token = await this.provider.getAccessToken();
+    chai.assert.isNotEmpty(token);
 
-      const requester = this.createRequesterWithToken(token!);
-      const response = await requester.get(
-        `/_api/web/tenantappcatalog/AvailableApps/GetById('${appId}')`
-      );
-      chai.assert.isTrue(response.data.Deployed);
+    const requester = this.createRequesterWithToken(token!);
+    const response = await requester.get(
+      `/_api/web/tenantappcatalog/AvailableApps/GetById('${appId}')`
+    );
+    chai.assert.isTrue(response.data.Deployed);
   }
 
   public static async deleteApp(appId: string) {
@@ -30,9 +30,7 @@ export class SharepointValidator {
     chai.assert.isNotEmpty(token);
 
     const requester = this.createRequesterWithToken(token!);
-    await requester.post(
-      `/_api/web/tenantappcatalog/AvailableApps/GetById('${appId}')/Remove`
-    );
+    await requester.post(`/_api/web/tenantappcatalog/AvailableApps/GetById('${appId}')/Remove`);
   }
 
   private static createRequesterWithToken(sharepointToken: string): AxiosInstance {

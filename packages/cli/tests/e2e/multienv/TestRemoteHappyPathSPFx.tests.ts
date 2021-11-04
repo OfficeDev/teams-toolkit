@@ -17,7 +17,7 @@ import {
 import { AppPackageFolderName } from "@microsoft/teamsfx-api";
 import { AppStudioValidator } from "../../commonlib";
 
-describe("Start a new project", function () {
+describe("Multi Env Happy Path for SPFx", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
@@ -25,7 +25,7 @@ describe("Start a new project", function () {
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
   const env = "e2e";
 
-  it("Create SPFx project without framework - Test Plan ID 9426251", async function () {
+  it("Can create/provision/deploy/validate/package/publish an SPFx project", async function () {
     const command = `teamsfx new --interactive false --app-name ${appName} --capabilites tab-spfx --spfx-framework-type ${type} --spfx-webpart-name helloworld --programming-language typescript`;
     let result = await execAsync(command, {
       cwd: testFolder,

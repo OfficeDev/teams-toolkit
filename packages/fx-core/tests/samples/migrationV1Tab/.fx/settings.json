@@ -1,0 +1,20 @@
+{
+    "appName": "v1personaljs",
+    "projectId": "a96c0025-cec5-4dc6-8cfb-37b2b6c9e0ff",
+    "solutionSettings": {
+        "name": "fx-solution-azure",
+        "version": "1.0.0",
+        "hostType": "Azure",
+        "capabilities": [
+            "Tab"
+        ],
+        "azureResources": [],
+        "activeResourcePlugins": [
+            "fx-resource-frontend-hosting",
+            "fx-resource-local-debug",
+            "fx-resource-appstudio"
+        ],
+        "migrateFromV1": true
+    },
+    "programmingLanguage": "javascript"
+}

@@ -621,6 +621,7 @@ describe("Middleware - others", () => {
       // assert.isNotNull(envFile["fx-resource-bot"].skuName);
     });
   });
+
   describe("ProjectMigratorMW", () => {
     const sandbox = sinon.createSandbox();
     const appName = randomAppName();
@@ -628,7 +629,6 @@ describe("Middleware - others", () => {
 
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
-      await fs.copy(path.join(__dirname, "../samples/migration/"), path.join(projectPath));
       mockedEnvRestore = mockedEnv({
         TEAMSFX_INSIDER_PREVIEW: "true",
       });
@@ -642,6 +642,7 @@ describe("Middleware - others", () => {
     });
 
     it("successfully migrate to version of arm and multi-env", async () => {
+      await fs.copy(path.join(__dirname, "../samples/migration/"), path.join(projectPath));
       class MyClass {
         tools?: any = new MockTools();
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
@@ -659,6 +660,118 @@ describe("Middleware - others", () => {
       try {
         const res = await my.other(inputs);
         assert.isTrue(res.isOk());
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+    it("successfully update the tab project migrated from v1", async () => {
+      await fs.copy(path.join(__dirname, "../samples/migrationV1Tab/"), path.join(projectPath));
+      class MyClass {
+        tools?: any = new MockTools();
+        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        other: [ProjectMigratorMW],
+      });
+
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = projectPath;
+      const my = new MyClass();
+
+      try {
+        const res = await my.other(inputs);
+        assert.isTrue(res.isOk());
+
+        const azureParameterExists = await fs.pathExists(
+          path.join(inputs.projectPath!, ".fx/configs/azure.parameters.dev.json")
+        );
+        assert.isFalse(azureParameterExists);
+        const azureTemplateExists = await fs.pathExists(
+          path.join(inputs.projectPath!, "templates/azure")
+        );
+        assert.isFalse(azureTemplateExists);
+        const remoteManifestExists = await fs.pathExists(
+          path.join(inputs.projectPath!, "templates/appPackage/manifest.remote.template.json")
+        );
+        assert.isFalse(remoteManifestExists);
+        const devConfigExists = await fs.pathExists(
+          path.join(inputs.projectPath!, ".fx/configs/config.dev.json")
+        );
+        assert.isFalse(devConfigExists);
+
+        const localSettingsContent = await fs.readJson(
+          path.join(inputs.projectPath!, ".fx/configs/localSettings.json")
+        );
+        assert.isNotEmpty(localSettingsContent?.frontend);
+        assert.isNotEmpty(localSettingsContent?.teamsApp);
+        const projectSettingsContent = await fs.readJson(
+          path.join(inputs.projectPath!, ".fx/configs/projectSettings.json")
+        );
+        assert.isTrue(projectSettingsContent?.solutionSettings?.migrateFromV1);
+        const localManifest = await fs.readJson(
+          path.join(inputs.projectPath!, "templates/appPackage/manifest.local.template.json")
+        );
+        assert.equal(localManifest?.icons?.color, "resources/color.png");
+        assert.equal(localManifest?.icons?.outline, "resources/outline.png");
+        assert.equal(localManifest?.id, "{{localSettings.teamsApp.teamsAppId}}");
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+    it("successfully update the bot project migrated from v1", async () => {
+      await fs.copy(path.join(__dirname, "../samples/migrationV1Bot/"), path.join(projectPath));
+      class MyClass {
+        tools?: any = new MockTools();
+        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        other: [ProjectMigratorMW],
+      });
+
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = projectPath;
+      const my = new MyClass();
+
+      try {
+        const res = await my.other(inputs);
+        assert.isTrue(res.isOk());
+
+        const azureParameterExists = await fs.pathExists(
+          path.join(inputs.projectPath!, ".fx/configs/azure.parameters.dev.json")
+        );
+        assert.isFalse(azureParameterExists);
+        const azureTemplateExists = await fs.pathExists(
+          path.join(inputs.projectPath!, "templates/azure")
+        );
+        assert.isFalse(azureTemplateExists);
+        const remoteManifestExists = await fs.pathExists(
+          path.join(inputs.projectPath!, "templates/appPackage/manifest.remote.template.json")
+        );
+        assert.isFalse(remoteManifestExists);
+        const devConfigExists = await fs.pathExists(
+          path.join(inputs.projectPath!, ".fx/configs/config.dev.json")
+        );
+        assert.isFalse(devConfigExists);
+
+        const localSettingsContent = await fs.readJson(
+          path.join(inputs.projectPath!, ".fx/configs/localSettings.json")
+        );
+        assert.isNotEmpty(localSettingsContent?.bot);
+        assert.isNotEmpty(localSettingsContent?.teamsApp);
+        const projectSettingsContent = await fs.readJson(
+          path.join(inputs.projectPath!, ".fx/configs/projectSettings.json")
+        );
+        assert.isTrue(projectSettingsContent?.solutionSettings?.migrateFromV1);
+        const localManifest = await fs.readJson(
+          path.join(inputs.projectPath!, "templates/appPackage/manifest.local.template.json")
+        );
+        assert.equal(localManifest?.icons?.color, "resources/color.png");
+        assert.equal(localManifest?.icons?.outline, "resources/outline.png");
+        assert.equal(localManifest?.id, "{{localSettings.teamsApp.teamsAppId}}");
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

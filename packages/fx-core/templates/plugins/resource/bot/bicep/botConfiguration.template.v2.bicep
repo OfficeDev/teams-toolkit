@@ -3,6 +3,7 @@
 @secure()
 param provisionParameters object
 param provisionOutputs object
+@secure()
 param currentAppSettings object
 
 var botWebAppName = split(provisionOutputs.botOutput.value.webAppResourceId, '/')[8]

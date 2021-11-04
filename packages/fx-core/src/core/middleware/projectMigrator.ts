@@ -97,7 +97,7 @@ class EnvConfigName {
   static readonly Endpoint = "endpoint";
 }
 
-class ArmParameters {
+export class ArmParameters {
   static readonly FEStorageName = "frontendHostingStorageName";
   static readonly IdentityName = "userAssignedIdentityName";
   static readonly SQLServer = "azureSqlServerName";

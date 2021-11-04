@@ -43,7 +43,11 @@ import * as commonTools from "../../src/common/tools";
 import { environmentManager } from "../../src/core/environment";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
 import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
-import { migrateArm, ProjectMigratorMW } from "../../src/core/middleware/projectMigrator";
+import {
+  migrateArm,
+  ProjectMigratorMW,
+  ArmParameters,
+} from "../../src/core/middleware/projectMigrator";
 import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
 import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import {
@@ -606,28 +610,15 @@ describe("Middleware - others", () => {
       );
       assert.isNotNull(armParam.parameters.resourceBaseName);
       assert.isNotNull(armParam.parameters.azureSql_admin);
-      assert.strictEqual(
-        armParam.parameters.provisionParameters.value.frontendHosting_storageName,
-        "test"
-      );
-      assert.strictEqual(
-        armParam.parameters.provisionParameters.value.identity_managedIdentityName,
-        "test"
-      );
-      assert.strictEqual(armParam.parameters.provisionParameters.value.azureSql_serverName, "test");
-      assert.strictEqual(
-        armParam.parameters.provisionParameters.value.azureSql_databaseName,
-        "test"
-      );
-      assert.strictEqual(
-        armParam.parameters.provisionParameters.value.function_serverfarmsName,
-        "test"
-      );
-      assert.strictEqual(
-        armParam.parameters.provisionParameters.value.function_storageName,
-        "test"
-      );
-      assert.strictEqual(armParam.parameters.provisionParameters.value.function_webappName, "test");
+      const parameterObj = armParam.parameters.provisionParameters.value;
+      assert.isNotNull(parameterObj);
+      assert.strictEqual(parameterObj[ArmParameters.FEStorageName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.IdentityName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.SQLServer], "test");
+      assert.strictEqual(parameterObj[ArmParameters.SQLDatabase], "test");
+      assert.strictEqual(parameterObj[ArmParameters.functionServerName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.functionStorageName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.functionAppName], "test");
     });
   });
   describe("ProjectMigratorMW", () => {

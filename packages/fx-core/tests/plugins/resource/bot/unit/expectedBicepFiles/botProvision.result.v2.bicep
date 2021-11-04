@@ -1,6 +1,6 @@
 @secure()
-param userAssignedIdentityId string
 param provisionParameters object
+param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
 var botAadAppClientId = provisionParameters['botAadAppClientId']

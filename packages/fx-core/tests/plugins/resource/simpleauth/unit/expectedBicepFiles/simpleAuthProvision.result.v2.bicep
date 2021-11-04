@@ -1,5 +1,5 @@
-param provisionParameters object
 @secure()
+param provisionParameters object
 param userAssignedIdentityId string
 var resourceBaseName = provisionParameters.resourceBaseName
 var sku = contains(provisionParameters, 'simpleAuthSku') ? provisionParameters['simpleAuthSku'] : 'F1'

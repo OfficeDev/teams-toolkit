@@ -50,7 +50,7 @@ export interface EnvStateFiles {
   userDataFile: string;
 }
 
-export const envPrefix = "$env:";
+export const envPrefix = "$env.";
 
 class EnvironmentManager {
   public readonly envNameRegex = /^[\w\d-_]+$/;
@@ -300,12 +300,7 @@ class EnvironmentManager {
       return templateContent;
     }
 
-    const envVars: Record<string, any> = {};
-    Object.entries(process.env).forEach(([key, value]) => {
-      envVars[envPrefix + key] = value;
-    });
-
-    return compileHandlebarsTemplateString(templateContent, envVars);
+    return compileHandlebarsTemplateString(templateContent, { $env: process.env });
   }
 
   private getEnvNameFromPath(filePath: string): string | null {

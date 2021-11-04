@@ -18,7 +18,7 @@ import {
   ok,
   Result,
 } from "@microsoft/teamsfx-api";
-import { environmentManager } from "../../src/core/environment";
+import { environmentManager, envPrefix } from "../../src/core/environment";
 import * as tools from "../../src/common/tools";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import { isMultiEnvEnabled } from "../../src/common/tools";
@@ -69,7 +69,7 @@ describe("APIs of Environment Manager", () => {
     auth: {
       accessAsUserScopeId: "test-scope-id",
       clientId: "test-client-id",
-      clientSecret: "{{$env:MOCKED_CLIENT_SECRET}}",
+      clientSecret: `{{${envPrefix}MOCKED_CLIENT_SECRET}}`,
       objectId: "test-object-id",
     },
   };

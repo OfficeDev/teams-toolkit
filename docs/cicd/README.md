@@ -1,36 +1,40 @@
 # CI/CD Support for Teams Application Developers
 
-TeamsFx helps automate your development workflow when building a Teams application. These documents provide some templates for you to quickly get started with CI/CD.
+TeamsFx helps automate your development workflow when building a Teams application. This document provides tools and pre-cooked templates for you to get started when setting up CI/CD pipelines with the most popular development platforms including Github, Azure DevOps and Jenkins.
 
 > Note:
-This document doesn't support the insider preview features (multi-env, arm support, and collaboration), so don't enable insider feature flag with CI/CD. CI/CD support for insider preview mode can be referred to [this link](https://aka.ms/teamsfx-cicd-insider-guide).
+If your project is using the insider features (ARM, Multiple Environments), Please look for CICD instructions in [this link](https://aka.ms/teamsfx-cicd-insider-guide).
 
 |Tools and Templates|Description|
 |---|---|
-|[teamsfx-cli-action](https://github.com/OfficeDev/teamsfx-cli-action)|A ready-to-use GitHub Action.|
+|[teamsfx-cli-action](https://github.com/OfficeDev/teamsfx-cli-action)|A ready-to-use GitHub Action that integrates with TeamsFx CLI.|
 |[github-ci-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-ci-template.yml) and [github-cd-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-cd-template.yml)| GitHub CI/CD templates for a Teams app. |
 |[jenkins-ci-template.Jenkinsfile](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/jenkins-ci-template.Jenkinsfile) and [jenkins-cd-template.Jenkinsfile](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/jenkins-cd-template.Jenkinsfile)|Jenkins CI/CD templates for a Teams app.|
 |[script-ci-template.sh](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-ci-template.sh) and [script-cd-template.sh](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-cd-template.sh)| Script templates for automation everywhere else outside of GitHub. |
 
-## CI/CD Workflow Templates in GitHub
-
-To add these templates to your repository, you will need your versions of [github-ci-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-ci-template.yml) and  [github-cd-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-cd-template.yml) to be located in your repository under the folder `.github/workflows`. 
+## Setup CI/CD Pipelines with GitHub
+To include CI/CD workflows to automate Teams app development process in github, you need to:
+1. Create a folder under `.github/workflows`
+1. Copy the template files (either one or both of them)
+    1. [github-ci-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-ci-template.yml) for CI workflow
+    1. [github-cd-template.yml](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/github-cd-template.yml) for CD workflow
+1. Customize these workflows to fit your scenarios.
 
 ### Customize CI Workflow
-There are some potential changes you can make to adapt your project:
+There are some changes you can make to adapt the workflow for your project:
 
 1. Change how the CI flow is triggered. We default to when a pull request is created targeting the `dev` branch.
-1. Ensure you have a npm build script, or customize the way you build in the automation code.
-1. Ensure you have a npm test script which returns zero for success, and/or change the test commands.
+1. Use a npm build script, or customize the way you build the project in the automation code.
+1. Use a npm test script which returns zero for success, and/or change the test commands.
 
 ### Customize CD Workflow
 You may want to change:
 1. How the CD flow is triggered. By default it happens when new commits are made to the `main` branch.
-1. Create GitHub [repository secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) by environment to hold Azure/M365 login credentials. The table below lists all the secrets you need to create on GitHub, and for detailed usage, please refer to the GitHub Actions [README.md](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md).
+1. Create GitHub [repository secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) by environment to securely store Azure and M365 login credentials. The table below lists all the secrets you need to create on GitHub, and for detailed usage, please refer to the GitHub Actions [README.md](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md).
 1. Change the build scripts if necessary.
 1. Remove the test scripts if you don't have tests.
 
-> Note: The provision step is expected to run separately by hand or by workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save the file content of `default.userdata` into GitHub [repository secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) with name `USERDATA_CONTENT` for future usage.
+> Note: The provision step is not included in the CD template as it's usually executed only once. You can either execute provision Within Teams Toolkit, TeamsFx CLI, or using a seperated workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save the file content of `default.userdata` into GitHub [repository secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) with name `USERDATA_CONTENT` for future usage.
 
 ### Environment Variables
 Steps to create environment variables in GitHub:
@@ -49,15 +53,17 @@ Steps to create environment variables in GitHub:
 |M365_TENANT_ID|To identify the tenant in which the Teams App will be created/published. This value is optional unless you have a multi-tenant account and you want to use another tenant. Read more on [how to find your M365 tenant ID](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-how-to-find-tenant).|
 > Note: Please refer to the [Configure M365/Azure Credentials](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md#configure-m365azure-credentials-as-github-secret) to make sure you have disabled Multi-factor Authentication and Security Defaults for the credentials used in the workflow.
 
-## CI/CD Pipeline Templates in Azure DevOps
+## Setup CI/CD Pipelines with Azure DevOps
 
-The support for Azure DevOps is based on the scripts support as you may see from the below. 
+You can set up automated pipelines in Azure DevOps, and make a reference on the scripts and steps below to get started:
 * [CI Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-ci-template.sh)
 * [CD Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-cd-template.sh)
 
 ### Set up CI Pipeline
-1. Add [CI Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-ci-template.sh) into your Azure DevOps repository, and do necessary customizations as you may infer from the comments in the script file.
-1. Create your Azure DevOps Pipeline for CI, as you may refer to [this link](https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops&tabs=java%2Ctfs-2018-2%2Cbrowser#create-your-first-pipeline-1). The Pipeline's definition can be referred to the following example definition for CI Pipeline.
+1. Add [CI Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-ci-template.sh) into your Azure DevOps repository, and customize it as needed to fit your requirements.
+1. Follow the [steps to create your Azure DevOps Pipeline for CI]((https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops&tabs=java%2Ctfs-2018-2%2Cbrowser#create-your-first-pipeline-1)). 
+
+Here is an example of a common CI pipeline scripts:
 
 ```
 trigger:
@@ -80,13 +86,15 @@ steps:
 The potential changes you can make for the script or workflow definition:
 1. Change how the CI flow is triggered. We default to when a new commit is pushed into the `dev` branch.
 1. Change the way of how to install node and npm.
-1. Ensure you have a npm build script, or customize the way you build in the automation code.
-1. Ensure you have a npm test script which returns zero for success, and/or change the test commands.
+1. Use a npm build script, or customize the way you build in the automation code.
+1. Use a npm test script which returns zero for success, and/or change the test commands.
 
 ### Set up CD Pipeline
 1. Add [CD Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-cd-template.sh) into your Azure DevOps repository, and do necessary customizations as you may infer from the comments in the script file.
-1. Create your Azure DevOps Pipeline for CD, as you may refer to [this link](https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops&tabs=java%2Ctfs-2018-2%2Cbrowser#create-your-first-pipeline-1). The Pipeline's definition can be referred to the following example definition for CI Pipeline.
-1. Add necessary variables by [Define variables](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch), and make them as secrets if necessary.
+1. Follow the steps to [create your Azure DevOps Pipeline for CD Pipeline.](https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops&tabs=java%2Ctfs-2018-2%2Cbrowser#create-your-first-pipeline-1). 
+1. Add secrect variables using [Define variables](https://docs.microsoft.com/en-us/azure/devops/pipelines/process/variables?view=azure-devops&tabs=yaml%2Cbatch).
+
+Here is an example of a common CD pipeline scripts:
 
 ```
 trigger:
@@ -129,7 +137,7 @@ The potential changes you can make for the script or workflow definition:
 1. Ensure you have a npm build script, or customize the way you build in the automation code.
 1. Ensure you have a npm test script which returns zero for success, and/or change the test commands.
 
-> Note: The provision step is expected to run separately by hand or by workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and upload `.fx/default.userdata` into Azure DevOps [secure files](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/secure-files?view=azure-devops) for future usage.
+> Note: The provision step is not included in the CD template as it's usually executed only once. You can either execute provision Within Teams Toolkit, TeamsFx CLI, or using a seperated workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and upload `.fx/default.userdata` into Azure DevOps [secure files](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/secure-files?view=azure-devops) for future usage.
 
 ### Environment Variables
 Steps to create Pipeline variables in Azure DevOps:
@@ -164,7 +172,7 @@ To check how to connect Jenkins with different SCM platforms:
 ### Customize CI Pipeline
 There are some potential changes you can make to adapt your project:
 
-1. Rename the template file to `Jenkinsfile` since it's a common practise, and put it under the target branch, for example, the `dev` branch.
+1. Rename the template file to `Jenkinsfile` since it's a common practice, and put it under the target branch, for example, the `dev` branch.
 1. Change how the CI flow is triggered. We default to use the triggers of `pollSCM` when a new change is pushed into the `dev` branch.
 1. Ensure you have a npm build script, or customize the way you build in the automation code.
 1. Ensure you have a npm test script which returns zero for success, and/or change the test commands.
@@ -177,7 +185,7 @@ You may want to change:
 1. Change the build scripts if necessary.
 1. Remove the test scripts if you don't have tests.
 
-> Note: The provision step is expected to run separately by hand or by pipeline. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save the file content of `default.userdata` into Jenkins credentials to generate file `default.userdata`.
+> Note: The provision step is not included in the CD template as it's usually executed only once. You can either execute provision Within Teams Toolkit, TeamsFx CLI, or using a seperated workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save the file content of `default.userdata` into Jenkins credentials to generate file `default.userdata`.
 
 ### Environment Variables
 Please follow [using-credentials](https://www.jenkins.io/doc/book/using/using-credentials/) to create credentials on Jenkins.
@@ -193,7 +201,7 @@ Please follow [using-credentials](https://www.jenkins.io/doc/book/using/using-cr
 |M365_TENANT_ID|To identify the tenant in which the Teams App will be created/published. This value is optional unless you have a multi-tenant account and you want to use another tenant. Read more on [how to find your M365 tenant ID](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-how-to-find-tenant).|
 > Note: Please refer to the [Configure M365/Azure Credentials](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md#configure-m365azure-credentials-as-github-secret) to make sure you have disabled Multi-factor Authentication and Security Defaults for the credentials used in the pipeline.
 
-## Getting started guide for other platforms
+## Setup CI/CD Pipelines with other platforms
 You can follow the pre-defined example bash scripts to build and customize CI/CD pipelines on other platforms:
 * [CI Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-ci-template.sh)
 * [CD Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd/others-script-cd-template.sh)

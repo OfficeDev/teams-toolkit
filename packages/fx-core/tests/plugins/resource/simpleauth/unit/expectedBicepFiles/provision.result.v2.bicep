@@ -3,7 +3,7 @@ module simpleAuthProvision './simpleAuthProvision.result.v2.bicep' = {
   name: 'simpleAuthProvision'
   params: {
     provisionParameters: provisionParameters
-    userAssignedIdentityId: userAssignedIdentityProvision.outputs.identityResourceId
+    userAssignedIdentityId: 
   }
 }
 

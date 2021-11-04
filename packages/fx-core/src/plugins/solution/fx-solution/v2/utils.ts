@@ -27,8 +27,10 @@ import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   HostTypeOptionAzure,
+  HostTypeOptionSPFx,
   MessageExtensionItem,
   TabOptionItem,
+  TabSPFxItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
 
@@ -196,8 +198,13 @@ export function fillInSolutionSettings(
     );
   }
   let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
-  if (capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id))
+  if (
+    capabilities.includes(BotOptionItem.id) ||
+    capabilities.includes(MessageExtensionItem.id) ||
+    capabilities.includes(TabOptionItem.id)
+  )
     hostType = HostTypeOptionAzure.id;
+  if (capabilities.includes(TabSPFxItem.id)) hostType = HostTypeOptionSPFx.id;
   if (!hostType) {
     return err(
       returnSystemError(

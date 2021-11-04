@@ -1,4 +1,4 @@
 {
-  "azureSql_admin": "{{state.fx-resource-azure-sql.admin}}",
-  "azureSql_adminPassword": "{{state.fx-resource-azure-sql.adminPassword}}"
+  "azureSqlAdmin": "{{state.fx-resource-azure-sql.admin}}",
+  "azureSqlAdminPassword": "{{state.fx-resource-azure-sql.adminPassword}}"
 }

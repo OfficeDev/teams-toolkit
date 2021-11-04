@@ -103,18 +103,18 @@ class EnvConfigName {
   static readonly Endpoint = "endpoint";
 }
 
-class ArmParameters {
-  static readonly FEStorageName = "frontendHosting_storageName";
-  static readonly IdentityName = "identity_managedIdentityName";
-  static readonly SQLServer = "azureSql_serverName";
-  static readonly SQLDatabase = "azureSql_databaseName";
-  static readonly SimpleAuthSku = "simpleAuth_sku";
-  static readonly functionServerName = "function_serverfarmsName";
-  static readonly functionStorageName = "function_storageName";
-  static readonly functionAppName = "function_webappName";
-  static readonly botWebAppSku = "bot_webAppSKU";
-  static readonly SimpleAuthWebAppName = "simpleAuth_webAppName";
-  static readonly SimpleAuthServerFarm = "simpleAuth_serverFarmsName";
+export class ArmParameters {
+  static readonly FEStorageName = "frontendHostingStorageName";
+  static readonly IdentityName = "userAssignedIdentityName";
+  static readonly SQLServer = "azureSqlServerName";
+  static readonly SQLDatabase = "azureSqlDatabaseName";
+  static readonly SimpleAuthSku = "simpleAuthSku";
+  static readonly functionServerName = "functionServerfarmsName";
+  static readonly functionStorageName = "functionStorageName";
+  static readonly functionAppName = "functionWebappName";
+  static readonly botWebAppSku = "botWebAppSKU";
+  static readonly SimpleAuthWebAppName = "simpleAuthWebAppName";
+  static readonly SimpleAuthServerFarm = "simpleAuthServerFarmsName";
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {

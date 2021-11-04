@@ -10,7 +10,7 @@ export interface InnerLoopPlugin {
   runtimeStacks: RuntimeStacks[];
   languages: string[];
   scaffoldSourceCode: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
-  build: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+  // build: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
   provisionLocalResource?: (
     ctx: Context,
     inputs: Inputs,

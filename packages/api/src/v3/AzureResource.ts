@@ -34,6 +34,12 @@ export interface AzureResource extends Json {
   endpoint?: string;
   skuName?: string;
   secretFields?: string[];
+
+  //some resource can have customized resource group
+  resourceGroupName?: string;
+  subscriptionId?: string;
+  tenantId?: string;
+  location?: string;
 }
 
 export interface AzureManagedIdentity extends AzureResource {
@@ -97,7 +103,7 @@ export interface TeamsAppResource {
 /**
  * defines: provision instance values for all resources
  */
-export interface TeamsAppResourceSettings {
+export interface TeamsAppResourceProfile {
   solution: AzureCommonConfig;
   tab: {
     hosting: AzureResource;
@@ -113,7 +119,7 @@ export interface TeamsAppResourceSettings {
   teamsApp: TeamsAppResource;
 }
 
-const resourceSettings: TeamsAppResourceSettings = {
+const resourceSettings: TeamsAppResourceProfile = {
   solution: {
     resourceNameSuffix: "595516",
     resourceGroupName: "fullcap-dev-rg",

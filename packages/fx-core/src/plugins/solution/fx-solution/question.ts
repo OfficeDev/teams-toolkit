@@ -99,6 +99,9 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
     validation: {
       validFunc: async (input: string[]): Promise<string | undefined> => {
         const name = input as string[];
+        if (name.length === 0) {
+          return "Select at at least 1 capability";
+        }
         if (
           name.length > 1 &&
           (name.includes(TabSPFxItem.id) || name.includes(TabSPFxItem.label))

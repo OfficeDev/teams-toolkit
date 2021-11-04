@@ -29,6 +29,7 @@ import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { StringContext } from "./utils/stringContext";
 import { registerEnvTreeHandler } from "./envTree";
+import { TreeViewCommand } from "./treeview/commandsTreeViewProvider";
 
 export async function getSubscriptionId(): Promise<string | undefined> {
   const subscriptionInfo = await AzureAccountManager.getSelectedSubscription();
@@ -183,6 +184,11 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   };
 
   const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
+    if (args && args.length > 1) {
+      const command: TreeViewCommand = args[1];
+      if (command && command.contextValue === "signedinM365") return ok(null);
+    }
+
     tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginClick, {
       [TelemetryProperty.TriggerFrom]:
         args && args.length > 0 ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
@@ -208,6 +214,11 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   };
 
   const signinAzureCallback = async (args?: any[]): Promise<Result<null, FxError>> => {
+    if (args && args.length > 1) {
+      const command: TreeViewCommand = args[1];
+      if (command && command.contextValue === "signedinAzure") return ok(null);
+    }
+
     if (AzureAccountManager.getAccountInfo() === undefined) {
       tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginClick, {
         [TelemetryProperty.TriggerFrom]:
@@ -329,6 +340,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           ]);
           const subItem = await getSelectSubItem!(token);
           tools.treeProvider?.add([subItem[0]]);
+          await registerEnvTreeHandler();
         }
       } else if (status === "SigningIn") {
         tools.treeProvider?.refresh([

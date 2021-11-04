@@ -221,6 +221,14 @@ export function replaceTemplateWithUserData(
   userData: Record<string, string>
 ): string {
   const view = convertDotenvToEmbeddedJson(userData);
+  Mustache.escape = (t: string) => {
+    if (!t) {
+      return t;
+    }
+    const str = JSON.stringify(t);
+    return str.substr(1, str.length - 2);
+    // return t;
+  };
   const result = Mustache.render(template, view);
   return result;
 }

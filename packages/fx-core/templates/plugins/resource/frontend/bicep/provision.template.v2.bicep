@@ -6,7 +6,7 @@ module frontendHostingProvision '{{PluginOutput.fx-resource-frontend-hosting.Mod
 }
 
 output frontendHostingOutput object = {
-  teamsFxPluginId: 'fx-resource-frontend'
+  teamsFxPluginId: 'fx-resource-frontend-hosting'
   domain: frontendHostingProvision.outputs.domain
   endpoint: frontendHostingProvision.outputs.endpoint
   resourceId: frontendHostingProvision.outputs.resourceId

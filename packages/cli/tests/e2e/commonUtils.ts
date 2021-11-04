@@ -19,7 +19,12 @@ import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
 import { sleep } from "../../src/utils";
 import * as dotenv from "dotenv";
-import { cfg, AadManager, ResourceGroupManager, SharepointValidator as SharepointManager } from "../commonlib";
+import {
+  cfg,
+  AadManager,
+  ResourceGroupManager,
+  SharepointValidator as SharepointManager,
+} from "../commonlib";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
 export const execAsync = promisify(exec);

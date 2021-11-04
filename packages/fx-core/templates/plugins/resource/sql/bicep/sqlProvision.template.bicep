@@ -3,8 +3,8 @@ param provisionParameters object
 var resourceBaseName = provisionParameters.resourceBaseName
 var sqlServerName = contains(provisionParameters, 'sqlServerName') ? provisionParameters['sqlServerName'] : '${resourceBaseName}-sql-server'
 var sqlDatabaseName = contains(provisionParameters, 'sqlDatabaseName') ? provisionParameters['sqlDatabaseName'] : '${resourceBaseName}-database'
-var administratorLogin = contains(provisionParameters, 'administratorLogin') ? provisionParameters['administratorLogin'] : ''
-var administratorLoginPassword = contains(provisionParameters, 'administratorLoginPassword') ? provisionParameters['administratorLoginPassword'] : ''
+var administratorLogin = contains(provisionParameters, 'azureSqlAdmin') ? provisionParameters['azureSqlAdmin'] : ''
+var administratorLoginPassword = contains(provisionParameters, 'azureSqlAdminPassword') ? provisionParameters['azureSqlAdminPassword'] : ''
 
 resource sqlServer 'Microsoft.Sql/servers@2021-02-01-preview' = {
   location: resourceGroup().location

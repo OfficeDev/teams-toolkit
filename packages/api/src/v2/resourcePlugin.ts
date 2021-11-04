@@ -245,4 +245,13 @@ export interface ResourcePlugin {
     envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
+
+  /**
+   * For grant and check permission in remote collaboration
+   */
+  grantPermission?: (ctx: Context, userInfo: Json) => Promise<Result<Json, FxError>>;
+
+  checkPermission?: (ctx: Context, userInfo: Json) => Promise<Result<Json, FxError>>;
+
+  listCollaborator?: (ctx: Context, userInfo: Json) => Promise<Result<Json, FxError>>;
 }

@@ -167,6 +167,12 @@ export interface SolutionPlugin {
     tokenProvider: TokenProvider
   ) => Promise<Result<any, FxError>>;
 
+  listAllCollaborators?: (
+    ctx: Context,
+    inputs: Inputs,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<any, FxError>>;
+
   //legacy API for compatibility reason
   getQuestions?: (
     ctx: Context,

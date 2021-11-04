@@ -1,19 +1,11 @@
-param apimServiceName string
-param productName string
-param publisherEmail string
-param publisherName string
-param oauthServerName string
-param clientId string
 @secure()
-param clientSecret string
-param m365TenantId string
-param m365ApplicationIdUri string
-param m365OauthAuthorityHost string
+param provisionParameters object
 
-var scope = '${m365ApplicationIdUri}/.default'
-var authorizationEndpoint = uri(m365OauthAuthorityHost, '${m365TenantId}/oauth2/v2.0/authorize')
-var tokenEndpoint = uri(m365OauthAuthorityHost, '${m365TenantId}/oauth2/v2.0/token')
-
+var resourceBaseName = provisionParameters['resourceBaseName']
+var apimServiceName = contains(provisionParameters, 'apimServiceName') ? provisionParameters['apimServiceName'] : '${resourceBaseName}'
+var productName = contains(provisionParameters, 'apimProductName') ? provisionParameters['apimProductName'] : '${resourceBaseName}'
+var publisherEmail = provisionParameters['apimPublisherEmail']
+var publisherName = provisionParameters['apimPublisherName']
 
 resource apimService 'Microsoft.ApiManagement/service@2020-12-01' = {
   name: apimServiceName
@@ -39,34 +31,5 @@ resource apimServiceProduct 'Microsoft.ApiManagement/service/products@2020-12-01
   }
 }
 
-resource apimServiceAuthServer 'Microsoft.ApiManagement/service/authorizationServers@2020-12-01' = {
-  parent: apimService
-  name: oauthServerName
-  properties: {
-    displayName: oauthServerName
-    description: 'Created by TeamsFx.'
-    clientRegistrationEndpoint: 'http://localhost'
-    authorizationEndpoint: authorizationEndpoint
-    authorizationMethods: [
-      'GET'
-      'POST'
-    ]
-    clientAuthenticationMethod: [
-      'Body'
-    ]
-    tokenEndpoint: tokenEndpoint
-    defaultScope: scope
-    grantTypes: [
-      'authorizationCode'
-    ]
-    bearerTokenSendingMethods: [
-      'authorizationHeader'
-    ]
-    clientId: clientId
-    clientSecret: clientSecret
-  }
-}
-
 output serviceResourceId string = apimService.id
 output productResourceId string = apimServiceProduct.id
-output authServerResourceId string = apimServiceAuthServer.id

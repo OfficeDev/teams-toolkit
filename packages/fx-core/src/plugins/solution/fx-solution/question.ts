@@ -40,7 +40,7 @@ export const MessageExtensionItem: OptionItem = {
 
 export const TabSPFxItem: OptionItem = {
   id: "TabSPFx",
-  label: "Tab SPFx",
+  label: "Tab(SPFx)",
   cliName: "tab-spfx",
   description: "UI-base app with SPFx framework",
   detail: "Teams-aware webpages with SPFx framework embedded in Microsoft Teams",
@@ -96,7 +96,19 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
     staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
     default: [TabOptionItem.id],
     placeholder: "Select at least 1 capability",
-    validation: { minItems: 1 },
+    validation: {
+      validFunc: async (input: string[]): Promise<string | undefined> => {
+        const name = input as string[];
+        if (
+          name.length > 1 &&
+          (name.includes(TabSPFxItem.id) || name.includes(TabSPFxItem.label))
+        ) {
+          return "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Message Extension capabilities are not available";
+        }
+
+        return undefined;
+      },
+    },
     onDidChangeSelection: async function (
       currentSelectedIds: Set<string>,
       previousSelectedIds: Set<string>

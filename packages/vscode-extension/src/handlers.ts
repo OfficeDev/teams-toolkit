@@ -917,7 +917,7 @@ async function showLocalDebugMessage() {
         TreatmentVariables.VSCodeConfig,
         TreatmentVariables.ShowLocalDebug,
         true
-      ) || true
+      )
   ) {
     const localDebug = {
       title: StringResources.vsc.handlers.localDebugTitle,

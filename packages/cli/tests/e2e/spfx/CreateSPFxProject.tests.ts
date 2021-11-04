@@ -103,6 +103,7 @@ describe("Start a new project", function () {
       const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
       const sharepointPackage = `${projectPath}/SPFx/sharepoint/${solutionConfig.paths.zippedPackage}`;
       appId = solutionConfig["solution"]["id"];
+      chai.assert.isNotEmpty(appId);
       expect(await fs.pathExists(sharepointPackage)).to.be.true;
 
       // Check if package exsist in App Catalog

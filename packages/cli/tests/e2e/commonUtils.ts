@@ -133,11 +133,16 @@ export async function setBotSkuNameToB1(projectPath: string) {
 }
 
 export async function cleanupSharePointPackage(appId: string) {
-  try {
-    await SharepointManager.deleteApp(appId);
-    console.log(`[Successfully] clean up sharepoint package ${appId}`);
-  } catch (error) {
-    console.log(`[Failed] clean up sharepoint package ${appId}, Error: ${error.message}`);
+  if (appId) {
+    try {
+      SharepointManager.init();
+      await SharepointManager.deleteApp(appId);
+      console.log(`[Successfully] clean up sharepoint package ${appId}`);
+    } catch (error) {
+      console.log(`[Failed] clean up sharepoint package ${appId}, Error: ${error.message}`);
+    }
+  } else {
+    console.log(`[Failed] sharepoint appId is undefined, will not clean up this resource.`);
   }
 }
 

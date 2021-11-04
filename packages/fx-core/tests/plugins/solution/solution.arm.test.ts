@@ -194,7 +194,7 @@ module teamsFxConfig './config.bicep' = {
 }
 
 output provisionOutput object = provision
-output teamsFxConfigurationOutput object = teamsFxConfig
+output teamsFxConfigurationOutput object = contains(reference(resourceId('Microsoft.Resources/deployments', teamsFxConfig.name), '2020-06-01'), 'outputs') ? teamsFxConfig : {}
 `
     );
     expect(
@@ -218,9 +218,7 @@ output teamsFxConfigurationOutput object = teamsFxConfig
   "parameters": {
     "provisionParameters": {
       "value": {
-        "resourceBaseName": {
-          "value": "mytestappdefa000000"
-        },
+        "resourceBaseName": "mytestappdefa000000",
         "FrontendParameter": "FrontendParameterValue",
         "SimpleAuthParameter": "SimpleAuthParameterValue"
       }

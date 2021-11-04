@@ -1,5 +1,6 @@
+@secure()
 param provisionParameters object
-
+param userAssignedIdentityId string
 var resourceBaseName = provisionParameters.resourceBaseName
 var sku = contains(provisionParameters, 'simpleAuthSku') ? provisionParameters['simpleAuthSku'] : 'F1'
 var serverFarmsName = contains(provisionParameters, 'simpleAuthServerFarmsName') ? provisionParameters['simpleAuthServerFarmsName'] : '${resourceBaseName}-simpleAuth-serverfarms'
@@ -21,6 +22,12 @@ resource webApp 'Microsoft.Web/sites@2020-06-01' = {
   location: resourceGroup().location
   properties: {
     serverFarmId: serverFarms.id
+  }
+  identity: {
+    type: 'UserAssigned'
+    userAssignedIdentities: {
+      '${userAssignedIdentityId}': {}
+    }
   }
 }
 

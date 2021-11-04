@@ -3,7 +3,7 @@ module functionProvision '{{PluginOutput.fx-resource-function.Modules.functionCo
   name: 'functionProvision'
   params: {
     provisionParameters: provisionParameters
-    userAssignedIdentityId: userAssignedIdentityProvision.outputs.resourceId
+    userAssignedIdentityId: {{PluginOutput.fx-resource-identity.References.identityResourceId}}
   }
 }
 

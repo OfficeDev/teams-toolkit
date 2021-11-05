@@ -210,7 +210,9 @@ export function AssertConfigNotEmpty(
       EmptyConfigValue,
       component,
       name,
-      isArmSupportEnabled() ? `state.${envName}.json` : ProjectConstants.configFilePath,
+      isArmSupportEnabled()
+        ? ProjectConstants.configFilePathArmSupported(envName)
+        : ProjectConstants.configFilePath,
       ConfigRetryOperations[component][name]
     );
   }

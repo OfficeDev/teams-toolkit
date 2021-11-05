@@ -204,7 +204,7 @@ export class TeamsBotImpl {
           ConstantString.UTF8Encoding
         ),
         Modules: {
-          botProvision: await fs.readFile(
+          bot: await fs.readFile(
             path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateV2FileName),
             ConstantString.UTF8Encoding
           ),
@@ -221,7 +221,7 @@ export class TeamsBotImpl {
           ConstantString.UTF8Encoding
         ),
         Modules: {
-          botConfiguration: await fs.readFile(
+          bot: await fs.readFile(
             path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateV2FileName),
             ConstantString.UTF8Encoding
           ),

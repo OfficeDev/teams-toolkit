@@ -687,10 +687,7 @@ export class FunctionPluginImpl {
       Provision: {
         Orchestration: await fs.readFile(provisionTemplateFilePath, ConstantString.UTF8Encoding),
         Modules: {
-          functionProvision: await fs.readFile(
-            provisionFuncTemplateFilePath,
-            ConstantString.UTF8Encoding
-          ),
+          function: await fs.readFile(provisionFuncTemplateFilePath, ConstantString.UTF8Encoding),
         },
         Reference: {
           functionAppResourceId: FunctionBicep.functionAppResourceId,
@@ -700,10 +697,7 @@ export class FunctionPluginImpl {
       Configuration: {
         Orchestration: await fs.readFile(configTemplateFilePath, ConstantString.UTF8Encoding),
         Modules: {
-          functionConfiguration: await fs.readFile(
-            configFuncTemplateFilePath,
-            ConstantString.UTF8Encoding
-          ),
+          function: await fs.readFile(configFuncTemplateFilePath, ConstantString.UTF8Encoding),
         },
       },
     };

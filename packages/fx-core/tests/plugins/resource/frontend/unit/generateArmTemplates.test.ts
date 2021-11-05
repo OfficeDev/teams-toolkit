@@ -42,8 +42,8 @@ describe("FrontendGenerateArmTemplates", () => {
       Plugins: activeResourcePlugins,
       PluginOutput: {
         "fx-resource-frontend-hosting": {
-          Modules: {
-            frontendHostingProvision: {
+          Provision: {
+            frontendHosting: {
               ProvisionPath: `./${testModuleFileName}`,
             },
           },
@@ -60,10 +60,7 @@ describe("FrontendGenerateArmTemplates", () => {
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
       const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
       const moduleFile = await fs.readFile(expectedModuleFilePath, ConstantString.UTF8Encoding);
-      chai.assert.strictEqual(
-        expectedResult.Provision!.Modules!.frontendHostingProvision,
-        moduleFile
-      );
+      chai.assert.strictEqual(expectedResult.Provision!.Modules!.frontendHosting, moduleFile);
       const expectedModuleSnippetFilePath = path.join(
         expectedBicepFileDirectory,
         "provision.result.v2.bicep"

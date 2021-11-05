@@ -272,7 +272,7 @@ export class ApimManager {
           serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
         },
         Modules: {
-          apimProvision: await fs.readFile(
+          apim: await fs.readFile(
             path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleFileName),
             ConstantString.UTF8Encoding
           ),
@@ -284,7 +284,7 @@ export class ApimManager {
           ConstantString.UTF8Encoding
         ),
         Modules: {
-          apimConfiguration: await fs.readFile(
+          apim: await fs.readFile(
             path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
             ConstantString.UTF8Encoding
           ),

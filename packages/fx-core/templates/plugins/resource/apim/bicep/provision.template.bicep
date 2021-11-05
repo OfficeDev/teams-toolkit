@@ -1,5 +1,5 @@
 // Resources for APIM
-module apimProvision '{{PluginOutput.fx-resource-apim.Modules.apimProvision.ProvisionPath}}'  = {
+module apimProvision '{{PluginOutput.fx-resource-apim.Provision.apim.ProvisionPath}}'  = {
   name: 'apimProvision'
   params: {
     provisionParameters: provisionParameters

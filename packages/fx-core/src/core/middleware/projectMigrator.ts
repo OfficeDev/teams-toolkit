@@ -18,7 +18,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   CoreHookContext,
-  deserializeDict,
   serializeDict,
   SolutionConfigError,
   ProjectSettingError,
@@ -52,7 +51,11 @@ import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
-import { MANIFEST_LOCAL, MANIFEST_TEMPLATE } from "../../plugins/resource/appstudio/constants";
+import {
+  MANIFEST_LOCAL,
+  MANIFEST_TEMPLATE,
+  REMOTE_MANIFEST,
+} from "../../plugins/resource/appstudio/constants";
 import {
   Component,
   ProjectMigratorGuideStatus,
@@ -61,7 +64,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../common/telemetry";
-import * as util from "util";
+import * as dotenv from "dotenv";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 
@@ -229,7 +232,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       throw ProjectSettingError();
     }
     const projectSettings = loadRes.value;
-    if (!isSPFxProject(projectSettings)) {
+    if (!isSPFxProject(projectSettings) && !projectSettings?.solutionSettings?.migrateFromV1) {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArmStart);
       await migrateArm(ctx);
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
@@ -292,8 +295,7 @@ async function postMigration(
     });
 }
 
-async function generateRemoteTemplate(targetManifestFile: string) {
-  let manifestString = (await fs.readFile(targetManifestFile)).toString();
+async function generateRemoteTemplate(manifestString: string) {
   manifestString = manifestString.replace(new RegExp("{version}", "g"), "1.0.0");
   manifestString = manifestString.replace(
     new RegExp("{baseUrl}", "g"),
@@ -318,34 +320,63 @@ async function generateRemoteTemplate(targetManifestFile: string) {
   return manifest;
 }
 
+async function generateLocalTemplate(manifestString: string) {
+  manifestString = manifestString.replace(new RegExp("{version}", "g"), "1.0.0");
+  manifestString = manifestString.replace(
+    new RegExp("{baseUrl}", "g"),
+    "{{{localSettings.frontend.tabEndpoint}}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{appClientId}", "g"),
+    "{{localSettings.auth.clientId}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{webApplicationInfoResource}", "g"),
+    "{{{localSettings.auth.applicationIdUris}}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{botId}", "g"),
+    "{{localSettings.bot.botId}}"
+  );
+  const manifest: TeamsAppManifest = JSON.parse(manifestString);
+  manifest.name.full =
+    (manifest.name.full ? manifest.name.full : manifest.name.short) + "-local-debug";
+  manifest.name.short = manifest.name.short.substr(0, 18) + "-local-debug";
+  manifest.id = "{{localSettings.teamsApp.teamsAppId}}";
+  return manifest;
+}
+
 async function migrateMultiEnv(projectPath: string): Promise<void> {
   const { fx, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   const {
     hasFrontend,
     hasBackend,
-    hasBotPlugin,
+    hasBot,
     hasBotCapability,
     hasMessageExtensionCapability,
     isSPFx,
     hasProvision,
+    migrateFromV1,
   } = await queryProjectStatus(fx);
 
   //localSettings.json
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
   await localSettingsProvider.save(
-    localSettingsProvider.init(hasFrontend, hasBackend, hasBotPlugin)
+    localSettingsProvider.init(hasFrontend, hasBackend, hasBot, migrateFromV1)
   );
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
   await fs.copy(path.join(fx, "settings.json"), projectSettings);
   await ensureProjectSettings(projectSettings, path.join(fx, "env.default.json"));
 
-  //config.dev.json
   const appName = await getAppName(projectSettings);
-  await fs.writeFile(
-    path.join(fxConfig, "config.dev.json"),
-    JSON.stringify(getConfigDevJson(appName), null, 4)
-  );
+  if (!migrateFromV1) {
+    //config.dev.json
+    await fs.writeFile(
+      path.join(fxConfig, "config.dev.json"),
+      JSON.stringify(getConfigDevJson(appName), null, 4)
+    );
+  }
 
   // appPackage
   if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
@@ -354,25 +385,31 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     // version <= 2.4.1
     await fs.copy(path.join(fx, AppPackageFolderName), templateAppPackage);
   }
-  const targetManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
-  await fs.rename(path.join(templateAppPackage, "manifest.source.json"), targetManifestFile);
-
+  const sourceManifestFile = path.join(templateAppPackage, REMOTE_MANIFEST);
+  const manifest: TeamsAppManifest = await readJson(sourceManifestFile);
+  await fs.remove(sourceManifestFile);
+  await moveIconsToResourceFolder(templateAppPackage, manifest);
   // generate manifest.remote.template.json
-  const manifest = await generateRemoteTemplate(targetManifestFile);
-  await fs.writeFile(targetManifestFile, JSON.stringify(manifest, null, 4));
-  await moveIconsToResourceFolder(templateAppPackage);
+  if (!migrateFromV1) {
+    const targetRemoteManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
+    const remoteManifest = await generateRemoteTemplate(JSON.stringify(manifest));
+    await fs.writeFile(targetRemoteManifestFile, JSON.stringify(remoteManifest, null, 4));
+  }
 
   // generate manifest.local.template.json
-  const localManifest: TeamsAppManifest = await createLocalManifest(
-    appName,
-    hasFrontend,
-    hasBotCapability,
-    hasMessageExtensionCapability,
-    isSPFx,
-    false
-  );
-  const localManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
-  await fs.writeFile(localManifestFile, JSON.stringify(localManifest, null, 4));
+  // TODO: use generateLocalTemplate instead of create
+  const localManifest: TeamsAppManifest = migrateFromV1
+    ? await generateLocalTemplate(JSON.stringify(manifest))
+    : await createLocalManifest(
+        appName,
+        hasFrontend,
+        hasBotCapability,
+        hasMessageExtensionCapability,
+        isSPFx,
+        false
+      );
+  const targetLocalManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
+  await fs.writeFile(targetLocalManifestFile, JSON.stringify(localManifest, null, 4));
 
   if (isSPFx) {
     const replaceMap: Map<string, string> = new Map();
@@ -382,8 +419,8 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     }
     const solutionConfig = await fs.readJson(packageSolutionFile);
     replaceMap.set(PlaceHolders.componentId, solutionConfig.solution.id);
-    replaceMap.set(PlaceHolders.componentNameUnescaped, manifest.packageName!);
-    await SPFxUtils.configure(localManifestFile, replaceMap);
+    replaceMap.set(PlaceHolders.componentNameUnescaped, localManifest.packageName!);
+    await SPFxUtils.configure(targetLocalManifestFile, replaceMap);
   }
 
   if (hasProvision) {
@@ -397,11 +434,11 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   }
 }
 
-async function moveIconsToResourceFolder(templateAppPackage: string): Promise<void> {
+async function moveIconsToResourceFolder(
+  templateAppPackage: string,
+  manifest: TeamsAppManifest
+): Promise<void> {
   // see AppStudioPluginImpl.buildTeamsAppPackage()
-  const manifest: TeamsAppManifest = await readJson(
-    path.join(templateAppPackage, MANIFEST_TEMPLATE)
-  );
   const hasColorIcon = manifest.icons.color && !manifest.icons.color.startsWith("https://");
   const hasOutlineIcon = manifest.icons.outline && !manifest.icons.outline.startsWith("https://");
   if (!hasColorIcon || !hasOutlineIcon) {
@@ -422,16 +459,12 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
     manifest.icons.outline = `resources/${manifest.icons.outline}`;
   }
 
-  // update icons
-  await fs.writeFile(
-    path.join(templateAppPackage, MANIFEST_TEMPLATE),
-    JSON.stringify(manifest, null, 4)
-  );
+  return;
 }
 
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
   const stateData = await readJson(devState);
-  const secrets: Record<string, string> = deserializeDict(await fs.readFile(devUserData, "UTF-8"));
+  const secrets: Record<string, string> = dotenv.parse(await fs.readFile(devUserData, "UTF-8"));
 
   stateData[PluginNames.APPST]["teamsAppId"] = stateData[PluginNames.SOLUTION]["remoteTeamsAppId"];
 
@@ -496,6 +529,7 @@ async function queryProjectStatus(fx: string): Promise<any> {
   );
   const isSPFx = plugins?.some((plugin) => plugin.name === PluginNames.SPFX);
   const hasProvision = envDefaultJson.solution?.provisionSucceeded as boolean;
+  const migrateFromV1 = !!solutionSettings.migrateFromV1;
   return {
     hasFrontend,
     hasBackend,
@@ -504,6 +538,7 @@ async function queryProjectStatus(fx: string): Promise<any> {
     hasMessageExtensionCapability,
     isSPFx,
     hasProvision,
+    migrateFromV1,
   };
 }
 
@@ -573,8 +608,10 @@ async function ensureProjectSettings(
   const settings: ProjectSettings = await readJson(projectSettingPath);
   if (!settings.programmingLanguage || !settings.defaultFunctionName) {
     const envDefault = await readJson(envDefaultPath);
-    settings.programmingLanguage = envDefault[PluginNames.SOLUTION][programmingLanguage];
-    settings.defaultFunctionName = envDefault[PluginNames.FUNC]?.[defaultFunctionName];
+    settings.programmingLanguage =
+      settings.programmingLanguage || envDefault[PluginNames.SOLUTION]?.[programmingLanguage];
+    settings.defaultFunctionName =
+      settings.defaultFunctionName || envDefault[PluginNames.FUNC]?.[defaultFunctionName];
   }
   if (!settings.version) {
     settings.version = "1.0.0";

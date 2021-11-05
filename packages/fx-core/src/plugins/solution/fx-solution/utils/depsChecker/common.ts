@@ -25,13 +25,17 @@ export function isLinux(): boolean {
 
 // help links
 export const defaultHelpLink = "https://aka.ms/teamsfx-envchecker-help";
+export const bicepHelpLink = `${defaultHelpLink}#how-to-install-bicep-cli`;
 
 export const Messages = {
   learnMoreButtonText: "Learn more",
 
   downloadBicep: `Downloading and installing the portable version of @NameVersion, which will be installed to @InstallDir and will not affect your environment.`,
   finishInstallBicep: `Successfully installed @NameVersion.`,
-  failToInstallBicep: `Failed to install @NameVersion. Install @NameVersion manually and restart Visual Studio Code.`,
+  failToInstallBicep: `Failed to install @NameVersion`,
+  failToInstallBicepOutputVSC: `Failed to install @NameVersion. please read this wiki(@HelpLink) to install @NameVersion manually and restart Visual Studio Code.`,
+  failToInstallBicepOutputCLI: `Failed to install @NameVersion. please read this wiki(@HelpLink) to install @NameVersion manually.`,
+  failToInstallBicepDialog: `Failed to install @NameVersion. please click Learn More to install @NameVersion manually and restart Visual Studio Code.`,
 };
 
 export enum DepsCheckerEvent {

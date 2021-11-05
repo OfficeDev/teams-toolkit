@@ -200,8 +200,17 @@ export async function askResourceGroupInfo(
   defaultResourceGroupName: string
 ): Promise<Result<ResourceGroupInfo, FxError>> {
   if (!isMultiEnvEnabled()) {
+    let exists = false;
+    try {
+      const checkRes = await rmClient.resourceGroups.checkExistence(defaultResourceGroupName);
+      exists = !!checkRes.body;
+    } catch (error) {
+      ctx.logProvider?.warning(
+        `Failed to check resource group existence ${defaultResourceGroupName}, assume non-existent, error '${error}'`
+      );
+    }
     return ok({
-      createNewResourceGroup: true,
+      createNewResourceGroup: !exists,
       name: defaultResourceGroupName,
       location: DefaultResourceGroupLocation,
     });
@@ -420,7 +429,7 @@ async function askCommonQuestions(
   //   4. asking user with a popup
   const resourceGroupNameFromEnvConfig = ctx.envInfo.config.azure?.resourceGroupName;
   const resourceGroupNameFromState = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(RESOURCE_GROUP_NAME);
-  const resourceGroupLocationFromProfile = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(LOCATION);
+  const resourceGroupLocationFromState = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(LOCATION);
   const defaultResourceGroupName = `${appName.replace(" ", "_")}${
     isMultiEnvEnabled() ? "-" + ctx.envInfo.envName : ""
   }-rg`;
@@ -471,39 +480,20 @@ async function askCommonQuestions(
     telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
       CustomizeResourceGroupType.EnvConfig;
     resourceGroupInfo = maybeResourceGroupInfo;
-  } else if (resourceGroupNameFromState && resourceGroupLocationFromProfile) {
-    try {
-      const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromState);
-      if (checkRes.body) {
-        resourceGroupInfo = {
-          createNewResourceGroup: false,
-          name: resourceGroupNameFromState,
-          location: resourceGroupLocationFromProfile,
-        };
-      } else {
-        resourceGroupInfo = {
-          createNewResourceGroup: true,
-          name: resourceGroupNameFromState,
-          location: resourceGroupLocationFromProfile,
-        };
-      }
-
-      telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
-        CustomizeResourceGroupType.EnvState;
-    } catch (e) {
-      let error;
-      const errorMessage = `Failed to check the existence of the resource group '${resourceGroupNameFromState}', error: '${e}'`;
-      if (e instanceof Error) {
-        // reuse the original error object to prevent losing the stack info
-        e.message = errorMessage;
-        error = e;
-      } else {
-        error = new Error(errorMessage);
-      }
-      return err(
-        returnUserError(error, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)
-      );
+  } else if (resourceGroupNameFromState && resourceGroupLocationFromState) {
+    const maybeExist = await checkResourceGroupExistence(rmClient, resourceGroupNameFromState);
+    if (maybeExist.isErr()) {
+      return err(maybeExist.error);
     }
+    const exist = maybeExist.value;
+    resourceGroupInfo = {
+      createNewResourceGroup: !exist,
+      name: resourceGroupNameFromState,
+      location: resourceGroupLocationFromState,
+    };
+
+    telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
+      CustomizeResourceGroupType.EnvState;
   } else if (ctx.answers && ctx.ui) {
     const resourceGroupInfoResult = await askResourceGroupInfo(
       ctx,
@@ -630,10 +620,26 @@ async function createNewResourceGroup(
   rgInfo: ResourceGroupInfo,
   logProvider?: LogProvider
 ): Promise<Result<string, FxError>> {
+  const maybeExist = await checkResourceGroupExistence(rmClient, rgInfo.name);
+  if (maybeExist.isErr()) {
+    return err(maybeExist.error);
+  }
+
+  if (maybeExist.value) {
+    return err(
+      returnUserError(
+        new Error(`Failed to create resource group "${rgInfo.name}": the resource group exists`),
+        SolutionSource,
+        SolutionError.FailedToCreateResourceGroup
+      )
+    );
+  }
+
   let response: ResourceGroupsCreateOrUpdateResponse;
   try {
     response = await rmClient.resourceGroups.createOrUpdate(rgInfo.name, {
       location: rgInfo.location,
+      tags: { "created-by": "teamsfx" },
     });
   } catch (e) {
     let errMsg: string;
@@ -663,4 +669,29 @@ async function createNewResourceGroup(
     `[${PluginDisplayName.Solution}] askCommonQuestions - resource group:'${response.name}' created!`
   );
   return ok(response.name);
+}
+
+async function checkResourceGroupExistence(
+  rmClient: ResourceManagementClient,
+  resourceGroupName: string
+): Promise<Result<boolean, FxError>> {
+  try {
+    const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
+    return ok(!!checkRes.body);
+  } catch (e) {
+    // The `checkExistence()` call returns an error with empty error message in some conditions.
+    // Wrap the error to prevent showing empty error message to the users.
+    let error;
+    const errorMessage = `Failed to check the existence of the resource group '${resourceGroupName}', error: '${e}'`;
+    if (e instanceof Error) {
+      // reuse the original error object to prevent losing the stack info
+      e.message = errorMessage;
+      error = e;
+    } else {
+      error = new Error(errorMessage);
+    }
+    return err(
+      returnUserError(error, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)
+    );
+  }
 }

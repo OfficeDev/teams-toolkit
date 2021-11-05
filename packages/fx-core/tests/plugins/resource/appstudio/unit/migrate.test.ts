@@ -357,4 +357,70 @@ describe("Migrate", () => {
       )
     ).to.be.true;
   });
+
+  it("should use color and outline link", async () => {
+    fileContent.clear();
+    sandbox.stub<any, any>(fs, "readdir").callsFake(async (filePath: fs.PathLike) => {
+      return [V1ManifestFileName];
+    });
+
+    const sourceManifest = JSON.parse(manifestStr.toString());
+    sourceManifest.icons.color = "https://test.com/color.png";
+    sourceManifest.icons.outline = "https://test.com/outline.png";
+
+    fileContent.set(
+      path.normalize(
+        `${ctx.root}/${ArchiveFolderName}/${AppPackageFolderName}/${V1ManifestFileName}`
+      ),
+      JSON.stringify(sourceManifest)
+    );
+
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Tab"],
+        migrateFromV1: true,
+      },
+    };
+
+    const result = await plugin.migrateV1Project(ctx);
+    chai.expect(result.isOk()).equals(true);
+
+    const manifest: TeamsAppManifest = JSON.parse(
+      fileContent.get(
+        path.normalize(
+          isMultiEnvEnabled()
+            ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_LOCAL}`
+            : `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
+        )
+      )
+    );
+    const testTargetManifest = Object.assign({}, targetManifest);
+    testTargetManifest.icons.color = "https://test.com/color.png";
+    testTargetManifest.icons.outline = "https://test.com/outline.png";
+    chai.expect(manifest).to.deep.equal(testTargetManifest);
+
+    chai.expect(
+      fileContent.has(
+        path.normalize(
+          isMultiEnvEnabled()
+            ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${DEFAULT_COLOR_PNG_FILENAME}`
+            : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_COLOR_PNG_FILENAME}`
+        )
+      )
+    ).to.be.false;
+    chai.expect(
+      fileContent.has(
+        path.normalize(
+          isMultiEnvEnabled()
+            ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${DEFAULT_OUTLINE_PNG_FILENAME}`
+            : `${ctx.root}/${AppPackageFolderName}/${DEFAULT_OUTLINE_PNG_FILENAME}`
+        )
+      )
+    ).to.be.false;
+  });
 });

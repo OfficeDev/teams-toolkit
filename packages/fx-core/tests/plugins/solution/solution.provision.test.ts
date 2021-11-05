@@ -83,7 +83,9 @@ import {
   ResourcePlugins,
   ResourcePluginsV2,
 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { AadAppForTeamsPlugin, Executor, isArmSupportEnabled, newEnvInfo } from "../../../src";
+import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
+import { newEnvInfo } from "../../../src/core/tools";
+import { isArmSupportEnabled } from "../../../src/common/tools";
 import Container from "typedi";
 import { askResourceGroupInfo } from "../../../src/plugins/solution/fx-solution/commonQuestions";
 import { ResourceManagementModels } from "@azure/arm-resources";
@@ -99,6 +101,7 @@ import frontend from "../../../src/plugins/resource/frontend";
 import { UnknownObject } from "@azure/core-http/types/latest/src/util/utils";
 import { LocalCrypto } from "../../../src/core/crypto";
 import * as arm from "../../../src/plugins/solution/fx-solution/arm";
+import * as armResources from "@azure/arm-resources";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -593,6 +596,9 @@ describe("Resource group creation failed for provision() in Azure projects", () 
   beforeEach(() => {
     mockAzureProjectDeps(mocker, permissionsJsonPath, mockedManifest, mockedAppDef);
     mocker.stub(ResourceGroups.prototype, "createOrUpdate").throws("some error");
+    mocker.stub(ResourceGroups.prototype, "checkExistence").resolves({
+      body: false,
+    } as armResources.ResourceManagementModels.ResourcesCheckExistenceResponse);
   });
 
   afterEach(() => {
@@ -1018,6 +1024,9 @@ describe("API v2 implementation", () => {
 
     beforeEach(() => {
       mocker.stub(ResourceGroups.prototype, "createOrUpdate").resolves({ name: "my_app-rg" });
+      mocker.stub(ResourceGroups.prototype, "checkExistence").resolves({
+        body: false,
+      } as armResources.ResourceManagementModels.ResourcesCheckExistenceResponse);
     });
     afterEach(() => {
       mocker.restore();

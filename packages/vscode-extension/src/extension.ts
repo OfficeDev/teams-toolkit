@@ -253,6 +253,24 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(viewEnvironmentWithIcon);
 
+  const openSubscriptionInPortal = vscode.commands.registerCommand(
+    "fx-extension.openSubscriptionInPortal",
+    (node) => {
+      const envName = node.commandId.split(".").pop();
+      Correlator.run(handlers.openSubscriptionInPortal, envName);
+    }
+  );
+  context.subscriptions.push(openSubscriptionInPortal);
+
+  const openResourceGroupInPortal = vscode.commands.registerCommand(
+    "fx-extension.openResourceGroupInPortal",
+    (node) => {
+      const envName = node.commandId.split(".").pop();
+      Correlator.run(handlers.openResourceGroupInPortal, envName);
+    }
+  );
+  context.subscriptions.push(openResourceGroupInPortal);
+
   const grantPermission = vscode.commands.registerCommand(
     "fx-extension.grantPermission",
     (node) => {

@@ -282,19 +282,33 @@ function syncArmOutput(ctx: SolutionContext, armOutput: any) {
   // todo: delete this line after solution helps all resource plugin fill in arm output
   ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, armOutput);
 
-  Object.keys(armOutput).forEach((key) => {
-    const output = armOutput[key].value;
-    if (output instanceof Object) {
-      const pluginId = output[TEAMS_FX_RESOURCE_ID_KEY];
-      if (pluginId) {
-        Object.keys(output).forEach((key) => {
-          if (key != TEAMS_FX_RESOURCE_ID_KEY) {
-            ctx.envInfo.state.get(pluginId)?.set(key, output[key]);
+  if (armOutput instanceof Object) {
+    const armOutputKeys = Object.keys(armOutput);
+    for (const armOutputKey of armOutputKeys) {
+      const moduleOutput = armOutput[armOutputKey].value;
+
+      if (moduleOutput instanceof Object) {
+        const moduleOutputKeys = Object.keys(moduleOutput);
+        for (const moduleOutputKey of moduleOutputKeys) {
+          const pluginOutput = moduleOutput[moduleOutputKey].value;
+
+          if (pluginOutput instanceof Object) {
+            const pluginId = pluginOutput[TEAMS_FX_RESOURCE_ID_KEY];
+            if (pluginId) {
+              const pluginOutputKeys = Object.keys(pluginOutput);
+              for (const pluginOutputKey of pluginOutputKeys) {
+                if (pluginOutputKey != TEAMS_FX_RESOURCE_ID_KEY) {
+                  ctx.envInfo.state
+                    .get(pluginId)
+                    ?.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
+                }
+              }
+            }
           }
-        });
+        }
       }
     }
-  });
+  }
 }
 
 export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {

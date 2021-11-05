@@ -31,7 +31,7 @@ import {
   InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 
-import { ConfigNotFoundError, EnvUndefined, InvalidEnvFile, ReadFileError } from "./error";
+import { ConfigNotFoundError, UserdataNotFound, EnvUndefined, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags } from "./constants";
 import {
@@ -257,7 +257,11 @@ export async function readProjectSecrets(
   }
   const secretFile = secretFileResult.value;
   if (!fs.existsSync(secretFile)) {
-    return err(ConfigNotFoundError(secretFile));
+    if (isMultiEnvEnabled()) {
+      return err(new UserdataNotFound(env!));
+    } else {
+      return err(ConfigNotFoundError(secretFile));
+    }
   }
   try {
     const secretData = await fs.readFile(secretFile);
@@ -281,6 +285,11 @@ export function writeSecretToFile(
   for (const secretKey of Object.keys(secrets)) {
     const secretValue = secrets[secretKey];
     array.push(`${secretKey}=${secretValue}`);
+  }
+  if (!fs.existsSync(secretFile)) {
+    if (isMultiEnvEnabled()) {
+      return err(new UserdataNotFound(env!));
+    }
   }
   try {
     fs.writeFileSync(secretFile, array.join("\n"));

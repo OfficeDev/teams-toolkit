@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FxError, returnSystemError, returnUserError } from "@microsoft/teamsfx-api";
+import { isArmSupportEnabled } from "../../../common";
 import { ProjectConstants, ConfigRetryOperations, TeamsToolkitComponent } from "./constants";
 
 enum ErrorType {
@@ -57,8 +58,8 @@ export const InvalidAadObjectId: IApimPluginError = {
 export const EmptyConfigValue: IApimPluginError = {
   type: ErrorType.User,
   code: "EmptyConfigValue",
-  message: (component: string, name: string, retryOperation: string) =>
-    `Project configuration '${name}' of '${component}' is missing in '${ProjectConstants.configFilePath}'. Retry ${retryOperation} or set the value manually.`,
+  message: (component: string, name: string, filePath: string, retryOperation: string) =>
+    `Project configuration '${name}' of '${component}' is missing in '${filePath}'. Retry ${retryOperation} or set the value manually.`,
 };
 
 export const NoPluginConfig: IApimPluginError = {
@@ -198,13 +199,20 @@ export function AssertNotEmpty(name: string, value: any): any {
   return value;
 }
 
-export function AssertConfigNotEmpty<T>(
+export function AssertConfigNotEmpty(
   component: TeamsToolkitComponent,
   name: string,
-  value: string | undefined
+  value: string | undefined,
+  envName: string
 ): string {
   if (!value) {
-    throw BuildError(EmptyConfigValue, component, name, ConfigRetryOperations[component][name]);
+    throw BuildError(
+      EmptyConfigValue,
+      component,
+      name,
+      isArmSupportEnabled() ? `state.${envName}.json` : ProjectConstants.configFilePath,
+      ConfigRetryOperations[component][name]
+    );
   }
 
   return value;

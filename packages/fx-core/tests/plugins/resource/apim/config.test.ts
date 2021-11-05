@@ -37,9 +37,9 @@ describe("config", () => {
       chai
         .expect(() => solutionConfig.teamsAppTenantId)
         .to.throw(
-          `Project configuration 'apiPath' of 'fx-resource-apim' is missing in '${
+          `Project configuration 'teamsAppTenantId' of 'solution' is missing in '${
             isArmSupportEnabled() ? "state.dev.json" : "env.default.json"
-          }'. Retry deploy to the cloud or set the value manually.`
+          }'. Retry provision in the cloud or set the value manually.`
         );
     });
     it("Error type property", () => {

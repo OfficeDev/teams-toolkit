@@ -51,11 +51,13 @@ describe("FunctionGenerateArmTemplates", () => {
       Plugins: activeResourcePlugins,
       PluginOutput: {
         "fx-resource-function": {
-          Modules: {
-            functionProvision: {
+          Provision: {
+            function: {
               ProvisionPath: `./${testProvisionModuleFileName}`,
             },
-            functionConfiguration: {
+          },
+          Configuration: {
+            function: {
               ConfigPath: `./${testConfigurationModuleFileName}`,
             },
           },
@@ -98,7 +100,7 @@ describe("FunctionGenerateArmTemplates", () => {
         testProvisionModuleFileName
       );
       chai.assert.strictEqual(
-        expectedResult.Provision!.Modules!.functionProvision,
+        expectedResult.Provision!.Modules!.function,
         fs.readFileSync(expectedProvisionModuleFilePath, ConstantString.UTF8Encoding)
       );
 
@@ -107,7 +109,7 @@ describe("FunctionGenerateArmTemplates", () => {
         testConfigurationModuleFileName
       );
       chai.assert.strictEqual(
-        expectedResult.Configuration!.Modules!.functionConfiguration,
+        expectedResult.Configuration!.Modules!.function,
         fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
       );
 

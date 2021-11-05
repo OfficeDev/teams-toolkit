@@ -1,4 +1,4 @@
-module frontendHostingProvision '{{PluginOutput.fx-resource-frontend-hosting.Modules.frontendHostingProvision.ProvisionPath}}' = {
+module frontendHostingProvision '{{PluginOutput.fx-resource-frontend-hosting.Provision.frontendHosting.ProvisionPath}}' = {
   name: 'frontendHostingProvision'
   params: {
     provisionParameters: provisionParameters

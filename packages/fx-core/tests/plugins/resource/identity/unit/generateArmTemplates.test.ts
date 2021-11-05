@@ -57,8 +57,8 @@ describe("identityPlugin", () => {
       Plugins: activeResourcePlugins,
       PluginOutput: {
         "fx-resource-identity": {
-          Modules: {
-            identityProvision: {
+          Provision: {
+            identity: {
               ProvisionPath: `./${testModuleFileName}`,
             },
           },
@@ -74,7 +74,7 @@ describe("identityPlugin", () => {
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
       const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
       const moduleFile = await fs.readFile(expectedModuleFilePath, ConstantString.UTF8Encoding);
-      chai.assert.strictEqual(expectedResult.Provision!.Modules!.identityProvision, moduleFile);
+      chai.assert.strictEqual(expectedResult.Provision!.Modules!.identity, moduleFile);
       const expectedModuleSnippetFilePath = path.join(
         expectedBicepFileDirectory,
         "provision.result.bicep"

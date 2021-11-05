@@ -1,5 +1,5 @@
 // Resources for Simple Auth
-module simpleAuthProvision '{{PluginOutput.fx-resource-simple-auth.Modules.simpleAuthProvision.ProvisionPath}}' = {
+module simpleAuthProvision '{{PluginOutput.fx-resource-simple-auth.Provision.simpleAuth.ProvisionPath}}' = {
   name: 'simpleAuthProvision'
   params: {
     provisionParameters: provisionParameters

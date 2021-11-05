@@ -209,10 +209,7 @@ export class FrontendPluginImpl {
           domain: FrontendOutputBicepSnippet.Domain2,
         },
         Modules: {
-          frontendHostingProvision: await fs.readFile(
-            moduleProvisionFilePath,
-            ConstantString.UTF8Encoding
-          ),
+          frontendHosting: await fs.readFile(moduleProvisionFilePath, ConstantString.UTF8Encoding),
         },
       },
     };

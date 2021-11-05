@@ -27,8 +27,10 @@ import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   HostTypeOptionAzure,
+  HostTypeOptionSPFx,
   MessageExtensionItem,
   TabOptionItem,
+  TabSPFxItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
 
@@ -185,7 +187,7 @@ export function fillInSolutionSettings(
   solutionSettings: AzureSolutionSettings,
   answers: Inputs
 ): Result<Void, FxError> {
-  const capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
+  let capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
   if (!capabilities || capabilities.length === 0) {
     return err(
       returnSystemError(
@@ -196,8 +198,17 @@ export function fillInSolutionSettings(
     );
   }
   let hostType = answers[AzureSolutionQuestionNames.HostType] as string;
-  if (capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id))
+  if (
+    capabilities.includes(BotOptionItem.id) ||
+    capabilities.includes(MessageExtensionItem.id) ||
+    capabilities.includes(TabOptionItem.id)
+  ) {
     hostType = HostTypeOptionAzure.id;
+  } else if (capabilities.includes(TabSPFxItem.id)) {
+    // set capabilities to TabOptionItem in case of TabSPFx item, so donot impact capabilities.includes() check overall
+    capabilities = [TabOptionItem.id];
+    hostType = HostTypeOptionSPFx.id;
+  }
   if (!hostType) {
     return err(
       returnSystemError(

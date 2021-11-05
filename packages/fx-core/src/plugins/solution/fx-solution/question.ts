@@ -38,6 +38,14 @@ export const MessageExtensionItem: OptionItem = {
   detail: "Inserting app content or acting on a message without leaving the conversation",
 };
 
+export const TabSPFxItem: OptionItem = {
+  id: "TabSPFx",
+  label: "Tab(SPFx)",
+  cliName: "tab-spfx",
+  description: "UI-base app with SPFx framework",
+  detail: "Teams-aware webpages with SPFx framework embedded in Microsoft Teams",
+};
+
 export enum AzureSolutionQuestionNames {
   Capabilities = "capabilities",
   V1Capability = "v1-capability",
@@ -85,10 +93,40 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
     name: AzureSolutionQuestionNames.Capabilities,
     title: "Select capabilities",
     type: "multiSelect",
-    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
+    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
     default: [TabOptionItem.id],
     placeholder: "Select at least 1 capability",
-    validation: { minItems: 1 },
+    validation: {
+      validFunc: async (input: string[]): Promise<string | undefined> => {
+        const name = input as string[];
+        if (name.length === 0) {
+          return "Select at at least 1 capability";
+        }
+        if (
+          name.length > 1 &&
+          (name.includes(TabSPFxItem.id) || name.includes(TabSPFxItem.label))
+        ) {
+          return "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Message Extension capabilities are not available";
+        }
+
+        return undefined;
+      },
+    },
+    onDidChangeSelection: async function (
+      currentSelectedIds: Set<string>,
+      previousSelectedIds: Set<string>
+    ): Promise<Set<string>> {
+      if (currentSelectedIds.size > 1 && currentSelectedIds.has(TabSPFxItem.id)) {
+        if (previousSelectedIds.has(TabSPFxItem.id)) {
+          currentSelectedIds.delete(TabSPFxItem.id);
+        } else {
+          currentSelectedIds.clear();
+          currentSelectedIds.add(TabSPFxItem.id);
+        }
+      }
+
+      return currentSelectedIds;
+    },
   };
 }
 
@@ -97,7 +135,7 @@ export function createV1CapabilityQuestion(): SingleSelectQuestion {
     name: AzureSolutionQuestionNames.V1Capability,
     title: "Select capability",
     type: "singleSelect",
-    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
+    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
     default: TabOptionItem.id,
     placeholder: "Select the same capability as your existing project",
     validation: { minItems: 1 },

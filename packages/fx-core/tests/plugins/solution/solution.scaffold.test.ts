@@ -102,7 +102,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
 
   afterEach(async () => {
     mocker.restore();
-    fs.remove(testFolder);
+    await fs.remove(testFolder);
   });
 
   it("should work for happy path with only tab", async () => {

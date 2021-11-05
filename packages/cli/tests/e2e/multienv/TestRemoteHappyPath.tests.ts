@@ -128,6 +128,9 @@ describe("Multi Env Happy Path for Azure", function () {
         // Validate Bot Provision
         const bot = BotValidator.init(context);
         await BotValidator.validateProvision(bot);
+
+        const appPackage = `${projectPath}/build/appPackage/appPackage.${env}.zip`;
+        expect(await fs.pathExists(appPackage)).to.be.true;
       }
 
       // deploy

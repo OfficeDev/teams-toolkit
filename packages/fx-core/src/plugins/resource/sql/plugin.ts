@@ -275,9 +275,9 @@ export class SqlPluginImpl {
           ),
         },
         Reference: {
-          sqlServerResourceId: AzureSqlBicep.sqlResourceId,
-          sqlServerEndpoint: AzureSqlBicep.sqlEndpoint,
-          sqlDatabaseName: AzureSqlBicep.databaseName,
+          sqlResourceId: AzureSqlBicep.sqlResourceId,
+          sqlEndpoint: AzureSqlBicep.sqlEndpoint,
+          databaseName: AzureSqlBicep.databaseName,
         },
       },
       Parameters: JSON.parse(

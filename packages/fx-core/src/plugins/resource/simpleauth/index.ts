@@ -17,7 +17,7 @@ import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { isArmSupportEnabled } from "../../..";
+import { isArmSupportEnabled, isVsCallingCli } from "../../..";
 import "./v2";
 @Service(ResourcePlugins.SimpleAuthPlugin)
 export class SimpleAuthPlugin implements Plugin {
@@ -25,7 +25,7 @@ export class SimpleAuthPlugin implements Plugin {
   displayName = "Simple Auth";
   activate(solutionSettings: AzureSolutionSettings): boolean {
     // TODO: we need to disable simple auth plugin when in VS
-    if (solutionSettings?.migrateFromV1) {
+    if (solutionSettings?.migrateFromV1 || isVsCallingCli()) {
       return false;
     }
     const cap = solutionSettings.capabilities || [];

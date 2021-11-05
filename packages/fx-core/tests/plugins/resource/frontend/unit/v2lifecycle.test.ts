@@ -119,7 +119,7 @@ describe("Frontend hosting V2", () => {
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
       const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
       const moduleFile = await fs.readFile(expectedModuleFilePath, ConstantString.UTF8Encoding);
-      assert.strictEqual(expectedResult.Provision!.Modules!.frontendHostingProvision, moduleFile);
+      assert.strictEqual(expectedResult.Provision!.Modules!.frontendHosting, moduleFile);
       const expectedModuleSnippetFilePath = path.join(
         expectedBicepFileDirectory,
         "provision.result.v2.bicep"

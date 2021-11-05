@@ -225,10 +225,14 @@ describe("Solution scaffold() reading valid manifest file", () => {
       .true;
     expect(fileContent.has(path.join(testFolder, "./templates/azure", "config.bicep"))).to.be.true;
     expect(
-      fileContent.has(path.join(testFolder, "./templates/azure/provision", "frontendHosting.bicep"))
+      fileContent.has(
+        path.join(testFolder, "./templates/azure/provision", "frontendHostingProvision.bicep")
+      )
     ).to.be.true;
     expect(
-      fileContent.has(path.join(testFolder, "./templates/azure/provision", "simpleAuth.bicep"))
+      fileContent.has(
+        path.join(testFolder, "./templates/azure/provision", "simpleAuthProvision.bicep")
+      )
     ).to.be.true;
     expect(fileContent.has(path.join(testFolder, "./templates/azure/provision", "identity.bicep")))
       .to.be.true;

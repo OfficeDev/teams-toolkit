@@ -108,12 +108,12 @@ describe("simpleAuthPlugin", () => {
       PluginOutput: {
         "fx-resource-simple-auth": {
           Provision: {
-            simpleAuthProvision: {
+            simpleAuth: {
               ProvisionPath: `./${testProvisionModuleFileName}`,
             },
           },
           Configuration: {
-            simpleAuthConfiguration: {
+            simpleAuth: {
               ConfigPath: `./${testConfigurationModuleFileName}`,
             },
           },
@@ -137,10 +137,7 @@ describe("simpleAuthPlugin", () => {
         expectedProvisionModuleFilePath,
         ConstantString.UTF8Encoding
       );
-      chai.assert.strictEqual(
-        expectedResult.Provision!.Modules!.simpleAuthProvision,
-        provisionMpduleFile
-      );
+      chai.assert.strictEqual(expectedResult.Provision!.Modules!.simpleAuth, provisionMpduleFile);
       const expectedConfigurationModuleFilePath = path.join(
         expectedBicepFileDirectory,
         testConfigurationModuleFileName
@@ -150,10 +147,7 @@ describe("simpleAuthPlugin", () => {
         expectedConfigurationModuleFilePath,
         ConstantString.UTF8Encoding
       );
-      chai.assert.strictEqual(
-        expectedResult.Configuration!.Modules!.simpleAuthConfiguration,
-        configModuleFile
-      );
+      chai.assert.strictEqual(expectedResult.Configuration!.Modules!.simpleAuth, configModuleFile);
       const expectedPrvosionSnippetFilePath = path.join(
         expectedBicepFileDirectory,
         "provision.result.v2.bicep"

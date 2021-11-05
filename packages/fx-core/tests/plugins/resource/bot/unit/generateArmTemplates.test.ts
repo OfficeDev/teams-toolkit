@@ -66,16 +66,13 @@ describe("Bot Generates Arm Templates", () => {
         path.join(expectedBicepFileDirectory, provisionModuleFileName),
         ConstantString.UTF8Encoding
       );
-      chai.assert.strictEqual(compiledResult.Provision!.Modules!.botProvision, provisionModuleFile);
+      chai.assert.strictEqual(compiledResult.Provision!.Modules!.bot, provisionModuleFile);
 
       const configModuleFile = await fs.readFile(
         path.join(expectedBicepFileDirectory, configurationModuleFileName),
         ConstantString.UTF8Encoding
       );
-      chai.assert.strictEqual(
-        compiledResult.Configuration!.Modules!.botConfiguration,
-        configModuleFile
-      );
+      chai.assert.strictEqual(compiledResult.Configuration!.Modules!.bot, configModuleFile);
 
       const orchestrationProvisionFile = await fs.readFile(
         path.join(expectedBicepFileDirectory, "provision.result.v2.bicep"),

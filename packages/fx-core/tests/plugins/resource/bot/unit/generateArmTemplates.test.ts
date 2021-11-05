@@ -57,12 +57,10 @@ describe("Bot Generates Arm Templates", () => {
           },
         },
         "fx-resource-identity": {
-          Provision: {
-            References: {
-              identityName: "provisionOutputs.identityOutput.value.identityName",
-              identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
-              identityResourceId: "provisionOutputs.identityOutput.value.identityResourceId",
-            },
+          References: {
+            identityName: "provisionOutputs.identityOutput.value.identityName",
+            identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
+            identityResourceId: "userAssignedIdentityProvision.outputs.identityResourceId",
           },
         },
       },

@@ -44,6 +44,6 @@ resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-15' = {
     SQL_DATABASE_NAME: provisionOutputs.azureSqlOutput.value.sqlDatabaseName
     SQL_ENDPOINT: provisionOutputs.azureSqlOutput.value.sqlServerEndpoint
     {{/contains}}
-    IDENTITY_ID: {{PluginOutput.fx-resource-identity.Provision.References.identityClientId}}
+    IDENTITY_ID: {{PluginOutput.fx-resource-identity.References.identityClientId}}
   }, currentAppSettings)
 }

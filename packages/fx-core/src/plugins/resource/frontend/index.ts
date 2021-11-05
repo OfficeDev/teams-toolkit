@@ -26,11 +26,11 @@ import { TelemetryHelper } from "./utils/telemetry-helper";
 import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { isArmSupportEnabled } from "../../..";
+import { isArmSupportEnabled, isVsCallingCli } from "../../..";
 import { ArmResourcePlugin } from "../../../common/armInterface";
 import "./v2";
 import { Platform } from "@microsoft/teamsfx-api";
-import { BlazorPluginImpl } from "../blazor/plugin";
+import { BlazorPluginImpl } from "./blazor/plugin";
 
 @Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin, ArmResourcePlugin {
@@ -49,7 +49,7 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   }
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (ctx.answers?.platform === Platform.VSCode) {
+    if (isVsCallingCli()) {
       return ok(undefined);
     }
     FrontendPlugin.setContext(ctx);
@@ -59,57 +59,45 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   }
 
   public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (ctx.answers?.platform === Platform.VSCode) {
-      FrontendPlugin.setContext(ctx);
-      return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
-        this.blazorPluginImpl.preProvision(ctx)
-      );
-    }
-
     if (isArmSupportEnabled()) {
       return ok(undefined);
     }
 
     FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
-      this.frontendPluginImpl.preProvision(ctx)
-    );
+    return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () => {
+      if (isVsCallingCli()) {
+        return this.blazorPluginImpl.preProvision(ctx);
+      }
+      return this.frontendPluginImpl.preProvision(ctx);
+    });
   }
 
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (ctx.answers?.platform === Platform.VSCode) {
-      FrontendPlugin.setContext(ctx);
-      return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
-        this.blazorPluginImpl.provision(ctx)
-      );
-    }
-
     if (isArmSupportEnabled()) {
       return ok(undefined);
     }
 
     FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.Provision, () =>
-      this.frontendPluginImpl.provision(ctx)
-    );
+    return this.runWithErrorHandling(ctx, TelemetryEvent.Provision, () => {
+      if (isVsCallingCli()) {
+        return this.blazorPluginImpl.provision(ctx);
+      }
+      return this.frontendPluginImpl.provision(ctx);
+    });
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (ctx.answers?.platform === Platform.VSCode) {
-      FrontendPlugin.setContext(ctx);
-      return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
-        this.blazorPluginImpl.postProvision(ctx)
-      );
-    }
-
     FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.PostProvision, () =>
-      this.frontendPluginImpl.postProvision(ctx)
-    );
+    return this.runWithErrorHandling(ctx, TelemetryEvent.PostProvision, () => {
+      if (isVsCallingCli()) {
+        return this.blazorPluginImpl.postProvision(ctx);
+      }
+      return this.frontendPluginImpl.postProvision(ctx);
+    });
   }
 
   public async preDeploy(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (ctx.answers?.platform === Platform.VSCode) {
+    if (isVsCallingCli()) {
       return ok(undefined);
     }
 
@@ -120,21 +108,17 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
   }
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (ctx.answers?.platform === Platform.VSCode) {
-      FrontendPlugin.setContext(ctx);
-      return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
-        this.blazorPluginImpl.deploy(ctx)
-      );
-    }
-
     FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
-      this.frontendPluginImpl.deploy(ctx)
-    );
+    return this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () => {
+      if (isVsCallingCli()) {
+        return this.blazorPluginImpl.deploy(ctx);
+      }
+      return this.frontendPluginImpl.deploy(ctx);
+    });
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (ctx.answers?.platform === Platform.VSCode) {
+    if (isVsCallingCli()) {
       return ok(undefined);
     }
 

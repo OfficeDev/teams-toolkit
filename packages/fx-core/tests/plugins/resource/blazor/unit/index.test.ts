@@ -7,21 +7,22 @@ import * as sinon from "sinon";
 import { PluginContext, ReadonlyPluginConfig, Result } from "@microsoft/teamsfx-api";
 import chaiAsPromised from "chai-as-promised";
 
-import { BlazorPlugin } from "../../../../../src/plugins/resource/blazor/";
+import { FrontendPlugin as BlazorPlugin } from "../../../../../src/plugins/resource/frontend";
 import { TestHelper } from "../helper";
 import {
   BlazorConfigInfo,
   BlazorPluginInfo,
   DependentPluginInfo,
-} from "../../../../../src/plugins/resource/blazor/constants";
+} from "../../../../../src/plugins/resource/Frontend/blazor/constants";
 import {
   AzureClientFactory,
   AzureLib,
-} from "../../../../../src/plugins/resource/blazor/utils/azure-client";
+} from "../../../../../src/plugins/resource/frontend/blazor/utils/azure-client";
 import { AppServicePlan } from "@azure/arm-appservice/esm/models";
 import * as dirWalk from "../../../../../src/plugins/resource/function/utils/dir-walk";
 import * as execute from "../../../../../src/plugins/resource/function/utils/execute";
 import axios from "axios";
+import * as core from "../../../../../src";
 
 chai.use(chaiAsPromised);
 
@@ -36,6 +37,7 @@ describe("BlazorPlugin", () => {
     });
 
     beforeEach(async () => {
+      sinon.stub(core, "isVsCallingCli").returns(true);
       sinon.stub(AzureLib, "ensureAppServicePlan").resolves({
         id: TestHelper.appServicePlanId,
       } as AppServicePlan);
@@ -71,7 +73,7 @@ describe("BlazorPlugin", () => {
       const appName: string = ctx.projectSettings!.appName;
       const expectedWebAppName = `${appName}${BlazorPluginInfo.alias}${resourceNameSuffix}`;
 
-      chai.assert.equal(plugin.pluginImpl.config.webAppName, expectedWebAppName);
+      chai.assert.equal(plugin.blazorPluginImpl.config.webAppName, expectedWebAppName);
       chai.assert.isTrue(result.isOk());
     });
 
@@ -80,7 +82,7 @@ describe("BlazorPlugin", () => {
 
       chai.assert.isTrue(result.isOk());
       chai.assert.equal(
-        plugin.pluginImpl.config.webAppEndpoint,
+        plugin.blazorPluginImpl.config.endpoint,
         `https://${TestHelper.webAppDomain}`
       );
     });

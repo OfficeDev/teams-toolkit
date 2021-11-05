@@ -13,7 +13,6 @@ import {
   DependentPluginInfo,
   BlazorPathInfo as PathInfo,
 } from "./constants";
-import { Logger } from "./utils/logger";
 import { Messages } from "./resources/messages";
 import { TeamsFxResult } from "./error-factory";
 import { WebSiteManagementModels } from "@azure/arm-appservice";
@@ -28,6 +27,7 @@ import {
   runWithErrorCatchAndWrap,
 } from "./resources/errors";
 import * as Deploy from "./ops/deploy";
+import { Logger } from "../utils/logger";
 
 type Site = WebSiteManagementModels.Site;
 

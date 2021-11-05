@@ -42,8 +42,8 @@ describe("FrontendGenerateArmTemplates", () => {
       Plugins: activeResourcePlugins,
       PluginOutput: {
         "fx-resource-frontend-hosting": {
-          Modules: {
-            frontendHostingProvision: {
+          Provision: {
+            frontendHosting: {
               ProvisionPath: `./${testModuleFileName}`,
             },
           },

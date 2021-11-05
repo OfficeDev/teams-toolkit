@@ -107,10 +107,12 @@ describe("simpleAuthPlugin", () => {
       Plugins: activeResourcePlugins,
       PluginOutput: {
         "fx-resource-simple-auth": {
-          Modules: {
+          Provision: {
             simpleAuthProvision: {
               ProvisionPath: `./${testProvisionModuleFileName}`,
             },
+          },
+          Configuration: {
             simpleAuthConfiguration: {
               ConfigPath: `./${testConfigurationModuleFileName}`,
             },

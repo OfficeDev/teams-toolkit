@@ -1,5 +1,5 @@
 // Resources for Azure Functions
-module functionProvision '{{PluginOutput.fx-resource-function.Modules.functionConfiguration.ProvisionPath}}' = {
+module functionProvision '{{PluginOutput.fx-resource-function.Provision.function.ProvisionPath}}' = {
   name: 'functionProvision'
   params: {
     provisionParameters: provisionParameters

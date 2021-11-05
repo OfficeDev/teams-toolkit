@@ -269,7 +269,7 @@ export class SqlPluginImpl {
           ConstantString.UTF8Encoding
         ),
         Modules: {
-          azureSqlProvision: await fs.readFile(
+          azureSql: await fs.readFile(
             path.join(bicepTemplateDirectory, AzureSqlBicepFile.ProvisionModuleTemplateFileName),
             ConstantString.UTF8Encoding
           ),

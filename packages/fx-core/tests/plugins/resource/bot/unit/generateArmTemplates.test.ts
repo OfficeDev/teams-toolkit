@@ -41,11 +41,13 @@ describe("Bot Generates Arm Templates", () => {
       Plugins: activeResourcePlugins,
       PluginOutput: {
         "fx-resource-bot": {
-          Modules: {
-            botProvision: {
+          Provision: {
+            bot: {
               ProvisionPath: `./${provisionModuleFileName}`,
             },
-            botConfiguration: {
+          },
+          Configuration: {
+            bot: {
               ConfigPath: `./${configurationModuleFileName}`,
             },
           },

@@ -101,8 +101,8 @@ describe("Frontend hosting V2", () => {
       Plugins: [pluginV2.name, "fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
       PluginOutput: {
         "fx-resource-frontend-hosting": {
-          Modules: {
-            frontendHostingProvision: {
+          Provision: {
+            frontendHosting: {
               ProvisionPath: `./${testModuleFileName}`,
             },
           },

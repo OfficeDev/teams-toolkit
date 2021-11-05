@@ -51,11 +51,13 @@ describe("FunctionGenerateArmTemplates", () => {
       Plugins: activeResourcePlugins,
       PluginOutput: {
         "fx-resource-function": {
-          Modules: {
-            functionProvision: {
+          Provision: {
+            function: {
               ProvisionPath: `./${testProvisionModuleFileName}`,
             },
-            functionConfiguration: {
+          },
+          Configuration: {
+            function: {
               ConfigPath: `./${testConfigurationModuleFileName}`,
             },
           },

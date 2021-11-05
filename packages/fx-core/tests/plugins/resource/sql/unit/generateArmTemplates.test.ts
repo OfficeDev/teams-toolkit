@@ -57,8 +57,8 @@ describe("generateArmTemplates", () => {
       Plugins: activeResourcePlugins,
       PluginOutput: {
         "fx-resource-azure-sql": {
-          Modules: {
-            azureSqlProvision: {
+          Provision: {
+            azureSql: {
               ProvisionPath: `./${testModuleFileName}`,
             },
           },

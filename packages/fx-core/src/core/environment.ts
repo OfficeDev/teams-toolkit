@@ -38,18 +38,19 @@ import {
   ModifiedSecretError,
 } from "..";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
-import { readJson } from "../common/fileUtils";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
-import { isMultiEnvEnabled } from "../common";
+import { compileHandlebarsTemplateString, isMultiEnvEnabled } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
-import Mustache from "mustache";
+import { ConstantString } from "../common/constants";
 
 export interface EnvStateFiles {
   envState: string;
   userDataFile: string;
 }
+
+export const envPrefix = "$env.";
 
 class EnvironmentManager {
   public readonly envNameRegex = /^[\w\d-_]+$/;
@@ -249,10 +250,15 @@ class EnvironmentManager {
     const validate = this.ajv.compile<EnvConfig>(envConfigSchema);
     let data;
     try {
-      data = await fs.readJson(envConfigPath);
+      data = await fs.readFile(envConfigPath, ConstantString.UTF8Encoding);
+
+      // resolve environment variables
+      data = this.expandEnvironmentVariables(data);
+      data = JSON.parse(data);
     } catch (error) {
       return err(InvalidEnvConfigError(envName, `Failed to read env config JSON: ${error}`));
     }
+
     if (validate(data)) {
       return ok(data);
     }
@@ -287,6 +293,14 @@ class EnvironmentManager {
     const data = objectToMap(resultJson);
 
     return ok(data);
+  }
+
+  private expandEnvironmentVariables(templateContent: string): string {
+    if (!templateContent) {
+      return templateContent;
+    }
+
+    return compileHandlebarsTemplateString(templateContent, { $env: process.env });
   }
 
   private getEnvNameFromPath(filePath: string): string | null {

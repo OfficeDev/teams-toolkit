@@ -108,7 +108,9 @@ export class AppStudioPlugin implements Plugin {
    */
   public async postProvision(ctx: PluginContext): Promise<Result<string, FxError>> {
     const remoteTeamsAppId = await this.appStudioPluginImpl.postProvision(ctx);
-    await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, false);
+    if (isMultiEnvEnabled()) {
+      await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, false);
+    }
     return ok(remoteTeamsAppId);
   }
 

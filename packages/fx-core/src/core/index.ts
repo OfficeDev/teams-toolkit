@@ -141,14 +141,23 @@ export interface CoreHookContext extends HookContext {
   localSettings?: Json;
 }
 
-// API V2 feature flag
-export function isV2() {
-  const flag = process.env[FeatureFlagName.APIV2];
+function featureFlagEnabled(flagName: string): boolean {
+  const flag = process.env[flagName];
   if (flag !== undefined && flag.toLowerCase() === "true") {
     return true;
   } else {
     return false;
   }
+}
+
+// API V2 feature flag
+export function isV2() {
+  return featureFlagEnabled(FeatureFlagName.APIV2);
+}
+
+// On VS calling CLI, interactive questions need to be skipped.
+export function isVsCallingCli() {
+  return featureFlagEnabled(FeatureFlagName.VSCallingCLI);
 }
 
 export let Logger: LogProvider;

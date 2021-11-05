@@ -30,18 +30,12 @@ import { EnvNodeNoCreate } from "../constants";
 
 export default class Env extends YargsCommand {
   public readonly commandHead = `env`;
-  public readonly command = `${this.commandHead} [action]`;
+  public readonly command = `${this.commandHead} <action>`;
   public readonly description = "Manage environments.";
 
   public readonly subCommands: YargsCommand[] = [new EnvAdd(), new EnvList()];
 
   public builder(yargs: Argv): Argv<any> {
-    yargs.options("action", {
-      description: `${this.subCommands.map((cmd) => cmd.commandHead).join("|")}`,
-      type: "string",
-      choices: this.subCommands.map((cmd) => cmd.commandHead),
-      require: true,
-    });
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });

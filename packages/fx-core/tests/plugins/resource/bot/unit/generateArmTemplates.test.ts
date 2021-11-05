@@ -24,7 +24,11 @@ describe("Bot Generates Arm Templates", () => {
 
   it("generate bicep arm templates: new bot", async () => {
     // Arrange
-    const activeResourcePlugins = [ResourcePlugins.Aad, ResourcePlugins.Bot];
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.Bot,
+      ResourcePlugins.Identity,
+    ];
     const pluginContext: PluginContext = testUtils.newPluginContext();
     const azureSolutionSettings = pluginContext.projectSettings!
       .solutionSettings! as AzureSolutionSettings;
@@ -36,7 +40,7 @@ describe("Bot Generates Arm Templates", () => {
 
     // Assert
     const provisionModuleFileName = "botProvision.result.v2.bicep";
-    const configurationModuleFileName = "botConfig.Result.v2.bicep";
+    const configurationModuleFileName = "botConfig.result.v2.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
@@ -49,6 +53,15 @@ describe("Bot Generates Arm Templates", () => {
           Configuration: {
             bot: {
               ConfigPath: `./${configurationModuleFileName}`,
+            },
+          },
+        },
+        "fx-resource-identity": {
+          Provision: {
+            References: {
+              identityName: "provisionOutputs.identityOutput.value.identityName",
+              identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
+              identityResourceId: "provisionOutputs.identityOutput.value.identityResourceId",
             },
           },
         },

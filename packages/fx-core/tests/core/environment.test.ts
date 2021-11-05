@@ -18,8 +18,9 @@ import {
   ok,
   Result,
 } from "@microsoft/teamsfx-api";
-import { environmentManager } from "../../src/core/environment";
+import { environmentManager, envPrefix } from "../../src/core/environment";
 import * as tools from "../../src/common/tools";
+import mockedEnv, { RestoreFn } from "mocked-env";
 import { isMultiEnvEnabled } from "../../src/common/tools";
 import sinon from "sinon";
 
@@ -58,6 +59,20 @@ describe("APIs of Environment Manager", () => {
     },
   };
   const invalidEnvConfigData = {};
+
+  const envConfigDataWithSecret = {
+    manifest: {
+      appName: {
+        short: appName,
+      },
+    },
+    auth: {
+      accessAsUserScopeId: "test-scope-id",
+      clientId: "test-client-id",
+      clientSecret: `{{${envPrefix}MOCKED_CLIENT_SECRET}}`,
+      objectId: "test-object-id",
+    },
+  };
 
   const envStateDataObj = new Map([
     [
@@ -152,6 +167,33 @@ describe("APIs of Environment Manager", () => {
       } else {
         assert.fail("Failed to get expected error.");
       }
+    });
+
+    it("load environment config file with secret data", async () => {
+      const secretValue = "mocked secret value";
+      const mockedEnvRestore = mockedEnv({
+        MOCKED_CLIENT_SECRET: secretValue,
+      });
+
+      const envName = "test";
+      await mockEnvConfigs(projectPath, envConfigDataWithSecret, envName);
+
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(
+        projectPath,
+        cryptoProvider,
+        envName
+      );
+
+      if (actualEnvDataResult.isErr()) {
+        assert.fail("Error occurs while loading environment config.");
+      }
+
+      const envConfigInfo = actualEnvDataResult.value;
+      assert.equal(envConfigInfo.envName, envName);
+      const actualValue = envConfigInfo.config.auth?.clientSecret;
+      assert.equal(actualValue, secretValue);
+
+      mockedEnvRestore();
     });
 
     it("load non existent env name", async () => {

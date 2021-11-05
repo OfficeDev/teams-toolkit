@@ -154,10 +154,7 @@ export class SimpleAuthPluginImpl {
           endpoint: Constants.SimpleAuthBicepOutputEndpoint,
         },
         Modules: {
-          simpleAuthProvision: await fs.readFile(
-            provisionModuleV2Result,
-            ConstantString.UTF8Encoding
-          ),
+          simpleAuth: await fs.readFile(provisionModuleV2Result, ConstantString.UTF8Encoding),
         },
       },
       Configuration: {
@@ -166,10 +163,7 @@ export class SimpleAuthPluginImpl {
           ConstantString.UTF8Encoding
         ),
         Modules: {
-          simpleAuthConfiguration: await fs.readFile(
-            configModuleV2FilePath,
-            ConstantString.UTF8Encoding
-          ),
+          simpleAuth: await fs.readFile(configModuleV2FilePath, ConstantString.UTF8Encoding),
         },
       },
     };

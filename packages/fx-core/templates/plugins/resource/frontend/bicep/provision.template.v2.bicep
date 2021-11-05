@@ -1,4 +1,4 @@
-module frontendHostingProvision '{{PluginOutput.fx-resource-frontend-hosting.Modules.frontendHostingProvision.ProvisionPath}}' = {
+module frontendHostingProvision '{{PluginOutput.fx-resource-frontend-hosting.Provision.frontendHosting.ProvisionPath}}' = {
   name: 'frontendHostingProvision'
   params: {
     provisionParameters: provisionParameters
@@ -6,8 +6,8 @@ module frontendHostingProvision '{{PluginOutput.fx-resource-frontend-hosting.Mod
 }
 
 output frontendHostingOutput object = {
-  teamsFxPluginId: 'fx-resource-frontend'
+  teamsFxPluginId: 'fx-resource-frontend-hosting'
   domain: frontendHostingProvision.outputs.domain
   endpoint: frontendHostingProvision.outputs.endpoint
-  resourceId: frontendHostingProvision.outputs.resourceId
+  storageResourceId: frontendHostingProvision.outputs.resourceId
 }

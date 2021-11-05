@@ -24,7 +24,11 @@ describe("Bot Generates Arm Templates", () => {
 
   it("generate bicep arm templates: new bot", async () => {
     // Arrange
-    const activeResourcePlugins = [ResourcePlugins.Aad, ResourcePlugins.Bot];
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.Bot,
+      ResourcePlugins.Identity,
+    ];
     const pluginContext: PluginContext = testUtils.newPluginContext();
     const azureSolutionSettings = pluginContext.projectSettings!
       .solutionSettings! as AzureSolutionSettings;
@@ -36,17 +40,28 @@ describe("Bot Generates Arm Templates", () => {
 
     // Assert
     const provisionModuleFileName = "botProvision.result.v2.bicep";
-    const configurationModuleFileName = "botConfig.Result.v2.bicep";
+    const configurationModuleFileName = "botConfig.result.v2.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
         "fx-resource-bot": {
-          Modules: {
-            botProvision: {
+          Provision: {
+            bot: {
               ProvisionPath: `./${provisionModuleFileName}`,
             },
-            botConfiguration: {
+          },
+          Configuration: {
+            bot: {
               ConfigPath: `./${configurationModuleFileName}`,
+            },
+          },
+        },
+        "fx-resource-identity": {
+          Provision: {
+            References: {
+              identityName: "provisionOutputs.identityOutput.value.identityName",
+              identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
+              identityResourceId: "provisionOutputs.identityOutput.value.identityResourceId",
             },
           },
         },
@@ -64,16 +79,13 @@ describe("Bot Generates Arm Templates", () => {
         path.join(expectedBicepFileDirectory, provisionModuleFileName),
         ConstantString.UTF8Encoding
       );
-      chai.assert.strictEqual(compiledResult.Provision!.Modules!.botProvision, provisionModuleFile);
+      chai.assert.strictEqual(compiledResult.Provision!.Modules!.bot, provisionModuleFile);
 
       const configModuleFile = await fs.readFile(
         path.join(expectedBicepFileDirectory, configurationModuleFileName),
         ConstantString.UTF8Encoding
       );
-      chai.assert.strictEqual(
-        compiledResult.Configuration!.Modules!.botConfiguration,
-        configModuleFile
-      );
+      chai.assert.strictEqual(compiledResult.Configuration!.Modules!.bot, configModuleFile);
 
       const orchestrationProvisionFile = await fs.readFile(
         path.join(expectedBicepFileDirectory, "provision.result.v2.bicep"),

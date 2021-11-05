@@ -282,19 +282,33 @@ function syncArmOutput(ctx: SolutionContext, armOutput: any) {
   // todo: delete this line after solution helps all resource plugin fill in arm output
   ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, armOutput);
 
-  Object.keys(armOutput).forEach((key) => {
-    const output = armOutput[key].value;
-    if (output instanceof Object) {
-      const pluginId = output[TEAMS_FX_RESOURCE_ID_KEY];
-      if (pluginId) {
-        Object.keys(output).forEach((key) => {
-          if (key != TEAMS_FX_RESOURCE_ID_KEY) {
-            ctx.envInfo.state.get(pluginId)?.set(key, output[key]);
+  if (armOutput instanceof Object) {
+    const armOutputKeys = Object.keys(armOutput);
+    for (const armOutputKey of armOutputKeys) {
+      const moduleOutput = armOutput[armOutputKey].value;
+
+      if (moduleOutput instanceof Object) {
+        const moduleOutputKeys = Object.keys(moduleOutput);
+        for (const moduleOutputKey of moduleOutputKeys) {
+          const pluginOutput = moduleOutput[moduleOutputKey].value;
+
+          if (pluginOutput instanceof Object) {
+            const pluginId = pluginOutput[TEAMS_FX_RESOURCE_ID_KEY];
+            if (pluginId) {
+              const pluginOutputKeys = Object.keys(pluginOutput);
+              for (const pluginOutputKey of pluginOutputKeys) {
+                if (pluginOutputKey != TEAMS_FX_RESOURCE_ID_KEY) {
+                  ctx.envInfo.state
+                    .get(pluginId)
+                    ?.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
+                }
+              }
+            }
           }
-        });
+        }
       }
     }
-  });
+  }
 }
 
 export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
@@ -459,7 +473,7 @@ async function doGenerateArmTemplate(ctx: SolutionContext): Promise<Result<any, 
       "\r\n" + bicepOrchestrationTemplate.getOrchestractionConfigContent();
     const templateFolderPath = path.join(ctx.root, templatesFolder);
     await fs.ensureDir(templateFolderPath);
-    await fs.ensureDir(path.join(templateFolderPath, "teamsFxConfiguration"));
+    await fs.ensureDir(path.join(templateFolderPath, "teamsFx"));
     await fs.ensureDir(path.join(templateFolderPath, "provision"));
     const templateSolitionPath = path.join(getTemplatesFolder(), "plugins", "solution");
     if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationFileName)))) {
@@ -579,17 +593,17 @@ export class ArmTemplateRenderContext {
 
   public addPluginOutput(pluginName: string, armResult: ArmTemplateResult) {
     const pluginOutputContext: PluginOutputContext = {
-      Modules: {},
+      Provision: {},
+      Configuration: {},
       References: {},
     };
-    const modules = armResult.Provision?.Modules;
+    const provision = armResult.Provision?.Modules;
     const references = armResult.Provision?.Reference;
     const configs = armResult.Configuration?.Modules;
-
-    if (modules) {
-      for (const module of Object.entries(modules)) {
+    if (provision) {
+      for (const module of Object.entries(provision)) {
         const moduleFileName = module[0];
-        pluginOutputContext.Modules![moduleFileName] = {
+        pluginOutputContext.Provision![moduleFileName] = {
           ProvisionPath: generateBicepModuleProvisionFilePath(moduleFileName),
         };
       }
@@ -598,7 +612,7 @@ export class ArmTemplateRenderContext {
     if (configs) {
       for (const module of Object.entries(configs)) {
         const moduleFileName = module[0];
-        pluginOutputContext.Modules![moduleFileName] = {
+        pluginOutputContext.Configuration![moduleFileName] = {
           ConfigPath: generateBicepModuleConfigFilePath(moduleFileName),
         };
       }
@@ -618,21 +632,15 @@ export class ArmTemplateRenderContext {
 
 // Stores the bicep orchestration information for all resource plugins
 class BicepOrchestrationContent {
-  private ParameterTemplate: string = solutionLevelParameters;
-  private VariableTemplate = "";
-  private ModuleTemplate = "";
-  private OutputTemplate = "";
-  private ParameterJsonTemplate: Record<string, unknown> = {};
-  private ReferencePluginsResult: Record<string, unknown> = {};
+  private ParameterJsonTemplate: Record<string, string> = {};
   private RenderContenxt: ArmTemplateRenderContext;
   private TemplateAdded = false;
 
   private ProvisionTemplate = "";
   private ConfigTemplate = "";
-  private ParameterReference = "";
 
   constructor(pluginNames: string[], baseName: string) {
-    this.ParameterJsonTemplate[resourceBaseName] = { value: baseName };
+    this.ParameterJsonTemplate[resourceBaseName] = baseName;
     this.RenderContenxt = new ArmTemplateRenderContext(pluginNames);
   }
 
@@ -645,28 +653,6 @@ class BicepOrchestrationContent {
 
   public applyReference(configContent: string): string {
     return compileHandlebarsTemplateString(configContent, this.RenderContenxt).trim();
-  }
-
-  public applyTemplate(pluginName: string, scaffoldResult: ScaffoldArmTemplateResult): void {
-    this.ParameterTemplate += this.normalizeTemplateSnippet(
-      scaffoldResult.Orchestration.ParameterTemplate?.Content
-    );
-    this.VariableTemplate += this.normalizeTemplateSnippet(
-      scaffoldResult.Orchestration.VariableTemplate?.Content
-    );
-    this.ModuleTemplate += this.normalizeTemplateSnippet(
-      scaffoldResult.Orchestration.ModuleTemplate?.Content
-    );
-    this.OutputTemplate += this.normalizeTemplateSnippet(
-      scaffoldResult.Orchestration.OutputTemplate?.Content
-    );
-    // update context to render the template
-    this.RenderContenxt.addPluginOutput(pluginName, scaffoldResult);
-    // Update parameters for bicep file
-    Object.assign(
-      this.ParameterJsonTemplate,
-      scaffoldResult.Orchestration.ParameterTemplate?.ParameterJson
-    );
   }
 
   public getOrchestractionProvisionContent(): string {
@@ -708,12 +694,13 @@ class BicepOrchestrationContent {
 }
 
 interface PluginOutputContext {
-  Modules?: { [ModuleName: string]: PluginModuleProperties };
+  Provision?: { [ModuleName: string]: PluginModuleProperties };
+  Configuration?: { [ModuleName: string]: PluginModuleProperties };
   References?: { [Key: string]: string };
 }
 
 interface PluginModuleProperties {
-  [PathName: string]: string;
+  [pathName: string]: string;
 }
 
 function generateBicepModuleProvisionFilePath(moduleFileName: string) {
@@ -721,7 +708,7 @@ function generateBicepModuleProvisionFilePath(moduleFileName: string) {
 }
 
 function generateBicepModuleConfigFilePath(moduleFileName: string) {
-  return `./teamsFxConfiguration/${moduleFileName}.bicep`;
+  return `./teamsFx/${moduleFileName}.bicep`;
 }
 
 function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: string): string {

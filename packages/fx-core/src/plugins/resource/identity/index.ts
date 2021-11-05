@@ -153,7 +153,7 @@ export class IdentityPlugin implements Plugin {
           identityResourceId: IdentityBicep.identityResourceId,
         },
         Modules: {
-          identityProvision: await fs.readFile(moduleTemplateFilePath, ConstantString.UTF8Encoding),
+          identity: await fs.readFile(moduleTemplateFilePath, ConstantString.UTF8Encoding),
         },
       },
     };

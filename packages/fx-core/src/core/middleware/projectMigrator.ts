@@ -51,7 +51,11 @@ import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
-import { MANIFEST_LOCAL, MANIFEST_TEMPLATE } from "../../plugins/resource/appstudio/constants";
+import {
+  MANIFEST_LOCAL,
+  MANIFEST_TEMPLATE,
+  REMOTE_MANIFEST,
+} from "../../plugins/resource/appstudio/constants";
 import {
   Component,
   ProjectMigratorGuideStatus,
@@ -97,18 +101,18 @@ class EnvConfigName {
   static readonly Endpoint = "endpoint";
 }
 
-class ArmParameters {
-  static readonly FEStorageName = "frontendHosting_storageName";
-  static readonly IdentityName = "identity_managedIdentityName";
-  static readonly SQLServer = "azureSql_serverName";
-  static readonly SQLDatabase = "azureSql_databaseName";
-  static readonly SimpleAuthSku = "simpleAuth_sku";
-  static readonly functionServerName = "function_serverfarmsName";
-  static readonly functionStorageName = "function_storageName";
-  static readonly functionAppName = "function_webappName";
-  static readonly botWebAppSku = "bot_webAppSKU";
-  static readonly SimpleAuthWebAppName = "simpleAuth_webAppName";
-  static readonly SimpleAuthServerFarm = "simpleAuth_serverFarmsName";
+export class ArmParameters {
+  static readonly FEStorageName = "frontendHostingStorageName";
+  static readonly IdentityName = "userAssignedIdentityName";
+  static readonly SQLServer = "azureSqlServerName";
+  static readonly SQLDatabase = "azureSqlDatabaseName";
+  static readonly SimpleAuthSku = "simpleAuthSku";
+  static readonly functionServerName = "functionServerfarmsName";
+  static readonly functionStorageName = "functionStorageName";
+  static readonly functionAppName = "functionWebappName";
+  static readonly botWebAppSku = "botWebAppSKU";
+  static readonly SimpleAuthWebAppName = "simpleAuthWebAppName";
+  static readonly SimpleAuthServerFarm = "simpleAuthServerFarmsName";
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -228,7 +232,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       throw ProjectSettingError();
     }
     const projectSettings = loadRes.value;
-    if (!isSPFxProject(projectSettings)) {
+    if (!isSPFxProject(projectSettings) && !projectSettings?.solutionSettings?.migrateFromV1) {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArmStart);
       await migrateArm(ctx);
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
@@ -291,8 +295,7 @@ async function postMigration(
     });
 }
 
-async function generateRemoteTemplate(targetManifestFile: string) {
-  let manifestString = (await fs.readFile(targetManifestFile)).toString();
+async function generateRemoteTemplate(manifestString: string) {
   manifestString = manifestString.replace(new RegExp("{version}", "g"), "1.0.0");
   manifestString = manifestString.replace(
     new RegExp("{baseUrl}", "g"),
@@ -317,6 +320,32 @@ async function generateRemoteTemplate(targetManifestFile: string) {
   return manifest;
 }
 
+async function generateLocalTemplate(manifestString: string) {
+  manifestString = manifestString.replace(new RegExp("{version}", "g"), "1.0.0");
+  manifestString = manifestString.replace(
+    new RegExp("{baseUrl}", "g"),
+    "{{{localSettings.frontend.tabEndpoint}}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{appClientId}", "g"),
+    "{{localSettings.auth.clientId}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{webApplicationInfoResource}", "g"),
+    "{{{localSettings.auth.applicationIdUris}}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{botId}", "g"),
+    "{{localSettings.bot.botId}}"
+  );
+  const manifest: TeamsAppManifest = JSON.parse(manifestString);
+  manifest.name.full =
+    (manifest.name.full ? manifest.name.full : manifest.name.short) + "-local-debug";
+  manifest.name.short = manifest.name.short.substr(0, 18) + "-local-debug";
+  manifest.id = "{{localSettings.teamsApp.teamsAppId}}";
+  return manifest;
+}
+
 async function migrateMultiEnv(projectPath: string): Promise<void> {
   const { fx, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   const {
@@ -327,22 +356,27 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     hasMessageExtensionCapability,
     isSPFx,
     hasProvision,
+    migrateFromV1,
   } = await queryProjectStatus(fx);
 
   //localSettings.json
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
-  await localSettingsProvider.save(localSettingsProvider.init(hasFrontend, hasBackend, hasBot));
+  await localSettingsProvider.save(
+    localSettingsProvider.init(hasFrontend, hasBackend, hasBot, migrateFromV1)
+  );
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
   await fs.copy(path.join(fx, "settings.json"), projectSettings);
   await ensureProjectSettings(projectSettings, path.join(fx, "env.default.json"));
 
-  //config.dev.json
   const appName = await getAppName(projectSettings);
-  await fs.writeFile(
-    path.join(fxConfig, "config.dev.json"),
-    JSON.stringify(getConfigDevJson(appName), null, 4)
-  );
+  if (!migrateFromV1) {
+    //config.dev.json
+    await fs.writeFile(
+      path.join(fxConfig, "config.dev.json"),
+      JSON.stringify(getConfigDevJson(appName), null, 4)
+    );
+  }
 
   // appPackage
   if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
@@ -351,25 +385,31 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     // version <= 2.4.1
     await fs.copy(path.join(fx, AppPackageFolderName), templateAppPackage);
   }
-  const targetManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
-  await fs.rename(path.join(templateAppPackage, "manifest.source.json"), targetManifestFile);
-
+  const sourceManifestFile = path.join(templateAppPackage, REMOTE_MANIFEST);
+  const manifest: TeamsAppManifest = await readJson(sourceManifestFile);
+  await fs.remove(sourceManifestFile);
+  await moveIconsToResourceFolder(templateAppPackage, manifest);
   // generate manifest.remote.template.json
-  const manifest = await generateRemoteTemplate(targetManifestFile);
-  await fs.writeFile(targetManifestFile, JSON.stringify(manifest, null, 4));
-  await moveIconsToResourceFolder(templateAppPackage);
+  if (!migrateFromV1) {
+    const targetRemoteManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
+    const remoteManifest = await generateRemoteTemplate(JSON.stringify(manifest));
+    await fs.writeFile(targetRemoteManifestFile, JSON.stringify(remoteManifest, null, 4));
+  }
 
   // generate manifest.local.template.json
-  const localManifest: TeamsAppManifest = await createLocalManifest(
-    appName,
-    hasFrontend,
-    hasBotCapability,
-    hasMessageExtensionCapability,
-    isSPFx,
-    false
-  );
-  const localManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
-  await fs.writeFile(localManifestFile, JSON.stringify(localManifest, null, 4));
+  // TODO: use generateLocalTemplate instead of create
+  const localManifest: TeamsAppManifest = migrateFromV1
+    ? await generateLocalTemplate(JSON.stringify(manifest))
+    : await createLocalManifest(
+        appName,
+        hasFrontend,
+        hasBotCapability,
+        hasMessageExtensionCapability,
+        isSPFx,
+        false
+      );
+  const targetLocalManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
+  await fs.writeFile(targetLocalManifestFile, JSON.stringify(localManifest, null, 4));
 
   if (isSPFx) {
     const replaceMap: Map<string, string> = new Map();
@@ -379,8 +419,8 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     }
     const solutionConfig = await fs.readJson(packageSolutionFile);
     replaceMap.set(PlaceHolders.componentId, solutionConfig.solution.id);
-    replaceMap.set(PlaceHolders.componentNameUnescaped, manifest.packageName!);
-    await SPFxUtils.configure(localManifestFile, replaceMap);
+    replaceMap.set(PlaceHolders.componentNameUnescaped, localManifest.packageName!);
+    await SPFxUtils.configure(targetLocalManifestFile, replaceMap);
   }
 
   if (hasProvision) {
@@ -394,11 +434,11 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   }
 }
 
-async function moveIconsToResourceFolder(templateAppPackage: string): Promise<void> {
+async function moveIconsToResourceFolder(
+  templateAppPackage: string,
+  manifest: TeamsAppManifest
+): Promise<void> {
   // see AppStudioPluginImpl.buildTeamsAppPackage()
-  const manifest: TeamsAppManifest = await readJson(
-    path.join(templateAppPackage, MANIFEST_TEMPLATE)
-  );
   const hasColorIcon = manifest.icons.color && !manifest.icons.color.startsWith("https://");
   const hasOutlineIcon = manifest.icons.outline && !manifest.icons.outline.startsWith("https://");
   if (!hasColorIcon || !hasOutlineIcon) {
@@ -419,11 +459,7 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
     manifest.icons.outline = `resources/${manifest.icons.outline}`;
   }
 
-  // update icons
-  await fs.writeFile(
-    path.join(templateAppPackage, MANIFEST_TEMPLATE),
-    JSON.stringify(manifest, null, 4)
-  );
+  return;
 }
 
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
@@ -493,6 +529,7 @@ async function queryProjectStatus(fx: string): Promise<any> {
   );
   const isSPFx = plugins?.some((plugin) => plugin.name === PluginNames.SPFX);
   const hasProvision = envDefaultJson.solution?.provisionSucceeded as boolean;
+  const migrateFromV1 = !!solutionSettings.migrateFromV1;
   return {
     hasFrontend,
     hasBackend,
@@ -501,6 +538,7 @@ async function queryProjectStatus(fx: string): Promise<any> {
     hasMessageExtensionCapability,
     isSPFx,
     hasProvision,
+    migrateFromV1,
   };
 }
 
@@ -570,8 +608,10 @@ async function ensureProjectSettings(
   const settings: ProjectSettings = await readJson(projectSettingPath);
   if (!settings.programmingLanguage || !settings.defaultFunctionName) {
     const envDefault = await readJson(envDefaultPath);
-    settings.programmingLanguage = envDefault[PluginNames.SOLUTION][programmingLanguage];
-    settings.defaultFunctionName = envDefault[PluginNames.FUNC]?.[defaultFunctionName];
+    settings.programmingLanguage =
+      settings.programmingLanguage || envDefault[PluginNames.SOLUTION]?.[programmingLanguage];
+    settings.defaultFunctionName =
+      settings.defaultFunctionName || envDefault[PluginNames.FUNC]?.[defaultFunctionName];
   }
   if (!settings.version) {
     settings.version = "1.0.0";
@@ -787,72 +827,60 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
     environmentManager.getDefaultEnvName()
   );
   const targetJson = await fs.readJson(path.join(fxConfig, parameterEnvFileName));
-  const ArmParameter = "parameters";
+  const parameterObj = targetJson["parameters"]["provisionParameters"]["value"];
   // frontend hosting
   if (envConfig[ResourcePlugins.FrontendHosting]?.[EnvConfigName.StorageName]) {
-    targetJson[ArmParameter][ArmParameters.FEStorageName] = {
-      value: envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName],
-    };
+    parameterObj[ArmParameters.FEStorageName] =
+      envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName];
   }
   // manage identity
   if (envConfig[ResourcePlugins.Identity]?.[EnvConfigName.Identity]) {
-    targetJson[ArmParameter][ArmParameters.IdentityName] = {
-      value: envConfig[ResourcePlugins.Identity][EnvConfigName.Identity],
-    };
+    parameterObj[ArmParameters.IdentityName] =
+      envConfig[ResourcePlugins.Identity][EnvConfigName.Identity];
   }
   // azure SQL
   if (envConfig[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlEndpoint]) {
-    targetJson[ArmParameter][ArmParameters.SQLServer] = {
-      value:
-        envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint].split(
-          ".database.windows.net"
-        )[0],
-    };
+    parameterObj[ArmParameters.SQLServer] =
+      envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint].split(
+        ".database.windows.net"
+      )[0];
   }
   if (envConfig[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlDataBase]) {
-    targetJson[ArmParameter][ArmParameters.SQLDatabase] = {
-      value: envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlDataBase],
-    };
+    parameterObj[ArmParameters.SQLDatabase] =
+      envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlDataBase];
   }
   // SimpleAuth
   if (envConfig[ResourcePlugins.SimpleAuth]?.[EnvConfigName.SkuName]) {
-    targetJson[ArmParameter][ArmParameters.SimpleAuthSku] = {
-      value: envConfig[ResourcePlugins.SimpleAuth][EnvConfigName.SkuName],
-    };
+    parameterObj[ArmParameters.SimpleAuthSku] =
+      envConfig[ResourcePlugins.SimpleAuth][EnvConfigName.SkuName];
   }
 
   if (envConfig[ResourcePlugins.SimpleAuth]?.[EnvConfigName.Endpoint]) {
     const simpleAuthHost = new URL(envConfig[ResourcePlugins.SimpleAuth]?.[EnvConfigName.Endpoint])
       .hostname;
     const simpleAuthName = simpleAuthHost.split(".")[0];
-    targetJson[ArmParameter][ArmParameters.SimpleAuthWebAppName] = targetJson[ArmParameter][
+    parameterObj[ArmParameters.SimpleAuthWebAppName] = parameterObj[
       ArmParameters.SimpleAuthServerFarm
-    ] = {
-      value: simpleAuthName,
-    };
+    ] = simpleAuthName;
   }
   // Function
   if (envConfig[ResourcePlugins.Function]?.[EnvConfigName.AppServicePlanName]) {
-    targetJson[ArmParameter][ArmParameters.functionServerName] = {
-      value: envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName],
-    };
+    parameterObj[ArmParameters.functionServerName] =
+      envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName];
   }
   if (envConfig[ResourcePlugins.Function]?.[EnvConfigName.StorageAccountName]) {
-    targetJson[ArmParameter][ArmParameters.functionStorageName] = {
-      value: envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName],
-    };
+    parameterObj[ArmParameters.functionStorageName] =
+      envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName];
   }
   if (envConfig[ResourcePlugins.Function]?.[EnvConfigName.FuncAppName]) {
-    targetJson[ArmParameter][ArmParameters.functionAppName] = {
-      value: envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName],
-    };
+    parameterObj[ArmParameters.functionAppName] =
+      envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName];
   }
 
   // Bot
   if (envConfig[ResourcePlugins.Bot]?.[EnvConfigName.SkuName]) {
-    targetJson[ArmParameter][ArmParameters.botWebAppSku] = {
-      value: envConfig[ResourcePlugins.Bot]?.[EnvConfigName.SkuName],
-    };
+    parameterObj[ArmParameters.botWebAppSku] =
+      envConfig[ResourcePlugins.Bot]?.[EnvConfigName.SkuName];
   }
   await fs.writeFile(
     path.join(fxConfig, parameterEnvFileName),

@@ -6,8 +6,8 @@ module frontendHostingProvision './frontendProvision.result.v2.bicep' = {
 }
 
 output frontendHostingOutput object = {
-  teamsFxPluginId: 'fx-resource-frontend'
+  teamsFxPluginId: 'fx-resource-frontend-hosting'
   domain: frontendHostingProvision.outputs.domain
   endpoint: frontendHostingProvision.outputs.endpoint
-  resourceId: frontendHostingProvision.outputs.resourceId
+  storageResourceId: frontendHostingProvision.outputs.resourceId
 }

@@ -642,6 +642,28 @@ export class LocalDebugPlugin implements Plugin {
       }
     }
 
+    // TODO: This is to load .env.teamsfx.local for each component. Remove this after fully supporting custom local debug.
+    try {
+      const localEnvMultiProvider = new LocalEnvMultiProvider(ctx.root);
+      if (includeFrontend) {
+        const customEnvs = (
+          await localEnvMultiProvider.loadFrontendLocalEnvs(includeBackend, includeAuth)
+        ).customizedLocalEnvs;
+        this.appendEnvWithPrefix(customEnvs, localEnvs, "FRONTEND_");
+      }
+      if (includeBackend) {
+        const customEnvs = (await localEnvMultiProvider.loadBackendLocalEnvs()).customizedLocalEnvs;
+        this.appendEnvWithPrefix(customEnvs, localEnvs, "BACKEND_");
+      }
+      if (includeBot) {
+        const customEnvs = (await localEnvMultiProvider.loadBotLocalEnvs(false))
+          .customizedLocalEnvs;
+        this.appendEnvWithPrefix(customEnvs, localEnvs, "BOT_");
+      }
+    } catch (error) {
+      ctx.logProvider?.error(`Cannot load .env.teamsfx.local. ${error}`);
+    }
+
     return localEnvs;
   }
 
@@ -704,6 +726,20 @@ export class LocalDebugPlugin implements Plugin {
       // Initialize a local settings on scaffolding
       ctx.localSettings = localSettingsProvider.init(includeFrontend, includeBackend, includeBot);
       await localSettingsProvider.save(ctx.localSettings);
+    }
+  }
+
+  appendEnvWithPrefix(
+    source: { [key: string]: string },
+    target: { [key: string]: string },
+    prefix: string
+  ) {
+    for (const key of Object.keys(source)) {
+      const prefixKey = `${prefix}${key}`;
+      if (target[prefixKey] === undefined || target[prefixKey] === "") {
+        // only append and do not override
+        target[prefixKey] = source[key];
+      }
     }
   }
 }

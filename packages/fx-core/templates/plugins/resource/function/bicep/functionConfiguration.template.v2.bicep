@@ -19,18 +19,20 @@ var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
 var tabAppDomain = {{../PluginOutput.fx-resource-frontend-hosting.References.domain}}
 var tabAppEndpoint = {{../PluginOutput.fx-resource-frontend-hosting.References.endpoint}} 
 {{/contains}}
+{{#contains 'fx-resource-bot' Plugins}}
 var botId = provisionParameters['botAadAppClientId']
+{{/contains}}
 {{#contains 'fx-resource-frontend-hosting' Plugins}}
 {{#notContains 'fx-resource-bot' ../Plugins}}
-var m365ApplicationIdUri = 'api://${ {{~../PluginOutput.fx-resource-frontend-hosting.References.domain~}} }/${m365ClientId}'
+var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'
 {{/notContains}}
 {{#contains 'fx-resource-bot' ../Plugins}}
-var m365ApplicationIdUri = 'api://${ {{~../PluginOutput.fx-resource-frontend-hosting.References.domain~}} }/botid-${bot_aadClientId}'
+var m365ApplicationIdUri = 'api://${tabAppDomain}/botid-${botId}'
 {{/contains}}
 {{/contains}}
 {{#notContains 'fx-resource-frontend-hosting' Plugins}}
 {{#contains 'fx-resource-bot' ../Plugins}}
-var m365ApplicationIdUri = 'api://botid-${bot_aadClientId}'
+var m365ApplicationIdUri = 'api://botid-${botId}'
 {{/contains}}
 {{/notContains}}
 

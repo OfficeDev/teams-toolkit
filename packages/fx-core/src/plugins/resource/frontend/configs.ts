@@ -97,9 +97,9 @@ export class FrontendConfig {
   }
 
   static getStorageResourceId(ctx: PluginContext): string {
-    const result = ctx.config.getString(FrontendConfigInfo.resourceId);
+    const result = ctx.config.getString(FrontendConfigInfo.StorageResourceId);
     if (!result) {
-      throw new InvalidConfigError(FrontendConfigInfo.resourceId);
+      throw new InvalidConfigError(FrontendConfigInfo.StorageResourceId);
     }
     return result;
   }

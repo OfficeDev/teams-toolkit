@@ -312,10 +312,9 @@ describe("APIs of Environment Manager", () => {
       assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
     });
 
-    it("with userdata (has checksum): load environment state without target env", async () => {
+    it("with userdata: load environment state without target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithCredential, undefined, {
         ...userData,
-        _checksum: "81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33",
       });
       if (isMultiEnvEnabled()) {
         await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
@@ -481,7 +480,7 @@ describe("APIs of Environment Manager", () => {
         projectPath
       );
 
-      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
+      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}`;
       assert.deepEqual(JSON.parse(fileMap.get(envFiles.envState)), envStateDataWithCredential);
       assert.equal(
         formatContent(fileMap.get(envFiles.userDataFile)),
@@ -499,7 +498,7 @@ describe("APIs of Environment Manager", () => {
       const envFiles = environmentManager.getEnvStateFilesPath(targetEnvName, projectPath);
 
       const expectedEnvStateContent = JSON.stringify(envStateDataWithCredential, null, 4);
-      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}\n_checksum=81595a4344a4345ecfd90232f9e3540ce2b72e50745b3b83adc484c8e5055a33`;
+      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}`;
       assert.equal(
         formatContent(fileMap.get(envFiles.envState)),
         formatContent(expectedEnvStateContent)

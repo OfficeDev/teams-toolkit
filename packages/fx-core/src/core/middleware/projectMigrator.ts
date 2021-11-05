@@ -23,6 +23,7 @@ import {
   ProjectSettingError,
   environmentManager,
   SPFxConfigError,
+  getResourceFolder,
 } from "../..";
 import { UpgradeCanceledError } from "../error";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
@@ -271,19 +272,9 @@ async function generateUpgradeReport(ctx: CoreHookContext) {
   try {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     const projectPath = inputs.projectPath as string;
-    const report = path.join(projectPath, upgradeReportName);
-    await fs.ensureFile(report);
-
-    const header = `# Upgrade Change Logs${EOL}${EOL}Congratulation on your upgrade!${EOL}We have updated your configuration files with latest Teams Toolkit features.${EOL}Please check sections below to learn about upgrade details.`;
-    const projectStructure = `## Project Structure${EOL}${EOL}All old files in .fx and appPackage folder have been deleted and backed up to the ".backup" folder.${EOL}You can delete ".backup" folder.`;
-    const bicep = `## Bicep${EOL}`;
-    const restore = `## Restore${EOL}${EOL}Read this [wiki](https://aka.ms/teamsfx-migration-guide) if you want to restore your configuration files or learn more about this upgrade.`;
-
-    await fs.writeFile(
-      report,
-      `${header}${EOL}${EOL}${projectStructure}${EOL}${EOL}${bicep}${EOL}${EOL}${restore}`,
-      { encoding: "utf8" }
-    );
+    const target = path.join(projectPath, upgradeReportName);
+    const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
+    await fs.copyFile(source, target);
   } catch (error) {
     // do nothing
   }

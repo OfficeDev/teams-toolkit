@@ -22,7 +22,7 @@ describe("Start a new project", function () {
   let appId: string;
 
   it("Create, provision and run SPFx project with React framework", async function () {
-    let command = `teamsfx new --interactive false --app-name ${appName} --capabilites tab-spfx --spfx-framework-type react --spfx-webpart-name helloworld --programming-language typescript`;
+    let command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type react --spfx-webpart-name helloworld --programming-language typescript`;
     let result = await execAsync(command, {
       cwd: testFolder,
       env: process.env,
@@ -113,7 +113,7 @@ describe("Start a new project", function () {
   });
 
   it("Create SPFx project without framework", async function () {
-    const command = `teamsfx new --interactive false --app-name ${appName} --capabilites tab-spfx --spfx-framework-type none --spfx-webpart-name helloworld --programming-language typescript`;
+    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type none --spfx-webpart-name helloworld --programming-language typescript`;
     const result = await execAsync(command, {
       cwd: testFolder,
       env: process.env,

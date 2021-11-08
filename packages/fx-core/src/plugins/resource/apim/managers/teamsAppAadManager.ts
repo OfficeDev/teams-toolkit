@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
-import { ApimPluginConfigKeys, TeamsToolkitComponent } from "../constants";
-import { AssertConfigNotEmpty } from "../error";
+import { ApimPluginConfigKeys } from "../constants";
 import { IApimPluginConfig, IAadPluginConfig } from "../config";
 import { AadService } from "../services/aadService";
 import { Lazy } from "../utils/commonUtils";
@@ -27,10 +26,8 @@ export class TeamsAppAadManager {
     apimConfig: IApimPluginConfig
   ): Promise<void> {
     const aadService = await this.lazyAadService.getValue();
-    const apimClientAADClientId = AssertConfigNotEmpty(
-      TeamsToolkitComponent.ApimPlugin,
-      ApimPluginConfigKeys.apimClientAADClientId,
-      apimConfig.apimClientAADClientId
+    const apimClientAADClientId = apimConfig.checkAndGet(
+      ApimPluginConfigKeys.apimClientAADClientId
     );
     const data = { api: { knownClientApplications: [apimClientAADClientId] } };
 

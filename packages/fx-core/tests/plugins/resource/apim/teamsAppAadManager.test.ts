@@ -17,10 +17,15 @@ import { AadService } from "../../../../src/plugins/resource/apim/services/aadSe
 import { IAadPluginConfig } from "../../../../src/plugins/resource/apim/config";
 import { TeamsAppAadManager } from "../../../../src/plugins/resource/apim/managers/teamsAppAadManager";
 import axios, { AxiosInstance } from "axios";
-import { AadDefaultValues } from "../../../../src/plugins/resource/apim/constants";
+import {
+  AadDefaultValues,
+  ApimPluginConfigKeys,
+  TeamsToolkitComponent,
+} from "../../../../src/plugins/resource/apim/constants";
 import { assert } from "sinon";
 import { Lazy } from "../../../../src/plugins/resource/apim/utils/commonUtils";
 import { v4 } from "uuid";
+import { AssertConfigNotEmpty } from "../../../../src/plugins/resource/apim/error";
 dotenv.config();
 chai.use(chaiAsPromised);
 
@@ -65,7 +70,18 @@ describe("TeamsAppAadManager", () => {
       const aadConfig = buildAadPluginConfig(testObjectId, testClientId);
 
       // Act
-      await teamsAppAadManager.postProvision(aadConfig, { apimClientAADClientId: testClientId });
+      await teamsAppAadManager.postProvision(aadConfig, {
+        apimClientAADClientId: testClientId,
+        checkAndGet(key: string): string {
+          let res: string | undefined = undefined;
+          if (key === ApimPluginConfigKeys.apiDocumentPath) {
+            res = "openapi/openapi.json";
+          } else if (key === ApimPluginConfigKeys.apiPrefix) {
+            res = "apim-plugin-test";
+          }
+          return AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, key, res, "dev");
+        },
+      });
 
       // Assert
       assert.calledThrice(spy);

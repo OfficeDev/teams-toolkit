@@ -23,6 +23,7 @@ import {
   ProjectSettingError,
   environmentManager,
   SPFxConfigError,
+  getResourceFolder,
 } from "../..";
 import { UpgradeCanceledError } from "../error";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
@@ -67,6 +68,7 @@ import {
 import * as dotenv from "dotenv";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
+import { EOL } from "os";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -79,6 +81,7 @@ const resourceGroupName = "resourceGroupName";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
 const learnMoreLink = "https://aka.ms/teamsfx-migration-guide";
 const manualUpgradeLink = `${learnMoreLink}#upgrade-your-project-manually`;
+const upgradeReportName = `upgrade-change-logs.md`;
 let updateNotificationFlag = false;
 let fromReloadFlag = false;
 
@@ -149,6 +152,9 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
     await migrateToArmAndMultiEnv(ctx);
     core.tools.logProvider.warning(
       `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your configuration files or learn more about this upgrade.`
+    );
+    core.tools.logProvider.warning(
+      `[core] Read upgrade-change-logs.md to learn about details for this upgrade.`
     );
   } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
     // TODO: delete before Arm && Multi-env version released
@@ -262,6 +268,18 @@ async function handleError(projectPath: string, ctx: CoreHookContext) {
     });
 }
 
+async function generateUpgradeReport(ctx: CoreHookContext) {
+  try {
+    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+    const projectPath = inputs.projectPath as string;
+    const target = path.join(projectPath, upgradeReportName);
+    const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
+    await fs.copyFile(source, target);
+  } catch (error) {
+    // do nothing
+  }
+}
+
 async function postMigration(
   projectPath: string,
   ctx: CoreHookContext,
@@ -270,6 +288,7 @@ async function postMigration(
   await removeOldProjectFiles(projectPath);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrate);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
+  await generateUpgradeReport(ctx);
   const core = ctx.self as FxCore;
   core.tools.ui
     .showMessage(

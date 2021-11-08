@@ -39,4 +39,5 @@ export class FeatureFlagName {
   static readonly APIV2 = "TEAMSFX_APIV2";
   static readonly InsiderPreview = "TEAMSFX_INSIDER_PREVIEW";
   static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
+  static readonly VSCallingCLI = "VS_CALLING_CLI";
 }

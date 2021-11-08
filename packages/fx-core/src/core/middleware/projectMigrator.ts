@@ -134,14 +134,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
         [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
       });
       ctx.result = err(UpgradeCanceledError());
-      core.tools.logProvider.warning(`[core] Upgrade cancelled.`);
-      core.tools.logProvider.warning(
-        `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Check project upgrade) or click the “Upgrade project” button on tree view to trigger the upgrade.`
-      );
-
-      core.tools.logProvider.warning(
-        `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.7.0`
-      );
+      outputCancelMessage(ctx);
       return;
     }
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
@@ -169,6 +162,28 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
   }
   await next();
 };
+
+function outputCancelMessage(ctx: CoreHookContext) {
+  const core = ctx.self as FxCore;
+  core.tools.logProvider.warning(`[core] Upgrade cancelled.`);
+
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  if (inputs.platform === Platform.VSCode) {
+    core.tools.logProvider.warning(
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Check project upgrade) or click the “Upgrade project” button on tree view to trigger the upgrade.`
+    );
+    core.tools.logProvider.warning(
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.7.0`
+    );
+  } else {
+    core.tools.logProvider.warning(
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
+    );
+    core.tools.logProvider.warning(
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= 2.7.0`
+    );
+  }
+}
 
 function checkMethod(ctx: CoreHookContext): boolean {
   const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
@@ -289,10 +304,18 @@ async function postMigration(
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
   await generateUpgradeReport(ctx);
   const core = ctx.self as FxCore;
+  if (inputs.platform === Platform.VSCode) {
+    showSuccessDialogForVSCode(core);
+  } else {
+    core.tools.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessageCLI);
+  }
+}
+
+function showSuccessDialogForVSCode(core: FxCore) {
   core.tools.ui
     .showMessage(
       "info",
-      getStrings().solution.MigrationToArmAndMultiEnvSuccessMessage,
+      getStrings().solution.MigrationToArmAndMultiEnvSuccessMessageVSC,
       false,
       reloadText
     )
@@ -302,9 +325,7 @@ async function postMigration(
         sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
           [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
         });
-        if (inputs.platform === Platform.VSCode) {
-          core.tools.ui.reload?.();
-        }
+        core.tools.ui.reload?.();
       } else {
         sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
           [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Cancel,

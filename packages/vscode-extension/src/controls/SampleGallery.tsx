@@ -7,6 +7,8 @@ import InMeetingApp from "../../media/in-meeting-app.png";
 import ShareNow from "../../media/share-now.gif";
 import ToDoList from "../../media/to-do-list.gif";
 import ToDoListSharepoint from "../../media/to-do-list-sharepoint.gif";
+import ToDoListM365 from "../../media/to-do-list-M365.gif";
+import NpmSearchConnectorM365 from "../../media/npm-search-connector-M365.gif";
 
 export default class SampleGallery extends React.Component<any, any> {
   constructor(props: any) {
@@ -77,6 +79,22 @@ export default class SampleGallery extends React.Component<any, any> {
             title="FAQ Plus"
             description="FAQ Plus is a conversational Q&A bot providing an easy way to answer frequently asked questions by users. One can ask a question and the bot responds with information in the knowledge base. If the answer is not in the knowledge base, the bot submits the question to a pre-configured team of experts who help provide support."
             sampleAppFolder="faq-plus"
+            sampleAppUrl="https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
+          />
+          <SampleAppCard
+            image={ToDoListM365}
+            tags={["React", "Azure function", "JS", "Outlook", "Office"]}
+            title="Todo List (Works in Teams, Outlook and Office)"
+            description="Todo List app helps to manage personal to do items and also runs across Microsoft 365, including Teams, Outlook and Office. The frontend is a React app and the backend is an Azure Function. You can optionally deploy and host the app in Azure."
+            sampleAppFolder="todo-list-with-Azure-backend-M365"
+            sampleAppUrl="https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
+          />
+          <SampleAppCard
+            image={NpmSearchConnectorM365}
+            tags={["Message Extension", "JS", "Outlook"]}
+            title="NPM Search Connector"
+            description="NPM Search Connector is a Messaging Extension that runs across M365 including Teams and Outlook (Web). It allows you to perform a quick search for a NPM package and insert package details into conversations for easy sharing. The front end is built with Adaptive Cards and the backend is an Azure Bot Service."
+            sampleAppFolder="NPM-search-connector-M365"
             sampleAppUrl="https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
           />
         </Stack>

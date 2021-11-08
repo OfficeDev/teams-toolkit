@@ -690,7 +690,7 @@ export class FunctionPluginImpl {
           function: await fs.readFile(provisionFuncTemplateFilePath, ConstantString.UTF8Encoding),
         },
         Reference: {
-          functionAppId: FunctionBicep.functionAppId,
+          functionAppResourceId: FunctionBicep.functionAppResourceId,
           functionEndpoint: FunctionBicep.functionEndpoint,
         },
       },

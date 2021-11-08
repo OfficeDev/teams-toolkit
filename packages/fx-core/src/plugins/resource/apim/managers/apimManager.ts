@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ApimDefaultValues, ApimPathInfo, ApimPluginConfigKeys } from "../constants";
+import { ApimDefaultValues, ApimOutputBicepSnippet, ApimPathInfo, ApimPluginConfigKeys } from "../constants";
 import { AssertNotEmpty } from "../error";
 import {
   IAadPluginConfig,
@@ -13,7 +13,6 @@ import { ApimService } from "../services/apimService";
 import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { IAnswer } from "../answer";
 import {
-  AzureSolutionSettings,
   LogProvider,
   PluginContext,
   TelemetryReporter,
@@ -27,10 +26,9 @@ import {
 import { NamingRules } from "../utils/namingRules";
 import path from "path";
 import { Bicep, ConstantString } from "../../../../common/constants";
-import { ScaffoldArmTemplateResult } from "../../../../common/armInterface";
+import { ArmTemplateResult } from "../../../../common/armInterface";
 import * as fs from "fs-extra";
 import {
-  generateBicepFiles,
   getResourceGroupNameFromResourceId,
   isArmSupportEnabled,
 } from "../../../../common/tools";
@@ -211,54 +209,43 @@ export class ApimManager {
     await apimService.addApiToProduct(resourceGroupName, apimServiceName, productId, apiId);
   }
 
-  public async generateArmTemplates(
-    solutionConfig: AzureSolutionSettings
-  ): Promise<ScaffoldArmTemplateResult> {
+  public async generateArmTemplates(): Promise<ArmTemplateResult> {
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
 
-    const handleBarsContext = {
-      Plugins: solutionConfig.activeResourcePlugins,
-    };
-    const moduleOrchestrationContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.ModuleOrchestrationFileName),
-      handleBarsContext
-    );
-    if (moduleOrchestrationContentResult.isErr()) {
-      throw moduleOrchestrationContentResult.error;
-    }
-
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        apimProvision: {
-          Content: await fs.readFile(
-            path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleTemplateFileName),
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ProvisionFileName),
+          ConstantString.UTF8Encoding
+        ),
+        Reference: {
+          serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
+        },
+        Modules: {
+          apim: await fs.readFile(
+            path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleFileName),
             ConstantString.UTF8Encoding
           ),
         },
       },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(
-            path.join(bicepTemplateDir, Bicep.ParameterOrchestrationFileName),
-            ConstantString.UTF8Encoding
-          ),
-          ParameterJson: JSON.parse(
-            await fs.readFile(
-              path.join(bicepTemplateDir, Bicep.ParameterFileName),
-              ConstantString.UTF8Encoding
-            )
-          ),
-        },
-        ModuleTemplate: {
-          Content: moduleOrchestrationContentResult.value,
-        },
-        OutputTemplate: {
-          Content: await fs.readFile(
-            path.join(bicepTemplateDir, Bicep.OutputOrchestrationFileName),
+      Configuration: {
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ConfigFileName),
+          ConstantString.UTF8Encoding
+        ),
+        Modules: {
+          apim: await fs.readFile(
+            path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
             ConstantString.UTF8Encoding
           ),
         },
       },
+      Parameters: JSON.parse(
+        await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ParameterFileName),
+          ConstantString.UTF8Encoding
+        )
+      ),
     };
 
     return result;

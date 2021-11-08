@@ -62,7 +62,7 @@ describe("FunctionGenerateArmTemplates", () => {
             },
           },
           References: {
-            functionAppId: FunctionBicep.functionAppId,
+            functionAppResourceId: FunctionBicep.functionAppResourceId,
             functionEndpoint: FunctionBicep.functionEndpoint,
           },
         },

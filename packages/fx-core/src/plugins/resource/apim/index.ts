@@ -12,6 +12,7 @@ import {
   QTreeNode,
   Stage,
   Func,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { AssertNotEmpty, BuildError, NotImplemented, UnhandledError } from "./error";
 import { Telemetry } from "./utils/telemetry";
@@ -30,7 +31,6 @@ import {
 import { Factory } from "./factory";
 import { ProgressBar } from "./utils/progressBar";
 import { buildAnswer } from "./answer";
-import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { AzureResourceApim } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
@@ -111,14 +111,14 @@ export class ApimPlugin implements Plugin {
       await this.progressBar.init(PluginLifeCycleToProgressStep[lifeCycle], ctx);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.envInfo.state,
+        ctx.envInfo,
         lifeCycle,
         OperationStatus.Started
       );
       const result = await fn(ctx, this.progressBar, ...params);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.envInfo.state,
+        ctx.envInfo,
         lifeCycle,
         OperationStatus.Succeeded
       );
@@ -137,7 +137,7 @@ export class ApimPlugin implements Plugin {
       ctx.logProvider?.error(`[${ProjectConstants.pluginDisplayName}] ${error.message}`);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.envInfo.state,
+        ctx.envInfo,
         lifeCycle,
         OperationStatus.Failed,
         packagedError
@@ -153,7 +153,7 @@ async function _getQuestions(
   progressBar: ProgressBar,
   stage: Stage
 ): Promise<QTreeNode | undefined> {
-  const apimConfig = new ApimPluginConfig(ctx.config);
+  const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
   const questionManager = await Factory.buildQuestionManager(ctx);
   switch (stage) {
     case Stage.deploy:
@@ -168,7 +168,7 @@ async function _getQuestionsForUserTask(
   progressBar: ProgressBar,
   func: Func
 ): Promise<QTreeNode | undefined> {
-  const apimConfig = new ApimPluginConfig(ctx.config);
+  const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
   const questionManager = await Factory.buildQuestionManager(ctx);
   if (func.method === "addResource") {
     return await questionManager.addResource(ctx, apimConfig);
@@ -182,7 +182,7 @@ async function _callFunc(ctx: PluginContext, progressBar: ProgressBar, func: Fun
 }
 
 async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const apimConfig = new ApimPluginConfig(ctx.config);
+  const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
   const answer = buildAnswer(ctx.answers);
   const scaffoldManager = await Factory.buildScaffoldManager(ctx);
 
@@ -199,8 +199,8 @@ async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<
 }
 
 async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.envInfo.state);
-  const apimConfig = new ApimPluginConfig(ctx.config);
+  const solutionConfig = new SolutionConfig(ctx.envInfo);
+  const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
 
   const apimManager = await Factory.buildApimManager(ctx);
   const aadManager = await Factory.buildAadManager(ctx);
@@ -230,8 +230,8 @@ async function _generateArmTemplates(
 }
 
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const apimConfig = new ApimPluginConfig(ctx.config);
-  const aadConfig = new AadPluginConfig(ctx.envInfo.state);
+  const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
+  const aadConfig = new AadPluginConfig(ctx.envInfo);
 
   const apimManager = await Factory.buildApimManager(ctx);
   const aadManager = await Factory.buildAadManager(ctx);
@@ -263,9 +263,9 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
 }
 
 async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.envInfo.state);
-  const apimConfig = new ApimPluginConfig(ctx.config);
-  const functionConfig = new FunctionPluginConfig(ctx.envInfo.state);
+  const solutionConfig = new SolutionConfig(ctx.envInfo);
+  const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
+  const functionConfig = new FunctionPluginConfig(ctx.envInfo);
   const answer = buildAnswer(ctx.answers);
 
   if (answer.validate) {

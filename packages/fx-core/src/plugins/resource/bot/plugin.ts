@@ -300,123 +300,124 @@ export class TeamsBotImpl {
   }
 
   public async postProvision(context: PluginContext): Promise<FxResult> {
+    if (isArmSupportEnabled()) {
+      return ResultFactory.Success();
+    }
     Logger.info(Messages.PostProvisioningStart);
 
     this.ctx = context;
 
-    if (!isArmSupportEnabled()) {
-      await this.config.restoreConfigFromContext(context);
+    await this.config.restoreConfigFromContext(context);
 
-      // 1. Get required config items from other plugins.
-      // 2. Update bot hosting env"s app settings.
-      const botId = this.config.scaffold.botId;
-      const botPassword = this.config.scaffold.botPassword;
-      const teamsAppClientId = this.config.teamsAppClientId;
-      const teamsAppClientSecret = this.config.teamsAppClientSecret;
-      const teamsAppTenant = this.config.teamsAppTenant;
-      const applicationIdUris = this.config.applicationIdUris;
-      const siteEndpoint = this.config.provision.siteEndpoint;
+    // 1. Get required config items from other plugins.
+    // 2. Update bot hosting env"s app settings.
+    const botId = this.config.scaffold.botId;
+    const botPassword = this.config.scaffold.botPassword;
+    const teamsAppClientId = this.config.teamsAppClientId;
+    const teamsAppClientSecret = this.config.teamsAppClientSecret;
+    const teamsAppTenant = this.config.teamsAppTenant;
+    const applicationIdUris = this.config.applicationIdUris;
+    const siteEndpoint = this.config.provision.siteEndpoint;
 
-      CheckThrowSomethingMissing(ConfigNames.BOT_ID, botId);
-      CheckThrowSomethingMissing(ConfigNames.BOT_PASSWORD, botPassword);
-      CheckThrowSomethingMissing(ConfigNames.AUTH_CLIENT_ID, teamsAppClientId);
-      CheckThrowSomethingMissing(ConfigNames.AUTH_CLIENT_SECRET, teamsAppClientSecret);
-      CheckThrowSomethingMissing(ConfigNames.AUTH_TENANT, teamsAppTenant);
-      CheckThrowSomethingMissing(ConfigNames.AUTH_APPLICATION_ID_URIS, applicationIdUris);
-      CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, siteEndpoint);
+    CheckThrowSomethingMissing(ConfigNames.BOT_ID, botId);
+    CheckThrowSomethingMissing(ConfigNames.BOT_PASSWORD, botPassword);
+    CheckThrowSomethingMissing(ConfigNames.AUTH_CLIENT_ID, teamsAppClientId);
+    CheckThrowSomethingMissing(ConfigNames.AUTH_CLIENT_SECRET, teamsAppClientSecret);
+    CheckThrowSomethingMissing(ConfigNames.AUTH_TENANT, teamsAppTenant);
+    CheckThrowSomethingMissing(ConfigNames.AUTH_APPLICATION_ID_URIS, applicationIdUris);
+    CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, siteEndpoint);
 
-      const serviceClientCredentials = await this.getAzureAccountCredenial();
+    const serviceClientCredentials = await this.getAzureAccountCredenial();
 
-      const webSiteMgmtClient = factory.createWebSiteMgmtClient(
-        serviceClientCredentials,
-        this.config.provision.subscriptionId!
-      );
+    const webSiteMgmtClient = factory.createWebSiteMgmtClient(
+      serviceClientCredentials,
+      this.config.provision.subscriptionId!
+    );
 
-      const appSettings = [
-        { name: AuthEnvNames.BOT_ID, value: botId },
-        { name: AuthEnvNames.BOT_PASSWORD, value: botPassword },
-        { name: AuthEnvNames.M365_CLIENT_ID, value: teamsAppClientId },
-        { name: AuthEnvNames.M365_CLIENT_SECRET, value: teamsAppClientSecret },
-        { name: AuthEnvNames.M365_TENANT_ID, value: teamsAppTenant },
-        { name: AuthEnvNames.M365_AUTHORITY_HOST, value: AuthValues.M365_AUTHORITY_HOST },
-        {
-          name: AuthEnvNames.INITIATE_LOGIN_ENDPOINT,
-          value: `${this.config.provision.siteEndpoint}${CommonStrings.AUTH_LOGIN_URI_SUFFIX}`,
-        },
-        { name: AuthEnvNames.M365_APPLICATION_ID_URI, value: applicationIdUris },
-      ];
+    const appSettings = [
+      { name: AuthEnvNames.BOT_ID, value: botId },
+      { name: AuthEnvNames.BOT_PASSWORD, value: botPassword },
+      { name: AuthEnvNames.M365_CLIENT_ID, value: teamsAppClientId },
+      { name: AuthEnvNames.M365_CLIENT_SECRET, value: teamsAppClientSecret },
+      { name: AuthEnvNames.M365_TENANT_ID, value: teamsAppTenant },
+      { name: AuthEnvNames.M365_AUTHORITY_HOST, value: AuthValues.M365_AUTHORITY_HOST },
+      {
+        name: AuthEnvNames.INITIATE_LOGIN_ENDPOINT,
+        value: `${this.config.provision.siteEndpoint}${CommonStrings.AUTH_LOGIN_URI_SUFFIX}`,
+      },
+      { name: AuthEnvNames.M365_APPLICATION_ID_URI, value: applicationIdUris },
+    ];
 
-      if (this.config.provision.sqlEndpoint) {
-        appSettings.push({
-          name: AuthEnvNames.SQL_ENDPOINT,
-          value: this.config.provision.sqlEndpoint,
-        });
-      }
-      if (this.config.provision.sqlDatabaseName) {
-        appSettings.push({
-          name: AuthEnvNames.SQL_DATABASE_NAME,
-          value: this.config.provision.sqlDatabaseName,
-        });
-      }
-      if (this.config.provision.sqlUserName) {
-        appSettings.push({
-          name: AuthEnvNames.SQL_USER_NAME,
-          value: this.config.provision.sqlUserName,
-        });
-      }
-      if (this.config.provision.sqlPassword) {
-        appSettings.push({
-          name: AuthEnvNames.SQL_PASSWORD,
-          value: this.config.provision.sqlPassword,
-        });
-      }
-      if (this.config.provision.identityClientId) {
-        appSettings.push({
-          name: AuthEnvNames.IDENTITY_ID,
-          value: this.config.provision.identityClientId,
-        });
-      }
-      if (this.config.provision.functionEndpoint) {
-        appSettings.push({
-          name: AuthEnvNames.API_ENDPOINT,
-          value: this.config.provision.functionEndpoint,
-        });
-      }
-
-      const siteEnvelope: appService.WebSiteManagementModels.Site =
-        LanguageStrategy.getSiteEnvelope(
-          this.config.scaffold.programmingLanguage!,
-          this.config.provision.appServicePlan!,
-          this.config.provision.location!,
-          appSettings
-        );
-
-      if (this.config.provision.identityResourceId) {
-        siteEnvelope.identity = {
-          type: IdentityConstants.IDENTITY_TYPE_USER_ASSIGNED,
-          userAssignedIdentities: {
-            [this.config.provision.identityResourceId]: {},
-          },
-        };
-      }
-
-      Logger.info(Messages.UpdatingAzureWebAppSettings);
-      await AzureOperations.CreateOrUpdateAzureWebApp(
-        webSiteMgmtClient,
-        this.config.provision.resourceGroup!,
-        this.config.provision.siteName!,
-        siteEnvelope,
-        true
-      );
-      Logger.info(Messages.SuccessfullyUpdatedAzureWebAppSettings);
-
-      // 3. Update message endpoint for bot registration.
-      await this.updateMessageEndpointOnAzure(
-        `${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
-      );
-
-      this.config.saveConfigIntoContext(context);
+    if (this.config.provision.sqlEndpoint) {
+      appSettings.push({
+        name: AuthEnvNames.SQL_ENDPOINT,
+        value: this.config.provision.sqlEndpoint,
+      });
     }
+    if (this.config.provision.sqlDatabaseName) {
+      appSettings.push({
+        name: AuthEnvNames.SQL_DATABASE_NAME,
+        value: this.config.provision.sqlDatabaseName,
+      });
+    }
+    if (this.config.provision.sqlUserName) {
+      appSettings.push({
+        name: AuthEnvNames.SQL_USER_NAME,
+        value: this.config.provision.sqlUserName,
+      });
+    }
+    if (this.config.provision.sqlPassword) {
+      appSettings.push({
+        name: AuthEnvNames.SQL_PASSWORD,
+        value: this.config.provision.sqlPassword,
+      });
+    }
+    if (this.config.provision.identityClientId) {
+      appSettings.push({
+        name: AuthEnvNames.IDENTITY_ID,
+        value: this.config.provision.identityClientId,
+      });
+    }
+    if (this.config.provision.functionEndpoint) {
+      appSettings.push({
+        name: AuthEnvNames.API_ENDPOINT,
+        value: this.config.provision.functionEndpoint,
+      });
+    }
+
+    const siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(
+      this.config.scaffold.programmingLanguage!,
+      this.config.provision.appServicePlan!,
+      this.config.provision.location!,
+      appSettings
+    );
+
+    if (this.config.provision.identityResourceId) {
+      siteEnvelope.identity = {
+        type: IdentityConstants.IDENTITY_TYPE_USER_ASSIGNED,
+        userAssignedIdentities: {
+          [this.config.provision.identityResourceId]: {},
+        },
+      };
+    }
+
+    Logger.info(Messages.UpdatingAzureWebAppSettings);
+    await AzureOperations.CreateOrUpdateAzureWebApp(
+      webSiteMgmtClient,
+      this.config.provision.resourceGroup!,
+      this.config.provision.siteName!,
+      siteEnvelope,
+      true
+    );
+    Logger.info(Messages.SuccessfullyUpdatedAzureWebAppSettings);
+
+    // 3. Update message endpoint for bot registration.
+    await this.updateMessageEndpointOnAzure(
+      `${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
+    );
+
+    this.config.saveConfigIntoContext(context);
+    Logger.info(Messages.SuccessfullyPostProvisionedBot);
 
     return ResultFactory.Success();
   }

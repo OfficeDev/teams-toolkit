@@ -1,7 +1,7 @@
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { ARM_TEMPLATE_OUTPUT, newEnvInfo } from "../../../../src";
-import { AzureSqlArmOutput, Constants } from "../../../../src/plugins/resource/sql/constants";
+import { Constants } from "../../../../src/plugins/resource/sql/constants";
 import { MockUserInteraction } from "../../../core/utils";
 
 export class TestHelper {
@@ -109,19 +109,15 @@ export class TestHelper {
   static mockArmOutput(context: PluginContext) {
     const solutionProfile = context.envInfo.state.get("solution") ?? new Map();
     const armOutput = solutionProfile[ARM_TEMPLATE_OUTPUT] ?? {};
-
-    armOutput[AzureSqlArmOutput.sqlResourceId] = {
-      type: "String",
-      value:
-        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Sql/servers/test-sql",
-    };
-    armOutput[AzureSqlArmOutput.sqlEndpoint] = {
-      type: "String",
-      value: "test-sql.database.windows.net",
-    };
-    armOutput[AzureSqlArmOutput.databaseName] = {
-      type: "String",
-      value: "databaseName",
+    armOutput["azureSqlOutput"] = {
+      type: "Object",
+      value: {
+        teamsFxPluginId: "fx-resource-azure-sql",
+        sqlResourceId:
+          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Sql/servers/test-sql",
+        sqlEndpoint: "test-sql.database.windows.net",
+        databaseName: "databaseName",
+      },
     };
     solutionProfile.set(ARM_TEMPLATE_OUTPUT, armOutput);
     context.envInfo.state.set("solution", solutionProfile);

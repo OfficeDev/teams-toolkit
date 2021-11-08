@@ -23,14 +23,7 @@ import { SqlConfig } from "./config";
 import { SqlClient } from "./sqlClient";
 import { ContextUtils } from "./utils/contextUtils";
 import { formatEndpoint, parseToken, UserType } from "./utils/commonUtils";
-import {
-  AzureSqlArmOutput,
-  AzureSqlBicep,
-  AzureSqlBicepFile,
-  Constants,
-  HelpLinks,
-  Telemetry,
-} from "./constants";
+import { AzureSqlBicep, AzureSqlBicepFile, Constants, HelpLinks, Telemetry } from "./constants";
 import { Message } from "./utils/message";
 import { TelemetryUtils } from "./utils/telemetryUtils";
 import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "./questions";
@@ -40,7 +33,6 @@ import { getTemplatesFolder } from "../../../folder";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
-import { getArmOutput } from "../utils4v2";
 import {
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
@@ -187,10 +179,6 @@ export class SqlPluginImpl {
     });
 
     if (isArmSupportEnabled()) {
-      this.syncArmOutput(ctx);
-      ctx.config.set(Constants.sqlResourceId, this.config.sqlResourceId);
-      ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
-      ctx.config.set(Constants.databaseName, this.config.databaseName);
       this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
       this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
       this.config.azureSubscriptionId = getSubscriptionIdFromResourceId(this.config.sqlResourceId);
@@ -294,15 +282,6 @@ export class SqlPluginImpl {
   private setContext(ctx: PluginContext) {
     ctx.config.set(Constants.admin, this.config.admin);
     ctx.config.set(Constants.adminPassword, this.config.adminPassword);
-  }
-
-  private syncArmOutput(ctx: PluginContext) {
-    this.config.sqlResourceId = getArmOutput(ctx, AzureSqlArmOutput.sqlResourceId)!;
-    this.config.sqlEndpoint = getArmOutput(ctx, AzureSqlArmOutput.sqlEndpoint)!;
-    this.config.databaseName = getArmOutput(ctx, AzureSqlArmOutput.databaseName)!;
-    this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
-    this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
-    this.config.azureSubscriptionId = getSubscriptionIdFromResourceId(this.config.sqlResourceId);
   }
 
   private buildQuestionNode() {

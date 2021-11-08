@@ -131,6 +131,7 @@ export class Messages {
   public static readonly ReopenWorkingDir = (path = ""): string =>
     `Please check whether the path ${path} exists and you have write access to it, if no, please move the project to a valid path.`;
   public static readonly PostProvisioningStart = "Start to Post Provision.";
+  public static readonly SuccessfullyPostProvisionedBot = "Successfully post-provisioned bot.";
 
   // for the use of migrating v1 project
   public static readonly StartMigrateV1Project = (name: string) => `Migrating '${name}'.`;

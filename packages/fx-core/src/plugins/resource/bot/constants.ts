@@ -272,7 +272,7 @@ export class PathInfo {
 }
 
 export class BotBicep {
-  static readonly resourceId: string = "provisionOutputs.botOutput.value.webAppResourceId";
-  static readonly hostName: string = "provisionOutputs.botOutput.value.webAppHostName";
-  static readonly webAppEndpoint: string = "provisionOutputs.botOutputs.value.webAppEndpoint";
+  static readonly resourceId: string = "provisionOutputs.botOutput.value.botWebAppResourceId";
+  static readonly hostName: string = "provisionOutputs.botOutput.value.validDomain";
+  static readonly webAppEndpoint: string = "provisionOutputs.botOutputs.value.botWebAppEndpoint";
 }

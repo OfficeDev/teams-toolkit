@@ -10,7 +10,7 @@ import {
   execAsync,
   getTestFolder,
   getUniqueAppName,
-  loadContext,
+  readContext,
 } from "../commonUtils";
 import { AppStudioValidator, SharepointValidator } from "../../commonlib";
 
@@ -18,7 +18,6 @@ describe("Start a new project", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
-  const env = "e2e";
   let appId: string;
 
   it("Create, provision and run SPFx project with React framework", async function () {
@@ -78,7 +77,7 @@ describe("Start a new project", function () {
 
     {
       // Get context
-      const contextResult = await loadContext(projectPath, env);
+      const contextResult = await readContext(projectPath);
       if (contextResult.isErr()) {
         throw contextResult.error;
       }
@@ -110,41 +109,6 @@ describe("Start a new project", function () {
       SharepointValidator.init();
       SharepointValidator.validateDeploy(appId);
     }
-  });
-
-  it("Create SPFx project without framework", async function () {
-    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type none --spfx-webpart-name helloworld --programming-language typescript`;
-    const result = await execAsync(command, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
-
-    // check specified files
-    const files: string[] = [
-      "config/config.json",
-      "config/copy-assets.json",
-      "config/deploy-azure-storage.json",
-      "config/package-solution.json",
-      "config/serve.json",
-      "config/write-manifests.json",
-      "src/webparts/helloworld/HelloworldWebPart.manifest.json",
-      "src/webparts/helloworld/HelloworldWebPart.ts",
-      "src/webparts/helloworld/loc/en-us.js",
-      "src/webparts/helloworld/loc/mystrings.d.ts",
-      "src/index.ts",
-      ".gitignore",
-      "gulpfile.js",
-      "package.json",
-      "README.md",
-      "tsconfig.json",
-      "tslint.json",
-    ];
-    for (const file of files) {
-      const filePath = path.join(testFolder, appName, `SPFx`, file);
-      expect(fs.existsSync(filePath), `${filePath} must exist.`).to.eq(true);
-    }
-    expect(result.stderr).to.eq("");
   });
 
   after(async () => {

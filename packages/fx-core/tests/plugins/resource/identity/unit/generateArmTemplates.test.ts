@@ -10,12 +10,7 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import fs from "fs-extra";
 import * as path from "path";
-import {
-  ConstantString,
-  mockSolutionUpdateArmTemplates,
-  mockSolutionUpdateArmTemplatesV2,
-  ResourcePlugins,
-} from "../../util";
+import { ConstantString, mockSolutionUpdateArmTemplatesV2, ResourcePlugins } from "../../util";
 chai.use(chaiAsPromised);
 
 dotenv.config();

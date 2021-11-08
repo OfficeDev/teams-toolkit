@@ -1,5 +1,5 @@
 // Resources for bot
-module botProvision './botProvision.result.v2.bicep' = {
+module botProvision './botProvision.result.bicep' = {
   name: 'botProvision'
   params: {
     provisionParameters: provisionParameters

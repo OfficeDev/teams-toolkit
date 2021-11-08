@@ -32,9 +32,9 @@ export async function sendRequestWithRetry<T>(
 
       error = new Error(`HTTP Request failed: ${JSON.stringify(res)}`);
       status = res.status;
-    } catch (e) {
+    } catch (e: any) {
       error = e;
-      status = e.response?.status;
+      status = e?.response?.status;
     }
   }
 

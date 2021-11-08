@@ -1,13 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ReadonlySolutionConfig, UserError } from "@microsoft/teamsfx-api";
-import { SystemError, TelemetryReporter } from "@microsoft/teamsfx-api";
-import {
-  PluginLifeCycle,
-  ProjectConstants,
-  OperationStatus,
-  OpenApiSchemaVersion,
-} from "../constants";
+import { EnvInfo, UserError, SystemError, TelemetryReporter } from "@microsoft/teamsfx-api";
+import { PluginLifeCycle, ProjectConstants, OperationStatus } from "../constants";
 import { IName } from "../interfaces/IName";
 import { SolutionConfig } from "../config";
 
@@ -28,12 +22,12 @@ class TelemetryPropertyName {
 export class Telemetry {
   public static sendLifeCycleEvent(
     telemetryReporter: TelemetryReporter | undefined,
-    config: ReadonlySolutionConfig,
+    envInfo: EnvInfo,
     lifeCycle: PluginLifeCycle,
     status: OperationStatus,
     error?: UserError | SystemError
   ): void {
-    const solutionConfig = new SolutionConfig(config);
+    const solutionConfig = new SolutionConfig(envInfo);
     const properties = solutionConfig.remoteTeamsAppId
       ? { appid: solutionConfig.remoteTeamsAppId }
       : undefined;

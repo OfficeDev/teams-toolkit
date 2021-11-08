@@ -1,11 +1,4 @@
-import {
-  JSCodeshift,
-  Collection,
-  Identifier,
-  ASTPath,
-  identifier,
-  tsQualifiedName,
-} from "jscodeshift";
+import { JSCodeshift, Collection, Identifier, ASTPath, identifier } from "jscodeshift";
 import { ImportInfo } from "./importInfo";
 import { Replacement, TargetReplacement } from "./replacement";
 import { buildReplacement, buildTargetReplacement } from "./replacementsGenerator";

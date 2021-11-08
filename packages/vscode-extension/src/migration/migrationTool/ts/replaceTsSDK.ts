@@ -12,12 +12,9 @@ import {
   Transform,
   Options,
   Collection,
-  Identifier,
-  ASTPath,
   CallExpression,
 } from "jscodeshift";
 import { replaceFunction } from "./replaceFunction";
-import { ImportInfo } from "./importInfo";
 import { replaceEnum } from "./replaceEnum";
 import {
   getTeamsClientSDKReferencePrefixes,

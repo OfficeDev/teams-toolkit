@@ -4,17 +4,15 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
-
 import { cleanUpLocalProject, execAsync, getTestFolder, getUniqueAppName } from "../commonUtils";
 
 describe("Start a new project", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
-  const type = "none";
 
-  it("Create SPFx project without framework - Test Plan ID 9426251", async function () {
-    let command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type ${type} --spfx-webpart-name helloworld --programming-language typescript`;
+  it("Create SPFx project without framework", async function () {
+    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type none --spfx-webpart-name helloworld --programming-language typescript`;
     const result = await execAsync(command, {
       cwd: testFolder,
       env: process.env,
@@ -46,15 +44,6 @@ describe("Start a new project", function () {
       expect(fs.existsSync(filePath), `${filePath} must exist.`).to.eq(true);
     }
     expect(result.stderr).to.eq("");
-
-    // validation succeed without provision
-    command = "teamsfx validate";
-    const validationResult = await execAsync(command, {
-      cwd: path.join(testFolder, appName),
-      env: process.env,
-      timeout: 0,
-    });
-    expect(validationResult.stderr).to.eq("");
   });
 
   after(async () => {

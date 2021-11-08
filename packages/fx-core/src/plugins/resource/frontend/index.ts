@@ -10,6 +10,8 @@ import {
   AzureSolutionSettings,
   ok,
   Func,
+  FxError,
+  Result,
 } from "@microsoft/teamsfx-api";
 
 import { ErrorFactory, TeamsFxResult } from "./error-factory";
@@ -27,7 +29,7 @@ import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/q
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { isArmSupportEnabled } from "../../..";
-import { ArmResourcePlugin } from "../../../common/armInterface";
+import { ArmResourcePlugin, ArmTemplateResult } from "../../../common/armInterface";
 import "./v2";
 
 @Service(ResourcePlugins.FrontendPlugin)
@@ -95,7 +97,9 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
     );
   }
 
-  public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
+  public async generateArmTemplates(
+    ctx: PluginContext
+  ): Promise<Result<ArmTemplateResult, FxError>> {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.GenerateArmTemplates, () =>
       this.frontendPluginImpl.generateArmTemplates(ctx)

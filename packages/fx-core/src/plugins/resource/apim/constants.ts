@@ -161,7 +161,9 @@ export class ApimPathInfo {
     "apim",
     "bicep"
   );
-  public static readonly ProvisionModuleTemplateFileName = "apimProvision.bicep";
+
+  static readonly ProvisionModuleFileName = "apimProvision.bicep";
+  static readonly ConfigurationModuleFileName = "apimConfiguration.bicep";
 }
 
 export class ApimPluginConfigKeys {
@@ -425,4 +427,8 @@ export enum OpenApiSchemaVersion {
 
 export class UserTask {
   static addResourceFuncName = "addResource";
+}
+
+export class ApimOutputBicepSnippet {
+  static readonly ServiceResourceId = "provisionOutputs.apimOutput.value.serviceResourceId";
 }

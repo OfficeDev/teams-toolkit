@@ -47,7 +47,7 @@ import {
   HostTypeOptionSPFx,
   MessageExtensionItem,
 } from "../../plugins/solution/fx-solution/question";
-import { createLocalManifest } from "../../plugins/resource/appstudio/plugin";
+import { createLocalManifest, createManifest } from "../../plugins/resource/appstudio/plugin";
 import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
@@ -68,7 +68,6 @@ import {
 import * as dotenv from "dotenv";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
-import { EOL } from "os";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -172,9 +171,9 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
 };
 
 function checkMethod(ctx: CoreHookContext): boolean {
-  const getProjectConfigMethod = "getProjectConfig";
-  if (ctx.method === getProjectConfigMethod && fromReloadFlag) return false;
-  fromReloadFlag = ctx.method === getProjectConfigMethod;
+  const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
+  if (ctx.method && methods.has(ctx.method) && fromReloadFlag) return false;
+  fromReloadFlag = ctx.method != undefined && methods.has(ctx.method);
   return true;
 }
 
@@ -365,6 +364,36 @@ async function generateLocalTemplate(manifestString: string) {
   return manifest;
 }
 
+async function getManifest(
+  sourceManifestFile: string,
+  appName: string,
+  hasFrontend: boolean,
+  hasBotCapability: boolean,
+  hasMessageExtensionCapability: boolean,
+  isSPFx: boolean,
+  migrateFromV1: boolean
+): Promise<TeamsAppManifest> {
+  let manifest: TeamsAppManifest | undefined;
+  let error = undefined;
+  try {
+    manifest = await readJson(sourceManifestFile);
+  } catch (err) {
+    error = err;
+    manifest = await createManifest(
+      appName,
+      hasFrontend,
+      hasBotCapability,
+      hasMessageExtensionCapability,
+      isSPFx,
+      migrateFromV1
+    );
+  }
+  if (!manifest) {
+    throw error;
+  }
+  return manifest;
+}
+
 async function migrateMultiEnv(projectPath: string): Promise<void> {
   const { fx, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   const {
@@ -405,7 +434,15 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     await fs.copy(path.join(fx, AppPackageFolderName), templateAppPackage);
   }
   const sourceManifestFile = path.join(templateAppPackage, REMOTE_MANIFEST);
-  const manifest: TeamsAppManifest = await readJson(sourceManifestFile);
+  const manifest: TeamsAppManifest = await getManifest(
+    sourceManifestFile,
+    appName,
+    hasFrontend,
+    hasBotCapability,
+    hasMessageExtensionCapability,
+    isSPFx,
+    migrateFromV1
+  );
   await fs.remove(sourceManifestFile);
   await moveIconsToResourceFolder(templateAppPackage, manifest);
   // generate manifest.remote.template.json
@@ -466,16 +503,18 @@ async function moveIconsToResourceFolder(
 
   // move to resources
   const resource = path.join(templateAppPackage, "resources");
-  const iconColor = path.join(templateAppPackage, manifest.icons.color);
-  const iconOutline = path.join(templateAppPackage, manifest.icons.outline);
+  const colorName = manifest.icons.color.replace("resources/", "");
+  const outlineName = manifest.icons.outline.replace("resources/", "");
+  const iconColor = path.join(templateAppPackage, colorName);
+  const iconOutline = path.join(templateAppPackage, outlineName);
   await fs.ensureDir(resource);
   if (await fs.pathExists(iconColor)) {
-    await fs.move(iconColor, path.join(resource, manifest.icons.color));
-    manifest.icons.color = `resources/${manifest.icons.color}`;
+    await fs.move(iconColor, path.join(resource, colorName));
+    manifest.icons.color = `resources/${colorName}`;
   }
   if (await fs.pathExists(iconOutline)) {
-    await fs.move(iconOutline, path.join(resource, manifest.icons.outline));
-    manifest.icons.outline = `resources/${manifest.icons.outline}`;
+    await fs.move(iconOutline, path.join(resource, outlineName));
+    manifest.icons.outline = `resources/${outlineName}`;
   }
 
   return;

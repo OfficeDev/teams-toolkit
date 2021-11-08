@@ -664,6 +664,34 @@ describe("Middleware - others", () => {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
     });
+
+    it("successfully migrate to version of arm and multi-env with error manifest file", async () => {
+      await fs.copy(
+        path.join(__dirname, "../samples/migrationErrorManifest/"),
+        path.join(projectPath)
+      );
+      class MyClass {
+        tools?: any = new MockTools();
+        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        other: [ProjectMigratorMW],
+      });
+
+      const inputs: Inputs = { platform: Platform.VSCode };
+      inputs.projectPath = projectPath;
+      const my = new MyClass();
+
+      try {
+        const res = await my.other(inputs);
+        assert.isTrue(res.isOk());
+      } finally {
+        await fs.rmdir(inputs.projectPath!, { recursive: true });
+      }
+    });
+
     it("successfully update the tab project migrated from v1", async () => {
       await fs.copy(path.join(__dirname, "../samples/migrationV1Tab/"), path.join(projectPath));
       class MyClass {

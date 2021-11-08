@@ -4,7 +4,7 @@ import "mocha";
 
 import * as chai from "chai";
 import * as sinon from "sinon";
-import { PluginContext, ReadonlyPluginConfig, Result } from "@microsoft/teamsfx-api";
+import { PluginContext, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
 import chaiAsPromised from "chai-as-promised";
 
 import { FrontendPlugin as BlazorPlugin } from "../../../../../src/plugins/resource/frontend";
@@ -13,7 +13,7 @@ import {
   BlazorConfigInfo,
   BlazorPluginInfo,
   DependentPluginInfo,
-} from "../../../../../src/plugins/resource/Frontend/blazor/constants";
+} from "../../../../../src/plugins/resource/frontend/blazor/constants";
 import {
   AzureClientFactory,
   AzureLib,

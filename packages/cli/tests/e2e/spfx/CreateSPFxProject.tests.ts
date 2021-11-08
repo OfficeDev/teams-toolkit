@@ -77,11 +77,7 @@ describe("Start a new project", function () {
 
     {
       // Get context
-      const contextResult = await readContext(projectPath);
-      if (contextResult.isErr()) {
-        throw contextResult.error;
-      }
-      const context = contextResult.value;
+      const context = await readContext(projectPath);
 
       // Only check Teams App existence
       const appStudio = AppStudioValidator.init(context);

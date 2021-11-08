@@ -13,26 +13,9 @@ var oauthServerName = contains(provisionParameters, 'apimOauthServerName') ? pro
 var clientId = provisionParameters['apimClientId']
 var clientSecret = provisionParameters['apimClientSecret']
 
-{{#contains 'fx-resource-bot' Plugins}}
-var botId = provisionParameters['botAadAppClientId']
-{{/contains}}
-{{#contains 'fx-resource-frontend-hosting' Plugins}}
-var tabAppDomain = {{../PluginOutput.fx-resource-frontend-hosting.References.domain}}
-{{/contains}}
-{{#contains 'fx-resource-frontend-hosting' Plugins}}
-{{#notContains 'fx-resource-bot' ../Plugins}}
+var tabAppDomain = provisionOutputs.frontendHostingOutput.value.domain
 var m365ClientId = provisionParameters['m365ClientId']
 var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'
-{{/notContains}}
-{{#contains 'fx-resource-bot' ../Plugins}}
-var m365ApplicationIdUri = 'api://${tabAppDomain}/botid-${botId}'
-{{/contains}}
-{{/contains}}
-{{#notContains 'fx-resource-frontend-hosting' Plugins}}
-{{#contains 'fx-resource-bot' ../Plugins}}
-var m365ApplicationIdUri = 'api://botid-${botId}'
-{{/contains}}
-{{/notContains}}
 
 var scope = '${m365ApplicationIdUri}/.default'
 var authorizationEndpoint = uri(m365OauthAuthorityHost, '${m365TenantId}/oauth2/v2.0/authorize')

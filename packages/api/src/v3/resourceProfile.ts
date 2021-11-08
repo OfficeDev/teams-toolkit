@@ -28,7 +28,7 @@ export enum AzureResourceTypes {
  * defines the provision output of HostingPlugin
  */
 export interface AzureResource extends Json {
-  type: AzureResourceTypes;
+  type: string;
   id: string; //resourceId
   name: string;
   endpoint?: string;
@@ -96,17 +96,19 @@ export interface AzureCommonConfig {
   provisionSucceeded: boolean;
 }
 
-export interface TeamsAppResource {
+export interface TeamsAppResource extends Json {
   teamsAppId: string;
   tenantId: string;
 }
 
 export interface LocalResource extends Json {
+  type: string;
   endpoint?: string;
   secretFields?: string[];
 }
 
-export interface FrontendLocalResource extends LocalResource {
+export interface LocalFrontendResource extends LocalResource {
+  type: "Local Frontend";
   browser: string;
   https: boolean;
   trustDevCert: boolean;
@@ -115,13 +117,15 @@ export interface FrontendLocalResource extends LocalResource {
   endpoint: string;
 }
 
-export interface SimpleAuthLocalResource extends LocalResource {
+export interface LocalSimpleAuthResource extends LocalResource {
+  type: "Local Simple Auth";
   filePath: string;
   environmentVariableParams: string;
   endpoint: string;
 }
 
 export interface LocalBotResource extends LocalResource {
+  type: "Local Bot";
   skipNgrok: boolean;
   botId: string;
   botPassword: string;
@@ -155,15 +159,15 @@ export interface TeamsAppResourceProfile {
 export interface TeamsAppLocalResourceProfile {
   teamsApp: TeamsAppResource;
   tab?: {
-    hosting: FrontendLocalResource;
-    simpleAuth?: SimpleAuthLocalResource;
+    hosting: LocalFrontendResource;
+    simpleAuth?: LocalSimpleAuthResource;
   };
   bot?: {
     hosting: LocalBotResource;
   };
   aad?: AzureActiveDirectoryApp;
   resources?: {
-    [key: string]: AzureResource;
+    [key: string]: LocalResource;
   };
 }
 

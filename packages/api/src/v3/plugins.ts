@@ -3,20 +3,36 @@
 
 import { AzureAccountProvider, FxError, Result, TokenProvider } from "..";
 import { OptionItem } from "../qm";
-import { Inputs, Void } from "../types";
+import { Inputs, Json, Void } from "../types";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
-import { AzureResource, RuntimeStacks, TeamsAppLocalResourceProfile } from "./resourceProfile";
+import {
+  AzureResource,
+  LocalResource,
+  RuntimeStacks,
+  TeamsAppLocalResourceProfile,
+} from "./resourceProfile";
 export interface InnerLoopPlugin {
   name: string;
   scaffoldOption: OptionItem;
   runtimeStacks: RuntimeStacks[];
   languages: string[];
-  scaffoldSourceCode: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+
+  scaffoldSourceCode?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+
+  //all plugins are built-in plugins: aad, appStudio, localDebug, simpleAuth, bot
   provisionLocalResource?: (
     ctx: Context,
     inputs: Inputs,
-    localSettings: TeamsAppLocalResourceProfile,
+    tokenProvider: TokenProvider,
+    teamsAppLocalResourceProfile?: TeamsAppLocalResourceProfile
+  ) => Promise<Result<LocalResource, FxError>>;
+
+  //all plugins are built-in plugins: aad, appStudio, localDebug, simpleAuth, bot
+  configureLocalResource?: (
+    ctx: Context,
+    inputs: Inputs,
+    teamsAppLocalResourceProfile: TeamsAppLocalResourceProfile,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 }
@@ -32,18 +48,19 @@ export interface HostingPlugin {
     ctx: Context,
     inputs: ProvisionInputs,
     tokenProvider: AzureAccountProvider,
-    resourceManifest?: AzureResource
+    resourceProfile?: AzureResource
   ) => Promise<Result<AzureResource, FxError>>;
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
+    resourceProfile: AzureResource,
     configs: Record<string, string>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
   deploy?: (
     ctx: Context,
     inputs: DeploymentInputs,
-    resourceManifest: AzureResource,
+    resourceProfile: AzureResource,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
 }

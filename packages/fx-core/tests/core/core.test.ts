@@ -210,7 +210,7 @@ describe("Core basic APIs", () => {
       {
         description: "skip ask app name",
         appName: appName,
-        projectPath: path.resolve(os.tmpdir(), "v1projectpath", `${appName}`),
+        projectPath: path.resolve(os.tmpdir(), "v1projectpath", appName),
         skipAppNameQuestion: true,
       },
       {
@@ -267,7 +267,6 @@ describe("Core basic APIs", () => {
             projectPath: testParam.projectPath,
           };
           const res = await core.migrateV1Project(inputs);
-          console.log(JSON.stringify(res));
           assert.isTrue(res.isOk() && res.value === testParam.projectPath);
           assert.deepEqual(expectedInputs, inputs);
           inputs.projectPath = testParam.projectPath;
@@ -276,7 +275,6 @@ describe("Core basic APIs", () => {
             inputs,
             commonTools.isMultiEnvEnabled()
           );
-          console.log(JSON.stringify(projectSettingsResult));
           if (projectSettingsResult.isErr()) {
             assert.fail("failed to load project settings");
           }
@@ -287,7 +285,6 @@ describe("Core basic APIs", () => {
 
           if (!commonTools.isMultiEnvEnabled()) {
             const envInfoResult = await loadSolutionContext(tools, inputs, projectSettings);
-            console.log(JSON.stringify(envInfoResult));
             if (envInfoResult.isErr()) {
               assert.fail("failed to load env info");
             }

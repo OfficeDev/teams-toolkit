@@ -353,7 +353,11 @@ describe("Utils Tests", function () {
 
     it("Fake Path", async () => {
       const result = await readProjectSecrets("fake", environmentManager.getDefaultEnvName());
-      expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
+      if (isMultiEnvEnabled()) {
+        expect(result.isOk() ? result.value : result.error.name).equals("UserdataNotFound");
+      } else {
+        expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
+      }
     });
   });
 

@@ -290,7 +290,7 @@ describe("Post Local Debug", () => {
 
   it("should return Ok for SPFx postLocalDebug happy path", async () => {
     ctx = {
-      root: getAzureProjectRoot(),
+      root: "./tests/plugins/resource/appstudio/spfx-resources/",
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),
@@ -340,9 +340,6 @@ describe("Post Local Debug", () => {
     sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
 
     const postLocalDebugResult = await plugin.postLocalDebug(ctx);
-    if (postLocalDebugResult.isErr()) {
-      console.log(`${postLocalDebugResult.error.name}:${postLocalDebugResult.error.message}`);
-    }
 
     chai.assert.isTrue(postLocalDebugResult.isOk());
   });

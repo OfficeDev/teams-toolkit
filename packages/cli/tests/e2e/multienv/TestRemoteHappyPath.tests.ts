@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AppPackageFolderName } from "@microsoft/teamsfx-api";
+import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
@@ -128,9 +128,6 @@ describe("Multi Env Happy Path for Azure", function () {
         // Validate Bot Provision
         const bot = BotValidator.init(context);
         await BotValidator.validateProvision(bot);
-
-        const appPackage = `${projectPath}/build/appPackage/appPackage.${env}.zip`;
-        expect(await fs.pathExists(appPackage)).to.be.true;
       }
 
       // deploy
@@ -183,7 +180,7 @@ describe("Multi Env Happy Path for Azure", function () {
 
       {
         // Validate package
-        const file = `${projectPath}/${AppPackageFolderName}/appPackage.${env}.zip`;
+        const file = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`;
         expect(await fs.pathExists(file)).to.be.true;
       }
 

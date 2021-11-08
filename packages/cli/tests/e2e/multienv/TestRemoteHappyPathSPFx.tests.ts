@@ -14,7 +14,7 @@ import {
   loadContext,
   mockTeamsfxMultiEnvFeatureFlag,
 } from "../commonUtils";
-import { AppPackageFolderName } from "@microsoft/teamsfx-api";
+import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import { AppStudioValidator } from "../../commonlib";
 
 describe("Multi Env Happy Path for SPFx", function () {
@@ -135,7 +135,7 @@ describe("Multi Env Happy Path for SPFx", function () {
 
     {
       // Validate package
-      const file = `${projectPath}/${AppPackageFolderName}/appPackage.${env}.zip`;
+      const file = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`;
       expect(await fs.pathExists(file)).to.be.true;
     }
 

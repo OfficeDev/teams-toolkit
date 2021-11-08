@@ -1,13 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureAccountProvider, FxError, Result } from "..";
+import { AzureAccountProvider, FxError, Result, TokenProvider } from "..";
+import { OptionItem } from "../qm";
 import { Inputs, Void } from "../types";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
-import { AzureResource, RuntimeStacks } from "./AzureResource";
+import { AzureResource, RuntimeStacks, TeamsAppLocalResourceProfile } from "./resourceProfile";
+export interface InnerLoopPlugin {
+  name: string;
+  scaffoldOption: OptionItem;
+  runtimeStacks: RuntimeStacks[];
+  languages: string[];
+  scaffoldSourceCode: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+  provisionLocalResource?: (
+    ctx: Context,
+    inputs: Inputs,
+    localSettings: TeamsAppLocalResourceProfile,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Void, FxError>>;
+}
 
 export interface HostingPlugin {
+  provisionOption: OptionItem;
   runtimeStacks: RuntimeStacks[];
   generateResourceTemplate?: (
     ctx: Context,

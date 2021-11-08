@@ -9,6 +9,6 @@ module functionProvision '{{PluginOutput.fx-resource-function.Provision.function
 
 output functionOutput object = {
   teamsFxPluginId: 'fx-resource-function'
-  functionAppResourceId: functionProvision.outputs.functionAppResourceId
-  endpoint: functionProvision.outputs.functionAppEndpoint
+  functionAppId: functionProvision.outputs.functionAppId
+  functionEndpoint: functionProvision.outputs.functionEndpoint
 }

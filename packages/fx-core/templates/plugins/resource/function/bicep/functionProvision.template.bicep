@@ -76,5 +76,5 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   }
 }
 
-output functionAppEndpoint string = functionApp.properties.defaultHostName
-output functionAppResourceId string = functionApp.id
+output functionEndpoint string = functionApp.properties.defaultHostName
+output functionAppId string = functionApp.id

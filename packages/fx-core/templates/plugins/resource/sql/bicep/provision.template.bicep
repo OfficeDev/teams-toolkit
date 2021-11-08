@@ -7,7 +7,7 @@ module azureSqlProvision '{{PluginOutput.fx-resource-azure-sql.Provision.azureSq
 
 output azureSqlOutput object = {
   teamsFxPluginId: 'fx-resource-azure-sql'
-  sqlServerResourceId: azureSqlProvision.outputs.resourceId
-  sqlServerEndpoint: azureSqlProvision.outputs.sqlEndpoint
-  sqlDatabaseName: azureSqlProvision.outputs.databaseName
+  sqlResourceId: azureSqlProvision.outputs.resourceId
+  sqlEndpoint: azureSqlProvision.outputs.sqlEndpoint
+  databaseName: azureSqlProvision.outputs.databaseName
 }

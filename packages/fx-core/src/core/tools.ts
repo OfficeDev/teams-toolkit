@@ -106,8 +106,13 @@ export async function validateV1Project(
 export async function isMigrateFromV1Project(workspacePath?: string): Promise<boolean> {
   if (!workspacePath) return false;
   try {
-    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(confFolderPath, "settings.json");
+    const confFolderPath = isMultiEnvEnabled()
+      ? path.resolve(workspacePath, `.${ConfigFolderName}`, "configs")
+      : path.resolve(workspacePath, `.${ConfigFolderName}`);
+    const settingsFile = path.resolve(
+      confFolderPath,
+      isMultiEnvEnabled() ? ProjectSettingsFileName : "settings.json"
+    );
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     if (validateSettings(projectSettings)) return false;
     return !!projectSettings?.solutionSettings?.migrateFromV1;

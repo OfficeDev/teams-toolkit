@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
-import { ApimPluginConfigKeys, TeamsToolkitComponent } from "../constants";
-import { AssertConfigNotEmpty, AssertNotEmpty, BuildError, InvalidAadObjectId } from "../error";
+import { ApimPluginConfigKeys } from "../constants";
+import { AssertNotEmpty, BuildError, InvalidAadObjectId } from "../error";
 import { IAadInfo, IRequiredResourceAccess } from "../interfaces/IAadResource";
 import { IAadPluginConfig, IApimPluginConfig } from "../config";
 import { AadService } from "../services/aadService";
@@ -64,11 +64,7 @@ export class AadManager {
     redirectUris: string[]
   ): Promise<void> {
     const aadService: AadService = await this.lazyAadService.getValue();
-    const objectId = AssertConfigNotEmpty(
-      TeamsToolkitComponent.ApimPlugin,
-      ApimPluginConfigKeys.apimClientAADObjectId,
-      apimPluginConfig.apimClientAADObjectId
-    );
+    const objectId = apimPluginConfig.checkAndGet(ApimPluginConfigKeys.apimClientAADObjectId);
 
     let existingAadInfo = await aadService.getAad(objectId);
     existingAadInfo = AssertNotEmpty("existingAadInfo", existingAadInfo);

@@ -112,9 +112,12 @@ import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import Mustache from "mustache";
-import { checkAndConfig, replaceConfigValue } from "./utils/utils";
+import { checkAndConfig, getCustomizedKeys, replaceConfigValue } from "./utils/utils";
+import { TelemetryPropertyKey } from "./utils/telemetry";
 
 export class AppStudioPluginImpl {
+  public commonProperties: { [key: string]: string } = {};
+
   public async getAppDefinitionAndUpdate(
     ctx: PluginContext,
     isLocalDebug: boolean,
@@ -250,58 +253,6 @@ export class AppStudioPluginImpl {
     );
 
     return teamsAppId;
-  }
-
-  /**
-   * ask app common questions to generate app manifest
-   * @param settings
-   * @returns
-   */
-  private async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    const solutionSettings: AzureSolutionSettings =
-      settings.solutionSettings as AzureSolutionSettings;
-    if (
-      !solutionSettings.capabilities ||
-      (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
-        !solutionSettings.capabilities.includes(MessageExtensionItem.id) &&
-        !solutionSettings.capabilities.includes(TabOptionItem.id))
-    ) {
-      throw new Error(`Invalid capability: ${solutionSettings.capabilities}`);
-    }
-    if (
-      HostTypeOptionAzure.id === solutionSettings.hostType ||
-      solutionSettings.capabilities.includes(BotOptionItem.id) ||
-      solutionSettings.capabilities.includes(MessageExtensionItem.id)
-    ) {
-      let manifestString = isMultiEnvEnabled()
-        ? TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV
-        : TEAMS_APP_MANIFEST_TEMPLATE;
-      manifestString = replaceConfigValue(manifestString, "appName", settings.appName);
-      manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
-      const manifest: TeamsAppManifest = JSON.parse(manifestString);
-      if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
-        manifest.staticTabs = isMultiEnvEnabled() ? STATIC_TABS_TPL_FOR_MULTI_ENV : STATIC_TABS_TPL;
-        manifest.configurableTabs = isMultiEnvEnabled()
-          ? CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV
-          : CONFIGURABLE_TABS_TPL;
-      }
-      if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
-        manifest.bots = isMultiEnvEnabled() ? BOTS_TPL_FOR_MULTI_ENV : BOTS_TPL;
-      }
-      if (solutionSettings.capabilities.includes(MessageExtensionItem.id)) {
-        manifest.composeExtensions = isMultiEnvEnabled()
-          ? COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV
-          : COMPOSE_EXTENSIONS_TPL;
-      }
-
-      if (settings?.solutionSettings?.migrateFromV1) {
-        manifest.webApplicationInfo = undefined;
-      }
-
-      return manifest;
-    }
-
-    return undefined;
   }
 
   /**
@@ -524,31 +475,35 @@ export class AppStudioPluginImpl {
         : newAppPackageFolder;
       await fs.ensureDir(resourcesDir);
 
-      const archiveColorFile = path.join(archiveAppPackageFolder, manifest.icons.color);
-      const existColorFile = await this.checkFileExist(archiveColorFile);
-      const newColorFileName = existColorFile
-        ? path.basename(manifest.icons.color)
-        : DEFAULT_COLOR_PNG_FILENAME;
-      await fs.copyFile(
-        existColorFile ? archiveColorFile : path.join(getTemplatesFolder(), COLOR_TEMPLATE),
-        path.join(resourcesDir, newColorFileName)
-      );
-      manifest.icons.color = isMultiEnvEnabled()
-        ? `${MANIFEST_RESOURCES}/${newColorFileName}`
-        : newColorFileName;
+      if (manifest?.icons?.color && !manifest.icons.color.startsWith("https://")) {
+        const archiveColorFile = path.join(archiveAppPackageFolder, manifest.icons.color);
+        const existColorFile = await this.checkFileExist(archiveColorFile);
+        const newColorFileName = existColorFile
+          ? path.basename(manifest.icons.color)
+          : DEFAULT_COLOR_PNG_FILENAME;
+        await fs.copyFile(
+          existColorFile ? archiveColorFile : path.join(getTemplatesFolder(), COLOR_TEMPLATE),
+          path.join(resourcesDir, newColorFileName)
+        );
+        manifest.icons.color = isMultiEnvEnabled()
+          ? `${MANIFEST_RESOURCES}/${newColorFileName}`
+          : newColorFileName;
+      }
 
-      const archiveOutlineFile = path.join(archiveAppPackageFolder, manifest.icons.outline);
-      const existOutlineFile = await this.checkFileExist(archiveOutlineFile);
-      const newOutlineFileName = existOutlineFile
-        ? path.basename(manifest.icons.outline)
-        : DEFAULT_OUTLINE_PNG_FILENAME;
-      await fs.copyFile(
-        existOutlineFile ? archiveOutlineFile : path.join(getTemplatesFolder(), OUTLINE_TEMPLATE),
-        path.join(resourcesDir, newOutlineFileName)
-      );
-      manifest.icons.outline = isMultiEnvEnabled()
-        ? `${MANIFEST_RESOURCES}/${newOutlineFileName}`
-        : newOutlineFileName;
+      if (manifest?.icons?.outline && !manifest.icons.outline.startsWith("https://")) {
+        const archiveOutlineFile = path.join(archiveAppPackageFolder, manifest.icons.outline);
+        const existOutlineFile = await this.checkFileExist(archiveOutlineFile);
+        const newOutlineFileName = existOutlineFile
+          ? path.basename(manifest.icons.outline)
+          : DEFAULT_OUTLINE_PNG_FILENAME;
+        await fs.copyFile(
+          existOutlineFile ? archiveOutlineFile : path.join(getTemplatesFolder(), OUTLINE_TEMPLATE),
+          path.join(resourcesDir, newOutlineFileName)
+        );
+        manifest.icons.outline = isMultiEnvEnabled()
+          ? `${MANIFEST_RESOURCES}/${newOutlineFileName}`
+          : newOutlineFileName;
+      }
 
       await fs.writeFile(
         path.join(newAppPackageFolder, isMultiEnvEnabled() ? MANIFEST_LOCAL : REMOTE_MANIFEST),
@@ -590,13 +545,20 @@ export class AppStudioPluginImpl {
         await fs.writeFile(`${appDir}/${MANIFEST_LOCAL}`, JSON.stringify(localManifest, null, 4));
       }
     } else {
-      manifest = await this.createManifest(ctx.projectSettings!);
+      const solutionSettings: AzureSolutionSettings = ctx.projectSettings
+        ?.solutionSettings as AzureSolutionSettings;
+      const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
+      const hasBot = solutionSettings.capabilities.includes(BotOptionItem.id);
+      const hasMessageExtension = solutionSettings.capabilities.includes(MessageExtensionItem.id);
+      manifest = await createManifest(
+        ctx.projectSettings!.appName,
+        hasFrontend,
+        hasBot,
+        hasMessageExtension,
+        false,
+        !!solutionSettings?.migrateFromV1
+      );
       if (isMultiEnvEnabled()) {
-        const solutionSettings: AzureSolutionSettings = ctx.projectSettings
-          ?.solutionSettings as AzureSolutionSettings;
-        const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
-        const hasBot = solutionSettings.capabilities.includes(BotOptionItem.id);
-        const hasMessageExtension = solutionSettings.capabilities.includes(MessageExtensionItem.id);
         const localDebugManifest = await createLocalManifest(
           ctx.projectSettings!.appName,
           hasFrontend,
@@ -1556,6 +1518,10 @@ export class AppStudioPluginImpl {
     ).toString();
 
     if (isMultiEnvEnabled()) {
+      const customizedKeys = getCustomizedKeys("", JSON.parse(manifest));
+      this.commonProperties = {
+        [TelemetryPropertyKey.customizedKeys]: JSON.stringify(customizedKeys),
+      };
       const view = {
         config: ctx.envInfo.config,
         state: {
@@ -1741,4 +1707,47 @@ export async function createLocalManifest(
     }
     return manifest;
   }
+}
+
+export async function createManifest(
+  appName: string,
+  hasFrontend: boolean,
+  hasBot: boolean,
+  hasMessageExtension: boolean,
+  isSPFx: boolean,
+  migrateFromV1: boolean
+): Promise<TeamsAppManifest | undefined> {
+  if (!hasBot && !hasMessageExtension && !hasFrontend) {
+    throw new Error(`Invalid capability`);
+  }
+  if (!isSPFx || hasBot || hasMessageExtension) {
+    let manifestString = isMultiEnvEnabled()
+      ? TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV
+      : TEAMS_APP_MANIFEST_TEMPLATE;
+    manifestString = replaceConfigValue(manifestString, "appName", appName);
+    manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
+    const manifest: TeamsAppManifest = JSON.parse(manifestString);
+    if (hasFrontend) {
+      manifest.staticTabs = isMultiEnvEnabled() ? STATIC_TABS_TPL_FOR_MULTI_ENV : STATIC_TABS_TPL;
+      manifest.configurableTabs = isMultiEnvEnabled()
+        ? CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV
+        : CONFIGURABLE_TABS_TPL;
+    }
+    if (hasBot) {
+      manifest.bots = isMultiEnvEnabled() ? BOTS_TPL_FOR_MULTI_ENV : BOTS_TPL;
+    }
+    if (hasMessageExtension) {
+      manifest.composeExtensions = isMultiEnvEnabled()
+        ? COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV
+        : COMPOSE_EXTENSIONS_TPL;
+    }
+
+    if (migrateFromV1) {
+      manifest.webApplicationInfo = undefined;
+    }
+
+    return manifest;
+  }
+
+  return undefined;
 }

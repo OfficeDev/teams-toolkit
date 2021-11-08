@@ -20,10 +20,12 @@ import {
 import { Inputs, Platform, PluginContext } from "@microsoft/teamsfx-api";
 import {
   AadDefaultValues,
+  ApimPluginConfigKeys,
   QuestionConstants,
+  TeamsToolkitComponent,
 } from "../../../../src/plugins/resource/apim/constants";
 import axios from "axios";
-import { AssertNotEmpty } from "../../../../src/plugins/resource/apim/error";
+import { AssertConfigNotEmpty, AssertNotEmpty } from "../../../../src/plugins/resource/apim/error";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { AadService } from "../../../../src/plugins/resource/apim/services/aadService";
 import { ApimService } from "../../../../src/plugins/resource/apim/services/apimService";
@@ -123,6 +125,15 @@ async function buildContext(
   const apimConfig: IApimPluginConfig = {
     apiDocumentPath: "openapi/openapi.json",
     apiPrefix: "apim-plugin-test",
+    checkAndGet(key: string): string {
+      let res: string | undefined = undefined;
+      if (key === ApimPluginConfigKeys.apiDocumentPath) {
+        res = "openapi/openapi.json";
+      } else if (key === ApimPluginConfigKeys.apiPrefix) {
+        res = "apim-plugin-test";
+      }
+      return AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, key, res, "dev");
+    },
   };
   const answer: Inputs = {
     [QuestionConstants.VSCode.Apim.questionName]: {

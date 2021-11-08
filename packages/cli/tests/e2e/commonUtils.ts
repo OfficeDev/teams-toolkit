@@ -19,7 +19,12 @@ import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
 import { sleep } from "../../src/utils";
 import * as dotenv from "dotenv";
-import { cfg, AadManager, ResourceGroupManager } from "../commonlib";
+import {
+  cfg,
+  AadManager,
+  ResourceGroupManager,
+  SharepointValidator as SharepointManager,
+} from "../commonlib";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
 export const execAsync = promisify(exec);
@@ -125,6 +130,20 @@ export async function setBotSkuNameToB1(projectPath: string) {
   const context = await fs.readJSON(envFilePath);
   context[botPluginName]["skuName"] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
+}
+
+export async function cleanupSharePointPackage(appId: string) {
+  if (appId) {
+    try {
+      SharepointManager.init();
+      await SharepointManager.deleteApp(appId);
+      console.log(`[Successfully] clean up sharepoint package ${appId}`);
+    } catch (error) {
+      console.log(`[Failed] clean up sharepoint package ${appId}, Error: ${error.message}`);
+    }
+  } else {
+    console.log(`[Failed] sharepoint appId is undefined, will not clean up this resource.`);
+  }
 }
 
 export async function cleanUpAadApp(

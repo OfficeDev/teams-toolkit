@@ -23,6 +23,7 @@ import {
   ProjectSettingError,
   environmentManager,
   SPFxConfigError,
+  getResourceFolder,
 } from "../..";
 import { UpgradeCanceledError } from "../error";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
@@ -46,12 +47,16 @@ import {
   HostTypeOptionSPFx,
   MessageExtensionItem,
 } from "../../plugins/solution/fx-solution/question";
-import { createLocalManifest } from "../../plugins/resource/appstudio/plugin";
+import { createLocalManifest, createManifest } from "../../plugins/resource/appstudio/plugin";
 import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
-import { MANIFEST_LOCAL, MANIFEST_TEMPLATE } from "../../plugins/resource/appstudio/constants";
+import {
+  MANIFEST_LOCAL,
+  MANIFEST_TEMPLATE,
+  REMOTE_MANIFEST,
+} from "../../plugins/resource/appstudio/constants";
 import {
   Component,
   ProjectMigratorGuideStatus,
@@ -75,6 +80,7 @@ const resourceGroupName = "resourceGroupName";
 const parameterFileNameTemplate = "azure.parameters.@envName.json";
 const learnMoreLink = "https://aka.ms/teamsfx-migration-guide";
 const manualUpgradeLink = `${learnMoreLink}#upgrade-your-project-manually`;
+const upgradeReportName = `upgrade-change-logs.md`;
 let updateNotificationFlag = false;
 let fromReloadFlag = false;
 
@@ -128,14 +134,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
         [TelemetryProperty.Status]: ProjectMigratorStatus.Cancel,
       });
       ctx.result = err(UpgradeCanceledError());
-      core.tools.logProvider.warning(`[core] Upgrade cancelled.`);
-      core.tools.logProvider.warning(
-        `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Check project upgrade) or click the “Upgrade project” button on tree view to trigger the upgrade.`
-      );
-
-      core.tools.logProvider.warning(
-        `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.7.0`
-      );
+      outputCancelMessage(ctx);
       return;
     }
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotification, {
@@ -145,6 +144,9 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
     await migrateToArmAndMultiEnv(ctx);
     core.tools.logProvider.warning(
       `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your configuration files or learn more about this upgrade.`
+    );
+    core.tools.logProvider.warning(
+      `[core] Read upgrade-change-logs.md to learn about details for this upgrade.`
     );
   } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
     // TODO: delete before Arm && Multi-env version released
@@ -161,10 +163,32 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
   await next();
 };
 
+function outputCancelMessage(ctx: CoreHookContext) {
+  const core = ctx.self as FxCore;
+  core.tools.logProvider.warning(`[core] Upgrade cancelled.`);
+
+  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  if (inputs.platform === Platform.VSCode) {
+    core.tools.logProvider.warning(
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Check project upgrade) or click the “Upgrade project” button on tree view to trigger the upgrade.`
+    );
+    core.tools.logProvider.warning(
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.7.0`
+    );
+  } else {
+    core.tools.logProvider.warning(
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
+    );
+    core.tools.logProvider.warning(
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= 2.7.0`
+    );
+  }
+}
+
 function checkMethod(ctx: CoreHookContext): boolean {
-  const getProjectConfigMethod = "getProjectConfig";
-  if (ctx.method === getProjectConfigMethod && fromReloadFlag) return false;
-  fromReloadFlag = ctx.method === getProjectConfigMethod;
+  const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
+  if (ctx.method && methods.has(ctx.method) && fromReloadFlag) return false;
+  fromReloadFlag = ctx.method != undefined && methods.has(ctx.method);
   return true;
 }
 
@@ -228,7 +252,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       throw ProjectSettingError();
     }
     const projectSettings = loadRes.value;
-    if (!isSPFxProject(projectSettings)) {
+    if (!isSPFxProject(projectSettings) && !projectSettings?.solutionSettings?.migrateFromV1) {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArmStart);
       await migrateArm(ctx);
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
@@ -258,6 +282,18 @@ async function handleError(projectPath: string, ctx: CoreHookContext) {
     });
 }
 
+async function generateUpgradeReport(ctx: CoreHookContext) {
+  try {
+    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+    const projectPath = inputs.projectPath as string;
+    const target = path.join(projectPath, upgradeReportName);
+    const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
+    await fs.copyFile(source, target);
+  } catch (error) {
+    // do nothing
+  }
+}
+
 async function postMigration(
   projectPath: string,
   ctx: CoreHookContext,
@@ -266,11 +302,20 @@ async function postMigration(
   await removeOldProjectFiles(projectPath);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrate);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
+  await generateUpgradeReport(ctx);
   const core = ctx.self as FxCore;
+  if (inputs.platform === Platform.VSCode) {
+    showSuccessDialogForVSCode(core);
+  } else {
+    core.tools.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessageCLI);
+  }
+}
+
+function showSuccessDialogForVSCode(core: FxCore) {
   core.tools.ui
     .showMessage(
       "info",
-      getStrings().solution.MigrationToArmAndMultiEnvSuccessMessage,
+      getStrings().solution.MigrationToArmAndMultiEnvSuccessMessageVSC,
       false,
       reloadText
     )
@@ -280,9 +325,7 @@ async function postMigration(
         sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
           [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
         });
-        if (inputs.platform === Platform.VSCode) {
-          core.tools.ui.reload?.();
-        }
+        core.tools.ui.reload?.();
       } else {
         sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
           [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Cancel,
@@ -291,8 +334,7 @@ async function postMigration(
     });
 }
 
-async function generateRemoteTemplate(targetManifestFile: string) {
-  let manifestString = (await fs.readFile(targetManifestFile)).toString();
+async function generateRemoteTemplate(manifestString: string) {
   manifestString = manifestString.replace(new RegExp("{version}", "g"), "1.0.0");
   manifestString = manifestString.replace(
     new RegExp("{baseUrl}", "g"),
@@ -317,6 +359,62 @@ async function generateRemoteTemplate(targetManifestFile: string) {
   return manifest;
 }
 
+async function generateLocalTemplate(manifestString: string) {
+  manifestString = manifestString.replace(new RegExp("{version}", "g"), "1.0.0");
+  manifestString = manifestString.replace(
+    new RegExp("{baseUrl}", "g"),
+    "{{{localSettings.frontend.tabEndpoint}}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{appClientId}", "g"),
+    "{{localSettings.auth.clientId}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{webApplicationInfoResource}", "g"),
+    "{{{localSettings.auth.applicationIdUris}}}"
+  );
+  manifestString = manifestString.replace(
+    new RegExp("{botId}", "g"),
+    "{{localSettings.bot.botId}}"
+  );
+  const manifest: TeamsAppManifest = JSON.parse(manifestString);
+  manifest.name.full =
+    (manifest.name.full ? manifest.name.full : manifest.name.short) + "-local-debug";
+  manifest.name.short = manifest.name.short.substr(0, 18) + "-local-debug";
+  manifest.id = "{{localSettings.teamsApp.teamsAppId}}";
+  return manifest;
+}
+
+async function getManifest(
+  sourceManifestFile: string,
+  appName: string,
+  hasFrontend: boolean,
+  hasBotCapability: boolean,
+  hasMessageExtensionCapability: boolean,
+  isSPFx: boolean,
+  migrateFromV1: boolean
+): Promise<TeamsAppManifest> {
+  let manifest: TeamsAppManifest | undefined;
+  let error = undefined;
+  try {
+    manifest = await readJson(sourceManifestFile);
+  } catch (err) {
+    error = err;
+    manifest = await createManifest(
+      appName,
+      hasFrontend,
+      hasBotCapability,
+      hasMessageExtensionCapability,
+      isSPFx,
+      migrateFromV1
+    );
+  }
+  if (!manifest) {
+    throw error;
+  }
+  return manifest;
+}
+
 async function migrateMultiEnv(projectPath: string): Promise<void> {
   const { fx, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   const {
@@ -327,22 +425,27 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     hasMessageExtensionCapability,
     isSPFx,
     hasProvision,
+    migrateFromV1,
   } = await queryProjectStatus(fx);
 
   //localSettings.json
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
-  await localSettingsProvider.save(localSettingsProvider.init(hasFrontend, hasBackend, hasBot));
+  await localSettingsProvider.save(
+    localSettingsProvider.init(hasFrontend, hasBackend, hasBot, migrateFromV1)
+  );
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
   await fs.copy(path.join(fx, "settings.json"), projectSettings);
   await ensureProjectSettings(projectSettings, path.join(fx, "env.default.json"));
 
-  //config.dev.json
   const appName = await getAppName(projectSettings);
-  await fs.writeFile(
-    path.join(fxConfig, "config.dev.json"),
-    JSON.stringify(getConfigDevJson(appName), null, 4)
-  );
+  if (!migrateFromV1) {
+    //config.dev.json
+    await fs.writeFile(
+      path.join(fxConfig, "config.dev.json"),
+      JSON.stringify(getConfigDevJson(appName), null, 4)
+    );
+  }
 
   // appPackage
   if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
@@ -351,25 +454,39 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     // version <= 2.4.1
     await fs.copy(path.join(fx, AppPackageFolderName), templateAppPackage);
   }
-  const targetManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
-  await fs.rename(path.join(templateAppPackage, "manifest.source.json"), targetManifestFile);
-
-  // generate manifest.remote.template.json
-  const manifest = await generateRemoteTemplate(targetManifestFile);
-  await fs.writeFile(targetManifestFile, JSON.stringify(manifest, null, 4));
-  await moveIconsToResourceFolder(templateAppPackage);
-
-  // generate manifest.local.template.json
-  const localManifest: TeamsAppManifest = await createLocalManifest(
+  const sourceManifestFile = path.join(templateAppPackage, REMOTE_MANIFEST);
+  const manifest: TeamsAppManifest = await getManifest(
+    sourceManifestFile,
     appName,
     hasFrontend,
     hasBotCapability,
     hasMessageExtensionCapability,
     isSPFx,
-    false
+    migrateFromV1
   );
-  const localManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
-  await fs.writeFile(localManifestFile, JSON.stringify(localManifest, null, 4));
+  await fs.remove(sourceManifestFile);
+  await moveIconsToResourceFolder(templateAppPackage, manifest);
+  // generate manifest.remote.template.json
+  if (!migrateFromV1) {
+    const targetRemoteManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
+    const remoteManifest = await generateRemoteTemplate(JSON.stringify(manifest));
+    await fs.writeFile(targetRemoteManifestFile, JSON.stringify(remoteManifest, null, 4));
+  }
+
+  // generate manifest.local.template.json
+  // TODO: use generateLocalTemplate instead of create
+  const localManifest: TeamsAppManifest = migrateFromV1
+    ? await generateLocalTemplate(JSON.stringify(manifest))
+    : await createLocalManifest(
+        appName,
+        hasFrontend,
+        hasBotCapability,
+        hasMessageExtensionCapability,
+        isSPFx,
+        false
+      );
+  const targetLocalManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
+  await fs.writeFile(targetLocalManifestFile, JSON.stringify(localManifest, null, 4));
 
   if (isSPFx) {
     const replaceMap: Map<string, string> = new Map();
@@ -379,8 +496,8 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     }
     const solutionConfig = await fs.readJson(packageSolutionFile);
     replaceMap.set(PlaceHolders.componentId, solutionConfig.solution.id);
-    replaceMap.set(PlaceHolders.componentNameUnescaped, manifest.packageName!);
-    await SPFxUtils.configure(localManifestFile, replaceMap);
+    replaceMap.set(PlaceHolders.componentNameUnescaped, localManifest.packageName!);
+    await SPFxUtils.configure(targetLocalManifestFile, replaceMap);
   }
 
   if (hasProvision) {
@@ -394,11 +511,11 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   }
 }
 
-async function moveIconsToResourceFolder(templateAppPackage: string): Promise<void> {
+async function moveIconsToResourceFolder(
+  templateAppPackage: string,
+  manifest: TeamsAppManifest
+): Promise<void> {
   // see AppStudioPluginImpl.buildTeamsAppPackage()
-  const manifest: TeamsAppManifest = await readJson(
-    path.join(templateAppPackage, MANIFEST_TEMPLATE)
-  );
   const hasColorIcon = manifest.icons.color && !manifest.icons.color.startsWith("https://");
   const hasOutlineIcon = manifest.icons.outline && !manifest.icons.outline.startsWith("https://");
   if (!hasColorIcon || !hasOutlineIcon) {
@@ -407,23 +524,21 @@ async function moveIconsToResourceFolder(templateAppPackage: string): Promise<vo
 
   // move to resources
   const resource = path.join(templateAppPackage, "resources");
-  const iconColor = path.join(templateAppPackage, manifest.icons.color);
-  const iconOutline = path.join(templateAppPackage, manifest.icons.outline);
+  const colorName = manifest.icons.color.replace("resources/", "");
+  const outlineName = manifest.icons.outline.replace("resources/", "");
+  const iconColor = path.join(templateAppPackage, colorName);
+  const iconOutline = path.join(templateAppPackage, outlineName);
   await fs.ensureDir(resource);
   if (await fs.pathExists(iconColor)) {
-    await fs.move(iconColor, path.join(resource, manifest.icons.color));
-    manifest.icons.color = `resources/${manifest.icons.color}`;
+    await fs.move(iconColor, path.join(resource, colorName));
+    manifest.icons.color = `resources/${colorName}`;
   }
   if (await fs.pathExists(iconOutline)) {
-    await fs.move(iconOutline, path.join(resource, manifest.icons.outline));
-    manifest.icons.outline = `resources/${manifest.icons.outline}`;
+    await fs.move(iconOutline, path.join(resource, outlineName));
+    manifest.icons.outline = `resources/${outlineName}`;
   }
 
-  // update icons
-  await fs.writeFile(
-    path.join(templateAppPackage, MANIFEST_TEMPLATE),
-    JSON.stringify(manifest, null, 4)
-  );
+  return;
 }
 
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
@@ -493,6 +608,7 @@ async function queryProjectStatus(fx: string): Promise<any> {
   );
   const isSPFx = plugins?.some((plugin) => plugin.name === PluginNames.SPFX);
   const hasProvision = envDefaultJson.solution?.provisionSucceeded as boolean;
+  const migrateFromV1 = !!solutionSettings.migrateFromV1;
   return {
     hasFrontend,
     hasBackend,
@@ -501,6 +617,7 @@ async function queryProjectStatus(fx: string): Promise<any> {
     hasMessageExtensionCapability,
     isSPFx,
     hasProvision,
+    migrateFromV1,
   };
 }
 
@@ -570,8 +687,10 @@ async function ensureProjectSettings(
   const settings: ProjectSettings = await readJson(projectSettingPath);
   if (!settings.programmingLanguage || !settings.defaultFunctionName) {
     const envDefault = await readJson(envDefaultPath);
-    settings.programmingLanguage = envDefault[PluginNames.SOLUTION][programmingLanguage];
-    settings.defaultFunctionName = envDefault[PluginNames.FUNC]?.[defaultFunctionName];
+    settings.programmingLanguage =
+      settings.programmingLanguage || envDefault[PluginNames.SOLUTION]?.[programmingLanguage];
+    settings.defaultFunctionName =
+      settings.defaultFunctionName || envDefault[PluginNames.FUNC]?.[defaultFunctionName];
   }
   if (!settings.version) {
     settings.version = "1.0.0";

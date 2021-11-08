@@ -5,7 +5,7 @@ import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { getTemplatesFolder } from "../../../..";
+import { getTemplatesFolder } from "../../../../folder";
 
 export class ScaffoldManager {
   private readonly logger: LogProvider | undefined;

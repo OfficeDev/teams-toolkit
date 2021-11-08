@@ -30,19 +30,12 @@ import { EnvNodeNoCreate } from "../constants";
 
 export default class Env extends YargsCommand {
   public readonly commandHead = `env`;
-  public readonly command = `${this.commandHead} [action]`;
+  public readonly command = `${this.commandHead} <action>`;
   public readonly description = "Manage environments.";
 
   public readonly subCommands: YargsCommand[] = [new EnvAdd(), new EnvList()];
 
   public builder(yargs: Argv): Argv<any> {
-    yargs.options("action", {
-      description: `${this.subCommands.map((cmd) => cmd.commandHead).join("|")}`,
-      type: "string",
-      choices: this.subCommands.map((cmd) => cmd.commandHead),
-      // Action is not required because we support "teamsfx env" to show current active env.
-      require: false,
-    });
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
@@ -56,8 +49,7 @@ export default class Env extends YargsCommand {
 class EnvAdd extends YargsCommand {
   public readonly commandHead = `add`;
   public readonly command = `${this.commandHead} <name>`;
-  public readonly description =
-    "Add a new environment by copying from current active environment or the specified environment.";
+  public readonly description = "Add a new environment by copying from the specified environment.";
   public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {

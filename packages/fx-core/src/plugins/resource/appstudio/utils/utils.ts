@@ -11,6 +11,7 @@ export function replaceConfigValue(config: string, id: string, value: string): s
   return config;
 }
 
+
 /**
  *
  * @throws Error - when placeholder doesn't have corresponding value
@@ -26,4 +27,25 @@ export function checkAndConfig(config: string, id: string, value: string | undef
       return config;
     }
   }
+}
+
+export function getCustomizedKeys(prefix: string, manifest: any): string[] {
+  let keys: string[] = [];
+  for (const key in manifest) {
+    if (manifest.hasOwnProperty(key)) {
+      const value = manifest[key];
+      if (typeof value === "object") {
+        if (Array.isArray(value)) {
+          value.map((item, index) => {
+            keys = keys.concat(getCustomizedKeys(`${prefix}.${key}[${index}]`, item));
+          });
+        } else {
+          keys = keys.concat(getCustomizedKeys(`${prefix}.${key}`, value));
+        }
+      } else if (typeof value === "string" && value.startsWith("{{config.manifest")) {
+        keys.push(`${prefix}.${key}`);
+      }
+    }
+  }
+  return keys;
 }

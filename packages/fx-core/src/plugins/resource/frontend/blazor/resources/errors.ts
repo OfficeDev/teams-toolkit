@@ -1,8 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Logger } from "../utils/logger";
+import { Logger } from "../../utils/logger";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import { FrontendPluginError } from "../../resources/errors";
 
 export enum ErrorType {
   User,
@@ -19,12 +20,7 @@ const tips = {
   restoreEnvironment: `If you manually updated configuration files (under directory .${ConfigFolderName}), recover them.`,
 };
 
-export class BlazorPluginError extends Error {
-  public code: string;
-  public message: string;
-  public suggestions: string[];
-  public errorType: ErrorType;
-  public helpLink?: string;
+export class BlazorPluginError extends FrontendPluginError {
   public innerError?: Error;
 
   constructor(
@@ -35,12 +31,7 @@ export class BlazorPluginError extends Error {
     helpLink?: string,
     innerError?: Error
   ) {
-    super(message);
-    this.code = code;
-    this.message = message;
-    this.suggestions = suggestions;
-    this.errorType = errorType;
-    this.helpLink = helpLink;
+    super(errorType, code, message, suggestions, helpLink);
     this.innerError = innerError;
   }
 

@@ -257,8 +257,8 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     { id: "typescript", label: "TypeScript" },
   ],
   dynamicOptions: (inputs: Inputs): StaticOptions => {
-    const hostType = inputs[AzureSolutionQuestionNames.HostType] as string;
-    if (HostTypeOptionSPFx.id === hostType) return [{ id: "typescript", label: "TypeScript" }];
+    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+    if (cpas.includes(TabSPFxItem.id)) return [{ id: "typescript", label: "TypeScript" }];
     return [
       { id: "javascript", label: "JavaScript" },
       { id: "typescript", label: "TypeScript" },
@@ -266,13 +266,13 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   },
   skipSingleOption: true,
   default: (inputs: Inputs) => {
-    const hostType = inputs[AzureSolutionQuestionNames.HostType] as string;
-    if (HostTypeOptionSPFx.id === hostType) return "typescript";
+    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+    if (cpas.includes(TabSPFxItem.id)) return "typescript";
     return "javascript";
   },
   placeholder: (inputs: Inputs): string => {
-    const hostType = inputs[AzureSolutionQuestionNames.HostType] as string;
-    if (HostTypeOptionSPFx.id === hostType) return "SPFx is currently supporting TypeScript only.";
+    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+    if (cpas.includes(TabSPFxItem.id)) return "SPFx is currently supporting TypeScript only.";
     return "Select a programming language.";
   },
 };

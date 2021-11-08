@@ -44,12 +44,15 @@ export interface HostingPlugin {
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<ResourceTemplate, FxError>>;
+
+  //only for built-in plugin (AAD)
   provisionResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
     tokenProvider: AzureAccountProvider,
     resourceProfile?: AzureResource
   ) => Promise<Result<AzureResource, FxError>>;
+
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,

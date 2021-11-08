@@ -240,14 +240,13 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     await result;
     return ok(undefined);
   } catch (error) {
-    ctx.logProvider?.error(
-      format(
-        getStrings().solution.DeployArmTemplates.FailNotice,
-        PluginDisplayName.Solution,
-        resourceGroupName,
-        deploymentName
-      )
+    const errorMessage = format(
+      getStrings().solution.DeployArmTemplates.FailNotice,
+      PluginDisplayName.Solution,
+      resourceGroupName,
+      deploymentName
     );
+    ctx.logProvider?.error(errorMessage + ` Detailed error: ${error.message}`);
 
     const result = await wrapGetDeploymentError(deployCtx, resourceGroupName, deploymentName);
     if (result.isOk()) {

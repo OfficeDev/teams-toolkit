@@ -34,7 +34,7 @@ export class Factory {
   public static async buildApimManager(ctx: PluginContext): Promise<ApimManager> {
     const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
 
-    const solutionConfig = new SolutionConfig(ctx.envInfo.state);
+    const solutionConfig = new SolutionConfig(ctx.envInfo);
     const lazyApimService = new Lazy<ApimService>(
       async () =>
         await Factory.buildApimService(
@@ -82,7 +82,7 @@ export class Factory {
   }
 
   public static async buildQuestionManager(ctx: PluginContext): Promise<IQuestionManager> {
-    const solutionConfig = new SolutionConfig(ctx.envInfo.state);
+    const solutionConfig = new SolutionConfig(ctx.envInfo);
     switch (ctx.answers?.platform) {
       case Platform.VSCode:
         // Lazy init apim service to get the latest subscription id in configuration

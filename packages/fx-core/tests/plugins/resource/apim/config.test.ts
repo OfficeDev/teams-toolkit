@@ -11,9 +11,11 @@ import { ApimPluginConfig, SolutionConfig } from "../../../../src/plugins/resour
 import {
   ConfigMap,
   ConfigValue,
+  EnvInfo,
   PluginIdentity,
   ReadonlyPluginConfig,
 } from "@microsoft/teamsfx-api";
+import { isArmSupportEnabled } from "../../../../src";
 
 describe("config", () => {
   describe("SolutionConfig", () => {
@@ -23,14 +25,21 @@ describe("config", () => {
         new Map<string, ConfigValue>([[SolutionConfigKeys.resourceNameSuffix, 1]]),
       ],
     ]);
+    const envInfo: EnvInfo = {
+      envName: "dev",
+      config: { manifest: { appName: { short: "appname" } } },
+      state: configContent,
+    };
 
-    const solutionConfig = new SolutionConfig(configContent);
+    const solutionConfig = new SolutionConfig(envInfo);
 
     it("Undefined property", () => {
       chai
         .expect(() => solutionConfig.teamsAppTenantId)
         .to.throw(
-          "Project configuration 'teamsAppTenantId' of 'solution' is missing in 'env.default.json'. Retry provision in the cloud or set the value manually."
+          `Project configuration 'teamsAppTenantId' of 'solution' is missing in '${
+            isArmSupportEnabled() ? "state.dev.json" : "env.default.json"
+          }'. Retry provision in the cloud or set the value manually.`
         );
     });
     it("Error type property", () => {
@@ -50,7 +59,7 @@ describe("config", () => {
       throw Error("Empty test input");
     }
 
-    const apimPluginConfig = new ApimPluginConfig(configContent);
+    const apimPluginConfig = new ApimPluginConfig(configContent, "dev");
     it("Undefined property", () => {
       chai.expect(apimPluginConfig.apiPath).to.equal(undefined);
     });
@@ -63,6 +72,23 @@ describe("config", () => {
     });
     it("Property with value", () => {
       chai.expect(apimPluginConfig.resourceGroupName).to.equal("test-resource-group-name");
+    });
+    it("Check and get undefined property", () => {
+      chai
+        .expect(() => apimPluginConfig.checkAndGet(ApimPluginConfigKeys.apiPath))
+        .to.throw(
+          `Project configuration 'apiPath' of 'fx-resource-apim' is missing in '${
+            isArmSupportEnabled() ? "state.dev.json" : "env.default.json"
+          }'. Retry deploy to the cloud or set the value manually.`
+        );
+    });
+    it("Check and get error type property", () => {
+      chai.expect(apimPluginConfig.checkAndGet(ApimPluginConfigKeys.serviceName)).to.equal("1");
+    });
+    it("Check and get property with value", () => {
+      chai
+        .expect(apimPluginConfig.checkAndGet(ApimPluginConfigKeys.resourceGroupName))
+        .to.equal("test-resource-group-name");
     });
   });
 });

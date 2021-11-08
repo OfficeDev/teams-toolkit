@@ -9,6 +9,6 @@ module functionProvision './functionProvision.result.bicep' = {
 
 output functionOutput object = {
   teamsFxPluginId: 'fx-resource-function'
-  functionAppId: functionProvision.outputs.functionAppId
+  functionAppResourceId: functionProvision.outputs.functionAppResourceId
   functionEndpoint: functionProvision.outputs.functionEndpoint
 }

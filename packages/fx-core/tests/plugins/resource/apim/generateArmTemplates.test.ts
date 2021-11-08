@@ -56,20 +56,20 @@ describe("apimManager.generateArmTemplates", () => {
           References: {
             serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
           },
-          "fx-resource-function": {
-            References: {
-              functionAppResourceId: "provisionOutputs.functionOutput.value.functionAppResourceId",
-              endpoint: "provisionOutputs.functionOutput.value.endpoint",
-            },
+        },
+        "fx-resource-function": {
+          References: {
+            functionAppResourceId: "provisionOutputs.functionOutput.value.functionAppResourceId",
+            endpoint: "provisionOutputs.functionOutput.value.endpoint",
           },
-          "fx-resource-frontend-hosting": {
-            Outputs: {
-              endpoint: "frontend_hosting_test_endpoint",
-            },
-            References: {
-              domain: "provisionOutputs.frontendHostingOutput.value.domain",
-              endpoint: "provisionOutputs.frontendHostingOutput.value.endpoint",
-            },
+        },
+        "fx-resource-frontend-hosting": {
+          Outputs: {
+            endpoint: "frontend_hosting_test_endpoint",
+          },
+          References: {
+            domain: "provisionOutputs.frontendHostingOutput.value.domain",
+            endpoint: "provisionOutputs.frontendHostingOutput.value.endpoint",
           },
         },
       },

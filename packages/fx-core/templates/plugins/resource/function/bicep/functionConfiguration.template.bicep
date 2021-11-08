@@ -8,7 +8,7 @@ param currentConfigs object
 @secure()
 param currentAppSettings object
 
-var functionAppName = split({{PluginOutput.fx-resource-function.References.functionAppId}}, '/')[8]
+var functionAppName = split({{PluginOutput.fx-resource-function.References.functionAppResourceId}}, '/')[8]
 
 var m365ClientId = provisionParameters['m365ClientId']
 var m365ClientSecret = provisionParameters['m365ClientSecret']
@@ -58,7 +58,7 @@ resource appConfig 'Microsoft.Web/sites/config@2021-01-15' = {
 resource appSettings 'Microsoft.Web/sites/config@2021-01-15' = {
   name: '${functionAppName}/appsettings'
   properties: union({
-    API_ENDPOINT: 'https://${ {{~PluginOutput.fx-resource-function.References.functionAppId~}} }'
+    API_ENDPOINT: 'https://${ {{~PluginOutput.fx-resource-function.References.functionAppResourceId~}} }'
     ALLOWED_APP_IDS: authorizedClientApplicationIds
     M365_CLIENT_ID: m365ClientId
     M365_CLIENT_SECRET: m365ClientSecret

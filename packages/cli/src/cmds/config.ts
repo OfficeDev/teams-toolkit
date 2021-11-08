@@ -25,7 +25,13 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import activate from "../activate";
-import { NonTeamsFxProjectFolder, ConfigNameNotFound, EnvNotSpecified } from "../error";
+import {
+  NonTeamsFxProjectFolder,
+  ConfigNameNotFound,
+  EnvNotSpecified,
+  ConfigNotFoundError,
+  EnvNotProvisioned,
+} from "../error";
 import * as constants from "../constants";
 
 const GlobalOptions = new Set([
@@ -176,7 +182,6 @@ export class ConfigGet extends YargsCommand {
     option?: string
   ): Promise<Result<null, FxError>> {
     let found = false;
-    // TODO: check file not found error before provision
     const result = await readProjectSecrets(rootFolder, env);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, result.error);
@@ -275,7 +280,8 @@ export class ConfigSet extends YargsCommand {
       } else {
         env = environmentManager.getDefaultEnvName();
       }
-      const inProject = (await readEnvJsonFile(rootFolder, env)).isOk();
+
+      const inProject = readSettingsFileSync(rootFolder).isOk();
       // project config
       if (inProject) {
         const projectResult = await this.setProjectConfig(rootFolder, args.option, args.value, env);

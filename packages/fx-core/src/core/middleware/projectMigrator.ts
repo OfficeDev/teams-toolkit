@@ -68,8 +68,6 @@ import {
 import * as dotenv from "dotenv";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
-import { EOL } from "os";
-import { Manifest } from "../../plugins/resource/frontend/ops/scaffold";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";

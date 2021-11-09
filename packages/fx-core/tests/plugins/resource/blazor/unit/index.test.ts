@@ -23,7 +23,7 @@ import * as dirWalk from "../../../../../src/plugins/resource/function/utils/dir
 import * as execute from "../../../../../src/plugins/resource/function/utils/execute";
 import axios from "axios";
 import * as core from "../../../../../src/core";
-import * as common from "../../../../../src/common";
+import { isArmSupportEnabled } from "../../../../../src";
 
 chai.use(chaiAsPromised);
 
@@ -31,6 +31,9 @@ describe("BlazorPlugin", () => {
   describe("Provision", () => {
     let plugin: BlazorPlugin;
     let ctx: PluginContext;
+    if (isArmSupportEnabled()) {
+      return;
+    }
 
     before(async () => {
       ctx = TestHelper.getFakePluginContext();
@@ -39,7 +42,6 @@ describe("BlazorPlugin", () => {
 
     beforeEach(async () => {
       sinon.stub(core, "isVsCallingCli").returns(true);
-      sinon.stub(common, "isArmSupportEnabled").returns(false);
       sinon.stub(AzureLib, "ensureAppServicePlan").resolves({
         id: TestHelper.appServicePlanId,
       } as AppServicePlan);

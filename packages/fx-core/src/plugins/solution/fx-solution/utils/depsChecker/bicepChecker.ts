@@ -3,6 +3,7 @@ import * as path from "path";
 import * as os from "os";
 import {
   ConfigFolderName,
+  Platform,
   LogProvider,
   SolutionContext,
   SystemError,
@@ -12,7 +13,7 @@ import * as fs from "fs-extra";
 import { cpUtils } from "./cpUtils";
 import { finished, Readable, Writable } from "stream";
 import {
-  defaultHelpLink,
+  bicepHelpLink,
   DepsCheckerEvent,
   isMacOS,
   isWindows,
@@ -45,13 +46,28 @@ export async function ensureBicep(ctx: SolutionContext): Promise<string> {
       await bicepChecker.install();
     }
   } catch (err) {
-    await ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
+    ctx.logProvider?.debug(`Failed to check or install bicep, error = '${err}'`);
     if (!(await bicepChecker.isGlobalBicepInstalled())) {
-      await displayLearnMore(err.message, defaultHelpLink, ctx);
+      await displayLearnMore(
+        Messages.failToInstallBicepDialog.split("@NameVersion").join(displayBicepName),
+        bicepHelpLink,
+        ctx
+      );
+      outputErrorMessage(ctx);
       throw err;
     }
   }
   return bicepChecker.getBicepCommand();
+}
+
+function outputErrorMessage(ctx: SolutionContext) {
+  const message =
+    ctx.answers?.platform === Platform.VSCode
+      ? Messages.failToInstallBicepOutputVSC
+      : Messages.failToInstallBicepOutputCLI;
+  ctx.logProvider?.warning(
+    message.split("@NameVersion").join(displayBicepName).split("@HelpLink").join(bicepHelpLink)
+  );
 }
 
 class BicepChecker {

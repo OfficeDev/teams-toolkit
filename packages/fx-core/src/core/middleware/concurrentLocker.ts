@@ -74,9 +74,9 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
       break;
     } catch (e) {
       if (e["code"] === "ELOCKED") {
-        logger?.warning(
-          `[core] failed to acquire lock for task ${taskName} on: ${configFolder}, error: ${e} try again ... `
-        );
+        // logger?.warning(
+        //   `[core] failed to acquire lock for task ${taskName} on: ${configFolder}, error: ${e} try again ... `
+        // );
         await sleep(1000);
         continue;
       }

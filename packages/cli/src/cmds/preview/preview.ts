@@ -147,9 +147,6 @@ export default class Preview extends YargsCommand {
       if (args.local && args.remote) {
         throw errors.ExclusiveLocalRemoteOptions();
       }
-      if (!utils.isWorkspaceSupported(workspaceFolder)) {
-        throw errors.WorkspaceNotSupported(workspaceFolder);
-      }
 
       const result =
         previewType === "local"

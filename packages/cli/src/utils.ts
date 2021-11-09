@@ -434,7 +434,7 @@ export function getProjectId(rootfolder: string | undefined): any {
 
     // Also try reading from the old project location to support `ProjectMigratorMW` telemetry.
     // While doing migration, sending telemetry will call this `getProjectId()` function.
-    // But before migration done, the settings file will be in the old path.
+    // But before migration done, the settings file is still in the old location.
     const settingsFilePathOld = getConfigPath(rootfolder, "settings.json");
     try {
       const settings = fs.readJsonSync(settingsFilePathOld);

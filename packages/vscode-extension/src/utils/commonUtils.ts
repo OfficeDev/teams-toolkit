@@ -139,7 +139,7 @@ export function getProjectId(): string | undefined {
 
       // Also try reading from the old project location to support `ProjectMigratorMW` telemetry.
       // While doing migration, sending telemetry will call this `getProjectId()` function.
-      // But before migration done, the settings file will be in the old path.
+      // But before migration done, the settings file is still in the old location.
       const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathOld, "utf8"));
       return settingsJson.projectId;
     } else {

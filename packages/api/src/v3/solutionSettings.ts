@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
-
-import { RuntimeStacks } from "./AzureResource";
-
 // Licensed under the MIT license.
-export interface TeamsAppPluginSettings {
+
+import { RuntimeStacks } from "./resourceProfile";
+
+export interface TeamsAppPluginConfigurations {
   tab: {
     innerLoopPlugins: string[];
     hostingPlugins: string[];
@@ -21,14 +21,14 @@ export interface ComputeResourceSettings {
   innerLoopPlugin: string;
   hostingPlugin: string;
   runtimeStack: RuntimeStacks;
-  dependentResources: string[];
-  programmingLanguage: string;
+  dependencies: string[];
+  language: string;
 }
 
 export interface AdditionalResourceSettings {
   type: "additional";
   hostingPlugin: string;
-  dependentResources: string[];
+  dependencies: string[];
 }
 
 /**
@@ -46,7 +46,7 @@ export interface TeamsAppSolutionSettings {
   };
 }
 
-const projectSettings: TeamsAppSolutionSettings = {
+const solutionSettings: TeamsAppSolutionSettings = {
   capabilities: ["Tab", "Bot"],
   tab: "Tab#1",
   bot: "Bot#1",
@@ -56,44 +56,44 @@ const projectSettings: TeamsAppSolutionSettings = {
       innerLoopPlugin: "TabBotScaffoldPlugin",
       runtimeStack: RuntimeStacks.Node12LTS,
       hostingPlugin: "AzureWebAppPluginName",
-      dependentResources: ["FunctionApp#1", "FunctionApp#2"],
-      programmingLanguage: "javascript",
+      dependencies: ["FunctionApp#1", "FunctionApp#2"],
+      language: "javascript",
     },
     "Bot#1": {
       type: "compute",
       innerLoopPlugin: "TabBotScaffoldPlugin",
       runtimeStack: RuntimeStacks.Node12LTS,
       hostingPlugin: "AzureWebAppPluginName", // bot plugin is built-in plugin
-      dependentResources: ["AzureSql#1"],
-      programmingLanguage: "javascript",
+      dependencies: ["AzureSql#1"],
+      language: "javascript",
     },
     "FunctionApp#1": {
       type: "compute",
       innerLoopPlugin: "AzureFunctionPlugin",
       hostingPlugin: "AzureFunctionPlugin",
       runtimeStack: RuntimeStacks.Node12LTS,
-      dependentResources: ["AzureSql#1", "Tab#1"],
-      programmingLanguage: "javascript",
+      dependencies: ["AzureSql#1", "Tab#1"],
+      language: "javascript",
     },
     "FunctionApp#2": {
       type: "compute",
       innerLoopPlugin: "AzureFunctionPlugin",
       hostingPlugin: "AzureFunctionPlugin",
       runtimeStack: RuntimeStacks.Node12LTS,
-      dependentResources: ["Tab#1"],
-      programmingLanguage: "javascript",
+      dependencies: ["Tab#1"],
+      language: "javascript",
     },
     "AzureSql#1": {
       type: "additional",
       hostingPlugin: "AzureSQLPluginName",
-      dependentResources: ["ManagedIdentity#1"],
+      dependencies: ["ManagedIdentity#1"],
     },
     "ManagedIdentity#1": {
       type: "additional",
       hostingPlugin: "ManagedIdentityPluginName",
-      dependentResources: [],
+      dependencies: [],
     },
   },
 };
 
-console.log(projectSettings);
+console.log(solutionSettings);

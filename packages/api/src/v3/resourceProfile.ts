@@ -28,7 +28,7 @@ export enum AzureResourceTypes {
  * defines the provision output of HostingPlugin
  */
 export interface AzureResource extends Json {
-  type: AzureResourceTypes;
+  type: string;
   id: string; //resourceId
   name: string;
   endpoint?: string;
@@ -67,6 +67,7 @@ export interface AzureBot extends AzureResource {
   aadObjectId: string; //bot AAD App Id
   appServicePlan: string; // use for deploy
   botChannelReg: string; // Azure Bot
+  botRedirectUri?: string; // ???
 }
 
 export interface WebApp extends AzureResource {
@@ -95,30 +96,84 @@ export interface AzureCommonConfig {
   provisionSucceeded: boolean;
 }
 
-export interface TeamsAppResource {
+export interface TeamsAppResource extends Json {
   teamsAppId: string;
   tenantId: string;
 }
 
+export interface LocalResource extends Json {
+  type: string;
+  endpoint?: string;
+  secretFields?: string[];
+}
+
+export interface LocalFrontendResource extends LocalResource {
+  type: "Local Frontend";
+  browser: string;
+  https: boolean;
+  trustDevCert: boolean;
+  sslCertFile: string;
+  sslKeyFile: string;
+  endpoint: string;
+}
+
+export interface LocalSimpleAuthResource extends LocalResource {
+  type: "Local Simple Auth";
+  filePath: string;
+  environmentVariableParams: string;
+  endpoint: string;
+}
+
+export interface LocalBotResource extends LocalResource {
+  type: "Local Bot";
+  skipNgrok: boolean;
+  botId: string;
+  botPassword: string;
+  aadObjectId: string;
+  botRedirectUri?: string; // ???
+  endpoint: string;
+}
+
 /**
- * defines: provision instance values for all resources
+ * defines: provision cloud resource profiles
  */
 export interface TeamsAppResourceProfile {
   solution: AzureCommonConfig;
-  tab: {
+  tab?: {
     hosting: AzureResource;
-    simpleAuth: WebApp;
+    simpleAuth?: WebApp;
   };
-  bot: {
+  bot?: {
     hosting: AzureBot;
   };
-  aad: AzureActiveDirectoryApp;
-  resources: {
+  aad?: AzureActiveDirectoryApp;
+  resources?: {
     [key: string]: AzureResource;
   };
   teamsApp: TeamsAppResource;
 }
 
+/**
+ * defines local resource profiles
+ */
+export interface TeamsAppLocalResourceProfile {
+  teamsApp: TeamsAppResource;
+  tab?: {
+    hosting: LocalFrontendResource;
+    simpleAuth?: LocalSimpleAuthResource;
+  };
+  bot?: {
+    hosting: LocalBotResource;
+  };
+  aad?: AzureActiveDirectoryApp;
+  resources?: {
+    [key: string]: LocalResource;
+  };
+}
+
+/**
+ * example of TeamsAppResourceProfile
+ */
 const resourceSettings: TeamsAppResourceProfile = {
   solution: {
     resourceNameSuffix: "595516",
@@ -137,9 +192,9 @@ const resourceSettings: TeamsAppResourceProfile = {
       endpoint: "https://frontendstgwtdxzjx6olulg.z19.web.core.windows.net",
     },
     simpleAuth: {
+      type: AzureResourceTypes.WebApp,
       id: "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/serverfarms/fullcapdev230e29-simpleAuth-serverfarms",
       name: "fullcapdev230e29-simpleauth-webapp",
-      type: AzureResourceTypes.WebApp,
       endpoint: "https://fullcapdev230e29-simpleauth-webapp.azurewebsites.net",
     },
   },

@@ -24,6 +24,7 @@ import {
   isFeatureFlagEnabled,
   isMultiEnvEnabled,
 } from "../../src/common/tools";
+import * as tools from "../../src/common/tools";
 import {
   ContextUpgradeError,
   FetchSampleError,
@@ -52,9 +53,7 @@ describe("Other test case", () => {
   });
   it("question: QuestionAppName validation", async () => {
     const inputs: Inputs = { platform: Platform.VSCode };
-    const folder = os.tmpdir();
     let appName = "1234";
-    inputs.folder = folder;
 
     let validRes = await (QuestionAppName.validation as FuncValidation<string>).validFunc(
       appName,
@@ -67,6 +66,8 @@ describe("Other test case", () => {
     );
 
     appName = randomAppName();
+    const folder = os.tmpdir();
+    sandbox.stub(tools, "getRootDirectory").returns(folder);
     const projectPath = path.resolve(folder, appName);
 
     sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(true);

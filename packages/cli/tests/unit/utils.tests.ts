@@ -4,7 +4,15 @@
 import path from "path";
 import fs from "fs-extra";
 import * as apis from "@microsoft/teamsfx-api";
-import { Colors, Platform, QTreeNode, UserError } from "@microsoft/teamsfx-api";
+import {
+  Colors,
+  ConfigFolderName,
+  InputConfigsFolderName,
+  Platform,
+  ProjectSettingsFileName,
+  QTreeNode,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import sinon from "sinon";
 
 import {
@@ -522,12 +530,23 @@ describe("Utils Tests", function () {
   describe("getProjectId", async () => {
     const sandbox = sinon.createSandbox();
 
+    const oldSettingsPath = path.join(`.${ConfigFolderName}`, "settings.json");
+    const newSettingsPath = path.join(
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      ProjectSettingsFileName
+    );
+
     before(() => {
       sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
         return path.toString().includes("real");
       });
-      sandbox.stub(fs, "readJsonSync").returns({
-        projectId: "real",
+      sandbox.stub(fs, "readJsonSync").callsFake((path: fs.PathLike) => {
+        if (path.toString().includes("real")) {
+          return { projectId: "real" };
+        } else {
+          throw new Error(`ENOENT: no such file or directory, open '${path.toString()}'`);
+        }
       });
     });
 
@@ -549,6 +568,117 @@ describe("Utils Tests", function () {
       const result = getProjectId("fake");
       expect(result).equals(undefined);
     });
+  });
+
+  describe("getProjectId fallback logic", async () => {
+    const sandbox = sinon.createSandbox();
+
+    const oldSettingsPath = path.join(`.${ConfigFolderName}`, "settings.json");
+    const newSettingsPath = path.join(
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      ProjectSettingsFileName
+    );
+
+    let oldExist = false;
+    let newExist = false;
+
+    before(() => {
+      sandbox.stub(fs, "existsSync").callsFake((pathLike: fs.PathLike) => {
+        const _path = pathLike.toString();
+        if (path.normalize(_path).endsWith(oldSettingsPath)) {
+          return oldExist;
+        } else if (path.normalize(_path).endsWith(newSettingsPath)) {
+          return newExist;
+        } else {
+          return _path.includes("real");
+        }
+      });
+      sandbox.stub(fs, "readJsonSync").callsFake((pathLike: fs.PathLike) => {
+        const _path = pathLike.toString();
+        if (path.normalize(_path).endsWith(oldSettingsPath)) {
+          if (oldExist) {
+            return {
+              projectId: "old",
+            };
+          } else {
+            throw new Error(`ENOENT: no such file or directory, open '${_path.toString()}'`);
+          }
+        } else if (path.normalize(_path).endsWith(newSettingsPath)) {
+          if (newExist) {
+            return {
+              projectId: "new",
+            };
+          } else {
+            throw new Error(`ENOENT: no such file or directory, open '${_path.toString()}'`);
+          }
+        } else {
+          return undefined;
+        }
+      });
+    });
+
+    after(() => {
+      sandbox.restore();
+    });
+
+    if (isMultiEnvEnabled()) {
+      it("Multi env enabled and both new files and old files exist", async () => {
+        oldExist = true;
+        newExist = true;
+        const result = getProjectId("real");
+        expect(result).equals("new");
+      });
+
+      it("Multi env enabled and only new files exist", async () => {
+        oldExist = false;
+        newExist = true;
+        const result = getProjectId("real");
+        expect(result).equals("new");
+      });
+
+      it("Multi env enabled and only old files exist", async () => {
+        oldExist = true;
+        newExist = false;
+        const result = getProjectId("real");
+        expect(result).equals("old");
+      });
+
+      it("Multi env enabled and neither new nor old files exist", async () => {
+        oldExist = false;
+        newExist = false;
+        const result = getProjectId("real");
+        expect(result).equals(undefined);
+      });
+    } else {
+      it("Multi env disabled and both new files and old files exist", async () => {
+        oldExist = true;
+        newExist = true;
+        const result = getProjectId("real");
+        expect(result).equals("old");
+      });
+
+      it("Multi env disabled and only new files exist", async () => {
+        oldExist = false;
+        newExist = true;
+        const result = getProjectId("real");
+        expect(result).equals(undefined);
+      });
+
+      it("Multi env disabled and only old files exist", async () => {
+        oldExist = true;
+        newExist = false;
+        const result = getProjectId("real");
+        expect(result).equals("old");
+      });
+
+      it("Multi env disabled and neither new nor old files exist", async () => {
+        oldExist = false;
+        newExist = false;
+        const result = getProjectId("real");
+        expect(result).equals(undefined);
+      });
+    }
   });
 
   it("getSystemInputs", async () => {

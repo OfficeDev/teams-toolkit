@@ -24,6 +24,7 @@ import {
   TokenProvider,
   UserError,
   Void,
+  Err,
 } from "@microsoft/teamsfx-api";
 import {
   GLOBAL_CONFIG,
@@ -55,6 +56,7 @@ import {
   TelemetryEvent,
   TelemetryProperty,
 } from "../../../common/telemetry";
+import { RestError } from "@azure/ms-rest-js";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -481,7 +483,12 @@ async function askCommonQuestions(
       CustomizeResourceGroupType.EnvConfig;
     resourceGroupInfo = maybeResourceGroupInfo;
   } else if (resourceGroupNameFromState && resourceGroupLocationFromState) {
-    const maybeExist = await checkResourceGroupExistence(rmClient, resourceGroupNameFromState);
+    const maybeExist = await checkResourceGroupExistence(
+      rmClient,
+      resourceGroupNameFromState,
+      subscriptionResult.value.subscriptionId,
+      subscriptionResult.value.subscriptionName
+    );
     if (maybeExist.isErr()) {
       return err(maybeExist.error);
     }
@@ -533,7 +540,13 @@ async function askCommonQuestions(
   ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckResourceGroup, telemetryProperties);
 
   if (resourceGroupInfo.createNewResourceGroup) {
-    const maybeRgName = await createNewResourceGroup(rmClient, resourceGroupInfo, ctx.logProvider);
+    const maybeRgName = await createNewResourceGroup(
+      rmClient,
+      resourceGroupInfo,
+      subscriptionResult.value.subscriptionId,
+      subscriptionResult.value.subscriptionName,
+      ctx.logProvider
+    );
     if (maybeRgName.isErr()) {
       return err(maybeRgName.error);
     }
@@ -618,9 +631,16 @@ export async function fillInCommonQuestions(
 async function createNewResourceGroup(
   rmClient: ResourceManagementClient,
   rgInfo: ResourceGroupInfo,
+  subscriptionId: string,
+  subscriptionName: string,
   logProvider?: LogProvider
 ): Promise<Result<string, FxError>> {
-  const maybeExist = await checkResourceGroupExistence(rmClient, rgInfo.name);
+  const maybeExist = await checkResourceGroupExistence(
+    rmClient,
+    rgInfo.name,
+    subscriptionId,
+    subscriptionName
+  );
   if (maybeExist.isErr()) {
     return err(maybeExist.error);
   }
@@ -671,24 +691,68 @@ async function createNewResourceGroup(
   return ok(response.name);
 }
 
+function handleRestError<T>(
+  restError: RestError,
+  resourceGroupName: string,
+  subscriptionId: string,
+  subscriptionName: string
+): Err<T, FxError> {
+  const subscriptionInfoString =
+    subscriptionId + (subscriptionName.length > 0 ? `(${subscriptionName})` : "");
+  if (restError.statusCode === 403) {
+    return err(
+      returnUserError(
+        new Error(
+          `Unauthorized to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'. Please check your Azure subscription.`
+        ),
+        SolutionSource,
+        SolutionError.Unauthorized
+      )
+    );
+  } else {
+    // Avoid sensitive information like request headers in the error message.
+    const rawErrorString = JSON.stringify({
+      code: restError.code,
+      statusCode: restError.statusCode,
+      body: restError.body,
+      name: restError.name,
+      message: restError.message,
+    });
+    return err(
+      returnUserError(
+        new Error(
+          `Failed to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}', raw error: '${rawErrorString}'`
+        ),
+        SolutionSource,
+        SolutionError.FailedToCheckResourceGroupExistence
+      )
+    );
+  }
+}
+
 async function checkResourceGroupExistence(
   rmClient: ResourceManagementClient,
-  resourceGroupName: string
+  resourceGroupName: string,
+  subscriptionId: string,
+  subscriptionName: string
 ): Promise<Result<boolean, FxError>> {
   try {
     const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
     return ok(!!checkRes.body);
   } catch (e) {
-    // The `checkExistence()` call returns an error with empty error message in some conditions.
-    // Wrap the error to prevent showing empty error message to the users.
     let error;
-    const errorMessage = `Failed to check the existence of the resource group '${resourceGroupName}', error: '${e}'`;
-    if (e instanceof Error) {
+    if (e instanceof RestError) {
+      return handleRestError(e, resourceGroupName, subscriptionId, subscriptionName);
+    } else if (e instanceof Error) {
       // reuse the original error object to prevent losing the stack info
-      e.message = errorMessage;
+      e.message = `Failed to check the existence of resource group '${resourceGroupName}', error: '${e}'`;
       error = e;
     } else {
-      error = new Error(errorMessage);
+      error = new Error(
+        `Failed to check the existence of resource group '${resourceGroupName}', error: '${JSON.stringify(
+          e
+        )}'`
+      );
     }
     return err(
       returnUserError(error, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)

@@ -99,6 +99,7 @@ export enum SolutionError {
   FailedToGetResourceGroupInfoInputs = "FailedToGetResourceGroupInfoInputs",
   ResourceGroupNotFound = "ResourceGroupNotFound",
   SubscriptionNotFound = "SubscriptionNotFound",
+  Unauthorized = "Unauthorized",
   NotLoginToAzure = "NotLoginToAzure",
   AzureAccountExtensionNotInitialized = "AzureAccountExtensionNotInitialized",
   LocalTabEndpointMissing = "LocalTabEndpointMissing",

@@ -165,30 +165,23 @@ export class TestHelper {
 }
 
 export function mockArmOutput(context: PluginContext, simpleAuthUrl: string) {
-  // set context.envInfo.state.get(SOLUTION)[ARM_TEMPLATE_OUTPUT]["domain"] = some fake value
-  const solutionProfile = context.envInfo.state.get(SOLUTION) ?? new Map();
-  const armOutput = solutionProfile[ARM_TEMPLATE_OUTPUT] ?? {};
+  // solution plugin will now help fill plugin context
+  const frontendHostingPluginId = "fx-resource-frontend-hosting";
 
-  armOutput["frontendHostingOutput"] = {
-    type: "Object",
-    value: {
-      teamsFxPluginId: "fx-resource-frontend-hosting",
-      storageResourceId: `/subscriptions/test_subscription_id/resourceGroups/test_resource_group_name/providers/Microsoft.Storage/storageAccounts/test_storage_name`,
-      endpoint: `https://test_storage_name.z13.web.core.windows.net`,
-      domain: `test_storage_name.z13.web.core.windows.net`,
-    },
-  };
-  armOutput["simpleAuthOutput"] = {
-    type: "Object",
-    value: {
-      teamsFxPluginId: "fx-resource-simple-auth",
-      skuName: "B1",
-      endpoint: simpleAuthUrl,
-      webAppName: "test_simple_auth_web_app_name",
-      appServicePlanName: "test_simple_auth_app_service_plan_name",
-    },
-  };
+  context.envInfo.state.set(
+    frontendHostingPluginId,
+    new Map<string, string>([
+      [
+        "storageResourceId",
+        `/subscriptions/test_subscription_id/resourceGroups/test_resource_group_name/providers/Microsoft.Storage/storageAccounts/test_storage_name`,
+      ],
+      ["endpoint", `https://test_storage_name.z13.web.core.windows.net`],
+      ["domain", `test_storage_name.z13.web.core.windows.net`],
+    ])
+  );
 
-  solutionProfile.set(ARM_TEMPLATE_OUTPUT, armOutput);
-  context.envInfo.state.set(SOLUTION, solutionProfile);
+  context.config.set("skuName", "B1");
+  context.config.set("endpoint", simpleAuthUrl);
+  context.config.set("webAppName", "test_simple_auth_web_app_name");
+  context.config.set("appServicePlanName", "test_simple_auth_app_service_plan_name");
 }

@@ -5,7 +5,7 @@ import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
 import { UserInfo } from "../models/userinfo";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 import { Cache } from "../core/cache.browser";
-import * as microsoftTeams from "@microsoft/teams-js";
+import { app, authentication } from "@microsoft/teams-js";
 import { getAuthenticationConfiguration } from "../core/configurationProvider";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { AuthCodeResult } from "../models/authCodeResult";
@@ -94,39 +94,35 @@ export class TeamsUserCredential implements TokenCredential {
 
     internalLogger.info(`Popup login page to get user's access token with scopes: ${scopesStr}`);
 
-    return new Promise<void>((resolve, reject) => {
-      microsoftTeams.initialize(() => {
-        microsoftTeams.authentication.authenticate({
-          url: `${this.config.initiateLoginEndpoint}?clientId=${
-            this.config.clientId
-          }&scope=${encodeURI(scopesStr)}`,
-          width: loginPageWidth,
-          height: loginPageHeight,
-          successCallback: async (result?: string) => {
-            if (!result) {
-              const errorMsg = "Get empty authentication result from Teams";
-
-              internalLogger.error(errorMsg);
-              reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-              return;
-            }
-
-            const authCodeResult: AuthCodeResult = JSON.parse(result);
-            try {
-              await this.exchangeAccessTokenFromSimpleAuthServer(scopesStr, authCodeResult);
-              resolve();
-            } catch (err) {
-              reject(this.generateAuthServerError(err));
-            }
-          },
-          failureCallback: (reason?: string) => {
-            const errorMsg = `Consent failed for the scope ${scopesStr} with error: ${reason}`;
-            internalLogger.error(errorMsg);
-            reject(new ErrorWithCode(errorMsg, ErrorCode.ConsentFailed));
-          },
-        });
-      });
-    });
+    await app.initialize();
+    let result: string;
+    try {
+      const params = {
+        url: `${this.config.initiateLoginEndpoint}?clientId=${
+          this.config.clientId
+        }&scope=${encodeURI(scopesStr)}`,
+        width: loginPageWidth,
+        height: loginPageHeight,
+      } as authentication.AuthenticatePopUpParameters;
+      result = await authentication.authenticate(params);
+      if (!result) {
+        const errorMsg = "Get empty authentication result from Teams";
+        internalLogger.error(errorMsg);
+        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+      }
+    } catch (err: unknown) {
+      const errorMsg = `Consent failed for the scope ${scopesStr} with error: ${
+        (err as Error).message
+      }`;
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.ConsentFailed);
+    }
+    try {
+      const authCodeResult: AuthCodeResult = JSON.parse(result);
+      await this.exchangeAccessTokenFromSimpleAuthServer(scopesStr, authCodeResult);
+    } catch (err) {
+      throw this.generateAuthServerError(err);
+    }
   }
 
   /**
@@ -290,63 +286,54 @@ export class TeamsUserCredential implements TokenCredential {
    * It will try to get SSO token from memory first, if SSO token doesn't exist or about to expired, then it will using teams SDK to get SSO token
    * @returns SSO token
    */
-  private getSSOToken(): Promise<AccessToken> {
-    return new Promise<AccessToken>((resolve, reject) => {
-      if (this.ssoToken) {
-        if (this.ssoToken.expiresOnTimestamp - Date.now() > tokenRefreshTimeSpanInMillisecond) {
-          internalLogger.verbose("Get SSO token from memory cache");
-          resolve(this.ssoToken);
-          return;
-        }
+  private async getSSOToken(): Promise<AccessToken> {
+    if (this.ssoToken) {
+      if (this.ssoToken.expiresOnTimestamp - Date.now() > tokenRefreshTimeSpanInMillisecond) {
+        internalLogger.verbose("Get SSO token from memory cache");
+        return this.ssoToken;
+      }
+    }
+
+    // If the code not running in Teams, the initialize callback function would never trigger
+    const initializeTimeout = new Promise((_r, reject) =>
+      setTimeout(() => reject(), initializeTeamsSdkTimeoutInMillisecond)
+    );
+    try {
+      await Promise.race([app.initialize(), initializeTimeout]);
+    } catch (error: unknown) {
+      const errorMsg = "Initialize teams sdk timeout, maybe the code is not running inside Teams";
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+    }
+
+    const params = {} as authentication.AuthTokenRequestParameters;
+    try {
+      const token = await authentication.getAuthToken(params);
+      if (!token) {
+        const errorMsg = "Get empty SSO token from Teams";
+        internalLogger.error(errorMsg);
+        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
       }
 
-      let initialized = false;
-      microsoftTeams.initialize(() => {
-        initialized = true;
-        microsoftTeams.authentication.getAuthToken({
-          successCallback: (token: string) => {
-            if (!token) {
-              const errorMsg = "Get empty SSO token from Teams";
-              internalLogger.error(errorMsg);
-              reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-              return;
-            }
+      const tokenObject = parseJwt(token);
+      if (tokenObject.ver !== "1.0" && tokenObject.ver !== "2.0") {
+        const errorMsg = "SSO token is not valid with an unknown version: " + tokenObject.ver;
+        internalLogger.error(errorMsg);
+        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+      }
 
-            const tokenObject = parseJwt(token);
-            if (tokenObject.ver !== "1.0" && tokenObject.ver !== "2.0") {
-              const errorMsg = "SSO token is not valid with an unknown version: " + tokenObject.ver;
-              internalLogger.error(errorMsg);
-              reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-              return;
-            }
+      const ssoToken: AccessToken = {
+        token,
+        expiresOnTimestamp: tokenObject.exp * 1000,
+      };
 
-            const ssoToken: AccessToken = {
-              token,
-              expiresOnTimestamp: tokenObject.exp * 1000,
-            };
-
-            this.ssoToken = ssoToken;
-            resolve(ssoToken);
-          },
-          failureCallback: (errMessage: string) => {
-            const errorMsg = "Get SSO token failed with error: " + errMessage;
-            internalLogger.error(errorMsg);
-            reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-          },
-          resources: [],
-        });
-      });
-
-      // If the code not running in Teams, the initialize callback function would never trigger
-      setTimeout(() => {
-        if (!initialized) {
-          const errorMsg =
-            "Initialize teams sdk timeout, maybe the code is not running inside Teams";
-          internalLogger.error(errorMsg);
-          reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
-        }
-      }, initializeTeamsSdkTimeoutInMillisecond);
-    });
+      this.ssoToken = ssoToken;
+      return ssoToken;
+    } catch (err: unknown) {
+      const errorMsg = "Get SSO token failed with error: " + (err as Error).message;
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+    }
   }
 
   /**

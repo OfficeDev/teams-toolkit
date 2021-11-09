@@ -284,6 +284,18 @@ export const SampleSelect: SingleSelectQuestion = {
         "Conversational Bot which answers common questions, looping human when bots unable to help",
       data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
     },
+    {
+      id: "todo-list-with-Azure-backend-M365",
+      label: "Todo List (Works in Teams, Outlook and Office)",
+      detail: "Todo List app that runs across Microsoft 365 including Teams, Outlook and Office",
+      data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
+    },
+    {
+      id: "NPM-search-connector-M365",
+      label: "NPM Search Connector",
+      detail: "Search and Share an NPM Package in Teams and Outlook (Web)",
+      data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
+    },
   ],
   placeholder: "Select a sample",
   returnObject: true,

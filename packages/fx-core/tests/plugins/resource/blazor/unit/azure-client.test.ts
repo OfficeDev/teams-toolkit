@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 import "mocha";
 import * as chai from "chai";
-import { BlazorPluginInfo } from "../../../../../src/plugins/resource/blazor/constants";
-import { AzureLib } from "../../../../../src/plugins/resource/blazor/utils/azure-client";
+import { BlazorPluginInfo } from "../../../../../src/plugins/resource/frontend/blazor/constants";
+import { AzureLib } from "../../../../../src/plugins/resource/frontend/blazor/utils/azure-client";
 
 const client: any = {
   appServicePlans: {

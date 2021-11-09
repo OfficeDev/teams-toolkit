@@ -46,7 +46,7 @@ export class BlazorPluginInfo {
   static readonly issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new";
   static readonly helpLink = "https://aka.ms/teamsfx-bz-help";
 
-  static readonly persistentConfig = ["webAppName", "appServicePlanName", "webAppEndpoint"];
+  static readonly persistentConfig = ["webAppName", "appServicePlanName", "endpoint", "domain"];
 
   static readonly defaultFramework = "net5.0";
   static readonly defaultRuntime = "win-x86";
@@ -95,6 +95,6 @@ export class DependentPluginInfo {
 export class BlazorConfigInfo {
   static readonly webAppName = "webAppName";
   static readonly appServicePlanName = "appServicePlanName";
-  static readonly webAppEndpoint = "webAppEndpoint";
-  static readonly webAppId = "webAppId";
+  static readonly webAppEndpoint = "endpoint";
+  static readonly webAppDomain = "domain";
 }

@@ -424,15 +424,34 @@ export function getProjectId(rootfolder: string | undefined): any {
     return undefined;
   }
 
-  if (isWorkspaceSupported(rootfolder)) {
+  if (isMultiEnvEnabled()) {
+    // Do not check validity of project in multi-env.
+    // Before migration, `isWorkspaceSupported()` is false, but we still need to send `project-id` telemetry property.
     const result = readSettingsFileSync(rootfolder);
-    if (result.isErr()) {
-      return undefined;
+    if (result.isOk()) {
+      return result.value.projectId;
     }
 
-    return result.value.projectId;
-  }
+    // Also try reading from the old project location to support `ProjectMigratorMW` telemetry.
+    // While doing migration, sending telemetry will call this `getProjectId()` function.
+    // But before migration done, the settings file will be in the old path.
+    const settingsFilePathOld = getConfigPath(rootfolder, "settings.json");
+    try {
+      const settings = fs.readJsonSync(settingsFilePathOld);
+      return settings.projectId;
+    } catch (e) {
+      return undefined;
+    }
+  } else {
+    if (isWorkspaceSupported(rootfolder)) {
+      const result = readSettingsFileSync(rootfolder);
+      if (result.isErr()) {
+        return undefined;
+      }
 
+      return result.value.projectId;
+    }
+  }
   return undefined;
 }
 

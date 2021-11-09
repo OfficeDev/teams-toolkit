@@ -9,6 +9,18 @@ import * as os from "os";
 import * as commonUtils from "../../../src/utils/commonUtils";
 
 import * as extensionPackage from "../../../package.json";
+import path = require("path");
+import {
+  ConfigFolderName,
+  InputConfigsFolderName,
+  ProjectSettingsFileName,
+} from "@microsoft/teamsfx-api";
+// import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+const core = require("@microsoft/teamsfx-core");
+const isMultiEnvEnabled = core.isMultiEnvEnabled;
+import { ext } from "../../../src/extensionVariables";
+import { Uri, workspace } from "vscode";
+import * as tmp from "tmp";
 
 suite("CommonUtils", () => {
   suite("getPackageVersion", () => {
@@ -123,5 +135,126 @@ suite("CommonUtils", () => {
 
       sinon.restore();
     });
+  });
+
+  suite("getProjectId", async () => {
+    const sandbox = sinon.createSandbox();
+
+    // const oldSettingsPath = path.join(`.${ConfigFolderName}`, "settings.json");
+    // const newSettingsPath = path.join(
+    //   `.${ConfigFolderName}`,
+    //   InputConfigsFolderName,
+    //   ProjectSettingsFileName
+    // );
+
+    let workspacePath: string;
+    const cleanupCallbacks: (() => void)[] = [];
+
+    function createOldProjectSettings() {
+      const filePath = path.join(workspacePath, `.${ConfigFolderName}`, "settings.json");
+      fs.ensureDirSync(path.dirname(filePath));
+      fs.writeJsonSync(filePath, {
+        solutionSettings: {
+          hostType: "azure",
+        },
+        projectId: "old",
+      });
+    }
+    function createNewProjectSettings() {
+      const filePath = path.join(
+        workspacePath,
+        `.${ConfigFolderName}`,
+        InputConfigsFolderName,
+        ProjectSettingsFileName
+      );
+      fs.ensureDirSync(path.dirname(filePath));
+      fs.writeJsonSync(filePath, {
+        solutionSettings: {
+          hostType: "azure",
+        },
+        projectId: "new",
+      });
+    }
+
+    setup(() => {
+      // Use real file system instead of stub because of cross-package stub issues of ES6 import
+      // https://github.com/sinonjs/sinon/issues/1711
+      const { name, removeCallback } = tmp.dirSync({ unsafeCleanup: true });
+      cleanupCallbacks.push(removeCallback);
+      workspacePath = name;
+
+      if (!("workspaceUri" in ext)) {
+        // ensure the property exist to prevent sinon "Cannot stub non-existent property" error
+        (ext.workspaceUri as any) = undefined;
+      }
+      sandbox.stub(ext, "workspaceUri").value(Uri.file(workspacePath));
+    });
+
+    teardown(() => {
+      cleanupCallbacks.forEach((callback) => callback());
+    });
+
+    suiteSetup(() => {
+      // stub existsSync for other project files besides project settings file
+      sandbox.stub(fs, "existsSync").callsFake((pathLike: fs.PathLike) => {
+        const _path = pathLike.toString();
+        return _path.includes("real");
+      });
+    });
+
+    suiteTeardown(() => {
+      sandbox.restore();
+    });
+
+    if (isMultiEnvEnabled()) {
+      // it("Multi env enabled and both new files and old files exist", async () => {
+      //   oldExist = true;
+      //   newExist = true;
+      //   const result = commonUtils.getProjectId();
+      //   chai.expect(result).equals("new");
+      // });
+      // it("Multi env enabled and only new files exist", async () => {
+      //   oldExist = false;
+      //   newExist = true;
+      //   const result = getProjectId("real");
+      //   chai.expect(result).equals("new");
+      // });
+      // it("Multi env enabled and only old files exist", async () => {
+      //   oldExist = true;
+      //   newExist = false;
+      //   const result = getProjectId("real");
+      //   expect(result).equals("old");
+      // });
+      // it("Multi env enabled and neither new nor old files exist", async () => {
+      //   oldExist = false;
+      //   newExist = false;
+      //   const result = getProjectId("real");
+      //   expect(result).equals(undefined);
+      // });
+    } else {
+      test("Multi env disabled and both new files and old files exist", async () => {
+        createOldProjectSettings();
+        createNewProjectSettings();
+        const result = commonUtils.getProjectId();
+        chai.expect(result).equals("old");
+      });
+
+      it("Multi env disabled and only new files exist", async () => {
+        createNewProjectSettings();
+        const result = commonUtils.getProjectId();
+        chai.expect(result).equals(undefined);
+      });
+
+      it("Multi env disabled and only old files exist", async () => {
+        createOldProjectSettings();
+        const result = commonUtils.getProjectId();
+        chai.expect(result).equals("old");
+      });
+
+      it("Multi env disabled and neither new nor old files exist", async () => {
+        const result = commonUtils.getProjectId();
+        chai.expect(result).equals(undefined);
+      });
+    }
   });
 });

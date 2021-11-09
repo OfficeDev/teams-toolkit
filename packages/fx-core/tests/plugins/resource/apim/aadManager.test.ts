@@ -16,11 +16,18 @@ import {
   before_if,
   EnvConfig,
 } from "./testUtil";
-import { InvalidAadObjectId } from "../../../../src/plugins/resource/apim/error";
+import {
+  AssertConfigNotEmpty,
+  InvalidAadObjectId,
+} from "../../../../src/plugins/resource/apim/error";
 import { IRequiredResourceAccess } from "../../../../src/plugins/resource/apim/interfaces/IAadResource";
 import { AadService } from "../../../../src/plugins/resource/apim/services/aadService";
 import { IAadPluginConfig, IApimPluginConfig } from "../../../../src/plugins/resource/apim/config";
-import { AadDefaultValues } from "../../../../src/plugins/resource/apim/constants";
+import {
+  AadDefaultValues,
+  ApimPluginConfigKeys,
+  TeamsToolkitComponent,
+} from "../../../../src/plugins/resource/apim/constants";
 import { Lazy } from "../../../../src/plugins/resource/apim/utils/commonUtils";
 dotenv.config();
 chai.use(chaiAsPromised);
@@ -402,6 +409,15 @@ function buildApimPluginConfig(objectId?: string, clientSecret?: string): IApimP
   return {
     apimClientAADObjectId: objectId,
     apimClientAADClientSecret: clientSecret,
+    checkAndGet(key: string): string {
+      let res: string | undefined = undefined;
+      if (key === ApimPluginConfigKeys.apimClientAADObjectId) {
+        res = objectId;
+      } else if (key === ApimPluginConfigKeys.apimClientAADClientSecret) {
+        res = clientSecret;
+      }
+      return AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, key, res, "dev");
+    },
   };
 }
 

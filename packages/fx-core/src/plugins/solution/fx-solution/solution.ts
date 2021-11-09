@@ -150,6 +150,7 @@ import { scaffoldReadme } from "./v2/scaffolding";
 import { environmentManager } from "../../..";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { LOCAL_TENANT_ID } from ".";
+import { buildAppConfiguration } from "@azure/msal-node";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -2457,15 +2458,17 @@ export class TeamsAppSolution implements Solution {
       });
       return ok(Void);
     }
-
-    if (
+    const alreadyHaveBotAndAddBot =
       (settings.capabilities?.includes(BotOptionItem.id) ||
         settings.capabilities?.includes(MessageExtensionItem.id)) &&
       (capabilitiesAnswer.includes(BotOptionItem.id) ||
-        capabilitiesAnswer.includes(MessageExtensionItem.id))
-    ) {
+        capabilitiesAnswer.includes(MessageExtensionItem.id));
+    const alreadyHaveTabAndAddTab =
+      settings.capabilities?.includes(TabOptionItem.id) &&
+      capabilitiesAnswer.includes(TabOptionItem.id);
+    if (alreadyHaveBotAndAddBot || alreadyHaveTabAndAddTab) {
       const e = returnUserError(
-        new Error("Application already contains a Bot and/or Messaging Extension"),
+        new Error("There are no additional capabilities you can add to your project."),
         SolutionSource,
         SolutionError.FailedToAddCapability
       );
@@ -2478,7 +2481,6 @@ export class TeamsAppSolution implements Solution {
       );
     }
     let change = false;
-    const notifications: string[] = [];
     const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin, this.AppStudioPlugin];
     const capabilities = Array.from(settings.capabilities);
     for (const cap of capabilitiesAnswer!) {
@@ -2486,13 +2488,11 @@ export class TeamsAppSolution implements Solution {
         capabilities.push(cap);
         change = true;
         if (cap === TabOptionItem.id) {
-          notifications.push("Azure Tab Frontend");
           pluginsToScaffold.push(this.FrontendPlugin);
         } else if (
           (cap === BotOptionItem.id || cap === MessageExtensionItem.id) &&
           !pluginsToScaffold.includes(this.BotPlugin)
         ) {
-          notifications.push("Bot/MessageExtension");
           pluginsToScaffold.push(this.BotPlugin);
         }
       }
@@ -2507,10 +2507,11 @@ export class TeamsAppSolution implements Solution {
       }
       settings.capabilities = capabilities;
       await this.reloadPlugins(settings);
-      ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
+      const pluginNames = pluginsToScaffold.map((p) => p.name).join(",");
+      ctx.logProvider?.info(`start scaffolding ${pluginNames}.....`);
       const scaffoldRes = await this.doScaffold(ctx, pluginsToScaffold, true);
       if (scaffoldRes.isErr()) {
-        ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
+        ctx.logProvider?.info(`failed to scaffold ${pluginNames}!`);
         ctx.projectSettings!.solutionSettings = originalSettings;
         return err(
           sendErrorTelemetryThenReturnError(
@@ -2520,14 +2521,19 @@ export class TeamsAppSolution implements Solution {
           )
         );
       }
-      ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
+      ctx.logProvider?.info(`finish scaffolding ${pluginNames}!`);
       ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
-      const msg = util.format(
+      const addNames = capabilitiesAnswer.map((c) => `'${c}'`).join(" and ");
+      const single = capabilitiesAnswer.length === 1;
+      const template =
         ctx.answers.platform === Platform.CLI
-          ? getStrings().solution.AddCapabilityNoticeForCli
-          : getStrings().solution.AddCapabilityNotice,
-        notifications.join(",")
-      );
+          ? single
+            ? getStrings().solution.AddCapabilityNoticeForCli
+            : getStrings().solution.AddCapabilitiesNoticeForCli
+          : single
+          ? getStrings().solution.AddCapabilityNotice
+          : getStrings().solution.AddCapabilitiesNotice;
+      const msg = util.format(template, addNames);
       ctx.ui?.showMessage("info", msg, false);
 
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {

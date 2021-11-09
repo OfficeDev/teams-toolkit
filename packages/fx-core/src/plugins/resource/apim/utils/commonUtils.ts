@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { parseFromResourceId } from "../../../..";
+import { parseFromResourceId } from "../../../../common/tools";
 import { ProjectConstants } from "../constants";
 import { BuildError, FailedToParseResourceIdError } from "../error";
 

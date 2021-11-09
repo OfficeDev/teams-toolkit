@@ -107,19 +107,11 @@ export class TestHelper {
   }
 
   static mockArmOutput(context: PluginContext) {
-    const solutionProfile = context.envInfo.state.get("solution") ?? new Map();
-    const armOutput = solutionProfile[ARM_TEMPLATE_OUTPUT] ?? {};
-    armOutput["azureSqlOutput"] = {
-      type: "Object",
-      value: {
-        teamsFxPluginId: "fx-resource-azure-sql",
-        sqlResourceId:
-          "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Sql/servers/test-sql",
-        sqlEndpoint: "test-sql.database.windows.net",
-        databaseName: "databaseName",
-      },
-    };
-    solutionProfile.set(ARM_TEMPLATE_OUTPUT, armOutput);
-    context.envInfo.state.set("solution", solutionProfile);
+    context.config.set(
+      "sqlResourceId",
+      "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Sql/servers/test-sql"
+    );
+    context.config.set("sqlEndpoint", "test-sql.database.windows.net");
+    context.config.set("databaseName", "databaseName");
   }
 }

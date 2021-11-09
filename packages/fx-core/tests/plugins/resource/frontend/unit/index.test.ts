@@ -219,10 +219,9 @@ describe("FrontendPlugin", () => {
         sinon
           .stub(AzureStorageClient.prototype, "enableStaticWebsite")
           .returns(Promise.resolve(undefined));
-        TestHelper.mockArmOutput(pluginContext);
-      } else {
-        pluginContext.config.set(FrontendConfigInfo.Endpoint, TestHelper.storageEndpoint);
       }
+      pluginContext.config.set(FrontendConfigInfo.Endpoint, TestHelper.storageEndpoint);
+
       frontendPlugin = new FrontendPlugin();
     });
 

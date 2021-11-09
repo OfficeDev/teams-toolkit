@@ -9,6 +9,7 @@ import {
   err,
   SystemError,
   AzureSolutionSettings,
+  Func,
 } from "@microsoft/teamsfx-api";
 
 import { IdentityConfig } from "./config";
@@ -159,6 +160,13 @@ export class IdentityPlugin implements Plugin {
     };
 
     return ok(result);
+  }
+
+  public async executeUserTask(func: Func, context: PluginContext): Promise<Result> {
+    if (func.method === "migrateV1Project") {
+      return ok(undefined); // Not need to do anything when migrate V1 project
+    }
+    return ok(undefined);
   }
 
   async loadArmTemplate(ctx: PluginContext) {

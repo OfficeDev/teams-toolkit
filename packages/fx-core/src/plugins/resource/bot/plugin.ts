@@ -192,6 +192,13 @@ export class TeamsBotImpl {
     this.ctx = context;
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
     const result: ArmTemplateResult = {
+      Provision: {
+        Reference: {
+          resourceId: BotBicep.resourceId,
+          hostName: BotBicep.hostName,
+          webAppEndpoint: BotBicep.webAppEndpoint,
+        },
+      },
       Configuration: {
         Modules: {
           botConfiguration: await fs.readFile(

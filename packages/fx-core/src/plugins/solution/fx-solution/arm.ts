@@ -46,6 +46,7 @@ import { Utils } from "../../resource/frontend/utils";
 import { executeCommand } from "../../../common/cpUtils";
 import { TEAMS_FX_RESOURCE_ID_KEY } from ".";
 import { Plugins } from "../../resource/aad/constants";
+import { indexOf } from "lodash";
 
 // Old folder structure constants
 const templateFolder = "templates";
@@ -475,22 +476,34 @@ async function doGenerateArmTemplate(
 
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
-    let bicepOrchestrationProvisionContent = await fs.readFile(
-      path.join(getTemplatesFolder(), "plugins", "solution", "provision.bicep"),
-      ConstantString.UTF8Encoding
-    );
-    let bicepOrchestrationConfigContent = await fs.readFile(
-      path.join(getTemplatesFolder(), "plugins", "solution", "config.bicep"),
-      ConstantString.UTF8Encoding
-    );
-    bicepOrchestrationProvisionContent +=
-      "\r\n" + bicepOrchestrationTemplate.getOrchestractionProvisionContent();
-    bicepOrchestrationConfigContent +=
-      "\r\n" + bicepOrchestrationTemplate.getOrchestractionConfigContent();
     const templateFolderPath = path.join(ctx.root, templatesFolder);
     await fs.ensureDir(templateFolderPath);
     await fs.ensureDir(path.join(templateFolderPath, "teamsFx"));
     await fs.ensureDir(path.join(templateFolderPath, "provision"));
+
+    let bicepOrchestrationProvisionContent = "";
+    let bicepOrchestrationConfigContent = "";
+    if (
+      !(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationProvisionFileName)))
+    ) {
+      bicepOrchestrationProvisionContent =
+        (await fs.readFile(
+          path.join(getTemplatesFolder(), "plugins", "solution", "provision.bicep"),
+          ConstantString.UTF8Encoding
+        )) + "\r\n";
+    }
+    if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationConfigFileName)))) {
+      bicepOrchestrationConfigContent =
+        (await fs.readFile(
+          path.join(getTemplatesFolder(), "plugins", "solution", "config.bicep"),
+          ConstantString.UTF8Encoding
+        )) + "\r\n";
+    }
+    bicepOrchestrationProvisionContent +=
+      bicepOrchestrationTemplate.getOrchestractionProvisionContent() + "\r\n";
+    bicepOrchestrationConfigContent +=
+      bicepOrchestrationTemplate.getOrchestractionConfigContent() + "\r\n";
+
     const templateSolitionPath = path.join(getTemplatesFolder(), "plugins", "solution");
     if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationFileName)))) {
       await fs.copyFile(
@@ -532,7 +545,7 @@ async function doGenerateArmTemplate(
           paramterObj,
           bicepOrchestrationTemplate.getAppendedParameters()
         );
-        parameterFileContent = JSON.stringify(parameterFile);
+        parameterFileContent = JSON.stringify(parameterFile, undefined, 4);
       } else {
         parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
       }

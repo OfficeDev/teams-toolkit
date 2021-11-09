@@ -39,7 +39,7 @@ export interface ScaffoldArmTemplateResult extends Record<string, unknown> {
 
 export interface ArmTemplateResult extends Record<string, unknown> {
   Provision?: {
-    Orchestration: string;
+    Orchestration?: string;
     Reference?: Record<string, unknown>;
     Modules?: { [moduleFileName: string]: string };
   };

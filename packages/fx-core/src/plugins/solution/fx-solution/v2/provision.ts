@@ -15,7 +15,6 @@ import {
 import { getStrings, isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
 import {
-  blockV1Project,
   combineRecords,
   ensurePermissionRequest,
   extractSolutionInputs,
@@ -64,11 +63,6 @@ export async function provisionResource(
     );
   }
   const projectPath: string = inputs.projectPath;
-
-  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
-  if (blockResult.isErr()) {
-    return new v2.FxFailure(blockResult.error);
-  }
 
   const azureSolutionSettings = getAzureSolutionSettings(ctx);
   // Just to trigger M365 login before the concurrent execution of provision.

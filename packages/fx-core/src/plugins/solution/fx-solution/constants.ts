@@ -137,7 +137,6 @@ export enum SolutionError {
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
   FailedToGenerateArmTemplates = "FailedToGenerateArmTemplates",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
-  V1ProjectNotSupported = "V1ProjectNotSupported",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
   M365TenantNotMatch = "M365TenantNotMatch",
   FeatureNotSupported = "FeatureNotSupported",

@@ -681,11 +681,15 @@ export class AppStudioPluginImpl {
 
     if (isMultiEnvEnabled()) {
       await fs.ensureDir(path.dirname(zipFileName));
+
       const manifestFileName =
         `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/manifest.` +
         (isLocalDebug ? "local" : ctx.envInfo.envName) +
         `.json`;
-      await fs.writeFile(manifestFileName, manifestString);
+      if (await fs.pathExists(manifestFileName)) {
+        await fs.chmod(manifestFileName, 0o777);
+      }
+      await fs.writeFile(manifestFileName, manifestString, { mode: 0o000 });
     }
 
     const zip = new AdmZip();

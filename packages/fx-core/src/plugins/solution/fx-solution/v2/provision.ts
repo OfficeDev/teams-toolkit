@@ -44,7 +44,7 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import _ from "lodash";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
-import { isV2 } from "../../../..";
+import { isV2, isVsCallingCli } from "../../../..";
 import { REMOTE_TEAMS_APP_ID } from "..";
 import { Constants } from "../../../resource/appstudio/constants";
 
@@ -255,6 +255,11 @@ export async function provisionResource(
 }
 
 export async function askForProvisionConsent(ctx: SolutionContext): Promise<Result<Void, FxError>> {
+  if (isVsCallingCli()) {
+    // Skip asking users for input on VS calling CLI to simplify user interaction.
+    return ok(Void);
+  }
+
   const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
 
   // Only Azure project requires this confirm dialog

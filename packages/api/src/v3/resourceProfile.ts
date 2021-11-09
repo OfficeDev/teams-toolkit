@@ -247,6 +247,12 @@ const resourceSettings: TeamsAppResourceProfile = {
       adminUserName: "huajiez",
       databaseName: "fullcapdev230e29-database",
     },
+    "ManagedIdentity#1": {
+      type: AzureResourceTypes.ManagedIdentity,
+      id: "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/fullcap102dev517e3f-managedIdentity",
+      name: "fullcap102dev517e3f-managedIdentity",
+      clientId: "bab9c110-d477-4cd4-9903-a01e426ec68a",
+    },
   },
 };
 

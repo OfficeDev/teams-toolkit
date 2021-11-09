@@ -1632,9 +1632,13 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
     true,
     StringResources.vsc.migrateTeamsTabApp.upgrade
   );
-  if (selection.isErr()) {
-    return err(selection.error);
-  } else if (selection.value !== StringResources.vsc.migrateTeamsTabApp.upgrade) {
+  const userCancelError = new UserError(
+    ExtensionErrors.UserCancel,
+    StringResources.vsc.common.userCancel,
+    "migrateTeamsTabApp"
+  );
+  if (selection.isErr() || selection.value !== StringResources.vsc.migrateTeamsTabApp.upgrade) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsTabApp, userCancelError);
     return ok(null);
   }
   const selectFolderConfig: SelectFolderConfig = {
@@ -1642,16 +1646,11 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
     title: StringResources.vsc.migrateTeamsTabApp.selectFolderConfig.title,
   };
   const selectFolderResult = await VS_CODE_UI.selectFolder(selectFolderConfig);
-  let tabAppPath: string;
-  if (selectFolderResult.isErr()) {
-    return err(selectFolderResult.error);
-  } else {
-    if (selectFolderResult.value.type === "success") {
-      tabAppPath = selectFolderResult.value.result as string;
-    } else {
-      return ok(null);
-    }
+  if (selectFolderResult.isErr() || selectFolderResult.value.type !== "success") {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsTabApp, userCancelError);
+    return ok(null);
   }
+  const tabAppPath = selectFolderResult.value.result as string;
 
   const progressBar = VS_CODE_UI.createProgressBar(
     StringResources.vsc.migrateTeamsTabApp.progressTitle,
@@ -1718,9 +1717,13 @@ export async function migrateTeamsManifestHandler(): Promise<Result<null, FxErro
     true,
     StringResources.vsc.migrateTeamsManifest.upgrade
   );
-  if (selection.isErr()) {
-    return err(selection.error);
-  } else if (selection.value !== StringResources.vsc.migrateTeamsManifest.upgrade) {
+  const userCancelError = new UserError(
+    ExtensionErrors.UserCancel,
+    StringResources.vsc.common.userCancel,
+    "migrateTeamsManifest"
+  );
+  if (selection.isErr() || selection.value !== StringResources.vsc.migrateTeamsManifest.upgrade) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsManifest, userCancelError);
     return ok(null);
   }
   const selectFileConfig: SelectFileConfig = {
@@ -1728,16 +1731,11 @@ export async function migrateTeamsManifestHandler(): Promise<Result<null, FxErro
     title: StringResources.vsc.migrateTeamsManifest.selectFileConfig.title,
   };
   const selectFileResult = await VS_CODE_UI.selectFile(selectFileConfig);
-  let manifestPath: string;
-  if (selectFileResult.isErr()) {
-    return err(selectFileResult.error);
-  } else {
-    if (selectFileResult.value.type === "success") {
-      manifestPath = selectFileResult.value.result as string;
-    } else {
-      return ok(null);
-    }
+  if (selectFileResult.isErr() || selectFileResult.value.type !== "success") {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsManifest, userCancelError);
+    return ok(null);
   }
+  const manifestPath = selectFileResult.value.result as string;
 
   const progressBar = VS_CODE_UI.createProgressBar(
     StringResources.vsc.migrateTeamsManifest.progressTitle,

@@ -17,7 +17,11 @@ import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcom
 import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
-import { AdaptiveCardCodeLensProvider, CryptoCodeLensProvider } from "./codeLensProvider";
+import {
+  AdaptiveCardCodeLensProvider,
+  CryptoCodeLensProvider,
+  ManifestTemplateCodeLensProvider,
+} from "./codeLensProvider";
 import {
   Correlator,
   isMultiEnvEnabled,
@@ -219,6 +223,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(adaptiveCardCodeLensCmd);
 
+  const manifestTemplateCodeLensCmd = vscode.commands.registerCommand(
+    "fx-extension.OpenPreviewFile",
+    (env) => Correlator.run(handlers.openPreviewManifest, env)
+  );
+  context.subscriptions.push(manifestTemplateCodeLensCmd);
+
   const createNewEnvironment = vscode.commands.registerCommand(
     "fx-extension.addEnvironment",
     (...args) => Correlator.run(handlers.createNewEnvironment, args)
@@ -318,6 +328,13 @@ export async function activate(context: vscode.ExtensionContext) {
     pattern: adaptiveCardFilePattern,
   };
 
+  const manifestTemplateCodeLensProvider = new ManifestTemplateCodeLensProvider();
+  const manifestTemplateSelecctor = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/manifest.*.template.json`,
+  };
+
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
   );
@@ -328,6 +345,12 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerCodeLensProvider(
       adaptiveCardFileSelector,
       adaptiveCardCodeLensProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      manifestTemplateSelecctor,
+      manifestTemplateCodeLensProvider
     )
   );
 

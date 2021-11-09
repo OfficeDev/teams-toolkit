@@ -1642,6 +1642,30 @@ export async function openAdaptiveCardExt(args: any[] = [TelemetryTiggerFrom.Tre
   }
 }
 
+export async function openPreviewManifest(env: string): Promise<Result<any, FxError>> {
+  let fileName;
+  if (env === "local") {
+    fileName = "manifest.local.json";
+  } else {
+    const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders![0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+    const envNamesResult = await environmentManager.listEnvConfigs(workspacePath);
+    if (envNamesResult.isErr()) {
+      return err(envNamesResult.error);
+    }
+    // const envNames = envNamesResult.value;
+    // const quickPick = window.createQuickPick();
+    // quickPick.items = envNames.map(x => {
+    //   return {
+    //     label: x
+    //   }
+    // });
+    // quickPick.title = "Select an environment"
+    const inputs = getSystemInputs();
+    await core.getSelectedEnv(inputs);
+  }
+}
+
 export async function signOutAzure(isFromTreeView: boolean) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOutStart, {
     [TelemetryProperty.TriggerFrom]: isFromTreeView

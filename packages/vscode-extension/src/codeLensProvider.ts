@@ -6,6 +6,7 @@ import * as StringResources from "./resources/Strings.json";
 import * as fs from "fs-extra";
 import { AdaptiveCardsFolderName } from "@microsoft/teamsfx-api";
 import { TelemetryTiggerFrom } from "./telemetry/extTelemetryEvents";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 /**
  * CodelensProvider
@@ -87,5 +88,44 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
     };
     codeLenses.push(new vscode.CodeLens(topOfFile, command));
     return codeLenses;
+  }
+}
+
+export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider {
+  private manifestPreviewRegex = /\$schema/;
+
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const text = document.getText();
+    const regex = new RegExp(this.manifestPreviewRegex);
+    const matches = regex.exec(text);
+    if (matches != null) {
+      const match = matches[0];
+      const line = document.lineAt(document.positionAt(matches.index).line);
+      const indexOf = line.text.indexOf(match);
+      const position = new vscode.Position(line.lineNumber, indexOf);
+      const range = new vscode.Range(
+        position,
+        new vscode.Position(line.lineNumber, indexOf + match.length)
+      );
+
+      let env: string;
+      if (document.fileName == "manifest.local.template.json") {
+        env = "local";
+      }
+      {
+        env = "remote";
+      }
+
+      const command = {
+        title: "📝Preview",
+        command: "fx-extension.OpenPreviewFile",
+        arguments: [env],
+      };
+      return [new vscode.CodeLens(range, command)];
+    } else {
+      return [];
+    }
   }
 }

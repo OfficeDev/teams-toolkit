@@ -70,16 +70,14 @@ describe("Publish Teams app with Azure", () => {
   it("Publish teams app", async () => {
     sandbox.stub(AppStudioClient, "getAppByTeamsAppId").resolves(undefined);
 
-    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
-      ok({
-        tabEndpoint: "tabEndpoint",
-        tabDomain: "tabDomain",
-        aadId: "aadId",
-        botDomain: "botDomain",
-        botId: "botId",
-        webApplicationInfoResource: "webApplicationInfoResource",
-      })
-    );
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
+      tabEndpoint: "tabEndpoint",
+      tabDomain: "tabDomain",
+      aadId: "aadId",
+      botDomain: "botDomain",
+      botId: "botId",
+      webApplicationInfoResource: "webApplicationInfoResource",
+    });
 
     const teamsAppId = await plugin.publish(ctx);
     chai.assert.isTrue(teamsAppId.isOk());
@@ -98,16 +96,14 @@ describe("Publish Teams app with Azure", () => {
     sandbox.stub(AppStudioClient, "getAppByTeamsAppId").resolves(mockApp);
     ctx.ui = new MockUserInteraction();
 
-    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
-      ok({
-        tabEndpoint: "tabEndpoint",
-        tabDomain: "tabDomain",
-        aadId: "aadId",
-        botDomain: "botDomain",
-        botId: "botId",
-        webApplicationInfoResource: "webApplicationInfoResource",
-      })
-    );
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
+      tabEndpoint: "tabEndpoint",
+      tabDomain: "tabDomain",
+      aadId: "aadId",
+      botDomain: "botDomain",
+      botId: "botId",
+      webApplicationInfoResource: "webApplicationInfoResource",
+    });
 
     const teamsAppId = await plugin.publish(ctx);
     chai.assert.isTrue(teamsAppId.isOk());

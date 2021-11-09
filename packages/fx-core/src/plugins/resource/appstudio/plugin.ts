@@ -1504,13 +1504,40 @@ export class AppStudioPluginImpl {
       webApplicationInfoResource,
       teamsAppId,
     } = await this.getConfigForCreatingManifest(ctx, isLocalDebug);
+    const isProvisionSucceeded = !!(ctx.envInfo.state
+      .get("solution")
+      ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
 
     const validDomains: string[] = [];
     if (tabDomain) {
       validDomains.push(tabDomain);
     }
-    if (botDomain) {
-      validDomains.push(botDomain);
+
+    if (botId) {
+      if (!botDomain) {
+        if (isLocalDebug) {
+          return err(
+            AppStudioResultFactory.SystemError(
+              AppStudioError.GetLocalDebugConfigFailedError.name,
+              AppStudioError.GetLocalDebugConfigFailedError.message(
+                new Error(`Data required: ${LOCAL_DEBUG_BOT_DOMAIN}`)
+              )
+            )
+          );
+        } else {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(
+                new Error(`Data required: ${BOT_DOMAIN}`),
+                isProvisionSucceeded
+              )
+            )
+          );
+        }
+      } else {
+        validDomains.push(botDomain);
+      }
     }
 
     let manifest = (
@@ -1586,9 +1613,6 @@ export class AppStudioPluginImpl {
             )
           );
         } else {
-          const isProvisionSucceeded = !!(ctx.envInfo.state
-            .get("solution")
-            ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
           return err(
             AppStudioResultFactory.UserError(
               AppStudioError.GetRemoteConfigFailedError.name,

@@ -215,9 +215,7 @@ describe("Get AppDefinition and Update", () => {
       chai
         .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
         .equals(AppStudioError.GetLocalDebugConfigFailedError.name);
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
-        .includes(LOCAL_DEBUG_AAD_ID);
+      chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes("{appClientId}");
     }
   });
 
@@ -254,10 +252,7 @@ describe("Get AppDefinition and Update", () => {
       chai
         .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
         .equals(AppStudioError.GetLocalDebugConfigFailedError.name);
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
-        .includes(LOCAL_DEBUG_TAB_ENDPOINT);
-      chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes(LOCAL_BOT_ID);
+      chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes("{baseUrl}");
     }
   });
 
@@ -291,13 +286,8 @@ describe("Get AppDefinition and Update", () => {
     if (getAppDefinitionAndResult.isErr()) {
       chai
         .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
-        .equals(AppStudioError.InvalidLocalDebugConfigurationDataError.name);
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
-        .includes(LOCAL_DEBUG_TAB_ENDPOINT);
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
-        .includes(LOCAL_DEBUG_TAB_DOMAIN);
+        .equals(AppStudioError.GetLocalDebugConfigFailedError.name);
+      chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes("{baseUrl}");
     }
   });
 

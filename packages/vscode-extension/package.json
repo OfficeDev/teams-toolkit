@@ -480,6 +480,14 @@
         "title": "Grant permission",
         "icon": "$(person-add)",
         "enablement": "fx-extension.isMultiEnvEnabled && fx-extension.isRemoteCollaborateEnabled"
+      },
+      {
+        "command": "fx-extension.migrateTeamsTabApp",
+        "title": "Teams: Upgrade Teams JS SDK to extend in Outlook and Office"
+      },
+      {
+        "command": "fx-extension.migrateTeamsManifest",
+        "title": "Teams: Upgrade Teams manifest to extend in Outlook and Office"
       }
     ],
     "taskDefinitions": [
@@ -736,6 +744,7 @@
     "@types/express": "^4.17.11",
     "@types/fs-extra": "^9.0.5",
     "@types/glob": "^7.1.4",
+    "@types/jscodeshift": "^0.11.2",
     "@types/keytar": "^4.4.2",
     "@types/mocha": "^8.0.0",
     "@types/node": "^14.14.21",
@@ -806,9 +815,11 @@
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/teamsfx-api": "^0.10.0",
     "@microsoft/teamsfx-core": "^0.10.0",
+    "@npmcli/package-json": "^1.0.1",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "jscodeshift": "^0.13.0",
     "jsonschema": "^1.4.0",
     "log4js": "^6.3.0",
     "read-package-json-fast": "^2.0.3",

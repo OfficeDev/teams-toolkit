@@ -124,6 +124,12 @@ export enum TelemetryEvent {
   ShowChangeLocationNotification = "show-change-location-notification",
   ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
+
+  MigrateTeamsTabAppStart = "migrate-teams-tab-app-start",
+  MigrateTeamsTabApp = "migrate-teams-tab-app",
+  MigrateTeamsTabAppCode = "migrate-teams-tab-app-code",
+  MigrateTeamsManifestStart = "migrate-teams-manifest-start",
+  MigrateTeamsManifest = "migrate-teams-manifest",
 }
 
 export enum TelemetryProperty {

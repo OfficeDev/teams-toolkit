@@ -231,6 +231,12 @@ describe("FrontendPlugin", () => {
     });
 
     it("happy path", async () => {
+      // mock plugin context
+      pluginContext.config.set(
+        "storageResourceId",
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/fakerg/providers/Microsoft.Storage/storageAccounts/fakestorageaccount"
+      );
+
       const result = await frontendPlugin.postProvision(pluginContext);
 
       chai.assert.isTrue(result.isOk());

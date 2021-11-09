@@ -23,6 +23,7 @@ import {
   isArmSupportEnabled,
   isFeatureFlagEnabled,
   isMultiEnvEnabled,
+  getRootDirectory,
 } from "../../src/common/tools";
 import * as tools from "../../src/common/tools";
 import {
@@ -264,5 +265,28 @@ describe("Other test case", () => {
     assert.isTrue(res2.isErr());
     const res3 = parseTeamsAppTenantId({ abd: "123" });
     assert.isTrue(res3.isErr());
+  });
+
+  it("getRootDirectory", () => {
+    let restore = mockedEnv({
+      [FeatureFlagName.rootDirectory]: undefined,
+    });
+
+    assert.equal(getRootDirectory(), path.join(os.homedir(), "TeamsApps"));
+    restore();
+
+    restore = mockedEnv({
+      [FeatureFlagName.rootDirectory]: "",
+    });
+
+    assert.equal(getRootDirectory(), path.join(os.homedir(), "TeamsApps"));
+    restore();
+
+    restore = mockedEnv({
+      [FeatureFlagName.rootDirectory]: os.tmpdir(),
+    });
+
+    assert.equal(getRootDirectory(), os.tmpdir());
+    restore();
   });
 });

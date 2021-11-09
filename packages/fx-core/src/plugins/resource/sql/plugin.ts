@@ -170,6 +170,8 @@ export class SqlPluginImpl {
 
   async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
     ctx.logProvider?.info(Message.startPostProvision);
+    await this.loadConfig(ctx);
+
     DialogUtils.init(ctx, ProgressTitle.PostProvision, Object.keys(ConfigureMessage).length);
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix, undefined, {

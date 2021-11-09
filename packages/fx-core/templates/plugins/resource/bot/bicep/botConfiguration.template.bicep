@@ -38,7 +38,7 @@ resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-15' = {
     M365_TENANT_ID: m365TenantId
     M365_APPLICATION_ID_URI: m365ApplicationIdUri
     {{#contains 'fx-resource-function' Plugins}}
-    API_ENDPOINT: provisionOutputs.functionOutput.value.endpoint
+    API_ENDPOINT: provisionOutputs.functionOutput.value.functionEndpoint
     {{/contains}}
     {{#contains 'fx-resource-azure-sql' Plugins}}
     SQL_DATABASE_NAME: {{../PluginOutput.fx-resource-azure-sql.References.databaseName}}

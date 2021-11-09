@@ -51,7 +51,7 @@ import * as jsonPermissionList from "./permissions/permissions.json";
 import { Utils } from "./utils/common";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { ScaffoldArmTemplateResult, ArmTemplateResult } from "../../../common/armInterface";
+import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
 import { isMultiEnvEnabled } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";

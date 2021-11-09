@@ -22,7 +22,7 @@ import { AppServicePlan } from "@azure/arm-appservice/esm/models";
 import * as dirWalk from "../../../../../src/plugins/resource/function/utils/dir-walk";
 import * as execute from "../../../../../src/plugins/resource/function/utils/execute";
 import axios from "axios";
-import * as core from "../../../../../src";
+import * as core from "../../../../../src/core";
 
 chai.use(chaiAsPromised);
 
@@ -104,6 +104,7 @@ describe("BlazorPlugin", () => {
       pluginContext.config.set(BlazorConfigInfo.webAppName, "ut");
       pluginContext.config.set(BlazorConfigInfo.appServicePlanName, "ut");
 
+      sinon.stub(core, "isVsCallingCli").returns(true);
       sinon.stub(dirWalk, "forEachFileAndDir").resolves(undefined);
       sinon.stub(execute, "execute").resolves("");
       sinon.stub(AzureClientFactory, "getWebSiteManagementClient").returns({

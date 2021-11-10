@@ -921,9 +921,22 @@ export class FxCore implements Core {
     return await ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
   }
 
-  @hooks([ErrorHandlerMW, EnvInfoLoaderMW(true)])
-  async getSelectedEnv(ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    return ok("");
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(false),
+    ContextInjectorMW,
+  ])
+  async getSelectedEnv(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<string | undefined, FxError>> {
+    if (isV2()) {
+      return ok(ctx?.envInfoV2?.envName);
+    } else {
+      return ok(ctx?.solutionContext?.envInfo.envName);
+    }
   }
 
   async _getQuestionsForUserTask(

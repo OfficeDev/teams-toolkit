@@ -1642,27 +1642,47 @@ export async function openAdaptiveCardExt(args: any[] = [TelemetryTiggerFrom.Tre
   }
 }
 
-export async function openPreviewManifest(env: string): Promise<Result<any, FxError>> {
-  let fileName;
-  if (env === "local") {
-    fileName = "manifest.local.json";
-  } else {
-    const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders![0];
-    const workspacePath: string = workspaceFolder.uri.fsPath;
-    const envNamesResult = await environmentManager.listEnvConfigs(workspacePath);
-    if (envNamesResult.isErr()) {
-      return err(envNamesResult.error);
+export async function openPreviewManifest(env: string): Promise<Result<string, FxError>> {
+  const workspacePath = getWorkspacePath();
+  if (workspacePath) {
+    let fileName;
+    if (env === "local") {
+      fileName = "manifest.local.json";
+    } else {
+      const envNamesResult = await environmentManager.listEnvConfigs(workspacePath);
+      if (envNamesResult.isErr()) {
+        return err(envNamesResult.error);
+      }
+      const inputs = getSystemInputs();
+      const env = await core.getSelectedEnv(inputs);
+      if (env.isErr()) {
+        return err(env.error);
+      }
+      fileName = `manifest.${env.value}.json`;
     }
-    // const envNames = envNamesResult.value;
-    // const quickPick = window.createQuickPick();
-    // quickPick.items = envNames.map(x => {
-    //   return {
-    //     label: x
-    //   }
-    // });
-    // quickPick.title = "Select an environment"
-    const inputs = getSystemInputs();
-    await core.getSelectedEnv(inputs);
+    const manifestFile = `${workspacePath}/build/appPackage/${fileName}`;
+    if (fs.existsSync(manifestFile)) {
+      workspace.openTextDocument(manifestFile).then((document) => {
+        window.showTextDocument(document);
+      });
+      return ok(manifestFile);
+    } else {
+      const error = new SystemError(
+        "FileNotFound",
+        util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
+        ExtensionSource
+      );
+      showError(error);
+      return err(error);
+    }
+  } else {
+    const noOpenWorkspaceError = new UserError(
+      ExtensionErrors.NoWorkspaceError,
+      StringResources.vsc.handlers.noOpenWorkspace,
+      ExtensionSource
+    );
+    showError(noOpenWorkspaceError);
+    return err(noOpenWorkspaceError);
   }
 }
 

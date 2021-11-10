@@ -111,10 +111,9 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
       );
 
       let env: string;
-      if (document.fileName == "manifest.local.template.json") {
+      if (document.fileName.endsWith("manifest.local.template.json")) {
         env = "local";
-      }
-      {
+      } else {
         env = "remote";
       }
 

@@ -1,6 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ApimDefaultValues, ApimOutputBicepSnippet, ApimPathInfo, ApimPluginConfigKeys } from "../constants";
+import {
+  ApimDefaultValues,
+  ApimOutputBicepSnippet,
+  ApimPathInfo,
+  ApimPluginConfigKeys,
+} from "../constants";
 import { AssertNotEmpty } from "../error";
 import {
   IAadPluginConfig,
@@ -12,11 +17,7 @@ import {
 import { ApimService } from "../services/apimService";
 import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { IAnswer } from "../answer";
-import {
-  LogProvider,
-  PluginContext,
-  TelemetryReporter,
-} from "@microsoft/teamsfx-api";
+import { LogProvider, PluginContext, TelemetryReporter } from "@microsoft/teamsfx-api";
 import {
   getApimServiceNameFromResourceId,
   getAuthServiceNameFromResourceId,
@@ -28,10 +29,7 @@ import path from "path";
 import { Bicep, ConstantString } from "../../../../common/constants";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import * as fs from "fs-extra";
-import {
-  getResourceGroupNameFromResourceId,
-  isArmSupportEnabled,
-} from "../../../../common/tools";
+import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../../../common/tools";
 import { getTemplatesFolder } from "../../../../folder";
 
 export class ApimManager {

@@ -1631,6 +1631,14 @@ export async function openAdaptiveCardExt(args: any[] = [TelemetryTiggerFrom.Tre
 
 export async function openPreviewManifest(args: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewManifestFile, getTriggerFromProperty(args));
+
+  const workspacePath = getWorkspacePath();
+  const validProject = isValidProject(workspacePath);
+  if (!validProject) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, InvalidProjectError());
+    return err(InvalidProjectError());
+  }
+
   let isLocalDebug = false;
   if (args && args.length > 0) {
     const filePath = args[0].fsPath;
@@ -1638,57 +1646,46 @@ export async function openPreviewManifest(args: any[]): Promise<Result<any, FxEr
       isLocalDebug = true;
     }
   }
-  const workspacePath = getWorkspacePath();
-  if (workspacePath) {
-    let manifestFile;
-    if (isLocalDebug) {
-      const res = await buildPackageHandler(["localDebug"]);
-      if (res.isErr()) {
-        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
-        return err(res.error);
-      }
-      manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.local.json`;
-    } else {
-      const res = await buildPackageHandler(["remote"]);
-      if (res.isErr()) {
-        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
-        return err(res.error);
-      }
-      const inputs = getSystemInputs();
-      const env = await core.getSelectedEnv(inputs);
-      if (env.isErr()) {
-        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, env.error);
-        return err(env.error);
-      }
-      manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env.value}.json`;
+
+  let manifestFile;
+  if (isLocalDebug) {
+    const res = await buildPackageHandler(["localDebug"]);
+    if (res.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
+      return err(res.error);
     }
-    if (fs.existsSync(manifestFile)) {
-      workspace.openTextDocument(manifestFile).then((document) => {
-        window.showTextDocument(document);
-      });
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewManifestFile, {
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
-      return ok(manifestFile);
-    } else {
-      const error = new SystemError(
-        "FileNotFound",
-        util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
-        ExtensionSource
-      );
-      showError(error);
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, error);
-      return err(error);
-    }
+    manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.local.json`;
   } else {
-    const noOpenWorkspaceError = new UserError(
-      ExtensionErrors.NoWorkspaceError,
-      StringResources.vsc.handlers.noOpenWorkspace,
+    const res = await buildPackageHandler(["remote"]);
+    if (res.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
+      return err(res.error);
+    }
+    const inputs = getSystemInputs();
+    const env = await core.getSelectedEnv(inputs);
+    if (env.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, env.error);
+      return err(env.error);
+    }
+    manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env.value}.json`;
+  }
+  if (fs.existsSync(manifestFile)) {
+    workspace.openTextDocument(manifestFile).then((document) => {
+      window.showTextDocument(document);
+    });
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewManifestFile, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
+    return ok(manifestFile);
+  } else {
+    const error = new SystemError(
+      "FileNotFound",
+      util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
       ExtensionSource
     );
-    showError(noOpenWorkspaceError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, noOpenWorkspaceError);
-    return err(noOpenWorkspaceError);
+    showError(error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, error);
+    return err(error);
   }
 }
 

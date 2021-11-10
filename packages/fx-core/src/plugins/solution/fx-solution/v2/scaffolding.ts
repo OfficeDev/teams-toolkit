@@ -20,8 +20,6 @@ import {
 } from "../question";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
-  blockV1Project,
-  combineRecords,
   getAzureSolutionSettings,
   getSelectedPlugins,
   fillInSolutionSettings,
@@ -45,10 +43,6 @@ export async function scaffoldSourceCode(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<Void, FxError>> {
-  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
-  if (blockResult.isErr()) {
-    return err(blockResult.error);
-  }
   if (inputs.projectPath === undefined) {
     return err(
       returnSystemError(
@@ -117,10 +111,6 @@ export async function scaffoldByPlugins(
   localSettings: Json,
   plugins: v2.ResourcePlugin[]
 ): Promise<Result<Void, FxError>> {
-  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
-  if (blockResult.isErr()) {
-    return err(blockResult.error);
-  }
   const thunks: NamedThunk<Void>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
     .map((plugin) => {

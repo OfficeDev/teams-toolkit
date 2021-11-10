@@ -11,7 +11,7 @@ export enum BlazorConfigKey {
   webAppName = "webAppName",
   appServicePlanName = "appServicePlanName",
   webAppEndpoint = "webAppEndpoint",
-  webAppId = "webAppId",
+  webAppDomain = "webAppDomain",
 
   /* Intermediate */
   site = "site",

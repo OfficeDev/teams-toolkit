@@ -15,7 +15,6 @@ import {
 import { getStrings, isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
 import {
-  blockV1Project,
   combineRecords,
   ensurePermissionRequest,
   extractSolutionInputs,
@@ -44,7 +43,7 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import _ from "lodash";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
-import { isV2 } from "../../../..";
+import { isV2, isVsCallingCli } from "../../../..";
 import { REMOTE_TEAMS_APP_ID } from "..";
 import { Constants } from "../../../resource/appstudio/constants";
 
@@ -64,11 +63,6 @@ export async function provisionResource(
     );
   }
   const projectPath: string = inputs.projectPath;
-
-  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
-  if (blockResult.isErr()) {
-    return new v2.FxFailure(blockResult.error);
-  }
 
   const azureSolutionSettings = getAzureSolutionSettings(ctx);
   // Just to trigger M365 login before the concurrent execution of provision.
@@ -255,6 +249,11 @@ export async function provisionResource(
 }
 
 export async function askForProvisionConsent(ctx: SolutionContext): Promise<Result<Void, FxError>> {
+  if (isVsCallingCli()) {
+    // Skip asking users for input on VS calling CLI to simplify user interaction.
+    return ok(Void);
+  }
+
   const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
 
   // Only Azure project requires this confirm dialog

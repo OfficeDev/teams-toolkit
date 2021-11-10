@@ -139,7 +139,6 @@ import {
   ParamForRegisterTeamsAppAndAad,
 } from "./v2/executeUserTask";
 import {
-  blockV1Project,
   isAzureProject,
   ensurePermissionRequest,
   parseTeamsAppTenantId,
@@ -375,7 +374,14 @@ export class TeamsAppSolution implements Solution {
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
     });
 
-    ctx.ui?.showMessage("info", `Success: ${getStrings().solution.MigrateSuccessNotice}`, false);
+    ctx.ui
+      ?.showMessage("info", `${getStrings().solution.MigrateSuccessNotice}`, false, "Reload")
+      .then((result) => {
+        const userSelected = result.isOk() ? result.value : undefined;
+        if (userSelected === "Reload") {
+          ctx.ui?.reload?.();
+        }
+      });
     return ok(Void);
   }
 
@@ -400,10 +406,6 @@ export class TeamsAppSolution implements Solution {
   }
 
   async update(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-    if (v1Blocked.isErr()) {
-      return v1Blocked;
-    }
     return await this.executeAddResource(ctx);
   }
 
@@ -532,11 +534,6 @@ export class TeamsAppSolution implements Solution {
    */
   @hooks([ErrorHandlerMW])
   async provision(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-    if (v1Blocked.isErr()) {
-      return v1Blocked;
-    }
-
     const canProvision = this.checkWhetherSolutionIsIdle();
     if (canProvision.isErr()) {
       return canProvision;
@@ -714,11 +711,6 @@ export class TeamsAppSolution implements Solution {
 
   @hooks([ErrorHandlerMW])
   async deploy(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-    if (v1Blocked.isErr()) {
-      return v1Blocked;
-    }
-
     const isAzureProject = this.isAzureProject(ctx);
     const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
     if (isAzureProject && !provisioned) {
@@ -836,11 +828,6 @@ export class TeamsAppSolution implements Solution {
   }
   @hooks([ErrorHandlerMW])
   async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-    if (v1Blocked.isErr()) {
-      return v1Blocked;
-    }
-
     const checkRes = this.checkWhetherSolutionIsIdle();
     if (checkRes.isErr()) return err(checkRes.error);
     const isAzureProject = this.isAzureProject(ctx);
@@ -1019,10 +1006,6 @@ export class TeamsAppSolution implements Solution {
       node.addChild(capNode);
     } else if (stage === Stage.provision) {
       if (isDynamicQuestion) {
-        const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-        if (v1Blocked.isErr()) {
-          return err(v1Blocked.error);
-        }
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
         if (provisioned) return ok(undefined);
       }
@@ -1052,11 +1035,6 @@ export class TeamsAppSolution implements Solution {
       }
     } else if (stage === Stage.deploy) {
       if (isDynamicQuestion) {
-        const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-        if (v1Blocked.isErr()) {
-          return err(v1Blocked.error);
-        }
-
         const isAzureProject = this.isAzureProject(ctx);
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
         if (isAzureProject && !provisioned) {
@@ -1126,10 +1104,6 @@ export class TeamsAppSolution implements Solution {
       }
     } else if (stage === Stage.publish) {
       if (isDynamicQuestion) {
-        const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-        if (v1Blocked.isErr()) {
-          return err(v1Blocked.error);
-        }
         const isAzureProject = this.isAzureProject(ctx);
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
         if (!provisioned) {
@@ -2124,11 +2098,6 @@ export class TeamsAppSolution implements Solution {
     func: Func,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-    if (v1Blocked.isErr()) {
-      return err(v1Blocked.error);
-    }
-
     const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers!.platform!);
     const settings = this.getAzureSolutionSettings(ctx);
 
@@ -2248,11 +2217,6 @@ export class TeamsAppSolution implements Solution {
   async getQuestionsForAddCapability(
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-    if (v1Blocked.isErr()) {
-      return err(v1Blocked.error);
-    }
-
     const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers!.platform!);
     const settings = this.getAzureSolutionSettings(ctx);
 

@@ -23,8 +23,6 @@ import {
 import { AzureSolutionQuestionNames } from "../question";
 import { executeConcurrently, NamedThunk } from "./executor";
 import {
-  blockV1Project,
-  combineRecords,
   extractSolutionInputs,
   getAzureSolutionSettings,
   getSelectedPlugins,
@@ -37,10 +35,6 @@ export async function deploy(
   provisionOutputs: Json,
   tokenProvider: AzureAccountProvider
 ): Promise<Result<Void, FxError>> {
-  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
-  if (blockResult.isErr()) {
-    return err(blockResult.error);
-  }
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
   const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
 

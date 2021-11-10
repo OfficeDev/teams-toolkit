@@ -94,6 +94,14 @@ export function InvalidV1ProjectError(message?: string) {
   );
 }
 
+export function V1ProjectNotSupportedError(message?: string) {
+  return new UserError(
+    "V1ProjectNotSupported",
+    `Command is not supported in the project migrated from Teams Toolkit V1`,
+    CoreSource
+  );
+}
+
 export function PathNotExistError(path: string): UserError {
   return new UserError("PathNotExist", `The path not exist: ${path}`, CoreSource);
 }

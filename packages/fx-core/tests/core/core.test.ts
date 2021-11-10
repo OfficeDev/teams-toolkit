@@ -198,16 +198,13 @@ describe("Core basic APIs", () => {
   });
 
   describe("migrateV1", () => {
-    if (commonTools.isMultiEnvEnabled()) {
-      // TODO: add multi-env test case after migrateV1 for mult-env implemented
-      return;
-    }
     let mockedEnvRestore: RestoreFn;
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });
     });
     afterEach(async () => {
       mockedEnvRestore();
+      await fs.remove(path.resolve(os.tmpdir(), "v1projectpath"));
     });
     const migrateV1Params = [
       {
@@ -219,7 +216,7 @@ describe("Core basic APIs", () => {
       {
         description: "ask app name",
         appName: "v1projectname",
-        projectPath: path.resolve(os.tmpdir(), "v1-project-path", `${appName}-errorname`),
+        projectPath: path.resolve(os.tmpdir(), "v1projectpath", `${appName}-errorname`),
         skipAppNameQuestion: false,
       },
     ];
@@ -274,7 +271,10 @@ describe("Core basic APIs", () => {
           assert.deepEqual(expectedInputs, inputs);
           inputs.projectPath = testParam.projectPath;
 
-          const projectSettingsResult = await loadProjectSettings(inputs);
+          const projectSettingsResult = await loadProjectSettings(
+            inputs,
+            commonTools.isMultiEnvEnabled()
+          );
           if (projectSettingsResult.isErr()) {
             assert.fail("failed to load project settings");
           }
@@ -283,17 +283,19 @@ describe("Core basic APIs", () => {
           const validSettingsResult = validateSettings(projectSettings);
           assert.isTrue(validSettingsResult === undefined);
 
-          const envInfoResult = await loadSolutionContext(tools, inputs, projectSettings);
-          if (envInfoResult.isErr()) {
-            assert.fail("failed to load env info");
+          if (!commonTools.isMultiEnvEnabled()) {
+            const envInfoResult = await loadSolutionContext(tools, inputs, projectSettings);
+            if (envInfoResult.isErr()) {
+              assert.fail("failed to load env info");
+            }
+
+            const solutionContext = envInfoResult.value;
+            const validRes = validateProject(solutionContext);
+            assert.isTrue(validRes === undefined);
+
+            const solutionConfig = solutionContext.envInfo.state.get("solution");
+            assert.isTrue(solutionConfig !== undefined);
           }
-
-          const solutionContext = envInfoResult.value;
-          const validRes = validateProject(solutionContext);
-          assert.isTrue(validRes === undefined);
-
-          const solutioConfig = solutionContext.envInfo.state.get("solution");
-          assert.isTrue(solutioConfig !== undefined);
         }
       });
     });

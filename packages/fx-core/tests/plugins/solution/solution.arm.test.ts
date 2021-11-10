@@ -234,60 +234,6 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
       `# ignore ARM template backup folder${os.EOL}/backup`
     );
   });
-
-  it("should create backup folder when ARM template already exists", async () => {
-    const mockedCtx = mockSolutionContext();
-    mockedCtx.root = testFolder;
-    mockedCtx.projectSettings = {
-      appName: testAppName,
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionAzure.id,
-        name: "azure",
-        version: "1.0",
-        activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
-        capabilities: [TabOptionItem.id],
-      },
-    };
-
-    const projectArmBaseFolder = path.join(mockedCtx.root, baseFolder);
-    const projectArmTemplateFolder = path.join(mockedCtx.root, templateFolder);
-    const projectConfigFolder = path.join(mockedCtx.root, configFolderName);
-    const mockedParameterDefaultJsonContent = "mocked parameter.default.json file";
-    const mockedMainBicepContent = "mocked main.bicep file";
-    await fs.ensureDir(projectArmBaseFolder);
-    await fs.ensureDir(projectArmTemplateFolder);
-    await fs.ensureDir(projectConfigFolder);
-    await fs.writeFile(
-      path.join(projectConfigFolder, parameterFileName),
-      mockedParameterDefaultJsonContent
-    );
-    await fs.writeFile(path.join(projectArmBaseFolder, "main.bicep"), mockedMainBicepContent);
-
-    const result = await generateArmTemplate(mockedCtx);
-
-    expect(result.isOk()).to.be.true;
-    const backupBaseFolder = path.join(mockedCtx.root, templatesFolder, "backup");
-    expect(await fs.pathExists(backupBaseFolder)).to.be.true;
-    const backupFolderItems = await fs.readdir(backupBaseFolder);
-    expect(backupFolderItems.length).equals(1);
-    const parameterBackupFolder = path.join(
-      backupBaseFolder,
-      backupFolderItems[0],
-      parameterFolderName
-    );
-    const parameterBackupFiles = await fs.readdir(parameterBackupFolder);
-    expect(parameterBackupFiles.length).equals(1);
-    expect(
-      await fs.readFile(path.join(parameterBackupFolder, parameterBackupFiles[0]), fileEncoding)
-    ).equals(mockedParameterDefaultJsonContent);
-    const templateBackupFolder = path.join(backupBaseFolder, backupFolderItems[0], templatesFolder);
-    const templateBackupFiles = await fs.readdir(templateBackupFolder);
-    expect(templateBackupFiles.length).equals(2);
-    expect(
-      await fs.readFile(path.join(templateBackupFolder, templateBackupFiles[0]), fileEncoding)
-    ).equals(mockedMainBicepContent);
-  });
 });
 
 describe("Deploy ARM Template to Azure", () => {

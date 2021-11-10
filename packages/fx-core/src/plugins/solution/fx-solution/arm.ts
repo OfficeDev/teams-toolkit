@@ -421,7 +421,10 @@ async function doGenerateArmTemplate(
         FxError
       >;
       if (result.isOk()) {
-        if (!selectedPlugins.find(({ name }) => name === pluginWithArm.name)) {
+        if (
+          selectedPlugins.length != 0 &&
+          !selectedPlugins.find(({ name }) => name === pluginWithArm.name)
+        ) {
           if (result.value.Configuration?.Orchestration)
             delete result.value.Configuration?.Orchestration;
           if (result.value.Provision?.Orchestration) delete result.value.Provision?.Orchestration;
@@ -794,34 +797,6 @@ function generateResourceBaseName(appName: string, envName: string): string {
     normalizedEnvName.substr(0, maxEnvNameLength) +
     getUuid().substr(0, 6)
   );
-}
-
-// backup existing ARM template and parameter files to backup folder named with current timestamp
-async function backupExistingFilesIfNecessary(ctx: SolutionContext): Promise<void> {
-  const armBaseFolder = path.join(ctx.root, templatesFolder);
-  const parameterJsonFolder = path.join(ctx.root, configsFolder);
-
-  const files = await Utils.listFilePaths(parameterJsonFolder, "azure.parameter*");
-  const armBaseFolderExist = await fs.pathExists(armBaseFolder);
-  if (armBaseFolderExist || files.length > 0) {
-    const backupFolder = path.join(
-      ctx.root,
-      templateFolder,
-      "backup",
-      dateFormat(new Date(), "yyyymmddHHMMssl")
-    ); // example: ./infra/azure/backup/20210823080000000
-    const templateBackupFolder = path.join(backupFolder, templateFolder);
-    const parameterBackupFolder = path.join(backupFolder, parameterFolder);
-    await fs.ensureDir(backupFolder);
-    await fs.ensureDir(parameterBackupFolder);
-    if (armBaseFolderExist) {
-      await fs.move(armBaseFolder, templateBackupFolder);
-    }
-    for (const file of files) {
-      const baseName = path.basename(file);
-      await fs.move(file, path.join(parameterBackupFolder, baseName));
-    }
-  }
 }
 
 async function wrapGetDeploymentError(

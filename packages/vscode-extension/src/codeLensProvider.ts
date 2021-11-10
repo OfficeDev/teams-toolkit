@@ -6,7 +6,6 @@ import * as StringResources from "./resources/Strings.json";
 import * as fs from "fs-extra";
 import { AdaptiveCardsFolderName } from "@microsoft/teamsfx-api";
 import { TelemetryTiggerFrom } from "./telemetry/extTelemetryEvents";
-import { environmentManager } from "@microsoft/teamsfx-core";
 
 /**
  * CodelensProvider
@@ -109,18 +108,10 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
         position,
         new vscode.Position(line.lineNumber, indexOf + match.length)
       );
-
-      let env: string;
-      if (document.fileName.endsWith("manifest.local.template.json")) {
-        env = "local";
-      } else {
-        env = "remote";
-      }
-
       const command = {
         title: "📝Preview",
         command: "fx-extension.OpenPreviewFile",
-        arguments: [env],
+        arguments: [{ fsPath: document.fileName }],
       };
       return [new vscode.CodeLens(range, command)];
     } else {

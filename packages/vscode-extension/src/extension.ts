@@ -225,7 +225,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
   const manifestTemplateCodeLensCmd = vscode.commands.registerCommand(
     "fx-extension.OpenPreviewFile",
-    (env) => Correlator.run(handlers.openPreviewManifest, env)
+    (...args) => Correlator.run(handlers.openPreviewManifest, args)
   );
   context.subscriptions.push(manifestTemplateCodeLensCmd);
 

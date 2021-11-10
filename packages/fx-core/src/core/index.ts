@@ -925,7 +925,7 @@ export class FxCore implements Core {
     ErrorHandlerMW,
     ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(false),
+    EnvInfoLoaderMW(true),
     ContextInjectorMW,
   ])
   async getSelectedEnv(

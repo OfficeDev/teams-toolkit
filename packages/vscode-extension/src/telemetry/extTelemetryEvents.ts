@@ -129,6 +129,7 @@ export enum TelemetryEvent {
   ShowChangeLocationNotification = "show-change-location-notification",
   ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
+  PreviewManifestFile = "preview-manifest",
 }
 
 export enum TelemetryProperty {

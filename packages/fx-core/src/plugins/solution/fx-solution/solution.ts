@@ -2489,6 +2489,7 @@ export class TeamsAppSolution implements Solution {
         change = true;
         if (cap === TabOptionItem.id) {
           pluginsToScaffold.push(this.FrontendPlugin);
+          pluginsToScaffold.push(Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin));
         } else if (
           (cap === BotOptionItem.id || cap === MessageExtensionItem.id) &&
           !pluginsToScaffold.includes(this.BotPlugin)

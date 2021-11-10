@@ -947,6 +947,9 @@ export class FxCore implements Core {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<string | undefined, FxError>> {
+    if (!isMultiEnvEnabled()) {
+      return err(new TaskNotSupportError("getSelectedEnv"));
+    }
     if (isV2()) {
       return ok(ctx?.envInfoV2?.envName);
     } else {

@@ -7,7 +7,7 @@ var serverfarmsName = contains(provisionParameters, 'functionServerfarmsName') ?
 var functionAppName = contains(provisionParameters, 'functionWebappName') ? provisionParameters['functionWebappName'] : '${resourceBaseName}-function-webapp'
 var storageName = contains(provisionParameters, 'functionStorageName') ? provisionParameters['functionStorageName'] : 'functionstg${uniqueString(resourceBaseName)}'
 
-resource serverfarms 'Microsoft.Web/serverfarms@2021-01-15' = {
+resource serverfarms 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: serverfarmsName
   kind: 'functionapp'
   location: resourceGroup().location
@@ -16,12 +16,13 @@ resource serverfarms 'Microsoft.Web/serverfarms@2021-01-15' = {
   }
 }
 
-resource functionApp 'Microsoft.Web/sites@2021-01-15' = {
+resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
   name: functionAppName
   kind: 'functionapp'
   location: resourceGroup().location
   properties: {
     serverFarmId: serverfarms.id
+    keyVaultReferenceIdentity: userAssignedIdentityId
     siteConfig: {
       appSettings: [
         {

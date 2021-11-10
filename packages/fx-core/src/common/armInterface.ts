@@ -6,7 +6,6 @@ import { FxError, Result, PluginContext } from "@microsoft/teamsfx-api";
 // WIP: Put the interfaces here temporary to unblock development, they will be moved to the V2 teamsfx-api in the future.
 export interface ArmResourcePlugin {
   generateArmTemplates?: (ctx: PluginContext) => Promise<Result<ArmTemplateResult, FxError>>;
-  updateArmTemplates?: (ctx: PluginContext) => Promise<Result<ArmTemplateResult, FxError>>;
 }
 
 export interface BicepOrchestrationTemplate {

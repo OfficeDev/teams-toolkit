@@ -188,29 +188,6 @@ export class TeamsBotImpl {
     return ResultFactory.Success();
   }
 
-  public async updateArmTemplates(context: PluginContext): Promise<FxResult> {
-    this.ctx = context;
-    const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
-    const result: ArmTemplateResult = {
-      Provision: {
-        Reference: {
-          resourceId: BotBicep.resourceId,
-          hostName: BotBicep.hostName,
-          webAppEndpoint: BotBicep.webAppEndpoint,
-        },
-      },
-      Configuration: {
-        Modules: {
-          bot: await fs.readFile(
-            path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
-            ConstantString.UTF8Encoding
-          ),
-        },
-      },
-    };
-    return ResultFactory.Success(result);
-  }
-
   public async generateArmTemplates(context: PluginContext): Promise<FxResult> {
     this.ctx = context;
     await this.config.restoreConfigFromContext(context);

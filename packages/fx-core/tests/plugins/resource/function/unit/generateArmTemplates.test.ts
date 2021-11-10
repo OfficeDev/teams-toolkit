@@ -9,12 +9,7 @@ import * as path from "path";
 
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { FunctionPlugin } from "../../../../../src";
-import {
-  ConstantString,
-  mockSolutionUpdateArmTemplates,
-  mockSolutionUpdateArmTemplatesV2,
-  ResourcePlugins,
-} from "../../util";
+import { ConstantString, mockSolutionUpdateArmTemplatesV2, ResourcePlugins } from "../../util";
 import { MockContext } from "../helper";
 import { FunctionBicep } from "../../../../../src/plugins/resource/function/constants";
 

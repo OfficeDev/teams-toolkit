@@ -8,7 +8,6 @@ import {
   Stage,
   QTreeNode,
   Platform,
-  AzureSolutionSettings,
   traverse,
 } from "@microsoft/teamsfx-api";
 import { ManagementClient } from "./managementClient";
@@ -24,30 +23,21 @@ import { SqlConfig } from "./config";
 import { SqlClient } from "./sqlClient";
 import { ContextUtils } from "./utils/contextUtils";
 import { formatEndpoint, parseToken, UserType } from "./utils/commonUtils";
-import {
-  AzureSqlArmOutput,
-  AzureSqlBicep,
-  AzureSqlBicepFile,
-  Constants,
-  HelpLinks,
-  Telemetry,
-} from "./constants";
+import { AzureSqlBicep, AzureSqlBicepFile, Constants, HelpLinks, Telemetry } from "./constants";
 import { Message } from "./utils/message";
 import { TelemetryUtils } from "./utils/telemetryUtils";
 import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "./questions";
 import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 import path from "path";
-import { generateBicepFiles, getTemplatesFolder } from "../../..";
+import { getTemplatesFolder } from "../../../folder";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import * as fs from "fs-extra";
-import { getArmOutput } from "../utils4v2";
 import {
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
   isArmSupportEnabled,
 } from "../../../common";
-import { IdentityArmOutput } from "../identity/constants";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
@@ -180,6 +170,8 @@ export class SqlPluginImpl {
 
   async postProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
     ctx.logProvider?.info(Message.startPostProvision);
+    await this.loadConfig(ctx);
+
     DialogUtils.init(ctx, ProgressTitle.PostProvision, Object.keys(ConfigureMessage).length);
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix, undefined, {
@@ -189,10 +181,9 @@ export class SqlPluginImpl {
     });
 
     if (isArmSupportEnabled()) {
-      this.syncArmOutput(ctx);
-      ctx.config.set(Constants.sqlResourceId, this.config.sqlResourceId);
-      ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
-      ctx.config.set(Constants.databaseName, this.config.databaseName);
+      this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
+      this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
+      this.config.azureSubscriptionId = getSubscriptionIdFromResourceId(this.config.sqlResourceId);
     }
 
     ctx.config.delete(Constants.adminPassword);
@@ -295,15 +286,6 @@ export class SqlPluginImpl {
     ctx.config.set(Constants.adminPassword, this.config.adminPassword);
   }
 
-  private syncArmOutput(ctx: PluginContext) {
-    this.config.sqlResourceId = getArmOutput(ctx, AzureSqlArmOutput.sqlResourceId)!;
-    this.config.sqlEndpoint = getArmOutput(ctx, AzureSqlArmOutput.sqlEndpoint)!;
-    this.config.databaseName = getArmOutput(ctx, AzureSqlArmOutput.databaseName)!;
-    this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
-    this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
-    this.config.azureSubscriptionId = getSubscriptionIdFromResourceId(this.config.sqlResourceId);
-  }
-
   private buildQuestionNode() {
     const sqlNode = new QTreeNode({
       type: "group",
@@ -334,19 +316,15 @@ export class SqlPluginImpl {
   }
 
   private getIdentity(ctx: PluginContext) {
-    if (isArmSupportEnabled()) {
-      this.config.identity = getArmOutput(ctx, IdentityArmOutput.identityName)!;
-    } else {
-      const identityConfig = ctx.envInfo.state.get(Constants.identityPlugin);
-      this.config.identity = identityConfig!.get(Constants.identityName) as string;
-      if (!this.config.identity) {
-        const error = SqlResultFactory.SystemError(
-          ErrorMessage.SqlGetConfigError.name,
-          ErrorMessage.SqlGetConfigError.message(Constants.identityPlugin, Constants.identityName)
-        );
-        ctx.logProvider?.error(error.message);
-        throw error;
-      }
+    const identityConfig = ctx.envInfo.state.get(Constants.identityPlugin);
+    this.config.identity = identityConfig!.get(Constants.identityName) as string;
+    if (!this.config.identity) {
+      const error = SqlResultFactory.SystemError(
+        ErrorMessage.SqlGetConfigError.name,
+        ErrorMessage.SqlGetConfigError.message(Constants.identityPlugin, Constants.identityName)
+      );
+      ctx.logProvider?.error(error.message);
+      throw error;
     }
   }
 

@@ -15,11 +15,7 @@ import {
   EnvNamePlaceholder,
   LogProvider,
 } from "@microsoft/teamsfx-api";
-import {
-  ScaffoldArmTemplateResult,
-  ArmResourcePlugin,
-  ArmTemplateResult,
-} from "../../../common/armInterface";
+import { ArmResourcePlugin, ArmTemplateResult } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import { format } from "util";
@@ -30,7 +26,6 @@ import { ArmHelpLink, ConstantString, PluginDisplayName } from "../../../common/
 import { getResourceGroupNameFromResourceId, waitSeconds, getUuid } from "../../../common/tools";
 import { environmentManager } from "../../..";
 import {
-  ARM_TEMPLATE_OUTPUT,
   GLOBAL_CONFIG,
   PluginNames,
   RESOURCE_GROUP_NAME,
@@ -57,12 +52,10 @@ const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionFileName = "provision.bicep";
 const bicepOrchestrationConfigFileName = "config.bicep";
-const solutionLevelParameters = `param resourceBaseName string\n`;
 
 // New folder structure constants
 const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
-const modulesFolder = "modules";
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 
 // constant string
@@ -278,9 +271,6 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
 }
 
 function syncArmOutput(ctx: SolutionContext, armOutput: any) {
-  // todo: delete this line after solution helps all resource plugin fill in arm output
-  ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(ARM_TEMPLATE_OUTPUT, armOutput);
-
   if (armOutput instanceof Object) {
     const armOutputKeys = Object.keys(armOutput);
     for (const armOutputKey of armOutputKeys) {

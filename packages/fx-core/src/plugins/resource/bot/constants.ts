@@ -269,25 +269,10 @@ export class PathInfo {
   );
   public static readonly ProvisionModuleTemplateFileName = "botProvision.template.bicep";
   public static readonly ConfigurationModuleTemplateFileName = "botConfiguration.template.bicep";
-  public static readonly ProvisionModuleTemplateV2FileName = "botProvision.template.v2.bicep";
-  public static readonly ConfigurationModuleTemplateV2FileName =
-    "botConfiguration.template.v2.bicep";
 }
 
 export class BotBicep {
-  static readonly resourceId: string = "provisionOutputs.botOutput.value.webAppResourceId";
-  static readonly hostName: string = "provisionOutputs.botOutput.value.webAppHostName";
-  static readonly webAppEndpoint: string = "provisionOutputs.botOutputs.value.webAppEndpoint";
-}
-
-export class BotArmOutput {
-  static readonly WebAppSKU = "bot_webAppSKU";
-  static readonly ServiceSKU = "bot_serviceSKU";
-  static readonly WebAppName = "bot_webAppName";
-  static readonly Domain = "bot_domain";
-  static readonly AppServicePlanName = "bot_appServicePlanName";
-  static readonly BotServiceName = "bot_serviceName";
-  static readonly BotWebAppResourceId = "bot_webAppResourceId";
-  static readonly WebAppEndpoint = "bot_webAppEndpoint";
-  static readonly InitiateLoginEndpoint = "bot_initiateLoginEndpoint";
+  static readonly resourceId: string = "provisionOutputs.botOutput.value.botWebAppResourceId";
+  static readonly hostName: string = "provisionOutputs.botOutput.value.validDomain";
+  static readonly webAppEndpoint: string = "provisionOutputs.botOutputs.value.botWebAppEndpoint";
 }

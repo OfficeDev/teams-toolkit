@@ -103,12 +103,6 @@ export class AzureSqlBicep {
   static readonly databaseName: string = "provisionOutputs.azureSqlOutput.value.databaseName";
 }
 
-export class AzureSqlArmOutput {
-  static readonly sqlResourceId: string = "azureSql_sqlResourceId";
-  static readonly sqlEndpoint: string = "azureSql_sqlEndpoint";
-  static readonly databaseName: string = "azureSql_databaseName";
-}
-
 export class AzureSqlBicepFile {
   static readonly moduleTemplateFileName: string = "sql.template.bicep";
   static readonly ProvisionModuleTemplateFileName = "sqlProvision.template.bicep";

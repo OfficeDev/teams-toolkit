@@ -55,7 +55,6 @@ import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
 import { environmentManager } from "../../../src/core/environment";
 import { LocalCrypto } from "../../../src/core/crypto";
-import { ConfigKeysOfOtherPlugin } from "../../../src/plugins/resource/aad/constants";
 
 let mockedEnvRestore: () => void;
 
@@ -78,9 +77,14 @@ const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const fileEncoding = "UTF8";
 const templateFolder = path.join(baseFolder, templateFolderName);
 
-const TEST_SUBSCRIPTION_ID = "test_subscription_id";
+const TEST_SUBSCRIPTION_ID = "11111111-2222-3333-4444-555555555555";
 const TEST_RESOURCE_GROUP_NAME = "test_resource_group_name";
-const FRONTEND_HOSTING_PLUGIN_ID = "fx-resource-frontend-hosting";
+
+enum PluginId {
+  FrontendHosting = "fx-resource-frontend-hosting",
+  Identity = "fx-resource-identity",
+  SimpleAuth = "fx-resource-simple-auth",
+}
 
 function mockSolutionContext(): SolutionContext {
   return {
@@ -296,23 +300,46 @@ describe("Deploy ARM Template to Azure", () => {
   const testResourceSuffix = "-testSuffix";
   const testStorageName = "test_storage_name";
   let parameterFileName: string;
+
+  const frontendhostingTestDomain = "testfrontendhosting.z13.web.core.windows.net";
+  const frontendhostingTestEndpoint = `https://${testStorageName}.z13.web.core.windows.net`;
+  const frontendhostingTestResourceId = `/subscriptions/${TEST_SUBSCRIPTION_ID}/resourceGroups/${TEST_RESOURCE_GROUP_NAME}/providers/Microsoft.Storage/storageAccounts/${testStorageName}`;
+  const identityTestName = "test-identity";
+  const identityTestResourceId = `/subscriptions/${TEST_SUBSCRIPTION_ID}/resourceGroups/${TEST_RESOURCE_GROUP_NAME}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${identityTestName}`;
+  const identityTestClientId = "test-identity-client-id";
+  const simpleAuthTestEndpoint = "https://test-simpleauth-webapp.azurewebsites.net";
+  const simpleAuthTestWebAppResourceId = `/subscriptions/${TEST_SUBSCRIPTION_ID}/resourceGroups/${TEST_RESOURCE_GROUP_NAME}/providers/Microsoft.Web/sites/test-simpleAuth-webapp`;
   const testArmTemplateOutput = {
-    frontendHostingOutput: {
+    provisionOutput: {
       type: "Object",
       value: {
-        teamsFxPluginId: FRONTEND_HOSTING_PLUGIN_ID,
-        storageResourceId: `/subscriptions/${TEST_SUBSCRIPTION_ID}/resourceGroups/${TEST_RESOURCE_GROUP_NAME}/providers/Microsoft.Storage/storageAccounts/${testStorageName}`,
-        endpoint: `https://${testStorageName}.z13.web.core.windows.net`,
-        domain: `${testStorageName}.z13.web.core.windows.net`,
+        frontendHostingOutput: {
+          type: "Object",
+          value: {
+            teamsFxPluginId: PluginId.FrontendHosting,
+            domain: frontendhostingTestDomain,
+            endpoint: frontendhostingTestEndpoint,
+            resourceId: frontendhostingTestResourceId,
+          },
+        },
+        identityOutput: {
+          type: "Object",
+          value: {
+            teamsFxPluginId: PluginId.Identity,
+            identityName: identityTestName,
+            identityResourceId: identityTestResourceId,
+            identityClientId: identityTestClientId,
+          },
+        },
+        simpleAuthOutput: {
+          type: "Object",
+          value: {
+            teamsFxPluginId: PluginId.SimpleAuth,
+            endpoint: simpleAuthTestEndpoint,
+            webAppResourceId: simpleAuthTestWebAppResourceId,
+          },
+        },
       },
-    },
-    simpleAuth_skuName: {
-      type: "String",
-      value: "B1",
-    },
-    simpleAuth_endpoint: {
-      type: "String",
-      value: "https://test_simpleauth_domain",
     },
   };
   const SOLUTION_CONFIG = "solution";
@@ -505,9 +532,40 @@ describe("Deploy ARM Template to Azure", () => {
         }
       }`)
     );
+
     chai.assert.strictEqual(
-      mockedCtx.envInfo.state.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
-      testArmTemplateOutput
+      mockedCtx.envInfo.state.get(PluginId.FrontendHosting)?.get("domain"),
+      frontendhostingTestDomain
+    );
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.FrontendHosting)?.get("endpoint"),
+      frontendhostingTestEndpoint
+    );
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.FrontendHosting)?.get("resourceId"),
+      frontendhostingTestResourceId
+    );
+
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.Identity)?.get("identityName"),
+      identityTestName
+    );
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.Identity)?.get("identityResourceId"),
+      identityTestResourceId
+    );
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.Identity)?.get("identityClientId"),
+      identityTestClientId
+    );
+
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.SimpleAuth)?.get("endpoint"),
+      simpleAuthTestEndpoint
+    );
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.SimpleAuth)?.get("webAppResourceId"),
+      simpleAuthTestWebAppResourceId
     );
   });
 

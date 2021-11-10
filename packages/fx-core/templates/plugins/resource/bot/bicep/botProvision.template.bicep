@@ -1,71 +1,87 @@
-param botServiceName string
-param botAadClientId string
-param botDisplayName string
-param botServerfarmsName string
-param botWebAppSKU string = 'F1'
-param botServiceSKU string = 'F1'
-param botWebAppName string
-{{#contains 'fx-resource-identity' Plugins}}
-param identityResourceId string
-{{/contains}}
+@secure()
+param provisionParameters object
+param userAssignedIdentityId string
 
-var botWebAppHostname = botWebApp.properties.hostNames[0]
-var botEndpoint = 'https://${botWebAppHostname}'
+var resourceBaseName = provisionParameters.resourceBaseName
+var botAadAppClientId = provisionParameters['botAadAppClientId']
+var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
+var botServiceName = contains(provisionParameters, 'botServiceName') ? provisionParameters['botServiceName'] : '${resourceBaseName}-bot-service'
+var botDisplayName = contains(provisionParameters, 'botDisplayName') ? provisionParameters['botDisplayName'] : '${resourceBaseName}-bot-displayname'
+var serverfarmsName = contains(provisionParameters, 'botServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}-bot-serverfarms'
+var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'F1'
+var webAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}-bot-sites'
 
-resource botServices 'Microsoft.BotService/botServices@2021-03-01' = {
+resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
   kind: 'azurebot'
   location: 'global'
   name: botServiceName
   properties: {
     displayName: botDisplayName
-    endpoint: uri(botEndpoint, '/api/messages')
-    msaAppId: botAadClientId
+    endpoint: uri('https://${webApp.properties.defaultHostName}', '/api/messages')
+    msaAppId: botAadAppClientId
   }
   sku: {
-    name: botServiceSKU
+    name: 'F0'
   }
 }
 
-resource botServerfarm 'Microsoft.Web/serverfarms@2021-01-01' = {
-  kind: 'app'
-  location: resourceGroup().location
-  name: botServerfarmsName
+resource botServiceMsTeamsChannel 'Microsoft.BotService/botServices/channels@2021-03-01' = {
+  parent: botService
+  location: 'global'
+  name: 'MsTeamsChannel'
   properties: {
-    reserved: false
-  }
-  sku: {
-    name: botWebAppSKU
+    channelName: 'MsTeamsChannel'
   }
 }
 
-resource botWebApp 'Microsoft.Web/sites@2021-01-01' = {
+resource serverfarm 'Microsoft.Web/serverfarms@2021-01-01' = {
   kind: 'app'
   location: resourceGroup().location
-  name: botWebAppName
+  name: serverfarmsName
+  sku: {
+    name: webAppSKU
+  }
+}
+
+resource webApp 'Microsoft.Web/sites@2021-01-01' = {
+  kind: 'app'
+  location: resourceGroup().location
+  name: webAppName
   properties: {
-    reserved: false
-    serverFarmId: botServerfarm.id
+    serverFarmId: serverfarm.id
     siteConfig: {
-      alwaysOn: false
-      http20Enabled: false
-      numberOfWorkers: 1
+      appSettings: [
+        {
+          name: 'BOT_ID'
+          value: botAadAppClientId
+        }
+        {
+          name: 'BOT_PASSWORD'
+          value: botAadAppClientSecret
+        }
+        {
+          name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
+          value: 'true'
+        }
+        {
+          name: 'WEBSITE_NODE_DEFAULT_VERSION'
+          value: '12.13.0'
+        }
+      ]
     }
   }
-  {{#contains 'fx-resource-identity' Plugins}}
   identity: {
     type: 'UserAssigned'
     userAssignedIdentities: {
-      '${identityResourceId}': {}
+      '${userAssignedIdentityId}': {}
     }
   }
-  {{/contains}}
 }
 
-output botWebAppSKU string = botWebAppSKU
-output botServiceSKU string = botServiceSKU
-output botWebAppName string = botWebAppName
-output botDomain string = botWebAppHostname
-output appServicePlanName string = botServerfarmsName
+output botWebAppSKU string = webAppSKU
+output botWebAppName string = webAppName
+output botDomain string = webApp.properties.defaultHostName
+output appServicePlanName string = serverfarmsName
 output botServiceName string = botServiceName
-output botWebAppResourceId string = botWebApp.id
-output botWebAppEndpoint string = botEndpoint
+output botWebAppResourceId string = webApp.id
+output botWebAppEndpoint string = 'https://${webApp.properties.defaultHostName}'

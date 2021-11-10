@@ -60,7 +60,7 @@ describe("apimManager.generateArmTemplates", () => {
         "fx-resource-function": {
           References: {
             functionAppResourceId: "provisionOutputs.functionOutput.value.functionAppResourceId",
-            endpoint: "provisionOutputs.functionOutput.value.endpoint",
+            endpoint: "provisionOutputs.functionOutput.value.functionEndpoint",
           },
         },
         "fx-resource-frontend-hosting": {

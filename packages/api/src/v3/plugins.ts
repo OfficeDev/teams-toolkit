@@ -11,11 +11,11 @@ import {
   LocalResource,
   RuntimeStacks,
   TeamsAppLocalResourceProfile,
+  TeamsAppResourceProfile,
 } from "./resourceProfile";
 export interface InnerLoopPlugin {
   name: string;
   scaffoldOption: OptionItem;
-  addResourceOption: OptionItem;
   runtimeStacks: RuntimeStacks[];
   languages: string[];
   scaffoldSourceCode?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
@@ -38,26 +38,19 @@ export interface InnerLoopPlugin {
 }
 
 export interface HostingPlugin {
+  name: string;
   provisionOption: OptionItem;
   runtimeStacks: RuntimeStacks[];
+  dependencies: string[];
   generateResourceTemplate?: (
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<ResourceTemplate, FxError>>;
 
-  //only for built-in plugin (AAD)
-  provisionResource?: (
-    ctx: Context,
-    inputs: ProvisionInputs,
-    tokenProvider: AzureAccountProvider,
-    resourceProfile?: AzureResource
-  ) => Promise<Result<AzureResource, FxError>>;
-
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    resourceProfile: AzureResource,
-    configs: Record<string, string>,
+    appResourceProfile: TeamsAppResourceProfile,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
   deploy?: (

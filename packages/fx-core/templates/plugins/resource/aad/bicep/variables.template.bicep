@@ -1,4 +1,3 @@
-
 {{#contains 'fx-resource-frontend-hosting' Plugins}}
 {{#notContains 'fx-resource-bot' ../Plugins}}
 var m365ApplicationIdUri = 'api://${ {{~../PluginOutput.fx-resource-frontend-hosting.Outputs.domain~}} }/${m365ClientId}'

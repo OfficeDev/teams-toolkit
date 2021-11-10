@@ -9,8 +9,9 @@ import * as path from "path";
 
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { FunctionPlugin } from "../../../../../src";
-import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
+import { ConstantString, mockSolutionUpdateArmTemplatesV2, ResourcePlugins } from "../../util";
 import { MockContext } from "../helper";
+import { FunctionBicep } from "../../../../../src/plugins/resource/function/constants";
 
 chai.use(chaiAsPromised);
 
@@ -39,69 +40,88 @@ describe("FunctionGenerateArmTemplates", () => {
     const result = await functionPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testProvisionModuleFileName = "functionProvision.bicep";
-    const testConfigurationModuleFileName = "functionConfiguration.bicep";
+    const testProvisionModuleFileName = "functionProvision.result.bicep";
+    const testConfigurationModuleFileName = "functionConfig.result.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
         "fx-resource-function": {
-          Modules: {
-            functionProvision: {
-              Path: `./${testProvisionModuleFileName}`,
+          Provision: {
+            function: {
+              ProvisionPath: `./${testProvisionModuleFileName}`,
             },
-            functionConfiguration: {
-              Path: `./${testConfigurationModuleFileName}`,
+          },
+          Configuration: {
+            function: {
+              ConfigPath: `./${testConfigurationModuleFileName}`,
             },
+          },
+          References: {
+            functionAppResourceId: FunctionBicep.functionAppResourceId,
+            functionEndpoint: FunctionBicep.functionEndpoint,
           },
         },
         "fx-resource-frontend-hosting": {
           Outputs: {
             endpoint: "frontend_hosting_test_endpoint",
           },
+          References: {
+            domain: "provisionOutputs.frontendHostingOutput.value.domain",
+            endpoint: "provisionOutputs.frontendHostingOutput.value.endpoint",
+          },
+        },
+        "fx-resource-identity": {
+          Outputs: {
+            endpoint: "frontend_hosting_test_endpoint",
+          },
+          References: {
+            identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
+            identityResourceId: "userAssignedIdentityProvision.outputs.identityResourceId",
+          },
         },
       },
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplates(
+      const expectedResult = mockSolutionUpdateArmTemplatesV2(
         mockedSolutionDataContext,
         result.value
       );
 
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
+
       const expectedProvisionModuleFilePath = path.join(
         expectedBicepFileDirectory,
         testProvisionModuleFileName
       );
       chai.assert.strictEqual(
-        expectedResult.Modules!.functionProvision.Content,
+        expectedResult.Provision!.Modules!.function,
         fs.readFileSync(expectedProvisionModuleFilePath, ConstantString.UTF8Encoding)
       );
+
       const expectedConfigurationModuleFilePath = path.join(
         expectedBicepFileDirectory,
         testConfigurationModuleFileName
       );
       chai.assert.strictEqual(
-        expectedResult.Modules!.functionConfiguration.Content,
+        expectedResult.Configuration!.Modules!.function,
         fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
       );
 
-      const expectedModuleSnippetFilePath = path.join(expectedBicepFileDirectory, "module.bicep");
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.ModuleTemplate!.Content,
-        fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
+      const orchestrationProvisionFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, "provision.result.bicep"),
+        ConstantString.UTF8Encoding
       );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
+
+      chai.assert.strictEqual(expectedResult.Provision!.Orchestration, orchestrationProvisionFile);
+
       chai.assert.strictEqual(
-        expectedResult.Orchestration.ParameterTemplate!.Content,
-        fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
+        expectedResult.Configuration!.Orchestration,
+        fs.readFileSync(
+          path.join(expectedBicepFileDirectory, "config.result.bicep"),
+          ConstantString.UTF8Encoding
+        )
       );
-      const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
-      chai.assert.strictEqual(
-        expectedResult.Orchestration.OutputTemplate!.Content,
-        fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
-      );
-      chai.assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
     }
   });
 });

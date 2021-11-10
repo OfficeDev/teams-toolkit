@@ -7,8 +7,8 @@ import glob from "glob";
 import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 
-function functionAppNameFromId(functionAppId: string) {
-  const tokens = functionAppId.split("/");
+function functionAppNameFromId(functionAppResourceId: string) {
+  const tokens = functionAppResourceId.split("/");
   if (tokens.length == 0) {
     return "";
   }
@@ -78,7 +78,7 @@ interface IFunctionObject {
   functionAppName: string;
   appServicePlanName: string;
   expectValues: Map<string, string>;
-  functionAppId?: string;
+  functionAppResourceId?: string;
 }
 
 export class FunctionValidator {
@@ -159,8 +159,8 @@ export class FunctionValidator {
 
     console.log("Validating app settings.");
 
-    const appName = functionObject.functionAppId
-      ? functionAppNameFromId(functionObject.functionAppId)
+    const appName = functionObject.functionAppResourceId
+      ? functionAppNameFromId(functionObject.functionAppResourceId)
       : functionObject.functionAppName;
     const response = await this.getWebappConfigs(
       this.subscriptionId,
@@ -243,8 +243,8 @@ export class FunctionValidator {
     const tokenCredential = await MockAzureAccountProvider.getAccountCredentialAsync();
     const token = (await tokenCredential?.getToken())?.accessToken;
 
-    const appName = functionObject.functionAppId
-      ? functionAppNameFromId(functionObject.functionAppId)
+    const appName = functionObject.functionAppResourceId
+      ? functionAppNameFromId(functionObject.functionAppResourceId)
       : functionObject.functionAppName;
 
     const deployments = await this.getDeployments(

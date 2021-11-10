@@ -56,6 +56,7 @@ export class FrontendPathInfo {
   static TemplatePackageExt = ".zip";
 
   static ModuleFileName = "frontendHosting.bicep";
+  static ModuleProvisionV2FileName = "frontendHostingProvision.v2.bicep";
 
   static BuildFolderName = "build";
   static BuildPath = `${FrontendPathInfo.BuildFolderName}${path.sep}`;
@@ -93,12 +94,6 @@ export class DependentPluginInfo {
   static readonly LocalTabEndpoint = "localTabEndpoint";
 }
 
-export class ArmOutput {
-  static readonly FrontendEndpoint = "frontendHosting_endpoint";
-  static readonly FrontendDomain = "frontendHosting_domain";
-  static readonly FrontendStorageResourceId = "frontendHosting_storageResourceId";
-}
-
 export class FrontendConfigInfo {
   static readonly StorageName = "storageName"; // TODO: Remove this storageName config when arm-disabled scenario removed
   static readonly StorageResourceId = "storageResourceId";
@@ -107,9 +102,12 @@ export class FrontendConfigInfo {
 }
 
 export class FrontendOutputBicepSnippet {
-  static readonly StorageName = "frontendHostingProvision.outputs.storageName";
-  static readonly Endpoint = "frontendHostingProvision.outputs.endpoint";
-  static readonly Domain = "frontendHostingProvision.outputs.domain";
+  static readonly StorageName = "provisionOutputs.frontendHostingProvision.outputs.storageName";
+  static readonly Endpoint = "provisionOutputs.frontendHostingProvision.outputs.endpoint";
+  static readonly Domain = "provisionOutputs.frontendHostingProvision.outputs.domain";
+  static readonly Domain2 = "provisionOutputs.frontendHostingOutput.value.domain";
+  static readonly Endpoint2 = "provisionOutputs.frontendHostingOutput.value.endpoint";
+  static readonly StorageName2 = "provisionOutputs.frontendHostingOutput.value.storageName";
 }
 
 export class TelemetryEvent {

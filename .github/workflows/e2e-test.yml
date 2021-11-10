@@ -133,16 +133,16 @@ jobs:
           path: |
             ./packages/cli/report.json
 
-      - name: Clean the Repo
-        if: ${{ always() }}
-        run: |
-          rsync --delete-before -d /tmp/empty/ ./
-
       - name: Sync to Azure DevOps Test Plan
         if: ${{ always() && github.ref == 'refs/heads/main' }}
         run: |
           version =$(node -p -e "require('./packages/cli/package.json').version")
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/report.json cli $version
+
+      - name: Clean the Repo
+        if: ${{ always() }}
+        run: |
+          rsync --delete-before -d /tmp/empty/ ./
 
   report-stat:
     if: ${{ github.event_name != 'pull_request' }}

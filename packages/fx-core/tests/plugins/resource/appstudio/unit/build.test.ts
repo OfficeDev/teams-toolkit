@@ -72,7 +72,7 @@ describe("Build Teams Package", () => {
     );
     sandbox.stub(fs, "move").resolves();
 
-    const builtPackage = await plugin.buildTeamsPackage(ctx);
+    const builtPackage = await plugin.buildTeamsPackage(ctx, false);
     chai.assert.isTrue(builtPackage.isOk());
     if (builtPackage.isOk()) {
       chai.assert.isNotEmpty(builtPackage.value);

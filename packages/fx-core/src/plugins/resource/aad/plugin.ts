@@ -35,7 +35,6 @@ import { Envs } from "./interfaces/models";
 import { DialogUtils } from "./utils/dialog";
 import {
   ConfigKeys,
-  ConfigKeysOfOtherPlugin,
   Constants,
   Messages,
   Plugins,
@@ -52,9 +51,10 @@ import * as jsonPermissionList from "./permissions/permissions.json";
 import { Utils } from "./utils/common";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
-import { getTemplatesFolder, isMultiEnvEnabled } from "../../..";
+import { isMultiEnvEnabled } from "../../../common/tools";
+import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
 
@@ -311,33 +311,11 @@ export class AadAppForTeamsImpl {
       getTemplatesFolder(),
       TemplatePathInfo.BicepTemplateRelativeDir
     );
-    const inputParameterOrchestrationFilePath = path.join(
-      bicepTemplateDir,
-      Bicep.ParameterOrchestrationFileName
-    );
-    const variablesOrchestrationFilePath = path.join(
-      bicepTemplateDir,
-      Bicep.VariablesOrchestrationFileName
-    );
     const parameterFilePath = path.join(bicepTemplateDir, Bicep.ParameterFileName);
 
-    const result: ScaffoldArmTemplateResult = {
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(
-            inputParameterOrchestrationFilePath,
-            ConstantString.UTF8Encoding
-          ),
-          ParameterJson: JSON.parse(
-            await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)
-          ),
-        },
-        VariableTemplate: {
-          Content: await fs.readFile(variablesOrchestrationFilePath, ConstantString.UTF8Encoding),
-        },
-      },
+    const result: ArmTemplateResult = {
+      Parameters: JSON.parse(await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)),
     };
-
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
     return ResultFactory.Success(result);
   }

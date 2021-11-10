@@ -7,7 +7,6 @@ import {
   err,
   returnUserError,
   TokenProvider,
-  ConfigMap,
   Void,
   SolutionContext,
   returnSystemError,
@@ -43,8 +42,7 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import _ from "lodash";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
-import { isV2, isVsCallingCli } from "../../../..";
-import { REMOTE_TEAMS_APP_ID } from "..";
+import { isV2, isVsCallingCli } from "../../../../core";
 import { Constants } from "../../../resource/appstudio/constants";
 
 export async function provisionResource(

@@ -715,7 +715,7 @@ describe("provision() happy path for Azure projects", () => {
       return ok(Void);
     };
     const spy = mocker.spy(aadPlugin, "setApplicationInContext");
-    const stub = sinon.stub(arm, "deployArmTemplates");
+    const stub = mocker.stub(arm, "deployArmTemplates");
 
     expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .undefined;

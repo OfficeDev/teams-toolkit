@@ -21,6 +21,7 @@ import {
   globalStateUpdate,
   Correlator,
   sampleProvider,
+  getRootDirectory,
 } from "@microsoft/teamsfx-core";
 import { PanelType } from "./PanelType";
 import { execSync } from "child_process";
@@ -158,12 +159,7 @@ export class WebviewPanel {
       [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
       [TelemetryProperty.SampleAppName]: msg.data.appFolder,
     });
-    const folder = await vscode.window.showOpenDialog({
-      canSelectFiles: false,
-      canSelectFolders: true,
-      canSelectMany: false,
-      title: StringResources.vsc.webview.downloadSampleTitle,
-    });
+    const folder = getRootDirectory();
 
     let downloadSuccess = false;
     let error = new UserError(
@@ -172,7 +168,7 @@ export class WebviewPanel {
       ExtensionSource
     );
     if (folder !== undefined) {
-      const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
+      const sampleAppPath = path.join(folder, msg.data.appFolder);
       if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
         error.name = ExtensionErrors.FolderAlreadyExist;
         error.message = StringResources.vsc.webview.folderExist;
@@ -187,11 +183,7 @@ export class WebviewPanel {
           const result = await this.fetchCodeZip(msg.data.appUrl);
           progress.next(StringResources.vsc.webview.unzipPackage);
           if (result !== undefined) {
-            await this.saveFilesRecursively(
-              new AdmZip(result.data),
-              msg.data.appFolder,
-              folder[0].fsPath
-            );
+            await this.saveFilesRecursively(new AdmZip(result.data), msg.data.appFolder, folder);
             await this.downloadSampleHook(msg.data.appFolder, sampleAppPath);
             downloadSuccess = true;
             vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(sampleAppPath));

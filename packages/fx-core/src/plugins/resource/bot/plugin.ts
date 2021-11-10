@@ -201,8 +201,8 @@ export class TeamsBotImpl {
       },
       Configuration: {
         Modules: {
-          botConfiguration: await fs.readFile(
-            path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateV2FileName),
+          bot: await fs.readFile(
+            path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
             ConstantString.UTF8Encoding
           ),
         },

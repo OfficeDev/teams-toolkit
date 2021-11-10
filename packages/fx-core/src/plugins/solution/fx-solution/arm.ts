@@ -45,8 +45,7 @@ import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { Utils } from "../../resource/frontend/utils";
 import { executeCommand } from "../../../common/cpUtils";
 import { TEAMS_FX_RESOURCE_ID_KEY } from ".";
-import { Plugins } from "../../resource/aad/constants";
-import { indexOf } from "lodash";
+import os from "os";
 
 // Old folder structure constants
 const templateFolder = "templates";
@@ -414,10 +413,7 @@ async function doGenerateArmTemplate(
   // Get bicep content from each resource plugin
   for (const plugin of plugins) {
     const pluginWithArm = plugin as Plugin & ArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
-    if (
-      pluginWithArm.generateArmTemplates &&
-      selectedPlugins.find(({ name }) => name === pluginWithArm.name)
-    ) {
+    if (pluginWithArm.generateArmTemplates) {
       // find method using method name
       const pluginContext = getPluginContext(ctx, pluginWithArm.name);
       const result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
@@ -425,7 +421,14 @@ async function doGenerateArmTemplate(
         FxError
       >;
       if (result.isOk()) {
-        bicepOrchestrationTemplate.applyTemplateV2(pluginWithArm.name, result.value);
+        if (!selectedPlugins.find(({ name }) => name === pluginWithArm.name)) {
+          if (result.value.Configuration?.Orchestration)
+            delete result.value.Configuration?.Orchestration;
+          if (result.value.Provision?.Orchestration) delete result.value.Provision?.Orchestration;
+          if (result.value.Provision?.Modules) delete result.value.Provision?.Modules;
+          if (result.value.Parameters) delete result.value.Parameters;
+        }
+        bicepOrchestrationTemplate.applyTemplate(pluginWithArm.name, result.value);
         if (result.value.Configuration?.Modules) {
           for (const module of Object.entries(result.value.Configuration.Modules)) {
             const moduleName = module[0];
@@ -439,28 +442,6 @@ async function doGenerateArmTemplate(
             const moduleName = module[0];
             const moduleValue = module[1] as string;
             moduleProvisionFiles.set(generateBicepModuleProvisionFilePath(moduleName), moduleValue);
-          }
-        }
-      } else {
-        const msg = format(
-          getStrings().solution.GenerateArmTemplateFailNotice,
-          ctx.projectSettings?.appName
-        );
-        ctx.logProvider?.error(msg);
-        return result;
-      }
-    } else if (pluginWithArm.updateArmTemplates) {
-      const pluginContext = getPluginContext(ctx, pluginWithArm.name);
-      const result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<
-        ArmTemplateResult,
-        FxError
-      >;
-      if (result.isOk()) {
-        if (result.value.Configuration?.Modules) {
-          for (const module of Object.entries(result.value.Configuration.Modules)) {
-            const moduleName = module[0];
-            const moduleValue = module[1] as string;
-            moduleConfigFiles.set(generateBicepModuleConfigFilePath(moduleName), moduleValue);
           }
         }
       } else {
@@ -486,23 +467,21 @@ async function doGenerateArmTemplate(
     if (
       !(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationProvisionFileName)))
     ) {
-      bicepOrchestrationProvisionContent =
-        (await fs.readFile(
-          path.join(getTemplatesFolder(), "plugins", "solution", "provision.bicep"),
-          ConstantString.UTF8Encoding
-        )) + "\r\n";
+      bicepOrchestrationProvisionContent = await fs.readFile(
+        path.join(getTemplatesFolder(), "plugins", "solution", "provision.bicep"),
+        ConstantString.UTF8Encoding
+      );
     }
     if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationConfigFileName)))) {
-      bicepOrchestrationConfigContent =
-        (await fs.readFile(
-          path.join(getTemplatesFolder(), "plugins", "solution", "config.bicep"),
-          ConstantString.UTF8Encoding
-        )) + "\r\n";
+      bicepOrchestrationConfigContent = await fs.readFile(
+        path.join(getTemplatesFolder(), "plugins", "solution", "config.bicep"),
+        ConstantString.UTF8Encoding
+      );
     }
     bicepOrchestrationProvisionContent +=
-      bicepOrchestrationTemplate.getOrchestractionProvisionContent() + "\r\n";
+      os.EOL + bicepOrchestrationTemplate.getOrchestractionProvisionContent();
     bicepOrchestrationConfigContent +=
-      bicepOrchestrationTemplate.getOrchestractionConfigContent() + "\r\n";
+      os.EOL + bicepOrchestrationTemplate.getOrchestractionConfigContent();
 
     const templateSolitionPath = path.join(getTemplatesFolder(), "plugins", "solution");
     if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationFileName)))) {
@@ -512,10 +491,14 @@ async function doGenerateArmTemplate(
       );
     }
 
-    let res = bicepOrchestrationTemplate.applyReference(bicepOrchestrationProvisionContent);
-    await fs.appendFile(path.join(templateFolderPath, bicepOrchestrationProvisionFileName), res);
-    res = bicepOrchestrationTemplate.applyReference(bicepOrchestrationConfigContent);
-    await fs.appendFile(path.join(templateFolderPath, bicepOrchestrationConfigFileName), res);
+    await fs.appendFile(
+      path.join(templateFolderPath, bicepOrchestrationProvisionFileName),
+      bicepOrchestrationProvisionContent
+    );
+    await fs.appendFile(
+      path.join(templateFolderPath, bicepOrchestrationConfigFileName),
+      bicepOrchestrationConfigContent
+    );
     // Output bicep module files from each resource plugin
     for (const module of moduleProvisionFiles) {
       // module[0] contains relative path to template folder, e.g. "./modules/frontendHosting.bicep"
@@ -686,7 +669,7 @@ class BicepOrchestrationContent {
     this.RenderContenxt = new ArmTemplateRenderContext(pluginNames);
   }
 
-  public applyTemplateV2(pluginName: string, armResult: ArmTemplateResult): void {
+  public applyTemplate(pluginName: string, armResult: ArmTemplateResult): void {
     this.ProvisionTemplate += this.normalizeTemplateSnippet(armResult.Provision?.Orchestration);
     this.ConfigTemplate += this.normalizeTemplateSnippet(armResult.Configuration?.Orchestration);
     this.RenderContenxt.addPluginOutput(pluginName, armResult);
@@ -694,7 +677,7 @@ class BicepOrchestrationContent {
   }
 
   public applyReference(configContent: string): string {
-    return compileHandlebarsTemplateString(configContent, this.RenderContenxt).trim();
+    return compileHandlebarsTemplateString(configContent, this.RenderContenxt);
   }
 
   public getOrchestractionProvisionContent(): string {

@@ -9,38 +9,36 @@ import {
   err,
   SystemError,
   AzureSolutionSettings,
+  Func,
 } from "@microsoft/teamsfx-api";
 
 import { IdentityConfig } from "./config";
-import {
-  Constants,
-  IdentityArmOutput,
-  IdentityBicep,
-  IdentityBicepFile,
-  Telemetry,
-} from "./constants";
+import { Constants, IdentityBicep, IdentityBicepFile, Telemetry } from "./constants";
 import { ContextUtils } from "./utils/contextUtils";
 import { ResultFactory, Result } from "./results";
 import { Message } from "./utils/messages";
 import { TelemetryUtils } from "./utils/telemetryUtil";
 import { formatEndpoint } from "./utils/commonUtils";
-import { generateBicepFiles, getTemplatesFolder } from "../../..";
-import { AzureResourceSQL } from "../../solution/fx-solution/question";
+import { getTemplatesFolder } from "../../../folder";
+import { AzureResourceSQL, HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 import { Bicep, ConstantString } from "../../../common/constants";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ArmTemplateResult } from "../../../common/armInterface";
 import { isArmSupportEnabled } from "../../../common";
-import { getArmOutput } from "../utils4v2";
 import "./v2";
 @Service(ResourcePlugins.IdentityPlugin)
 export class IdentityPlugin implements Plugin {
   name = "fx-resource-identity";
   displayName = "Microsoft Identity";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
-    return azureResources.includes(AzureResourceSQL.id);
+    if (!isArmSupportEnabled()) {
+      const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
+      return azureResources.includes(AzureResourceSQL.id);
+    } else {
+      return solutionSettings.hostType === HostTypeOptionAzure.id;
+    }
   }
   template: any;
   parameters: any;
@@ -66,9 +64,6 @@ export class IdentityPlugin implements Plugin {
   }
 
   async postProvision(ctx: PluginContext): Promise<Result> {
-    if (isArmSupportEnabled()) {
-      this.syncArmOutput(ctx);
-    }
     return ok(undefined);
   }
 
@@ -120,12 +115,6 @@ export class IdentityPlugin implements Plugin {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result> {
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
-    const context = {
-      Plugins: selectedPlugins,
-    };
-
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -133,53 +122,34 @@ export class IdentityPlugin implements Plugin {
       "identity",
       "bicep"
     );
-
-    const moduleTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      IdentityBicepFile.moduleTemplateFileName
-    );
-    const moduleContentResult = await generateBicepFiles(moduleTemplateFilePath, context);
-    if (moduleContentResult.isErr()) {
-      throw moduleContentResult.error;
-    }
-
-    const parameterTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.ParameterOrchestrationFileName
-    );
-    const moduleOrchestrationFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.ModuleOrchestrationFileName
-    );
-    const outputTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.OutputOrchestrationFileName
-    );
-
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        userAssignedIdentityProvision: {
-          Content: moduleContentResult.value,
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
+          ConstantString.UTF8Encoding
+        ),
+        Reference: {
+          identityName: IdentityBicep.identityName,
+          identityClientId: IdentityBicep.identityClientId,
+          identityResourceId: IdentityBicep.identityResourceId,
         },
-      },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
-        },
-        ModuleTemplate: {
-          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
-          Outputs: {
-            identityName: IdentityBicep.identityName,
-            identityClientId: IdentityBicep.identityClientId,
-            identityResourceId: IdentityBicep.identityResourceId,
-          },
-        },
-        OutputTemplate: {
-          Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
+        Modules: {
+          identity: await fs.readFile(
+            path.join(bicepTemplateDirectory, IdentityBicepFile.moduleTempalteFilename),
+            ConstantString.UTF8Encoding
+          ),
         },
       },
     };
+
     return ok(result);
+  }
+
+  public async executeUserTask(func: Func, context: PluginContext): Promise<Result> {
+    if (func.method === "migrateV1Project") {
+      return ok(undefined); // Not need to do anything when migrate V1 project
+    }
+    return ok(undefined);
   }
 
   async loadArmTemplate(ctx: PluginContext) {
@@ -236,18 +206,6 @@ export class IdentityPlugin implements Plugin {
       );
       throw error;
     }
-  }
-
-  private syncArmOutput(ctx: PluginContext) {
-    ctx.config.set(Constants.identityName, getArmOutput(ctx, IdentityArmOutput.identityName));
-    ctx.config.set(
-      Constants.identityClientId,
-      getArmOutput(ctx, IdentityArmOutput.identityClientId)
-    );
-    ctx.config.set(
-      Constants.identityResourceId,
-      getArmOutput(ctx, IdentityArmOutput.identityResourceId)
-    );
   }
 
   private loadConfig(ctx: PluginContext) {

@@ -48,20 +48,19 @@ export class Constants {
     },
   };
 
-  static readonly ArmOutput = {
-    frontendEndpoint: "frontendHosting_endpoint",
-    simpleAuthEndpoint: "simpleAuth_endpoint",
-    simpleAuthSkuName: "simpleAuth_skuName",
-    simpleAuthWebAppName: "simpleAuth_webAppName",
-    simpleAuthAppServicePlanName: "simpleAuth_appServicePlanName",
-  };
-
   static readonly provisionModuleTemplateFileName: string = "simpleAuthProvision.template.bicep";
   static readonly configurationModuleTemplateFileName: string =
     "simpleAuthConfiguration.template.bicep";
 
-  static readonly SimpleAuthBicepOutputSkuName: string = "simpleAuthProvision.outputs.skuName";
-  static readonly SimpleAuthBicepOutputEndpoint: string = "simpleAuthProvision.outputs.endpoint";
+  static readonly provisionModuleTemplateFileNameV2: string =
+    "simpleAuthProvision.template.v2.bicep";
+  static readonly configModuleTemplateFileNameV2: string =
+    "simpleAuthConfiguration.template.v2.bicep";
+
+  static readonly SimpleAuthBicepOutputSkuName: string =
+    "provisionOutputs.simpleAuthProvision.outputs.skuName";
+  static readonly SimpleAuthBicepOutputEndpoint: string =
+    "provisionOutputs.simpleAuthProvision.outputs.endpoint";
 
   static readonly SimpleAuthFileName: string = "SimpleAuth.zip";
   static readonly SimpleAuthZipName = (version: string): string =>

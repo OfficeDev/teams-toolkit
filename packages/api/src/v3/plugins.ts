@@ -15,9 +15,9 @@ import {
 export interface InnerLoopPlugin {
   name: string;
   scaffoldOption: OptionItem;
+  addResourceOption: OptionItem;
   runtimeStacks: RuntimeStacks[];
   languages: string[];
-
   scaffoldSourceCode?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 
   //all plugins are built-in plugins: aad, appStudio, localDebug, simpleAuth, bot

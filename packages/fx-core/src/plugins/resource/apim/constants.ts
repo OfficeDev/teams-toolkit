@@ -10,7 +10,7 @@ export class ProjectConstants {
   public static readonly pluginDisplayName: string = "API Management";
   public static readonly configFilePathArmSupported = (envName: string): string =>
     `state.${envName}.json`;
-  public static readonly configFilePath: string = "state.xxx.json";
+  public static readonly configFilePath: string = "env.default.json";
   public static readonly workingDir: string = "openapi";
   public static readonly openApiDocumentFileName: string = "openapi.json";
   public static readonly readMeFileName: string = "README.md";

@@ -819,14 +819,13 @@ async function openMarkdownHandler() {
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
-    showLocalDebugMessage();
     if (await isMigrateFromV1Project(workspacePath)) {
       targetFolder = workspacePath;
     } else if (await isSPFxProject(workspacePath)) {
-      showChangeLocationMessage();
+      showLocalDebugMessage();
       targetFolder = `${workspacePath}/SPFx`;
     } else {
-      showChangeLocationMessage();
+      showLocalDebugMessage();
       const tabFolder = await commonUtils.getProjectRoot(
         workspacePath,
         constants.frontendFolderName
@@ -859,7 +858,6 @@ async function openSampleReadmeHandler() {
   const afterScaffold = globalStateGet("openSampleReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     globalStateUpdate("openSampleReadme", false);
-    showChangeLocationMessage();
     showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
@@ -871,7 +869,14 @@ async function openSampleReadmeHandler() {
   }
 }
 
-async function showChangeLocationMessage() {
+async function showLocalDebugMessage() {
+  const localDebug = {
+    title: StringResources.vsc.handlers.localDebugTitle,
+    run: async (): Promise<void> => {
+      selectAndDebug();
+    },
+  };
+
   const config = {
     title: StringResources.vsc.handlers.configTitle,
     run: async (): Promise<void> => {
@@ -882,50 +887,22 @@ async function showChangeLocationMessage() {
     },
   };
 
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowChangeLocationNotification);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
   vscode.window
     .showInformationMessage(
-      util.format(StringResources.vsc.handlers.configLocationDescription, getWorkspacePath()),
-      config
+      util.format(StringResources.vsc.handlers.localDebugDescription, getWorkspacePath()),
+      config,
+      localDebug
     )
     .then((selection) => {
-      if (selection?.title === StringResources.vsc.handlers.configTitle) {
+      if (selection?.title === StringResources.vsc.handlers.localDebugTitle) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
+        selection.run();
+      } else if (selection?.title === StringResources.vsc.handlers.configTitle) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickChangeLocation);
         selection.run();
       }
     });
-}
-
-async function showLocalDebugMessage() {
-  if (
-    await exp
-      .getExpService()
-      .getTreatmentVariableAsync(
-        TreatmentVariables.VSCodeConfig,
-        TreatmentVariables.ShowLocalDebug,
-        true
-      )
-  ) {
-    const localDebug = {
-      title: StringResources.vsc.handlers.localDebugTitle,
-      run: async (): Promise<void> => {
-        selectAndDebug();
-      },
-    };
-
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
-    vscode.window
-      .showInformationMessage(
-        util.format(StringResources.vsc.handlers.localDebugDescription),
-        localDebug
-      )
-      .then((selection) => {
-        if (selection?.title === StringResources.vsc.handlers.localDebugTitle) {
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
-          selection.run();
-        }
-      });
-  }
 }
 
 export async function openSamplesHandler(args?: any[]) {

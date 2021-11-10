@@ -730,7 +730,7 @@ function handleRestError<T>(
   }
 }
 
-async function checkResourceGroupExistence(
+export async function checkResourceGroupExistence(
   rmClient: ResourceManagementClient,
   resourceGroupName: string,
   subscriptionId: string,

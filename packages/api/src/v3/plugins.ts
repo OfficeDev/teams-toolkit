@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { AzureAccountProvider, FxError, Result, TokenProvider } from "..";
-import { OptionItem } from "../qm";
+import { OptionItem, QTreeNode } from "../qm";
 import { Inputs, Json, Void } from "../types";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
@@ -13,11 +13,18 @@ import {
   TeamsAppLocalResourceProfile,
   TeamsFxResourceProfile,
 } from "./resourceProfile";
-export interface InnerLoopPlugin {
+import { Dependency } from "./solutionModel";
+export interface ScaffoldingPlugin {
   name: string;
-  scaffoldOption: OptionItem;
   runtimeStacks: RuntimeStacks[];
   languages: string[];
+  scaffoldOption: OptionItem;
+
+  /**
+   * return dependent components when activating plugins
+   */
+  getDependencies(ctx: Context, inputs: Inputs): Promise<Result<Dependency[], FxError>>;
+
   scaffoldSourceCode?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 
   //all plugins are built-in plugins: aad, appStudio, localDebug, simpleAuth, bot
@@ -40,13 +47,11 @@ export interface InnerLoopPlugin {
 export interface HostingPlugin {
   name: string;
   provisionOption: OptionItem;
-  runtimeStacks: RuntimeStacks[];
-  dependencies: string[];
+  runtimeStacks?: RuntimeStacks[];
   generateResourceTemplate?: (
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<ResourceTemplate, FxError>>;
-
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,

@@ -390,7 +390,7 @@ describe("Deploy ARM Template to Azure", () => {
       "value": "{{state.fx-resource-aad-app-for-teams.clientSecret}}"
     },
     "envValue": {
-      "value": "{{MOCKED_EXPAND_VAR_TEST}}"
+      "value": "{{$env.MOCKED_EXPAND_VAR_TEST}}"
     }
   }
   }

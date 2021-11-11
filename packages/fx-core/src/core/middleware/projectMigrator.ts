@@ -95,6 +95,7 @@ class EnvConfigName {
   static readonly SqlEndpoint = "sqlEndpoint";
   static readonly SqlResourceId = "sqlResourceId";
   static readonly SqlDataBase = "databaseName";
+  static readonly SqlSkipAddingUser = "skipAddingUser";
   static readonly SkuName = "skuName";
   static readonly AppServicePlanName = "appServicePlanName";
   static readonly StorageAccountName = "storageAccountName";
@@ -436,16 +437,15 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   );
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
+  const configDevJsonFilePath = path.join(fxConfig, "config.dev.json");
+  const envDefaultFilePath = path.join(fx, "env.default.json");
   await fs.copy(path.join(fx, "settings.json"), projectSettings);
-  await ensureProjectSettings(projectSettings, path.join(fx, "env.default.json"));
+  await ensureProjectSettings(projectSettings, envDefaultFilePath);
 
   const appName = await getAppName(projectSettings);
   if (!migrateFromV1) {
     //config.dev.json
-    await fs.writeFile(
-      path.join(fxConfig, "config.dev.json"),
-      JSON.stringify(getConfigDevJson(appName), null, 4)
-    );
+    await fs.writeFile(configDevJsonFilePath, JSON.stringify(getConfigDevJson(appName), null, 4));
   }
 
   // appPackage
@@ -499,6 +499,19 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
       await fs.copy(path.join(fx, "default.userdata"), devUserData);
     }
     await removeExpiredFields(devState, devUserData);
+  }
+
+  // migrate skipAddingSqlUser
+  if (!migrateFromV1) {
+    const configDev = await fs.readJson(configDevJsonFilePath);
+    const envDefault = await fs.readJson(envDefaultFilePath);
+
+    if (envDefault[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlSkipAddingUser]) {
+      configDev["skipAddingSqlUser"] =
+        envDefault[ResourcePlugins.AzureSQL][EnvConfigName.SqlSkipAddingUser];
+    }
+
+    await fs.writeFile(configDevJsonFilePath, JSON.stringify(configDev, null, 4));
   }
 }
 

@@ -658,6 +658,10 @@ describe("Middleware - others", () => {
       try {
         const res = await my.other(inputs);
         assert.isTrue(res.isOk());
+        const configDev = await fs.readJson(
+          path.join(inputs.projectPath, ".fx", "configs", "config.dev.json")
+        );
+        assert.isTrue(configDev["skipAddingSqlUser"]);
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

@@ -254,6 +254,9 @@ export async function addCapability(
       change = true;
       if (cap === TabOptionItem.id) {
         pluginsToScaffold.push(frontendPlugin);
+        pluginsToScaffold.push(
+          Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SimpleAuthPlugin)
+        );
       } else if (
         (cap === BotOptionItem.id || cap === MessageExtensionItem.id) &&
         !pluginsToScaffold.includes(botPlugin)

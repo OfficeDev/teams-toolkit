@@ -5,9 +5,7 @@ import { FxError, Result, PluginContext } from "@microsoft/teamsfx-api";
 
 // WIP: Put the interfaces here temporary to unblock development, they will be moved to the V2 teamsfx-api in the future.
 export interface ArmResourcePlugin {
-  generateArmTemplates?: (
-    ctx: PluginContext
-  ) => Promise<Result<ScaffoldArmTemplateResult, FxError>>;
+  generateArmTemplates?: (ctx: PluginContext) => Promise<Result<ArmTemplateResult, FxError>>;
 }
 
 export interface BicepOrchestrationTemplate {
@@ -36,4 +34,14 @@ export interface BicepOrchestration {
 export interface ScaffoldArmTemplateResult extends Record<string, unknown> {
   Modules?: { [moduleFileName: string]: BicepModule };
   Orchestration: BicepOrchestration;
+}
+
+export interface ArmTemplateResult extends Record<string, unknown> {
+  Provision?: {
+    Orchestration: string;
+    Reference?: Record<string, unknown>;
+    Modules?: { [moduleFileName: string]: string };
+  };
+  Configuration?: { Orchestration: string; Modules?: { [moduleFileName: string]: string } };
+  Parameters?: Record<string, string>;
 }

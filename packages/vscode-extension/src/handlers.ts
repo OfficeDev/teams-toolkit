@@ -31,7 +31,8 @@ import {
   Void,
   Tools,
   AzureSolutionSettings,
-  ConfigFolderName,
+  AppPackageFolderName,
+  BuildFolderName,
   TreeItem,
   TreeCategory,
   LocalEnvironmentName,
@@ -404,14 +405,23 @@ export async function addCapabilityHandler(args: any[]): Promise<Result<null, Fx
   return await runUserTask(func, TelemetryEvent.AddCap, true);
 }
 
-export async function buildPackageHandler(args?: any[]): Promise<Result<null, FxError>> {
+export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
 
   const func: Func = {
     namespace: "fx-solution-azure",
     method: "buildPackage",
+    params: {
+      type: args ? args[0] : "remote",
+    },
   };
-  return await runUserTask(func, TelemetryEvent.Build, false);
+
+  let ignoreEnvInfo = false;
+  if (args && args[0] == "localDebug") {
+    ignoreEnvInfo = true;
+  }
+
+  return await runUserTask(func, TelemetryEvent.Build, ignoreEnvInfo);
 }
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -1616,6 +1626,66 @@ export async function openAdaptiveCardExt(args: any[] = [TelemetryTiggerFrom.Tre
       });
   } else {
     await vscode.commands.executeCommand("workbench.view.extension.cardLists");
+  }
+}
+
+export async function openPreviewManifest(args: any[]): Promise<Result<any, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewManifestFile, getTriggerFromProperty(args));
+
+  const workspacePath = getWorkspacePath();
+  const validProject = isValidProject(workspacePath);
+  if (!validProject) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, InvalidProjectError());
+    return err(InvalidProjectError());
+  }
+
+  let isLocalDebug = false;
+  if (args && args.length > 0) {
+    const filePath = args[0].fsPath;
+    if (filePath && filePath.endsWith("manifest.local.template.json")) {
+      isLocalDebug = true;
+    }
+  }
+
+  let manifestFile;
+  if (isLocalDebug) {
+    const res = await buildPackageHandler(["localDebug"]);
+    if (res.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
+      return err(res.error);
+    }
+    manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.local.json`;
+  } else {
+    const res = await buildPackageHandler(["remote"]);
+    if (res.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
+      return err(res.error);
+    }
+    const inputs = getSystemInputs();
+    const env = await core.getSelectedEnv(inputs);
+    if (env.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, env.error);
+      return err(env.error);
+    }
+    manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env.value}.json`;
+  }
+  if (fs.existsSync(manifestFile)) {
+    workspace.openTextDocument(manifestFile).then((document) => {
+      window.showTextDocument(document);
+    });
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewManifestFile, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
+    return ok(manifestFile);
+  } else {
+    const error = new SystemError(
+      "FileNotFound",
+      util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
+      ExtensionSource
+    );
+    showError(error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, error);
+    return err(error);
   }
 }
 

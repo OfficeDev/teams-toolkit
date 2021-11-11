@@ -88,7 +88,7 @@ const context: any = {
     ...((isArmSupportEnabled()
       ? [
           [
-            "functionAppId",
+            "functionAppResourceId",
             "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Web/sites/ut",
           ],
         ]

@@ -98,16 +98,12 @@ export class HelpLinks {
 }
 
 export class AzureSqlBicep {
-  static readonly sqlEndpoint: string = "azureSqlProvision.outputs.sqlEndpoint";
-  static readonly databaseName: string = "azureSqlProvision.outputs.databaseName";
-}
-
-export class AzureSqlArmOutput {
-  static readonly sqlResourceId: string = "azureSql_sqlResourceId";
-  static readonly sqlEndpoint: string = "azureSql_sqlEndpoint";
-  static readonly databaseName: string = "azureSql_databaseName";
+  static readonly sqlResourceId: string = "provisionOutputs.azureSqlOutput.value.sqlResourceId";
+  static readonly sqlEndpoint: string = "provisionOutputs.azureSqlOutput.value.sqlEndpoint";
+  static readonly databaseName: string = "provisionOutputs.azureSqlOutput.value.databaseName";
 }
 
 export class AzureSqlBicepFile {
   static readonly moduleTemplateFileName: string = "sql.template.bicep";
+  static readonly ProvisionModuleTemplateFileName = "sqlProvision.template.bicep";
 }

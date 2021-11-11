@@ -128,6 +128,7 @@ export enum TelemetryEvent {
   ClickLocalDebug = "click-local-debug",
   ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
+  PreviewManifestFile = "preview-manifest",
 }
 
 export enum TelemetryProperty {

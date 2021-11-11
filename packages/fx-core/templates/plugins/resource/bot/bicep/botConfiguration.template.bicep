@@ -1,59 +1,49 @@
-param botServiceName string
-param botWebAppName string
-param botAadClientId string
+// Auto generated content, please customize files under provision folder
+
 @secure()
-param botAadClientSecret string
-param authLoginUriSuffix string
-param botEndpoint string
-param m365ClientId string
+param provisionParameters object
+param provisionOutputs object
 @secure()
-param m365ClientSecret string
-param m365TenantId string
-param m365OauthAuthorityHost string
-param m365ApplicationIdUri string
-{{#contains 'fx-resource-function' Plugins}}
-param functionEndpoint string
-{{/contains}}
-{{#contains 'fx-resource-azure-sql' Plugins}}
-param sqlDatabaseName string
-param sqlEndpoint string
-{{/contains}}
-{{#contains 'fx-resource-identity' Plugins}}
-param identityClientId string
-{{/contains}}
+param currentAppSettings object
 
-var initiateLoginEndpoint = uri(botEndpoint, authLoginUriSuffix)
+var botWebAppName = split(provisionOutputs.botOutput.value.botWebAppResourceId, '/')[8]
+var m365ClientId = provisionParameters['m365ClientId']
+var m365ClientSecret = provisionParameters['m365ClientSecret']
+var m365TenantId = provisionParameters['m365TenantId']
+var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 
-resource botServicesMsTeamsChannel 'Microsoft.BotService/botServices/channels@2021-03-01' = {
-  location: 'global'
-  name: '${botServiceName}/MsTeamsChannel'
-  properties: {
-    channelName: 'MsTeamsChannel'
-  }
-}
+var botId = provisionParameters['botAadAppClientId']
 
-resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-01' = {
-    name: '${botWebAppName}/appsettings'
-     properties: {
-      BOT_ID: botAadClientId
-      BOT_PASSWORD: botAadClientSecret
-      INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint
-      M365_APPLICATION_ID_URI: m365ApplicationIdUri
-      M365_AUTHORITY_HOST: m365OauthAuthorityHost
-      M365_CLIENT_ID: m365ClientId
-      M365_CLIENT_SECRET: m365ClientSecret
-      M365_TENANT_ID: m365TenantId
-      SCM_DO_BUILD_DURING_DEPLOYMENT: 'true'
-      WEBSITE_NODE_DEFAULT_VERSION: '12.13.0'
-      {{#contains 'fx-resource-function' Plugins}}
-      API_ENDPOINT: functionEndpoint
-      {{/contains}}
-      {{#contains 'fx-resource-azure-sql' Plugins}}
-      SQL_DATABASE_NAME: sqlDatabaseName
-      SQL_ENDPOINT: sqlEndpoint
-      {{/contains}}
-      {{#contains 'fx-resource-identity' Plugins}}
-      IDENTITY_ID: identityClientId
-      {{/contains}}
-     }
+{{#contains 'fx-resource-frontend-hosting' Plugins}}
+{{#notContains 'fx-resource-bot' ../Plugins}}
+var m365ApplicationIdUri = 'api://${ {{~../PluginOutput.fx-resource-frontend-hosting.References.domain~}} }/${m365ClientId}'
+{{/notContains}}
+{{#contains 'fx-resource-bot' ../Plugins}}
+var m365ApplicationIdUri = 'api://${ {{~../PluginOutput.fx-resource-frontend-hosting.References.domain~}} }/botid-${botId}'
+{{/contains}}
+{{/contains}}
+{{#notContains 'fx-resource-frontend-hosting' Plugins}}
+{{#contains 'fx-resource-bot' ../Plugins}}
+var m365ApplicationIdUri = 'api://botid-${botId}'
+{{/contains}}
+{{/notContains}}
+
+resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-15' = {
+  name: '${botWebAppName}/appsettings'
+  properties: union({
+    INITIATE_LOGIN_ENDPOINT: uri(provisionOutputs.botOutput.value.siteEndpoint, 'auth-start.html')
+    M365_AUTHORITY_HOST: m365OauthAuthorityHost
+    M365_CLIENT_ID: m365ClientId
+    M365_CLIENT_SECRET: m365ClientSecret
+    M365_TENANT_ID: m365TenantId
+    M365_APPLICATION_ID_URI: m365ApplicationIdUri
+    {{#contains 'fx-resource-function' Plugins}}
+    API_ENDPOINT: provisionOutputs.functionOutput.value.functionEndpoint
+    {{/contains}}
+    {{#contains 'fx-resource-azure-sql' Plugins}}
+    SQL_DATABASE_NAME: {{../PluginOutput.fx-resource-azure-sql.References.databaseName}}
+    SQL_ENDPOINT: {{../PluginOutput.fx-resource-azure-sql.References.sqlEndpoint}}
+    {{/contains}}
+    IDENTITY_ID: {{PluginOutput.fx-resource-identity.References.identityClientId}}
+  }, currentAppSettings)
 }

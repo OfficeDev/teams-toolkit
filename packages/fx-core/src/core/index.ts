@@ -251,7 +251,7 @@ export class FxCore implements Core {
           name: "",
           version: "1.0.0",
         },
-        version: "1.0.0",
+        version: "2.0.0",
         isFromSample: false,
       };
       ctx.projectSettings = projectSettings;
@@ -273,7 +273,6 @@ export class FxCore implements Core {
         }
         ctx.solutionV2 = solution;
         projectSettings.solutionSettings.name = solution.name;
-        projectSettings.version = "2.0.0";
         const contextV2 = createV2Context(this, projectSettings);
         ctx.contextV2 = contextV2;
         const scaffoldSourceCodeRes = await solution.scaffoldSourceCode(contextV2, inputs);
@@ -934,6 +933,27 @@ export class FxCore implements Core {
     currentStage = Stage.listAllCollaborators;
     inputs.stage = Stage.listAllCollaborators;
     return await ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(true),
+    ContextInjectorMW,
+  ])
+  async getSelectedEnv(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<string | undefined, FxError>> {
+    if (!isMultiEnvEnabled()) {
+      return err(new TaskNotSupportError("getSelectedEnv"));
+    }
+    if (isV2()) {
+      return ok(ctx?.envInfoV2?.envName);
+    } else {
+      return ok(ctx?.solutionContext?.envInfo.envName);
+    }
   }
 
   async _getQuestionsForUserTask(

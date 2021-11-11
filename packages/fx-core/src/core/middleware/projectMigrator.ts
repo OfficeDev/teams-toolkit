@@ -445,7 +445,17 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   const appName = await getAppName(projectSettings);
   if (!migrateFromV1) {
     //config.dev.json
-    await fs.writeFile(configDevJsonFilePath, JSON.stringify(getConfigDevJson(appName), null, 4));
+    const configDev = getConfigDevJson(appName);
+
+    // migrate skipAddingSqlUser
+    const envDefault = await fs.readJson(envDefaultFilePath);
+
+    if (envDefault[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlSkipAddingUser]) {
+      configDev["skipAddingSqlUser"] =
+        envDefault[ResourcePlugins.AzureSQL][EnvConfigName.SqlSkipAddingUser];
+    }
+
+    await fs.writeFile(configDevJsonFilePath, JSON.stringify(configDev, null, 4));
   }
 
   // appPackage
@@ -499,19 +509,6 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
       await fs.copy(path.join(fx, "default.userdata"), devUserData);
     }
     await removeExpiredFields(devState, devUserData);
-  }
-
-  // migrate skipAddingSqlUser
-  if (!migrateFromV1) {
-    const configDev = await fs.readJson(configDevJsonFilePath);
-    const envDefault = await fs.readJson(envDefaultFilePath);
-
-    if (envDefault[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlSkipAddingUser]) {
-      configDev["skipAddingSqlUser"] =
-        envDefault[ResourcePlugins.AzureSQL][EnvConfigName.SqlSkipAddingUser];
-    }
-
-    await fs.writeFile(configDevJsonFilePath, JSON.stringify(configDev, null, 4));
   }
 }
 

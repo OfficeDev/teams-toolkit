@@ -195,18 +195,18 @@ export class FrontendPluginImpl {
       FrontendPathInfo.BicepTemplateRelativeDir
     );
 
-    const provisionFilePath = path.join(bicepTemplateDir, Bicep.ProvisionV2FileName);
+    const provisionFilePath = path.join(bicepTemplateDir, Bicep.ProvisionFileName);
     const moduleProvisionFilePath = path.join(
       bicepTemplateDir,
-      FrontendPathInfo.ModuleProvisionV2FileName
+      FrontendPathInfo.ModuleProvisionFileName
     );
 
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: await fs.readFile(provisionFilePath, ConstantString.UTF8Encoding),
         Reference: {
-          endpoint: FrontendOutputBicepSnippet.Endpoint2,
-          domain: FrontendOutputBicepSnippet.Domain2,
+          endpoint: FrontendOutputBicepSnippet.Endpoint,
+          domain: FrontendOutputBicepSnippet.Domain,
         },
         Modules: {
           frontendHosting: await fs.readFile(moduleProvisionFilePath, ConstantString.UTF8Encoding),

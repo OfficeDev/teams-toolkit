@@ -10,7 +10,7 @@ import { ApimService } from "../../../../src/plugins/resource/apim/services/apim
 import { ApiManagementClient } from "@azure/arm-apimanagement";
 import path from "path";
 import fs from "fs-extra";
-import { mockSolutionUpdateArmTemplatesV2, ResourcePlugins } from "../util";
+import { mockSolutionUpdateArmTemplates, ResourcePlugins } from "../util";
 import { ConstantString } from "../../../../src/common/constants";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { generateFakeServiceClientCredentials } from "../bot/unit/utils";
@@ -75,7 +75,7 @@ describe("apimManager.generateArmTemplates", () => {
       },
     };
 
-    const expectedResult = mockSolutionUpdateArmTemplatesV2(mockedSolutionDataContext, result);
+    const expectedResult = mockSolutionUpdateArmTemplates(mockedSolutionDataContext, result);
 
     const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
 

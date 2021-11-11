@@ -2,14 +2,8 @@
 // Licensed under the MIT license.
 
 import "mocha";
-import * as chai from "chai";
 import * as dotenv from "dotenv";
-import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { AadAppForTeamsPlugin } from "../../../../../src/plugins/resource/aad/index";
-import { TestHelper } from "../helper";
-import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
-import path from "path";
-import * as fs from "fs-extra";
 
 dotenv.config();
 

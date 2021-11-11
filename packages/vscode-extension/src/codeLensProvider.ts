@@ -91,7 +91,7 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
 }
 
 export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider {
-  private manifestPreviewRegex = /\$schema/;
+  private schemaRegex = /\$schema/;
 
   public provideCodeLenses(
     document: vscode.TextDocument
@@ -99,14 +99,13 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
     const codeLenses: vscode.CodeLens[] = [];
     const command = {
       title: "📝Preview",
-      command: "fx-extension.OpenPreviewFile",
+      command: "fx-extension.openPreviewFile",
       arguments: [{ fsPath: document.fileName }],
     };
     codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), command));
-    return codeLenses;
-    /*
+
     const text = document.getText();
-    const regex = new RegExp(this.manifestPreviewRegex);
+    const regex = new RegExp(this.schemaRegex);
     const matches = regex.exec(text);
     if (matches != null) {
       const match = matches[0];
@@ -117,8 +116,15 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
         position,
         new vscode.Position(line.lineNumber, indexOf + match.length)
       );
-      
-      return [];
-    }*/
+      const url = line.text.substring(line.text.indexOf("https"), line.text.length - 2);
+      const schemaCommand = {
+        title: "Open schema",
+        command: "fx-extension.openSchema",
+        arguments: [{ url: url }],
+      };
+      codeLenses.push(new vscode.CodeLens(range, schemaCommand));
+    }
+
+    return codeLenses;
   }
 }

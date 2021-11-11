@@ -235,7 +235,7 @@ export enum SolutionTelemetrySuccess {
 export const SolutionTelemetryComponentName = "solution";
 export const SolutionSource = "Solution";
 
-export class UnauthorizedToCheckResourceGroup extends UserError {
+export class UnauthorizedToCheckResourceGroupError extends UserError {
   constructor(resourceGroupName: string, subscriptionId: string, subscriptionName: string) {
     const subscriptionInfoString =
       subscriptionId + (subscriptionName.length > 0 ? `(${subscriptionName})` : "");
@@ -247,7 +247,7 @@ export class UnauthorizedToCheckResourceGroup extends UserError {
   }
 }
 
-export class FailedToCheckResourceGroupExistence extends UserError {
+export class FailedToCheckResourceGroupExistenceError extends UserError {
   constructor(
     error: unknown,
     resourceGroupName: string,

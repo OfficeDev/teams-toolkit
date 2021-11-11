@@ -34,9 +34,9 @@ import {
   RESOURCE_GROUP_NAME,
   SolutionError,
   SolutionSource,
-  FailedToCheckResourceGroupExistence,
+  FailedToCheckResourceGroupExistenceError,
   SUBSCRIPTION_ID,
-  UnauthorizedToCheckResourceGroup,
+  UnauthorizedToCheckResourceGroupError,
 } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
@@ -702,11 +702,11 @@ function handleRestError<T>(
   // ARM API will return 403 with empty body when users does not have permission to access the resource group
   if (restError.statusCode === 403) {
     return err(
-      new UnauthorizedToCheckResourceGroup(resourceGroupName, subscriptionId, subscriptionName)
+      new UnauthorizedToCheckResourceGroupError(resourceGroupName, subscriptionId, subscriptionName)
     );
   } else {
     return err(
-      new FailedToCheckResourceGroupExistence(
+      new FailedToCheckResourceGroupExistenceError(
         restError,
         resourceGroupName,
         subscriptionId,
@@ -730,7 +730,7 @@ export async function checkResourceGroupExistence(
       return handleRestError(e, resourceGroupName, subscriptionId, subscriptionName);
     } else {
       return err(
-        new FailedToCheckResourceGroupExistence(
+        new FailedToCheckResourceGroupExistenceError(
           e,
           resourceGroupName,
           subscriptionId,

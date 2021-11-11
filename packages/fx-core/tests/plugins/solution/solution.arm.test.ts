@@ -33,6 +33,7 @@ import {
   generateArmTemplate,
   pollDeploymentStatus,
 } from "../../../src/plugins/solution/fx-solution/arm";
+import { ArmTemplateResult } from "../../../src/common/armInterface";
 import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 import { it } from "mocha";
 import path from "path";
@@ -42,10 +43,10 @@ import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { ResourceManagementModels, Deployments } from "@azure/arm-resources";
 import { WebResourceLike, HttpHeaders } from "@azure/ms-rest-js";
 import {
-  mockedAadScaffoldArmResultV2,
-  mockedFehostScaffoldArmResultV2,
-  mockedSimpleAuthScaffoldArmResultV2,
-  mockedBotArmTemplateResult,
+  mockedFehostScaffoldArmResult,
+  mockedSimpleAuthScaffoldArmResult,
+  mockedAadScaffoldArmResult,
+  mockedBotArmTemplateResultFunc,
 } from "./util";
 import * as tools from "../../../src/common/tools";
 import * as cpUtils from "../../../src/common/cpUtils";
@@ -162,15 +163,18 @@ describe("Generate ARM Template for project", () => {
 
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedFehostScaffoldArmResultV2);
+      const res: ArmTemplateResult = mockedFehostScaffoldArmResult();
+      return ok(res);
     });
 
     mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedSimpleAuthScaffoldArmResultV2);
+      const res: ArmTemplateResult = mockedSimpleAuthScaffoldArmResult();
+      return ok(res);
     });
 
     mocker.stub(aadPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedAadScaffoldArmResultV2);
+      const res: ArmTemplateResult = mockedAadScaffoldArmResult();
+      return ok(res);
     });
 
     mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
@@ -257,19 +261,23 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
 
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedFehostScaffoldArmResultV2);
+      const res: ArmTemplateResult = mockedSimpleAuthScaffoldArmResult();
+      return ok(res);
     });
 
     mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedSimpleAuthScaffoldArmResultV2);
+      const res: ArmTemplateResult = mockedFehostScaffoldArmResult();
+      return ok(res);
     });
 
     mocker.stub(aadPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedAadScaffoldArmResultV2);
+      const res: ArmTemplateResult = mockedAadScaffoldArmResult();
+      return ok(res);
     });
 
     mocker.stub(botPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedBotArmTemplateResult);
+      const res: ArmTemplateResult = mockedBotArmTemplateResultFunc();
+      return ok(res);
     });
 
     mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
@@ -289,8 +297,8 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
     "provisionParameters": {
       "value": {
         "resourceBaseName": "mytestappdefa000000",
-        "FrontendParameter": "FrontendParameterValue",
-        "SimpleAuthParameter": "SimpleAuthParameterValue"
+        "SimpleAuthParameter": "SimpleAuthParameterValue",
+        "FrontendParameter": "FrontendParameterValue"
       }
     }
   }
@@ -327,8 +335,8 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
       "value": {
         "resourceBaseName": "mytestappdefa000000",
         "BotParameter": "BotParameterValue",
-        "FrontendParameter": "FrontendParameterValue",
-        "SimpleAuthParameter": "SimpleAuthParameterValue"
+        "SimpleAuthParameter": "SimpleAuthParameterValue",
+        "FrontendParameter": "FrontendParameterValue"
       }
     }
   }
@@ -455,8 +463,8 @@ describe("Deploy ARM Template to Azure", () => {
 
   afterEach(() => {
     envRestore();
-    mockedEnvRestore();
     mocker.restore();
+    mockedEnvRestore();
   });
 
   it("should fail when main.bicep do not exist", async () => {

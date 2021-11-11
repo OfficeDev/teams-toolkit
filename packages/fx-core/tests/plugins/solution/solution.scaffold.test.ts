@@ -38,11 +38,12 @@ import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/Resou
 import Container from "typedi";
 import mockedEnv from "mocked-env";
 import { ArmResourcePlugin } from "../../../src/common/armInterface";
-import { mockedFehostScaffoldArmResultV2, mockedSimpleAuthScaffoldArmResultV2 } from "./util";
+import { mockedFehostScaffoldArmResult, mockedSimpleAuthScaffoldArmResult } from "./util";
 import { getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
 import { MockTools } from "../../core/utils";
 import { assert } from "console";
 import { LocalCrypto } from "../../../src/core/crypto";
+import { ArmTemplateResult } from "../../../src/common/armInterface";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -211,11 +212,13 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedFehostScaffoldArmResultV2);
+      const res: ArmTemplateResult = mockedSimpleAuthScaffoldArmResult();
+      return ok(res);
     });
 
     mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedSimpleAuthScaffoldArmResultV2);
+      const res: ArmTemplateResult = mockedFehostScaffoldArmResult();
+      return ok(res);
     });
 
     const result = await solution.scaffold(mockedCtx);

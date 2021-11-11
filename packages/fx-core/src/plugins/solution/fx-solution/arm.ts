@@ -477,27 +477,35 @@ async function doGenerateArmTemplate(
           const duplicateParam = Object.keys(paramterObj).filter((val) =>
             Object.keys(appendParam).includes(val)
           );
-          if (duplicateParam && duplicateParam.length != 0) {
-            const returnError = `There are some duplicate parameters in ${parameterEnvFilePath}, please modify these parameter names to avoid the conflict: ${duplicateParam}`;
-            returnUserError(
-              returnError,
-              SolutionSource,
-              SolutionError.FailedToGenerateArmTemplates,
-              ArmHelpLink
+          if (duplicateParam && duplicateParam.length > 1) {
+            const returnError = new Error(
+              `There are some duplicate parameters in ${parameterEnvFilePath}, to avoid the conflict, please modify these parameter names except resourceBaseName: ${duplicateParam}`
+            );
+            return err(
+              returnUserError(
+                returnError,
+                SolutionSource,
+                SolutionError.FailedToUpdateArmParameters,
+                ArmHelpLink
+              )
             );
           }
           parameterFile.parameters.provisionParameters.value = Object.assign(
-            paramterObj,
-            appendParam
+            appendParam,
+            paramterObj
           );
           parameterFileContent = JSON.stringify(parameterFile, undefined, 4);
         } catch (error) {
-          const returnError = `There are some errors in the ${parameterEnvFilePath}, please make sure this file is complete before proceeding`;
-          returnUserError(
-            returnError,
-            SolutionSource,
-            SolutionError.FailedToGenerateArmTemplates,
-            ArmHelpLink
+          const returnError = new Error(
+            `There are some errors in the ${parameterEnvFilePath}, please make sure this file is a valid json file before proceeding`
+          );
+          return err(
+            returnUserError(
+              returnError,
+              SolutionSource,
+              SolutionError.FailedToUpdateArmParameters,
+              ArmHelpLink
+            )
           );
         }
       } else {

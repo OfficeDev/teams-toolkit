@@ -617,6 +617,9 @@ describe("Middleware - others", () => {
       assert.strictEqual(parameterObj[ArmParameters.functionServerName], "test");
       assert.strictEqual(parameterObj[ArmParameters.functionStorageName], "test");
       assert.strictEqual(parameterObj[ArmParameters.functionAppName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimServiceName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimProductName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimOauthServerName], "test");
     });
   });
 

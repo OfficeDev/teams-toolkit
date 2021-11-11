@@ -96,6 +96,15 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
   public provideCodeLenses(
     document: vscode.TextDocument
   ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const codeLenses: vscode.CodeLens[] = [];
+    const command = {
+      title: "📝Preview",
+      command: "fx-extension.OpenPreviewFile",
+      arguments: [{ fsPath: document.fileName }],
+    };
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), command));
+    return codeLenses;
+    /*
     const text = document.getText();
     const regex = new RegExp(this.manifestPreviewRegex);
     const matches = regex.exec(text);
@@ -108,14 +117,8 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
         position,
         new vscode.Position(line.lineNumber, indexOf + match.length)
       );
-      const command = {
-        title: "📝Preview",
-        command: "fx-extension.OpenPreviewFile",
-        arguments: [{ fsPath: document.fileName }],
-      };
-      return [new vscode.CodeLens(range, command)];
-    } else {
+      
       return [];
-    }
+    }*/
   }
 }

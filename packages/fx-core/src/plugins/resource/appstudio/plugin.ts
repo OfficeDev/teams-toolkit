@@ -105,7 +105,7 @@ import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import Mustache from "mustache";
-import { getCustomizedKeys, replaceConfigValue } from "./utils/utils";
+import { getCustomizedKeys, getLocalAppName, replaceConfigValue } from "./utils/utils";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 
 export class AppStudioPluginImpl {
@@ -201,13 +201,7 @@ export class AppStudioPluginImpl {
       const manifestString = Mustache.render(JSON.stringify(manifest), view);
       manifest = JSON.parse(manifestString);
     } else {
-      const suffix = "-local-debug";
-      let appName = ctx.projectSettings!.appName;
-      if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
-        appName = appName + suffix;
-      }
-      manifest.name.short = appName;
-
+      manifest.name.short = getLocalAppName(ctx.projectSettings!.appName);
       manifest.id = localTeamsAppID ?? "";
 
       if (manifest.configurableTabs) {
@@ -1723,14 +1717,9 @@ export class AppStudioPluginImpl {
     const appDefinition = this.convertToAppDefinition(updatedManifest, false);
 
     if (isLocalDebug && !isMultiEnvEnabled()) {
-      const suffix = "-local-debug";
-      if (
-        suffix.length + (appDefinition.shortName ? appDefinition.shortName.length : 0) <=
-        TEAMS_APP_SHORT_NAME_MAX_LENGTH
-      ) {
-        appDefinition.shortName = appDefinition.shortName + suffix;
-        appDefinition.appName = appDefinition.shortName;
-      }
+      const appName = getLocalAppName(appDefinition.shortName ?? "");
+      appDefinition.shortName = appName;
+      appDefinition.appName = appName;
     }
 
     return ok([appDefinition, updatedManifest]);

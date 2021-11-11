@@ -129,6 +129,7 @@ import {
 import { flattenConfigJson, newEnvInfo } from "./tools";
 import { getRootDirectory } from "../common/tools";
 import { LocalCrypto } from "./crypto";
+import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -184,6 +185,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    SupportV1ConditionMW(true),
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -249,7 +251,7 @@ export class FxCore implements Core {
           name: "",
           version: "1.0.0",
         },
-        version: "1.0.0",
+        version: "2.0.0",
         isFromSample: false,
       };
       ctx.projectSettings = projectSettings;
@@ -271,7 +273,6 @@ export class FxCore implements Core {
         }
         ctx.solutionV2 = solution;
         projectSettings.solutionSettings.name = solution.name;
-        projectSettings.version = "2.0.0";
         const contextV2 = createV2Context(this, projectSettings);
         ctx.contextV2 = contextV2;
         const scaffoldSourceCodeRes = await solution.scaffoldSourceCode(contextV2, inputs);
@@ -352,6 +353,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    SupportV1ConditionMW(true),
     MigrateConditionHandlerMW,
     QuestionModelMW,
     ContextInjectorMW,
@@ -474,6 +476,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -531,6 +534,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -575,6 +579,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectUpgraderMW,
     ProjectSettingsLoaderMW,
@@ -657,6 +662,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -698,6 +704,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -756,6 +763,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -797,6 +805,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -830,6 +839,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -861,6 +871,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -877,6 +888,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -893,6 +905,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -909,6 +922,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -1026,6 +1040,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     ContextInjectorMW,
@@ -1048,6 +1063,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     ContextInjectorMW,
@@ -1074,6 +1090,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),
     EnvInfoLoaderMW(true),
@@ -1185,6 +1202,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),

@@ -15,6 +15,7 @@ import {
   IComposeExtension,
   IBot,
   AppPackageFolderName,
+  BuildFolderName,
   ArchiveFolderName,
   V1ManifestFileName,
   ConfigMap,
@@ -68,8 +69,6 @@ import {
   LOCAL_BOT_ID,
   BOT_ID,
   REMOTE_MANIFEST,
-  FRONTEND_ENDPOINT_ARM,
-  FRONTEND_DOMAIN_ARM,
   ErrorMessages,
   SOLUTION,
   MANIFEST_TEMPLATE,
@@ -95,13 +94,7 @@ import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import { getTemplatesFolder, isV2 } from "../../..";
 import path from "path";
-import { getArmOutput } from "../utils4v2";
-import {
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-  getAppDirectory,
-  isSPFxProject,
-} from "../../../common";
+import { isMultiEnvEnabled, getAppDirectory, isSPFxProject } from "../../../common";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
@@ -590,7 +583,7 @@ export class AppStudioPluginImpl {
     return undefined;
   }
 
-  public async buildTeamsAppPackage(ctx: PluginContext): Promise<string> {
+  public async buildTeamsAppPackage(ctx: PluginContext, isLocalDebug: boolean): Promise<string> {
     let manifestString: string | undefined = undefined;
 
     if (!ctx.envInfo?.envName) {
@@ -598,18 +591,27 @@ export class AppStudioPluginImpl {
     }
 
     const appDirectory = await getAppDirectory(ctx.root);
-    const zipFileName: string = isMultiEnvEnabled()
-      ? `${ctx.root}/${AppPackageFolderName}/appPackage.${ctx.envInfo.envName}.zip`
-      : `${ctx.root}/${AppPackageFolderName}/appPackage.zip`;
+    let zipFileName: string;
+    if (isMultiEnvEnabled()) {
+      if (isLocalDebug) {
+        zipFileName = `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/appPackage.local.zip`;
+      } else {
+        zipFileName = `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${ctx.envInfo.envName}.zip`;
+      }
+    } else {
+      zipFileName = `${ctx.root}/${AppPackageFolderName}/appPackage.zip`;
+    }
 
     if (isSPFxProject(ctx.projectSettings)) {
-      manifestString = (await fs.readFile(await this.getManifestTemplatePath(ctx.root))).toString();
+      manifestString = (
+        await fs.readFile(await this.getManifestTemplatePath(ctx.root, isLocalDebug))
+      ).toString();
       if (isMultiEnvEnabled()) {
         const view = {
           config: ctx.envInfo.config,
           state: {
             "fx-resource-appstudio": {
-              teamsAppId: await this.getTeamsAppId(ctx, false),
+              teamsAppId: await this.getTeamsAppId(ctx, isLocalDebug),
             },
           },
         };
@@ -621,7 +623,7 @@ export class AppStudioPluginImpl {
         manifestString = JSON.stringify(manifest, null, 4);
       }
     } else {
-      const manifest = await this.getAppDefinitionAndManifest(ctx, false);
+      const manifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
       if (manifest.isOk()) {
         manifestString = JSON.stringify(manifest.value[1]);
       } else {
@@ -671,6 +673,15 @@ export class AppStudioPluginImpl {
 
     if (isMultiEnvEnabled()) {
       await fs.ensureDir(path.dirname(zipFileName));
+
+      const manifestFileName =
+        `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/manifest.` +
+        (isLocalDebug ? "local" : ctx.envInfo.envName) +
+        `.json`;
+      if (await fs.pathExists(manifestFileName)) {
+        await fs.chmod(manifestFileName, 0o777);
+      }
+      await fs.writeFile(manifestFileName, manifestString, { mode: 0o000 });
     }
 
     const zip = new AdmZip();
@@ -971,7 +982,7 @@ export class AppStudioPluginImpl {
       // Build Teams App package
       // Platforms will be checked in buildTeamsAppPackage(ctx)
       await publishProgress?.next(`Building Teams app package in ${appDirectory}.`);
-      const appPackage = await this.buildTeamsAppPackage(ctx);
+      const appPackage = await this.buildTeamsAppPackage(ctx, false);
 
       const appContent = await fs.readFile(appPackage);
       appStudioToken = await ctx.appStudioToken?.getAccessToken();
@@ -1124,22 +1135,8 @@ export class AppStudioPluginImpl {
     webApplicationInfoResource?: string;
     teamsAppId: string;
   }> {
-    let tabEndpoint, tabDomain;
-    if (isArmSupportEnabled()) {
-      // getConfigForCreatingManifest is called in post-provision and validate manifest
-      // only in post stage, we find the value from arm output.
-      // Here is a walk-around way, try to get from arm output first and then get from ctx config.
-      // todo: use the specific function to read config in post stage.
-      tabEndpoint = getArmOutput(ctx, FRONTEND_ENDPOINT_ARM) as string;
-      tabDomain = getArmOutput(ctx, FRONTEND_DOMAIN_ARM) as string;
-      if (!tabEndpoint) {
-        tabEndpoint = this.getTabEndpoint(ctx, localDebug);
-        tabDomain = this.getTabDomain(ctx, localDebug);
-      }
-    } else {
-      tabEndpoint = this.getTabEndpoint(ctx, localDebug);
-      tabDomain = this.getTabDomain(ctx, localDebug);
-    }
+    const tabEndpoint = this.getTabEndpoint(ctx, localDebug);
+    const tabDomain = this.getTabDomain(ctx, localDebug);
     const aadId = this.getAadClientId(ctx, localDebug);
     const botId = this.getBotId(ctx, localDebug);
     const botDomain = this.getBotDomain(ctx, localDebug);

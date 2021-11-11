@@ -81,6 +81,9 @@ type BicepTemplate = {
 };
 
 // @public (undocumented)
+export const BuildFolderName = "build";
+
+// @public (undocumented)
 export const CLIPlatforms: Platform[];
 
 // @public

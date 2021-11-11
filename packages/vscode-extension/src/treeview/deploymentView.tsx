@@ -57,14 +57,6 @@ export class DeploymentView extends React.Component<any, any> {
           command="fx-extension.provision"
         ></TreeItem>
         <TreeItem
-          label="Validate manifest file"
-          tooltip={StringResources.vsc.commandsTreeViewProvider.validateManifestDescription}
-          icon="codicon codicon-checklist"
-          customized={false}
-          disable={this.state.locked}
-          command="fx-extension.validateManifest"
-        ></TreeItem>
-        <TreeItem
           label="Zip Teams metadata package"
           tooltip={StringResources.vsc.commandsTreeViewProvider.buildPackageDescription}
           icon="codicon codicon-package"

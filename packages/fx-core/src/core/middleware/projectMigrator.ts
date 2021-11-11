@@ -99,22 +99,22 @@ class EnvConfigName {
   static readonly StorageAccountName = "storageAccountName";
   static readonly StorageResourceId = "storageResourceId";
   static readonly FuncAppName = "functionAppName";
-  static readonly FunctionId = "functionAppId";
+  static readonly FunctionAppResourceId = "functionAppResourceId";
   static readonly Endpoint = "endpoint";
 }
 
-class ArmParameters {
-  static readonly FEStorageName = "frontendHosting_storageName";
-  static readonly IdentityName = "identity_managedIdentityName";
-  static readonly SQLServer = "azureSql_serverName";
-  static readonly SQLDatabase = "azureSql_databaseName";
-  static readonly SimpleAuthSku = "simpleAuth_sku";
-  static readonly functionServerName = "function_serverfarmsName";
-  static readonly functionStorageName = "function_storageName";
-  static readonly functionAppName = "function_webappName";
-  static readonly botWebAppSku = "bot_webAppSKU";
-  static readonly SimpleAuthWebAppName = "simpleAuth_webAppName";
-  static readonly SimpleAuthServerFarm = "simpleAuth_serverFarmsName";
+export class ArmParameters {
+  static readonly FEStorageName = "frontendHostingStorageName";
+  static readonly IdentityName = "userAssignedIdentityName";
+  static readonly SQLServer = "azureSqlServerName";
+  static readonly SQLDatabase = "azureSqlDatabaseName";
+  static readonly SimpleAuthSku = "simpleAuthSku";
+  static readonly functionServerName = "functionServerfarmsName";
+  static readonly functionStorageName = "functionStorageName";
+  static readonly functionAppName = "functionWebappName";
+  static readonly botWebAppSku = "botWebAppSKU";
+  static readonly SimpleAuthWebAppName = "simpleAuthWebAppName";
+  static readonly SimpleAuthServerFarm = "simpleAuthServerFarmsName";
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -210,13 +210,13 @@ async function getOldProjectInfoForTelemetry(
     const hostType = solutionSettings.hostType;
     const result: { [key: string]: string } = { [TelemetryProperty.HostType]: hostType };
 
-    if (hostType === HostTypeOptionAzure || hostType === HostTypeOptionSPFx) {
+    if (hostType === HostTypeOptionAzure.id || hostType === HostTypeOptionSPFx.id) {
       result[TelemetryProperty.ActivePlugins] = JSON.stringify(
         solutionSettings.activeResourcePlugins
       );
       result[TelemetryProperty.Capabilities] = JSON.stringify(solutionSettings.capabilities);
     }
-    if (hostType === HostTypeOptionAzure) {
+    if (hostType === HostTypeOptionAzure.id) {
       const azureSolutionSettings = solutionSettings as AzureSolutionSettings;
       result[TelemetryProperty.AzureResources] = JSON.stringify(
         azureSolutionSettings.azureResources
@@ -813,7 +813,7 @@ async function updateConfig(ctx: CoreHookContext) {
   }
   if (needUpdate && envConfig[ResourcePlugins.Function]?.[EnvConfigName.FuncAppName]) {
     envConfig[ResourcePlugins.Function][
-      EnvConfigName.FunctionId
+      EnvConfigName.FunctionAppResourceId
     ] = `${configPrefix}/providers/Microsoft.Web/${
       envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]
     }`;
@@ -906,72 +906,60 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
     environmentManager.getDefaultEnvName()
   );
   const targetJson = await fs.readJson(path.join(fxConfig, parameterEnvFileName));
-  const ArmParameter = "parameters";
+  const parameterObj = targetJson["parameters"]["provisionParameters"]["value"];
   // frontend hosting
   if (envConfig[ResourcePlugins.FrontendHosting]?.[EnvConfigName.StorageName]) {
-    targetJson[ArmParameter][ArmParameters.FEStorageName] = {
-      value: envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName],
-    };
+    parameterObj[ArmParameters.FEStorageName] =
+      envConfig[ResourcePlugins.FrontendHosting][EnvConfigName.StorageName];
   }
   // manage identity
   if (envConfig[ResourcePlugins.Identity]?.[EnvConfigName.Identity]) {
-    targetJson[ArmParameter][ArmParameters.IdentityName] = {
-      value: envConfig[ResourcePlugins.Identity][EnvConfigName.Identity],
-    };
+    parameterObj[ArmParameters.IdentityName] =
+      envConfig[ResourcePlugins.Identity][EnvConfigName.Identity];
   }
   // azure SQL
   if (envConfig[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlEndpoint]) {
-    targetJson[ArmParameter][ArmParameters.SQLServer] = {
-      value:
-        envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint].split(
-          ".database.windows.net"
-        )[0],
-    };
+    parameterObj[ArmParameters.SQLServer] =
+      envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlEndpoint].split(
+        ".database.windows.net"
+      )[0];
   }
   if (envConfig[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlDataBase]) {
-    targetJson[ArmParameter][ArmParameters.SQLDatabase] = {
-      value: envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlDataBase],
-    };
+    parameterObj[ArmParameters.SQLDatabase] =
+      envConfig[ResourcePlugins.AzureSQL][EnvConfigName.SqlDataBase];
   }
   // SimpleAuth
   if (envConfig[ResourcePlugins.SimpleAuth]?.[EnvConfigName.SkuName]) {
-    targetJson[ArmParameter][ArmParameters.SimpleAuthSku] = {
-      value: envConfig[ResourcePlugins.SimpleAuth][EnvConfigName.SkuName],
-    };
+    parameterObj[ArmParameters.SimpleAuthSku] =
+      envConfig[ResourcePlugins.SimpleAuth][EnvConfigName.SkuName];
   }
 
   if (envConfig[ResourcePlugins.SimpleAuth]?.[EnvConfigName.Endpoint]) {
     const simpleAuthHost = new URL(envConfig[ResourcePlugins.SimpleAuth]?.[EnvConfigName.Endpoint])
       .hostname;
     const simpleAuthName = simpleAuthHost.split(".")[0];
-    targetJson[ArmParameter][ArmParameters.SimpleAuthWebAppName] = targetJson[ArmParameter][
+    parameterObj[ArmParameters.SimpleAuthWebAppName] = parameterObj[
       ArmParameters.SimpleAuthServerFarm
-    ] = {
-      value: simpleAuthName,
-    };
+    ] = simpleAuthName;
   }
   // Function
   if (envConfig[ResourcePlugins.Function]?.[EnvConfigName.AppServicePlanName]) {
-    targetJson[ArmParameter][ArmParameters.functionServerName] = {
-      value: envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName],
-    };
+    parameterObj[ArmParameters.functionServerName] =
+      envConfig[ResourcePlugins.Function][EnvConfigName.AppServicePlanName];
   }
   if (envConfig[ResourcePlugins.Function]?.[EnvConfigName.StorageAccountName]) {
-    targetJson[ArmParameter][ArmParameters.functionStorageName] = {
-      value: envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName],
-    };
+    parameterObj[ArmParameters.functionStorageName] =
+      envConfig[ResourcePlugins.Function][EnvConfigName.StorageAccountName];
   }
   if (envConfig[ResourcePlugins.Function]?.[EnvConfigName.FuncAppName]) {
-    targetJson[ArmParameter][ArmParameters.functionAppName] = {
-      value: envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName],
-    };
+    parameterObj[ArmParameters.functionAppName] =
+      envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName];
   }
 
   // Bot
   if (envConfig[ResourcePlugins.Bot]?.[EnvConfigName.SkuName]) {
-    targetJson[ArmParameter][ArmParameters.botWebAppSku] = {
-      value: envConfig[ResourcePlugins.Bot]?.[EnvConfigName.SkuName],
-    };
+    parameterObj[ArmParameters.botWebAppSku] =
+      envConfig[ResourcePlugins.Bot]?.[EnvConfigName.SkuName];
   }
   await fs.writeFile(
     path.join(fxConfig, parameterEnvFileName),

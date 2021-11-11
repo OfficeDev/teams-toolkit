@@ -31,6 +31,7 @@ import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
 import { IUserList } from "./interfaces/IAppDefinition";
+import { isMultiEnvEnabled } from "../../../common";
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -107,6 +108,9 @@ export class AppStudioPlugin implements Plugin {
    */
   public async postProvision(ctx: PluginContext): Promise<Result<string, FxError>> {
     const remoteTeamsAppId = await this.appStudioPluginImpl.postProvision(ctx);
+    if (isMultiEnvEnabled()) {
+      await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, false);
+    }
     return ok(remoteTeamsAppId);
   }
 
@@ -176,7 +180,7 @@ export class AppStudioPlugin implements Plugin {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {
-      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx);
+      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, false);
       const builtSuccess = [
         { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
         { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
@@ -241,7 +245,7 @@ export class AppStudioPlugin implements Plugin {
       if (answer === manuallySubmitOption.id) {
         //const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
         try {
-          const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx);
+          const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, false);
           const msg = `Successfully created ${
             ctx.projectSettings!.appName
           } app package file at ${appPackagePath}. Send this to your administrator for approval.`;
@@ -316,6 +320,9 @@ export class AppStudioPlugin implements Plugin {
     const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
     if (localTeamsAppId.isOk()) {
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.localDebug);
+      if (isMultiEnvEnabled()) {
+        await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, true);
+      }
       return localTeamsAppId;
     } else {
       const error = localTeamsAppId.error;

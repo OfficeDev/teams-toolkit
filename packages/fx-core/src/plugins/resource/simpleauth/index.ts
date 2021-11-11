@@ -17,14 +17,14 @@ import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { isArmSupportEnabled } from "../../..";
+import { isArmSupportEnabled, isVsCallingCli } from "../../..";
 import "./v2";
 @Service(ResourcePlugins.SimpleAuthPlugin)
 export class SimpleAuthPlugin implements Plugin {
   name = "fx-resource-simple-auth";
   displayName = "Simple Auth";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    if (solutionSettings?.migrateFromV1) {
+    if (solutionSettings?.migrateFromV1 || isVsCallingCli()) {
       return false;
     }
     const cap = solutionSettings.capabilities || [];

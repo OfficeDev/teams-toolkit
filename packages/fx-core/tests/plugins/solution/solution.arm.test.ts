@@ -44,6 +44,7 @@ import {
   mockedAadScaffoldArmResultV2,
   mockedFehostScaffoldArmResultV2,
   mockedSimpleAuthScaffoldArmResultV2,
+  mockedBotArmTemplateResult,
 } from "./util";
 import * as tools from "../../../src/common/tools";
 import * as cpUtils from "../../../src/common/cpUtils";
@@ -67,6 +68,7 @@ const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin)
   ArmResourcePlugin;
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin & ArmResourcePlugin;
 const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin & ArmResourcePlugin;
+const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin) as Plugin & ArmResourcePlugin;
 
 const baseFolder = "./templates/azure";
 const templatesFolder = "./templates";
@@ -84,6 +86,7 @@ enum PluginId {
   FrontendHosting = "fx-resource-frontend-hosting",
   Identity = "fx-resource-identity",
   SimpleAuth = "fx-resource-simple-auth",
+  BotPlugin = "fx-resource-bot",
 }
 
 function mockSolutionContext(): SolutionContext {
@@ -232,6 +235,85 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
     );
     expect(await fs.readFile(path.join(projectArmBaseFolder, ".gitignore"), fileEncoding)).equals(
       `# ignore ARM template backup folder${os.EOL}/backup`
+    );
+  });
+
+  it("add bot capability on tab app success", async () => {
+    const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
+    mockedCtx.projectSettings = {
+      appName: testAppName,
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
+        capabilities: [TabOptionItem.id],
+      },
+    };
+    mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["default"]));
+
+    // mock plugin behavior
+    mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      return ok(mockedFehostScaffoldArmResultV2);
+    });
+
+    mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      return ok(mockedSimpleAuthScaffoldArmResultV2);
+    });
+
+    mocker.stub(aadPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      return ok(mockedAadScaffoldArmResultV2);
+    });
+
+    mocker.stub(botPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      return ok(mockedBotArmTemplateResult);
+    });
+
+    mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
+
+    const projectArmTemplateFolder = path.join(testFolder, templateFolder);
+    const projectArmParameterFolder = path.join(testFolder, configFolderName);
+    const projectArmBaseFolder = path.join(testFolder, baseFolder);
+    let result = await generateArmTemplate(mockedCtx);
+    expect(result.isOk()).to.be.true;
+    expect(
+      await fs.readFile(path.join(projectArmParameterFolder, parameterFileName), fileEncoding)
+    ).equals(
+      `{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "provisionParameters": {
+      "value": {
+        "resourceBaseName": "mytestappdefa000000",
+        "FrontendParameter": "FrontendParameterValue",
+        "SimpleAuthParameter": "SimpleAuthParameterValue"
+      }
+    }
+  }
+}`
+    );
+    const selectedPlugins: Plugin[] = [botPlugin];
+    result = await generateArmTemplate(mockedCtx, selectedPlugins);
+    expect(result.isOk()).to.be.true;
+    expect(
+      await fs.readFile(path.join(projectArmParameterFolder, parameterFileName), fileEncoding)
+    ).equals(
+      `{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "provisionParameters": {
+      "value": {
+        "resourceBaseName": "mytestappdefa000000",
+        "FrontendParameter": "FrontendParameterValue",
+        "SimpleAuthParameter": "SimpleAuthParameterValue"
+      }
+    }
+  }
+}`
     );
   });
 });

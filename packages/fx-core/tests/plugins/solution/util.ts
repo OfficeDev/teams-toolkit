@@ -207,6 +207,27 @@ export const mockedAadScaffoldArmResult = {
   Orchestration: {},
 };
 
+export const mockedBotArmTemplateResult: ArmTemplateResult = {
+  Provision: {
+    Orchestration: "",
+    Modules: {
+      bot: "Mocked bot Provision content. Module path: {{PluginOutput.fx-resource-simple-auth.Provision.bot.ProvisionPath}}",
+    },
+    Reference: {
+      URI: "Mocked bot URL",
+    },
+  },
+  Configuration: {
+    Orchestration: "",
+    Modules: {
+      bot: "Mocked bot Configuration content, Module path: {{PluginOutput.fx-resource-simple-auth.Configuration.bot.ConfigPath}}",
+    },
+  },
+  Parameters: {
+    BotParameter: "",
+  },
+};
+
 export class MockedLogProvider implements LogProvider {
   async info(message: { content: string; color: Colors }[] | string | any): Promise<boolean> {
     return true;

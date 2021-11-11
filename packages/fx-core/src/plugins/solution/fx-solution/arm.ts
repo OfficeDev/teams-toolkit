@@ -39,10 +39,8 @@ import {
 } from "./constants";
 import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
-import dateFormat from "dateformat";
 import { getTemplatesFolder } from "../../../folder";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
-import { Utils } from "../../resource/frontend/utils";
 import { executeCommand } from "../../../common/cpUtils";
 import { TEAMS_FX_RESOURCE_ID_KEY } from ".";
 import os from "os";
@@ -460,6 +458,54 @@ async function doGenerateArmTemplate(
 
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
+    // Output parameter file
+    const envListResult = await environmentManager.listEnvConfigs(ctx.root);
+    if (envListResult.isErr()) {
+      return err(envListResult.error);
+    }
+    const parameterEnvFolderPath = path.join(ctx.root, configsFolder);
+    await fs.ensureDir(parameterEnvFolderPath);
+    for (const env of envListResult.value) {
+      const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, env);
+      const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
+      let parameterFileContent = "";
+      if (await fs.pathExists(parameterEnvFilePath)) {
+        try {
+          const parameterFile = await fs.readJson(parameterEnvFilePath);
+          const paramterObj = parameterFile.parameters.provisionParameters.value;
+          const appendParam = bicepOrchestrationTemplate.getAppendedParameters();
+          const duplicateParam = Object.keys(paramterObj).filter((val) =>
+            Object.keys(appendParam).includes(val)
+          );
+          if (duplicateParam && duplicateParam.length != 0) {
+            const returnError = `There are some duplicate parameters in ${parameterEnvFilePath}, please modify these parameter names to avoid the conflict: ${duplicateParam}`;
+            returnUserError(
+              returnError,
+              SolutionSource,
+              SolutionError.FailedToGenerateArmTemplates,
+              ArmHelpLink
+            );
+          }
+          parameterFile.parameters.provisionParameters.value = Object.assign(
+            paramterObj,
+            appendParam
+          );
+          parameterFileContent = JSON.stringify(parameterFile, undefined, 4);
+        } catch (error) {
+          const returnError = `There are some errors in the ${parameterEnvFilePath}, please make sure this file is complete before proceeding`;
+          returnUserError(
+            returnError,
+            SolutionSource,
+            SolutionError.FailedToGenerateArmTemplates,
+            ArmHelpLink
+          );
+        }
+      } else {
+        parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
+      }
+      await fs.writeFile(parameterEnvFilePath, parameterFileContent);
+    }
+    // Generate main.bicep, config.bicep, provision.bicep
     const templateFolderPath = path.join(ctx.root, templatesFolder);
     await fs.ensureDir(templateFolderPath);
     await fs.ensureDir(path.join(templateFolderPath, "teamsFx"));
@@ -502,40 +548,15 @@ async function doGenerateArmTemplate(
       path.join(templateFolderPath, bicepOrchestrationConfigFileName),
       bicepOrchestrationConfigContent
     );
-    // Output bicep module files from each resource plugin
+    // Generate module provision bicep files
     for (const module of moduleProvisionFiles) {
-      // module[0] contains relative path to template folder, e.g. "./modules/frontendHosting.bicep"
       const res = bicepOrchestrationTemplate.applyReference(module[1]);
       await fs.appendFile(path.join(templateFolderPath, module[0]), res);
     }
+    // Generate module configuration bicep files
     for (const module of moduleConfigFiles) {
       const res = bicepOrchestrationTemplate.applyReference(module[1]);
       await fs.writeFile(path.join(templateFolderPath, module[0]), res);
-    }
-
-    // Output parameter file
-    const envListResult = await environmentManager.listEnvConfigs(ctx.root);
-    if (envListResult.isErr()) {
-      return err(envListResult.error);
-    }
-    const parameterEnvFolderPath = path.join(ctx.root, configsFolder);
-    await fs.ensureDir(parameterEnvFolderPath);
-    for (const env of envListResult.value) {
-      const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, env);
-      const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
-      let parameterFileContent = "";
-      if (await fs.pathExists(parameterEnvFilePath)) {
-        const parameterFile = await fs.readJson(parameterEnvFilePath);
-        const paramterObj = parameterFile.parameters.provisionParameters.value;
-        parameterFile.parameters.provisionParameters.value = Object.assign(
-          paramterObj,
-          bicepOrchestrationTemplate.getAppendedParameters()
-        );
-        parameterFileContent = JSON.stringify(parameterFile, undefined, 4);
-      } else {
-        parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
-      }
-      await fs.writeFile(parameterEnvFilePath, parameterFileContent);
     }
 
     // Output .gitignore file

@@ -456,7 +456,10 @@ export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
   return await env.openExternal(Uri.parse(cicdGuideLink));
 }
 
-export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
+export async function runCommand(
+  stage: Stage,
+  defaultInputs?: Inputs
+): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<any, FxError> = ok(null);
   let inputs: Inputs | undefined;
@@ -466,7 +469,7 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
       throw checkCoreRes.error;
     }
 
-    inputs = getSystemInputs();
+    inputs = defaultInputs ? defaultInputs : getSystemInputs();
     inputs.stage = stage;
 
     switch (stage) {

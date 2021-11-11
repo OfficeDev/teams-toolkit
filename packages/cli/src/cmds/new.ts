@@ -8,8 +8,22 @@ import fs from "fs-extra";
 import path from "path";
 import { Argv, Options } from "yargs";
 
-import { FxError, err, ok, Result, Question, LogLevel, Stage } from "@microsoft/teamsfx-api";
-import { downloadSampleHook, fetchCodeZip, saveFilesRecursively } from "@microsoft/teamsfx-core";
+import {
+  FxError,
+  err,
+  ok,
+  Result,
+  Question,
+  LogLevel,
+  Stage,
+  OptionItem,
+} from "@microsoft/teamsfx-api";
+import {
+  downloadSampleHook,
+  fetchCodeZip,
+  sampleProvider,
+  saveFilesRecursively,
+} from "@microsoft/teamsfx-core";
 
 import activate from "../activate";
 import * as constants from "../constants";
@@ -127,26 +141,55 @@ class NewTemplete extends YargsCommand {
       return err(NotFoundInputedFolder(folder));
     }
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart);
+
+    const result = await activate();
+    if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
+      return err(result.error);
+    }
+
+    const core = result.value;
+
     const templateName = args["template-name"] as string;
     const template = constants.templates.find(
       (t) => toLocaleLowerCase(t.sampleAppName) === templateName
     )!;
 
-    const sampleAppFolder = path.resolve(folder, template.sampleAppName);
-    if ((await fs.pathExists(sampleAppFolder)) && (await fs.readdir(sampleAppFolder)).length > 0) {
-      CliTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.DownloadSample,
-        ProjectFolderExist(sampleAppFolder)
-      );
-      return err(ProjectFolderExist(sampleAppFolder));
+    const inputs = getSystemInputs();
+    inputs["scratch"] = "no";
+    const options = sampleProvider.SampleCollection.samples
+      .filter((sample) => sample.id === templateName)
+      .map((sample) => {
+        return {
+          id: sample.id,
+          label: sample.title,
+          description: sample.shortDescription,
+          data: sample.link,
+        } as OptionItem;
+      });
+    inputs["samples"] = options[0];
+    inputs["folder"] = folder;
+    const result = await core.createProject(inputs);
+    if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, result.error);
+      return err(result.error);
     }
 
-    const result = await fetchCodeZip(template.sampleAppUrl);
-    if (!result) {
-      throw SampleAppDownloadFailed(template.sampleAppUrl, new Error());
-    }
-    await saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
-    await downloadSampleHook(templateName, sampleAppFolder);
+    const sampleAppFolder = path.resolve(folder, template.sampleAppName);
+    // if ((await fs.pathExists(sampleAppFolder)) && (await fs.readdir(sampleAppFolder)).length > 0) {
+    //   CliTelemetry.sendTelemetryErrorEvent(
+    //     TelemetryEvent.DownloadSample,
+    //     ProjectFolderExist(sampleAppFolder)
+    //   );
+    //   return err(ProjectFolderExist(sampleAppFolder));
+    // }
+
+    // const result = await fetchCodeZip(template.sampleAppUrl);
+    // if (!result) {
+    //   throw SampleAppDownloadFailed(template.sampleAppUrl, new Error());
+    // }
+    // await saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
+    // await downloadSampleHook(templateName, sampleAppFolder);
     CLILogProvider.necessaryLog(
       LogLevel.Info,
       `Downloaded the '${CLILogProvider.white(

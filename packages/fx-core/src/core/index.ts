@@ -66,6 +66,7 @@ import {
   isMultiEnvEnabled,
   mapToJson,
   saveFilesRecursively,
+  getRootDirectory,
 } from "../common/tools";
 import { PluginNames } from "../plugins";
 import { getAllV2ResourcePlugins } from "../plugins/solution/fx-solution/ResourcePluginContainer";
@@ -102,7 +103,11 @@ import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
 import { ProjectMigratorMW } from "./middleware/projectMigrator";
-import { newSolutionContext, ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
+import {
+  loadProjectSettings,
+  newSolutionContext,
+  ProjectSettingsLoaderMW,
+} from "./middleware/projectSettingsLoader";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { QuestionModelMW } from "./middleware/questionModel";
@@ -127,7 +132,6 @@ import {
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
 import { flattenConfigJson, newEnvInfo } from "./tools";
-import { getRootDirectory } from "../common/tools";
 import { LocalCrypto } from "./crypto";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
 
@@ -208,7 +212,7 @@ export class FxCore implements Core {
     const multiEnv = isMultiEnvEnabled();
     if (scratch === ScratchOptionNo.id) {
       // create from sample
-      const downloadRes = await downloadSample(this, inputs);
+      const downloadRes = await downloadSample(this, inputs, ctx);
       if (downloadRes.isErr()) {
         return err(downloadRes.error);
       }
@@ -246,7 +250,7 @@ export class FxCore implements Core {
       }
       const projectSettings: ProjectSettings = {
         appName: appName,
-        projectId: uuid.v4(),
+        projectId: inputs.projectId ? inputs.projectId : uuid.v4(),
         solutionSettings: {
           name: "",
           version: "1.0.0",
@@ -1375,7 +1379,8 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
 }
 export async function downloadSample(
   fxcore: FxCore,
-  inputs: Inputs
+  inputs: Inputs,
+  ctx: CoreHookContext
 ): Promise<Result<string, FxError>> {
   let folder = inputs[QuestionRootFolder.name] as string;
   if (inputs.platform === Platform.VSCode) {
@@ -1402,18 +1407,9 @@ export async function downloadSample(
           });
           fetchRes = await fetchCodeZip(url);
           if (fetchRes !== undefined) {
-            sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, {
-              [TelemetryProperty.SampleAppName]: sample.id,
-              [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-              module: "fx-core",
-            });
             return ok(Void);
           } else return err(FetchSampleError());
         } catch (e) {
-          sendTelemetryErrorEvent(Component.core, TelemetryEvent.DownloadSample, assembleError(e), {
-            [TelemetryProperty.SampleAppName]: sample.id,
-            module: "fx-core",
-          });
           return err(assembleError(e));
         }
       },
@@ -1444,8 +1440,40 @@ export async function downloadSample(
       cancellable: false,
     });
     if (runRes.isOk()) {
+      const loadInputs: Inputs = {
+        ...inputs,
+        projectPath: sampleAppPath,
+      };
+      const projectSettingsRes = await loadProjectSettings(loadInputs, isMultiEnvEnabled());
+      if (projectSettingsRes.isOk()) {
+        const projectSettings = projectSettingsRes.value;
+        // set projectId to sample telemetry
+        projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
+        sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, {
+          [TelemetryProperty.SampleAppName]: sample.id,
+          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+          [TelemetryProperty.ProjectId]: projectSettings.projectId,
+          module: "fx-core",
+        });
+        ctx.projectSettings = projectSettings;
+      } else {
+        sendTelemetryErrorEvent(
+          Component.core,
+          TelemetryEvent.DownloadSample,
+          projectSettingsRes.error,
+          {
+            [TelemetryProperty.SampleAppName]: sample.id,
+            [TelemetryProperty.Success]: TelemetrySuccess.No,
+            module: "fx-core",
+          }
+        );
+      }
       return ok(sampleAppPath);
     } else {
+      sendTelemetryErrorEvent(Component.core, TelemetryEvent.DownloadSample, runRes.error, {
+        [TelemetryProperty.SampleAppName]: sample.id,
+        module: "fx-core",
+      });
       return err(runRes.error);
     }
   }

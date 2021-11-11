@@ -14,8 +14,15 @@ import AzureAccountManager from "../commonlib/azureLogin";
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
 import SharepointTokenInstance from "../commonlib/sharepointLogin";
 import GraphTokenInstance from "../commonlib/graphLogin";
-import { runCommand } from "../handlers";
-import { returnSystemError, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { core, getSystemInputs, runCommand } from "../handlers";
+import {
+  Inputs,
+  OptionItem,
+  returnSystemError,
+  Stage,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import {
   globalStateGet,
   globalStateUpdate,
@@ -158,68 +165,83 @@ export class WebviewPanel {
       [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
       [TelemetryProperty.SampleAppName]: msg.data.appFolder,
     });
-    const folder = await vscode.window.showOpenDialog({
-      canSelectFiles: false,
-      canSelectFolders: true,
-      canSelectMany: false,
-      title: StringResources.vsc.webview.downloadSampleTitle,
-    });
+    const inputs: Inputs = getSystemInputs();
+    inputs.stage = Stage.create;
+    inputs["scratch"] = "no";
+    const options = sampleProvider.SampleCollection.samples
+      .filter((sample) => sample.id === msg.data.appFolder)
+      .map((sample) => {
+        return {
+          id: sample.id,
+          label: sample.title,
+          description: sample.shortDescription,
+          data: sample.link,
+        } as OptionItem;
+      });
+    inputs["samples"] = options[0];
+    const res = await runCommand(Stage.create, inputs);
+    // const folder = await vscode.window.showOpenDialog({
+    //   canSelectFiles: false,
+    //   canSelectFolders: true,
+    //   canSelectMany: false,
+    //   title: StringResources.vsc.webview.downloadSampleTitle,
+    // });
 
-    let downloadSuccess = false;
-    let error = new UserError(
-      ExtensionErrors.UserCancel,
-      StringResources.vsc.webview.invalidFolder,
-      ExtensionSource
-    );
-    if (folder !== undefined) {
-      const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
-      if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
-        error.name = ExtensionErrors.FolderAlreadyExist;
-        error.message = StringResources.vsc.webview.folderExist;
-        vscode.window.showErrorMessage(
-          util.format(StringResources.vsc.webview.folderExistDialogTitle, sampleAppPath)
-        );
-      } else {
-        const progress = VS_CODE_UI.createProgressBar(StringResources.vsc.webview.fetchData, 2);
-        progress.start();
-        try {
-          progress.next(util.format(StringResources.vsc.webview.downloadFrom, msg.data.appUrl));
-          const result = await this.fetchCodeZip(msg.data.appUrl);
-          progress.next(StringResources.vsc.webview.unzipPackage);
-          if (result !== undefined) {
-            await this.saveFilesRecursively(
-              new AdmZip(result.data),
-              msg.data.appFolder,
-              folder[0].fsPath
-            );
-            await this.downloadSampleHook(msg.data.appFolder, sampleAppPath);
-            downloadSuccess = true;
-            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(sampleAppPath));
-            await globalStateUpdate("openSampleReadme", true);
-          } else {
-            error = new SystemError(
-              ExtensionErrors.FetchSampleError,
-              StringResources.vsc.webview.emptyData,
-              ExtensionSource
-            );
-            vscode.window.showErrorMessage(StringResources.vsc.webview.downloadSampleFail);
-          }
-        } catch (e) {
-          error = returnSystemError(e, ExtensionSource, ExtensionErrors.UnknwonError);
-        } finally {
-          progress.end(downloadSuccess);
-        }
-      }
-    }
+    // let downloadSuccess = false;
+    // let error = new UserError(
+    //   ExtensionErrors.UserCancel,
+    //   StringResources.vsc.webview.invalidFolder,
+    //   ExtensionSource
+    // );
+    // if (folder !== undefined) {
+    //   const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
+    //   if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
+    //     error.name = ExtensionErrors.FolderAlreadyExist;
+    //     error.message = StringResources.vsc.webview.folderExist;
+    //     vscode.window.showErrorMessage(
+    //       util.format(StringResources.vsc.webview.folderExistDialogTitle, sampleAppPath)
+    //     );
+    //   } else {
+    //     const progress = VS_CODE_UI.createProgressBar(StringResources.vsc.webview.fetchData, 2);
+    //     progress.start();
+    //     try {
+    //       progress.next(util.format(StringResources.vsc.webview.downloadFrom, msg.data.appUrl));
+    //       const result = await this.fetchCodeZip(msg.data.appUrl);
+    //       progress.next(StringResources.vsc.webview.unzipPackage);
+    //       if (result !== undefined) {
+    //         await this.saveFilesRecursively(
+    //           new AdmZip(result.data),
+    //           msg.data.appFolder,
+    //           folder[0].fsPath
+    //         );
+    //         await this.downloadSampleHook(msg.data.appFolder, sampleAppPath);
+    //         downloadSuccess = true;
+    //         vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(sampleAppPath));
+    //         await globalStateUpdate("openSampleReadme", true);
+    //       } else {
+    //         error = new SystemError(
+    //           ExtensionErrors.FetchSampleError,
+    //           StringResources.vsc.webview.emptyData,
+    //           ExtensionSource
+    //         );
+    //         vscode.window.showErrorMessage(StringResources.vsc.webview.downloadSampleFail);
+    //       }
+    //     } catch (e) {
+    //       error = returnSystemError(e, ExtensionSource, ExtensionErrors.UnknwonError);
+    //     } finally {
+    //       progress.end(downloadSuccess);
+    //     }
+    //   }
+    // }
 
-    if (downloadSuccess) {
+    if (res.isOk()) {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, {
         [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
         [TelemetryProperty.SampleAppName]: msg.data.appFolder,
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       });
     } else {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, error, {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, {
         [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
         [TelemetryProperty.SampleAppName]: msg.data.appFolder,
         [TelemetryProperty.Success]: TelemetrySuccess.No,

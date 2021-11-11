@@ -25,6 +25,7 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   TabOptionItem,
+  BotOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   deployArmTemplates,
@@ -275,8 +276,8 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
 
     const projectArmTemplateFolder = path.join(testFolder, templateFolder);
     const projectArmParameterFolder = path.join(testFolder, configFolderName);
-    const projectArmBaseFolder = path.join(testFolder, baseFolder);
-    let result = await generateArmTemplate(mockedCtx);
+    let selectedPlugins: Plugin[] = [aadPlugin, simpleAuthPlugin, fehostPlugin];
+    let result = await generateArmTemplate(mockedCtx, selectedPlugins);
     expect(result.isOk()).to.be.true;
     expect(
       await fs.readFile(path.join(projectArmParameterFolder, parameterFileName), fileEncoding)
@@ -295,12 +296,29 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
   }
 }`
     );
-    const selectedPlugins: Plugin[] = [botPlugin];
+    expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../provision/bot.bicep"))).to.be
+      .false;
+    expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../teamsFx/bot.bicep"))).to.be
+      .false;
+    selectedPlugins = [botPlugin];
+    mockedCtx.projectSettings = {
+      appName: testAppName,
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
+        capabilities: [TabOptionItem.id, BotOptionItem.id],
+      },
+    };
     result = await generateArmTemplate(mockedCtx, selectedPlugins);
     expect(result.isOk()).to.be.true;
-    expect(
-      await fs.readFile(path.join(projectArmParameterFolder, parameterFileName), fileEncoding)
-    ).equals(
+    const fileContent = await fs.readFile(
+      path.join(projectArmParameterFolder, parameterFileName),
+      fileEncoding
+    );
+    expect(fileContent).equals(
       `{
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
@@ -308,6 +326,7 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
     "provisionParameters": {
       "value": {
         "resourceBaseName": "mytestappdefa000000",
+        "BotParameter": "BotParameterValue",
         "FrontendParameter": "FrontendParameterValue",
         "SimpleAuthParameter": "SimpleAuthParameterValue"
       }
@@ -315,6 +334,10 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
   }
 }`
     );
+    expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../provision/bot.bicep"))).to.be
+      .true;
+    expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../teamsFx/bot.bicep"))).to.be
+      .true;
   });
 });
 
@@ -386,6 +409,9 @@ describe("Deploy ARM Template to Azure", () => {
       >
     ).callsFake((file: number | PathLike): Promise<string> => {
       return fileContent.get(file.toString());
+    });
+    mocker.stub(fs, "appendFile").callsFake(async (path: number | PathLike, data: any) => {
+      fileContent.set(path.toString(), data);
     });
     mocker.stub(fs, "stat").callsFake((filePath: PathLike): Promise<fs.Stats> => {
       if (fileContent.has(filePath.toString())) {

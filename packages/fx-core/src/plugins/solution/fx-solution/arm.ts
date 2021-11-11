@@ -494,7 +494,7 @@ async function doGenerateArmTemplate(
             appendParam,
             paramterObj
           );
-          parameterFileContent = JSON.stringify(parameterFile, undefined, 4);
+          parameterFileContent = JSON.stringify(parameterFile, undefined, 2);
         } catch (error) {
           const returnError = new Error(
             `There are some errors in the ${parameterEnvFilePath}, please make sure this file is a valid json file before proceeding`

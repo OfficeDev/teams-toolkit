@@ -30,7 +30,8 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import _ from "lodash";
 import path from "path";
-import { createV2Context, getTemplatesFolder, newEnvInfo, newProjectSettings } from "../../../src";
+import { getTemplatesFolder, newProjectSettings } from "../../../src";
+import { newEnvInfo } from "../../../src/core/tools";
 import { validManifest } from "./util";
 import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";

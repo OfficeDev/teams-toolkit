@@ -209,7 +209,7 @@ export const mockedAadScaffoldArmResult = {
 
 export const mockedBotArmTemplateResult: ArmTemplateResult = {
   Provision: {
-    Orchestration: "",
+    Orchestration: "Bot Provision module content content and outputs",
     Modules: {
       bot: "Mocked bot Provision content. Module path: {{PluginOutput.fx-resource-simple-auth.Provision.bot.ProvisionPath}}",
     },
@@ -218,13 +218,13 @@ export const mockedBotArmTemplateResult: ArmTemplateResult = {
     },
   },
   Configuration: {
-    Orchestration: "",
+    Orchestration: "Bot Configuration module content and outputs",
     Modules: {
       bot: "Mocked bot Configuration content, Module path: {{PluginOutput.fx-resource-simple-auth.Configuration.bot.ConfigPath}}",
     },
   },
   Parameters: {
-    BotParameter: "",
+    BotParameter: "BotParameterValue",
   },
 };
 

@@ -61,7 +61,6 @@ const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 // constant string
 const resourceBaseName = "resourceBaseName";
 const parameterName = "parameters";
-const stateName = "state";
 const solutionName = "solution";
 
 // Get ARM template content from each resource plugin and output to project folder
@@ -731,13 +730,15 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
   }
 
   // Add environment variable to available variables
-  const processVariables: Record<string, string> = Object.keys(process.env)
-    .filter((key) => !stateName.includes(key))
-    .reduce((obj: Record<string, string>, key: string) => {
+  const processVariables: Record<string, string> = Object.keys(process.env).reduce(
+    (obj: Record<string, string>, key: string) => {
       obj[key] = process.env[key] as string;
       return obj;
-    }, {});
-  Object.assign(availableVariables, processVariables); // The environment variable has higher priority
+    },
+    {}
+  );
+
+  availableVariables["$env"] = processVariables;
 
   return compileHandlebarsTemplateString(parameterContent, availableVariables);
 }

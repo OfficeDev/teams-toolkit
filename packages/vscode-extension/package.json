@@ -483,11 +483,11 @@
       },
       {
         "command": "fx-extension.migrateTeamsTabApp",
-        "title": "Teams: Upgrade Teams JS SDK to extend in Outlook and Office"
+        "title": "Teams: Upgrade Teams JS SDK references to support Outlook and Office apps"
       },
       {
         "command": "fx-extension.migrateTeamsManifest",
-        "title": "Teams: Upgrade Teams manifest to extend in Outlook and Office"
+        "title": "Teams: Upgrade Teams manifest to support Outlook and Office apps"
       }
     ],
     "taskDefinitions": [

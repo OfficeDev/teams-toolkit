@@ -1416,6 +1416,8 @@ export class AppStudioPluginImpl {
       appDefinition.webApplicationInfoResource = appManifest.webApplicationInfo.resource;
     }
 
+    appDefinition.activities = appManifest.activities;
+
     if (!ignoreIcon && appManifest.icons.color) {
       appDefinition.colorIcon = appManifest.icons.color;
     }

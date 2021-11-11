@@ -83,6 +83,9 @@
 /packages/fx-core/src/plugins/resource/simpleauth @KennethBWSong @adashen @formulahendry
 /packages/fx-core/tests/plugins/resource/simpleauth @KennethBWSong @adashen @formulahendry
 
+/packages/fx-core/src/plugins/solution/arm.ts @blackchoey @xzf0587 @dilin-MS @wenytang-ms @adashen
+/packages/fx-core/src/common/armInterface.ts @blackchoey @xzf0587 @dilin-MS @wenytang-ms @adashen
+
 /packages/simpleauth @adashen @blackchoey @wenytang-ms
 
 /packages/function-extension @adashen @blackchoey @dilin-MS

@@ -164,7 +164,7 @@ export function mockedBotArmTemplateResultFunc(): ArmTemplateResult {
     Provision: {
       Orchestration: "Bot Provision module content content and outputs",
       Modules: {
-        bot: "Mocked bot Provision content. Module path: {{PluginOutput.fx-resource-simple-auth.Provision.bot.ProvisionPath}}",
+        bot: "Mocked bot Provision content. simple auth endpoint: {{PluginOutput.fx-resource-simple-auth.References.endpoint}}",
       },
       Reference: {
         URI: "Mocked bot URL",

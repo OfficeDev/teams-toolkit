@@ -472,18 +472,18 @@ async function doGenerateArmTemplate(
       if (await fs.pathExists(parameterEnvFilePath)) {
         try {
           const parameterFile = await fs.readJson(parameterEnvFilePath);
-          const paramterObj = parameterFile.parameters.provisionParameters.value;
+          const parameterObj = parameterFile.parameters.provisionParameters.value;
           const appendParam = bicepOrchestrationTemplate.getAppendedParameters();
-          const duplicateParam = Object.keys(paramterObj).filter((val) =>
+          const duplicateParam = Object.keys(parameterObj).filter((val) =>
             Object.keys(appendParam).includes(val)
           );
-          if (duplicateParam && duplicateParam.length > 1) {
-            const returnError = new Error(
-              `There are some duplicate parameters in ${parameterEnvFilePath}, to avoid the conflict, please modify these parameter names except resourceBaseName: ${duplicateParam}`
+          if (duplicateParam && duplicateParam.length != 0) {
+            const duplicateParamError = new Error(
+              `There are some duplicate parameters in ${parameterEnvFilePath}, to avoid the conflict, please modify these parameter names: ${duplicateParam}`
             );
             return err(
               returnUserError(
-                returnError,
+                duplicateParamError,
                 SolutionSource,
                 SolutionError.FailedToUpdateArmParameters,
                 ArmHelpLink
@@ -491,17 +491,19 @@ async function doGenerateArmTemplate(
             );
           }
           parameterFile.parameters.provisionParameters.value = Object.assign(
-            appendParam,
-            paramterObj
+            parameterObj,
+            appendParam
           );
           parameterFileContent = JSON.stringify(parameterFile, undefined, 2);
         } catch (error) {
-          const returnError = new Error(
-            `There are some errors in the ${parameterEnvFilePath}, please make sure this file is a valid json file before proceeding`
+          const parameterFileError = new Error(
+            `There are some errors in ${parameterEnvFilePath}, please make sure this file is valid. The error message is ${
+              (error as Error).message
+            }`
           );
           return err(
             returnUserError(
-              returnError,
+              parameterFileError,
               SolutionSource,
               SolutionError.FailedToUpdateArmParameters,
               ArmHelpLink
@@ -733,7 +735,11 @@ class BicepOrchestrationContent {
   }
 
   public getAppendedParameters(): Record<string, unknown> {
-    return this.ParameterJsonTemplate;
+    const res = this.ParameterJsonTemplate;
+    if (res.resourceBaseName) {
+      delete res.resourceBaseName;
+    }
+    return res;
   }
 
   public needsGenerateTemplate(): boolean {

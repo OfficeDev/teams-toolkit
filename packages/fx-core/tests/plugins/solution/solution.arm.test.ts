@@ -261,12 +261,12 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
 
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      const res: ArmTemplateResult = mockedSimpleAuthScaffoldArmResult();
+      const res: ArmTemplateResult = mockedFehostScaffoldArmResult();
       return ok(res);
     });
 
     mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      const res: ArmTemplateResult = mockedFehostScaffoldArmResult();
+      const res: ArmTemplateResult = mockedSimpleAuthScaffoldArmResult();
       return ok(res);
     });
 
@@ -297,17 +297,30 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
     "provisionParameters": {
       "value": {
         "resourceBaseName": "mytestappdefa000000",
-        "SimpleAuthParameter": "SimpleAuthParameterValue",
-        "FrontendParameter": "FrontendParameterValue"
+        "FrontendParameter": "FrontendParameterValue",
+        "SimpleAuthParameter": "SimpleAuthParameterValue"
       }
     }
   }
 }`
     );
+    expect(
+      await fs.readFile(
+        path.join(projectArmTemplateFolder, "../provision/frontendHostingProvision.bicep"),
+        fileEncoding
+      )
+    ).equals("Mocked frontend hosting provision module content");
+    expect(
+      await fs.readFile(
+        path.join(projectArmTemplateFolder, "../provision/simpleAuthProvision.bicep"),
+        fileEncoding
+      )
+    ).equals("Mocked simple auth provision module content");
     expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../provision/bot.bicep"))).to.be
       .false;
     expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../teamsFx/bot.bicep"))).to.be
       .false;
+    // Add bot capability
     selectedPlugins = [botPlugin];
     mockedCtx.projectSettings = {
       appName: testAppName,
@@ -334,18 +347,27 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
     "provisionParameters": {
       "value": {
         "resourceBaseName": "mytestappdefa000000",
-        "BotParameter": "BotParameterValue",
+        "FrontendParameter": "FrontendParameterValue",
         "SimpleAuthParameter": "SimpleAuthParameterValue",
-        "FrontendParameter": "FrontendParameterValue"
+        "BotParameter": "BotParameterValue"
       }
     }
   }
 }`
     );
+    expect(
+      await fs.readFile(
+        path.join(projectArmTemplateFolder, "../provision/frontendHostingProvision.bicep"),
+        fileEncoding
+      )
+    ).equals("Mocked frontend hosting provision module content");
     expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../provision/bot.bicep"))).to.be
       .true;
     expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../teamsFx/bot.bicep"))).to.be
       .true;
+    expect(
+      await fs.readFile(path.join(projectArmTemplateFolder, "../provision/bot.bicep"), fileEncoding)
+    ).equals("Mocked bot Provision content. simple auth endpoint: Mocked simple auth endpoint");
   });
 });
 

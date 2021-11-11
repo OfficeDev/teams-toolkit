@@ -47,7 +47,7 @@ import {
   HostTypeOptionSPFx,
   MessageExtensionItem,
 } from "../../plugins/solution/fx-solution/question";
-import { createLocalManifest, createManifest } from "../../plugins/resource/appstudio/plugin";
+import { createManifest } from "../../plugins/resource/appstudio/plugin";
 import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
@@ -57,6 +57,7 @@ import {
   MANIFEST_TEMPLATE,
   REMOTE_MANIFEST,
 } from "../../plugins/resource/appstudio/constants";
+import { getLocalAppName } from "../../plugins/resource/appstudio/utils/utils";
 import {
   Component,
   ProjectMigratorGuideStatus,
@@ -380,7 +381,7 @@ async function generateLocalTemplate(manifestString: string) {
   const manifest: TeamsAppManifest = JSON.parse(manifestString);
   manifest.name.full =
     (manifest.name.full ? manifest.name.full : manifest.name.short) + "-local-debug";
-  manifest.name.short = manifest.name.short.substr(0, 18) + "-local-debug";
+  manifest.name.short = getLocalAppName(manifest.name.short);
   manifest.id = "{{localSettings.teamsApp.teamsAppId}}";
   return manifest;
 }
@@ -474,17 +475,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   }
 
   // generate manifest.local.template.json
-  // TODO: use generateLocalTemplate instead of create
-  const localManifest: TeamsAppManifest = migrateFromV1
-    ? await generateLocalTemplate(JSON.stringify(manifest))
-    : await createLocalManifest(
-        appName,
-        hasFrontend,
-        hasBotCapability,
-        hasMessageExtensionCapability,
-        isSPFx,
-        false
-      );
+  const localManifest: TeamsAppManifest = await generateLocalTemplate(JSON.stringify(manifest));
   const targetLocalManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
   await fs.writeFile(targetLocalManifestFile, JSON.stringify(localManifest, null, 4));
 

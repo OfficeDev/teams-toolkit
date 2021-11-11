@@ -732,7 +732,7 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
   // Add environment variable to available variables
   const processVariables: Record<string, string> = Object.keys(process.env).reduce(
     (obj: Record<string, string>, key: string) => {
-      [key] = process.env[key] as string;
+      obj[key] = process.env[key] as string;
       return obj;
     },
     {}

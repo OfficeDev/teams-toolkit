@@ -38,8 +38,8 @@ interface TestSuite {
 }
 
 enum TestPointOutCome {
-  passed = 3,
-  failed = 2,
+  passed = "passed",
+  failed = "failed",
 }
 
 interface TestPoint {
@@ -475,6 +475,7 @@ async function main() {
       SyncToTestPlan().catch((err: any) => {
         throw err;
       });
+      break;
     }
     case "stat": {
       getTestPlanStat()
@@ -484,6 +485,7 @@ async function main() {
         .catch((err: any) => {
           throw err;
         });
+      break;
     }
   }
 }

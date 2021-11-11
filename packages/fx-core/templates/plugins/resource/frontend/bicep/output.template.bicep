@@ -1,3 +1,6 @@
-output frontendHosting_storageResourceId string = frontendHostingProvision.outputs.resourceId
-output frontendHosting_endpoint string = frontendHostingProvision.outputs.endpoint
-output frontendHosting_domain string = frontendHostingProvision.outputs.domain
+output frontendHostingOutput object = {
+  teamsFxPluginId: 'fx-resource-frontend-hosting'
+  storageResourceId: frontendHostingProvision.outputs.resourceId
+  endpoint: frontendHostingProvision.outputs.endpoint
+  domain: frontendHostingProvision.outputs.domain
+}

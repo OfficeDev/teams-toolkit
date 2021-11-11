@@ -23,7 +23,9 @@ import {
   isArmSupportEnabled,
   isFeatureFlagEnabled,
   isMultiEnvEnabled,
+  getRootDirectory,
 } from "../../src/common/tools";
+import * as tools from "../../src/common/tools";
 import {
   ContextUpgradeError,
   FetchSampleError,
@@ -52,9 +54,7 @@ describe("Other test case", () => {
   });
   it("question: QuestionAppName validation", async () => {
     const inputs: Inputs = { platform: Platform.VSCode };
-    const folder = os.tmpdir();
     let appName = "1234";
-    inputs.folder = folder;
 
     let validRes = await (QuestionAppName.validation as FuncValidation<string>).validFunc(
       appName,
@@ -67,6 +67,8 @@ describe("Other test case", () => {
     );
 
     appName = randomAppName();
+    const folder = os.tmpdir();
+    sandbox.stub(tools, "getRootDirectory").returns(folder);
     const projectPath = path.resolve(folder, appName);
 
     sandbox.stub<any, any>(fs, "pathExists").withArgs(projectPath).resolves(true);
@@ -263,5 +265,28 @@ describe("Other test case", () => {
     assert.isTrue(res2.isErr());
     const res3 = parseTeamsAppTenantId({ abd: "123" });
     assert.isTrue(res3.isErr());
+  });
+
+  it("getRootDirectory", () => {
+    let restore = mockedEnv({
+      [FeatureFlagName.rootDirectory]: undefined,
+    });
+
+    assert.equal(getRootDirectory(), path.join(os.homedir(), "TeamsApps"));
+    restore();
+
+    restore = mockedEnv({
+      [FeatureFlagName.rootDirectory]: "",
+    });
+
+    assert.equal(getRootDirectory(), path.join(os.homedir(), "TeamsApps"));
+    restore();
+
+    restore = mockedEnv({
+      [FeatureFlagName.rootDirectory]: os.tmpdir(),
+    });
+
+    assert.equal(getRootDirectory(), os.tmpdir());
+    restore();
   });
 });

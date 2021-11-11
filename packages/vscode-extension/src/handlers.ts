@@ -31,7 +31,8 @@ import {
   Void,
   Tools,
   AzureSolutionSettings,
-  ConfigFolderName,
+  AppPackageFolderName,
+  BuildFolderName,
   TreeItem,
   TreeCategory,
   LocalEnvironmentName,
@@ -372,7 +373,6 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null
     getTriggerFromProperty(args)
   );
   const result = await runCommand(Stage.migrateV1);
-  await openMarkdownHandler();
   await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
   await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.top", false);
   await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.bottom", false);
@@ -405,14 +405,23 @@ export async function addCapabilityHandler(args: any[]): Promise<Result<null, Fx
   return await runUserTask(func, TelemetryEvent.AddCap, true);
 }
 
-export async function buildPackageHandler(args?: any[]): Promise<Result<null, FxError>> {
+export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
 
   const func: Func = {
     namespace: "fx-solution-azure",
     method: "buildPackage",
+    params: {
+      type: args ? args[0] : "remote",
+    },
   };
-  return await runUserTask(func, TelemetryEvent.Build, false);
+
+  let ignoreEnvInfo = false;
+  if (args && args[0] == "localDebug") {
+    ignoreEnvInfo = true;
+  }
+
+  return await runUserTask(func, TelemetryEvent.Build, ignoreEnvInfo);
 }
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -817,16 +826,16 @@ async function openMarkdownHandler() {
   const afterScaffold = globalStateGet("openReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     await globalStateUpdate("openReadme", false);
-    showChangeLocationMessage();
-    showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
     let targetFolder: string | undefined;
     if (await isMigrateFromV1Project(workspacePath)) {
       targetFolder = workspacePath;
     } else if (await isSPFxProject(workspacePath)) {
+      showLocalDebugMessage();
       targetFolder = `${workspacePath}/SPFx`;
     } else {
+      showLocalDebugMessage();
       const tabFolder = await commonUtils.getProjectRoot(
         workspacePath,
         constants.frontendFolderName
@@ -859,7 +868,6 @@ async function openSampleReadmeHandler() {
   const afterScaffold = globalStateGet("openSampleReadme", false);
   if (afterScaffold && workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     globalStateUpdate("openSampleReadme", false);
-    showChangeLocationMessage();
     showLocalDebugMessage();
     const workspaceFolder = workspace.workspaceFolders[0];
     const workspacePath: string = workspaceFolder.uri.fsPath;
@@ -871,7 +879,14 @@ async function openSampleReadmeHandler() {
   }
 }
 
-async function showChangeLocationMessage() {
+async function showLocalDebugMessage() {
+  const localDebug = {
+    title: StringResources.vsc.handlers.localDebugTitle,
+    run: async (): Promise<void> => {
+      selectAndDebug();
+    },
+  };
+
   const config = {
     title: StringResources.vsc.handlers.configTitle,
     run: async (): Promise<void> => {
@@ -882,50 +897,22 @@ async function showChangeLocationMessage() {
     },
   };
 
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowChangeLocationNotification);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
   vscode.window
     .showInformationMessage(
-      util.format(StringResources.vsc.handlers.configLocationDescription, getWorkspacePath()),
-      config
+      util.format(StringResources.vsc.handlers.localDebugDescription, getWorkspacePath()),
+      config,
+      localDebug
     )
     .then((selection) => {
-      if (selection?.title === StringResources.vsc.handlers.configTitle) {
+      if (selection?.title === StringResources.vsc.handlers.localDebugTitle) {
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
+        selection.run();
+      } else if (selection?.title === StringResources.vsc.handlers.configTitle) {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickChangeLocation);
         selection.run();
       }
     });
-}
-
-async function showLocalDebugMessage() {
-  if (
-    await exp
-      .getExpService()
-      .getTreatmentVariableAsync(
-        TreatmentVariables.VSCodeConfig,
-        TreatmentVariables.ShowLocalDebug,
-        true
-      )
-  ) {
-    const localDebug = {
-      title: StringResources.vsc.handlers.localDebugTitle,
-      run: async (): Promise<void> => {
-        selectAndDebug();
-      },
-    };
-
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ShowLocalDebugNotification);
-    vscode.window
-      .showInformationMessage(
-        util.format(StringResources.vsc.handlers.localDebugDescription),
-        localDebug
-      )
-      .then((selection) => {
-        if (selection?.title === StringResources.vsc.handlers.localDebugTitle) {
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickLocalDebug);
-          selection.run();
-        }
-      });
-  }
 }
 
 export async function openSamplesHandler(args?: any[]) {
@@ -1639,6 +1626,66 @@ export async function openAdaptiveCardExt(args: any[] = [TelemetryTiggerFrom.Tre
       });
   } else {
     await vscode.commands.executeCommand("workbench.view.extension.cardLists");
+  }
+}
+
+export async function openPreviewManifest(args: any[]): Promise<Result<any, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewManifestFile, getTriggerFromProperty(args));
+
+  const workspacePath = getWorkspacePath();
+  const validProject = isValidProject(workspacePath);
+  if (!validProject) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, InvalidProjectError());
+    return err(InvalidProjectError());
+  }
+
+  let isLocalDebug = false;
+  if (args && args.length > 0) {
+    const filePath = args[0].fsPath;
+    if (filePath && filePath.endsWith("manifest.local.template.json")) {
+      isLocalDebug = true;
+    }
+  }
+
+  let manifestFile;
+  if (isLocalDebug) {
+    const res = await buildPackageHandler(["localDebug"]);
+    if (res.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
+      return err(res.error);
+    }
+    manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.local.json`;
+  } else {
+    const res = await buildPackageHandler(["remote"]);
+    if (res.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
+      return err(res.error);
+    }
+    const inputs = getSystemInputs();
+    const env = await core.getSelectedEnv(inputs);
+    if (env.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, env.error);
+      return err(env.error);
+    }
+    manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env.value}.json`;
+  }
+  if (fs.existsSync(manifestFile)) {
+    workspace.openTextDocument(manifestFile).then((document) => {
+      window.showTextDocument(document);
+    });
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PreviewManifestFile, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
+    return ok(manifestFile);
+  } else {
+    const error = new SystemError(
+      "FileNotFound",
+      util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
+      ExtensionSource
+    );
+    showError(error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, error);
+    return err(error);
   }
 }
 

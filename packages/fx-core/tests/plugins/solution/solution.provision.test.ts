@@ -55,6 +55,8 @@ import {
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   WEB_APPLICATION_INFO_SOURCE,
+  UnauthorizedToCheckResourceGroup,
+  FailedToCheckResourceGroupExistence,
 } from "../../../src/plugins/solution/fx-solution/constants";
 import {
   FRONTEND_DOMAIN,
@@ -1065,7 +1067,7 @@ describe("before provision() asking for resource group info", () => {
       );
       // Assert
       expect(result.isErr());
-      expect(result._unsafeUnwrapErr().name === SolutionError.Unauthorized);
+      expect(result._unsafeUnwrapErr()).instanceOf(UnauthorizedToCheckResourceGroup);
     });
 
     it("Network error", async () => {
@@ -1080,7 +1082,24 @@ describe("before provision() asking for resource group info", () => {
       );
       // Assert
       expect(result.isErr());
+      expect(result._unsafeUnwrapErr()).instanceOf(FailedToCheckResourceGroupExistence);
       expect(result._unsafeUnwrapErr().message).to.contain("MockNetworkError");
+    });
+
+    it("Non-Error thrown", async () => {
+      // Arrange
+      upstreamResult = new Err<boolean, Error>("UnexpectedUnknownError" as unknown as Error);
+      // Act
+      const result = await checkResourceGroupExistence(
+        mockRmClient,
+        mockResourceGroupName,
+        mockSubscriptionId,
+        mockSubscriptionName
+      );
+      // Assert
+      expect(result.isErr());
+      expect(result._unsafeUnwrapErr()).instanceOf(FailedToCheckResourceGroupExistence);
+      expect(result._unsafeUnwrapErr().message).to.contain("UnexpectedUnknownError");
     });
   });
 });

@@ -34,6 +34,9 @@ import {
   RESOURCE_GROUP_NAME,
   SolutionError,
   SolutionSource,
+  FailedToCheckResourceGroupExistence,
+  SUBSCRIPTION_ID,
+  UnauthorizedToCheckResourceGroup,
 } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
@@ -49,7 +52,6 @@ import {
 import { getHashedEnv } from "../../../common/tools";
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
-import { SUBSCRIPTION_ID } from ".";
 import { SolutionPlugin } from "../../resource/localdebug/constants";
 import {
   CustomizeResourceGroupType,
@@ -697,34 +699,18 @@ function handleRestError<T>(
   subscriptionId: string,
   subscriptionName: string
 ): Err<T, FxError> {
-  const subscriptionInfoString =
-    subscriptionId + (subscriptionName.length > 0 ? `(${subscriptionName})` : "");
+  // ARM API will return 403 with empty body when users does not have permission to access the resource group
   if (restError.statusCode === 403) {
     return err(
-      returnUserError(
-        new Error(
-          `Unauthorized to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'. Please check your Azure subscription.`
-        ),
-        SolutionSource,
-        SolutionError.Unauthorized
-      )
+      new UnauthorizedToCheckResourceGroup(resourceGroupName, subscriptionId, subscriptionName)
     );
   } else {
-    // Avoid sensitive information like request headers in the error message.
-    const rawErrorString = JSON.stringify({
-      code: restError.code,
-      statusCode: restError.statusCode,
-      body: restError.body,
-      name: restError.name,
-      message: restError.message,
-    });
     return err(
-      returnUserError(
-        new Error(
-          `Failed to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}', raw error: '${rawErrorString}'`
-        ),
-        SolutionSource,
-        SolutionError.FailedToCheckResourceGroupExistence
+      new FailedToCheckResourceGroupExistence(
+        restError,
+        resourceGroupName,
+        subscriptionId,
+        subscriptionName
       )
     );
   }
@@ -740,22 +726,17 @@ export async function checkResourceGroupExistence(
     const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
     return ok(!!checkRes.body);
   } catch (e) {
-    let error;
     if (e instanceof RestError) {
       return handleRestError(e, resourceGroupName, subscriptionId, subscriptionName);
-    } else if (e instanceof Error) {
-      // reuse the original error object to prevent losing the stack info
-      e.message = `Failed to check the existence of resource group '${resourceGroupName}', error: '${e}'`;
-      error = e;
     } else {
-      error = new Error(
-        `Failed to check the existence of resource group '${resourceGroupName}', error: '${JSON.stringify(
-          e
-        )}'`
+      return err(
+        new FailedToCheckResourceGroupExistence(
+          e,
+          resourceGroupName,
+          subscriptionId,
+          subscriptionName
+        )
       );
     }
-    return err(
-      returnUserError(error, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)
-    );
   }
 }

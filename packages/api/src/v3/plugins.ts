@@ -11,7 +11,7 @@ import {
   LocalResource,
   RuntimeStacks,
   TeamsAppLocalResourceProfile,
-  TeamsAppResourceProfile,
+  TeamsFxResourceProfile,
 } from "./resourceProfile";
 export interface InnerLoopPlugin {
   name: string;
@@ -50,7 +50,7 @@ export interface HostingPlugin {
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    appResourceProfile: TeamsAppResourceProfile,
+    appResourceProfile: TeamsFxResourceProfile,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
   deploy?: (

@@ -96,4 +96,4 @@ const solutionSettings: TeamsAppSolutionSettings = {
   },
 };
 
-console.log(solutionSettings);
+// console.log(solutionSettings);

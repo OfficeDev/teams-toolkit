@@ -935,6 +935,27 @@ export class FxCore implements Core {
     return await ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
   }
 
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(true),
+    ContextInjectorMW,
+  ])
+  async getSelectedEnv(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<string | undefined, FxError>> {
+    if (!isMultiEnvEnabled()) {
+      return err(new TaskNotSupportError("getSelectedEnv"));
+    }
+    if (isV2()) {
+      return ok(ctx?.envInfoV2?.envName);
+    } else {
+      return ok(ctx?.solutionContext?.envInfo.envName);
+    }
+  }
+
   async _getQuestionsForUserTask(
     ctx: SolutionContext | v2.Context,
     solution: Solution | v2.SolutionPlugin,

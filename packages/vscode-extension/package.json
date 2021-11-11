@@ -261,6 +261,13 @@
           "group": "teamsfx"
         }
       ],
+      "editor/title": [
+        {
+          "command": "fx-extension.OpenPreviewFile",
+          "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json",
+          "group": "navigation"
+        }
+      ],
       "commandPalette": [
         {
           "command": "fx-extension.signOut",
@@ -460,6 +467,11 @@
         "command": "fx-extension.cicdGuide",
         "title": "CI/CD guide",
         "icon": "$(sync)"
+      },
+      {
+        "command": "fx-extension.OpenPreviewFile",
+        "title": "Preview manifest file",
+        "icon": "$(file-code)"
       },
       {
         "command": "fx-extension.migrateV1Project",

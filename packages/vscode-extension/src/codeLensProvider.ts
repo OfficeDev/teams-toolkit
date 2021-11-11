@@ -89,3 +89,36 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
     return codeLenses;
   }
 }
+
+export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider {
+  private manifestPreviewRegex = /\$schema/;
+
+  public provideCodeLenses(
+    document: vscode.TextDocument
+  ): vscode.ProviderResult<vscode.CodeLens[]> {
+    const codeLenses: vscode.CodeLens[] = [];
+    const command = {
+      title: "📝Preview",
+      command: "fx-extension.OpenPreviewFile",
+      arguments: [{ fsPath: document.fileName }],
+    };
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), command));
+    return codeLenses;
+    /*
+    const text = document.getText();
+    const regex = new RegExp(this.manifestPreviewRegex);
+    const matches = regex.exec(text);
+    if (matches != null) {
+      const match = matches[0];
+      const line = document.lineAt(document.positionAt(matches.index).line);
+      const indexOf = line.text.indexOf(match);
+      const position = new vscode.Position(line.lineNumber, indexOf);
+      const range = new vscode.Range(
+        position,
+        new vscode.Position(line.lineNumber, indexOf + match.length)
+      );
+      
+      return [];
+    }*/
+  }
+}

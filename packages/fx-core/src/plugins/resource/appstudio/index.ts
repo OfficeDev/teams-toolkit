@@ -176,11 +176,14 @@ export class AppStudioPlugin implements Plugin {
    * @param {string} appDirectory - The directory contains manifest.source.json and two images
    * @returns {string} - Path of built appPackage.zip
    */
-  public async buildTeamsPackage(ctx: PluginContext): Promise<Result<string, FxError>> {
+  public async buildTeamsPackage(
+    ctx: PluginContext,
+    isLocalDebug: boolean
+  ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {
-      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, false);
+      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, isLocalDebug);
       const builtSuccess = [
         { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
         { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
@@ -418,7 +421,11 @@ export class AppStudioPlugin implements Plugin {
     if (func.method === "validateManifest") {
       return await this.validateManifest(ctx);
     } else if (func.method === "buildPackage") {
-      return await this.buildTeamsPackage(ctx);
+      if (func.params && func.params.type) {
+        const isLocalDebug = (func.params.type as string) === "localDebug";
+        return await this.buildTeamsPackage(ctx, isLocalDebug);
+      }
+      return await this.buildTeamsPackage(ctx, false);
     } else if (func.method === "getAppDefinitionAndUpdate") {
       if (func.params && func.params.type && func.params.manifest) {
         const isLocalDebug = (func.params.type as string) === "localDebug";

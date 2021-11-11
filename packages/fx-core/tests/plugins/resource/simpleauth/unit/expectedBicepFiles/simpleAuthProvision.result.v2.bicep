@@ -7,7 +7,7 @@ var serverFarmsName = contains(provisionParameters, 'simpleAuthServerFarmsName')
 var webAppName = contains(provisionParameters, 'simpleAuthWebAppName') ? provisionParameters['simpleAuthWebAppName'] : '${resourceBaseName}-simpleAuth-webapp'
 var simpelAuthPackageUri = contains(provisionParameters, 'simpleAuthPackageUri') ? provisionParameters['simpleAuthPackageUri'] : 'https://github.com/OfficeDev/TeamsFx/releases/download/simpleauth@0.1.0/Microsoft.TeamsFx.SimpleAuth_0.1.0.zip'
 
-resource serverFarms 'Microsoft.Web/serverfarms@2020-06-01' = {
+resource serverFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: serverFarmsName
   location: resourceGroup().location
   sku: {
@@ -16,12 +16,13 @@ resource serverFarms 'Microsoft.Web/serverfarms@2020-06-01' = {
   kind: 'app'
 }
 
-resource webApp 'Microsoft.Web/sites@2020-06-01' = {
+resource webApp 'Microsoft.Web/sites@2021-02-01' = {
   kind: 'app'
   name: webAppName
   location: resourceGroup().location
   properties: {
     serverFarmId: serverFarms.id
+    keyVaultReferenceIdentity: userAssignedIdentityId
   }
   identity: {
     type: 'UserAssigned'
@@ -31,7 +32,7 @@ resource webApp 'Microsoft.Web/sites@2020-06-01' = {
   }
 }
 
-resource simpleAuthDeploy 'Microsoft.Web/sites/extensions@2021-01-15' = {
+resource simpleAuthDeploy 'Microsoft.Web/sites/extensions@2021-02-01' = {
   parent: webApp
   name: 'MSDeploy'
   properties: {

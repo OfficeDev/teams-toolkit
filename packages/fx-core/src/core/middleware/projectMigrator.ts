@@ -102,6 +102,12 @@ class EnvConfigName {
   static readonly FuncAppName = "functionAppName";
   static readonly FunctionAppResourceId = "functionAppResourceId";
   static readonly Endpoint = "endpoint";
+  static readonly ServiceName = "serviceName";
+  static readonly ProductId = "productId";
+  static readonly OAuthServerId = "oAuthServerId";
+  static readonly ServiceResourceId = "serviceResourceId";
+  static readonly ProductResourceId = "productResourceId";
+  static readonly AuthServerResourceId = "authServerResourceId";
 }
 
 export class ArmParameters {
@@ -116,6 +122,9 @@ export class ArmParameters {
   static readonly botWebAppSku = "botWebAppSKU";
   static readonly SimpleAuthWebAppName = "simpleAuthWebAppName";
   static readonly SimpleAuthServerFarm = "simpleAuthServerFarmsName";
+  static readonly ApimServiceName = "apimServiceName";
+  static readonly ApimProductName = "apimProductName";
+  static readonly ApimOauthServerName = "apimOauthServerName";
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -783,7 +792,7 @@ async function updateConfig(ctx: CoreHookContext) {
   let needUpdate = false;
   let configPrefix = "";
   if (envConfig[solutionName][subscriptionId] && envConfig[solutionName][resourceGroupName]) {
-    configPrefix = `/subscriptions/${envConfig[solutionName][subscriptionId]}/resourcegroups/${envConfig["solution"][resourceGroupName]}`;
+    configPrefix = `/subscriptions/${envConfig[solutionName][subscriptionId]}/resourcegroups/${envConfig[solutionName][resourceGroupName]}`;
     needUpdate = true;
   }
   if (needUpdate && envConfig[ResourcePlugins.FrontendHosting]?.[EnvConfigName.StorageName]) {
@@ -832,6 +841,28 @@ async function updateConfig(ctx: CoreHookContext) {
     envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityClientId] =
       envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityId];
     delete envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityId];
+  }
+
+  if (needUpdate && envConfig[ResourcePlugins.Apim]?.[EnvConfigName.ServiceName]) {
+    envConfig[ResourcePlugins.Apim][
+      EnvConfigName.ServiceResourceId
+    ] = `${configPrefix}/providers/Microsoft.ApiManagement/service/${
+      envConfig[ResourcePlugins.Apim][EnvConfigName.ServiceName]
+    }`;
+    delete envConfig[ResourcePlugins.Apim][EnvConfigName.ServiceName];
+
+    if (envConfig[ResourcePlugins.Apim]?.[EnvConfigName.ProductId]) {
+      envConfig[ResourcePlugins.Apim][EnvConfigName.ProductResourceId] = `${
+        envConfig[ResourcePlugins.Apim][EnvConfigName.ServiceResourceId]
+      }/products/${envConfig[ResourcePlugins.Apim][EnvConfigName.ProductId]}`;
+      delete envConfig[ResourcePlugins.Apim][EnvConfigName.ProductId];
+    }
+    if (envConfig[ResourcePlugins.Apim]?.[EnvConfigName.OAuthServerId]) {
+      envConfig[ResourcePlugins.Apim][EnvConfigName.AuthServerResourceId] = `${
+        envConfig[ResourcePlugins.Apim][EnvConfigName.ServiceResourceId]
+      }/authorizationServers/${envConfig[ResourcePlugins.Apim][EnvConfigName.OAuthServerId]}`;
+      delete envConfig[ResourcePlugins.Apim][EnvConfigName.OAuthServerId];
+    }
   }
   await fs.writeFile(path.join(fx, "new.env.default.json"), JSON.stringify(envConfig, null, 4));
 }
@@ -952,6 +983,21 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
     parameterObj[ArmParameters.botWebAppSku] =
       envConfig[ResourcePlugins.Bot]?.[EnvConfigName.SkuName];
   }
+
+  // Apim
+  if (envConfig[ResourcePlugins.Apim]?.[EnvConfigName.ServiceName]) {
+    parameterObj[ArmParameters.ApimServiceName] =
+      envConfig[ResourcePlugins.Apim]?.[EnvConfigName.ServiceName];
+  }
+  if (envConfig[ResourcePlugins.Apim]?.[EnvConfigName.ProductId]) {
+    parameterObj[ArmParameters.ApimProductName] =
+      envConfig[ResourcePlugins.Apim]?.[EnvConfigName.ProductId];
+  }
+  if (envConfig[ResourcePlugins.Apim]?.[EnvConfigName.OAuthServerId]) {
+    parameterObj[ArmParameters.ApimOauthServerName] =
+      envConfig[ResourcePlugins.Apim]?.[EnvConfigName.OAuthServerId];
+  }
+
   await fs.writeFile(
     path.join(fxConfig, parameterEnvFileName),
     JSON.stringify(targetJson, null, 4)

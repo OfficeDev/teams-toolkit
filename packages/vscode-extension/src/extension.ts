@@ -36,6 +36,7 @@ import {
   InputConfigsFolderName,
   StatesFolderName,
   AdaptiveCardsFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { registerEnvTreeHandler } from "./envTree";
@@ -236,6 +237,12 @@ export async function activate(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.openPreviewManifest, args)
   );
   context.subscriptions.push(manifestTemplateCodeLensCmd);
+
+  const openConfigCmd = vscode.commands.registerCommand(
+    "fx-extension.openConfig",
+    (cipher, selection) => Correlator.run(handlers.openConfigFile)
+  );
+  context.subscriptions.push(openConfigCmd);
 
   const createNewEnvironment = vscode.commands.registerCommand(
     "fx-extension.addEnvironment",

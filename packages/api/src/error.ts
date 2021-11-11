@@ -390,7 +390,7 @@ export class InvalidProjectError extends UserError {
   constructor(source: string, msg?: string) {
     super({
       source: source,
-      message: `The command only works for project created by Teamsfx Toolkit. ${
+      message: `The command only works for project created by Teams Toolkit. ${
         msg ? ": " + msg : ""
       }`,
     });

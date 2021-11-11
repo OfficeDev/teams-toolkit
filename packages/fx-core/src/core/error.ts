@@ -101,7 +101,7 @@ export function PathNotExistError(path: string): UserError {
 export function InvalidProjectError(msg?: string): UserError {
   return new UserError(
     "InvalidProject",
-    `The command only works for project created by Teamsfx Toolkit. ${msg ? ": " + msg : ""}`,
+    `The command only works for project created by Teams Toolkit. ${msg ? ": " + msg : ""}`,
     CoreSource
   );
 }

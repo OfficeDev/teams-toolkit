@@ -49,13 +49,7 @@ export class Constants {
   };
 
   static readonly provisionModuleTemplateFileName: string = "simpleAuthProvision.template.bicep";
-  static readonly configurationModuleTemplateFileName: string =
-    "simpleAuthConfiguration.template.bicep";
-
-  static readonly provisionModuleTemplateFileNameV2: string =
-    "simpleAuthProvision.template.v2.bicep";
-  static readonly configModuleTemplateFileNameV2: string =
-    "simpleAuthConfiguration.template.v2.bicep";
+  static readonly configModuleTemplateFileName: string = "simpleAuthConfiguration.template.bicep";
 
   static readonly SimpleAuthBicepOutputSkuName: string =
     "provisionOutputs.simpleAuthProvision.outputs.skuName";

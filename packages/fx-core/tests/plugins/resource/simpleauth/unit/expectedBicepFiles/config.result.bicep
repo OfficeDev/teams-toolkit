@@ -1,6 +1,6 @@
 var simpleAuthCurrentAppSettings = list('${provisionOutputs.simpleAuthOutput.value.webAppResourceId}/config/appsettings', '2021-01-15').properties
 
-module teamsFxSimpleAuthConfig './simpleAuthConfig.result.v2.bicep' = {
+module teamsFxSimpleAuthConfig './simpleAuthConfig.result.bicep' = {
   name: 'addTeamsFxSimpleAuthConfiguration'
   params: {
     provisionParameters: provisionParameters

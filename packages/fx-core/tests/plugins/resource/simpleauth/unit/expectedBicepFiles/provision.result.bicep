@@ -1,5 +1,5 @@
 // Resources for Simple Auth
-module simpleAuthProvision './simpleAuthProvision.result.v2.bicep' = {
+module simpleAuthProvision './simpleAuthProvision.result.bicep' = {
   name: 'simpleAuthProvision'
   params: {
     provisionParameters: provisionParameters

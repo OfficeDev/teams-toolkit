@@ -4,7 +4,7 @@ import "mocha";
 import * as chai from "chai";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 
-import { ConstantString, mockSolutionUpdateArmTemplatesV2, ResourcePlugins } from "../../util";
+import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
 import { TeamsBot } from "../../../../../src";
 import * as testUtils from "./utils";
 import path from "path";
@@ -62,7 +62,7 @@ describe("Bot Generates Arm Templates", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const compiledResult = mockSolutionUpdateArmTemplatesV2(
+      const compiledResult = mockSolutionUpdateArmTemplates(
         mockedSolutionDataContext,
         result.value
       );

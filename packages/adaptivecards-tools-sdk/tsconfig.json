@@ -1,0 +1,41 @@
+{
+  "compilerOptions": {
+    "module": "esnext",
+    "outDir": "./lib",
+    "target": "es5",
+    "lib": [
+      "dom"
+    ],
+    "sourceMap": true,
+    "inlineSources": true,
+    "skipLibCheck": true,
+    "strict": false,
+    "forceConsistentCasingInFileNames": true,
+    "esModuleInterop": true,    
+    "moduleResolution": "node",
+    "resolveJsonModule": true,
+    "isolatedModules": true,
+    "jsx": "react",
+    "declaration": true,
+    "declarationDir": "./types",
+    "allowSyntheticDefaultImports": true,
+    "allowJs": true,
+    "declarationMap": true,
+    "importHelpers": true,
+    "alwaysStrict": true,
+    "noUnusedLocals": false, // TODO: temporarily disabled
+    "noUnusedParameters": false, // TODO: temporarily disabled
+    "noImplicitReturns": true,
+    "noFallthroughCasesInSwitch": true,
+    "noEmit": true,
+    "experimentalDecorators": true
+  },
+  "include": [
+    "./src"
+  ],
+  "exclude": [
+    "node_modules",
+    "rollup.config.js",
+    "lib"
+  ]
+}

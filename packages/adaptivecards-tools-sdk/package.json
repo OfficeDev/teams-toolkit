@@ -1,0 +1,36 @@
+{
+  "name": "adaptivecards-tools",
+  "version": "1.0.0",
+  "description": "",
+  "main": "./lib/index.js",
+  "types": "types/index.d.ts",
+  "scripts": {
+    "clean": "rimraf lib types",
+    "clean-build": "npm run clean && npm run build",
+    "build": "rollup -c"
+  },
+  "author": "",
+  "license": "ISC",
+  "devDependencies": {
+    "rollup-plugin-typescript2": "^0.25.3",
+    "@rollup/plugin-commonjs": "^13.0.2",
+    "@rollup/plugin-json": "^4.0.0",
+    "@rollup/plugin-node-resolve": "^8.0.0",
+    "@rollup/plugin-replace": "^2.2.0",
+    "@types/react": "^17.0.14",
+    "@types/markdown-it": "^12.2.1",
+    "rimraf": "^3.0.0",
+    "rollup": "^2.59.0",
+    "rollup-plugin-sourcemaps": "^0.4.2",
+    "rollup-plugin-terser": "^5.1.1",
+    "typescript": "^4.4.2"
+  },
+  "dependencies": {
+    "react": "^17.0.2",
+    "markdown-it": "^12.2.0",
+    "adaptive-expressions": "^4.14.1",
+    "adaptivecards": "^2.10.0-beta.2",
+    "adaptivecards-templating": "^2.1.0",
+    "json-schema-to-typescript": "^10.1.4"
+  }
+}

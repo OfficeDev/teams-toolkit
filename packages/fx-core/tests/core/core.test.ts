@@ -77,21 +77,19 @@ describe("Core basic APIs", () => {
 
   describe("Core's basic APIs", async () => {
     const AllEnvParams = [
-      { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "true" },
-      { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "true" },
+      { TEAMSFX_APIV2: "false", TEAMSFX_ROLLBACK_TO_TOOLKIT_V2: "true" },
+      { TEAMSFX_APIV2: "false" },
+      { TEAMSFX_APIV2: "true", TEAMSFX_ROLLBACK_TO_TOOLKIT_V2: "true" },
+      { TEAMSFX_APIV2: "true" },
     ];
-    const EnableMultiEnvParams = [
-      { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "true" },
-      { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "true" },
-    ];
+    const EnableMultiEnvParams = [{ TEAMSFX_APIV2: "false" }, { TEAMSFX_APIV2: "true" }];
     const DisableMultiEnvParams = [
-      { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "false" },
+      { TEAMSFX_APIV2: "false", TEAMSFX_ROLLBACK_TO_TOOLKIT_V2: "true" },
+      { TEAMSFX_APIV2: "true", TEAMSFX_ROLLBACK_TO_TOOLKIT_V2: "true" },
     ];
     for (const param of AllEnvParams) {
-      describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
+      const isMultiEnvEnabled = param.TEAMSFX_ROLLBACK_TO_TOOLKIT_V2 != "true";
+      describe(`Multi-Env: ${isMultiEnvEnabled}, API V2:${param.TEAMSFX_APIV2}`, () => {
         let mockedEnvRestore: RestoreFn;
         beforeEach(() => {
           sandbox.restore();
@@ -164,9 +162,10 @@ describe("Core basic APIs", () => {
       });
     }
     for (const param of DisableMultiEnvParams) {
-      describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
+      describe(`Multi-Env: false, API V2:${param.TEAMSFX_APIV2}`, () => {
         let mockedEnvRestore: RestoreFn;
         beforeEach(() => {
+          sandbox.restore();
           mockedEnvRestore = mockedEnv(param);
         });
         afterEach(() => {
@@ -178,7 +177,7 @@ describe("Core basic APIs", () => {
       });
     }
     for (const param of EnableMultiEnvParams) {
-      describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
+      describe(`Multi-Env: true, API V2:${param.TEAMSFX_APIV2}`, () => {
         let mockedEnvRestore: RestoreFn;
         beforeEach(() => {
           mockedEnvRestore = mockedEnv(param);

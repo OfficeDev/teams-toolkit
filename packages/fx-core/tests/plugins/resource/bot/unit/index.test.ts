@@ -316,7 +316,7 @@ describe("Teams Bot Resource Plugin", () => {
         .resolves(testUtils.generateFakeTokenCredentialsBase());
       botPluginImpl.config.provision.siteName = "test-site-name";
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_INSIDER_PREVIEW: "0",
+        TEAMSFX_ROLLBACK_TO_TOOLKIT_V2: "1",
       });
 
       // Act

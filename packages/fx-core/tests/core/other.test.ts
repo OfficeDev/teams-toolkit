@@ -182,44 +182,46 @@ describe("Other test case", () => {
   });
 
   it("isArmSupportEnabled: return correct result based on environment variable value", () => {
-    const armSupportFeatureFlagName = "TEAMSFX_INSIDER_PREVIEW";
+    const rollbackToToolkitV2FlagName = FeatureFlagName.RollbackToToolkitV2;
 
     let restore = mockedEnv({
-      [armSupportFeatureFlagName]: undefined,
-    });
-    assert.isFalse(isArmSupportEnabled());
-    restore();
-
-    restore = mockedEnv({
-      [armSupportFeatureFlagName]: "",
-    });
-    assert.isFalse(isArmSupportEnabled());
-    restore();
-
-    restore = mockedEnv({
-      [armSupportFeatureFlagName]: "true",
+      [rollbackToToolkitV2FlagName]: undefined,
     });
     assert.isTrue(isArmSupportEnabled());
+    restore();
+
+    restore = mockedEnv({
+      [rollbackToToolkitV2FlagName]: "",
+    });
+    assert.isTrue(isArmSupportEnabled());
+    restore();
+
+    restore = mockedEnv({
+      [rollbackToToolkitV2FlagName]: "true",
+    });
+    assert.isFalse(isArmSupportEnabled());
     restore();
   });
 
   it("isMultiEnvEnabled: return correct result based on environment variable value", () => {
+    const rollbackToToolkitV2FlagName = FeatureFlagName.RollbackToToolkitV2;
+
     let restore = mockedEnv({
-      [FeatureFlagName.InsiderPreview]: undefined,
-    });
-    assert.isFalse(isMultiEnvEnabled());
-    restore();
-
-    restore = mockedEnv({
-      [FeatureFlagName.InsiderPreview]: "",
-    });
-    assert.isFalse(isMultiEnvEnabled());
-    restore();
-
-    restore = mockedEnv({
-      [FeatureFlagName.InsiderPreview]: "true",
+      [rollbackToToolkitV2FlagName]: undefined,
     });
     assert.isTrue(isMultiEnvEnabled());
+    restore();
+
+    restore = mockedEnv({
+      [rollbackToToolkitV2FlagName]: "",
+    });
+    assert.isTrue(isMultiEnvEnabled());
+    restore();
+
+    restore = mockedEnv({
+      [rollbackToToolkitV2FlagName]: "true",
+    });
+    assert.isFalse(isMultiEnvEnabled());
     restore();
   });
 

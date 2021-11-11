@@ -91,7 +91,7 @@ describe("Middleware - ProjectSettingsWriterMW", () => {
       myMethod: [ContextInjectorMW, ProjectSettingsWriterMW],
     });
     const my = new MyClass();
-    let mockedEnvRestore = mockedEnv({ TEAMSFX_INSIDER_PREVIEW: "false" });
+    let mockedEnvRestore = mockedEnv({ TEAMSFX_ROLLBACK_TO_TOOLKIT_V2: "true" });
     {
       await my.myMethod(inputs);
       const content: string = fileMap.get(settingsFileV1);
@@ -99,7 +99,7 @@ describe("Middleware - ProjectSettingsWriterMW", () => {
       assert.deepEqual(mockProjectSettings, settingsInFile);
     }
     mockedEnvRestore();
-    mockedEnvRestore = mockedEnv({ TEAMSFX_INSIDER_PREVIEW: "true" });
+    mockedEnvRestore = mockedEnv({ TEAMSFX_ROLLBACK_TO_TOOLKIT_V2: "false" });
     {
       await my.myMethod(inputs);
       const content: string = fileMap.get(settingsFileV2);

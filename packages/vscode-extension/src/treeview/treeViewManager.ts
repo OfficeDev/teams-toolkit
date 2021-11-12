@@ -131,6 +131,15 @@ class TreeViewManager {
         { name: "type-hierarchy", custom: false }
       ),
       new TreeViewCommand(
+        StringResources.vsc.commandsTreeViewProvider.validateManifestTitleNew,
+        StringResources.vsc.commandsTreeViewProvider.validateManifestDescription,
+        "fx-extension.validateManifest",
+        vscode.TreeItemCollapsibleState.None,
+        undefined,
+        undefined,
+        { name: "checklist", custom: false }
+      ),
+      new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.buildPackageTitleNew,
         StringResources.vsc.commandsTreeViewProvider.buildPackageDescription,
         "fx-extension.build",

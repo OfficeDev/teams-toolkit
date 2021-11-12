@@ -436,7 +436,7 @@ describe("Core basic APIs", () => {
       platform: Platform.CLI,
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
-      [CoreQuestionNames.Samples]: sampleOption,
+      [CoreQuestionNames.Samples]: sampleOption.id,
       stage: Stage.create,
     };
     sandbox

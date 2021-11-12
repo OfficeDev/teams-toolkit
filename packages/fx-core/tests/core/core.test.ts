@@ -173,7 +173,7 @@ describe("Core basic APIs", () => {
           mockedEnvRestore();
         });
         it("create from sample", async () => {
-          await case2();
+          await createFromSample();
         });
       });
     }
@@ -428,7 +428,7 @@ describe("Core basic APIs", () => {
     }
   }
 
-  async function case2() {
+  async function createFromSample() {
     const sampleOption = SampleSelect.staticOptions[0] as OptionItem;
     appName = sampleOption.id;
     projectPath = path.resolve(os.tmpdir(), appName);
@@ -473,9 +473,12 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = { platform: Platform.CLI };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk() && res.value === projectPath);
+      assert.isTrue(inputs.projectId !== undefined);
+      assert.isTrue(inputs.projectPath === projectPath);
+      expectedInputs.projectId = inputs.projectId;
+      expectedInputs.projectPath = inputs.projectPath;
       assert.deepEqual(expectedInputs, inputs);
       inputs.projectPath = projectPath;
-
       const projectSettingsResult = await loadProjectSettings(
         inputs,
         commonTools.isMultiEnvEnabled()

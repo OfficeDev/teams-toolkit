@@ -105,7 +105,7 @@ export default class New extends YargsCommand {
   }
 }
 
-export class NewTemplate extends YargsCommand {
+class NewTemplate extends YargsCommand {
   public readonly commandHead = `template`;
   public readonly command = `${this.commandHead} <template-name>`;
   public readonly description = "Create an app from an existing template.";

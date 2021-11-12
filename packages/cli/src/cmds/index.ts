@@ -7,7 +7,7 @@ import { Argv } from "yargs";
 
 import { YargsCommand } from "../yargsCommand";
 import Account from "./account";
-import New, { NewTemplate } from "./new";
+import New from "./new";
 import Capability from "./capability";
 import Resource from "./resource";
 import Provision from "./provision";
@@ -26,7 +26,6 @@ import Env from "./env";
 export const commands: YargsCommand[] = [
   new Account(),
   new New(),
-  new NewTemplate(),
   new Capability(),
   new Resource(),
   new Provision(),

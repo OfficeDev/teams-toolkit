@@ -142,13 +142,13 @@ class NewTemplete extends YargsCommand {
     }
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart);
 
-    const result = await activate();
-    if (result.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
-      return err(result.error);
+    const activeRes = await activate();
+    if (activeRes.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, activeRes.error);
+      return err(activeRes.error);
     }
 
-    const core = result.value;
+    const core = activeRes.value;
 
     const templateName = args["template-name"] as string;
     const template = constants.templates.find(

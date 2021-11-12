@@ -48,7 +48,7 @@ import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import * as uuid from "uuid";
-import { environmentManager } from "..";
+import { environmentManager, sampleProvider } from "..";
 import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
@@ -1395,13 +1395,19 @@ export async function downloadSample(
       folder = getRootDirectory();
       await fs.ensureDir(folder);
     }
-    const sample = inputs[CoreQuestionNames.Samples] as OptionItem;
-    if (!(sample && sample.data && folder)) {
+    const sampleId = inputs[CoreQuestionNames.Samples] as string;
+    if (!(sampleId && folder)) {
       throw InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs);
     }
-    if (sample.id) telemetryProperties[TelemetryProperty.SampleAppName] = sample.id;
-    const url = sample.data as string;
-    const sampleId = sample.id;
+    telemetryProperties[TelemetryProperty.SampleAppName] = sampleId;
+    const samples = sampleProvider.SampleCollection.samples.filter(
+      (sample) => sample.id.toLowerCase() === sampleId.toLowerCase()
+    );
+    if (samples.length === 0) {
+      throw InvalidInputError(`invalid sample id: '${sampleId}'`, inputs);
+    }
+    const sample = samples[0];
+    const url = sample.link as string;
     const sampleAppPath = path.resolve(folder, sampleId);
     if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
       throw ProjectFolderExistError(sampleAppPath);

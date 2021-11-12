@@ -158,28 +158,12 @@ class NewTemplate extends YargsCommand {
     const templateName = args["template-name"] as string;
     const inputs = getSystemInputs();
     inputs["scratch"] = "no";
-    const options = sampleProvider.SampleCollection.samples
-      .filter((sample) => toLocaleLowerCase(sample.id) === toLocaleLowerCase(templateName))
-      .map((sample) => {
-        return {
-          id: sample.id,
-          label: sample.title,
-          description: sample.shortDescription,
-          data: sample.link,
-        } as OptionItem;
-      });
     const properties: any = {
       [TelemetryProperty.SampleName]: templateName,
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
       module: "cli",
     };
-    if (options.length === 0) {
-      const error = new InvalidTemplateName(templateName);
-      properties[TelemetryProperty.Success] = TelemetrySuccess.No;
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, error, properties);
-      return err(error);
-    }
-    inputs["samples"] = options[0];
+    inputs["samples"] = templateName;
     inputs["folder"] = folder;
     const result = await core.createProject(inputs);
     if (inputs.projectId) {

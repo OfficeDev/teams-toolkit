@@ -1,52 +1,40 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
-import * as vscode from "vscode";
-import { ext } from "../extensionVariables";
-import { Commands } from "./Commands";
-import axios from "axios";
-import * as AdmZip from "adm-zip";
-import * as fs from "fs-extra";
-import * as uuid from "uuid";
-import { glob } from "glob";
-import AzureAccountManager from "../commonlib/azureLogin";
-import AppStudioTokenInstance from "../commonlib/appStudioLogin";
-import SharepointTokenInstance from "../commonlib/sharepointLogin";
-import GraphTokenInstance from "../commonlib/graphLogin";
-import { core, getSystemInputs, runCommand } from "../handlers";
+import { Inputs, Stage } from "@microsoft/teamsfx-api";
 import {
-  Inputs,
-  OptionItem,
-  returnSystemError,
-  Stage,
-  SystemError,
-  UserError,
-} from "@microsoft/teamsfx-api";
-import {
+  Correlator,
   globalStateGet,
   globalStateUpdate,
-  Correlator,
   sampleProvider,
 } from "@microsoft/teamsfx-core";
-import { PanelType } from "./PanelType";
+import * as AdmZip from "adm-zip";
+import axios from "axios";
 import { execSync } from "child_process";
-import { isMacOS } from "../utils/commonUtils";
+import * as fs from "fs-extra";
+import { glob } from "glob";
+import * as path from "path";
+import * as uuid from "uuid";
+import * as vscode from "vscode";
+import AppStudioTokenInstance from "../commonlib/appStudioLogin";
+import AzureAccountManager from "../commonlib/azureLogin";
+import GraphTokenInstance from "../commonlib/graphLogin";
+import SharepointTokenInstance from "../commonlib/sharepointLogin";
+import { ext } from "../extensionVariables";
+import { getSystemInputs, runCommand } from "../handlers";
+import * as StringResources from "../resources/Strings.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
+  AccountType,
   TelemetryEvent,
   TelemetryProperty,
-  TelemetryTiggerFrom,
   TelemetrySuccess,
-  AccountType,
+  TelemetryTiggerFrom,
 } from "../telemetry/extTelemetryEvents";
-import { ExtensionErrors, ExtensionSource } from "../error";
-import * as StringResources from "../resources/Strings.json";
-import * as util from "util";
-import { VS_CODE_UI } from "../extension";
-import { exp } from "../exp/index";
-import { TreatmentVariables, TreatmentVariableValue } from "../exp/treatmentVariables";
+import { isMacOS } from "../utils/commonUtils";
+import { Commands } from "./Commands";
 import { EventMessages } from "./messages";
+import { PanelType } from "./PanelType";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -169,17 +157,7 @@ export class WebviewPanel {
     const inputs: Inputs = getSystemInputs();
     inputs.stage = Stage.create;
     inputs["scratch"] = "no";
-    const options = sampleProvider.SampleCollection.samples
-      .filter((sample) => sample.id === msg.data.appFolder)
-      .map((sample) => {
-        return {
-          id: sample.id,
-          label: sample.title,
-          description: sample.shortDescription,
-          data: sample.link,
-        } as OptionItem;
-      });
-    inputs["samples"] = options[0];
+    inputs["samples"] = msg.data.appFolder;
     const res = await runCommand(Stage.create, inputs);
     if (inputs.projectId) {
       props[TelemetryProperty.ProjectId] = inputs.projectId;

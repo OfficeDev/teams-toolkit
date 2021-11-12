@@ -463,7 +463,7 @@ describe("Core basic APIs", () => {
             });
           }
           if (config.name === CoreQuestionNames.Samples) {
-            return ok({ type: "success", result: sampleOption });
+            return ok({ type: "success", result: sampleOption.id });
           }
           throw err(InvalidInputError("invalid question"));
         }

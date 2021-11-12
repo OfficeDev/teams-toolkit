@@ -217,6 +217,7 @@ export class FxCore implements Core {
         return err(downloadRes.error);
       }
       projectPath = downloadRes.value;
+      inputs.projectPath = projectPath;
       globalStateDescription = "openSampleReadme";
     } else {
       // create from new

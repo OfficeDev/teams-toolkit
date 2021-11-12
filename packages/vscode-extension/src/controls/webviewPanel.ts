@@ -161,10 +161,11 @@ export class WebviewPanel {
   }
 
   private async downloadSampleApp(msg: any) {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, {
+    const props: any = {
       [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
       [TelemetryProperty.SampleAppName]: msg.data.appFolder,
-    });
+    };
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, props);
     const inputs: Inputs = getSystemInputs();
     inputs.stage = Stage.create;
     inputs["scratch"] = "no";
@@ -180,72 +181,15 @@ export class WebviewPanel {
       });
     inputs["samples"] = options[0];
     const res = await runCommand(Stage.create, inputs);
-    // const folder = await vscode.window.showOpenDialog({
-    //   canSelectFiles: false,
-    //   canSelectFolders: true,
-    //   canSelectMany: false,
-    //   title: StringResources.vsc.webview.downloadSampleTitle,
-    // });
-
-    // let downloadSuccess = false;
-    // let error = new UserError(
-    //   ExtensionErrors.UserCancel,
-    //   StringResources.vsc.webview.invalidFolder,
-    //   ExtensionSource
-    // );
-    // if (folder !== undefined) {
-    //   const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
-    //   if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
-    //     error.name = ExtensionErrors.FolderAlreadyExist;
-    //     error.message = StringResources.vsc.webview.folderExist;
-    //     vscode.window.showErrorMessage(
-    //       util.format(StringResources.vsc.webview.folderExistDialogTitle, sampleAppPath)
-    //     );
-    //   } else {
-    //     const progress = VS_CODE_UI.createProgressBar(StringResources.vsc.webview.fetchData, 2);
-    //     progress.start();
-    //     try {
-    //       progress.next(util.format(StringResources.vsc.webview.downloadFrom, msg.data.appUrl));
-    //       const result = await this.fetchCodeZip(msg.data.appUrl);
-    //       progress.next(StringResources.vsc.webview.unzipPackage);
-    //       if (result !== undefined) {
-    //         await this.saveFilesRecursively(
-    //           new AdmZip(result.data),
-    //           msg.data.appFolder,
-    //           folder[0].fsPath
-    //         );
-    //         await this.downloadSampleHook(msg.data.appFolder, sampleAppPath);
-    //         downloadSuccess = true;
-    //         vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(sampleAppPath));
-    //         await globalStateUpdate("openSampleReadme", true);
-    //       } else {
-    //         error = new SystemError(
-    //           ExtensionErrors.FetchSampleError,
-    //           StringResources.vsc.webview.emptyData,
-    //           ExtensionSource
-    //         );
-    //         vscode.window.showErrorMessage(StringResources.vsc.webview.downloadSampleFail);
-    //       }
-    //     } catch (e) {
-    //       error = returnSystemError(e, ExtensionSource, ExtensionErrors.UnknwonError);
-    //     } finally {
-    //       progress.end(downloadSuccess);
-    //     }
-    //   }
-    // }
-
+    if (inputs.projectId) {
+      props[TelemetryProperty.ProjectId] = inputs.projectId;
+    }
     if (res.isOk()) {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, {
-        [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
-        [TelemetryProperty.SampleAppName]: msg.data.appFolder,
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
+      props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
     } else {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, {
-        [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
-        [TelemetryProperty.SampleAppName]: msg.data.appFolder,
-        [TelemetryProperty.Success]: TelemetrySuccess.No,
-      });
+      props[TelemetryProperty.Success] = TelemetrySuccess.No;
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);
     }
   }
 

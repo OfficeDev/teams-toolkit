@@ -217,7 +217,6 @@ export class FxCore implements Core {
         return err(downloadRes.error);
       }
       projectPath = downloadRes.value;
-      inputs.projectPath = projectPath;
       globalStateDescription = "openSampleReadme";
     } else {
       // create from new
@@ -1379,106 +1378,74 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
   return ok(null);
 }
 export async function downloadSample(
-  fxcore: FxCore,
+  fxCore: FxCore,
   inputs: Inputs,
   ctx: CoreHookContext
 ): Promise<Result<string, FxError>> {
-  let folder = inputs[QuestionRootFolder.name] as string;
-  if (inputs.platform === Platform.VSCode) {
-    folder = getRootDirectory();
-    await fs.ensureDir(folder);
-  }
-  const sample = inputs[CoreQuestionNames.Samples] as OptionItem;
-  if (sample && sample.data && folder) {
+  let fxError;
+  const progress = fxCore.tools.ui.createProgressBar("Fetch sample app", 3);
+  progress.start();
+  const telemetryProperties: any = {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    module: "fx-core",
+  };
+  try {
+    let folder = inputs[QuestionRootFolder.name] as string;
+    if (inputs.platform === Platform.VSCode) {
+      folder = getRootDirectory();
+      await fs.ensureDir(folder);
+    }
+    const sample = inputs[CoreQuestionNames.Samples] as OptionItem;
+    if (!(sample && sample.data && folder)) {
+      throw InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs);
+    }
+    if (sample.id) telemetryProperties[TelemetryProperty.SampleAppName] = sample.id;
     const url = sample.data as string;
     const sampleId = sample.id;
     const sampleAppPath = path.resolve(folder, sampleId);
     if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
-      return err(ProjectFolderExistError(sampleAppPath));
+      throw ProjectFolderExistError(sampleAppPath);
     }
-
-    let fetchRes: AxiosResponse<any> | undefined;
-    const task1: RunnableTask<Void> = {
-      name: `Download code from '${url}'`,
-      run: async (...args: any): Promise<Result<Void, FxError>> => {
-        try {
-          sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSampleStart, {
-            [TelemetryProperty.SampleAppName]: sample.id,
-            module: "fx-core",
-          });
-          fetchRes = await fetchCodeZip(url);
-          if (fetchRes !== undefined) {
-            return ok(Void);
-          } else return err(FetchSampleError());
-        } catch (e) {
-          return err(assembleError(e));
-        }
-      },
-    };
-
-    const task2: RunnableTask<Void> = {
-      name: "Save and unzip package",
-      run: async (...args: any): Promise<Result<Void, FxError>> => {
-        if (fetchRes) {
-          await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
-        }
-        return ok(Void);
-      },
-    };
-    const task3: RunnableTask<Void> = {
-      name: "post process",
-      run: async (...args: any): Promise<Result<Void, FxError>> => {
-        await downloadSampleHook(sampleId, sampleAppPath);
-        return ok(Void);
-      },
-    };
-    const group = new GroupOfTasks<Void>([task1, task2, task3], {
-      sequential: true,
-      fastFail: true,
-    });
-    const runRes = await fxcore.tools.ui.runWithProgress(group, {
-      showProgress: true,
-      cancellable: false,
-    });
-    if (runRes.isOk()) {
-      const loadInputs: Inputs = {
-        ...inputs,
-        projectPath: sampleAppPath,
-      };
-      const projectSettingsRes = await loadProjectSettings(loadInputs, isMultiEnvEnabled());
-      if (projectSettingsRes.isOk()) {
-        const projectSettings = projectSettingsRes.value;
-        // set projectId to sample telemetry
-        projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
-        sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, {
-          [TelemetryProperty.SampleAppName]: sample.id,
-          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-          [TelemetryProperty.ProjectId]: projectSettings.projectId,
-          module: "fx-core",
-        });
-        ctx.projectSettings = projectSettings;
-      } else {
-        sendTelemetryErrorEvent(
-          Component.core,
-          TelemetryEvent.DownloadSample,
-          projectSettingsRes.error,
-          {
-            [TelemetryProperty.SampleAppName]: sample.id,
-            [TelemetryProperty.Success]: TelemetrySuccess.No,
-            module: "fx-core",
-          }
-        );
-      }
-      return ok(sampleAppPath);
-    } else {
-      sendTelemetryErrorEvent(Component.core, TelemetryEvent.DownloadSample, runRes.error, {
-        [TelemetryProperty.SampleAppName]: sample.id,
-        module: "fx-core",
-      });
-      return err(runRes.error);
+    progress.next(`Downloading from ${url}`);
+    const fetchRes = await fetchCodeZip(url);
+    if (fetchRes === undefined) {
+      throw new SystemError(
+        "FetchSampleError",
+        "Fetch sample app error: empty zip file",
+        CoreSource
+      );
     }
+    progress.next("Unzipping the sample package");
+    await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+    await downloadSampleHook(sampleId, sampleAppPath);
+    progress.next("Update project settings");
+    const loadInputs: Inputs = {
+      ...inputs,
+      projectPath: sampleAppPath,
+    };
+    const projectSettingsRes = await loadProjectSettings(loadInputs, isMultiEnvEnabled());
+    if (projectSettingsRes.isOk()) {
+      const projectSettings = projectSettingsRes.value;
+      projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
+      inputs.projectId = projectSettings.projectId;
+      telemetryProperties[TelemetryProperty.ProjectId] = projectSettings.projectId;
+      ctx.projectSettings = projectSettings;
+      inputs.projectPath = sampleAppPath;
+    }
+    progress.end(true);
+    return ok(sampleAppPath);
+  } catch (e) {
+    fxError = assembleError(e);
+    progress.end(false);
+    telemetryProperties[TelemetryProperty.Success] = TelemetrySuccess.No;
+    sendTelemetryErrorEvent(
+      Component.core,
+      TelemetryEvent.DownloadSample,
+      fxError,
+      telemetryProperties
+    );
+    return err(fxError);
   }
-  return err(InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs));
 }
 
 export function newProjectSettings(): ProjectSettings {

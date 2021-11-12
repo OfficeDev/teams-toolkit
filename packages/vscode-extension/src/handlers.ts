@@ -418,7 +418,7 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   return await runUserTask(func, TelemetryEvent.ValidateManifest, false);
 }
 
-export async function buildPackageHandler(args?: any[]): Promise<Result<null, FxError>> {
+export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
 
   const func: Func = {

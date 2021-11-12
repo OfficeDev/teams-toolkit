@@ -31,6 +31,7 @@ export class ResourcePlugins {
   static readonly AzureSQL = "fx-resource-azure-sql";
   static readonly Function = "fx-resource-function";
   static readonly Identity = "fx-resource-identity";
+  static readonly Apim = "fx-resource-apim";
 }
 export class PluginDisplayName {
   static readonly Solution = "Teams Toolkit";

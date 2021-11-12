@@ -938,6 +938,13 @@ export async function openReportIssues(args?: any[]) {
   return env.openExternal(Uri.parse("https://github.com/OfficeDev/TeamsFx/issues"));
 }
 
+export async function openExternalHandler(args?: any[]) {
+  if (args && args.length > 0) {
+    const url = args[0].url;
+    return env.openExternal(Uri.parse(url));
+  }
+}
+
 export async function openManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.OpenManifestEditorStart,

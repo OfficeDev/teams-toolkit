@@ -30,6 +30,7 @@ import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
 import path from "path";
+import os from "os";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { CoreSource, FxCore } from "..";
@@ -69,6 +70,7 @@ import {
 import * as dotenv from "dotenv";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
+import { LocalEnvMultiProvider } from "../../plugins/resource/localdebug/localEnvMulti";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -82,6 +84,7 @@ const parameterFileNameTemplate = "azure.parameters.@envName.json";
 const learnMoreLink = "https://aka.ms/teamsfx-migration-guide";
 const manualUpgradeLink = `${learnMoreLink}#upgrade-your-project-manually`;
 const upgradeReportName = `upgrade-change-logs.md`;
+const gitignoreFileName = ".gitignore";
 let updateNotificationFlag = false;
 let fromReloadFlag = false;
 
@@ -444,6 +447,12 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   await localSettingsProvider.save(
     localSettingsProvider.init(hasFrontend, hasBackend, hasBot, migrateFromV1)
   );
+  await addPathToGitignore(projectPath, localSettingsProvider.localSettingsFilePath);
+
+  // add **/.env.teamsfx.local to .gitignore
+  const item = "**/" + LocalEnvMultiProvider.LocalEnvFileName;
+  await addItemToGitignore(projectPath, item);
+
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
   const configDevJsonFilePath = path.join(fxConfig, "config.dev.json");
@@ -650,9 +659,11 @@ async function getBackupFolder(projectPath: string): Promise<string> {
   // avoid conflict(rarely)
   return path.join(projectPath, `.teamsfx${backupName}`);
 }
+
 async function backup(projectPath: string): Promise<void> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
   const backup = await getBackupFolder(projectPath);
+  await addPathToGitignore(projectPath, backup);
   const backupFx = path.join(backup, `.${ConfigFolderName}`);
   const backupAppPackage = path.join(backup, AppPackageFolderName);
   await fs.ensureDir(backupFx);
@@ -675,6 +686,24 @@ async function backup(projectPath: string): Promise<void> {
   } else if (await fs.pathExists(path.join(fx, AppPackageFolderName))) {
     // version <= 2.4.1
     await fs.copy(path.join(fx, AppPackageFolderName), backupAppPackage);
+  }
+}
+
+// append folder path to .gitignore under the project root.
+async function addPathToGitignore(projectPath: string, ignoredPath: string) {
+  const relativePath = path.relative(projectPath, ignoredPath);
+  await addItemToGitignore(projectPath, relativePath);
+}
+
+// append item to .gitignore under the project root.
+async function addItemToGitignore(projectPath: string, item: string) {
+  const gitignorePath = path.join(projectPath, gitignoreFileName);
+  await fs.ensureFile(gitignorePath);
+
+  const gitignoreContent = await fs.readFile(gitignorePath, "UTF-8");
+  if (gitignoreContent.indexOf(item) === -1) {
+    const appendedContent = os.EOL + item;
+    await fs.appendFile(gitignorePath, appendedContent);
   }
 }
 

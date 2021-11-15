@@ -118,7 +118,7 @@ describe("Multi Env Happy Path for Azure", function () {
         await FrontendValidator.validateProvision(frontend);
 
         // Validate Function App
-        const func = FunctionValidator.init(context);
+        const func = FunctionValidator.init(context, true);
         await FunctionValidator.validateProvision(func, false, true);
 
         // Validate SQL
@@ -126,8 +126,8 @@ describe("Multi Env Happy Path for Azure", function () {
         await SqlValidator.validateSql();
 
         // Validate Bot Provision
-        const bot = BotValidator.init(context);
-        await BotValidator.validateProvision(bot);
+        const bot = BotValidator.init(context, true);
+        await BotValidator.validateProvision(bot, true);
       }
 
       // deploy

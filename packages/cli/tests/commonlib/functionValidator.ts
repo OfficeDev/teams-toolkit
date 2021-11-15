@@ -213,7 +213,7 @@ export class FunctionValidator {
       const servicePlanResponse = await this.getWebappServicePlan(
         this.subscriptionId,
         this.rg,
-        functionObject.appServicePlanName,
+        functionObject.appServicePlanName!,
         token as string
       );
       chai.assert(servicePlanResponse, functionObject.appServicePlanName);

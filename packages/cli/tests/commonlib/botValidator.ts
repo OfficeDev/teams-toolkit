@@ -181,7 +181,7 @@ export class BotValidator {
       const servicePlanResponse = await this.getWebappServicePlan(
         this.subscriptionId,
         this.rg,
-        botObject.appServicePlan,
+        botObject.appServicePlan!,
         token as string
       );
       chai.assert(servicePlanResponse, botObject.appServicePlan);

@@ -59,7 +59,7 @@ jobs:
           then 
             echo '======================================= Prompt Information ==============================================='
             echo 'There may be some unformatted files in your PR, please run these commands on Git Bash terminal: '
-            echo '1. npm run setup'
+            echo '1. npm run install-all'
             echo '2. VAR=$(realpath .github/scripts/lint-pr.sh) '
             echo '3. npx lerna exec -- bash $VAR ${your-PR-target-branch}'
             echo 'please replace the ${your-PR-target-branch} as the target branch of your PR, such as origin/dev or upstream/dev'

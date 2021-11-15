@@ -191,14 +191,14 @@ class SampleAppCard extends React.Component<any, any> {
         <h3>{this.props.description}</h3>
         <div className="section buttons">
           <PrimaryButton
-            text="Repository"
+            text="View on Github"
             className="right-aligned"
             onClick={() => {
               this.viewSampleApp(this.props.sampleAppFolder, this.props.baseUrl);
             }}
           />
           <PrimaryButton
-            text="Download"
+            text="Create"
             className="right-aligned"
             onClick={() => {
               this.cloneSampleApp(

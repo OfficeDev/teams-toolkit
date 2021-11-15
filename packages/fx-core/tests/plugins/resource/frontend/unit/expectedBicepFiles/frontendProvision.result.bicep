@@ -1,6 +1,6 @@
 param provisionParameters object
 var resourceBaseName = provisionParameters.resourceBaseName
-var storageName = contains(provisionParameters, 'frontendHostingStorageName') ? provisionParameters['frontendHostingStorageName'] : 'frontendstg${uniqueString(resourceBaseName)}'
+var storageName = contains(provisionParameters, 'frontendHostingStorageName') ? provisionParameters['frontendHostingStorageName'] : '${resourceBaseName}tab'
 
 resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
   kind: 'StorageV2'

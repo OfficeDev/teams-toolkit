@@ -3,12 +3,12 @@
 
 import { AccessToken, AuthenticationError, ClientSecretCredential } from "@azure/identity";
 import { assert, expect, use as chaiUse } from "chai";
-import chaiPromises from "chai-as-promised";
-import sinon from "sinon";
+import * as chaiPromises from "chai-as-promised";
+import * as sinon from "sinon";
 import mockedEnv from "mocked-env";
 import { loadConfiguration, M365TenantCredential } from "../../../src";
 import { ErrorCode, ErrorWithCode } from "../../../src/core/errors";
-import fs from "fs";
+import * as fs from "fs";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
 
 chaiUse(chaiPromises);

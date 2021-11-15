@@ -1,13 +1,23 @@
 {
+  "compileOnSave": false,
   "compilerOptions": {
-    "module": "es6",
-    "outDir": "./dist-esm",
+    "module": "ES2015",
+    "outDir": "dist",
     "declarationDir": "./types",
-    "target": "ES2015",
-    "lib": ["DOM"],
+    "target": "es5",
+    "lib": [
+      "es5",
+      "dom",
+      "es2015.promise",
+      "es2015.symbol",
+      "es2015.iterable",
+      "es2015.collection",
+      "es2015.symbol.wellknown",
+      "es2015.core",
+      "es2017.object",
+      "es2017.string"
+    ],
     "declaration": true,
-    "declarationMap": true,
-    "inlineSources": true,
     "sourceMap": true,
     "importHelpers": true,
     "strict": true,
@@ -18,24 +28,8 @@
     "noFallthroughCasesInSwitch": true,
     "forceConsistentCasingInFileNames": true,
     "moduleResolution": "node",
-    "allowSyntheticDefaultImports": true,
-    "esModuleInterop": true,
-    "skipLibCheck": true,
-    "noEmit": false,
-    "experimentalDecorators": true
+    "resolveJsonModule": true,
+    "downlevelIteration": true
   },
-  "exclude": [
-    "node_modules",
-    "types",
-    "temp",
-    "browser",
-    "dist",
-    "dist-samples",
-    "dist-esm",
-    "./samples/**/*.ts",
-    "resources",
-    "test/*.ts",
-    "test/e2e/node",
-    "test/ui/"
-  ]
+  "exclude": ["dist/**/*"]
 }

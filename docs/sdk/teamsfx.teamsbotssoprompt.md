@@ -56,7 +56,6 @@ dialogs.add(new WaterfallDialog('taskNeedingLogin', [
          }
      }
 ]));
-
 ```
 
 ## Constructors

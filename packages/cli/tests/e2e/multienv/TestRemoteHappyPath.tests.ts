@@ -114,7 +114,7 @@ describe("Multi Env Happy Path for Azure", function () {
         await SimpleAuthValidator.validate(simpleAuth, aad, "B1", true);
 
         // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
+        const frontend = FrontendValidator.init(context, true);
         await FrontendValidator.validateProvision(frontend);
 
         // Validate Function App

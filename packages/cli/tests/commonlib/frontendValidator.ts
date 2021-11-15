@@ -63,18 +63,22 @@ export class FrontendValidator {
   public static init(ctx: any, insiderPreview = false): IFrontendObject {
     console.log("Start to init validator for Frontend.");
 
-    let frontendObject;
-
+    let frontendObject: IFrontendObject;
     if (insiderPreview) {
       const resourceId = ctx[DependentPluginInfo.frontendPluginName][this.storageResourceIdKeyName];
       chai.assert.exists(resourceId);
 
       this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
       this.resourceGroupName = getResourceGroupNameFromResourceId(resourceId);
-      frontendObject.storageName = this.getStorageAccountName(resourceId);
+
+      frontendObject = {
+        storageName: this.getStorageAccountName(resourceId),
+        containerName: "$web",
+      };
     } else {
       frontendObject = ctx[DependentPluginInfo.frontendPluginName] as IFrontendObject;
       chai.assert.exists(frontendObject);
+      frontendObject.containerName = "$web";
 
       this.subscriptionId =
         ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.subscriptionId];
@@ -85,7 +89,6 @@ export class FrontendValidator {
       chai.assert.exists(this.resourceGroupName);
     }
 
-    frontendObject.containerName = "$web";
     console.log("Successfully init validator for Frontend.");
     return frontendObject;
   }

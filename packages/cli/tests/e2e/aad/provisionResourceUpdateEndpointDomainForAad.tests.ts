@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import fs from "fs-extra";
+import { cloneDeep } from "lodash";
 import path from "path";
 import { teamsAppTenantIdConfigKey } from "../../../src/cmds/preview/constants";
 
@@ -24,10 +25,14 @@ function test(vsCallingCli: boolean) {
     const projectPath = path.resolve(testFolder, appName);
 
     it(`Provision Resource: Update Domain and Endpoint for AAD - Test Plan Id 9576711`, async function () {
+      const env = cloneDeep(process.env);
+      if (vsCallingCli) {
+        env["VS_CALLING_CLI"] = "true";
+      }
       // new a project
       await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
         cwd: testFolder,
-        env: process.env,
+        env: env,
         timeout: 0,
       });
       console.log(`[Successfully] scaffold to ${projectPath}`);
@@ -35,19 +40,19 @@ function test(vsCallingCli: boolean) {
       {
         // set fx-resource-simple-auth.skuName as B1
         const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-        context["fx-resource-simple-auth"]["skuName"] = "B1";
+        if (!vsCallingCli) {
+          // On VS calling CLI, simple auth plugin is not activated.
+          context["fx-resource-simple-auth"]["skuName"] = "B1";
+        }
         context["fx-resource-aad-app-for-teams"]["endpoint"] = "https://dormainfortest.test";
         context["fx-resource-aad-app-for-teams"]["domain"] = "dormainfortest.test";
         await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
       }
 
       // provision
-      if (vsCallingCli) {
-        process.env["VS_CALLING_CLI"] = "true";
-      }
       await execAsyncWithRetry(`teamsfx provision --subscription ${subscription}`, {
         cwd: projectPath,
-        env: process.env,
+        env: env,
         timeout: 0,
       });
 

@@ -15,6 +15,7 @@ import {
   StatesFolderName,
   returnSystemError,
   TeamsAppManifest,
+  LogProvider,
 } from "@microsoft/teamsfx-api";
 import {
   CoreHookContext,
@@ -30,6 +31,7 @@ import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
 import path from "path";
+import os from "os";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { CoreSource, FxCore } from "..";
@@ -69,6 +71,7 @@ import {
 import * as dotenv from "dotenv";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
+import { LocalEnvMultiProvider } from "../../plugins/resource/localdebug/localEnvMulti";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -82,6 +85,7 @@ const parameterFileNameTemplate = "azure.parameters.@envName.json";
 const learnMoreLink = "https://aka.ms/teamsfx-migration-guide";
 const manualUpgradeLink = `${learnMoreLink}#upgrade-your-project-manually`;
 const upgradeReportName = `upgrade-change-logs.md`;
+const gitignoreFileName = ".gitignore";
 let updateNotificationFlag = false;
 let fromReloadFlag = false;
 
@@ -95,6 +99,7 @@ class EnvConfigName {
   static readonly SqlEndpoint = "sqlEndpoint";
   static readonly SqlResourceId = "sqlResourceId";
   static readonly SqlDataBase = "databaseName";
+  static readonly SqlSkipAddingUser = "skipAddingUser";
   static readonly SkuName = "skuName";
   static readonly AppServicePlanName = "appServicePlanName";
   static readonly StorageAccountName = "storageAccountName";
@@ -102,6 +107,12 @@ class EnvConfigName {
   static readonly FuncAppName = "functionAppName";
   static readonly FunctionAppResourceId = "functionAppResourceId";
   static readonly Endpoint = "endpoint";
+  static readonly ServiceName = "serviceName";
+  static readonly ProductId = "productId";
+  static readonly OAuthServerId = "oAuthServerId";
+  static readonly ServiceResourceId = "serviceResourceId";
+  static readonly ProductResourceId = "productResourceId";
+  static readonly AuthServerResourceId = "authServerResourceId";
 }
 
 export class ArmParameters {
@@ -116,6 +127,9 @@ export class ArmParameters {
   static readonly botWebAppSku = "botWebAppSKU";
   static readonly SimpleAuthWebAppName = "simpleAuthWebAppName";
   static readonly SimpleAuthServerFarm = "simpleAuthServerFarmsName";
+  static readonly ApimServiceName = "apimServiceName";
+  static readonly ApimProductName = "apimProductName";
+  static readonly ApimOauthServerName = "apimOauthServerName";
 }
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
@@ -232,6 +246,7 @@ async function getOldProjectInfoForTelemetry(
 
 async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const core = ctx.self as FxCore;
   const projectPath = inputs.projectPath as string;
   const telemetryProperties = await getOldProjectInfoForTelemetry(projectPath);
   sendTelemetryEvent(
@@ -240,7 +255,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     telemetryProperties
   );
 
-  await backup(projectPath);
+  await backup(projectPath, core.tools.logProvider);
   try {
     await updateConfig(ctx);
 
@@ -305,11 +320,22 @@ async function postMigration(
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
   await generateUpgradeReport(ctx);
   const core = ctx.self as FxCore;
+  await updateGitIgnore(projectPath, core.tools.logProvider);
   if (inputs.platform === Platform.VSCode) {
     showSuccessDialogForVSCode(core);
   } else {
     core.tools.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessageCLI);
   }
+}
+
+async function updateGitIgnore(projectPath: string, log: LogProvider): Promise<void> {
+  // add .fx/configs/localSetting.json to .gitignore
+  const localSettingsProvider = new LocalSettingsProvider(projectPath);
+  await addPathToGitignore(projectPath, localSettingsProvider.localSettingsFilePath, log);
+
+  // add **/.env.teamsfx.local to .gitignore
+  const item = "**/" + LocalEnvMultiProvider.LocalEnvFileName;
+  await addItemToGitignore(projectPath, item, log);
 }
 
 function showSuccessDialogForVSCode(core: FxCore) {
@@ -434,18 +460,28 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   await localSettingsProvider.save(
     localSettingsProvider.init(hasFrontend, hasBackend, hasBot, migrateFromV1)
   );
+
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
+  const configDevJsonFilePath = path.join(fxConfig, "config.dev.json");
+  const envDefaultFilePath = path.join(fx, "env.default.json");
   await fs.copy(path.join(fx, "settings.json"), projectSettings);
-  await ensureProjectSettings(projectSettings, path.join(fx, "env.default.json"));
+  await ensureProjectSettings(projectSettings, envDefaultFilePath);
 
   const appName = await getAppName(projectSettings);
   if (!migrateFromV1) {
     //config.dev.json
-    await fs.writeFile(
-      path.join(fxConfig, "config.dev.json"),
-      JSON.stringify(getConfigDevJson(appName), null, 4)
-    );
+    const configDev = getConfigDevJson(appName);
+
+    // migrate skipAddingSqlUser
+    const envDefault = await fs.readJson(envDefaultFilePath);
+
+    if (envDefault[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlSkipAddingUser]) {
+      configDev["skipAddingSqlUser"] =
+        envDefault[ResourcePlugins.AzureSQL][EnvConfigName.SqlSkipAddingUser];
+    }
+
+    await fs.writeFile(configDevJsonFilePath, JSON.stringify(configDev, null, 4));
   }
 
   // appPackage
@@ -631,9 +667,11 @@ async function getBackupFolder(projectPath: string): Promise<string> {
   // avoid conflict(rarely)
   return path.join(projectPath, `.teamsfx${backupName}`);
 }
-async function backup(projectPath: string): Promise<void> {
+
+async function backup(projectPath: string, log: LogProvider): Promise<void> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
   const backup = await getBackupFolder(projectPath);
+  await addPathToGitignore(projectPath, backup, log);
   const backupFx = path.join(backup, `.${ConfigFolderName}`);
   const backupAppPackage = path.join(backup, AppPackageFolderName);
   await fs.ensureDir(backupFx);
@@ -656,6 +694,36 @@ async function backup(projectPath: string): Promise<void> {
   } else if (await fs.pathExists(path.join(fx, AppPackageFolderName))) {
     // version <= 2.4.1
     await fs.copy(path.join(fx, AppPackageFolderName), backupAppPackage);
+  }
+}
+
+// append folder path to .gitignore under the project root.
+async function addPathToGitignore(
+  projectPath: string,
+  ignoredPath: string,
+  log: LogProvider
+): Promise<void> {
+  const relativePath = path.relative(projectPath, ignoredPath).replace(/\\/g, "/");
+  await addItemToGitignore(projectPath, relativePath, log);
+}
+
+// append item to .gitignore under the project root.
+async function addItemToGitignore(
+  projectPath: string,
+  item: string,
+  log: LogProvider
+): Promise<void> {
+  const gitignorePath = path.join(projectPath, gitignoreFileName);
+  try {
+    await fs.ensureFile(gitignorePath);
+
+    const gitignoreContent = await fs.readFile(gitignorePath, "UTF-8");
+    if (gitignoreContent.indexOf(item) === -1) {
+      const appendedContent = os.EOL + item;
+      await fs.appendFile(gitignorePath, appendedContent);
+    }
+  } catch {
+    log.warning(`[core] Failed to add '${item}' to '${gitignorePath}', please do it manually.`);
   }
 }
 
@@ -783,7 +851,7 @@ async function updateConfig(ctx: CoreHookContext) {
   let needUpdate = false;
   let configPrefix = "";
   if (envConfig[solutionName][subscriptionId] && envConfig[solutionName][resourceGroupName]) {
-    configPrefix = `/subscriptions/${envConfig[solutionName][subscriptionId]}/resourcegroups/${envConfig["solution"][resourceGroupName]}`;
+    configPrefix = `/subscriptions/${envConfig[solutionName][subscriptionId]}/resourcegroups/${envConfig[solutionName][resourceGroupName]}`;
     needUpdate = true;
   }
   if (needUpdate && envConfig[ResourcePlugins.FrontendHosting]?.[EnvConfigName.StorageName]) {
@@ -832,6 +900,28 @@ async function updateConfig(ctx: CoreHookContext) {
     envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityClientId] =
       envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityId];
     delete envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityId];
+  }
+
+  if (needUpdate && envConfig[ResourcePlugins.Apim]?.[EnvConfigName.ServiceName]) {
+    envConfig[ResourcePlugins.Apim][
+      EnvConfigName.ServiceResourceId
+    ] = `${configPrefix}/providers/Microsoft.ApiManagement/service/${
+      envConfig[ResourcePlugins.Apim][EnvConfigName.ServiceName]
+    }`;
+    delete envConfig[ResourcePlugins.Apim][EnvConfigName.ServiceName];
+
+    if (envConfig[ResourcePlugins.Apim]?.[EnvConfigName.ProductId]) {
+      envConfig[ResourcePlugins.Apim][EnvConfigName.ProductResourceId] = `${
+        envConfig[ResourcePlugins.Apim][EnvConfigName.ServiceResourceId]
+      }/products/${envConfig[ResourcePlugins.Apim][EnvConfigName.ProductId]}`;
+      delete envConfig[ResourcePlugins.Apim][EnvConfigName.ProductId];
+    }
+    if (envConfig[ResourcePlugins.Apim]?.[EnvConfigName.OAuthServerId]) {
+      envConfig[ResourcePlugins.Apim][EnvConfigName.AuthServerResourceId] = `${
+        envConfig[ResourcePlugins.Apim][EnvConfigName.ServiceResourceId]
+      }/authorizationServers/${envConfig[ResourcePlugins.Apim][EnvConfigName.OAuthServerId]}`;
+      delete envConfig[ResourcePlugins.Apim][EnvConfigName.OAuthServerId];
+    }
   }
   await fs.writeFile(path.join(fx, "new.env.default.json"), JSON.stringify(envConfig, null, 4));
 }
@@ -952,6 +1042,21 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
     parameterObj[ArmParameters.botWebAppSku] =
       envConfig[ResourcePlugins.Bot]?.[EnvConfigName.SkuName];
   }
+
+  // Apim
+  if (envConfig[ResourcePlugins.Apim]?.[EnvConfigName.ServiceName]) {
+    parameterObj[ArmParameters.ApimServiceName] =
+      envConfig[ResourcePlugins.Apim]?.[EnvConfigName.ServiceName];
+  }
+  if (envConfig[ResourcePlugins.Apim]?.[EnvConfigName.ProductId]) {
+    parameterObj[ArmParameters.ApimProductName] =
+      envConfig[ResourcePlugins.Apim]?.[EnvConfigName.ProductId];
+  }
+  if (envConfig[ResourcePlugins.Apim]?.[EnvConfigName.OAuthServerId]) {
+    parameterObj[ArmParameters.ApimOauthServerName] =
+      envConfig[ResourcePlugins.Apim]?.[EnvConfigName.OAuthServerId];
+  }
+
   await fs.writeFile(
     path.join(fxConfig, parameterEnvFileName),
     JSON.stringify(targetJson, null, 4)

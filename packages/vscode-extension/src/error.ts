@@ -18,6 +18,7 @@ export enum ExtensionErrors {
   FetchSampleError = "FetchSampleError",
   OpenEnvStateError = "OpenEnvStateError",
   EnvStateNotFoundError = "EnvStateNotFoundError",
+  EnvConfigNotFoundError = "EnvConfigNotFoundError",
   EnvResourceInfoNotFoundError = "EnvResourceInfoNotFoundError",
   NoWorkspaceError = "NoWorkSpaceError",
 }

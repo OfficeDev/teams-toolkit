@@ -8,6 +8,7 @@ import {
   cleanUpLocalProject,
   cleanupSharePointPackage,
   execAsync,
+  execAsyncWithRetry,
   getTestFolder,
   getUniqueAppName,
   readContext,
@@ -67,7 +68,7 @@ describe("Start a new project", function () {
     expect(result.stderr).to.eq("");
 
     // provision
-    result = await execAsync(`teamsfx provision`, {
+    result = await execAsyncWithRetry(`teamsfx provision`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
@@ -85,7 +86,7 @@ describe("Start a new project", function () {
     }
 
     // deploy
-    result = await execAsync(`teamsfx deploy`, {
+    result = await execAsyncWithRetry(`teamsfx deploy`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,

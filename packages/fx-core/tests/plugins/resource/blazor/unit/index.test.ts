@@ -4,6 +4,7 @@ import "mocha";
 
 import * as chai from "chai";
 import * as sinon from "sinon";
+import * as fs from "fs-extra";
 import { PluginContext, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
 import chaiAsPromised from "chai-as-promised";
 
@@ -107,10 +108,12 @@ describe("BlazorPlugin", () => {
       pluginContext = TestHelper.getFakePluginContext();
       pluginContext.config.set(BlazorConfigInfo.webAppName, "ut");
       pluginContext.config.set(BlazorConfigInfo.appServicePlanName, "ut");
+      pluginContext.config.set(BlazorConfigInfo.projectFilePath, ".");
 
       sinon.stub(core, "isVsCallingCli").returns(true);
       sinon.stub(dirWalk, "forEachFileAndDir").resolves(undefined);
       sinon.stub(execute, "execute").resolves("");
+      sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(AzureClientFactory, "getWebSiteManagementClient").returns({
         webApps: {
           listPublishingCredentials: () => TestHelper.publishingProfile,

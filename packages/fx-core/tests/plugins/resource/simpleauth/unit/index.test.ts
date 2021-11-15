@@ -18,7 +18,7 @@ import * as dotenv from "dotenv";
 import { Utils } from "../../../../../src/plugins/resource/simpleauth/utils/common";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
-import { ConstantString, mockSolutionUpdateArmTemplatesV2 } from "../../util";
+import { ConstantString, mockSolutionUpdateArmTemplates } from "../../util";
 import { TeamsClientId } from "../../../../../src/common/constants";
 import { isMultiEnvEnabled } from "../../../../../src";
 import { LocalSettingsAuthKeys } from "../../../../../src/common/localSettingsConstants";
@@ -101,8 +101,8 @@ describe("simpleAuthPlugin", () => {
     const generateArmTemplatesResult = await simpleAuthPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testProvisionModuleFileName = "simpleAuthProvision.result.v2.bicep";
-    const testConfigurationModuleFileName = "simpleAuthConfig.result.v2.bicep";
+    const testProvisionModuleFileName = "simpleAuthProvision.result.bicep";
+    const testConfigurationModuleFileName = "simpleAuthConfig.result.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
@@ -123,7 +123,7 @@ describe("simpleAuthPlugin", () => {
 
     chai.assert.isTrue(generateArmTemplatesResult.isOk());
     if (generateArmTemplatesResult.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplatesV2(
+      const expectedResult = mockSolutionUpdateArmTemplates(
         mockedSolutionDataContext,
         generateArmTemplatesResult.value
       );
@@ -150,7 +150,7 @@ describe("simpleAuthPlugin", () => {
       chai.assert.strictEqual(expectedResult.Configuration!.Modules!.simpleAuth, configModuleFile);
       const expectedPrvosionSnippetFilePath = path.join(
         expectedBicepFileDirectory,
-        "provision.result.v2.bicep"
+        "provision.result.bicep"
       );
 
       const orchestrationProvisionFile = await fs.readFile(
@@ -158,10 +158,7 @@ describe("simpleAuthPlugin", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(expectedResult.Provision!.Orchestration, orchestrationProvisionFile);
-      const expectedConfigFilePath = path.join(
-        expectedBicepFileDirectory,
-        "config.result.v2.bicep"
-      );
+      const expectedConfigFilePath = path.join(expectedBicepFileDirectory, "config.result.bicep");
 
       const OrchestrationConfigFile = await fs.readFile(
         expectedConfigFilePath,

@@ -64,14 +64,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: isMultiEnvEnabled() ? 29 : 30,
+        numLocalEnvs: isMultiEnvEnabled() ? 30 : 30,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: isMultiEnvEnabled() ? 29 : 30,
+        numLocalEnvs: isMultiEnvEnabled() ? 30 : 30,
       },
     ];
     parameters1.forEach((parameter: TestParameter) => {
@@ -127,14 +127,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 4,
         numCompounds: 2,
         numTasks: 6,
-        numLocalEnvs: isMultiEnvEnabled() ? 15 : 16,
+        numLocalEnvs: isMultiEnvEnabled() ? 16 : 16,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 4,
         numCompounds: 2,
         numTasks: 6,
-        numLocalEnvs: isMultiEnvEnabled() ? 15 : 16,
+        numLocalEnvs: isMultiEnvEnabled() ? 16 : 16,
       },
     ];
     parameters2.forEach((parameter) => {
@@ -239,14 +239,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 6,
         numCompounds: 2,
         numTasks: 12,
-        numLocalEnvs: isMultiEnvEnabled() ? 41 : 44,
+        numLocalEnvs: isMultiEnvEnabled() ? 42 : 44,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 6,
         numCompounds: 2,
         numTasks: 12,
-        numLocalEnvs: isMultiEnvEnabled() ? 41 : 44,
+        numLocalEnvs: isMultiEnvEnabled() ? 42 : 44,
       },
     ];
     parameters4.forEach((parameter) => {
@@ -303,14 +303,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: isMultiEnvEnabled() ? 27 : 30,
+        numLocalEnvs: isMultiEnvEnabled() ? 28 : 30,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: isMultiEnvEnabled() ? 27 : 30,
+        numLocalEnvs: isMultiEnvEnabled() ? 28 : 30,
       },
     ];
     parameters5.forEach((parameter) => {

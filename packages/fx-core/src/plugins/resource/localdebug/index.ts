@@ -48,7 +48,7 @@ import {
   NgrokTunnelNotConnected,
   InvalidLocalBotEndpointFormat,
 } from "./util/error";
-import { prepareLocalAuthService } from "./util/localService";
+import { getAuthServiceFolder, prepareLocalAuthService } from "./util/localService";
 import { getNgrokHttpUrl } from "./util/ngrok";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
@@ -428,6 +428,10 @@ export class LocalDebugPlugin implements Plugin {
         LocalSettingsBackendKeys.FunctionEndpoint
       ) as string;
 
+      const localAuthPackagePath = ctx.localSettings?.auth?.get(
+        LocalSettingsAuthKeys.SimpleAuthFilePath
+      ) as string;
+
       if (includeFrontend) {
         if (includeAuth) {
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
@@ -435,6 +439,7 @@ export class LocalDebugPlugin implements Plugin {
             EnvKeysFrontend.LoginUrl
           ] = `${localTabEndpoint}/auth-start.html`;
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.ClientId] = clientId;
+          await prepareLocalAuthService(localAuthPackagePath);
         }
 
         if (includeBackend) {
@@ -515,6 +520,7 @@ export class LocalDebugPlugin implements Plugin {
     return ok(undefined);
   }
 
+  // Note: this may be called before `localDebug` so do not throw if any value is missing
   public async getLocalDebugEnvs(ctx: PluginContext): Promise<Record<string, string>> {
     const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
     const includeBackend = ProjectSettingLoader.includeBackend(ctx);
@@ -533,9 +539,6 @@ export class LocalDebugPlugin implements Plugin {
     const teamsMobileDesktopAppId = TeamsClientId.MobileDesktop;
     const teamsWebAppId = TeamsClientId.Web;
 
-    const localAuthPackagePath = ctx.localSettings?.auth?.get(
-      LocalSettingsAuthKeys.SimpleAuthFilePath
-    ) as string;
     const localAuthEndpoint = ctx.localSettings?.auth?.get(
       LocalSettingsAuthKeys.SimpleAuthServiceEndpoint
     ) as string;
@@ -576,12 +579,7 @@ export class LocalDebugPlugin implements Plugin {
         localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(
           ";"
         );
-
-        if (localAuthPackagePath) {
-          localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(
-            localAuthPackagePath
-          );
-        }
+        localEnvs[LocalEnvAuthKeys.ServicePath] = getAuthServiceFolder();
       }
 
       if (includeBackend) {

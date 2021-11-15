@@ -363,12 +363,16 @@ export function getSystemInputs(): Inputs {
   return answers;
 }
 
-export async function createNewProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
+export async function createNewProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
-  return await runCommand(Stage.create);
+  const result = await runCommand(Stage.create);
+  if (result.isOk()) {
+    commands.executeCommand("vscode.openFolder", result.value);
+  }
+  return result;
 }
 
-export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
+export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.MigrateV1ProjectStart,
     getTriggerFromProperty(args)
@@ -378,6 +382,9 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null
   await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.top", false);
   await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.bottom", false);
   await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.default", false);
+  if (result.isOk()) {
+    commands.executeCommand("vscode.openFolder", result.value);
+  }
   return result;
 }
 
@@ -470,7 +477,10 @@ export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
   return await env.openExternal(Uri.parse(cicdGuideLink));
 }
 
-export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
+export async function runCommand(
+  stage: Stage,
+  defaultInputs?: Inputs
+): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<any, FxError> = ok(null);
   let inputs: Inputs | undefined;
@@ -480,7 +490,7 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
       throw checkCoreRes.error;
     }
 
-    inputs = getSystemInputs();
+    inputs = defaultInputs ? defaultInputs : getSystemInputs();
     inputs.stage = stage;
 
     switch (stage) {
@@ -488,13 +498,9 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
-          await processResult(eventName, result, inputs);
         } else {
           const uri = Uri.file(tmpResult.value);
-          // 15% events are lost due to open other vs code instance, so collect the data before open folder.
-          await processResult(eventName, result, inputs);
-          commands.executeCommand("vscode.openFolder", uri);
-          result = ok(null);
+          result = ok(uri);
         }
         break;
       }
@@ -505,9 +511,8 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
         } else {
           if (tmpResult?.value) {
             const uri = Uri.file(tmpResult.value);
-            commands.executeCommand("vscode.openFolder", uri);
+            result = ok(uri);
           }
-          result = ok(null);
         }
         break;
       }
@@ -549,10 +554,7 @@ export async function runCommand(stage: Stage): Promise<Result<any, FxError>> {
     result = wrapError(e);
   }
 
-  // already process result before open folder durning create stage. so skip "processResult" here.
-  if (stage !== Stage.create) {
-    await processResult(eventName, result, inputs);
-  }
+  await processResult(eventName, result, inputs);
 
   return result;
 }

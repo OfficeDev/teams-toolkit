@@ -1,5 +1,9 @@
 A TeamsFx project is composed of several components.
 
+There are two types of components:
+    1. workspace module(tab frontend, function backend, bot): have code in workspace, can be launched as local service 
+    2. external resource that the workspace module depends on (Azure SQL, Key Vault, Managed Identity): no code in workspace
+
 The components are organized as a dependency tree/grid:
 
 project
@@ -23,9 +27,7 @@ project
 	  |-- Teams App ---> resource hosting plugin (App Studio plugin)
 	  
 	  
-two types of component:
-    1. workspace module(tab frontend, function backend, bot): have code in workspace, can be launched as local service 
-    2. external resource that the workspace module depends on (Azure SQL, Key Vault, Managed Identity): no code in workspace
+
 	
 three types of plugin: 
 	1. scaffolding plugin: Tab Frontend scaffolding, Function scaffolding, Bot Scaffolding

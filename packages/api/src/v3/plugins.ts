@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 import { AzureAccountProvider, FxError, Result, TokenProvider } from "..";
-import { OptionItem, QTreeNode } from "../qm";
-import { Inputs, Json, Void } from "../types";
+import { OptionItem } from "../qm";
+import { Inputs, Void } from "../types";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
 import {
@@ -24,7 +24,7 @@ export interface ScaffoldingPlugin {
 
 export interface ContainerHostingPlugin {
   name: string;
-  provisionOption: OptionItem;
+  hostingOption: OptionItem;
   runtimeStacks?: RuntimeStacks[];
   /**
    * return dependent components when activating plugins
@@ -65,7 +65,7 @@ export interface ContainerHostingPlugin {
 
 export interface ResourceHostingPlugin {
   name: string;
-  provisionOption: OptionItem;
+  hostingOption: OptionItem;
   generateResourceTemplate?: (
     ctx: Context,
     inputs: Inputs

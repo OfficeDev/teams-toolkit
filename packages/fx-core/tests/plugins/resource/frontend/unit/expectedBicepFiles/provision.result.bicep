@@ -1,4 +1,4 @@
-module frontendHostingProvision './frontendProvision.result.v2.bicep' = {
+module frontendHostingProvision './frontendProvision.result.bicep' = {
   name: 'frontendHostingProvision'
   params: {
     provisionParameters: provisionParameters

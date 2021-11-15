@@ -10,7 +10,7 @@ import * as path from "path";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
 import { FrontendPlugin } from "../../../../../src";
-import { ConstantString, mockSolutionUpdateArmTemplatesV2, ResourcePlugins } from "../../util";
+import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
 
 chai.use(chaiAsPromised);
 
@@ -37,7 +37,7 @@ describe("FrontendGenerateArmTemplates", () => {
     const result = await frontendPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "frontendProvision.result.v2.bicep";
+    const testModuleFileName = "frontendProvision.result.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
@@ -52,7 +52,7 @@ describe("FrontendGenerateArmTemplates", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplatesV2(
+      const expectedResult = mockSolutionUpdateArmTemplates(
         mockedSolutionDataContext,
         result.value
       );
@@ -63,7 +63,7 @@ describe("FrontendGenerateArmTemplates", () => {
       chai.assert.strictEqual(expectedResult.Provision!.Modules!.frontendHosting, moduleFile);
       const expectedModuleSnippetFilePath = path.join(
         expectedBicepFileDirectory,
-        "provision.result.v2.bicep"
+        "provision.result.bicep"
       );
       const OrchestrationConfigFile = await fs.readFile(
         expectedModuleSnippetFilePath,

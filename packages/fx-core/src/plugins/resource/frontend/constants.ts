@@ -55,8 +55,7 @@ export class FrontendPathInfo {
   static TemplateFileExt = ".tpl";
   static TemplatePackageExt = ".zip";
 
-  static ModuleFileName = "frontendHosting.bicep";
-  static ModuleProvisionV2FileName = "frontendHostingProvision.v2.bicep";
+  static ModuleProvisionFileName = "frontendHostingProvision.bicep";
 
   static BuildFolderName = "build";
   static BuildPath = `${FrontendPathInfo.BuildFolderName}${path.sep}`;
@@ -102,12 +101,8 @@ export class FrontendConfigInfo {
 }
 
 export class FrontendOutputBicepSnippet {
-  static readonly StorageName = "provisionOutputs.frontendHostingProvision.outputs.storageName";
-  static readonly Endpoint = "provisionOutputs.frontendHostingProvision.outputs.endpoint";
-  static readonly Domain = "provisionOutputs.frontendHostingProvision.outputs.domain";
-  static readonly Domain2 = "provisionOutputs.frontendHostingOutput.value.domain";
-  static readonly Endpoint2 = "provisionOutputs.frontendHostingOutput.value.endpoint";
-  static readonly StorageName2 = "provisionOutputs.frontendHostingOutput.value.storageName";
+  static readonly Domain = "provisionOutputs.frontendHostingOutput.value.domain";
+  static readonly Endpoint = "provisionOutputs.frontendHostingOutput.value.endpoint";
 }
 
 export class TelemetryEvent {

@@ -62,6 +62,7 @@ const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const resourceBaseName = "resourceBaseName";
 const parameterName = "parameters";
 const solutionName = "solution";
+const InvalidTemplateErrorCode = "InvalidTemplate";
 
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -246,9 +247,23 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     );
     ctx.logProvider?.error(errorMessage + ` Detailed error: ${error.message}`);
 
+    // return the error if the template is invalid
+    if (error.code === InvalidTemplateErrorCode) {
+      return err(
+        returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+      );
+    }
+
+    // try to get deployment error
     const result = await wrapGetDeploymentError(deployCtx, resourceGroupName, deploymentName);
     if (result.isOk()) {
       const deploymentError = result.value;
+
+      // return thrown error if deploymentError is empty
+      if (!deploymentError) {
+        returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure);
+      }
+
       ctx.logProvider?.error(
         `[${PluginDisplayName.Solution}] ${deploymentName} -> ${JSON.stringify(
           formattedDeploymentError(deploymentError),

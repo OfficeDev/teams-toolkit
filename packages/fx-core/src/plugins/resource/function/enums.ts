@@ -26,7 +26,7 @@ export enum FunctionConfigKey {
   storageAccountName = "storageAccountName",
   appServicePlanName = "appServicePlanName",
   functionEndpoint = "functionEndpoint",
-  functionAppId = "functionAppId",
+  functionAppResourceId = "functionAppResourceId",
 
   /* Intermediate  */
   functionName = "functionName",

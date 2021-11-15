@@ -71,8 +71,14 @@
       "unableToFindTeamsAppRegistration": "Unable to find Teams app registration",
       "noAzureAccountSignedIn": "No Azure account signed in. Please sign in to Azure.",
       "noSubscriptionFoundInAzureAccount": "The subscription not found or you don't have permission to access it with current Azure account.",
+      "previewAdaptiveCard": "Preview and Debug Adaptive Cards",
+      "previewACDesciption": "Preview and author Adaptive Cards directly in Visual Studio Code",
       "grantPermissionSucceeded": "Added account: '%s' to the environment '%s' as a collaborator.",
-      "grantPermissionWarning": "You need to handle Azure resource permissions manually on Azure Portal."
+      "grantPermissionWarning": "You need to handle Azure resource permissions manually on Azure Portal.",
+      "noM365AccountSignedIn": "No M365 account signed in. Please sign in to M365.",
+      "m365TenantNotMatch": "The M365 tenant id(which is used to provision before) does not match the current account.",
+      "azureAccountNotMatch": "The Azure account does not match.",
+      "m365AccountNotMatch": "The M365 account does not match."
     },
     "handlers": {
       "concurrentTriggerTask": "Task '%s' is still running. Wait for it to complete before starting another task.",
@@ -100,8 +106,11 @@
       "decryptFailed": "Failed to decrypt secrect.",
       "openEnvFailed": "Can not open project environment %s.",
       "findEnvFailed": "Can not find project environment %s.",
-      "localDebugDescription": "Preview your project by running local debug",
-      "localDebugTitle": "Local debug"
+      "resourceInfoNotFound": "Can not load %s info for environment %s.",
+      "localDebugDescription": "Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.",
+      "localDebugTitle": "Local debug",
+      "configTitle": "Change location",
+      "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension."
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",
@@ -155,6 +164,7 @@
     "localDebug": {
       "portAlreadyInUse": "Port: %s is already in use. Close this port and try again.",
       "portsAlreadyInUse": "Ports: %s are already in use. Close these ports and try again.",
+      "portWarning": "Changing port(s) in package.json may break local debug. Ensure all port changes are expected or refer to documentation by clicking `Learn More` button. (%s package.json location: %s)",
       "sideloadingHintDoNotShowAgain": "Don't Show Again",
       "openFAQ": "Open FAQ",
       "sideloadingHintMessage": "If any error occurs during local debug, you can refer to the FAQ page by clicking 'Open FAQ' button.",

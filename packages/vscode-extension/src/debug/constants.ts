@@ -8,6 +8,7 @@ export const ngrokStartCommand = "ngrok start";
 export const botStartCommand = "bot start";
 export const openWenClientCommand = "launch Teams web client";
 export const backendWatchCommand = "backend watch";
+export const npmRunDevRegex = /npm[\s]+run[\s]+dev/im;
 
 export const frontendProblemMatcher = "$teamsfx-frontend-watch";
 export const backendProblemMatcher = "$teamsfx-backend-watch";
@@ -47,14 +48,13 @@ const hosts = [allAddressIPv4, loopbackAddressIPv4, allAddressIPv6, loopbackAddr
 
 export const frontendPorts: [number, string[]][] = [[3000, hosts]];
 export const simpleAuthPorts: [number, string[]][] = [[5000, hosts]];
-export const backendPorts: [number, string[]][] = [
-  [7071, hosts],
-  [9229, hosts],
-];
-export const botPorts: [number, string[]][] = [
-  [3978, hosts],
-  [9239, hosts],
-];
+export const backendDebugPortRegex = /--inspect[\s]*=[\s"']*9229/im;
+export const backendDebugPorts: [number, string[]][] = [[9229, hosts]];
+export const backendServicePortRegex = /--port[\s"']*7071/im;
+export const backendServicePorts: [number, string[]][] = [[7071, hosts]];
+export const botDebugPortRegex = /--inspect[\s]*=[\s"']*9239/im;
+export const botDebugPorts: [number, string[]][] = [[9239, hosts]];
+export const botServicePorts: [number, string[]][] = [[3978, hosts]];
 
 export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new?";
 export const issueTemplate = `
@@ -88,5 +88,12 @@ export const errorDetail = `
 export enum SideloadingHintStateKeys {
   DoNotShowAgain = "sideloadingHint/doNotShowAgain",
 }
+
+export enum PortWarningStateKeys {
+  DoNotShowAgain = "localDebugPortWarning/doNotShowAgain",
+}
+
 export const localDebugFAQUrl =
   "https://github.com/OfficeDev/TeamsFx/blob/dev/docs/fx-core/localdebug-help.md#what-to-do-if-teams-shows-app-not-found-when-the-teams-web-client-is-opened";
+
+export const localDebugHelpDoc = "https://aka.ms/teamsfx-localdebug";

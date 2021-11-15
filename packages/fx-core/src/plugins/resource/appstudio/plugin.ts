@@ -15,6 +15,7 @@ import {
   IComposeExtension,
   IBot,
   AppPackageFolderName,
+  BuildFolderName,
   ArchiveFolderName,
   V1ManifestFileName,
   ConfigMap,
@@ -68,8 +69,6 @@ import {
   LOCAL_BOT_ID,
   BOT_ID,
   REMOTE_MANIFEST,
-  FRONTEND_ENDPOINT_ARM,
-  FRONTEND_DOMAIN_ARM,
   ErrorMessages,
   SOLUTION,
   MANIFEST_TEMPLATE,
@@ -84,18 +83,18 @@ import {
   CONFIGURABLE_TABS_TPL_LOCAL_DEBUG,
   BOTS_TPL_LOCAL_DEBUG,
   COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG,
+  COLOR_TEMPLATE,
+  OUTLINE_TEMPLATE,
+  DEFAULT_COLOR_PNG_FILENAME,
+  DEFAULT_OUTLINE_PNG_FILENAME,
+  MANIFEST_RESOURCES,
+  APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import { getTemplatesFolder, isV2 } from "../../..";
 import path from "path";
-import { getArmOutput } from "../utils4v2";
-import {
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-  getAppDirectory,
-  isSPFxProject,
-} from "../../../common";
+import { isMultiEnvEnabled, getAppDirectory, isSPFxProject } from "../../../common";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
@@ -106,9 +105,12 @@ import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import Mustache from "mustache";
-import { replaceConfigValue } from "./utils/utils";
+import { getCustomizedKeys, getLocalAppName, replaceConfigValue } from "./utils/utils";
+import { TelemetryPropertyKey } from "./utils/telemetry";
 
 export class AppStudioPluginImpl {
+  public commonProperties: { [key: string]: string } = {};
+
   public async getAppDefinitionAndUpdate(
     ctx: PluginContext,
     isLocalDebug: boolean,
@@ -128,7 +130,7 @@ export class AppStudioPluginImpl {
 
       appDefinition = appDefinitionAndManifest.value[0];
 
-      const localTeamsAppID = this.getTeamsAppId(ctx, true);
+      const localTeamsAppID = await this.getTeamsAppId(ctx, true);
 
       let createIfNotExist = false;
       if (!localTeamsAppID) {
@@ -178,7 +180,7 @@ export class AppStudioPluginImpl {
   ): Promise<Result<string, FxError>> {
     const appDirectory = await getAppDirectory(ctx.root);
     const appStudioToken = await ctx.appStudioToken?.getAccessToken();
-    const localTeamsAppID = this.getTeamsAppId(ctx, true);
+    const localTeamsAppID = await this.getTeamsAppId(ctx, true);
     let create = !localTeamsAppID;
     if (localTeamsAppID) {
       try {
@@ -199,13 +201,7 @@ export class AppStudioPluginImpl {
       const manifestString = Mustache.render(JSON.stringify(manifest), view);
       manifest = JSON.parse(manifestString);
     } else {
-      const suffix = "-local-debug";
-      let appName = ctx.projectSettings!.appName;
-      if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
-        appName = appName + suffix;
-      }
-      manifest.name.short = appName;
-
+      manifest.name.short = getLocalAppName(ctx.projectSettings!.appName);
       manifest.id = localTeamsAppID ?? "";
 
       if (manifest.configurableTabs) {
@@ -247,58 +243,6 @@ export class AppStudioPluginImpl {
   }
 
   /**
-   * ask app common questions to generate app manifest
-   * @param settings
-   * @returns
-   */
-  private async createManifest(settings: ProjectSettings): Promise<TeamsAppManifest | undefined> {
-    const solutionSettings: AzureSolutionSettings =
-      settings.solutionSettings as AzureSolutionSettings;
-    if (
-      !solutionSettings.capabilities ||
-      (!solutionSettings.capabilities.includes(BotOptionItem.id) &&
-        !solutionSettings.capabilities.includes(MessageExtensionItem.id) &&
-        !solutionSettings.capabilities.includes(TabOptionItem.id))
-    ) {
-      throw new Error(`Invalid capability: ${solutionSettings.capabilities}`);
-    }
-    if (
-      HostTypeOptionAzure.id === solutionSettings.hostType ||
-      solutionSettings.capabilities.includes(BotOptionItem.id) ||
-      solutionSettings.capabilities.includes(MessageExtensionItem.id)
-    ) {
-      let manifestString = isMultiEnvEnabled()
-        ? TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV
-        : TEAMS_APP_MANIFEST_TEMPLATE;
-      manifestString = replaceConfigValue(manifestString, "appName", settings.appName);
-      manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
-      const manifest: TeamsAppManifest = JSON.parse(manifestString);
-      if (solutionSettings.capabilities.includes(TabOptionItem.id)) {
-        manifest.staticTabs = isMultiEnvEnabled() ? STATIC_TABS_TPL_FOR_MULTI_ENV : STATIC_TABS_TPL;
-        manifest.configurableTabs = isMultiEnvEnabled()
-          ? CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV
-          : CONFIGURABLE_TABS_TPL;
-      }
-      if (solutionSettings.capabilities.includes(BotOptionItem.id)) {
-        manifest.bots = isMultiEnvEnabled() ? BOTS_TPL_FOR_MULTI_ENV : BOTS_TPL;
-      }
-      if (solutionSettings.capabilities.includes(MessageExtensionItem.id)) {
-        manifest.composeExtensions = isMultiEnvEnabled()
-          ? COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV
-          : COMPOSE_EXTENSIONS_TPL;
-      }
-
-      if (settings?.solutionSettings?.migrateFromV1) {
-        manifest.webApplicationInfo = undefined;
-      }
-
-      return manifest;
-    }
-
-    return undefined;
-  }
-
-  /**
    * generate app manifest template according to existing manifest
    * @param settings
    * @returns
@@ -320,10 +264,10 @@ export class AppStudioPluginImpl {
     manifestString = this.replaceExistingValueToPlaceholder(
       manifestString,
       manifestSource.developer.websiteUrl,
-      "baseUrl"
+      isMultiEnvEnabled() ? "{{{localSettings.frontend.tabEndpoint}}}" : "{baseUrl}"
     );
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
-    manifest.id = "{appid}";
+    manifest.id = isMultiEnvEnabled() ? "{{localSettings.teamsApp.teamsAppId}}" : "{appid}";
     manifest.validDomains = [];
 
     const includeBot = (
@@ -332,12 +276,16 @@ export class AppStudioPluginImpl {
     if (includeBot) {
       if (manifest.bots !== undefined && manifest.bots.length > 0) {
         for (let index = 0; index < manifest.bots.length; ++index) {
-          manifest.bots[index].botId = `{${BOT_ID}}`;
+          manifest.bots[index].botId = isMultiEnvEnabled()
+            ? "{{localSettings.bot.botId}}"
+            : `{${BOT_ID}}`;
         }
       }
       if (manifest.composeExtensions !== undefined && manifest.composeExtensions.length > 0) {
         for (let index = 0; index < manifest.composeExtensions.length; ++index) {
-          manifest.composeExtensions[index].botId = `{${BOT_ID}}`;
+          manifest.composeExtensions[index].botId = isMultiEnvEnabled()
+            ? "{{localSettings.bot.botId}}"
+            : `{${BOT_ID}}`;
         }
       }
     }
@@ -366,7 +314,7 @@ export class AppStudioPluginImpl {
   }
 
   public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
-    let remoteTeamsAppId = this.getTeamsAppId(ctx, false);
+    let remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
 
     let create = false;
     if (!remoteTeamsAppId) {
@@ -395,7 +343,7 @@ export class AppStudioPluginImpl {
   }
 
   public async postProvision(ctx: PluginContext): Promise<string> {
-    const remoteTeamsAppId = this.getTeamsAppId(ctx, false);
+    const remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
     let manifestString: string;
     const appDirectory = await getAppDirectory(ctx.root);
     const manifestPath = await this.getManifestTemplatePath(ctx.root);
@@ -450,28 +398,23 @@ export class AppStudioPluginImpl {
   public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     let manifestString: string | undefined = undefined;
-    const appDirectory = await getAppDirectory(ctx.root);
     if (isSPFxProject(ctx.projectSettings)) {
       manifestString = (await fs.readFile(await this.getManifestTemplatePath(ctx.root))).toString();
       if (isMultiEnvEnabled()) {
-        const teamsAppId = this.getTeamsAppId(ctx, false);
-        if (!teamsAppId) {
-          return err(
-            AppStudioResultFactory.UserError(
-              AppStudioError.GetRemoteConfigError.name,
-              AppStudioError.GetRemoteConfigError.message("Manifest validation failed")
-            )
-          );
-        }
         const view = {
           config: ctx.envInfo.config,
           state: {
             "fx-resource-appstudio": {
-              teamsAppId: teamsAppId,
+              teamsAppId: this.getTeamsAppId(ctx, false),
             },
           },
         };
         manifestString = Mustache.render(manifestString, view);
+        const manifest = JSON.parse(manifestString);
+        if (!isUUID(manifest.id)) {
+          manifest.id = v4();
+        }
+        manifestString = JSON.stringify(manifest, null, 4);
       }
     } else {
       const appDefinitionAndManifest = await this.getAppDefinitionAndManifest(ctx, false);
@@ -504,24 +447,56 @@ export class AppStudioPluginImpl {
     let manifest: TeamsAppManifest | undefined;
     const archiveAppPackageFolder = path.join(ctx.root, ArchiveFolderName, AppPackageFolderName);
     const archiveManifestPath = path.join(archiveAppPackageFolder, V1ManifestFileName);
-    const newAppPackageFolder = path.join(ctx.root, AppPackageFolderName);
+
+    // cannot use getAppDirectory before creating the manifest file
+    const newAppPackageFolder = isMultiEnvEnabled()
+      ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}`
+      : `${ctx.root}/${AppPackageFolderName}`;
+
     await fs.ensureDir(newAppPackageFolder);
     if (await this.checkFileExist(archiveManifestPath)) {
       manifest = await this.createV1Manifest(ctx);
-      const newManifestPath = path.join(newAppPackageFolder, REMOTE_MANIFEST);
-      await fs.writeFile(newManifestPath, JSON.stringify(manifest, null, 4));
 
-      const archiveColorFile = path.join(archiveAppPackageFolder, manifest.icons.color);
-      const newColorFile = path.join(newAppPackageFolder, manifest.icons.color);
-      if (await this.checkFileExist(archiveColorFile)) {
-        await fs.copyFile(archiveColorFile, newColorFile);
+      const resourcesDir = isMultiEnvEnabled()
+        ? path.join(newAppPackageFolder, MANIFEST_RESOURCES)
+        : newAppPackageFolder;
+      await fs.ensureDir(resourcesDir);
+
+      if (manifest?.icons?.color && !manifest.icons.color.startsWith("https://")) {
+        const archiveColorFile = path.join(archiveAppPackageFolder, manifest.icons.color);
+        const existColorFile = await this.checkFileExist(archiveColorFile);
+        const newColorFileName = existColorFile
+          ? path.basename(manifest.icons.color)
+          : DEFAULT_COLOR_PNG_FILENAME;
+        await fs.copyFile(
+          existColorFile ? archiveColorFile : path.join(getTemplatesFolder(), COLOR_TEMPLATE),
+          path.join(resourcesDir, newColorFileName)
+        );
+        manifest.icons.color = isMultiEnvEnabled()
+          ? `${MANIFEST_RESOURCES}/${newColorFileName}`
+          : newColorFileName;
       }
 
-      const archiveOutlineFile = path.join(archiveAppPackageFolder, manifest.icons.outline);
-      const newOutlineFile = path.join(newAppPackageFolder, manifest.icons.outline);
-      if (await this.checkFileExist(archiveOutlineFile)) {
-        await fs.copyFile(archiveOutlineFile, newOutlineFile);
+      if (manifest?.icons?.outline && !manifest.icons.outline.startsWith("https://")) {
+        const archiveOutlineFile = path.join(archiveAppPackageFolder, manifest.icons.outline);
+        const existOutlineFile = await this.checkFileExist(archiveOutlineFile);
+        const newOutlineFileName = existOutlineFile
+          ? path.basename(manifest.icons.outline)
+          : DEFAULT_OUTLINE_PNG_FILENAME;
+        await fs.copyFile(
+          existOutlineFile ? archiveOutlineFile : path.join(getTemplatesFolder(), OUTLINE_TEMPLATE),
+          path.join(resourcesDir, newOutlineFileName)
+        );
+        manifest.icons.outline = isMultiEnvEnabled()
+          ? `${MANIFEST_RESOURCES}/${newOutlineFileName}`
+          : newOutlineFileName;
       }
+
+      await fs.writeFile(
+        path.join(newAppPackageFolder, isMultiEnvEnabled() ? MANIFEST_LOCAL : REMOTE_MANIFEST),
+        JSON.stringify(manifest, null, 4)
+      );
+
       return { enableAuth: !!manifest?.webApplicationInfo?.id };
     } else {
       await this.scaffold(ctx);
@@ -535,7 +510,7 @@ export class AppStudioPluginImpl {
 
     // cannot use getAppDirectory before creating the manifest file
     const appDir = isMultiEnvEnabled()
-      ? `${ctx.root}/templates/${AppPackageFolderName}`
+      ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}`
       : `${ctx.root}/${AppPackageFolderName}`;
 
     if (isSPFxProject(ctx.projectSettings)) {
@@ -551,24 +526,33 @@ export class AppStudioPluginImpl {
           false,
           false,
           false,
-          true
+          true,
+          false
         );
         await fs.writeFile(`${appDir}/${MANIFEST_LOCAL}`, JSON.stringify(localManifest, null, 4));
       }
     } else {
-      manifest = await this.createManifest(ctx.projectSettings!);
+      const solutionSettings: AzureSolutionSettings = ctx.projectSettings
+        ?.solutionSettings as AzureSolutionSettings;
+      const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
+      const hasBot = solutionSettings.capabilities.includes(BotOptionItem.id);
+      const hasMessageExtension = solutionSettings.capabilities.includes(MessageExtensionItem.id);
+      manifest = await createManifest(
+        ctx.projectSettings!.appName,
+        hasFrontend,
+        hasBot,
+        hasMessageExtension,
+        false,
+        !!solutionSettings?.migrateFromV1
+      );
       if (isMultiEnvEnabled()) {
-        const solutionSettings: AzureSolutionSettings = ctx.projectSettings
-          ?.solutionSettings as AzureSolutionSettings;
-        const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
-        const hasBot = solutionSettings.capabilities.includes(BotOptionItem.id);
-        const hasMessageExtension = solutionSettings.capabilities.includes(MessageExtensionItem.id);
         const localDebugManifest = await createLocalManifest(
           ctx.projectSettings!.appName,
           hasFrontend,
           hasBot,
           hasMessageExtension,
-          false
+          false,
+          !!solutionSettings?.migrateFromV1
         );
         await fs.writeFile(
           `${appDir}/${MANIFEST_LOCAL}`,
@@ -583,29 +567,17 @@ export class AppStudioPluginImpl {
       : `${appDir}/${REMOTE_MANIFEST}`;
     await fs.writeFile(manifestTemplatePath, JSON.stringify(manifest, null, 4));
 
-    const defaultColorPath = path.join(
-      templatesFolder,
-      "plugins",
-      "resource",
-      "appstudio",
-      "defaultIcon.png"
-    );
-    const defaultOutlinePath = path.join(
-      templatesFolder,
-      "plugins",
-      "resource",
-      "appstudio",
-      "defaultOutline.png"
-    );
-    const resourcesDir = isMultiEnvEnabled() ? path.join(appDir, "resources") : appDir;
+    const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
+    const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
+    const resourcesDir = isMultiEnvEnabled() ? path.join(appDir, MANIFEST_RESOURCES) : appDir;
     await fs.ensureDir(resourcesDir);
-    await fs.copy(defaultColorPath, `${resourcesDir}/color.png`);
-    await fs.copy(defaultOutlinePath, `${resourcesDir}/outline.png`);
+    await fs.copy(defaultColorPath, `${resourcesDir}/${DEFAULT_COLOR_PNG_FILENAME}`);
+    await fs.copy(defaultOutlinePath, `${resourcesDir}/${DEFAULT_OUTLINE_PNG_FILENAME}`);
 
     return undefined;
   }
 
-  public async buildTeamsAppPackage(ctx: PluginContext): Promise<string> {
+  public async buildTeamsAppPackage(ctx: PluginContext, isLocalDebug: boolean): Promise<string> {
     let manifestString: string | undefined = undefined;
 
     if (!ctx.envInfo?.envName) {
@@ -613,25 +585,39 @@ export class AppStudioPluginImpl {
     }
 
     const appDirectory = await getAppDirectory(ctx.root);
-    const zipFileName: string = isMultiEnvEnabled()
-      ? `${ctx.root}/${AppPackageFolderName}/appPackage.${ctx.envInfo.envName}.zip`
-      : `${ctx.root}/${AppPackageFolderName}/appPackage.zip`;
+    let zipFileName: string;
+    if (isMultiEnvEnabled()) {
+      if (isLocalDebug) {
+        zipFileName = `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/appPackage.local.zip`;
+      } else {
+        zipFileName = `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${ctx.envInfo.envName}.zip`;
+      }
+    } else {
+      zipFileName = `${ctx.root}/${AppPackageFolderName}/appPackage.zip`;
+    }
 
     if (isSPFxProject(ctx.projectSettings)) {
-      manifestString = (await fs.readFile(await this.getManifestTemplatePath(ctx.root))).toString();
+      manifestString = (
+        await fs.readFile(await this.getManifestTemplatePath(ctx.root, isLocalDebug))
+      ).toString();
       if (isMultiEnvEnabled()) {
         const view = {
           config: ctx.envInfo.config,
           state: {
             "fx-resource-appstudio": {
-              teamsAppId: this.getTeamsAppId(ctx, false),
+              teamsAppId: await this.getTeamsAppId(ctx, isLocalDebug),
             },
           },
         };
         manifestString = Mustache.render(manifestString, view);
+        const manifest = JSON.parse(manifestString);
+        if (!isUUID(manifest.id)) {
+          manifest.id = v4();
+        }
+        manifestString = JSON.stringify(manifest, null, 4);
       }
     } else {
-      const manifest = await this.getAppDefinitionAndManifest(ctx, false);
+      const manifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
       if (manifest.isOk()) {
         manifestString = JSON.stringify(manifest.value[1]);
       } else {
@@ -653,7 +639,6 @@ export class AppStudioPluginImpl {
       }
     }
     const status = await fs.lstat(appDirectory);
-
     if (!status.isDirectory()) {
       throw AppStudioResultFactory.UserError(
         AppStudioError.NotADirectoryError.name,
@@ -682,12 +667,21 @@ export class AppStudioPluginImpl {
 
     if (isMultiEnvEnabled()) {
       await fs.ensureDir(path.dirname(zipFileName));
+
+      const manifestFileName =
+        `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/manifest.` +
+        (isLocalDebug ? "local" : ctx.envInfo.envName) +
+        `.json`;
+      if (await fs.pathExists(manifestFileName)) {
+        await fs.chmod(manifestFileName, 0o777);
+      }
+      await fs.writeFile(manifestFileName, manifestString, { mode: 0o000 });
     }
 
     const zip = new AdmZip();
     zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
-    zip.addLocalFile(colorFile, isMultiEnvEnabled() ? "resources" : "");
-    zip.addLocalFile(outlineFile, isMultiEnvEnabled() ? "resources" : "");
+    zip.addLocalFile(colorFile, isMultiEnvEnabled() ? MANIFEST_RESOURCES : "");
+    zip.addLocalFile(outlineFile, isMultiEnvEnabled() ? MANIFEST_RESOURCES : "");
     zip.writeZip(zipFileName);
 
     if (isSPFxProject(ctx.projectSettings)) {
@@ -705,19 +699,19 @@ export class AppStudioPluginImpl {
       await fs.move(
         `${appDirectory}/${manifest.icons.color}`,
         isMultiEnvEnabled()
-          ? `${ctx.root}/templates/${AppPackageFolderName}/resources/${manifest.icons.color}`
+          ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${manifest.icons.color}`
           : `${ctx.root}/${AppPackageFolderName}/${manifest.icons.color}`
       );
       await fs.move(
         `${appDirectory}/${manifest.icons.outline}`,
         isMultiEnvEnabled()
-          ? `${ctx.root}/templates/${AppPackageFolderName}/resources/${manifest.icons.outline}`
+          ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_RESOURCES}/${manifest.icons.outline}`
           : `${ctx.root}/${AppPackageFolderName}/${manifest.icons.outline}`
       );
       await fs.move(
         `${appDirectory}/${REMOTE_MANIFEST}`,
         isMultiEnvEnabled()
-          ? `${ctx.root}/templates/${AppPackageFolderName}/${MANIFEST_TEMPLATE}`
+          ? `${ctx.root}/${APP_PACKAGE_FOLDER_FOR_MULTI_ENV}/${MANIFEST_TEMPLATE}`
           : `${ctx.root}/${AppPackageFolderName}/${REMOTE_MANIFEST}`
       );
     }
@@ -738,7 +732,7 @@ export class AppStudioPluginImpl {
           config: ctx.envInfo.config,
           state: {
             "fx-resource-appstudio": {
-              teamsAppId: this.getTeamsAppId(ctx, false),
+              teamsAppId: await this.getTeamsAppId(ctx, false),
             },
           },
         };
@@ -822,7 +816,7 @@ export class AppStudioPluginImpl {
   ): Promise<ResourcePermission[]> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
 
-    const teamsAppId = this.getTeamsAppId(ctx, false);
+    const teamsAppId = await this.getTeamsAppId(ctx, false);
     if (!teamsAppId) {
       if (isMultiEnvEnabled()) {
         throw new Error(ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, PluginNames.APPST));
@@ -851,7 +845,7 @@ export class AppStudioPluginImpl {
 
   public async listCollaborator(ctx: PluginContext): Promise<TeamsAppAdmin[]> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-    const teamsAppId = this.getTeamsAppId(ctx, false);
+    const teamsAppId = await this.getTeamsAppId(ctx, false);
     if (!teamsAppId) {
       if (isMultiEnvEnabled()) {
         throw new Error(ErrorMessages.GetConfigError(Constants.TEAMS_APP_ID, PluginNames.APPST));
@@ -887,7 +881,7 @@ export class AppStudioPluginImpl {
   ): Promise<ResourcePermission[]> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
 
-    const teamsAppId = this.getTeamsAppId(ctx, false);
+    const teamsAppId = await this.getTeamsAppId(ctx, false);
     if (!teamsAppId) {
       if (isMultiEnvEnabled()) {
         throw new Error(
@@ -947,7 +941,7 @@ export class AppStudioPluginImpl {
       }
 
       // Update App in App Studio
-      const remoteTeamsAppId = this.getTeamsAppId(ctx, false);
+      const remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
       await publishProgress?.next(
         `Updating app definition for app ${remoteTeamsAppId} in app studio`
       );
@@ -982,7 +976,7 @@ export class AppStudioPluginImpl {
       // Build Teams App package
       // Platforms will be checked in buildTeamsAppPackage(ctx)
       await publishProgress?.next(`Building Teams app package in ${appDirectory}.`);
-      const appPackage = await this.buildTeamsAppPackage(ctx);
+      const appPackage = await this.buildTeamsAppPackage(ctx, false);
 
       const appContent = await fs.readFile(appPackage);
       appStudioToken = await ctx.appStudioToken?.getAccessToken();
@@ -1018,7 +1012,7 @@ export class AppStudioPluginImpl {
     placeholderName: string
   ): string {
     if (config && value && placeholderName) {
-      config = config.split(value).join(`{${placeholderName}}`);
+      config = config.split(value).join(placeholderName);
     }
 
     return config;
@@ -1123,41 +1117,29 @@ export class AppStudioPluginImpl {
     }
   }
 
-  private getConfigForCreatingManifest(
+  private async getConfigForCreatingManifest(
     ctx: PluginContext,
     localDebug: boolean
-  ): Result<
-    {
-      tabEndpoint?: string;
-      tabDomain?: string;
-      aadId: string;
-      botDomain?: string;
-      botId?: string;
-      webApplicationInfoResource?: string;
-      teamsAppId: string;
-    },
-    FxError
+  ): Promise<
+    Result<
+      {
+        tabEndpoint?: string;
+        tabDomain?: string;
+        aadId: string;
+        botDomain?: string;
+        botId?: string;
+        webApplicationInfoResource?: string;
+        teamsAppId: string;
+      },
+      FxError
+    >
   > {
-    let tabEndpoint, tabDomain;
-    if (isArmSupportEnabled()) {
-      // getConfigForCreatingManifest is called in post-provision and validate manifest
-      // only in post stage, we find the value from arm output.
-      // Here is a walk-around way, try to get from arm output first and then get from ctx config.
-      // todo: use the specific function to read config in post stage.
-      tabEndpoint = getArmOutput(ctx, FRONTEND_ENDPOINT_ARM) as string;
-      tabDomain = getArmOutput(ctx, FRONTEND_DOMAIN_ARM) as string;
-      if (!tabEndpoint) {
-        tabEndpoint = this.getTabEndpoint(ctx, localDebug);
-        tabDomain = this.getTabDomain(ctx, localDebug);
-      }
-    } else {
-      tabEndpoint = this.getTabEndpoint(ctx, localDebug);
-      tabDomain = this.getTabDomain(ctx, localDebug);
-    }
+    const tabEndpoint = this.getTabEndpoint(ctx, localDebug);
+    const tabDomain = this.getTabDomain(ctx, localDebug);
     const aadId = this.getAadClientId(ctx, localDebug);
     const botId = this.getBotId(ctx, localDebug);
     const botDomain = this.getBotDomain(ctx, localDebug);
-    const teamsAppId = this.getTeamsAppId(ctx, localDebug);
+    const teamsAppId = await this.getTeamsAppId(ctx, localDebug);
 
     // This config value is set by aadPlugin.setApplicationInContext. so aadPlugin.setApplicationInContext needs to run first.
 
@@ -1194,90 +1176,46 @@ export class AppStudioPluginImpl {
     }
 
     if (!tabEndpoint && !botId) {
-      if (isArmSupportEnabled()) {
-        return err(
-          localDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.GetLocalDebugConfigFailedError.name,
-                AppStudioError.GetLocalDebugConfigFailedError.message(
-                  LOCAL_DEBUG_TAB_ENDPOINT + ", " + LOCAL_BOT_ID,
-                  false
-                )
+      return err(
+        localDebug
+          ? AppStudioResultFactory.SystemError(
+              AppStudioError.GetLocalDebugConfigFailedError.name,
+              AppStudioError.GetLocalDebugConfigFailedError.message(
+                LOCAL_DEBUG_TAB_ENDPOINT + ", " + LOCAL_BOT_ID,
+                false
               )
-            : AppStudioResultFactory.UserError(
-                AppStudioError.GetRemoteConfigFailedError.name,
-                AppStudioError.GetRemoteConfigFailedError.message(
-                  FRONTEND_ENDPOINT_ARM + ", " + BOT_ID,
-                  false
-                )
+            )
+          : AppStudioResultFactory.UserError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(
+                FRONTEND_ENDPOINT + ", " + BOT_ID,
+                false
               )
-        );
-      } else {
-        return err(
-          localDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.GetLocalDebugConfigFailedError.name,
-                AppStudioError.GetLocalDebugConfigFailedError.message(
-                  LOCAL_DEBUG_TAB_ENDPOINT + ", " + LOCAL_BOT_ID,
-                  false
-                )
-              )
-            : AppStudioResultFactory.UserError(
-                AppStudioError.GetRemoteConfigFailedError.name,
-                AppStudioError.GetRemoteConfigFailedError.message(
-                  FRONTEND_ENDPOINT + ", " + BOT_ID,
-                  false
-                )
-              )
-        );
-      }
+            )
+      );
     }
     if ((tabEndpoint && !tabDomain) || (!tabEndpoint && tabDomain)) {
-      if (isArmSupportEnabled()) {
-        return err(
-          localDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.InvalidLocalDebugConfigurationDataError.name,
-                AppStudioError.InvalidLocalDebugConfigurationDataError.message(
-                  LOCAL_DEBUG_TAB_ENDPOINT,
-                  tabEndpoint,
-                  LOCAL_DEBUG_TAB_DOMAIN,
-                  tabDomain
-                )
+      return err(
+        localDebug
+          ? AppStudioResultFactory.SystemError(
+              AppStudioError.InvalidLocalDebugConfigurationDataError.name,
+              AppStudioError.InvalidLocalDebugConfigurationDataError.message(
+                LOCAL_DEBUG_TAB_ENDPOINT,
+                tabEndpoint,
+                LOCAL_DEBUG_TAB_DOMAIN,
+                tabDomain
               )
-            : AppStudioResultFactory.SystemError(
-                AppStudioError.InvalidRemoteConfigurationDataError.name,
-                AppStudioError.InvalidRemoteConfigurationDataError.message(
-                  FRONTEND_ENDPOINT_ARM,
-                  tabEndpoint,
-                  FRONTEND_DOMAIN_ARM,
-                  tabDomain
-                )
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.InvalidRemoteConfigurationDataError.name,
+              AppStudioError.InvalidRemoteConfigurationDataError.message(
+                FRONTEND_ENDPOINT,
+                tabEndpoint,
+                FRONTEND_DOMAIN,
+                tabDomain
               )
-        );
-      } else {
-        return err(
-          localDebug
-            ? AppStudioResultFactory.SystemError(
-                AppStudioError.InvalidLocalDebugConfigurationDataError.name,
-                AppStudioError.InvalidLocalDebugConfigurationDataError.message(
-                  LOCAL_DEBUG_TAB_ENDPOINT,
-                  tabEndpoint,
-                  LOCAL_DEBUG_TAB_DOMAIN,
-                  tabDomain
-                )
-              )
-            : AppStudioResultFactory.SystemError(
-                AppStudioError.InvalidRemoteConfigurationDataError.name,
-                AppStudioError.InvalidRemoteConfigurationDataError.message(
-                  FRONTEND_ENDPOINT,
-                  tabEndpoint,
-                  FRONTEND_DOMAIN,
-                  tabDomain
-                )
-              )
-        );
-      }
+            )
+      );
     }
     if (botId) {
       if (!botDomain) {
@@ -1403,16 +1341,27 @@ export class AppStudioPluginImpl {
     return applicationIdUris;
   }
 
-  private getTeamsAppId(ctx: PluginContext, isLocalDebug: boolean): string {
+  private async getTeamsAppId(ctx: PluginContext, isLocalDebug: boolean): Promise<string> {
     let teamsAppId: string;
-    if (isLocalDebug) {
-      teamsAppId = isMultiEnvEnabled()
-        ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
-        : (ctx.envInfo.state.get("solution")?.get(LOCAL_DEBUG_TEAMS_APP_ID) as string);
+
+    if (isMultiEnvEnabled() || !isLocalDebug) {
+      // User may manually update id in manifest template file, rather than configuration file
+      // The id in manifest template file should override configurations
+      const manifest: TeamsAppManifest = await fs.readJSON(
+        await this.getManifestTemplatePath(ctx.root, isLocalDebug)
+      );
+      teamsAppId = manifest.id;
+      if (!isUUID(teamsAppId)) {
+        if (isMultiEnvEnabled()) {
+          teamsAppId = isLocalDebug
+            ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+            : (ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string);
+        } else {
+          teamsAppId = ctx.envInfo.state.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string;
+        }
+      }
     } else {
-      teamsAppId = isMultiEnvEnabled()
-        ? (ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
-        : (ctx.envInfo.state.get("solution")?.get(REMOTE_TEAMS_APP_ID) as string);
+      teamsAppId = ctx.envInfo.state.get("solution")?.get(LOCAL_DEBUG_TEAMS_APP_ID) as string;
     }
     return teamsAppId;
   }
@@ -1466,6 +1415,8 @@ export class AppStudioPluginImpl {
       appDefinition.webApplicationInfoId = appManifest.webApplicationInfo.id;
       appDefinition.webApplicationInfoResource = appManifest.webApplicationInfo.resource;
     }
+
+    appDefinition.activities = appManifest.activities;
 
     if (!ignoreIcon && appManifest.icons.color) {
       appDefinition.colorIcon = appManifest.icons.color;
@@ -1630,7 +1581,7 @@ export class AppStudioPluginImpl {
     ctx: PluginContext,
     isLocalDebug: boolean
   ): Promise<Result<[IAppDefinition, TeamsAppManifest], FxError>> {
-    const configs = this.getConfigForCreatingManifest(ctx, isLocalDebug);
+    const configs = await this.getConfigForCreatingManifest(ctx, isLocalDebug);
     if (configs.isErr()) {
       return err(configs.error);
     }
@@ -1658,6 +1609,10 @@ export class AppStudioPluginImpl {
     ).toString();
 
     if (isMultiEnvEnabled()) {
+      const customizedKeys = getCustomizedKeys("", JSON.parse(manifest));
+      this.commonProperties = {
+        [TelemetryPropertyKey.customizedKeys]: JSON.stringify(customizedKeys),
+      };
       const view = {
         config: ctx.envInfo.config,
         state: {
@@ -1764,14 +1719,9 @@ export class AppStudioPluginImpl {
     const appDefinition = this.convertToAppDefinition(updatedManifest, false);
 
     if (isLocalDebug && !isMultiEnvEnabled()) {
-      const suffix = "-local-debug";
-      if (
-        suffix.length + (appDefinition.shortName ? appDefinition.shortName.length : 0) <=
-        TEAMS_APP_SHORT_NAME_MAX_LENGTH
-      ) {
-        appDefinition.shortName = appDefinition.shortName + suffix;
-        appDefinition.appName = appDefinition.shortName;
-      }
+      const appName = getLocalAppName(appDefinition.shortName ?? "");
+      appDefinition.shortName = appName;
+      appDefinition.appName = appName;
     }
 
     return ok([appDefinition, updatedManifest]);
@@ -1792,7 +1742,8 @@ export async function createLocalManifest(
   hasFrontend: boolean,
   hasBot: boolean,
   hasMessageExtension: boolean,
-  isSPFx: boolean
+  isSPFx: boolean,
+  migrateFromV1: boolean
 ): Promise<TeamsAppManifest> {
   let name = appName;
   const suffix = "-local-debug";
@@ -1822,6 +1773,52 @@ export async function createLocalManifest(
     if (hasMessageExtension) {
       manifest.composeExtensions = COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG;
     }
+    if (migrateFromV1) {
+      manifest.webApplicationInfo = undefined;
+    }
     return manifest;
   }
+}
+
+export async function createManifest(
+  appName: string,
+  hasFrontend: boolean,
+  hasBot: boolean,
+  hasMessageExtension: boolean,
+  isSPFx: boolean,
+  migrateFromV1: boolean
+): Promise<TeamsAppManifest | undefined> {
+  if (!hasBot && !hasMessageExtension && !hasFrontend) {
+    throw new Error(`Invalid capability`);
+  }
+  if (!isSPFx || hasBot || hasMessageExtension) {
+    let manifestString = isMultiEnvEnabled()
+      ? TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV
+      : TEAMS_APP_MANIFEST_TEMPLATE;
+    manifestString = replaceConfigValue(manifestString, "appName", appName);
+    manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
+    const manifest: TeamsAppManifest = JSON.parse(manifestString);
+    if (hasFrontend) {
+      manifest.staticTabs = isMultiEnvEnabled() ? STATIC_TABS_TPL_FOR_MULTI_ENV : STATIC_TABS_TPL;
+      manifest.configurableTabs = isMultiEnvEnabled()
+        ? CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV
+        : CONFIGURABLE_TABS_TPL;
+    }
+    if (hasBot) {
+      manifest.bots = isMultiEnvEnabled() ? BOTS_TPL_FOR_MULTI_ENV : BOTS_TPL;
+    }
+    if (hasMessageExtension) {
+      manifest.composeExtensions = isMultiEnvEnabled()
+        ? COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV
+        : COMPOSE_EXTENSIONS_TPL;
+    }
+
+    if (migrateFromV1) {
+      manifest.webApplicationInfo = undefined;
+    }
+
+    return manifest;
+  }
+
+  return undefined;
 }

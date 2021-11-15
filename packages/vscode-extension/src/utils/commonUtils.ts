@@ -121,19 +121,32 @@ export function getTeamsAppIdByEnv(env: string) {
 export function getProjectId(): string | undefined {
   try {
     const ws = ext.workspaceUri.fsPath;
+    const settingsJsonPathNew = path.join(
+      ws,
+      `.${ConfigFolderName}`,
+      InputConfigsFolderName,
+      ProjectSettingsFileName
+    );
+    const settingsJsonPathOld = path.join(ws, `.${ConfigFolderName}/settings.json`);
 
-    if (isValidProject(ws)) {
-      const settingsJsonPath = path.join(
-        ws,
+    if (isMultiEnvEnabled()) {
+      // Do not check validity of project in multi-env.
+      // Before migration, `isValidProject()` is false, but we still need to send `project-id` telemetry property.
+      try {
+        const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathNew, "utf8"));
+        return settingsJson.projectId;
+      } catch (e) {}
 
-        isMultiEnvEnabled()
-          ? `.${ConfigFolderName}/${InputConfigsFolderName}/${ProjectSettingsFileName}`
-          : `.${ConfigFolderName}/settings.json`
-      );
-
-      const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPath, "utf8"));
-
+      // Also try reading from the old project location to support `ProjectMigratorMW` telemetry.
+      // While doing migration, sending telemetry will call this `getProjectId()` function.
+      // But before migration done, the settings file is still in the old location.
+      const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathOld, "utf8"));
       return settingsJson.projectId;
+    } else {
+      if (isValidProject(ws)) {
+        const settingsJson = JSON.parse(fs.readFileSync(settingsJsonPathOld, "utf8"));
+        return settingsJson.projectId;
+      }
     }
   } catch (e) {
     return undefined;
@@ -236,6 +249,10 @@ export function syncFeatureFlags() {
   process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
+
+  process.env["TEAMSFX_ROOT_DIRECTORY"] = getConfiguration(
+    ConfigurationKey.RootDirectory
+  ).toString();
 }
 
 export class FeatureFlags {
@@ -304,6 +321,23 @@ export async function getSubscriptionInfoFromEnv(
   }
 }
 
+export async function getM365TenantFromEnv(env: string): Promise<string | undefined> {
+  let provisionResult: Json | undefined;
+
+  try {
+    provisionResult = await getProvisionResultJson(env);
+  } catch (error) {
+    // ignore error on tree view when load provision result failed.
+    return undefined;
+  }
+
+  if (!provisionResult) {
+    return undefined;
+  }
+
+  return provisionResult?.[PluginNames.AAD]?.tenantId;
+}
+
 export async function getResourceGroupNameFromEnv(env: string): Promise<string | undefined> {
   let provisionResult: Json | undefined;
 
@@ -320,6 +354,24 @@ export async function getResourceGroupNameFromEnv(env: string): Promise<string |
   }
 
   return provisionResult.solution.resourceGroupName;
+}
+
+export async function getProvisionSucceedFromEnv(env: string): Promise<boolean | undefined> {
+  let provisionResult: Json | undefined;
+
+  try {
+    provisionResult = await getProvisionResultJson(env);
+  } catch (error) {
+    // ignore error on tree view when load provision result failed.
+
+    return undefined;
+  }
+
+  if (!provisionResult) {
+    return undefined;
+  }
+
+  return provisionResult.solution.provisionSucceeded;
 }
 
 async function getProvisionResultJson(env: string): Promise<Json | undefined> {

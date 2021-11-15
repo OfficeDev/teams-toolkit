@@ -25,7 +25,13 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import activate from "../activate";
-import { NonTeamsFxProjectFolder, ConfigNameNotFound, EnvNotSpecified } from "../error";
+import {
+  NonTeamsFxProjectFolder,
+  ConfigNameNotFound,
+  EnvNotSpecified,
+  ConfigNotFoundError,
+  EnvNotProvisioned,
+} from "../error";
 import * as constants from "../constants";
 
 const GlobalOptions = new Set([
@@ -60,18 +66,6 @@ export class ConfigGet extends YargsCommand {
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
     const inProject = readSettingsFileSync(rootFolder).isOk();
-    let env: string | undefined = undefined;
-    if (isMultiEnvEnabled()) {
-      if (!args.global) {
-        if (args.env) {
-          env = args.env;
-        } else {
-          return err(new EnvNotSpecified());
-        }
-      }
-    } else {
-      env = environmentManager.getDefaultEnvName();
-    }
 
     if (args.option === undefined) {
       // print all
@@ -80,6 +74,17 @@ export class ConfigGet extends YargsCommand {
         return globalResult;
       }
       if (!args.global && inProject) {
+        let env: string | undefined = undefined;
+        if (isMultiEnvEnabled()) {
+          if (args.env) {
+            env = args.env;
+          } else {
+            return err(new EnvNotSpecified());
+          }
+        } else {
+          env = environmentManager.getDefaultEnvName();
+        }
+
         const projectResult = await this.printProjectConfig(rootFolder, env);
         if (projectResult.isErr()) {
           return projectResult;
@@ -101,6 +106,16 @@ export class ConfigGet extends YargsCommand {
       } else {
         // project config
         if (inProject) {
+          let env: string | undefined = undefined;
+          if (isMultiEnvEnabled()) {
+            if (args.env) {
+              env = args.env;
+            } else {
+              return err(new EnvNotSpecified());
+            }
+          } else {
+            env = environmentManager.getDefaultEnvName();
+          }
           const projectResult = await this.printProjectConfig(rootFolder, env, args.option);
           if (projectResult.isErr()) {
             return projectResult;
@@ -167,7 +182,6 @@ export class ConfigGet extends YargsCommand {
     option?: string
   ): Promise<Result<null, FxError>> {
     let found = false;
-    // TODO: check file not found error before provision
     const result = await readProjectSecrets(rootFolder, env);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ConfigGet, result.error);
@@ -231,7 +245,6 @@ export class ConfigSet extends YargsCommand {
       return result.option("env", {
         description: "Environment name",
         type: "string",
-        demandOption: true,
       });
     } else {
       return result;
@@ -240,19 +253,6 @@ export class ConfigSet extends YargsCommand {
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
-    let env: string | undefined = undefined;
-    if (isMultiEnvEnabled()) {
-      if (!args.global) {
-        if (args.env) {
-          env = args.env;
-        } else {
-          return err(new EnvNotSpecified());
-        }
-      }
-    } else {
-      env = environmentManager.getDefaultEnvName();
-    }
-    const inProject = (await readEnvJsonFile(rootFolder, env)).isOk();
 
     if (GlobalOptions.has(args.option) || args.global) {
       // global config
@@ -268,6 +268,20 @@ export class ConfigSet extends YargsCommand {
         return globalResult;
       }
     } else {
+      let env: string | undefined = undefined;
+      if (isMultiEnvEnabled()) {
+        if (!args.global) {
+          if (args.env) {
+            env = args.env;
+          } else {
+            return err(new EnvNotSpecified());
+          }
+        }
+      } else {
+        env = environmentManager.getDefaultEnvName();
+      }
+
+      const inProject = readSettingsFileSync(rootFolder).isOk();
       // project config
       if (inProject) {
         const projectResult = await this.setProjectConfig(rootFolder, args.option, args.value, env);

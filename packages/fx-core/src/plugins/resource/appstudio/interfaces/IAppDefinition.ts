@@ -1,6 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { IConfigurableTab, IStaticTab, IMessagingExtensionCommand } from "@microsoft/teamsfx-api";
+import {
+  IConfigurableTab,
+  IStaticTab,
+  IMessagingExtensionCommand,
+  IActivityType,
+} from "@microsoft/teamsfx-api";
 
 export interface IAppDefinition {
   teamsAppId?: string;
@@ -43,6 +48,9 @@ export interface IAppDefinition {
   isFullScreen?: boolean;
   hasPreviewFeature?: boolean;
   localizationInfo?: ILocalizationInfo;
+  activities?: {
+    activityTypes?: IActivityType[];
+  };
 }
 
 export interface IUserList {

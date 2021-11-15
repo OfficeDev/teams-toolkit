@@ -9,7 +9,7 @@ import {
   IServicePrincipals,
 } from "../interfaces/IAadResource";
 import { IName } from "../interfaces/IName";
-import { AzureResource, OperationStatus, Operation, ErrorHandlerResult } from "../constants";
+import { AzureResource, OperationStatus, Operation } from "../constants";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { LogMessages } from "../log";
 import { Telemetry } from "../utils/telemetry";

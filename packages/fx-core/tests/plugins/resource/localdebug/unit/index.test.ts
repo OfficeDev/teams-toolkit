@@ -3,7 +3,12 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as dotenv from "dotenv";
 import * as fs from "fs-extra";
-import { ConfigFolderName, Platform, PluginContext } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  InputConfigsFolderName,
+  Platform,
+  PluginContext,
+} from "@microsoft/teamsfx-api";
 import * as path from "path";
 
 import { LocalDebugPluginInfo } from "../../../../../src/plugins/resource/localdebug/constants";
@@ -11,6 +16,7 @@ import { LocalDebugPlugin } from "../../../../../src/plugins/resource/localdebug
 import * as uuid from "uuid";
 import { newEnvInfo } from "../../../../../src/core/tools";
 import { FeatureFlagName } from "../../../../../src/common/constants";
+import { isMultiEnvEnabled } from "../../../../../src";
 chai.use(chaiAsPromised);
 
 interface TestParameter {
@@ -24,6 +30,10 @@ interface TestParameter {
 describe(LocalDebugPluginInfo.pluginName, () => {
   const expectedLaunchFile = path.resolve(__dirname, "../data/.vscode/launch.json");
   const expectedLocalEnvFile = path.resolve(__dirname, `../data/.${ConfigFolderName}/local.env`);
+  const expectedLocalSettingsFile = path.resolve(
+    __dirname,
+    `../data/.${ConfigFolderName}/${InputConfigsFolderName}/localSettings.json`
+  );
   const expectedSettingsFile = path.resolve(__dirname, "../data/.vscode/settings.json");
   const expectedTasksFile = path.resolve(__dirname, "../data/.vscode/tasks.json");
 
@@ -54,14 +64,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: 30,
+        numLocalEnvs: isMultiEnvEnabled() ? 30 : 30,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: 30,
+        numLocalEnvs: isMultiEnvEnabled() ? 30 : 30,
       },
     ];
     parameters1.forEach((parameter: TestParameter) => {
@@ -107,9 +117,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         );
         chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
 
-        //assert output local.env
-        const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-        chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
+        await assertLocalDebugLocalEnvs(parameter.numLocalEnvs, plugin, pluginContext);
       });
     });
 
@@ -119,14 +127,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 4,
         numCompounds: 2,
         numTasks: 6,
-        numLocalEnvs: 16,
+        numLocalEnvs: isMultiEnvEnabled() ? 16 : 16,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 4,
         numCompounds: 2,
         numTasks: 6,
-        numLocalEnvs: 16,
+        numLocalEnvs: isMultiEnvEnabled() ? 16 : 16,
       },
     ];
     parameters2.forEach((parameter) => {
@@ -167,9 +175,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         //no settings.json
         chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
 
-        //assert output local.env
-        const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-        chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
+        await assertLocalDebugLocalEnvs(parameter.numLocalEnvs, plugin, pluginContext);
       });
     });
 
@@ -179,14 +185,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 7,
-        numLocalEnvs: 14,
+        numLocalEnvs: isMultiEnvEnabled() ? 12 : 14,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 7,
-        numLocalEnvs: 14,
+        numLocalEnvs: isMultiEnvEnabled() ? 12 : 14,
       },
     ];
     parameters3.forEach((parameter) => {
@@ -223,9 +229,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         //no settings.json
         chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
 
-        //assert output local.env
-        const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-        chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
+        await assertLocalDebugLocalEnvs(parameter.numLocalEnvs, plugin, pluginContext);
       });
     });
 
@@ -235,14 +239,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 6,
         numCompounds: 2,
         numTasks: 12,
-        numLocalEnvs: 44,
+        numLocalEnvs: isMultiEnvEnabled() ? 42 : 44,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 6,
         numCompounds: 2,
         numTasks: 12,
-        numLocalEnvs: 44,
+        numLocalEnvs: isMultiEnvEnabled() ? 42 : 44,
       },
     ];
     parameters4.forEach((parameter) => {
@@ -289,9 +293,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         );
         chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
 
-        //assert output local.env
-        const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-        chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
+        await assertLocalDebugLocalEnvs(parameter.numLocalEnvs, plugin, pluginContext);
       });
     });
 
@@ -301,14 +303,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: 30,
+        numLocalEnvs: isMultiEnvEnabled() ? 28 : 30,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: 30,
+        numLocalEnvs: isMultiEnvEnabled() ? 28 : 30,
       },
     ];
     parameters5.forEach((parameter) => {
@@ -350,9 +352,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         //no settings.json
         chai.assert.isFalse(fs.existsSync(expectedSettingsFile));
 
-        //assert output local.env
-        const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-        chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
+        await assertLocalDebugLocalEnvs(parameter.numLocalEnvs, plugin, pluginContext);
       });
     });
 
@@ -414,7 +414,11 @@ describe(LocalDebugPluginInfo.pluginName, () => {
       chai.assert.isTrue(fs.existsSync(expectedLaunchFile));
       chai.assert.isTrue(fs.existsSync(expectedTasksFile));
       chai.assert.isTrue(fs.existsSync(expectedSettingsFile));
-      chai.assert.isTrue(fs.existsSync(expectedLocalEnvFile));
+      if (isMultiEnvEnabled()) {
+        chai.assert.isTrue(fs.existsSync(expectedLocalSettingsFile));
+      } else {
+        chai.assert.isTrue(fs.existsSync(expectedLocalEnvFile));
+      }
     });
 
     it("vs", async () => {
@@ -435,14 +439,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 2,
         numCompounds: 2,
         numTasks: 5,
-        numLocalEnvs: 2,
+        numLocalEnvs: isMultiEnvEnabled() ? 4 : 2,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 2,
         numCompounds: 2,
         numTasks: 5,
-        numLocalEnvs: 2,
+        numLocalEnvs: isMultiEnvEnabled() ? 4 : 2,
       },
     ];
     parameters6.forEach((parameter: TestParameter) => {
@@ -477,9 +481,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         const tasks: [] = tasksAll["tasks"];
         chai.assert.equal(tasks.length, parameter.numTasks);
 
-        //assert output local.env
-        const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
-        chai.assert.equal(Object.keys(localEnvs).length, parameter.numLocalEnvs);
+        await assertLocalDebugLocalEnvs(parameter.numLocalEnvs, plugin, pluginContext);
       });
     });
 
@@ -552,4 +554,92 @@ describe(LocalDebugPluginInfo.pluginName, () => {
       chai.assert.isTrue(result.isOk());
     });
   });
+
+  describe("getLocalDebugEnvs", () => {
+    let pluginContext: PluginContext;
+    let plugin: LocalDebugPlugin;
+    let flagInsiderPreview: string | undefined;
+
+    beforeEach(() => {
+      pluginContext = {
+        root: path.resolve(__dirname, "../data/"),
+        envInfo: newEnvInfo(),
+        config: new Map(),
+        answers: { platform: Platform.VSCode },
+      } as PluginContext;
+      plugin = new LocalDebugPlugin();
+      fs.emptyDirSync(pluginContext.root);
+      flagInsiderPreview = process.env[FeatureFlagName.InsiderPreview];
+    });
+
+    afterEach(() => {
+      process.env[FeatureFlagName.InsiderPreview] = flagInsiderPreview;
+    });
+
+    it("multi-env", async () => {
+      pluginContext.envInfo = newEnvInfo(
+        undefined,
+        undefined,
+        new Map([["solution", new Map([["programmingLanguage", "javascript"]])]])
+      );
+      pluginContext.projectSettings = {
+        appName: "",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          name: "",
+          version: "",
+          activeResourcePlugins: [
+            "fx-resource-aad-app-for-teams",
+            "fx-resource-simple-auth",
+            "fx-resource-frontend-hosting",
+            "fx-resource-function",
+            "fx-resource-bot",
+          ],
+        },
+      };
+
+      const frontendEnvPath = path.resolve(__dirname, "../data/tabs/.env.teamsfx.local");
+      fs.ensureFileSync(frontendEnvPath);
+      fs.writeFileSync(frontendEnvPath, "FOO=FRONTEND");
+      const backendEnvPath = path.resolve(__dirname, "../data/api/.env.teamsfx.local");
+      fs.ensureFileSync(backendEnvPath);
+      fs.writeFileSync(backendEnvPath, "FOO=BACKEND");
+      const botEnvPath = path.resolve(__dirname, "../data/bot/.env.teamsfx.local");
+      fs.ensureFileSync(botEnvPath);
+      fs.writeFileSync(botEnvPath, "FOO=BOT");
+
+      process.env[FeatureFlagName.InsiderPreview] = "true";
+
+      const localEnvs = await plugin.getLocalDebugEnvs(pluginContext);
+
+      chai.assert.isTrue(localEnvs !== undefined);
+      chai.assert.equal(localEnvs["FRONTEND_FOO"], "FRONTEND");
+      chai.assert.equal(localEnvs["BACKEND_FOO"], "BACKEND");
+      chai.assert.equal(localEnvs["BOT_FOO"], "BOT");
+      chai.assert.isTrue(Object.keys(localEnvs).length > 3);
+    });
+  });
+
+  async function assertLocalDebugLocalEnvs(
+    numLocalEnvs: number,
+    plugin: LocalDebugPlugin,
+    ctx: PluginContext
+  ): Promise<void> {
+    if (isMultiEnvEnabled()) {
+      // assert output: localSettings.json
+      chai.assert.isTrue(await fs.pathExists(expectedLocalSettingsFile));
+      const result = await plugin.executeUserTask(
+        { method: "getLocalDebugEnvs", namespace: "fx-resource-local-debug" },
+        ctx
+      );
+      chai.assert.isTrue(result.isOk());
+      if (result.isOk()) {
+        chai.assert.equal(Object.keys(result.value).length, numLocalEnvs);
+      }
+    } else {
+      // assert output: local.env
+      const localEnvs = dotenv.parse(fs.readFileSync(expectedLocalEnvFile));
+      chai.assert.equal(Object.keys(localEnvs).length, numLocalEnvs);
+    }
+  }
 });

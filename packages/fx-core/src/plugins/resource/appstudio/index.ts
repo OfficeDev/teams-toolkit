@@ -31,6 +31,7 @@ import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
 import { IUserList } from "./interfaces/IAppDefinition";
+import { isMultiEnvEnabled } from "../../../common";
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -86,10 +87,17 @@ export class AppStudioPlugin implements Plugin {
     TelemetryUtils.sendStartEvent(TelemetryEventName.provision);
     const remoteTeamsAppId = await this.appStudioPluginImpl.provision(ctx);
     if (remoteTeamsAppId.isErr()) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.provision, remoteTeamsAppId.error);
+      TelemetryUtils.sendErrorEvent(
+        TelemetryEventName.provision,
+        remoteTeamsAppId.error,
+        this.appStudioPluginImpl.commonProperties
+      );
       return remoteTeamsAppId;
     } else {
-      TelemetryUtils.sendSuccessEvent(TelemetryEventName.provision);
+      TelemetryUtils.sendSuccessEvent(
+        TelemetryEventName.provision,
+        this.appStudioPluginImpl.commonProperties
+      );
       return ok(remoteTeamsAppId.value);
     }
   }
@@ -100,6 +108,9 @@ export class AppStudioPlugin implements Plugin {
    */
   public async postProvision(ctx: PluginContext): Promise<Result<string, FxError>> {
     const remoteTeamsAppId = await this.appStudioPluginImpl.postProvision(ctx);
+    if (isMultiEnvEnabled()) {
+      await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, false);
+    }
     return ok(remoteTeamsAppId);
   }
 
@@ -120,7 +131,7 @@ export class AppStudioPlugin implements Plugin {
       const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
       ctx.logProvider?.error("Manifest Validation failed!");
       ctx.ui?.showMessage("error", errMessage, false);
-      const properties: { [key: string]: string } = {};
+      const properties: { [key: string]: string } = this.appStudioPluginImpl.commonProperties;
       properties[TelemetryPropertyKey.validationResult] = validationResult.join("\n");
       const validationFailed = AppStudioResultFactory.UserError(
         AppStudioError.ValidationFailedError.name,
@@ -135,7 +146,10 @@ export class AppStudioPlugin implements Plugin {
     }
     const validationSuccess = "Manifest Validation succeed!";
     ctx.ui?.showMessage("info", validationSuccess, false);
-    TelemetryUtils.sendSuccessEvent(TelemetryEventName.validateManifest);
+    TelemetryUtils.sendSuccessEvent(
+      TelemetryEventName.validateManifest,
+      this.appStudioPluginImpl.commonProperties
+    );
     return validationpluginResult;
   }
 
@@ -162,11 +176,14 @@ export class AppStudioPlugin implements Plugin {
    * @param {string} appDirectory - The directory contains manifest.source.json and two images
    * @returns {string} - Path of built appPackage.zip
    */
-  public async buildTeamsPackage(ctx: PluginContext): Promise<Result<string, FxError>> {
+  public async buildTeamsPackage(
+    ctx: PluginContext,
+    isLocalDebug: boolean
+  ): Promise<Result<string, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.buildTeamsPackage);
     try {
-      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx);
+      const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, isLocalDebug);
       const builtSuccess = [
         { content: "(√)Done: ", color: Colors.BRIGHT_GREEN },
         { content: "Teams Package ", color: Colors.BRIGHT_WHITE },
@@ -174,10 +191,17 @@ export class AppStudioPlugin implements Plugin {
         { content: " built successfully!", color: Colors.BRIGHT_WHITE },
       ];
       ctx.ui?.showMessage("info", builtSuccess, false);
-      TelemetryUtils.sendSuccessEvent(TelemetryEventName.buildTeamsPackage);
+      TelemetryUtils.sendSuccessEvent(
+        TelemetryEventName.buildTeamsPackage,
+        this.appStudioPluginImpl.commonProperties
+      );
       return ok(appPackagePath);
     } catch (error) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.buildTeamsPackage, error);
+      TelemetryUtils.sendErrorEvent(
+        TelemetryEventName.buildTeamsPackage,
+        error,
+        this.appStudioPluginImpl.commonProperties
+      );
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.TeamsPackageBuildError.name,
@@ -224,7 +248,7 @@ export class AppStudioPlugin implements Plugin {
       if (answer === manuallySubmitOption.id) {
         //const appDirectory = `${ctx.root}/.${ConfigFolderName}`;
         try {
-          const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx);
+          const appPackagePath = await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, false);
           const msg = `Successfully created ${
             ctx.projectSettings!.appName
           } app package file at ${appPackagePath}. Send this to your administrator for approval.`;
@@ -252,10 +276,10 @@ export class AppStudioPlugin implements Plugin {
       ctx.logProvider?.info(`Publish success!`);
       ctx.ui?.showMessage(
         "info",
-        `Success: ${result.name} successfully published to the admin portal. Once approved, your app will be available for your organization.`,
+        `Success: ${result.name} successfully published to the [admin portal](${Constants.TEAMS_ADMIN_PORTAL}). Once approved, your app will be available for your organization.`,
         false
       );
-      const properties: { [key: string]: string } = {};
+      const properties: { [key: string]: string } = this.appStudioPluginImpl.commonProperties;
       properties[TelemetryPropertyKey.updateExistingApp] = String(result.update);
       properties[TelemetryPropertyKey.publishedAppId] = String(result.id);
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.publish, properties);
@@ -268,7 +292,11 @@ export class AppStudioPlugin implements Plugin {
         }
         const innerError = error.innerError ? `innerError: ${error.innerError}` : "";
         error.message = `${error.message} ${innerError}`;
-        TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, error);
+        TelemetryUtils.sendErrorEvent(
+          TelemetryEventName.publish,
+          error,
+          this.appStudioPluginImpl.commonProperties
+        );
         return err(error);
       } else {
         const publishFailed = new SystemError(
@@ -279,7 +307,11 @@ export class AppStudioPlugin implements Plugin {
           undefined,
           error
         );
-        TelemetryUtils.sendErrorEvent(TelemetryEventName.publish, publishFailed);
+        TelemetryUtils.sendErrorEvent(
+          TelemetryEventName.publish,
+          publishFailed,
+          this.appStudioPluginImpl.commonProperties
+        );
         return err(publishFailed);
       }
     }
@@ -291,6 +323,9 @@ export class AppStudioPlugin implements Plugin {
     const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
     if (localTeamsAppId.isOk()) {
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.localDebug);
+      if (isMultiEnvEnabled()) {
+        await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, true);
+      }
       return localTeamsAppId;
     } else {
       const error = localTeamsAppId.error;
@@ -386,7 +421,11 @@ export class AppStudioPlugin implements Plugin {
     if (func.method === "validateManifest") {
       return await this.validateManifest(ctx);
     } else if (func.method === "buildPackage") {
-      return await this.buildTeamsPackage(ctx);
+      if (func.params && func.params.type) {
+        const isLocalDebug = (func.params.type as string) === "localDebug";
+        return await this.buildTeamsPackage(ctx, isLocalDebug);
+      }
+      return await this.buildTeamsPackage(ctx, false);
     } else if (func.method === "getAppDefinitionAndUpdate") {
       if (func.params && func.params.type && func.params.manifest) {
         const isLocalDebug = (func.params.type as string) === "localDebug";

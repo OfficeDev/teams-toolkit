@@ -63,9 +63,11 @@ import {
 import {
   downloadSampleHook,
   fetchCodeZip,
+  isFeatureFlagEnabled,
   isMultiEnvEnabled,
   mapToJson,
   saveFilesRecursively,
+  getRootDirectory,
 } from "../common/tools";
 import { PluginNames } from "../plugins";
 import { getAllV2ResourcePlugins } from "../plugins/solution/fx-solution/ResourcePluginContainer";
@@ -128,6 +130,7 @@ import {
 } from "./SolutionPluginContainer";
 import { flattenConfigJson, newEnvInfo } from "./tools";
 import { LocalCrypto } from "./crypto";
+import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -140,14 +143,23 @@ export interface CoreHookContext extends HookContext {
   localSettings?: Json;
 }
 
-// API V2 feature flag
-export function isV2() {
-  const flag = process.env[FeatureFlagName.APIV2];
+function featureFlagEnabled(flagName: string): boolean {
+  const flag = process.env[flagName];
   if (flag !== undefined && flag.toLowerCase() === "true") {
     return true;
   } else {
     return false;
   }
+}
+
+// API V2 feature flag
+export function isV2() {
+  return featureFlagEnabled(FeatureFlagName.APIV2);
+}
+
+// On VS calling CLI, interactive questions need to be skipped.
+export function isVsCallingCli() {
+  return featureFlagEnabled(FeatureFlagName.VSCallingCLI);
 }
 
 export let Logger: LogProvider;
@@ -174,6 +186,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    SupportV1ConditionMW(true),
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -185,7 +198,11 @@ export class FxCore implements Core {
     }
     currentStage = Stage.create;
     inputs.stage = Stage.create;
-    const folder = inputs[QuestionRootFolder.name] as string;
+    let folder = inputs[QuestionRootFolder.name] as string;
+    if (inputs.platform === Platform.VSCode) {
+      folder = getRootDirectory();
+      await fs.ensureDir(folder);
+    }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     let globalStateDescription = "openReadme";
@@ -235,7 +252,7 @@ export class FxCore implements Core {
           name: "",
           version: "1.0.0",
         },
-        version: "1.0.0",
+        version: getProjectSettingsVersion(),
         isFromSample: false,
       };
       ctx.projectSettings = projectSettings;
@@ -257,7 +274,6 @@ export class FxCore implements Core {
         }
         ctx.solutionV2 = solution;
         projectSettings.solutionSettings.name = solution.name;
-        projectSettings.version = "2.0.0";
         const contextV2 = createV2Context(this, projectSettings);
         ctx.contextV2 = contextV2;
         const scaffoldSourceCodeRes = await solution.scaffoldSourceCode(contextV2, inputs);
@@ -338,11 +354,12 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    SupportV1ConditionMW(true),
     MigrateConditionHandlerMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
+    EnvInfoWriterMW(true),
   ])
   async migrateV1Project(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     currentStage = Stage.migrateV1;
@@ -460,6 +477,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -517,6 +535,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -561,6 +580,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectUpgraderMW,
     ProjectSettingsLoaderMW,
@@ -643,6 +663,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -684,6 +705,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -742,6 +764,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -783,6 +806,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -816,6 +840,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -847,6 +872,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -863,6 +889,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -879,6 +906,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -895,6 +923,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -905,6 +934,27 @@ export class FxCore implements Core {
     currentStage = Stage.listAllCollaborators;
     inputs.stage = Stage.listAllCollaborators;
     return await ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(true),
+    ContextInjectorMW,
+  ])
+  async getSelectedEnv(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<string | undefined, FxError>> {
+    if (!isMultiEnvEnabled()) {
+      return err(new TaskNotSupportError("getSelectedEnv"));
+    }
+    if (isV2()) {
+      return ok(ctx?.envInfoV2?.envName);
+    } else {
+      return ok(ctx?.solutionContext?.envInfo.envName);
+    }
   }
 
   async _getQuestionsForUserTask(
@@ -1012,6 +1062,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     ContextInjectorMW,
@@ -1034,6 +1085,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     ContextInjectorMW,
@@ -1060,6 +1112,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),
     EnvInfoLoaderMW(true),
@@ -1171,6 +1224,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),
@@ -1258,14 +1312,18 @@ export class FxCore implements Core {
         if (solutionNode.data) solutionSelectNode.addChild(solutionNode);
       }
     }
-    createNew.addChild(new QTreeNode(QuestionRootFolder));
+    if (inputs.platform !== Platform.VSCode) {
+      createNew.addChild(new QTreeNode(QuestionRootFolder));
+    }
     createNew.addChild(new QTreeNode(QuestionAppName));
 
     // create from sample
     const sampleNode = new QTreeNode(SampleSelect);
     node.addChild(sampleNode);
     sampleNode.condition = { equals: ScratchOptionNo.id };
-    sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+    if (inputs.platform !== Platform.VSCode) {
+      sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+    }
     return ok(node.trim());
   }
 }
@@ -1307,6 +1365,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
             `${ArchiveFolderName}`,
             `${ArchiveLogFileName}`,
             ".env.teamsfx.local",
+            "subscriptionInfo.json",
           ].join("\n")
         : `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
     );
@@ -1319,7 +1378,11 @@ export async function downloadSample(
   fxcore: FxCore,
   inputs: Inputs
 ): Promise<Result<string, FxError>> {
-  const folder = inputs[QuestionRootFolder.name] as string;
+  let folder = inputs[QuestionRootFolder.name] as string;
+  if (inputs.platform === Platform.VSCode) {
+    folder = getRootDirectory();
+    await fs.ensureDir(folder);
+  }
   const sample = inputs[CoreQuestionNames.Samples] as OptionItem;
   if (sample && sample.data && folder) {
     const url = sample.data as string;
@@ -1394,7 +1457,7 @@ export function newProjectSettings(): ProjectSettings {
   const projectSettings: ProjectSettings = {
     appName: "",
     projectId: uuid.v4(),
-    version: "2.0.0",
+    version: getProjectSettingsVersion(),
     solutionSettings: {
       name: "",
     },
@@ -1421,6 +1484,11 @@ export function undefinedName(objs: any[], names: string[]) {
     }
   }
   return undefined;
+}
+
+export function getProjectSettingsVersion() {
+  if (isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false)) return "2.0.0";
+  else return "1.0.0";
 }
 
 export * from "./error";

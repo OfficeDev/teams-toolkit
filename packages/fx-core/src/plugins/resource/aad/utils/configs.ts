@@ -12,8 +12,7 @@ import { format, Formats } from "./format";
 import { Utils } from "./common";
 import { ResultFactory } from "../results";
 import { v4 as uuidv4 } from "uuid";
-import { isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common";
-import { getArmOutput } from "../../utils4v2";
+import { isMultiEnvEnabled } from "../../../../common";
 import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
@@ -205,13 +204,9 @@ export class SetApplicationInContextConfig {
     } else {
       frontendDomain = ctx.config.get(ConfigKeys.domain);
       if (!frontendDomain) {
-        if (isArmSupportEnabled()) {
-          frontendDomain = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingDomainArm);
-        } else {
-          frontendDomain = ctx.envInfo.state
-            .get(Plugins.frontendHosting)
-            ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
-        }
+        frontendDomain = ctx.envInfo.state
+          .get(Plugins.frontendHosting)
+          ?.get(ConfigKeysOfOtherPlugin.frontendHostingDomain);
       }
     }
 
@@ -272,13 +267,9 @@ export class PostProvisionConfig {
     } else {
       frontendEndpoint = ctx.config.get(ConfigKeys.endpoint);
       if (!frontendEndpoint) {
-        if (isArmSupportEnabled()) {
-          frontendEndpoint = getArmOutput(ctx, ConfigKeysOfOtherPlugin.frontendHostingEndpointArm);
-        } else {
-          frontendEndpoint = ctx.envInfo.state
-            .get(Plugins.frontendHosting)
-            ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
-        }
+        frontendEndpoint = ctx.envInfo.state
+          .get(Plugins.frontendHosting)
+          ?.get(ConfigKeysOfOtherPlugin.frontendHostingEndpoint);
       }
     }
 

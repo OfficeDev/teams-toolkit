@@ -88,7 +88,7 @@ const context: any = {
     ...((isArmSupportEnabled()
       ? [
           [
-            "functionAppId",
+            "functionAppResourceId",
             "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Web/sites/ut",
           ],
         ]
@@ -173,7 +173,7 @@ describe(FunctionPluginInfo.pluginName, () => {
       sinon.stub(dirWalk, "forEachFileAndDir").resolves(undefined);
 
       // Act
-      const res = await FunctionDeploy.hasUpdatedContent("ut", FunctionLanguage.JavaScript);
+      const res = await FunctionDeploy.hasUpdatedContent("ut", FunctionLanguage.JavaScript, "ut");
 
       // Assert
       chai.assert.isFalse(res);
@@ -184,7 +184,7 @@ describe(FunctionPluginInfo.pluginName, () => {
       sinon.stub(dirWalk, "forEachFileAndDir").resolves(undefined);
 
       // Act
-      const res = await FunctionDeploy.hasUpdatedContent("ut", FunctionLanguage.JavaScript);
+      const res = await FunctionDeploy.hasUpdatedContent("ut", FunctionLanguage.JavaScript, "ut");
 
       // Assert
       chai.assert.isTrue(res);

@@ -48,7 +48,7 @@ import {
   NgrokTunnelNotConnected,
   InvalidLocalBotEndpointFormat,
 } from "./util/error";
-import { prepareLocalAuthService } from "./util/localService";
+import { getAuthServiceFolder, prepareLocalAuthService } from "./util/localService";
 import { getNgrokHttpUrl } from "./util/ngrok";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
@@ -66,6 +66,7 @@ import {
 import { TeamsClientId } from "../../../common/constants";
 import { ProjectSettingLoader } from "./projectSettingLoader";
 import "./v2";
+import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
 
 const PackageJson = require("@npmcli/package-json");
 
@@ -205,6 +206,9 @@ export class LocalDebugPlugin implements Plugin {
             ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, "");
           }
         } else {
+          // generate localSettings.json
+          await this.scaffoldLocalSettingsJson(ctx);
+
           // add 'npm install' scripts into root package.json
           const packageJsonPath = ctx.root;
           let packageJson: any = undefined;
@@ -424,6 +428,10 @@ export class LocalDebugPlugin implements Plugin {
         LocalSettingsBackendKeys.FunctionEndpoint
       ) as string;
 
+      const localAuthPackagePath = ctx.localSettings?.auth?.get(
+        LocalSettingsAuthKeys.SimpleAuthFilePath
+      ) as string;
+
       if (includeFrontend) {
         if (includeAuth) {
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
@@ -431,6 +439,7 @@ export class LocalDebugPlugin implements Plugin {
             EnvKeysFrontend.LoginUrl
           ] = `${localTabEndpoint}/auth-start.html`;
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.ClientId] = clientId;
+          await prepareLocalAuthService(localAuthPackagePath);
         }
 
         if (includeBackend) {
@@ -511,6 +520,7 @@ export class LocalDebugPlugin implements Plugin {
     return ok(undefined);
   }
 
+  // Note: this may be called before `localDebug` so do not throw if any value is missing
   public async getLocalDebugEnvs(ctx: PluginContext): Promise<Record<string, string>> {
     const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
     const includeBackend = ProjectSettingLoader.includeBackend(ctx);
@@ -529,9 +539,6 @@ export class LocalDebugPlugin implements Plugin {
     const teamsMobileDesktopAppId = TeamsClientId.MobileDesktop;
     const teamsWebAppId = TeamsClientId.Web;
 
-    const localAuthPackagePath = ctx.localSettings?.auth?.get(
-      LocalSettingsAuthKeys.SimpleAuthFilePath
-    ) as string;
     const localAuthEndpoint = ctx.localSettings?.auth?.get(
       LocalSettingsAuthKeys.SimpleAuthServiceEndpoint
     ) as string;
@@ -572,12 +579,7 @@ export class LocalDebugPlugin implements Plugin {
         localEnvs[LocalEnvAuthKeys.AllowedAppIds] = [teamsMobileDesktopAppId, teamsWebAppId].join(
           ";"
         );
-
-        if (localAuthPackagePath) {
-          localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(
-            localAuthPackagePath
-          );
-        }
+        localEnvs[LocalEnvAuthKeys.ServicePath] = getAuthServiceFolder();
       }
 
       if (includeBackend) {
@@ -638,6 +640,28 @@ export class LocalDebugPlugin implements Plugin {
       }
     }
 
+    // TODO: This is to load .env.teamsfx.local for each component. Remove this after fully supporting custom local debug.
+    try {
+      const localEnvMultiProvider = new LocalEnvMultiProvider(ctx.root);
+      if (includeFrontend) {
+        const customEnvs = (
+          await localEnvMultiProvider.loadFrontendLocalEnvs(includeBackend, includeAuth)
+        ).customizedLocalEnvs;
+        this.appendEnvWithPrefix(customEnvs, localEnvs, "FRONTEND_");
+      }
+      if (includeBackend) {
+        const customEnvs = (await localEnvMultiProvider.loadBackendLocalEnvs()).customizedLocalEnvs;
+        this.appendEnvWithPrefix(customEnvs, localEnvs, "BACKEND_");
+      }
+      if (includeBot) {
+        const customEnvs = (await localEnvMultiProvider.loadBotLocalEnvs(false))
+          .customizedLocalEnvs;
+        this.appendEnvWithPrefix(customEnvs, localEnvs, "BOT_");
+      }
+    } catch (error) {
+      ctx.logProvider?.error(`Cannot load .env.teamsfx.local. ${error}`);
+    }
+
     return localEnvs;
   }
 
@@ -679,6 +703,42 @@ export class LocalDebugPlugin implements Plugin {
     }
 
     return ok(undefined);
+  }
+
+  async scaffoldLocalSettingsJson(ctx: PluginContext): Promise<void> {
+    const localSettingsProvider = new LocalSettingsProvider(ctx.root);
+
+    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
+    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
+    const includeBot = ProjectSettingLoader.includeBot(ctx);
+
+    if (ctx.localSettings !== undefined) {
+      // Add local settings for the new added capability/resource
+      ctx.localSettings = localSettingsProvider.incrementalInit(
+        ctx.localSettings,
+        includeBackend,
+        includeBot
+      );
+      await localSettingsProvider.save(ctx.localSettings);
+    } else {
+      // Initialize a local settings on scaffolding
+      ctx.localSettings = localSettingsProvider.init(includeFrontend, includeBackend, includeBot);
+      await localSettingsProvider.save(ctx.localSettings);
+    }
+  }
+
+  appendEnvWithPrefix(
+    source: { [key: string]: string },
+    target: { [key: string]: string },
+    prefix: string
+  ) {
+    for (const key of Object.keys(source)) {
+      const prefixKey = `${prefix}${key}`;
+      if (target[prefixKey] === undefined || target[prefixKey] === "") {
+        // only append and do not override
+        target[prefixKey] = source[key];
+      }
+    }
   }
 }
 

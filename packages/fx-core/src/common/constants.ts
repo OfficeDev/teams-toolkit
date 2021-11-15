@@ -2,6 +2,7 @@ export class ConstantString {
   static readonly UTF8Encoding = "utf-8";
   static readonly DeploymentResourceType = "Microsoft.Resources/deployments";
   static readonly DeploymentNotFound = "DeploymentNotFound";
+  static readonly rootFolder = "TeamsApps";
 }
 
 export const ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
@@ -12,6 +13,8 @@ export class Bicep {
   static readonly OutputOrchestrationFileName: string = "output.template.bicep";
   static readonly VariablesOrchestrationFileName: string = "variables.template.bicep";
   static readonly ParameterFileName: string = "parameters.json";
+  static readonly ProvisionFileName: string = "provision.template.bicep";
+  static readonly ConfigFileName: string = "config.template.bicep";
 }
 
 export class TeamsClientId {
@@ -28,6 +31,7 @@ export class ResourcePlugins {
   static readonly AzureSQL = "fx-resource-azure-sql";
   static readonly Function = "fx-resource-function";
   static readonly Identity = "fx-resource-identity";
+  static readonly Apim = "fx-resource-apim";
 }
 export class PluginDisplayName {
   static readonly Solution = "Teams Toolkit";
@@ -37,4 +41,6 @@ export class FeatureFlagName {
   static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
   static readonly APIV2 = "TEAMSFX_APIV2";
   static readonly InsiderPreview = "TEAMSFX_INSIDER_PREVIEW";
+  static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
+  static readonly VSCallingCLI = "VS_CALLING_CLI";
 }

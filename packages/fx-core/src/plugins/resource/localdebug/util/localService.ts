@@ -8,6 +8,10 @@ import * as os from "os";
 import * as path from "path";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
+export function getAuthServiceFolder(): string {
+  return `${os.homedir()}/.${ConfigFolderName}/localauth`;
+}
+
 export async function prepareLocalAuthService(zipPath: string): Promise<string> {
   const toolkitHome = `${os.homedir()}/.${ConfigFolderName}`;
   const zipFolder = path.dirname(zipPath);

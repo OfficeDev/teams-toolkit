@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { AssertConfigNotEmpty, BuildError, NoValidOpenApiDocument } from "../error";
+import { BuildError, NoValidOpenApiDocument } from "../error";
 import {
   LogProvider,
   OptionItem,
@@ -12,12 +12,7 @@ import {
   Inputs,
   ValidationSchema,
 } from "@microsoft/teamsfx-api";
-import {
-  ApimDefaultValues,
-  ApimPluginConfigKeys,
-  QuestionConstants,
-  TeamsToolkitComponent,
-} from "../constants";
+import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants } from "../constants";
 import { ApimPluginConfig, SolutionConfig } from "../config";
 import { ApimService } from "../services/apimService";
 import { OpenApiProcessor } from "../utils/openApiProcessor";
@@ -25,7 +20,7 @@ import { buildAnswer } from "../answer";
 import { NamingRules } from "../utils/namingRules";
 import { BaseQuestionService, IQuestionService } from "./question";
 import { getApimServiceNameFromResourceId, Lazy } from "../utils/commonUtils";
-import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../../..";
+import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../../../common/tools";
 
 export class ApimServiceQuestion extends BaseQuestionService implements IQuestionService {
   private readonly lazyApimService: Lazy<ApimService>;
@@ -137,12 +132,8 @@ export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements 
       type: "func",
       name: QuestionConstants.VSCode.ExistingOpenApiDocument.questionName,
       func: async (inputs: Inputs): Promise<OptionItem> => {
-        const apimConfig = new ApimPluginConfig(ctx.config);
-        const openApiDocumentPath = AssertConfigNotEmpty(
-          TeamsToolkitComponent.ApimPlugin,
-          ApimPluginConfigKeys.apiDocumentPath,
-          apimConfig.apiDocumentPath
-        );
+        const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
+        const openApiDocumentPath = apimConfig.checkAndGet(ApimPluginConfigKeys.apiDocumentPath);
         const openApiDocument = await this.openApiProcessor.loadOpenApiDocument(
           openApiDocumentPath,
           ctx.root
@@ -209,33 +200,19 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
 
   private async getDynamicOptions(inputs: Inputs, ctx: PluginContext): Promise<OptionItem[]> {
     const apimService = await this.lazyApimService.getValue();
-    const apimConfig = new ApimPluginConfig(ctx.config);
-    const solutionConfig = new SolutionConfig(ctx.envInfo.state);
+    const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
+    const solutionConfig = new SolutionConfig(ctx.envInfo);
     const answer = buildAnswer(inputs);
     let resourceGroupName, serviceName;
     if (isArmSupportEnabled()) {
-      const apimServiceResourceId = AssertConfigNotEmpty(
-        TeamsToolkitComponent.ApimPlugin,
-        ApimPluginConfigKeys.serviceResourceId,
-        apimConfig.serviceResourceId
-      );
+      const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);
       resourceGroupName = getResourceGroupNameFromResourceId(apimServiceResourceId);
       serviceName = getApimServiceNameFromResourceId(apimServiceResourceId);
     } else {
       resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-      serviceName = AssertConfigNotEmpty(
-        TeamsToolkitComponent.ApimPlugin,
-        ApimPluginConfigKeys.serviceName,
-        apimConfig.serviceName
-      );
+      serviceName = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceName);
     }
-    const apiPrefix =
-      answer.apiPrefix ??
-      AssertConfigNotEmpty(
-        TeamsToolkitComponent.ApimPlugin,
-        ApimPluginConfigKeys.apiPrefix,
-        apimConfig.apiPrefix
-      );
+    const apiPrefix = answer.apiPrefix ?? apimConfig.checkAndGet(ApimPluginConfigKeys.apiPrefix);
     const versionSetId =
       apimConfig.versionSetId ??
       NamingRules.versionSetId.sanitize(apiPrefix, solutionConfig.resourceNameSuffix);

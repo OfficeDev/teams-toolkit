@@ -35,7 +35,6 @@ import {
   FindAppError,
 } from "./resources/errors";
 import {
-  FunctionArmOutput,
   AzureInfo,
   FunctionBicep,
   DefaultProvisionConfigs,
@@ -78,7 +77,7 @@ import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { generateBicepFiles, getTemplatesFolder } from "../../..";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ArmTemplateResult, ScaffoldArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import {
   getResourceGroupNameFromResourceId,
@@ -87,7 +86,6 @@ import {
   isArmSupportEnabled,
 } from "../../../common";
 import { functionNameQuestion } from "./question";
-import { getArmOutput } from "../utils4v2";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -108,7 +106,7 @@ export interface FunctionConfig {
   storageAccountName?: string;
   appServicePlanName?: string;
   functionEndpoint?: string;
-  functionAppId?: string;
+  functionAppResourceId?: string;
 
   /* Intermediate  */
   skipDeploy: boolean;
@@ -126,7 +124,9 @@ export class FunctionPluginImpl {
 
     this.config.functionEndpoint = ctx.config.get(FunctionConfigKey.functionEndpoint) as string;
     if (isArmSupportEnabled()) {
-      this.config.functionAppId = ctx.config.get(FunctionConfigKey.functionAppId) as string;
+      this.config.functionAppResourceId = ctx.config.get(
+        FunctionConfigKey.functionAppResourceId
+      ) as string;
     } else {
       const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
         DependentPluginInfo.solutionPluginName
@@ -400,8 +400,8 @@ export class FunctionPluginImpl {
   }
 
   public async provision(ctx: PluginContext): Promise<FxResult> {
-    const resourceGroupName = this.getFunctionAppResourceGroupName(ctx);
-    const subscriptionId = this.getFunctionAppSubscriptionId(ctx);
+    const resourceGroupName = this.getFunctionAppResourceGroupName();
+    const subscriptionId = this.getFunctionAppSubscriptionId();
     const location = this.checkAndGet(this.config.location, FunctionConfigKey.location);
     const appServicePlanName = this.checkAndGet(
       this.config.appServicePlanName,
@@ -552,9 +552,11 @@ export class FunctionPluginImpl {
   }
 
   public async postProvision(ctx: PluginContext): Promise<FxResult> {
-    const functionAppName = this.getFunctionAppName(ctx, true);
-    const resourceGroupName = this.getFunctionAppResourceGroupName(ctx, true);
-    const subscriptionId = this.getFunctionAppSubscriptionId(ctx, true);
+    await this.syncConfigFromContext(ctx);
+
+    const functionAppName = this.getFunctionAppName();
+    const resourceGroupName = this.getFunctionAppResourceGroupName();
+    const subscriptionId = this.getFunctionAppSubscriptionId();
     const credential = this.checkAndGet(
       await ctx.azureAccountProvider?.getAccountCredentialAsync(),
       FunctionConfigKey.credential
@@ -564,10 +566,6 @@ export class FunctionPluginImpl {
       new InitAzureSDKError(),
       () => AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId)
     );
-
-    if (isArmSupportEnabled()) {
-      this.syncArmOutput(ctx);
-    }
 
     const site = await this.getSite(
       ctx,
@@ -633,7 +631,11 @@ export class FunctionPluginImpl {
       FunctionConfigKey.functionLanguage
     );
 
-    const updated: boolean = await FunctionDeploy.hasUpdatedContent(workingPath, functionLanguage);
+    const updated: boolean = await FunctionDeploy.hasUpdatedContent(
+      workingPath,
+      functionLanguage,
+      ctx.envInfo.envName
+    );
     if (!updated) {
       Logger.info(InfoMessages.noChange);
       this.config.skipDeploy = true;
@@ -659,12 +661,6 @@ export class FunctionPluginImpl {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
-    const context = {
-      Plugins: selectedPlugins,
-    };
-
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -673,66 +669,39 @@ export class FunctionPluginImpl {
       "bicep"
     );
 
-    const provisionModuleTemplateFilePath = path.join(
+    const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionFileName);
+
+    const provisionFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
       FunctionBicepFile.provisionModuleTemplateFileName
     );
-    const provisionModuleContentResult = await generateBicepFiles(
-      provisionModuleTemplateFilePath,
-      context
-    );
-    if (provisionModuleContentResult.isErr()) {
-      throw provisionModuleContentResult.error;
-    }
-    const configurationModuleTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      FunctionBicepFile.configurationTemplateFileName
-    );
-    const configurationModuleContentResult = await generateBicepFiles(
-      configurationModuleTemplateFilePath,
-      context
-    );
-    if (configurationModuleContentResult.isErr()) {
-      throw configurationModuleContentResult.error;
-    }
 
-    const parameterTemplateFilePath = path.join(
+    const configTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ConfigFileName);
+
+    const configFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      Bicep.ParameterOrchestrationFileName
-    );
-    const moduleOrchestrationFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.ModuleOrchestrationFileName
-    );
-    const outputTemplateFilePath = path.join(
-      bicepTemplateDirectory,
-      Bicep.OutputOrchestrationFileName
+      FunctionBicepFile.configuraitonTemplateFileName
     );
 
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        functionProvision: {
-          Content: provisionModuleContentResult.value,
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: await fs.readFile(provisionTemplateFilePath, ConstantString.UTF8Encoding),
+        Modules: {
+          function: await fs.readFile(provisionFuncTemplateFilePath, ConstantString.UTF8Encoding),
         },
-        functionConfiguration: {
-          Content: configurationModuleContentResult.value,
+        Reference: {
+          functionAppResourceId: FunctionBicep.functionAppResourceId,
+          functionEndpoint: FunctionBicep.functionEndpoint,
         },
       },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(parameterTemplateFilePath, ConstantString.UTF8Encoding),
-        },
-        ModuleTemplate: {
-          Content: await fs.readFile(moduleOrchestrationFilePath, ConstantString.UTF8Encoding),
-          Outputs: {
-            functionEndpoint: FunctionBicep.functionEndpoint,
-          },
-        },
-        OutputTemplate: {
-          Content: await fs.readFile(outputTemplateFilePath, ConstantString.UTF8Encoding),
+      Configuration: {
+        Orchestration: await fs.readFile(configTemplateFilePath, ConstantString.UTF8Encoding),
+        Modules: {
+          function: await fs.readFile(configFuncTemplateFilePath, ConstantString.UTF8Encoding),
         },
       },
     };
+
     return ResultFactory.Success(result);
   }
 
@@ -744,9 +713,9 @@ export class FunctionPluginImpl {
     }
 
     const workingPath: string = this.getFunctionProjectRootPath(ctx);
-    const functionAppName = this.getFunctionAppName(ctx);
-    const resourceGroupName = this.getFunctionAppResourceGroupName(ctx);
-    const subscriptionId = this.getFunctionAppSubscriptionId(ctx);
+    const functionAppName = this.getFunctionAppName();
+    const resourceGroupName = this.getFunctionAppResourceGroupName();
+    const subscriptionId = this.getFunctionAppSubscriptionId();
     const functionLanguage: FunctionLanguage = this.checkAndGet(
       this.config.functionLanguage,
       FunctionConfigKey.functionLanguage
@@ -769,7 +738,8 @@ export class FunctionPluginImpl {
       workingPath,
       functionAppName,
       functionLanguage,
-      resourceGroupName
+      resourceGroupName,
+      ctx.envInfo.envName
     );
 
     return ResultFactory.Success();
@@ -792,37 +762,37 @@ export class FunctionPluginImpl {
     return selectedPlugins.includes(plugin);
   }
 
-  private getFunctionAppId(ctx: PluginContext, getFromArmOutput = false): string {
-    if (getFromArmOutput) {
-      return getArmOutput(ctx, FunctionArmOutput.AppResourceId)!;
-    }
-    return this.checkAndGet(this.config.functionAppId, FunctionConfigKey.functionAppId);
+  private getFunctionAppName(): string {
+    return isArmSupportEnabled()
+      ? getSiteNameFromResourceId(
+          this.checkAndGet(
+            this.config.functionAppResourceId,
+            FunctionConfigKey.functionAppResourceId
+          )
+        )
+      : this.checkAndGet(this.config.functionAppName, FunctionConfigKey.functionAppName);
   }
 
-  private getFunctionAppName(ctx: PluginContext, getFromArmOutput = false): string {
-    if (isArmSupportEnabled()) {
-      return getSiteNameFromResourceId(this.getFunctionAppId(ctx, getFromArmOutput));
-    }
-    return this.checkAndGet(this.config.functionAppName, FunctionConfigKey.functionAppName);
+  private getFunctionAppResourceGroupName(): string {
+    return isArmSupportEnabled()
+      ? getResourceGroupNameFromResourceId(
+          this.checkAndGet(
+            this.config.functionAppResourceId,
+            FunctionConfigKey.functionAppResourceId
+          )
+        )
+      : this.checkAndGet(this.config.resourceGroupName, FunctionConfigKey.resourceGroupName);
   }
 
-  private getFunctionAppResourceGroupName(ctx: PluginContext, getFromArmOutput = false): string {
-    if (isArmSupportEnabled()) {
-      return getResourceGroupNameFromResourceId(this.getFunctionAppId(ctx, getFromArmOutput));
-    }
-    return this.checkAndGet(this.config.resourceGroupName, FunctionConfigKey.resourceGroupName);
-  }
-
-  private getFunctionAppSubscriptionId(ctx: PluginContext, getFromArmOutput = false): string {
-    if (isArmSupportEnabled()) {
-      return getSubscriptionIdFromResourceId(this.getFunctionAppId(ctx, getFromArmOutput));
-    }
-    return this.checkAndGet(this.config.subscriptionId, FunctionConfigKey.subscriptionId);
-  }
-
-  private syncArmOutput(ctx: PluginContext) {
-    this.config.functionEndpoint = `https://${getArmOutput(ctx, FunctionArmOutput.Endpoint)}`;
-    this.config.functionAppId = getArmOutput(ctx, FunctionArmOutput.AppResourceId);
+  private getFunctionAppSubscriptionId(): string {
+    return isArmSupportEnabled()
+      ? getSubscriptionIdFromResourceId(
+          this.checkAndGet(
+            this.config.functionAppResourceId,
+            FunctionConfigKey.functionAppResourceId
+          )
+        )
+      : this.checkAndGet(this.config.subscriptionId, FunctionConfigKey.subscriptionId);
   }
 
   private async getSite(

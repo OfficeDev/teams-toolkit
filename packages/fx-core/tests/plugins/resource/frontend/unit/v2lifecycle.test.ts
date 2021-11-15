@@ -12,7 +12,7 @@ import "reflect-metadata";
 import sinon from "sinon";
 import { Container } from "typedi";
 import * as uuid from "uuid";
-import { ScaffoldArmTemplateResult } from "../../../../../src/common/armInterface";
+import { ArmTemplateResult } from "../../../../../src/common/armInterface";
 import "../../../../../src/index";
 import { TabLanguage } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { FrontendPluginV2 } from "../../../../../src/plugins/resource/frontend/v2/index";
@@ -96,14 +96,14 @@ describe("Frontend hosting V2", () => {
   it("Scaffold - happy path", async () => {
     const result = await pluginV2.generateResourceTemplate(context, inputs);
     // Assert
-    const testModuleFileName = "frontend_hosting.bicep";
+    const testModuleFileName = "frontendProvision.result.bicep";
     const mockedSolutionDataContext = {
       Plugins: [pluginV2.name, "fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
       PluginOutput: {
         "fx-resource-frontend-hosting": {
-          Modules: {
-            frontendHostingProvision: {
-              Path: `./${testModuleFileName}`,
+          Provision: {
+            frontendHosting: {
+              ProvisionPath: `./${testModuleFileName}`,
             },
           },
         },
@@ -113,32 +113,24 @@ describe("Frontend hosting V2", () => {
     if (result.isOk()) {
       const expectedResult = mockSolutionUpdateArmTemplates(
         mockedSolutionDataContext,
-        result.value.template as ScaffoldArmTemplateResult
+        result.value.template as ArmTemplateResult
       );
 
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
       const expectedModuleFilePath = path.join(expectedBicepFileDirectory, testModuleFileName);
-      assert.strictEqual(
-        expectedResult.Modules!.frontendHostingProvision.Content,
-        fs.readFileSync(expectedModuleFilePath, ConstantString.UTF8Encoding)
+      const moduleFile = await fs.readFile(expectedModuleFilePath, ConstantString.UTF8Encoding);
+      assert.strictEqual(expectedResult.Provision!.Modules!.frontendHosting, moduleFile);
+      const expectedModuleSnippetFilePath = path.join(
+        expectedBicepFileDirectory,
+        "provision.result.bicep"
       );
-      const expectedModuleSnippetFilePath = path.join(expectedBicepFileDirectory, "module.bicep");
-      assert.strictEqual(
-        expectedResult.Orchestration.ModuleTemplate!.Content,
-        fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
+      const OrchestrationConfigFile = await fs.readFile(
+        expectedModuleSnippetFilePath,
+        ConstantString.UTF8Encoding
       );
-      const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
-      assert.strictEqual(
-        expectedResult.Orchestration.ParameterTemplate!.Content,
-        fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
-      );
-      const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
-      assert.strictEqual(
-        expectedResult.Orchestration.OutputTemplate!.Content,
-        fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
-      );
-      assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
-      assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterJson);
+      assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationConfigFile);
+      assert.isNotNull(expectedResult.Provision!.Reference);
+      assert.isUndefined(expectedResult.Parameters);
     }
   });
 });

@@ -30,7 +30,10 @@ import * as uuid from "uuid";
 import { getResourceFolder } from "../folder";
 import { ConstantString, FeatureFlagName } from "./constants";
 import * as crypto from "crypto";
-import { FailedToParseResourceIdError, SolutionError } from "..";
+import * as os from "os";
+import { FailedToParseResourceIdError } from "../core/error";
+import { SolutionError } from "../plugins/solution/fx-solution/constants";
+import Mustache from "mustache";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -165,7 +168,7 @@ export function dataNeedEncryption(key: string): boolean {
   return CryptoDataMatchers.has(key);
 }
 
-export function sperateSecretData(configJson: Json): Record<string, string> {
+export function separateSecretData(configJson: Json): Record<string, string> {
   const res: Record<string, string> = {};
   for (const matcher of SecretDataMatchers) {
     const splits = matcher.split(".");
@@ -194,37 +197,40 @@ export function sperateSecretData(configJson: Json): Record<string, string> {
   return res;
 }
 
-export function mergeSerectData(dict: Record<string, string>, configJson: Json): void {
-  for (const matcher of SecretDataMatchers) {
-    const splits = matcher.split(".");
-    const resourceId = splits[0];
-    const item = splits[1];
-    const resourceConfig: any = configJson[resourceId];
-    if (!resourceConfig) continue;
-    if ("*" !== item) {
-      const originalItemValue: string | undefined = resourceConfig[item] as string | undefined;
-      if (
-        originalItemValue &&
-        originalItemValue.startsWith("{{") &&
-        originalItemValue.endsWith("}}")
-      ) {
-        const keyName = `${resourceId}.${item}`;
-        resourceConfig[item] = dict[keyName];
+export function convertDotenvToEmbeddedJson(dict: Record<string, string>): Json {
+  const result: Json = {};
+  for (const key of Object.keys(dict)) {
+    const array = key.split(".");
+    let obj = result;
+    for (let i = 0; i < array.length - 1; ++i) {
+      const subKey = array[i];
+      let subObj = obj[subKey];
+      if (!subObj) {
+        subObj = {};
+        obj[subKey] = subObj;
       }
-    } else {
-      for (const itemName of Object.keys(resourceConfig)) {
-        const originalItemValue = resourceConfig[itemName];
-        if (
-          originalItemValue &&
-          originalItemValue.startsWith("{{") &&
-          originalItemValue.endsWith("}}")
-        ) {
-          const keyName = `${resourceId}.${itemName}`;
-          resourceConfig[itemName] = dict[keyName];
-        }
-      }
+      obj = subObj;
     }
+    obj[array[array.length - 1]] = dict[key];
   }
+  return result;
+}
+
+export function replaceTemplateWithUserData(
+  template: string,
+  userData: Record<string, string>
+): string {
+  const view = convertDotenvToEmbeddedJson(userData);
+  Mustache.escape = (t: string) => {
+    if (!t) {
+      return t;
+    }
+    const str = JSON.stringify(t);
+    return str.substr(1, str.length - 2);
+    // return t;
+  };
+  const result = Mustache.render(template, view);
+  return result;
 }
 
 export function serializeDict(dict: Record<string, string>): string {
@@ -234,20 +240,6 @@ export function serializeDict(dict: Record<string, string>): string {
     array.push(`${key}=${value}`);
   }
   return array.join("\n");
-}
-
-export function deserializeDict(data: string): Record<string, string> {
-  const lines = data.split("\n");
-  const dict: Record<string, string> = {};
-  for (const line of lines) {
-    const index = line.indexOf("=");
-    if (index > 0) {
-      const key = line.substr(0, index);
-      const value = line.substr(index + 1);
-      dict[key] = value;
-    }
-  }
-  return dict;
 }
 
 export async function fetchCodeZip(url: string) {
@@ -428,6 +420,15 @@ export function isRemoteCollaborateEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
 }
 
+export function getRootDirectory(): string {
+  const root = process.env[FeatureFlagName.rootDirectory];
+  if (root === undefined || root === "") {
+    return path.join(os.homedir(), ConstantString.rootFolder);
+  } else {
+    return root;
+  }
+}
+
 export async function generateBicepFiles(
   templateFilePath: string,
   context: any
@@ -455,12 +456,16 @@ export function compileHandlebarsTemplateString(templateString: string, context:
 export async function getAppDirectory(projectRoot: string): Promise<string> {
   const REMOTE_MANIFEST = "manifest.source.json";
   const MANIFEST_TEMPLATE = "manifest.remote.template.json";
+  const MANIFEST_LOCAL = "manifest.local.template.json";
   const appDirNewLocForMultiEnv = `${projectRoot}/templates/${AppPackageFolderName}`;
   const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
   const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;
 
   if (isMultiEnvEnabled()) {
-    if (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) {
+    if (
+      (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) ||
+      (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_LOCAL}`))
+    ) {
       return appDirNewLocForMultiEnv;
     } else if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
       return appDirNewLoc;

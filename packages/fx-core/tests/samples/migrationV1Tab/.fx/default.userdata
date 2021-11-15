@@ -1,0 +1,5 @@
+solution.localDebugTeamsAppId=
+solution.teamsAppTenantId=
+fx-resource-local-debug.trustDevCert=true
+fx-resource-local-debug.localTabEndpoint=https://localhost:3000
+fx-resource-local-debug.localTabDomain=localhost

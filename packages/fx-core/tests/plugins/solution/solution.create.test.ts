@@ -171,27 +171,6 @@ describe("Solution create()", async () => {
     expect(lang).to.be.undefined;
   });
 
-  it("should require hostType azure in answers if tab is chosen", async () => {
-    fileContent.clear();
-    const solution = new TeamsAppSolution();
-    const mockedSolutionCtx = mockSolutionContext();
-    mockedSolutionCtx.projectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionAzure.id,
-        name: "azure",
-        version: "1.0",
-      },
-    };
-    const answers = mockedSolutionCtx.answers!;
-    answers[AzureSolutionQuestionNames.Capabilities as string] = [TabOptionItem.id];
-    const result = await solution.create(mockedSolutionCtx);
-    expect(result.isErr()).equals(true);
-    expect(result._unsafeUnwrapErr().message).equals("hostType is undefined");
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.InternelError);
-  });
-
   afterEach(() => {
     mocker.restore();
   });

@@ -15,10 +15,13 @@ import {
   ConfigMap,
   EnvConfig,
   PermissionRequestProvider,
+  Json,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { LocalCrypto } from "../../../../core/crypto";
 import { newEnvInfo } from "../../../../core/tools";
+import { flattenConfigMap, legacyConfig2EnvState } from "../../../resource/utils4v2";
+import { combineRecords } from "./utils";
 
 class BaseSolutionContextAdaptor implements SolutionContext {
   envInfo = newEnvInfo();
@@ -92,7 +95,15 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
     this.envInfo = {
       envName: envInfo.envName,
       config: envInfo.config as EnvConfig,
-      state: state,
+      state: flattenConfigMap(state),
     };
+  }
+
+  getEnvStateJson(): Json {
+    return combineRecords(
+      [...this.envInfo.state].map(([pluginName, state]) => {
+        return { name: pluginName, result: legacyConfig2EnvState(state, pluginName) };
+      })
+    );
   }
 }

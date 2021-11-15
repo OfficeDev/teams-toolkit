@@ -14,7 +14,7 @@ import { terser } from "rollup-plugin-terser";
 
 const pkg = require("./package.json");
 const input = pkg.module;
-const depNames = Object.keys(pkg.dependencies);
+const depNames = Object.keys(Object.assign({}, pkg.dependencies, pkg.peerDependencies));
 const devDepNames = Object.keys(pkg.devDependencies);
 const production = process.env.NODE_ENV === "production";
 

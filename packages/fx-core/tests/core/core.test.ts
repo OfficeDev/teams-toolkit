@@ -94,12 +94,61 @@ describe("Core basic APIs", () => {
       describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
         let mockedEnvRestore: RestoreFn;
         beforeEach(() => {
+          sandbox.restore();
           mockedEnvRestore = mockedEnv(param);
         });
 
         afterEach(() => {
           mockedEnvRestore();
         });
+        it("create from new", async () => {
+          appName = randomAppName();
+          projectPath = path.resolve(os.tmpdir(), appName);
+          const expectedInputs: Inputs = {
+            platform: Platform.VSCode,
+            [CoreQuestionNames.AppName]: appName,
+            [CoreQuestionNames.Folder]: os.tmpdir(),
+            [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+            projectPath: projectPath,
+            solution: mockSolution.name,
+            stage: Stage.create,
+          };
+          it("CLI", async () => {
+            const core = new FxCore(tools);
+            {
+              const inputs: Inputs = { platform: Platform.CLI };
+              const res = await core.createProject(inputs);
+              assert.isTrue(res.isOk() && res.value === projectPath);
+              assert.deepEqual(expectedInputs, inputs);
+            }
+          });
+
+          it("VSCode without customized default root directory", async () => {
+            const core = new FxCore(tools);
+            {
+              const inputs: Inputs = { platform: Platform.VSCode };
+              const res = await core.createProject(inputs);
+              assert.isTrue(res.isOk() && res.value === os.homedir() + appName);
+              delete expectedInputs.folder;
+              assert.deepEqual(expectedInputs, inputs);
+            }
+          });
+
+          it("VSCode with customized default root directory", async () => {
+            const newParam = { ...(param && { TEAMSFX_ROOT_DIRECTORY: os.tmpdir() }) };
+            mockedEnvRestore = mockedEnv(newParam);
+            const core = new FxCore(tools);
+            {
+              const inputs: Inputs = { platform: Platform.VSCode };
+              const res = await core.createProject(inputs);
+              assert.isTrue(res.isOk() && res.value === newParam.TEAMSFX_ROOT_DIRECTORY + appName);
+              delete expectedInputs.folder;
+              assert.deepEqual(expectedInputs, inputs);
+            }
+            mockedEnvRestore();
+          });
+        });
+
         it("create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectConfig", async () => {
           await case1();
         });
@@ -133,6 +182,7 @@ describe("Core basic APIs", () => {
         let mockedEnvRestore: RestoreFn;
         beforeEach(() => {
           mockedEnvRestore = mockedEnv(param);
+          sandbox.restore();
         });
         afterEach(() => {
           mockedEnvRestore();
@@ -148,16 +198,13 @@ describe("Core basic APIs", () => {
   });
 
   describe("migrateV1", () => {
-    if (commonTools.isMultiEnvEnabled()) {
-      // TODO: add multi-env test case after migrateV1 for mult-env implemented
-      return;
-    }
     let mockedEnvRestore: RestoreFn;
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });
     });
     afterEach(async () => {
       mockedEnvRestore();
+      await fs.remove(path.resolve(os.tmpdir(), "v1projectpath"));
     });
     const migrateV1Params = [
       {
@@ -169,7 +216,7 @@ describe("Core basic APIs", () => {
       {
         description: "ask app name",
         appName: "v1projectname",
-        projectPath: path.resolve(os.tmpdir(), "v1-project-path", `${appName}-errorname`),
+        projectPath: path.resolve(os.tmpdir(), "v1projectpath", `${appName}-errorname`),
         skipAppNameQuestion: false,
       },
     ];
@@ -224,7 +271,10 @@ describe("Core basic APIs", () => {
           assert.deepEqual(expectedInputs, inputs);
           inputs.projectPath = testParam.projectPath;
 
-          const projectSettingsResult = await loadProjectSettings(inputs);
+          const projectSettingsResult = await loadProjectSettings(
+            inputs,
+            commonTools.isMultiEnvEnabled()
+          );
           if (projectSettingsResult.isErr()) {
             assert.fail("failed to load project settings");
           }
@@ -233,17 +283,19 @@ describe("Core basic APIs", () => {
           const validSettingsResult = validateSettings(projectSettings);
           assert.isTrue(validSettingsResult === undefined);
 
-          const envInfoResult = await loadSolutionContext(tools, inputs, projectSettings);
-          if (envInfoResult.isErr()) {
-            assert.fail("failed to load env info");
+          if (!commonTools.isMultiEnvEnabled()) {
+            const envInfoResult = await loadSolutionContext(tools, inputs, projectSettings);
+            if (envInfoResult.isErr()) {
+              assert.fail("failed to load env info");
+            }
+
+            const solutionContext = envInfoResult.value;
+            const validRes = validateProject(solutionContext);
+            assert.isTrue(validRes === undefined);
+
+            const solutionConfig = solutionContext.envInfo.state.get("solution");
+            assert.isTrue(solutionConfig !== undefined);
           }
-
-          const solutionContext = envInfoResult.value;
-          const validRes = validateProject(solutionContext);
-          assert.isTrue(validRes === undefined);
-
-          const solutioConfig = solutionContext.envInfo.state.get("solution");
-          assert.isTrue(solutioConfig !== undefined);
         }
       });
     });
@@ -251,11 +303,10 @@ describe("Core basic APIs", () => {
 
   async function case1() {
     appName = randomAppName();
-    projectPath = path.resolve(os.tmpdir(), appName);
+    projectPath = path.join(os.homedir(), "TeamsApps", appName);
     const expectedInputs: Inputs = {
       platform: Platform.VSCode,
       [CoreQuestionNames.AppName]: appName,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
       solution: mockSolution.name,
@@ -302,7 +353,7 @@ describe("Core basic APIs", () => {
     {
       const inputs: Inputs = { platform: Platform.VSCode };
       const res = await core.createProject(inputs);
-      assert.isTrue(res.isOk() && res.value === projectPath);
+      assert.isTrue(res.isOk());
       assert.deepEqual(expectedInputs, inputs);
 
       const projectSettingsResult = await loadProjectSettings(

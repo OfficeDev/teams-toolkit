@@ -158,7 +158,7 @@ export class WebviewPanel {
     inputs.stage = Stage.create;
     inputs["scratch"] = "no";
     inputs["samples"] = msg.data.appFolder;
-    const res = await runCommand(Stage.create, inputs, false);
+    const res = await runCommand(Stage.create, inputs);
     if (inputs.projectId) {
       props[TelemetryProperty.ProjectId] = inputs.projectId;
     }

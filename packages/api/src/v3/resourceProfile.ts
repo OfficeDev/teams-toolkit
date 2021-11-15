@@ -143,6 +143,7 @@ export interface TeamsFxResourceProfile {
   solution: AzureCommonConfig;
   tab?: AzureResource;
   bot?: AzureBot;
+  modules?: AzureResource[];
   resources?: AzureResource[];
   aad?: AzureActiveDirectoryApp;
   teamsApp: TeamsAppResource;
@@ -212,6 +213,7 @@ const resourceSettings: TeamsFxResourceProfile = {
     teamsAppId: "3949bacf-b098-4b03-9bb1-ca94196c90f8",
     tenantId: "72f988bf-86f1-41af-91ab-2d7cd011db47",
   },
+
   resources: [
     {
       name: "simpleAuth",

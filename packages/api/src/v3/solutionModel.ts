@@ -24,15 +24,15 @@ export interface WorkspaceModule extends Component {
   name: string;
   type: "WorkspaceModule";
   runtimeStack: RuntimeStacks;
-  scaffoldingPlugin: string;
-  hostingPlugin?: string;
-  dependencies?: Dependency[];
+  scaffoldingPlugin: string; // specified in scaffolding stage
+  containerHostingPlugin?: string; //specified in local-debug and provision stage
+  dependencies?: Dependency[]; // specified in scaffolding stage
 }
 
 export interface ExternalResource extends Component {
   name: string;
   type: "ExternalResource";
-  hostingPlugin?: string;
+  resourceHostingPlugin?: string; //specified in add-resource stage
   dependencies?: Dependency[];
 }
 
@@ -86,7 +86,7 @@ const solutionModel: TeamsFxSolutionModel = {
     {
       name: "sql1",
       type: "ExternalResource",
-      hostingPlugin: "some function scaffolding plugin",
+      resourceHostingPlugin: "some function scaffolding plugin",
       dependencies: [
         {
           name: "identify1",
@@ -97,7 +97,7 @@ const solutionModel: TeamsFxSolutionModel = {
     {
       name: "identify1",
       type: "ExternalResource",
-      hostingPlugin: "some function scaffolding plugin",
+      resourceHostingPlugin: "some function scaffolding plugin",
     },
   ],
 };

@@ -18,15 +18,18 @@ export interface ScaffoldingPlugin {
   name: string;
   runtimeStacks: RuntimeStacks[];
   languages: string[];
-  scaffoldOption: OptionItem;
+  moduleOption: OptionItem;
+  scaffoldSourceCode?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+}
 
+export interface ContainerHostingPlugin {
+  name: string;
+  provisionOption: OptionItem;
+  runtimeStacks?: RuntimeStacks[];
   /**
    * return dependent components when activating plugins
    */
   getDependencies(ctx: Context, inputs: Inputs): Promise<Result<Dependency[], FxError>>;
-
-  scaffoldSourceCode?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
-
   //all plugins are built-in plugins: aad, appStudio, localDebug, simpleAuth, bot
   provisionLocalResource?: (
     ctx: Context,
@@ -42,12 +45,6 @@ export interface ScaffoldingPlugin {
     teamsAppLocalResourceProfile: TeamsAppLocalResourceProfile,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
-}
-
-export interface HostingPlugin {
-  name: string;
-  provisionOption: OptionItem;
-  runtimeStacks?: RuntimeStacks[];
   generateResourceTemplate?: (
     ctx: Context,
     inputs: Inputs
@@ -64,4 +61,13 @@ export interface HostingPlugin {
     resourceProfile: AzureResource,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
+}
+
+export interface ResourceHostingPlugin {
+  name: string;
+  provisionOption: OptionItem;
+  generateResourceTemplate?: (
+    ctx: Context,
+    inputs: Inputs
+  ) => Promise<Result<ResourceTemplate, FxError>>;
 }

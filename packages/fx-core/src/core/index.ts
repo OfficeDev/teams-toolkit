@@ -63,9 +63,11 @@ import {
 import {
   downloadSampleHook,
   fetchCodeZip,
+  isFeatureFlagEnabled,
   isMultiEnvEnabled,
   mapToJson,
   saveFilesRecursively,
+  getRootDirectory,
 } from "../common/tools";
 import { PluginNames } from "../plugins";
 import { getAllV2ResourcePlugins } from "../plugins/solution/fx-solution/ResourcePluginContainer";
@@ -127,7 +129,6 @@ import {
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
 import { flattenConfigJson, newEnvInfo } from "./tools";
-import { getRootDirectory } from "../common/tools";
 import { LocalCrypto } from "./crypto";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
 
@@ -251,7 +252,7 @@ export class FxCore implements Core {
           name: "",
           version: "1.0.0",
         },
-        version: "2.0.0",
+        version: getProjectSettingsVersion(),
         isFromSample: false,
       };
       ctx.projectSettings = projectSettings;
@@ -1456,7 +1457,7 @@ export function newProjectSettings(): ProjectSettings {
   const projectSettings: ProjectSettings = {
     appName: "",
     projectId: uuid.v4(),
-    version: "2.0.0",
+    version: getProjectSettingsVersion(),
     solutionSettings: {
       name: "",
     },
@@ -1483,6 +1484,11 @@ export function undefinedName(objs: any[], names: string[]) {
     }
   }
   return undefined;
+}
+
+export function getProjectSettingsVersion() {
+  if (isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false)) return "2.0.0";
+  else return "1.0.0";
 }
 
 export * from "./error";

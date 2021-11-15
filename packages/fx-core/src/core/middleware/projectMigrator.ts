@@ -745,7 +745,6 @@ async function cleanup(projectPath: string): Promise<void> {
   await fs.remove(templateAppPackage);
   await fs.remove(fxState);
   await fs.remove(path.join(templateAppPackage, ".."));
-  await fs.remove(path.join(projectPath, ".backup"));
   if (await fs.pathExists(path.join(fxConfig, "..", "new.env.default.json"))) {
     await fs.remove(path.join(fxConfig, "..", "new.env.default.json"));
   }

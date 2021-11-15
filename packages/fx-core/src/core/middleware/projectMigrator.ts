@@ -15,6 +15,7 @@ import {
   StatesFolderName,
   returnSystemError,
   TeamsAppManifest,
+  LogProvider,
 } from "@microsoft/teamsfx-api";
 import {
   CoreHookContext,
@@ -245,6 +246,7 @@ async function getOldProjectInfoForTelemetry(
 
 async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
+  const core = ctx.self as FxCore;
   const projectPath = inputs.projectPath as string;
   const telemetryProperties = await getOldProjectInfoForTelemetry(projectPath);
   sendTelemetryEvent(
@@ -253,7 +255,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     telemetryProperties
   );
 
-  await backup(projectPath);
+  await backup(projectPath, core.tools.logProvider);
   try {
     await updateConfig(ctx);
 
@@ -318,11 +320,22 @@ async function postMigration(
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
   await generateUpgradeReport(ctx);
   const core = ctx.self as FxCore;
+  await updateGitIgnore(projectPath, core.tools.logProvider);
   if (inputs.platform === Platform.VSCode) {
     showSuccessDialogForVSCode(core);
   } else {
     core.tools.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessageCLI);
   }
+}
+
+async function updateGitIgnore(projectPath: string, log: LogProvider): Promise<void> {
+  // add .fx/configs/localSetting.json to .gitignore
+  const localSettingsProvider = new LocalSettingsProvider(projectPath);
+  await addPathToGitignore(projectPath, localSettingsProvider.localSettingsFilePath, log);
+
+  // add **/.env.teamsfx.local to .gitignore
+  const item = "**/" + LocalEnvMultiProvider.LocalEnvFileName;
+  await addItemToGitignore(projectPath, item, log);
 }
 
 function showSuccessDialogForVSCode(core: FxCore) {
@@ -447,11 +460,6 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   await localSettingsProvider.save(
     localSettingsProvider.init(hasFrontend, hasBackend, hasBot, migrateFromV1)
   );
-  await addPathToGitignore(projectPath, localSettingsProvider.localSettingsFilePath);
-
-  // add **/.env.teamsfx.local to .gitignore
-  const item = "**/" + LocalEnvMultiProvider.LocalEnvFileName;
-  await addItemToGitignore(projectPath, item);
 
   //projectSettings.json
   const projectSettings = path.join(fxConfig, ProjectSettingsFileName);
@@ -660,10 +668,10 @@ async function getBackupFolder(projectPath: string): Promise<string> {
   return path.join(projectPath, `.teamsfx${backupName}`);
 }
 
-async function backup(projectPath: string): Promise<void> {
+async function backup(projectPath: string, log: LogProvider): Promise<void> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
   const backup = await getBackupFolder(projectPath);
-  await addPathToGitignore(projectPath, backup);
+  await addPathToGitignore(projectPath, backup, log);
   const backupFx = path.join(backup, `.${ConfigFolderName}`);
   const backupAppPackage = path.join(backup, AppPackageFolderName);
   await fs.ensureDir(backupFx);
@@ -690,20 +698,32 @@ async function backup(projectPath: string): Promise<void> {
 }
 
 // append folder path to .gitignore under the project root.
-async function addPathToGitignore(projectPath: string, ignoredPath: string) {
+async function addPathToGitignore(
+  projectPath: string,
+  ignoredPath: string,
+  log: LogProvider
+): Promise<void> {
   const relativePath = path.relative(projectPath, ignoredPath).replace(/\\/g, "/");
-  await addItemToGitignore(projectPath, relativePath);
+  await addItemToGitignore(projectPath, relativePath, log);
 }
 
 // append item to .gitignore under the project root.
-async function addItemToGitignore(projectPath: string, item: string) {
+async function addItemToGitignore(
+  projectPath: string,
+  item: string,
+  log: LogProvider
+): Promise<void> {
   const gitignorePath = path.join(projectPath, gitignoreFileName);
-  await fs.ensureFile(gitignorePath);
+  try {
+    await fs.ensureFile(gitignorePath);
 
-  const gitignoreContent = await fs.readFile(gitignorePath, "UTF-8");
-  if (gitignoreContent.indexOf(item) === -1) {
-    const appendedContent = os.EOL + item;
-    await fs.appendFile(gitignorePath, appendedContent);
+    const gitignoreContent = await fs.readFile(gitignorePath, "UTF-8");
+    if (gitignoreContent.indexOf(item) === -1) {
+      const appendedContent = os.EOL + item;
+      await fs.appendFile(gitignorePath, appendedContent);
+    }
+  } catch {
+    log.warning(`[core] Failed to add '${item}' to '${gitignorePath}', please do it manually.`);
   }
 }
 

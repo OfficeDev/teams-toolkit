@@ -1,45 +1,40 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as path from "path";
-import * as vscode from "vscode";
-import { ext } from "../extensionVariables";
-import { Commands } from "./Commands";
-import axios from "axios";
-import * as AdmZip from "adm-zip";
-import * as fs from "fs-extra";
-import * as uuid from "uuid";
-import { glob } from "glob";
-import AzureAccountManager from "../commonlib/azureLogin";
-import AppStudioTokenInstance from "../commonlib/appStudioLogin";
-import SharepointTokenInstance from "../commonlib/sharepointLogin";
-import GraphTokenInstance from "../commonlib/graphLogin";
-import { runCommand } from "../handlers";
-import { returnSystemError, Stage, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { Inputs, Stage } from "@microsoft/teamsfx-api";
 import {
+  Correlator,
   globalStateGet,
   globalStateUpdate,
-  Correlator,
   sampleProvider,
 } from "@microsoft/teamsfx-core";
-import { PanelType } from "./PanelType";
+import * as AdmZip from "adm-zip";
+import axios from "axios";
 import { execSync } from "child_process";
-import { isMacOS } from "../utils/commonUtils";
+import * as fs from "fs-extra";
+import { glob } from "glob";
+import * as path from "path";
+import * as uuid from "uuid";
+import * as vscode from "vscode";
+import AppStudioTokenInstance from "../commonlib/appStudioLogin";
+import AzureAccountManager from "../commonlib/azureLogin";
+import GraphTokenInstance from "../commonlib/graphLogin";
+import SharepointTokenInstance from "../commonlib/sharepointLogin";
+import { ext } from "../extensionVariables";
+import { getSystemInputs, runCommand } from "../handlers";
+import * as StringResources from "../resources/Strings.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
+  AccountType,
   TelemetryEvent,
   TelemetryProperty,
-  TelemetryTiggerFrom,
   TelemetrySuccess,
-  AccountType,
+  TelemetryTiggerFrom,
 } from "../telemetry/extTelemetryEvents";
-import { ExtensionErrors, ExtensionSource } from "../error";
-import * as StringResources from "../resources/Strings.json";
-import * as util from "util";
-import { VS_CODE_UI } from "../extension";
-import { exp } from "../exp/index";
-import { TreatmentVariables, TreatmentVariableValue } from "../exp/treatmentVariables";
+import { isMacOS } from "../utils/commonUtils";
+import { Commands } from "./Commands";
 import { EventMessages } from "./messages";
+import { PanelType } from "./PanelType";
 
 export class WebviewPanel {
   private static readonly viewType = "react";
@@ -154,76 +149,26 @@ export class WebviewPanel {
   }
 
   private async downloadSampleApp(msg: any) {
-    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, {
+    const props: any = {
       [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
       [TelemetryProperty.SampleAppName]: msg.data.appFolder,
-    });
-    const folder = await vscode.window.showOpenDialog({
-      canSelectFiles: false,
-      canSelectFolders: true,
-      canSelectMany: false,
-      title: StringResources.vsc.webview.downloadSampleTitle,
-    });
-
-    let downloadSuccess = false;
-    let error = new UserError(
-      ExtensionErrors.UserCancel,
-      StringResources.vsc.webview.invalidFolder,
-      ExtensionSource
-    );
-    if (folder !== undefined) {
-      const sampleAppPath = path.join(folder[0].fsPath, msg.data.appFolder);
-      if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
-        error.name = ExtensionErrors.FolderAlreadyExist;
-        error.message = StringResources.vsc.webview.folderExist;
-        vscode.window.showErrorMessage(
-          util.format(StringResources.vsc.webview.folderExistDialogTitle, sampleAppPath)
-        );
-      } else {
-        const progress = VS_CODE_UI.createProgressBar(StringResources.vsc.webview.fetchData, 2);
-        progress.start();
-        try {
-          progress.next(util.format(StringResources.vsc.webview.downloadFrom, msg.data.appUrl));
-          const result = await this.fetchCodeZip(msg.data.appUrl);
-          progress.next(StringResources.vsc.webview.unzipPackage);
-          if (result !== undefined) {
-            await this.saveFilesRecursively(
-              new AdmZip(result.data),
-              msg.data.appFolder,
-              folder[0].fsPath
-            );
-            await this.downloadSampleHook(msg.data.appFolder, sampleAppPath);
-            downloadSuccess = true;
-            vscode.commands.executeCommand("vscode.openFolder", vscode.Uri.file(sampleAppPath));
-            await globalStateUpdate("openSampleReadme", true);
-          } else {
-            error = new SystemError(
-              ExtensionErrors.FetchSampleError,
-              StringResources.vsc.webview.emptyData,
-              ExtensionSource
-            );
-            vscode.window.showErrorMessage(StringResources.vsc.webview.downloadSampleFail);
-          }
-        } catch (e) {
-          error = returnSystemError(e, ExtensionSource, ExtensionErrors.UnknwonError);
-        } finally {
-          progress.end(downloadSuccess);
-        }
-      }
+    };
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, props);
+    const inputs: Inputs = getSystemInputs();
+    inputs.stage = Stage.create;
+    inputs["scratch"] = "no";
+    inputs["samples"] = msg.data.appFolder;
+    const res = await runCommand(Stage.create, inputs);
+    if (inputs.projectId) {
+      props[TelemetryProperty.ProjectId] = inputs.projectId;
     }
-
-    if (downloadSuccess) {
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, {
-        [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
-        [TelemetryProperty.SampleAppName]: msg.data.appFolder,
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      });
+    if (res.isOk()) {
+      props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
+      vscode.commands.executeCommand("vscode.openFolder", res.value);
     } else {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, error, {
-        [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview,
-        [TelemetryProperty.SampleAppName]: msg.data.appFolder,
-        [TelemetryProperty.Success]: TelemetrySuccess.No,
-      });
+      props[TelemetryProperty.Success] = TelemetrySuccess.No;
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);
     }
   }
 

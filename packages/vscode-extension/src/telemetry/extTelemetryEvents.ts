@@ -91,6 +91,9 @@ export enum TelemetryEvent {
   EditSecretStart = "edit-secret-start",
   EditSecret = "edit-secret",
 
+  OpenManifestConfigStart = "open-manifest-config-start",
+  OpenManifestConfig = "open-manifest-config",
+
   OpenTeamsApp = "open-teams-app",
   UpdateTeamsApp = "update-teams-app",
 

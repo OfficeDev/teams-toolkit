@@ -176,7 +176,7 @@ export class BotValidator {
       }
     });
 
-    if (insiderPreviewEnabled) {
+    if (!insiderPreviewEnabled) {
       console.log("Validating app service plan.");
       const servicePlanResponse = await this.getWebappServicePlan(
         this.subscriptionId,

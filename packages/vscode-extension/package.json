@@ -425,7 +425,7 @@
       },
       {
         "command": "fx-extension.checkProjectUpgrade",
-        "title": "Teams: Upgrade the project"
+        "title": "Teams: Upgrade project"
       },
       {
         "command": "fx-extension.deploy",

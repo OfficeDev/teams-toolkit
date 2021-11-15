@@ -90,8 +90,8 @@
     "webpack-cli": "^4.7.2"
   },
   "dependencies": {
-    "@microsoft/teamsfx-api": "^0.9.0",
-    "@microsoft/teamsfx-core": "^0.9.0",
+    "@microsoft/teamsfx-api": "^0.10.0",
+    "@microsoft/teamsfx-core": "^0.10.0",
     "@azure/arm-apimanagement": "^6.0.0",
     "@azure/arm-resources": "^4.0.0",
     "@azure/arm-sql": "^7.0.2",

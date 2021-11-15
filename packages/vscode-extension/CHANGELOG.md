@@ -1,5 +1,20 @@
 # Changelog
 
+## 2.10.0 - Nov 15, 2021 
+
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- Enable developers with the capability to extend Teams apps to run across Microsoft 365, get instructions from our [documentation](https://aka.ms/teamsfx-extend-m365). 
+- Provide Teams sample apps which can run across Microsoft 365. Users can get a initial experience of running Teams apps in Microsoft 365.
+
+Enhancement:
+
+- Improve the create new project experience. Remove the selection of Frontend Hosting Type.
+- Improve UI: more friendly getting start experience in "Quick Start" page.
+- Improve UI: give more information of each button in the Tooltips of buttons.
+
+
 ## 2.9.0 - Nov 01, 2021 
 
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:

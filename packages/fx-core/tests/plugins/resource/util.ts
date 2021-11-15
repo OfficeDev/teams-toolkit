@@ -2,7 +2,7 @@ import { Json } from "@microsoft/teamsfx-api";
 import { compileHandlebarsTemplateString } from "../../../src";
 import { ScaffoldArmTemplateResult, ArmTemplateResult } from "../../../src/common/armInterface";
 
-export function mockSolutionUpdateArmTemplatesV2(
+export function mockSolutionUpdateArmTemplates(
   mockedData: Json,
   template: ArmTemplateResult
 ): ArmTemplateResult {
@@ -52,55 +52,6 @@ export function mockSolutionUpdateArmTemplatesV2(
     }
   }
   result.Parameters = template.Parameters;
-  return result;
-}
-
-export function mockSolutionUpdateArmTemplates(
-  mockedData: Json,
-  template: ScaffoldArmTemplateResult
-): ScaffoldArmTemplateResult {
-  const result: ScaffoldArmTemplateResult = {
-    Orchestration: {},
-  };
-
-  if (template.Modules) {
-    result.Modules = template.Modules;
-  }
-
-  if (template.Orchestration.ModuleTemplate) {
-    result.Orchestration.ModuleTemplate = {
-      Content: compileHandlebarsTemplateString(
-        template.Orchestration.ModuleTemplate.Content,
-        mockedData
-      ),
-    };
-  }
-
-  if (template.Orchestration.OutputTemplate) {
-    result.Orchestration.OutputTemplate = {
-      Content: template.Orchestration.OutputTemplate.Content,
-    };
-  }
-
-  if (template.Orchestration.VariableTemplate) {
-    result.Orchestration.VariableTemplate = {
-      Content: compileHandlebarsTemplateString(
-        template.Orchestration.VariableTemplate.Content,
-        mockedData
-      ),
-    };
-  }
-
-  if (template.Orchestration.ParameterTemplate) {
-    result.Orchestration.ParameterTemplate = {
-      Content: compileHandlebarsTemplateString(
-        template.Orchestration.ParameterTemplate.Content,
-        mockedData
-      ),
-      ParameterJson: template.Orchestration.ParameterTemplate.ParameterJson,
-    };
-  }
-
   return result;
 }
 

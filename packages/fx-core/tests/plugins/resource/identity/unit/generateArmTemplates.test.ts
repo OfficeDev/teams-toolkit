@@ -10,7 +10,7 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import fs from "fs-extra";
 import * as path from "path";
-import { ConstantString, mockSolutionUpdateArmTemplatesV2, ResourcePlugins } from "../../util";
+import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
 chai.use(chaiAsPromised);
 
 dotenv.config();
@@ -62,7 +62,7 @@ describe("identityPlugin", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplatesV2(
+      const expectedResult = mockSolutionUpdateArmTemplates(
         mockedSolutionDataContext,
         result.value
       );

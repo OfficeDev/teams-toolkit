@@ -617,6 +617,9 @@ describe("Middleware - others", () => {
       assert.strictEqual(parameterObj[ArmParameters.functionServerName], "test");
       assert.strictEqual(parameterObj[ArmParameters.functionStorageName], "test");
       assert.strictEqual(parameterObj[ArmParameters.functionAppName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimServiceName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimProductName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimOauthServerName], "test");
     });
   });
 
@@ -658,6 +661,10 @@ describe("Middleware - others", () => {
       try {
         const res = await my.other(inputs);
         assert.isTrue(res.isOk());
+        const configDev = await fs.readJson(
+          path.join(inputs.projectPath, ".fx", "configs", "config.dev.json")
+        );
+        assert.isTrue(configDev["skipAddingSqlUser"]);
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

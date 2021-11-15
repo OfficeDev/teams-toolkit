@@ -13,8 +13,6 @@ export class Bicep {
   static readonly OutputOrchestrationFileName: string = "output.template.bicep";
   static readonly VariablesOrchestrationFileName: string = "variables.template.bicep";
   static readonly ParameterFileName: string = "parameters.json";
-  static readonly ProvisionV2FileName: string = "provision.template.v2.bicep";
-  static readonly ConfigV2FileName: string = "config.template.v2.bicep";
   static readonly ProvisionFileName: string = "provision.template.bicep";
   static readonly ConfigFileName: string = "config.template.bicep";
 }
@@ -33,6 +31,7 @@ export class ResourcePlugins {
   static readonly AzureSQL = "fx-resource-azure-sql";
   static readonly Function = "fx-resource-function";
   static readonly Identity = "fx-resource-identity";
+  static readonly Apim = "fx-resource-apim";
 }
 export class PluginDisplayName {
   static readonly Solution = "Teams Toolkit";

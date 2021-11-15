@@ -263,7 +263,7 @@
       ],
       "editor/title": [
         {
-          "command": "fx-extension.OpenPreviewFile",
+          "command": "fx-extension.openPreviewFile",
           "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json",
           "group": "navigation"
         }
@@ -469,8 +469,13 @@
         "icon": "$(sync)"
       },
       {
-        "command": "fx-extension.OpenPreviewFile",
+        "command": "fx-extension.openPreviewFile",
         "title": "Preview manifest file",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "fx-extension.openSchema",
+        "title": "Open manifest schema",
         "icon": "$(file-code)"
       },
       {

@@ -21,7 +21,7 @@ import {
   ResourcePluginsV2,
 } from "../../../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { MockTools, randomAppName } from "../../../../core/utils";
-import { ConstantString, mockSolutionUpdateArmTemplatesV2 } from "../../util";
+import { ConstantString, mockSolutionUpdateArmTemplates } from "../../util";
 
 describe("Frontend hosting V2", () => {
   const sandbox = sinon.createSandbox();
@@ -96,7 +96,7 @@ describe("Frontend hosting V2", () => {
   it("Scaffold - happy path", async () => {
     const result = await pluginV2.generateResourceTemplate(context, inputs);
     // Assert
-    const testModuleFileName = "frontendProvision.result.v2.bicep";
+    const testModuleFileName = "frontendProvision.result.bicep";
     const mockedSolutionDataContext = {
       Plugins: [pluginV2.name, "fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
       PluginOutput: {
@@ -111,7 +111,7 @@ describe("Frontend hosting V2", () => {
     };
     assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplatesV2(
+      const expectedResult = mockSolutionUpdateArmTemplates(
         mockedSolutionDataContext,
         result.value.template as ArmTemplateResult
       );
@@ -122,7 +122,7 @@ describe("Frontend hosting V2", () => {
       assert.strictEqual(expectedResult.Provision!.Modules!.frontendHosting, moduleFile);
       const expectedModuleSnippetFilePath = path.join(
         expectedBicepFileDirectory,
-        "provision.result.v2.bicep"
+        "provision.result.bicep"
       );
       const OrchestrationConfigFile = await fs.readFile(
         expectedModuleSnippetFilePath,

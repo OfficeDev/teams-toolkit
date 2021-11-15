@@ -158,13 +158,14 @@ export class WebviewPanel {
     inputs.stage = Stage.create;
     inputs["scratch"] = "no";
     inputs["samples"] = msg.data.appFolder;
-    const res = await runCommand(Stage.create, inputs);
+    const res = await runCommand(Stage.create, inputs, false);
     if (inputs.projectId) {
       props[TelemetryProperty.ProjectId] = inputs.projectId;
     }
     if (res.isOk()) {
       props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, props);
+      vscode.commands.executeCommand("vscode.openFolder", res.value);
     } else {
       props[TelemetryProperty.Success] = TelemetrySuccess.No;
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, res.error, props);

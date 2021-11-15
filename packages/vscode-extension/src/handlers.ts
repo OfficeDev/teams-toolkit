@@ -458,7 +458,8 @@ export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
 
 export async function runCommand(
   stage: Stage,
-  defaultInputs?: Inputs
+  defaultInputs?: Inputs,
+  reloadForCreate?: boolean
 ): Promise<Result<any, FxError>> {
   const eventName = ExtTelemetry.stageToEvent(stage);
   let result: Result<any, FxError> = ok(null);
@@ -482,8 +483,10 @@ export async function runCommand(
           const uri = Uri.file(tmpResult.value);
           // 15% events are lost due to open other vs code instance, so collect the data before open folder.
           await processResult(eventName, result, inputs);
-          commands.executeCommand("vscode.openFolder", uri);
-          result = ok(null);
+          if (reloadForCreate) {
+            commands.executeCommand("vscode.openFolder", uri);
+          }
+          result = ok(uri);
         }
         break;
       }

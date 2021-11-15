@@ -58,7 +58,7 @@ resource appConfig 'Microsoft.Web/sites/config@2021-01-15' = {
 resource appSettings 'Microsoft.Web/sites/config@2021-01-15' = {
   name: '${functionAppName}/appsettings'
   properties: union({
-    API_ENDPOINT: 'https://${ {{~PluginOutput.fx-resource-function.References.functionEndpoint~}} }'
+    API_ENDPOINT: {{PluginOutput.fx-resource-function.References.functionEndpoint}}
     ALLOWED_APP_IDS: authorizedClientApplicationIds
     M365_CLIENT_ID: m365ClientId
     M365_CLIENT_SECRET: m365ClientSecret

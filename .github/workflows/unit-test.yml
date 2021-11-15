@@ -43,8 +43,8 @@ jobs:
         run: |
           # make sure the coverage data is cleaned
           rm -rf .nyc_output
-          xvfb-run -a npx lerna run test:unit
-          TEAMSFX_INSIDER_PREVIEW=true xvfb-run -a npx lerna run test:unit
+          xvfb-run -a npx lerna run test:unit --stream
+          TEAMSFX_INSIDER_PREVIEW=true xvfb-run -a npx lerna run test:unit --stream
 
           coverages="{}"
           for i in $(find . -name coverage-summary.json); do
@@ -84,8 +84,8 @@ jobs:
         shell: bash
         run: |
           rm -rf .nyc_output
-          xvfb-run -a npx lerna run test:unit
-          TEAMSFX_INSIDER_PREVIEW=true xvfb-run -a npx lerna run test:unit
+          xvfb-run -a npx lerna run test:unit --stream
+          TEAMSFX_INSIDER_PREVIEW=true xvfb-run -a npx lerna run test:unit --stream
 
           coverages="{}"
           for i in $(find . -name coverage-summary.json); do
@@ -149,7 +149,7 @@ jobs:
         id: unit-test
         shell: bash
         run: |
-          xvfb-run -a npx lerna run test:unit
+          xvfb-run -a npx lerna run test:unit --stream
           for i in $(find . -name coverage-summary.json); do
             package=$(basename $(dirname $(dirname $i)))
             az storage entity insert \

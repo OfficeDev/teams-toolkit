@@ -495,11 +495,8 @@ export async function runCommand(
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
-          // await processResult(eventName, result, inputs);
         } else {
           const uri = Uri.file(tmpResult.value);
-          // 15% events are lost due to open other vs code instance, so collect the data before open folder.
-          // await processResult(eventName, result, inputs);
           result = ok(uri);
         }
         break;
@@ -512,7 +509,6 @@ export async function runCommand(
           if (tmpResult?.value) {
             const uri = Uri.file(tmpResult.value);
             result = ok(uri);
-            // commands.executeCommand("vscode.openFolder", uri);
           }
         }
         break;
@@ -555,10 +551,7 @@ export async function runCommand(
     result = wrapError(e);
   }
 
-  // already process result before open folder durning create stage. so skip "processResult" here.
-  if (stage !== Stage.create) {
-    await processResult(eventName, result, inputs);
-  }
+  await processResult(eventName, result, inputs);
 
   return result;
 }

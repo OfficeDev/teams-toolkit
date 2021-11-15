@@ -8,7 +8,8 @@
     "lint:staged": "lerna run lint:staged --stream",
     "lint": "lerna run lint --stream",
     "manual-version:rc": "lerna version --preid=rc --no-push --no-changelog --no-private --ignore-scripts",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "install-all": "npm install && lerna bootstrap --ignore-scripts --ignore-prepublish && npm run install-eslint"
   },
   "devDependencies": {
     "@commitlint/cli": "^12.0.1",

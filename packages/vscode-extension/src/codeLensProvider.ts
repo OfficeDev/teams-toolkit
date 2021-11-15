@@ -92,6 +92,7 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
 
 export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private schemaRegex = /\$schema/;
+  private manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
 
   public provideCodeLenses(
     document: vscode.TextDocument
@@ -123,6 +124,27 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
         arguments: [{ url: url }],
       };
       codeLenses.push(new vscode.CodeLens(range, schemaCommand));
+    }
+
+    if (document.fileName.endsWith("manifest.remote.template.json")) {
+      const configRegex = new RegExp(this.manifestConfigDataRegex);
+      let matches;
+      while ((matches = configRegex.exec(text)) !== null) {
+        const line = document.lineAt(document.positionAt(matches.index).line);
+        const indexOf = line.text.indexOf(matches[0]);
+        const position = new vscode.Position(line.lineNumber, indexOf);
+        const range = document.getWordRangeAtPosition(
+          position,
+          new RegExp(this.manifestConfigDataRegex)
+        );
+        const command = {
+          title: "🖊️Go to config file",
+          command: "fx-extension.openConfig",
+        };
+        if (range) {
+          codeLenses.push(new vscode.CodeLens(range, command));
+        }
+      }
     }
 
     return codeLenses;

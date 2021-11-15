@@ -261,5 +261,4 @@ export const SampleSelect: SingleSelectQuestion = {
     } as OptionItem;
   }),
   placeholder: "Select a sample",
-  returnObject: true,
 };

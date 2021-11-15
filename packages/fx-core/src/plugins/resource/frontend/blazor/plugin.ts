@@ -24,10 +24,14 @@ import { BlazorConfigKey as ConfigKey, AppSettingsKey } from "./enum";
 import {
   ConfigureWebAppError,
   FetchConfigError,
+  ProjectPathError,
   runWithErrorCatchAndWrap,
+  runWithErrorCatchAndThrow,
 } from "./resources/errors";
 import * as Deploy from "./ops/deploy";
 import { Logger } from "../utils/logger";
+import path from "path";
+import * as fs from "fs-extra";
 
 type Site = WebSiteManagementModels.Site;
 
@@ -43,6 +47,7 @@ export interface BlazorPluginConfig {
   appServicePlanName?: string;
   endpoint?: string;
   domain?: string;
+  projectFilePath?: string;
 
   /* Intermediate  */
   site?: Site;
@@ -66,6 +71,7 @@ export class BlazorPluginImpl {
 
     this.config.webAppName = ctx.config.get(ConfigInfo.webAppName) as string;
     this.config.appServicePlanName = ctx.config.get(ConfigInfo.appServicePlanName) as string;
+    this.config.projectFilePath = ctx.config.get(ConfigInfo.projectFilePath) as string;
   }
 
   private syncConfigToContext(ctx: PluginContext): void {
@@ -280,7 +286,6 @@ export class BlazorPluginImpl {
 
     this.syncConfigFromContext(ctx);
 
-    const workingPath = ctx.root;
     const webAppName = this.checkAndGet(this.config.webAppName, ConfigKey.webAppName);
     const resourceGroupName = this.checkAndGet(
       this.config.resourceGroupName,
@@ -292,6 +297,17 @@ export class BlazorPluginImpl {
       ConfigKey.credential
     );
 
+    const projectFilePath = path.resolve(
+      ctx.root,
+      this.checkAndGet(this.config.projectFilePath, ConfigKey.projectFilePath)
+    );
+
+    await runWithErrorCatchAndThrow(
+      new ProjectPathError(projectFilePath),
+      async () => await fs.pathExists(projectFilePath)
+    );
+    const projectPath = path.dirname(projectFilePath);
+
     // ? Do we support user customize build? If yes, how?
     // * If we support user customize runtime, we need to validate its value because we use it to concat build command.
     const framework = PluginInfo.defaultFramework;
@@ -299,9 +315,9 @@ export class BlazorPluginImpl {
 
     const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);
 
-    await Deploy.build(workingPath, runtime);
+    await Deploy.build(projectPath, runtime);
 
-    const folderToBeZipped = PathInfo.publishFolderPath(workingPath, framework, runtime);
+    const folderToBeZipped = PathInfo.publishFolderPath(projectPath, framework, runtime);
     await Deploy.zipDeploy(client, resourceGroupName, webAppName, folderToBeZipped);
 
     Logger.info(Messages.EndDeploy(PluginInfo.displayName));

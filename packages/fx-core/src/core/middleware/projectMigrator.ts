@@ -82,6 +82,7 @@ const parameterFileNameTemplate = "azure.parameters.@envName.json";
 const learnMoreLink = "https://aka.ms/teamsfx-migration-guide";
 const manualUpgradeLink = `${learnMoreLink}#upgrade-your-project-manually`;
 const upgradeReportName = `upgrade-change-logs.md`;
+const AadSecret = "{{ $env.AAD_APP_CLIENT_SECRET }}";
 let updateNotificationFlag = false;
 let fromReloadFlag = false;
 
@@ -109,6 +110,10 @@ class EnvConfigName {
   static readonly ServiceResourceId = "serviceResourceId";
   static readonly ProductResourceId = "productResourceId";
   static readonly AuthServerResourceId = "authServerResourceId";
+  static readonly AadSkipProvision = "skipProvision";
+  static readonly OAuthScopeId = "oauth2PermissionScopeId";
+  static readonly ClientId = "clientId";
+  static readonly ObjectId = "objectId";
 }
 
 export class ArmParameters {
@@ -462,6 +467,13 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     if (envDefault[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlSkipAddingUser]) {
       configDev["skipAddingSqlUser"] =
         envDefault[ResourcePlugins.AzureSQL][EnvConfigName.SqlSkipAddingUser];
+    }
+    if (envDefault[ResourcePlugins.Aad]?.[EnvConfigName.AadSkipProvision]) {
+      configDev.auth!.accessAsUserScopeId =
+        envDefault[ResourcePlugins.Aad][EnvConfigName.OAuthScopeId];
+      configDev.auth!.clientId = envDefault[ResourcePlugins.Aad][EnvConfigName.ClientId];
+      configDev.auth!.clientSecret = AadSecret;
+      configDev.auth!.objectId = envDefault[ResourcePlugins.Aad][EnvConfigName.ObjectId];
     }
 
     await fs.writeFile(configDevJsonFilePath, JSON.stringify(configDev, null, 4));

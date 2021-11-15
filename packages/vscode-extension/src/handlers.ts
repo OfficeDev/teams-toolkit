@@ -1672,6 +1672,7 @@ export async function openPreviewManifest(args: any[]): Promise<Result<any, FxEr
       return err(res.error);
     }
     const inputs = getSystemInputs();
+    inputs.ignoreEnvInfo = true;
     const env = await core.getSelectedEnv(inputs);
     if (env.isErr()) {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, env.error);
@@ -1723,7 +1724,9 @@ export async function openConfigFile() {
     return err(invalidProjectError);
   }
 
-  const envName = await core.getSelectedEnv(getSystemInputs());
+  const inputs = getSystemInputs();
+  inputs.ignoreEnvInfo = false;
+  const envName = await core.getSelectedEnv(inputs);
   if (envName.isErr()) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfig, envName.error);
     return err(envName.error);

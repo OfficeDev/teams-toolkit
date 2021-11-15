@@ -403,6 +403,19 @@ export async function addCapabilityHandler(args: any[]): Promise<Result<null, Fx
   return await runUserTask(func, TelemetryEvent.AddCap, true);
 }
 
+export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.ValidateManifestStart,
+    getTriggerFromProperty(args)
+  );
+
+  const func: Func = {
+    namespace: "fx-solution-azure",
+    method: "validateManifest",
+  };
+  return await runUserTask(func, TelemetryEvent.ValidateManifest, false);
+}
+
 export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
 

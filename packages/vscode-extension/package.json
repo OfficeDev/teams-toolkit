@@ -49,6 +49,7 @@
     "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.update",
     "onCommand:fx-extension.openManifest",
+    "onCommand:fx-extension.validateManifest",
     "onCommand:fx-extension.build",
     "onCommand:fx-extension.provision",
     "onCommand:fx-extension.deploy",
@@ -409,6 +410,10 @@
       {
         "command": "fx-extension.openManifest",
         "title": "Teams: Edit manifest file"
+      },
+      {
+        "command": "fx-extension.validateManifest",
+        "title": "Teams: Validate manifest file"
       },
       {
         "command": "fx-extension.build",

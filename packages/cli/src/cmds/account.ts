@@ -164,6 +164,7 @@ class AccountShow extends YargsCommand {
     const subscriptions = await AzureTokenProvider.listSubscriptions();
     /// TODO: if this is not the usually used subscription, you can write hard code here.
     fakeAccount.AzureSubscriptionInfo = subscriptions[0];
+    await fs.ensureDir(path.dirname(fakeAccountFilePath));
     await fs.writeJson(fakeAccountFilePath, fakeAccount, { spaces: 4, encoding: "utf-8" });
 
     if (azureStatus.status === signedIn) {

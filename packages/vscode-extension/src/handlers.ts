@@ -360,15 +360,16 @@ export function getSystemInputs(): Inputs {
   return answers;
 }
 
-export async function createNewProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
+export async function createNewProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   if (result.isOk()) {
     commands.executeCommand("vscode.openFolder", result.value);
   }
+  return result;
 }
 
-export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<null, FxError>> {
+export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(
     TelemetryEvent.MigrateV1ProjectStart,
     getTriggerFromProperty(args)

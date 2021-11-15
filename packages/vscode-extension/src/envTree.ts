@@ -10,13 +10,11 @@ import {
   TreeCategory,
   TreeItem,
   SubscriptionInfo,
-  LocalEnvironmentName,
 } from "@microsoft/teamsfx-api";
 import {
   isMultiEnvEnabled,
   environmentManager,
   isRemoteCollaborateEnabled,
-  LocalSettingsProvider,
 } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
@@ -25,7 +23,6 @@ import * as StringResources from "./resources/Strings.json";
 import { checkPermission, listAllCollaborators, tools } from "./handlers";
 import { signedIn } from "./commonlib/common/constant";
 import { AppStudioLogin } from "./commonlib/appStudioLogin";
-import * as fs from "fs-extra";
 import {
   getProvisionSucceedFromEnv,
   getM365TenantFromEnv,
@@ -60,9 +57,7 @@ export async function registerEnvTreeHandler(
       }
       showEnvList.splice(0);
 
-      const envNames = (await localSettingsExists(workspacePath))
-        ? [LocalEnvironmentName].concat(envNamesResult.value)
-        : envNamesResult.value;
+      const envNames = envNamesResult.value;
       for (const item of envNames) {
         showEnvList.push(item);
         const provisionSucceeded = await getProvisionSucceedFromEnv(item);
@@ -72,7 +67,7 @@ export async function registerEnvTreeHandler(
             label: item,
             description: provisionSucceeded ? "(Provisioned)" : "",
             parent: TreeCategory.Environment,
-            contextValue: item === LocalEnvironmentName ? "local" : "environment",
+            contextValue: "environment",
             icon: provisionSucceeded ? "folder-active" : "symbol-folder",
             isCustom: false,
             expanded: true,
@@ -227,16 +222,10 @@ function generateCollaboratorParentNode(env: string): TreeItem {
   };
 }
 
-async function localSettingsExists(projectRoot: string): Promise<boolean> {
-  const provider = new LocalSettingsProvider(projectRoot);
-  return await fs.pathExists(provider.localSettingsFilePath);
-}
-
 async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeItem[]> {
   if (
     environmentTreeProvider &&
-    environmentTreeProvider.findCommand("fx-extension.environment." + env) &&
-    env !== LocalEnvironmentName
+    environmentTreeProvider.findCommand("fx-extension.environment." + env)
   ) {
     let envSubItems: TreeItem[] = [];
     const subscriptionInfo = await getSubscriptionInfoFromEnv(env);

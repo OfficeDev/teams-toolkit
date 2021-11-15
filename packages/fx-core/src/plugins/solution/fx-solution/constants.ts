@@ -137,6 +137,7 @@ export enum SolutionError {
   FailedToCompileBicepFiles = "FailedToCompileBicepFiles",
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
   FailedToGenerateArmTemplates = "FailedToGenerateArmTemplates",
+  FailedToUpdateArmParameters = "FailedToUpdateArmTemplates",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
   M365TenantNotMatch = "M365TenantNotMatch",

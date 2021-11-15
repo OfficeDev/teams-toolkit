@@ -17,12 +17,6 @@ New Features:
  ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/M365sample2.png)
  ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/M365sample1.png)
 
-Enhancement:
-
-- Improve the create new project experience. Remove the selection of Frontend Hosting Type.
-- Improve UI: more friendly getting start experience in "Quick Start" page.
-- Improve UI: give more information of each button in the Tooltips of buttons.
-
 ## 2.9.0 - Nov 01, 2021 
 
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:

@@ -17,6 +17,17 @@ export function getSubscriptionIdFromResourceId(resourceId: string): string {
   return result;
 }
 
+export function getSiteNameFromResourceId(webAppResourceId: string): string {
+  const result = parseFromResourceId(
+    /providers\/Microsoft.Web\/sites\/([^\/]*)/i,
+    webAppResourceId
+  );
+  if (!result) {
+    throw new Error(`Cannot parse site name from resource id ${webAppResourceId}`);
+  }
+  return result;
+}
+
 export function parseFromResourceId(pattern: RegExp, resourceId: string): string {
   const result = resourceId.match(pattern);
   return result ? result[1].trim() : "";

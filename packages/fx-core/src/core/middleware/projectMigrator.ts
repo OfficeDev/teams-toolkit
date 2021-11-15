@@ -691,7 +691,7 @@ async function backup(projectPath: string): Promise<void> {
 
 // append folder path to .gitignore under the project root.
 async function addPathToGitignore(projectPath: string, ignoredPath: string) {
-  const relativePath = path.relative(projectPath, ignoredPath);
+  const relativePath = path.relative(projectPath, ignoredPath).replace(/\\/g, "/");
   await addItemToGitignore(projectPath, relativePath);
 }
 

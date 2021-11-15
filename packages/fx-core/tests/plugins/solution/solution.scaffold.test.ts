@@ -186,7 +186,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
   it("should work and generate arm template when project requires Azure services", async () => {
     // add dedicated test case to test ARM feature enabled behavior
     const restore = mockedEnv({
-      TEAMSFX_INSIDER_PREVIEW: "1",
+      __TEAMSFX_INSIDER_PREVIEW: "1",
     });
 
     fileContent.clear();
@@ -249,7 +249,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
   it("should work and not generate arm template when project does not require Azure services", async () => {
     // add dedicated test case to test ARM feature enabled behavior
     const restore = mockedEnv({
-      TEAMSFX_INSIDER_PREVIEW: "1",
+      __TEAMSFX_INSIDER_PREVIEW: "1",
     });
 
     fileContent.clear();

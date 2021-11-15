@@ -231,11 +231,11 @@
         },
         {
           "command": "fx-extension.viewEnvironment",
-          "when": "view == teamsfx-environment && viewItem =~ /^environment|^local$/"
+          "when": "view == teamsfx-environment && viewItem =~ /environment/"
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /^environment|^local$/",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         },
         {

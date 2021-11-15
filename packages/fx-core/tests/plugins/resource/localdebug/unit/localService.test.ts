@@ -11,7 +11,10 @@ import * as fs from "fs-extra";
 import os from "os";
 import * as path from "path";
 
-import { prepareLocalAuthService } from "../../../../../src/plugins/resource/localdebug/util/localService";
+import {
+  getAuthServiceFolder,
+  prepareLocalAuthService,
+} from "../../../../../src/plugins/resource/localdebug/util/localService";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
@@ -86,6 +89,11 @@ describe("localService", () => {
       chai.assert.isFalse(
         fs.pathExistsSync(`${fakeHomeDir}/.${ConfigFolderName}/localauth/test.dll`)
       );
+    });
+
+    it("auth service folder", () => {
+      const localAuthFolder = getAuthServiceFolder();
+      chai.assert.equal(localAuthFolder, `${fakeHomeDir}/.${ConfigFolderName}/localauth`);
     });
   });
 });

@@ -49,6 +49,7 @@
     "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.update",
     "onCommand:fx-extension.openManifest",
+    "onCommand:fx-extension.validateManifest",
     "onCommand:fx-extension.build",
     "onCommand:fx-extension.provision",
     "onCommand:fx-extension.deploy",
@@ -231,11 +232,11 @@
         },
         {
           "command": "fx-extension.viewEnvironment",
-          "when": "view == teamsfx-environment && viewItem =~ /^environment|^local$/"
+          "when": "view == teamsfx-environment && viewItem =~ /environment/"
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /^environment|^local$/",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         },
         {
@@ -263,7 +264,7 @@
       ],
       "editor/title": [
         {
-          "command": "fx-extension.OpenPreviewFile",
+          "command": "fx-extension.openPreviewFile",
           "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json",
           "group": "navigation"
         }
@@ -411,6 +412,10 @@
         "title": "Teams: Edit manifest file"
       },
       {
+        "command": "fx-extension.validateManifest",
+        "title": "Teams: Validate manifest file"
+      },
+      {
         "command": "fx-extension.build",
         "title": "Teams: Zip Teams metadata package"
       },
@@ -469,8 +474,13 @@
         "icon": "$(sync)"
       },
       {
-        "command": "fx-extension.OpenPreviewFile",
+        "command": "fx-extension.openPreviewFile",
         "title": "Preview manifest file",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "fx-extension.openSchema",
+        "title": "Open manifest schema",
         "icon": "$(file-code)"
       },
       {

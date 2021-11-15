@@ -9,7 +9,7 @@ import * as path from "path";
 
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { FunctionPlugin } from "../../../../../src";
-import { ConstantString, mockSolutionUpdateArmTemplatesV2, ResourcePlugins } from "../../util";
+import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
 import { MockContext } from "../helper";
 import { FunctionBicep } from "../../../../../src/plugins/resource/function/constants";
 
@@ -83,7 +83,7 @@ describe("FunctionGenerateArmTemplates", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplatesV2(
+      const expectedResult = mockSolutionUpdateArmTemplates(
         mockedSolutionDataContext,
         result.value
       );

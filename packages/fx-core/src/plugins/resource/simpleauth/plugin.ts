@@ -121,11 +121,6 @@ export class SimpleAuthPluginImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
 
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
-    const context = {
-      Plugins: selectedPlugins,
-    };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -134,19 +129,19 @@ export class SimpleAuthPluginImpl {
       "bicep"
     );
 
-    const provisionModuleV2Result = path.join(
+    const provisionModuleResult = path.join(
       bicepTemplateDirectory,
-      Constants.provisionModuleTemplateFileNameV2
+      Constants.provisionModuleTemplateFileName
     );
-    const configModuleV2FilePath = path.join(
+    const configModuleFilePath = path.join(
       bicepTemplateDirectory,
-      Constants.configModuleTemplateFileNameV2
+      Constants.configModuleTemplateFileName
     );
 
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: await fs.readFile(
-          path.join(bicepTemplateDirectory, Bicep.ProvisionV2FileName),
+          path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
           ConstantString.UTF8Encoding
         ),
         Reference: {
@@ -154,16 +149,16 @@ export class SimpleAuthPluginImpl {
           endpoint: Constants.SimpleAuthBicepOutputEndpoint,
         },
         Modules: {
-          simpleAuth: await fs.readFile(provisionModuleV2Result, ConstantString.UTF8Encoding),
+          simpleAuth: await fs.readFile(provisionModuleResult, ConstantString.UTF8Encoding),
         },
       },
       Configuration: {
         Orchestration: await fs.readFile(
-          path.join(bicepTemplateDirectory, Bicep.ConfigV2FileName),
+          path.join(bicepTemplateDirectory, Bicep.ConfigFileName),
           ConstantString.UTF8Encoding
         ),
         Modules: {
-          simpleAuth: await fs.readFile(configModuleV2FilePath, ConstantString.UTF8Encoding),
+          simpleAuth: await fs.readFile(configModuleFilePath, ConstantString.UTF8Encoding),
         },
       },
     };

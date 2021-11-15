@@ -21,10 +21,12 @@ import {
   serializeDict,
   SolutionConfigError,
   ProjectSettingError,
+  NotJsonError,
   environmentManager,
   SPFxConfigError,
   getResourceFolder,
 } from "../..";
+import { globalStateUpdate } from "../../common/globalState";
 import { UpgradeCanceledError } from "../error";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
@@ -69,11 +71,11 @@ import {
 import * as dotenv from "dotenv";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
+import util from "util";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
 const learnMoreText = "Learn More";
-const reloadText = "Reload";
 const upgradeButton = "Upgrade";
 const solutionName = "solution";
 const subscriptionId = "subscriptionId";
@@ -82,6 +84,7 @@ const parameterFileNameTemplate = "azure.parameters.@envName.json";
 const learnMoreLink = "https://aka.ms/teamsfx-migration-guide";
 const manualUpgradeLink = `${learnMoreLink}#upgrade-your-project-manually`;
 const upgradeReportName = `upgrade-change-logs.md`;
+const globalStateDescription = "openUpgradeChangelogs";
 let updateNotificationFlag = false;
 let fromReloadFlag = false;
 
@@ -181,7 +184,7 @@ function outputCancelMessage(ctx: CoreHookContext) {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (inputs.platform === Platform.VSCode) {
     core.tools.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Check project upgrade) or click the “Upgrade project” button on tree view to trigger the upgrade.`
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
     );
     core.tools.logProvider.warning(
       `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.7.0`
@@ -250,8 +253,9 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     telemetryProperties
   );
 
-  await backup(projectPath);
+  await preCheckKeyFiles(projectPath, ctx);
   try {
+    await backup(projectPath);
     await updateConfig(ctx);
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnvStart);
@@ -273,6 +277,44 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     throw err;
   }
   await postMigration(projectPath, ctx, inputs);
+}
+
+async function preCheckKeyFiles(projectPath: string, ctx: CoreHookContext): Promise<void> {
+  const core = ctx.self as FxCore;
+  const fx = path.join(projectPath, `.${ConfigFolderName}`);
+  const manifestPath = (await fs.pathExists(path.join(fx, AppPackageFolderName, REMOTE_MANIFEST)))
+    ? path.join(fx, AppPackageFolderName, REMOTE_MANIFEST)
+    : path.join(projectPath, AppPackageFolderName, REMOTE_MANIFEST);
+
+  await preReadJsonFile(path.join(fx, "env.default.json"), core);
+  await preReadJsonFile(path.join(fx, "settings.json"), core);
+  await preReadJsonFile(manifestPath, core);
+}
+
+async function preReadJsonFile(path: string, core: FxCore): Promise<void> {
+  try {
+    await fs.readJson(path);
+  } catch (err) {
+    core.tools.logProvider.error(
+      `'${path}' is not exist or not in json format. Please fix it and try again by running command (Teams: Upgrade project).`
+    );
+    core.tools.logProvider.warning(`Read this wiki(${learnMoreLink}) for the FAQ.`);
+
+    core.tools.ui
+      .showMessage(
+        "info",
+        util.format(getStrings().solution.MigrationToArmAndMultiEnvPreCheckErrorMessage, path),
+        false,
+        learnMoreText
+      )
+      .then((result) => {
+        const userSelected = result.isOk() ? result.value : undefined;
+        if (userSelected === learnMoreText) {
+          core.tools.ui!.openUrl(manualUpgradeLink);
+        }
+      });
+    throw NotJsonError(err);
+  }
 }
 
 async function handleError(projectPath: string, ctx: CoreHookContext) {
@@ -297,7 +339,7 @@ async function generateUpgradeReport(ctx: CoreHookContext) {
   try {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     const projectPath = inputs.projectPath as string;
-    const target = path.join(projectPath, upgradeReportName);
+    const target = path.join(projectPath, ".backup", upgradeReportName);
     const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
     await fs.copyFile(source, target);
   } catch (error) {
@@ -316,33 +358,15 @@ async function postMigration(
   await generateUpgradeReport(ctx);
   const core = ctx.self as FxCore;
   if (inputs.platform === Platform.VSCode) {
-    showSuccessDialogForVSCode(core);
+    await globalStateUpdate(globalStateDescription, true);
+    core.tools.ui.reload?.();
   } else {
-    core.tools.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessageCLI);
+    core.tools.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessage);
   }
-}
-
-function showSuccessDialogForVSCode(core: FxCore) {
-  core.tools.ui
-    .showMessage(
-      "info",
-      getStrings().solution.MigrationToArmAndMultiEnvSuccessMessageVSC,
-      false,
-      reloadText
-    )
-    .then((result) => {
-      const userSelected = result.isOk() ? result.value : undefined;
-      if (userSelected === reloadText) {
-        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
-          [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
-        });
-        core.tools.ui.reload?.();
-      } else {
-        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
-          [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Cancel,
-        });
-      }
-    });
+  // auto-reload
+  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
+    [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
+  });
 }
 
 async function generateRemoteTemplate(manifestString: string) {
@@ -721,6 +745,7 @@ async function cleanup(projectPath: string): Promise<void> {
   await fs.remove(templateAppPackage);
   await fs.remove(fxState);
   await fs.remove(path.join(templateAppPackage, ".."));
+  await fs.remove(path.join(projectPath, ".backup"));
   if (await fs.pathExists(path.join(fxConfig, "..", "new.env.default.json"))) {
     await fs.remove(path.join(fxConfig, "..", "new.env.default.json"));
   }

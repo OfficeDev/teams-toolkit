@@ -19,6 +19,7 @@ export class AzureInfo {
 
 export class RegularExpr {
   static readonly allCharToBeSkippedInName: RegExp = /[^a-zA-Z0-9]/g;
+  static readonly targetFramework: RegExp = /(?<=<TargetFramework>)(.*)(?=<)/gim;
 }
 
 export class DefaultProvisionConfigs {
@@ -54,7 +55,7 @@ export class BlazorPluginInfo {
     "projectFilePath",
   ];
 
-  static readonly defaultFramework = "net5.0";
+  static readonly defaultFramework = "net6.0";
   static readonly defaultRuntime = "win-x86";
 }
 

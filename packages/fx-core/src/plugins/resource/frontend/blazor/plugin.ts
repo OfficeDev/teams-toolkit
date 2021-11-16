@@ -308,9 +308,7 @@ export class BlazorPluginImpl {
     );
     const projectPath = path.dirname(projectFilePath);
 
-    // ? Do we support user customize build? If yes, how?
-    // * If we support user customize runtime, we need to validate its value because we use it to concat build command.
-    const framework = PluginInfo.defaultFramework;
+    const framework = await Deploy.getFrameworkVersion(projectFilePath);
     const runtime = PluginInfo.defaultRuntime;
 
     const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);

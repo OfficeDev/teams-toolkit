@@ -117,8 +117,6 @@ export class ConfigKeysOfOtherPlugin {
   static localDebugBotEndpoint = "localBotEndpoint";
   static solutionPermissionRequest = "permissionRequest";
   static remoteTeamsAppId = "remoteTeamsAppId";
-  static frontendHostingEndpointArm = "frontendHosting_endpoint";
-  static frontendHostingDomainArm = "frontendHosting_domain";
   static solutionUserInfo = "userInfo";
 }
 

@@ -42,6 +42,8 @@ import {
   Inputs,
   TokenProvider,
   v2,
+  Ok,
+  Err,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -53,6 +55,8 @@ import {
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   WEB_APPLICATION_INFO_SOURCE,
+  UnauthorizedToCheckResourceGroupError,
+  FailedToCheckResourceGroupExistenceError,
 } from "../../../src/plugins/solution/fx-solution/constants";
 import {
   FRONTEND_DOMAIN,
@@ -87,7 +91,10 @@ import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
 import { newEnvInfo } from "../../../src/core/tools";
 import { isArmSupportEnabled } from "../../../src/common/tools";
 import Container from "typedi";
-import { askResourceGroupInfo } from "../../../src/plugins/solution/fx-solution/commonQuestions";
+import {
+  askResourceGroupInfo,
+  checkResourceGroupExistence,
+} from "../../../src/plugins/solution/fx-solution/commonQuestions";
 import { ResourceManagementModels } from "@azure/arm-resources";
 import { CoreQuestionNames } from "../../../src/core/question";
 import { Subscriptions } from "@azure/arm-subscriptions";
@@ -715,7 +722,7 @@ describe("provision() happy path for Azure projects", () => {
       return ok(Void);
     };
     const spy = mocker.spy(aadPlugin, "setApplicationInContext");
-    const stub = sinon.stub(arm, "deployArmTemplates");
+    const stub = mocker.stub(arm, "deployArmTemplates");
 
     expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .undefined;
@@ -973,6 +980,127 @@ describe("before provision() asking for resource group info", () => {
     expect(resourceGroupInfoResult._unsafeUnwrapErr().name).to.equal(
       SolutionError.FailedToListResourceGroup
     );
+  });
+
+  describe("checkResourceGroupExistence", () => {
+    const mockSubscriptionId = "3b8db46f-4298-458a-ac36-e04e7e66b68f";
+    const mockSubscriptionName = "Test Subscription";
+    const mockResourceGroupName = "mock-rg";
+    let upstreamResult: Result<boolean, Error> = new Ok<boolean, Error>(true);
+    let mockRmClient: ResourceManagementClient;
+
+    beforeEach(async () => {
+      const mockedCtx = mockCtxWithResourceGroupQuestions(false, mockResourceGroupName);
+      mocker
+        .stub(ResourceGroups.prototype, "checkExistence")
+        .callsFake(
+          async (
+            resourceGroupName: string,
+            options?: msRest.RequestOptionsBase
+          ): Promise<armResources.ResourceManagementModels.ResourceGroupsCheckExistenceResponse> => {
+            if (upstreamResult.isOk()) {
+              return {
+                body: upstreamResult.value,
+              } as armResources.ResourceManagementModels.ResourceGroupsCheckExistenceResponse;
+            } else {
+              throw upstreamResult.error;
+            }
+          }
+        );
+
+      mockedCtx.projectSettings = {
+        appName: "my app",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
+          name: "azure",
+          version: "1.0",
+          activeResourcePlugins: [],
+        },
+      };
+      const token = await mockedCtx.azureAccountProvider?.getAccountCredentialAsync();
+      expect(token).to.exist;
+      mockRmClient = new ResourceManagementClient(token!, mockSubscriptionId);
+    });
+
+    it("Exists", async () => {
+      // Arrange
+      upstreamResult = new Ok<boolean, Error>(true);
+      // Act
+      const result = await checkResourceGroupExistence(
+        mockRmClient,
+        mockResourceGroupName,
+        mockSubscriptionId,
+        mockSubscriptionName
+      );
+      // Assert
+      expect(result.isOk());
+      expect(result._unsafeUnwrap()).to.be.true;
+    });
+
+    it("Not exist", async () => {
+      // Arrange
+      upstreamResult = new Ok<boolean, Error>(false);
+      // Act
+      const result = await checkResourceGroupExistence(
+        mockRmClient,
+        mockResourceGroupName,
+        mockSubscriptionId,
+        mockSubscriptionName
+      );
+      // Assert
+      expect(result.isOk());
+      expect(result._unsafeUnwrap()).to.be.false;
+    });
+
+    it("Unauthorized", async () => {
+      // Arrange
+      upstreamResult = new Err<boolean, Error>(
+        new msRest.RestError("Unauthorized", "RestError", 403)
+      );
+      // Act
+      const result = await checkResourceGroupExistence(
+        mockRmClient,
+        mockResourceGroupName,
+        mockSubscriptionId,
+        mockSubscriptionName
+      );
+      // Assert
+      expect(result.isErr());
+      expect(result._unsafeUnwrapErr()).instanceOf(UnauthorizedToCheckResourceGroupError);
+    });
+
+    it("Network error", async () => {
+      // Arrange
+      upstreamResult = new Err<boolean, Error>(new Error("MockNetworkError"));
+      // Act
+      const result = await checkResourceGroupExistence(
+        mockRmClient,
+        mockResourceGroupName,
+        mockSubscriptionId,
+        mockSubscriptionName
+      );
+      // Assert
+      expect(result.isErr());
+      expect(result._unsafeUnwrapErr()).instanceOf(FailedToCheckResourceGroupExistenceError);
+      expect(result._unsafeUnwrapErr().message).to.contain("MockNetworkError");
+    });
+
+    it("Non-Error thrown", async () => {
+      // Arrange
+      upstreamResult = new Err<boolean, Error>("UnexpectedUnknownError" as unknown as Error);
+      // Act
+      const result = await checkResourceGroupExistence(
+        mockRmClient,
+        mockResourceGroupName,
+        mockSubscriptionId,
+        mockSubscriptionName
+      );
+      // Assert
+      expect(result.isErr());
+      expect(result._unsafeUnwrapErr()).instanceOf(FailedToCheckResourceGroupExistenceError);
+      expect(result._unsafeUnwrapErr().message).to.contain("UnexpectedUnknownError");
+    });
   });
 });
 

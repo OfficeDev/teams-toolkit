@@ -49,6 +49,7 @@
     "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.update",
     "onCommand:fx-extension.openManifest",
+    "onCommand:fx-extension.validateManifest",
     "onCommand:fx-extension.build",
     "onCommand:fx-extension.provision",
     "onCommand:fx-extension.deploy",
@@ -231,11 +232,11 @@
         },
         {
           "command": "fx-extension.viewEnvironment",
-          "when": "view == teamsfx-environment && viewItem =~ /^environment|^local$/"
+          "when": "view == teamsfx-environment && viewItem =~ /environment/"
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /^environment|^local$/",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         },
         {
@@ -259,6 +260,13 @@
           "command": "fx-extension.selectAndDebug",
           "when": "!inDebugMode && debuggersAvailable && fx-extension.runIconActive",
           "group": "teamsfx"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "fx-extension.openPreviewFile",
+          "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json",
+          "group": "navigation"
         }
       ],
       "commandPalette": [
@@ -404,6 +412,10 @@
         "title": "Teams: Edit manifest file"
       },
       {
+        "command": "fx-extension.validateManifest",
+        "title": "Teams: Validate manifest file"
+      },
+      {
         "command": "fx-extension.build",
         "title": "Teams: Zip Teams metadata package"
       },
@@ -413,7 +425,7 @@
       },
       {
         "command": "fx-extension.checkProjectUpgrade",
-        "title": "Teams: Check project upgrade"
+        "title": "Teams: Upgrade project"
       },
       {
         "command": "fx-extension.deploy",
@@ -460,6 +472,16 @@
         "command": "fx-extension.cicdGuide",
         "title": "CI/CD guide",
         "icon": "$(sync)"
+      },
+      {
+        "command": "fx-extension.openPreviewFile",
+        "title": "Preview manifest file",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "fx-extension.openSchema",
+        "title": "Open manifest schema",
+        "icon": "$(file-code)"
       },
       {
         "command": "fx-extension.migrateV1Project",

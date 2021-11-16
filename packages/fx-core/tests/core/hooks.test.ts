@@ -43,7 +43,11 @@ import * as commonTools from "../../src/common/tools";
 import { environmentManager } from "../../src/core/environment";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
 import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
-import { migrateArm, ProjectMigratorMW } from "../../src/core/middleware/projectMigrator";
+import {
+  migrateArm,
+  ProjectMigratorMW,
+  ArmParameters,
+} from "../../src/core/middleware/projectMigrator";
 import { ProjectUpgraderMW } from "../../src/core/middleware/projectUpgrader";
 import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
 import {
@@ -597,28 +601,25 @@ describe("Middleware - others", () => {
       assert.isTrue(
         await fs.pathExists(path.join(projectPath, "templates", "azure", "main.bicep"))
       );
-      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure", "modules")));
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure", "provision")));
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure", "teamsFx")));
       const armParam = await fs.readJson(
         path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json")
       );
       assert.isNotNull(armParam.parameters.resourceBaseName);
       assert.isNotNull(armParam.parameters.azureSql_admin);
-      assert.strictEqual(armParam.parameters.frontendHosting_storageName.value, "test");
-      assert.strictEqual(armParam.parameters.identity_managedIdentityName.value, "test");
-      assert.strictEqual(armParam.parameters.azureSql_serverName.value, "test");
-      assert.strictEqual(armParam.parameters.azureSql_databaseName.value, "test");
-      assert.strictEqual(armParam.parameters.function_serverfarmsName.value, "test");
-      assert.strictEqual(armParam.parameters.function_storageName.value, "test");
-      assert.strictEqual(armParam.parameters.function_webappName.value, "test");
-
-      // const newEnv = await fs.readJson(path.join(projectPath, ".fx", "new.env.default.json"));
-      // const envFile = await fs.readJson(path.join(projectPath, ".fx", "env.default.json"));
-      // assert.strictEqual(
-      //   newEnv["fx-resource-bot"].wayToRegisterBot,
-      //   envFile["fx-resource-bot"].wayToRegisterBot
-      // );
-      // assert.isUndefined(newEnv["fx-resource-bot"].skuName);
-      // assert.isNotNull(envFile["fx-resource-bot"].skuName);
+      const parameterObj = armParam.parameters.provisionParameters.value;
+      assert.isNotNull(parameterObj);
+      assert.strictEqual(parameterObj[ArmParameters.FEStorageName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.IdentityName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.SQLServer], "test");
+      assert.strictEqual(parameterObj[ArmParameters.SQLDatabase], "test");
+      assert.strictEqual(parameterObj[ArmParameters.functionServerName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.functionStorageName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.functionAppName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimServiceName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimProductName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimOauthServerName], "test");
     });
   });
 
@@ -660,6 +661,10 @@ describe("Middleware - others", () => {
       try {
         const res = await my.other(inputs);
         assert.isTrue(res.isOk());
+        const configDev = await fs.readJson(
+          path.join(inputs.projectPath, ".fx", "configs", "config.dev.json")
+        );
+        assert.isTrue(configDev["skipAddingSqlUser"]);
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

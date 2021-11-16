@@ -16,6 +16,7 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
 import { sampleProvider } from "../common";
+import { getRootDirectory } from "..";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -42,8 +43,6 @@ export const QuestionAppName: TextInputQuestion = {
   title: "Application name",
   validation: {
     validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-      const folder = previousInputs![CoreQuestionNames.Folder] as string;
-      if (!folder) return undefined;
       const schema = {
         pattern: ProjectNamePattern,
       };
@@ -52,7 +51,7 @@ export const QuestionAppName: TextInputQuestion = {
       if (validateResult.errors && validateResult.errors.length > 0) {
         return "Application name must start with a letter and can only contain letters and digits.";
       }
-      const projectPath = path.resolve(folder, appName);
+      const projectPath = path.resolve(getRootDirectory(), appName);
       const exists = await fs.pathExists(projectPath);
       if (exists) return `Path exists: ${projectPath}. Select a different application name.`;
       return undefined;
@@ -262,5 +261,4 @@ export const SampleSelect: SingleSelectQuestion = {
     } as OptionItem;
   }),
   placeholder: "Select a sample",
-  returnObject: true,
 };

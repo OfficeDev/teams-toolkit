@@ -19,7 +19,7 @@ import {
   Json,
 } from "@microsoft/teamsfx-api";
 import { getStrings, isArmSupportEnabled } from "../../../../common/tools";
-import { blockV1Project, getAzureSolutionSettings, reloadV2Plugins } from "./utils";
+import { getAzureSolutionSettings, reloadV2Plugins } from "./utils";
 import {
   SolutionError,
   SolutionTelemetryComponentName,
@@ -54,10 +54,6 @@ export async function executeUserTask(
   envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
 ): Promise<Result<unknown, FxError>> {
-  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
-  if (blockResult.isErr()) {
-    return err(blockResult.error);
-  }
   const namespace = func.namespace;
   const method = func.method;
   const array = namespace.split("/");
@@ -258,6 +254,9 @@ export async function addCapability(
       change = true;
       if (cap === TabOptionItem.id) {
         pluginsToScaffold.push(frontendPlugin);
+        pluginsToScaffold.push(
+          Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SimpleAuthPlugin)
+        );
       } else if (
         (cap === BotOptionItem.id || cap === MessageExtensionItem.id) &&
         !pluginsToScaffold.includes(botPlugin)

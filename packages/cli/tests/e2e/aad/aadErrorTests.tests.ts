@@ -27,6 +27,8 @@ describe("Aad Error Tests", function () {
 
   let projectPath: string;
 
+  this.retries(3);
+
   beforeEach(async () => {
     testFolder = getTestFolder();
 

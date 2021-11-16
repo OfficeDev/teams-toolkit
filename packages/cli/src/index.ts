@@ -6,12 +6,12 @@
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
+import "./console/screen";
 import { registerCommands } from "./cmds";
 import * as constants from "./constants";
 import { registerPrompts } from "./prompts";
 import HelpParamGenerator from "./helpParamGenerator";
 import { getVersion } from "./utils";
-import { CLILogProvider } from "./commonlib/log";
 
 function changeArgv(argv: string[]): string[] {
   return argv.map((s) => (s.startsWith("--") ? s.toLocaleLowerCase() : s));

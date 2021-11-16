@@ -91,6 +91,9 @@ export enum TelemetryEvent {
   EditSecretStart = "edit-secret-start",
   EditSecret = "edit-secret",
 
+  OpenManifestConfigStart = "open-manifest-config-start",
+  OpenManifestConfig = "open-manifest-config",
+
   OpenTeamsApp = "open-teams-app",
   UpdateTeamsApp = "update-teams-app",
 
@@ -126,9 +129,9 @@ export enum TelemetryEvent {
 
   ShowLocalDebugNotification = "show-local-debug-notification",
   ClickLocalDebug = "click-local-debug",
-  ShowChangeLocationNotification = "show-change-location-notification",
   ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
+  PreviewManifestFile = "preview-manifest",
 }
 
 export enum TelemetryProperty {

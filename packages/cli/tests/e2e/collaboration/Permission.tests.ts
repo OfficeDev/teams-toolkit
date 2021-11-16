@@ -45,7 +45,7 @@ describe("Collaboration", function () {
     console.log("[Successfully] provision");
 
     // Check Permission
-    const checkPermissionResult = await execAsync(`teamsfx permission status`, {
+    const checkPermissionResult = await execAsyncWithRetry(`teamsfx permission status`, {
       cwd: projectPath,
       env: processEnv,
       timeout: 0,
@@ -60,7 +60,7 @@ describe("Collaboration", function () {
     console.log("[Successfully] check permission");
 
     // Grant Permission
-    const grantCollaboratorResult = await execAsync(
+    const grantCollaboratorResult = await execAsyncWithRetry(
       `teamsfx permission grant --email ${collaborator}`,
       {
         cwd: projectPath,

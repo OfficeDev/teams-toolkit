@@ -25,7 +25,7 @@ import {
   IdentityConstants,
   AzureConstants,
   PathInfo,
-  BotArmOutput,
+  BotBicep,
   Alias,
 } from "./constants";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
@@ -52,19 +52,16 @@ import { BotAuthCredential } from "./botAuthCredential";
 import { AzureOperations } from "./azureOps";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import path from "path";
-import { getTemplatesFolder } from "../../..";
-import { ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { getTemplatesFolder } from "../../../folder";
+import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import {
   copyFiles,
-  generateBicepFiles,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
   isArmSupportEnabled,
 } from "../../../common";
-import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
-import { getArmOutput } from "../utils4v2";
 
 export class TeamsBotImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
@@ -198,78 +195,42 @@ export class TeamsBotImpl {
 
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
 
-    const selectedPlugins = (this.ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
-    const handleBarsContext = {
-      Plugins: selectedPlugins,
-    };
-
-    const provisionModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateFileName),
-      handleBarsContext
-    );
-    if (provisionModuleContentResult.isErr()) {
-      throw provisionModuleContentResult.error;
-    }
-
-    const configurationModuleContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
-      handleBarsContext
-    );
-    if (configurationModuleContentResult.isErr()) {
-      throw configurationModuleContentResult.error;
-    }
-
-    const inputParameterContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.ParameterOrchestrationFileName),
-      handleBarsContext
-    );
-    if (inputParameterContentResult.isErr()) {
-      throw inputParameterContentResult.error;
-    }
-
-    const moduleOrchestrationContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.ModuleOrchestrationFileName),
-      handleBarsContext
-    );
-    if (moduleOrchestrationContentResult.isErr()) {
-      throw moduleOrchestrationContentResult.error;
-    }
-
-    const outputOrchestrationContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.OutputOrchestrationFileName),
-      handleBarsContext
-    );
-    if (outputOrchestrationContentResult.isErr()) {
-      throw outputOrchestrationContentResult.error;
-    }
-
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        botProvision: {
-          Content: provisionModuleContentResult.value,
-        },
-        botConfiguration: {
-          Content: configurationModuleContentResult.value,
-        },
-      },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: inputParameterContentResult.value,
-          ParameterJson: JSON.parse(
-            await fs.readFile(
-              path.join(bicepTemplateDir, Bicep.ParameterFileName),
-              ConstantString.UTF8Encoding
-            )
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ProvisionFileName),
+          ConstantString.UTF8Encoding
+        ),
+        Modules: {
+          bot: await fs.readFile(
+            path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateFileName),
+            ConstantString.UTF8Encoding
           ),
         },
-        ModuleTemplate: {
-          Content: moduleOrchestrationContentResult.value,
-        },
-        OutputTemplate: {
-          Content: outputOrchestrationContentResult.value,
+        Reference: {
+          resourceId: BotBicep.resourceId,
+          hostName: BotBicep.hostName,
+          webAppEndpoint: BotBicep.webAppEndpoint,
         },
       },
+      Configuration: {
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ConfigFileName),
+          ConstantString.UTF8Encoding
+        ),
+        Modules: {
+          bot: await fs.readFile(
+            path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
+            ConstantString.UTF8Encoding
+          ),
+        },
+      },
+      Parameters: JSON.parse(
+        await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ParameterFileName),
+          ConstantString.UTF8Encoding
+        )
+      ),
     };
 
     Logger.info(Messages.SuccessfullyGenerateArmTemplatesBot);
@@ -338,152 +299,125 @@ export class TeamsBotImpl {
     );
   }
 
-  private async syncArmOutput(context: PluginContext) {
-    await this.config.restoreConfigFromContext(context);
-
-    this.config.provision.validDomain = getArmOutput(context, BotArmOutput.Domain) as string;
-    this.config.provision.appServicePlan = getArmOutput(
-      context,
-      BotArmOutput.AppServicePlanName
-    ) as string;
-    this.config.provision.botChannelRegName = getArmOutput(
-      context,
-      BotArmOutput.BotServiceName
-    ) as string;
-    this.config.provision.botWebAppResourceId = getArmOutput(
-      context,
-      BotArmOutput.BotWebAppResourceId
-    ) as string;
-    this.config.provision.siteEndpoint = getArmOutput(
-      context,
-      BotArmOutput.WebAppEndpoint
-    ) as string;
-    this.config.provision.skuName = getArmOutput(context, BotArmOutput.WebAppSKU) as string;
-    this.config.provision.siteName = getArmOutput(context, BotArmOutput.WebAppName) as string;
-
-    this.config.saveConfigIntoContext(context);
-  }
-
   public async postProvision(context: PluginContext): Promise<FxResult> {
+    if (isArmSupportEnabled()) {
+      return ResultFactory.Success();
+    }
     Logger.info(Messages.PostProvisioningStart);
 
     this.ctx = context;
 
-    if (isArmSupportEnabled()) {
-      await this.syncArmOutput(context);
-    } else {
-      await this.config.restoreConfigFromContext(context);
+    await this.config.restoreConfigFromContext(context);
 
-      // 1. Get required config items from other plugins.
-      // 2. Update bot hosting env"s app settings.
-      const botId = this.config.scaffold.botId;
-      const botPassword = this.config.scaffold.botPassword;
-      const teamsAppClientId = this.config.teamsAppClientId;
-      const teamsAppClientSecret = this.config.teamsAppClientSecret;
-      const teamsAppTenant = this.config.teamsAppTenant;
-      const applicationIdUris = this.config.applicationIdUris;
-      const siteEndpoint = this.config.provision.siteEndpoint;
+    // 1. Get required config items from other plugins.
+    // 2. Update bot hosting env"s app settings.
+    const botId = this.config.scaffold.botId;
+    const botPassword = this.config.scaffold.botPassword;
+    const teamsAppClientId = this.config.teamsAppClientId;
+    const teamsAppClientSecret = this.config.teamsAppClientSecret;
+    const teamsAppTenant = this.config.teamsAppTenant;
+    const applicationIdUris = this.config.applicationIdUris;
+    const siteEndpoint = this.config.provision.siteEndpoint;
 
-      CheckThrowSomethingMissing(ConfigNames.BOT_ID, botId);
-      CheckThrowSomethingMissing(ConfigNames.BOT_PASSWORD, botPassword);
-      CheckThrowSomethingMissing(ConfigNames.AUTH_CLIENT_ID, teamsAppClientId);
-      CheckThrowSomethingMissing(ConfigNames.AUTH_CLIENT_SECRET, teamsAppClientSecret);
-      CheckThrowSomethingMissing(ConfigNames.AUTH_TENANT, teamsAppTenant);
-      CheckThrowSomethingMissing(ConfigNames.AUTH_APPLICATION_ID_URIS, applicationIdUris);
-      CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, siteEndpoint);
+    CheckThrowSomethingMissing(ConfigNames.BOT_ID, botId);
+    CheckThrowSomethingMissing(ConfigNames.BOT_PASSWORD, botPassword);
+    CheckThrowSomethingMissing(ConfigNames.AUTH_CLIENT_ID, teamsAppClientId);
+    CheckThrowSomethingMissing(ConfigNames.AUTH_CLIENT_SECRET, teamsAppClientSecret);
+    CheckThrowSomethingMissing(ConfigNames.AUTH_TENANT, teamsAppTenant);
+    CheckThrowSomethingMissing(ConfigNames.AUTH_APPLICATION_ID_URIS, applicationIdUris);
+    CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, siteEndpoint);
 
-      const serviceClientCredentials = await this.getAzureAccountCredenial();
+    const serviceClientCredentials = await this.getAzureAccountCredenial();
 
-      const webSiteMgmtClient = factory.createWebSiteMgmtClient(
-        serviceClientCredentials,
-        this.config.provision.subscriptionId!
-      );
+    const webSiteMgmtClient = factory.createWebSiteMgmtClient(
+      serviceClientCredentials,
+      this.config.provision.subscriptionId!
+    );
 
-      const appSettings = [
-        { name: AuthEnvNames.BOT_ID, value: botId },
-        { name: AuthEnvNames.BOT_PASSWORD, value: botPassword },
-        { name: AuthEnvNames.M365_CLIENT_ID, value: teamsAppClientId },
-        { name: AuthEnvNames.M365_CLIENT_SECRET, value: teamsAppClientSecret },
-        { name: AuthEnvNames.M365_TENANT_ID, value: teamsAppTenant },
-        { name: AuthEnvNames.M365_AUTHORITY_HOST, value: AuthValues.M365_AUTHORITY_HOST },
-        {
-          name: AuthEnvNames.INITIATE_LOGIN_ENDPOINT,
-          value: `${this.config.provision.siteEndpoint}${CommonStrings.AUTH_LOGIN_URI_SUFFIX}`,
-        },
-        { name: AuthEnvNames.M365_APPLICATION_ID_URI, value: applicationIdUris },
-      ];
+    const appSettings = [
+      { name: AuthEnvNames.BOT_ID, value: botId },
+      { name: AuthEnvNames.BOT_PASSWORD, value: botPassword },
+      { name: AuthEnvNames.M365_CLIENT_ID, value: teamsAppClientId },
+      { name: AuthEnvNames.M365_CLIENT_SECRET, value: teamsAppClientSecret },
+      { name: AuthEnvNames.M365_TENANT_ID, value: teamsAppTenant },
+      { name: AuthEnvNames.M365_AUTHORITY_HOST, value: AuthValues.M365_AUTHORITY_HOST },
+      {
+        name: AuthEnvNames.INITIATE_LOGIN_ENDPOINT,
+        value: `${this.config.provision.siteEndpoint}${CommonStrings.AUTH_LOGIN_URI_SUFFIX}`,
+      },
+      { name: AuthEnvNames.M365_APPLICATION_ID_URI, value: applicationIdUris },
+    ];
 
-      if (this.config.provision.sqlEndpoint) {
-        appSettings.push({
-          name: AuthEnvNames.SQL_ENDPOINT,
-          value: this.config.provision.sqlEndpoint,
-        });
-      }
-      if (this.config.provision.sqlDatabaseName) {
-        appSettings.push({
-          name: AuthEnvNames.SQL_DATABASE_NAME,
-          value: this.config.provision.sqlDatabaseName,
-        });
-      }
-      if (this.config.provision.sqlUserName) {
-        appSettings.push({
-          name: AuthEnvNames.SQL_USER_NAME,
-          value: this.config.provision.sqlUserName,
-        });
-      }
-      if (this.config.provision.sqlPassword) {
-        appSettings.push({
-          name: AuthEnvNames.SQL_PASSWORD,
-          value: this.config.provision.sqlPassword,
-        });
-      }
-      if (this.config.provision.identityClientId) {
-        appSettings.push({
-          name: AuthEnvNames.IDENTITY_ID,
-          value: this.config.provision.identityClientId,
-        });
-      }
-      if (this.config.provision.functionEndpoint) {
-        appSettings.push({
-          name: AuthEnvNames.API_ENDPOINT,
-          value: this.config.provision.functionEndpoint,
-        });
-      }
-
-      const siteEnvelope: appService.WebSiteManagementModels.Site =
-        LanguageStrategy.getSiteEnvelope(
-          this.config.scaffold.programmingLanguage!,
-          this.config.provision.appServicePlan!,
-          this.config.provision.location!,
-          appSettings
-        );
-
-      if (this.config.provision.identityResourceId) {
-        siteEnvelope.identity = {
-          type: IdentityConstants.IDENTITY_TYPE_USER_ASSIGNED,
-          userAssignedIdentities: {
-            [this.config.provision.identityResourceId]: {},
-          },
-        };
-      }
-
-      Logger.info(Messages.UpdatingAzureWebAppSettings);
-      await AzureOperations.CreateOrUpdateAzureWebApp(
-        webSiteMgmtClient,
-        this.config.provision.resourceGroup!,
-        this.config.provision.siteName!,
-        siteEnvelope,
-        true
-      );
-      Logger.info(Messages.SuccessfullyUpdatedAzureWebAppSettings);
-
-      // 3. Update message endpoint for bot registration.
-      await this.updateMessageEndpointOnAzure(
-        `${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
-      );
-
-      this.config.saveConfigIntoContext(context);
+    if (this.config.provision.sqlEndpoint) {
+      appSettings.push({
+        name: AuthEnvNames.SQL_ENDPOINT,
+        value: this.config.provision.sqlEndpoint,
+      });
     }
+    if (this.config.provision.sqlDatabaseName) {
+      appSettings.push({
+        name: AuthEnvNames.SQL_DATABASE_NAME,
+        value: this.config.provision.sqlDatabaseName,
+      });
+    }
+    if (this.config.provision.sqlUserName) {
+      appSettings.push({
+        name: AuthEnvNames.SQL_USER_NAME,
+        value: this.config.provision.sqlUserName,
+      });
+    }
+    if (this.config.provision.sqlPassword) {
+      appSettings.push({
+        name: AuthEnvNames.SQL_PASSWORD,
+        value: this.config.provision.sqlPassword,
+      });
+    }
+    if (this.config.provision.identityClientId) {
+      appSettings.push({
+        name: AuthEnvNames.IDENTITY_ID,
+        value: this.config.provision.identityClientId,
+      });
+    }
+    if (this.config.provision.functionEndpoint) {
+      appSettings.push({
+        name: AuthEnvNames.API_ENDPOINT,
+        value: this.config.provision.functionEndpoint,
+      });
+    }
+
+    const siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(
+      this.config.scaffold.programmingLanguage!,
+      this.config.provision.appServicePlan!,
+      this.config.provision.location!,
+      appSettings
+    );
+
+    if (this.config.provision.identityResourceId) {
+      siteEnvelope.identity = {
+        type: IdentityConstants.IDENTITY_TYPE_USER_ASSIGNED,
+        userAssignedIdentities: {
+          [this.config.provision.identityResourceId]: {},
+        },
+      };
+    }
+
+    Logger.info(Messages.UpdatingAzureWebAppSettings);
+    await AzureOperations.CreateOrUpdateAzureWebApp(
+      webSiteMgmtClient,
+      this.config.provision.resourceGroup!,
+      this.config.provision.siteName!,
+      siteEnvelope,
+      true
+    );
+    Logger.info(Messages.SuccessfullyUpdatedAzureWebAppSettings);
+
+    // 3. Update message endpoint for bot registration.
+    await this.updateMessageEndpointOnAzure(
+      `${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
+    );
+
+    this.config.saveConfigIntoContext(context);
+    Logger.info(Messages.SuccessfullyPostProvisionedBot);
 
     return ResultFactory.Success();
   }

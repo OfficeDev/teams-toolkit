@@ -31,7 +31,7 @@ import {
 import * as Deploy from "./ops/deploy";
 import { Logger } from "../utils/logger";
 import path from "path";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 
 type Site = WebSiteManagementModels.Site;
 

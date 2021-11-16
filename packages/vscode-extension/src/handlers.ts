@@ -243,6 +243,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
+    await openUpgradeChangeLogsHandler();
     ExtTelemetry.isFromSample = await getIsFromSample();
 
     if (workspacePath) {
@@ -880,6 +881,33 @@ async function openMarkdownHandler() {
       const PreviewMarkdownCommand = "markdown.showPreview";
       commands.executeCommand(PreviewMarkdownCommand, uri);
     });
+  }
+}
+
+async function openUpgradeChangeLogsHandler() {
+  const openUpgradeChangelogsFlag = "openUpgradeChangelogs";
+  if (
+    globalStateGet(openUpgradeChangelogsFlag, false) &&
+    workspace.workspaceFolders &&
+    workspace.workspaceFolders.length > 0
+  ) {
+    try {
+      await globalStateUpdate(openUpgradeChangelogsFlag, false);
+
+      const workspacePath: string = workspace.workspaceFolders[0].uri.fsPath;
+      const backupName = ".backup";
+      const backupFolder: string = (await fs.pathExists(path.join(workspacePath, backupName)))
+        ? path.join(workspacePath, backupName)
+        : path.join(workspacePath, `.teamsfx${backupName}`);
+      const uri = Uri.file(path.join(backupFolder, "upgrade-change-logs.md"));
+
+      workspace.openTextDocument(uri).then(() => {
+        const PreviewMarkdownCommand = "markdown.showPreview";
+        commands.executeCommand(PreviewMarkdownCommand, uri);
+      });
+    } catch (err) {
+      // do nothing
+    }
   }
 }
 

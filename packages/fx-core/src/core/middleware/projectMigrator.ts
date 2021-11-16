@@ -174,8 +174,12 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       false,
       "OK"
     );
+  } else {
+    // continue next step only when:
+    // 1. no need to upgrade the project;
+    // 2. no need to update Teams Toolkit version;
+    await next();
   }
-  await next();
 };
 
 function outputCancelMessage(ctx: CoreHookContext) {

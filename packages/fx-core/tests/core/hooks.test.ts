@@ -691,6 +691,7 @@ describe("Middleware - others", () => {
       try {
         await my.other(inputs);
         assert.fail();
+      } catch (e) {
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

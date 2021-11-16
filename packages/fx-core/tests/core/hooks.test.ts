@@ -632,7 +632,6 @@ describe("Middleware - others", () => {
       await fs.ensureDir(projectPath);
       mockedEnvRestore = mockedEnv({
         TEAMSFX_INSIDER_PREVIEW: "true",
-        AAD_APP_CLIENT_SECRET: "test",
       });
       sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
     });
@@ -655,10 +654,9 @@ describe("Middleware - others", () => {
         other: [ProjectMigratorMW],
       });
 
-      const inputs: Inputs = { platform: Platform.VSCode };
+      const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
       inputs.projectPath = projectPath;
       const my = new MyClass();
-
       try {
         const res = await my.other(inputs);
         assert.isTrue(res.isOk());

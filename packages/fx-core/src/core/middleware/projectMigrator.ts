@@ -487,24 +487,19 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
         envDefault[ResourcePlugins.AzureSQL][EnvConfigName.SqlSkipAddingUser];
     }
     if (envDefault[ResourcePlugins.Aad]?.[EnvConfigName.AadSkipProvision] === "true") {
-      Object.assign(configDev, { auth: {} });
+      configDev.auth = {};
       if (envDefault[ResourcePlugins.Aad][EnvConfigName.OAuthScopeId]) {
-        Object.assign(configDev.auth, {
-          accessAsUserScopeId: envDefault[ResourcePlugins.Aad][EnvConfigName.OAuthScopeId],
-        });
+        configDev.auth!.accessAsUserScopeId =
+          envDefault[ResourcePlugins.Aad][EnvConfigName.OAuthScopeId];
       }
       if (envDefault[ResourcePlugins.Aad][EnvConfigName.ObjectId]) {
-        Object.assign(configDev.auth, {
-          objectId: envDefault[ResourcePlugins.Aad][EnvConfigName.ObjectId],
-        });
+        configDev.auth!.objectId = envDefault[ResourcePlugins.Aad][EnvConfigName.ObjectId];
       }
       if (envDefault[ResourcePlugins.Aad][EnvConfigName.ClientId]) {
-        Object.assign(configDev.auth, {
-          clientId: envDefault[ResourcePlugins.Aad][EnvConfigName.ClientId],
-        });
+        configDev.auth!.clientId = envDefault[ResourcePlugins.Aad][EnvConfigName.ClientId];
       }
       if (envDefault[ResourcePlugins.Aad][EnvConfigName.ClientSecret]) {
-        Object.assign(configDev.auth, { clientSecret: AadSecret });
+        configDev.auth!.clientSecret = AadSecret;
       }
     }
 

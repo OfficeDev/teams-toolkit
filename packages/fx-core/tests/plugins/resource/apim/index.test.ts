@@ -17,13 +17,10 @@ import {
 import {
   QuestionConstants,
   TeamsToolkitComponent,
+  OpenApiSchemaVersion,
 } from "../../../../src/plugins/resource/apim/constants";
 import { AadService } from "../../../../src/plugins/resource/apim/services/aadService";
 import { AadManager } from "../../../../src/plugins/resource/apim/managers/aadManager";
-import {
-  IAadPluginConfig,
-  IFunctionPluginConfig,
-} from "../../../../src/plugins/resource/apim/config";
 import { isArmSupportEnabled, newEnvInfo } from "../../../../src";
 import { createSandbox, SinonSandbox } from "sinon";
 import { Factory } from "../../../../src/plugins/resource/apim/factory";
@@ -33,8 +30,10 @@ import {
   mockApiManagementService,
   DefaultTestInput,
   mockCredential,
-  MockApiManagementServiceInput,
   MockAxiosInput,
+  mockApiVersionSet,
+  mockApi,
+  mockProductApi,
 } from "./mock";
 import { Lazy } from "../../../../src/plugins/resource/apim/utils/commonUtils";
 import { ApimManager } from "../../../../src/plugins/resource/apim/managers/apimManager";
@@ -61,6 +60,16 @@ describe("ApimPlugin", () => {
       const ctx = await buildPluginContext(sandbox);
       let result = await apimPlugin.provision(ctx);
       chai.assert.isTrue(result.isOk(), "Operation apimPlugin.provision should be succeeded.");
+      // result = await apimPlugin.generateArmTemplates(ctx);
+      // chai.assert.isTrue(
+      //   result.isOk(),
+      //   "Operation apimPlugin.generateArmTemplates should be succeeded."
+      // );
+      updateConfig(ctx, undefined, undefined, {
+        serviceResourceId: `/subscriptions/${DefaultTestInput.subscriptionId}/resourceGroups/${DefaultTestInput.resourceGroup.existing}/providers/Microsoft.ApiManagement/service/apim111601dev624d09`,
+        productResourceId: `/subscriptions/${DefaultTestInput.subscriptionId}/resourceGroups/${DefaultTestInput.resourceGroup.existing}/providers/Microsoft.ApiManagement/service/apim111601dev624d09/products/apim111601dev624d09`,
+        authServerResourceId: `/subscriptions/${DefaultTestInput.subscriptionId}/resourceGroups/${DefaultTestInput.resourceGroup.existing}/providers/Microsoft.ApiManagement/service/apim111601dev624d09/authorizationServers/apim111601dev624d09`,
+      });
       updateConfig(ctx, {
         objectId: DefaultTestInput.aadObjectId.created,
         clientId: DefaultTestInput.aadClientId.created,
@@ -68,8 +77,16 @@ describe("ApimPlugin", () => {
         applicationIdUris: `api://apim.xxx.web.core.windows.net/${DefaultTestInput.aadClientId.created}`,
       });
       result = await apimPlugin.postProvision(ctx);
-      console.log(JSON.stringify(result));
       chai.assert.isTrue(result.isOk(), "Operation apimPlugin.postProvision should be succeeded.");
+      updateConfig(
+        ctx,
+        undefined,
+        { functionEndpoint: "https://apim-function-webapp.azurewebsites.net" },
+        undefined,
+        answer
+      );
+      result = await apimPlugin.deploy(ctx);
+      chai.assert.isTrue(result.isOk(), "Operation apimPlugin.deploy should be succeeded.");
     });
   });
 });
@@ -87,9 +104,27 @@ function mockApimPlugin(sandbox: SinonSandbox, mockApimInput?: MockAxiosInput) {
   const { apimService, apiManagementClient, credential } = mockApimService(sandbox);
   const apiManagementServiceStub = mockApiManagementService(sandbox);
   apiManagementClient.apiManagementService = apiManagementServiceStub;
+  const apiVersionSetStub = mockApiVersionSet(sandbox);
+  apiManagementClient.apiVersionSet = apiVersionSetStub;
+  const apiStub = mockApi(sandbox);
+  apiManagementClient.api = apiStub;
+  const productApiStub = mockProductApi(sandbox);
+  apiManagementClient.productApi = productApiStub;
+
   mockCredential(sandbox, credential, "test@unittest.com");
   const lazyApimService = new Lazy(async () => apimService);
   const openApiProcessor = new OpenApiProcessor();
+  sandbox.stub(openApiProcessor, "loadOpenApiDocument").resolves({
+    schemaVersion: OpenApiSchemaVersion.V3,
+    spec: {
+      openapi: "3.0.1",
+      info: {
+        title: "user input swagger",
+        version: "v1",
+      },
+      paths: {},
+    },
+  });
   const apimManager = new ApimManager(lazyApimService, openApiProcessor);
   sandbox.stub(Factory, "buildApimManager").resolves(apimManager);
 }
@@ -152,7 +187,9 @@ function updateConfig(
   }
 
   if (apimConfig) {
-    ctx.config = new ConfigMap(Object.entries(apimConfig));
+    for (const [key, value] of Object.entries(apimConfig)) {
+      ctx.config.set(key, value);
+    }
   }
 
   if (answer) {
@@ -160,19 +197,6 @@ function updateConfig(
   }
 }
 
-const aadConfig: IAadPluginConfig = {
-  objectId: "",
-  clientId: "",
-  oauth2PermissionScopeId: "",
-  applicationIdUris: "",
-};
-const functionConfig: IFunctionPluginConfig = {
-  functionEndpoint: "",
-};
-const apimConfig = {
-  apiDocumentPath: "openapi/openapi.json",
-  apiPrefix: "apim-plugin-test",
-};
 const answer: Inputs = {
   [QuestionConstants.VSCode.Apim.questionName]: {
     id: QuestionConstants.VSCode.Apim.createNewApimOption,
@@ -183,5 +207,9 @@ const answer: Inputs = {
     label: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,
   },
   [QuestionConstants.VSCode.NewApiVersion.questionName]: "v1",
-  platform: Platform.VS,
+  [QuestionConstants.VSCode.OpenApiDocument.questionName]: {
+    label: "openapi/openapi.json",
+  },
+  [QuestionConstants.VSCode.ApiPrefix.questionName]: "api-prefix",
+  platform: Platform.VSCode,
 };

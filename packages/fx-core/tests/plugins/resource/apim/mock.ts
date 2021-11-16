@@ -42,11 +42,11 @@ export function createSinonStubInstance<T>(
 export const DefaultTestInput = {
   subscriptionId: "test-subscription-id",
   resourceGroup: {
-    existing: "test-resource-group",
+    existing: "test-resource-group-existing",
     new: "test-resource-group-new",
   },
   apimServiceName: {
-    existing: "test-service",
+    existing: "test-service-existing",
     new: "test-service-new",
     error: "test-service-error",
   },
@@ -123,8 +123,9 @@ export function mockApimService(sandbox: SinonSandbox): {
   return { apimService, apiManagementClient, credential };
 }
 export type MockApiManagementServiceInput = {
-  resourceGroup?: {
+  resourceGroup: {
     new?: string;
+    existing: string;
   };
   apimServiceName?: {
     existing?: string;
@@ -140,15 +141,20 @@ export function mockApiManagementService(
     [string, string],
     Promise<any>
   >;
-  getStub.rejects(UnexpectedInputError);
-
-  getStub.withArgs(match.any, match.any).rejects(
-    buildError({
-      code: "ResourceNotFound",
-      statusCode: 404,
-      message: `The Resource 'Microsoft.ApiManagement/service/xxxx' under resource group 'test-existing-resource-group' was not found. For more details please go to https://aka.ms/ARMResourceNotFoundFix`,
-    })
-  );
+  getStub
+    .withArgs(
+      mockTestInput.resourceGroup.existing,
+      match((input: string) => {
+        return input !== mockTestInput.apimServiceName?.existing;
+      })
+    )
+    .rejects(
+      buildError({
+        code: "ResourceNotFound",
+        statusCode: 404,
+        message: `The Resource 'Microsoft.ApiManagement/service/xxxx' under resource group 'test-existing-resource-group' was not found. For more details please go to https://aka.ms/ARMResourceNotFoundFix`,
+      })
+    );
 
   if (mockTestInput.resourceGroup?.new) {
     getStub.withArgs(mockTestInput.resourceGroup.new, match.any).rejects(
@@ -161,14 +167,22 @@ export function mockApiManagementService(
   }
 
   if (mockTestInput.apimServiceName?.existing) {
-    getStub.withArgs(match.any, mockTestInput.apimServiceName.existing).resolves({});
+    getStub
+      .withArgs(mockTestInput.resourceGroup.existing, mockTestInput.apimServiceName.existing)
+      .resolves({});
   }
 
   const createOrUpdateStub = apiManagementServiceStub.createOrUpdate as unknown as SinonStub<
     [string, string, ApiManagementServiceResource],
     Promise<any>
   >;
-  createOrUpdateStub.withArgs(match.any, match.any, match.any).resolves({});
+  createOrUpdateStub
+    .withArgs(
+      match.any,
+      match((input: string) => input !== mockTestInput.apimServiceName?.error),
+      match.any
+    )
+    .resolves({});
   if (mockTestInput.apimServiceName?.error) {
     createOrUpdateStub.withArgs(match.any, mockTestInput.apimServiceName.error, match.any).rejects(
       buildError({
@@ -188,18 +202,22 @@ export function mockApiVersionSet(sandbox: SinonSandbox): any {
     [string, string, string, ApiVersionSetContract],
     Promise<any>
   >;
-  createOrUpdateStub.rejects(UnexpectedInputError);
   createOrUpdateStub.withArgs(match.any, match.any, match.any, match.any).resolves({});
 
   const getStub = apiVersionSet.get as unknown as SinonStub<[string, string, string], Promise<any>>;
-  getStub.rejects(UnexpectedInputError);
-  getStub.withArgs(match.any, match.any, DefaultTestInput.versionSet.new).rejects(
-    buildError({
-      code: "ResourceNotFound",
-      statusCode: 404,
-      message: `The version set '${DefaultTestInput.versionSet.new}' was not found.`,
-    })
-  );
+  getStub
+    .withArgs(
+      match.any,
+      match.any,
+      match((input: string) => input !== DefaultTestInput.versionSet.existing)
+    )
+    .rejects(
+      buildError({
+        code: "ResourceNotFound",
+        statusCode: 404,
+        message: `The version set 'test-version-set' was not found.`,
+      })
+    );
   getStub.withArgs(match.any, match.any, DefaultTestInput.versionSet.existing).resolves({});
 
   return apiVersionSet;
@@ -211,7 +229,14 @@ export function mockApi(sandbox: SinonSandbox): any {
     [string, string, string, ApiCreateOrUpdateParameter],
     Promise<any>
   >;
-  createOrUpdateStub.rejects(UnexpectedInputError);
+  createOrUpdateStub
+    .withArgs(
+      match.any,
+      match.any,
+      match((input: string) => input !== DefaultTestInput.apiId.error),
+      match.any
+    )
+    .resolves({});
   createOrUpdateStub
     .withArgs(match.any, match.any, DefaultTestInput.apiId.error, match.any)
     .rejects(
@@ -221,7 +246,6 @@ export function mockApi(sandbox: SinonSandbox): any {
         message: "Mock test error",
       })
     );
-  createOrUpdateStub.withArgs(match.any, match.any, match.any, match.any).resolves({});
   return apiStub;
 }
 
@@ -233,7 +257,15 @@ export function mockProductApi(sandbox: SinonSandbox): any {
     [string, string, string, string],
     Promise<any>
   >;
-  productApiStub.rejects(UnexpectedInputError);
+  // createOrUpdate (success)
+  productApiStub
+    .withArgs(
+      match.any,
+      match.any,
+      match((input: string) => input !== DefaultTestInput.productId.error),
+      match((input: string) => input !== DefaultTestInput.apiId.error)
+    )
+    .resolves({});
   // createOrUpdate (failed)
   productApiStub
     .withArgs(match.any, match.any, DefaultTestInput.productId.error, DefaultTestInput.apiId.error)
@@ -244,8 +276,6 @@ export function mockProductApi(sandbox: SinonSandbox): any {
         message: "Mock test error",
       })
     );
-  // createOrUpdate (success)
-  productApiStub.withArgs(match.any, match.any, match.any, match.any).resolves({});
 
   // Mock productApi.checkEntityExists
   const checkEntityExistsStub = productApi.checkEntityExists as unknown as SinonStub<
@@ -254,7 +284,12 @@ export function mockProductApi(sandbox: SinonSandbox): any {
   >;
   checkEntityExistsStub.rejects(UnexpectedInputError);
   checkEntityExistsStub
-    .withArgs(match.any, match.any, DefaultTestInput.productId.new, DefaultTestInput.apiId.new)
+    .withArgs(
+      match.any,
+      match.any,
+      match((input: string) => input !== DefaultTestInput.productId.existing),
+      match((input: string) => input !== DefaultTestInput.apiId.existing)
+    )
     .rejects(
       buildError({
         code: "ResourceNotFound",

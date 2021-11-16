@@ -16,7 +16,10 @@ import {
   getTestFolder,
   getUniqueAppName,
   cleanUp,
+  setSimpleAuthSkuNameToB1Bicep,
+  setSimpleAuthSkuNameToB1,
 } from "../commonUtils";
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 describe("Aad Error Tests", function () {
   let testFolder: string;
@@ -55,34 +58,64 @@ describe("Aad Error Tests", function () {
     {
       // set fake object id in context
 
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+      if (isMultiEnvEnabled()) {
+        const config = await fs.readJSON(
+          environmentManager.getEnvConfigPath(environmentManager.getDefaultEnvName(), projectPath)
+        );
+        config["auth"] = {
+          objectId: "fakeObjectid",
+          clientId: "fakeClientId",
+          clientSecret: "fakeClientSecret",
+          accessAsUserScopeId: "fakeAccessAsUserScopeId",
+        };
+        await fs.writeJSON(
+          environmentManager.getEnvConfigPath(environmentManager.getDefaultEnvName(), projectPath),
+          config,
+          { spaces: 4 }
+        );
 
-      context["fx-resource-aad-app-for-teams"]["objectId"] = "fake";
+        setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+        const { stdout, stderr } = await execAsync(
+          `teamsfx provision --subscription ${subscription}`,
+          {
+            cwd: projectPath,
+            env: process.env,
+            timeout: 0,
+          }
+        );
+        expect(stderr.toString()).to.contains(
+          "Failed in step: Update permission for Azure AD app. You need to go to Azure Protal and mannually update the permission"
+        );
+      } else {
+        const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
 
-      context["fx-resource-simple-auth"]["skuName"] = "B1";
+        context["fx-resource-aad-app-for-teams"]["objectId"] = "fake";
 
-      await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
-    }
+        context["fx-resource-simple-auth"]["skuName"] = "B1";
 
-    // provision
+        await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
+        try {
+          await execAsync(`teamsfx provision --subscription ${subscription}`, {
+            cwd: projectPath,
 
-    try {
-      await execAsync(`teamsfx provision --subscription ${subscription}`, {
-        cwd: projectPath,
+            env: process.env,
 
-        env: process.env,
-
-        timeout: 0,
-      });
-    } catch (error) {
-      expect(error.toString()).to.contains("AadGetAppError");
+            timeout: 0,
+          });
+        } catch (error) {
+          expect(error.toString()).to.contains("AadGetAppError");
+        }
+      }
     }
   });
 
   it(`AAD: GetSkipAppConfigError`, async function () {
+    if (isMultiEnvEnabled()) {
+      // Insider preview does not use skipProvision
+      return;
+    }
+    // set skip flag in context
     {
-      // set skip flag in context
-
       const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
 
       context["fx-resource-aad-app-for-teams"]["skipProvision"] = true;
@@ -108,12 +141,10 @@ describe("Aad Error Tests", function () {
   });
 
   it(`AAD: UnknownPermissionScope`, async function () {
-    {
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-
-      context["fx-resource-simple-auth"]["skuName"] = "B1";
-
-      await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
+    if (isMultiEnvEnabled()) {
+      setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    } else {
+      setSimpleAuthSkuNameToB1(projectPath);
     }
 
     {
@@ -140,12 +171,10 @@ describe("Aad Error Tests", function () {
   });
 
   it(`AAD: UnknownPermissionRole`, async function () {
-    {
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-
-      context["fx-resource-simple-auth"]["skuName"] = "B1";
-
-      await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
+    if (isMultiEnvEnabled()) {
+      setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    } else {
+      setSimpleAuthSkuNameToB1(projectPath);
     }
 
     {
@@ -172,12 +201,10 @@ describe("Aad Error Tests", function () {
   });
 
   it(`AAD: ParsePermissionError`, async function () {
-    {
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-
-      context["fx-resource-simple-auth"]["skuName"] = "B1";
-
-      await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
+    if (isMultiEnvEnabled()) {
+      setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    } else {
+      setSimpleAuthSkuNameToB1(projectPath);
     }
 
     {
@@ -203,9 +230,9 @@ describe("Aad Error Tests", function () {
     }
   });
 
-  afterEach(async () => {
-    // clean up
+  // afterEach(async () => {
+  //   // clean up
 
-    await cleanUp(appName, projectPath, true, false, false);
-  });
+  //   await cleanUp(appName, projectPath, true, false, false);
+  // });
 });

@@ -674,7 +674,7 @@ describe("Middleware - others", () => {
       }
     });
 
-    it("successfully migrate to version of arm and multi-env with error manifest file", async () => {
+    it("pre check with error manifest file", async () => {
       await fs.copy(
         path.join(__dirname, "../samples/migrationErrorManifest/"),
         path.join(projectPath)
@@ -692,10 +692,10 @@ describe("Middleware - others", () => {
       const inputs: Inputs = { platform: Platform.VSCode };
       inputs.projectPath = projectPath;
       const my = new MyClass();
-
       try {
-        const res = await my.other(inputs);
-        assert.isTrue(res.isOk());
+        await my.other(inputs);
+        assert.fail();
+      } catch (e) {
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

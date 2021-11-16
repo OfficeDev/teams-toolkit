@@ -7,6 +7,8 @@ import InMeetingApp from "../../media/in-meeting-app.png";
 import ShareNow from "../../media/share-now.gif";
 import ToDoList from "../../media/to-do-list.gif";
 import ToDoListSharepoint from "../../media/to-do-list-sharepoint.gif";
+import ToDoListM365 from "../../media/to-do-list-M365.gif";
+import NpmSearchConnectorM365 from "../../media/npm-search-connector-M365.gif";
 import { EventMessages } from "./messages";
 
 interface SampleInfo {
@@ -29,6 +31,8 @@ const imageMapping: { [p: string]: any } = {
   "share-now": ShareNow,
   "in-meeting-app": InMeetingApp,
   "faq-plus": FAQPlus,
+  "todo-list-with-Azure-backend-M365": ToDoListM365,
+  "NPM-search-connector-M365": NpmSearchConnectorM365,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

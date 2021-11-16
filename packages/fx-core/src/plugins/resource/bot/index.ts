@@ -3,10 +3,6 @@
 import {
   Plugin,
   PluginContext,
-  Result,
-  QTreeNode,
-  Stage,
-  FxError,
   err,
   UserError,
   SystemError,
@@ -26,6 +22,7 @@ import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
+
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
   name = "fx-resource-bot";
@@ -194,7 +191,7 @@ export class TeamsBot implements Plugin {
       const result =
         e.errorType === ErrorType.System
           ? ResultFactory.SystemError(e.name, e.genMessage(), e.innerError)
-          : ResultFactory.UserError(e.name, e.genMessage(), e.showHelpLink, e.innerError);
+          : ResultFactory.UserError(e.name, e.genMessage(), e.innerError, e.helpLink);
       sendTelemetry && telemetryHelper.sendResultEvent(context, name, result);
       return result;
     } else {

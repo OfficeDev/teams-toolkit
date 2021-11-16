@@ -76,7 +76,7 @@ export enum TelemetryProperty {
   ErrorType = "error-type",
   ErrorCode = "error-code",
   ErrorMessage = "error-message",
-  SampleName = "sample-name",
+  SampleName = "sample-app-name",
   Capabilities = "capabilities",
   Resources = "resources",
   Internal = "internal",

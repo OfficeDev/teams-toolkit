@@ -1,6 +1,11 @@
 A TeamsFx project is composed of two types of components:
-    1. module: have code in workspace, can be launched as local service (tab frontend, function backend, bot)
-    2. resource: external resource that modules depends on without local code in workspace (Azure SQL, Key Vault, Managed Identity) 
+  1. module: have code in workspace, can be launched as local service (tab frontend, function backend, bot)
+  2. resource: external resource that modules depends on without local code in workspace (Azure SQL, Key Vault, Managed Identity) 
+
+Three types of plugins: 
+	1. scaffolding plugin: scaffold only
+	2. hosting plugin: do local hosting, cloud provision, example: Azure Web App, Azure Storage, Azure Function App
+	3. resource provider plugin: cloud provision, example: Azure SQL, Key Vault, Managed Identity
 
 project
   |--modules
@@ -14,11 +19,6 @@ project
 	    |-- AAD (resource provider plugin = AAD plugin)
 	    |-- Teams App (resource provider plugin = App Studio plugin)
 	
-Three types of plugin: 
-	1. scaffolding plugin: scaffold only
-	2. hosting plugin: do local hosting, cloud provision, example: Azure Web App, Azure Storage, Azure Function App
-	3. resource provider plugin: cloud provision, example: Azure SQL, Key Vault, Managed Identity
-
 Relationship between components and plugins:
 	1. module VS scaffolding plugin 1<-->m
 	2. module VS hosting plugin m<--->m

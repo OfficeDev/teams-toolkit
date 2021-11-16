@@ -688,9 +688,9 @@ describe("Middleware - others", () => {
       const inputs: Inputs = { platform: Platform.VSCode };
       inputs.projectPath = projectPath;
       const my = new MyClass();
-
       try {
-        assert.throw(async () => await my.other(inputs), "pre check manifest");
+        await my.other(inputs);
+        assert.fail();
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

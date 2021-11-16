@@ -261,7 +261,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
 
   await preCheckKeyFiles(projectPath, ctx);
   try {
-    await backup(projectPath, core.tools.logProvider);
+    await backup(projectPath);
     await updateConfig(ctx);
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnvStart);
@@ -663,7 +663,7 @@ async function getBackupFolder(projectPath: string): Promise<string> {
   return path.join(projectPath, `.teamsfx${backupName}`);
 }
 
-async function backup(projectPath: string, log: LogProvider): Promise<void> {
+async function backup(projectPath: string): Promise<void> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
   const backupFolder = await getBackupFolder(projectPath);
   const backupFx = path.join(backupFolder, `.${ConfigFolderName}`);

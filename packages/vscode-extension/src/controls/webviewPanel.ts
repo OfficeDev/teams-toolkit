@@ -281,7 +281,12 @@ export class WebviewPanel {
     await Promise.all(
       zip
         .getEntries()
-        .filter((entry) => !entry.isDirectory && entry.entryName.includes(appFolder))
+        .filter(
+          (entry) =>
+            !entry.isDirectory &&
+            entry.entryName.includes(appFolder) &&
+            entry.entryName.split("/").includes(appFolder)
+        )
         .map(async (entry) => {
           const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
           const filePath = path.join(dstPath, entryPath);

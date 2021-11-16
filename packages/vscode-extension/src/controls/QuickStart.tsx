@@ -7,6 +7,7 @@ import CommandsIMG from "../../media/step_commands.svg";
 import NodeIMG from "../../media/step_nodejs.svg";
 import M365IMG from "../../media/step_m365.svg";
 import AzureIMG from "../../media/step_azure.png";
+import VideoIMG from "../../media/video_img.png";
 import TodoListSampleIMG from "../../media/todolist-sample.gif";
 import Step_Done from "../../media/Done.svg";
 import Step_Active_0 from "../../media/active-0.svg";
@@ -125,6 +126,7 @@ export default class QuickStart extends React.Component<any, any> {
                   ]}
                   actionText="Watch Video (< 1 min)"
                   onAction={this.onWatchVideo}
+                  primaryHref={"https://aka.ms/teamsfx-video"}
                   secondaryActionText="Next"
                   onSecondaryAction={() => {
                     this.onNextStep(curStep, `What are Teams app "Capabilities"?`);
@@ -270,32 +272,14 @@ export default class QuickStart extends React.Component<any, any> {
           <div className="content-margin" />
           <div className="stage">
             {this.state.currentStep === 1 && (
-              <div
-                className="player"
-                onMouseOver={this.onShowWatchOnBrowser}
-                onMouseLeave={this.onHideWatchOnBrowser}
-              >
-                <video
-                  id="capabilitiesVideo"
-                  className="capabilitiesVideo"
-                  controls
-                  disablePictureInPicture
-                  onPlay={this.onVideoPlay}
-                  onPause={this.onVideoPause}
+              <div className="player">
+                <a
+                  href="https://aka.ms/teamsfx-video"
+                  target="_blank"
+                  onClick={this.onWatchOnBrowser}
                 >
-                  <source src="https://aka.ms/teamsfx-video"></source>
-                </video>
-                <div>
-                  <a
-                    id="watchOnBrowser"
-                    className="watchOnBrowser"
-                    href="https://aka.ms/teamsfx-video"
-                    target="_blank"
-                    onClick={this.onWatchOnBrowser}
-                  >
-                    Watch on browser
-                  </a>
-                </div>
+                  <Image src={VideoIMG} />
+                </a>
               </div>
             )}
             {this.state.currentStep === 2 && <Image src={CommandsIMG} />}
@@ -419,11 +403,6 @@ export default class QuickStart extends React.Component<any, any> {
     });
 
     this.setState({ playFromStep: true });
-
-    const video = document.getElementById("capabilitiesVideo") as HTMLMediaElement;
-    if (video && video.paused) {
-      video!.play();
-    }
   };
 
   onWatchOnBrowser = () => {
@@ -441,63 +420,6 @@ export default class QuickStart extends React.Component<any, any> {
       stepsDone: done,
     });
     this.setGlobalStepsDone(done);
-  };
-
-  onVideoPlay = () => {
-    if (this.state.videoSeeking) {
-      this.setState({ videoSeeking: false });
-      return;
-    }
-    if (!this.state.playFromStep) {
-      vscode.postMessage({
-        command: Commands.SendTelemetryEvent,
-        data: {
-          eventName: TelemetryEvent.WatchVideo,
-          properties: { [TelemetryProperty.VideoPlayFrom]: WatchVideoFrom.PlayBtn },
-        },
-      });
-    } else {
-      this.setState({ playFromStep: false });
-    }
-
-    const done = this.state.stepsDone;
-    done[0] = true;
-    this.setState({
-      stepsDone: done,
-    });
-    this.setGlobalStepsDone(done);
-  };
-
-  onVideoPause = () => {
-    const video = document.getElementById("capabilitiesVideo") as HTMLMediaElement;
-    if (video && !video.ended) {
-      if (video.seeking) {
-        this.setState({ videoSeeking: true });
-      } else {
-        vscode.postMessage({
-          command: Commands.SendTelemetryEvent,
-          data: {
-            eventName: TelemetryEvent.PauseVideo,
-            properties: { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview },
-          },
-        });
-      }
-    }
-  };
-
-  onHideWatchOnBrowser = () => {
-    const video = document.getElementById("capabilitiesVideo") as HTMLMediaElement;
-    const watchOnBrowser = document.getElementById("watchOnBrowser") as any;
-
-    if (video && video.paused !== true) {
-      watchOnBrowser.style.display = "none";
-    }
-  };
-
-  onShowWatchOnBrowser = () => {
-    const watchOnBrowser = document.getElementById("watchOnBrowser") as any;
-
-    watchOnBrowser.style.display = "";
   };
 
   displayCommands = () => {
@@ -627,7 +549,11 @@ class GetStartedAction extends React.Component<any, any> {
           <div className="left-right-align">
             <div className="left">
               {this.props.actionText && (
-                <PrimaryButton onClick={this.props.onAction} text={this.props.actionText} />
+                <PrimaryButton
+                  href={this.props.primaryHref}
+                  onClick={this.props.onAction}
+                  text={this.props.actionText}
+                />
               )}
             </div>
             <div className="right">

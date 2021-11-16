@@ -413,6 +413,18 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(migrateV1Cmd);
 
+  const migrateTeamsTabAppCmd = vscode.commands.registerCommand(
+    "fx-extension.migrateTeamsTabApp",
+    () => Correlator.run(handlers.migrateTeamsTabAppHandler)
+  );
+  context.subscriptions.push(migrateTeamsTabAppCmd);
+
+  const migrateTeamsManifestCmd = vscode.commands.registerCommand(
+    "fx-extension.migrateTeamsManifest",
+    () => Correlator.run(handlers.migrateTeamsManifestHandler)
+  );
+  context.subscriptions.push(migrateTeamsManifestCmd);
+
   // 2. Call activate function of toolkit core.
   await handlers.activate();
 

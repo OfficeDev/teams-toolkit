@@ -1,6 +1,6 @@
 {
-    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/main/",
-    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
+    "baseUrl": "https://github.com/OfficeDev/TeamsFx-Samples/tree/v2/",
+    "defaultPackageLink": "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/v2.zip",
     "samples": [
         {
             "id": "todo-list-with-Azure-backend",

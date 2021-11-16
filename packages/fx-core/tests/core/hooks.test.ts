@@ -632,6 +632,7 @@ describe("Middleware - others", () => {
       await fs.ensureDir(projectPath);
       mockedEnvRestore = mockedEnv({
         TEAMSFX_INSIDER_PREVIEW: "true",
+        AAD_APP_CLIENT_SECRET: "test",
       });
       sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
     });
@@ -665,6 +666,11 @@ describe("Middleware - others", () => {
           path.join(inputs.projectPath, ".fx", "configs", "config.dev.json")
         );
         assert.isTrue(configDev["skipAddingSqlUser"]);
+        assert.isNotNull(configDev["auth"]);
+        assert.strictEqual(configDev["auth"]["accessAsUserScopeId"], "test");
+        assert.strictEqual(configDev["auth"]["objectId"], "test");
+        assert.strictEqual(configDev["auth"]["clientId"], "test");
+        assert.strictEqual(configDev["auth"]["clientSecret"], "{{ $env.AAD_APP_CLIENT_SECRET }}");
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

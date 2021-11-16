@@ -441,34 +441,8 @@ async function generateLocalTemplate(manifestString: string) {
   return manifest;
 }
 
-async function getManifest(
-  sourceManifestFile: string,
-  appName: string,
-  hasFrontend: boolean,
-  hasBotCapability: boolean,
-  hasMessageExtensionCapability: boolean,
-  isSPFx: boolean,
-  migrateFromV1: boolean
-): Promise<TeamsAppManifest> {
-  let manifest: TeamsAppManifest | undefined;
-  let error = undefined;
-  try {
-    manifest = await readJson(sourceManifestFile);
-  } catch (err) {
-    error = err;
-    manifest = await createManifest(
-      appName,
-      hasFrontend,
-      hasBotCapability,
-      hasMessageExtensionCapability,
-      isSPFx,
-      migrateFromV1
-    );
-  }
-  if (!manifest) {
-    throw error;
-  }
-  return manifest;
+async function getManifest(sourceManifestFile: string): Promise<TeamsAppManifest> {
+  return await readJson(sourceManifestFile);
 }
 
 async function migrateMultiEnv(projectPath: string): Promise<void> {
@@ -521,15 +495,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     await fs.copy(path.join(fx, AppPackageFolderName), templateAppPackage);
   }
   const sourceManifestFile = path.join(templateAppPackage, REMOTE_MANIFEST);
-  const manifest: TeamsAppManifest = await getManifest(
-    sourceManifestFile,
-    appName,
-    hasFrontend,
-    hasBotCapability,
-    hasMessageExtensionCapability,
-    isSPFx,
-    migrateFromV1
-  );
+  const manifest: TeamsAppManifest = await getManifest(sourceManifestFile);
   await fs.remove(sourceManifestFile);
   await moveIconsToResourceFolder(templateAppPackage, manifest);
   // generate manifest.remote.template.json

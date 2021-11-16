@@ -670,7 +670,7 @@ describe("Middleware - others", () => {
       }
     });
 
-    it("successfully migrate to version of arm and multi-env with error manifest file", async () => {
+    it("pre check with error manifest file", async () => {
       await fs.copy(
         path.join(__dirname, "../samples/migrationErrorManifest/"),
         path.join(projectPath)
@@ -690,8 +690,7 @@ describe("Middleware - others", () => {
       const my = new MyClass();
 
       try {
-        const res = await my.other(inputs);
-        assert.isTrue(res.isOk());
+        assert.throw(async () => await my.other(inputs), "pre check manifest");
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

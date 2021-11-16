@@ -31,5 +31,5 @@
     "resolveJsonModule": true,
     "downlevelIteration": true
   },
-  "exclude": ["dist/**/*"]
+  "exclude": ["dist/**/*", "config/*"]
 }

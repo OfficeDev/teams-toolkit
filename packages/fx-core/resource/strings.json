@@ -30,7 +30,7 @@
     "MigrationToArmAndMultiEnvSuccessMessage": "Upgrade succeeded. Your project is upgraded to new configuration files.",
     "NeedToUpdateTeamsToolkitVersionMessage": "Your project is not supported. Please update Teams Toolkit to the latest version from the VSCode Extension Marketplace and make sure the setting (fx-extension: Insider Preview) is enabled",
     "MigrationToArmAndMultiEnvErrorMessage": "Upgrade Failed. Please check the error message in Output window to troubleshoot and fix. You can also click Learn More for the FAQ and how to upgrade manually.",
-    "MigrationToArmAndMultiEnvPreCheckErrorMessage": "Upgrade Failed. '%s' is not exist or not in json format. Please fix it and try again by running command (Teams: Upgrade project).\nYou can also click Learn More for the FAQ.",
+    "MigrationToArmAndMultiEnvPreCheckErrorMessage": "Upgrade Failed. '%s' doesn't exist or is not in json format. Please fix it and try again by running command (Teams: Upgrade project).\nYou can also click Learn More for the FAQ.",
     "DeployArmTemplates": {
       "StartNotice": "[%s] Start deploying ARM templates.",
       "CompileBicepSuccessNotice": "[%s] Successfully compile bicep files to JSON.",

@@ -746,8 +746,8 @@ describe("Middleware - others", () => {
         const localManifest = await fs.readJson(
           path.join(inputs.projectPath!, "templates/appPackage/manifest.local.template.json")
         );
-        assert.equal(localManifest?.icons?.color, "resources/color.png");
-        assert.equal(localManifest?.icons?.outline, "resources/outline.png");
+        assert.equal(localManifest?.icons?.color, "color.png");
+        assert.equal(localManifest?.icons?.outline, "outline.png");
         assert.equal(localManifest?.id, "{{localSettings.teamsApp.teamsAppId}}");
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
@@ -802,8 +802,8 @@ describe("Middleware - others", () => {
         const localManifest = await fs.readJson(
           path.join(inputs.projectPath!, "templates/appPackage/manifest.local.template.json")
         );
-        assert.equal(localManifest?.icons?.color, "resources/color.png");
-        assert.equal(localManifest?.icons?.outline, "resources/outline.png");
+        assert.equal(localManifest?.icons?.color, "color.png");
+        assert.equal(localManifest?.icons?.outline, "outline.png");
         assert.equal(localManifest?.id, "{{localSettings.teamsApp.teamsAppId}}");
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });

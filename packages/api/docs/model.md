@@ -1,51 +1,29 @@
-A TeamsFx project is composed of several components.
-
-There are two types of components:
-    1. workspace module(tab frontend, function backend, bot): have code in workspace, can be launched as local service 
-    2. external resource that the workspace module depends on (Azure SQL, Key Vault, Managed Identity): no code in workspace
-
-The components are organized as a dependency tree/grid:
+A TeamsFx project is composed of two types of components:
+    1. module: have code in workspace, can be launched as local service (tab frontend, function backend, bot)
+    2. resource: external resource that modules depends on without local code in workspace (Azure SQL, Key Vault, Managed Identity) 
 
 project
-  |--tab(workspace module) ---> scaffolding plugin, container hosting plugin (Azure Storage, Azure Static Web App, Azure Web App)
-  |	  |--simple auth (workspace module)
-  |	  |--function (workspace module)
-  |			|--sql (resource)
-  |			|   |--identity(resource, peer)
-  |			|--identity(resource)
-  |--bot(workspace module) ---> scaffolding plugin, container hosting plugin (Azure Web App)
-  |	  |--sql(resource)
-  |	  |   |--identity(resource, peer)
-  |	  |--identity(resource)
   |--modules
-  |   |-- function (workspace module) ---> scaffolding plugin, container hosting plugin
-  |   |-- simple auth (workspace module) ---> scaffolding plugin, container hosting plugin (Azure Web App)
+  |   |--tab (scaffolding plugin = React frontend plugin, hosting plugin = Azure Storage plugin|Azure Static Web App plugin|Azure Web App plugin)
+  |	  |--simple auth (scaffolding plugin = Simple auth plugin, hosting plugin = Azure Web App plugin)
+  |	  |--function (scaffolding plugin = Azure function plugin, hosting plugin = Azure function plugin)
+  |		|--bot (scaffolding plugin = Bot plugin, hosting plugin = Azure Web App plugin
   |--resources
-	  |-- sql ---> resource hosting plugin (SQL plugin)
-	  |-- Identity ---> resource hosting plugin (Identity plugin)
-	  |-- AAD ---> resource hosting plugin (AAD plugin)
-	  |-- Teams App ---> resource hosting plugin (App Studio plugin)
-	  
-	  
-
+	    |-- SQL (resource provider plugin = Azure SQL plugin)
+	    |-- Identity (resource provider plugin = Identity plugin)
+	    |-- AAD (resource provider plugin = AAD plugin)
+	    |-- Teams App (resource provider plugin = App Studio plugin)
 	
-three types of plugin: 
-	1. scaffolding plugin: Tab Frontend scaffolding, Function scaffolding, Bot Scaffolding
-	2. container hosting plugin(local hosting, cloud hosting): Azure Web App, Azure Storage, Azure Function App
-	3. resource hosting plugin(cloud hosting): Azure SQL, Key Vault, Managed Identity
+Three types of plugin: 
+	1. scaffolding plugin: scaffold only
+	2. hosting plugin: do local hosting, cloud provision, example: Azure Web App, Azure Storage, Azure Function App
+	3. resource provider plugin: cloud provision, example: Azure SQL, Key Vault, Managed Identity
 
-relationship between component and plugin:
-	1. workspace module->scaffolding plugin 1<-->m
-	2. workspace module->container hosting plugin   m<--->m
-	3. resource->resource hosting plugin   1<-->1
+Relationship between components and plugins:
+	1. module VS scaffolding plugin 1<-->m
+	2. module VS hosting plugin m<--->m
+	3. resource VS resource provider plugin 1<-->1
 
-plugin has dependencies：
-	auto dependency
-	conditional dependency: frontend hosting depends on simple auth if single-sign-in is wanted 
-	
-
-scaffolding plugin can describe the corresponding workspace module
-
-resource hosting plugin can describe the corresponding resource component
-
-container hosting plugin can host multiple workspace modules, so it can't describe the corresponding modules.
+Each scaffolding plugin scaffold only one module, it will provide the extensibility of project modules.
+Each resource provider plugin can provision only one type of resource, it will provide the extensibility of project resources.
+One hosting plugin can provision multiple modules, it can be reused and will provide extensibility of project module hosting capability.

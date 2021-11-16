@@ -654,10 +654,9 @@ describe("Middleware - others", () => {
         other: [ProjectMigratorMW],
       });
 
-      const inputs: Inputs = { platform: Platform.VSCode };
+      const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
       inputs.projectPath = projectPath;
       const my = new MyClass();
-
       try {
         const res = await my.other(inputs);
         assert.isTrue(res.isOk());
@@ -665,6 +664,11 @@ describe("Middleware - others", () => {
           path.join(inputs.projectPath, ".fx", "configs", "config.dev.json")
         );
         assert.isTrue(configDev["skipAddingSqlUser"]);
+        assert.isNotNull(configDev["auth"]);
+        assert.strictEqual(configDev["auth"]["accessAsUserScopeId"], "test");
+        assert.strictEqual(configDev["auth"]["objectId"], "test");
+        assert.strictEqual(configDev["auth"]["clientId"], "test");
+        assert.strictEqual(configDev["auth"]["clientSecret"], "{{ $env.AAD_APP_CLIENT_SECRET }}");
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }

@@ -70,7 +70,7 @@ export const DefaultTestInput = {
     error: "test-aad-display-name-error",
   },
   aadObjectId: {
-    created: "test-aad-object-id-created",
+    created: "c390324c-7acd-4402-8ae7-dc9486d45cd0",
     new: "test-aad-object-id-new",
     error: "test-aad-object-id-error",
   },
@@ -80,22 +80,22 @@ export const DefaultTestInput = {
   },
   aadClientId: {
     new: "test-aad-client-id-new",
-    created: "test-aad-client-id-created",
+    created: "de28501f-3727-4c8a-8782-f4f9ee1b9209",
     error: "test-aad-client-id-error",
   },
 };
 
 export const DefaultTestOutput = {
   createAad: {
-    id: "test-aad-object-id-created",
-    appId: "test-aad-client-id-created",
+    id: "c390324c-7acd-4402-8ae7-dc9486d45cd0",
+    appId: "de28501f-3727-4c8a-8782-f4f9ee1b9209",
   },
   addSecret: {
     secretText: "test-secret-text",
   },
   getAad: {
-    id: "test-aad-object-id-created",
-    appId: "test-aad-client-id-created",
+    id: "c390324c-7acd-4402-8ae7-dc9486d45cd0",
+    appId: "de28501f-3727-4c8a-8782-f4f9ee1b9209",
     displayName: "test-aad-display-name-created",
     requiredResourceAccess: [],
     web: {
@@ -122,47 +122,62 @@ export function mockApimService(sandbox: SinonSandbox): {
 
   return { apimService, apiManagementClient, credential };
 }
-
-export function mockApiManagementService(sandbox: SinonSandbox): any {
+export type MockApiManagementServiceInput = {
+  resourceGroup?: {
+    new?: string;
+  };
+  apimServiceName?: {
+    existing?: string;
+    error?: string;
+  };
+};
+export function mockApiManagementService(
+  sandbox: SinonSandbox,
+  mockTestInput: MockApiManagementServiceInput = DefaultTestInput
+): any {
   const apiManagementServiceStub = sandbox.createStubInstance(ApiManagementService);
   const getStub = apiManagementServiceStub.get as unknown as sinon.SinonStub<
     [string, string],
     Promise<any>
   >;
   getStub.rejects(UnexpectedInputError);
-  getStub
-    .withArgs(DefaultTestInput.resourceGroup.existing, DefaultTestInput.apimServiceName.new)
-    .rejects(
-      buildError({
-        code: "ResourceNotFound",
-        statusCode: 404,
-        message: `The Resource 'Microsoft.ApiManagement/service/${DefaultTestInput.apimServiceName.new}' under resource group '${DefaultTestInput.resourceGroup.existing}' was not found. For more details please go to https://aka.ms/ARMResourceNotFoundFix`,
-      })
-    );
-  getStub.withArgs(DefaultTestInput.resourceGroup.new, match.any).rejects(
+
+  getStub.withArgs(match.any, match.any).rejects(
     buildError({
-      code: "ResourceGroupNotFound",
+      code: "ResourceNotFound",
       statusCode: 404,
-      message: `Resource group '${DefaultTestInput.resourceGroup.new}' could not be found.`,
+      message: `The Resource 'Microsoft.ApiManagement/service/xxxx' under resource group 'test-existing-resource-group' was not found. For more details please go to https://aka.ms/ARMResourceNotFoundFix`,
     })
   );
-  getStub
-    .withArgs(DefaultTestInput.resourceGroup.existing, DefaultTestInput.apimServiceName.existing)
-    .resolves({});
+
+  if (mockTestInput.resourceGroup?.new) {
+    getStub.withArgs(mockTestInput.resourceGroup.new, match.any).rejects(
+      buildError({
+        code: "ResourceGroupNotFound",
+        statusCode: 404,
+        message: `Resource group '${mockTestInput.resourceGroup.new}' could not be found.`,
+      })
+    );
+  }
+
+  if (mockTestInput.apimServiceName?.existing) {
+    getStub.withArgs(match.any, mockTestInput.apimServiceName.existing).resolves({});
+  }
 
   const createOrUpdateStub = apiManagementServiceStub.createOrUpdate as unknown as SinonStub<
     [string, string, ApiManagementServiceResource],
     Promise<any>
   >;
-  createOrUpdateStub.rejects(UnexpectedInputError);
-  createOrUpdateStub.withArgs(match.any, DefaultTestInput.apimServiceName.error, match.any).rejects(
-    buildError({
-      code: "TestError",
-      statusCode: 400,
-      message: "Mock test error",
-    })
-  );
   createOrUpdateStub.withArgs(match.any, match.any, match.any).resolves({});
+  if (mockTestInput.apimServiceName?.error) {
+    createOrUpdateStub.withArgs(match.any, mockTestInput.apimServiceName.error, match.any).rejects(
+      buildError({
+        code: "TestError",
+        statusCode: 400,
+        message: "Mock test error",
+      })
+    );
+  }
 
   return apiManagementServiceStub;
 }

@@ -39,6 +39,8 @@ import {
   ConfigFolderName,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
+  SelectFolderConfig,
+  SelectFileConfig,
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -123,6 +125,7 @@ import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
 import { getConfiguration } from "./utils/commonUtils";
 import { AzurePortalUrl, ConfigurationKey } from "./constants";
+import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -1836,4 +1839,156 @@ export interface VscQuickPickItem extends QuickPickItem {
   id: string;
 
   function: () => Promise<void>;
+}
+
+export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MigrateTeamsTabAppStart);
+  const selection = await VS_CODE_UI.showMessage(
+    "warn",
+    StringResources.vsc.migrateTeamsTabApp.warningMessage,
+    true,
+    StringResources.vsc.migrateTeamsTabApp.upgrade
+  );
+  const userCancelError = new UserError(
+    ExtensionErrors.UserCancel,
+    StringResources.vsc.common.userCancel,
+    "migrateTeamsTabApp"
+  );
+  if (selection.isErr() || selection.value !== StringResources.vsc.migrateTeamsTabApp.upgrade) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsTabApp, userCancelError);
+    return ok(null);
+  }
+  const selectFolderConfig: SelectFolderConfig = {
+    name: StringResources.vsc.migrateTeamsTabApp.selectFolderConfig.name,
+    title: StringResources.vsc.migrateTeamsTabApp.selectFolderConfig.title,
+  };
+  const selectFolderResult = await VS_CODE_UI.selectFolder(selectFolderConfig);
+  if (selectFolderResult.isErr() || selectFolderResult.value.type !== "success") {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsTabApp, userCancelError);
+    return ok(null);
+  }
+  const tabAppPath = selectFolderResult.value.result as string;
+
+  const progressBar = VS_CODE_UI.createProgressBar(
+    StringResources.vsc.migrateTeamsTabApp.progressTitle,
+    2
+  );
+  await progressBar.start();
+
+  const migrationHandler = new TeamsAppMigrationHandler(tabAppPath);
+  let result: Result<null, FxError> = ok(null);
+  let packageUpdated: Result<boolean, FxError> = ok(true);
+  try {
+    // Update package.json to use @microsoft/teams-js v2
+    await progressBar.next(StringResources.vsc.migrateTeamsTabApp.updatePackageJson);
+    VsCodeLogInstance.info(StringResources.vsc.migrateTeamsTabApp.updatePackageJson);
+    packageUpdated = await migrationHandler.updatePackageJson();
+    if (packageUpdated.isErr()) {
+      throw packageUpdated.error;
+    } else if (!packageUpdated.value) {
+      // no change in package.json, show warning.
+      const warningMessage = util.format(
+        StringResources.vsc.migrateTeamsTabApp.updatePackageJsonWarning,
+        path.join(tabAppPath, "package.json")
+      );
+      VsCodeLogInstance.warning(warningMessage);
+      window.showWarningMessage(warningMessage, "OK");
+    } else {
+      // Update codes to use @microsoft/teams-js v2
+      await progressBar.next(StringResources.vsc.migrateTeamsTabApp.updateCodes);
+      VsCodeLogInstance.info(StringResources.vsc.migrateTeamsTabApp.updateCodes);
+      result = await migrationHandler.updateCodes();
+      if (result.isErr()) {
+        throw result.error;
+      }
+    }
+  } catch (error) {
+    result = wrapError(error as Error);
+  }
+
+  if (result.isErr()) {
+    await progressBar.end(false);
+    showError(result.error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsTabApp, result.error);
+  } else {
+    await progressBar.end(true);
+    if (!packageUpdated.isErr() && packageUpdated.value) {
+      VS_CODE_UI.showMessage(
+        "info",
+        util.format(StringResources.vsc.migrateTeamsTabApp.success, tabAppPath),
+        false
+      );
+    }
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MigrateTeamsTabApp, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
+  }
+  return result;
+}
+
+export async function migrateTeamsManifestHandler(): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MigrateTeamsManifestStart);
+  const selection = await VS_CODE_UI.showMessage(
+    "warn",
+    StringResources.vsc.migrateTeamsManifest.warningMessage,
+    true,
+    StringResources.vsc.migrateTeamsManifest.upgrade
+  );
+  const userCancelError = new UserError(
+    ExtensionErrors.UserCancel,
+    StringResources.vsc.common.userCancel,
+    "migrateTeamsManifest"
+  );
+  if (selection.isErr() || selection.value !== StringResources.vsc.migrateTeamsManifest.upgrade) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsManifest, userCancelError);
+    return ok(null);
+  }
+  const selectFileConfig: SelectFileConfig = {
+    name: StringResources.vsc.migrateTeamsManifest.selectFileConfig.name,
+    title: StringResources.vsc.migrateTeamsManifest.selectFileConfig.title,
+  };
+  const selectFileResult = await VS_CODE_UI.selectFile(selectFileConfig);
+  if (selectFileResult.isErr() || selectFileResult.value.type !== "success") {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsManifest, userCancelError);
+    return ok(null);
+  }
+  const manifestPath = selectFileResult.value.result as string;
+
+  const progressBar = VS_CODE_UI.createProgressBar(
+    StringResources.vsc.migrateTeamsManifest.progressTitle,
+    1
+  );
+  await progressBar.start();
+
+  const migrationHandler = new TeamsAppMigrationHandler(manifestPath);
+  let result: Result<null, FxError> = ok(null);
+
+  try {
+    // Update Teams manifest
+    await progressBar.next(StringResources.vsc.migrateTeamsManifest.updateManifest);
+    VsCodeLogInstance.info(StringResources.vsc.migrateTeamsManifest.updateManifest);
+    result = await migrationHandler.updateManifest();
+    if (result.isErr()) {
+      throw result.error;
+    }
+  } catch (error) {
+    result = wrapError(error as Error);
+  }
+
+  if (result.isErr()) {
+    await progressBar.end(false);
+    showError(result.error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsManifest, result.error);
+  } else {
+    await progressBar.end(true);
+    VS_CODE_UI.showMessage(
+      "info",
+      util.format(StringResources.vsc.migrateTeamsManifest.success, manifestPath),
+      false
+    );
+    ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MigrateTeamsManifest, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    });
+  }
+  return result;
 }

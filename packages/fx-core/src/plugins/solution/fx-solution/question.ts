@@ -88,6 +88,12 @@ export const AzureResourceApim: OptionItem = {
   description: "Azure Function App will be also selected to be published as an API",
 };
 
+export const AzureResourceKeyVault: OptionItem = {
+  id: "keyvault",
+  label: "Azure Key Vault",
+  description: "Description for Azure Key Vault",
+};
+
 export function createCapabilityQuestion(): MultiSelectQuestion {
   return {
     name: AzureSolutionQuestionNames.Capabilities,
@@ -189,7 +195,7 @@ export function createAddAzureResourceQuestion(
   alreadhHaveSQL: boolean,
   alreadyHaveAPIM: boolean
 ): MultiSelectQuestion {
-  const options: OptionItem[] = [AzureResourceFunction];
+  const options: OptionItem[] = [AzureResourceFunction, AzureResourceKeyVault];
   if (!alreadhHaveSQL) options.push(AzureResourceSQL);
   if (!alreadyHaveAPIM) options.push(AzureResourceApim);
   return {

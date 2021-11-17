@@ -906,7 +906,7 @@ async function popupAfterUpgrade(): Promise<void> {
 
       const outputMsg = `Please set "AAD_APP_CLIENT_SECRET" = "${aadClientSecret}" in your system environment variable. Read this wiki(${learnMoreLink}) to for more details.`;
       VsCodeLogInstance.warning(outputMsg);
-      const showMsg = `Please set "AAD_APP_CLIENT_SECRET" = "${aadClientSecret}" in your system env variable.\nYou can also click Learn More for more details.`;
+      const showMsg = `Please set "AAD_APP_CLIENT_SECRET" = "${aadClientSecret}" in your system environment variable.\nYou can also click Learn More for more details.`;
       window.showWarningMessage(showMsg, option, learnMoreText).then((result) => {
         if (result === learnMoreText) {
           return env.openExternal(Uri.parse(learnMoreLink));

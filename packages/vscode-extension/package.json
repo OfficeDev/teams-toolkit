@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.9.0",
+  "version": "2.10.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -49,6 +49,7 @@
     "onCommand:fx-extension.addCapability",
     "onCommand:fx-extension.update",
     "onCommand:fx-extension.openManifest",
+    "onCommand:fx-extension.validateManifest",
     "onCommand:fx-extension.build",
     "onCommand:fx-extension.provision",
     "onCommand:fx-extension.deploy",
@@ -231,11 +232,11 @@
         },
         {
           "command": "fx-extension.viewEnvironment",
-          "when": "view == teamsfx-environment && viewItem =~ /^environment|^local$/"
+          "when": "view == teamsfx-environment && viewItem =~ /environment/"
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /^environment|^local$/",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         },
         {
@@ -259,6 +260,13 @@
           "command": "fx-extension.selectAndDebug",
           "when": "!inDebugMode && debuggersAvailable && fx-extension.runIconActive",
           "group": "teamsfx"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "fx-extension.openPreviewFile",
+          "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json",
+          "group": "navigation"
         }
       ],
       "commandPalette": [
@@ -404,6 +412,10 @@
         "title": "Teams: Edit manifest file"
       },
       {
+        "command": "fx-extension.validateManifest",
+        "title": "Teams: Validate manifest file"
+      },
+      {
         "command": "fx-extension.build",
         "title": "Teams: Zip Teams metadata package"
       },
@@ -413,7 +425,7 @@
       },
       {
         "command": "fx-extension.checkProjectUpgrade",
-        "title": "Teams: Check project upgrade"
+        "title": "Teams: Upgrade project"
       },
       {
         "command": "fx-extension.deploy",
@@ -462,6 +474,16 @@
         "icon": "$(sync)"
       },
       {
+        "command": "fx-extension.openPreviewFile",
+        "title": "Preview manifest file",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "fx-extension.openSchema",
+        "title": "Open manifest schema",
+        "icon": "$(file-code)"
+      },
+      {
         "command": "fx-extension.migrateV1Project",
         "title": "Teams: Initialize Your Project to Work with the Latest Teams Toolkit"
       },
@@ -505,6 +527,14 @@
         "title": "Grant permission",
         "icon": "$(person-add)",
         "enablement": "fx-extension.isMultiEnvEnabled && fx-extension.isRemoteCollaborateEnabled"
+      },
+      {
+        "command": "fx-extension.migrateTeamsTabApp",
+        "title": "Teams: Upgrade Teams JS SDK references to support Outlook and Office apps"
+      },
+      {
+        "command": "fx-extension.migrateTeamsManifest",
+        "title": "Teams: Upgrade Teams manifest to support Outlook and Office apps"
       }
     ],
     "taskDefinitions": [
@@ -733,7 +763,8 @@
     "test-compile": "tsc -p ./",
     "test-watch": "npm run copy-test-files && tsc -watch -p ./",
     "pretest": "npm run lint && npm run check-format && npm run test-compile",
-    "test:unit": "rimraf coverage && npm run compile && node out/test/unit/runTest.js",
+    "test:unit": "rimraf coverage && npm run compile && node out/test/unit/runTest.js && npm run test:unit:migration",
+    "test:unit:migration": "nyc mocha --require ts-node/register \"test/unit/migration/*.test.ts\"",
     "test:integration": "echo 'to be implementd'",
     "test:e2e": "echo 'to be implementd'",
     "test:env-checker": "npm run compile && npm run copy-test-files && node out/test/integration/envChecker/runEnvCheckerTest.js",
@@ -760,6 +791,7 @@
     "@types/express": "^4.17.11",
     "@types/fs-extra": "^9.0.5",
     "@types/glob": "^7.1.4",
+    "@types/jscodeshift": "^0.11.2",
     "@types/keytar": "^4.4.2",
     "@types/mocha": "^8.0.4",
     "@types/node": "^14.14.21",
@@ -829,10 +861,12 @@
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/teamsfx-api": "^0.10.0",
-    "@microsoft/teamsfx-core": "^0.10.0",
+    "@microsoft/teamsfx-core": "^0.11.0",
+    "@npmcli/package-json": "^1.0.1",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "jscodeshift": "^0.13.0",
     "jsonschema": "^1.4.0",
     "log4js": "^6.3.0",
     "read-package-json-fast": "^2.0.3",

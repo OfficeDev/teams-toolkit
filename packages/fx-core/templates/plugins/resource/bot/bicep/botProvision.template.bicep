@@ -5,11 +5,11 @@ param userAssignedIdentityId string
 var resourceBaseName = provisionParameters.resourceBaseName
 var botAadAppClientId = provisionParameters['botAadAppClientId']
 var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
-var botServiceName = contains(provisionParameters, 'botServiceName') ? provisionParameters['botServiceName'] : '${resourceBaseName}-bot-service'
-var botDisplayName = contains(provisionParameters, 'botDisplayName') ? provisionParameters['botDisplayName'] : '${resourceBaseName}-bot-displayname'
-var serverfarmsName = contains(provisionParameters, 'botServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}-bot-serverfarms'
+var botServiceName = contains(provisionParameters, 'botServiceName') ? provisionParameters['botServiceName'] : '${resourceBaseName}'
+var botDisplayName = contains(provisionParameters, 'botDisplayName') ? provisionParameters['botDisplayName'] : '${resourceBaseName}'
+var serverfarmsName = contains(provisionParameters, 'botServerfarmsName') ? provisionParameters['botServerfarmsName'] : '${resourceBaseName}bot'
 var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'F1'
-var webAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}-bot-sites'
+var webAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot'
 
 resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
   kind: 'azurebot'
@@ -34,7 +34,7 @@ resource botServiceMsTeamsChannel 'Microsoft.BotService/botServices/channels@202
   }
 }
 
-resource serverfarm 'Microsoft.Web/serverfarms@2021-01-01' = {
+resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
   kind: 'app'
   location: resourceGroup().location
   name: serverfarmsName
@@ -43,12 +43,13 @@ resource serverfarm 'Microsoft.Web/serverfarms@2021-01-01' = {
   }
 }
 
-resource webApp 'Microsoft.Web/sites@2021-01-01' = {
+resource webApp 'Microsoft.Web/sites@2021-02-01' = {
   kind: 'app'
   location: resourceGroup().location
   name: webAppName
   properties: {
     serverFarmId: serverfarm.id
+    keyVaultReferenceIdentity: userAssignedIdentityId
     siteConfig: {
       appSettings: [
         {

@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { TEAMS_APP_SHORT_NAME_MAX_LENGTH } from "../constants";
 
 export function replaceConfigValue(config: string, id: string, value: string): string {
   if (config && id && value) {
@@ -48,4 +49,12 @@ export function getCustomizedKeys(prefix: string, manifest: any): string[] {
     }
   }
   return keys;
+}
+
+export function getLocalAppName(appName: string): string {
+  const suffix = "-local-debug";
+  if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
+    appName = appName + suffix;
+  }
+  return appName;
 }

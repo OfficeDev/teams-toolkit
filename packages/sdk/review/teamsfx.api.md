@@ -39,7 +39,7 @@ export function createMicrosoftGraphClient(credential: TokenCredential, scopes?:
 // @beta
 export class DefaultTediousConnectionConfiguration {
     getConfig(): Promise<ConnectionConfig>;
-    }
+}
 
 // @beta
 export enum ErrorCode {
@@ -73,8 +73,6 @@ export function getResourceConfiguration(resourceType: ResourceType, resourceNam
     [index: string]: any;
 };
 
-export { GetTokenOptions }
-
 // @beta
 export function loadConfiguration(configuration?: Configuration): void;
 
@@ -101,20 +99,20 @@ export enum LogLevel {
 export class M365TenantCredential implements TokenCredential {
     constructor();
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
-    }
+}
 
 // @beta
 export class MsGraphAuthProvider implements AuthenticationProvider {
     constructor(credential: TokenCredential, scopes?: string | string[]);
     getAccessToken(): Promise<string>;
-    }
+}
 
 // @beta
 export class OnBehalfOfUserCredential implements TokenCredential {
     constructor(ssoToken: string);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(): UserInfo;
-    }
+}
 
 // @beta
 export interface ResourceConfiguration {
@@ -145,7 +143,7 @@ export class TeamsBotSsoPrompt extends Dialog {
     constructor(dialogId: string, settings: TeamsBotSsoPromptSettings);
     beginDialog(dc: DialogContext): Promise<DialogTurnResult>;
     continueDialog(dc: DialogContext): Promise<DialogTurnResult>;
-    }
+}
 
 // @beta
 export interface TeamsBotSsoPromptSettings {
@@ -168,15 +166,12 @@ export class TeamsUserCredential implements TokenCredential {
     login(scopes: string | string[]): Promise<void>;
 }
 
-export { TokenCredential }
-
 // @beta
 export interface UserInfo {
     displayName: string;
     objectId: string;
     preferredUserName: string;
 }
-
 
 // (No @packageDocumentation comment for this package)
 

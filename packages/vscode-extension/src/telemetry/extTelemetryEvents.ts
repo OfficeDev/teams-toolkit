@@ -91,6 +91,9 @@ export enum TelemetryEvent {
   EditSecretStart = "edit-secret-start",
   EditSecret = "edit-secret",
 
+  OpenManifestConfigStart = "open-manifest-config-start",
+  OpenManifestConfig = "open-manifest-config",
+
   OpenTeamsApp = "open-teams-app",
   UpdateTeamsApp = "update-teams-app",
 
@@ -128,6 +131,14 @@ export enum TelemetryEvent {
   ClickLocalDebug = "click-local-debug",
   ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
+
+  PreviewManifestFile = "preview-manifest",
+
+  MigrateTeamsTabAppStart = "migrate-teams-tab-app-start",
+  MigrateTeamsTabApp = "migrate-teams-tab-app",
+  MigrateTeamsTabAppCode = "migrate-teams-tab-app-code",
+  MigrateTeamsManifestStart = "migrate-teams-manifest-start",
+  MigrateTeamsManifest = "migrate-teams-manifest",
 }
 
 export enum TelemetryProperty {

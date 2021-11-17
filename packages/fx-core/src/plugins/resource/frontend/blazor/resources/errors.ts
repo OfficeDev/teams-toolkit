@@ -82,6 +82,15 @@ export class ConfigureWebAppError extends BlazorPluginError {
   }
 }
 
+export class ProjectPathError extends BlazorPluginError {
+  constructor(projectFilePath: string) {
+    super(ErrorType.User, "ProjectPathError", `Failed to find target project ${projectFilePath}.`, [
+      tips.checkLog,
+      tips.restoreEnvironment,
+    ]);
+  }
+}
+
 export class BuildError extends BlazorPluginError {
   constructor(innerError?: Error) {
     super(

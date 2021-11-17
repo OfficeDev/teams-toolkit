@@ -51,7 +51,6 @@ import {
   HostTypeOptionSPFx,
   MessageExtensionItem,
 } from "../../plugins/solution/fx-solution/question";
-import { createManifest } from "../../plugins/resource/appstudio/plugin";
 import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
@@ -167,12 +166,6 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
     });
 
     await migrateToArmAndMultiEnv(ctx);
-    core.tools.logProvider.warning(
-      `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your configuration files or learn more about this upgrade.`
-    );
-    core.tools.logProvider.warning(
-      `[core] Read upgrade-change-logs.md to learn about details for this upgrade.`
-    );
   } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
     // TODO: delete before Arm && Multi-env version released
     // only for arm && multi-env project with unreleased teams toolkit version
@@ -260,7 +253,6 @@ async function getOldProjectInfoForTelemetry(
 
 async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const core = ctx.self as FxCore;
   const projectPath = inputs.projectPath as string;
   const telemetryProperties = await getOldProjectInfoForTelemetry(projectPath);
   sendTelemetryEvent(
@@ -269,7 +261,9 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     telemetryProperties
   );
 
-  await preCheckKeyFiles(projectPath, ctx);
+  if (!(await preCheckKeyFiles(projectPath, ctx))) {
+    return;
+  }
   try {
     await backup(projectPath);
     await updateConfig(ctx);
@@ -295,16 +289,20 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   await postMigration(projectPath, ctx, inputs);
 }
 
-async function preCheckKeyFiles(projectPath: string, ctx: CoreHookContext): Promise<void> {
+async function preCheckKeyFiles(projectPath: string, ctx: CoreHookContext): Promise<boolean> {
   const core = ctx.self as FxCore;
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
   const manifestPath = (await fs.pathExists(path.join(fx, AppPackageFolderName, REMOTE_MANIFEST)))
     ? path.join(fx, AppPackageFolderName, REMOTE_MANIFEST)
     : path.join(projectPath, AppPackageFolderName, REMOTE_MANIFEST);
-
-  await preReadJsonFile(path.join(fx, "env.default.json"), core);
-  await preReadJsonFile(path.join(fx, "settings.json"), core);
-  await preReadJsonFile(manifestPath, core);
+  try {
+    await preReadJsonFile(path.join(fx, "env.default.json"), core);
+    await preReadJsonFile(path.join(fx, "settings.json"), core);
+    await preReadJsonFile(manifestPath, core);
+  } catch (err) {
+    return false;
+  }
+  return true;
 }
 
 async function preReadJsonFile(path: string, core: FxCore): Promise<void> {
@@ -312,7 +310,7 @@ async function preReadJsonFile(path: string, core: FxCore): Promise<void> {
     await fs.readJson(path);
   } catch (err) {
     core.tools.logProvider.error(
-      `'${path}' is not exist or not in json format. Please fix it and try again by running command (Teams: Upgrade project).`
+      `'${path}' doesn't exist or is not in json format. Please fix it and try again by running command (Teams: Upgrade project).`
     );
     core.tools.logProvider.warning(`Read this wiki(${learnMoreLink}) for the FAQ.`);
 
@@ -374,16 +372,23 @@ async function postMigration(
   await generateUpgradeReport(ctx);
   const core = ctx.self as FxCore;
   await updateGitIgnore(projectPath, core.tools.logProvider);
+
+  core.tools.logProvider.warning(
+    `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your configuration files or learn more about this upgrade.`
+  );
+  core.tools.logProvider.warning(
+    `[core] Read upgrade-change-logs.md to learn about details for this upgrade.`
+  );
+
   if (inputs.platform === Platform.VSCode) {
     await globalStateUpdate(globalStateDescription, true);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
+      [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
+    });
     core.tools.ui.reload?.();
   } else {
     core.tools.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessage);
   }
-  // auto-reload
-  sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
-    [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
-  });
 }
 
 async function updateGitIgnore(projectPath: string, log: LogProvider): Promise<void> {
@@ -523,7 +528,6 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   const sourceManifestFile = path.join(templateAppPackage, REMOTE_MANIFEST);
   const manifest: TeamsAppManifest = await getManifest(sourceManifestFile);
   await fs.remove(sourceManifestFile);
-  await moveIconsToResourceFolder(templateAppPackage, manifest);
   // generate manifest.remote.template.json
   if (!migrateFromV1) {
     const targetRemoteManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
@@ -557,36 +561,6 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     }
     await removeExpiredFields(devState, devUserData);
   }
-}
-
-async function moveIconsToResourceFolder(
-  templateAppPackage: string,
-  manifest: TeamsAppManifest
-): Promise<void> {
-  // see AppStudioPluginImpl.buildTeamsAppPackage()
-  const hasColorIcon = manifest.icons.color && !manifest.icons.color.startsWith("https://");
-  const hasOutlineIcon = manifest.icons.outline && !manifest.icons.outline.startsWith("https://");
-  if (!hasColorIcon || !hasOutlineIcon) {
-    return;
-  }
-
-  // move to resources
-  const resource = path.join(templateAppPackage, "resources");
-  const colorName = manifest.icons.color.replace("resources/", "");
-  const outlineName = manifest.icons.outline.replace("resources/", "");
-  const iconColor = path.join(templateAppPackage, colorName);
-  const iconOutline = path.join(templateAppPackage, outlineName);
-  await fs.ensureDir(resource);
-  if (await fs.pathExists(iconColor)) {
-    await fs.move(iconColor, path.join(resource, colorName));
-    manifest.icons.color = `resources/${colorName}`;
-  }
-  if (await fs.pathExists(iconOutline)) {
-    await fs.move(iconOutline, path.join(resource, outlineName));
-    manifest.icons.outline = `resources/${outlineName}`;
-  }
-
-  return;
 }
 
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {

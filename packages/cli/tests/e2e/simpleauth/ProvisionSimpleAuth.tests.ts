@@ -5,7 +5,7 @@ import fs from "fs-extra";
 import path from "path";
 
 import { AadValidator, SimpleAuthValidator } from "../../commonlib";
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+
 import {
   execAsync,
   execAsyncWithRetry,
@@ -15,6 +15,7 @@ import {
   cleanUp,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 describe("Provision", function () {
   const testFolder = getTestFolder();

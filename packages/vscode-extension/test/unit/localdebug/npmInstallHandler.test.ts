@@ -5,7 +5,7 @@ import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { hasNpmInstalled } from "../../../src/debug/npmInstallHandler";
+import { checkDependencies } from "../../../src/debug/npmInstallHandler";
 
 const testDataFolder = path.resolve(__dirname, "test-data");
 
@@ -14,7 +14,7 @@ suite("[debug > npmInstallHandler]", () => {
     await fs.ensureDir(testDataFolder);
   });
 
-  suite("hasNpmInstalled()", () => {
+  suite("checkDependencies()", () => {
     setup(async () => {
       await fs.emptyDir(testDataFolder);
     });
@@ -35,11 +35,11 @@ suite("[debug > npmInstallHandler]", () => {
       await fs.writeFile(path.join(testDataFolder, "package-lock.json"), packageLockJson);
       await fs.ensureDir(path.join(testDataFolder, "node_modules", "my-package"));
 
-      const npmInstalled = await hasNpmInstalled(testDataFolder);
+      const npmInstalled = await checkDependencies(testDataFolder);
       chai.expect(npmInstalled).to.be.true;
     });
 
-    test("npm installing", async () => {
+    test("yarn installed", async () => {
       const packageJson = `\
         {\n\
           "name": "test",\n\
@@ -51,14 +51,16 @@ suite("[debug > npmInstallHandler]", () => {
             "my-package": "1.0.0"\n\
           }\n\
         }`;
+      const yarnLockJson = "yarn.lock place holder";
       await fs.writeFile(path.join(testDataFolder, "package.json"), packageJson);
+      await fs.writeFile(path.join(testDataFolder, "yarn.lock"), yarnLockJson);
       await fs.ensureDir(path.join(testDataFolder, "node_modules", "my-package"));
 
-      const npmInstalled = await hasNpmInstalled(testDataFolder);
-      chai.expect(npmInstalled).to.be.false;
+      const npmInstalled = await checkDependencies(testDataFolder);
+      chai.expect(npmInstalled).to.be.true;
     });
 
-    test("no package-lock.json", async () => {
+    test("installing", async () => {
       const packageJson = `\
         {\n\
           "name": "test",\n\
@@ -67,12 +69,14 @@ suite("[debug > npmInstallHandler]", () => {
             "build": "tsc --build"\n\
           },\n\
           "dependencies": {\n\
-            "my-package": "1.0.0"\n\
+            "my-package1": "1.0.0",\n\
+            "my-package2": "1.0.0"\n\
           }\n\
         }`;
       await fs.writeFile(path.join(testDataFolder, "package.json"), packageJson);
+      await fs.ensureDir(path.join(testDataFolder, "node_modules", "my-package1"));
 
-      const npmInstalled = await hasNpmInstalled(testDataFolder);
+      const npmInstalled = await checkDependencies(testDataFolder);
       chai.expect(npmInstalled).to.be.false;
     });
 
@@ -92,7 +96,7 @@ suite("[debug > npmInstallHandler]", () => {
       await fs.writeFile(path.join(testDataFolder, "package.json"), packageJson);
       await fs.writeFile(path.join(testDataFolder, "package-lock.json"), packageLockJson);
 
-      const npmInstalled = await hasNpmInstalled(testDataFolder);
+      const npmInstalled = await checkDependencies(testDataFolder);
       chai.expect(npmInstalled).to.be.false;
     });
 
@@ -113,7 +117,7 @@ suite("[debug > npmInstallHandler]", () => {
       await fs.writeFile(path.join(testDataFolder, "package-lock.json"), packageLockJson);
       await fs.ensureDir(path.join(testDataFolder, "node_modules", ".staging"));
 
-      const npmInstalled = await hasNpmInstalled(testDataFolder);
+      const npmInstalled = await checkDependencies(testDataFolder);
       chai.expect(npmInstalled).to.be.false;
     });
 
@@ -128,11 +132,9 @@ suite("[debug > npmInstallHandler]", () => {
           "dependencies": {\n\
           }\n\
         }`;
-      const packageLockJson = "package-lock.json place holder";
       await fs.writeFile(path.join(testDataFolder, "package.json"), packageJson);
-      await fs.writeFile(path.join(testDataFolder, "package-lock.json"), packageLockJson);
 
-      const npmInstalled = await hasNpmInstalled(testDataFolder);
+      const npmInstalled = await checkDependencies(testDataFolder);
       chai.expect(npmInstalled).to.be.true;
     });
   });

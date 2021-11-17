@@ -862,6 +862,7 @@
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/teamsfx-api": "^0.10.0",
     "@microsoft/teamsfx-core": "^0.11.0",
+    "@npmcli/arborist": "^4.0.4",
     "@npmcli/package-json": "^1.0.1",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",

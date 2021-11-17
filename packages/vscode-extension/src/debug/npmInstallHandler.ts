@@ -7,39 +7,35 @@ import * as vscode from "vscode";
 
 import { loadPackageJson } from "./commonUtils";
 
-export async function hasNpmInstalled(folder: string): Promise<boolean> {
+const Arborist = require("@npmcli/arborist");
+
+export async function checkDependencies(folder: string): Promise<boolean> {
   if (await fs.pathExists(folder)) {
-    // after npm install done, package-lock.json should exist
-    const packageLockJsonPath = path.join(folder, "package-lock.json");
-    if (await fs.pathExists(packageLockJsonPath)) {
-      const packageJson = await loadPackageJson(path.join(folder, "package.json"));
-      if (
-        (packageJson?.dependencies && Object.keys(packageJson?.dependencies).length > 0) ||
-        (packageJson?.devDependencies && Object.keys(packageJson?.devDependencies).length > 0)
-      ) {
-        // deps should exist
-        const nodeModulesFolder = path.join(folder, "node_modules");
-        if (
-          (await fs.pathExists(nodeModulesFolder)) &&
-          fs.statSync(nodeModulesFolder).isDirectory()
-        ) {
-          const modules = await fs.readdir(nodeModulesFolder);
-          return (
-            modules !== undefined &&
-            modules.some((module) => module !== undefined && !module.startsWith("."))
-          );
-        } else {
-          // no node_modules
-          return false;
-        }
-      } else {
-        // treat no deps as npm installed
-        return true;
+    const packageJson = await loadPackageJson(path.join(folder, "package.json"));
+    if (
+      (packageJson?.dependencies && Object.keys(packageJson?.dependencies).length > 0) ||
+      (packageJson?.devDependencies && Object.keys(packageJson?.devDependencies).length > 0)
+    ) {
+      // load deps from node_modules
+      const arb = new Arborist({ path: folder });
+      try {
+        await arb.loadActual();
+      } catch (error: any) {
+        return false;
       }
+
+      // check if any missing dependency
+      const dependencies =
+        arb.actualTree?.edgesOut === undefined ? [] : [...arb.actualTree.edgesOut.values()];
+      return !dependencies.some((dependency) => dependency.error === "MISSING");
+    } else {
+      // treat no deps as npm installed
+      return true;
     }
   }
 
-  return false;
+  // treat missing folder as npm installed
+  return true;
 }
 
 export async function runNpmInstallAll(projectRoot: string): Promise<void> {

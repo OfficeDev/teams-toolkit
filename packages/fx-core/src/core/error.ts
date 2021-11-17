@@ -265,7 +265,8 @@ export function ProjectSettingError(): UserError {
 
 export function UpgradeCanceledError(): UserError {
   return new UserError(
-    "UpgradeCanceledError",
+    // @see tools.isUserCancelError()
+    "User Cancel",
     "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 2.7.0).",
     CoreSource
   );

@@ -78,6 +78,8 @@ This doc is for using existing Azure AD app or Manually Create Azure AD app for 
 
 1. Open your TeamsFx project, and open `.fx/configs/config.dev.json`.
 
+1. Set `AAD_APP_CLIENT_SECRET` = **Client Secret** in your system environment variable.
+
 1. Add follow code after existing code.
 
   ```
@@ -90,7 +92,7 @@ This doc is for using existing Azure AD app or Manually Create Azure AD app for 
   "auth": {
     "objectId": **Object ID**,
     "clientId": **Application (client) ID**,
-    "clientSecret": **Client Secret**,
+    "clientSecret": {{ $env.AAD_APP_CLIENT_SECRET }},
     "accessAsUserScopeId": **Access As User Scope ID**
   }
   ```

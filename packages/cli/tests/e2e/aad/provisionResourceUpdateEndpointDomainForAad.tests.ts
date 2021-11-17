@@ -25,6 +25,7 @@ function test(vsCallingCli: boolean) {
     const appName = getUniqueAppName();
     const subscription = getSubscriptionId();
     const projectPath = path.resolve(testFolder, appName);
+    process.env.TEAMSFX_INSIDER_PREVIEW = "true";
 
     it(`Provision Resource: Update Domain and Endpoint for AAD - Test Plan Id 9576711`, async function () {
       const env = cloneDeep(process.env);

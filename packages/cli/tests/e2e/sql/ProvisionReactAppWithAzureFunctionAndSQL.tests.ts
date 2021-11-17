@@ -23,6 +23,7 @@ describe("Provision to Azure with SQL", function () {
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  process.env.TEAMSFX_INSIDER_PREVIEW = "true";
 
   it(`Provision react app with Azure Function and SQL - Test Plan ID 9454227`, async function () {
     // new a project ( tab + function + sql )

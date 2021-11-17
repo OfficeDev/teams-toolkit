@@ -11,6 +11,7 @@ describe("Azure App Scaffold", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
+  process.env.TEAMSFX_INSIDER_PREVIEW = "true";
 
   it(`Tab + Bot + Function in TypeScript`, async function () {
     const lang = "typescript";

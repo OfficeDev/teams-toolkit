@@ -22,6 +22,7 @@ describe("Start a new project", function () {
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
   let appId: string;
+  process.env.TEAMSFX_INSIDER_PREVIEW = "true";
 
   it("Create, provision and run SPFx project with React framework", async function () {
     let command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type react --spfx-webpart-name helloworld --programming-language typescript`;

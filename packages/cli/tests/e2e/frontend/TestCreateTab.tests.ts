@@ -22,6 +22,7 @@ describe("Create single tab", function () {
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  process.env.TEAMSFX_INSIDER_PREVIEW = "true";
 
   it("Create react app without Azure Function", async () => {
     // new a project ( tab only )

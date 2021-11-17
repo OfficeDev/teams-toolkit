@@ -41,6 +41,8 @@ describe("Aad Error Tests", function () {
 
     projectPath = path.resolve(testFolder, appName);
 
+    process.env.TEAMSFX_INSIDER_PREVIEW = "true";
+
     // new a project
 
     await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {

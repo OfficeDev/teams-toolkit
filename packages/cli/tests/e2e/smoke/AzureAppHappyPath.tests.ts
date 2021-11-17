@@ -33,6 +33,7 @@ describe("Azure App Happy Path", function () {
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  process.env.TEAMSFX_INSIDER_PREVIEW = "true";
 
   it(`Tab + Bot (Create New) + Function + SQL + Apim`, async function () {
     // new a project ( tab + function + sql )

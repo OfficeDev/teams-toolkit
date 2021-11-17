@@ -60,11 +60,6 @@ describe("ApimPlugin", () => {
       const ctx = await buildPluginContext(sandbox);
       let result = await apimPlugin.provision(ctx);
       chai.assert.isTrue(result.isOk(), "Operation apimPlugin.provision should be succeeded.");
-      // result = await apimPlugin.generateArmTemplates(ctx);
-      // chai.assert.isTrue(
-      //   result.isOk(),
-      //   "Operation apimPlugin.generateArmTemplates should be succeeded."
-      // );
       updateConfig(ctx, undefined, undefined, {
         serviceResourceId: `/subscriptions/${DefaultTestInput.subscriptionId}/resourceGroups/${DefaultTestInput.resourceGroup.existing}/providers/Microsoft.ApiManagement/service/apim111601dev624d09`,
         productResourceId: `/subscriptions/${DefaultTestInput.subscriptionId}/resourceGroups/${DefaultTestInput.resourceGroup.existing}/providers/Microsoft.ApiManagement/service/apim111601dev624d09/products/apim111601dev624d09`,

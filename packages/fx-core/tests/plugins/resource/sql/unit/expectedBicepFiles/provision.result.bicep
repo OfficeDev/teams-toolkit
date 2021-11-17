@@ -1,3 +1,4 @@
+// Resources for Azure SQL
 module azureSqlProvision './sqlProvision.result.bicep' = {
   name: 'azureSqlProvision'
   params: {

@@ -110,7 +110,9 @@
       "localDebugDescription": "Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.",
       "localDebugTitle": "Local debug",
       "configTitle": "Change location",
-      "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension."
+      "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension.",
+      "doProvisionBeforeDeployNotificaion": "Resources in your Teams app must be provisioned before the deployment. Do you want to provision it first?",
+      "provisionInTheCould":"Provision in the cloud"
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",

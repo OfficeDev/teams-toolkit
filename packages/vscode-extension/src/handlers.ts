@@ -526,6 +526,21 @@ export async function runCommand(
       }
       case Stage.deploy: {
         result = await core.deployArtifacts(inputs);
+        // experiment only: show notification in the middle instead of right bottom corner.
+        if (result.isErr() && result.error.name === "CannotDeployBeforeProvision") {
+          const askUserDoProvision = await vscode.window.showInformationMessage(
+            StringResources.vsc.handlers.doProvisionBeforeDeployNotificaion,
+            { modal: true },
+            StringResources.vsc.handlers.provisionInTheCould
+          );
+          if (askUserDoProvision === StringResources.vsc.handlers.provisionInTheCould) {
+            result = await core.provisionResources(inputs);
+          } else {
+            result = err(
+              new UserError(ExtensionErrors.UserCancel, ExtensionErrors.UserCancel, ExtensionSource)
+            );
+          }
+        }
         break;
       }
       case Stage.publish: {

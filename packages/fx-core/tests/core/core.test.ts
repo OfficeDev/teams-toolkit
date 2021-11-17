@@ -163,7 +163,7 @@ describe("Core basic APIs", () => {
         });
       });
     }
-    for (const param of DisableMultiEnvParams) {
+    for (const param of EnableMultiEnvParams) {
       describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
         let mockedEnvRestore: RestoreFn;
         beforeEach(() => {

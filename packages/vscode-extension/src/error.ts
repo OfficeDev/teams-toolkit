@@ -21,4 +21,6 @@ export enum ExtensionErrors {
   EnvConfigNotFoundError = "EnvConfigNotFoundError",
   EnvResourceInfoNotFoundError = "EnvResourceInfoNotFoundError",
   NoWorkspaceError = "NoWorkSpaceError",
+  GrantPermissionNotLoginError = "GrantPermissionNotLoginError",
+  GrantPermissionNotProvisionError = "GrantPermissionNotProvisionError",
 }

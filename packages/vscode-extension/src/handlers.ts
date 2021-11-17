@@ -60,7 +60,7 @@ import {
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
-import AppStudioTokenInstance from "./commonlib/appStudioLogin";
+import AppStudioTokenInstance, { AppStudioLogin } from "./commonlib/appStudioLogin";
 import SharepointTokenInstance from "./commonlib/sharepointLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
@@ -81,6 +81,7 @@ import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
 import {
   anonymizeFilePaths,
+  getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   getTeamsAppIdByEnv,
@@ -1054,7 +1055,7 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
     await registerEnvTreeHandler(false);
-    await updateNewEnvCollaborators(result.value);
+    // await updateNewEnvCollaborators(result.value);
   }
   return result;
 }
@@ -1227,7 +1228,6 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
   let result: Result<any, FxError> = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermission);
 
-  const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
   let inputs: Inputs | undefined;
   try {
     const checkCoreRes = checkCoreNotEmpty();
@@ -1235,9 +1235,28 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       throw checkCoreRes.error;
     }
 
+    const loginStatus = await AppStudioLogin.getInstance().getStatus();
+
+    if (loginStatus.status !== signedIn) {
+      throw new UserError(
+        ExtensionErrors.GrantPermissionNotLoginError,
+        StringResources.vsc.handlers.loginBeforeGrantPermission,
+        ExtensionSource
+      );
+    }
+
+    const provisionSucceeded = await getProvisionSucceedFromEnv(env);
+
+    if (!provisionSucceeded) {
+      throw new UserError(
+        ExtensionErrors.GrantPermissionNotProvisionError,
+        StringResources.vsc.handlers.provisionBeforeGrantPermission,
+        ExtensionSource
+      );
+    }
+
     inputs = getSystemInputs();
     inputs.env = env;
-
     result = await core.grantPermission(inputs);
     if (result.isErr()) {
       throw result.error;
@@ -1255,7 +1274,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       VsCodeLogInstance.info(grantSucceededMsg);
       VsCodeLogInstance.warning(warningMsg);
 
-      await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
+      // await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {
       window.showWarningMessage(result.value.message);
     }
@@ -1263,7 +1282,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
     result = wrapError(e);
   }
 
-  await processResult(eventName, result, inputs);
+  await processResult(TelemetryEvent.GrantPermission, result, inputs);
   return result;
 }
 
@@ -1340,6 +1359,8 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
 
   return result;
 }
+
+export async function checkAndListPermission(env: string): Promise<void> {}
 
 export async function checkPermission(env: string): Promise<boolean> {
   let result = false;

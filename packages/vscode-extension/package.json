@@ -251,7 +251,7 @@
         },
         {
           "command": "fx-extension.grantPermission",
-          "when": "view == teamsfx-environment && viewItem == addCollaborator",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         }
       ],

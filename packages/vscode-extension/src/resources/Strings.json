@@ -110,7 +110,9 @@
       "localDebugDescription": "Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.",
       "localDebugTitle": "Local debug",
       "configTitle": "Change location",
-      "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension."
+      "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension.",
+      "loginBeforeGrantPermission": "You must login your M365 account before grant permission to others",
+      "provisionBeforeGrantPermission": "You must provision the project before grant permission to others"
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",

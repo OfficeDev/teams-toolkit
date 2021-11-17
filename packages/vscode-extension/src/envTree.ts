@@ -76,11 +76,13 @@ export async function registerEnvTreeHandler(
       }
       await checkAllEnv(envNamesResult.value);
 
+      /*
       const collaboratorsItem = await getAllCollaboratorList(
         envNamesResult.value,
         forceUpdateCollaboratorList
       );
       await environmentTreeProvider.add(collaboratorsItem);
+      */
     });
   }
   return ok(Void);

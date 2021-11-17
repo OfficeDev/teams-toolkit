@@ -3,9 +3,10 @@
 
 import { AccessToken } from "@azure/core-auth";
 import { assert, use as chaiUse } from "chai";
-import chaiPromises from "chai-as-promised";
-import { MsGraphAuthProvider, loadConfiguration, TeamsUserCredential } from "../../../src";
-import sinon from "sinon";
+import * as chaiPromises from "chai-as-promised";
+import { MsGraphAuthProvider, loadConfiguration } from "../../../src/index.browser";
+import { TeamsUserCredential } from "../../../src/credential/teamsUserCredential.browser";
+import * as sinon from "sinon";
 import { getSSOToken, AADJwtPayLoad, SSOToken } from "../helper.browser";
 import jwtDecode from "jwt-decode";
 

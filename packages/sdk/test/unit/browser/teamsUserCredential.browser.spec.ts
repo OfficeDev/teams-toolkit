@@ -3,9 +3,9 @@
 
 import { AccessToken } from "@azure/core-auth";
 import { assert, expect, use as chaiUse } from "chai";
-import chaiPromises from "chai-as-promised";
-import { loadConfiguration, TeamsUserCredential } from "../../../src";
-import sinon from "sinon";
+import * as chaiPromises from "chai-as-promised";
+import { loadConfiguration, TeamsUserCredential } from "../../../src/index.browser";
+import * as sinon from "sinon";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../../src/core/errors";
 
 chaiUse(chaiPromises);

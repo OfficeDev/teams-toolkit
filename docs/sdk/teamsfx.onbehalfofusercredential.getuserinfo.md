@@ -31,6 +31,5 @@ Basic user info with user displayName, objectId and preferredUserName.
 
 ```typescript
 const currentUser = getUserInfo();
-
 ```
 

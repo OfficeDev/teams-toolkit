@@ -1856,6 +1856,8 @@ export class TeamsAppSolution implements Solution {
       if (stateResult.state != CollaborationState.OK) {
         if (ctx.answers?.platform === Platform.CLI) {
           ctx.ui?.showMessage("warn", stateResult.message!, false);
+        } else if (ctx.answers?.platform === Platform.VSCode) {
+          ctx.logProvider?.warning(stateResult.message!);
         }
         return ok({
           state: stateResult.state,
@@ -1911,7 +1913,11 @@ export class TeamsAppSolution implements Solution {
           { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
         ];
 
-        ctx.ui?.showMessage("info", message, false);
+        if (ctx.answers?.platform === Platform.CLI) {
+          ctx.ui?.showMessage("info", message, false);
+        } else if (ctx.answers?.platform === Platform.VSCode) {
+          ctx.logProvider?.info(message);
+        }
       }
 
       const results = await executeConcurrently("", listCollaboratorWithCtx);
@@ -1993,7 +1999,11 @@ export class TeamsAppSolution implements Solution {
           }
 
           message.push({ content: "\n", color: Colors.BRIGHT_WHITE });
-          ctx.ui?.showMessage("info", message, false);
+          if (ctx.answers?.platform === Platform.CLI) {
+            ctx.ui?.showMessage("info", message, false);
+          } else if (ctx.answers?.platform === Platform.VSCode) {
+            ctx.logProvider?.info(message);
+          }
         }
       }
 

@@ -305,6 +305,15 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(grantPermission);
 
+  const listCollaborator = vscode.commands.registerCommand(
+    "fx-extension.listCollaborator",
+    (node) => {
+      const envName = node.commandId.split(".").pop();
+      Correlator.run(handlers.listCollaborator, envName);
+    }
+  );
+  context.subscriptions.push(listCollaborator);
+
   const workspacePath = getWorkspacePath();
   vscode.commands.executeCommand(
     "setContext",

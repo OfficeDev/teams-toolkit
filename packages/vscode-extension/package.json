@@ -240,6 +240,11 @@
           "group": "inline@3"
         },
         {
+          "command": "fx-extension.listCollaborator",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
+          "group": "inline@3"
+        },
+        {
           "command": "fx-extension.openSubscriptionInPortal",
           "when": "view == teamsfx-environment && viewItem == openSubscriptionInPortal",
           "group": "inline@3"
@@ -320,6 +325,10 @@
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.listCollaborator",
           "when": "false"
         },
         {
@@ -508,6 +517,12 @@
         "command": "fx-extension.viewEnvironmentWithIcon",
         "title": "View environment",
         "icon": "$(file-symlink-directory)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.listCollaborator",
+        "title": "List Collaborators",
+        "icon": "$(organization)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {

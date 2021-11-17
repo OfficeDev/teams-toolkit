@@ -126,6 +126,8 @@ import graphLogin from "./commonlib/graphLogin";
 import { getConfiguration } from "./utils/commonUtils";
 import { AzurePortalUrl, ConfigurationKey } from "./constants";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
+import { generateAccountHint } from "./debug/teamsfxDebugProvider";
+import { returnUserError } from "@microsoft/teamsfx-api";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -397,6 +399,34 @@ export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, 
   const result = await selectAndDebug();
   await processResult(TelemetryEvent.RunIconDebug, result);
   return result;
+}
+
+export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewLocalDebug);
+  await vscode.commands.executeCommand("workbench.action.quickOpen", "debug Debug");
+  return ok(null);
+}
+
+export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
+  const debugConfig = await commonUtils.getDebugConfig(false, env);
+  if (!debugConfig?.appId) {
+    const error = returnUserError(
+      new Error(StringResources.vsc.handlers.teamsAppIdNotFound),
+      ExtensionSource,
+      ExtensionErrors.TeamsAppIdNotFoundError
+    );
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, error);
+    return err(error);
+  }
+
+  const accountHint = await generateAccountHint();
+  const uri = `https://teams.microsoft.com/l/app/${debugConfig.appId}?installAppPackage=true&webjoin=true&${accountHint}`;
+  await vscode.env.openExternal(Uri.parse(uri));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+  });
+  return ok(null);
 }
 
 export async function addResourceHandler(args?: any[]): Promise<Result<null, FxError>> {

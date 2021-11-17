@@ -278,6 +278,32 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(viewEnvironmentWithIcon);
 
+  const localDebug = vscode.commands.registerCommand("fx-extension.localdebug", (node) => {
+    Correlator.run(handlers.treeViewLocalDebugHandler);
+  });
+  context.subscriptions.push(localDebug);
+
+  const localDebugWithIcon = vscode.commands.registerCommand(
+    "fx-extension.localdebugWithIcon",
+    (node) => {
+      Correlator.run(handlers.treeViewLocalDebugHandler);
+    }
+  );
+  context.subscriptions.push(localDebugWithIcon);
+
+  const preview = vscode.commands.registerCommand("fx-extension.preview", (node) => {
+    Correlator.run(handlers.treeViewPreviewHandler, node.command.title);
+  });
+  context.subscriptions.push(preview);
+
+  const previewWithIcon = vscode.commands.registerCommand(
+    "fx-extension.previewWithIcon",
+    (node) => {
+      Correlator.run(handlers.treeViewPreviewHandler, node.command.title);
+    }
+  );
+  context.subscriptions.push(previewWithIcon);
+
   const openSubscriptionInPortal = vscode.commands.registerCommand(
     "fx-extension.openSubscriptionInPortal",
     (node) => {

@@ -232,11 +232,29 @@
         },
         {
           "command": "fx-extension.viewEnvironment",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/"
+          "when": "view == teamsfx-environment && viewItem =~ /environment.*/"
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/",
+          "when": "view == teamsfx-environment && viewItem =~ /environment.*/",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.preview",
+          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/"
+        },
+        {
+          "command": "fx-extension.previewWithIcon",
+          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.localdebug",
+          "when": "view == teamsfx-environment && viewItem =~ /local/"
+        },
+        {
+          "command": "fx-extension.localdebugWithIcon",
+          "when": "view == teamsfx-environment && viewItem =~ /local/",
           "group": "inline@3"
         },
         {
@@ -320,6 +338,22 @@
         },
         {
           "command": "fx-extension.viewEnvironmentWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.preview",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.previewWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.localdebug",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.localdebugWithIcon",
           "when": "false"
         },
         {
@@ -508,6 +542,28 @@
         "command": "fx-extension.viewEnvironmentWithIcon",
         "title": "View environment",
         "icon": "$(file-symlink-directory)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.preview",
+        "title": "Preview",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.previewWithIcon",
+        "title": "Preview",
+        "icon": "$(eye)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.localdebug",
+        "title": "Local debug",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.localdebugWithIcon",
+        "title": "Local debug",
+        "icon": "$(run)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {

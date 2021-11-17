@@ -67,7 +67,7 @@ export async function registerEnvTreeHandler(
             label: item,
             description: provisionSucceeded ? "(Provisioned)" : "",
             parent: TreeCategory.Environment,
-            contextValue: "environment",
+            contextValue: provisionSucceeded ? "environment-provisioned" : "environment",
             icon: provisionSucceeded ? "folder-active" : "symbol-folder",
             isCustom: false,
             expanded: true,

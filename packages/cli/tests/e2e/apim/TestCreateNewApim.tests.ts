@@ -67,7 +67,7 @@ describe("Create a new API Management Service", function () {
             throw contextRes.error;
           }
         } else {
-          provisionContext = readContext(projectPath);
+          provisionContext = await readContext(projectPath);
         }
 
         await ApimValidator.validateProvision(

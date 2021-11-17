@@ -1,8 +1,12 @@
 ## Basic concepts
 
-A TeamsFx project is composed of two types of components:
-  1. module: have code in workspace, can be launched as local service (tab frontend, bot)
-  2. resource: cloud resource that modules depends on (Azure SQL, Key Vault, Managed Identity) 
+A TeamsFx project is composed two parts:
+  1. capabilities: tab or bot
+  2. resources: cloud resources that support the above capabilities (Azure SQL, Key Vault, Managed Identity) 
+
+A resources can have dependencies in its self description, for example, Azure SQL depends on Managed Identity.
+
+Resources are provided by resource provider plugins.
 
 Plugin category | Extension point | Behavior
 ---|---|---
@@ -57,6 +61,7 @@ project
 
 3. call sample provider plugins' setup() API to add required resources OR developer can add manually
 
+4. call sample provider plugins' scaffold() API to add sample codes.
 
 ### add resource
 
@@ -86,5 +91,5 @@ project
 
 3. call resource provider plugins's deploy() API
 
-4. call app studio module's deploy API to update manifest
+4. call app studio module's deploy() API to update manifest
 

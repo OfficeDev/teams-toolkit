@@ -26,7 +26,8 @@ describe("Use an existing API Management Service", function () {
   const projectPath = path.resolve(testFolder, appName);
   const existingRGName = `${appName}existing`;
   const existingRGNameExtend = `${existingRGName}-rg`;
-  process.env.SIMPLE_AUTH_SKU_NAME = "B1";
+  const testProcessEnv = Object.assign({}, process.env);
+  testProcessEnv["SIMPLE_AUTH_SKU_NAME"] = "B1";
 
   it(`Import API into an existing API Management Service`, async function () {
     if (isArmSupportEnabled()) {
@@ -36,7 +37,7 @@ describe("Use an existing API Management Service", function () {
     // new a project
     let result = await execAsync(`teamsfx new --app-name ${appName} --interactive false`, {
       cwd: testFolder,
-      env: process.env,
+      env: testProcessEnv,
       timeout: 0,
     });
     console.log(`Create new project. Error message: ${result.stderr}`);
@@ -45,7 +46,7 @@ describe("Use an existing API Management Service", function () {
       `teamsfx resource add azure-apim --subscription ${subscriptionId} --apim-resource-group ${existingRGNameExtend} --apim-service-name ${appName}-existing-apim`,
       {
         cwd: projectPath,
-        env: process.env,
+        env: testProcessEnv,
         timeout: 0,
       }
     );
@@ -59,7 +60,7 @@ describe("Use an existing API Management Service", function () {
 
     result = await execAsyncWithRetry(`teamsfx provision`, {
       cwd: projectPath,
-      env: process.env,
+      env: testProcessEnv,
       timeout: 0,
     });
     console.log(`Provision. Error message: ${result.stderr}`);
@@ -78,7 +79,7 @@ describe("Use an existing API Management Service", function () {
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
       {
         cwd: projectPath,
-        env: process.env,
+        env: testProcessEnv,
         timeout: 0,
       },
       3,

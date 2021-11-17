@@ -20,7 +20,9 @@ describe("Import API into API Management", function () {
   process.env.SIMPLE_AUTH_SKU_NAME = "B1";
   const testProcessEnv = [Object.assign({}, process.env), Object.assign({}, process.env)];
   testProcessEnv[0]["TEAMSFX_INSIDER_PREVIEW"] = "true";
+  testProcessEnv[0]["SIMPLE_AUTH_SKU_NAME"] = "B1";
   testProcessEnv[1]["TEAMSFX_INSIDER_PREVIEW"] = "false";
+  testProcessEnv[1]["SIMPLE_AUTH_SKU_NAME"] = "B1";
 
   testProcessEnv.forEach((input) => {
     const isMultiEnvEnabled = input["TEAMSFX_INSIDER_PREVIEW"] === "true";

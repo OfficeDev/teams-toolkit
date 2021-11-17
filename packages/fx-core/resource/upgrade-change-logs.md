@@ -18,5 +18,11 @@ Teams Toolkit now supports provision Azure resources using an Infrastructure as 
 ### Environment Specific Configuration Files
 Teams Toolkit now supports creating multiple environments for a project, and you can customize the configurations for a specific environment, for example using different app names in the manifest for different environments. You can read more about what you can do in [this wiki](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit#managing-multiple-environments-in-teams-toolkit).
 
+## Know what you need to do
+### Provision resource with bot
+If you have already provisioned the bot service before the migration, and you want to continue to use the bot service after the migration, please provision again. We will create a new bot service for this project, and other resources will not change.
+
+### Use exsiting resource instead of provision new resources
+You may need to modify the project settings file manually following [the guid](If you have already provisioned the bot service before the migration, and you want to continue to use the bot service after the migration, please provision again. We will create a new bot service for this project, and other resources will not change.)
 ## Restore Your Project Configurations
 Read this [wiki](https://aka.ms/teamsfx-migration-guide) if you want to restore your configuration files or learn more about this upgrade.

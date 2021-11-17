@@ -27,7 +27,6 @@ describe("Use an existing API Management Service", function () {
   const existingRGName = `${appName}existing`;
   const existingRGNameExtend = `${existingRGName}-rg`;
   process.env.SIMPLE_AUTH_SKU_NAME = "B1";
-  process.env.TEAMSFX_INSIDER_PREVIEW = "false";
 
   it(`Import API into an existing API Management Service`, async function () {
     if (isArmSupportEnabled()) {

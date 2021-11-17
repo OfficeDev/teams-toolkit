@@ -271,6 +271,10 @@ export function UpgradeCanceledError(): UserError {
   );
 }
 
+export function NotJsonError(err: Error): UserError {
+  return new UserError(err, CoreSource, "NotJsonError");
+}
+
 export function FailedToParseResourceIdError(name: string, resourceId: string): UserError {
   return new UserError(
     "FailedToParseResourceIdError",

@@ -65,6 +65,11 @@ export class AppStudioError {
     message: (errors: string[]) => `Validation error: \n ${errors.join("\n")}`,
   };
 
+  public static readonly UpdateManifestError = {
+    name: "UpdateManifestFailed",
+    message: (error: any) => (error.message ? error.message : "Update Teams App manifest failed!"),
+  };
+
   public static readonly GetLocalDebugConfigFailedError = {
     name: "GetLocalDebugConfigFailed",
     message: (domain: string, doProvision: boolean) =>
@@ -170,5 +175,10 @@ export class AppStudioError {
   public static readonly TeamsAppNotFoundError = {
     name: "TeamsAppNotFound",
     message: (appId: string) => `Cannot found teams app with id ${appId}`,
+  };
+
+  public static readonly UpdateManifestCancelError = {
+    name: "UpdateManifestCancelled",
+    message: (name: string) => `Update manifest with ID ${name} has been cancelled.`,
   };
 }

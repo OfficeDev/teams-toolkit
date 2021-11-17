@@ -97,6 +97,14 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
   public provideCodeLenses(
     document: vscode.TextDocument
   ): vscode.ProviderResult<vscode.CodeLens[]> {
+    if (document.fileName.endsWith("template.json")) {
+      return this.computeTemplateCodeLenses(document);
+    } else {
+      return this.computePreviewCodeLenses(document);
+    }
+  }
+
+  private computeTemplateCodeLenses(document: vscode.TextDocument) {
     const codeLenses: vscode.CodeLens[] = [];
     const command = {
       title: "📝Preview",
@@ -147,6 +155,17 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
       }
     }
 
+    return codeLenses;
+  }
+
+  private computePreviewCodeLenses(document: vscode.TextDocument) {
+    const codeLenses: vscode.CodeLens[] = [];
+    const command = {
+      title: "🔄Update",
+      command: "fx-extension.updatePreviewFile",
+      arguments: [{ fsPath: document.fileName }, TelemetryTiggerFrom.CodeLens],
+    };
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), command));
     return codeLenses;
   }
 }

@@ -301,6 +301,11 @@
           "command": "fx-extension.openPreviewFile",
           "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json",
           "group": "navigation"
+        },
+        {
+          "command": "fx-extension.updatePreviewFile",
+          "when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/ && fx-extension.isMultiEnvEnabled",
+          "group": "navigation"
         }
       ],
       "commandPalette": [
@@ -544,6 +549,12 @@
         "command": "fx-extension.openSchema",
         "title": "Open manifest schema",
         "icon": "$(file-code)"
+      },
+      {
+        "command": "fx-extension.updatePreviewFile",
+        "title": "Teams: Update manifest file",
+        "icon": "$(cloud-upload)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.migrateV1Project",

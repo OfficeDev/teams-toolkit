@@ -15,12 +15,13 @@ import {
   Result,
   FxError,
 } from "@microsoft/teamsfx-api";
-import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
+import AppStudioTokenInstance, { AppStudioLogin } from "../../../src/commonlib/appStudioLogin";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { WebviewPanel } from "../../../src/controls/webviewPanel";
 import { PanelType } from "../../../src/controls/PanelType";
 import { AzureAccountManager } from "../../../src/commonlib/azureLogin";
 import { MockCore } from "./mocks/mockCore";
+import * as commonUtils from "../../../src/utils/commonUtils";
 import * as extension from "../../../src/extension";
 import * as accountTree from "../../../src/accountTree";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
@@ -370,6 +371,9 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(AppStudioLogin.getInstance(), "getStatus").resolves({ status: "SignedIn" });
+      sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
+
       sinon.stub(envTree, "addCollaboratorToEnv").resolves();
       sinon.stub(MockCore.prototype, "grantPermission").returns(
         Promise.resolve(

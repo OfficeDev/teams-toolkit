@@ -10,7 +10,6 @@ import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  setSimpleAuthSkuNameToB1,
   getConfigFileName,
   cleanUp,
   cleanUpResourceGroup,
@@ -71,6 +70,7 @@ describe("Use an existing API Management Service", function () {
       provisionContext,
       appName,
       subscriptionId,
+      false,
       existingRGNameExtend,
       `${appName}-existing-apim`
     );
@@ -88,7 +88,7 @@ describe("Use an existing API Management Service", function () {
     console.log(`Deploy. Error message: ${result.stderr}`);
 
     const deployContext = await fs.readJSON(getConfigFileName(appName));
-    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
+    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1", false);
   });
 
   after(async () => {

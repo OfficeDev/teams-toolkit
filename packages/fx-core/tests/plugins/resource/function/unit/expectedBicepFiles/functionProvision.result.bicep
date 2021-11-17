@@ -68,7 +68,7 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
   }
 }
 
-resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
+resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   name: storageName
   kind: 'StorageV2'
   location: resourceGroup().location

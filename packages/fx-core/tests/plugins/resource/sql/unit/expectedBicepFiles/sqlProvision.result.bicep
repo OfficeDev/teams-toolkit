@@ -6,7 +6,7 @@ var sqlDatabaseName = contains(provisionParameters, 'sqlDatabaseName') ? provisi
 var administratorLogin = contains(provisionParameters, 'azureSqlAdmin') ? provisionParameters['azureSqlAdmin'] : ''
 var administratorLoginPassword = contains(provisionParameters, 'azureSqlAdminPassword') ? provisionParameters['azureSqlAdminPassword'] : ''
 
-resource sqlServer 'Microsoft.Sql/servers@2021-02-01-preview' = {
+resource sqlServer 'Microsoft.Sql/servers@2021-05-01-preview' = {
   location: resourceGroup().location
   name: sqlServerName
   properties: {
@@ -15,7 +15,7 @@ resource sqlServer 'Microsoft.Sql/servers@2021-02-01-preview' = {
   }
 }
 
-resource sqlDatabase 'Microsoft.Sql/servers/databases@2021-02-01-preview' = {
+resource sqlDatabase 'Microsoft.Sql/servers/databases@2021-05-01-preview' = {
   parent: sqlServer
   location: resourceGroup().location
   name: sqlDatabaseName
@@ -24,7 +24,7 @@ resource sqlDatabase 'Microsoft.Sql/servers/databases@2021-02-01-preview' = {
   }
 }
 
-resource sqlFirewallRules 'Microsoft.Sql/servers/firewallRules@2021-02-01-preview' = {
+resource sqlFirewallRules 'Microsoft.Sql/servers/firewallRules@2021-05-01-preview' = {
   parent: sqlServer
   name: 'AllowAzure'
   properties: {

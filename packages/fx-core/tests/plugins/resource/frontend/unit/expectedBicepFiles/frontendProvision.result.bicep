@@ -1,8 +1,9 @@
+@secure()
 param provisionParameters object
 var resourceBaseName = provisionParameters.resourceBaseName
 var storageName = contains(provisionParameters, 'frontendHostingStorageName') ? provisionParameters['frontendHostingStorageName'] : '${resourceBaseName}tab'
 
-resource storage 'Microsoft.Storage/storageAccounts@2021-04-01' = {
+resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   kind: 'StorageV2'
   location: resourceGroup().location
   name: storageName

@@ -90,16 +90,14 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
     }
 
     await SharepointLogin.codeFlowInstance.reloadCache();
-    if (!SharepointLogin.codeFlowInstance.account) {
-      try {
-        const scopes = await this.getScopes(showDialog);
-        if (!scopes) {
-          return undefined;
-        }
-        SharepointLogin.codeFlowInstance.scopes = scopes;
-      } catch (error) {
-        throw error;
+    try {
+      const scopes = await this.getScopes(showDialog);
+      if (!scopes) {
+        return undefined;
       }
+      SharepointLogin.codeFlowInstance.scopes = scopes;
+    } catch (error) {
+      throw error;
     }
     const accessToken = SharepointLogin.codeFlowInstance.getToken();
     return accessToken;

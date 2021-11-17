@@ -121,7 +121,7 @@ export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string, envName
   );
   const parametersFilePath = path.resolve(projectPath, bicepParameterFile);
   const parameters = await fs.readJSON(parametersFilePath);
-  parameters["parameters"]["provisionParameters"]["simpleAuthSku"] = "B1";
+  parameters["parameters"]["provisionParameters"]["value"]["simpleAuthSku"] = "B1";
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
 }
 

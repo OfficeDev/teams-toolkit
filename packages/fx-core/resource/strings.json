@@ -3,7 +3,7 @@
   "solution": {
     "ScaffoldSuccessNotice": "[Teams Toolkit] Scaffold successfully.",
     "ProvisionConfirmNotice": "The Teams Toolkit will provision resources and register corresponding resource providers under %s (Azure account) with %s (subscription). Costs may incur according to the pricing calculator.",
-    "ProvisionConfirmEnvNotice": "Do you want to provision resources in %s (environment)?\n%s (Azure account) with %s (subscription) will be used to provision the resources. Cost may incur according to the usage.",
+    "ProvisionConfirmEnvNotice": "Do you want to provision resources in %s environment?\n%s (Azure account) with %s (subscription) will be used to provision the resources. Cost may incur according to the usage.",
     "ProvisionFailGuide": "Provision resources failed, subscription id: '%s', resource group: '%s'. You can choose to rollback to delete the resource group and redo provision.",
     "ProvisionSuccessNotice": "'%s' successfully provisioned in the cloud.",
     "ProvisionFailNotice": "fail to provision '%s' in the cloud!",
@@ -27,10 +27,10 @@
     "LocalDebugTenantConfirmNotice": "You already run local debug for the Teams app in another tenant '%s'. You can sign out %s and sign in with the matched M365 account to re-use the previous local debug resource. If you really want to switch tenant for local debug, you can delete the %s file and re-run local debug.",
     "MigrateSuccessNotice": "Your project is now initialized with Teams Toolkit! Reload Visual Studio Code for the change to take effect. If you wish to host your application in Azure, we recommend you to re-create your project directly using the latest Teams Toolkit.",
     "MigrationToArmAndMultiEnvMessage": "Teams Toolkit will upgrade your project configuration files to support the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version, please find Teams Toolkit in Extension and install the version <= 2.7.0",
-    "MigrationToArmAndMultiEnvSuccessMessageVSC": "Upgrade succeeded. Your project is upgraded to new configuration files. Reload Visual Studio Code for the change to take effect.",
-    "MigrationToArmAndMultiEnvSuccessMessageCLI": "Upgrade succeeded. Your project is upgraded to new configuration files.",
+    "MigrationToArmAndMultiEnvSuccessMessage": "Upgrade succeeded. Your project is upgraded to new configuration files.",
     "NeedToUpdateTeamsToolkitVersionMessage": "Your project is not supported. Please update Teams Toolkit to the latest version from the VSCode Extension Marketplace and make sure the setting (fx-extension: Insider Preview) is enabled",
     "MigrationToArmAndMultiEnvErrorMessage": "Upgrade Failed. Please check the error message in Output window to troubleshoot and fix. You can also click Learn More for the FAQ and how to upgrade manually.",
+    "MigrationToArmAndMultiEnvPreCheckErrorMessage": "Upgrade Failed. '%s' doesn't exist or is not in json format. Please fix it and try again by running command (Teams: Upgrade project).\nYou can also click Learn More for the FAQ.",
     "DeployArmTemplates": {
       "StartNotice": "[%s] Start deploying ARM templates.",
       "CompileBicepSuccessNotice": "[%s] Successfully compile bicep files to JSON.",

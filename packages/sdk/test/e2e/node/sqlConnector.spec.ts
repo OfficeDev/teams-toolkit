@@ -4,7 +4,7 @@ import axios from "axios";
 import { assert, use as chaiUse } from "chai";
 import { SqlManagementClient, SqlManagementModels } from "@azure/arm-sql";
 import * as msRestNodeAuth from "@azure/ms-rest-nodeauth";
-import chaiPromises from "chai-as-promised";
+import * as chaiPromises from "chai-as-promised";
 import { Connection, Request } from "tedious";
 import { loadConfiguration, DefaultTediousConnectionConfiguration } from "../../../src";
 import { MockEnvironmentVariable, RestoreEnvironmentVariable } from "../helper";

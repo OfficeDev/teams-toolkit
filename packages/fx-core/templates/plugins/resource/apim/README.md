@@ -1,6 +1,6 @@
 # Publish Teams Backend (Azure Functions) to Azure API Management
 
-Azure API Management (APIM) is used to create consistent and modern API gateways for existing backend services. With Teams Toolkit or TeamsFx CLI, you can easily publish your backend APIs (Azure Functions) to existing or new APIM instance.
+Azure API Management (APIM) is used to create consistent and modern API gateways for existing backend services. With Teams Toolkit or TeamsFx CLI, you can easily publish your backend APIs (Azure Functions) to APIM instance.
 
 ## Prerequisite
 
@@ -17,11 +17,9 @@ Azure API Management (APIM) is used to create consistent and modern API gateways
 You can enable Azure API Management by following steps:
 | Using Teams Toolkit| Using TeamsFx CLI|
 | :------------------| :----------------|
-| <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.<sup>\*</sup></li><li>After you signed in, select a subscription under your account.<sup>\*</sup></li><li>Open command palette, select `Teams: Add Resources` and select `Register APIs in Azure API Management` in next step.</ul> | <ul><li>Run command `teamsfx account login azure`.<sup>\*</sup></li><li>Run command `teamsfx account set --subscription $subscriptionId`.<sup>\*</sup></li><li>Create a new API Management instance or use an existing API Management instance</li><ul><li>Create a new instance: Run command `teamsfx resource add azure-apim`.</li><li>Use an existing instance: Run command `teamsfx resource add azure-apim --apim-resource-group $resourceGroupName --apim-service-name $serviceName`.</li></ul></ul>|
+| Open command palette, select `Teams: Add Resources` and select `Register APIs in Azure API Management` in next step.| Run command `teamsfx resource add azure-apim`.|
 
 > \* Skip this step if you have already done in the previous steps.
-
-> Note: We need your Azure account and subscription information here so you can specify whether to use an existing or new APIM instance.
 
 ## Deploy to Azure
 

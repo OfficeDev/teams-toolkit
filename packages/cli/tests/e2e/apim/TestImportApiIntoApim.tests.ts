@@ -15,9 +15,11 @@ import {
   setSimpleAuthSkuNameToB1,
   getConfigFileName,
   cleanUp,
+  setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 describe("Import API into API Management", function () {
   const testFolder = getTestFolder();
@@ -34,7 +36,11 @@ describe("Import API into API Management", function () {
     });
     console.log(`Create new project. Error message: ${result.stderr}`);
 
-    await setSimpleAuthSkuNameToB1(projectPath);
+    if (isMultiEnvEnabled()) {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    } else {
+      await setSimpleAuthSkuNameToB1(projectPath);
+    }
 
     result = await execAsyncWithRetry(
       `teamsfx resource add azure-apim --subscription ${subscriptionId}`,

@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import { cloneDeep } from "lodash";
 import path from "path";
@@ -15,6 +16,7 @@ import {
   getTestFolder,
   getUniqueAppName,
   cleanUp,
+  setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 
 function test(vsCallingCli: boolean) {
@@ -38,15 +40,27 @@ function test(vsCallingCli: boolean) {
       console.log(`[Successfully] scaffold to ${projectPath}`);
 
       {
-        // set fx-resource-simple-auth.skuName as B1
-        const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-        if (!vsCallingCli) {
-          // On VS calling CLI, simple auth plugin is not activated.
-          context["fx-resource-simple-auth"]["skuName"] = "B1";
+        if (isMultiEnvEnabled()) {
+          // set fx-resource-simple-auth.skuName as B1
+          const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+          if (!vsCallingCli) {
+            // On VS calling CLI, simple auth plugin is not activated.
+            setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+          }
+          context["fx-resource-aad-app-for-teams"]["endpoint"] = "https://dormainfortest.test";
+          context["fx-resource-aad-app-for-teams"]["domain"] = "dormainfortest.test";
+          await fs.writeJSON(`${projectPath}/.fx/states/state.dev.json`, context, { spaces: 4 });
+        } else {
+          // set fx-resource-simple-auth.skuName as B1
+          const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+          if (!vsCallingCli) {
+            // On VS calling CLI, simple auth plugin is not activated.
+            context["fx-resource-simple-auth"]["skuName"] = "B1";
+          }
+          context["fx-resource-aad-app-for-teams"]["endpoint"] = "https://dormainfortest.test";
+          context["fx-resource-aad-app-for-teams"]["domain"] = "dormainfortest.test";
+          await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
         }
-        context["fx-resource-aad-app-for-teams"]["endpoint"] = "https://dormainfortest.test";
-        context["fx-resource-aad-app-for-teams"]["domain"] = "dormainfortest.test";
-        await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
       }
 
       // provision
@@ -56,12 +70,21 @@ function test(vsCallingCli: boolean) {
         timeout: 0,
       });
 
-      // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+      if (isMultiEnvEnabled()) {
+        // Get context
+        const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-      // Validate Aad App
-      const aad = AadValidator.init(context);
-      await AadValidator.validate(aad);
+        // Validate Aad App
+        const aad = AadValidator.init(context);
+        await AadValidator.validate(aad);
+      } else {
+        // Get context
+        const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+
+        // Validate Aad App
+        const aad = AadValidator.init(context);
+        await AadValidator.validate(aad);
+      }
     });
 
     after(async () => {

@@ -15,9 +15,12 @@ import {
   cleanUp,
   cleanUpResourceGroup,
   readContext,
+  setSimpleAuthSkuNameToB1Bicep,
+  readContextMultiEnv,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 describe("Use an existing API Management Service", function () {
   const testFolder = getTestFolder();
@@ -36,7 +39,11 @@ describe("Use an existing API Management Service", function () {
     });
     console.log(`Create new project. Error message: ${result.stderr}`);
 
-    await setSimpleAuthSkuNameToB1(projectPath);
+    if (isMultiEnvEnabled()) {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    } else {
+      await setSimpleAuthSkuNameToB1(projectPath);
+    }
 
     result = await execAsyncWithRetry(
       `teamsfx resource add azure-apim --subscription ${subscriptionId} --apim-resource-group ${existingRGNameExtend} --apim-service-name ${appName}-existing-apim`,
@@ -61,13 +68,26 @@ describe("Use an existing API Management Service", function () {
     });
     console.log(`Provision. Error message: ${result.stderr}`);
 
-    const provisionContext = await readContext(projectPath);
-    await ApimValidator.validateProvision(
-      provisionContext,
-      appName,
-      existingRGNameExtend,
-      `${appName}-existing-apim`
-    );
+    if (isMultiEnvEnabled()) {
+      const provisionContext = await readContextMultiEnv(
+        projectPath,
+        environmentManager.getDefaultEnvName()
+      );
+      await ApimValidator.validateProvision(
+        provisionContext,
+        appName,
+        existingRGNameExtend,
+        `${appName}-existing-apim`
+      );
+    } else {
+      const provisionContext = await readContext(projectPath);
+      await ApimValidator.validateProvision(
+        provisionContext,
+        appName,
+        existingRGNameExtend,
+        `${appName}-existing-apim`
+      );
+    }
 
     result = await execAsyncWithRetry(
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,

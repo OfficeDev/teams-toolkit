@@ -16,9 +16,12 @@ import {
   getConfigFileName,
   cleanUp,
   readContext,
+  setSimpleAuthSkuNameToB1Bicep,
+  readContextMultiEnv,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 describe("Create a new API Management Service", function () {
   const testFolder = getTestFolder();
@@ -35,7 +38,11 @@ describe("Create a new API Management Service", function () {
     });
     console.log(`Create new project. Error message: ${result.stderr}`);
 
-    await setSimpleAuthSkuNameToB1(projectPath);
+    if (isMultiEnvEnabled()) {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    } else {
+      await setSimpleAuthSkuNameToB1(projectPath);
+    }
 
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
 
@@ -56,8 +63,16 @@ describe("Create a new API Management Service", function () {
     });
     console.log(`Provision. Error message: ${result.stderr}`);
 
-    const provisionContext = await readContext(projectPath);
-    await ApimValidator.validateProvision(provisionContext, appName);
+    if (isMultiEnvEnabled()) {
+      const provisionContext = await readContextMultiEnv(
+        projectPath,
+        environmentManager.getDefaultEnvName()
+      );
+      await ApimValidator.validateProvision(provisionContext, appName);
+    } else {
+      const provisionContext = await readContext(projectPath);
+      await ApimValidator.validateProvision(provisionContext, appName);
+    }
 
     result = await execAsyncWithRetry(
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,

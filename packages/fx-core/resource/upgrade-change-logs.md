@@ -20,9 +20,9 @@ Teams Toolkit now supports creating multiple environments for a project, and you
 
 ## Know what you need to do
 ### Provision resource with bot
-If you have already provisioned the bot service before the migration, and you want to continue to use the bot service after the migration, please provision again. We will create a new bot service for this project, and other resources will not change.
+If you have already provisioned the bot service before the migration, and you want to continue to use the bot service after the migration, please provision again. We will create a new bot service for this project, and other resources will not change. You can [read more](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#required-steps-after-migration) about why you need re-prevision.
 
 ### Use exsiting resource instead of provision new resources
-You may need to modify the project settings file manually following [the guid](If you have already provisioned the bot service before the migration, and you want to continue to use the bot service after the migration, please provision again. We will create a new bot service for this project, and other resources will not change.)
+If you still want to use the previously provisioned resources, please follow [this document](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#manual-work-to-use-existing-resource).
 ## Restore Your Project Configurations
 Read this [wiki](https://aka.ms/teamsfx-migration-guide) if you want to restore your configuration files or learn more about this upgrade.

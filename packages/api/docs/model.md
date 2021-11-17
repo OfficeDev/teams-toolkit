@@ -1,16 +1,17 @@
 A TeamsFx project is composed of two types of components:
   1. module: have code in workspace, can be launched as local service (tab frontend, function backend, bot)
-  2. resource: external resource that modules depends on without local code in workspace (Azure SQL, Key Vault, Managed Identity) 
+  2. resource: cloud resource that modules depends on (Azure SQL, Key Vault, Managed Identity) 
 
 Three types of plugins: 
-	1. scaffolding plugin: scaffold only
-	2. hosting plugin: do local hosting, cloud provision, example: Azure Web App, Azure Storage, Azure Function App
-	3. resource provider plugin: cloud provision, example: Azure SQL, Key Vault, Managed Identity
+	1. framework plugin: scaffold an empty project with specific framework (React, Angular, Vue, ...)
+  2. sample provider plugin: setup the project prerequisite(add required resources) and scaffold sample code into the selected framework
+	3. resource provider plugin: provision cloud resources, resource provider plugin has hosting property (whether it can host)
 
 project
-  capability
-    tab (framework = React, stack = nodejs 12)
-    bot (framework = Bot framework, stack = nodejs 12)
+  modules
+    tab (framework = React, stack = nodejs12, resourceProvider = Azure storage)
+    bot (framework = Bot framework, stack = nodejs12, resourceProvider = Azure Web App)
+    function (framework = ???, stack = nodejs12, resourceProvider = Azure function)
   resources
     Azure storage
     Azure function
@@ -20,12 +21,3 @@ project
 	  Managed Identity
 	  AAD
 	  Teams App
-	
-Relationship between components and plugins:
-	1. module VS scaffolding plugin 1<-->m
-	2. module VS hosting plugin m<--->m
-	3. resource VS resource provider plugin 1<-->1
-
-Each scaffolding plugin scaffold only one module, it will provide the extensibility of project modules.
-Each resource provider plugin can provision only one type of resource, it will provide the extensibility of project resources.
-One hosting plugin can provision multiple modules, it can be reused and will provide extensibility of project module hosting capability.

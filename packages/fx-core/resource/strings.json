@@ -3,7 +3,7 @@
   "solution": {
     "ScaffoldSuccessNotice": "[Teams Toolkit] Scaffold successfully.",
     "ProvisionConfirmNotice": "The Teams Toolkit will provision resources and register corresponding resource providers under %s (Azure account) with %s (subscription). Costs may incur according to the pricing calculator.",
-    "ProvisionConfirmEnvNotice": "Do you want to provision resources in %s (environment)?\n%s (Azure account) with %s (subscription) will be used to provision the resources. Cost may incur according to the usage.",
+    "ProvisionConfirmEnvNotice": "Do you want to provision resources in %s environment?\n%s (Azure account) with %s (subscription) will be used to provision the resources. Cost may incur according to the usage.",
     "ProvisionFailGuide": "Provision resources failed, subscription id: '%s', resource group: '%s'. You can choose to rollback to delete the resource group and redo provision.",
     "ProvisionSuccessNotice": "'%s' successfully provisioned in the cloud.",
     "ProvisionFailNotice": "fail to provision '%s' in the cloud!",

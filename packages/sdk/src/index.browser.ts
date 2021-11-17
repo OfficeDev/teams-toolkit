@@ -9,15 +9,15 @@ export {
   loadConfiguration,
 } from "./core/configurationProvider";
 
-export { M365TenantCredential } from "./credential/m365TenantCredential";
-export { OnBehalfOfUserCredential } from "./credential/onBehalfOfUserCredential";
-export { TeamsUserCredential } from "./credential/teamsUserCredential";
+export { M365TenantCredential } from "./credential/m365TenantCredential.browser";
+export { OnBehalfOfUserCredential } from "./credential/onBehalfOfUserCredential.browser";
+export { TeamsUserCredential } from "./credential/teamsUserCredential.browser";
 
 export { MsGraphAuthProvider } from "./core/msGraphAuthProvider";
 export { createMicrosoftGraphClient } from "./core/msGraphClientProvider";
 export { DefaultTediousConnectionConfiguration } from "./core/defaultTediousConnectionConfiguration";
 
-export { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "./bot/teamsBotSsoPrompt";
+export { TeamsBotSsoPrompt, TeamsBotSsoPromptSettings } from "./bot/teamsBotSsoPrompt.browser";
 export { TeamsBotSsoPromptTokenResponse } from "./bot/teamsBotSsoPromptTokenResponse";
 
 export { UserInfo } from "./models/userinfo";

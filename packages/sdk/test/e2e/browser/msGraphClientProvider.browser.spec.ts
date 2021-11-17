@@ -2,10 +2,11 @@
 // Licensed under the MIT license.
 
 import { assert, expect, use as chaiUse } from "chai";
-import chaiPromises from "chai-as-promised";
-import { createMicrosoftGraphClient, loadConfiguration, TeamsUserCredential } from "../../../src";
+import * as chaiPromises from "chai-as-promised";
+import { createMicrosoftGraphClient, loadConfiguration } from "../../../src/index.browser";
+import { TeamsUserCredential } from "../../../src/credential/teamsUserCredential.browser";
 import { getSSOToken, SSOToken } from "../helper.browser";
-import sinon from "sinon";
+import * as sinon from "sinon";
 import { AccessToken } from "@azure/core-auth";
 
 chaiUse(chaiPromises);

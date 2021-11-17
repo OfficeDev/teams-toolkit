@@ -523,7 +523,6 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   const sourceManifestFile = path.join(templateAppPackage, REMOTE_MANIFEST);
   const manifest: TeamsAppManifest = await getManifest(sourceManifestFile);
   await fs.remove(sourceManifestFile);
-  await moveIconsToResourceFolder(templateAppPackage, manifest);
   // generate manifest.remote.template.json
   if (!migrateFromV1) {
     const targetRemoteManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
@@ -557,36 +556,6 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     }
     await removeExpiredFields(devState, devUserData);
   }
-}
-
-async function moveIconsToResourceFolder(
-  templateAppPackage: string,
-  manifest: TeamsAppManifest
-): Promise<void> {
-  // see AppStudioPluginImpl.buildTeamsAppPackage()
-  const hasColorIcon = manifest.icons.color && !manifest.icons.color.startsWith("https://");
-  const hasOutlineIcon = manifest.icons.outline && !manifest.icons.outline.startsWith("https://");
-  if (!hasColorIcon || !hasOutlineIcon) {
-    return;
-  }
-
-  // move to resources
-  const resource = path.join(templateAppPackage, "resources");
-  const colorName = manifest.icons.color.replace("resources/", "");
-  const outlineName = manifest.icons.outline.replace("resources/", "");
-  const iconColor = path.join(templateAppPackage, colorName);
-  const iconOutline = path.join(templateAppPackage, outlineName);
-  await fs.ensureDir(resource);
-  if (await fs.pathExists(iconColor)) {
-    await fs.move(iconColor, path.join(resource, colorName));
-    manifest.icons.color = `resources/${colorName}`;
-  }
-  if (await fs.pathExists(iconOutline)) {
-    await fs.move(iconOutline, path.join(resource, outlineName));
-    manifest.icons.outline = `resources/${outlineName}`;
-  }
-
-  return;
 }
 
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {

@@ -17,10 +17,6 @@ class Cache {
   public static remove(key: string): void {
     sessionStorage.removeItem(key);
   }
-
-  public static clear(): void {
-    sessionStorage.clear();
-  }
 }
 
 export { Cache };

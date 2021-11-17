@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { isNode } from "@azure/core-http";
 import {
   AuthenticationConfiguration,
   Configuration,
@@ -9,7 +8,7 @@ import {
   ResourceType,
 } from "../models/configuration";
 import { internalLogger } from "../util/logger";
-import { formatString } from "../util/utils";
+import { formatString, isNode } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "./errors";
 
 /**

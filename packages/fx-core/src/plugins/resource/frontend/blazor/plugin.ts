@@ -31,7 +31,7 @@ import {
 import * as Deploy from "./ops/deploy";
 import { Logger } from "../utils/logger";
 import path from "path";
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 
 type Site = WebSiteManagementModels.Site;
 
@@ -308,9 +308,7 @@ export class BlazorPluginImpl {
     );
     const projectPath = path.dirname(projectFilePath);
 
-    // ? Do we support user customize build? If yes, how?
-    // * If we support user customize runtime, we need to validate its value because we use it to concat build command.
-    const framework = PluginInfo.defaultFramework;
+    const framework = await Deploy.getFrameworkVersion(projectFilePath);
     const runtime = PluginInfo.defaultRuntime;
 
     const client = AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId);

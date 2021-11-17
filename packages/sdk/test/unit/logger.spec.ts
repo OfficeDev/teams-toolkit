@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { assert, expect } from "chai";
-import sinon from "sinon";
+import * as sinon from "sinon";
 import {
   setLogger,
   internalLogger,

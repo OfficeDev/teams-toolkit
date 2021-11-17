@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { assert, use as chaiUse, expect } from "chai";
-import chaiPromises from "chai-as-promised";
+import * as chaiPromises from "chai-as-promised";
 import {
   loadConfiguration,
   ResourceType,

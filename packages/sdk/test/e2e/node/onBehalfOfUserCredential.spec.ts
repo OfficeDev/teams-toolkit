@@ -3,7 +3,7 @@
 
 import { assert, expect, use as chaiUse } from "chai";
 
-import chaiPromises from "chai-as-promised";
+import * as chaiPromises from "chai-as-promised";
 
 import {
   ErrorCode,

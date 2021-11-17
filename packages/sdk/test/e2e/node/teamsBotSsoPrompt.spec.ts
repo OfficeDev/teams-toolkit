@@ -25,14 +25,14 @@ import {
   Configuration,
 } from "../../../src";
 import { assert, use as chaiUse } from "chai";
-import chaiPromises from "chai-as-promised";
+import * as chaiPromises from "chai-as-promised";
 import {
   getSsoTokenFromTeams,
   MockEnvironmentVariable,
   RestoreEnvironmentVariable,
-} from "../../helper";
+} from "../helper";
 import { parseJwt } from "../../../src/util/utils";
-import sinon from "sinon";
+import * as sinon from "sinon";
 import { TeamsInfo } from "botbuilder";
 
 chaiUse(chaiPromises);

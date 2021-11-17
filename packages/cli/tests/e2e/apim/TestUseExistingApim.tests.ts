@@ -18,6 +18,7 @@ import {
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
+import { isArmSupportEnabled } from "@microsoft/teamsfx-core";
 
 describe("Use an existing API Management Service", function () {
   const testFolder = getTestFolder();
@@ -26,8 +27,14 @@ describe("Use an existing API Management Service", function () {
   const projectPath = path.resolve(testFolder, appName);
   const existingRGName = `${appName}existing`;
   const existingRGNameExtend = `${existingRGName}-rg`;
+  process.env.SIMPLE_AUTH_SKU_NAME = "B1";
+  process.env.TEAMSFX_INSIDER_PREVIEW = "false";
 
   it(`Import API into an existing API Management Service`, async function () {
+    if (isArmSupportEnabled()) {
+      return;
+    }
+
     // new a project
     let result = await execAsync(`teamsfx new --app-name ${appName} --interactive false`, {
       cwd: testFolder,
@@ -35,8 +42,6 @@ describe("Use an existing API Management Service", function () {
       timeout: 0,
     });
     console.log(`Create new project. Error message: ${result.stderr}`);
-
-    await setSimpleAuthSkuNameToB1(projectPath);
 
     result = await execAsyncWithRetry(
       `teamsfx resource add azure-apim --subscription ${subscriptionId} --apim-resource-group ${existingRGNameExtend} --apim-service-name ${appName}-existing-apim`,
@@ -65,6 +70,7 @@ describe("Use an existing API Management Service", function () {
     await ApimValidator.validateProvision(
       provisionContext,
       appName,
+      subscriptionId,
       existingRGNameExtend,
       `${appName}-existing-apim`
     );

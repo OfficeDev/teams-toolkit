@@ -16,6 +16,7 @@ import {
   returnSystemError,
   TeamsAppManifest,
   LogProvider,
+  BuildFolderName,
 } from "@microsoft/teamsfx-api";
 import {
   CoreHookContext,
@@ -391,9 +392,25 @@ async function updateGitIgnore(projectPath: string, log: LogProvider): Promise<v
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
   await addPathToGitignore(projectPath, localSettingsProvider.localSettingsFilePath, log);
 
+  // add .fx/subscriptionInfo.json to .gitignore
+  const subscriptionInfoPath = path.join(
+    projectPath,
+    `.${ConfigFolderName}`,
+    "subscriptionInfo.json"
+  );
+  await addPathToGitignore(projectPath, subscriptionInfoPath, log);
+
+  // add build/ to .gitignore
+  const buildFolder = path.join(projectPath, BuildFolderName);
+  await addPathToGitignore(projectPath, buildFolder, log);
+
   // add **/.env.teamsfx.local to .gitignore
-  const item = "**/" + LocalEnvMultiProvider.LocalEnvFileName;
-  await addItemToGitignore(projectPath, item, log);
+  const envLocal = "**/" + LocalEnvMultiProvider.LocalEnvFileName;
+  await addItemToGitignore(projectPath, envLocal, log);
+
+  // add .fx/states/*.userdata to .gitignore
+  const userdata = `.${ConfigFolderName}/${StatesFolderName}/*.userdata`;
+  await addItemToGitignore(projectPath, userdata, log);
 
   if (backupFolder) {
     await addPathToGitignore(projectPath, backupFolder, log);

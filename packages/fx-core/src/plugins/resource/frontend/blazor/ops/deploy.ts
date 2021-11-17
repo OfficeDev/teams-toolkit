@@ -1,4 +1,4 @@
-import * as fs from "fs-extra";
+import fs from "fs-extra";
 import * as path from "path";
 import AdmZip from "adm-zip";
 import { sendRequestWithRetry } from "../../../../../common/templatesUtils";
@@ -12,9 +12,23 @@ import {
   runWithErrorCatchAndWrap,
 } from "../resources/errors";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
-import { AzureInfo, BlazorCommands as Commands } from "../constants";
+import {
+  AzureInfo,
+  BlazorCommands as Commands,
+  BlazorPluginInfo as PluginInfo,
+  RegularExpr,
+} from "../constants";
 import { execute } from "../../../function/utils/execute";
 import { forEachFileAndDir } from "../../../function/utils/dir-walk";
+
+export async function getFrameworkVersion(projectFilePath: string): Promise<string> {
+  const content = await fs.readFile(projectFilePath, "utf8");
+  const framework = content.match(RegularExpr.targetFramework);
+  if (framework?.length) {
+    return framework[0].trim();
+  }
+  return PluginInfo.defaultFramework;
+}
 
 export async function build(path: string, runtime: string) {
   const command = Commands.buildRelease(runtime);

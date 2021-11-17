@@ -16,7 +16,7 @@ var botId = provisionParameters['botAadAppClientId']
 
 var m365ApplicationIdUri = 'api://botid-${botId}'
 
-resource botWebAppSettings 'Microsoft.Web/sites/config@2021-01-15' = {
+resource botWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${botWebAppName}/appsettings'
   properties: union({
     INITIATE_LOGIN_ENDPOINT: uri(provisionOutputs.botOutput.value.siteEndpoint, 'auth-start.html')

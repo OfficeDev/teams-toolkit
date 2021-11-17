@@ -1,3 +1,4 @@
+// Resources for frontend hosting
 module frontendHostingProvision './frontendProvision.result.bicep' = {
   name: 'frontendHostingProvision'
   params: {

@@ -2388,10 +2388,7 @@ export class TeamsAppSolution implements Solution {
 
     if (notifications.length > 0) {
       if (isArmSupportEnabled() && addNewResoruceToProvision) {
-        const confirmed = await confirmRegenerateArmTemplate(ctx.ui);
-        if (!confirmed) {
-          return ok(Void);
-        }
+        confirmRegenerateArmTemplate(ctx.ui);
       }
       settings.azureResources = azureResource;
       await this.reloadPlugins(settings);
@@ -2499,10 +2496,7 @@ export class TeamsAppSolution implements Solution {
 
     if (change) {
       if (isArmSupportEnabled()) {
-        const confirmed = await confirmRegenerateArmTemplate(ctx.ui);
-        if (!confirmed) {
-          return ok(Void);
-        }
+        confirmRegenerateArmTemplate(ctx.ui);
       }
       settings.capabilities = capabilities;
       await this.reloadPlugins(settings);

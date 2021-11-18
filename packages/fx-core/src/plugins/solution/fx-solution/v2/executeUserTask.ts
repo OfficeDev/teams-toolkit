@@ -268,10 +268,7 @@ export async function addCapability(
 
   if (change) {
     if (isArmSupportEnabled()) {
-      const confirmed = await confirmRegenerateArmTemplate(ctx.userInteraction);
-      if (!confirmed) {
-        return ok({});
-      }
+      confirmRegenerateArmTemplate(ctx.userInteraction);
     }
     settings.capabilities = capabilities;
     reloadV2Plugins(settings);
@@ -326,14 +323,9 @@ export async function addCapability(
   return ok({});
 }
 
-export async function confirmRegenerateArmTemplate(ui?: UserInteraction): Promise<boolean> {
+export function confirmRegenerateArmTemplate(ui?: UserInteraction) {
   const msg: string = util.format(getStrings().solution.RegenerateArmTemplateConfirmNotice);
-  const okItem = "Ok";
-  const confirmRes = await ui?.showMessage("warn", msg, true, okItem);
-
-  const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
-
-  return confirm === okItem;
+  ui?.showMessage("info", msg, false);
 }
 
 async function scaffoldCodeAndResourceTemplate(
@@ -443,10 +435,7 @@ export async function addResource(
 
   if (notifications.length > 0) {
     if (isArmSupportEnabled() && addNewResoruceToProvision) {
-      const confirmed = await confirmRegenerateArmTemplate(ctx.userInteraction);
-      if (!confirmed) {
-        return ok(Void);
-      }
+      confirmRegenerateArmTemplate(ctx.userInteraction);
     }
     settings.azureResources = azureResource;
     reloadV2Plugins(settings);

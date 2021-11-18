@@ -26,6 +26,7 @@ describe("Import API into API Management", function () {
   const appName = getUniqueAppName();
   const subscriptionId = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  process.env.TEAMSFX_INSIDER_PREVIEW = "true";
 
   before(async () => {
     // new a project

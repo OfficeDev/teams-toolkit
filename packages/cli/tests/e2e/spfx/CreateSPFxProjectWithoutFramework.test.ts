@@ -10,6 +10,7 @@ describe("Start a new project", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
+  process.env.TEAMSFX_INSIDER_PREVIEW = "true";
 
   it("Create SPFx project without framework", async function () {
     const command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type none --spfx-webpart-name helloworld --programming-language typescript`;

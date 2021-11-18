@@ -23,6 +23,7 @@ describe("Provision", function () {
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  process.env.TEAMSFX_INSIDER_PREVIEW = "true";
 
   it(`Provision Resource: Update Permission for AAD - Test Plan Id 9729543`, async function () {
     // new a project

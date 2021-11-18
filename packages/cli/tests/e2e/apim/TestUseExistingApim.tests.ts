@@ -29,6 +29,7 @@ describe("Use an existing API Management Service", function () {
   const projectPath = path.resolve(testFolder, appName);
   const existingRGName = `${appName}existing`;
   const existingRGNameExtend = `${existingRGName}-rg`;
+  process.env.TEAMSFX_INSIDER_PREVIEW = "true";
 
   it(`Import API into an existing API Management Service`, async function () {
     // new a project

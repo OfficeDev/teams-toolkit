@@ -22,6 +22,7 @@ describe("Provision", function () {
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  process.env.TEAMSFX_INSIDER_PREVIEW = "true";
 
   it(`Provision Resource: Provision SimpleAuth with different pricing tier - Test Plan ID 9576788`, async function () {
     // set env

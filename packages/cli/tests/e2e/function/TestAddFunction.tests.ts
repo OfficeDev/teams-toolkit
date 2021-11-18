@@ -23,6 +23,7 @@ describe("Test Add Function", function () {
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  process.env.TEAMSFX_INSIDER_PREVIEW = "true";
 
   it(`Create Tab Then Add Function`, async function () {
     await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities tab`, {

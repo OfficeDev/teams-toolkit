@@ -544,7 +544,7 @@ export class AppStudioPluginImpl {
       appDefinition,
       appStudioToken!,
       isLocalDebug,
-      !isLocalDebug,
+      false,
       appDirectory,
       teamsAppId,
       ctx.logProvider

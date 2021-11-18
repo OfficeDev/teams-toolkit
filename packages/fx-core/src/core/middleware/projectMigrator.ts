@@ -354,9 +354,11 @@ async function generateUpgradeReport(ctx: CoreHookContext) {
   try {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     const projectPath = inputs.projectPath as string;
-    const target = path.join(projectPath, ".backup", upgradeReportName);
-    const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
-    await fs.copyFile(source, target);
+    if (backupFolder) {
+      const target = path.join(projectPath, backupFolder, upgradeReportName);
+      const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
+      await fs.copyFile(source, target);
+    }
   } catch (error) {
     // do nothing
   }

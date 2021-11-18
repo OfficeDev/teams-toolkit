@@ -8,10 +8,24 @@ on:
     branches:
       - main
       - dev
+    types:
+      - assigned
+      - opened
+      - synchronize
+      - reopened
+      - edited
+  pull_request_review_comment:
+    branches:
+      - main
+      - dev
+    types:
+      - created
+      - edited
+      - deleted
 
 jobs:
   check-e2e-tests:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' || github.event_name == 'pull_request_review_comment' }}
     runs-on: ubuntu-latest
     steps:
       - name: Setup node
@@ -55,7 +69,7 @@ jobs:
           fi
 
   e2e-tests:
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     name: run e2e test on (self-hosted linux 8cpu node14)
     env:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
@@ -145,7 +159,7 @@ jobs:
           rsync --delete-before -d /tmp/empty/ ./
 
   report-stat:
-    if: ${{ github.event_name != 'pull_request' }}
+    if: ${{ github.event_name == 'schedule' || github.event_name == 'workflow_dispatch' }}
     env:
       AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
     runs-on: ubuntu-latest

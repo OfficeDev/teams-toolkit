@@ -11,5 +11,4 @@ output identityOutput object = {
   identityName: userAssignedIdentityProvision.outputs.identityName
   identityResourceId: userAssignedIdentityProvision.outputs.identityResourceId
   identityClientId: userAssignedIdentityProvision.outputs.identityClientId
-  identityPrincipalId: userAssignedIdentityProvision.outputs.identityPrincipalId
 }

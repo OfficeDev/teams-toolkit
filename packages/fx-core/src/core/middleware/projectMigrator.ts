@@ -751,9 +751,7 @@ async function ensureProjectSettings(
     settings.defaultFunctionName =
       settings.defaultFunctionName || envDefault[PluginNames.FUNC]?.[defaultFunctionName];
   }
-  if (!settings.version) {
-    settings.version = "1.0.0";
-  }
+  settings.version = "2.0.0";
   await fs.writeFile(projectSettingPath, JSON.stringify(settings, null, 4), {
     encoding: "UTF-8",
   });

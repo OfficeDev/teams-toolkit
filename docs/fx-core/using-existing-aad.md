@@ -79,23 +79,25 @@ This doc is for using existing Azure AD app or Manually Create Azure AD app for 
 1. Open your TeamsFx project, and open `.fx/configs/config.dev.json`.
 
 1. Set `AAD_APP_CLIENT_SECRET` = **Client Secret** in your system environment variable.
+   
+    *Note: You can change the env name `AAD_APP_CLIENT_SECRET` here, and remember to replace  `AAD_APP_CLIENT_SECRET` with your env name in the next step.*
 
 1. Add follow code after existing code.
 
-  ```
-  "$schema": "https://aka.ms/teamsfx-env-config-schema",
-  "description": "...",
-  "manifest": {
-    ...
-  },
-  // Add code below. Note you need to replace the placeholders with the values copied in previous steps.
-  "auth": {
-    "objectId": **Object ID**,
-    "clientId": **Application (client) ID**,
-    "clientSecret": {{ $env.AAD_APP_CLIENT_SECRET }},
-    "accessAsUserScopeId": **Access As User Scope ID**
-  }
-  ```
+     ```
+     "$schema": "https://aka.ms/teamsfx-env-config-schema",
+     "description": "...",
+     "manifest": {
+       ...
+     },
+     // Add code below. Note you need to replace the placeholders with the values copied in previous steps.
+     "auth": {
+       "objectId": **Object ID**,
+       "clientId": **Application (client) ID**,
+       "clientSecret": {{ $env.AAD_APP_CLIENT_SECRET }},
+       "accessAsUserScopeId": **Access As User Scope ID**
+     }
+     ```
 
 1. Open Teams Toolkit extension and click on "Provision in the cloud". Wait until your project is successfully provisioned.
 

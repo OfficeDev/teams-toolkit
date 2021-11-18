@@ -21,17 +21,10 @@ You can enable Azure API Management by following steps:
 
 ## Deploy to Azure
 
-Simply deploy your project to the cloud when it’s ready by following these steps:
+Deploy your project to Azure by following these steps:
 
-- Login to Azure account<sup>\*</sup>
-- Login to M365 account<sup>\*</sup>
-- Set an active subscription<sup>\*</sup>
-- Provision the resources in the cloud
-- Deploy to the cloud
-
-You can do this using the Teams Toolkit in Visual Studio Code or using the TeamsFx CLI:
-| From Visual Studio Code | From TeamsFx CLI|
-| :------------------| :----------------|
+| From Visual Studio Code | From TeamsFx CLI |
+| :-----------------------| :----------------|
 | <ul><li>Open Teams Toolkit, and sign into Azure by clicking the `Sign in to Azure` under the `ACCOUNTS` section from sidebar.<sup>\*</sup></li> <li>After you signed in, select a subscription under your account.<sup>\*</sup></li><li>Open Teams Toolkit, and sign into M365 by clicking the `Sign in to M365` under the `ACCOUNTS` section from sidebar.<sup>\*</sup></li><li>Open the command palette and select: `Teams: Provision in the cloud`.</li><li>Open the command palette and select: `Teams: Deploy to the cloud`.</li></ul> |<ul> <li>Run command `teamsfx account login azure`.<sup>\*</sup></li> <li>Run command `teamsfx account set --subscription $subscriptionId`.<sup>\*</sup></li> <li>Run command `teamsfx account login m365`.<sup>\*</sup></li> <li> Run command `teamsfx provision`.</li> <li>First-time: Run command `teamsfx deploy function apim --open-api-document openapi/openapi.json --api-prefix $apiPrefix --api-version $apiVersion`. </li><li>Non-first-time: Run command `teamsfx deploy function apim --api-version $apiVersion`. </li></ul>|
 
 > \* Skip this step if you have already done in the previous steps.

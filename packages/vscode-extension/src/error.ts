@@ -21,6 +21,7 @@ export enum ExtensionErrors {
   EnvConfigNotFoundError = "EnvConfigNotFoundError",
   EnvResourceInfoNotFoundError = "EnvResourceInfoNotFoundError",
   NoWorkspaceError = "NoWorkSpaceError",
+  TeamsAppIdNotFoundError = "TeamsAppIdNotFoundError",
   GrantPermissionNotLoginError = "GrantPermissionNotLoginError",
   GrantPermissionNotProvisionError = "GrantPermissionNotProvisionError",
 }

@@ -133,7 +133,7 @@ import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/uti
 import {
   canAddCapability,
   canAddResource,
-  confirmRegenerateArmTemplate,
+  showGenerateArmTemplate,
   extractParamForRegisterTeamsAppAndAad,
   ParamForRegisterTeamsAppAndAad,
 } from "./v2/executeUserTask";
@@ -2388,7 +2388,7 @@ export class TeamsAppSolution implements Solution {
 
     if (notifications.length > 0) {
       if (isArmSupportEnabled() && addNewResoruceToProvision) {
-        confirmRegenerateArmTemplate(ctx.ui);
+        showGenerateArmTemplate(ctx.ui);
       }
       settings.azureResources = azureResource;
       await this.reloadPlugins(settings);
@@ -2496,7 +2496,7 @@ export class TeamsAppSolution implements Solution {
 
     if (change) {
       if (isArmSupportEnabled()) {
-        confirmRegenerateArmTemplate(ctx.ui);
+        showGenerateArmTemplate(ctx.ui);
       }
       settings.capabilities = capabilities;
       await this.reloadPlugins(settings);

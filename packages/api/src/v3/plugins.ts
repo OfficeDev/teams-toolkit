@@ -26,7 +26,7 @@ export interface SampleProvider {
   runtimeStacks: RuntimeStacks[];
   languages: string[];
   sampleOptions: OptionItem[];
-  scaffold: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+  scaffoldSample: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 
 export interface ResourceProvider {
@@ -36,7 +36,8 @@ export interface ResourceProvider {
   /**
    * return dependent components when activating plugins
    */
-  getDependencies(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>>;
+  getDependencies?(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>>;
+
   provisionLocalResource?: (
     ctx: Context,
     inputs: Inputs,

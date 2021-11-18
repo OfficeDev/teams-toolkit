@@ -58,7 +58,6 @@ const solutionModel: TeamsFxSolutionSettings = {
     {
       name: "AzureSQL",
       resourceProvider: "AzureSQLPlugin",
-      dependencies: ["ManagedIdentity"],
     },
     {
       name: "ManagedIdentity",

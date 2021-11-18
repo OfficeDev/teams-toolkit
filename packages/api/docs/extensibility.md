@@ -84,13 +84,13 @@ project
 
 1. config provision params for each resource provider plugin (optional)
 
-1. call all resources' generateResourceTemplate or provision API to do provision
+2. call all resources' generateResourceTemplate or provision API to do provision
 
-2. solution do provision based on outputs of resource templates.. (deploy arm templates)
+3. solution do provision based on outputs of resource templates.. (deploy arm templates)
 
-3. call all resource plugins' configResource(settings, resource profiles) API to configuration
+4. call all resource plugins' configResource(settings, resource profiles) API to configuration
 
-4. call app studio's provision to create teams app
+5. call app studio's provision to create teams app
 
 ### deploy
 

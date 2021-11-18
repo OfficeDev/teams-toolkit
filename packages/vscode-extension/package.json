@@ -187,6 +187,31 @@
           "command": "fx-extension.refreshEnvironment",
           "when": "view == teamsfx-environment",
           "group": "navigation@2"
+        },
+        {
+          "command": "fx-extension.openAccountLink",
+          "when": "view == teamsfx-accounts",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openEnvLink",
+          "when": "view == teamsfx-environment",
+          "group": "navigation@3"
+        },
+        {
+          "command": "fx-extension.openDevelopmentLink",
+          "when": "view == teamsfx-development",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openDeploymentLink",
+          "when": "view == teamsfx-deployment",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openHelpFeedbackLink",
+          "when": "view == teamsfx-help-and-feedback",
+          "group": "navigation@1"
         }
       ],
       "view/item/context": [
@@ -341,6 +366,26 @@
         {
           "command": "fx-extension.checkProjectUpgrade",
           "when": "fx-extension.canUpgradeToArmAndMultiEnv"
+        },
+        {
+          "command": "fx-extension.openAccountLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openEnvLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openDevelopmentLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openDeploymentLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openHelpFeedbackLink",
+          "when": "false"
         }
       ]
     },
@@ -535,6 +580,32 @@
       {
         "command": "fx-extension.migrateTeamsManifest",
         "title": "Teams: Upgrade Teams manifest to support Outlook and Office apps"
+      },
+      {
+        "command": "fx-extension.openAccountLink",
+        "title": "Open account link",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openEnvLink",
+        "title": "Open environment link",
+        "icon": "$(info)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.openDevelopmentLink",
+        "title": "Open development link",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openDeploymentLink",
+        "title": "Open deployment link",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openHelpFeedbackLink",
+        "title": "Open help link",
+        "icon": "$(info)"
       }
     ],
     "taskDefinitions": [

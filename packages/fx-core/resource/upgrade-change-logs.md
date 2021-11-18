@@ -21,5 +21,11 @@ For project contains APIM cloud resource, if you have already successfully provi
 ### Environment Specific Configuration Files
 Teams Toolkit now supports creating multiple environments for a project, and you can customize the configurations for a specific environment, for example using different app names in the manifest for different environments. You can read more about what you can do in [this wiki](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit#managing-multiple-environments-in-teams-toolkit).
 
+## Know what you need to do
+### Provision resource with bot
+If you have already provisioned the bot service before the migration, and you want to continue to use the bot service after the migration, please provision again. We will create a new bot service for this project, and other resources will not change. You can [read more](https://aka.ms/teamsfx-migration-guide#required-steps-after-migration) about why you need re-prevision.
+
+### Use exsiting bot
+If you want to reuse the existing bot that has been provision, please follow [this step](https://aka.ms/teamsfx-migration-guide#manual-work-to-use-existing-bot).
 ## Restore Your Project Configurations
 Read this [wiki](https://aka.ms/teamsfx-migration-guide) if you want to restore your configuration files or learn more about this upgrade.

@@ -161,7 +161,7 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
   private computePreviewCodeLenses(document: vscode.TextDocument) {
     const codeLenses: vscode.CodeLens[] = [];
     const command = {
-      title: "🔄Update",
+      title: "Update to Teams platform",
       command: "fx-extension.updatePreviewFile",
       arguments: [{ fsPath: document.fileName }, TelemetryTiggerFrom.CodeLens],
     };

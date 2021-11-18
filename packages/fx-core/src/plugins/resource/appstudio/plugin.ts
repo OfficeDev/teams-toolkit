@@ -539,27 +539,38 @@ export class AppStudioPluginImpl {
     }
 
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-    const result = await this.updateApp(
-      ctx,
-      appDefinition,
-      appStudioToken!,
-      isLocalDebug,
-      false,
-      appDirectory,
-      teamsAppId,
-      ctx.logProvider
-    );
-    if (result.isErr()) {
-      throw result.error;
-    }
+    try {
+      const result = await this.updateApp(
+        ctx,
+        appDefinition,
+        appStudioToken!,
+        isLocalDebug,
+        false,
+        appDirectory,
+        teamsAppId,
+        ctx.logProvider
+      );
+      if (result.isErr()) {
+        throw result.error;
+      }
 
-    ctx.logProvider?.info(`Teams app updated: ${result.value}`);
-    ctx.ui?.showMessage(
-      "info",
-      `Successfully updated manifest for [${manifest.name.short}]`,
-      false
-    );
-    return ok(teamsAppId);
+      ctx.logProvider?.info(`Teams app updated: ${result.value}`);
+      ctx.ui?.showMessage(
+        "info",
+        `Successfully updated manifest for [${manifest.name.short}]`,
+        false
+      );
+      return ok(teamsAppId);
+    } catch (error) {
+      if (error.message && error.message.includes("404")) {
+        throw AppStudioResultFactory.UserError(
+          AppStudioError.UpdateManifestWithInvalidAppError.name,
+          AppStudioError.UpdateManifestWithInvalidAppError.message(teamsAppId)
+        );
+      } else {
+        throw error;
+      }
+    }
   }
 
   public async migrateV1Project(ctx: PluginContext): Promise<{ enableAuth: boolean }> {

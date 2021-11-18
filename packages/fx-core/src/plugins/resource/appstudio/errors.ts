@@ -181,4 +181,10 @@ export class AppStudioError {
     name: "UpdateManifestCancelled",
     message: (name: string) => `Update manifest with ID ${name} has been cancelled.`,
   };
+
+  public static readonly UpdateManifestWithInvalidAppError = {
+    name: "UpdateManifestWithInvalidAppError",
+    message: (appId: string) =>
+      `Cannot find teams app with id ${appId}. You must run local debug or provision first before updating manifest to Teams platform`,
+  };
 }

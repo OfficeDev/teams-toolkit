@@ -552,7 +552,7 @@
       },
       {
         "command": "fx-extension.updatePreviewFile",
-        "title": "Teams: Update manifest file",
+        "title": "Teams: Update manifest to Teams platform",
         "icon": "$(cloud-upload)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },

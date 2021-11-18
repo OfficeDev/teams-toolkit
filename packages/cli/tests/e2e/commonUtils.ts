@@ -167,6 +167,9 @@ export async function cleanUpAadApp(
   envName = "dev"
 ) {
   const envFilePath = path.resolve(projectPath, getEnvFilePathSuffix(isMultiEnvEnabled, envName));
+  if (!(await fs.pathExists(envFilePath))) {
+    return;
+  }
   const context = await fs.readJSON(envFilePath);
   const manager = await AadManager.init();
   const promises: Promise<boolean>[] = [];

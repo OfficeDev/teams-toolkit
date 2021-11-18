@@ -41,15 +41,10 @@ function test(vsCallingCli: boolean) {
 
       {
         if (isMultiEnvEnabled()) {
-          // set fx-resource-simple-auth.skuName as B1
-          const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
           if (!vsCallingCli) {
             // On VS calling CLI, simple auth plugin is not activated.
             setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
           }
-          context["fx-resource-aad-app-for-teams"]["endpoint"] = "https://dormainfortest.test";
-          context["fx-resource-aad-app-for-teams"]["domain"] = "dormainfortest.test";
-          await fs.writeJSON(`${projectPath}/.fx/states/state.dev.json`, context, { spaces: 4 });
         } else {
           // set fx-resource-simple-auth.skuName as B1
           const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);

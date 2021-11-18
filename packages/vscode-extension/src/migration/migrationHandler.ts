@@ -74,7 +74,7 @@ export class TeamsAppMigrationHandler {
     try {
       return ok(await updateCodes(this.sourcePath, TeamsAppMigrationHandler.excludeFolders));
     } catch (e: any) {
-      return err(returnSystemError(e, ExtensionSource, "UpdateCodesError"));
+      return err(returnSystemError(e, ExtensionSource, ExtensionErrors.UpdateCodesError));
     }
   }
 

@@ -24,4 +24,5 @@ export enum ExtensionErrors {
   UpdatePackageJsonError = "UpdatePackageJsonError",
   UpdateManifestError = "UpdateManifestError",
   UpdateCodeError = "UpdateCodeError",
+  UpdateCodesError = "UpdateCodesError",
 }

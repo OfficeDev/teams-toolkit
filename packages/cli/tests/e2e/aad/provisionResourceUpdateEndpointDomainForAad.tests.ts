@@ -89,7 +89,11 @@ function test(vsCallingCli: boolean) {
 
     after(async () => {
       // clean up
-      await cleanUp(appName, projectPath, true, false, false);
+      if (isMultiEnvEnabled()) {
+        await cleanUp(appName, projectPath, true, false, false, true);
+      } else {
+        await cleanUp(appName, projectPath, true, false, false);
+      }
     });
   });
 }

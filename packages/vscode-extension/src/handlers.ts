@@ -43,6 +43,7 @@ import {
   EnvNamePlaceholder,
   SelectFolderConfig,
   SelectFileConfig,
+  ConcurrentError,
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -1566,7 +1567,9 @@ export async function showError(e: UserError | SystemError) {
     const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, issue);
     if (button) await button.run();
   } else {
-    await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
+    if (e instanceof ConcurrentError)
+      await window.showWarningMessage(`[${errorCode}]: ${e.message}`);
+    else await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
   }
 }
 

@@ -143,7 +143,6 @@ export interface TeamsFxResourceProfile {
   solution: AzureCommonConfig;
   tab?: AzureResource;
   bot?: AzureBot;
-  modules?: AzureResource[];
   resources?: AzureResource[];
   aad?: AzureActiveDirectoryApp;
   teamsApp: TeamsAppResource;

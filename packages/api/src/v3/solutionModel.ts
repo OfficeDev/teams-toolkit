@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Json, SolutionSettings } from "../types";
+
 export enum RuntimeStacks {
   DoNet_6_EA = ".NET 6(Early Access)",
   DoNet_5 = ".NET 5",
@@ -11,93 +13,58 @@ export enum RuntimeStacks {
   Node14LTS = "Node 14 LTS",
 }
 
-export interface Component {
-  type: "WorkspaceModule" | "ExternalResource";
-}
-
-export interface Dependency {
+export interface Module extends Json {
   name: string;
-  peer: boolean;
-}
-
-export interface WorkspaceModule extends Component {
-  name: string;
-  type: "WorkspaceModule";
+  frameworkProvider: string;
+  framework: string;
+  language: string;
   runtimeStack: RuntimeStacks;
-  scaffoldingPlugin: string; // specified in scaffolding stage
-  containerHostingPlugin?: string; //specified in local-debug and provision stage
-  dependencies?: Dependency[]; // specified in scaffolding stage
+  resourceProvider?: string;
 }
 
-export interface ExternalResource extends Component {
+export interface Resource extends Json {
   name: string;
-  type: "ExternalResource";
-  resourceHostingPlugin?: string; //specified in add-resource stage
-  dependencies?: Dependency[];
+  resourceProvider?: string;
+  dependencies?: string[];
+  runtimeStack?: RuntimeStacks;
 }
 
-export interface TeamsFxSolutionModel {
-  tab?: WorkspaceModule;
-  bot?: WorkspaceModule;
-  modules?: WorkspaceModule[];
-  resources?: ExternalResource[];
+export interface TeamsFxSolutionSettings extends SolutionSettings {
+  tab?: Module;
+  bot?: Module;
+  resources?: Resource[];
 }
 
-const solutionModel: TeamsFxSolutionModel = {
+const solutionModel: TeamsFxSolutionSettings = {
+  name: "TeamsFxSolutionPlugin",
   tab: {
     name: "tab",
-    type: "WorkspaceModule",
     runtimeStack: RuntimeStacks.Node12LTS,
-    scaffoldingPlugin: "some tab scaffolding plugin",
-    dependencies: [
-      {
-        name: "myFunctionApp",
-        peer: false,
-      },
-    ],
+    frameworkProvider: "ReactFrameworkPlugin",
+    language: "javascript",
+    framework: "React",
   },
   bot: {
     name: "bot",
-    type: "WorkspaceModule",
     runtimeStack: RuntimeStacks.Node12LTS,
-    scaffoldingPlugin: "some bot scaffolding plugin",
-    dependencies: [
-      {
-        name: "sql",
-        peer: false,
-      },
-    ],
+    frameworkProvider: "BotFrameworkPlugin",
+    language: "javascript",
+    framework: "",
   },
-  modules: [
-    {
-      name: "myFunctionApp",
-      type: "WorkspaceModule",
-      runtimeStack: RuntimeStacks.Node12LTS,
-      scaffoldingPlugin: "some function scaffolding plugin",
-      dependencies: [
-        {
-          name: "sql1",
-          peer: false,
-        },
-      ],
-    },
-  ],
   resources: [
     {
-      name: "sql1",
-      type: "ExternalResource",
-      resourceHostingPlugin: "some function scaffolding plugin",
-      dependencies: [
-        {
-          name: "identify1",
-          peer: true,
-        },
-      ],
+      name: "AzureFunction",
+      runtimeStack: RuntimeStacks.Node12LTS,
+      resourceProvider: "AzureFunctionPlugin",
     },
     {
-      name: "identify1",
-      type: "ExternalResource",
-      resourceHostingPlugin: "some function scaffolding plugin",
+      name: "AzureSQL",
+      resourceProvider: "AzureSQLPlugin",
+      dependencies: ["ManagedIdentity"],
+    },
+    {
+      name: "ManagedIdentity",
+      resourceProvider: "ManagedIdentityPlugin",
     },
   ],
 };

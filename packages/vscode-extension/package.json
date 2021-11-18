@@ -579,17 +579,6 @@
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
-        "command": "fx-extension.viewEnvironment",
-        "title": "View environment",
-        "enablement": "fx-extension.isMultiEnvEnabled"
-      },
-      {
-        "command": "fx-extension.viewEnvironmentWithIcon",
-        "title": "View environment",
-        "icon": "$(file-symlink-directory)",
-        "enablement": "fx-extension.isMultiEnvEnabled"
-      },
-      {
         "command": "fx-extension.preview",
         "title": "Preview",
         "enablement": "fx-extension.isMultiEnvEnabled"

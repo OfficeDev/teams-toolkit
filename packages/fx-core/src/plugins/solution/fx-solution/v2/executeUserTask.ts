@@ -268,7 +268,7 @@ export async function addCapability(
 
   if (change) {
     if (isArmSupportEnabled()) {
-      showGenerateArmTemplate(ctx.userInteraction);
+      showUpdateArmTemplateNotice(ctx.userInteraction);
     }
     settings.capabilities = capabilities;
     reloadV2Plugins(settings);
@@ -323,8 +323,8 @@ export async function addCapability(
   return ok({});
 }
 
-export function showGenerateArmTemplate(ui?: UserInteraction) {
-  const msg: string = util.format(getStrings().solution.GenerateArmTemplateNotice);
+export function showUpdateArmTemplateNotice(ui?: UserInteraction) {
+  const msg: string = util.format(getStrings().solution.UpdateArmTemplateNotice);
   ui?.showMessage("info", msg, false);
 }
 
@@ -435,7 +435,7 @@ export async function addResource(
 
   if (notifications.length > 0) {
     if (isArmSupportEnabled() && addNewResoruceToProvision) {
-      showGenerateArmTemplate(ctx.userInteraction);
+      showUpdateArmTemplateNotice(ctx.userInteraction);
     }
     settings.azureResources = azureResource;
     reloadV2Plugins(settings);

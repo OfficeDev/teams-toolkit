@@ -88,7 +88,9 @@ const learnMoreLink = "https://aka.ms/teamsfx-migration-guide";
 const manualUpgradeLink = `${learnMoreLink}#upgrade-your-project-manually`;
 const upgradeReportName = `upgrade-change-logs.md`;
 const AadSecret = "{{ $env.AAD_APP_CLIENT_SECRET }}";
-const globalStateDescription = "openUpgradeChangelogs";
+const ChangeLogsFlag = "openUpgradeChangelogs";
+const AADClientSecretFlag = "NeedToSetAADClientSecretEnv";
+
 const gitignoreFileName = ".gitignore";
 let updateNotificationFlag = false;
 let fromReloadFlag = false;
@@ -390,7 +392,7 @@ async function postMigration(
   );
 
   if (inputs.platform === Platform.VSCode) {
-    await globalStateUpdate(globalStateDescription, true);
+    await globalStateUpdate(ChangeLogsFlag, true);
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
       [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
     });
@@ -540,6 +542,10 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
         configDev.auth!.clientId = envDefault[ResourcePlugins.Aad][EnvConfigName.ClientId];
       }
       if (envDefault[ResourcePlugins.Aad][EnvConfigName.ClientSecret]) {
+        await globalStateUpdate(
+          AADClientSecretFlag,
+          envDefault[ResourcePlugins.Aad][EnvConfigName.ClientSecret]
+        );
         configDev.auth!.clientSecret = AadSecret;
       }
     }

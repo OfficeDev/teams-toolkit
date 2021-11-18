@@ -371,7 +371,6 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(AppStudioLogin.getInstance(), "getStatus").resolves({ status: "SignedIn" });
       sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
 
       sinon.stub(envTree, "addCollaboratorToEnv").resolves();

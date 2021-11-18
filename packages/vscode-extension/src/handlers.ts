@@ -1055,6 +1055,8 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
     await registerEnvTreeHandler(false);
+
+    // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
     // await updateNewEnvCollaborators(result.value);
   }
   return result;
@@ -1235,16 +1237,6 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       throw checkCoreRes.error;
     }
 
-    const loginStatus = await AppStudioLogin.getInstance().getStatus();
-
-    if (loginStatus.status !== signedIn) {
-      throw new UserError(
-        ExtensionErrors.GrantPermissionNotLoginError,
-        StringResources.vsc.handlers.loginBeforeGrantPermission,
-        ExtensionSource
-      );
-    }
-
     const provisionSucceeded = await getProvisionSucceedFromEnv(env);
 
     if (!provisionSucceeded) {
@@ -1274,6 +1266,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       VsCodeLogInstance.info(grantSucceededMsg);
       VsCodeLogInstance.warning(warningMsg);
 
+      // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
       // await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {
       window.showWarningMessage(result.value.message);
@@ -1359,8 +1352,6 @@ export async function listAllCollaborators(envs: string[]): Promise<Record<strin
 
   return result;
 }
-
-export async function checkAndListPermission(env: string): Promise<void> {}
 
 export async function checkPermission(env: string): Promise<boolean> {
   let result = false;

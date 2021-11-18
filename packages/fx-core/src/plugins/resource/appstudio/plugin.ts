@@ -449,7 +449,7 @@ export class AppStudioPluginImpl {
     isLocalDebug: boolean
   ): Promise<Result<string, FxError>> {
     const teamsAppId = await this.getTeamsAppId(ctx, isLocalDebug);
-    let manifest: TeamsAppManifest;
+    let manifest: any;
     let manifestString: string;
     const appDirectory = await getAppDirectory(ctx.root);
     const manifestPath = await this.getManifestTemplatePath(ctx.root, isLocalDebug);
@@ -513,21 +513,29 @@ export class AppStudioPluginImpl {
       (isLocalDebug ? "local" : ctx.envInfo.envName) +
       `.json`;
     const existingManifest = await fs.readJSON(manifestFileName);
+    delete manifest.id;
+    delete existingManifest.id;
     if (!_.isEqual(manifest, existingManifest)) {
       const res = await ctx.ui?.showMessage(
         "warn",
-        "Your configuration has been updated, do you want to regenerate the manifest file and upload?",
+        "The manifest file configurations has been modified already. Do you want to continue to regenerate the manifest file and update to Teams platform?",
         true,
-        "Regenerate and upload"
+        "Preview only",
+        "Preview and update"
       );
-      if (!(res?.isOk() && res.value === "Regenerate and upload")) {
-        const error = AppStudioResultFactory.UserError(
-          AppStudioError.UpdateManifestCancelError.name,
-          AppStudioError.UpdateManifestCancelError.message(manifest.name.short)
-        );
+
+      const error = AppStudioResultFactory.UserError(
+        AppStudioError.UpdateManifestCancelError.name,
+        AppStudioError.UpdateManifestCancelError.message(manifest.name.short)
+      );
+      if (res?.isOk() && res.value === "Preview only") {
+        this.buildTeamsAppPackage(ctx, isLocalDebug);
+        return err(error);
+      } else if (res?.isOk() && res.value === "Preview and update") {
+        this.buildTeamsAppPackage(ctx, isLocalDebug);
+      } else {
         return err(error);
       }
-      this.buildTeamsAppPackage(ctx, isLocalDebug);
     }
 
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
@@ -535,8 +543,8 @@ export class AppStudioPluginImpl {
       ctx,
       appDefinition,
       appStudioToken!,
-      false,
-      false,
+      isLocalDebug,
+      !isLocalDebug,
       appDirectory,
       teamsAppId,
       ctx.logProvider

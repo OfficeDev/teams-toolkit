@@ -285,7 +285,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
-    await handleError(projectPath, ctx);
+    await handleError(projectPath, ctx, backupFolder);
     throw err;
   }
   await postMigration(projectPath, ctx, inputs, backupFolder);
@@ -333,8 +333,12 @@ async function preReadJsonFile(path: string, core: FxCore): Promise<void> {
   }
 }
 
-async function handleError(projectPath: string, ctx: CoreHookContext) {
-  await cleanup(projectPath);
+async function handleError(
+  projectPath: string,
+  ctx: CoreHookContext,
+  backupFolder: string | undefined
+) {
+  await cleanup(projectPath, backupFolder);
   const core = ctx.self as FxCore;
   core.tools.ui
     .showMessage(
@@ -780,7 +784,7 @@ async function getAppName(projectSettingPath: string): Promise<string> {
   return settings.appName;
 }
 
-async function cleanup(projectPath: string): Promise<void> {
+async function cleanup(projectPath: string, backupFolder: string | undefined): Promise<void> {
   const { _, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   await fs.remove(fxConfig);
   await fs.remove(templateAppPackage);
@@ -788,6 +792,9 @@ async function cleanup(projectPath: string): Promise<void> {
   await fs.remove(path.join(templateAppPackage, ".."));
   if (await fs.pathExists(path.join(fxConfig, "..", "new.env.default.json"))) {
     await fs.remove(path.join(fxConfig, "..", "new.env.default.json"));
+  }
+  if (backupFolder) {
+    await fs.remove(backupFolder);
   }
 }
 

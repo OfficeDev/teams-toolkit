@@ -36,6 +36,7 @@ import {
   InputConfigsFolderName,
   StatesFolderName,
   AdaptiveCardsFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { registerEnvTreeHandler } from "./envTree";
@@ -177,6 +178,35 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openDocumentCmd);
 
+  const openAccountLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openAccountLink",
+    (...args) => Correlator.run(handlers.openAccountLinkHandler, args)
+  );
+  context.subscriptions.push(openAccountLinkCmd);
+
+  const openEnvLinkCmd = vscode.commands.registerCommand("fx-extension.openEnvLink", (...args) =>
+    Correlator.run(handlers.openEnvLinkHandler, args)
+  );
+  context.subscriptions.push(openEnvLinkCmd);
+
+  const openDevelopmentLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openDevelopmentLink",
+    (...args) => Correlator.run(handlers.openDevelopmentLinkHandler, args)
+  );
+  context.subscriptions.push(openDevelopmentLinkCmd);
+
+  const openDeploymentLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openDeploymentLink",
+    (...args) => Correlator.run(handlers.openDeploymentLinkHandler, args)
+  );
+  context.subscriptions.push(openDeploymentLinkCmd);
+
+  const openHelpFeedbackLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openHelpFeedbackLink",
+    (...args) => Correlator.run(handlers.openHelpFeedbackLinkHandler, args)
+  );
+  context.subscriptions.push(openHelpFeedbackLinkCmd);
+
   const openManifestCmd = vscode.commands.registerCommand("fx-extension.openManifest", (...args) =>
     Correlator.run(handlers.openManifestHandler, args)
   );
@@ -242,6 +272,12 @@ export async function activate(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.openPreviewManifest, args)
   );
   context.subscriptions.push(manifestTemplateCodeLensCmd);
+
+  const openConfigCmd = vscode.commands.registerCommand(
+    "fx-extension.openConfig",
+    (cipher, selection) => Correlator.run(handlers.openConfigFile)
+  );
+  context.subscriptions.push(openConfigCmd);
 
   const createNewEnvironment = vscode.commands.registerCommand(
     "fx-extension.addEnvironment",
@@ -322,9 +358,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const userDataSelector = {
     language: "plaintext",
     scheme: "file",
-    pattern: isMultiEnvEnabled()
-      ? `**/.${ConfigFolderName}/${StatesFolderName}/*.userdata`
-      : `**/.${ConfigFolderName}/*.userdata`,
+    pattern: "**/*.userdata",
   };
   const localDebugDataSelector = {
     language: "json",
@@ -405,6 +439,18 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.migrateV1ProjectHandler)
   );
   context.subscriptions.push(migrateV1Cmd);
+
+  const migrateTeamsTabAppCmd = vscode.commands.registerCommand(
+    "fx-extension.migrateTeamsTabApp",
+    () => Correlator.run(handlers.migrateTeamsTabAppHandler)
+  );
+  context.subscriptions.push(migrateTeamsTabAppCmd);
+
+  const migrateTeamsManifestCmd = vscode.commands.registerCommand(
+    "fx-extension.migrateTeamsManifest",
+    () => Correlator.run(handlers.migrateTeamsManifestHandler)
+  );
+  context.subscriptions.push(migrateTeamsManifestCmd);
 
   // 2. Call activate function of toolkit core.
   await handlers.activate();

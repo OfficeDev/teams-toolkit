@@ -1,10 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { assert, expect, use as chaiUse } from "chai";
-import chaiPromises from "chai-as-promised";
+import * as chaiPromises from "chai-as-promised";
 import { AccessToken } from "@azure/core-auth";
-import sinon from "sinon";
-import { loadConfiguration, TeamsUserCredential, ErrorWithCode } from "../../../src";
+import * as sinon from "sinon";
+import { loadConfiguration, TeamsUserCredential, ErrorWithCode } from "../../../src/index.browser";
 import { getSSOToken, AADJwtPayLoad, SSOToken } from "../helper.browser";
 import jwtDecode from "jwt-decode";
 

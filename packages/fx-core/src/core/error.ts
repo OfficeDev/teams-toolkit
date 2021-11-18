@@ -265,10 +265,15 @@ export function ProjectSettingError(): UserError {
 
 export function UpgradeCanceledError(): UserError {
   return new UserError(
-    "UpgradeCanceledError",
+    // @see tools.isUserCancelError()
+    "UserCancel",
     "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 2.7.0).",
     CoreSource
   );
+}
+
+export function NotJsonError(err: Error): UserError {
+  return new UserError(err, CoreSource, "NotJsonError");
 }
 
 export function FailedToParseResourceIdError(name: string, resourceId: string): UserError {

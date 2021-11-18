@@ -239,6 +239,37 @@
     "upgrade": {
       "banner": "Teams Toolkit has been updated to v%s — check out what's new!",
       "whatIsNewTitle": "What's New"
+    },
+    "upgradeToMultiEnvAndBicep": {
+      "learnMoreText": "Learn More",
+      "learnMoreLink": "https://aka.ms/teamsfx-existing-aad-doc",
+      "outputMsg": "Please set \"AAD_APP_CLIENT_SECRET\" = \"%s\" in your system environment variable. Read this wiki(%s) to for more details.",
+      "showMsg": "Please set \"AAD_APP_CLIENT_SECRET\" = \"%s\" in your system environment variable.\\nYou can also click Learn More for more details."
+    },
+    "migrateTeamsTabApp": {
+      "selectFolderConfig": {
+        "name": "Select Teams Tab App to Upgrade",
+        "title": "Select Teams Tab App to Upgrade"
+      },
+      "warningMessage": "Teams Toolkit will update in place the Teams Tab app you selected to use Teams client SDK v2. We recommend to use git for better tracking file changes before upgrading.",
+      "upgrade": "Upgrade",
+      "success": "Successfully upgraded the Teams Tab app %s.",
+      "updateCode": "Update %s code in %s.",
+      "progressTitle": "Upgrade Teams Tab App to Extend in Outlook and Office",
+      "updatePackageJson": "Update package.json to use @microsoft/teams-js v2.",
+      "updatePackageJsonWarning": "No @microsoft/teams-js dependency found in %s. Nothing to upgrade.",
+      "updateCodes": "Update codes to use @microsoft/teams-js v2."
+    },
+    "migrateTeamsManifest": {
+      "selectFileConfig": {
+        "name": "Select Teams Manifest to Upgrade",
+        "title": "Select Teams Manifest to Upgrade"
+      },
+      "warningMessage": "Teams Toolkit will update in place the Teams manifest file you selected to work in Outlook and Office. We recommend to use git for better tracking file changes before upgrading.",
+      "upgrade": "Upgrade",
+      "success": "Successfully upgraded the Teams manifest %s.",
+      "progressTitle": "Upgrade Teams Manifest to Extend in Outlook and Office",
+      "updateManifest": "Update Teams manifest."
     }
   }
 }

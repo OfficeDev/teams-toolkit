@@ -30,6 +30,7 @@ import { ProvisionConfig } from "./utils/configs";
 import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
+import { getAllowedAppIds } from "../../../common/tools";
 
 function delay(ms: number) {
   // tslint:disable-next-line no-string-based-set-timeout
@@ -360,16 +361,12 @@ export class AadAppClient {
             value: "access_as_user",
           },
         ],
-        preAuthorizedApplications: [
-          {
-            appId: Constants.teamsWebAppId,
+        preAuthorizedApplications: getAllowedAppIds().map((appId) => {
+          return {
+            appId,
             delegatedPermissionIds: [oauth2PermissionScopeId],
-          },
-          {
-            appId: Constants.teamsMobileDesktopAppId,
-            delegatedPermissionIds: [oauth2PermissionScopeId],
-          },
-        ],
+          };
+        }),
       },
       optionalClaims: {
         accessToken: [

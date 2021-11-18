@@ -3,7 +3,7 @@
 
 import { expect, use as chaiUse } from "chai";
 import "isomorphic-fetch";
-import chaiPromises from "chai-as-promised";
+import * as chaiPromises from "chai-as-promised";
 import mockedEnv from "mocked-env";
 import {
   createMicrosoftGraphClient,

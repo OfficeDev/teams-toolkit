@@ -173,3 +173,12 @@ export class UserdataNotFound extends UserError {
     );
   }
 }
+
+export class InvalidTemplateName extends UserError {
+  constructor(name: string) {
+    super({
+      source: constants.cliSource,
+      message: `Invalid template name: ${name}`,
+    });
+  }
+}

@@ -41,6 +41,7 @@ import {
   EnvNamePlaceholder,
   SelectFolderConfig,
   SelectFileConfig,
+  SingleSelectConfig,
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -430,23 +431,48 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   return await runUserTask(func, TelemetryEvent.ValidateManifest, false);
 }
 
+/**
+ * Ask user to select environment, local is included
+ */
+async function askTargetEnvironment(): Promise<Result<string, FxError>> {
+  const projectPath = getWorkspacePath();
+  if (!isValidProject(projectPath)) {
+    return err(InvalidProjectError());
+  }
+  const envProfilesResult = await environmentManager.listEnvConfigs(projectPath!);
+  if (envProfilesResult.isErr()) {
+    return err(envProfilesResult.error);
+  }
+  const config: SingleSelectConfig = {
+    name: "targetEnvName",
+    title: "Select an environment",
+    options: envProfilesResult.value.concat(["local"]),
+  };
+  const selectedEnv = await VS_CODE_UI.selectOption(config);
+  if (selectedEnv.isErr()) {
+    return err(selectedEnv.error);
+  } else {
+    return ok(selectedEnv.value.result as string);
+  }
+}
+
 export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
 
+  const selectedEnv = await askTargetEnvironment();
+  if (selectedEnv.isErr()) {
+    return err(selectedEnv.error);
+  }
+
+  const env = selectedEnv.value;
   const func: Func = {
     namespace: "fx-solution-azure",
     method: "buildPackage",
     params: {
-      type: args ? args[0] : "remote",
+      type: env === "local" ? "localDebug" : "remote",
     },
   };
-
-  let ignoreEnvInfo = false;
-  if (args && args[0] == "localDebug") {
-    ignoreEnvInfo = true;
-  }
-
-  return await runUserTask(func, TelemetryEvent.Build, ignoreEnvInfo);
+  return await runUserTask(func, TelemetryEvent.Build, false, env);
 }
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -586,7 +612,8 @@ export function detectVsCodeEnv(): VsCodeEnv {
 export async function runUserTask(
   func: Func,
   eventName: string,
-  ignoreEnvInfo: boolean
+  ignoreEnvInfo: boolean,
+  envName?: string
 ): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
   let inputs: Inputs | undefined;
@@ -598,6 +625,7 @@ export async function runUserTask(
 
     inputs = getSystemInputs();
     inputs.ignoreEnvInfo = ignoreEnvInfo;
+    inputs.env = envName;
     result = await core.executeUserTask(func, inputs);
   } catch (e) {
     result = wrapError(e);
@@ -994,55 +1022,47 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
     TelemetryEvent.OpenManifestEditorStart,
     getTriggerFromProperty(args)
   );
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    const workspaceFolder = workspace.workspaceFolders[0];
-    const projectRoot = await commonUtils.getProjectRoot(workspaceFolder.uri.fsPath, "");
-    const appDirectory = await getAppDirectory(projectRoot!);
-    if (!(await fs.pathExists(appDirectory))) {
-      const invalidProjectError: FxError = InvalidProjectError();
-      showError(invalidProjectError);
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, invalidProjectError);
-      return err(invalidProjectError);
-    }
-    const func: Func = {
-      namespace: "fx-solution-azure/fx-resource-appstudio",
-      method: "getManifestTemplatePath",
-    };
-    const res = await runUserTask(func, TelemetryEvent.ValidateManifest, true);
-    if (res.isOk()) {
-      const manifestFile = res.value as string;
-      if (fs.existsSync(manifestFile)) {
-        workspace.openTextDocument(manifestFile).then((document) => {
-          window.showTextDocument(document);
-        });
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditor, {
-          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        });
-        return ok(null);
-      } else {
-        const FxError = new SystemError(
-          "FileNotFound",
-          util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
-          ExtensionSource
-        );
-        showError(FxError);
-        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
-        return err(FxError);
-      }
+  const projectPath = getWorkspacePath();
+  if (!projectPath) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, InvalidProjectError());
+    return err(InvalidProjectError());
+  }
+  const appDirectory = await getAppDirectory(projectPath!);
+  if (!(await fs.pathExists(appDirectory))) {
+    const invalidProjectError: FxError = InvalidProjectError();
+    showError(invalidProjectError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, invalidProjectError);
+    return err(invalidProjectError);
+  }
+  const func: Func = {
+    namespace: "fx-solution-azure/fx-resource-appstudio",
+    method: "getManifestTemplatePath",
+  };
+  const res = await runUserTask(func, TelemetryEvent.ValidateManifest, true);
+  if (res.isOk()) {
+    const manifestFile = res.value as string;
+    if (fs.existsSync(manifestFile)) {
+      workspace.openTextDocument(manifestFile).then((document) => {
+        window.showTextDocument(document);
+      });
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditor, {
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      });
+      return ok(null);
     } else {
-      showError(res.error);
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, res.error);
-      return err(res.error);
+      const FxError = new SystemError(
+        "FileNotFound",
+        util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
+        ExtensionSource
+      );
+      showError(FxError);
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
+      return err(FxError);
     }
   } else {
-    const noOpenWorkspaceError = new UserError(
-      ExtensionErrors.NoWorkspaceError,
-      StringResources.vsc.handlers.noOpenWorkspace,
-      ExtensionSource
-    );
-    showError(noOpenWorkspaceError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, noOpenWorkspaceError);
-    return err(noOpenWorkspaceError);
+    showError(res.error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, res.error);
+    return err(res.error);
   }
 }
 

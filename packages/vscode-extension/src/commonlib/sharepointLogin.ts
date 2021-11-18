@@ -72,7 +72,9 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
    * Get sharepoint access token
    */
   async getAccessToken(showDialog = true): Promise<string | undefined> {
+    let isFirstLogin = false;
     if (!SharepointLogin.codeFlowInstance) {
+      isFirstLogin = true;
       try {
         const scopes = await this.getScopes(showDialog);
         if (!scopes) {
@@ -90,15 +92,18 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
     }
 
     await SharepointLogin.codeFlowInstance.reloadCache();
-    try {
-      const scopes = await this.getScopes(showDialog);
-      if (!scopes) {
-        return undefined;
+    if (!isFirstLogin) {
+      try {
+        const scopes = await this.getScopes(showDialog);
+        if (!scopes) {
+          return undefined;
+        }
+        SharepointLogin.codeFlowInstance.scopes = scopes;
+      } catch (error) {
+        throw error;
       }
-      SharepointLogin.codeFlowInstance.scopes = scopes;
-    } catch (error) {
-      throw error;
     }
+
     const accessToken = SharepointLogin.codeFlowInstance.getToken();
     return accessToken;
   }

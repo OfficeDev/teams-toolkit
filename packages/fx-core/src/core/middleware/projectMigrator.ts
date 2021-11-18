@@ -92,7 +92,6 @@ const globalStateDescription = "openUpgradeChangelogs";
 const gitignoreFileName = ".gitignore";
 let updateNotificationFlag = false;
 let fromReloadFlag = false;
-let backupFolder: string | undefined;
 
 class EnvConfigName {
   static readonly StorageName = "storageName";
@@ -266,8 +265,8 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     return;
   }
   try {
-    backupFolder = await getBackupFolder(projectPath);
-    await backup(projectPath);
+    const backupFolder: string = await getBackupFolder(projectPath);
+    await backup(projectPath, backupFolder);
     await updateConfig(ctx);
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnvStart);
@@ -288,7 +287,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     await handleError(projectPath, ctx);
     throw err;
   }
-  await postMigration(projectPath, ctx, inputs);
+  await postMigration(projectPath, ctx, inputs, backupFolder);
 }
 
 async function preCheckKeyFiles(projectPath: string, ctx: CoreHookContext): Promise<boolean> {
@@ -366,14 +365,15 @@ async function generateUpgradeReport(ctx: CoreHookContext) {
 async function postMigration(
   projectPath: string,
   ctx: CoreHookContext,
-  inputs: Inputs
+  inputs: Inputs,
+  backupFolder: string
 ): Promise<void> {
   await removeOldProjectFiles(projectPath);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrate);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
   await generateUpgradeReport(ctx);
   const core = ctx.self as FxCore;
-  await updateGitIgnore(projectPath, core.tools.logProvider);
+  await updateGitIgnore(projectPath, core.tools.logProvider, backupFolder);
 
   core.tools.logProvider.warning(
     `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your configuration files or learn more about this upgrade.`
@@ -393,7 +393,11 @@ async function postMigration(
   }
 }
 
-async function updateGitIgnore(projectPath: string, log: LogProvider): Promise<void> {
+async function updateGitIgnore(
+  projectPath: string,
+  log: LogProvider,
+  backupFolder: string
+): Promise<void> {
   // add .fx/configs/localSetting.json to .gitignore
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
   await addPathToGitignore(projectPath, localSettingsProvider.localSettingsFilePath, log);
@@ -681,7 +685,7 @@ async function getBackupFolder(projectPath: string): Promise<string> {
   return path.join(projectPath, `.teamsfx${backupName}`);
 }
 
-async function backup(projectPath: string): Promise<void> {
+async function backup(projectPath: string, backupFolder: string): Promise<void> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
   const backupFx = path.join(backupFolder, `.${ConfigFolderName}`);
   const backupAppPackage = path.join(backupFolder, AppPackageFolderName);

@@ -43,7 +43,6 @@ import {
   EnvNamePlaceholder,
   SelectFolderConfig,
   SelectFileConfig,
-  returnUserError,
   ConcurrentError,
 } from "@microsoft/teamsfx-api";
 import {

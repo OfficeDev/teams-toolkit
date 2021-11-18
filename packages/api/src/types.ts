@@ -196,7 +196,7 @@ export interface Inputs extends Json {
   env?: string;
   runtimeStack?: RuntimeStacks;
   language?: string;
-  subFolder: string;
+  subFolderName?: string;
 }
 
 export interface ProjectConfig {

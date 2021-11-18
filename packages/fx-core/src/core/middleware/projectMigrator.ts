@@ -66,6 +66,7 @@ import {
   Component,
   ProjectMigratorGuideStatus,
   ProjectMigratorStatus,
+  sendTelemetryErrorEvent,
   sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
@@ -75,6 +76,7 @@ import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 import util from "util";
 import { LocalEnvMultiProvider } from "../../plugins/resource/localdebug/localEnvMulti";
+import { assembleError } from "@microsoft/teamsfx-api";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -167,7 +169,18 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
     });
 
-    await migrateToArmAndMultiEnv(ctx);
+    try {
+      await migrateToArmAndMultiEnv(ctx);
+    } catch (error) {
+      // Strictly speaking, this telemetry event is not required because errorHandlerMW will send error telemetry anyway.
+      // But it makes it easier to separate projectMigratorMW errors from other provision errors.
+      sendTelemetryErrorEvent(
+        Component.core,
+        TelemetryEvent.ProjectMigratorError,
+        assembleError(err, CoreSource)
+      );
+      throw error;
+    }
   } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
     // TODO: delete before Arm && Multi-env version released
     // only for arm && multi-env project with unreleased teams toolkit version
@@ -263,9 +276,17 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     telemetryProperties
   );
 
-  if (!(await preCheckKeyFiles(projectPath, ctx))) {
+  try {
+    await preCheckKeyFiles(projectPath, ctx);
+  } catch (err) {
+    sendTelemetryErrorEvent(
+      Component.core,
+      TelemetryEvent.ProjectMigratorPrecheckFailed,
+      assembleError(err, CoreSource)
+    );
     return;
   }
+
   let backupFolder: string | undefined;
   try {
     backupFolder = await getBackupFolder(projectPath);
@@ -293,20 +314,15 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   await postMigration(projectPath, ctx, inputs, backupFolder);
 }
 
-async function preCheckKeyFiles(projectPath: string, ctx: CoreHookContext): Promise<boolean> {
+async function preCheckKeyFiles(projectPath: string, ctx: CoreHookContext): Promise<void> {
   const core = ctx.self as FxCore;
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
   const manifestPath = (await fs.pathExists(path.join(fx, AppPackageFolderName, REMOTE_MANIFEST)))
     ? path.join(fx, AppPackageFolderName, REMOTE_MANIFEST)
     : path.join(projectPath, AppPackageFolderName, REMOTE_MANIFEST);
-  try {
-    await preReadJsonFile(path.join(fx, "env.default.json"), core);
-    await preReadJsonFile(path.join(fx, "settings.json"), core);
-    await preReadJsonFile(manifestPath, core);
-  } catch (err) {
-    return false;
-  }
-  return true;
+  await preReadJsonFile(path.join(fx, "env.default.json"), core);
+  await preReadJsonFile(path.join(fx, "settings.json"), core);
+  await preReadJsonFile(manifestPath, core);
 }
 
 async function preReadJsonFile(path: string, core: FxCore): Promise<void> {

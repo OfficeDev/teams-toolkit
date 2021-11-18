@@ -31,6 +31,7 @@ export const Messages = {
   learnMoreButtonText: "Learn more",
 
   downloadBicep: `Downloading and installing the portable version of @NameVersion, which will be installed to @InstallDir and will not affect your environment.`,
+  failToRetriveBicepReleaseVersions: `Failed to retrieve bicep release versions from '@GithubUrl', using default version '@BicepVersion'. Error = '@Error'`,
   finishInstallBicep: `Successfully installed @NameVersion.`,
   failToInstallBicep: `Failed to install @NameVersion`,
   failToInstallBicepOutputVSC: `Failed to install @NameVersion. please read this wiki(@HelpLink) to install @NameVersion manually and restart Visual Studio Code.`,

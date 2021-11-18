@@ -18,7 +18,6 @@ import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
 
 describe("Create a new API Management Service", function () {
-  process.env.SIMPLE_AUTH_SKU_NAME = "B1";
   const testProcessEnv = [Object.assign({}, process.env), Object.assign({}, process.env)];
   testProcessEnv[0]["TEAMSFX_INSIDER_PREVIEW"] = "true";
   testProcessEnv[0]["SIMPLE_AUTH_SKU_NAME"] = "B1";

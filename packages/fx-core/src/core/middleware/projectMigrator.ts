@@ -892,6 +892,7 @@ async function updateConfig(ctx: CoreHookContext) {
   if (envConfig[ResourcePlugins.Bot]) {
     delete envConfig[ResourcePlugins.Bot];
     envConfig[ResourcePlugins.Bot] = { wayToRegisterBot: "create-new" };
+    envConfig.solution.provisionSucceeded = false;
   }
   let needUpdate = false;
   let configPrefix = "";

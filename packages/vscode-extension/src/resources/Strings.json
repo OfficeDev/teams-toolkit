@@ -249,6 +249,8 @@
       "upgrade": "Upgrade",
       "success": "Successfully upgraded the Teams Tab app %s.",
       "updateCode": "Update %s code in %s.",
+      "updateCodeError": "Failed to update file %s, code: %s, message: %s.",
+      "updateCodesError": "Failed to update files %s.",
       "progressTitle": "Upgrade Teams Tab App to Extend in Outlook and Office",
       "updatePackageJson": "Update package.json to use @microsoft/teams-js v2.",
       "updatePackageJsonWarning": "No @microsoft/teams-js dependency found in %s. Nothing to upgrade.",

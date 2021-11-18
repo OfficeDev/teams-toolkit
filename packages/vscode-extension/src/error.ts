@@ -21,4 +21,7 @@ export enum ExtensionErrors {
   EnvConfigNotFoundError = "EnvConfigNotFoundError",
   EnvResourceInfoNotFoundError = "EnvResourceInfoNotFoundError",
   NoWorkspaceError = "NoWorkSpaceError",
+  UpdatePackageJsonError = "UpdatePackageJsonError",
+  UpdateManifestError = "UpdateManifestError",
+  UpdateCodeError = "UpdateCodeError",
 }

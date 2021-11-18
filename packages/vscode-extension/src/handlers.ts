@@ -41,6 +41,7 @@ import {
   EnvNamePlaceholder,
   SelectFolderConfig,
   SelectFileConfig,
+  returnUserError,
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -1877,10 +1878,10 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
     true,
     StringResources.vsc.migrateTeamsTabApp.upgrade
   );
-  const userCancelError = new UserError(
-    ExtensionErrors.UserCancel,
+  const userCancelError = returnUserError(
+    new Error(ExtensionErrors.UserCancel),
     StringResources.vsc.common.userCancel,
-    "migrateTeamsTabApp"
+    ExtensionSource
   );
   if (selection.isErr() || selection.value !== StringResources.vsc.migrateTeamsTabApp.upgrade) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsTabApp, userCancelError);
@@ -1906,6 +1907,7 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
   const migrationHandler = new TeamsAppMigrationHandler(tabAppPath);
   let result: Result<null, FxError> = ok(null);
   let packageUpdated: Result<boolean, FxError> = ok(true);
+  let updateFailedFiles: string[] = [];
   try {
     // Update package.json to use @microsoft/teams-js v2
     await progressBar.next(StringResources.vsc.migrateTeamsTabApp.updatePackageJson);
@@ -1920,14 +1922,24 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
         path.join(tabAppPath, "package.json")
       );
       VsCodeLogInstance.warning(warningMessage);
-      window.showWarningMessage(warningMessage, "OK");
+      VS_CODE_UI.showMessage("warn", warningMessage, false, "OK");
     } else {
       // Update codes to use @microsoft/teams-js v2
       await progressBar.next(StringResources.vsc.migrateTeamsTabApp.updateCodes);
       VsCodeLogInstance.info(StringResources.vsc.migrateTeamsTabApp.updateCodes);
-      result = await migrationHandler.updateCodes();
-      if (result.isErr()) {
-        throw result.error;
+      const failedFiles = await migrationHandler.updateCodes();
+      if (failedFiles.isErr()) {
+        throw failedFiles.error;
+      } else {
+        updateFailedFiles = failedFiles.value;
+        if (failedFiles.value.length > 0) {
+          const warningMessage = util.format(
+            StringResources.vsc.migrateTeamsTabApp.updateCodesError,
+            failedFiles.value.join(", ")
+          );
+          VsCodeLogInstance.warning(warningMessage);
+          VS_CODE_UI.showMessage("warn", warningMessage, false, "OK");
+        }
       }
     }
   } catch (error) {
@@ -1949,6 +1961,7 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
     }
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MigrateTeamsTabApp, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.UpdateFailedFiles]: updateFailedFiles.length.toString(),
     });
   }
   return result;
@@ -1962,10 +1975,10 @@ export async function migrateTeamsManifestHandler(): Promise<Result<null, FxErro
     true,
     StringResources.vsc.migrateTeamsManifest.upgrade
   );
-  const userCancelError = new UserError(
-    ExtensionErrors.UserCancel,
+  const userCancelError = returnUserError(
+    new Error(ExtensionErrors.UserCancel),
     StringResources.vsc.common.userCancel,
-    "migrateTeamsManifest"
+    ExtensionSource
   );
   if (selection.isErr() || selection.value !== StringResources.vsc.migrateTeamsManifest.upgrade) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsManifest, userCancelError);

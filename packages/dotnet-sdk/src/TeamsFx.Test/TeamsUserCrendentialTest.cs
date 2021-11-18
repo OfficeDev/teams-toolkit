@@ -299,7 +299,7 @@ namespace Microsoft.TeamsFx.Test
             var response = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new StringContent($"{{ \"scope\": \"fake_scope\", \"access_token\": \"{ fakeSsoToken }\", \"expires_on\": \"{ fakeExpiration:O}\" }}"),
+                Content = new StringContent($"{{ \"scope\": \"fake_scope\", \"access_token\": \"{fakeSsoToken}\", \"expires_on\": \"{fakeExpiration:O}\" }}"),
             };
 
             handlerMock
@@ -430,7 +430,7 @@ namespace Microsoft.TeamsFx.Test
             var response = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new StringContent($"{{ \"scope\": \"fake_scope\", \"access_token\": \"{ fakeSsoToken }\", \"expires_on\": \"{ fakeExpiration:O }\" }}"),
+                Content = new StringContent($"{{ \"scope\": \"fake_scope\", \"access_token\": \"{fakeSsoToken}\", \"expires_on\": \"{fakeExpiration:O}\" }}"),
             };
 
             handlerMock

@@ -266,6 +266,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     return;
   }
   try {
+    backupFolder = await getBackupFolder(projectPath);
     await backup(projectPath);
     await updateConfig(ctx);
 
@@ -682,7 +683,6 @@ async function getBackupFolder(projectPath: string): Promise<string> {
 
 async function backup(projectPath: string): Promise<void> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
-  const backupFolder = await getBackupFolder(projectPath);
   const backupFx = path.join(backupFolder, `.${ConfigFolderName}`);
   const backupAppPackage = path.join(backupFolder, AppPackageFolderName);
   await fs.ensureDir(backupFx);

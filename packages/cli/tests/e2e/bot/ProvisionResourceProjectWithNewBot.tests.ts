@@ -73,7 +73,7 @@ describe("Provision", function () {
         await AadValidator.validate(aad);
 
         // Validate Bot Provision
-        const bot = BotValidator.init(context);
+        const bot = BotValidator.init(context, true);
         await BotValidator.validateProvision(bot);
       } else {
         // Validate provision
@@ -106,7 +106,7 @@ describe("Provision", function () {
         const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
         // Validate Bot Deploy
-        const bot = BotValidator.init(context);
+        const bot = BotValidator.init(context, true);
         await BotValidator.validateDeploy(bot);
       } else {
         // Validate deployment

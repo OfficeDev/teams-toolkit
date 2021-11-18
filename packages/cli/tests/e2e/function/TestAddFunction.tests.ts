@@ -82,10 +82,10 @@ describe("Test Add Function", function () {
 
         // Validate Simple Auth
         const simpleAuth = SimpleAuthValidator.init(context);
-        await SimpleAuthValidator.validate(simpleAuth, aad);
+        await SimpleAuthValidator.validate(simpleAuth, aad, "B1", true);
 
         // Validate Function App
-        const func = FunctionValidator.init(context);
+        const func = FunctionValidator.init(context, true);
         await FunctionValidator.validateProvision(func, false);
       } else {
         // Validate provision
@@ -122,7 +122,7 @@ describe("Test Add Function", function () {
         const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
         // Validate Function App
-        const func = FunctionValidator.init(context);
+        const func = FunctionValidator.init(context, true);
         await FunctionValidator.validateDeploy(func);
       } else {
         // Validate deployment

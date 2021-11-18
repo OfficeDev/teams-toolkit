@@ -52,7 +52,7 @@ describe("Provision", function () {
 
       // Validate Simple Auth
       const simpleAuth = SimpleAuthValidator.init(context);
-      await SimpleAuthValidator.validate(simpleAuth, aad, "D1");
+      await SimpleAuthValidator.validate(simpleAuth, aad, "D1", true);
     } else {
       // Get context
       const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);

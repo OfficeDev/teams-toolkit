@@ -105,14 +105,14 @@ describe("Azure App Happy Path", function () {
 
         // Validate Simple Auth
         const simpleAuth = SimpleAuthValidator.init(context);
-        await SimpleAuthValidator.validate(simpleAuth, aad);
+        await SimpleAuthValidator.validate(simpleAuth, aad, "B1", true);
 
         // Validate Function App
-        const func = FunctionValidator.init(context);
-        await FunctionValidator.validateProvision(func);
+        const func = FunctionValidator.init(context, true);
+        await FunctionValidator.validateProvision(func, true, true);
 
         // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
+        const frontend = FrontendValidator.init(context, true);
         await FrontendValidator.validateProvision(frontend);
       } else {
         // Validate provision

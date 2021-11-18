@@ -63,7 +63,7 @@ import {
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
-import AppStudioTokenInstance from "./commonlib/appStudioLogin";
+import AppStudioTokenInstance, { AppStudioLogin } from "./commonlib/appStudioLogin";
 import SharepointTokenInstance from "./commonlib/sharepointLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
@@ -84,6 +84,7 @@ import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
 import {
   anonymizeFilePaths,
+  getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   getTeamsAppIdByEnv,
@@ -1151,7 +1152,9 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
     await registerEnvTreeHandler(false);
-    await updateNewEnvCollaborators(result.value);
+
+    // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
+    // await updateNewEnvCollaborators(result.value);
   }
   return result;
 }
@@ -1333,7 +1336,6 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
   let result: Result<any, FxError> = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermission);
 
-  const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
   let inputs: Inputs | undefined;
   try {
     const checkCoreRes = checkCoreNotEmpty();
@@ -1341,9 +1343,18 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       throw checkCoreRes.error;
     }
 
+    const provisionSucceeded = await getProvisionSucceedFromEnv(env);
+
+    if (!provisionSucceeded) {
+      throw new UserError(
+        ExtensionErrors.GrantPermissionNotProvisionError,
+        StringResources.vsc.handlers.provisionBeforeGrantPermission,
+        ExtensionSource
+      );
+    }
+
     inputs = getSystemInputs();
     inputs.env = env;
-
     result = await core.grantPermission(inputs);
     if (result.isErr()) {
       throw result.error;
@@ -1361,7 +1372,8 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       VsCodeLogInstance.info(grantSucceededMsg);
       VsCodeLogInstance.warning(warningMsg);
 
-      await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
+      // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
+      // await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {
       window.showWarningMessage(result.value.message);
     }
@@ -1369,7 +1381,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
     result = wrapError(e);
   }
 
-  await processResult(eventName, result, inputs);
+  await processResult(TelemetryEvent.GrantPermission, result, inputs);
   return result;
 }
 

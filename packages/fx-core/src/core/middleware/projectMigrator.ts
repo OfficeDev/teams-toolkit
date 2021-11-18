@@ -373,12 +373,10 @@ async function handleError(
     });
 }
 
-async function generateUpgradeReport(ctx: CoreHookContext, backupFolder: string | undefined) {
+async function generateUpgradeReport(backupFolder: string | undefined) {
   try {
-    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    const projectPath = inputs.projectPath as string;
     if (backupFolder) {
-      const target = path.join(projectPath, backupFolder, upgradeReportName);
+      const target = path.join(backupFolder, upgradeReportName);
       const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
       await fs.copyFile(source, target);
     }
@@ -396,7 +394,7 @@ async function postMigration(
   await removeOldProjectFiles(projectPath);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrate);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
-  await generateUpgradeReport(ctx, backupFolder);
+  await generateUpgradeReport(backupFolder);
   const core = ctx.self as FxCore;
   await updateGitIgnore(projectPath, core.tools.logProvider, backupFolder);
 

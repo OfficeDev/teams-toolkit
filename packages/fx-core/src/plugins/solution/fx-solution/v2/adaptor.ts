@@ -72,15 +72,15 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
     const v2context: v2.Context = params[0];
     const inputs: Inputs = params[1];
     const envInfo: EnvInfoV2 = params[2];
-    const tokenProvidier = params[3];
+    const tokenProvider = params[3];
 
     this.root = inputs.projectPath ?? "";
     this.targetEnvName = inputs.targetEnvName;
     this.logProvider = v2context.logProvider;
     this.telemetryReporter = v2context.telemetryReporter;
-    this.azureAccountProvider = tokenProvidier.azureAccountProvider;
-    this.graphTokenProvider = tokenProvidier.graphTokenProvider;
-    this.appStudioToken = tokenProvidier.appStudioToken;
+    this.azureAccountProvider = tokenProvider.azureAccountProvider;
+    this.graphTokenProvider = tokenProvider.graphTokenProvider;
+    this.appStudioToken = tokenProvider.appStudioToken;
     this.treeProvider = undefined;
     this.answers = inputs;
     this.projectSettings = v2context.projectSetting;
@@ -105,5 +105,38 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
         return { name: pluginName, result: legacyConfig2EnvState(state, pluginName) };
       })
     );
+  }
+}
+
+export class CollaboratorContextAdapter extends BaseSolutionContextAdaptor {
+  constructor(params: Parameters<NonNullable<v2.SolutionPlugin["grantPermission"]>>) {
+    super();
+    const v2context: v2.Context = params[0];
+    const inputs: Inputs = params[1];
+    const envInfo = params[2];
+    const tokenProvider = params[3];
+    this.root = inputs.projectPath ?? "";
+    this.targetEnvName = inputs.targetEnvName;
+    this.logProvider = v2context.logProvider;
+    this.telemetryReporter = v2context.telemetryReporter;
+    this.azureAccountProvider = tokenProvider.azureAccountProvider;
+    this.graphTokenProvider = tokenProvider.graphTokenProvider;
+    this.appStudioToken = tokenProvider.appStudioToken;
+    this.treeProvider = undefined;
+    this.answers = inputs;
+    this.projectSettings = v2context.projectSetting;
+    this.localSettings = undefined;
+    this.ui = v2context.userInteraction;
+    this.cryptoProvider = v2context.cryptoProvider;
+    this.permissionRequestProvider = v2context.permissionRequestProvider;
+    const state = ConfigMap.fromJSON(envInfo.state);
+    if (!state) {
+      throw new Error(`failed to convert profile ${JSON.stringify(envInfo.state)}`);
+    }
+    this.envInfo = {
+      envName: envInfo.envName,
+      config: envInfo.config as EnvConfig,
+      state: flattenConfigMap(state),
+    };
   }
 }

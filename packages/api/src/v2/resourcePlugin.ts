@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { DeepReadonly } from ".";
+import { DeepReadonly, InputsWithProjectPath } from ".";
 import { FxError, QTreeNode, TokenProvider, Void, Func, Json, Inputs, EnvInfo } from "../index";
 import { AzureSolutionSettings } from "../types";
 import { AppStudioTokenProvider, AzureAccountProvider } from "../utils";
@@ -249,9 +249,27 @@ export interface ResourcePlugin {
   /**
    * For grant and check permission in remote collaboration
    */
-  grantPermission?: (ctx: Context, userInfo: Json) => Promise<Result<Json, FxError>>;
+  grantPermission?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider,
+    userInfo: Json
+  ) => Promise<Result<Json, FxError>>;
 
-  checkPermission?: (ctx: Context, userInfo: Json) => Promise<Result<Json, FxError>>;
+  checkPermission?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider,
+    userInfo: Json
+  ) => Promise<Result<Json, FxError>>;
 
-  listCollaborator?: (ctx: Context, userInfo: Json) => Promise<Result<Json, FxError>>;
+  listCollaborator?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider,
+    userInfo: Json
+  ) => Promise<Result<Json, FxError>>;
 }

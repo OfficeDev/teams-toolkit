@@ -5,219 +5,206 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import dotenv from "dotenv";
 import { ApimPlugin } from "../../../../src/plugins/resource/apim/index";
-import { v4 } from "uuid";
 import {
-  AadHelper,
-  after_if,
-  before_if,
-  EnvConfig,
-  it_if,
-  MockAzureAccountProvider,
-  MockGraphTokenProvider,
-  MockPluginContext,
-  ResourceGroupHelper,
-} from "./testUtil";
-import { Inputs, Platform, PluginContext } from "@microsoft/teamsfx-api";
+  ConfigMap,
+  FxError,
+  Inputs,
+  Ok,
+  Platform,
+  PluginContext,
+  Result,
+} from "@microsoft/teamsfx-api";
 import {
-  AadDefaultValues,
-  ApimPluginConfigKeys,
   QuestionConstants,
   TeamsToolkitComponent,
+  OpenApiSchemaVersion,
 } from "../../../../src/plugins/resource/apim/constants";
-import axios from "axios";
-import { AssertConfigNotEmpty, AssertNotEmpty } from "../../../../src/plugins/resource/apim/error";
-import { ApiManagementClient } from "@azure/arm-apimanagement";
 import { AadService } from "../../../../src/plugins/resource/apim/services/aadService";
-import { ApimService } from "../../../../src/plugins/resource/apim/services/apimService";
+import { AadManager } from "../../../../src/plugins/resource/apim/managers/aadManager";
+import { isArmSupportEnabled, newEnvInfo } from "../../../../src";
+import { createSandbox, SinonSandbox } from "sinon";
+import { Factory } from "../../../../src/plugins/resource/apim/factory";
 import {
-  IAadPluginConfig,
-  IApimPluginConfig,
-  IFunctionPluginConfig,
-  ISolutionConfig,
-} from "../../../../src/plugins/resource/apim/config";
-import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
+  mockAxios,
+  mockApimService,
+  mockApiManagementService,
+  DefaultTestInput,
+  mockCredential,
+  MockAxiosInput,
+  mockApiVersionSet,
+  mockApi,
+  mockProductApi,
+} from "./mock";
+import { Lazy } from "../../../../src/plugins/resource/apim/utils/commonUtils";
+import { ApimManager } from "../../../../src/plugins/resource/apim/managers/apimManager";
+import { OpenApiProcessor } from "../../../../src/plugins/resource/apim/utils/openApiProcessor";
+import { TeamsAppAadManager } from "../../../../src/plugins/resource/apim/managers/teamsAppAadManager";
+
 dotenv.config();
 chai.use(chaiAsPromised);
 
-const UT_SUFFIX: string = v4().substring(0, 6);
-const UT_RESOURCE_NAME = `fx-apim-local-unit-test-index-${UT_SUFFIX}`;
-const UT_RESOURCE_GROUP = `fx-apim-local-unit-test-index-${UT_SUFFIX}`;
-const UT_SCOPE_ID = v4();
-const UT_IDENTITY_URL = `api://${v4()}`;
-const testFunctionEndpoint = "https://test-endpoint";
-
 describe("ApimPlugin", () => {
-  let services: {
-    aadService: AadService;
-    aadHelper: AadHelper;
-    apimService: ApimService;
-    resourceGroupHelper: ResourceGroupHelper;
-  };
-  let aadClientId = "";
-  let aadObjectId = "";
-
-  before_if(EnvConfig.enableTest, async () => {
-    services = await buildService();
-    await services.resourceGroupHelper.createResourceGroup(
-      UT_RESOURCE_GROUP,
-      EnvConfig.defaultLocation
-    );
-    const aadInfo = await services.aadService.createAad(UT_RESOURCE_NAME);
-    aadClientId = aadInfo.appId ?? "";
-    aadObjectId = aadInfo.id ?? "";
-    await services.aadService.updateAad(aadInfo.id ?? "", {
-      identifierUris: [UT_IDENTITY_URL],
-      api: {
-        oauth2PermissionScopes: [
-          {
-            adminConsentDescription: "Test consent description",
-            adminConsentDisplayName: "Test display name",
-            id: UT_SCOPE_ID,
-            isEnabled: true,
-            type: "User",
-            userConsentDescription: "Test consent description",
-            userConsentDisplayName: "Test display name",
-            value: "access_as_user",
-          },
-        ],
-      },
-    });
-  });
-
-  after_if(EnvConfig.enableTest, async () => {
-    services.aadHelper.deleteAadByName(UT_RESOURCE_NAME);
-    services.aadHelper.deleteAadByName(`${UT_RESOURCE_NAME}-client`);
-    services.resourceGroupHelper.deleteResourceGroup(UT_RESOURCE_GROUP);
-  });
-
   describe("Happy path", () => {
+    const sandbox = createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
     const apimPlugin = new ApimPlugin();
-    it_if(EnvConfig.enableTest, "First time create", async () => {
-      const ctx = await buildContext(UT_RESOURCE_NAME, UT_SUFFIX, aadObjectId, aadClientId);
+    it("Create a new project", async () => {
+      if (!isArmSupportEnabled()) {
+        return;
+      }
 
-      let result = await apimPlugin.scaffold(ctx);
-      chai.assert.isTrue(result.isOk(), "Operation apimPlugin.scaffold should be succeeded.");
-      result = await apimPlugin.provision(ctx);
+      mockApimPlugin(sandbox);
+
+      const ctx = await buildPluginContext(sandbox);
+      let result = await apimPlugin.provision(ctx);
       chai.assert.isTrue(result.isOk(), "Operation apimPlugin.provision should be succeeded.");
+      updateConfig(ctx, undefined, undefined, {
+        serviceResourceId: `/subscriptions/${DefaultTestInput.subscriptionId}/resourceGroups/${DefaultTestInput.resourceGroup.existing}/providers/Microsoft.ApiManagement/service/apim111601dev624d09`,
+        productResourceId: `/subscriptions/${DefaultTestInput.subscriptionId}/resourceGroups/${DefaultTestInput.resourceGroup.existing}/providers/Microsoft.ApiManagement/service/apim111601dev624d09/products/apim111601dev624d09`,
+        authServerResourceId: `/subscriptions/${DefaultTestInput.subscriptionId}/resourceGroups/${DefaultTestInput.resourceGroup.existing}/providers/Microsoft.ApiManagement/service/apim111601dev624d09/authorizationServers/apim111601dev624d09`,
+      });
+      updateConfig(ctx, {
+        objectId: DefaultTestInput.aadObjectId.created,
+        clientId: DefaultTestInput.aadClientId.created,
+        oauth2PermissionScopeId: "34221e41-10e8-4211-bf95-9084936ba1ad",
+        applicationIdUris: `api://apim.xxx.web.core.windows.net/${DefaultTestInput.aadClientId.created}`,
+      });
       result = await apimPlugin.postProvision(ctx);
       chai.assert.isTrue(result.isOk(), "Operation apimPlugin.postProvision should be succeeded.");
+      updateConfig(
+        ctx,
+        undefined,
+        { functionEndpoint: "https://apim-function-webapp.azurewebsites.net" },
+        undefined,
+        answer
+      );
       result = await apimPlugin.deploy(ctx);
       chai.assert.isTrue(result.isOk(), "Operation apimPlugin.deploy should be succeeded.");
     });
   });
 });
 
-async function buildContext(
-  resourceName: string,
-  resourceNameSuffix: string,
-  aadObjectId: string,
-  aadClientId: string
-): Promise<PluginContext> {
-  const aadConfig: IAadPluginConfig = {
-    objectId: aadObjectId,
-    clientId: aadClientId,
-    oauth2PermissionScopeId: UT_SCOPE_ID,
-    applicationIdUris: UT_IDENTITY_URL,
-  };
-  const functionConfig: IFunctionPluginConfig = {
-    functionEndpoint: testFunctionEndpoint,
-  };
-  const apimConfig: IApimPluginConfig = {
-    apiDocumentPath: "openapi/openapi.json",
-    apiPrefix: "apim-plugin-test",
-    checkAndGet(key: string): string {
-      let res: string | undefined = undefined;
-      if (key === ApimPluginConfigKeys.apiDocumentPath) {
-        res = "openapi/openapi.json";
-      } else if (key === ApimPluginConfigKeys.apiPrefix) {
-        res = "apim-plugin-test";
-      }
-      return AssertConfigNotEmpty(TeamsToolkitComponent.ApimPlugin, key, res, "dev");
-    },
-  };
-  const answer: Inputs = {
-    [QuestionConstants.VSCode.Apim.questionName]: {
-      id: QuestionConstants.VSCode.Apim.createNewApimOption,
-      label: QuestionConstants.VSCode.Apim.createNewApimOption,
-    },
-    [QuestionConstants.VSCode.ApiVersion.questionName]: {
-      id: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,
-      label: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,
-    },
-    [QuestionConstants.VSCode.NewApiVersion.questionName]: "v1",
-    platform: Platform.VS,
-  };
-  const ctx = new MockPluginContext(
-    resourceName,
-    buildSolutionConfig(resourceNameSuffix),
-    aadConfig,
-    functionConfig,
-    apimConfig,
-    answer
+function mockApimPlugin(sandbox: SinonSandbox, mockApimInput?: MockAxiosInput) {
+  const { axiosInstance, requestStub } = mockAxios(sandbox);
+  const lazyAadService = new Lazy(
+    async () => new AadService(axiosInstance, undefined, undefined, 2)
   );
-  await ctx.init();
-  return ctx;
-}
+  const aadManager = new AadManager(lazyAadService);
+  const teamsAppAadManager = new TeamsAppAadManager(lazyAadService);
+  sandbox.stub(Factory, "buildAadManager").resolves(aadManager);
+  sandbox.stub(Factory, "buildTeamsAppAadManager").resolves(teamsAppAadManager);
 
-function buildSolutionConfig(resourceNameSuffix: string): ISolutionConfig {
-  return {
-    resourceNameSuffix: resourceNameSuffix,
-    resourceGroupName: UT_RESOURCE_GROUP,
-    teamsAppTenantId: EnvConfig.tenantId,
-    location: EnvConfig.defaultLocation,
-  };
-}
+  const { apimService, apiManagementClient, credential } = mockApimService(sandbox);
+  const apiManagementServiceStub = mockApiManagementService(sandbox);
+  apiManagementClient.apiManagementService = apiManagementServiceStub;
+  const apiVersionSetStub = mockApiVersionSet(sandbox);
+  apiManagementClient.apiVersionSet = apiVersionSetStub;
+  const apiStub = mockApi(sandbox);
+  apiManagementClient.api = apiStub;
+  const productApiStub = mockProductApi(sandbox);
+  apiManagementClient.productApi = productApiStub;
 
-async function buildService(): Promise<{
-  aadService: AadService;
-  aadHelper: AadHelper;
-  apimService: ApimService;
-  resourceGroupHelper: ResourceGroupHelper;
-}> {
-  const mockGraphTokenProvider = new MockGraphTokenProvider(
-    EnvConfig.tenantId,
-    EnvConfig.servicePrincipalClientId,
-    EnvConfig.servicePrincipalClientSecret
-  );
-  const graphToken = await mockGraphTokenProvider.getAccessToken();
-  const axiosInstance = axios.create({
-    baseURL: AadDefaultValues.graphApiBasePath,
-    headers: {
-      authorization: `Bearer ${graphToken}`,
-      "content-type": "application/json",
+  mockCredential(sandbox, credential, "test@unittest.com");
+  const lazyApimService = new Lazy(async () => apimService);
+  const openApiProcessor = new OpenApiProcessor();
+  sandbox.stub(openApiProcessor, "loadOpenApiDocument").resolves({
+    schemaVersion: OpenApiSchemaVersion.V3,
+    spec: {
+      openapi: "3.0.1",
+      info: {
+        title: "user input swagger",
+        version: "v1",
+      },
+      paths: {},
     },
   });
-
-  const aadHelper = new AadHelper(axiosInstance);
-  const aadService = new AadService(axiosInstance);
-
-  const mockAzureAccountProvider = new MockAzureAccountProvider();
-  await mockAzureAccountProvider.login(
-    EnvConfig.servicePrincipalClientId,
-    EnvConfig.servicePrincipalClientSecret,
-    EnvConfig.tenantId
-  );
-  const credential = AssertNotEmpty(
-    "credential",
-    await mockAzureAccountProvider.getAccountCredentialAsync()
-  );
-
-  const apiManagementClient = new ApiManagementClient(credential, EnvConfig.subscriptionId);
-  const resourceProviderClient = new Providers(
-    new ResourceManagementClientContext(credential, EnvConfig.subscriptionId)
-  );
-  const apimService = new ApimService(
-    apiManagementClient,
-    resourceProviderClient,
-    credential,
-    EnvConfig.subscriptionId
-  );
-  const resourceGroupHelper = new ResourceGroupHelper(credential, EnvConfig.subscriptionId);
-
-  return {
-    aadService: aadService,
-    aadHelper: aadHelper,
-    apimService: apimService,
-    resourceGroupHelper: resourceGroupHelper,
-  };
+  const apimManager = new ApimManager(lazyApimService, openApiProcessor);
+  sandbox.stub(Factory, "buildApimManager").resolves(apimManager);
 }
+
+function buildPluginContext(
+  sandbox: SinonSandbox,
+  aadConfig?: any,
+  functionConfig?: any,
+  apimConfig?: any,
+  answer?: Inputs
+): PluginContext {
+  const result: PluginContext = {
+    root: "",
+    envInfo: newEnvInfo(),
+    config: new ConfigMap(),
+    cryptoProvider: {
+      encrypt: (plaintext: string): Result<string, FxError> => {
+        return new Ok("");
+      },
+      decrypt: (ciphertext: string): Result<string, FxError> => {
+        return new Ok("");
+      },
+    },
+    projectSettings: {
+      appName: "test-app-name",
+      projectId: "test-project-id",
+      solutionSettings: { name: "" },
+    },
+  };
+
+  const solutionConfig = {
+    resourceNameSuffix: "test-suffix",
+    resourceGroupName: DefaultTestInput.resourceGroup.existing,
+    teamsAppTenantId: "test-tenant-id",
+    location: "test-location",
+  };
+
+  result.envInfo.state.set(TeamsToolkitComponent.Solution, new Map(Object.entries(solutionConfig)));
+  result.envInfo.config.manifest.appName.short = "test-app-name";
+  updateConfig(aadConfig, functionConfig, apimConfig, answer);
+  return result;
+}
+
+function updateConfig(
+  ctx: PluginContext,
+  aadConfig?: any,
+  functionConfig?: any,
+  apimConfig?: any,
+  answer?: Inputs
+) {
+  if (aadConfig) {
+    ctx.envInfo.state.set(TeamsToolkitComponent.AadPlugin, new Map(Object.entries(aadConfig)));
+  }
+
+  if (functionConfig) {
+    ctx.envInfo.state.set(
+      TeamsToolkitComponent.FunctionPlugin,
+      new Map(Object.entries(functionConfig))
+    );
+  }
+
+  if (apimConfig) {
+    for (const [key, value] of Object.entries(apimConfig)) {
+      ctx.config.set(key, value);
+    }
+  }
+
+  if (answer) {
+    ctx.answers = answer;
+  }
+}
+
+const answer: Inputs = {
+  [QuestionConstants.VSCode.Apim.questionName]: {
+    id: QuestionConstants.VSCode.Apim.createNewApimOption,
+    label: QuestionConstants.VSCode.Apim.createNewApimOption,
+  },
+  [QuestionConstants.VSCode.ApiVersion.questionName]: {
+    id: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,
+    label: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,
+  },
+  [QuestionConstants.VSCode.NewApiVersion.questionName]: "v1",
+  [QuestionConstants.VSCode.OpenApiDocument.questionName]: {
+    label: "openapi/openapi.json",
+  },
+  [QuestionConstants.VSCode.ApiPrefix.questionName]: "api-prefix",
+  platform: Platform.VSCode,
+};

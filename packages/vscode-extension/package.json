@@ -597,7 +597,7 @@
       {
         "command": "fx-extension.previewWithIcon",
         "title": "Preview",
-        "icon": "$(eye)",
+        "icon": "$(run)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
@@ -608,7 +608,7 @@
       {
         "command": "fx-extension.localdebugWithIcon",
         "title": "Local debug",
-        "icon": "$(run)",
+        "icon": "$(debug-alt)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {

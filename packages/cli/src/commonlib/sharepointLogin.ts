@@ -97,9 +97,9 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
     const GRAPH_TENANT_ENDPT = "https://graph.microsoft.com/v1.0/sites/root?$select=webUrl";
 
     if (accessToken.length > 0) {
-      axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
-
-      const response = await axios.get(GRAPH_TENANT_ENDPT);
+      const response = await axios.get(GRAPH_TENANT_ENDPT, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
       return response.data.webUrl;
     }
     return "";

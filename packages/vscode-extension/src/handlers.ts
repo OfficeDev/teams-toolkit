@@ -927,10 +927,16 @@ async function popupAfterUpgrade(): Promise<void> {
       const learnMoreLink = StringResources.vsc.upgradeToMultiEnvAndBicep.learnMoreLink;
       const learnMoreText = StringResources.vsc.upgradeToMultiEnvAndBicep.learnMoreText;
       const option = { modal: false };
-
-      const outputMsg = `Please set "AAD_APP_CLIENT_SECRET" = "${aadClientSecret}" in your system environment variable. Read this wiki(${learnMoreLink}) to for more details.`;
+      const outputMsg = util.format(
+        StringResources.vsc.upgradeToMultiEnvAndBicep.outputMsg,
+        aadClientSecret,
+        learnMoreLink
+      );
+      const showMsg = util.format(
+        StringResources.vsc.upgradeToMultiEnvAndBicep.showMsg,
+        aadClientSecret
+      );
       VsCodeLogInstance.warning(outputMsg);
-      const showMsg = `Please set "AAD_APP_CLIENT_SECRET" = "${aadClientSecret}" in your system environment variable.\nYou can also click Learn More for more details.`;
       window.showWarningMessage(showMsg, option, learnMoreText).then((result) => {
         if (result === learnMoreText) {
           return env.openExternal(Uri.parse(learnMoreLink));

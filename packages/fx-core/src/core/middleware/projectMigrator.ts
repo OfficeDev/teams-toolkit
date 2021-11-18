@@ -264,8 +264,9 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   if (!(await preCheckKeyFiles(projectPath, ctx))) {
     return;
   }
+  let backupFolder: string | undefined;
   try {
-    const backupFolder: string = await getBackupFolder(projectPath);
+    backupFolder = await getBackupFolder(projectPath);
     await backup(projectPath, backupFolder);
     await updateConfig(ctx);
 

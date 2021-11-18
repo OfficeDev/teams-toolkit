@@ -11,7 +11,7 @@ jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      cases: ${{ steps.list-cases.outputs.cases || github.event.inputs.cases }}
+      cases: ${{ steps.list-cases.outputs.cases }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -20,7 +20,7 @@ jobs:
         id: list-cases
         working-directory: packages/cli
         run: |
-          listCases=`find tests/e2e -name "*.tests.ts" | jq -R -s -c '[split("\n") | .[]| select(.!="")]'`
+          listCases=`find tests/e2e -name "*.tests.ts" -printf "%f\n" | sed 's/.tests.ts//' | jq -R -s -c '[split("\n") | .[]| select(.!="")]'`
           inputCases='${{ github.event.inputs.cases }}'
           cases=`jq --argjson arr1 "$listCases" --argjson arr2 "$inputCases" -n -R -s -c '$arr1 + $arr2'`
           echo "::set-output name=cases::$cases"

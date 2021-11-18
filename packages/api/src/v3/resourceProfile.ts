@@ -162,7 +162,7 @@ export interface TeamsAppLocalResourceProfile {
 /**
  * example of TeamsAppResourceProfile
  */
-const resourceSettings: TeamsFxResourceProfile = {
+const resourceProfile: TeamsFxResourceProfile = {
   solution: {
     resourceNameSuffix: "595516",
     resourceGroupName: "fullcap-dev-rg",
@@ -250,5 +250,3 @@ const resourceSettings: TeamsFxResourceProfile = {
     },
   ],
 };
-
-console.log(resourceSettings);

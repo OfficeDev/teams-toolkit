@@ -68,5 +68,3 @@ const solutionModel: TeamsFxSolutionSettings = {
     },
   ],
 };
-
-console.log(solutionModel);

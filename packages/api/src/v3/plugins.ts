@@ -13,7 +13,7 @@ import {
   TeamsAppLocalResourceProfile,
   TeamsFxResourceProfile,
 } from "./resourceProfile";
-import { Dependency } from "./solutionModel";
+import { Dependency } from "./solutionSettings";
 export interface ScaffoldingPlugin {
   name: string;
   runtimeStacks: RuntimeStacks[];

@@ -3,15 +3,13 @@
     "module": "esnext",
     "outDir": "./lib",
     "target": "es5",
-    "lib": [
-      "dom"
-    ],
+    "lib": ["dom"],
     "sourceMap": true,
     "inlineSources": true,
     "skipLibCheck": true,
     "strict": false,
     "forceConsistentCasingInFileNames": true,
-    "esModuleInterop": true,    
+    "esModuleInterop": true,
     "moduleResolution": "node",
     "resolveJsonModule": true,
     "isolatedModules": true,
@@ -30,12 +28,6 @@
     "noEmit": true,
     "experimentalDecorators": true
   },
-  "include": [
-    "./src"
-  ],
-  "exclude": [
-    "node_modules",
-    "rollup.config.js",
-    "lib"
-  ]
+  "include": ["./src"],
+  "exclude": ["node_modules", "rollup.config.js", "lib"]
 }

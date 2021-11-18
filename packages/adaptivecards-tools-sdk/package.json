@@ -1,16 +1,20 @@
 {
-  "name": "adaptivecards-tools",
-  "version": "1.0.0",
-  "description": "",
+  "name": "@microsoft/adaptivecards-tools",
+  "version": "0.1.0",
+  "description": "Microsoft sdk for Adaptive Cards",
   "main": "./lib/index.js",
   "types": "types/index.d.ts",
   "scripts": {
     "clean": "rimraf lib types",
     "clean-build": "npm run clean && npm run build",
-    "build": "rollup -c"
+    "build": "rollup -c",
+    "lint": "eslint \"**/*.ts\"",
+    "lint:staged": "lint-staged",
+    "precommit": "lint-staged",
+    "format": "prettier --write --config ./.prettierrc.js --ignore-path ./.prettierignore \"src/**/*.ts\" \"*.{js,json}\""
   },
-  "author": "",
-  "license": "ISC",
+  "author": "Microsoft Corporation",
+  "license": "MIT",
   "devDependencies": {
     "rollup-plugin-typescript2": "^0.25.3",
     "@rollup/plugin-commonjs": "^13.0.2",
@@ -20,10 +24,18 @@
     "@types/react": "^17.0.14",
     "@types/markdown-it": "^12.2.1",
     "rimraf": "^3.0.0",
-    "rollup": "^2.59.0",
+    "rollup": "^2.41.0",
     "rollup-plugin-sourcemaps": "^0.4.2",
     "rollup-plugin-terser": "^5.1.1",
-    "typescript": "^4.4.2"
+    "typescript": "^4.1.2",
+    "@shared/eslint-config": "file:../eslint-config",
+    "@shared/prettier-config": "file:../prettier-config",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^4.13.0",
+    "eslint": "^8.1.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-prettier": "^4.0.0",
+    "lint-staged": "^11.2.6"
   },
   "dependencies": {
     "react": "^17.0.2",
@@ -32,5 +44,10 @@
     "adaptivecards": "^2.10.0-beta.2",
     "adaptivecards-templating": "^2.1.0",
     "json-schema-to-typescript": "^10.1.4"
+  },
+  "lint-staged": {
+    "*.{js,jsx,css,ts,tsx}": [
+      "npx eslint --cache --fix --quiet"
+    ]
   }
 }

@@ -1,5 +1,7 @@
-import { AdaptiveCards } from "./AdaptiveCards";
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 
+import { AdaptiveCards } from "./AdaptiveCards";
 import React from "react";
 
 export interface AdaptiveCardProps<D> {

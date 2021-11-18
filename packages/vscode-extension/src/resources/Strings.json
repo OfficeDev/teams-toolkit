@@ -240,6 +240,10 @@
       "banner": "Teams Toolkit has been updated to v%s — check out what's new!",
       "whatIsNewTitle": "What's New"
     },
+    "upgradeToMultiEnvAndBicep": {
+      "learnMoreText": "Learn More",
+      "learnMoreLink": "https://aka.ms/teamsfx-existing-aad-doc"
+    },
     "migrateTeamsTabApp": {
       "selectFolderConfig": {
         "name": "Select Teams Tab App to Upgrade",

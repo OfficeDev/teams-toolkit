@@ -924,8 +924,8 @@ async function popupAfterUpgrade(): Promise<void> {
     workspace.workspaceFolders.length > 0
   ) {
     try {
-      const learnMoreLink = "https://aka.ms/teamsfx-existing-aad-doc";
-      const learnMoreText = "Learn More";
+      const learnMoreLink = StringResources.vsc.upgradeToMultiEnvAndBicep.learnMoreLink;
+      const learnMoreText = StringResources.vsc.upgradeToMultiEnvAndBicep.learnMoreText;
       const option = { modal: false };
 
       const outputMsg = `Please set "AAD_APP_CLIENT_SECRET" = "${aadClientSecret}" in your system environment variable. Read this wiki(${learnMoreLink}) to for more details.`;

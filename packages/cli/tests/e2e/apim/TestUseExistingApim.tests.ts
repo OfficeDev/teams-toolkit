@@ -92,6 +92,9 @@ describe("Use an existing API Management Service", function () {
   });
 
   after(async () => {
+    if (isArmSupportEnabled()) {
+      return;
+    }
     await Promise.all([
       // clean up another resource group
       cleanUpResourceGroup(existingRGName),

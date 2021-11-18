@@ -256,15 +256,6 @@
           "group": "inline"
         },
         {
-          "command": "fx-extension.viewEnvironment",
-          "when": "view == teamsfx-environment && viewItem =~ /environment.*|local/"
-        },
-        {
-          "command": "fx-extension.viewEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /environment.*|local/",
-          "group": "inline@3"
-        },
-        {
           "command": "fx-extension.preview",
           "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/"
         },
@@ -355,14 +346,6 @@
         },
         {
           "command": "fx-extension.refreshEnvironment",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.viewEnvironment",
-          "when": "false"
-        },
-        {
-          "command": "fx-extension.viewEnvironmentWithIcon",
           "when": "false"
         },
         {

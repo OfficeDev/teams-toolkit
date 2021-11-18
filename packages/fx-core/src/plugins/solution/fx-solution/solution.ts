@@ -1883,7 +1883,7 @@ export class TeamsAppSolution implements Solution {
       );
 
       const envName = ctx.envInfo.envName;
-      if (ctx.answers?.platform === Platform.CLI) {
+      if (ctx.answers?.platform === Platform.CLI || ctx.answers?.platform === Platform.VSCode) {
         const aadAppTenantId = ctx.envInfo.state?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
         if (!envName) {
           return err(
@@ -1968,7 +1968,7 @@ export class TeamsAppSolution implements Solution {
         });
       }
 
-      if (ctx.answers?.platform === Platform.CLI) {
+      if (ctx.answers?.platform === Platform.CLI || ctx.answers?.platform === Platform.VSCode) {
         for (const collaborator of collaborators) {
           const message = [
             { content: `Account: `, color: Colors.BRIGHT_WHITE },

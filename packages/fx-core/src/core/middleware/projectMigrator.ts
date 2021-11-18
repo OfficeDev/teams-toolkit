@@ -16,16 +16,19 @@ import {
   returnSystemError,
   TeamsAppManifest,
   LogProvider,
+  BuildFolderName,
 } from "@microsoft/teamsfx-api";
 import {
   CoreHookContext,
   serializeDict,
   SolutionConfigError,
   ProjectSettingError,
+  NotJsonError,
   environmentManager,
   SPFxConfigError,
   getResourceFolder,
 } from "../..";
+import { globalStateUpdate } from "../../common/globalState";
 import { UpgradeCanceledError } from "../error";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
@@ -49,7 +52,6 @@ import {
   HostTypeOptionSPFx,
   MessageExtensionItem,
 } from "../../plugins/solution/fx-solution/question";
-import { createManifest } from "../../plugins/resource/appstudio/plugin";
 import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
@@ -64,6 +66,7 @@ import {
   Component,
   ProjectMigratorGuideStatus,
   ProjectMigratorStatus,
+  sendTelemetryErrorEvent,
   sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
@@ -71,12 +74,13 @@ import {
 import * as dotenv from "dotenv";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
+import util from "util";
 import { LocalEnvMultiProvider } from "../../plugins/resource/localdebug/localEnvMulti";
+import { assembleError } from "@microsoft/teamsfx-api";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
 const learnMoreText = "Learn More";
-const reloadText = "Reload";
 const upgradeButton = "Upgrade";
 const solutionName = "solution";
 const subscriptionId = "subscriptionId";
@@ -85,6 +89,10 @@ const parameterFileNameTemplate = "azure.parameters.@envName.json";
 const learnMoreLink = "https://aka.ms/teamsfx-migration-guide";
 const manualUpgradeLink = `${learnMoreLink}#upgrade-your-project-manually`;
 const upgradeReportName = `upgrade-change-logs.md`;
+const AadSecret = "{{ $env.AAD_APP_CLIENT_SECRET }}";
+const ChangeLogsFlag = "openUpgradeChangelogs";
+const AADClientSecretFlag = "NeedToSetAADClientSecretEnv";
+
 const gitignoreFileName = ".gitignore";
 let updateNotificationFlag = false;
 let fromReloadFlag = false;
@@ -113,6 +121,11 @@ class EnvConfigName {
   static readonly ServiceResourceId = "serviceResourceId";
   static readonly ProductResourceId = "productResourceId";
   static readonly AuthServerResourceId = "authServerResourceId";
+  static readonly AadSkipProvision = "skipProvision";
+  static readonly OAuthScopeId = "oauth2PermissionScopeId";
+  static readonly ClientId = "clientId";
+  static readonly ClientSecret = "clientSecret";
+  static readonly ObjectId = "objectId";
 }
 
 export class ArmParameters {
@@ -156,13 +169,18 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       [TelemetryProperty.Status]: ProjectMigratorStatus.OK,
     });
 
-    await migrateToArmAndMultiEnv(ctx);
-    core.tools.logProvider.warning(
-      `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your configuration files or learn more about this upgrade.`
-    );
-    core.tools.logProvider.warning(
-      `[core] Read upgrade-change-logs.md to learn about details for this upgrade.`
-    );
+    try {
+      await migrateToArmAndMultiEnv(ctx);
+    } catch (error) {
+      // Strictly speaking, this telemetry event is not required because errorHandlerMW will send error telemetry anyway.
+      // But it makes it easier to separate projectMigratorMW errors from other provision errors.
+      sendTelemetryErrorEvent(
+        Component.core,
+        TelemetryEvent.ProjectMigratorError,
+        assembleError(err, CoreSource)
+      );
+      throw error;
+    }
   } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
     // TODO: delete before Arm && Multi-env version released
     // only for arm && multi-env project with unreleased teams toolkit version
@@ -174,8 +192,12 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       false,
       "OK"
     );
+  } else {
+    // continue next step only when:
+    // 1. no need to upgrade the project;
+    // 2. no need to update Teams Toolkit version;
+    await next();
   }
-  await next();
 };
 
 function outputCancelMessage(ctx: CoreHookContext) {
@@ -185,7 +207,7 @@ function outputCancelMessage(ctx: CoreHookContext) {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (inputs.platform === Platform.VSCode) {
     core.tools.logProvider.warning(
-      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Check project upgrade) or click the “Upgrade project” button on tree view to trigger the upgrade.`
+      `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
     );
     core.tools.logProvider.warning(
       `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.7.0`
@@ -246,7 +268,6 @@ async function getOldProjectInfoForTelemetry(
 
 async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const core = ctx.self as FxCore;
   const projectPath = inputs.projectPath as string;
   const telemetryProperties = await getOldProjectInfoForTelemetry(projectPath);
   sendTelemetryEvent(
@@ -255,8 +276,21 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     telemetryProperties
   );
 
-  await backup(projectPath, core.tools.logProvider);
   try {
+    await preCheckKeyFiles(projectPath, ctx);
+  } catch (err) {
+    sendTelemetryErrorEvent(
+      Component.core,
+      TelemetryEvent.ProjectMigratorPrecheckFailed,
+      assembleError(err, CoreSource)
+    );
+    return;
+  }
+
+  let backupFolder: string | undefined;
+  try {
+    backupFolder = await getBackupFolder(projectPath);
+    await backup(projectPath, backupFolder);
     await updateConfig(ctx);
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnvStart);
@@ -274,14 +308,55 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
-    await handleError(projectPath, ctx);
+    await handleError(projectPath, ctx, backupFolder);
     throw err;
   }
-  await postMigration(projectPath, ctx, inputs);
+  await postMigration(projectPath, ctx, inputs, backupFolder);
 }
 
-async function handleError(projectPath: string, ctx: CoreHookContext) {
-  await cleanup(projectPath);
+async function preCheckKeyFiles(projectPath: string, ctx: CoreHookContext): Promise<void> {
+  const core = ctx.self as FxCore;
+  const fx = path.join(projectPath, `.${ConfigFolderName}`);
+  const manifestPath = (await fs.pathExists(path.join(fx, AppPackageFolderName, REMOTE_MANIFEST)))
+    ? path.join(fx, AppPackageFolderName, REMOTE_MANIFEST)
+    : path.join(projectPath, AppPackageFolderName, REMOTE_MANIFEST);
+  await preReadJsonFile(path.join(fx, "env.default.json"), core);
+  await preReadJsonFile(path.join(fx, "settings.json"), core);
+  await preReadJsonFile(manifestPath, core);
+}
+
+async function preReadJsonFile(path: string, core: FxCore): Promise<void> {
+  try {
+    await fs.readJson(path);
+  } catch (err) {
+    core.tools.logProvider.error(
+      `'${path}' doesn't exist or is not in json format. Please fix it and try again by running command (Teams: Upgrade project).`
+    );
+    core.tools.logProvider.warning(`Read this wiki(${learnMoreLink}) for the FAQ.`);
+
+    core.tools.ui
+      .showMessage(
+        "info",
+        util.format(getStrings().solution.MigrationToArmAndMultiEnvPreCheckErrorMessage, path),
+        false,
+        learnMoreText
+      )
+      .then((result) => {
+        const userSelected = result.isOk() ? result.value : undefined;
+        if (userSelected === learnMoreText) {
+          core.tools.ui!.openUrl(manualUpgradeLink);
+        }
+      });
+    throw NotJsonError(err);
+  }
+}
+
+async function handleError(
+  projectPath: string,
+  ctx: CoreHookContext,
+  backupFolder: string | undefined
+) {
+  await cleanup(projectPath, backupFolder);
   const core = ctx.self as FxCore;
   core.tools.ui
     .showMessage(
@@ -298,13 +373,15 @@ async function handleError(projectPath: string, ctx: CoreHookContext) {
     });
 }
 
-async function generateUpgradeReport(ctx: CoreHookContext) {
+async function generateUpgradeReport(ctx: CoreHookContext, backupFolder: string | undefined) {
   try {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     const projectPath = inputs.projectPath as string;
-    const target = path.join(projectPath, upgradeReportName);
-    const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
-    await fs.copyFile(source, target);
+    if (backupFolder) {
+      const target = path.join(projectPath, backupFolder, upgradeReportName);
+      const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
+      await fs.copyFile(source, target);
+    }
   } catch (error) {
     // do nothing
   }
@@ -313,52 +390,66 @@ async function generateUpgradeReport(ctx: CoreHookContext) {
 async function postMigration(
   projectPath: string,
   ctx: CoreHookContext,
-  inputs: Inputs
+  inputs: Inputs,
+  backupFolder: string | undefined
 ): Promise<void> {
   await removeOldProjectFiles(projectPath);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrate);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
-  await generateUpgradeReport(ctx);
+  await generateUpgradeReport(ctx, backupFolder);
   const core = ctx.self as FxCore;
-  await updateGitIgnore(projectPath, core.tools.logProvider);
+  await updateGitIgnore(projectPath, core.tools.logProvider, backupFolder);
+
+  core.tools.logProvider.warning(
+    `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your configuration files or learn more about this upgrade.`
+  );
+  core.tools.logProvider.warning(
+    `[core] Read upgrade-change-logs.md to learn about details for this upgrade.`
+  );
+
   if (inputs.platform === Platform.VSCode) {
-    showSuccessDialogForVSCode(core);
+    await globalStateUpdate(ChangeLogsFlag, true);
+    sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
+      [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
+    });
+    core.tools.ui.reload?.();
   } else {
-    core.tools.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessageCLI);
+    core.tools.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessage);
   }
 }
 
-async function updateGitIgnore(projectPath: string, log: LogProvider): Promise<void> {
+async function updateGitIgnore(
+  projectPath: string,
+  log: LogProvider,
+  backupFolder: string | undefined
+): Promise<void> {
   // add .fx/configs/localSetting.json to .gitignore
   const localSettingsProvider = new LocalSettingsProvider(projectPath);
   await addPathToGitignore(projectPath, localSettingsProvider.localSettingsFilePath, log);
 
-  // add **/.env.teamsfx.local to .gitignore
-  const item = "**/" + LocalEnvMultiProvider.LocalEnvFileName;
-  await addItemToGitignore(projectPath, item, log);
-}
+  // add .fx/subscriptionInfo.json to .gitignore
+  const subscriptionInfoPath = path.join(
+    projectPath,
+    `.${ConfigFolderName}`,
+    "subscriptionInfo.json"
+  );
+  await addPathToGitignore(projectPath, subscriptionInfoPath, log);
 
-function showSuccessDialogForVSCode(core: FxCore) {
-  core.tools.ui
-    .showMessage(
-      "info",
-      getStrings().solution.MigrationToArmAndMultiEnvSuccessMessageVSC,
-      false,
-      reloadText
-    )
-    .then((result) => {
-      const userSelected = result.isOk() ? result.value : undefined;
-      if (userSelected === reloadText) {
-        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
-          [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
-        });
-        core.tools.ui.reload?.();
-      } else {
-        sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
-          [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Cancel,
-        });
-      }
-    });
+  // add build/ to .gitignore
+  const buildFolder = path.join(projectPath, BuildFolderName);
+  await addPathToGitignore(projectPath, buildFolder, log);
+
+  // add **/.env.teamsfx.local to .gitignore
+  const envLocal = "**/" + LocalEnvMultiProvider.LocalEnvFileName;
+  await addItemToGitignore(projectPath, envLocal, log);
+
+  // add .fx/states/*.userdata to .gitignore
+  const userdata = `.${ConfigFolderName}/${StatesFolderName}/*.userdata`;
+  await addItemToGitignore(projectPath, userdata, log);
+
+  if (backupFolder) {
+    await addPathToGitignore(projectPath, backupFolder, log);
+  }
 }
 
 async function generateRemoteTemplate(manifestString: string) {
@@ -412,34 +503,8 @@ async function generateLocalTemplate(manifestString: string) {
   return manifest;
 }
 
-async function getManifest(
-  sourceManifestFile: string,
-  appName: string,
-  hasFrontend: boolean,
-  hasBotCapability: boolean,
-  hasMessageExtensionCapability: boolean,
-  isSPFx: boolean,
-  migrateFromV1: boolean
-): Promise<TeamsAppManifest> {
-  let manifest: TeamsAppManifest | undefined;
-  let error = undefined;
-  try {
-    manifest = await readJson(sourceManifestFile);
-  } catch (err) {
-    error = err;
-    manifest = await createManifest(
-      appName,
-      hasFrontend,
-      hasBotCapability,
-      hasMessageExtensionCapability,
-      isSPFx,
-      migrateFromV1
-    );
-  }
-  if (!manifest) {
-    throw error;
-  }
-  return manifest;
+async function getManifest(sourceManifestFile: string): Promise<TeamsAppManifest> {
+  return await readJson(sourceManifestFile);
 }
 
 async function migrateMultiEnv(projectPath: string): Promise<void> {
@@ -480,6 +545,26 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
       configDev["skipAddingSqlUser"] =
         envDefault[ResourcePlugins.AzureSQL][EnvConfigName.SqlSkipAddingUser];
     }
+    if (envDefault[ResourcePlugins.Aad]?.[EnvConfigName.AadSkipProvision] === "true") {
+      configDev.auth = {};
+      if (envDefault[ResourcePlugins.Aad][EnvConfigName.OAuthScopeId]) {
+        configDev.auth!.accessAsUserScopeId =
+          envDefault[ResourcePlugins.Aad][EnvConfigName.OAuthScopeId];
+      }
+      if (envDefault[ResourcePlugins.Aad][EnvConfigName.ObjectId]) {
+        configDev.auth!.objectId = envDefault[ResourcePlugins.Aad][EnvConfigName.ObjectId];
+      }
+      if (envDefault[ResourcePlugins.Aad][EnvConfigName.ClientId]) {
+        configDev.auth!.clientId = envDefault[ResourcePlugins.Aad][EnvConfigName.ClientId];
+      }
+      if (envDefault[ResourcePlugins.Aad][EnvConfigName.ClientSecret]) {
+        await globalStateUpdate(
+          AADClientSecretFlag,
+          envDefault[ResourcePlugins.Aad][EnvConfigName.ClientSecret]
+        );
+        configDev.auth!.clientSecret = AadSecret;
+      }
+    }
 
     await fs.writeFile(configDevJsonFilePath, JSON.stringify(configDev, null, 4));
   }
@@ -492,17 +577,8 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     await fs.copy(path.join(fx, AppPackageFolderName), templateAppPackage);
   }
   const sourceManifestFile = path.join(templateAppPackage, REMOTE_MANIFEST);
-  const manifest: TeamsAppManifest = await getManifest(
-    sourceManifestFile,
-    appName,
-    hasFrontend,
-    hasBotCapability,
-    hasMessageExtensionCapability,
-    isSPFx,
-    migrateFromV1
-  );
+  const manifest: TeamsAppManifest = await getManifest(sourceManifestFile);
   await fs.remove(sourceManifestFile);
-  await moveIconsToResourceFolder(templateAppPackage, manifest);
   // generate manifest.remote.template.json
   if (!migrateFromV1) {
     const targetRemoteManifestFile = path.join(templateAppPackage, MANIFEST_TEMPLATE);
@@ -538,40 +614,8 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   }
 }
 
-async function moveIconsToResourceFolder(
-  templateAppPackage: string,
-  manifest: TeamsAppManifest
-): Promise<void> {
-  // see AppStudioPluginImpl.buildTeamsAppPackage()
-  const hasColorIcon = manifest.icons.color && !manifest.icons.color.startsWith("https://");
-  const hasOutlineIcon = manifest.icons.outline && !manifest.icons.outline.startsWith("https://");
-  if (!hasColorIcon || !hasOutlineIcon) {
-    return;
-  }
-
-  // move to resources
-  const resource = path.join(templateAppPackage, "resources");
-  const colorName = manifest.icons.color.replace("resources/", "");
-  const outlineName = manifest.icons.outline.replace("resources/", "");
-  const iconColor = path.join(templateAppPackage, colorName);
-  const iconOutline = path.join(templateAppPackage, outlineName);
-  await fs.ensureDir(resource);
-  if (await fs.pathExists(iconColor)) {
-    await fs.move(iconColor, path.join(resource, colorName));
-    manifest.icons.color = `resources/${colorName}`;
-  }
-  if (await fs.pathExists(iconOutline)) {
-    await fs.move(iconOutline, path.join(resource, outlineName));
-    manifest.icons.outline = `resources/${outlineName}`;
-  }
-
-  return;
-}
-
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
   const stateData = await readJson(devState);
-  const secrets: Record<string, string> = dotenv.parse(await fs.readFile(devUserData, "UTF-8"));
-
   stateData[PluginNames.APPST]["teamsAppId"] = stateData[PluginNames.SOLUTION]["remoteTeamsAppId"];
 
   const expiredStateKeys: [string, string][] = [
@@ -598,14 +642,16 @@ async function removeExpiredFields(devState: string, devUserData: string): Promi
       }
     }
   }
-
-  for (const [_, value] of Object.entries(LocalDebugConfigKeys)) {
-    deleteUserDataKey(secrets, `${PluginNames.LDEBUG}.${value}`);
-  }
-  deleteUserDataKey(secrets, `${PluginNames.AAD}.local_clientSecret`);
-
   await fs.writeFile(devState, JSON.stringify(stateData, null, 4), { encoding: "UTF-8" });
-  await fs.writeFile(devUserData, serializeDict(secrets), { encoding: "UTF-8" });
+
+  if (await fs.pathExists(devUserData)) {
+    const secrets: Record<string, string> = dotenv.parse(await fs.readFile(devUserData, "UTF-8"));
+    for (const [_, value] of Object.entries(LocalDebugConfigKeys)) {
+      deleteUserDataKey(secrets, `${PluginNames.LDEBUG}.${value}`);
+    }
+    deleteUserDataKey(secrets, `${PluginNames.AAD}.local_clientSecret`);
+    await fs.writeFile(devUserData, serializeDict(secrets), { encoding: "UTF-8" });
+  }
 }
 
 function deleteUserDataKey(secrets: Record<string, string>, key: string) {
@@ -660,20 +706,18 @@ async function getMultiEnvFolders(projectPath: string): Promise<any> {
 
 async function getBackupFolder(projectPath: string): Promise<string> {
   const backupName = ".backup";
-  const backup = path.join(projectPath, backupName);
-  if (!(await fs.pathExists(backup))) {
-    return backup;
+  const backupPath = path.join(projectPath, backupName);
+  if (!(await fs.pathExists(backupPath))) {
+    return backupPath;
   }
   // avoid conflict(rarely)
   return path.join(projectPath, `.teamsfx${backupName}`);
 }
 
-async function backup(projectPath: string, log: LogProvider): Promise<void> {
+async function backup(projectPath: string, backupFolder: string): Promise<void> {
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
-  const backup = await getBackupFolder(projectPath);
-  await addPathToGitignore(projectPath, backup, log);
-  const backupFx = path.join(backup, `.${ConfigFolderName}`);
-  const backupAppPackage = path.join(backup, AppPackageFolderName);
+  const backupFx = path.join(backupFolder, `.${ConfigFolderName}`);
+  const backupAppPackage = path.join(backupFolder, AppPackageFolderName);
   await fs.ensureDir(backupFx);
   await fs.ensureDir(backupAppPackage);
   const fxFiles = [
@@ -751,9 +795,7 @@ async function ensureProjectSettings(
     settings.defaultFunctionName =
       settings.defaultFunctionName || envDefault[PluginNames.FUNC]?.[defaultFunctionName];
   }
-  if (!settings.version) {
-    settings.version = "1.0.0";
-  }
+  settings.version = "2.0.0";
   await fs.writeFile(projectSettingPath, JSON.stringify(settings, null, 4), {
     encoding: "UTF-8",
   });
@@ -764,7 +806,7 @@ async function getAppName(projectSettingPath: string): Promise<string> {
   return settings.appName;
 }
 
-async function cleanup(projectPath: string): Promise<void> {
+async function cleanup(projectPath: string, backupFolder: string | undefined): Promise<void> {
   const { _, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   await fs.remove(fxConfig);
   await fs.remove(templateAppPackage);
@@ -772,6 +814,9 @@ async function cleanup(projectPath: string): Promise<void> {
   await fs.remove(path.join(templateAppPackage, ".."));
   if (await fs.pathExists(path.join(fxConfig, "..", "new.env.default.json"))) {
     await fs.remove(path.join(fxConfig, "..", "new.env.default.json"));
+  }
+  if (backupFolder) {
+    await fs.remove(backupFolder);
   }
 }
 

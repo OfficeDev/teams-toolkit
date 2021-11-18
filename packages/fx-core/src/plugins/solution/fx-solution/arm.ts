@@ -373,11 +373,10 @@ export async function copyParameterJson(
   const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
   const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);
   const targetParameterContent = await fs.readJson(sourceParameterFilePath);
-  if (targetParameterContent[parameterName][resourceBaseName]) {
+  if (targetParameterContent[parameterName]?.provisionParameters?.value?.resourceBaseName) {
     const appName = ctx.projectSettings!.appName;
-    targetParameterContent[parameterName][resourceBaseName] = {
-      value: generateResourceBaseName(appName, targetEnvName),
-    };
+    targetParameterContent[parameterName].provisionParameters.value!.resourceBaseName =
+      generateResourceBaseName(appName, targetEnvName);
   }
 
   await fs.ensureDir(parameterFolderPath);
@@ -582,17 +581,6 @@ async function doGenerateArmTemplate(
     for (const module of moduleConfigFiles) {
       const res = bicepOrchestrationTemplate.applyReference(module[1]);
       await fs.writeFile(path.join(templateFolderPath, module[0]), res);
-    }
-
-    // Output .gitignore file
-    const gitignoreContent = await fs.readFile(
-      path.join(templateSolitionPath, "armGitignore"),
-      ConstantString.UTF8Encoding
-    );
-    const gitignoreFileName = ".gitignore";
-    const gitignoreFilePath = path.join(ctx.root, templatesFolder, gitignoreFileName);
-    if (!(await fs.pathExists(gitignoreFilePath))) {
-      await fs.writeFile(gitignoreFilePath, gitignoreContent);
     }
   }
 

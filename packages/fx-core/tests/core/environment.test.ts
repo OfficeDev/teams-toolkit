@@ -155,6 +155,26 @@ describe("APIs of Environment Manager", () => {
       }
     });
 
+    it("load environment config file with invalid subscription id", async () => {
+      await mockEnvConfigs(projectPath, {
+        manifest: {
+          appName: {
+            short: appName,
+          },
+        },
+        azure: {
+          subscriptionId: "invalid-subscription-id",
+        },
+      });
+
+      const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
+      if (actualEnvDataResult.isErr()) {
+        assert.equal(actualEnvDataResult.error.name, "InvalidEnvConfigError");
+      } else {
+        assert.fail("Failed to get expected error.");
+      }
+    });
+
     it("load invalid JSON config file", async () => {
       const envName = environmentManager.getDefaultEnvName();
       const envConfigFile = environmentManager.getEnvConfigPath(envName, projectPath);

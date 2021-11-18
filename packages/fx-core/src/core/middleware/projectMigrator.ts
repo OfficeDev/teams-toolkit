@@ -582,8 +582,6 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
 
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
   const stateData = await readJson(devState);
-  const secrets: Record<string, string> = dotenv.parse(await fs.readFile(devUserData, "UTF-8"));
-
   stateData[PluginNames.APPST]["teamsAppId"] = stateData[PluginNames.SOLUTION]["remoteTeamsAppId"];
 
   const expiredStateKeys: [string, string][] = [
@@ -610,14 +608,16 @@ async function removeExpiredFields(devState: string, devUserData: string): Promi
       }
     }
   }
-
-  for (const [_, value] of Object.entries(LocalDebugConfigKeys)) {
-    deleteUserDataKey(secrets, `${PluginNames.LDEBUG}.${value}`);
-  }
-  deleteUserDataKey(secrets, `${PluginNames.AAD}.local_clientSecret`);
-
   await fs.writeFile(devState, JSON.stringify(stateData, null, 4), { encoding: "UTF-8" });
-  await fs.writeFile(devUserData, serializeDict(secrets), { encoding: "UTF-8" });
+
+  if (await fs.pathExists(devUserData)) {
+    const secrets: Record<string, string> = dotenv.parse(await fs.readFile(devUserData, "UTF-8"));
+    for (const [_, value] of Object.entries(LocalDebugConfigKeys)) {
+      deleteUserDataKey(secrets, `${PluginNames.LDEBUG}.${value}`);
+    }
+    deleteUserDataKey(secrets, `${PluginNames.AAD}.local_clientSecret`);
+    await fs.writeFile(devUserData, serializeDict(secrets), { encoding: "UTF-8" });
+  }
 }
 
 function deleteUserDataKey(secrets: Record<string, string>, key: string) {

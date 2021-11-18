@@ -16,6 +16,7 @@ import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import {
   ErrorType,
   FrontendPluginError,
+  NotImplemented,
   UnhandledErrorCode,
   UnhandledErrorMessage,
 } from "./resources/errors";
@@ -49,7 +50,7 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     if (isVsCallingCli()) {
-      return ok(undefined);
+      throw new NotImplemented();
     }
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Scaffold, () =>
@@ -112,7 +113,7 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
     if (isVsCallingCli()) {
-      return ok(undefined);
+      throw new NotImplemented();
     }
 
     FrontendPlugin.setContext(ctx);

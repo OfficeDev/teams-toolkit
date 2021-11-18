@@ -280,7 +280,8 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
 export const GetUserEmailQuestion: TextInputQuestion = {
   name: "email",
   type: "text",
-  title: "Invite a collaborator using email address (must be in the same M365 account tenant)",
+  title:
+    "Add M365 Teams App (with AAD App) owners using email address (must be in the same tenant)",
   validation: {
     validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
       if (!input || input.trim() === "") {

@@ -1971,12 +1971,23 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
       } else {
         updateFailedFiles = failedFiles.value;
         if (failedFiles.value.length > 0) {
-          const warningMessage = util.format(
-            StringResources.vsc.migrateTeamsTabApp.updateCodesError,
-            failedFiles.value.join(", ")
+          VsCodeLogInstance.warning(
+            util.format(
+              StringResources.vsc.migrateTeamsTabApp.updateCodesErrorOutput,
+              failedFiles.value.length,
+              failedFiles.value.join(", ")
+            )
           );
-          VsCodeLogInstance.warning(warningMessage);
-          VS_CODE_UI.showMessage("warn", warningMessage, false, "OK");
+          VS_CODE_UI.showMessage(
+            "warn",
+            util.format(
+              StringResources.vsc.migrateTeamsTabApp.updateCodesErrorMessage,
+              failedFiles.value.length,
+              failedFiles.value[0]
+            ),
+            false,
+            "OK"
+          );
         }
       }
     }

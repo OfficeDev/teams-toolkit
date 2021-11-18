@@ -230,9 +230,12 @@ describe("Aad Error Tests", function () {
     }
   });
 
-  // afterEach(async () => {
-  //   // clean up
-
-  //   await cleanUp(appName, projectPath, true, false, false);
-  // });
+  afterEach(async () => {
+    // clean up
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, false, false, true);
+    } else {
+      await cleanUp(appName, projectPath, true, false, false);
+    }
+  });
 });

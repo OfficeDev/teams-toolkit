@@ -177,6 +177,10 @@ describe("Test Add Function", function () {
   after(async () => {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
-    await cleanUp(appName, projectPath);
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, false, false, true);
+    } else {
+      await cleanUp(appName, projectPath);
+    }
   });
 });

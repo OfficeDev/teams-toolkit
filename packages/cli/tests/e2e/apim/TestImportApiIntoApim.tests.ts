@@ -100,6 +100,10 @@ describe("Import API into API Management", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, true);
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, false, true, true);
+    } else {
+      await cleanUp(appName, projectPath, true, false, true);
+    }
   });
 });

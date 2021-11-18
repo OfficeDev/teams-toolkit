@@ -106,11 +106,20 @@ describe("Use an existing API Management Service", function () {
   });
 
   after(async () => {
-    await Promise.all([
-      // clean up another resource group
-      cleanUpResourceGroup(existingRGName),
-      // clean up other resources
-      cleanUp(appName, projectPath, true, false, true),
-    ]);
+    if (isMultiEnvEnabled()) {
+      await Promise.all([
+        // clean up another resource group
+        cleanUpResourceGroup(existingRGName),
+        // clean up other resources
+        cleanUp(appName, projectPath, true, false, true, true),
+      ]);
+    } else {
+      await Promise.all([
+        // clean up another resource group
+        cleanUpResourceGroup(existingRGName),
+        // clean up other resources
+        cleanUp(appName, projectPath, true, false, true),
+      ]);
+    }
   });
 });

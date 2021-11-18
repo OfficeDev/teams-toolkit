@@ -92,6 +92,10 @@ describe("Create a new API Management Service", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, true);
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, false, true, true);
+    } else {
+      await cleanUp(appName, projectPath, true, false, true);
+    }
   });
 });

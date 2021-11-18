@@ -213,6 +213,10 @@ describe("Azure App Happy Path", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, true, true);
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, true, true, true);
+    } else {
+      await cleanUp(appName, projectPath, true, true, true);
+    }
   });
 });

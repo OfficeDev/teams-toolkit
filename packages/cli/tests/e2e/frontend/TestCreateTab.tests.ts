@@ -127,6 +127,10 @@ describe("Create single tab", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath);
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, false, false, true);
+    } else {
+      await cleanUp(appName, projectPath);
+    }
   });
 });

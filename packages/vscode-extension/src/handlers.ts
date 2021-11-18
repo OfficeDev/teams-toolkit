@@ -472,7 +472,7 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
 }
 
 export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
-  const isInsiderEnabled = getConfiguration(ConfigurationKey.InsiderPreview);
+  const isInsiderEnabled = isMultiEnvEnabled();
 
   ExtTelemetry.sendTelemetryEvent(
     isInsiderEnabled ? TelemetryEvent.CICDInsiderGuide : TelemetryEvent.CICDGuide,

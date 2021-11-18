@@ -43,6 +43,7 @@ import {
   EnvNamePlaceholder,
   SelectFolderConfig,
   SelectFileConfig,
+  ConcurrentError,
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -86,7 +87,9 @@ import {
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   getTeamsAppIdByEnv,
+  isMacOS,
   isSPFxProject,
+  isWindows,
   syncFeatureFlags,
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
@@ -247,7 +250,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
-    await openUpgradeChangeLogsHandler();
+    await postUpgrade();
     ExtTelemetry.isFromSample = await getIsFromSample();
 
     if (workspacePath) {
@@ -940,6 +943,44 @@ async function openMarkdownHandler() {
   }
 }
 
+async function postUpgrade(): Promise<void> {
+  await openUpgradeChangeLogsHandler();
+  await popupAfterUpgrade();
+}
+
+async function popupAfterUpgrade(): Promise<void> {
+  const aadClientSecretFlag = "NeedToSetAADClientSecretEnv";
+  const aadClientSecret = globalStateGet(aadClientSecretFlag, "");
+  if (
+    aadClientSecret !== "" &&
+    workspace.workspaceFolders &&
+    workspace.workspaceFolders.length > 0
+  ) {
+    try {
+      const learnMoreLink = StringResources.vsc.upgradeToMultiEnvAndBicep.learnMoreLink;
+      const learnMoreText = StringResources.vsc.upgradeToMultiEnvAndBicep.learnMoreText;
+      const option = { modal: false };
+      const outputMsg = util.format(
+        StringResources.vsc.upgradeToMultiEnvAndBicep.outputMsg,
+        aadClientSecret,
+        learnMoreLink
+      );
+      const showMsg = util.format(
+        StringResources.vsc.upgradeToMultiEnvAndBicep.showMsg,
+        aadClientSecret
+      );
+      VsCodeLogInstance.warning(outputMsg);
+      window.showWarningMessage(showMsg, option, learnMoreText).then((result) => {
+        if (result === learnMoreText) {
+          return env.openExternal(Uri.parse(learnMoreLink));
+        }
+      });
+    } finally {
+      await globalStateUpdate(aadClientSecretFlag, "");
+    }
+  }
+}
+
 async function openUpgradeChangeLogsHandler() {
   const openUpgradeChangelogsFlag = "openUpgradeChangelogs";
   if (
@@ -1596,7 +1637,8 @@ export async function showError(e: UserError | SystemError) {
     const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, issue);
     if (button) await button.run();
   } else {
-    await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
+    if (!(e instanceof ConcurrentError))
+      await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
   }
 }
 

@@ -384,9 +384,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const userDataSelector = {
     language: "plaintext",
     scheme: "file",
-    pattern: isMultiEnvEnabled()
-      ? `**/.${ConfigFolderName}/${StatesFolderName}/*.userdata`
-      : `**/.${ConfigFolderName}/*.userdata`,
+    pattern: "**/*.userdata",
   };
   const localDebugDataSelector = {
     language: "json",

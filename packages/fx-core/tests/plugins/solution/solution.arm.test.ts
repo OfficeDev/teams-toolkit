@@ -238,9 +238,6 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
   }
 }`
     );
-    expect(await fs.readFile(path.join(projectArmBaseFolder, ".gitignore"), fileEncoding)).equals(
-      `# ignore ARM template backup folder${os.EOL}/backup`
-    );
   });
 
   it("add bot capability on tab app success", async () => {

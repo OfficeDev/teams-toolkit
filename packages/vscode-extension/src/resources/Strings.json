@@ -241,6 +241,12 @@
       "banner": "Teams Toolkit has been updated to v%s — check out what's new!",
       "whatIsNewTitle": "What's New"
     },
+    "upgradeToMultiEnvAndBicep": {
+      "learnMoreText": "Learn More",
+      "learnMoreLink": "https://aka.ms/teamsfx-existing-aad-doc",
+      "outputMsg": "Please set \"AAD_APP_CLIENT_SECRET\" = \"%s\" in your system environment variable. Read this wiki(%s) to for more details.",
+      "showMsg": "Please set \"AAD_APP_CLIENT_SECRET\" = \"%s\" in your system environment variable.\\nYou can also click Learn More for more details."
+    },
     "migrateTeamsTabApp": {
       "selectFolderConfig": {
         "name": "Select Teams Tab App to Upgrade",

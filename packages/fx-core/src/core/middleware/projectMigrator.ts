@@ -351,7 +351,7 @@ async function handleError(projectPath: string, ctx: CoreHookContext) {
     });
 }
 
-async function generateUpgradeReport(ctx: CoreHookContext, backupFolder: string) {
+async function generateUpgradeReport(ctx: CoreHookContext, backupFolder: string | undefined) {
   try {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     const projectPath = inputs.projectPath as string;
@@ -369,7 +369,7 @@ async function postMigration(
   projectPath: string,
   ctx: CoreHookContext,
   inputs: Inputs,
-  backupFolder: string
+  backupFolder: string | undefined
 ): Promise<void> {
   await removeOldProjectFiles(projectPath);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrate);
@@ -399,7 +399,7 @@ async function postMigration(
 async function updateGitIgnore(
   projectPath: string,
   log: LogProvider,
-  backupFolder: string
+  backupFolder: string | undefined
 ): Promise<void> {
   // add .fx/configs/localSetting.json to .gitignore
   const localSettingsProvider = new LocalSettingsProvider(projectPath);

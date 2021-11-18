@@ -521,7 +521,7 @@
       },
       {
         "command": "fx-extension.listCollaborator",
-        "title": "List Collaborators",
+        "title": "List M365 Teams App (with AAD App) Owners",
         "icon": "$(organization)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },

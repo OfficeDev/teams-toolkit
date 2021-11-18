@@ -808,6 +808,30 @@ export async function openDocumentHandler(args: any[]): Promise<boolean> {
   return env.openExternal(Uri.parse("https://aka.ms/teamsfx-build-first-app"));
 }
 
+export async function openAccountLinkHandler(args: any[]): Promise<boolean> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-account"));
+}
+
+export async function openEnvLinkHandler(args: any[]): Promise<boolean> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-environment"));
+}
+
+export async function openDevelopmentLinkHandler(args: any[]): Promise<boolean> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-development"));
+}
+
+export async function openDeploymentLinkHandler(args: any[]): Promise<boolean> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-deployment"));
+}
+
+export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.Documentation, getTriggerFromProperty(args));
+  return env.openExternal(Uri.parse("https://aka.ms/teamsfx-treeview-helpnfeedback"));
+}
 export async function openWelcomeHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
   WebviewPanel.createOrShow(PanelType.QuickStart);

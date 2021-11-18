@@ -1,13 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  ApimArmOutput,
   ApimDefaultValues,
+  ApimOutputBicepSnippet,
   ApimPathInfo,
   ApimPluginConfigKeys,
-  TeamsToolkitComponent,
 } from "../constants";
-import { AssertConfigNotEmpty, AssertNotEmpty } from "../error";
+import { AssertNotEmpty } from "../error";
 import {
   IAadPluginConfig,
   IApimPluginConfig,
@@ -18,12 +17,7 @@ import {
 import { ApimService } from "../services/apimService";
 import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { IAnswer } from "../answer";
-import {
-  AzureSolutionSettings,
-  LogProvider,
-  PluginContext,
-  TelemetryReporter,
-} from "@microsoft/teamsfx-api";
+import { LogProvider, PluginContext, TelemetryReporter } from "@microsoft/teamsfx-api";
 import {
   getApimServiceNameFromResourceId,
   getAuthServiceNameFromResourceId,
@@ -31,17 +25,12 @@ import {
   Lazy,
 } from "../utils/commonUtils";
 import { NamingRules } from "../utils/namingRules";
-import {
-  generateBicepFiles,
-  getResourceGroupNameFromResourceId,
-  getTemplatesFolder,
-  isArmSupportEnabled,
-} from "../../../..";
 import path from "path";
 import { Bicep, ConstantString } from "../../../../common/constants";
-import { ScaffoldArmTemplateResult } from "../../../../common/armInterface";
+import { ArmTemplateResult } from "../../../../common/armInterface";
 import * as fs from "fs-extra";
-import { getArmOutput } from "../../utils4v2";
+import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../../../common/tools";
+import { getTemplatesFolder } from "../../../../folder";
 
 export class ApimManager {
   private readonly logger: LogProvider | undefined;
@@ -112,29 +101,13 @@ export class ApimManager {
     aadConfig: IAadPluginConfig,
     appName: string
   ): Promise<void> {
-    if (isArmSupportEnabled()) {
-      apimConfig.serviceResourceId = getArmOutput(ctx, ApimArmOutput.ServiceResourceId);
-      apimConfig.productResourceId = getArmOutput(ctx, ApimArmOutput.ProductResourceId);
-      apimConfig.authServerResourceId = getArmOutput(ctx, ApimArmOutput.AuthServerResourceId);
-    } else {
-      const solutionConfig = new SolutionConfig(ctx.envInfo.state);
+    if (!isArmSupportEnabled()) {
+      const solutionConfig = new SolutionConfig(ctx.envInfo);
       const apimService: ApimService = await this.lazyApimService.getValue();
       const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-      const apimServiceName = AssertConfigNotEmpty(
-        TeamsToolkitComponent.ApimPlugin,
-        ApimPluginConfigKeys.serviceName,
-        apimConfig.serviceName
-      );
-      const clientId = AssertConfigNotEmpty(
-        TeamsToolkitComponent.ApimPlugin,
-        ApimPluginConfigKeys.apimClientAADClientId,
-        apimConfig.apimClientAADClientId
-      );
-      const clientSecret = AssertConfigNotEmpty(
-        TeamsToolkitComponent.ApimPlugin,
-        ApimPluginConfigKeys.apimClientAADClientSecret,
-        apimConfig.apimClientAADClientSecret
-      );
+      const apimServiceName = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceName);
+      const clientId = apimConfig.checkAndGet(ApimPluginConfigKeys.apimClientAADClientId);
+      const clientSecret = apimConfig.checkAndGet(ApimPluginConfigKeys.apimClientAADClientSecret);
 
       const oAuthServerId =
         apimConfig.oAuthServerId ??
@@ -165,20 +138,10 @@ export class ApimManager {
     let resourceGroupName, apimServiceName, authServerId, productId;
 
     if (isArmSupportEnabled()) {
-      const apimServiceResourceId = AssertConfigNotEmpty(
-        TeamsToolkitComponent.ApimPlugin,
-        ApimPluginConfigKeys.serviceResourceId,
-        apimConfig.serviceResourceId
-      );
-      const apimProductResourceId = AssertConfigNotEmpty(
-        TeamsToolkitComponent.ApimPlugin,
-        ApimPluginConfigKeys.productResourceId,
-        apimConfig.productResourceId
-      );
-      const authServerResourceId = AssertConfigNotEmpty(
-        TeamsToolkitComponent.ApimPlugin,
-        ApimPluginConfigKeys.authServerResourceId,
-        apimConfig.authServerResourceId
+      const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);
+      const apimProductResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.productResourceId);
+      const authServerResourceId = apimConfig.checkAndGet(
+        ApimPluginConfigKeys.authServerResourceId
       );
       resourceGroupName = getResourceGroupNameFromResourceId(apimServiceResourceId);
       apimServiceName = getApimServiceNameFromResourceId(apimServiceResourceId);
@@ -186,33 +149,13 @@ export class ApimManager {
       productId = getproductNameFromResourceId(apimProductResourceId);
     } else {
       resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-      apimServiceName = AssertConfigNotEmpty(
-        TeamsToolkitComponent.ApimPlugin,
-        ApimPluginConfigKeys.serviceName,
-        apimConfig.serviceName
-      );
-      authServerId = AssertConfigNotEmpty(
-        TeamsToolkitComponent.ApimPlugin,
-        ApimPluginConfigKeys.oAuthServerId,
-        apimConfig.oAuthServerId
-      );
-      productId = AssertConfigNotEmpty(
-        TeamsToolkitComponent.ApimPlugin,
-        ApimPluginConfigKeys.productId,
-        apimConfig.productId
-      );
+      apimServiceName = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceName);
+      authServerId = apimConfig.checkAndGet(ApimPluginConfigKeys.oAuthServerId);
+      productId = apimConfig.checkAndGet(ApimPluginConfigKeys.productId);
     }
 
-    const apiPrefix = AssertConfigNotEmpty(
-      TeamsToolkitComponent.ApimPlugin,
-      ApimPluginConfigKeys.apiPrefix,
-      apimConfig.apiPrefix
-    );
-    const apiDocumentPath = AssertConfigNotEmpty(
-      TeamsToolkitComponent.ApimPlugin,
-      ApimPluginConfigKeys.apiDocumentPath,
-      apimConfig.apiDocumentPath
-    );
+    const apiPrefix = apimConfig.checkAndGet(ApimPluginConfigKeys.apiPrefix);
+    const apiDocumentPath = apimConfig.checkAndGet(ApimPluginConfigKeys.apiDocumentPath);
     const versionIdentity = AssertNotEmpty("versionAnswer.versionIdentity", answer.versionIdentity);
 
     const apiId =
@@ -264,54 +207,43 @@ export class ApimManager {
     await apimService.addApiToProduct(resourceGroupName, apimServiceName, productId, apiId);
   }
 
-  public async generateArmTemplates(
-    solutionConfig: AzureSolutionSettings
-  ): Promise<ScaffoldArmTemplateResult> {
+  public async generateArmTemplates(): Promise<ArmTemplateResult> {
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
 
-    const handleBarsContext = {
-      Plugins: solutionConfig.activeResourcePlugins,
-    };
-    const moduleOrchestrationContentResult = await generateBicepFiles(
-      path.join(bicepTemplateDir, Bicep.ModuleOrchestrationFileName),
-      handleBarsContext
-    );
-    if (moduleOrchestrationContentResult.isErr()) {
-      throw moduleOrchestrationContentResult.error;
-    }
-
-    const result: ScaffoldArmTemplateResult = {
-      Modules: {
-        apimProvision: {
-          Content: await fs.readFile(
-            path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleTemplateFileName),
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ProvisionFileName),
+          ConstantString.UTF8Encoding
+        ),
+        Reference: {
+          serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
+        },
+        Modules: {
+          apim: await fs.readFile(
+            path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleFileName),
             ConstantString.UTF8Encoding
           ),
         },
       },
-      Orchestration: {
-        ParameterTemplate: {
-          Content: await fs.readFile(
-            path.join(bicepTemplateDir, Bicep.ParameterOrchestrationFileName),
-            ConstantString.UTF8Encoding
-          ),
-          ParameterJson: JSON.parse(
-            await fs.readFile(
-              path.join(bicepTemplateDir, Bicep.ParameterFileName),
-              ConstantString.UTF8Encoding
-            )
-          ),
-        },
-        ModuleTemplate: {
-          Content: moduleOrchestrationContentResult.value,
-        },
-        OutputTemplate: {
-          Content: await fs.readFile(
-            path.join(bicepTemplateDir, Bicep.OutputOrchestrationFileName),
+      Configuration: {
+        Orchestration: await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ConfigFileName),
+          ConstantString.UTF8Encoding
+        ),
+        Modules: {
+          apim: await fs.readFile(
+            path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
             ConstantString.UTF8Encoding
           ),
         },
       },
+      Parameters: JSON.parse(
+        await fs.readFile(
+          path.join(bicepTemplateDir, Bicep.ParameterFileName),
+          ConstantString.UTF8Encoding
+        )
+      ),
     };
 
     return result;

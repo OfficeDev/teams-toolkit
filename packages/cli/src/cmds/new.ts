@@ -8,12 +8,31 @@ import fs from "fs-extra";
 import path from "path";
 import { Argv, Options } from "yargs";
 
-import { FxError, err, ok, Result, Question, LogLevel, Stage } from "@microsoft/teamsfx-api";
-import { downloadSampleHook, fetchCodeZip, saveFilesRecursively } from "@microsoft/teamsfx-core";
+import {
+  FxError,
+  err,
+  ok,
+  Result,
+  Question,
+  LogLevel,
+  Stage,
+  OptionItem,
+} from "@microsoft/teamsfx-api";
+import {
+  downloadSampleHook,
+  fetchCodeZip,
+  sampleProvider,
+  saveFilesRecursively,
+} from "@microsoft/teamsfx-core";
 
 import activate from "../activate";
 import * as constants from "../constants";
-import { NotFoundInputedFolder, SampleAppDownloadFailed, ProjectFolderExist } from "../error";
+import {
+  NotFoundInputedFolder,
+  SampleAppDownloadFailed,
+  ProjectFolderExist,
+  InvalidTemplateName,
+} from "../error";
 import { YargsCommand } from "../yargsCommand";
 import { getSystemInputs, toLocaleLowerCase } from "../utils";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -32,7 +51,7 @@ export default class New extends YargsCommand {
   public readonly description = "Create a new Teams application.";
   public params: { [_: string]: Options } = {};
 
-  public readonly subCommands: YargsCommand[] = [new NewTemplete()];
+  public readonly subCommands: YargsCommand[] = [new NewTemplate()];
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.create);
@@ -86,12 +105,12 @@ export default class New extends YargsCommand {
   }
 }
 
-class NewTemplete extends YargsCommand {
+class NewTemplate extends YargsCommand {
   public readonly commandHead = `template`;
   public readonly command = `${this.commandHead} <template-name>`;
   public readonly description = "Create an app from an existing template.";
 
-  public readonly subCommands: YargsCommand[] = [new NewTempleteList()];
+  public readonly subCommands: YargsCommand[] = [new NewTemplateList()];
 
   public builder(yargs: Argv): Argv<any> {
     const RootFolderNodeData = constants.RootFolderNode.data as Question;
@@ -127,42 +146,49 @@ class NewTemplete extends YargsCommand {
       return err(NotFoundInputedFolder(folder));
     }
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart);
+
+    const activeRes = await activate();
+    if (activeRes.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, activeRes.error);
+      return err(activeRes.error);
+    }
+
+    const core = activeRes.value;
+
     const templateName = args["template-name"] as string;
-    const template = constants.templates.find(
-      (t) => toLocaleLowerCase(t.sampleAppName) === templateName
-    )!;
-
-    const sampleAppFolder = path.resolve(folder, template.sampleAppName);
-    if ((await fs.pathExists(sampleAppFolder)) && (await fs.readdir(sampleAppFolder)).length > 0) {
-      CliTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.DownloadSample,
-        ProjectFolderExist(sampleAppFolder)
-      );
-      return err(ProjectFolderExist(sampleAppFolder));
+    const inputs = getSystemInputs();
+    inputs["scratch"] = "no";
+    const properties: any = {
+      [TelemetryProperty.SampleName]: templateName,
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      module: "cli",
+    };
+    inputs["samples"] = templateName;
+    inputs["folder"] = folder;
+    const result = await core.createProject(inputs);
+    if (inputs.projectId) {
+      properties[TelemetryProperty.ProjectId] = inputs.projectId;
+    }
+    if (result.isErr()) {
+      properties[TelemetryProperty.Success] = TelemetrySuccess.No;
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DownloadSample, result.error, properties);
+      return err(result.error);
     }
 
-    const result = await fetchCodeZip(template.sampleAppUrl);
-    if (!result) {
-      throw SampleAppDownloadFailed(template.sampleAppUrl, new Error());
-    }
-    await saveFilesRecursively(new AdmZip(result.data), template.sampleAppName, folder);
-    await downloadSampleHook(templateName, sampleAppFolder);
+    const sampleAppFolder = path.resolve(folder, templateName);
     CLILogProvider.necessaryLog(
       LogLevel.Info,
-      `Downloaded the '${CLILogProvider.white(
-        template.sampleAppName
-      )}' sample to '${CLILogProvider.white(sampleAppFolder)}'.`
+      `Downloaded the '${CLILogProvider.white(templateName)}' sample to '${CLILogProvider.white(
+        sampleAppFolder
+      )}'.`
     );
 
-    CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, {
-      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.SampleName]: templateName,
-    });
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSample, properties);
     return ok(null);
   }
 }
 
-class NewTempleteList extends YargsCommand {
+class NewTemplateList extends YargsCommand {
   public readonly commandHead = `list`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "List all templates";

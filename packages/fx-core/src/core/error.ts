@@ -94,6 +94,14 @@ export function InvalidV1ProjectError(message?: string) {
   );
 }
 
+export function V1ProjectNotSupportedError(message?: string) {
+  return new UserError(
+    "V1ProjectNotSupported",
+    `Command is not supported in the project migrated from Teams Toolkit V1`,
+    CoreSource
+  );
+}
+
 export function PathNotExistError(path: string): UserError {
   return new UserError("PathNotExist", `The path not exist: ${path}`, CoreSource);
 }
@@ -257,10 +265,15 @@ export function ProjectSettingError(): UserError {
 
 export function UpgradeCanceledError(): UserError {
   return new UserError(
-    "UpgradeCanceledError",
+    // @see tools.isUserCancelError()
+    "UserCancel",
     "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 2.7.0).",
     CoreSource
   );
+}
+
+export function NotJsonError(err: Error): UserError {
+  return new UserError(err, CoreSource, "NotJsonError");
 }
 
 export function FailedToParseResourceIdError(name: string, resourceId: string): UserError {

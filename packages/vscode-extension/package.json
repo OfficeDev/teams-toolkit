@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.8.0",
+  "version": "2.10.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -174,7 +174,6 @@
           "name": "Teams Toolkit",
           "when": "fx-extension.sidebarWelcome.bottom && fx-extension.canUpgradeToArmAndMultiEnv"
         }
-
       ]
     },
     "menus": {
@@ -188,6 +187,31 @@
           "command": "fx-extension.refreshEnvironment",
           "when": "view == teamsfx-environment",
           "group": "navigation@2"
+        },
+        {
+          "command": "fx-extension.openAccountLink",
+          "when": "view == teamsfx-accounts",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openEnvLink",
+          "when": "view == teamsfx-environment",
+          "group": "navigation@3"
+        },
+        {
+          "command": "fx-extension.openDevelopmentLink",
+          "when": "view == teamsfx-development",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openDeploymentLink",
+          "when": "view == teamsfx-deployment",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openHelpFeedbackLink",
+          "when": "view == teamsfx-help-and-feedback",
+          "group": "navigation@1"
         }
       ],
       "view/item/context": [
@@ -263,6 +287,13 @@
           "group": "teamsfx"
         }
       ],
+      "editor/title": [
+        {
+          "command": "fx-extension.openPreviewFile",
+          "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json",
+          "group": "navigation"
+        }
+      ],
       "commandPalette": [
         {
           "command": "fx-extension.signOut",
@@ -335,6 +366,26 @@
         {
           "command": "fx-extension.checkProjectUpgrade",
           "when": "fx-extension.canUpgradeToArmAndMultiEnv"
+        },
+        {
+          "command": "fx-extension.openAccountLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openEnvLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openDevelopmentLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openDeploymentLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openHelpFeedbackLink",
+          "when": "false"
         }
       ]
     },
@@ -419,7 +470,7 @@
       },
       {
         "command": "fx-extension.checkProjectUpgrade",
-        "title": "Teams: Check project upgrade"
+        "title": "Teams: Upgrade project"
       },
       {
         "command": "fx-extension.deploy",
@@ -468,6 +519,16 @@
         "icon": "$(sync)"
       },
       {
+        "command": "fx-extension.openPreviewFile",
+        "title": "Preview manifest file",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "fx-extension.openSchema",
+        "title": "Open manifest schema",
+        "icon": "$(file-code)"
+      },
+      {
         "command": "fx-extension.migrateV1Project",
         "title": "Teams: Initialize Your Project to Work with the Latest Teams Toolkit"
       },
@@ -500,7 +561,7 @@
         "icon": "$(ports-open-browser-icon)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
-	    {
+      {
         "command": "fx-extension.openResourceGroupInPortal",
         "title": "Open in Portal",
         "icon": "$(ports-open-browser-icon)",
@@ -511,6 +572,40 @@
         "title": "Grant permission",
         "icon": "$(person-add)",
         "enablement": "fx-extension.isMultiEnvEnabled && fx-extension.isRemoteCollaborateEnabled"
+      },
+      {
+        "command": "fx-extension.migrateTeamsTabApp",
+        "title": "Teams: Upgrade Teams JS SDK references to support Outlook and Office apps"
+      },
+      {
+        "command": "fx-extension.migrateTeamsManifest",
+        "title": "Teams: Upgrade Teams manifest to support Outlook and Office apps"
+      },
+      {
+        "command": "fx-extension.openAccountLink",
+        "title": "Open account link",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openEnvLink",
+        "title": "Open environment link",
+        "icon": "$(info)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.openDevelopmentLink",
+        "title": "Open development link",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openDeploymentLink",
+        "title": "Open deployment link",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openHelpFeedbackLink",
+        "title": "Open help link",
+        "icon": "$(info)"
       }
     ],
     "taskDefinitions": [
@@ -702,8 +797,8 @@
             "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
             "default": true
           },
-          "fx-extension.defaultProjectRootDirectory":{
-            "type":"string",
+          "fx-extension.defaultProjectRootDirectory": {
+            "type": "string",
             "description": "Set the default root directory for creating new teams app project. By default, the root directory is $HOME_DIR/TeamsApps. (requries reload of VS Code)"
           }
         }
@@ -739,7 +834,8 @@
     "test-compile": "tsc -p ./",
     "test-watch": "npm run copy-test-files && tsc -watch -p ./",
     "pretest": "npm run lint && npm run check-format && npm run test-compile",
-    "test:unit": "rimraf coverage && npm run compile && node out/test/unit/runTest.js",
+    "test:unit": "rimraf coverage && npm run compile && node out/test/unit/runTest.js && npm run test:unit:migration",
+    "test:unit:migration": "nyc mocha --require ts-node/register \"test/unit/migration/*.test.ts\"",
     "test:integration": "echo 'to be implementd'",
     "test:e2e": "echo 'to be implementd'",
     "test:env-checker": "npm run compile && npm run copy-test-files && node out/test/integration/envChecker/runEnvCheckerTest.js",
@@ -753,7 +849,7 @@
   "devDependencies": {
     "@azure/arm-subscriptions": "^3.0.0",
     "@azure/eslint-plugin-azure-sdk": "^2.0.1",
-    "@commitlint/cli": "^12.0.1",
+    "@commitlint/cli": "^14.0.1",
     "@commitlint/config-conventional": "^12.0.1",
     "@fluentui/react": "^8.5.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
@@ -766,8 +862,9 @@
     "@types/express": "^4.17.11",
     "@types/fs-extra": "^9.0.5",
     "@types/glob": "^7.1.4",
+    "@types/jscodeshift": "^0.11.2",
     "@types/keytar": "^4.4.2",
-    "@types/mocha": "^8.0.0",
+    "@types/mocha": "^8.0.4",
     "@types/node": "^14.14.21",
     "@types/react": "^17.0.3",
     "@types/react-dom": "^17.0.2",
@@ -777,8 +874,8 @@
     "@types/underscore": "^1.11.0",
     "@types/uuid": "^8.3.0",
     "@types/vscode": "^1.51.0",
-    "@typescript-eslint/eslint-plugin": "^4.19.0",
-    "@typescript-eslint/parser": "^4.19.0",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
     "@vscode/codicons": "0.0.21",
     "adm-zip": "^0.5.4",
     "chai": "^4.2.0",
@@ -788,7 +885,7 @@
     "copyfiles": "^2.4.1",
     "css-loader": "^5.1.3",
     "decache": "^4.6.0",
-    "eslint": "^7.22.0",
+    "eslint": "^8.1.0",
     "eslint-plugin-import": "^2.25.2",
     "eslint-plugin-prettier": "^4.0.0",
     "find-process": "^1.4.4",
@@ -796,9 +893,9 @@
     "glob": "^7.1.7",
     "html-webpack-plugin": "^5.3.1",
     "istanbul": "^0.4.5",
-    "lint-staged": "^10.5.4",
-    "mocha": "^8.1.3",
-    "mocha-junit-reporter": "^2.0.0",
+    "lint-staged": "^11.2.6",
+    "mocha": "^9.1.1",
+    "mocha-junit-reporter": "^2.0.2",
     "mocha-multi-reporters": "^1.5.1",
     "mock-require": "^3.0.3",
     "ms-rest": "^2.5.4",
@@ -834,11 +931,13 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.9.0",
-    "@microsoft/teamsfx-core": "^0.9.1",
+    "@microsoft/teamsfx-api": "^0.10.0",
+    "@microsoft/teamsfx-core": "^0.11.0",
+    "@npmcli/package-json": "^1.0.1",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
+    "jscodeshift": "^0.13.0",
     "jsonschema": "^1.4.0",
     "log4js": "^6.3.0",
     "read-package-json-fast": "^2.0.3",

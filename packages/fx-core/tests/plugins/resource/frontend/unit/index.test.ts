@@ -24,7 +24,6 @@ import {
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
 import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/configs";
 import {
-  ArmOutput,
   AzureErrorCode,
   FrontendConfigInfo,
   FrontendPathInfo,
@@ -220,14 +219,9 @@ describe("FrontendPlugin", () => {
         sinon
           .stub(AzureStorageClient.prototype, "enableStaticWebsite")
           .returns(Promise.resolve(undefined));
-        TestHelper.mockArmOutput(
-          pluginContext,
-          ArmOutput.FrontendStorageResourceId,
-          TestHelper.storageResourceId
-        );
-      } else {
-        pluginContext.config.set(FrontendConfigInfo.Endpoint, TestHelper.storageEndpoint);
       }
+      pluginContext.config.set(FrontendConfigInfo.Endpoint, TestHelper.storageEndpoint);
+
       frontendPlugin = new FrontendPlugin();
     });
 
@@ -236,6 +230,12 @@ describe("FrontendPlugin", () => {
     });
 
     it("happy path", async () => {
+      // mock plugin context
+      pluginContext.config.set(
+        "storageResourceId",
+        "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/fakerg/providers/Microsoft.Storage/storageAccounts/fakestorageaccount"
+      );
+
       const result = await frontendPlugin.postProvision(pluginContext);
 
       chai.assert.isTrue(result.isOk());

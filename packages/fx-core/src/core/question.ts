@@ -15,6 +15,8 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import * as os from "os";
 import { environmentManager } from "./environment";
+import { sampleProvider } from "../common";
+import { getRootDirectory } from "..";
 
 export enum CoreQuestionNames {
   AppName = "app-name",
@@ -41,8 +43,6 @@ export const QuestionAppName: TextInputQuestion = {
   title: "Application name",
   validation: {
     validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
-      const folder = previousInputs![CoreQuestionNames.Folder] as string;
-      if (!folder) return undefined;
       const schema = {
         pattern: ProjectNamePattern,
       };
@@ -51,7 +51,7 @@ export const QuestionAppName: TextInputQuestion = {
       if (validateResult.errors && validateResult.errors.length > 0) {
         return "Application name must start with a letter and can only contain letters and digits.";
       }
-      const projectPath = path.resolve(folder, appName);
+      const projectPath = path.resolve(getRootDirectory(), appName);
       const exists = await fs.pathExists(projectPath);
       if (exists) return `Path exists: ${projectPath}. Select a different application name.`;
       return undefined;
@@ -252,39 +252,13 @@ export const SampleSelect: SingleSelectQuestion = {
   type: "singleSelect",
   name: CoreQuestionNames.Samples,
   title: "Start from a sample",
-  staticOptions: [
-    {
-      id: "todo-list-with-Azure-backend",
-      label: "Todo List with backend on Azure",
-      detail: "Todo List app with Azure Function backend and Azure SQL database",
-      data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
-    },
-    {
-      id: "todo-list-SPFx",
-      label: "Todo List with SPFx",
-      detail: "Todo List app hosting on SharePoint",
-      data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
-    },
-    {
-      id: "share-now",
-      label: "Share Now",
-      detail: "Knowledge sharing app contains a Tab and a Message Extension",
-      data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
-    },
-    {
-      id: "in-meeting-app",
-      label: "In-meeting App",
-      detail: "A template for apps using only in the context of a Teams meeting",
-      data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
-    },
-    {
-      id: "faq-plus",
-      label: "FAQ Plus",
-      detail:
-        "Conversational Bot which answers common questions, looping human when bots unable to help",
-      data: "https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip",
-    },
-  ],
+  staticOptions: sampleProvider.SampleCollection.samples.map((sample) => {
+    return {
+      id: sample.id,
+      label: sample.title,
+      detail: sample.shortDescription,
+      data: sample.link,
+    } as OptionItem;
+  }),
   placeholder: "Select a sample",
-  returnObject: true,
 };

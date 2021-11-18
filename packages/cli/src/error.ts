@@ -3,7 +3,16 @@
 
 "use strict";
 
-import { returnSystemError, returnUserError, SystemError, UserError } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  EnvNamePlaceholder,
+  EnvStateFileNameTemplate,
+  returnSystemError,
+  returnUserError,
+  StatesFolderName,
+  SystemError,
+  UserError,
+} from "@microsoft/teamsfx-api";
 import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 import * as constants from "./constants";
@@ -152,5 +161,24 @@ export class EnvNotFound extends UserError {
 export class EnvNotProvisioned extends UserError {
   constructor(env: string) {
     super(new.target.name, `The environment "${env}" is not provisioned`, constants.cliSource);
+  }
+}
+
+export class UserdataNotFound extends UserError {
+  constructor(env: string) {
+    super(
+      new.target.name,
+      `The userdata file ".${ConfigFolderName}/${StatesFolderName}/${env}.userdata" is not found. Please try to provision in the "${env}" envrionment`,
+      constants.cliSource
+    );
+  }
+}
+
+export class InvalidTemplateName extends UserError {
+  constructor(name: string) {
+    super({
+      source: constants.cliSource,
+      message: `Invalid template name: ${name}`,
+    });
   }
 }

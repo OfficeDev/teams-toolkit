@@ -5,7 +5,6 @@ import { SSOTokenInfoBase, SSOTokenV1Info, SSOTokenV2Info } from "../models/ssoT
 import { UserInfo } from "../models/userinfo";
 import jwt_decode from "jwt-decode";
 import { internalLogger } from "./logger";
-import { createHash } from "crypto";
 
 /**
  * Parse jwt token payload
@@ -123,36 +122,16 @@ export function getAuthority(authorityHost: string, tenantId: string): string {
 /**
  * @internal
  */
-export function parseCertificate(
-  certificateContent: string | undefined
-): ClientCertificate | undefined {
-  if (!certificateContent) {
-    return undefined;
-  }
-
-  const certificatePattern =
-    /(-+BEGIN CERTIFICATE-+)(\n\r?|\r\n?)([A-Za-z0-9+/\n\r]+=*)(\n\r?|\r\n?)(-+END CERTIFICATE-+)/;
-  const match = certificatePattern.exec(certificateContent);
-  if (!match) {
-    const errorMsg = "The certificate content does not contain a PEM-encoded certificate.";
-    internalLogger.error(errorMsg);
-    throw new ErrorWithCode(errorMsg, ErrorCode.InvalidCertificate);
-  }
-  const thumbprint = createHash("sha1")
-    .update(Buffer.from(match[3], "base64"))
-    .digest("hex")
-    .toUpperCase();
-
-  return {
-    thumbprint: thumbprint,
-    privateKey: certificateContent,
-  };
+export interface ClientCertificate {
+  thumbprint: string;
+  privateKey: string;
 }
 
 /**
  * @internal
  */
-export interface ClientCertificate {
-  thumbprint: string;
-  privateKey: string;
-}
+export const isNode =
+  typeof process !== "undefined" &&
+  !!process.version &&
+  !!process.versions &&
+  !!process.versions.node;

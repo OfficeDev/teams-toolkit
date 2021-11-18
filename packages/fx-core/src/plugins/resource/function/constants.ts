@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Kind, SkuName, SkuTier } from "@azure/arm-storage/esm/models";
-import { TeamsClientId } from "../../../common/constants";
+import { getAllowedAppIds } from "../../../common/tools";
 
 import { FunctionConfigKey, FunctionLanguage, NodeVersion } from "./enums";
 
@@ -25,7 +25,7 @@ export class FunctionPluginInfo {
     FunctionConfigKey.storageAccountName,
     FunctionConfigKey.appServicePlanName,
     FunctionConfigKey.functionEndpoint,
-    FunctionConfigKey.functionAppId,
+    FunctionConfigKey.functionAppResourceId,
   ];
 
   public static readonly templateBaseGroupName: string = "function-base";
@@ -138,7 +138,7 @@ export class DefaultProvisionConfigs {
   });
 
   public static readonly functionAppStaticSettings: { [key: string]: string } = {
-    ALLOWED_APP_IDS: [TeamsClientId.MobileDesktop, TeamsClientId.Web].join(";"),
+    ALLOWED_APP_IDS: getAllowedAppIds().join(";"),
     FUNCTIONS_EXTENSION_VERSION: "~3",
     WEBSITE_RUN_FROM_PACKAGE: "1",
   };
@@ -181,7 +181,10 @@ export class QuestionValidationFunc {
 }
 
 export class FunctionBicep {
-  static readonly functionEndpoint: string = "functionProvision.outputs.functionEndpoint";
+  static readonly functionEndpoint: string =
+    "provisionOutputs.functionOutput.value.functionEndpoint";
+  static readonly functionAppResourceId: string =
+    "provisionOutputs.functionOutput.value.functionAppResourceId";
 }
 
 export class FunctionArmOutput {
@@ -191,5 +194,5 @@ export class FunctionArmOutput {
 
 export class FunctionBicepFile {
   static readonly provisionModuleTemplateFileName: string = "functionProvision.template.bicep";
-  static readonly configurationTemplateFileName: string = "functionConfiguration.template.bicep";
+  static readonly configuraitonTemplateFileName: string = "functionConfiguration.template.bicep";
 }

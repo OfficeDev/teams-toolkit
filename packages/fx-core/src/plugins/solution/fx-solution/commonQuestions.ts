@@ -24,6 +24,7 @@ import {
   TokenProvider,
   UserError,
   Void,
+  Err,
 } from "@microsoft/teamsfx-api";
 import {
   GLOBAL_CONFIG,
@@ -33,6 +34,9 @@ import {
   RESOURCE_GROUP_NAME,
   SolutionError,
   SolutionSource,
+  FailedToCheckResourceGroupExistenceError,
+  SUBSCRIPTION_ID,
+  UnauthorizedToCheckResourceGroupError,
 } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
@@ -48,13 +52,13 @@ import {
 import { getHashedEnv } from "../../../common/tools";
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
-import { SUBSCRIPTION_ID } from ".";
 import { SolutionPlugin } from "../../resource/localdebug/constants";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
   TelemetryProperty,
 } from "../../../common/telemetry";
+import { RestError } from "@azure/ms-rest-js";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -200,8 +204,17 @@ export async function askResourceGroupInfo(
   defaultResourceGroupName: string
 ): Promise<Result<ResourceGroupInfo, FxError>> {
   if (!isMultiEnvEnabled()) {
+    let exists = false;
+    try {
+      const checkRes = await rmClient.resourceGroups.checkExistence(defaultResourceGroupName);
+      exists = !!checkRes.body;
+    } catch (error) {
+      ctx.logProvider?.warning(
+        `Failed to check resource group existence ${defaultResourceGroupName}, assume non-existent, error '${error}'`
+      );
+    }
     return ok({
-      createNewResourceGroup: true,
+      createNewResourceGroup: !exists,
       name: defaultResourceGroupName,
       location: DefaultResourceGroupLocation,
     });
@@ -472,7 +485,12 @@ async function askCommonQuestions(
       CustomizeResourceGroupType.EnvConfig;
     resourceGroupInfo = maybeResourceGroupInfo;
   } else if (resourceGroupNameFromState && resourceGroupLocationFromState) {
-    const maybeExist = await checkResourceGroupExistence(rmClient, resourceGroupNameFromState);
+    const maybeExist = await checkResourceGroupExistence(
+      rmClient,
+      resourceGroupNameFromState,
+      subscriptionResult.value.subscriptionId,
+      subscriptionResult.value.subscriptionName
+    );
     if (maybeExist.isErr()) {
       return err(maybeExist.error);
     }
@@ -524,7 +542,13 @@ async function askCommonQuestions(
   ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckResourceGroup, telemetryProperties);
 
   if (resourceGroupInfo.createNewResourceGroup) {
-    const maybeRgName = await createNewResourceGroup(rmClient, resourceGroupInfo, ctx.logProvider);
+    const maybeRgName = await createNewResourceGroup(
+      rmClient,
+      resourceGroupInfo,
+      subscriptionResult.value.subscriptionId,
+      subscriptionResult.value.subscriptionName,
+      ctx.logProvider
+    );
     if (maybeRgName.isErr()) {
       return err(maybeRgName.error);
     }
@@ -609,9 +633,16 @@ export async function fillInCommonQuestions(
 async function createNewResourceGroup(
   rmClient: ResourceManagementClient,
   rgInfo: ResourceGroupInfo,
+  subscriptionId: string,
+  subscriptionName: string,
   logProvider?: LogProvider
 ): Promise<Result<string, FxError>> {
-  const maybeExist = await checkResourceGroupExistence(rmClient, rgInfo.name);
+  const maybeExist = await checkResourceGroupExistence(
+    rmClient,
+    rgInfo.name,
+    subscriptionId,
+    subscriptionName
+  );
   if (maybeExist.isErr()) {
     return err(maybeExist.error);
   }
@@ -630,6 +661,7 @@ async function createNewResourceGroup(
   try {
     response = await rmClient.resourceGroups.createOrUpdate(rgInfo.name, {
       location: rgInfo.location,
+      tags: { "created-by": "teamsfx" },
     });
   } catch (e) {
     let errMsg: string;
@@ -661,27 +693,50 @@ async function createNewResourceGroup(
   return ok(response.name);
 }
 
-async function checkResourceGroupExistence(
+function handleRestError<T>(
+  restError: RestError,
+  resourceGroupName: string,
+  subscriptionId: string,
+  subscriptionName: string
+): Err<T, FxError> {
+  // ARM API will return 403 with empty body when users does not have permission to access the resource group
+  if (restError.statusCode === 403) {
+    return err(
+      new UnauthorizedToCheckResourceGroupError(resourceGroupName, subscriptionId, subscriptionName)
+    );
+  } else {
+    return err(
+      new FailedToCheckResourceGroupExistenceError(
+        restError,
+        resourceGroupName,
+        subscriptionId,
+        subscriptionName
+      )
+    );
+  }
+}
+
+export async function checkResourceGroupExistence(
   rmClient: ResourceManagementClient,
-  resourceGroupName: string
+  resourceGroupName: string,
+  subscriptionId: string,
+  subscriptionName: string
 ): Promise<Result<boolean, FxError>> {
   try {
     const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
     return ok(!!checkRes.body);
   } catch (e) {
-    // The `checkExistence()` call returns an error with empty error message in some conditions.
-    // Wrap the error to prevent showing empty error message to the users.
-    let error;
-    const errorMessage = `Failed to check the existence of the resource group '${resourceGroupName}', error: '${e}'`;
-    if (e instanceof Error) {
-      // reuse the original error object to prevent losing the stack info
-      e.message = errorMessage;
-      error = e;
+    if (e instanceof RestError) {
+      return handleRestError(e, resourceGroupName, subscriptionId, subscriptionName);
     } else {
-      error = new Error(errorMessage);
+      return err(
+        new FailedToCheckResourceGroupExistenceError(
+          e,
+          resourceGroupName,
+          subscriptionId,
+          subscriptionName
+        )
+      );
     }
-    return err(
-      returnUserError(error, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)
-    );
   }
 }

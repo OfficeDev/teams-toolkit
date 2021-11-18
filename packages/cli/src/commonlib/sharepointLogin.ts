@@ -58,7 +58,9 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
    * Get team access token
    */
   async getAccessToken(showDialog = true): Promise<string | undefined> {
+    let isFirstLogin = false;
     if (!SharepointLogin.codeFlowInstance) {
+      isFirstLogin = true;
       try {
         const scopes = await this.getScopes(showDialog);
         if (!scopes) {
@@ -76,7 +78,7 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
     }
 
     await SharepointLogin.codeFlowInstance.reloadCache();
-    if (!SharepointLogin.codeFlowInstance.account) {
+    if (!isFirstLogin) {
       try {
         const scopes = await this.getScopes(showDialog);
         if (!scopes) {
@@ -95,9 +97,9 @@ export class SharepointLogin extends login implements SharepointTokenProvider {
     const GRAPH_TENANT_ENDPT = "https://graph.microsoft.com/v1.0/sites/root?$select=webUrl";
 
     if (accessToken.length > 0) {
-      axios.defaults.headers.common.Authorization = `Bearer ${accessToken}`;
-
-      const response = await axios.get(GRAPH_TENANT_ENDPT);
+      const response = await axios.get(GRAPH_TENANT_ENDPT, {
+        headers: { Authorization: `Bearer ${accessToken}` },
+      });
       return response.data.webUrl;
     }
     return "";

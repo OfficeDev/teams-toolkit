@@ -1,5 +1,29 @@
 # Changelog
 
+## 2.10.0 - Nov 15, 2021 
+
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- Enable developers with the capability to extend Teams apps to run across Microsoft 365, get instructions from our [documentation](https://aka.ms/teamsfx-extend-m365). 
+- Provide Teams sample apps "Todo List (Works in Teams, Outlook and Office)" and "NPM Search Connector" which can run across Microsoft 365. Users can get an initial experience of running Teams apps in Microsoft 365.
+
+## 2.9.0 - Nov 01, 2021 
+
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+Preview Features:
+- Enable CI/CD for multiple environments scenario.
+- Insider Preview features in 2.8.0 release are still in preview. Refer to [Enable insider preview features](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit) for how to use.
+- Upgrade existing projects to support preview features, refer to [Upgrade existing project to use latest features](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features) for more information.
+
+Enhancement:
+
+- Improve UI: more friendly user experience to create a new Teams project.
+- Improve UI: add links to source code for samples.
+- Support one-click deployment of SharePoint framework based Teams app.
+- Integrate Adaptive Card Studio with previewing and debugging Adaptive Card in VS Code.
+
 
 ## 2.8.0 - Oct 18, 2021
 

@@ -5,7 +5,7 @@ import { BuildError, NotImplemented } from "../error";
 import { IApimPluginConfig } from "../config";
 import * as VSCode from "../questions/vscodeQuestion";
 import * as CLI from "../questions/cliQuestion";
-import { isArmSupportEnabled } from "../../../..";
+import { isArmSupportEnabled } from "../../../../common/tools";
 
 export interface IQuestionManager {
   callFunc(func: Func, ctx: PluginContext): Promise<any>;

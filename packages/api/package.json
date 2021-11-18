@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-api",
-  "version": "0.9.0",
+  "version": "0.10.0",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -49,7 +49,7 @@
     "eslint-plugin-prettier": "^4.0.0",
     "json-schema-to-typescript": "^10.1.4",
     "lint-staged": "^10.5.4",
-    "mocha": "^8.2.1",
+    "mocha": "^9.1.3",
     "nyc": "^15.1.0",
     "prettier": "^2.4.1",
     "sinon": "^9.2.2",
@@ -62,7 +62,7 @@
     "@azure/core-http": "^1.2.2",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@types/fs-extra": "^9.0.10",
-    "axios": "^0.21.1",
+    "axios": "^0.21.2",
     "chai": "^4.3.4",
     "jsonschema": "^1.4.0",
     "neverthrow": "^3.2.0"

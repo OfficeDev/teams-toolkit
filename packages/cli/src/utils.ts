@@ -31,7 +31,7 @@ import {
   InputConfigsFolderName,
 } from "@microsoft/teamsfx-api";
 
-import { ConfigNotFoundError, EnvUndefined, InvalidEnvFile, ReadFileError } from "./error";
+import { ConfigNotFoundError, UserdataNotFound, EnvUndefined, ReadFileError } from "./error";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { FeatureFlags } from "./constants";
 import {
@@ -257,7 +257,11 @@ export async function readProjectSecrets(
   }
   const secretFile = secretFileResult.value;
   if (!fs.existsSync(secretFile)) {
-    return err(ConfigNotFoundError(secretFile));
+    if (isMultiEnvEnabled()) {
+      return err(new UserdataNotFound(env!));
+    } else {
+      return err(ConfigNotFoundError(secretFile));
+    }
   }
   try {
     const secretData = await fs.readFile(secretFile);
@@ -281,6 +285,11 @@ export function writeSecretToFile(
   for (const secretKey of Object.keys(secrets)) {
     const secretValue = secrets[secretKey];
     array.push(`${secretKey}=${secretValue}`);
+  }
+  if (!fs.existsSync(secretFile)) {
+    if (isMultiEnvEnabled()) {
+      return err(new UserdataNotFound(env!));
+    }
   }
   try {
     fs.writeFileSync(secretFile, array.join("\n"));
@@ -415,15 +424,34 @@ export function getProjectId(rootfolder: string | undefined): any {
     return undefined;
   }
 
-  if (isWorkspaceSupported(rootfolder)) {
+  if (isMultiEnvEnabled()) {
+    // Do not check validity of project in multi-env.
+    // Before migration, `isWorkspaceSupported()` is false, but we still need to send `project-id` telemetry property.
     const result = readSettingsFileSync(rootfolder);
-    if (result.isErr()) {
-      return undefined;
+    if (result.isOk()) {
+      return result.value.projectId;
     }
 
-    return result.value.projectId;
-  }
+    // Also try reading from the old project location to support `ProjectMigratorMW` telemetry.
+    // While doing migration, sending telemetry will call this `getProjectId()` function.
+    // But before migration done, the settings file is still in the old location.
+    const settingsFilePathOld = getConfigPath(rootfolder, "settings.json");
+    try {
+      const settings = fs.readJsonSync(settingsFilePathOld);
+      return settings.projectId;
+    } catch (e) {
+      return undefined;
+    }
+  } else {
+    if (isWorkspaceSupported(rootfolder)) {
+      const result = readSettingsFileSync(rootfolder);
+      if (result.isErr()) {
+        return undefined;
+      }
 
+      return result.value.projectId;
+    }
+  }
   return undefined;
 }
 

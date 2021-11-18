@@ -1,0 +1,605 @@
+{
+  "functionMappings": [
+    {
+      "source": "microsoftTeams.initialize",
+      "target": "microsoftTeams.app.initialize",
+      "callbackToPromise": true,
+      "callbackPosition": 0
+    },
+    {
+      "source": "microsoftTeams.getContext",
+      "target": "microsoftTeams.app.getContext",
+      "callbackToPromise": true,
+      "callbackPosition": 0
+    },
+    {
+      "source": "microsoftTeams.registerOnThemeChangeHandler",
+      "target": "microsoftTeams.app.registerOnThemeChangeHandler"
+    },
+    {
+      "source": "microsoftTeams.appInitialization.notifyAppLoaded",
+      "target": "microsoftTeams.app.notifyAppLoaded"
+    },
+    {
+      "source": "microsoftTeams.appInitialization.notifySuccess",
+      "target": "microsoftTeams.app.notifySuccess"
+    },
+    {
+      "source": "microsoftTeams.appInitialization.notifyFailure",
+      "target": "microsoftTeams.app.notifyFailure"
+    },
+    {
+      "source": "microsoftTeams.appInitialization.notifyExpectedFailure",
+      "target": "microsoftTeams.app.notifyExpectedFailure"
+    },
+    {
+      "source": "microsoftTeams.shareDeepLink",
+      "target": "microsoftTeams.core.shareDeepLink"
+    },
+    {
+      "source": "microsoftTeams.executeDeepLink",
+      "target": "microsoftTeams.core.executeDeepLink",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.registerFullScreenHandler",
+      "target": "microsoftTeams.pages.registerFullScreenHandler"
+    },
+    {
+      "source": "microsoftTeams.initializeWithFrameContext",
+      "target": "microsoftTeams.pages.initializeWithFrameContext"
+    },
+    {
+      "source": "microsoftTeams.navigateCrossDomain",
+      "target": "microsoftTeams.pages.navigateCrossDomain",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.returnFocus",
+      "target": "microsoftTeams.pages.returnFocus"
+    },
+    {
+      "source": "microsoftTeams.setFrameContext",
+      "target": "microsoftTeams.pages.setCurrentFrame"
+    },
+    {
+      "source": "microsoftTeams.registerAppButtonClickHandler",
+      "target": "microsoftTeams.pages.appButton.onClick"
+    },
+    {
+      "source": "microsoftTeams.registerAppButtonHoverEnterHandler",
+      "target": "microsoftTeams.pages.appButton.onHoverEnter"
+    },
+    {
+      "source": "microsoftTeams.registerAppButtonHoverLeaveHandler",
+      "target": "microsoftTeams.pages.appButton.onHoverLeave"
+    },
+    {
+      "source": "microsoftTeams.registerBackButtonHandler",
+      "target": "microsoftTeams.pages.backStack.registerBackButtonHandler"
+    },
+    {
+      "source": "microsoftTeams.navigateBack",
+      "target": "microsoftTeams.pages.backStack.navigateBack",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.settings.getSettings",
+      "target": "microsoftTeams.pages.config.getConfig",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.settings.setSettings",
+      "target": "microsoftTeams.pages.config.setConfig",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.settings.setValidityState",
+      "target": "microsoftTeams.pages.config.setValidityState"
+    },
+    {
+      "source": "microsoftTeams.settings.registerOnSaveHandler",
+      "target": "microsoftTeams.pages.config.registerOnSaveHandler"
+    },
+    {
+      "source": "microsoftTeams.settings.registerOnRemoveHandler",
+      "target": "microsoftTeams.pages.config.registerOnRemoveHandler"
+    },
+    {
+      "source": "microsoftTeams.settings.initialize",
+      "target": "microsoftTeams.pages.config.initialize"
+    },
+    {
+      "source": "microsoftTeams.registerEnterSettingsHandler",
+      "target": "microsoftTeams.pages.config.registerChangeConfigHandler"
+    },
+    {
+      "source": "microsoftTeams.enterFullscreen",
+      "target": "microsoftTeams.pages.fullTrust.enterFullscreen"
+    },
+    {
+      "source": "microsoftTeams.exitFullscreen",
+      "target": "microsoftTeams.pages.fullTrust.exitFullscreen"
+    },
+    {
+      "source": "microsoftTeams.getTabInstances",
+      "target": "microsoftTeams.pages.tabs.getTabInstances",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.getMruTabInstances",
+      "target": "microsoftTeams.pages.tabs.getMruTabInstances",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.navigateToTab",
+      "target": "microsoftTeams.pages.tabs.navigateToTab",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.showNotification",
+      "target": "microsoftTeams.notifications.showNotification"
+    },
+    {
+      "source": "microsoftTeams.getConfigSetting",
+      "target": "microsoftTeams.legacy.fullTrust.getConfigSetting",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.getUserJoinedTeams",
+      "target": "microsoftTeams.legacy.fullTrust.getUserJoinedTeams",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.tasks.startTask",
+      "target": "microsoftTeams.dialog.open"
+    },
+    {
+      "source": "microsoftTeams.tasks.submitTask",
+      "target": "microsoftTeams.dialog.submit"
+    },
+    {
+      "source": "microsoftTeams.tasks.updateTask",
+      "target": "microsoftTeams.dialog.resize"
+    },
+    {
+      "source": "microsoftTeams.enablePrintCapability",
+      "target": "microsoftTeams.teamsCore.enablePrintCapability"
+    },
+    {
+      "source": "microsoftTeams.registerBeforeUnloadHandler",
+      "target": "microsoftTeams.teamsCore.registerBeforeUnloadHandler"
+    },
+    {
+      "source": "microsoftTeams.registerFocusEnterHandler",
+      "target": "microsoftTeams.teamsCore.registerFocusEnterHandler"
+    },
+    {
+      "source": "microsoftTeams.registerOnLoadHandler",
+      "target": "microsoftTeams.teamsCore.registerOnLoadHandler"
+    },
+    {
+      "source": "microsoftTeams.print",
+      "target": "microsoftTeams.teamsCore.print"
+    },
+    {
+      "source": "microsoftTeams.conversations.openConversation",
+      "target": "microsoftTeams.chat.openConversation",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.conversations.closeConversation",
+      "target": "microsoftTeams.chat.closeConversation"
+    },
+    {
+      "source": "microsoftTeams.getChatMembers",
+      "target": "microsoftTeams.chat.getChatMembers",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.openFilePreview",
+      "target": "microsoftTeams.files.openFilePreview"
+    },
+    {
+      "source": "microsoftTeams.files.addCloudStorageFolder",
+      "target": "microsoftTeams.files.addCloudStorageFolder",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.files.deleteCloudStorageFolder",
+      "target": "microsoftTeams.files.deleteCloudStorageFolder",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.files.getCloudStorageFolderContents",
+      "target": "microsoftTeams.files.getCloudStorageFolderContents",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.files.getCloudStorageFolders",
+      "target": "microsoftTeams.files.getCloudStorageFolders",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.authentication.authenticate",
+      "target": "microsoftTeams.authentication.authenticate",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.authentication.getAuthToken",
+      "target": "microsoftTeams.authentication.getAuthToken",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.authentication.getUser",
+      "target": "microsoftTeams.authentication.getUser",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.authentication.notifyFailure",
+      "target": "microsoftTeams.authentication.notifyFailure"
+    },
+    {
+      "source": "microsoftTeams.authentication.notifySuccess",
+      "target": "microsoftTeams.authentication.notifySuccess"
+    },
+    {
+      "source": "microsoftTeams.authentication.initialize",
+      "target": "microsoftTeams.authentication.initialize"
+    },
+    {
+      "source": "microsoftTeams.location.getLocation",
+      "target": "microsoftTeams.location.getLocation",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.location.showLocation",
+      "target": "microsoftTeams.location.showLocation",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.media.captureImage",
+      "target": "microsoftTeams.media.captureImage",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.media.selectMedia",
+      "target": "microsoftTeams.media.selectMedia",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.media.viewImages",
+      "target": "microsoftTeams.media.viewImages",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.media.scanBarCode",
+      "target": "microsoftTeams.media.scanBarCode",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.meeting.getAppContentStageSharingState",
+      "target": "microsoftTeams.meeting.getAppContentStageSharingState",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.meeting.getAppContentStageSharingCapabilities",
+      "target": "microsoftTeams.meeting.getAppContentStageSharingCapabilities",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.meeting.getAuthenticationTokenForAnonymousUser",
+      "target": "microsoftTeams.meeting.getAuthenticationTokenForAnonymousUser",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.meeting.getIncomingClientAudioState",
+      "target": "microsoftTeams.meeting.getIncomingClientAudioState",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.meeting.getLiveStreamState",
+      "target": "microsoftTeams.meeting.getLiveStreamState",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.meeting.getMeetingDetails",
+      "target": "microsoftTeams.meeting.getMeetingDetails",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.meeting.requestStartLiveStreaming",
+      "target": "microsoftTeams.meeting.requestStartLiveStreaming",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.meeting.requestStopLiveStreaming",
+      "target": "microsoftTeams.meeting.requestStopLiveStreaming",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.meeting.shareAppContentToStage",
+      "target": "microsoftTeams.meeting.shareAppContentToStage",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.meeting.stopSharingAppContentToStage",
+      "target": "microsoftTeams.meeting.stopSharingAppContentToStage",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.meeting.toggleIncomingClientAudio",
+      "target": "microsoftTeams.meeting.toggleIncomingClientAudio",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.meetingRoom.getPairedMeetingRoomInfo",
+      "target": "microsoftTeams.meetingRoom.getPairedMeetingRoomInfo",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.meetingRoom.sendCommandToPairedMeetingRoom",
+      "target": "microsoftTeams.meetingRoom.sendCommandToPairedMeetingRoom",
+      "callbackToPromise": true
+    },
+    {
+      "source": "microsoftTeams.people.selectPeople",
+      "target": "microsoftTeams.people.selectPeople",
+      "callbackToPromise": true
+    }
+  ],
+  "contextMappings": [
+    {
+      "source": "appIconPosition",
+      "target": "app.iconPositionVertical"
+    },
+    {
+      "source": "appSessionId",
+      "target": "app.sessionId"
+    },
+    {
+      "source": "channelId",
+      "target": "channel.id"
+    },
+    {
+      "source": "channelName",
+      "target": "channel.displayName"
+    },
+    {
+      "source": "channelRelativeUrl",
+      "target": "channel.relativeUrl"
+    },
+    {
+      "source": "channelType",
+      "target": "channel.membershipType"
+    },
+    {
+      "source": "chatId",
+      "target": "chat.id"
+    },
+    {
+      "source": "defaultOneNoteSectionId",
+      "target": "channel.defaultOneNoteSectionId"
+    },
+    {
+      "source": "entityId",
+      "target": "page.id"
+    },
+    {
+      "source": "frameContext",
+      "target": "page.frameContext"
+    },
+    {
+      "source": "groupId",
+      "target": "team.groupId"
+    },
+    {
+      "source": "hostClientType",
+      "target": "app.host.clientType"
+    },
+    {
+      "source": "hostTeamGroupId",
+      "target": "channel.ownerGroupId"
+    },
+    {
+      "source": "hostTeamTenantId",
+      "target": "channel.ownerTenantId"
+    },
+    {
+      "source": "isCallingAllowed",
+      "target": "user.isCallingAllowed"
+    },
+    {
+      "source": "isFullScreen",
+      "target": "page.isFullScreen"
+    },
+    {
+      "source": "isMultiWindow",
+      "target": "page.isMultiWindow"
+    },
+    {
+      "source": "isPSTNCallingAllowed",
+      "target": "user.isPSTNCallingAllowed"
+    },
+    {
+      "source": "isTeamArchived",
+      "target": "team.isArchived"
+    },
+    {
+      "source": "locale",
+      "target": "app.locale"
+    },
+    {
+      "source": "loginHint",
+      "target": "user.loginHint"
+    },
+    {
+      "source": "meetingId",
+      "target": "meeting.id"
+    },
+    {
+      "source": "osLocaleInfo.platform",
+      "target": "app.osLocaleInfo.platform"
+    },
+    {
+      "source": "osLocaleInfo.regionalFormat",
+      "target": "app.osLocaleInfo.regionalFormat"
+    },
+    {
+      "source": "osLocaleInfo.shortDate",
+      "target": "app.osLocaleInfo.shortDate"
+    },
+    {
+      "source": "osLocaleInfo.longDate",
+      "target": "app.osLocaleInfo.longDate"
+    },
+    {
+      "source": "osLocaleInfo.shortTime",
+      "target": "app.osLocaleInfo.shortTime"
+    },
+    {
+      "source": "osLocaleInfo.longTime",
+      "target": "app.osLocaleInfo.longTime"
+    },
+    {
+      "source": "parentMessageId",
+      "target": "app.parentMessageId"
+    },
+    {
+      "source": "ringId",
+      "target": "app.host.ringId"
+    },
+    {
+      "source": "sessionId",
+      "target": "app.host.sessionId"
+    },
+    {
+      "source": "sharepoint",
+      "target": "sharepoint"
+    },
+    {
+      "source": "sourceOrigin",
+      "target": "page.sourceOrigin"
+    },
+    {
+      "source": "subEntityId",
+      "target": "page.subPageId"
+    },
+    {
+      "source": "teamId",
+      "target": "team.internalId"
+    },
+    {
+      "source": "teamName",
+      "target": "team.displayName"
+    },
+    {
+      "source": "teamSiteDomain",
+      "target": "sharepointSite.domain"
+    },
+    {
+      "source": "teamSitePath",
+      "target": "sharepointSite.path"
+    },
+    {
+      "source": "teamSiteUrl",
+      "target": "sharepointSite.url"
+    },
+    {
+      "source": "teamTemplateId",
+      "target": "team.templateId"
+    },
+    {
+      "source": "teamType",
+      "target": "team.type"
+    },
+    {
+      "source": "tenantSKU",
+      "target": "user.tenant.teamsSku"
+    },
+    {
+      "source": "theme",
+      "target": "app.theme"
+    },
+    {
+      "source": "tid",
+      "target": "user.tenant.id"
+    },
+    {
+      "source": "upn",
+      "target": "user.userPrincipalName"
+    },
+    {
+      "source": "userClickTime",
+      "target": "app.userClickTime"
+    },
+    {
+      "source": "userFileOpenPreference",
+      "target": "app.userFileOpenPreference"
+    },
+    {
+      "source": "userLicenseType",
+      "target": "user.licenseType"
+    },
+    {
+      "source": "userObjectId",
+      "target": "user.id"
+    },
+    {
+      "source": "userPrincipalName",
+      "target": "user.userPrincipalName"
+    },
+    {
+      "source": "userTeamRole",
+      "target": "team.userRole"
+    }
+  ],
+  "enumMappings": [
+    {
+      "source": "microsoftTeams.appInitialization.FailedReason",
+      "target": "microsoftTeams.app.FailedReason"
+    },
+    {
+      "source": "microsoftTeams.appInitialization.ExpectedFailureReason",
+      "target": "microsoftTeams.app.ExpectedFailureReason"
+    },
+    {
+      "source": "microsoftTeams.TaskModuleDimension",
+      "target": "microsoftTeams.DialogDimension"
+    }
+  ],
+  "interfaceMappings": [
+    {
+      "source": "microsoftTeams.appInitialization.IFailedRequest",
+      "target": "microsoftTeams.app.IFailedRequest"
+    },
+    {
+      "source": "microsoftTeams.appInitialization.IExpectedFailureRequest",
+      "target": "microsoftTeams.app.IExpectedFailureRequest"
+    },
+    {
+      "source": "microsoftTeams.FrameContext",
+      "target": "microsoftTeams.FrameInfo"
+    },
+    {
+      "source": "microsoftTeams.TaskInfo",
+      "target": "microsoftTeams.DialogInfo"
+    },
+    {
+      "source": "microsoftTeams.settings.Settings",
+      "target": "microsoftTeams.pages.config.Config"
+    },
+    {
+      "source": "microsoftTeams.settings.SaveEvent",
+      "target": "microsoftTeams.pages.config.SaveEvent"
+    },
+    {
+      "source": "microsoftTeams.settings.RemoveEvent",
+      "target": "microsoftTeams.pages.config.RemoveEvent"
+    },
+    {
+      "source": "microsoftTeams.settings.SaveParameters",
+      "target": "microsoftTeams.pages.config.SaveParameters"
+    }
+  ]
+}

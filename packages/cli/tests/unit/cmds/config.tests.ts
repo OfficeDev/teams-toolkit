@@ -384,6 +384,14 @@ describe("Config Set Command Check", () => {
       logs.push(message);
     });
     sandbox
+      .stub(Utils, "readSettingsFileSync")
+      .callsFake((rootFolder: string): Result<any, FxError> => {
+        if (rootFolder.endsWith("testProjectFolder")) {
+          return ok({});
+        }
+        return err(NonTeamsFxProjectFolder());
+      });
+    sandbox
       .stub(Utils, "readEnvJsonFile")
       .callsFake(async (rootFolder: string): Promise<Result<any, FxError>> => {
         if (rootFolder.endsWith("testProjectFolder")) {

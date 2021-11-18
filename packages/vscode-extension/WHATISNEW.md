@@ -1,6 +1,40 @@
-
+- [2.10.0 - Nov 15 2021](#2100---nov-15-2021)
+- [2.9.0 - Nov 01 2021](#290---nov-01-2021)
 - [2.8.0 - Oct 18 2021](#280---oct-18-2021)
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
+
+## 2.10.0 - Nov 15, 2021 
+
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- Enable developers with the capability to extend Teams apps to run across Microsoft 365. Developers can invoke two important commands from VS Code Command Palette to upgrade their Teams app to Microsoft 365 custom app. Get detail instructions from our [documentation](https://aka.ms/teamsfx-extend-m365). 
+
+  ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/teamsfx-extend-m365.png)
+  
+- Provide Teams sample apps which can run across Microsoft 365. Users can get a initial experience of running Teams apps in Microsoft 365 by playing with samples first. Developers can get the samples from sample gallery, or click `Create a new Teams app` -> `Start from a sample`, and select sample apps for Microsoft 365.
+
+ ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/M365sample2.png)
+ 
+ ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/M365sample1.png)
+
+## 2.9.0 - Nov 01, 2021 
+
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+Preview Features:
+- Enable CI/CD for multiple environments scenario.
+- Insider Preview features in 2.8.0 release are still in preview. Refer to [Enable insider preview featuers](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit) for how to use.
+- Upgrade existing projects to support preview features, refer to [Upgrade existing project to use latest features](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features) for more information.
+
+Enhancement:
+
+- Improve UI: more friendly user experience to create a new Teams project.
+- Improve UI: add links to source code for samples.
+- Support one-click deployment of SharePoint framework based Teams app.
+- Integrate Adaptive Card Studio with previewing and debugging Adaptive Card in VS Code.
+
+  ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/adaptive-card.gif)
 
 ## 2.8.0 - Oct 18 2021
 

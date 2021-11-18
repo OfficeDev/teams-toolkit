@@ -81,6 +81,9 @@ type BicepTemplate = {
 };
 
 // @public (undocumented)
+export const BuildFolderName = "build";
+
+// @public (undocumented)
 export const CLIPlatforms: Platform[];
 
 // @public
@@ -634,6 +637,8 @@ export interface Inputs extends Json {
     ignoreLock?: boolean;
     // (undocumented)
     platform: Platform;
+    // (undocumented)
+    projectId?: string;
     // (undocumented)
     projectPath?: string;
     // (undocumented)

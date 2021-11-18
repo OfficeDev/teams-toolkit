@@ -163,7 +163,7 @@ describe("Core basic APIs", () => {
         });
       });
     }
-    for (const param of DisableMultiEnvParams) {
+    for (const param of EnableMultiEnvParams) {
       describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
         let mockedEnvRestore: RestoreFn;
         beforeEach(() => {
@@ -173,7 +173,7 @@ describe("Core basic APIs", () => {
           mockedEnvRestore();
         });
         it("create from sample", async () => {
-          await case2();
+          await createFromSample();
         });
       });
     }
@@ -198,16 +198,13 @@ describe("Core basic APIs", () => {
   });
 
   describe("migrateV1", () => {
-    if (commonTools.isMultiEnvEnabled()) {
-      // TODO: add multi-env test case after migrateV1 for mult-env implemented
-      return;
-    }
     let mockedEnvRestore: RestoreFn;
     beforeEach(() => {
       mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });
     });
     afterEach(async () => {
       mockedEnvRestore();
+      await fs.remove(path.resolve(os.tmpdir(), "v1projectpath"));
     });
     const migrateV1Params = [
       {
@@ -219,7 +216,7 @@ describe("Core basic APIs", () => {
       {
         description: "ask app name",
         appName: "v1projectname",
-        projectPath: path.resolve(os.tmpdir(), "v1-project-path", `${appName}-errorname`),
+        projectPath: path.resolve(os.tmpdir(), "v1projectpath", `${appName}-errorname`),
         skipAppNameQuestion: false,
       },
     ];
@@ -274,7 +271,10 @@ describe("Core basic APIs", () => {
           assert.deepEqual(expectedInputs, inputs);
           inputs.projectPath = testParam.projectPath;
 
-          const projectSettingsResult = await loadProjectSettings(inputs);
+          const projectSettingsResult = await loadProjectSettings(
+            inputs,
+            commonTools.isMultiEnvEnabled()
+          );
           if (projectSettingsResult.isErr()) {
             assert.fail("failed to load project settings");
           }
@@ -283,17 +283,19 @@ describe("Core basic APIs", () => {
           const validSettingsResult = validateSettings(projectSettings);
           assert.isTrue(validSettingsResult === undefined);
 
-          const envInfoResult = await loadSolutionContext(tools, inputs, projectSettings);
-          if (envInfoResult.isErr()) {
-            assert.fail("failed to load env info");
+          if (!commonTools.isMultiEnvEnabled()) {
+            const envInfoResult = await loadSolutionContext(tools, inputs, projectSettings);
+            if (envInfoResult.isErr()) {
+              assert.fail("failed to load env info");
+            }
+
+            const solutionContext = envInfoResult.value;
+            const validRes = validateProject(solutionContext);
+            assert.isTrue(validRes === undefined);
+
+            const solutionConfig = solutionContext.envInfo.state.get("solution");
+            assert.isTrue(solutionConfig !== undefined);
           }
-
-          const solutionContext = envInfoResult.value;
-          const validRes = validateProject(solutionContext);
-          assert.isTrue(validRes === undefined);
-
-          const solutioConfig = solutionContext.envInfo.state.get("solution");
-          assert.isTrue(solutioConfig !== undefined);
         }
       });
     });
@@ -426,7 +428,7 @@ describe("Core basic APIs", () => {
     }
   }
 
-  async function case2() {
+  async function createFromSample() {
     const sampleOption = SampleSelect.staticOptions[0] as OptionItem;
     appName = sampleOption.id;
     projectPath = path.resolve(os.tmpdir(), appName);
@@ -434,7 +436,7 @@ describe("Core basic APIs", () => {
       platform: Platform.CLI,
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
-      [CoreQuestionNames.Samples]: sampleOption,
+      [CoreQuestionNames.Samples]: sampleOption.id,
       stage: Stage.create,
     };
     sandbox
@@ -461,7 +463,7 @@ describe("Core basic APIs", () => {
             });
           }
           if (config.name === CoreQuestionNames.Samples) {
-            return ok({ type: "success", result: sampleOption });
+            return ok({ type: "success", result: sampleOption.id });
           }
           throw err(InvalidInputError("invalid question"));
         }
@@ -471,9 +473,12 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = { platform: Platform.CLI };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk() && res.value === projectPath);
+      assert.isTrue(inputs.projectId !== undefined);
+      assert.isTrue(inputs.projectPath === projectPath);
+      expectedInputs.projectId = inputs.projectId;
+      expectedInputs.projectPath = inputs.projectPath;
       assert.deepEqual(expectedInputs, inputs);
       inputs.projectPath = projectPath;
-
       const projectSettingsResult = await loadProjectSettings(
         inputs,
         commonTools.isMultiEnvEnabled()

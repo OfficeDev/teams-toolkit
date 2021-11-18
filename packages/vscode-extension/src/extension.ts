@@ -17,7 +17,11 @@ import { openWelcomePageAfterExtensionInstallation } from "./controls/openWelcom
 import { VsCodeUI } from "./qm/vsc_ui";
 import { exp } from "./exp";
 import { disableRunIcon, registerRunIcon } from "./debug/runIconHandler";
-import { AdaptiveCardCodeLensProvider, CryptoCodeLensProvider } from "./codeLensProvider";
+import {
+  AdaptiveCardCodeLensProvider,
+  CryptoCodeLensProvider,
+  ManifestTemplateCodeLensProvider,
+} from "./codeLensProvider";
 import {
   Correlator,
   isMultiEnvEnabled,
@@ -32,6 +36,7 @@ import {
   InputConfigsFolderName,
   StatesFolderName,
   AdaptiveCardsFolderName,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { registerEnvTreeHandler } from "./envTree";
@@ -173,10 +178,47 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openDocumentCmd);
 
+  const openAccountLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openAccountLink",
+    (...args) => Correlator.run(handlers.openAccountLinkHandler, args)
+  );
+  context.subscriptions.push(openAccountLinkCmd);
+
+  const openEnvLinkCmd = vscode.commands.registerCommand("fx-extension.openEnvLink", (...args) =>
+    Correlator.run(handlers.openEnvLinkHandler, args)
+  );
+  context.subscriptions.push(openEnvLinkCmd);
+
+  const openDevelopmentLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openDevelopmentLink",
+    (...args) => Correlator.run(handlers.openDevelopmentLinkHandler, args)
+  );
+  context.subscriptions.push(openDevelopmentLinkCmd);
+
+  const openDeploymentLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openDeploymentLink",
+    (...args) => Correlator.run(handlers.openDeploymentLinkHandler, args)
+  );
+  context.subscriptions.push(openDeploymentLinkCmd);
+
+  const openHelpFeedbackLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openHelpFeedbackLink",
+    (...args) => Correlator.run(handlers.openHelpFeedbackLinkHandler, args)
+  );
+  context.subscriptions.push(openHelpFeedbackLinkCmd);
+
   const openManifestCmd = vscode.commands.registerCommand("fx-extension.openManifest", (...args) =>
     Correlator.run(handlers.openManifestHandler, args)
   );
   context.subscriptions.push(openManifestCmd);
+
+  const openManifestSchemaCmd = vscode.commands.registerCommand(
+    "fx-extension.openSchema",
+    (...args) => {
+      Correlator.run(handlers.openExternalHandler, args);
+    }
+  );
+  context.subscriptions.push(openManifestSchemaCmd);
 
   const openAppManagementCmd = vscode.commands.registerCommand(
     "fx-extension.openAppManagement",
@@ -224,6 +266,18 @@ export async function activate(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.openAdaptiveCardExt, args)
   );
   context.subscriptions.push(adaptiveCardCodeLensCmd);
+
+  const manifestTemplateCodeLensCmd = vscode.commands.registerCommand(
+    "fx-extension.openPreviewFile",
+    (...args) => Correlator.run(handlers.openPreviewManifest, args)
+  );
+  context.subscriptions.push(manifestTemplateCodeLensCmd);
+
+  const openConfigCmd = vscode.commands.registerCommand(
+    "fx-extension.openConfig",
+    (cipher, selection) => Correlator.run(handlers.openConfigFile)
+  );
+  context.subscriptions.push(openConfigCmd);
 
   const createNewEnvironment = vscode.commands.registerCommand(
     "fx-extension.addEnvironment",
@@ -324,6 +378,13 @@ export async function activate(context: vscode.ExtensionContext) {
     pattern: adaptiveCardFilePattern,
   };
 
+  const manifestTemplateCodeLensProvider = new ManifestTemplateCodeLensProvider();
+  const manifestTemplateSelecctor = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/manifest.*.template.json`,
+  };
+
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
   );
@@ -334,6 +395,12 @@ export async function activate(context: vscode.ExtensionContext) {
     vscode.languages.registerCodeLensProvider(
       adaptiveCardFileSelector,
       adaptiveCardCodeLensProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      manifestTemplateSelecctor,
+      manifestTemplateCodeLensProvider
     )
   );
 
@@ -374,6 +441,18 @@ export async function activate(context: vscode.ExtensionContext) {
     Correlator.run(handlers.migrateV1ProjectHandler)
   );
   context.subscriptions.push(migrateV1Cmd);
+
+  const migrateTeamsTabAppCmd = vscode.commands.registerCommand(
+    "fx-extension.migrateTeamsTabApp",
+    () => Correlator.run(handlers.migrateTeamsTabAppHandler)
+  );
+  context.subscriptions.push(migrateTeamsTabAppCmd);
+
+  const migrateTeamsManifestCmd = vscode.commands.registerCommand(
+    "fx-extension.migrateTeamsManifest",
+    () => Correlator.run(handlers.migrateTeamsManifestHandler)
+  );
+  context.subscriptions.push(migrateTeamsManifestCmd);
 
   // 2. Call activate function of toolkit core.
   await handlers.activate();

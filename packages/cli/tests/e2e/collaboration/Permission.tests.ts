@@ -16,7 +16,7 @@ import {
   setSimpleAuthSkuNameToB1,
 } from "../commonUtils";
 
-describe("Permission", function () {
+describe("Collaboration", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
@@ -25,7 +25,7 @@ describe("Permission", function () {
   const creator = process.env["M365_ACCOUNT_NAME"];
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
 
-  it("Permissions", async function () {
+  it("Collaboration: CLI with permission status and permission grant", async function () {
     // new a project
     await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
       cwd: testFolder,
@@ -45,7 +45,7 @@ describe("Permission", function () {
     console.log("[Successfully] provision");
 
     // Check Permission
-    const checkPermissionResult = await execAsync(`teamsfx permission status`, {
+    const checkPermissionResult = await execAsyncWithRetry(`teamsfx permission status`, {
       cwd: projectPath,
       env: processEnv,
       timeout: 0,
@@ -60,7 +60,7 @@ describe("Permission", function () {
     console.log("[Successfully] check permission");
 
     // Grant Permission
-    const grantCollaboratorResult = await execAsync(
+    const grantCollaboratorResult = await execAsyncWithRetry(
       `teamsfx permission grant --email ${collaborator}`,
       {
         cwd: projectPath,

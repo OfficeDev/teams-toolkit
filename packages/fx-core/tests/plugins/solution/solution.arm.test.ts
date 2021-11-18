@@ -25,6 +25,7 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   TabOptionItem,
+  BotOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   deployArmTemplates,
@@ -32,6 +33,7 @@ import {
   generateArmTemplate,
   pollDeploymentStatus,
 } from "../../../src/plugins/solution/fx-solution/arm";
+import { ArmTemplateResult } from "../../../src/common/armInterface";
 import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 import { it } from "mocha";
 import path from "path";
@@ -41,9 +43,10 @@ import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { ResourceManagementModels, Deployments } from "@azure/arm-resources";
 import { WebResourceLike, HttpHeaders } from "@azure/ms-rest-js";
 import {
-  mockedAadScaffoldArmResult,
   mockedFehostScaffoldArmResult,
   mockedSimpleAuthScaffoldArmResult,
+  mockedAadScaffoldArmResult,
+  mockedBotArmTemplateResultFunc,
 } from "./util";
 import * as tools from "../../../src/common/tools";
 import * as cpUtils from "../../../src/common/cpUtils";
@@ -53,7 +56,7 @@ import "../../../src/plugins/resource/frontend";
 import "../../../src/plugins/resource/simpleauth";
 import "../../../src/plugins/resource/spfx";
 import "../../../src/plugins/resource/aad";
-import { environmentManager } from "../../../src";
+import { environmentManager } from "../../../src/core/environment";
 import { LocalCrypto } from "../../../src/core/crypto";
 
 let mockedEnvRestore: () => void;
@@ -67,6 +70,7 @@ const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin)
   ArmResourcePlugin;
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin & ArmResourcePlugin;
 const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin & ArmResourcePlugin;
+const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin) as Plugin & ArmResourcePlugin;
 
 const baseFolder = "./templates/azure";
 const templatesFolder = "./templates";
@@ -76,6 +80,16 @@ const configFolderName = "./.fx/configs";
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const fileEncoding = "UTF8";
 const templateFolder = path.join(baseFolder, templateFolderName);
+
+const TEST_SUBSCRIPTION_ID = "11111111-2222-3333-4444-555555555555";
+const TEST_RESOURCE_GROUP_NAME = "test_resource_group_name";
+
+enum PluginId {
+  FrontendHosting = "fx-resource-frontend-hosting",
+  Identity = "fx-resource-identity",
+  SimpleAuth = "fx-resource-simple-auth",
+  BotPlugin = "fx-resource-bot",
+}
 
 function mockSolutionContext(): SolutionContext {
   return {
@@ -149,15 +163,18 @@ describe("Generate ARM Template for project", () => {
 
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedFehostScaffoldArmResult);
+      const res: ArmTemplateResult = mockedFehostScaffoldArmResult();
+      return ok(res);
     });
 
     mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedSimpleAuthScaffoldArmResult);
+      const res: ArmTemplateResult = mockedSimpleAuthScaffoldArmResult();
+      return ok(res);
     });
 
     mocker.stub(aadPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedAadScaffoldArmResult);
+      const res: ArmTemplateResult = mockedAadScaffoldArmResult();
+      return ok(res);
     });
 
     mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
@@ -170,28 +187,37 @@ describe("Generate ARM Template for project", () => {
     expect(
       await fs.readFile(path.join(projectArmTemplateFolder, "../main.bicep"), fileEncoding)
     ).equals(
-      `param resourceBaseName string
-Mocked frontend hosting parameter content
-Mocked simple auth parameter content
+      `@secure()
+param provisionParameters object
 
-Mocked frontend hosting variable content
-Mocked simple auth variable content
+module provision './provision.bicep' = {
+  name: 'provisionResources'
+  params: {
+    provisionParameters: provisionParameters
+  }
+}
 
-Mocked frontend hosting module content. Module path: ./modules/frontendHostingProvision.bicep. Variable: Mocked simple auth endpoint
-Mocked simple auth module content. Module path: ./modules/simpleAuthProvision.bicep. Variable: Mocked frontend hosting endpoint
+module teamsFxConfig './config.bicep' = {
+  name: 'addTeamsFxConfigurations'
+  params: {
+    provisionParameters: provisionParameters
+    provisionOutputs: provision
+  }
+}
 
-Mocked frontend hosting output content
-Mocked simple auth output content`
+output provisionOutput object = provision
+output teamsFxConfigurationOutput object = contains(reference(resourceId('Microsoft.Resources/deployments', teamsFxConfig.name), '2020-06-01'), 'outputs') ? teamsFxConfig : {}
+`
     );
     expect(
       await fs.readFile(
-        path.join(projectArmTemplateFolder, "frontendHostingProvision.bicep"),
+        path.join(projectArmTemplateFolder, "../provision/frontendHostingProvision.bicep"),
         fileEncoding
       )
     ).equals("Mocked frontend hosting provision module content");
     expect(
       await fs.readFile(
-        path.join(projectArmTemplateFolder, "simpleAuthProvision.bicep"),
+        path.join(projectArmTemplateFolder, "../provision/simpleAuthProvision.bicep"),
         fileEncoding
       )
     ).equals("Mocked simple auth provision module content");
@@ -202,11 +228,13 @@ Mocked simple auth output content`
   "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "resourceBaseName": {
-      "value": "mytestappdefa000000"
-    },
-    "FrontendParameter": "FrontendParameterValue",
-    "SimpleAuthParameter": "SimpleAuthParameterValue"
+    "provisionParameters": {
+      "value": {
+        "resourceBaseName": "mytestappdefa000000",
+        "FrontendParameter": "FrontendParameterValue",
+        "SimpleAuthParameter": "SimpleAuthParameterValue"
+      }
+    }
   }
 }`
     );
@@ -215,7 +243,7 @@ Mocked simple auth output content`
     );
   });
 
-  it("should create backup folder when ARM template already exists", async () => {
+  it("add bot capability on tab app success", async () => {
     const mockedCtx = mockSolutionContext();
     mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
@@ -229,44 +257,117 @@ Mocked simple auth output content`
         capabilities: [TabOptionItem.id],
       },
     };
+    mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["default"]));
 
-    const projectArmBaseFolder = path.join(mockedCtx.root, baseFolder);
-    const projectArmTemplateFolder = path.join(mockedCtx.root, templateFolder);
-    const projectConfigFolder = path.join(mockedCtx.root, configFolderName);
-    const mockedParameterDefaultJsonContent = "mocked parameter.default.json file";
-    const mockedMainBicepContent = "mocked main.bicep file";
-    await fs.ensureDir(projectArmBaseFolder);
-    await fs.ensureDir(projectArmTemplateFolder);
-    await fs.ensureDir(projectConfigFolder);
-    await fs.writeFile(
-      path.join(projectConfigFolder, parameterFileName),
-      mockedParameterDefaultJsonContent
-    );
-    await fs.writeFile(path.join(projectArmBaseFolder, "main.bicep"), mockedMainBicepContent);
+    // mock plugin behavior
+    mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      const res: ArmTemplateResult = mockedFehostScaffoldArmResult();
+      return ok(res);
+    });
 
-    const result = await generateArmTemplate(mockedCtx);
+    mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      const res: ArmTemplateResult = mockedSimpleAuthScaffoldArmResult();
+      return ok(res);
+    });
 
+    mocker.stub(aadPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      const res: ArmTemplateResult = mockedAadScaffoldArmResult();
+      return ok(res);
+    });
+
+    mocker.stub(botPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      const res: ArmTemplateResult = mockedBotArmTemplateResultFunc();
+      return ok(res);
+    });
+
+    mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
+
+    const projectArmTemplateFolder = path.join(testFolder, templateFolder);
+    const projectArmParameterFolder = path.join(testFolder, configFolderName);
+    let selectedPlugins: Plugin[] = [aadPlugin, simpleAuthPlugin, fehostPlugin];
+    let result = await generateArmTemplate(mockedCtx, selectedPlugins);
     expect(result.isOk()).to.be.true;
-    const backupBaseFolder = path.join(mockedCtx.root, templatesFolder, "backup");
-    expect(await fs.pathExists(backupBaseFolder)).to.be.true;
-    const backupFolderItems = await fs.readdir(backupBaseFolder);
-    expect(backupFolderItems.length).equals(1);
-    const parameterBackupFolder = path.join(
-      backupBaseFolder,
-      backupFolderItems[0],
-      parameterFolderName
+    expect(
+      await fs.readFile(path.join(projectArmParameterFolder, parameterFileName), fileEncoding)
+    ).equals(
+      `{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "provisionParameters": {
+      "value": {
+        "resourceBaseName": "mytestappdefa000000",
+        "FrontendParameter": "FrontendParameterValue",
+        "SimpleAuthParameter": "SimpleAuthParameterValue"
+      }
+    }
+  }
+}`
     );
-    const parameterBackupFiles = await fs.readdir(parameterBackupFolder);
-    expect(parameterBackupFiles.length).equals(1);
     expect(
-      await fs.readFile(path.join(parameterBackupFolder, parameterBackupFiles[0]), fileEncoding)
-    ).equals(mockedParameterDefaultJsonContent);
-    const templateBackupFolder = path.join(backupBaseFolder, backupFolderItems[0], templatesFolder);
-    const templateBackupFiles = await fs.readdir(templateBackupFolder);
-    expect(templateBackupFiles.length).equals(2);
+      await fs.readFile(
+        path.join(projectArmTemplateFolder, "../provision/frontendHostingProvision.bicep"),
+        fileEncoding
+      )
+    ).equals("Mocked frontend hosting provision module content");
     expect(
-      await fs.readFile(path.join(templateBackupFolder, templateBackupFiles[0]), fileEncoding)
-    ).equals(mockedMainBicepContent);
+      await fs.readFile(
+        path.join(projectArmTemplateFolder, "../provision/simpleAuthProvision.bicep"),
+        fileEncoding
+      )
+    ).equals("Mocked simple auth provision module content");
+    expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../provision/bot.bicep"))).to.be
+      .false;
+    expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../teamsFx/bot.bicep"))).to.be
+      .false;
+    // Add bot capability
+    selectedPlugins = [botPlugin];
+    mockedCtx.projectSettings = {
+      appName: testAppName,
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
+        version: "1.0",
+        activeResourcePlugins: [fehostPlugin.name, simpleAuthPlugin.name],
+        capabilities: [TabOptionItem.id, BotOptionItem.id],
+      },
+    };
+    result = await generateArmTemplate(mockedCtx, selectedPlugins);
+    expect(result.isOk()).to.be.true;
+    const fileContent = await fs.readFile(
+      path.join(projectArmParameterFolder, parameterFileName),
+      fileEncoding
+    );
+    expect(fileContent).equals(
+      `{
+  "$schema": "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "provisionParameters": {
+      "value": {
+        "resourceBaseName": "mytestappdefa000000",
+        "FrontendParameter": "FrontendParameterValue",
+        "SimpleAuthParameter": "SimpleAuthParameterValue",
+        "BotParameter": "BotParameterValue"
+      }
+    }
+  }
+}`
+    );
+    expect(
+      await fs.readFile(
+        path.join(projectArmTemplateFolder, "../provision/frontendHostingProvision.bicep"),
+        fileEncoding
+      )
+    ).equals("Mocked frontend hosting provision module content");
+    expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../provision/bot.bicep"))).to.be
+      .true;
+    expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../teamsFx/bot.bicep"))).to.be
+      .true;
+    expect(
+      await fs.readFile(path.join(projectArmTemplateFolder, "../provision/bot.bicep"), fileEncoding)
+    ).equals("Mocked bot Provision content. simple auth endpoint: Mocked simple auth endpoint");
   });
 });
 
@@ -278,27 +379,48 @@ describe("Deploy ARM Template to Azure", () => {
   const testClientSecret = "test_client_secret";
   const testEnvValue = "test env value";
   const testResourceSuffix = "-testSuffix";
+  const testStorageName = "test_storage_name";
   let parameterFileName: string;
+
+  const frontendhostingTestDomain = "testfrontendhosting.z13.web.core.windows.net";
+  const frontendhostingTestEndpoint = `https://${testStorageName}.z13.web.core.windows.net`;
+  const frontendhostingTestResourceId = `/subscriptions/${TEST_SUBSCRIPTION_ID}/resourceGroups/${TEST_RESOURCE_GROUP_NAME}/providers/Microsoft.Storage/storageAccounts/${testStorageName}`;
+  const identityTestName = "test-identity";
+  const identityTestResourceId = `/subscriptions/${TEST_SUBSCRIPTION_ID}/resourceGroups/${TEST_RESOURCE_GROUP_NAME}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${identityTestName}`;
+  const identityTestClientId = "test-identity-client-id";
+  const simpleAuthTestEndpoint = "https://test-simpleauth-webapp.azurewebsites.net";
+  const simpleAuthTestWebAppResourceId = `/subscriptions/${TEST_SUBSCRIPTION_ID}/resourceGroups/${TEST_RESOURCE_GROUP_NAME}/providers/Microsoft.Web/sites/test-simpleAuth-webapp`;
   const testArmTemplateOutput = {
-    frontendHosting_storageResourceId: {
-      type: "String",
-      value: "test_storage_resource_id",
-    },
-    frontendHosting_endpoint: {
-      type: "String",
-      value: "https://test_frontendhosting_domain/",
-    },
-    frontendHosting_domain: {
-      type: "String",
-      value: "test_frontendhosting_domain",
-    },
-    simpleAuth_skuName: {
-      type: "String",
-      value: "B1",
-    },
-    simpleAuth_endpoint: {
-      type: "String",
-      value: "https://test_simpleauth_domain",
+    provisionOutput: {
+      type: "Object",
+      value: {
+        frontendHostingOutput: {
+          type: "Object",
+          value: {
+            teamsFxPluginId: PluginId.FrontendHosting,
+            domain: frontendhostingTestDomain,
+            endpoint: frontendhostingTestEndpoint,
+            resourceId: frontendhostingTestResourceId,
+          },
+        },
+        identityOutput: {
+          type: "Object",
+          value: {
+            teamsFxPluginId: PluginId.Identity,
+            identityName: identityTestName,
+            identityResourceId: identityTestResourceId,
+            identityClientId: identityTestClientId,
+          },
+        },
+        simpleAuthOutput: {
+          type: "Object",
+          value: {
+            teamsFxPluginId: PluginId.SimpleAuth,
+            endpoint: simpleAuthTestEndpoint,
+            webAppResourceId: simpleAuthTestWebAppResourceId,
+          },
+        },
+      },
     },
   };
   const SOLUTION_CONFIG = "solution";
@@ -317,6 +439,9 @@ describe("Deploy ARM Template to Azure", () => {
       >
     ).callsFake((file: number | PathLike): Promise<string> => {
       return fileContent.get(file.toString());
+    });
+    mocker.stub(fs, "appendFile").callsFake(async (path: number | PathLike, data: any) => {
+      fileContent.set(path.toString(), data);
     });
     mocker.stub(fs, "stat").callsFake((filePath: PathLike): Promise<fs.Stats> => {
       if (fileContent.has(filePath.toString())) {
@@ -349,7 +474,7 @@ describe("Deploy ARM Template to Azure", () => {
       "value": "{{state.fx-resource-aad-app-for-teams.clientSecret}}"
     },
     "envValue": {
-      "value": "{{MOCKED_EXPAND_VAR_TEST}}"
+      "value": "{{$env.MOCKED_EXPAND_VAR_TEST}}"
     }
   }
   }
@@ -360,8 +485,8 @@ describe("Deploy ARM Template to Azure", () => {
 
   afterEach(() => {
     envRestore();
-    mockedEnvRestore();
     mocker.restore();
+    mockedEnvRestore();
   });
 
   it("should fail when main.bicep do not exist", async () => {
@@ -386,7 +511,7 @@ describe("Deploy ARM Template to Azure", () => {
       SOLUTION_CONFIG,
       new ConfigMap([
         ["resource-base-name", "mocked resource base name"],
-        ["resourceGroupName", "mocked resource group name"],
+        ["resourceGroupName", TEST_RESOURCE_GROUP_NAME],
       ])
     );
 
@@ -491,9 +616,40 @@ describe("Deploy ARM Template to Azure", () => {
         }
       }`)
     );
+
     chai.assert.strictEqual(
-      mockedCtx.envInfo.state.get(SOLUTION_CONFIG)?.get("armTemplateOutput"),
-      testArmTemplateOutput
+      mockedCtx.envInfo.state.get(PluginId.FrontendHosting)?.get("domain"),
+      frontendhostingTestDomain
+    );
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.FrontendHosting)?.get("endpoint"),
+      frontendhostingTestEndpoint
+    );
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.FrontendHosting)?.get("resourceId"),
+      frontendhostingTestResourceId
+    );
+
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.Identity)?.get("identityName"),
+      identityTestName
+    );
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.Identity)?.get("identityResourceId"),
+      identityTestResourceId
+    );
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.Identity)?.get("identityClientId"),
+      identityTestClientId
+    );
+
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.SimpleAuth)?.get("endpoint"),
+      simpleAuthTestEndpoint
+    );
+    chai.assert.strictEqual(
+      mockedCtx.envInfo.state.get(PluginId.SimpleAuth)?.get("webAppResourceId"),
+      simpleAuthTestWebAppResourceId
     );
   });
 
@@ -566,9 +722,9 @@ describe("Deploy ARM Template to Azure", () => {
     mockedCtx.envInfo.state.set(
       SOLUTION_CONFIG,
       new ConfigMap([
-        ["resourceGroupName", "mocked resource group name"],
+        ["resourceGroupName", TEST_RESOURCE_GROUP_NAME],
         ["resourceNameSuffix", testResourceSuffix],
-        ["subscriptionId", "mocked subscription id"],
+        ["subscriptionId", TEST_SUBSCRIPTION_ID],
       ])
     );
 
@@ -584,7 +740,7 @@ describe("Deploy ARM Template to Azure", () => {
 
     mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
       const subscriptionInfo = {
-        subscriptionId: "test_subsctiption_id",
+        subscriptionId: TEST_SUBSCRIPTION_ID,
         subscriptionName: "test_subsctiption_name",
       } as SubscriptionInfo;
       return subscriptionInfo;

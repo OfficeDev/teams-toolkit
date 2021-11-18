@@ -38,8 +38,8 @@ interface TestSuite {
 }
 
 enum TestPointOutCome {
-  passed = 2,
-  failed = 3,
+  passed = "passed",
+  failed = "failed",
 }
 
 interface TestPoint {
@@ -104,8 +104,9 @@ const VSCodeTestPlanTemplate: TestPlan = {
   name: "VSCode Test Plan Template",
 };
 
-const BaseURL: string =
-  "https://dev.azure.com/msazure/Microsoft Teams Extensibility/_apis/testplan";
+const BaseURL: URL = new URL(
+  "https://dev.azure.com/msazure/Microsoft Teams Extensibility/_apis/testplan"
+);
 
 const CommonHeaders = {
   "Content-Type": "application/json",
@@ -114,7 +115,7 @@ const CommonHeaders = {
 
 class ADOTestPlanClient {
   private static client: axios.AxiosInstance = axios.default.create({
-    baseURL: BaseURL,
+    baseURL: BaseURL.toString(),
     timeout: 1000 * 100,
     headers: CommonHeaders,
     auth: {
@@ -125,16 +126,17 @@ class ADOTestPlanClient {
 
   public static async reportTestResult(
     planID: number,
-    tests: MochaTest[]
+    passes: MochaTest[],
+    failures: MochaTest[]
   ): Promise<boolean> {
-    let successSet = new Set();
-    let failSet = new Set();
-    for (let i in tests) {
-      if (tests[i].err) {
-        failSet.add(tests[i].title.trim());
-      } else {
-        successSet.add(tests[i].title.trim());
-      }
+    let passSet = new Set();
+    let failurSet = new Set();
+    for (let i in passes) {
+      passSet.add(passes[i].title.trim());
+    }
+
+    for (let i in failures) {
+      failurSet.add(failures[i].title.trim());
     }
 
     const points = await this.AllTestPoints(planID);
@@ -146,12 +148,12 @@ class ADOTestPlanClient {
     for (let i in points) {
       const suiteID = points[i].testSuite.id;
       let flag = false;
-      if (successSet.has(points[i].testCaseReference.name.trim())) {
+      if (passSet.has(points[i].testCaseReference.name.trim())) {
         points[i].results = { outcome: TestPointOutCome.passed };
         flag = true;
       }
 
-      if (failSet.has(points[i].testCaseReference.name.trim())) {
+      if (failurSet.has(points[i].testCaseReference.name.trim())) {
         points[i].results = { outcome: TestPointOutCome.failed };
         flag = true;
       }
@@ -165,7 +167,7 @@ class ADOTestPlanClient {
       }
     }
 
-    console.log(suitePoints);
+    console.log(JSON.stringify(suitePoints));
     for (let [k, v] of suitePoints) {
       await this.updateTestPoint(planID, k, v);
     }
@@ -428,7 +430,11 @@ async function SyncToTestPlan() {
       process.argv[5].trim()
     );
 
-    ADOTestPlanClient.reportTestResult(testPlan.id, results.tests);
+    ADOTestPlanClient.reportTestResult(
+      testPlan.id,
+      results.passes,
+      results.failures
+    );
   } catch (error) {
     throw error;
   }
@@ -475,6 +481,7 @@ async function main() {
       SyncToTestPlan().catch((err: any) => {
         throw err;
       });
+      break;
     }
     case "stat": {
       getTestPlanStat()
@@ -484,6 +491,7 @@ async function main() {
         .catch((err: any) => {
           throw err;
         });
+      break;
     }
   }
 }

@@ -9,7 +9,7 @@ import {
   IServicePrincipals,
 } from "../interfaces/IAadResource";
 import { IName } from "../interfaces/IName";
-import { AzureResource, OperationStatus, Operation, ErrorHandlerResult } from "../constants";
+import { AzureResource, OperationStatus, Operation } from "../constants";
 import { LogProvider, TelemetryReporter } from "@microsoft/teamsfx-api";
 import { LogMessages } from "../log";
 import { Telemetry } from "../utils/telemetry";
@@ -19,11 +19,18 @@ export class AadService {
   private readonly logger: LogProvider | undefined;
   private readonly telemetryReporter: TelemetryReporter | undefined;
   private readonly axios: AxiosInstance;
+  private readonly maxRetries: number | undefined;
 
-  constructor(axios: AxiosInstance, telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
+  constructor(
+    axios: AxiosInstance,
+    telemetryReporter?: TelemetryReporter,
+    logger?: LogProvider,
+    maxRetries?: number
+  ) {
     this.logger = logger;
     this.telemetryReporter = telemetryReporter;
     this.axios = axios;
+    this.maxRetries = maxRetries;
   }
 
   public async createAad(aadName: string): Promise<IAadInfo> {
@@ -179,6 +186,6 @@ export class AadService {
         );
         throw wrappedError;
       }
-    });
+    }, this.maxRetries);
   }
 }

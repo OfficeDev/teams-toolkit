@@ -7,14 +7,56 @@ import InMeetingApp from "../../media/in-meeting-app.png";
 import ShareNow from "../../media/share-now.gif";
 import ToDoList from "../../media/to-do-list.gif";
 import ToDoListSharepoint from "../../media/to-do-list-sharepoint.gif";
+import ToDoListM365 from "../../media/to-do-list-M365.gif";
+import NpmSearchConnectorM365 from "../../media/npm-search-connector-M365.gif";
+import HelloWorldTab from "../../media/helloWorld-tab.gif";
+import HelloWorldTabWithBackend from "../../media/helloWorld-tab-with-backend.gif";
+import { EventMessages } from "./messages";
+
+interface SampleInfo {
+  id: string;
+  title: string;
+  shortDescription: string;
+  fullDescription: string;
+  tags: string[];
+  link: string;
+}
+
+interface SampleCollection {
+  baseUrl: string;
+  samples: SampleInfo[];
+}
+
+const imageMapping: { [p: string]: any } = {
+  "todo-list-with-Azure-backend": ToDoList,
+  "todo-list-SPFx": ToDoListSharepoint,
+  "share-now": ShareNow,
+  "in-meeting-app": InMeetingApp,
+  "faq-plus": FAQPlus,
+  "todo-list-with-Azure-backend-M365": ToDoListM365,
+  "NPM-search-connector-M365": NpmSearchConnectorM365,
+  "hello-world-tab": HelloWorldTab,
+  "hello-world-tab-with-backend": HelloWorldTabWithBackend,
+};
 
 export default class SampleGallery extends React.Component<any, any> {
   constructor(props: any) {
     super(props);
+    this.state = {
+      baseUrl: "",
+      samples: [],
+    };
   }
 
-  componentDidMount() {
+  componentWillMount() {
     window.addEventListener("message", this.receiveMessage, false);
+    this.loadSampleCollection();
+  }
+
+  loadSampleCollection() {
+    vscode.postMessage({
+      command: Commands.LoadSampleCollection,
+    });
   }
 
   render() {
@@ -39,46 +81,7 @@ export default class SampleGallery extends React.Component<any, any> {
           styles={{ root: { overflow: "visible" } }}
           tokens={{ childrenGap: 20 }}
         >
-          <SampleAppCard
-            image={ToDoList}
-            tags={["React", "Azure function", "Azure SQL", "JS", "CI/CD"]}
-            title="Todo List with Azure backend"
-            description="Todo List provides an easy way to manage to-do items in Teams Client. This app helps enabling task collaboration and management for your team. The frontend is a React app and the backend is hosted on Azure. You will need an Azure subscription to run the app."
-            sampleAppFolder="todo-list-with-Azure-backend"
-            sampleAppUrl="https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
-          />
-          <SampleAppCard
-            image={ToDoListSharepoint}
-            tags={["SharePoint", "SPFx", "TS"]}
-            title="Todo List with SPFx "
-            description="Todo List with SPFx is a Todo List for individuals to manage his/her personal to-do items. This app is hosted on Sharepoint. There is no requirements to deploy Azure resources."
-            sampleAppFolder="todo-list-SPFx"
-            sampleAppUrl="https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
-          />
-          <SampleAppCard
-            image={ShareNow}
-            tags={["Tab", "Message Extension", "TS"]}
-            title="Share Now"
-            description="Share Now promotes the exchange of information between colleagues by enabling users to share content within the Teams environment. Users engage the app to share items of interest, discover new shared content, set preferences, and bookmark favorites for later reading."
-            sampleAppFolder="share-now"
-            sampleAppUrl="https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
-          />
-          <SampleAppCard
-            image={InMeetingApp}
-            tags={["Meeting extension", "JS"]}
-            title="In-meeting App"
-            description="In-meeting app is a hello-world template which shows how to build an app in the context of a Teams meeting. This is a hello-world sample which does not provide any functional feature. This app contains a side panel and a Bot which only shows user profile and can only be added to a Teams meeting."
-            sampleAppFolder="in-meeting-app"
-            sampleAppUrl="https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
-          />
-          <SampleAppCard
-            image={FAQPlus}
-            tags={["Easy QnA", "Bot", "JS"]}
-            title="FAQ Plus"
-            description="FAQ Plus is a conversational Q&A bot providing an easy way to answer frequently asked questions by users. One can ask a question and the bot responds with information in the knowledge base. If the answer is not in the knowledge base, the bot submits the question to a pre-configured team of experts who help provide support."
-            sampleAppFolder="faq-plus"
-            sampleAppUrl="https://github.com/OfficeDev/TeamsFx-Samples/archive/refs/heads/main.zip"
-          />
+          <SampleAppCardList samples={this.state.samples} baseUrl={this.state.baseUrl} />
         </Stack>
       </div>
     );
@@ -86,12 +89,44 @@ export default class SampleGallery extends React.Component<any, any> {
 
   receiveMessage = (event: any) => {
     const message = event.data.message;
-
     switch (message) {
+      case EventMessages.LoadSampleCollection:
+        const sampleCollection = event.data.data as SampleCollection;
+        this.setState({
+          baseUrl: sampleCollection.baseUrl,
+          samples: sampleCollection.samples,
+        });
+        break;
       default:
         break;
     }
   };
+}
+
+class SampleAppCardList extends React.Component<any, any> {
+  constructor(props: any) {
+    super(props);
+  }
+
+  render() {
+    const samples = this.props.samples as Array<SampleInfo>;
+    if (samples) {
+      const baseUrl = this.props.baseUrl;
+      return samples.map((sample) => {
+        return (
+          <SampleAppCard
+            baseUrl={baseUrl}
+            image={imageMapping[sample.id]}
+            tags={sample.tags}
+            title={sample.title}
+            description={sample.fullDescription}
+            sampleAppFolder={sample.id}
+            sampleAppUrl={sample.link}
+          />
+        );
+      });
+    }
+  }
 }
 
 class SampleAppCard extends React.Component<any, any> {
@@ -164,14 +199,14 @@ class SampleAppCard extends React.Component<any, any> {
         <h3>{this.props.description}</h3>
         <div className="section buttons">
           <PrimaryButton
-            text="Repository"
+            text="View on Github"
             className="right-aligned"
             onClick={() => {
-              this.viewSampleApp(this.props.sampleAppFolder);
+              this.viewSampleApp(this.props.sampleAppFolder, this.props.baseUrl);
             }}
           />
           <PrimaryButton
-            text="Download"
+            text="Create"
             className="right-aligned"
             onClick={() => {
               this.cloneSampleApp(
@@ -197,8 +232,7 @@ class SampleAppCard extends React.Component<any, any> {
     });
   };
 
-  viewSampleApp = (sampleAppFolder: string) => {
-    const sampleBaseUrl = "https://github.com/OfficeDev/TeamsFx-Samples/tree/main/";
+  viewSampleApp = (sampleAppFolder: string, sampleBaseUrl: string) => {
     vscode.postMessage({
       command: Commands.OpenExternalLink,
       data: sampleBaseUrl + sampleAppFolder,

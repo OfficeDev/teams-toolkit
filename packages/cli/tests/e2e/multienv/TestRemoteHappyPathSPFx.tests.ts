@@ -14,10 +14,10 @@ import {
   loadContext,
   mockTeamsfxMultiEnvFeatureFlag,
 } from "../commonUtils";
-import { AppPackageFolderName } from "@microsoft/teamsfx-api";
+import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import { AppStudioValidator } from "../../commonlib";
 
-describe("Start a new project", function () {
+describe("Multi Env Happy Path for SPFx", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
@@ -25,8 +25,8 @@ describe("Start a new project", function () {
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
   const env = "e2e";
 
-  it("Create SPFx project without framework - Test Plan ID 9426251", async function () {
-    const command = `teamsfx new --interactive false --app-name ${appName} --host-type spfx --spfx-framework-type ${type} --spfx-webpart-name helloworld --programming-language typescript`;
+  it("Can create/provision/deploy/validate/package/publish an SPFx project", async function () {
+    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities tab-spfx --spfx-framework-type ${type} --spfx-webpart-name helloworld --programming-language typescript`;
     let result = await execAsync(command, {
       cwd: testFolder,
       env: processEnv,
@@ -135,7 +135,7 @@ describe("Start a new project", function () {
 
     {
       // Validate package
-      const file = `${projectPath}/${AppPackageFolderName}/appPackage.${env}.zip`;
+      const file = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`;
       expect(await fs.pathExists(file)).to.be.true;
     }
 

@@ -3,6 +3,7 @@
 // Licensed under the MIT license.
 
 import { UserError } from "@microsoft/teamsfx-api";
+import { RestError } from "@azure/ms-rest-js";
 
 /**
  * Void is used to construct Result<Void, FxError>.
@@ -38,6 +39,7 @@ export const DEFAULT_FUNC_NAME = "defaultFunctionName";
  * Config key whose value is output of ARM templates deployment.
  */
 export const ARM_TEMPLATE_OUTPUT = "armTemplateOutput";
+export const TEAMS_FX_RESOURCE_ID_KEY = "teamsFxPluginId";
 
 /**
  * Config key whose value is the resource group name of project.
@@ -92,7 +94,6 @@ export enum SolutionError {
   NoAppStudioToken = "NoAppStudioToken",
   NoTeamsAppTenantId = "NoTeamsAppTenantId",
   NoUserName = "NoUserName",
-  FailedToCheckResourceGroupExistence = "FailedToCheckResourceGroupExistence",
   FailedToCreateResourceGroup = "FailedToCreateResourceGroup",
   FailedToListResourceGroup = "FailedToListResourceGrouop",
   FailedToListResourceGroupLocation = "FailedToListResourceGroupLocation",
@@ -136,8 +137,8 @@ export enum SolutionError {
   FailedToCompileBicepFiles = "FailedToCompileBicepFiles",
   FailedToGetAzureCredential = "FailedToGetAzureCredential",
   FailedToGenerateArmTemplates = "FailedToGenerateArmTemplates",
+  FailedToUpdateArmParameters = "FailedToUpdateArmTemplates",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
-  V1ProjectNotSupported = "V1ProjectNotSupported",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
   M365TenantNotMatch = "M365TenantNotMatch",
   FeatureNotSupported = "FeatureNotSupported",
@@ -234,3 +235,51 @@ export enum SolutionTelemetrySuccess {
 
 export const SolutionTelemetryComponentName = "solution";
 export const SolutionSource = "Solution";
+
+export class UnauthorizedToCheckResourceGroupError extends UserError {
+  constructor(resourceGroupName: string, subscriptionId: string, subscriptionName: string) {
+    const subscriptionInfoString =
+      subscriptionId + (subscriptionName.length > 0 ? `(${subscriptionName})` : "");
+    super(
+      new.target.name,
+      `Unauthorized to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'. Please check your Azure subscription.`,
+      SolutionSource
+    );
+  }
+}
+
+export class FailedToCheckResourceGroupExistenceError extends UserError {
+  constructor(
+    error: unknown,
+    resourceGroupName: string,
+    subscriptionId: string,
+    subscriptionName: string
+  ) {
+    const subscriptionInfoString =
+      subscriptionId + (subscriptionName.length > 0 ? `(${subscriptionName})` : "");
+    const baseErrorMessage = `Failed to check the existence of resource group '${resourceGroupName}' in subscription '${subscriptionInfoString}'`;
+
+    if (error instanceof RestError) {
+      // Avoid sensitive information like request headers in the error message.
+      const rawErrorString = JSON.stringify({
+        code: error.code,
+        statusCode: error.statusCode,
+        body: error.body,
+        name: error.name,
+        message: error.message,
+      });
+
+      super(new.target.name, `${baseErrorMessage}, error: '${rawErrorString}'`, SolutionSource);
+    } else if (error instanceof Error) {
+      // Reuse the original error object to prevent losing the stack info
+      error.message = `${baseErrorMessage}, error: '${error.message}'`;
+      super(error, SolutionSource, new.target.name);
+    } else {
+      super(
+        new.target.name,
+        `${baseErrorMessage}, error: '${JSON.stringify(error)}'`,
+        SolutionSource
+      );
+    }
+  }
+}

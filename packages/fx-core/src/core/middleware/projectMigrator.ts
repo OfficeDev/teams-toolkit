@@ -410,7 +410,7 @@ async function postMigration(
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
       [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
     });
-    core.tools.ui.reload?.();
+    await core.tools.ui.reload?.();
   } else {
     core.tools.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessage);
   }

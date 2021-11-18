@@ -13,24 +13,30 @@ import {
   TeamsAppLocalResourceProfile,
   TeamsFxResourceProfile,
 } from "./resourceProfile";
-import { Dependency } from "./solutionSettings";
-export interface ScaffoldingPlugin {
+export interface FrameworkProvider {
   name: string;
   runtimeStacks: RuntimeStacks[];
   languages: string[];
-  moduleOption: OptionItem;
-  scaffoldSourceCode?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+  frameworkOptions: OptionItem[];
+  scaffold: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 
-export interface ContainerHostingPlugin {
+export interface SampleProvider {
   name: string;
-  hostingOption: OptionItem;
+  runtimeStacks: RuntimeStacks[];
+  languages: string[];
+  sampleOptions: OptionItem[];
+  scaffold: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+}
+
+export interface ResourceProvider {
+  name: string;
+  resourceOptions: OptionItem[];
   runtimeStacks?: RuntimeStacks[];
   /**
    * return dependent components when activating plugins
    */
-  getDependencies(ctx: Context, inputs: Inputs): Promise<Result<Dependency[], FxError>>;
-  //all plugins are built-in plugins: aad, appStudio, localDebug, simpleAuth, bot
+  getDependencies(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>>;
   provisionLocalResource?: (
     ctx: Context,
     inputs: Inputs,
@@ -45,29 +51,30 @@ export interface ContainerHostingPlugin {
     teamsAppLocalResourceProfile: TeamsAppLocalResourceProfile,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
+
+  provisionResource?: (
+    ctx: Context,
+    inputs: ProvisionInputs,
+    tokenProvider: TokenProvider,
+    resourceProfile?: AzureResource
+  ) => Promise<Result<AzureResource, FxError>>;
+
   generateResourceTemplate?: (
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<ResourceTemplate, FxError>>;
+
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
     appResourceProfile: TeamsFxResourceProfile,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
+
   deploy?: (
     ctx: Context,
     inputs: DeploymentInputs,
     resourceProfile: AzureResource,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
-}
-
-export interface ResourceHostingPlugin {
-  name: string;
-  hostingOption: OptionItem;
-  generateResourceTemplate?: (
-    ctx: Context,
-    inputs: Inputs
-  ) => Promise<Result<ResourceTemplate, FxError>>;
 }

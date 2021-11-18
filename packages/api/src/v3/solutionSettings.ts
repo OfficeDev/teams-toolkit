@@ -24,7 +24,6 @@ export interface Module extends Json {
 export interface Resource extends Json {
   name: string;
   resourceProvider?: string;
-  dependencies?: string[];
   runtimeStack?: RuntimeStacks;
 }
 

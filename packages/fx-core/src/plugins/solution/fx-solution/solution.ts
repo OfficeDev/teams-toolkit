@@ -1962,7 +1962,7 @@ export class TeamsAppSolution implements Solution {
           { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
           { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
           {
-            content: `Starting list all collaborators for environment: `,
+            content: `Starting list all teams app owners for environment: `,
             color: Colors.BRIGHT_WHITE,
           },
           { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },

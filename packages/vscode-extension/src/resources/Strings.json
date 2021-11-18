@@ -111,6 +111,7 @@
       "localDebugTitle": "Local debug",
       "configTitle": "Change location",
       "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension.",
+      "teamsAppIdNotFound": "Failed to find 'fx-resource-appstudio.teamsAppId' in 'state.%s.json'.",
       "provisionBeforeGrantPermission": "You must provision the project first before adding owners for others"
     },
     "progressHandler": {

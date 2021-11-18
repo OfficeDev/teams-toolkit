@@ -1567,9 +1567,8 @@ export async function showError(e: UserError | SystemError) {
     const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, issue);
     if (button) await button.run();
   } else {
-    if (e instanceof ConcurrentError)
-      await window.showWarningMessage(`[${errorCode}]: ${e.message}`);
-    else await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
+    if (!(e instanceof ConcurrentError))
+      await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
   }
 }
 

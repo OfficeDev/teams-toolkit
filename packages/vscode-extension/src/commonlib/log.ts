@@ -29,12 +29,12 @@ export class VsCodeLogProvider implements LogProvider {
     return VsCodeLogProvider.instance;
   }
 
-  trace(message: string): Promise<boolean> {
+  async trace(message: string): Promise<boolean> {
     // return this.log(LogLevel.Trace, message);
     return true;
   }
 
-  debug(message: string): Promise<boolean> {
+  async debug(message: string): Promise<boolean> {
     // return this.log(LogLevel.Debug, message);
     return true;
   }

@@ -26,7 +26,6 @@ Only works in in server side.
 ```typescript
 loadConfiguration(); // load configuration from environment variables
 const credential = new M365TenantCredential();
-
 ```
 
 ## Constructors

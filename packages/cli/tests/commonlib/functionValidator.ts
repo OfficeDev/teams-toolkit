@@ -6,14 +6,11 @@ import * as chai from "chai";
 import glob from "glob";
 import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
-
-function functionAppNameFromId(functionAppResourceId: string) {
-  const tokens = functionAppResourceId.split("/");
-  if (tokens.length == 0) {
-    return "";
-  }
-  return tokens[tokens.length - 1];
-}
+import {
+  getSubscriptionIdFromResourceId,
+  getResourceGroupNameFromResourceId,
+  getSiteNameFromResourceId,
+} from "./utilities";
 
 const baseUrlAppSettings = (subscriptionId: string, rg: string, name: string) =>
   `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/appsettings/list?api-version=2019-08-01`;
@@ -76,38 +73,64 @@ class DependentPluginInfo {
 
 interface IFunctionObject {
   functionAppName: string;
-  appServicePlanName: string;
+  appServicePlanName?: string;
   expectValues: Map<string, string>;
-  functionAppResourceId?: string;
 }
 
 export class FunctionValidator {
   private static subscriptionId: string;
   private static rg: string;
 
-  public static init(ctx: any): IFunctionObject {
+  private static functionAppResourceIdKeyName = "functionAppResourceId";
+
+  public static init(ctx: any, insiderPreview = false): IFunctionObject {
     console.log("Start to init validator for Function.");
 
-    const functionObject = ctx[DependentPluginInfo.functionPluginName] as IFunctionObject;
-    chai.assert.exists(functionObject);
+    let functionObject: IFunctionObject;
 
-    this.subscriptionId =
-      ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.subscriptionId];
-    chai.assert.exists(this.subscriptionId);
+    if (insiderPreview) {
+      const resourceId =
+        ctx[DependentPluginInfo.functionPluginName][this.functionAppResourceIdKeyName];
+      this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
+      this.rg = getResourceGroupNameFromResourceId(resourceId);
 
-    this.rg = ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.resourceGroupName];
-    chai.assert.exists(this.rg);
+      const functionAppName = getSiteNameFromResourceId(resourceId);
+      const expectValues = new Map<string, string>([]);
+      expectValues.set(
+        BaseConfig.API_ENDPOINT,
+        ctx[DependentPluginInfo.functionPluginName][DependentPluginInfo.apiEndpoint] as string
+      );
+      expectValues.set(
+        SQLConfig.SQL_ENDPOINT,
+        ctx[DependentPluginInfo.sqlPluginName]?.[DependentPluginInfo.sqlEndpoint] as string
+      );
 
-    const expectValues = new Map<string, string>([]);
-    expectValues.set(
-      BaseConfig.API_ENDPOINT,
-      ctx[DependentPluginInfo.functionPluginName][DependentPluginInfo.apiEndpoint] as string
-    );
-    expectValues.set(
-      SQLConfig.SQL_ENDPOINT,
-      ctx[DependentPluginInfo.sqlPluginName]?.[DependentPluginInfo.sqlEndpoint] as string
-    );
-    functionObject.expectValues = expectValues;
+      functionObject = {
+        functionAppName: functionAppName,
+        expectValues: expectValues,
+      };
+    } else {
+      functionObject = ctx[DependentPluginInfo.functionPluginName] as IFunctionObject;
+      chai.assert.exists(functionObject);
+
+      this.subscriptionId =
+        ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.subscriptionId];
+      chai.assert.exists(this.subscriptionId);
+
+      this.rg = ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.resourceGroupName];
+      chai.assert.exists(this.rg);
+
+      const expectValues = new Map<string, string>([]);
+      expectValues.set(
+        BaseConfig.API_ENDPOINT,
+        ctx[DependentPluginInfo.functionPluginName][DependentPluginInfo.apiEndpoint] as string
+      );
+      expectValues.set(
+        SQLConfig.SQL_ENDPOINT,
+        ctx[DependentPluginInfo.sqlPluginName]?.[DependentPluginInfo.sqlEndpoint] as string
+      );
+      functionObject.expectValues = expectValues;
+    }
 
     console.log("Successfully init validator for Function.");
     return functionObject;
@@ -159,9 +182,7 @@ export class FunctionValidator {
 
     console.log("Validating app settings.");
 
-    const appName = functionObject.functionAppResourceId
-      ? functionAppNameFromId(functionObject.functionAppResourceId)
-      : functionObject.functionAppName;
+    const appName = functionObject.functionAppName;
     const response = await this.getWebappConfigs(
       this.subscriptionId,
       this.rg,
@@ -192,7 +213,7 @@ export class FunctionValidator {
       const servicePlanResponse = await this.getWebappServicePlan(
         this.subscriptionId,
         this.rg,
-        functionObject.appServicePlanName,
+        functionObject.appServicePlanName!,
         token as string
       );
       chai.assert(servicePlanResponse, functionObject.appServicePlanName);
@@ -243,9 +264,7 @@ export class FunctionValidator {
     const tokenCredential = await MockAzureAccountProvider.getAccountCredentialAsync();
     const token = (await tokenCredential?.getToken())?.accessToken;
 
-    const appName = functionObject.functionAppResourceId
-      ? functionAppNameFromId(functionObject.functionAppResourceId)
-      : functionObject.functionAppName;
+    const appName = functionObject.functionAppName;
 
     const deployments = await this.getDeployments(
       this.subscriptionId,

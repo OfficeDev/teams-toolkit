@@ -184,12 +184,11 @@ class BicepChecker {
 
     const bicepReader: Readable = axiosResponse.data;
     const bicepWriter: Writable = fs.createWriteStream(installDir);
-    try {
-      await this.writeBicepBits(bicepWriter, bicepReader);
-      fs.chmodSync(installDir, 0o755);
-    } finally {
-      await this.closeStream(bicepWriter);
-    }
+    // https://nodejs.org/api/fs.html#fscreatewritestreampath-options
+    // on 'error' or 'finish' the file descriptor will be closed automatically
+    // calling writer.end() again will hang
+    await this.writeBicepBits(bicepWriter, bicepReader);
+    fs.chmodSync(installDir, 0o755);
   }
 
   private async writeBicepBits(writer: Writable, reader: Readable): Promise<void> {
@@ -199,12 +198,6 @@ class BicepChecker {
         if (err) reject(err);
         else resolve();
       });
-    });
-  }
-
-  private async closeStream(writer: Writable): Promise<void> {
-    return new Promise((resolve: (value: void) => void): void => {
-      writer.end(() => resolve());
     });
   }
 

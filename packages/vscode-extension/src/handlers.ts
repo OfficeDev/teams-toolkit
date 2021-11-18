@@ -64,7 +64,7 @@ import {
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
-import AppStudioTokenInstance from "./commonlib/appStudioLogin";
+import AppStudioTokenInstance, { AppStudioLogin } from "./commonlib/appStudioLogin";
 import SharepointTokenInstance from "./commonlib/sharepointLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
@@ -85,10 +85,13 @@ import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
 import {
   anonymizeFilePaths,
+  getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   getTeamsAppIdByEnv,
+  isMacOS,
   isSPFxProject,
+  isWindows,
   syncFeatureFlags,
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
@@ -247,7 +250,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
-    await openUpgradeChangeLogsHandler();
+    await postUpgrade();
     ExtTelemetry.isFromSample = await getIsFromSample();
 
     if (workspacePath) {
@@ -912,6 +915,44 @@ async function openMarkdownHandler() {
   }
 }
 
+async function postUpgrade(): Promise<void> {
+  await openUpgradeChangeLogsHandler();
+  await popupAfterUpgrade();
+}
+
+async function popupAfterUpgrade(): Promise<void> {
+  const aadClientSecretFlag = "NeedToSetAADClientSecretEnv";
+  const aadClientSecret = globalStateGet(aadClientSecretFlag, "");
+  if (
+    aadClientSecret !== "" &&
+    workspace.workspaceFolders &&
+    workspace.workspaceFolders.length > 0
+  ) {
+    try {
+      const learnMoreLink = StringResources.vsc.upgradeToMultiEnvAndBicep.learnMoreLink;
+      const learnMoreText = StringResources.vsc.upgradeToMultiEnvAndBicep.learnMoreText;
+      const option = { modal: false };
+      const outputMsg = util.format(
+        StringResources.vsc.upgradeToMultiEnvAndBicep.outputMsg,
+        aadClientSecret,
+        learnMoreLink
+      );
+      const showMsg = util.format(
+        StringResources.vsc.upgradeToMultiEnvAndBicep.showMsg,
+        aadClientSecret
+      );
+      VsCodeLogInstance.warning(outputMsg);
+      window.showWarningMessage(showMsg, option, learnMoreText).then((result) => {
+        if (result === learnMoreText) {
+          return env.openExternal(Uri.parse(learnMoreLink));
+        }
+      });
+    } finally {
+      await globalStateUpdate(aadClientSecretFlag, "");
+    }
+  }
+}
+
 async function openUpgradeChangeLogsHandler() {
   const openUpgradeChangelogsFlag = "openUpgradeChangelogs";
   if (
@@ -1082,7 +1123,9 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
     await registerEnvTreeHandler(false);
-    await updateNewEnvCollaborators(result.value);
+
+    // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
+    // await updateNewEnvCollaborators(result.value);
   }
   return result;
 }
@@ -1264,7 +1307,6 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
   let result: Result<any, FxError> = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermission);
 
-  const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
   let inputs: Inputs | undefined;
   try {
     const checkCoreRes = checkCoreNotEmpty();
@@ -1272,9 +1314,18 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       throw checkCoreRes.error;
     }
 
+    const provisionSucceeded = await getProvisionSucceedFromEnv(env);
+
+    if (!provisionSucceeded) {
+      throw new UserError(
+        ExtensionErrors.GrantPermissionNotProvisionError,
+        StringResources.vsc.handlers.provisionBeforeGrantPermission,
+        ExtensionSource
+      );
+    }
+
     inputs = getSystemInputs();
     inputs.env = env;
-
     result = await core.grantPermission(inputs);
     if (result.isErr()) {
       throw result.error;
@@ -1292,7 +1343,8 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       VsCodeLogInstance.info(grantSucceededMsg);
       VsCodeLogInstance.warning(warningMsg);
 
-      await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
+      // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
+      // await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {
       window.showWarningMessage(result.value.message);
     }
@@ -1300,7 +1352,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
     result = wrapError(e);
   }
 
-  await processResult(eventName, result, inputs);
+  await processResult(TelemetryEvent.GrantPermission, result, inputs);
   return result;
 }
 
@@ -1568,9 +1620,8 @@ export async function showError(e: UserError | SystemError) {
     const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, issue);
     if (button) await button.run();
   } else {
-    if (e instanceof ConcurrentError)
-      await window.showWarningMessage(`[${errorCode}]: ${e.message}`);
-    else await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
+    if (!(e instanceof ConcurrentError))
+      await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
   }
 }
 

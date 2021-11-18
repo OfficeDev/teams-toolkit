@@ -81,11 +81,14 @@ export async function registerEnvTreeHandler(
       }
       await checkAllEnv(envNamesResult.value);
 
+      // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
+      /*
       const collaboratorsItem = await getAllCollaboratorList(
         envNamesResult.value,
         forceUpdateCollaboratorList
       );
       await environmentTreeProvider.add(collaboratorsItem);
+      */
     });
   }
   return ok(Void);

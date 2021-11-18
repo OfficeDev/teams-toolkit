@@ -25,4 +25,6 @@ export enum ExtensionErrors {
   UpdateManifestError = "UpdateManifestError",
   UpdateCodeError = "UpdateCodeError",
   UpdateCodesError = "UpdateCodesError",
+  GrantPermissionNotLoginError = "GrantPermissionNotLoginError",
+  GrantPermissionNotProvisionError = "GrantPermissionNotProvisionError",
 }

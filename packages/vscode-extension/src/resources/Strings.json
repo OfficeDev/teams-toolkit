@@ -110,7 +110,8 @@
       "localDebugDescription": "Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.",
       "localDebugTitle": "Local debug",
       "configTitle": "Change location",
-      "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension."
+      "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension.",
+      "provisionBeforeGrantPermission": "You must provision the project first before adding owners for others"
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",
@@ -239,6 +240,12 @@
     "upgrade": {
       "banner": "Teams Toolkit has been updated to v%s — check out what's new!",
       "whatIsNewTitle": "What's New"
+    },
+    "upgradeToMultiEnvAndBicep": {
+      "learnMoreText": "Learn More",
+      "learnMoreLink": "https://aka.ms/teamsfx-existing-aad-doc",
+      "outputMsg": "Please set \"AAD_APP_CLIENT_SECRET\" = \"%s\" in your system environment variable. Read this wiki(%s) to for more details.",
+      "showMsg": "Please set \"AAD_APP_CLIENT_SECRET\" = \"%s\" in your system environment variable.\\nYou can also click Learn More for more details."
     },
     "migrateTeamsTabApp": {
       "selectFolderConfig": {

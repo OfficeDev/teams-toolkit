@@ -31,6 +31,15 @@ project
 	  Teams App
 ```
 
+## Key points
+1. Classification of plugins? Define three kinds of plugins (extension points)
+
+2. Who to resolve resource configuration dependencies? Some resource provider plugins (such as App studio plugin) are mandatory. Some are not and are addable. The features such as single-sign-in are in forms of resource provider plugins (built-in). Adding a feature means adding a resource provider plugin. 
+
+3. Framework(core/solution) is not responsible to resolve the configuration dependencies after provision is done. Resource provider plugin or user is responsible to do that.
+
+4. E2E flow for key stages (create, add resource, add sample, provision)
+
 ## Flows
 
 ### create a new project from zero

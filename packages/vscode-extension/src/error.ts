@@ -25,6 +25,7 @@ export enum ExtensionErrors {
   UpdateManifestError = "UpdateManifestError",
   UpdateCodeError = "UpdateCodeError",
   UpdateCodesError = "UpdateCodesError",
+  TeamsAppIdNotFoundError = "TeamsAppIdNotFoundError",
   GrantPermissionNotLoginError = "GrantPermissionNotLoginError",
   GrantPermissionNotProvisionError = "GrantPermissionNotProvisionError",
 }

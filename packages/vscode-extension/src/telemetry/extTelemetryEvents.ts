@@ -139,6 +139,11 @@ export enum TelemetryEvent {
   MigrateTeamsTabAppCode = "migrate-teams-tab-app-code",
   MigrateTeamsManifestStart = "migrate-teams-manifest-start",
   MigrateTeamsManifest = "migrate-teams-manifest",
+
+  TreeViewLocalDebug = "treeview-localdebug",
+
+  TreeViewPreviewStart = "treeview-preview-start",
+  TreeViewPreview = "treeview-preview",
 }
 
 export enum TelemetryProperty {

@@ -138,7 +138,7 @@ async function updateCodeInplace(
     }
     vsCodeLogProvider.info(
       util.format(
-        StringResources.vsc.migrateTeamsTabApp.updateCode,
+        StringResources.vsc.migrateTeamsTabApp.updatingCode,
         type === "ts" ? "typescript" : "javascript",
         filePath
       )

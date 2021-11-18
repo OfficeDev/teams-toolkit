@@ -1948,8 +1948,8 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
   let updateFailedFiles: string[] = [];
   try {
     // Update package.json to use @microsoft/teams-js v2
-    await progressBar.next(StringResources.vsc.migrateTeamsTabApp.updatePackageJson);
-    VsCodeLogInstance.info(StringResources.vsc.migrateTeamsTabApp.updatePackageJson);
+    await progressBar.next(StringResources.vsc.migrateTeamsTabApp.updatingPackageJson);
+    VsCodeLogInstance.info(StringResources.vsc.migrateTeamsTabApp.updatingPackageJson);
     packageUpdated = await migrationHandler.updatePackageJson();
     if (packageUpdated.isErr()) {
       throw packageUpdated.error;
@@ -1963,8 +1963,8 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
       VS_CODE_UI.showMessage("warn", warningMessage, false, "OK");
     } else {
       // Update codes to use @microsoft/teams-js v2
-      await progressBar.next(StringResources.vsc.migrateTeamsTabApp.updateCodes);
-      VsCodeLogInstance.info(StringResources.vsc.migrateTeamsTabApp.updateCodes);
+      await progressBar.next(StringResources.vsc.migrateTeamsTabApp.updatingCodes);
+      VsCodeLogInstance.info(StringResources.vsc.migrateTeamsTabApp.updatingCodes);
       const failedFiles = await migrationHandler.updateCodes();
       if (failedFiles.isErr()) {
         throw failedFiles.error;

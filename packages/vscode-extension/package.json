@@ -524,7 +524,7 @@
       },
       {
         "command": "fx-extension.grantPermission",
-        "title": "Grant permission",
+        "title": "Grant M365 Teams App/AAD Permission",
         "icon": "$(person-add)",
         "enablement": "fx-extension.isMultiEnvEnabled && fx-extension.isRemoteCollaborateEnabled"
       },

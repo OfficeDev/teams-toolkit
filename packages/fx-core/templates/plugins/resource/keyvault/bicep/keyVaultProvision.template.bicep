@@ -1,26 +1,26 @@
-param keyVaultName string
-param msiTenantId string
-param msiObjectId string
 @secure()
-param m365ClientSecret string
-@secure()
-param botClientSecret string
+param provisionParameters object
+param userAssignedIdentityObjectId string
 
+var resourceBaseName = provisionParameters.resourceBaseName
+var keyVaultName = contains(provisionParameters, 'keyVaultName') ? provisionParameters['keyVaultName'] : '${resourceBaseName}-kv'
+var tenantId = subscription().tenantId
 var m365ClientSecretName = 'm365ClientSecret'
+var m365ClientSecret = provisionParameters['m365ClientSecret']
 var botClientSecretName = 'botClientSecret'
+var botClientSecret = provisionParameters['botAadAppClientSecret']
 
 resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   name: keyVaultName
   location: resourceGroup().location
   properties: {
-    tenantId: msiTenantId
+    tenantId: tenantId
     accessPolicies: [
       {
-        tenantId: msiTenantId
-        objectId: msiObjectId
+        tenantId: tenantId
+        objectId: userAssignedIdentityObjectId
         permissions: {
           secrets: [
-            'list'
             'get'
           ]
         }

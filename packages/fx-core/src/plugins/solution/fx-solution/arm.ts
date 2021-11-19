@@ -136,7 +136,7 @@ export function getRequiredOperation(
 export async function pollDeploymentStatus(deployCtx: DeployContext) {
   const failedCount = 4;
   let tryCount = 0;
-  let previousStatus: { [key: string]: string; } = {};
+  let previousStatus: { [key: string]: string } = {};
   let polledOperations: string[] = [];
   deployCtx.ctx.logProvider?.info(
     format(
@@ -156,7 +156,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
         return;
       }
 
-      const currentStatus: { [key: string]: string; } = {};
+      const currentStatus: { [key: string]: string } = {};
 
       await Promise.all(
         operations.map(async (o) => {
@@ -555,7 +555,8 @@ async function doGenerateArmTemplate(
           parameterFileContent = JSON.stringify(parameterFile, undefined, 2);
         } catch (error) {
           const parameterFileError = new Error(
-            `There are some errors in ${parameterEnvFilePath}, please make sure this file is valid. The error message is ${(error as Error).message
+            `There are some errors in ${parameterEnvFilePath}, please make sure this file is valid. The error message is ${
+              (error as Error).message
             }`
           );
           return err(
@@ -689,7 +690,7 @@ async function compileBicepToJson(
 // Context used by handlebars to render the main.bicep file
 export class ArmTemplateRenderContext {
   public Plugins: string[];
-  public PluginOutput: { [PluginName: string]: PluginOutputContext; };
+  public PluginOutput: { [PluginName: string]: PluginOutputContext };
 
   constructor(pluginNames: string[]) {
     this.Plugins = pluginNames;
@@ -807,9 +808,9 @@ class BicepOrchestrationContent {
 }
 
 interface PluginOutputContext {
-  Provision?: { [ModuleName: string]: PluginModuleProperties; };
-  Configuration?: { [ModuleName: string]: PluginModuleProperties; };
-  References?: { [Key: string]: string; };
+  Provision?: { [ModuleName: string]: PluginModuleProperties };
+  Configuration?: { [ModuleName: string]: PluginModuleProperties };
+  References?: { [Key: string]: string };
 }
 
 interface PluginModuleProperties {
@@ -937,7 +938,7 @@ async function getDeploymentError(
       };
       if (
         operation.properties.targetResource?.resourceType ===
-        ConstantString.DeploymentResourceType &&
+          ConstantString.DeploymentResourceType &&
         operation.properties.targetResource?.resourceName &&
         operation.properties.targetResource?.id
       ) {

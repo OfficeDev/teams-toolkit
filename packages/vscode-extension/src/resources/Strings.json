@@ -110,7 +110,11 @@
       "localDebugDescription": "Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.",
       "localDebugTitle": "Local debug",
       "configTitle": "Change location",
-      "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension."
+      "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension.",
+      "teamsAppIdNotFound": "Failed to find 'fx-resource-appstudio.teamsAppId' in 'state.%s.json'.",
+      "provisionBeforeGrantPermission": "You must provision the project first before adding owners for others",
+      "doProvisionBeforeDeployNotificaion": "Resources in your Teams app must be provisioned before the deployment. Do you want to provision it first?",
+      "ok": "Ok"
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",

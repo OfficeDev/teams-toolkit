@@ -132,6 +132,7 @@ export class IdentityPlugin implements Plugin {
           identityName: IdentityBicep.identityName,
           identityClientId: IdentityBicep.identityClientId,
           identityResourceId: IdentityBicep.identityResourceId,
+          identityPrincipalId: IdentityBicep.identityPrincipalId,
         },
         Modules: {
           identity: await fs.readFile(

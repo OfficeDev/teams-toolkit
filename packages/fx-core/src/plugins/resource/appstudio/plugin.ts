@@ -107,6 +107,7 @@ import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInt
 import Mustache from "mustache";
 import { getCustomizedKeys, getLocalAppName, replaceConfigValue } from "./utils/utils";
 import { TelemetryPropertyKey } from "./utils/telemetry";
+import _ from "lodash";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -443,6 +444,135 @@ export class AppStudioPluginImpl {
     return ok(await AppStudioClient.validateManifest(manifestString, appStudioToken!));
   }
 
+  public async updateManifest(
+    ctx: PluginContext,
+    isLocalDebug: boolean
+  ): Promise<Result<string, FxError>> {
+    const teamsAppId = await this.getTeamsAppId(ctx, isLocalDebug);
+    let manifest: any;
+    let manifestString: string;
+    const appDirectory = await getAppDirectory(ctx.root);
+    const manifestPath = await this.getManifestTemplatePath(ctx.root, isLocalDebug);
+    const manifestResult = await this.reloadManifestAndCheckRequiredFields(manifestPath);
+    if (manifestResult.isErr()) {
+      throw manifestResult;
+    } else {
+      manifestString = JSON.stringify(manifestResult.value);
+    }
+
+    let appDefinition: IAppDefinition;
+    if (isSPFxProject(ctx.projectSettings)) {
+      let view: any;
+      if (isLocalDebug) {
+        view = {
+          localSettings: {
+            teamsApp: {
+              teamsAppId: teamsAppId,
+            },
+          },
+        };
+      } else {
+        view = {
+          config: ctx.envInfo.config,
+          state: {
+            "fx-resource-appstudio": {
+              teamsAppId: teamsAppId,
+            },
+          },
+        };
+      }
+
+      manifestString = Mustache.render(manifestString, view);
+      manifest = JSON.parse(manifestString);
+      appDefinition = this.convertToAppDefinition(manifest, false);
+    } else {
+      const appManifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
+      if (appManifest.isErr()) {
+        ctx.logProvider?.error("[Teams Toolkit] Update manifest failed!");
+        const isProvisionSucceeded = !!(ctx.envInfo.state
+          .get("solution")
+          ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
+        if (
+          appManifest.error.name === AppStudioError.GetRemoteConfigFailedError.name &&
+          !isProvisionSucceeded
+        ) {
+          throw AppStudioResultFactory.UserError(
+            AppStudioError.GetRemoteConfigError.name,
+            AppStudioError.GetRemoteConfigError.message("Update manifest failed")
+          );
+        } else {
+          throw appManifest.error;
+        }
+      }
+      [appDefinition] = appManifest.value;
+      manifest = appManifest.value[1];
+    }
+
+    const manifestFileName =
+      `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/manifest.` +
+      (isLocalDebug ? "local" : ctx.envInfo.envName) +
+      `.json`;
+    const existingManifest = await fs.readJSON(manifestFileName);
+    delete manifest.id;
+    delete existingManifest.id;
+    if (!_.isEqual(manifest, existingManifest)) {
+      const res = await ctx.ui?.showMessage(
+        "warn",
+        "The manifest file configurations has been modified already. Do you want to continue to regenerate the manifest file and update to Teams platform?",
+        true,
+        "Preview only",
+        "Preview and update"
+      );
+
+      const error = AppStudioResultFactory.UserError(
+        AppStudioError.UpdateManifestCancelError.name,
+        AppStudioError.UpdateManifestCancelError.message(manifest.name.short)
+      );
+      if (res?.isOk() && res.value === "Preview only") {
+        this.buildTeamsAppPackage(ctx, isLocalDebug);
+        return err(error);
+      } else if (res?.isOk() && res.value === "Preview and update") {
+        this.buildTeamsAppPackage(ctx, isLocalDebug);
+      } else {
+        return err(error);
+      }
+    }
+
+    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
+    try {
+      const result = await this.updateApp(
+        ctx,
+        appDefinition,
+        appStudioToken!,
+        isLocalDebug,
+        false,
+        appDirectory,
+        teamsAppId,
+        ctx.logProvider
+      );
+      if (result.isErr()) {
+        throw result.error;
+      }
+
+      ctx.logProvider?.info(`Teams app updated: ${result.value}`);
+      ctx.ui?.showMessage(
+        "info",
+        `Successfully updated manifest for [${manifest.name.short}]`,
+        false
+      );
+      return ok(teamsAppId);
+    } catch (error) {
+      if (error.message && error.message.includes("404")) {
+        throw AppStudioResultFactory.UserError(
+          AppStudioError.UpdateManifestWithInvalidAppError.name,
+          AppStudioError.UpdateManifestWithInvalidAppError.message(teamsAppId)
+        );
+      } else {
+        throw error;
+      }
+    }
+  }
+
   public async migrateV1Project(ctx: PluginContext): Promise<{ enableAuth: boolean }> {
     let manifest: TeamsAppManifest | undefined;
     const archiveAppPackageFolder = path.join(ctx.root, ArchiveFolderName, AppPackageFolderName);
@@ -619,7 +749,7 @@ export class AppStudioPluginImpl {
     } else {
       const manifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
       if (manifest.isOk()) {
-        manifestString = JSON.stringify(manifest.value[1]);
+        manifestString = JSON.stringify(manifest.value[1], null, 4);
       } else {
         ctx.logProvider?.error("[Teams Toolkit] Teams Package build failed!");
         const isProvisionSucceeded = !!(ctx.envInfo.state

@@ -186,7 +186,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
   it("should work and generate arm template when project requires Azure services", async () => {
     // add dedicated test case to test ARM feature enabled behavior
     const restore = mockedEnv({
-      TEAMSFX_INSIDER_PREVIEW: "1",
+      __TEAMSFX_INSIDER_PREVIEW: "1",
     });
 
     fileContent.clear();
@@ -224,7 +224,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(7);
+    expect(fileContent.size).equals(6);
     expect(fileContent.has(path.join(testFolder, "./templates/azure", "provision.bicep"))).to.be
       .true;
     expect(fileContent.has(path.join(testFolder, "./templates/azure", "config.bicep"))).to.be.true;
@@ -249,7 +249,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
   it("should work and not generate arm template when project does not require Azure services", async () => {
     // add dedicated test case to test ARM feature enabled behavior
     const restore = mockedEnv({
-      TEAMSFX_INSIDER_PREVIEW: "1",
+      __TEAMSFX_INSIDER_PREVIEW: "1",
     });
 
     fileContent.clear();

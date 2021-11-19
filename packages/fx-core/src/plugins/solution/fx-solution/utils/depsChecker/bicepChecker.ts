@@ -10,6 +10,7 @@ import {
   TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
+import * as semver from "semver";
 import { cpUtils } from "./cpUtils";
 import { finished, Readable, Writable } from "stream";
 import {
@@ -33,6 +34,7 @@ import { isBicepEnvCheckerEnabled } from "../../../../../common/tools";
 
 export const BicepName = "Bicep";
 export const installVersion = "v0.4";
+export const installVersionPattern = "^v0.4";
 export const fallbackInstallVersion = "v0.4.1008";
 export const supportedVersions: Array<string> = [installVersion];
 
@@ -166,10 +168,9 @@ class BicepChecker {
           headers: { Accept: "application/vnd.github.v3+json" },
         }
       );
-      selectedVersion = response.data
-        .map((t) => t.tag_name)
-        .filter(this.isVersionSupported)
-        .sort((v1, v2) => v2.localeCompare(v1))[0];
+      const versions = response.data.map((item) => item.tag_name);
+      const maxSatisfying = semver.maxSatisfying(versions, installVersionPattern);
+      selectedVersion = maxSatisfying || fallbackInstallVersion;
     } catch (e) {
       // GitHub public API has a limit of 60 requests per hour per IP
       // If it fails to retrieve the latest version, just use a known version.

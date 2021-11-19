@@ -6,26 +6,94 @@ on:
       cases:
         description: "specific cases to be excuted."
         required: false
+  schedule:
+    - cron: "0 4,7,10 * * *"
+  pull_request:
+    types:
+      - assigned
+      - opened
+      - synchronize
+      - reopened
+      - edited
 
 jobs:
   setup:
     runs-on: ubuntu-latest
     outputs:
-      cases: ${{ steps.list-cases.outputs.cases }}
+      cases: ${{ steps.schedule-cases.outputs.cases || steps.dispatch-cases.outputs.cases || steps.pr-cases.outputs.cases }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: List cases
-        id: list-cases
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup project
         working-directory: packages/cli
         run: |
-          listCases=`find tests/e2e -name "*.tests.ts" -printf "%f\n" | sed 's/.tests.ts//' | jq -R -s -c '[split("\n") | .[]| select(.!="")]'`
-          inputCases='${{ github.event.inputs.cases }}'
-          cases=`jq --argjson arr1 "$listCases" --argjson arr2 "$inputCases" -n -R -s -c '$arr1 + $arr2'`
+          npm install
+
+      - name: E2E Test clean
+        working-directory: packages/cli
+        run: |
+          npm run test:e2e:clean
+
+      - name: List cases for schedule
+        id: schedule-cases
+        if: ${{  github.event_name == 'schedule' }}
+        working-directory: packages/cli
+        run: |
+          cases=`find tests/e2e -name "*.tests.ts" -printf "%f\n" | sed 's/.tests.ts//' | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
           echo "::set-output name=cases::$cases"
 
-  execute-cases:
+      - name: List cases for dispatch
+        id: dispatch-cases
+        if: ${{  github.event_name == 'workflow_dispatch' }}
+        working-directory: packages/cli
+        run: |
+          inputCases='${{ github.event.inputs.cases }}'
+          if [ -z "$inputCases" ]; then
+            allCases=`find tests/e2e -name "*.tests.ts" -printf "%f\n" | sed 's/.tests.ts//' | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
+            echo "::set-output name=cases::$allCases"
+          else
+            echo "::set-output name=cases::$inputCases"
+          fi
+
+      - name: List cases for pull request
+        id: pr-cases
+        if: ${{ github.event_name == 'pull_request' }}
+        working-directory: packages/cli
+        run: |
+          npm install --global conventional-commits-parser
+          declare -a types=("fix" "feat" "refactor")
+          type=`echo "${{ github.event.pull_request.title }}" |  conventional-commits-parser | jq -r '.[].type'`
+          if [[ " ${types[*]} " =~ " ${type} " ]]; then
+            body='${{ github.event.pull_request.body }}'
+            declare -a cases
+            for t in $(find tests/e2e -name "*.tests.ts" -printf "%f\n" | sed 's/.tests.ts//'); do
+              if [[ $body == *$t* ]]; then
+                cases+=($t)
+              fi
+            done
+            prCases=`printf '%s\n' "${cases[@]}" | jq -R . | jq -sc .`
+            echo "::set-output name=cases::$prCases"
+          fi
+
+  execute-case:
+    if: ${{ always() }}
+    env:
+      AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
+      AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
+      M365_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      M365_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
+      M365_TENANT_ID: ${{ secrets.TEST_TENANT_ID_2 }}
+      CI_ENABLED: "true"
+      M365_ACCOUNT_COLLABORATOR: ${{ secrets.TEST_COLLABORATOR_USER_NAME }}
+      AZURE_DEVOPS_EXT_PAT: ${{ secrets.ADO_PAT }}
     needs: setup
     runs-on: ubuntu-latest
     strategy:
@@ -33,22 +101,93 @@ jobs:
       matrix:
         cases: ${{ fromJson(needs.setup.outputs.cases) }}
     steps:
-      - name: echo
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Download Simple Auth bits
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          shell: pwsh
+          command: |
+            ./.github/scripts/download-simpleauth.sh
+
+      - name: Setup project
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          command: |
+            npm run setup
+
+      - name: Package CLI and install
+        working-directory: packages/cli
         run: |
-          echo ${{ matrix.cases }}
+          rm -f *.tgz
+          npm pack
+          mv *.tgz teamsfx-cli.tgz
+          npm install -g teamsfx-cli.tgz
+
+      - name: run test
+        working-directory: packages/cli
+        run: |
+          for f in $(find tests/e2e -name "*.tests.ts"); do
+            if [[ $f == *"${{ matrix.cases }}"* ]]; then
+              npx mocha --reporter @mochajs/json-file-reporter $f
+            fi
+          done
+
+      - name: Sync to Azure DevOps Test Plan
+        run: |
+          version=$(node -p -e "require('./packages/cli/package.json').version")
+          npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/report.json cli $version
 
   teardown:
+    if: ${{ always() }}
     needs: execute-cases
     runs-on: ubuntu-latest
     steps:
-      - name: echo
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup project
+        working-directory: packages/cli
         run: |
-          echo "tear down"
+          npm install
+
+      - name: E2E Test clean
+        working-directory: packages/cli
+        run: |
+          npm run test:e2e:clean
 
   report:
+    if: ${{ failure() }}
     needs: execute-cases
     runs-on: ubuntu-latest
     steps:
-      - name: echo
-        run: |
-          echo "report"
+      - name: Send E-mail to the whole team
+        uses: satak/webrequest-action@master
+        if: ${{  github.event_name == 'schedule' }}
+        with:
+          url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
+          method: POST
+          payload: |
+            {
+              "to": "vsciotadt@microsoft.com",
+              "body": "TeamsFx CLI E2E Test failed. The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}",
+              "subject": "[Failure] TeamsFx CLI E2E Test ${{ github.run-id }}",
+              "apiKey": "${{ secrets.MAIL_API_KEY }}"
+            }

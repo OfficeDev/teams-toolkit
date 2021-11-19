@@ -119,7 +119,7 @@ export async function checkSubscription(
         SolutionError.SubscriptionNotFound,
         `The subscription '${subscriptionId}'${subscriptionName} for '${
           envInfo.envName
-        }'(Environment) is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
+        }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
           envInfo.envName
         )}' file.`,

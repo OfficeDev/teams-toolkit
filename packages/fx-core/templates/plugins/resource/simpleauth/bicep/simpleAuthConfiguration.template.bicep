@@ -10,7 +10,7 @@ var webAppName = split(provisionOutputs.simpleAuthOutput.value.webAppResourceId,
 
 var m365ClientId = provisionParameters['m365ClientId']
 {{#contains 'fx-resource-key-vault' Plugins}}
-var m365ClientSecret = provisionOutputs.keyvaultOutput.value.m365ClientSecretReferenceString
+var m365ClientSecret = provisionOutputs.keyVaultOutput.value.m365ClientSecretReference
 {{/contains}}
 {{#notContains 'fx-resource-key-vault' Plugins}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']

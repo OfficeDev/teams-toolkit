@@ -6,3 +6,9 @@ module keyVaultProvision '{{PluginOutput.fx-resource-key-vault.Provision.keyVaul
     userAssignedIdentityObjectId: {{PluginOutput.fx-resource-identity.References.identityPrincipalId}}
   }
 }
+
+output keyVaultOutput object = {
+  teamsFxPluginId: 'fx-resource-key-vault'
+  m365ClientSecretReference: keyVaultProvision.outputs.m365ClientSecretReference
+  botClientSecretReference: keyVaultProvision.outputs.botClientSecretReference
+}

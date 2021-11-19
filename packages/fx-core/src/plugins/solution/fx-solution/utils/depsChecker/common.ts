@@ -48,6 +48,7 @@ export enum DepsCheckerEvent {
   bicepInstallScriptCompleted = "bicep-install-script-completed",
   bicepInstallScriptError = "bicep-install-script-error",
   bicepValidationError = "bicep-validation-error",
+  bicepFailedToRetrieveGithubReleaseVersions = "bicep-failed-to-retrieve-github-release-versions",
 
   clickLearnMore = "env-checker-click-learn-more",
   clickCancel = "env-checker-click-cancel",
@@ -63,4 +64,5 @@ export enum TelemetryMeasurement {
   OSArch = "os-arch",
   OSRelease = "os-release",
   Component = "component",
+  ErrorMessage = "error-message",
 }

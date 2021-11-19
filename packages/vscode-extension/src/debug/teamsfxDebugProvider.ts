@@ -64,38 +64,40 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           accountHintPlaceholder
         );
         if (isaccountHintConfiguration) {
-          let tenantId = undefined,
-            loginHint = undefined;
-          try {
-            const tokenObject = (await AppStudioTokenInstance.getStatus())?.accountInfo;
-            if (tokenObject) {
-              // user signed in
-              tenantId = tokenObject.tid;
-              loginHint = tokenObject.upn;
-            } else {
-              // no signed user
-              tenantId = commonUtils.getTeamsAppTenantId();
-              loginHint = "login_your_m365_account"; // a workaround that user has the chance to login
-            }
-          } catch {
-            // ignore error
-          }
-          if (tenantId && loginHint) {
-            debugConfiguration.url = (debugConfiguration.url as string).replace(
-              accountHintPlaceholder,
-              `appTenantId=${tenantId}&login_hint=${loginHint}`
-            );
-          } else {
-            debugConfiguration.url = (debugConfiguration.url as string).replace(
-              accountHintPlaceholder,
-              ""
-            );
-          }
+          const accountHint = await generateAccountHint();
+          debugConfiguration.url = (debugConfiguration.url as string).replace(
+            accountHintPlaceholder,
+            accountHint
+          );
         }
       }
     } catch (err) {
       // TODO(kuojianlu): add log and telemetry
     }
     return debugConfiguration;
+  }
+}
+
+export async function generateAccountHint(): Promise<string> {
+  let tenantId = undefined,
+    loginHint = undefined;
+  try {
+    const tokenObject = (await AppStudioTokenInstance.getStatus())?.accountInfo;
+    if (tokenObject) {
+      // user signed in
+      tenantId = tokenObject.tid;
+      loginHint = tokenObject.upn;
+    } else {
+      // no signed user
+      tenantId = commonUtils.getTeamsAppTenantId();
+      loginHint = "login_your_m365_account"; // a workaround that user has the chance to login
+    }
+  } catch {
+    // ignore error
+  }
+  if (tenantId && loginHint) {
+    return `appTenantId=${tenantId}&login_hint=${loginHint}`;
+  } else {
+    return "";
   }
 }

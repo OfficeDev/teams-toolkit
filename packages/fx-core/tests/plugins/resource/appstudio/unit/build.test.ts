@@ -59,17 +59,15 @@ describe("Build Teams Package", () => {
   });
 
   it("Check teams app id", async () => {
-    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
-      ok({
-        tabEndpoint: "tabEndpoint",
-        tabDomain: "tabDomain",
-        aadId: "aadId",
-        botDomain: "botDomain",
-        botId: "botId",
-        webApplicationInfoResource: "webApplicationInfoResource",
-        teamsAppId: "teamsAppId",
-      })
-    );
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
+      tabEndpoint: "tabEndpoint",
+      tabDomain: "tabDomain",
+      aadId: "aadId",
+      botDomain: "botDomain",
+      botId: "botId",
+      webApplicationInfoResource: "webApplicationInfoResource",
+      teamsAppId: "teamsAppId",
+    });
     sandbox.stub(fs, "move").resolves();
 
     const builtPackage = await plugin.buildTeamsPackage(ctx, false);

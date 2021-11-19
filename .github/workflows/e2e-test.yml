@@ -31,9 +31,13 @@ jobs:
           node-version: 14
 
       - name: Setup project
-        working-directory: packages/cli
-        run: |
-          npm install
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          command: |
+            npm run setup
 
       - name: E2E Test clean
         working-directory: packages/cli
@@ -165,9 +169,13 @@ jobs:
           node-version: 14
 
       - name: Setup project
-        working-directory: packages/cli
-        run: |
-          npm install
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          command: |
+            npm run setup
 
       - name: E2E Test clean
         working-directory: packages/cli

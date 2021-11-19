@@ -146,13 +146,14 @@ jobs:
           done
 
       - name: Sync to Azure DevOps Test Plan
+        if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
         run: |
           version=$(node -p -e "require('./packages/cli/package.json').version")
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/report.json cli $version
 
   teardown:
     if: ${{ always() }}
-    needs: execute-cases
+    needs: execute-case
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -175,7 +176,7 @@ jobs:
 
   report:
     if: ${{ failure() }}
-    needs: execute-cases
+    needs: execute-case
     runs-on: ubuntu-latest
     steps:
       - name: Send E-mail to the whole team

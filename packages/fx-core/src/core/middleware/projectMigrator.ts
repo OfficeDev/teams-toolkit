@@ -17,6 +17,7 @@ import {
   TeamsAppManifest,
   LogProvider,
   BuildFolderName,
+  assembleError,
 } from "@microsoft/teamsfx-api";
 import {
   CoreHookContext,
@@ -76,7 +77,6 @@ import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 import util from "util";
 import { LocalEnvMultiProvider } from "../../plugins/resource/localdebug/localEnvMulti";
-import { assembleError } from "@microsoft/teamsfx-api";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -601,21 +601,22 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     await SPFxUtils.configure(targetLocalManifestFile, replaceMap);
   }
 
-  if (hasProvision) {
-    const devState = path.join(fxState, "state.dev.json");
-    const devUserData = path.join(fxState, "dev.userdata");
-    await fs.copy(path.join(fx, "new.env.default.json"), devState);
-    if (await fs.pathExists(path.join(fx, "default.userdata"))) {
-      await fs.copy(path.join(fx, "default.userdata"), devUserData);
-    }
-    await removeExpiredFields(devState, devUserData);
+  // state.dev.json / dev.userdata
+  const devState = path.join(fxState, "state.dev.json");
+  await fs.copy(path.join(fx, "new.env.default.json"), devState);
+  const devUserData = path.join(fxState, "dev.userdata");
+  if (await fs.pathExists(path.join(fx, "default.userdata"))) {
+    await fs.copy(path.join(fx, "default.userdata"), devUserData);
   }
+  await removeExpiredFields(devState, devUserData);
 }
 
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
   const stateData = await readJson(devState);
-  stateData[PluginNames.APPST]["teamsAppId"] = stateData[PluginNames.SOLUTION]["remoteTeamsAppId"];
-
+  if (stateData[PluginNames.SOLUTION] && stateData[PluginNames.SOLUTION]["remoteTeamsAppId"]) {
+    stateData[PluginNames.APPST]["teamsAppId"] =
+      stateData[PluginNames.SOLUTION]["remoteTeamsAppId"];
+  }
   const expiredStateKeys: [string, string][] = [
     [PluginNames.LDEBUG, ""],
     [PluginNames.SOLUTION, programmingLanguage],

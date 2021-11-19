@@ -77,7 +77,7 @@
       "grantPermissionWarning": "You need to handle Azure resource permissions manually on Azure Portal.",
       "m365AccountNotSignedIn": "No M365 account signed in. Please sign in to M365.",
       "m365TenantNotMatch": "The M365 tenant id(which is used to provision before) does not match the current account.",
-      "m365AccountNotMatch": "The signed in M365 account does not match the M365 tenant used in previous provision. Please sign out and sign in with correct M365 Account.",
+      "m365AccountNotMatch": "The signed in M365 account does not match the M365 tenant used in previous provision. Please sign out and sign in with correct M365 account.",
       "azureAccountNotSignedIn": "No Azure account signed in. Please sign in to Azure.",
       "azureAccountNotMatch": "The signed in Azure account does not have permission to access the subscription '%s' used in previous provision. Please sign out and sign in with correct Azure account."
     },

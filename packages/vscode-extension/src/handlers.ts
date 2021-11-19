@@ -1504,6 +1504,35 @@ export async function checkPermission(env: string): Promise<boolean> {
   return result;
 }
 
+export async function listCollaborator(env: string): Promise<void> {
+  let result: Result<any, FxError> = ok(Void);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
+
+  const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
+  let inputs: Inputs | undefined;
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    inputs = getSystemInputs();
+    inputs.env = env;
+
+    result = await core.listCollaborator(inputs);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    if (result.value.state !== CollaborationState.OK) {
+      window.showWarningMessage(result.value.message);
+    }
+  } catch (e) {
+    result = wrapError(e);
+  }
+
+  await processResult(eventName, result, inputs);
+}
+
 export async function openM365AccountHandler() {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenM365Portal);
   return env.openExternal(Uri.parse("https://admin.microsoft.com/Adminportal/"));

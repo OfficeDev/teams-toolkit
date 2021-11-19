@@ -236,6 +236,46 @@ export class AppStudioPlugin implements Plugin {
   }
 
   /**
+   * Update manifest file
+   */
+  public async updateManifest(
+    ctx: PluginContext,
+    isLocalDebug: boolean
+  ): Promise<Result<Void, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.updateManifest);
+
+    try {
+      const res = await this.appStudioPluginImpl.updateManifest(ctx, isLocalDebug);
+      if (res.isErr()) {
+        TelemetryUtils.sendErrorEvent(
+          TelemetryEventName.updateManifest,
+          res.error,
+          this.appStudioPluginImpl.commonProperties
+        );
+        return ok(Void);
+      }
+      TelemetryUtils.sendSuccessEvent(
+        TelemetryEventName.updateManifest,
+        this.appStudioPluginImpl.commonProperties
+      );
+      return ok(Void);
+    } catch (error) {
+      TelemetryUtils.sendErrorEvent(
+        TelemetryEventName.updateManifest,
+        error,
+        this.appStudioPluginImpl.commonProperties
+      );
+      return err(
+        AppStudioResultFactory.SystemError(
+          AppStudioError.UpdateManifestError.name,
+          AppStudioError.UpdateManifestError.message(error)
+        )
+      );
+    }
+  }
+
+  /**
    * Publish the app to Teams App Catalog
    * @param {PluginContext} ctx
    * @returns {string[]} - Teams App ID in Teams app catalog
@@ -447,8 +487,14 @@ export class AppStudioPlugin implements Plugin {
     } else if (func.method === "migrateV1Project") {
       return await this.migrateV1Project(ctx);
     } else if (func.method === "getManifestTemplatePath") {
-      const filePath = await this.appStudioPluginImpl.getManifestTemplatePath(ctx.root);
+      const isLocalDebug = (func.params.type as string) === "localDebug";
+      const filePath = await this.appStudioPluginImpl.getManifestTemplatePath(
+        ctx.root,
+        isLocalDebug
+      );
       return ok(filePath);
+    } else if (func.method === "updateManifest") {
+      return await this.updateManifest(ctx, func.params && func.params.envName === "local");
     }
     return err(
       new SystemError(

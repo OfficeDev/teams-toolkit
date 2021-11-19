@@ -75,10 +75,11 @@
       "previewACDesciption": "Preview and author Adaptive Cards directly in Visual Studio Code",
       "grantPermissionSucceeded": "Added account: '%s' to the environment '%s' as a collaborator.",
       "grantPermissionWarning": "You need to handle Azure resource permissions manually on Azure Portal.",
-      "noM365AccountSignedIn": "No M365 account signed in. Please sign in to M365.",
+      "m365AccountNotSignedIn": "No M365 account signed in. Please sign in to M365.",
       "m365TenantNotMatch": "The M365 tenant id(which is used to provision before) does not match the current account.",
-      "azureAccountNotMatch": "The Azure account does not match.",
-      "m365AccountNotMatch": "The M365 account does not match."
+      "m365AccountNotMatch": "The signed in M365 account does not match the M365 tenant used in previous provision. Please sign out and sign in with correct M365 account.",
+      "azureAccountNotSignedIn": "No Azure account signed in. Please sign in to Azure.",
+      "azureAccountNotMatch": "The signed in Azure account does not have permission to access the subscription '%s' used in previous provision. Please sign out and sign in with correct Azure account."
     },
     "handlers": {
       "concurrentTriggerTask": "Task '%s' is still running. Wait for it to complete before starting another task.",
@@ -110,7 +111,11 @@
       "localDebugDescription": "Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.",
       "localDebugTitle": "Local debug",
       "configTitle": "Change location",
-      "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension."
+      "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension.",
+      "teamsAppIdNotFound": "Failed to find 'fx-resource-appstudio.teamsAppId' in 'state.%s.json'.",
+      "provisionBeforeGrantPermission": "You must provision the project first before adding owners for others",
+      "doProvisionBeforeDeployNotificaion": "Resources in your Teams app must be provisioned before the deployment. Do you want to provision it first?",
+      "ok": "Ok"
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",
@@ -239,6 +244,12 @@
     "upgrade": {
       "banner": "Teams Toolkit has been updated to v%s — check out what's new!",
       "whatIsNewTitle": "What's New"
+    },
+    "upgradeToMultiEnvAndBicep": {
+      "learnMoreText": "Learn More",
+      "learnMoreLink": "https://aka.ms/teamsfx-existing-aad-doc",
+      "outputMsg": "Please set \"AAD_APP_CLIENT_SECRET\" = \"%s\" in your system environment variable. Read this wiki(%s) to for more details.",
+      "showMsg": "Please set \"AAD_APP_CLIENT_SECRET\" = \"%s\" in your system environment variable.\\nYou can also click Learn More for more details."
     },
     "migrateTeamsTabApp": {
       "selectFolderConfig": {

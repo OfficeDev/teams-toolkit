@@ -10,6 +10,7 @@ import {
   TelemetryReporter,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
+import * as semver from "semver";
 import { cpUtils } from "./cpUtils";
 import { finished, Readable, Writable } from "stream";
 import {
@@ -33,11 +34,14 @@ import { isBicepEnvCheckerEnabled } from "../../../../../common/tools";
 
 export const BicepName = "Bicep";
 export const installVersion = "v0.4";
+export const installVersionPattern = "^v0.4";
+export const fallbackInstallVersion = "v0.4.1008";
 export const supportedVersions: Array<string> = [installVersion];
 
 const displayBicepName = `${BicepName} (${installVersion})`;
 const timeout = 5 * 60 * 1000;
 const source = "bicep-envchecker";
+const bicepReleaseApiUrl = "https://api.github.com/repos/Azure/bicep/releases";
 
 export async function ensureBicep(ctx: SolutionContext): Promise<string> {
   const bicepChecker = new BicepChecker(ctx.logProvider, ctx.telemetryReporter);
@@ -156,16 +160,26 @@ class BicepChecker {
   }
 
   private async doInstallBicep(): Promise<void> {
-    const response: AxiosResponse<Array<{ tag_name: string }>> = await this._axios.get(
-      "https://api.github.com/repos/Azure/bicep/releases",
-      {
-        headers: { Accept: "application/vnd.github.v3+json" },
-      }
-    );
-    const selectedVersion: string = response.data
-      .map((t) => t.tag_name)
-      .filter(this.isVersionSupported)
-      .sort((v1, v2) => v2.localeCompare(v1))[0];
+    let selectedVersion: string;
+    try {
+      const response: AxiosResponse<Array<{ tag_name: string }>> = await this._axios.get(
+        bicepReleaseApiUrl,
+        {
+          headers: { Accept: "application/vnd.github.v3+json" },
+        }
+      );
+      const versions = response.data.map((item) => item.tag_name);
+      const maxSatisfying = semver.maxSatisfying(versions, installVersionPattern);
+      selectedVersion = maxSatisfying || fallbackInstallVersion;
+    } catch (e) {
+      // GitHub public API has a limit of 60 requests per hour per IP
+      // If it fails to retrieve the latest version, just use a known version.
+      selectedVersion = fallbackInstallVersion;
+      this._telemetry?.sendTelemetryEvent(
+        DepsCheckerEvent.bicepFailedToRetrieveGithubReleaseVersions,
+        { [TelemetryMeasurement.ErrorMessage]: `${e}` }
+      );
+    }
     const installDir = this.getBicepExecPath();
 
     await this._logger?.info(
@@ -184,12 +198,11 @@ class BicepChecker {
 
     const bicepReader: Readable = axiosResponse.data;
     const bicepWriter: Writable = fs.createWriteStream(installDir);
-    try {
-      await this.writeBicepBits(bicepWriter, bicepReader);
-      fs.chmodSync(installDir, 0o755);
-    } finally {
-      await this.closeStream(bicepWriter);
-    }
+    // https://nodejs.org/api/fs.html#fscreatewritestreampath-options
+    // on 'error' or 'finish' the file descriptor will be closed automatically
+    // calling writer.end() again will hang
+    await this.writeBicepBits(bicepWriter, bicepReader);
+    fs.chmodSync(installDir, 0o755);
   }
 
   private async writeBicepBits(writer: Writable, reader: Readable): Promise<void> {
@@ -199,12 +212,6 @@ class BicepChecker {
         if (err) reject(err);
         else resolve();
       });
-    });
-  }
-
-  private async closeStream(writer: Writable): Promise<void> {
-    return new Promise((resolve: (value: void) => void): void => {
-      writer.end(() => resolve());
     });
   }
 

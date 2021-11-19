@@ -749,7 +749,7 @@ export class AppStudioPluginImpl {
     } else {
       const manifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
       if (manifest.isOk()) {
-        manifestString = JSON.stringify(manifest.value[1]);
+        manifestString = JSON.stringify(manifest.value[1], null, 4);
       } else {
         ctx.logProvider?.error("[Teams Toolkit] Teams Package build failed!");
         const isProvisionSucceeded = !!(ctx.envInfo.state

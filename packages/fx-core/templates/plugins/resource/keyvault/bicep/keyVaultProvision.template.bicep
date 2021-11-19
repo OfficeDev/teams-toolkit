@@ -8,7 +8,8 @@ var tenantId = subscription().tenantId
 var m365ClientSecretName = 'm365ClientSecret'
 var m365ClientSecret = provisionParameters['m365ClientSecret']
 var botClientSecretName = 'botClientSecret'
-var botClientSecret = provisionParameters['botAadAppClientSecret']
+var botClientSecret = contains(provisionParameters, 'botAadAppClientSecret') ? provisionParameters['botAadAppClientSecret'] : ''
+
 
 resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   name: keyVaultName

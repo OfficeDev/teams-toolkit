@@ -3,6 +3,6 @@ module keyVaultProvision '{{PluginOutput.fx-resource-key-vault.Provision.keyVaul
   name: 'keyVaultProvision'
   params: {
     provisionParameters: provisionParameters
-    userAssignedIdentityObjectId: {{PluginOutput.fx-resource-identity.References.identityResourceId}}
+    userAssignedIdentityObjectId: {{PluginOutput.fx-resource-identity.References.identityPrincipalId}}
   }
 }

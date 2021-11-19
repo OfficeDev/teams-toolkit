@@ -66,26 +66,34 @@ export async function registerEnvTreeHandler(
       for (const item of envNames) {
         showEnvList.push(item);
         const provisionSucceeded = await getProvisionSucceedFromEnv(item);
+        const isLocal = item === LocalEnvironmentName;
         environmentTreeProvider.add([
           {
             commandId: "fx-extension.environment." + item,
             label: item,
             description: provisionSucceeded ? "(Provisioned)" : "",
             parent: TreeCategory.Environment,
-            contextValue: item === LocalEnvironmentName ? "local" : "environment",
+            contextValue: isLocal
+              ? "local"
+              : provisionSucceeded
+              ? "environment-provisioned"
+              : "environment",
             icon: provisionSucceeded ? "folder-active" : "symbol-folder",
             isCustom: false,
-            expanded: true,
+            expanded: isLocal ? undefined : true,
           },
         ]);
       }
       await checkAllEnv(envNamesResult.value);
 
+      // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
+      /*
       const collaboratorsItem = await getAllCollaboratorList(
         envNamesResult.value,
         forceUpdateCollaboratorList
       );
       await environmentTreeProvider.add(collaboratorsItem);
+      */
     });
   }
   return ok(Void);

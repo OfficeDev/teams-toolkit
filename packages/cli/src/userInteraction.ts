@@ -129,6 +129,10 @@ export class CLIUserInteraction implements UserInteraction {
     return process.env.CI_ENABLED === "true";
   }
 
+  get calledFromVS(): boolean {
+    return process.env.VS_CALLING_CLI === "true";
+  }
+
   private async runInquirer<T>(question: DistinctQuestion): Promise<Result<T, FxError>> {
     if (this.presetAnswers.has(question.name!)) {
       const answer = this.presetAnswers.get(question.name!);
@@ -144,7 +148,7 @@ export class CLIUserInteraction implements UserInteraction {
     }
 
     /// TODO: CI ENABLED refine.
-    if (this.ciEnabled) {
+    if (this.ciEnabled || this.calledFromVS) {
       if (question.default !== undefined) {
         return ok(question.default);
       } else if (

@@ -4,15 +4,17 @@ param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
 var serverfarmsName = contains(provisionParameters, 'functionServerfarmsName') ? provisionParameters['functionServerfarmsName'] : '${resourceBaseName}api'
+var serverfarmsSku = contains(provisionParameters, 'functionServerfarmsSku') ? provisionParameters['functionServerfarmsSku'] : 'Y1'
 var functionAppName = contains(provisionParameters, 'functionWebappName') ? provisionParameters['functionWebappName'] : '${resourceBaseName}api'
 var storageName = contains(provisionParameters, 'functionStorageName') ? provisionParameters['functionStorageName'] : '${resourceBaseName}api'
+var storageSku = contains(provisionParameters, 'functionStorageSku') ? provisionParameters['functionStorageSku'] : 'Standard_LRS'
 
 resource serverfarms 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: serverfarmsName
   kind: 'functionapp'
   location: resourceGroup().location
   sku: {
-    name: 'Y1'
+    name: serverfarmsSku // You can follow https://aka.ms/teamsfx-bicep-add-param-tutorial to add functionServerfarmsSku property to provisionParameters to override the default value "Y1".
   }
 }
 
@@ -73,7 +75,7 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
   kind: 'StorageV2'
   location: resourceGroup().location
   sku: {
-    name: 'Standard_LRS'
+    name: storageSku // You can follow https://aka.ms/teamsfx-bicep-add-param-tutorial to add functionStorageSku property to provisionParameters to override the default value "Standard_LRS".
   }
 }
 

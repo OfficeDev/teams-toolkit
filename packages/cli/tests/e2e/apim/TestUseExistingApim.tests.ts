@@ -74,7 +74,7 @@ describe("Use an existing API Management Service", function () {
         projectPath,
         environmentManager.getDefaultEnvName()
       );
-      await ApimValidator.validateProvision(
+      await ApimValidator.validateProvisionMultiEnv(
         provisionContext,
         appName,
         existingRGNameExtend,
@@ -103,7 +103,11 @@ describe("Use an existing API Management Service", function () {
     console.log(`Deploy. Error message: ${result.stderr}`);
 
     const deployContext = await fs.readJSON(getConfigFileName(appName));
-    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
+    if (isMultiEnvEnabled()) {
+      await ApimValidator.validateDeployMultiEnv(deployContext, projectPath, appName, "v1");
+    } else {
+      await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
+    }
   });
 
   after(async () => {

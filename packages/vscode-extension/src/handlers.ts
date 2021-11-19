@@ -63,7 +63,7 @@ import {
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
-import AppStudioTokenInstance from "./commonlib/appStudioLogin";
+import AppStudioTokenInstance, { AppStudioLogin } from "./commonlib/appStudioLogin";
 import SharepointTokenInstance from "./commonlib/sharepointLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
@@ -84,10 +84,13 @@ import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
 import {
   anonymizeFilePaths,
+  getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   getTeamsAppIdByEnv,
+  isMacOS,
   isSPFxProject,
+  isWindows,
   syncFeatureFlags,
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
@@ -129,6 +132,8 @@ import graphLogin from "./commonlib/graphLogin";
 import { getConfiguration } from "./utils/commonUtils";
 import { AzurePortalUrl, ConfigurationKey } from "./constants";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
+import { generateAccountHint } from "./debug/teamsfxDebugProvider";
+import { returnUserError } from "@microsoft/teamsfx-api";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -246,7 +251,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
-    await openUpgradeChangeLogsHandler();
+    await postUpgrade();
     ExtTelemetry.isFromSample = await getIsFromSample();
 
     if (workspacePath) {
@@ -402,6 +407,34 @@ export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, 
   return result;
 }
 
+export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewLocalDebug);
+  await vscode.commands.executeCommand("workbench.action.quickOpen", "debug Debug");
+  return ok(null);
+}
+
+export async function treeViewPreviewHandler(env: string): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreviewStart);
+  const debugConfig = await commonUtils.getDebugConfig(false, env);
+  if (!debugConfig?.appId) {
+    const error = returnUserError(
+      new Error(StringResources.vsc.handlers.teamsAppIdNotFound),
+      ExtensionSource,
+      ExtensionErrors.TeamsAppIdNotFoundError
+    );
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.TreeViewPreview, error);
+    return err(error);
+  }
+
+  const accountHint = await generateAccountHint();
+  const uri = `https://teams.microsoft.com/l/app/${debugConfig.appId}?installAppPackage=true&webjoin=true&${accountHint}`;
+  await vscode.env.openExternal(Uri.parse(uri));
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+  });
+  return ok(null);
+}
+
 export async function addResourceHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AddResourceStart, getTriggerFromProperty(args));
   const func: Func = {
@@ -470,7 +503,7 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
 }
 
 export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
-  const isInsiderEnabled = getConfiguration(ConfigurationKey.InsiderPreview);
+  const isInsiderEnabled = isMultiEnvEnabled();
 
   ExtTelemetry.sendTelemetryEvent(
     isInsiderEnabled ? TelemetryEvent.CICDInsiderGuide : TelemetryEvent.CICDGuide,
@@ -589,7 +622,8 @@ export function detectVsCodeEnv(): VsCodeEnv {
 export async function runUserTask(
   func: Func,
   eventName: string,
-  ignoreEnvInfo: boolean
+  ignoreEnvInfo: boolean,
+  envName?: string
 ): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(null);
   let inputs: Inputs | undefined;
@@ -601,6 +635,7 @@ export async function runUserTask(
 
     inputs = getSystemInputs();
     inputs.ignoreEnvInfo = ignoreEnvInfo;
+    inputs.env = envName;
     result = await core.executeUserTask(func, inputs);
   } catch (e) {
     result = wrapError(e);
@@ -862,6 +897,10 @@ function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
     case TelemetryTiggerFrom.Webview:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview };
+    case TelemetryTiggerFrom.CodeLens:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CodeLens };
+    case TelemetryTiggerFrom.EditorTitle:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.EditorTitle };
     case TelemetryTiggerFrom.Other:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
     default:
@@ -908,6 +947,44 @@ async function openMarkdownHandler() {
       const PreviewMarkdownCommand = "markdown.showPreview";
       commands.executeCommand(PreviewMarkdownCommand, uri);
     });
+  }
+}
+
+async function postUpgrade(): Promise<void> {
+  await openUpgradeChangeLogsHandler();
+  await popupAfterUpgrade();
+}
+
+async function popupAfterUpgrade(): Promise<void> {
+  const aadClientSecretFlag = "NeedToSetAADClientSecretEnv";
+  const aadClientSecret = globalStateGet(aadClientSecretFlag, "");
+  if (
+    aadClientSecret !== "" &&
+    workspace.workspaceFolders &&
+    workspace.workspaceFolders.length > 0
+  ) {
+    try {
+      const learnMoreLink = StringResources.vsc.upgradeToMultiEnvAndBicep.learnMoreLink;
+      const learnMoreText = StringResources.vsc.upgradeToMultiEnvAndBicep.learnMoreText;
+      const option = { modal: false };
+      const outputMsg = util.format(
+        StringResources.vsc.upgradeToMultiEnvAndBicep.outputMsg,
+        aadClientSecret,
+        learnMoreLink
+      );
+      const showMsg = util.format(
+        StringResources.vsc.upgradeToMultiEnvAndBicep.showMsg,
+        aadClientSecret
+      );
+      VsCodeLogInstance.warning(outputMsg);
+      window.showWarningMessage(showMsg, option, learnMoreText).then((result) => {
+        if (result === learnMoreText) {
+          return env.openExternal(Uri.parse(learnMoreLink));
+        }
+      });
+    } finally {
+      await globalStateUpdate(aadClientSecretFlag, "");
+    }
   }
 }
 
@@ -1081,7 +1158,9 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
     await registerEnvTreeHandler(false);
-    await updateNewEnvCollaborators(result.value);
+
+    // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
+    // await updateNewEnvCollaborators(result.value);
   }
   return result;
 }
@@ -1263,7 +1342,6 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
   let result: Result<any, FxError> = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermission);
 
-  const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
   let inputs: Inputs | undefined;
   try {
     const checkCoreRes = checkCoreNotEmpty();
@@ -1271,9 +1349,18 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       throw checkCoreRes.error;
     }
 
+    const provisionSucceeded = await getProvisionSucceedFromEnv(env);
+
+    if (!provisionSucceeded) {
+      throw new UserError(
+        ExtensionErrors.GrantPermissionNotProvisionError,
+        StringResources.vsc.handlers.provisionBeforeGrantPermission,
+        ExtensionSource
+      );
+    }
+
     inputs = getSystemInputs();
     inputs.env = env;
-
     result = await core.grantPermission(inputs);
     if (result.isErr()) {
       throw result.error;
@@ -1291,7 +1378,8 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       VsCodeLogInstance.info(grantSucceededMsg);
       VsCodeLogInstance.warning(warningMsg);
 
-      await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
+      // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
+      // await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {
       window.showWarningMessage(result.value.message);
     }
@@ -1299,7 +1387,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
     result = wrapError(e);
   }
 
-  await processResult(eventName, result, inputs);
+  await processResult(TelemetryEvent.GrantPermission, result, inputs);
   return result;
 }
 
@@ -1420,6 +1508,35 @@ export async function checkPermission(env: string): Promise<boolean> {
   }
 
   return result;
+}
+
+export async function listCollaborator(env: string): Promise<void> {
+  let result: Result<any, FxError> = ok(Void);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
+
+  const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
+  let inputs: Inputs | undefined;
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    inputs = getSystemInputs();
+    inputs.env = env;
+
+    result = await core.listCollaborator(inputs);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    if (result.value.state !== CollaborationState.OK) {
+      window.showWarningMessage(result.value.message);
+    }
+  } catch (e) {
+    result = wrapError(e);
+  }
+
+  await processResult(eventName, result, inputs);
 }
 
 export async function openM365AccountHandler() {
@@ -1567,9 +1684,8 @@ export async function showError(e: UserError | SystemError) {
     const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, issue);
     if (button) await button.run();
   } else {
-    if (e instanceof ConcurrentError)
-      await window.showWarningMessage(`[${errorCode}]: ${e.message}`);
-    else await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
+    if (!(e instanceof ConcurrentError))
+      await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
   }
 }
 
@@ -1825,6 +1941,38 @@ export async function openConfigFile() {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestConfig, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
+}
+
+export async function updatePreviewManifest(args: any[]) {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.UpdatePreviewManifestStart,
+    getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
+  );
+  let env: string | undefined;
+  if (args && args.length > 0) {
+    const segments = args[0].fsPath.split(".");
+    env = segments[segments.length - 2];
+  }
+
+  if (env && env !== "local") {
+    const inputs = getSystemInputs();
+    inputs.env = env;
+    await core.activateEnv(inputs);
+  }
+  const func: Func = {
+    namespace: "fx-solution-azure/fx-resource-appstudio",
+    method: "updateManifest",
+    params: {
+      envName: env,
+    },
+  };
+
+  return await runUserTask(
+    func,
+    TelemetryEvent.UpdatePreviewManifest,
+    env && env === "local" ? true : false,
+    env
+  );
 }
 
 export async function signOutAzure(isFromTreeView: boolean) {

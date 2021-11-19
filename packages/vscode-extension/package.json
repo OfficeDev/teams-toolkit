@@ -256,12 +256,26 @@
           "group": "inline"
         },
         {
-          "command": "fx-extension.viewEnvironment",
-          "when": "view == teamsfx-environment && viewItem =~ /^environment|^local$/"
+          "command": "fx-extension.preview",
+          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/"
         },
         {
-          "command": "fx-extension.viewEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /^environment|^local$/",
+          "command": "fx-extension.previewWithIcon",
+          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.localdebug",
+          "when": "view == teamsfx-environment && viewItem =~ /local/"
+        },
+        {
+          "command": "fx-extension.localdebugWithIcon",
+          "when": "view == teamsfx-environment && viewItem =~ /local/",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.listCollaborator",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         },
         {
@@ -276,7 +290,7 @@
         },
         {
           "command": "fx-extension.grantPermission",
-          "when": "view == teamsfx-environment && viewItem == addCollaborator",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         }
       ],
@@ -291,6 +305,11 @@
         {
           "command": "fx-extension.openPreviewFile",
           "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json",
+          "group": "navigation"
+        },
+        {
+          "command": "fx-extension.updatePreviewFile",
+          "when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/ && fx-extension.isMultiEnvEnabled",
           "group": "navigation"
         }
       ],
@@ -340,11 +359,23 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.viewEnvironment",
+          "command": "fx-extension.preview",
           "when": "false"
         },
         {
-          "command": "fx-extension.viewEnvironmentWithIcon",
+          "command": "fx-extension.previewWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.localdebug",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.localdebugWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.listCollaborator",
           "when": "false"
         },
         {
@@ -529,6 +560,12 @@
         "icon": "$(file-code)"
       },
       {
+        "command": "fx-extension.updatePreviewFile",
+        "title": "Teams: Update manifest to Teams platform",
+        "icon": "$(cloud-upload)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
         "command": "fx-extension.migrateV1Project",
         "title": "Teams: Initialize Your Project to Work with the Latest Teams Toolkit"
       },
@@ -545,14 +582,31 @@
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
-        "command": "fx-extension.viewEnvironment",
-        "title": "View environment",
+        "command": "fx-extension.preview",
+        "title": "Preview",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
-        "command": "fx-extension.viewEnvironmentWithIcon",
-        "title": "View environment",
-        "icon": "$(file-symlink-directory)",
+        "command": "fx-extension.previewWithIcon",
+        "title": "Preview",
+        "icon": "$(run)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.localdebug",
+        "title": "Local debug",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.localdebugWithIcon",
+        "title": "Local debug",
+        "icon": "$(debug-alt)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.listCollaborator",
+        "title": "List M365 Teams App (with AAD App) Owners",
+        "icon": "$(organization)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
@@ -569,7 +623,7 @@
       },
       {
         "command": "fx-extension.grantPermission",
-        "title": "Grant permission",
+        "title": "Add M365 Teams App (with AAD App) Owners",
         "icon": "$(person-add)",
         "enablement": "fx-extension.isMultiEnvEnabled && fx-extension.isRemoteCollaborateEnabled"
       },
@@ -767,11 +821,6 @@
       {
         "title": "Teams Toolkit",
         "properties": {
-          "fx-extension.insiderPreview": {
-            "type": "boolean",
-            "description": "Enable insider preview features. (requires reload of VS Code)",
-            "default": false
-          },
           "fx-extension.validateNode": {
             "type": "boolean",
             "description": "Ensure Node.js is installed.",

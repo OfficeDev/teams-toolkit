@@ -242,10 +242,6 @@ export function getConfiguration(key: string): boolean {
 }
 
 export function syncFeatureFlags() {
-  process.env["TEAMSFX_INSIDER_PREVIEW"] = getConfiguration(
-    ConfigurationKey.InsiderPreview
-  ).toString();
-
   process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
@@ -256,7 +252,7 @@ export function syncFeatureFlags() {
 }
 
 export class FeatureFlags {
-  static readonly InsiderPreview = "TEAMSFX_INSIDER_PREVIEW";
+  static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
 
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
 }

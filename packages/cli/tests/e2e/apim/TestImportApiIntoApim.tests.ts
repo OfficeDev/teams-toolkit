@@ -83,7 +83,11 @@ describe("Import API into API Management", function () {
     console.log(`Deploy. Error message: ${result.stderr}`);
 
     const deployContext = await fs.readJSON(getConfigFileName(appName));
-    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v2");
+    if (isMultiEnvEnabled()) {
+      await ApimValidator.validateDeployMultiEnv(deployContext, projectPath, appName, "v2");
+    } else {
+      await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v2");
+    }
   });
 
   it(`Update an existing API version in Azure API Management`, async function () {
@@ -96,7 +100,11 @@ describe("Import API into API Management", function () {
     console.log(`Deploy. Error message: ${result.stderr}`);
 
     const deployContext = await fs.readJSON(getConfigFileName(appName));
-    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
+    if (isMultiEnvEnabled()) {
+      await ApimValidator.validateDeployMultiEnv(deployContext, projectPath, appName, "v1");
+    } else {
+      await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
+    }
   });
 
   after(async () => {

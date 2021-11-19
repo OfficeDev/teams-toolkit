@@ -83,6 +83,30 @@ export class ApimValidator {
     await this.validateClientAad(config);
   }
 
+  public static async validateProvisionMultiEnv(
+    ctx: any,
+    appName: string,
+    resourceGroupName?: string,
+    serviceName?: string,
+    productId?: string,
+    oAuthServerId?: string
+  ): Promise<void> {
+    const config = new Config(ctx);
+    chai.assert.isNotEmpty(config?.resourceNameSuffix);
+
+    chai.assert.isNotEmpty(config?.apimClientAADObjectId);
+    chai.assert.isNotEmpty(config?.apimClientAADClientId);
+    chai.assert.isNotEmpty(config?.apimClientAADClientSecret);
+    chai.assert.isNotEmpty(config?.serviceResourceId);
+    chai.assert.isNotEmpty(config?.productResourceId);
+    chai.assert.isNotEmpty(config?.authServerResourceId);
+    // await this.validateApimService(config);
+    // await this.validateApimOAuthServer(config);
+    // await this.validateProduct(config);
+    await this.validateAppAad(config);
+    await this.validateClientAad(config);
+  }
+
   public static async validateDeploy(
     ctx: any,
     projectPath: string,
@@ -105,6 +129,30 @@ export class ApimValidator {
     await this.validateVersionSet(config);
     await this.validateApi(config, projectPath, apiVersion);
     await this.validateProductApi(config, apiVersion);
+  }
+
+  public static async validateDeployMultiEnv(
+    ctx: any,
+    projectPath: string,
+    apiPrefix: string,
+    apiVersion: string,
+    apiDocumentPath?: string,
+    versionSetId?: string,
+    apiPath?: string
+  ): Promise<void> {
+    const config = new Config(ctx);
+    chai.assert.isNotEmpty(config?.resourceNameSuffix);
+    chai.assert.equal(config?.apiPrefix, apiPrefix);
+    chai.assert.equal(config?.apiDocumentPath, apiDocumentPath ?? "openapi/openapi.json");
+    chai.assert.equal(
+      config?.versionSetId,
+      versionSetId ?? md5(`${apiPrefix}-${config?.resourceNameSuffix}`)
+    );
+    chai.assert.equal(config?.apiPath, apiPath ?? `${apiPrefix}-${config?.resourceNameSuffix}`);
+
+    // await this.validateVersionSet(config);
+    // await this.validateApi(config, projectPath, apiVersion);
+    // await this.validateProductApi(config, apiVersion);
   }
 
   private static getApimInfo(config: Config): { resourceGroup: string; serviceName: string } {
@@ -398,13 +446,22 @@ class Config {
   get apiDocumentPath() {
     return this.config[this.apimPlugin]["apiDocumentPath"];
   }
+  get serviceResourceId() {
+    return this.config[this.apimPlugin]["serviceResourceId"];
+  }
+  get productResourceId() {
+    return this.config[this.apimPlugin]["productResourceId"];
+  }
+  get authServerResourceId() {
+    return this.config[this.apimPlugin]["authServerResourceId"];
+  }
 }
 
 async function retry<T>(
   fn: (retries: number) => Promise<T>,
   condition: (result: T) => boolean,
-  maxRetries: number = 20,
-  retryTimeInterval: number = 1000
+  maxRetries = 20,
+  retryTimeInterval = 1000
 ): Promise<T> {
   let executionIndex = 1;
   let result: T = await fn(executionIndex);

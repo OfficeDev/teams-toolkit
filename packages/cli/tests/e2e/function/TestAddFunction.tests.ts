@@ -87,7 +87,7 @@ describe("Test Add Function", function () {
 
         // Validate Function App
         const func = FunctionValidator.init(context, true);
-        await FunctionValidator.validateProvision(func, false);
+        await FunctionValidator.validateProvision(func, false, true);
       } else {
         // Validate provision
         // Get context

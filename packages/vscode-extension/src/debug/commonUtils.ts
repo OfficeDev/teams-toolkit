@@ -137,10 +137,11 @@ export async function getLocalDebugEnvs(): Promise<Record<string, string>> {
 }
 
 export async function getDebugConfig(
-  isLocalSideloadingConfiguration: boolean
+  isLocalSideloadingConfiguration: boolean,
+  env?: string
 ): Promise<{ appId: string; env?: string } | undefined> {
   const params = isLocalSideloadingConfiguration ? "local" : "remote";
-  return await executeLocalDebugUserTask("getLaunchInput", params);
+  return await executeLocalDebugUserTask("getLaunchInput", params, env);
 }
 
 export async function getProgrammingLanguage(): Promise<string | undefined> {
@@ -148,7 +149,11 @@ export async function getProgrammingLanguage(): Promise<string | undefined> {
   return programmingLanguage as string;
 }
 
-async function executeLocalDebugUserTask(funcName: string, params?: unknown): Promise<any> {
+async function executeLocalDebugUserTask(
+  funcName: string,
+  params?: any,
+  env?: string
+): Promise<any> {
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-local-debug",
     method: funcName,
@@ -161,6 +166,9 @@ async function executeLocalDebugUserTask(funcName: string, params?: unknown): Pr
     if (isMultiEnvEnabled()) {
       const isRemote = params === "remote";
       inputs.ignoreEnvInfo = !isRemote;
+      if (env) {
+        inputs.env = env;
+      }
     }
     const result = await core.executeUserTask(func, inputs);
     if (result.isErr()) {

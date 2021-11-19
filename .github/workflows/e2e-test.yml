@@ -176,20 +176,6 @@ jobs:
         with:
           node-version: 14
 
-      - name: Setup project
-        uses: nick-invision/retry@v2
-        with:
-          timeout_minutes: 10
-          max_attempts: 10
-          retry_on: error
-          command: |
-            npm run setup
-
-      - name: E2E Test clean
-        working-directory: packages/cli
-        run: |
-          npm run test:e2e:clean
-
   report:
     if: ${{ failure() }}
     needs: execute-case

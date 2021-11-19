@@ -12,7 +12,6 @@ export function replaceConfigValue(config: string, id: string, value: string): s
   return config;
 }
 
-
 /**
  *
  * @throws Error - when placeholder doesn't have corresponding value

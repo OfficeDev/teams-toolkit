@@ -14,7 +14,6 @@ export enum RuntimeStacks {
 }
 
 export interface Module extends Json {
-  frameworkProvider: string;
   framework: string;
   language: string;
   runtimeStack: RuntimeStacks;
@@ -49,14 +48,12 @@ const solutionModel: TeamsFxSolutionSettings = {
   name: "TeamsFxSolutionPlugin",
   tab: {
     runtimeStack: RuntimeStacks.Node12LTS,
-    frameworkProvider: "ReactFrameworkPlugin",
     resourceProvider: "AzureStoragePlugin",
     language: "javascript",
     framework: "React",
   },
   bot: {
     runtimeStack: RuntimeStacks.Node12LTS,
-    frameworkProvider: "BotFrameworkPlugin",
     resourceProvider: "BotPlugin",
     language: "javascript",
     framework: "",

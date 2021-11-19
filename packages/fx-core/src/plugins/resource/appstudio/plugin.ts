@@ -105,7 +105,12 @@ import { v4 } from "uuid";
 import isUUID from "validator/lib/isUUID";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import Mustache from "mustache";
-import { checkAndConfig, getCustomizedKeys, getLocalAppName, replaceConfigValue } from "./utils/utils";
+import {
+  checkAndConfig,
+  getCustomizedKeys,
+  getLocalAppName,
+  replaceConfigValue,
+} from "./utils/utils";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 
@@ -1676,38 +1681,77 @@ export class AppStudioPluginImpl {
         config: ctx.envInfo.config,
         state: {
           "fx-resource-frontend-hosting": {
-            endpoint: tabEndpoint,
+            endpoint: tabEndpoint ?? "{{{state.fx-resource-frontend-hosting.endpoint}}}",
           },
           "fx-resource-aad-app-for-teams": {
-            clientId: aadId,
-            applicationIdUris: webApplicationInfoResource,
+            clientId: aadId ?? "{{state.fx-resource-aad-app-for-teams.clientId}}",
+            applicationIdUris:
+              webApplicationInfoResource ??
+              "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}",
           },
           "fx-resource-appstudio": {
-            teamsAppId: teamsAppId,
+            teamsAppId: teamsAppId ?? "{{state.fx-resource-appstudio.teamsAppId}}",
           },
           "fx-resource-bot": {
-            botId: botId,
+            botId: botId ?? "{{state.fx-resource-bot.botId}}",
           },
         },
         localSettings: {
           frontend: {
-            tabEndpoint: ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint),
+            tabEndpoint:
+              ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) ??
+              "{{{localSettings.frontend.tabEndpoint}}}",
           },
           auth: {
-            clientId: ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId),
-            applicationIdUris: ctx.localSettings?.auth?.get(
-              LocalSettingsAuthKeys.ApplicationIdUris
-            ),
+            clientId:
+              ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) ??
+              "{{localSettings.auth.clientId}}",
+            applicationIdUris:
+              ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris) ??
+              "{{{localSettings.auth.applicationIdUris}}}",
           },
           teamsApp: {
-            teamsAppId: ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId),
+            teamsAppId:
+              ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId) ??
+              "{{localSettings.teamsApp.teamsAppId}}",
           },
           bot: {
-            botId: ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId),
+            botId:
+              ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) ??
+              "{{localSettings.bot.botId}}",
           },
         },
       };
       manifest = Mustache.render(manifest, view);
+      const tokens = [
+        ...new Set(
+          Mustache.parse(manifest)
+            .filter((x) => x[0] != "text")
+            .map((x) => x[1])
+        ),
+      ];
+      if (tokens.length > 0) {
+        if (isLocalDebug) {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.GetLocalDebugConfigFailedError.name,
+              AppStudioError.GetLocalDebugConfigFailedError.message(
+                new Error(`Data required: ${tokens.join(",")}`)
+              )
+            )
+          );
+        } else {
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.GetRemoteConfigFailedError.name,
+              AppStudioError.GetRemoteConfigFailedError.message(
+                new Error(`Data required: ${tokens.join(",")}`),
+                isProvisionSucceeded
+              )
+            )
+          );
+        }
+      }
     } else {
       const appName = ctx.projectSettings?.appName;
       if (appName) {

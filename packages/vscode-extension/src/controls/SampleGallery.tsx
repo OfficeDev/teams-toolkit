@@ -11,6 +11,7 @@ import ToDoListM365 from "../../media/to-do-list-M365.gif";
 import NpmSearchConnectorM365 from "../../media/npm-search-connector-M365.gif";
 import HelloWorldTab from "../../media/helloWorld-tab.gif";
 import HelloWorldTabWithBackend from "../../media/helloWorld-tab-with-backend.gif";
+import GraphToolkitContactExporter from "../../media/graph-toolkit-contact-exporter.gif";
 import { EventMessages } from "./messages";
 
 interface SampleInfo {
@@ -37,6 +38,7 @@ const imageMapping: { [p: string]: any } = {
   "NPM-search-connector-M365": NpmSearchConnectorM365,
   "hello-world-tab": HelloWorldTab,
   "hello-world-tab-with-backend": HelloWorldTabWithBackend,
+  "graph-toolkit-contact-exporter": GraphToolkitContactExporter,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

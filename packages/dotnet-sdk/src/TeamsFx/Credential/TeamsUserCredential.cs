@@ -2,6 +2,7 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
+
 using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
@@ -9,15 +10,17 @@ using Microsoft.JSInterop;
 using Microsoft.TeamsFx.Configuration;
 using Microsoft.TeamsFx.Helper;
 using Microsoft.TeamsFx.Model;
-using Newtonsoft.Json;
+
 using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
 using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
+using System.Text.Json;
 using System.Threading;
 using System.Threading.Tasks;
+
 using AccessToken = Microsoft.TeamsFx.Model.AccessToken;
 
 namespace Microsoft.TeamsFx
@@ -116,9 +119,9 @@ namespace Microsoft.TeamsFx
         /// <summary>
         /// Popup login page to get user's access token with specific scopes.
         /// </summary>
-        /// 
+        ///
         /// <param name="scopes">The string of Microsoft Token scopes of access. Default value is `.default`.</param>
-        /// 
+        ///
         /// <example>
         /// For example:
         /// <code>
@@ -126,11 +129,11 @@ namespace Microsoft.TeamsFx
         /// await teamsUserCredential.LoginAsync("User.Read Calendars.Read"); // multiple scopes using string
         /// </code>
         /// </example>
-        /// 
+        ///
         /// <remarks>
         /// Only works in Teams client app. User will be redirected to the authorization page to login and consent.
         /// </remarks>
-        /// 
+        ///
         /// <exception cref="ExceptionCode.InternalError">When failed to login with unknown error.</exception>
         /// <exception cref="ExceptionCode.ServiceError">When simple auth server failed to exchange access token.</exception>
         /// <exception cref="ExceptionCode.ConsentFailed">When user canceled or failed to consent.</exception>
@@ -152,7 +155,7 @@ namespace Microsoft.TeamsFx
                     throw new ExceptionWithCode(errorMessage, ExceptionCode.InternalError);
                 }
 
-                var authCode = JsonConvert.DeserializeObject<AuthCode>(token);
+                var authCode = JsonSerializer.Deserialize<AuthCode>(token, new JsonSerializerOptions { IncludeFields = true });
                 await ExchangeAccessTokenFromSimpleAuthServer(scopes, authCode).ConfigureAwait(false);
             }
             catch (JSException e)
@@ -166,9 +169,9 @@ namespace Microsoft.TeamsFx
         /// <summary>
         /// Popup login page to get user's access token with specific scopes.
         /// </summary>
-        /// 
+        ///
         /// <param name="scopes">The array of Microsoft Token scopes of access. Default value is `[.default]`.</param>
-        /// 
+        ///
         /// <example>
         /// For example:
         /// <code>
@@ -176,11 +179,11 @@ namespace Microsoft.TeamsFx
         /// await teamsUserCredential.LoginAsync(new string[] { "User.Read Calendars.Read" }); //  multiple scopes using string array
         /// </code>
         /// </example>
-        /// 
+        ///
         /// <remarks>
         /// Only works in Teams client APP. User will be redirected to the authorization page to login and consent.
         /// </remarks>
-        /// 
+        ///
         /// <exception cref="ExceptionCode.InternalError">When failed to login with unknown error.</exception>
         /// <exception cref="ExceptionCode.ServiceError">When simple auth server failed to exchange access token.</exception>
         /// <exception cref="ExceptionCode.ConsentFailed">When user canceled or failed to consent.</exception>
@@ -196,11 +199,11 @@ namespace Microsoft.TeamsFx
         /// <param name="requestContext">The Azure.Core.TokenRequestContext with authentication information.</param>
         /// <param name="cancellationToken">The System.Threading.CancellationToken to use.</param>
         /// <returns>A valid Azure.Core.AccessToken.</returns>
-        /// 
+        ///
         /// <exception cref="ExceptionCode.InternalError">When failed to login with unknown error.</exception>
         /// <exception cref="ExceptionCode.UiRequiredError">When need user consent to get access token.</exception>
         /// <exception cref="ExceptionCode.ServiceError">When failed to get access token from simple auth server.</exception>
-        /// 
+        ///
         /// <example>
         /// For example:
         /// <code>
@@ -358,11 +361,11 @@ namespace Microsoft.TeamsFx
                 grant_type = GrantType.SsoToken
             };
             var response = await httpClient.PostAsync("auth/token",
-                new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json")).ConfigureAwait(false);
             var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
             if (response.IsSuccessStatusCode)
             {
-                var oauthToken = JsonConvert.DeserializeObject<SimpleAuthAccessToken>(content);
+                var oauthToken = JsonSerializer.Deserialize<SimpleAuthAccessToken>(content, new JsonSerializerOptions { IncludeFields = true });
                 var accessToken = new AccessToken(oauthToken.access_token, oauthToken.expires_on);
                 var cacheKey = Utils.GetCacheKey(accessToken.Token, scopeString, _authenticationOptions.ClientId);
                 await SetTokenToCacheAsync(cacheKey, accessToken).ConfigureAwait(false);
@@ -391,7 +394,7 @@ namespace Microsoft.TeamsFx
             if (_isWebAssembly)
             {
                 var tokenString = await _jsRuntime.InvokeAsync<string>("localStorage.getItem", cacheKey).ConfigureAwait(false);
-                var cacheToken = JsonConvert.DeserializeObject<AccessToken>(tokenString);
+                var cacheToken = JsonSerializer.Deserialize<AccessToken>(tokenString, new JsonSerializerOptions { IncludeFields = true });
                 return cacheToken;
             }
             else
@@ -409,7 +412,7 @@ namespace Microsoft.TeamsFx
         {
             if (_isWebAssembly)
             {
-                var tokenString = JsonConvert.SerializeObject(accessToken);
+                var tokenString = JsonSerializer.Serialize(accessToken);
                 await _jsRuntime.InvokeVoidAsync("localStorage.setItem", cacheKey, tokenString).ConfigureAwait(false);
             }
             else
@@ -433,11 +436,11 @@ namespace Microsoft.TeamsFx
                     grant_type = GrantType.AuthCode
                 };
                 var response = await httpClient.PostAsync("auth/token",
-                    new StringContent(JsonConvert.SerializeObject(data), Encoding.UTF8, "application/json")).ConfigureAwait(false);
+                    new StringContent(JsonSerializer.Serialize(data), Encoding.UTF8, "application/json")).ConfigureAwait(false);
                 var content = await response.Content.ReadAsStringAsync().ConfigureAwait(false);
                 if (response.IsSuccessStatusCode)
                 {
-                    var simpleAuthAccessToken = JsonConvert.DeserializeObject<SimpleAuthAccessToken>(content);
+                    var simpleAuthAccessToken = JsonSerializer.Deserialize<SimpleAuthAccessToken>(content, new JsonSerializerOptions { IncludeFields = true });
 
                     var accessToken = new AccessToken(simpleAuthAccessToken.access_token, simpleAuthAccessToken.expires_on);
 
@@ -451,9 +454,9 @@ namespace Microsoft.TeamsFx
                     SimpleAuthError error;
                     try
                     {
-                        error = JsonConvert.DeserializeObject<SimpleAuthError>(content);
+                        error = JsonSerializer.Deserialize<SimpleAuthError>(content, new JsonSerializerOptions { IncludeFields = true });
                     }
-                    catch (JsonReaderException)
+                    catch (JsonException)
                     {
                         error = null;
                     }
@@ -482,9 +485,9 @@ namespace Microsoft.TeamsFx
             string fullErrorMsg;
             try
             {
-                error = JsonConvert.DeserializeObject<SimpleAuthError>(content);
+                error = JsonSerializer.Deserialize<SimpleAuthError>(content, new JsonSerializerOptions { IncludeFields = true });
             }
-            catch (JsonReaderException)
+            catch (JsonException)
             {
                 error = null;
             }

@@ -157,13 +157,13 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
       }
 
       const currentStatus: { [key: string]: string } = {};
-
       await Promise.all(
         operations.map(async (o) => {
           const operation = getRequiredOperation(o, deployCtx);
           if (operation) {
             currentStatus[operation.resourceName] = operation.status;
             if (!polledOperations.includes(operation.resourceName)) {
+              polledOperations.push(operation.resourceName);
               const subOperations = await deployCtx.client.deploymentOperations.list(
                 deployCtx.resourceGroupName,
                 operation.resourceName
@@ -179,12 +179,6 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
         })
       );
 
-      operations.forEach((operation) => {
-        const status = getRequiredOperation(operation, deployCtx);
-        if (status) {
-          currentStatus[status.resourceName] = status.status;
-        }
-      });
       for (const key in currentStatus) {
         if (currentStatus[key] !== previousStatus[key]) {
           deployCtx.ctx.logProvider?.info(

@@ -274,6 +274,11 @@
           "group": "inline@3"
         },
         {
+          "command": "fx-extension.listCollaborator",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
+          "group": "inline@3"
+        },
+        {
           "command": "fx-extension.openSubscriptionInPortal",
           "when": "view == teamsfx-environment && viewItem == openSubscriptionInPortal",
           "group": "inline@3"
@@ -362,6 +367,10 @@
         },
         {
           "command": "fx-extension.localdebugWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.listCollaborator",
           "when": "false"
         },
         {
@@ -581,6 +590,12 @@
         "command": "fx-extension.localdebugWithIcon",
         "title": "Local debug",
         "icon": "$(debug-alt)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.listCollaborator",
+        "title": "List M365 Teams App (with AAD App) Owners",
+        "icon": "$(organization)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {

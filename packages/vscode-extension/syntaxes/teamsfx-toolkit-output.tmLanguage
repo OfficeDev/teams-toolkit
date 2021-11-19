@@ -54,6 +54,44 @@
                 <key>contentName</key>
                 <string>token.error-token</string>
             </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.error-token</string>
+                    </dict>
+                    <key>2</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.error-token</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>M365 Teams App \(ID: (.*)\), SSO AAD App \(ID: (.*)\)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.listCollaborator.appId</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.error-token</string>
+                    </dict>
+                    <key>2</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.warn-token</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>Teams App Owner: ([a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+[\.[a-zA-Z0-9_-]+]+). ((\(Not owner of SSO AAD app\))?)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.listCollaborator.account</string>
+            </dict>
         </array>
     </dict>
 </plist>

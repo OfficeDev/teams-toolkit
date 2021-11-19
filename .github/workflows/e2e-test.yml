@@ -9,6 +9,9 @@ on:
   schedule:
     - cron: "0 4,7,10 * * *"
   pull_request:
+    branches:
+      - main
+      - dev
     types:
       - assigned
       - opened

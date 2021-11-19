@@ -44,6 +44,7 @@ import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { executeCommand } from "../../../common/cpUtils";
 import { TEAMS_FX_RESOURCE_ID_KEY } from ".";
 import os from "os";
+import { DeploymentOperation } from "@azure/arm-resources/esm/models";
 
 // Old folder structure constants
 const templateFolder = "templates";
@@ -108,10 +109,35 @@ type DeployContext = {
   deploymentName: string;
 };
 
+type OperationStatus = {
+  resourceName: string;
+  status: string;
+};
+
+export function getRequiredOperation(
+  operation: DeploymentOperation,
+  deployCtx: DeployContext
+): OperationStatus | undefined {
+  if (
+    operation.properties?.targetResource?.resourceName &&
+    operation.properties.provisioningState &&
+    operation.properties?.timestamp &&
+    operation.properties.timestamp.getTime() > deployCtx.deploymentStartTime
+  ) {
+    return {
+      resourceName: operation.properties?.targetResource?.resourceName,
+      status: operation.properties.provisioningState,
+    };
+  } else {
+    return undefined;
+  }
+}
+
 export async function pollDeploymentStatus(deployCtx: DeployContext) {
   const failedCount = 4;
   let tryCount = 0;
-  let previousStatus: { [key: string]: string } = {};
+  let previousStatus: { [key: string]: string; } = {};
+  let polledOperations: string[] = [];
   deployCtx.ctx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
@@ -130,16 +156,33 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
         return;
       }
 
-      const currentStatus: { [key: string]: string } = {};
+      const currentStatus: { [key: string]: string; } = {};
+
+      await Promise.all(
+        operations.map(async (o) => {
+          const operation = getRequiredOperation(o, deployCtx);
+          if (operation) {
+            currentStatus[operation.resourceName] = operation.status;
+            if (!polledOperations.includes(operation.resourceName)) {
+              const subOperations = await deployCtx.client.deploymentOperations.list(
+                deployCtx.resourceGroupName,
+                operation.resourceName
+              );
+              subOperations.forEach((sub) => {
+                const subOperation = getRequiredOperation(sub, deployCtx);
+                if (subOperation) {
+                  currentStatus[subOperation.resourceName] = subOperation.status;
+                }
+              });
+            }
+          }
+        })
+      );
+
       operations.forEach((operation) => {
-        if (
-          operation.properties?.targetResource?.resourceName &&
-          operation.properties.provisioningState &&
-          operation.properties?.timestamp &&
-          operation.properties.timestamp.getTime() > deployCtx.deploymentStartTime
-        ) {
-          currentStatus[operation.properties.targetResource.resourceName] =
-            operation.properties.provisioningState;
+        const status = getRequiredOperation(operation, deployCtx);
+        if (status) {
+          currentStatus[status.resourceName] = status.status;
         }
       });
       for (const key in currentStatus) {
@@ -150,6 +193,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
         }
       }
       previousStatus = currentStatus;
+      polledOperations = [];
     } catch (error) {
       tryCount++;
       if (tryCount > failedCount) {
@@ -511,8 +555,7 @@ async function doGenerateArmTemplate(
           parameterFileContent = JSON.stringify(parameterFile, undefined, 2);
         } catch (error) {
           const parameterFileError = new Error(
-            `There are some errors in ${parameterEnvFilePath}, please make sure this file is valid. The error message is ${
-              (error as Error).message
+            `There are some errors in ${parameterEnvFilePath}, please make sure this file is valid. The error message is ${(error as Error).message
             }`
           );
           return err(
@@ -646,7 +689,7 @@ async function compileBicepToJson(
 // Context used by handlebars to render the main.bicep file
 export class ArmTemplateRenderContext {
   public Plugins: string[];
-  public PluginOutput: { [PluginName: string]: PluginOutputContext };
+  public PluginOutput: { [PluginName: string]: PluginOutputContext; };
 
   constructor(pluginNames: string[]) {
     this.Plugins = pluginNames;
@@ -764,9 +807,9 @@ class BicepOrchestrationContent {
 }
 
 interface PluginOutputContext {
-  Provision?: { [ModuleName: string]: PluginModuleProperties };
-  Configuration?: { [ModuleName: string]: PluginModuleProperties };
-  References?: { [Key: string]: string };
+  Provision?: { [ModuleName: string]: PluginModuleProperties; };
+  Configuration?: { [ModuleName: string]: PluginModuleProperties; };
+  References?: { [Key: string]: string; };
 }
 
 interface PluginModuleProperties {
@@ -894,7 +937,7 @@ async function getDeploymentError(
       };
       if (
         operation.properties.targetResource?.resourceType ===
-          ConstantString.DeploymentResourceType &&
+        ConstantString.DeploymentResourceType &&
         operation.properties.targetResource?.resourceName &&
         operation.properties.targetResource?.id
       ) {

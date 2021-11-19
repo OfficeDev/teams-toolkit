@@ -50,7 +50,8 @@ export class PluginDisplayName {
 export class FeatureFlagName {
   static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
   static readonly APIV2 = "TEAMSFX_APIV2";
-  static readonly InsiderPreview = "TEAMSFX_INSIDER_PREVIEW";
+  // This will default to true and this environment is only for tests. It does not expose to user.
+  static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
   static readonly VSCallingCLI = "VS_CALLING_CLI";
 }

@@ -15,8 +15,8 @@ set -euxo pipefail
 # In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
 export CI_ENABLED=true
 
-# The following line is to enable insider preview features.
-export TEAMSFX_INSIDER_PREVIEW=true
+# insider preview features are enabled by default
+
 # To specify the env name for multi-env feature.
 export TEAMSFX_ENV_NAME=staging
 

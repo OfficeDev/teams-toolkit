@@ -113,7 +113,7 @@ describe("Generate ARM Template for project", () => {
   let parameterFileName: string;
   beforeEach(async () => {
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_INSIDER_PREVIEW: "true",
+      __TEAMSFX_INSIDER_PREVIEW: "true",
     });
     parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, "default");
     await fs.ensureDir(testFolder);
@@ -426,7 +426,7 @@ describe("Deploy ARM Template to Azure", () => {
 
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_INSIDER_PREVIEW: "true",
+      __TEAMSFX_INSIDER_PREVIEW: "true",
     });
     parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, "default");
     (

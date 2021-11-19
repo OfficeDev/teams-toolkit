@@ -546,7 +546,7 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
 }
 
 export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
-  const isInsiderEnabled = getConfiguration(ConfigurationKey.InsiderPreview);
+  const isInsiderEnabled = isMultiEnvEnabled();
 
   ExtTelemetry.sendTelemetryEvent(
     isInsiderEnabled ? TelemetryEvent.CICDInsiderGuide : TelemetryEvent.CICDGuide,
@@ -940,6 +940,10 @@ function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.TreeView };
     case TelemetryTiggerFrom.Webview:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Webview };
+    case TelemetryTiggerFrom.CodeLens:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CodeLens };
+    case TelemetryTiggerFrom.EditorTitle:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.EditorTitle };
     case TelemetryTiggerFrom.Other:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
     default:
@@ -1551,6 +1555,35 @@ export async function checkPermission(env: string): Promise<boolean> {
   return result;
 }
 
+export async function listCollaborator(env: string): Promise<void> {
+  let result: Result<any, FxError> = ok(Void);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
+
+  const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
+  let inputs: Inputs | undefined;
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    inputs = getSystemInputs();
+    inputs.env = env;
+
+    result = await core.listCollaborator(inputs);
+    if (result.isErr()) {
+      throw result.error;
+    }
+    if (result.value.state !== CollaborationState.OK) {
+      window.showWarningMessage(result.value.message);
+    }
+  } catch (e) {
+    result = wrapError(e);
+  }
+
+  await processResult(eventName, result, inputs);
+}
+
 export async function openM365AccountHandler() {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenM365Portal);
   return env.openExternal(Uri.parse("https://admin.microsoft.com/Adminportal/"));
@@ -1953,6 +1986,38 @@ export async function openConfigFile() {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestConfig, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
+}
+
+export async function updatePreviewManifest(args: any[]) {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.UpdatePreviewManifestStart,
+    getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
+  );
+  let env: string | undefined;
+  if (args && args.length > 0) {
+    const segments = args[0].fsPath.split(".");
+    env = segments[segments.length - 2];
+  }
+
+  if (env && env !== "local") {
+    const inputs = getSystemInputs();
+    inputs.env = env;
+    await core.activateEnv(inputs);
+  }
+  const func: Func = {
+    namespace: "fx-solution-azure/fx-resource-appstudio",
+    method: "updateManifest",
+    params: {
+      envName: env,
+    },
+  };
+
+  return await runUserTask(
+    func,
+    TelemetryEvent.UpdatePreviewManifest,
+    env && env === "local" ? true : false,
+    env
+  );
 }
 
 export async function signOutAzure(isFromTreeView: boolean) {

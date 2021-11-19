@@ -181,48 +181,6 @@ describe("Other test case", () => {
     restore();
   });
 
-  it("isArmSupportEnabled: return correct result based on environment variable value", () => {
-    const armSupportFeatureFlagName = "TEAMSFX_INSIDER_PREVIEW";
-
-    let restore = mockedEnv({
-      [armSupportFeatureFlagName]: undefined,
-    });
-    assert.isFalse(isArmSupportEnabled());
-    restore();
-
-    restore = mockedEnv({
-      [armSupportFeatureFlagName]: "",
-    });
-    assert.isFalse(isArmSupportEnabled());
-    restore();
-
-    restore = mockedEnv({
-      [armSupportFeatureFlagName]: "true",
-    });
-    assert.isTrue(isArmSupportEnabled());
-    restore();
-  });
-
-  it("isMultiEnvEnabled: return correct result based on environment variable value", () => {
-    let restore = mockedEnv({
-      [FeatureFlagName.InsiderPreview]: undefined,
-    });
-    assert.isFalse(isMultiEnvEnabled());
-    restore();
-
-    restore = mockedEnv({
-      [FeatureFlagName.InsiderPreview]: "",
-    });
-    assert.isFalse(isMultiEnvEnabled());
-    restore();
-
-    restore = mockedEnv({
-      [FeatureFlagName.InsiderPreview]: "true",
-    });
-    assert.isTrue(isMultiEnvEnabled());
-    restore();
-  });
-
   it("SolutionPluginContainer", () => {
     const solutionPluginsV2 = getAllSolutionPluginsV2();
     assert.isTrue(solutionPluginsV2.map((s) => s.name).includes("fx-solution-azure"));

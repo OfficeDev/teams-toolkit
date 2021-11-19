@@ -22,7 +22,7 @@ import {
 } from "./resources/errors";
 import { Logger } from "./utils/logger";
 import { ProgressHelper } from "./utils/progress-helper";
-import { TelemetryEvent } from "./constants";
+import { FrontendPluginInfo, TelemetryEvent } from "./constants";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
@@ -31,6 +31,7 @@ import { isArmSupportEnabled, isVsCallingCli } from "../../..";
 import { ArmResourcePlugin } from "../../../common/armInterface";
 import "./v2";
 import { BlazorPluginImpl } from "./blazor/plugin";
+import { BlazorPluginInfo } from "./blazor/constants";
 
 @Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin, ArmResourcePlugin {
@@ -45,7 +46,10 @@ export class FrontendPlugin implements Plugin, ArmResourcePlugin {
 
   private static setContext(ctx: PluginContext): void {
     Logger.setLogger(ctx.logProvider);
-    TelemetryHelper.setContext(ctx);
+    TelemetryHelper.setContext(
+      ctx,
+      isVsCallingCli() ? BlazorPluginInfo.pluginName : FrontendPluginInfo.PluginName
+    );
   }
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {

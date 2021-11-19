@@ -6,7 +6,7 @@ import * as chai from "chai";
 import sinon from "sinon";
 import fs from "fs-extra";
 import path from "path";
-import { v4 as uuid } from "uuid";
+import { v4 as uuid, v4 } from "uuid";
 import { ConfigMap, PluginContext, ok, Platform, Plugin } from "@microsoft/teamsfx-api";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
@@ -77,6 +77,7 @@ describe("Publish Teams app with Azure", () => {
       botDomain: "botDomain",
       botId: "botId",
       webApplicationInfoResource: "webApplicationInfoResource",
+      teamsAppId: uuid(),
     });
 
     const teamsAppId = await plugin.publish(ctx);
@@ -103,6 +104,7 @@ describe("Publish Teams app with Azure", () => {
       botDomain: "botDomain",
       botId: "botId",
       webApplicationInfoResource: "webApplicationInfoResource",
+      teamsAppId: uuid(),
     });
 
     const teamsAppId = await plugin.publish(ctx);
@@ -166,6 +168,7 @@ describe("Publish Teams app with SPFx", () => {
         tabDomain: "tabDomain",
         aadId: "aadId",
         webApplicationInfoResource: "webApplicationInfoResource",
+        teamsAppId: uuid(),
       })
     );
 
@@ -192,6 +195,7 @@ describe("Publish Teams app with SPFx", () => {
         tabDomain: "tabDomain",
         aadId: "aadId",
         webApplicationInfoResource: "webApplicationInfoResource",
+        teamsAppId: uuid(),
       })
     );
 

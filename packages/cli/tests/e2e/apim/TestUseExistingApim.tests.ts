@@ -102,10 +102,11 @@ describe("Use an existing API Management Service", function () {
     );
     console.log(`Deploy. Error message: ${result.stderr}`);
 
-    const deployContext = await fs.readJSON(getConfigFileName(appName));
     if (isMultiEnvEnabled()) {
+      const deployContext = await fs.readJSON(getConfigFileName(appName, true));
       await ApimValidator.validateDeployMultiEnv(deployContext, projectPath, appName, "v1");
     } else {
+      const deployContext = await fs.readJSON(getConfigFileName(appName));
       await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
     }
   });

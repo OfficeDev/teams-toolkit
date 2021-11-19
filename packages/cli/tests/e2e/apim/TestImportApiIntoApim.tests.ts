@@ -82,10 +82,11 @@ describe("Import API into API Management", function () {
     });
     console.log(`Deploy. Error message: ${result.stderr}`);
 
-    const deployContext = await fs.readJSON(getConfigFileName(appName));
     if (isMultiEnvEnabled()) {
+      const deployContext = await fs.readJSON(getConfigFileName(appName, true));
       await ApimValidator.validateDeployMultiEnv(deployContext, projectPath, appName, "v2");
     } else {
+      const deployContext = await fs.readJSON(getConfigFileName(appName));
       await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v2");
     }
   });
@@ -99,10 +100,11 @@ describe("Import API into API Management", function () {
     });
     console.log(`Deploy. Error message: ${result.stderr}`);
 
-    const deployContext = await fs.readJSON(getConfigFileName(appName));
     if (isMultiEnvEnabled()) {
+      const deployContext = await fs.readJSON(getConfigFileName(appName, true));
       await ApimValidator.validateDeployMultiEnv(deployContext, projectPath, appName, "v1");
     } else {
+      const deployContext = await fs.readJSON(getConfigFileName(appName));
       await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
     }
   });

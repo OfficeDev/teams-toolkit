@@ -87,8 +87,13 @@ describe("Create a new API Management Service", function () {
     );
     console.log(`Deploy. Error message: ${result.stderr}`);
 
-    const deployContext = await fs.readJSON(getConfigFileName(appName));
-    await ApimValidator.validateDeployMultiEnv(deployContext, projectPath, appName, "v1");
+    if (isMultiEnvEnabled()) {
+      const deployContext = await fs.readJSON(getConfigFileName(appName, true));
+      await ApimValidator.validateDeployMultiEnv(deployContext, projectPath, appName, "v1");
+    } else {
+      const deployContext = await fs.readJSON(getConfigFileName(appName));
+      await ApimValidator.validateDeployMultiEnv(deployContext, projectPath, appName, "v1");
+    }
   });
 
   after(async () => {

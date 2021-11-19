@@ -49,8 +49,8 @@ To check that your manifest file is valid:
 
 ## Build
 
-- From Visual Studio Code: open the Teams Toolkit and click `Zip Teams metadata package` or open the command palette and select `Teams: Zip Teams metadata package`.
-- Alternatively, from the command line run `teamsfx build` in the project directory.
+- From Visual Studio Code: open the command palette and select `Teams: Zip Teams metadata package`.
+- Alternatively, from the command line run `teamsfx package` in the project directory.
 
 ## Publish to Teams
 

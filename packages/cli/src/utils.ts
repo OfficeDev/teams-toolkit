@@ -531,7 +531,10 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 }
 
 export function isRemoteCollaborationEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlags.InsiderPreview, false);
+  return (
+    !isFeatureFlagEnabled(FeatureFlags.RollbackToToolkitV2, false) &&
+    isFeatureFlagEnabled(FeatureFlags.InsiderPreview, true)
+  );
 }
 
 export function getAllFeatureFlags(): string[] | undefined {

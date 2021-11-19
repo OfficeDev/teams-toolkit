@@ -59,4 +59,5 @@ export const deployPluginNodeName = "deploy-plugin";
 
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
+  static readonly RollbackToToolkitV2 = "TEAMSFX_ROLLBACK_TO_TOOLKIT_V2";
 }

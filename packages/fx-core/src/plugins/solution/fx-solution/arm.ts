@@ -582,17 +582,6 @@ async function doGenerateArmTemplate(
       const res = bicepOrchestrationTemplate.applyReference(module[1]);
       await fs.writeFile(path.join(templateFolderPath, module[0]), res);
     }
-
-    // Output .gitignore file
-    const gitignoreContent = await fs.readFile(
-      path.join(templateSolitionPath, "armGitignore"),
-      ConstantString.UTF8Encoding
-    );
-    const gitignoreFileName = ".gitignore";
-    const gitignoreFilePath = path.join(ctx.root, templatesFolder, gitignoreFileName);
-    if (!(await fs.pathExists(gitignoreFilePath))) {
-      await fs.writeFile(gitignoreFilePath, gitignoreContent);
-    }
   }
 
   return ok(undefined); // Nothing to return when success

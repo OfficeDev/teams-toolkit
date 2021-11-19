@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { assert, expect, use as chaiUse } from "chai";
-import chaiPromises from "chai-as-promised";
+import * as chaiPromises from "chai-as-promised";
 import {
   ErrorCode,
   ErrorWithCode,
@@ -10,7 +10,7 @@ import {
   OnBehalfOfUserCredential,
   UserInfo,
 } from "../../../../src";
-import sinon from "sinon";
+import * as sinon from "sinon";
 import mockedEnv from "mocked-env";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
 

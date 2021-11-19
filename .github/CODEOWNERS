@@ -14,23 +14,24 @@
 /packages/vscode-extension/src/debug @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 /packages/vscode-extension/test/suite/envChecker @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 /packages/vscode-extension/src/resources/Strings.json @timngmsft @1openwindow @HuihuiWu-Microsoft
+/packages/vscode-extension/src/migration @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 
-/packages/cli @chagong @Alive-Fish 
+/packages/cli @chagong @Alive-Fish
 /packages/cli/src/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
-/packages/cli/src/commonlib/appStudioLoginUserPassword.ts @chagong @Alive-Fish 
-/packages/cli/src/commonlib/azureLoginUserPassword.ts @chagong @Alive-Fish 
-/packages/cli/src/commonlib/graphLoginUserPassword.ts @chagong @Alive-Fish 
-/packages/cli/src/commonlib/common/userPasswordConfig.ts @chagong @Alive-Fish 
+/packages/cli/src/commonlib/appStudioLoginUserPassword.ts @chagong @Alive-Fish
+/packages/cli/src/commonlib/azureLoginUserPassword.ts @chagong @Alive-Fish
+/packages/cli/src/commonlib/graphLoginUserPassword.ts @chagong @Alive-Fish
+/packages/cli/src/commonlib/common/userPasswordConfig.ts @chagong @Alive-Fish
 /packages/cli/src/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang @meifans
 /packages/cli/tests/e2e/aad @KennethBWSong @adashen @SLdragon
 /packages/cli/tests/e2e/collaboration @KennethBWSong @adashen @SLdragon
 /packages/cli/tests/e2e/simpleauth @KennethBWSong @adashen @formulahendry
 /packages/cli/tests/e2e/sql @xzf0587 @adashen @blackchoey
 /packages/cli/tests/e2e/apim @XiaofuHuang @dooriya @kimizhu
-/packages/cli/tests/e2e/function @henzhang-ms @eriolchan @hund030
-/packages/cli/tests/e2e/frontend @hund030 @eriolchan @henzhang-ms
+/packages/cli/tests/e2e/function @eriolchan @hund030 @IvanJobs
+/packages/cli/tests/e2e/frontend @hund030 @eriolchan @IvanJobs
 /packages/cli/tests/e2e/bot @IvanJobs @eriolchan @YitongFeng-git
-/packages/cli/tests/e2e/scaffold @hund030 @eriolchan @YitongFeng-git @IvanJobs @hengzhang-ms
+/packages/cli/tests/e2e/scaffold @hund030 @eriolchan @YitongFeng-git @IvanJobs
 /packages/cli/tests/e2e/multienv @a1exwang @dooriya @qinezh @xiaolang124 @kimizhu
 /packages/cli/tests/unit/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 /packages/cli/tests/unit/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang @meifans
@@ -38,7 +39,7 @@
 /packages/api @jayzhang @1yefuwang1 @LongOddCode @nliu-ms
 /packages/api/src/schemas @dooriya @qinezh @a1exwang @kimizhu
 
-/packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms 
+/packages/sdk @tecton @blackchoey @SLdragon @dilin-MS @wenytang-ms
 
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms
 /packages/fx-core/src/core/middleware/projectMigrator.ts @dooriya @qinezh @a1exwang @meifans @blackchoey @wenytang-ms
@@ -64,11 +65,11 @@
 /templates/bot-msgext @YitongFeng-git @IvanJobs @eriolchan
 /templates/msgext @YitongFeng-git @IvanJobs @eriolchan
 
-/packages/fx-core/src/plugins/resource/frontend @hund030 @eriolchan @henzhang-ms
-/packages/fx-core/tests/plugins/resource/frontend @hund030 @eriolchan @henzhang-ms
+/packages/fx-core/src/plugins/resource/frontend @hund030 @eriolchan @IvanJobs
+/packages/fx-core/tests/plugins/resource/frontend @hund030 @eriolchan @IvanJobs
 
-/packages/fx-core/src/plugins/resource/function @henzhang-ms @eriolchan @hund030
-/packages/fx-core/tests/plugins/resource/function @henzhang-ms @eriolchan @hund030
+/packages/fx-core/src/plugins/resource/function @eriolchan @hund030 @IvanJobs
+/packages/fx-core/tests/plugins/resource/function @eriolchan @hund030 @IvanJobs
 /packages/fx-core/src/plugins/resource/function/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh
 
 /packages/fx-core/src/plugins/resource/identity @xzf0587 @adashen @blackchoey
@@ -83,6 +84,9 @@
 /packages/fx-core/src/plugins/resource/simpleauth @KennethBWSong @adashen @formulahendry
 /packages/fx-core/tests/plugins/resource/simpleauth @KennethBWSong @adashen @formulahendry
 
+/packages/fx-core/src/plugins/solution/arm.ts @blackchoey @xzf0587 @dilin-MS @wenytang-ms @adashen
+/packages/fx-core/src/common/armInterface.ts @blackchoey @xzf0587 @dilin-MS @wenytang-ms @adashen
+
 /packages/simpleauth @adashen @blackchoey @wenytang-ms
 
 /packages/function-extension @adashen @blackchoey @dilin-MS
@@ -91,4 +95,4 @@
 
 /.github/workflows/cd.yml @adashen @LongOddCode @IvanJobs @qinezh @wenytang-ms
 
-/packages/server @jayzhang @IvanJobs @Alive-Fish 
+/packages/server @jayzhang @IvanJobs @Alive-Fish

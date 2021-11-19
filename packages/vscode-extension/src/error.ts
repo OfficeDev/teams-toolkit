@@ -18,6 +18,10 @@ export enum ExtensionErrors {
   FetchSampleError = "FetchSampleError",
   OpenEnvStateError = "OpenEnvStateError",
   EnvStateNotFoundError = "EnvStateNotFoundError",
+  EnvConfigNotFoundError = "EnvConfigNotFoundError",
   EnvResourceInfoNotFoundError = "EnvResourceInfoNotFoundError",
   NoWorkspaceError = "NoWorkSpaceError",
+  TeamsAppIdNotFoundError = "TeamsAppIdNotFoundError",
+  GrantPermissionNotLoginError = "GrantPermissionNotLoginError",
+  GrantPermissionNotProvisionError = "GrantPermissionNotProvisionError",
 }

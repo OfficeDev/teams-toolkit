@@ -282,7 +282,7 @@ describe("Middleware - others", () => {
 
     it("Should not upgrade for the new multi env project", async () => {
       sandbox.stub(process, "env").get(() => {
-        return { TEAMSFX_INSIDER_PREVIEW: "true" };
+        return { __TEAMSFX_INSIDER_PREVIEW: "true" };
       });
 
       envJson = MockLatestVersion2_3_0Context();
@@ -568,7 +568,7 @@ describe("Middleware - others", () => {
         path.join(projectPath, ".fx", "settings.json")
       );
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_INSIDER_PREVIEW: "true",
+        __TEAMSFX_INSIDER_PREVIEW: "true",
       });
     });
     afterEach(async () => {
@@ -617,6 +617,9 @@ describe("Middleware - others", () => {
       assert.strictEqual(parameterObj[ArmParameters.functionServerName], "test");
       assert.strictEqual(parameterObj[ArmParameters.functionStorageName], "test");
       assert.strictEqual(parameterObj[ArmParameters.functionAppName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimServiceName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimProductName], "test");
+      assert.strictEqual(parameterObj[ArmParameters.ApimOauthServerName], "test");
     });
   });
 
@@ -628,7 +631,7 @@ describe("Middleware - others", () => {
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_INSIDER_PREVIEW: "true",
+        __TEAMSFX_INSIDER_PREVIEW: "true",
       });
       sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
     });
@@ -651,19 +654,27 @@ describe("Middleware - others", () => {
         other: [ProjectMigratorMW],
       });
 
-      const inputs: Inputs = { platform: Platform.VSCode };
+      const inputs: Inputs = { platform: Platform.VSCode, ignoreEnvInfo: true };
       inputs.projectPath = projectPath;
       const my = new MyClass();
-
       try {
         const res = await my.other(inputs);
-        assert.isTrue(res.isOk());
+        assert.isUndefined(res);
+        const configDev = await fs.readJson(
+          path.join(inputs.projectPath, ".fx", "configs", "config.dev.json")
+        );
+        assert.isTrue(configDev["skipAddingSqlUser"]);
+        assert.isNotNull(configDev["auth"]);
+        assert.strictEqual(configDev["auth"]["accessAsUserScopeId"], "test");
+        assert.strictEqual(configDev["auth"]["objectId"], "test");
+        assert.strictEqual(configDev["auth"]["clientId"], "test");
+        assert.strictEqual(configDev["auth"]["clientSecret"], "{{ $env.AAD_APP_CLIENT_SECRET }}");
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
     });
 
-    it("successfully migrate to version of arm and multi-env with error manifest file", async () => {
+    it("pre check with error manifest file", async () => {
       await fs.copy(
         path.join(__dirname, "../samples/migrationErrorManifest/"),
         path.join(projectPath)
@@ -681,10 +692,10 @@ describe("Middleware - others", () => {
       const inputs: Inputs = { platform: Platform.VSCode };
       inputs.projectPath = projectPath;
       const my = new MyClass();
-
       try {
-        const res = await my.other(inputs);
-        assert.isTrue(res.isOk());
+        await my.other(inputs);
+        assert.fail();
+      } catch (e) {
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
       }
@@ -708,7 +719,7 @@ describe("Middleware - others", () => {
 
       try {
         const res = await my.other(inputs);
-        assert.isTrue(res.isOk());
+        assert.isUndefined(res);
 
         const azureParameterExists = await fs.pathExists(
           path.join(inputs.projectPath!, ".fx/configs/azure.parameters.dev.json")
@@ -739,8 +750,8 @@ describe("Middleware - others", () => {
         const localManifest = await fs.readJson(
           path.join(inputs.projectPath!, "templates/appPackage/manifest.local.template.json")
         );
-        assert.equal(localManifest?.icons?.color, "resources/color.png");
-        assert.equal(localManifest?.icons?.outline, "resources/outline.png");
+        assert.equal(localManifest?.icons?.color, "color.png");
+        assert.equal(localManifest?.icons?.outline, "outline.png");
         assert.equal(localManifest?.id, "{{localSettings.teamsApp.teamsAppId}}");
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });
@@ -764,7 +775,7 @@ describe("Middleware - others", () => {
 
       try {
         const res = await my.other(inputs);
-        assert.isTrue(res.isOk());
+        assert.isUndefined(res);
 
         const azureParameterExists = await fs.pathExists(
           path.join(inputs.projectPath!, ".fx/configs/azure.parameters.dev.json")
@@ -795,8 +806,8 @@ describe("Middleware - others", () => {
         const localManifest = await fs.readJson(
           path.join(inputs.projectPath!, "templates/appPackage/manifest.local.template.json")
         );
-        assert.equal(localManifest?.icons?.color, "resources/color.png");
-        assert.equal(localManifest?.icons?.outline, "resources/outline.png");
+        assert.equal(localManifest?.icons?.color, "color.png");
+        assert.equal(localManifest?.icons?.outline, "outline.png");
         assert.equal(localManifest?.id, "{{localSettings.teamsApp.teamsAppId}}");
       } finally {
         await fs.rmdir(inputs.projectPath!, { recursive: true });

@@ -30,18 +30,20 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import _ from "lodash";
 import path from "path";
-import { createV2Context, getTemplatesFolder, newEnvInfo, newProjectSettings } from "../../../src";
+import { getTemplatesFolder, newProjectSettings } from "../../../src";
+import { newEnvInfo } from "../../../src/core/tools";
 import { validManifest } from "./util";
 import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import mockedEnv from "mocked-env";
 import { ArmResourcePlugin } from "../../../src/common/armInterface";
-import { mockedFehostScaffoldArmResultV2, mockedSimpleAuthScaffoldArmResultV2 } from "./util";
+import { mockedFehostScaffoldArmResult, mockedSimpleAuthScaffoldArmResult } from "./util";
 import { getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
 import { MockTools } from "../../core/utils";
 import { assert } from "console";
 import { LocalCrypto } from "../../../src/core/crypto";
+import { ArmTemplateResult } from "../../../src/common/armInterface";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -184,7 +186,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
   it("should work and generate arm template when project requires Azure services", async () => {
     // add dedicated test case to test ARM feature enabled behavior
     const restore = mockedEnv({
-      TEAMSFX_INSIDER_PREVIEW: "1",
+      __TEAMSFX_INSIDER_PREVIEW: "1",
     });
 
     fileContent.clear();
@@ -210,17 +212,19 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedFehostScaffoldArmResultV2);
+      const res: ArmTemplateResult = mockedSimpleAuthScaffoldArmResult();
+      return ok(res);
     });
 
     mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedSimpleAuthScaffoldArmResultV2);
+      const res: ArmTemplateResult = mockedFehostScaffoldArmResult();
+      return ok(res);
     });
 
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(7);
+    expect(fileContent.size).equals(6);
     expect(fileContent.has(path.join(testFolder, "./templates/azure", "provision.bicep"))).to.be
       .true;
     expect(fileContent.has(path.join(testFolder, "./templates/azure", "config.bicep"))).to.be.true;
@@ -245,7 +249,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
   it("should work and not generate arm template when project does not require Azure services", async () => {
     // add dedicated test case to test ARM feature enabled behavior
     const restore = mockedEnv({
-      TEAMSFX_INSIDER_PREVIEW: "1",
+      __TEAMSFX_INSIDER_PREVIEW: "1",
     });
 
     fileContent.clear();

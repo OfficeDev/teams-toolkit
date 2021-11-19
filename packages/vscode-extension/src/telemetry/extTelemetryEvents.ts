@@ -34,6 +34,9 @@ export enum TelemetryEvent {
   ValidateManifestStart = "validate-manifest-start",
   ValidateManifest = "validate-manifest",
 
+  UpdatePreviewManifestStart = "update-preview-manifest-start",
+  UpdatePreviewManifest = "update-preview-manifest",
+
   getManifestTemplatePath = "get-manifest-path",
 
   BuildStart = "build-start",
@@ -91,6 +94,9 @@ export enum TelemetryEvent {
   EditSecretStart = "edit-secret-start",
   EditSecret = "edit-secret",
 
+  OpenManifestConfigStart = "open-manifest-config-start",
+  OpenManifestConfig = "open-manifest-config",
+
   OpenTeamsApp = "open-teams-app",
   UpdateTeamsApp = "update-teams-app",
 
@@ -128,7 +134,19 @@ export enum TelemetryEvent {
   ClickLocalDebug = "click-local-debug",
   ClickChangeLocation = "click-change-location",
   PreviewAdaptiveCard = "open-adaptivecard-preview",
+
   PreviewManifestFile = "preview-manifest",
+
+  MigrateTeamsTabAppStart = "migrate-teams-tab-app-start",
+  MigrateTeamsTabApp = "migrate-teams-tab-app",
+  MigrateTeamsTabAppCode = "migrate-teams-tab-app-code",
+  MigrateTeamsManifestStart = "migrate-teams-manifest-start",
+  MigrateTeamsManifest = "migrate-teams-manifest",
+
+  TreeViewLocalDebug = "treeview-localdebug",
+
+  TreeViewPreviewStart = "treeview-preview-start",
+  TreeViewPreview = "treeview-preview",
 }
 
 export enum TelemetryProperty {
@@ -183,6 +201,7 @@ export enum TelemetryTiggerFrom {
   TreeView = "TreeView",
   Webview = "Webview",
   CodeLens = "CodeLens",
+  EditorTitle = "EditorTitle",
   Other = "Other",
   Unknow = "Unknow",
 }

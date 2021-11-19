@@ -47,6 +47,8 @@ export class IdentityBicep {
     "provisionOutputs.identityOutput.value.identityClientId";
   static readonly identityResourceId: string =
     "userAssignedIdentityProvision.outputs.identityResourceId";
+  static readonly identityPrincipalId: string =
+    "userAssignedIdentityProvision.outputs.identityPrincipalId";
 }
 
 export class IdentityBicepFile {

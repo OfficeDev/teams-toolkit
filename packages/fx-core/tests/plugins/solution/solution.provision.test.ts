@@ -545,7 +545,7 @@ describe("provision() happy path for SPFx projects", () => {
       },
     };
     mocker.stub(process, "env").get(() => {
-      return { TEAMSFX_INSIDER_PREVIEW: insiderEnabled.toString() };
+      return { __TEAMSFX_INSIDER_PREVIEW: insiderEnabled.toString() };
     });
 
     expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
@@ -828,7 +828,7 @@ describe("before provision() asking for resource group info", () => {
   beforeEach(() => {
     mocker.stub(solutionUtil, "getSubsriptionDisplayName").resolves(mockedSubscriptionName);
     mocker.stub(process, "env").get(() => {
-      return { TEAMSFX_INSIDER_PREVIEW: "true" };
+      return { __TEAMSFX_INSIDER_PREVIEW: "true" };
     });
   });
 

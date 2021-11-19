@@ -41,6 +41,7 @@ import {
   UserCancelError,
   v2,
   Void,
+  BuildFolderName,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { AxiosResponse } from "axios";
@@ -1370,6 +1371,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
             `${ArchiveLogFileName}`,
             ".env.teamsfx.local",
             "subscriptionInfo.json",
+            BuildFolderName,
           ].join("\n")
         : `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
     );

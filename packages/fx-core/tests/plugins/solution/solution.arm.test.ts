@@ -113,7 +113,7 @@ describe("Generate ARM Template for project", () => {
   let parameterFileName: string;
   beforeEach(async () => {
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_INSIDER_PREVIEW: "true",
+      __TEAMSFX_INSIDER_PREVIEW: "true",
     });
     parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, "default");
     await fs.ensureDir(testFolder);
@@ -237,9 +237,6 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
     }
   }
 }`
-    );
-    expect(await fs.readFile(path.join(projectArmBaseFolder, ".gitignore"), fileEncoding)).equals(
-      `# ignore ARM template backup folder${os.EOL}/backup`
     );
   });
 
@@ -429,7 +426,7 @@ describe("Deploy ARM Template to Azure", () => {
 
   beforeEach(() => {
     mockedEnvRestore = mockedEnv({
-      TEAMSFX_INSIDER_PREVIEW: "true",
+      __TEAMSFX_INSIDER_PREVIEW: "true",
     });
     parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, "default");
     (

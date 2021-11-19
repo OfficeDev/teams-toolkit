@@ -34,6 +34,9 @@ export enum TelemetryEvent {
   ValidateManifestStart = "validate-manifest-start",
   ValidateManifest = "validate-manifest",
 
+  UpdatePreviewManifestStart = "update-preview-manifest-start",
+  UpdatePreviewManifest = "update-preview-manifest",
+
   getManifestTemplatePath = "get-manifest-path",
 
   BuildStart = "build-start",
@@ -139,6 +142,11 @@ export enum TelemetryEvent {
   MigrateTeamsTabAppCode = "migrate-teams-tab-app-code",
   MigrateTeamsManifestStart = "migrate-teams-manifest-start",
   MigrateTeamsManifest = "migrate-teams-manifest",
+
+  TreeViewLocalDebug = "treeview-localdebug",
+
+  TreeViewPreviewStart = "treeview-preview-start",
+  TreeViewPreview = "treeview-preview",
 }
 
 export enum TelemetryProperty {
@@ -193,6 +201,7 @@ export enum TelemetryTiggerFrom {
   TreeView = "TreeView",
   Webview = "Webview",
   CodeLens = "CodeLens",
+  EditorTitle = "EditorTitle",
   Other = "Other",
   Unknow = "Unknow",
 }

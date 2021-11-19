@@ -283,7 +283,8 @@ describe("V2 implementation", () => {
     mockScaffoldCodeThatAlwaysSucceeds(appStudioPluginV2);
     mockScaffoldCodeThatAlwaysSucceeds(localDebugPluginV2);
     mockScaffoldCodeThatAlwaysSucceeds(frontendPluginV2);
-
+    const insiderPreviewFlag = process.env.TEAMSFX_INSIDER_PREVIEW;
+    if (insiderPreviewFlag) return;
     const result = await executeUserTask(
       mockedCtx,
       mockedInputs,

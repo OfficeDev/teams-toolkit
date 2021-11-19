@@ -68,7 +68,7 @@ import AppStudioTokenInstance, { AppStudioLogin } from "./commonlib/appStudioLog
 import SharepointTokenInstance from "./commonlib/sharepointLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
-import { TreeViewCommand } from "./treeview/commandsTreeViewProvider";
+import { TreeViewCommand, CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
@@ -495,20 +495,37 @@ async function askTargetEnvironment(): Promise<Result<string, FxError>> {
 export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
 
-  const selectedEnv = await askTargetEnvironment();
-  if (selectedEnv.isErr()) {
-    return err(selectedEnv.error);
-  }
-
-  const env = selectedEnv.value;
   const func: Func = {
     namespace: "fx-solution-azure",
     method: "buildPackage",
     params: {
-      type: env === "local" ? "localDebug" : "remote",
+      type: "",
     },
   };
-  return await runUserTask(func, TelemetryEvent.Build, false, env);
+
+  if (args && args.length > 0 && args[0] != CommandsTreeViewProvider.TreeViewFlag) {
+    func.params.type = args[0];
+    const isLocalDebug = args[0] === "localDebug";
+    if (isLocalDebug) {
+      return await runUserTask(func, TelemetryEvent.Build, true);
+    } else {
+      return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
+    }
+  } else {
+    const selectedEnv = await askTargetEnvironment();
+    if (selectedEnv.isErr()) {
+      return err(selectedEnv.error);
+    }
+    const env = selectedEnv.value;
+    const isLocalDebug = env === "local";
+    if (isLocalDebug) {
+      func.params.type = "localDebug";
+      return await runUserTask(func, TelemetryEvent.Build, true);
+    } else {
+      func.params.type = "remote";
+      return await runUserTask(func, TelemetryEvent.Build, false, env);
+    }
+  }
 }
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -1132,9 +1149,19 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, invalidProjectError);
     return err(invalidProjectError);
   }
+
+  const selectedEnv = await askTargetEnvironment();
+  if (selectedEnv.isErr()) {
+    return err(selectedEnv.error);
+  }
+  const env = selectedEnv.value;
+
   const func: Func = {
     namespace: "fx-solution-azure/fx-resource-appstudio",
     method: "getManifestTemplatePath",
+    params: {
+      type: env === "local" ? "localDebug" : "remote",
+    },
   };
   const res = await runUserTask(func, TelemetryEvent.ValidateManifest, true);
   if (res.isOk()) {
@@ -1840,17 +1867,17 @@ export async function openPreviewManifest(args: any[]): Promise<Result<any, FxEr
     }
     manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.local.json`;
   } else {
-    const res = await buildPackageHandler(["remote"]);
-    if (res.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
-      return err(res.error);
-    }
     const inputs = getSystemInputs();
-    inputs.ignoreEnvInfo = true;
+    inputs.ignoreEnvInfo = false;
     const env = await core.getSelectedEnv(inputs);
     if (env.isErr()) {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, env.error);
       return err(env.error);
+    }
+    const res = await buildPackageHandler(["remote", env.value]);
+    if (res.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
+      return err(res.error);
     }
     manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env.value}.json`;
   }

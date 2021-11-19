@@ -447,7 +447,11 @@ export class AppStudioPlugin implements Plugin {
     } else if (func.method === "migrateV1Project") {
       return await this.migrateV1Project(ctx);
     } else if (func.method === "getManifestTemplatePath") {
-      const filePath = await this.appStudioPluginImpl.getManifestTemplatePath(ctx.root);
+      const isLocalDebug = (func.params.type as string) === "localDebug";
+      const filePath = await this.appStudioPluginImpl.getManifestTemplatePath(
+        ctx.root,
+        isLocalDebug
+      );
       return ok(filePath);
     }
     return err(

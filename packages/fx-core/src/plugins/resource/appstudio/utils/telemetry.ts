@@ -36,6 +36,7 @@ export enum TelemetryEventName {
   buildTeamsPackage = "build",
   publish = "publish",
   migrateV1Project = "migrate-v1-project",
+  updateManifest = "update-manifest",
   provision = "provision",
   checkPermission = "check-permission",
   grantPermission = "grant-permission",

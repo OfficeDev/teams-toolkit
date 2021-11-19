@@ -20,8 +20,8 @@ pipeline {
         // To enable @microsoft/teamsfx-cli running in CI mode, turn on CI_ENABLED like below.
         // In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
         CI_ENABLED = 'true'
-        // The following line is to enable insider preview features.
-        TEAMSFX_INSIDER_PREVIEW = 'true'
+        // insider preview features are enabled by default
+
         // To specify the env name for multi-env feature.
         TEAMSFX_ENV_NAME = 'staging'
     }

@@ -1,7 +1,6 @@
 export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
   BicepEnvCheckerEnable = "validateBicep",
-  InsiderPreview = "insiderPreview",
   RootDirectory = "defaultProjectRootDirectory",
 }
 

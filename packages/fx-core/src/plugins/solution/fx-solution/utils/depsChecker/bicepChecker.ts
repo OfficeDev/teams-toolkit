@@ -30,6 +30,7 @@ import {
 import { performance } from "perf_hooks";
 import { sendErrorTelemetryThenReturnError } from "../util";
 import { isBicepEnvCheckerEnabled } from "../../../../../common/tools";
+import { sendTelemetryEvent } from "../../../../../common/telemetry";
 
 export const BicepName = "Bicep";
 export const installVersion = "v0.4";
@@ -174,14 +175,9 @@ class BicepChecker {
       // GitHub public API has a limit of 60 requests per hour per IP
       // If it fails to retrieve the latest version, just use a known version.
       selectedVersion = fallbackInstallVersion;
-      this._logger?.debug(
-        Messages.failToRetriveBicepReleaseVersions
-          .split("@GithubUrl")
-          .join(bicepReleaseApiUrl)
-          .split("@BicepVersion")
-          .join(fallbackInstallVersion)
-          .split("@Error")
-          .join(`${e}`)
+      this._telemetry?.sendTelemetryEvent(
+        DepsCheckerEvent.bicepFailedToRetrieveGithubReleaseVersions,
+        { [TelemetryMeasurement.ErrorMessage]: `${e}` }
       );
     }
     const installDir = this.getBicepExecPath();

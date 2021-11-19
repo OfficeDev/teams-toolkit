@@ -31,7 +31,6 @@ export const Messages = {
   learnMoreButtonText: "Learn more",
 
   downloadBicep: `Downloading and installing the portable version of @NameVersion, which will be installed to @InstallDir and will not affect your environment.`,
-  failToRetriveBicepReleaseVersions: `Failed to retrieve bicep release versions from '@GithubUrl', using default version '@BicepVersion'. Error = '@Error'`,
   finishInstallBicep: `Successfully installed @NameVersion.`,
   failToInstallBicep: `Failed to install @NameVersion`,
   failToInstallBicepOutputVSC: `Failed to install @NameVersion. please read this wiki(@HelpLink) to install @NameVersion manually and restart Visual Studio Code.`,
@@ -49,6 +48,7 @@ export enum DepsCheckerEvent {
   bicepInstallScriptCompleted = "bicep-install-script-completed",
   bicepInstallScriptError = "bicep-install-script-error",
   bicepValidationError = "bicep-validation-error",
+  bicepFailedToRetrieveGithubReleaseVersions = "bicep-failed-to-retrieve-github-release-versions",
 
   clickLearnMore = "env-checker-click-learn-more",
   clickCancel = "env-checker-click-cancel",
@@ -64,4 +64,5 @@ export enum TelemetryMeasurement {
   OSArch = "os-arch",
   OSRelease = "os-release",
   Component = "component",
+  ErrorMessage = "error-message",
 }

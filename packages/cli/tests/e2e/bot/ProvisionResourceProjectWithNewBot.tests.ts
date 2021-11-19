@@ -74,7 +74,7 @@ describe("Provision", function () {
 
         // Validate Bot Provision
         const bot = BotValidator.init(context, true);
-        await BotValidator.validateProvision(bot);
+        await BotValidator.validateProvision(bot, true);
       } else {
         // Validate provision
         // Get context

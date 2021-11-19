@@ -3,6 +3,7 @@ param provisionParameters object
 
 var resourceBaseName = provisionParameters['resourceBaseName']
 var apimServiceName = contains(provisionParameters, 'apimServiceName') ? provisionParameters['apimServiceName'] : '${resourceBaseName}'
+var apimServiceSku = contains(provisionParameters, 'apimServiceSku') ? provisionParameters['apimServiceSku'] : 'Consumption'
 var productName = contains(provisionParameters, 'apimProductName') ? provisionParameters['apimProductName'] : '${resourceBaseName}'
 var publisherEmail = provisionParameters['apimPublisherEmail']
 var publisherName = provisionParameters['apimPublisherName']
@@ -11,7 +12,7 @@ resource apimService 'Microsoft.ApiManagement/service@2020-12-01' = {
   name: apimServiceName
   location: resourceGroup().location
   sku: {
-    name: 'Consumption'
+    name: apimServiceSku // You can follow https://aka.ms/teamsfx-bicep-add-param-tutorial to add apimServiceSku property to provisionParameters to override the default value "Consumption".
     capacity: 0
   }
   properties: {

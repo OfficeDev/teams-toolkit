@@ -1,8 +1,8 @@
 {
   "name": "@microsoft/adaptivecards-tools",
-  "version": "0.1.0",
+  "version": "0.1.2",
   "description": "Microsoft sdk for Adaptive Cards",
-  "main": "./lib/index.js",
+  "main": "lib/index.js",
   "types": "types/index.d.ts",
   "scripts": {
     "clean": "rimraf lib types",
@@ -13,8 +13,11 @@
     "precommit": "lint-staged",
     "format": "prettier --write --config ./.prettierrc.js --ignore-path ./.prettierignore \"src/**/*.ts\" \"*.{js,json}\""
   },
+  "repository": "https://github.com/OfficeDev/TeamsFx",
   "author": "Microsoft Corporation",
   "license": "MIT",
+  "homepage": "https://github.com/OfficeDev/TeamsFx",
+  "sideEffects": false,
   "devDependencies": {
     "rollup-plugin-typescript2": "^0.25.3",
     "@rollup/plugin-commonjs": "^13.0.2",
@@ -45,6 +48,16 @@
     "adaptivecards-templating": "^2.1.0",
     "json-schema-to-typescript": "^10.1.4"
   },
+  "publishConfig": {
+    "access": "public"
+  },
+  "files": [
+    "lib/*js",
+    "lib/*js.map",
+    "types/*.d.ts",
+    "README.md",
+    "LICENSE"
+  ],
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"

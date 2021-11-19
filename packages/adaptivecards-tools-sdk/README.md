@@ -1,6 +1,6 @@
 # AdaptiveCards SDK for TypeScript/JavaScript
 
-Adaptivecards-tools sdk aims to reduce developer's effort to render an Adaptive Card in your project, especially for Adaptive Card with Data, provide type safety check.
+Adaptivecards-tools sdk aims to reduce developer's efforts to render an Adaptive Card in your project, especially for Adaptive Card with Data, provide type safety check.
 
 ## Getting started
 

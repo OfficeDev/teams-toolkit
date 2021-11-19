@@ -178,6 +178,35 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openDocumentCmd);
 
+  const openAccountLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openAccountLink",
+    (...args) => Correlator.run(handlers.openAccountLinkHandler, args)
+  );
+  context.subscriptions.push(openAccountLinkCmd);
+
+  const openEnvLinkCmd = vscode.commands.registerCommand("fx-extension.openEnvLink", (...args) =>
+    Correlator.run(handlers.openEnvLinkHandler, args)
+  );
+  context.subscriptions.push(openEnvLinkCmd);
+
+  const openDevelopmentLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openDevelopmentLink",
+    (...args) => Correlator.run(handlers.openDevelopmentLinkHandler, args)
+  );
+  context.subscriptions.push(openDevelopmentLinkCmd);
+
+  const openDeploymentLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openDeploymentLink",
+    (...args) => Correlator.run(handlers.openDeploymentLinkHandler, args)
+  );
+  context.subscriptions.push(openDeploymentLinkCmd);
+
+  const openHelpFeedbackLinkCmd = vscode.commands.registerCommand(
+    "fx-extension.openHelpFeedbackLink",
+    (...args) => Correlator.run(handlers.openHelpFeedbackLinkHandler, args)
+  );
+  context.subscriptions.push(openHelpFeedbackLinkCmd);
+
   const openManifestCmd = vscode.commands.registerCommand("fx-extension.openManifest", (...args) =>
     Correlator.run(handlers.openManifestHandler, args)
   );
@@ -278,6 +307,32 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(viewEnvironmentWithIcon);
 
+  const localDebug = vscode.commands.registerCommand("fx-extension.localdebug", (node) => {
+    Correlator.run(handlers.treeViewLocalDebugHandler);
+  });
+  context.subscriptions.push(localDebug);
+
+  const localDebugWithIcon = vscode.commands.registerCommand(
+    "fx-extension.localdebugWithIcon",
+    (node) => {
+      Correlator.run(handlers.treeViewLocalDebugHandler);
+    }
+  );
+  context.subscriptions.push(localDebugWithIcon);
+
+  const preview = vscode.commands.registerCommand("fx-extension.preview", (node) => {
+    Correlator.run(handlers.treeViewPreviewHandler, node.command.title);
+  });
+  context.subscriptions.push(preview);
+
+  const previewWithIcon = vscode.commands.registerCommand(
+    "fx-extension.previewWithIcon",
+    (node) => {
+      Correlator.run(handlers.treeViewPreviewHandler, node.command.title);
+    }
+  );
+  context.subscriptions.push(previewWithIcon);
+
   const openSubscriptionInPortal = vscode.commands.registerCommand(
     "fx-extension.openSubscriptionInPortal",
     (node) => {
@@ -329,9 +384,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const userDataSelector = {
     language: "plaintext",
     scheme: "file",
-    pattern: isMultiEnvEnabled()
-      ? `**/.${ConfigFolderName}/${StatesFolderName}/*.userdata`
-      : `**/.${ConfigFolderName}/*.userdata`,
+    pattern: "**/*.userdata",
   };
   const localDebugDataSelector = {
     language: "json",

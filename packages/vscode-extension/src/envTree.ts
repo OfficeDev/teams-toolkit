@@ -10,11 +10,13 @@ import {
   TreeCategory,
   TreeItem,
   SubscriptionInfo,
+  LocalEnvironmentName,
 } from "@microsoft/teamsfx-api";
 import {
   isMultiEnvEnabled,
   environmentManager,
   isRemoteCollaborateEnabled,
+  LocalSettingsProvider,
 } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
@@ -23,6 +25,7 @@ import * as StringResources from "./resources/Strings.json";
 import { checkPermission, listAllCollaborators, tools } from "./handlers";
 import { signedIn } from "./commonlib/common/constant";
 import { AppStudioLogin } from "./commonlib/appStudioLogin";
+import * as fs from "fs-extra";
 import {
   getProvisionSucceedFromEnv,
   getM365TenantFromEnv,
@@ -57,30 +60,40 @@ export async function registerEnvTreeHandler(
       }
       showEnvList.splice(0);
 
-      const envNames = envNamesResult.value;
+      const envNames = (await localSettingsExists(workspacePath))
+        ? [LocalEnvironmentName].concat(envNamesResult.value)
+        : envNamesResult.value;
       for (const item of envNames) {
         showEnvList.push(item);
         const provisionSucceeded = await getProvisionSucceedFromEnv(item);
+        const isLocal = item === LocalEnvironmentName;
         environmentTreeProvider.add([
           {
             commandId: "fx-extension.environment." + item,
             label: item,
             description: provisionSucceeded ? "(Provisioned)" : "",
             parent: TreeCategory.Environment,
-            contextValue: "environment",
+            contextValue: isLocal
+              ? "local"
+              : provisionSucceeded
+              ? "environment-provisioned"
+              : "environment",
             icon: provisionSucceeded ? "folder-active" : "symbol-folder",
             isCustom: false,
-            expanded: true,
+            expanded: isLocal ? undefined : true,
           },
         ]);
       }
       await checkAllEnv(envNamesResult.value);
 
+      // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
+      /*
       const collaboratorsItem = await getAllCollaboratorList(
         envNamesResult.value,
         forceUpdateCollaboratorList
       );
       await environmentTreeProvider.add(collaboratorsItem);
+      */
     });
   }
   return ok(Void);
@@ -222,10 +235,16 @@ function generateCollaboratorParentNode(env: string): TreeItem {
   };
 }
 
+async function localSettingsExists(projectRoot: string): Promise<boolean> {
+  const provider = new LocalSettingsProvider(projectRoot);
+  return await fs.pathExists(provider.localSettingsFilePath);
+}
+
 async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeItem[]> {
   if (
     environmentTreeProvider &&
-    environmentTreeProvider.findCommand("fx-extension.environment." + env)
+    environmentTreeProvider.findCommand("fx-extension.environment." + env) &&
+    env !== LocalEnvironmentName
   ) {
     let envSubItems: TreeItem[] = [];
     const subscriptionInfo = await getSubscriptionInfoFromEnv(env);

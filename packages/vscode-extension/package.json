@@ -187,6 +187,31 @@
           "command": "fx-extension.refreshEnvironment",
           "when": "view == teamsfx-environment",
           "group": "navigation@2"
+        },
+        {
+          "command": "fx-extension.openAccountLink",
+          "when": "view == teamsfx-accounts",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openEnvLink",
+          "when": "view == teamsfx-environment",
+          "group": "navigation@3"
+        },
+        {
+          "command": "fx-extension.openDevelopmentLink",
+          "when": "view == teamsfx-development",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openDeploymentLink",
+          "when": "view == teamsfx-deployment",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openHelpFeedbackLink",
+          "when": "view == teamsfx-help-and-feedback",
+          "group": "navigation@1"
         }
       ],
       "view/item/context": [
@@ -231,12 +256,21 @@
           "group": "inline"
         },
         {
-          "command": "fx-extension.viewEnvironment",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/"
+          "command": "fx-extension.preview",
+          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/"
         },
         {
-          "command": "fx-extension.viewEnvironmentWithIcon",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/",
+          "command": "fx-extension.previewWithIcon",
+          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.localdebug",
+          "when": "view == teamsfx-environment && viewItem =~ /local/"
+        },
+        {
+          "command": "fx-extension.localdebugWithIcon",
+          "when": "view == teamsfx-environment && viewItem =~ /local/",
           "group": "inline@3"
         },
         {
@@ -251,7 +285,7 @@
         },
         {
           "command": "fx-extension.grantPermission",
-          "when": "view == teamsfx-environment && viewItem == addCollaborator",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         }
       ],
@@ -315,11 +349,19 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.viewEnvironment",
+          "command": "fx-extension.preview",
           "when": "false"
         },
         {
-          "command": "fx-extension.viewEnvironmentWithIcon",
+          "command": "fx-extension.previewWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.localdebug",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.localdebugWithIcon",
           "when": "false"
         },
         {
@@ -341,6 +383,26 @@
         {
           "command": "fx-extension.checkProjectUpgrade",
           "when": "fx-extension.canUpgradeToArmAndMultiEnv"
+        },
+        {
+          "command": "fx-extension.openAccountLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openEnvLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openDevelopmentLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openDeploymentLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openHelpFeedbackLink",
+          "when": "false"
         }
       ]
     },
@@ -500,14 +562,25 @@
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
-        "command": "fx-extension.viewEnvironment",
-        "title": "View environment",
+        "command": "fx-extension.preview",
+        "title": "Preview",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
-        "command": "fx-extension.viewEnvironmentWithIcon",
-        "title": "View environment",
-        "icon": "$(file-symlink-directory)",
+        "command": "fx-extension.previewWithIcon",
+        "title": "Preview",
+        "icon": "$(run)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.localdebug",
+        "title": "Local debug",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.localdebugWithIcon",
+        "title": "Local debug",
+        "icon": "$(debug-alt)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
@@ -524,7 +597,7 @@
       },
       {
         "command": "fx-extension.grantPermission",
-        "title": "Grant permission",
+        "title": "Add M365 Teams App (with AAD App) Owners",
         "icon": "$(person-add)",
         "enablement": "fx-extension.isMultiEnvEnabled && fx-extension.isRemoteCollaborateEnabled"
       },
@@ -535,6 +608,32 @@
       {
         "command": "fx-extension.migrateTeamsManifest",
         "title": "Teams: Upgrade Teams manifest to support Outlook and Office apps"
+      },
+      {
+        "command": "fx-extension.openAccountLink",
+        "title": "Open account link",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openEnvLink",
+        "title": "Open environment link",
+        "icon": "$(info)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.openDevelopmentLink",
+        "title": "Open development link",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openDeploymentLink",
+        "title": "Open deployment link",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openHelpFeedbackLink",
+        "title": "Open help link",
+        "icon": "$(info)"
       }
     ],
     "taskDefinitions": [

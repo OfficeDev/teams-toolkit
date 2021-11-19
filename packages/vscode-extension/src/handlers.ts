@@ -43,6 +43,7 @@ import {
   EnvNamePlaceholder,
   SelectFolderConfig,
   SelectFileConfig,
+  SingleSelectConfig,
   ConcurrentError,
 } from "@microsoft/teamsfx-api";
 import {
@@ -67,7 +68,7 @@ import AppStudioTokenInstance, { AppStudioLogin } from "./commonlib/appStudioLog
 import SharepointTokenInstance from "./commonlib/sharepointLogin";
 import AppStudioCodeSpaceTokenInstance from "./commonlib/appStudioCodeSpaceLogin";
 import VsCodeLogInstance from "./commonlib/log";
-import { TreeViewCommand } from "./treeview/commandsTreeViewProvider";
+import { TreeViewCommand, CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
@@ -466,6 +467,31 @@ export async function validateManifestHandler(args?: any[]): Promise<Result<null
   return await runUserTask(func, TelemetryEvent.ValidateManifest, false);
 }
 
+/**
+ * Ask user to select environment, local is included
+ */
+async function askTargetEnvironment(): Promise<Result<string, FxError>> {
+  const projectPath = getWorkspacePath();
+  if (!isValidProject(projectPath)) {
+    return err(InvalidProjectError());
+  }
+  const envProfilesResult = await environmentManager.listEnvConfigs(projectPath!);
+  if (envProfilesResult.isErr()) {
+    return err(envProfilesResult.error);
+  }
+  const config: SingleSelectConfig = {
+    name: "targetEnvName",
+    title: "Select an environment",
+    options: envProfilesResult.value.concat(["local"]),
+  };
+  const selectedEnv = await VS_CODE_UI.selectOption(config);
+  if (selectedEnv.isErr()) {
+    return err(selectedEnv.error);
+  } else {
+    return ok(selectedEnv.value.result as string);
+  }
+}
+
 export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.BuildStart, getTriggerFromProperty(args));
 
@@ -473,16 +499,33 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
     namespace: "fx-solution-azure",
     method: "buildPackage",
     params: {
-      type: args ? args[0] : "remote",
+      type: "",
     },
   };
 
-  let ignoreEnvInfo = false;
-  if (args && args[0] == "localDebug") {
-    ignoreEnvInfo = true;
+  if (args && args.length > 0 && args[0] != CommandsTreeViewProvider.TreeViewFlag) {
+    func.params.type = args[0];
+    const isLocalDebug = args[0] === "localDebug";
+    if (isLocalDebug) {
+      return await runUserTask(func, TelemetryEvent.Build, true);
+    } else {
+      return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
+    }
+  } else {
+    const selectedEnv = await askTargetEnvironment();
+    if (selectedEnv.isErr()) {
+      return err(selectedEnv.error);
+    }
+    const env = selectedEnv.value;
+    const isLocalDebug = env === "local";
+    if (isLocalDebug) {
+      func.params.type = "localDebug";
+      return await runUserTask(func, TelemetryEvent.Build, true);
+    } else {
+      func.params.type = "remote";
+      return await runUserTask(func, TelemetryEvent.Build, false, env);
+    }
   }
-
-  return await runUserTask(func, TelemetryEvent.Build, ignoreEnvInfo);
 }
 
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -1114,55 +1157,57 @@ export async function openManifestHandler(args?: any[]): Promise<Result<null, Fx
     TelemetryEvent.OpenManifestEditorStart,
     getTriggerFromProperty(args)
   );
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    const workspaceFolder = workspace.workspaceFolders[0];
-    const projectRoot = await commonUtils.getProjectRoot(workspaceFolder.uri.fsPath, "");
-    const appDirectory = await getAppDirectory(projectRoot!);
-    if (!(await fs.pathExists(appDirectory))) {
-      const invalidProjectError: FxError = InvalidProjectError();
-      showError(invalidProjectError);
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, invalidProjectError);
-      return err(invalidProjectError);
-    }
-    const func: Func = {
-      namespace: "fx-solution-azure/fx-resource-appstudio",
-      method: "getManifestTemplatePath",
-    };
-    const res = await runUserTask(func, TelemetryEvent.ValidateManifest, true);
-    if (res.isOk()) {
-      const manifestFile = res.value as string;
-      if (fs.existsSync(manifestFile)) {
-        workspace.openTextDocument(manifestFile).then((document) => {
-          window.showTextDocument(document);
-        });
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditor, {
-          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        });
-        return ok(null);
-      } else {
-        const FxError = new SystemError(
-          "FileNotFound",
-          util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
-          ExtensionSource
-        );
-        showError(FxError);
-        ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
-        return err(FxError);
-      }
+  const projectPath = getWorkspacePath();
+  if (!projectPath) {
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, InvalidProjectError());
+    return err(InvalidProjectError());
+  }
+  const appDirectory = await getAppDirectory(projectPath!);
+  if (!(await fs.pathExists(appDirectory))) {
+    const invalidProjectError: FxError = InvalidProjectError();
+    showError(invalidProjectError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, invalidProjectError);
+    return err(invalidProjectError);
+  }
+
+  const selectedEnv = await askTargetEnvironment();
+  if (selectedEnv.isErr()) {
+    return err(selectedEnv.error);
+  }
+  const env = selectedEnv.value;
+
+  const func: Func = {
+    namespace: "fx-solution-azure/fx-resource-appstudio",
+    method: "getManifestTemplatePath",
+    params: {
+      type: env === "local" ? "localDebug" : "remote",
+    },
+  };
+  const res = await runUserTask(func, TelemetryEvent.ValidateManifest, true);
+  if (res.isOk()) {
+    const manifestFile = res.value as string;
+    if (fs.existsSync(manifestFile)) {
+      workspace.openTextDocument(manifestFile).then((document) => {
+        window.showTextDocument(document);
+      });
+      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestEditor, {
+        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      });
+      return ok(null);
     } else {
-      showError(res.error);
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, res.error);
-      return err(res.error);
+      const FxError = new SystemError(
+        "FileNotFound",
+        util.format(StringResources.vsc.handlers.fileNotFound, manifestFile),
+        ExtensionSource
+      );
+      showError(FxError);
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, FxError);
+      return err(FxError);
     }
   } else {
-    const noOpenWorkspaceError = new UserError(
-      ExtensionErrors.NoWorkspaceError,
-      StringResources.vsc.handlers.noOpenWorkspace,
-      ExtensionSource
-    );
-    showError(noOpenWorkspaceError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, noOpenWorkspaceError);
-    return err(noOpenWorkspaceError);
+    showError(res.error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestEditor, res.error);
+    return err(res.error);
   }
 }
 
@@ -1871,17 +1916,17 @@ export async function openPreviewManifest(args: any[]): Promise<Result<any, FxEr
     }
     manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.local.json`;
   } else {
-    const res = await buildPackageHandler(["remote"]);
-    if (res.isErr()) {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
-      return err(res.error);
-    }
     const inputs = getSystemInputs();
-    inputs.ignoreEnvInfo = true;
+    inputs.ignoreEnvInfo = false;
     const env = await core.getSelectedEnv(inputs);
     if (env.isErr()) {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, env.error);
       return err(env.error);
+    }
+    const res = await buildPackageHandler(["remote", env.value]);
+    if (res.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.PreviewManifestFile, res.error);
+      return err(res.error);
     }
     manifestFile = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env.value}.json`;
   }

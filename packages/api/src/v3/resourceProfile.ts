@@ -14,14 +14,14 @@ export enum RuntimeStacks {
 }
 
 export enum AzureResourceTypes {
-  WebApp = "Web App",
-  StaticWebApp = "Static Web App",
-  FunctionApp = "Function App",
+  AzureWebApp = "AzureWebApp",
+  AzureStaticWebApp = "AzureStaticWebApp",
+  AzureFunctionApp = "AzureFunctionApp",
   ManagedIdentity = "Managed Identity",
-  StorageAccount = "Storage account",
-  AzureBot = "Azure Bot",
-  AzureSQLDatabase = "SQL database",
-  AzureActiveDirectoryApp = "AAD App",
+  AzureStorageAccount = "AzureStorageAccount",
+  AzureBot = "AzureBot",
+  AzureSQL = "AzureSQL",
+  AAD = "AAD",
 }
 
 /**
@@ -49,12 +49,12 @@ export interface AzureManagedIdentity extends AzureResource {
 }
 
 export interface AzureStorageAccount extends AzureResource {
-  type: AzureResourceTypes.StorageAccount;
+  type: AzureResourceTypes.AzureStorageAccount;
   endpoint: string;
 }
 
 export interface AzureSQLDatabase extends AzureResource {
-  type: AzureResourceTypes.AzureSQLDatabase;
+  type: AzureResourceTypes.AzureSQL;
   endpoint: string;
   adminUserName: string;
   databaseName: string;
@@ -72,12 +72,12 @@ export interface AzureBot extends AzureResource {
 }
 
 export interface WebApp extends AzureResource {
-  type: AzureResourceTypes.WebApp;
+  type: AzureResourceTypes.AzureWebApp;
   endpoint: string;
 }
 
 export interface AzureActiveDirectoryApp extends AzureResource {
-  type: AzureResourceTypes.AzureActiveDirectoryApp;
+  type: AzureResourceTypes.AAD;
   clientId: string;
   clientSecret: string;
   objectId: string;
@@ -174,7 +174,7 @@ const resourceProfile: TeamsFxResourceProfile = {
   },
   tab: {
     name: "tab",
-    type: AzureResourceTypes.StorageAccount,
+    type: AzureResourceTypes.AzureStorageAccount,
     resourceId:
       "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Storage/storageAccounts/frontendstgwtdxzjx6olulg",
     resourceName: "frontendstgwtdxzjx6olulg",
@@ -195,7 +195,7 @@ const resourceProfile: TeamsFxResourceProfile = {
   },
   aad: {
     name: "simpleAuth",
-    type: AzureResourceTypes.AzureActiveDirectoryApp,
+    type: AzureResourceTypes.AAD,
     resourceId: "3154034a-4ce1-48f7-809f-e8dd91ac5b4c",
     resourceName: "xxxaad",
     clientId: "0a9f0107-a78a-40a9-9740-812b1f13bf37",
@@ -215,24 +215,24 @@ const resourceProfile: TeamsFxResourceProfile = {
 
   resources: [
     {
-      name: "simpleAuth",
-      type: AzureResourceTypes.WebApp,
+      name: "SimpleAuth",
+      type: AzureResourceTypes.AzureWebApp,
       resourceId:
         "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/serverfarms/fullcapdev230e29-simpleAuth-serverfarms",
       resourceName: "fullcapdev230e29-simpleauth-webapp",
       endpoint: "https://fullcapdev230e29-simpleauth-webapp.azurewebsites.net",
     },
     {
-      name: "myFunctionApp",
-      type: AzureResourceTypes.FunctionApp,
+      name: "AzureFunction",
+      type: AzureResourceTypes.AzureFunctionApp,
       resourceId:
         "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/fullcap102dev517e3f-function-webapp",
       resourceName: "fullcapdev230e29-simpleauth-webapp",
       endpoint: "https://fullcapdev230e29-simpleauth-webapp.azurewebsites.net",
     },
     {
-      name: "sql1",
-      type: AzureResourceTypes.AzureSQLDatabase,
+      name: "AzureSQL",
+      type: AzureResourceTypes.AzureSQL,
       resourceId:
         "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Sql/servers/fullcapdev230e29-sql-server",
       resourceName: "fullcapdev230e29-sql-server",
@@ -241,7 +241,7 @@ const resourceProfile: TeamsFxResourceProfile = {
       databaseName: "fullcapdev230e29-database",
     },
     {
-      name: "Identity1",
+      name: "ManagedIdentity",
       type: AzureResourceTypes.ManagedIdentity,
       resourceId:
         "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/fullcap102dev517e3f-managedIdentity",

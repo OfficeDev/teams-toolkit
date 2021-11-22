@@ -122,8 +122,22 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       // show nothing if internal error (TODO: may add back if full status is required later)
       return [];
     } else if (isSideloadingAllowed === true) {
-      // show nothing if status is good (TODO: may add back if full status is required later)
-      return [];
+      return [
+        {
+          commandId: "fx-extension.checkSideloading",
+          label: StringResources.vsc.accountTree.sideloadingPass,
+          callback: () => {
+            return Promise.resolve(ok(null));
+          },
+          parent: "fx-extension.signinM365",
+          contextValue: "checkSideloading",
+          icon: "pass",
+          tooltip: {
+            isMarkdown: false,
+            value: StringResources.vsc.accountTree.sideloadingTooltip,
+          },
+        },
+      ];
     } else {
       showSideloadingWarning();
       return [

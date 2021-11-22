@@ -821,7 +821,7 @@
       {
         "title": "Teams Toolkit",
         "properties": {
-          "fx-extension.rollbackToToolkitV2": {
+          "fx-extension.rollbackToTeamsToolkitV2": {
             "type": "boolean",
             "description": "Rollback to Teams Toolkit v2. Notice the setting will be obsolete and removed soon. (requires reload of VS Code)",
             "default": false

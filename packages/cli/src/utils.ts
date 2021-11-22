@@ -532,7 +532,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 
 export function isRemoteCollaborationEnabled(): boolean {
   return (
-    !isFeatureFlagEnabled(FeatureFlags.RollbackToToolkitV2, false) &&
+    !isFeatureFlagEnabled(FeatureFlags.RollbackToTeamsToolkitV2, false) &&
     isFeatureFlagEnabled(FeatureFlags.InsiderPreview, true)
   );
 }

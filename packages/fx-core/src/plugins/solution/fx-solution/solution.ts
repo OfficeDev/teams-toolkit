@@ -1333,6 +1333,8 @@ export class TeamsAppSolution implements Solution {
       if (stateResult.state != CollaborationState.OK) {
         if (ctx.answers?.platform === Platform.CLI) {
           ctx.ui?.showMessage("warn", stateResult.message!, false);
+        } else if (ctx.answers?.platform === Platform.VSCode) {
+          ctx.logProvider?.warning(stateResult.message!);
         }
         return ok({
           state: stateResult.state,
@@ -2047,7 +2049,7 @@ export class TeamsAppSolution implements Solution {
     const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
     if (!provisioned) {
       const warningMsg =
-        "Failed to process because the resources have not been provisioned yet. Make sure you do the provision first.";
+        "The resources have not been provisioned yet. Please provision the resources first.";
       return {
         state: CollaborationState.NotProvisioned,
         message: warningMsg,

@@ -1410,16 +1410,6 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       throw checkCoreRes.error;
     }
 
-    const provisionSucceeded = await getProvisionSucceedFromEnv(env);
-
-    if (!provisionSucceeded) {
-      throw new UserError(
-        ExtensionErrors.GrantPermissionNotProvisionError,
-        StringResources.vsc.handlers.provisionBeforeGrantPermission,
-        ExtensionSource
-      );
-    }
-
     inputs = getSystemInputs();
     inputs.env = env;
     result = await core.grantPermission(inputs);

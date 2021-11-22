@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Icon, Stack, Image, PrimaryButton } from "@fluentui/react";
+import { Icon, Stack, Image, PrimaryButton, Label } from "@fluentui/react";
 import "./SampleGallery.scss";
 import { Commands } from "./Commands";
 import FAQPlus from "../../media/faq-plus.gif";
@@ -11,6 +11,8 @@ import ToDoListM365 from "../../media/to-do-list-M365.gif";
 import NpmSearchConnectorM365 from "../../media/npm-search-connector-M365.gif";
 import HelloWorldTab from "../../media/helloWorld-tab.gif";
 import HelloWorldTabWithBackend from "../../media/helloWorld-tab-with-backend.gif";
+import Watch from "../../media/watch.svg";
+import Settings from "../../media/settings.svg";
 import { EventMessages } from "./messages";
 
 interface SampleInfo {
@@ -19,6 +21,8 @@ interface SampleInfo {
   shortDescription: string;
   fullDescription: string;
   tags: string[];
+  time: string;
+  configuration: string;
   link: string;
 }
 
@@ -118,6 +122,8 @@ class SampleAppCardList extends React.Component<any, any> {
             baseUrl={baseUrl}
             image={imageMapping[sample.id]}
             tags={sample.tags}
+            time={sample.time}
+            configuration={sample.configuration}
             title={sample.title}
             description={sample.fullDescription}
             sampleAppFolder={sample.id}
@@ -168,6 +174,25 @@ class SampleAppCard extends React.Component<any, any> {
             this.props.tags.map((value: string) => {
               return <p className="tag">{value}</p>;
             })}
+        </div>
+        <div className="estimation-time">
+          <Image
+            src={Watch}
+            width={16}
+            height={16}
+            style={{ marginTop: "auto", marginBottom: "auto" }}
+          ></Image>
+
+          <label style={{ paddingLeft: 4 }}>{this.props.time}</label>
+        </div>
+        <div className="configuration">
+          <Image
+            src={Settings}
+            width={16}
+            height={16}
+            style={{ marginTop: "auto", marginBottom: "auto" }}
+          ></Image>
+          <label style={{ paddingLeft: 4 }}>{this.props.configuration}</label>
         </div>
         <label
           style={{

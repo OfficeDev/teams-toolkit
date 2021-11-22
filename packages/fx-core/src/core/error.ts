@@ -109,7 +109,7 @@ export function PathNotExistError(path: string): UserError {
 export function InvalidProjectError(msg?: string): UserError {
   return new UserError(
     "InvalidProject",
-    `The command only works for project created by Teamsfx Toolkit. ${msg ? ": " + msg : ""}`,
+    `The command only works for project created by Teams Toolkit. ${msg ? ": " + msg : ""}`,
     CoreSource
   );
 }
@@ -267,7 +267,7 @@ export function UpgradeCanceledError(): UserError {
   return new UserError(
     // @see tools.isUserCancelError()
     "UserCancel",
-    "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 2.7.0).",
+    "If you don't want to upgrade your project, please install another version of Teams Toolkit (version <= 2.10.0).",
     CoreSource
   );
 }

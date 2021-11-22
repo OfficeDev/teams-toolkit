@@ -75,10 +75,11 @@
       "previewACDesciption": "Preview and author Adaptive Cards directly in Visual Studio Code",
       "grantPermissionSucceeded": "Added account: '%s' to the environment '%s' as a collaborator.",
       "grantPermissionWarning": "You need to handle Azure resource permissions manually on Azure Portal.",
-      "noM365AccountSignedIn": "No M365 account signed in. Please sign in to M365.",
+      "m365AccountNotSignedIn": "No M365 account signed in. Please sign in to M365.",
       "m365TenantNotMatch": "The M365 tenant id(which is used to provision before) does not match the current account.",
-      "azureAccountNotMatch": "The Azure account does not match.",
-      "m365AccountNotMatch": "The M365 account does not match."
+      "m365AccountNotMatch": "The signed in M365 account does not match the M365 tenant used in previous provision. Please sign out and sign in with correct M365 account.",
+      "azureAccountNotSignedIn": "No Azure account signed in. Please sign in to Azure.",
+      "azureAccountNotMatch": "The signed in Azure account does not have permission to access the subscription '%s' used in previous provision. Please sign out and sign in with correct Azure account."
     },
     "handlers": {
       "concurrentTriggerTask": "Task '%s' is still running. Wait for it to complete before starting another task.",
@@ -111,7 +112,9 @@
       "configTitle": "Change location",
       "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension.",
       "teamsAppIdNotFound": "Failed to find 'fx-resource-appstudio.teamsAppId' in 'state.%s.json'.",
-      "provisionBeforeGrantPermission": "You must provision the project first before adding owners for others"
+      "provisionBeforeGrantPermission": "You must provision the project first before adding owners for others",
+      "doProvisionBeforeDeployNotificaion": "Resources in your Teams app must be provisioned before the deployment. Do you want to provision it first?",
+      "ok": "Ok"
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",
@@ -255,11 +258,14 @@
       "warningMessage": "Teams Toolkit will update in place the Teams Tab app you selected to use Teams client SDK v2. We recommend to use git for better tracking file changes before upgrading.",
       "upgrade": "Upgrade",
       "success": "Successfully upgraded the Teams Tab app %s.",
-      "updateCode": "Update %s code in %s.",
+      "updatingCode": "Updating %s code in %s.",
+      "updateCodeError": "Failed to update file %s, code: %s, message: %s.",
+      "updateCodesErrorOutput": "Failed to update %d files: %s.",
+      "updateCodesErrorMessage":"Failed to update %d files: %s, etc. Please refer to output channel for more details.",
       "progressTitle": "Upgrade Teams Tab App to Extend in Outlook and Office",
-      "updatePackageJson": "Update package.json to use @microsoft/teams-js v2.",
+      "updatingPackageJson": "Updating package.json to use @microsoft/teams-js v2.",
       "updatePackageJsonWarning": "No @microsoft/teams-js dependency found in %s. Nothing to upgrade.",
-      "updateCodes": "Update codes to use @microsoft/teams-js v2."
+      "updatingCodes": "Updating codes to use @microsoft/teams-js v2."
     },
     "migrateTeamsManifest": {
       "selectFileConfig": {

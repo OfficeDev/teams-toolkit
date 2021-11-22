@@ -93,7 +93,7 @@ jobs:
           npm run test:e2e:clean
 
   execute-case:
-    if: ${{ needs.setup.outputs.cases != "" }}
+    if: ${{ needs.setup.outputs.cases }}
     env:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
       AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}

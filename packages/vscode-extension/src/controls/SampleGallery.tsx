@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Icon, Stack, Image, PrimaryButton } from "@fluentui/react";
+import { Icon, Stack, Image, PrimaryButton, Label } from "@fluentui/react";
 import "./SampleGallery.scss";
 import { Commands } from "./Commands";
 import FAQPlus from "../../media/faq-plus.gif";
@@ -7,6 +7,13 @@ import InMeetingApp from "../../media/in-meeting-app.png";
 import ShareNow from "../../media/share-now.gif";
 import ToDoList from "../../media/to-do-list.gif";
 import ToDoListSharepoint from "../../media/to-do-list-sharepoint.gif";
+import ToDoListM365 from "../../media/to-do-list-M365.gif";
+import NpmSearchConnectorM365 from "../../media/npm-search-connector-M365.gif";
+import HelloWorldTab from "../../media/helloWorld-tab.gif";
+import HelloWorldTabWithBackend from "../../media/helloWorld-tab-with-backend.gif";
+import Watch from "../../media/watch.svg";
+import Settings from "../../media/settings.svg";
+import GraphToolkitContactExporter from "../../media/graph-toolkit-contact-exporter.gif";
 import { EventMessages } from "./messages";
 
 interface SampleInfo {
@@ -15,6 +22,8 @@ interface SampleInfo {
   shortDescription: string;
   fullDescription: string;
   tags: string[];
+  time: string;
+  configuration: string;
   link: string;
 }
 
@@ -29,6 +38,11 @@ const imageMapping: { [p: string]: any } = {
   "share-now": ShareNow,
   "in-meeting-app": InMeetingApp,
   "faq-plus": FAQPlus,
+  "todo-list-with-Azure-backend-M365": ToDoListM365,
+  "NPM-search-connector-M365": NpmSearchConnectorM365,
+  "hello-world-tab": HelloWorldTab,
+  "hello-world-tab-with-backend": HelloWorldTabWithBackend,
+  "graph-toolkit-contact-exporter": GraphToolkitContactExporter,
 };
 
 export default class SampleGallery extends React.Component<any, any> {
@@ -110,6 +124,8 @@ class SampleAppCardList extends React.Component<any, any> {
             baseUrl={baseUrl}
             image={imageMapping[sample.id]}
             tags={sample.tags}
+            time={sample.time}
+            configuration={sample.configuration}
             title={sample.title}
             description={sample.fullDescription}
             sampleAppFolder={sample.id}
@@ -160,6 +176,25 @@ class SampleAppCard extends React.Component<any, any> {
             this.props.tags.map((value: string) => {
               return <p className="tag">{value}</p>;
             })}
+        </div>
+        <div className="estimation-time">
+          <Image
+            src={Watch}
+            width={16}
+            height={16}
+            style={{ marginTop: "auto", marginBottom: "auto" }}
+          ></Image>
+
+          <label style={{ paddingLeft: 4 }}>{this.props.time}</label>
+        </div>
+        <div className="configuration">
+          <Image
+            src={Settings}
+            width={16}
+            height={16}
+            style={{ marginTop: "auto", marginBottom: "auto" }}
+          ></Image>
+          <label style={{ paddingLeft: 4 }}>{this.props.configuration}</label>
         </div>
         <label
           style={{

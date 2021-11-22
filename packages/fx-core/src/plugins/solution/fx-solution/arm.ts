@@ -44,6 +44,7 @@ import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { executeCommand } from "../../../common/cpUtils";
 import { TEAMS_FX_RESOURCE_ID_KEY } from ".";
 import os from "os";
+import { DeploymentOperation } from "@azure/arm-resources/esm/models";
 
 // Old folder structure constants
 const templateFolder = "templates";
@@ -108,10 +109,35 @@ type DeployContext = {
   deploymentName: string;
 };
 
+type OperationStatus = {
+  resourceName: string;
+  status: string;
+};
+
+export function getRequiredOperation(
+  operation: DeploymentOperation,
+  deployCtx: DeployContext
+): OperationStatus | undefined {
+  if (
+    operation.properties?.targetResource?.resourceName &&
+    operation.properties.provisioningState &&
+    operation.properties?.timestamp &&
+    operation.properties.timestamp.getTime() > deployCtx.deploymentStartTime
+  ) {
+    return {
+      resourceName: operation.properties?.targetResource?.resourceName,
+      status: operation.properties.provisioningState,
+    };
+  } else {
+    return undefined;
+  }
+}
+
 export async function pollDeploymentStatus(deployCtx: DeployContext) {
   const failedCount = 4;
   let tryCount = 0;
   let previousStatus: { [key: string]: string } = {};
+  let polledOperations: string[] = [];
   deployCtx.ctx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
@@ -131,17 +157,28 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
       }
 
       const currentStatus: { [key: string]: string } = {};
-      operations.forEach((operation) => {
-        if (
-          operation.properties?.targetResource?.resourceName &&
-          operation.properties.provisioningState &&
-          operation.properties?.timestamp &&
-          operation.properties.timestamp.getTime() > deployCtx.deploymentStartTime
-        ) {
-          currentStatus[operation.properties.targetResource.resourceName] =
-            operation.properties.provisioningState;
-        }
-      });
+      await Promise.all(
+        operations.map(async (o) => {
+          const operation = getRequiredOperation(o, deployCtx);
+          if (operation) {
+            currentStatus[operation.resourceName] = operation.status;
+            if (!polledOperations.includes(operation.resourceName)) {
+              polledOperations.push(operation.resourceName);
+              const subOperations = await deployCtx.client.deploymentOperations.list(
+                deployCtx.resourceGroupName,
+                operation.resourceName
+              );
+              subOperations.forEach((sub) => {
+                const subOperation = getRequiredOperation(sub, deployCtx);
+                if (subOperation) {
+                  currentStatus[subOperation.resourceName] = subOperation.status;
+                }
+              });
+            }
+          }
+        })
+      );
+
       for (const key in currentStatus) {
         if (currentStatus[key] !== previousStatus[key]) {
           deployCtx.ctx.logProvider?.info(
@@ -150,6 +187,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
         }
       }
       previousStatus = currentStatus;
+      polledOperations = [];
     } catch (error) {
       tryCount++;
       if (tryCount > failedCount) {
@@ -241,14 +279,6 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     await result;
     return ok(undefined);
   } catch (error) {
-    const errorMessage = format(
-      getStrings().solution.DeployArmTemplates.FailNotice,
-      PluginDisplayName.Solution,
-      resourceGroupName,
-      deploymentName
-    );
-    ctx.logProvider?.error(errorMessage + ` Detailed error: ${error.message}`);
-
     // return the error if the template is invalid
     if (error.code === InvalidTemplateErrorCode) {
       return err(
@@ -266,13 +296,22 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
         returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure);
       }
 
-      ctx.logProvider?.error(
-        `[${PluginDisplayName.Solution}] ${deploymentName} -> ${JSON.stringify(
-          formattedDeploymentError(deploymentError),
-          undefined,
-          2
-        )}`
+      const deploymentErrorMessage = JSON.stringify(
+        formattedDeploymentError(deploymentError),
+        undefined,
+        2
       );
+      const errorMessage = format(
+        getStrings().solution.DeployArmTemplates.FailNotice,
+        PluginDisplayName.Solution,
+        resourceGroupName,
+        deploymentName
+      );
+      ctx.logProvider?.error(
+        errorMessage +
+          `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${ArmHelpLink}.`
+      );
+
       let failedDeployments: string[] = [];
       if (deploymentError.subErrors) {
         failedDeployments = Object.keys(deploymentError.subErrors);
@@ -373,11 +412,10 @@ export async function copyParameterJson(
   const targetParameterFilePath = path.join(parameterFolderPath, targetParameterFileName);
   const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);
   const targetParameterContent = await fs.readJson(sourceParameterFilePath);
-  if (targetParameterContent[parameterName][resourceBaseName]) {
+  if (targetParameterContent[parameterName]?.provisionParameters?.value?.resourceBaseName) {
     const appName = ctx.projectSettings!.appName;
-    targetParameterContent[parameterName][resourceBaseName] = {
-      value: generateResourceBaseName(appName, targetEnvName),
-    };
+    targetParameterContent[parameterName].provisionParameters.value!.resourceBaseName =
+      generateResourceBaseName(appName, targetEnvName);
   }
 
   await fs.ensureDir(parameterFolderPath);
@@ -582,17 +620,6 @@ async function doGenerateArmTemplate(
     for (const module of moduleConfigFiles) {
       const res = bicepOrchestrationTemplate.applyReference(module[1]);
       await fs.writeFile(path.join(templateFolderPath, module[0]), res);
-    }
-
-    // Output .gitignore file
-    const gitignoreContent = await fs.readFile(
-      path.join(templateSolitionPath, "armGitignore"),
-      ConstantString.UTF8Encoding
-    );
-    const gitignoreFileName = ".gitignore";
-    const gitignoreFilePath = path.join(ctx.root, templatesFolder, gitignoreFileName);
-    if (!(await fs.pathExists(gitignoreFilePath))) {
-      await fs.writeFile(gitignoreFilePath, gitignoreContent);
     }
   }
 

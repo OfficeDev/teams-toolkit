@@ -17,6 +17,7 @@ import {
   UserInteraction,
   ProjectSettings,
   AzureSolutionSettings,
+  SolutionContext,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import axios from "axios";
@@ -28,11 +29,22 @@ import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
 import { getResourceFolder } from "../folder";
-import { ConstantString, FeatureFlagName } from "./constants";
+import {
+  ConstantString,
+  FeatureFlagName,
+  TeamsClientId,
+  OfficeClientId,
+  OutlookClientId,
+} from "./constants";
 import * as crypto from "crypto";
 import * as os from "os";
 import { FailedToParseResourceIdError } from "../core/error";
-import { SolutionError } from "../plugins/solution/fx-solution/constants";
+import {
+  GLOBAL_CONFIG,
+  RESOURCE_GROUP_NAME,
+  SolutionError,
+  SUBSCRIPTION_ID,
+} from "../plugins/solution/fx-solution/constants";
 import Mustache from "mustache";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
@@ -159,6 +171,8 @@ export const CryptoDataMatchers = new Set([
   "fx-resource-azure-sql.adminPassword",
 ]);
 
+export const AzurePortalUrl = "https://portal.azure.com";
+
 /**
  * Only data related to secrets need encryption.
  * @param key - the key name of data in user data file
@@ -269,7 +283,12 @@ export async function saveFilesRecursively(
   await Promise.all(
     zip
       .getEntries()
-      .filter((entry) => !entry.isDirectory && entry.entryName.includes(appFolder))
+      .filter(
+        (entry) =>
+          !entry.isDirectory &&
+          entry.entryName.includes(appFolder) &&
+          entry.entryName.split("/").includes(appFolder)
+      )
       .map(async (entry) => {
         const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
         const filePath = path.join(dstPath, entryPath);
@@ -394,6 +413,17 @@ export async function askSubscription(
   return ok(resultSub);
 }
 
+export function getResourceGroupInPortal(ctx: SolutionContext): string | undefined {
+  const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(SUBSCRIPTION_ID);
+  const tenantId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString("tenantId");
+  const resourceGroupName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
+  if (subscriptionId && tenantId && resourceGroupName) {
+    return `${AzurePortalUrl}/#@${tenantId}/resource/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}`;
+  } else {
+    return undefined;
+  }
+}
+
 // Determine whether feature flag is enabled based on environment variable setting
 export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = false): boolean {
   const flag = process.env[featureFlagName];
@@ -405,11 +435,17 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 }
 
 export function isMultiEnvEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
+  return (
+    !isFeatureFlagEnabled(FeatureFlagName.RollbackToTeamsToolkitV2, false) &&
+    isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)
+  );
 }
 
 export function isArmSupportEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
+  return (
+    !isFeatureFlagEnabled(FeatureFlagName.RollbackToTeamsToolkitV2, false) &&
+    isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)
+  );
 }
 
 export function isBicepEnvCheckerEnabled(): boolean {
@@ -417,7 +453,10 @@ export function isBicepEnvCheckerEnabled(): boolean {
 }
 
 export function isRemoteCollaborateEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false);
+  return (
+    !isFeatureFlagEnabled(FeatureFlagName.RollbackToTeamsToolkitV2, false) &&
+    isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)
+  );
 }
 
 export function getRootDirectory(): string {
@@ -662,4 +701,15 @@ function _redactObject(
  **/
 export function redactObject(obj: unknown, jsonSchema: unknown, maxRecursionDepth = 8): unknown {
   return _redactObject(obj, jsonSchema, maxRecursionDepth, 0);
+}
+
+export function getAllowedAppIds(): string[] {
+  return [
+    TeamsClientId.MobileDesktop,
+    TeamsClientId.Web,
+    OfficeClientId.Web1,
+    OfficeClientId.Web2,
+    OutlookClientId.Desktop,
+    OutlookClientId.Web,
+  ];
 }

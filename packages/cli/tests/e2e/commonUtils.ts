@@ -121,7 +121,7 @@ export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string, envName
   );
   const parametersFilePath = path.resolve(projectPath, bicepParameterFile);
   const parameters = await fs.readJSON(parametersFilePath);
-  parameters["parameters"]["provisionParameters"]["simpleAuthSku"] = "B1";
+  parameters["parameters"]["provisionParameters"]["value"]["simpleAuthSku"] = "B1";
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
 }
 
@@ -324,7 +324,7 @@ export async function readContext(projectPath: string): Promise<any> {
 export function mockTeamsfxMultiEnvFeatureFlag() {
   const env = Object.assign({}, process.env);
   env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = "true";
-  env["TEAMSFX_INSIDER_PREVIEW"] = "true";
+  env["__TEAMSFX_INSIDER_PREVIEW"] = "true";
   return env;
 }
 
@@ -356,7 +356,7 @@ export async function loadContext(projectPath: string, env: string): Promise<Res
       if (matchResult) {
         const userdataKey = matchResult[1];
         if (userdataKey in userdata) {
-          context[component][key] = userdata[key];
+          context[component][key] = userdata[userdataKey];
         }
       }
     }

@@ -280,16 +280,16 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
 export const GetUserEmailQuestion: TextInputQuestion = {
   name: "email",
   type: "text",
-  title: "Invite a collaborator (email or user principal name)",
+  title: "Add owner to Teams/AAD app for the account under the same M365 tenant (email)",
   validation: {
     validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
       if (!input || input.trim() === "") {
-        return "email address or user principal name cannot be null or empty";
+        return "Email address cannot be null or empty";
       }
 
       const re = /\S+@\S+\.\S+/;
       if (!re.test(input)) {
-        return "email address or user principal name is not valid";
+        return "Email address is not valid";
       }
       return undefined;
     },

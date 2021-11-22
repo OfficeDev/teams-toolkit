@@ -65,20 +65,22 @@ export class AppStudioError {
     message: (errors: string[]) => `Validation error: \n ${errors.join("\n")}`,
   };
 
+  public static readonly UpdateManifestError = {
+    name: "UpdateManifestFailed",
+    message: (error: any) => (error.message ? error.message : "Update Teams App manifest failed!"),
+  };
+
   public static readonly GetLocalDebugConfigFailedError = {
     name: "GetLocalDebugConfigFailed",
-    message: (domain: string, doProvision: boolean) =>
-      `Missing configuration data for manifest. ${
-        doProvision ? "Run 'provision' first." : ""
-      } Data required: ${domain}.`,
+    message: (error: any) => `Missing configuration data for manifest. ${error.message}`,
   };
 
   public static readonly GetRemoteConfigFailedError = {
     name: "GetRemoteConfigFailed",
-    message: (domain: string, doProvision: boolean) =>
-      `Missing configuration data for manifest. ${
-        doProvision ? "Run 'provision' first." : ""
-      } Data required: ${domain}.`,
+    message: (error: any, isProvisionSucceeded: boolean) =>
+      `Missing configuration data for manifest. ${error.message}. ${
+        isProvisionSucceeded ? "" : "Run 'Provision in the cloud' first."
+      }`,
   };
 
   public static readonly InvalidLocalDebugConfigurationDataError = {
@@ -170,5 +172,16 @@ export class AppStudioError {
   public static readonly TeamsAppNotFoundError = {
     name: "TeamsAppNotFound",
     message: (appId: string) => `Cannot found teams app with id ${appId}`,
+  };
+
+  public static readonly UpdateManifestCancelError = {
+    name: "UpdateManifestCancelled",
+    message: (name: string) => `Update manifest with ID ${name} has been cancelled.`,
+  };
+
+  public static readonly UpdateManifestWithInvalidAppError = {
+    name: "UpdateManifestWithInvalidAppError",
+    message: (appId: string) =>
+      `Cannot find teams app with id ${appId}. You must run local debug or provision first before updating manifest to Teams platform`,
   };
 }

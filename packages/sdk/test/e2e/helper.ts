@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 import * as msal from "@azure/msal-node";
 import mockedEnv from "mocked-env";
-import urljoin from "url-join";
 import { JwtPayload } from "jwt-decode";
 import * as dotenv from "dotenv";
+const urljoin = require("url-join");
 
 /**
  * Get Access Token from a specific AAD app client id.

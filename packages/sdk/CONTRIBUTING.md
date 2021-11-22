@@ -48,7 +48,6 @@ E2E tests need environment variables that are configured in GitHub Action.
 - test/unit/node/: unit tests for NodeJS only.
 - test/e2e/browser/: end-to-end tests related to Azure resources for browser only.
 - test/e2e/node/: end-to-end tests related to Azure resources for NodeJS only.
-- test/ui/: UI end to end tests.
 
 # Style Guidelines
 
@@ -68,7 +67,7 @@ Use `npm run format` to fix format issues and `npm run lint` to check lint issue
 ## Supporting Browser and NodeJS
 
 1. If a new class behaves differently under two environments. Create a new file named xxx.browser.ts that works only in browser and xxx.ts that works only in NodeJS.
-2. Add a new mapping in package.json file. (browser field)
+2. Export files in `index.ts` and `index.browser.ts`, they are entries for NodeJS and browser.
 3. Keep the exported functions and public ones of class consistent in 2 files.
 
 For example:

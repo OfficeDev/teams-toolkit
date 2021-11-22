@@ -27,11 +27,46 @@
     {
       "entityId": "index",
       "name": "Personal Tab",
-      "contentUrl": "https://localhost:3000/tab",
-      "websiteUrl": "https://localhost:3000/tab",
+      "contentUrl": "{baseUrl}/index.html#/tab",
+      "websiteUrl": "{baseUrl}/index.html#/tab",
       "scopes": ["personal"]
     }
   ],
+  "bots": [
+    {
+      "botId": "{botId}",
+      "scopes": [
+        "personal",
+        "team",
+        "groupchat"
+      ],
+      "supportsFiles": false,
+      "isNotificationOnly": false,
+      "commandLists": [
+        {
+          "scopes": [
+            "personal",
+            "team",
+            "groupchat"
+          ],
+          "commands": [
+            {
+              "title": "welcome",
+              "description": "Resend welcome card of this Bot"
+            },
+            {
+              "title": "learn",
+              "description": "Learn about Adaptive Card and Bot Command"
+            }
+          ]
+        }
+      ]
+    }
+  ],
   "permissions": ["identity", "messageTeamMembers"],
-  "validDomains": ["localhost", "localhost:3000"]
+  "validDomains": ["localhost", "localhost:3000"],
+  "webApplicationInfo": {
+    "id": "{appClientId}",
+    "resource": "{webApplicationInfoResource}"
+  }
 }

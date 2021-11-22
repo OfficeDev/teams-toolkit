@@ -71,6 +71,5 @@ try {
    dialogContext.beginDialog(dialogId);
    return Dialog.endOfTurn();
 }
-
 ```
 

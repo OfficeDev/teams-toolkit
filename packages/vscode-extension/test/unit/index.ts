@@ -55,22 +55,26 @@ function run(testsRoot: string, clb: any): any {
   }
 
   // Glob test files
-  glob("**/**.test.js", { cwd: testsRoot }, (error, files): any => {
-    if (error) {
-      return clb(error);
-    }
-    try {
-      files.forEach((f): Mocha => mocha.addFile(paths.join(testsRoot, f)));
+  glob(
+    "**/**.test.js",
+    { cwd: testsRoot, ignore: "migration/migrate.test.js" },
+    (error, files): any => {
+      if (error) {
+        return clb(error);
+      }
+      try {
+        files.forEach((f): Mocha => mocha.addFile(paths.join(testsRoot, f)));
 
-      let failureCount = 0;
-      mocha
-        .run()
-        .on("fail", () => failureCount++)
-        .on("end", () => clb(undefined, failureCount));
-    } catch (error) {
-      return clb(error);
+        let failureCount = 0;
+        mocha
+          .run()
+          .on("fail", () => failureCount++)
+          .on("end", () => clb(undefined, failureCount));
+      } catch (error) {
+        return clb(error);
+      }
     }
-  });
+  );
 }
 exports.run = run;
 

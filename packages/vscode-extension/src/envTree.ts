@@ -71,10 +71,10 @@ export async function registerEnvTreeHandler(
         : envNamesResult.value;
       for (const item of envNames) {
         showEnvList.push(item);
-        const provisionSucceeded: boolean = (await getProvisionSucceedFromEnv(item)) ?? false;
+        const provisionSucceeded = await getProvisionSucceedFromEnv(item);
         const isLocal = item === LocalEnvironmentName;
 
-        const accountStatusResult = await CheckAccountForEnvrironment(item, provisionSucceeded);
+        const accountStatusResult = await CheckAccountForEnvrironment(item);
         let envIcon = provisionSucceeded ? "folder-active" : "symbol-folder";
         const isIconCustom: boolean = isLocal ? false : !accountStatusResult.isOk;
         let accountTip = "";
@@ -313,10 +313,7 @@ function formatWarningMessages(warnings: string[]): string {
 
   return warningMessage;
 }
-async function CheckAccountForEnvrironment(
-  env: string,
-  provisionSucceeded: boolean
-): Promise<accountStatus> {
+async function CheckAccountForEnvrironment(env: string): Promise<accountStatus> {
   let checkResult = true;
   const warnings: string[] = [];
 
@@ -324,12 +321,10 @@ async function CheckAccountForEnvrironment(
   const loginStatus = await AppStudioLogin.getInstance().getStatus();
   if (loginStatus.status == signedIn) {
     // Signed account doesn't match
-    if (provisionSucceeded) {
-      const m365TenantId = await getM365TenantFromEnv(env);
-      if ((loginStatus.accountInfo as any).tid !== m365TenantId) {
-        checkResult = false;
-        warnings.push(StringResources.vsc.commandsTreeViewProvider.m365AccountNotMatch);
-      }
+    const m365TenantId = await getM365TenantFromEnv(env);
+    if (m365TenantId && (loginStatus.accountInfo as any).tid !== m365TenantId) {
+      checkResult = false;
+      warnings.push(StringResources.vsc.commandsTreeViewProvider.m365AccountNotMatch);
     }
   } else {
     // Not signed in
@@ -343,7 +338,7 @@ async function CheckAccountForEnvrironment(
     const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
     const provisionedSubId = subscriptionInfo?.subscriptionId;
 
-    if (provisionSucceeded && provisionedSubId) {
+    if (provisionedSubId) {
       const targetSub = subscriptions.find(
         (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
       );

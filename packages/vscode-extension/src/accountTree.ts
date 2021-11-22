@@ -134,7 +134,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           icon: "pass",
           tooltip: {
             isMarkdown: false,
-            value: StringResources.vsc.accountTree.sideloadingTooltip,
+            value: StringResources.vsc.accountTree.sideloadingPassTooltip,
           },
         },
       ];
@@ -153,7 +153,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           icon: "warning",
           tooltip: {
             isMarkdown: false,
-            value: StringResources.vsc.accountTree.sideloadingTooltip,
+            value: StringResources.vsc.accountTree.sideloadingWarningTooltip,
           },
         },
       ];

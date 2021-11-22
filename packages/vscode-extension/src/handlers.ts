@@ -123,7 +123,7 @@ import {
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
-import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
+import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
 import { ext } from "./extensionVariables";
 import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
@@ -155,41 +155,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     }
 
     if (!validProject) {
-      const expService = exp.getExpService();
-      if (expService) {
-        switch (
-          await expService.getTreatmentVariableAsync(
-            TreatmentVariables.VSCodeConfig,
-            TreatmentVariables.QuickStartInSidebar,
-            true
-          )
-        ) {
-          case TreatmentVariableValue.TopSidebar:
-            vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.top", true);
-            break;
-          case TreatmentVariableValue.BottomSidebar:
-            vscode.commands.executeCommand(
-              "setContext",
-              "fx-extension.sidebarWelcome.bottom",
-              true
-            );
-            break;
-          case TreatmentVariableValue.OriginalTreeView:
-            vscode.commands.executeCommand(
-              "setContext",
-              "fx-extension.sidebarWelcome.treeview",
-              true
-            );
-            break;
-          default:
-            vscode.commands.executeCommand(
-              "setContext",
-              "fx-extension.sidebarWelcome.default",
-              true
-            );
-            break;
-        }
-      }
+      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.default", true);
     } else {
       vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
     }
@@ -392,8 +358,6 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<any,
   );
   const result = await runCommand(Stage.migrateV1);
   await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
-  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.top", false);
-  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.bottom", false);
   await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.default", false);
   if (result.isOk()) {
     commands.executeCommand("vscode.openFolder", result.value);

@@ -269,7 +269,6 @@ describe("Get AppDefinition and Update", () => {
       chai
         .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
         .equals(AppStudioError.GetLocalDebugConfigFailedError.name);
-      chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes("botId");
     }
   });
 

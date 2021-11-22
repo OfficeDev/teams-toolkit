@@ -480,12 +480,19 @@ function showSideloadingWarning() {
     "warn",
     StringResources.vsc.accountTree.sideloadingMessage,
     false,
+    StringResources.vsc.accountTree.sideloadingJoinM365,
     StringResources.vsc.common.readMore
   )
     .then(async (result) => {
       if (result.isOk() && result.value === StringResources.vsc.common.readMore) {
         await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingReadmore);
+      } else if (
+        result.isOk() &&
+        result.value === StringResources.vsc.accountTree.sideloadingJoinM365
+      ) {
+        await VS_CODE_UI.openUrl("https://developer.microsoft.com/microsoft-365/dev-program");
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingJoinM365);
       }
     })
     .catch((error) => {});

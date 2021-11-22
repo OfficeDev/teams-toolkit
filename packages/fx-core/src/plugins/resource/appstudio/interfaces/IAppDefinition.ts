@@ -91,8 +91,13 @@ export interface IGroupChatCommand {
 }
 
 export interface ILocalizationInfo {
-  defaultLanguageTag?: any;
-  languages: any[];
+  defaultLanguageTag: string;
+  languages: ILanguage[];
+}
+
+export interface ILanguage {
+  languageTag: string;
+  file: string | any;
 }
 
 export interface IMessagingExtension {

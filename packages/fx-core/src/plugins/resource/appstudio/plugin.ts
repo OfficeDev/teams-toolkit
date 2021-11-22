@@ -29,6 +29,7 @@ import {
   IPersonalCommand,
   IGroupChatCommand,
   IUserList,
+  ILanguage,
 } from "./interfaces/IAppDefinition";
 import { ICommand, ICommandList } from "../../solution/fx-solution/appstudio/interface";
 import {
@@ -163,7 +164,7 @@ export class AppStudioPluginImpl {
 
       return teamsAppId;
     } else {
-      appDefinition = this.convertToAppDefinition(manifest, true);
+      appDefinition = await this.convertToAppDefinition(ctx, manifest, true);
 
       teamsAppId = await this.updateApp(
         ctx,
@@ -233,7 +234,7 @@ export class AppStudioPluginImpl {
       }
     }
 
-    const appDefinition: IAppDefinition = this.convertToAppDefinition(manifest, false);
+    const appDefinition: IAppDefinition = await this.convertToAppDefinition(ctx, manifest, false);
     const teamsAppId = await this.updateApp(
       ctx,
       appDefinition,
@@ -373,7 +374,7 @@ export class AppStudioPluginImpl {
         };
         manifestString = Mustache.render(manifestString, view);
       }
-      appDefinition = this.convertToAppDefinition(JSON.parse(manifestString), false);
+      appDefinition = await this.convertToAppDefinition(ctx, JSON.parse(manifestString), false);
     } else {
       const remoteManifest = await this.getAppDefinitionAndManifest(ctx, false);
       if (remoteManifest.isErr()) {
@@ -489,7 +490,7 @@ export class AppStudioPluginImpl {
 
       manifestString = Mustache.render(manifestString, view);
       manifest = JSON.parse(manifestString);
-      appDefinition = this.convertToAppDefinition(manifest, false);
+      appDefinition = await this.convertToAppDefinition(ctx, manifest, false);
     } else {
       const appManifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
       if (appManifest.isErr()) {
@@ -1080,7 +1081,7 @@ export class AppStudioPluginImpl {
       await publishProgress?.next(
         `Updating app definition for app ${remoteTeamsAppId} in app studio`
       );
-      const appDefinition = this.convertToAppDefinition(manifest, true);
+      const appDefinition = await this.convertToAppDefinition(ctx, manifest, true);
       let appStudioToken = await ctx?.appStudioToken?.getAccessToken();
       const colorIconContent =
         manifest.icons.color && !manifest.icons.color.startsWith("https://")
@@ -1412,10 +1413,11 @@ export class AppStudioPluginImpl {
    *
    * Refer to AppDefinitionProfile.cs
    */
-  private convertToAppDefinition(
+  private async convertToAppDefinition(
+    ctx: PluginContext,
     appManifest: TeamsAppManifest,
     ignoreIcon: boolean
-  ): IAppDefinition {
+  ): Promise<IAppDefinition> {
     const appDefinition: IAppDefinition = {
       appName: appManifest.name.short,
       validDomains: appManifest.validDomains,
@@ -1451,7 +1453,29 @@ export class AppStudioPluginImpl {
 
     appDefinition.connectors = appManifest.connectors;
     appDefinition.devicePermissions = appManifest.devicePermissions;
-    appDefinition.localizationInfo = appManifest.localizationInfo;
+    if (appManifest.localizationInfo) {
+      let languages: ILanguage[] = [];
+      if (appManifest.localizationInfo.additionalLanguages) {
+        languages = await Promise.all(
+          appManifest.localizationInfo.additionalLanguages!.map(async function (item: any) {
+            const templateDirectory = await getAppDirectory(ctx.root);
+            const fileName = `${templateDirectory}/${item.file}`;
+            if (!(await fs.pathExists(fileName))) {
+              throw new Error();
+            }
+            const content = await fs.readJSON(fileName);
+            return {
+              languageTag: item.languageTag,
+              file: content,
+            };
+          })
+        );
+      }
+      appDefinition.localizationInfo = {
+        defaultLanguageTag: appManifest.localizationInfo.defaultLanguageTag,
+        languages: languages,
+      };
+    }
 
     if (appManifest.webApplicationInfo) {
       appDefinition.webApplicationInfoId = appManifest.webApplicationInfo.id;
@@ -1831,7 +1855,7 @@ export class AppStudioPluginImpl {
       updatedManifest.developer.privacyUrl = DEFAULT_DEVELOPER_PRIVACY_URL;
     }
 
-    const appDefinition = this.convertToAppDefinition(updatedManifest, false);
+    const appDefinition = await this.convertToAppDefinition(ctx, updatedManifest, false);
 
     if (isLocalDebug && !isMultiEnvEnabled()) {
       const appName = getLocalAppName(appDefinition.shortName ?? "");

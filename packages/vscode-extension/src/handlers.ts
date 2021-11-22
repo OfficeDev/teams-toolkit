@@ -1007,10 +1007,13 @@ async function openUpgradeChangeLogsHandler() {
 
       const workspacePath: string = workspace.workspaceFolders[0].uri.fsPath;
       const backupName = ".backup";
-      const backupFolder: string = (await fs.pathExists(path.join(workspacePath, backupName)))
-        ? path.join(workspacePath, backupName)
-        : path.join(workspacePath, `.teamsfx${backupName}`);
-      const uri = Uri.file(path.join(backupFolder, "upgrade-change-logs.md"));
+      const changeLogsName = "upgrade-change-logs.md";
+      const changeLogsPath: string = (await fs.pathExists(
+        path.join(workspacePath, backupName, changeLogsName)
+      ))
+        ? path.join(workspacePath, backupName, changeLogsName)
+        : path.join(workspacePath, `.teamsfx${backupName}`, changeLogsName);
+      const uri = Uri.file(changeLogsPath);
 
       workspace.openTextDocument(uri).then(() => {
         const PreviewMarkdownCommand = "markdown.showPreview";

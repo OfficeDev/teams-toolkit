@@ -1,21 +1,25 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using Azure.Core;
-using Microsoft.Extensions.Caching.Memory;
-using Microsoft.Extensions.Logging;
-using Microsoft.Extensions.Options;
-using Microsoft.JSInterop;
-using Microsoft.TeamsFx.Configuration;
-using Microsoft.TeamsFx.Helper;
-using Microsoft.VisualStudio.TestTools.UnitTesting;
-using Moq;
-using Moq.Protected;
 using System;
 using System.Net;
 using System.Net.Http;
 using System.Threading;
 using System.Threading.Tasks;
+
+using Azure.Core;
+
+using Microsoft.Extensions.Caching.Memory;
+using Microsoft.Extensions.Logging;
+using Microsoft.Extensions.Options;
+using Microsoft.JSInterop;
+using Microsoft.JSInterop.Infrastructure;
+using Microsoft.TeamsFx.Configuration;
+using Microsoft.TeamsFx.Helper;
+using Microsoft.VisualStudio.TestTools.UnitTesting;
+
+using Moq;
+using Moq.Protected;
 
 namespace Microsoft.TeamsFx.Test
 {
@@ -73,7 +77,7 @@ namespace Microsoft.TeamsFx.Test
             var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
             var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, httpFactoryMock.Object, memoryCacheMock.Object);
             jsRuntimeMock.Setup(r => r.InvokeAsync<IJSObjectReference>("import", It.IsAny<object[]>())).ReturnsAsync(() => moduleMock.Object);
-            moduleMock.Setup(m => m.InvokeAsync<object>("initialize", It.IsAny<object[]>())).ThrowsAsync(new JSException("timeout"));
+            moduleMock.Setup(m => m.InvokeAsync<IJSVoidResult>("initialize", It.IsAny<object[]>())).ThrowsAsync(new JSException("timeout"));
 
             var ex = await Assert.ThrowsExceptionAsync<ExceptionWithCode>(
                 async () => await teamsCredential.GetUserInfoAsync());
@@ -295,7 +299,7 @@ namespace Microsoft.TeamsFx.Test
             var response = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new StringContent($"{{ \"scope\": \"fake_scope\", \"access_token\": \"{ fakeSsoToken }\", \"expires_on\": \"{ fakeExpiration }\" }}"),
+                Content = new StringContent($"{{ \"scope\": \"fake_scope\", \"access_token\": \"{fakeSsoToken}\", \"expires_on\": \"{fakeExpiration:O}\" }}"),
             };
 
             handlerMock
@@ -426,7 +430,7 @@ namespace Microsoft.TeamsFx.Test
             var response = new HttpResponseMessage
             {
                 StatusCode = HttpStatusCode.OK,
-                Content = new StringContent($"{{ \"scope\": \"fake_scope\", \"access_token\": \"{ fakeSsoToken }\", \"expires_on\": \"{ fakeExpiration }\" }}"),
+                Content = new StringContent($"{{ \"scope\": \"fake_scope\", \"access_token\": \"{fakeSsoToken}\", \"expires_on\": \"{fakeExpiration:O}\" }}"),
             };
 
             handlerMock

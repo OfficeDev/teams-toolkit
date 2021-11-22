@@ -637,28 +637,28 @@
       },
       {
         "command": "fx-extension.openAccountLink",
-        "title": "Open account link",
+        "title": "Learn more about accounts",
         "icon": "$(info)"
       },
       {
         "command": "fx-extension.openEnvLink",
-        "title": "Open environment link",
+        "title": "Learn more about enviornments",
         "icon": "$(info)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.openDevelopmentLink",
-        "title": "Open development link",
+        "title": "Learn more about development",
         "icon": "$(info)"
       },
       {
         "command": "fx-extension.openDeploymentLink",
-        "title": "Open deployment link",
+        "title": "Learn more about deployment",
         "icon": "$(info)"
       },
       {
         "command": "fx-extension.openHelpFeedbackLink",
-        "title": "Open help link",
+        "title": "Learn more about help and feedback",
         "icon": "$(info)"
       }
     ],
@@ -982,6 +982,7 @@
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/teamsfx-api": "^0.10.0",
     "@microsoft/teamsfx-core": "^0.11.0",
+    "@npmcli/arborist": "^4.0.4",
     "@npmcli/package-json": "^1.0.1",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",

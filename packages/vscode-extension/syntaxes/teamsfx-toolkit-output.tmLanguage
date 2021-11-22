@@ -60,12 +60,12 @@
                     <key>1</key>
                     <dict>
                         <key>name</key>
-                        <string>token.error-token</string>
+                        <string>token.warn-token</string>
                     </dict>
                     <key>2</key>
                     <dict>
                         <key>name</key>
-                        <string>token.error-token</string>
+                        <string>token.warn-token</string>
                     </dict>
                 </dict>
                 <key>match</key>
@@ -79,18 +79,60 @@
                     <key>1</key>
                     <dict>
                         <key>name</key>
-                        <string>token.error-token</string>
+                        <string>token.warn-token</string>
                     </dict>
                     <key>2</key>
                     <dict>
                         <key>name</key>
-                        <string>token.warn-token</string>
+                        <string>token.error-token</string>
                     </dict>
                 </dict>
                 <key>match</key>
                 <string>Teams App Owner: ([a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+[\.[a-zA-Z0-9_-]+]+). ((\(Not owner of SSO AAD app\))?)</string>
                 <key>name</key>
                 <string>teamsfx-toolkit.listCollaborator.account</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.warn-token</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>Account used to check: ([a-zA-Z0-9_-]+@[a-zA-Z0-9_-]+[\.[a-zA-Z0-9_-]+]+)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.listCollaborator.accountUsedToCheck</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.warn-token</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>Starting list all teams app owners for environment: (.*)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.listCollaborator.env</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.warn-token</string>
+                    </dict>
+                </dict>
+                <key>match</key>
+                <string>Tenant ID: (.*)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.listCollaborator.tenant</string>
             </dict>
         </array>
     </dict>

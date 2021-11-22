@@ -6,7 +6,7 @@ import * as chai from "chai";
 import sinon from "sinon";
 import fs from "fs-extra";
 import path from "path";
-import { v4 as uuid } from "uuid";
+import { v4 as uuid, v4 } from "uuid";
 import { ConfigMap, PluginContext, ok, Platform, Plugin } from "@microsoft/teamsfx-api";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
@@ -70,16 +70,15 @@ describe("Publish Teams app with Azure", () => {
   it("Publish teams app", async () => {
     sandbox.stub(AppStudioClient, "getAppByTeamsAppId").resolves(undefined);
 
-    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
-      ok({
-        tabEndpoint: "tabEndpoint",
-        tabDomain: "tabDomain",
-        aadId: "aadId",
-        botDomain: "botDomain",
-        botId: "botId",
-        webApplicationInfoResource: "webApplicationInfoResource",
-      })
-    );
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
+      tabEndpoint: "tabEndpoint",
+      tabDomain: "tabDomain",
+      aadId: "aadId",
+      botDomain: "botDomain",
+      botId: "botId",
+      webApplicationInfoResource: "webApplicationInfoResource",
+      teamsAppId: uuid(),
+    });
 
     const teamsAppId = await plugin.publish(ctx);
     chai.assert.isTrue(teamsAppId.isOk());
@@ -98,16 +97,15 @@ describe("Publish Teams app with Azure", () => {
     sandbox.stub(AppStudioClient, "getAppByTeamsAppId").resolves(mockApp);
     ctx.ui = new MockUserInteraction();
 
-    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns(
-      ok({
-        tabEndpoint: "tabEndpoint",
-        tabDomain: "tabDomain",
-        aadId: "aadId",
-        botDomain: "botDomain",
-        botId: "botId",
-        webApplicationInfoResource: "webApplicationInfoResource",
-      })
-    );
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
+      tabEndpoint: "tabEndpoint",
+      tabDomain: "tabDomain",
+      aadId: "aadId",
+      botDomain: "botDomain",
+      botId: "botId",
+      webApplicationInfoResource: "webApplicationInfoResource",
+      teamsAppId: uuid(),
+    });
 
     const teamsAppId = await plugin.publish(ctx);
     chai.assert.isTrue(teamsAppId.isOk());
@@ -170,6 +168,7 @@ describe("Publish Teams app with SPFx", () => {
         tabDomain: "tabDomain",
         aadId: "aadId",
         webApplicationInfoResource: "webApplicationInfoResource",
+        teamsAppId: uuid(),
       })
     );
 
@@ -196,6 +195,7 @@ describe("Publish Teams app with SPFx", () => {
         tabDomain: "tabDomain",
         aadId: "aadId",
         webApplicationInfoResource: "webApplicationInfoResource",
+        teamsAppId: uuid(),
       })
     );
 

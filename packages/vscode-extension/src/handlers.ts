@@ -123,7 +123,7 @@ import {
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
-import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
+import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
 import { ext } from "./extensionVariables";
 import { InputConfigsFolderName } from "@microsoft/teamsfx-api";
@@ -155,41 +155,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     }
 
     if (!validProject) {
-      const expService = exp.getExpService();
-      if (expService) {
-        switch (
-          await expService.getTreatmentVariableAsync(
-            TreatmentVariables.VSCodeConfig,
-            TreatmentVariables.QuickStartInSidebar,
-            true
-          )
-        ) {
-          case TreatmentVariableValue.TopSidebar:
-            vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.top", true);
-            break;
-          case TreatmentVariableValue.BottomSidebar:
-            vscode.commands.executeCommand(
-              "setContext",
-              "fx-extension.sidebarWelcome.bottom",
-              true
-            );
-            break;
-          case TreatmentVariableValue.OriginalTreeView:
-            vscode.commands.executeCommand(
-              "setContext",
-              "fx-extension.sidebarWelcome.treeview",
-              true
-            );
-            break;
-          default:
-            vscode.commands.executeCommand(
-              "setContext",
-              "fx-extension.sidebarWelcome.default",
-              true
-            );
-            break;
-        }
-      }
+      vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.default", true);
     } else {
       vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
     }
@@ -392,8 +358,6 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<any,
   );
   const result = await runCommand(Stage.migrateV1);
   await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
-  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.top", false);
-  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.bottom", false);
   await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.default", false);
   if (result.isOk()) {
     commands.executeCommand("vscode.openFolder", result.value);
@@ -1230,80 +1194,6 @@ export async function refreshEnvironment(args?: any[]): Promise<Result<Void, FxE
   return await registerEnvTreeHandler();
 }
 
-export async function viewEnvironment(env: string): Promise<Result<Void, FxError>> {
-  const telemetryProperties: { [p: string]: string } = {};
-  if (env === LocalEnvironmentName) {
-    telemetryProperties[TelemetryProperty.Env] = LocalEnvironmentName;
-  } else {
-    telemetryProperties[TelemetryProperty.Env] = getHashedEnv(env);
-  }
-
-  if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
-    const projectRoot = workspace.workspaceFolders![0].uri.fsPath;
-    const localSettingsProvider = new LocalSettingsProvider(projectRoot);
-
-    const envFilePath =
-      env === LocalEnvironmentName
-        ? localSettingsProvider.localSettingsFilePath
-        : environmentManager.getEnvConfigPath(env, projectRoot);
-
-    const envPath: vscode.Uri = vscode.Uri.file(envFilePath);
-    if (await fs.pathExists(envFilePath)) {
-      vscode.workspace.openTextDocument(envPath).then(
-        (a: vscode.TextDocument) => {
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ViewEnvironment, telemetryProperties);
-          vscode.window.showTextDocument(a, 1, false);
-        },
-        (error: any) => {
-          const openEnvError = new SystemError(
-            ExtensionErrors.OpenEnvStateError,
-            util.format(StringResources.vsc.handlers.openEnvFailed, env),
-            ExtensionSource,
-            undefined,
-            undefined,
-            error
-          );
-          showError(openEnvError);
-          ExtTelemetry.sendTelemetryErrorEvent(
-            TelemetryEvent.ViewEnvironment,
-            openEnvError,
-            telemetryProperties
-          );
-          return err(openEnvError);
-        }
-      );
-    } else {
-      const noEnvError = new UserError(
-        ExtensionErrors.EnvStateNotFoundError,
-        util.format(StringResources.vsc.handlers.findEnvFailed, env),
-        ExtensionSource
-      );
-      showError(noEnvError);
-      ExtTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.ViewEnvironment,
-        noEnvError,
-        telemetryProperties
-      );
-      return err(noEnvError);
-    }
-  } else {
-    const FxError: FxError = {
-      name: "NoWorkspace",
-      source: ExtensionSource,
-      message: StringResources.vsc.handlers.noOpenWorkspace,
-      timestamp: new Date(),
-    };
-    showError(FxError);
-    ExtTelemetry.sendTelemetryErrorEvent(
-      TelemetryEvent.ViewEnvironment,
-      FxError,
-      telemetryProperties
-    );
-    return err(FxError);
-  }
-  return ok(Void);
-}
-
 function getSubscriptionUrl(subscriptionInfo: SubscriptionInfo): string {
   const subscriptionId = subscriptionInfo.subscriptionId;
   const tenantId = subscriptionInfo.tenantId;
@@ -1408,16 +1298,6 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
     const checkCoreRes = checkCoreNotEmpty();
     if (checkCoreRes.isErr()) {
       throw checkCoreRes.error;
-    }
-
-    const provisionSucceeded = await getProvisionSucceedFromEnv(env);
-
-    if (!provisionSucceeded) {
-      throw new UserError(
-        ExtensionErrors.GrantPermissionNotProvisionError,
-        StringResources.vsc.handlers.provisionBeforeGrantPermission,
-        ExtensionSource
-      );
     }
 
     inputs = getSystemInputs();
@@ -2124,10 +2004,10 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
     true,
     StringResources.vsc.migrateTeamsTabApp.upgrade
   );
-  const userCancelError = new UserError(
-    ExtensionErrors.UserCancel,
+  const userCancelError = returnUserError(
+    new Error(ExtensionErrors.UserCancel),
     StringResources.vsc.common.userCancel,
-    "migrateTeamsTabApp"
+    ExtensionSource
   );
   if (selection.isErr() || selection.value !== StringResources.vsc.migrateTeamsTabApp.upgrade) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsTabApp, userCancelError);
@@ -2153,10 +2033,11 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
   const migrationHandler = new TeamsAppMigrationHandler(tabAppPath);
   let result: Result<null, FxError> = ok(null);
   let packageUpdated: Result<boolean, FxError> = ok(true);
+  let updateFailedFiles: string[] = [];
   try {
     // Update package.json to use @microsoft/teams-js v2
-    await progressBar.next(StringResources.vsc.migrateTeamsTabApp.updatePackageJson);
-    VsCodeLogInstance.info(StringResources.vsc.migrateTeamsTabApp.updatePackageJson);
+    await progressBar.next(StringResources.vsc.migrateTeamsTabApp.updatingPackageJson);
+    VsCodeLogInstance.info(StringResources.vsc.migrateTeamsTabApp.updatingPackageJson);
     packageUpdated = await migrationHandler.updatePackageJson();
     if (packageUpdated.isErr()) {
       throw packageUpdated.error;
@@ -2167,14 +2048,35 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
         path.join(tabAppPath, "package.json")
       );
       VsCodeLogInstance.warning(warningMessage);
-      window.showWarningMessage(warningMessage, "OK");
+      VS_CODE_UI.showMessage("warn", warningMessage, false, "OK");
     } else {
       // Update codes to use @microsoft/teams-js v2
-      await progressBar.next(StringResources.vsc.migrateTeamsTabApp.updateCodes);
-      VsCodeLogInstance.info(StringResources.vsc.migrateTeamsTabApp.updateCodes);
-      result = await migrationHandler.updateCodes();
-      if (result.isErr()) {
-        throw result.error;
+      await progressBar.next(StringResources.vsc.migrateTeamsTabApp.updatingCodes);
+      VsCodeLogInstance.info(StringResources.vsc.migrateTeamsTabApp.updatingCodes);
+      const failedFiles = await migrationHandler.updateCodes();
+      if (failedFiles.isErr()) {
+        throw failedFiles.error;
+      } else {
+        updateFailedFiles = failedFiles.value;
+        if (failedFiles.value.length > 0) {
+          VsCodeLogInstance.warning(
+            util.format(
+              StringResources.vsc.migrateTeamsTabApp.updateCodesErrorOutput,
+              failedFiles.value.length,
+              failedFiles.value.join(", ")
+            )
+          );
+          VS_CODE_UI.showMessage(
+            "warn",
+            util.format(
+              StringResources.vsc.migrateTeamsTabApp.updateCodesErrorMessage,
+              failedFiles.value.length,
+              failedFiles.value[0]
+            ),
+            false,
+            "OK"
+          );
+        }
       }
     }
   } catch (error) {
@@ -2196,6 +2098,7 @@ export async function migrateTeamsTabAppHandler(): Promise<Result<null, FxError>
     }
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.MigrateTeamsTabApp, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.UpdateFailedFiles]: updateFailedFiles.length.toString(),
     });
   }
   return result;
@@ -2209,10 +2112,10 @@ export async function migrateTeamsManifestHandler(): Promise<Result<null, FxErro
     true,
     StringResources.vsc.migrateTeamsManifest.upgrade
   );
-  const userCancelError = new UserError(
-    ExtensionErrors.UserCancel,
+  const userCancelError = returnUserError(
+    new Error(ExtensionErrors.UserCancel),
     StringResources.vsc.common.userCancel,
-    "migrateTeamsManifest"
+    ExtensionSource
   );
   if (selection.isErr() || selection.value !== StringResources.vsc.migrateTeamsManifest.upgrade) {
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsManifest, userCancelError);

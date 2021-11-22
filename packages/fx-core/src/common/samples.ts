@@ -6,6 +6,8 @@ export interface SampleInfo {
   shortDescription: string;
   fullDescription: string;
   tags: string[];
+  time: string;
+  configuration: string;
   link: string;
 }
 
@@ -26,6 +28,8 @@ class SampleProvider {
           shortDescription: sample.shortDescription,
           fullDescription: sample.fullDescription,
           tags: sample.tags,
+          time: sample.time,
+          configuration: sample.configuration,
           link: sampleConfig.defaultPackageLink,
         } as SampleInfo;
       });

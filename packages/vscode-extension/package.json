@@ -82,15 +82,7 @@
     "viewsWelcome": [
       {
         "view": "teamsfx-empty-project",
-        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
-      },
-      {
-        "view": "teamsfx-empty-project-top",
-        "contents": "The Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a 'zero-configuration' approach to the developer experience.\n[Quick Start](command:fx-extension.openWelcome)\nTo start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
-      },
-      {
-        "view": "teamsfx-empty-project-bottom",
-        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\nThe Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a 'zero-configuration' approach to the developer experience.\n[Quick Start](command:fx-extension.openWelcome)"
+        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome) or [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
       },
       {
         "view": "teamsfx-empty-project-and-check-upgrade",
@@ -148,16 +140,6 @@
           "id": "teamsfx-empty-project",
           "name": "Teams Toolkit",
           "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv"
-        },
-        {
-          "id": "teamsfx-empty-project-top",
-          "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.top && !fx-extension.canUpgradeToArmAndMultiEnv"
-        },
-        {
-          "id": "teamsfx-empty-project-bottom",
-          "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.bottom && !fx-extension.canUpgradeToArmAndMultiEnv"
         },
         {
           "id": "teamsfx-empty-project-and-check-upgrade",
@@ -982,6 +964,7 @@
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/teamsfx-api": "^0.10.0",
     "@microsoft/teamsfx-core": "^0.11.0",
+    "@npmcli/arborist": "^4.0.4",
     "@npmcli/package-json": "^1.0.1",
     "async-mutex": "^0.3.1",
     "dotenv": "^8.2.0",

@@ -105,7 +105,6 @@
       "invalidProject": "Failed to debug Teams App. The project is not a valid Teams project.",
       "editSecretTitle": "Edit the decrypted secret value",
       "decryptFailed": "Failed to decrypt secrect.",
-      "openEnvFailed": "Can not open project environment %s.",
       "findEnvFailed": "Can not find project environment %s.",
       "resourceInfoNotFound": "Can not load %s info for environment %s.",
       "localDebugDescription": "Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.",
@@ -261,11 +260,14 @@
       "warningMessage": "Teams Toolkit will update in place the Teams Tab app you selected to use Teams client SDK v2. We recommend to use git for better tracking file changes before upgrading.",
       "upgrade": "Upgrade",
       "success": "Successfully upgraded the Teams Tab app %s.",
-      "updateCode": "Update %s code in %s.",
+      "updatingCode": "Updating %s code in %s.",
+      "updateCodeError": "Failed to update file %s, code: %s, message: %s.",
+      "updateCodesErrorOutput": "Failed to update %d files: %s.",
+      "updateCodesErrorMessage":"Failed to update %d files: %s, etc. Please refer to output channel for more details.",
       "progressTitle": "Upgrade Teams Tab App to Extend in Outlook and Office",
-      "updatePackageJson": "Update package.json to use @microsoft/teams-js v2.",
+      "updatingPackageJson": "Updating package.json to use @microsoft/teams-js v2.",
       "updatePackageJsonWarning": "No @microsoft/teams-js dependency found in %s. Nothing to upgrade.",
-      "updateCodes": "Update codes to use @microsoft/teams-js v2."
+      "updatingCodes": "Updating codes to use @microsoft/teams-js v2."
     },
     "migrateTeamsManifest": {
       "selectFileConfig": {

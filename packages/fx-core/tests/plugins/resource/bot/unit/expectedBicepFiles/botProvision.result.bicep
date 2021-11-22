@@ -3,8 +3,6 @@ param provisionParameters object
 param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
-var botAadAppClientId = provisionParameters['botAadAppClientId']
-var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
 var botServiceName = contains(provisionParameters, 'botServiceName') ? provisionParameters['botServiceName'] : '${resourceBaseName}'
 var botServiceSku = contains(provisionParameters, 'botServiceSku') ? provisionParameters['botServiceSku'] : 'F0'
 var botDisplayName = contains(provisionParameters, 'botDisplayName') ? provisionParameters['botDisplayName'] : '${resourceBaseName}'
@@ -53,14 +51,6 @@ resource webApp 'Microsoft.Web/sites@2021-02-01' = {
     keyVaultReferenceIdentity: userAssignedIdentityId
     siteConfig: {
       appSettings: [
-        {
-          name: 'BOT_ID'
-          value: botAadAppClientId
-        }
-        {
-          name: 'BOT_PASSWORD'
-          value: botAadAppClientSecret
-        }
         {
           name: 'SCM_DO_BUILD_DURING_DEPLOYMENT'
           value: 'true'

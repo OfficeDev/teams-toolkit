@@ -17,6 +17,7 @@ import {
   TeamsAppManifest,
   LogProvider,
   BuildFolderName,
+  assembleError,
 } from "@microsoft/teamsfx-api";
 import {
   CoreHookContext,
@@ -76,7 +77,6 @@ import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 import util from "util";
 import { LocalEnvMultiProvider } from "../../plugins/resource/localdebug/localEnvMulti";
-import { assembleError } from "@microsoft/teamsfx-api";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -210,14 +210,14 @@ function outputCancelMessage(ctx: CoreHookContext) {
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
     );
     core.tools.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.7.0`
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.10.0`
     );
   } else {
     core.tools.logProvider.warning(
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
     );
     core.tools.logProvider.warning(
-      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= 2.7.0`
+      `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= 2.10.0`
     );
   }
 }
@@ -373,12 +373,10 @@ async function handleError(
     });
 }
 
-async function generateUpgradeReport(ctx: CoreHookContext, backupFolder: string | undefined) {
+async function generateUpgradeReport(backupFolder: string | undefined) {
   try {
-    const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-    const projectPath = inputs.projectPath as string;
     if (backupFolder) {
-      const target = path.join(projectPath, backupFolder, upgradeReportName);
+      const target = path.join(backupFolder, upgradeReportName);
       const source = path.resolve(path.join(getResourceFolder(), upgradeReportName));
       await fs.copyFile(source, target);
     }
@@ -396,7 +394,7 @@ async function postMigration(
   await removeOldProjectFiles(projectPath);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrate);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
-  await generateUpgradeReport(ctx, backupFolder);
+  await generateUpgradeReport(backupFolder);
   const core = ctx.self as FxCore;
   await updateGitIgnore(projectPath, core.tools.logProvider, backupFolder);
 
@@ -412,7 +410,7 @@ async function postMigration(
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
       [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
     });
-    core.tools.ui.reload?.();
+    await core.tools.ui.reload?.();
   } else {
     core.tools.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessage);
   }
@@ -603,21 +601,22 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
     await SPFxUtils.configure(targetLocalManifestFile, replaceMap);
   }
 
-  if (hasProvision) {
-    const devState = path.join(fxState, "state.dev.json");
-    const devUserData = path.join(fxState, "dev.userdata");
-    await fs.copy(path.join(fx, "new.env.default.json"), devState);
-    if (await fs.pathExists(path.join(fx, "default.userdata"))) {
-      await fs.copy(path.join(fx, "default.userdata"), devUserData);
-    }
-    await removeExpiredFields(devState, devUserData);
+  // state.dev.json / dev.userdata
+  const devState = path.join(fxState, "state.dev.json");
+  await fs.copy(path.join(fx, "new.env.default.json"), devState);
+  const devUserData = path.join(fxState, "dev.userdata");
+  if (await fs.pathExists(path.join(fx, "default.userdata"))) {
+    await fs.copy(path.join(fx, "default.userdata"), devUserData);
   }
+  await removeExpiredFields(devState, devUserData);
 }
 
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
   const stateData = await readJson(devState);
-  stateData[PluginNames.APPST]["teamsAppId"] = stateData[PluginNames.SOLUTION]["remoteTeamsAppId"];
-
+  if (stateData[PluginNames.SOLUTION] && stateData[PluginNames.SOLUTION]["remoteTeamsAppId"]) {
+    stateData[PluginNames.APPST]["teamsAppId"] =
+      stateData[PluginNames.SOLUTION]["remoteTeamsAppId"];
+  }
   const expiredStateKeys: [string, string][] = [
     [PluginNames.LDEBUG, ""],
     [PluginNames.SOLUTION, programmingLanguage],
@@ -892,6 +891,7 @@ async function updateConfig(ctx: CoreHookContext) {
   if (envConfig[ResourcePlugins.Bot]) {
     delete envConfig[ResourcePlugins.Bot];
     envConfig[ResourcePlugins.Bot] = { wayToRegisterBot: "create-new" };
+    envConfig.solution.provisionSucceeded = false;
   }
   let needUpdate = false;
   let configPrefix = "";

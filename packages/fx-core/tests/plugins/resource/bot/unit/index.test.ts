@@ -316,7 +316,7 @@ describe("Teams Bot Resource Plugin", () => {
         .resolves(testUtils.generateFakeTokenCredentialsBase());
       botPluginImpl.config.provision.siteName = "test-site-name";
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_INSIDER_PREVIEW: "0",
+        __TEAMSFX_INSIDER_PREVIEW: "0",
       });
 
       // Act
@@ -338,7 +338,7 @@ describe("Teams Bot Resource Plugin", () => {
         "/subscriptions/test-subscription/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-webapp"
       );
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_INSIDER_PREVIEW: "1",
+        __TEAMSFX_INSIDER_PREVIEW: "1",
       });
 
       // Act

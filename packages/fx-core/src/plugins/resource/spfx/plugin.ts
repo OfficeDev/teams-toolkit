@@ -254,6 +254,7 @@ export class SPFxPluginImpl {
 
   public async deploy(ctx: PluginContext): Promise<Result<any, FxError>> {
     const progressHandler = await ProgressHelper.startDeployProgressHandler(ctx);
+    let success = false;
     try {
       const tenant = await this.getTenant(ctx);
       if (tenant.isErr()) {
@@ -334,11 +335,15 @@ export class SPFxPluginImpl {
         appCatalogSite,
         appCatalogSite
       );
-      ctx.ui?.showMessage("info", guidance, false, "OK");
-
+      if (ctx.answers?.platform === Platform.CLI) {
+        ctx.ui?.showMessage("info", guidance, false);
+      } else {
+        ctx.ui?.showMessage("info", guidance, false, "OK");
+      }
+      success = true;
       return ok(undefined);
     } finally {
-      await ProgressHelper.endDeployProgress(false);
+      await ProgressHelper.endDeployProgress(success);
     }
   }
 

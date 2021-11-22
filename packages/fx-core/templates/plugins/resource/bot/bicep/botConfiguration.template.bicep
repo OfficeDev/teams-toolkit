@@ -11,6 +11,8 @@ var m365ClientId = provisionParameters['m365ClientId']
 var m365ClientSecret = provisionParameters['m365ClientSecret']
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
+var botAadAppClientId = provisionParameters['botAadAppClientId']
+var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
 
 var botId = provisionParameters['botAadAppClientId']
 
@@ -37,6 +39,8 @@ resource botWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     M365_CLIENT_SECRET: m365ClientSecret
     M365_TENANT_ID: m365TenantId
     M365_APPLICATION_ID_URI: m365ApplicationIdUri
+    BOT_ID: botAadAppClientId
+    BOT_PASSWORD: botAadAppClientSecret
     {{#contains 'fx-resource-function' Plugins}}
     API_ENDPOINT: provisionOutputs.functionOutput.value.functionEndpoint
     {{/contains}}

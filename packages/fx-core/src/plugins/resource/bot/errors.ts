@@ -4,6 +4,7 @@
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
 import { CommonStrings } from "./resources/strings";
+import { FxBotPluginResultFactory } from "./result";
 
 export enum ErrorType {
   User,
@@ -16,7 +17,7 @@ export class PluginError extends Error {
   public suggestions: string[];
   public errorType: ErrorType;
   public innerError?: Error;
-  public showHelpLink: boolean;
+  public helpLink?: string;
 
   constructor(
     type: ErrorType,
@@ -24,7 +25,7 @@ export class PluginError extends Error {
     details: string,
     suggestions: string[],
     innerError?: Error,
-    showHelpLink = false
+    helpLink?: string
   ) {
     super(details);
     this.name = name;
@@ -32,7 +33,7 @@ export class PluginError extends Error {
     this.suggestions = suggestions;
     this.errorType = type;
     this.innerError = innerError;
-    this.showHelpLink = showHelpLink;
+    this.helpLink = helpLink;
     Object.setPrototypeOf(this, PluginError.prototype);
   }
 
@@ -124,7 +125,7 @@ export class MissingSubscriptionRegistrationError extends PluginError {
       Messages.TheSubsNotRegisterToUseBotService,
       [Messages.RegisterYouSubsToUseBot, Messages.ClickHelpButtonForDetails],
       undefined,
-      true
+      FxBotPluginResultFactory.defaultHelpLink
     );
   }
 }
@@ -252,7 +253,7 @@ export class FreeServerFarmsQuotaError extends PluginError {
       Messages.MaxFreeAppServicePlanIsTen,
       [Messages.DeleteFreeAppServicePlanOrChangeSku, Messages.ClickHelpButtonForDetails],
       innerError,
-      true
+      FxBotPluginResultFactory.defaultHelpLink
     );
   }
 }

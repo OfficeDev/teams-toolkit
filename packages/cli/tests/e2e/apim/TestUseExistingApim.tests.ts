@@ -10,17 +10,14 @@ import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  setSimpleAuthSkuNameToB1,
   getConfigFileName,
   cleanUp,
   cleanUpResourceGroup,
   readContext,
-  setSimpleAuthSkuNameToB1Bicep,
-  readContextMultiEnv,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { isArmSupportEnabled } from "@microsoft/teamsfx-core";
 
 describe("Use an existing API Management Service", function () {
   const testFolder = getTestFolder();
@@ -29,27 +26,27 @@ describe("Use an existing API Management Service", function () {
   const projectPath = path.resolve(testFolder, appName);
   const existingRGName = `${appName}existing`;
   const existingRGNameExtend = `${existingRGName}-rg`;
+  const testProcessEnv = Object.assign({}, process.env);
+  testProcessEnv["SIMPLE_AUTH_SKU_NAME"] = "B1";
 
   it(`Import API into an existing API Management Service`, async function () {
+    if (isArmSupportEnabled()) {
+      return;
+    }
+
     // new a project
     let result = await execAsync(`teamsfx new --app-name ${appName} --interactive false`, {
       cwd: testFolder,
-      env: process.env,
+      env: testProcessEnv,
       timeout: 0,
     });
     console.log(`Create new project. Error message: ${result.stderr}`);
-
-    if (isMultiEnvEnabled()) {
-      await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    } else {
-      await setSimpleAuthSkuNameToB1(projectPath);
-    }
 
     result = await execAsyncWithRetry(
       `teamsfx resource add azure-apim --subscription ${subscriptionId} --apim-resource-group ${existingRGNameExtend} --apim-service-name ${appName}-existing-apim`,
       {
         cwd: projectPath,
-        env: process.env,
+        env: testProcessEnv,
         timeout: 0,
       }
     );
@@ -63,37 +60,26 @@ describe("Use an existing API Management Service", function () {
 
     result = await execAsyncWithRetry(`teamsfx provision`, {
       cwd: projectPath,
-      env: process.env,
+      env: testProcessEnv,
       timeout: 0,
     });
     console.log(`Provision. Error message: ${result.stderr}`);
 
-    if (isMultiEnvEnabled()) {
-      const provisionContext = await readContextMultiEnv(
-        projectPath,
-        environmentManager.getDefaultEnvName()
-      );
-      await ApimValidator.validateProvisionMultiEnv(
-        provisionContext,
-        appName,
-        existingRGNameExtend,
-        `${appName}-existing-apim`
-      );
-    } else {
-      const provisionContext = await readContext(projectPath);
-      await ApimValidator.validateProvision(
-        provisionContext,
-        appName,
-        existingRGNameExtend,
-        `${appName}-existing-apim`
-      );
-    }
+    const provisionContext = await readContext(projectPath);
+    await ApimValidator.validateProvision(
+      provisionContext,
+      appName,
+      subscriptionId,
+      false,
+      existingRGNameExtend,
+      `${appName}-existing-apim`
+    );
 
     result = await execAsyncWithRetry(
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
       {
         cwd: projectPath,
-        env: process.env,
+        env: testProcessEnv,
         timeout: 0,
       },
       3,
@@ -101,30 +87,19 @@ describe("Use an existing API Management Service", function () {
     );
     console.log(`Deploy. Error message: ${result.stderr}`);
 
-    if (isMultiEnvEnabled()) {
-      const deployContext = await fs.readJSON(getConfigFileName(appName, true));
-      await ApimValidator.validateDeployMultiEnv(deployContext, projectPath, appName, "v1");
-    } else {
-      const deployContext = await fs.readJSON(getConfigFileName(appName));
-      await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
-    }
+    const deployContext = await fs.readJSON(getConfigFileName(appName));
+    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1", false);
   });
 
   after(async () => {
-    if (isMultiEnvEnabled()) {
-      await Promise.all([
-        // clean up another resource group
-        cleanUpResourceGroup(existingRGName),
-        // clean up other resources
-        cleanUp(appName, projectPath, true, false, true, true),
-      ]);
-    } else {
-      await Promise.all([
-        // clean up another resource group
-        cleanUpResourceGroup(existingRGName),
-        // clean up other resources
-        cleanUp(appName, projectPath, true, false, true),
-      ]);
+    if (isArmSupportEnabled()) {
+      return;
     }
+    await Promise.all([
+      // clean up another resource group
+      cleanUpResourceGroup(existingRGName),
+      // clean up other resources
+      cleanUp(appName, projectPath, true, false, true),
+    ]);
   });
 });

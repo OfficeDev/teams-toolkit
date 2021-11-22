@@ -82,27 +82,11 @@
     "viewsWelcome": [
       {
         "view": "teamsfx-empty-project",
-        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
-      },
-      {
-        "view": "teamsfx-empty-project-top",
-        "contents": "The Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a 'zero-configuration' approach to the developer experience.\n[Quick Start](command:fx-extension.openWelcome)\nTo start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
-      },
-      {
-        "view": "teamsfx-empty-project-bottom",
-        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\nThe Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a 'zero-configuration' approach to the developer experience.\n[Quick Start](command:fx-extension.openWelcome)"
+        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome) or [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
       },
       {
         "view": "teamsfx-empty-project-and-check-upgrade",
-        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\n\nYou need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.7.0.\n[Upgrade project](command:fx-extension.checkProjectUpgrade)"
-      },
-      {
-        "view": "teamsfx-empty-project-top-and-check-upgrade",
-        "contents": "The Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a 'zero-configuration' approach to the developer experience.\n[Quick Start](command:fx-extension.openWelcome)\nTo start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\n\nYou need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.7.0.\n[Upgrade project](command:fx-extension.checkProjectUpgrade)"
-      },
-      {
-        "view": "teamsfx-empty-project-bottom-and-check-upgrade",
-        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\nThe Teams Toolkit helps developers create and deploy Teams apps with integrated Identity, access to cloud storage, data from [Microsoft Graph](https://docs.microsoft.com/en-us/graph/teams-concept-overview), and other services in [Azure](https://docs.microsoft.com/en-us/microsoftteams/platform/build-your-first-app/build-bot) and [M365](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant) with a 'zero-configuration' approach to the developer experience.\n[Quick Start](command:fx-extension.openWelcome)\n\nYou need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.7.0.\n[Upgrade project](command:fx-extension.checkProjectUpgrade)"
+        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome) or [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\n\nYou need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.\n[Upgrade project](command:fx-extension.checkProjectUpgrade)"
       }
     ],
     "views": {
@@ -150,29 +134,9 @@
           "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv"
         },
         {
-          "id": "teamsfx-empty-project-top",
-          "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.top && !fx-extension.canUpgradeToArmAndMultiEnv"
-        },
-        {
-          "id": "teamsfx-empty-project-bottom",
-          "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.bottom && !fx-extension.canUpgradeToArmAndMultiEnv"
-        },
-        {
           "id": "teamsfx-empty-project-and-check-upgrade",
           "name": "Teams Toolkit",
           "when": "fx-extension.sidebarWelcome.default && fx-extension.canUpgradeToArmAndMultiEnv"
-        },
-        {
-          "id": "teamsfx-empty-project-top-and-check-upgrade",
-          "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.top && fx-extension.canUpgradeToArmAndMultiEnv"
-        },
-        {
-          "id": "teamsfx-empty-project-bottom-and-check-upgrade",
-          "name": "Teams Toolkit",
-          "when": "fx-extension.sidebarWelcome.bottom && fx-extension.canUpgradeToArmAndMultiEnv"
         }
       ]
     },
@@ -349,10 +313,6 @@
         {
           "command": "fx-extension.migrateV1Project",
           "when": "fx-extension.v1Project"
-        },
-        {
-          "command": "fx-extension.addEnvironment",
-          "when": "false"
         },
         {
           "command": "fx-extension.refreshEnvironment",
@@ -821,6 +781,11 @@
       {
         "title": "Teams Toolkit",
         "properties": {
+          "fx-extension.rollbackToTeamsToolkitV2": {
+            "type": "boolean",
+            "description": "Rollback to Teams Toolkit v2. Notice the setting will be obsolete and removed soon. (requires reload of VS Code)",
+            "default": false
+          },
           "fx-extension.validateNode": {
             "type": "boolean",
             "description": "Ensure Node.js is installed.",

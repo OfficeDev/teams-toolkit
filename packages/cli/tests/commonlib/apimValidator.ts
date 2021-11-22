@@ -8,6 +8,11 @@ import fs from "fs-extra";
 import md5 from "md5";
 import { ResourceManagementClient } from "@azure/arm-resources";
 import { AzureAccountProvider, GraphTokenProvider } from "@microsoft/teamsfx-api";
+import {
+  getApimServiceNameFromResourceId,
+  getAuthServiceNameFromResourceId,
+  getproductNameFromResourceId,
+} from "../../../fx-core/src/plugins/resource/apim/utils/commonUtils";
 
 export class ApimValidator {
   static apimClient?: ApiManagementClient;
@@ -53,6 +58,8 @@ export class ApimValidator {
   public static async validateProvision(
     ctx: any,
     appName: string,
+    subscriptionId: string,
+    isArmSupportEnabled: boolean,
     resourceGroupName?: string,
     serviceName?: string,
     productId?: string,
@@ -61,48 +68,30 @@ export class ApimValidator {
     const config = new Config(ctx);
     chai.assert.isNotEmpty(config?.resourceNameSuffix);
     chai.assert.equal(config?.apimResourceGroupName, resourceGroupName);
-    chai.assert.equal(
-      config?.apimServiceName,
-      serviceName ?? `${appName}am${config?.resourceNameSuffix}`
-    );
-    chai.assert.equal(
-      config?.productId,
-      productId ?? `${appName}-${config?.resourceNameSuffix}-product`
-    );
-    chai.assert.equal(
-      config?.oAuthServerId,
-      oAuthServerId ?? `${appName}-${config?.resourceNameSuffix}-server`
-    );
+    if (isArmSupportEnabled) {
+      chai.assert.isNotEmpty(config?.serviceResourceId);
+      chai.assert.isNotEmpty(config?.productResourceId);
+      chai.assert.isNotEmpty(config?.authServerResourceId);
+    } else {
+      chai.assert.equal(
+        config?.apimServiceName,
+        serviceName ?? `${appName}am${config?.resourceNameSuffix}`
+      );
+      chai.assert.equal(
+        config?.productId,
+        productId ?? `${appName}-${config?.resourceNameSuffix}-product`
+      );
+      chai.assert.equal(
+        config?.oAuthServerId,
+        oAuthServerId ?? `${appName}-${config?.resourceNameSuffix}-server`
+      );
+    }
     chai.assert.isNotEmpty(config?.apimClientAADObjectId);
     chai.assert.isNotEmpty(config?.apimClientAADClientId);
     chai.assert.isNotEmpty(config?.apimClientAADClientSecret);
-    await this.validateApimService(config);
-    await this.validateApimOAuthServer(config);
-    await this.validateProduct(config);
-    await this.validateAppAad(config);
-    await this.validateClientAad(config);
-  }
-
-  public static async validateProvisionMultiEnv(
-    ctx: any,
-    appName: string,
-    resourceGroupName?: string,
-    serviceName?: string,
-    productId?: string,
-    oAuthServerId?: string
-  ): Promise<void> {
-    const config = new Config(ctx);
-    chai.assert.isNotEmpty(config?.resourceNameSuffix);
-
-    chai.assert.isNotEmpty(config?.apimClientAADObjectId);
-    chai.assert.isNotEmpty(config?.apimClientAADClientId);
-    chai.assert.isNotEmpty(config?.apimClientAADClientSecret);
-    chai.assert.isNotEmpty(config?.serviceResourceId);
-    chai.assert.isNotEmpty(config?.productResourceId);
-    chai.assert.isNotEmpty(config?.authServerResourceId);
-    // await this.validateApimService(config);
-    // await this.validateApimOAuthServer(config);
-    // await this.validateProduct(config);
+    await this.validateApimService(config, isArmSupportEnabled);
+    await this.validateApimOAuthServer(config, isArmSupportEnabled);
+    await this.validateProduct(config, isArmSupportEnabled);
     await this.validateAppAad(config);
     await this.validateClientAad(config);
   }
@@ -112,6 +101,7 @@ export class ApimValidator {
     projectPath: string,
     apiPrefix: string,
     apiVersion: string,
+    isArmSupportEnabled: boolean,
     apiDocumentPath?: string,
     versionSetId?: string,
     apiPath?: string
@@ -119,6 +109,7 @@ export class ApimValidator {
     const config = new Config(ctx);
     chai.assert.isNotEmpty(config?.resourceNameSuffix);
     chai.assert.equal(config?.apiPrefix, apiPrefix);
+
     chai.assert.equal(config?.apiDocumentPath, apiDocumentPath ?? "openapi/openapi.json");
     chai.assert.equal(
       config?.versionSetId,
@@ -126,39 +117,21 @@ export class ApimValidator {
     );
     chai.assert.equal(config?.apiPath, apiPath ?? `${apiPrefix}-${config?.resourceNameSuffix}`);
 
-    await this.validateVersionSet(config);
-    await this.validateApi(config, projectPath, apiVersion);
-    await this.validateProductApi(config, apiVersion);
+    await this.validateVersionSet(config, isArmSupportEnabled);
+    await this.validateApi(config, projectPath, apiVersion, isArmSupportEnabled);
+    await this.validateProductApi(config, apiVersion, isArmSupportEnabled);
   }
 
-  public static async validateDeployMultiEnv(
-    ctx: any,
-    projectPath: string,
-    apiPrefix: string,
-    apiVersion: string,
-    apiDocumentPath?: string,
-    versionSetId?: string,
-    apiPath?: string
-  ): Promise<void> {
-    const config = new Config(ctx);
-    chai.assert.isNotEmpty(config?.resourceNameSuffix);
-    chai.assert.equal(config?.apiPrefix, apiPrefix);
-    chai.assert.equal(config?.apiDocumentPath, apiDocumentPath ?? "openapi/openapi.json");
-    chai.assert.equal(
-      config?.versionSetId,
-      versionSetId ?? md5(`${apiPrefix}-${config?.resourceNameSuffix}`)
-    );
-    chai.assert.equal(config?.apiPath, apiPath ?? `${apiPrefix}-${config?.resourceNameSuffix}`);
-
-    // await this.validateVersionSet(config);
-    // await this.validateApi(config, projectPath, apiVersion);
-    // await this.validateProductApi(config, apiVersion);
-  }
-
-  private static getApimInfo(config: Config): { resourceGroup: string; serviceName: string } {
+  private static getApimInfo(
+    config: Config,
+    isArmSupportEnabled: boolean
+  ): { resourceGroup: string; serviceName: string } {
     const resourceGroup = config?.apimResourceGroupName ?? config?.resourceGroupName;
     chai.assert.isNotEmpty(resourceGroup);
-    const serviceName = config?.apimServiceName;
+    const serviceName = isArmSupportEnabled
+      ? getApimServiceNameFromResourceId(config?.serviceResourceId)
+      : config?.apimServiceName;
+
     chai.assert.isNotEmpty(serviceName);
     return { resourceGroup: resourceGroup!, serviceName: serviceName! };
   }
@@ -168,8 +141,12 @@ export class ApimValidator {
     return await fs.readJson(`${projectPath}/${config?.apiDocumentPath}`);
   }
 
-  private static async validateApimService(config: Config): Promise<void> {
-    const apim = this.getApimInfo(config);
+  private static async validateApimService(
+    config: Config,
+    isArmSupportEnabled: boolean
+  ): Promise<void> {
+    const apim = this.getApimInfo(config, isArmSupportEnabled);
+    console.log(`validateApimService ${apim.resourceGroup} ${apim.serviceName}`);
     const apimManagementService = await this.apimClient?.apiManagementService.get(
       apim.resourceGroup,
       apim.serviceName
@@ -178,13 +155,21 @@ export class ApimValidator {
     chai.assert.equal(apimManagementService?.sku.name, "Consumption");
   }
 
-  private static async validateApimOAuthServer(config: Config): Promise<void> {
-    const apim = this.getApimInfo(config);
-    chai.assert.isNotEmpty(config?.oAuthServerId);
+  private static async validateApimOAuthServer(
+    config: Config,
+    isArmSupportEnabled: boolean
+  ): Promise<void> {
+    const apim = this.getApimInfo(config, isArmSupportEnabled);
+
+    const oAuthServerId = isArmSupportEnabled
+      ? getAuthServiceNameFromResourceId(config?.authServerResourceId)
+      : config?.oAuthServerId;
+
+    chai.assert.isNotEmpty(oAuthServerId);
     const oAuthServer = await this.apimClient?.authorizationServer?.get(
       apim.resourceGroup,
       apim.serviceName,
-      config?.oAuthServerId
+      oAuthServerId
     );
     chai.assert.isNotEmpty(oAuthServer);
     chai.assert.isNotEmpty(oAuthServer?.displayName);
@@ -205,20 +190,30 @@ export class ApimValidator {
     );
   }
 
-  private static async validateProduct(config: Config): Promise<void> {
-    const apim = this.getApimInfo(config);
-    chai.assert.isNotEmpty(config?.productId);
+  private static async validateProduct(
+    config: Config,
+    isArmSupportEnabled: boolean
+  ): Promise<void> {
+    const apim = this.getApimInfo(config, isArmSupportEnabled);
+    const productId = isArmSupportEnabled
+      ? getproductNameFromResourceId(config?.productResourceId)
+      : config?.productId;
+
+    chai.assert.isNotEmpty(productId);
     const product = await this.apimClient?.product?.get(
       apim.resourceGroup,
       apim.serviceName,
-      config?.productId
+      productId
     );
     chai.assert.isNotEmpty(product);
     chai.assert.isFalse(product?.subscriptionRequired);
   }
 
-  private static async validateVersionSet(config: Config): Promise<void> {
-    const apim = this.getApimInfo(config);
+  private static async validateVersionSet(
+    config: Config,
+    isArmSupportEnabled: boolean
+  ): Promise<void> {
+    const apim = this.getApimInfo(config, isArmSupportEnabled);
     chai.assert.isNotEmpty(config?.versionSetId);
     const versionSet = await this.apimClient?.apiVersionSet?.get(
       apim.resourceGroup,
@@ -231,9 +226,10 @@ export class ApimValidator {
   private static async validateApi(
     config: Config,
     projectPath: string,
-    apiVersion: string
+    apiVersion: string,
+    isArmSupportEnabled: boolean
   ): Promise<any> {
-    const apim = this.getApimInfo(config);
+    const apim = this.getApimInfo(config, isArmSupportEnabled);
     const spec = await this.loadOpenApiSpec(config, projectPath);
 
     chai.assert.isNotEmpty(config?.apiPrefix);
@@ -246,10 +242,13 @@ export class ApimValidator {
     chai.assert.isNotEmpty(api);
     chai.assert.equal(api?.path, `${config?.apiPrefix}-${config?.resourceNameSuffix}`);
 
-    chai.assert.isNotEmpty(config?.oAuthServerId);
+    const oAuthServerId = isArmSupportEnabled
+      ? getAuthServiceNameFromResourceId(config?.authServerResourceId)
+      : config?.oAuthServerId;
+    chai.assert.isNotEmpty(oAuthServerId);
     chai.assert.equal(
       api?.authenticationSettings?.oAuth2?.authorizationServerId,
-      `${config?.oAuthServerId}`
+      `${oAuthServerId}`
     );
 
     chai.assert.isNotEmpty(config?.versionSetId);
@@ -264,16 +263,24 @@ export class ApimValidator {
     chai.assert.includeMembers(api?.protocols ?? [], ["https"]);
   }
 
-  private static async validateProductApi(config: Config, apiVersion: string): Promise<any> {
-    const apim = this.getApimInfo(config);
-    chai.assert.isNotEmpty(config?.productId);
+  private static async validateProductApi(
+    config: Config,
+    apiVersion: string,
+    isArmSupportEnabled: boolean
+  ): Promise<any> {
+    const apim = this.getApimInfo(config, isArmSupportEnabled);
     chai.assert.isNotEmpty(config?.apiPrefix);
     chai.assert.isNotEmpty(config?.resourceNameSuffix);
+    const productId = isArmSupportEnabled
+      ? getproductNameFromResourceId(config?.productResourceId)
+      : config?.productId;
+
+    chai.assert.isNotEmpty(productId);
 
     const productApi = await this.apimClient?.productApi.checkEntityExists(
       apim.resourceGroup,
       apim.serviceName,
-      config?.productId,
+      productId,
       `${config?.apiPrefix}-${config?.resourceNameSuffix}-${apiVersion}`
     );
     chai.assert.isNotEmpty(productApi);

@@ -13,6 +13,7 @@ import HelloWorldTab from "../../media/helloWorld-tab.gif";
 import HelloWorldTabWithBackend from "../../media/helloWorld-tab-with-backend.gif";
 import Watch from "../../media/watch.svg";
 import Settings from "../../media/settings.svg";
+import GraphToolkitContactExporter from "../../media/graph-toolkit-contact-exporter.gif";
 import { EventMessages } from "./messages";
 
 interface SampleInfo {
@@ -41,6 +42,7 @@ const imageMapping: { [p: string]: any } = {
   "NPM-search-connector-M365": NpmSearchConnectorM365,
   "hello-world-tab": HelloWorldTab,
   "hello-world-tab-with-backend": HelloWorldTabWithBackend,
+  "graph-toolkit-contact-exporter": GraphToolkitContactExporter,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

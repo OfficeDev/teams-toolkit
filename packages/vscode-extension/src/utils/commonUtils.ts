@@ -242,6 +242,10 @@ export function getConfiguration(key: string): boolean {
 }
 
 export function syncFeatureFlags() {
+  process.env["TEAMSFX_ROLLBACK_TO_TEAMS_TOOLKIT_V2"] = getConfiguration(
+    ConfigurationKey.RollbackToTeamsToolkitV2
+  ).toString();
+
   process.env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = getConfiguration(
     ConfigurationKey.BicepEnvCheckerEnable
   ).toString();
@@ -253,7 +257,7 @@ export function syncFeatureFlags() {
 
 export class FeatureFlags {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
-
+  static readonly RollbackToTeamsToolkitV2 = "TEAMSFX_ROLLBACK_TO_TEAMS_TOOLKIT_V2";
   static readonly TelemetryTest = "TEAMSFX_TELEMETRY_TEST";
 }
 

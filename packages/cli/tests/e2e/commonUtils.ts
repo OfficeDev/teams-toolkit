@@ -398,7 +398,7 @@ export async function loadContext(projectPath: string, env: string): Promise<Res
       if (matchResult) {
         const userdataKey = matchResult[1];
         if (userdataKey in userdata) {
-          context[component][key] = userdata[key];
+          context[component][key] = userdata[userdataKey];
         }
       }
     }

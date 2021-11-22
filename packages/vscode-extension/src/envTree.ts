@@ -322,7 +322,7 @@ async function CheckAccountForEnvrironment(env: string): Promise<accountStatus> 
   if (loginStatus.status == signedIn) {
     // Signed account doesn't match
     const m365TenantId = await getM365TenantFromEnv(env);
-    if ((loginStatus.accountInfo as any).tid !== m365TenantId) {
+    if (m365TenantId && (loginStatus.accountInfo as any).tid !== m365TenantId) {
       checkResult = false;
       warnings.push(StringResources.vsc.commandsTreeViewProvider.m365AccountNotMatch);
     }

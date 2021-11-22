@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "0.3.2",
+  "version": "0.4.0-rc.0",
   "description": "Microsoft Teams Framework for Node.js and browser.",
   "main": "dist/index.node.cjs.js",
   "browser": "dist/index.esm2017.js",
@@ -59,8 +59,8 @@
     "uuid": "^8.3.2"
   },
   "peerDependencies": {
-    "@microsoft/teams-js": "^1.9.0",
-    "@microsoft/microsoft-graph-client": "^3.0.0"
+    "@microsoft/microsoft-graph-client": "^3.0.0",
+    "@microsoft/teams-js": "^1.9.0"
   },
   "devDependencies": {
     "@azure/arm-sql": "^8.0.0",

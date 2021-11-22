@@ -42,11 +42,6 @@ jobs:
           command: |
             npm run setup
 
-      - name: E2E Test clean
-        working-directory: packages/cli
-        run: |
-          npm run test:e2e:clean
-
       - name: List cases for schedule
         id: schedule-cases
         if: ${{  github.event_name == 'schedule' }}
@@ -92,8 +87,13 @@ jobs:
             echo "::set-output name=cases::$prCases"
           fi
 
+      - name: E2E Test clean
+        working-directory: packages/cli
+        run: |
+          npm run test:e2e:clean
+
   execute-case:
-    if: ${{ always() }}
+    if: ${{ needs.setup.outputs.cases != "" }}
     env:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
       AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}

@@ -135,7 +135,7 @@ export function createV1CapabilityQuestion(): SingleSelectQuestion {
     name: AzureSolutionQuestionNames.V1Capability,
     title: "Select capability",
     type: "singleSelect",
-    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
+    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
     default: TabOptionItem.id,
     placeholder: "Select the same capability as your existing project",
     validation: { minItems: 1 },

@@ -25,22 +25,22 @@ import {
   Configuration,
 } from "../../../src";
 import { assert, use as chaiUse } from "chai";
-import chaiPromises from "chai-as-promised";
+import * as chaiPromises from "chai-as-promised";
 import {
   getSsoTokenFromTeams,
   MockEnvironmentVariable,
   RestoreEnvironmentVariable,
-} from "../../helper";
+} from "../helper";
 import { parseJwt } from "../../../src/util/utils";
-import sinon from "sinon";
+import * as sinon from "sinon";
 import { TeamsInfo } from "botbuilder";
 
 chaiUse(chaiPromises);
 let restore: () => void;
 
 describe("TeamsBotSsoPrompt Tests - Node", () => {
-  const clientId: string = process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID;
-  const tenantId: string = process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID;
+  const clientId: string = process.env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID!;
+  const tenantId: string = process.env.SDK_INTEGRATION_TEST_AAD_TENANT_ID!;
   const initiateLoginEndpoint = "fake_initiate_login_endpoint";
   const userPrincipalName = "fake_userPrincipalName";
 

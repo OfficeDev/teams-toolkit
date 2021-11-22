@@ -38,10 +38,10 @@ import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
   const sandbox = sinon.createSandbox();
   const EnvParams = [
-    { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "false" },
-    { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "true" },
-    { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "false" },
-    { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "true" },
+    { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "false" },
+    { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "true" },
+    { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "false" },
+    { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true" },
   ];
 
   afterEach(() => {
@@ -49,7 +49,7 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
   });
 
   for (const param of EnvParams) {
-    describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, async () => {
+    describe(`Multi-Env: ${param.__TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, async () => {
       let mockedEnvRestore: RestoreFn;
       beforeEach(() => {
         mockedEnvRestore = mockedEnv(param);
@@ -173,6 +173,8 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
         });
         sandbox.stub<any, any>(fs, "readFile").callsFake(async (file: string) => {
           if (userdataFile === file) return content;
+          if (envJsonFile === file) return fileMap.get(envJsonFile);
+          if (envConfigFile === file) return JSON.stringify(envInfoV1.config);
           return {};
         });
         const configsFolder = environmentManager.getEnvConfigsFolder(projectPath);

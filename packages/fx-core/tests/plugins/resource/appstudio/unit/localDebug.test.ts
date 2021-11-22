@@ -44,6 +44,7 @@ import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
+  LocalSettingsTeamsAppKeys,
 } from "../../../../../src/common/localSettingsConstants";
 import { getAzureProjectRoot } from "../helper";
 
@@ -123,6 +124,7 @@ describe("Post Local Debug", () => {
           [LocalSettingsFrontendKeys.TabEndpoint, localDebugTabEndpoint],
           [LocalSettingsFrontendKeys.TabDomain, localDebugTabDomain],
         ]),
+        teamsApp: new ConfigMap([[LocalSettingsTeamsAppKeys.TeamsAppId, uuid.v4()]]),
       };
     }
 
@@ -290,7 +292,7 @@ describe("Post Local Debug", () => {
 
   it("should return Ok for SPFx postLocalDebug happy path", async () => {
     ctx = {
-      root: getAzureProjectRoot(),
+      root: "./tests/plugins/resource/appstudio/spfx-resources/",
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),

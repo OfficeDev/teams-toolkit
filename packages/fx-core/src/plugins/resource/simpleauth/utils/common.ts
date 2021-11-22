@@ -12,8 +12,8 @@ import {
 } from "../errors";
 import { ResultFactory } from "../result";
 import { TelemetryUtils } from "./telemetry";
-import { getArmOutput } from "../../utils4v2";
-import { getTemplatesFolder, isArmSupportEnabled, isMultiEnvEnabled } from "../../../..";
+import { isMultiEnvEnabled } from "../../../../common/tools";
+import { getTemplatesFolder } from "../../../../folder";
 import got from "got";
 import {
   LocalSettingsAuthKeys,
@@ -85,12 +85,7 @@ export class Utils {
     const oauthAuthority = this.getOauthAuthority(ctx, isLocalDebug);
     const applicationIdUris = this.getApplicationIdUris(ctx, isLocalDebug);
 
-    let endpoint: string;
-    if (!isArmSupportEnabled() || isLocalDebug) {
-      endpoint = this.getFrontendEndpoint(ctx, isLocalDebug);
-    } else {
-      endpoint = getArmOutput(ctx, Constants.ArmOutput.frontendEndpoint) as string;
-    }
+    const endpoint = this.getFrontendEndpoint(ctx, isLocalDebug);
 
     const allowedAppIds = getAllowedAppIds().join(";");
     const aadMetadataAddress = `${oauthAuthority}/v2.0/.well-known/openid-configuration`;

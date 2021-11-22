@@ -45,6 +45,8 @@ export enum TelemetryEvent {
   ProjectMigratorMigrateMultiEnv = "project-migrator-migrate-multi-env",
   ProjectMigratorGuideStart = "project-migrator-guide-start",
   ProjectMigratorGuide = "project-migrator-guide",
+  ProjectMigratorPrecheckFailed = "project-migrator-pre-check-failed",
+  ProjectMigratorError = "project-migrator-error",
 }
 
 export enum TelemetrySuccess {

@@ -21,7 +21,7 @@ import {
 import Container from "typedi";
 import { getStrings } from "../../../../common";
 import { checkSubscription } from "../commonQuestions";
-import { CancelError, SolutionError, SolutionSource } from "../constants";
+import { SolutionError, SolutionSource, HelpLinks } from "../constants";
 import {
   addCapabilityQuestion,
   AskSubscriptionQuestion,
@@ -47,12 +47,7 @@ import {
   getAllV2ResourcePlugins,
   ResourcePluginsV2,
 } from "../ResourcePluginContainer";
-import {
-  blockV1Project,
-  checkWetherProvisionSucceeded,
-  getSelectedPlugins,
-  isAzureProject,
-} from "./utils";
+import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -191,10 +186,6 @@ export async function getQuestions(
     node.addChild(capNode);
   } else if (stage === Stage.provision) {
     if (isDynamicQuestion) {
-      const v1Blocked = blockV1Project(solutionSettings);
-      if (v1Blocked.isErr()) {
-        return err(v1Blocked.error);
-      }
       const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (provisioned) return ok(undefined);
     }
@@ -217,10 +208,6 @@ export async function getQuestions(
     }
   } else if (stage === Stage.deploy) {
     if (isDynamicQuestion) {
-      const v1Blocked = blockV1Project(solutionSettings);
-      if (v1Blocked.isErr()) {
-        return err(v1Blocked.error);
-      }
       const isAzure = isAzureProject(solutionSettings);
       const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (isAzure && !provisioned) {
@@ -228,7 +215,8 @@ export async function getQuestions(
           returnUserError(
             new Error(getStrings().solution.FailedToDeployBeforeProvision),
             SolutionSource,
-            SolutionError.CannotDeployBeforeProvision
+            SolutionError.CannotDeployBeforeProvision,
+            HelpLinks.WhyNeedProvision
           )
         );
       }
@@ -278,20 +266,18 @@ export async function getQuestions(
     }
   } else if (stage === Stage.publish) {
     if (isDynamicQuestion) {
-      const v1Blocked = blockV1Project(solutionSettings);
-      if (v1Blocked.isErr()) {
-        return err(v1Blocked.error);
-      }
       const isAzure = isAzureProject(solutionSettings);
       const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (!provisioned) {
+        const errorMsg = isAzure
+          ? getStrings().solution.FailedToPublishBeforeProvision
+          : getStrings().solution.SPFxAskProvisionBeforePublish;
         return err(
-          new UserError(
+          returnUserError(
+            new Error(errorMsg),
+            SolutionSource,
             SolutionError.CannotPublishBeforeProvision,
-            isAzure
-              ? getStrings().solution.FailedToPublishBeforeProvision
-              : getStrings().solution.SPFxAskProvisionBeforePublish,
-            SolutionSource
+            HelpLinks.WhyNeedProvision
           )
         );
       }
@@ -350,10 +336,6 @@ export async function getQuestionsForAddCapability(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-  const v1Blocked = blockV1Project(settings);
-  if (v1Blocked.isErr()) {
-    return err(v1Blocked.error);
-  }
 
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   if (!(settings.hostType === HostTypeOptionAzure.id) && isDynamicQuestion) {
@@ -405,10 +387,6 @@ export async function getQuestionsForAddResource(
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-  const v1Blocked = blockV1Project(settings);
-  if (v1Blocked.isErr()) {
-    return err(v1Blocked.error);
-  }
 
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
 

@@ -30,15 +30,11 @@ import {
   ResourceTemplate,
   SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
-import { CryptoDataMatchers, mapToJson } from "../../common";
+import { CryptoDataMatchers, mapToJson } from "../../common/tools";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
-import {
-  InvalidStateError,
-  newEnvInfo,
-  NoProjectOpenedError,
-  PluginHasNoTaskImpl,
-} from "../../core";
-import { ARM_TEMPLATE_OUTPUT, GLOBAL_CONFIG } from "../solution/fx-solution/constants";
+import { InvalidStateError, NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core/error";
+import { newEnvInfo } from "../../core/tools";
+import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
 
 export function convert2PluginContext(
   pluginName: string,
@@ -364,14 +360,6 @@ export async function getQuestionsForUserTaskAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   return await plugin.getQuestionsForUserTask(func, pluginContext);
-}
-export function getArmOutput(ctx: PluginContext, key: string): string | undefined {
-  const solutionConfig = ctx.envInfo.state.get("solution");
-  const output = solutionConfig?.get(ARM_TEMPLATE_OUTPUT);
-  if (output instanceof Map) {
-    return output?.get(key)?.get("value");
-  }
-  return output?.[key]?.value;
 }
 
 export function setStateV2ByConfigMapInc(pluginName: string, state: Json, config: ConfigMap): void {

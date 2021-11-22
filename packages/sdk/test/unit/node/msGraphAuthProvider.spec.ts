@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { expect, use as chaiUse } from "chai";
-import chaiPromises from "chai-as-promised";
+import * as chaiPromises from "chai-as-promised";
 import mockedEnv from "mocked-env";
 import {
   loadConfiguration,
@@ -12,8 +12,8 @@ import {
   ErrorWithCode,
   ErrorCode,
 } from "../../../src";
-import sinon from "sinon";
-import { AccessToken } from "@azure/core-http";
+import * as sinon from "sinon";
+import { AccessToken } from "@azure/core-auth";
 
 chaiUse(chaiPromises);
 let mockedEnvRestore: () => void;

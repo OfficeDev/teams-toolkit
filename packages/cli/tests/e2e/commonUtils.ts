@@ -11,7 +11,6 @@ import {
   Result,
   ok,
 } from "@microsoft/teamsfx-api";
-import { deserializeDict } from "@microsoft/teamsfx-core";
 import { exec } from "child_process";
 import fs from "fs-extra";
 import os from "os";
@@ -19,8 +18,13 @@ import path from "path";
 import { promisify } from "util";
 import { v4 as uuidv4 } from "uuid";
 import { sleep } from "../../src/utils";
-
-import { cfg, AadManager, ResourceGroupManager } from "../commonlib";
+import * as dotenv from "dotenv";
+import {
+  cfg,
+  AadManager,
+  ResourceGroupManager,
+  SharepointValidator as SharepointManager,
+} from "../commonlib";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
 export const execAsync = promisify(exec);
@@ -117,7 +121,7 @@ export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string, envName
   );
   const parametersFilePath = path.resolve(projectPath, bicepParameterFile);
   const parameters = await fs.readJSON(parametersFilePath);
-  parameters["parameters"]["simpleAuth_sku"] = { value: "B1" };
+  parameters["parameters"]["provisionParameters"]["value"]["simpleAuthSku"] = "B1";
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
 }
 
@@ -126,6 +130,20 @@ export async function setBotSkuNameToB1(projectPath: string) {
   const context = await fs.readJSON(envFilePath);
   context[botPluginName]["skuName"] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
+}
+
+export async function cleanupSharePointPackage(appId: string) {
+  if (appId) {
+    try {
+      SharepointManager.init();
+      await SharepointManager.deleteApp(appId);
+      console.log(`[Successfully] clean up sharepoint package ${appId}`);
+    } catch (error) {
+      console.log(`[Failed] clean up sharepoint package ${appId}, Error: ${error.message}`);
+    }
+  } else {
+    console.log(`[Failed] sharepoint appId is undefined, will not clean up this resource.`);
+  }
 }
 
 export async function cleanUpAadApp(
@@ -286,7 +304,7 @@ export async function readContext(projectPath: string): Promise<any> {
   let userData: Record<string, string> = {};
   if (await fs.pathExists(userDataFilePath)) {
     const dictContent = await fs.readFile(userDataFilePath, "UTF-8");
-    userData = deserializeDict(dictContent);
+    userData = dotenv.parse(dictContent);
   }
 
   // Read from userdata.
@@ -306,7 +324,7 @@ export async function readContext(projectPath: string): Promise<any> {
 export function mockTeamsfxMultiEnvFeatureFlag() {
   const env = Object.assign({}, process.env);
   env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = "true";
-  env["TEAMSFX_INSIDER_PREVIEW"] = "true";
+  env["__TEAMSFX_INSIDER_PREVIEW"] = "true";
   return env;
 }
 
@@ -329,7 +347,7 @@ export async function loadContext(projectPath: string, env: string): Promise<Res
     path.join(projectPath, `.${ConfigFolderName}`, StatesFolderName, `${env}.userdata`),
     "utf8"
   );
-  const userdata = deserializeDict(userdataContent);
+  const userdata = dotenv.parse(userdataContent);
 
   const regex = /\{\{([^{}]+)\}\}/;
   for (const component in context) {
@@ -338,7 +356,7 @@ export async function loadContext(projectPath: string, env: string): Promise<Res
       if (matchResult) {
         const userdataKey = matchResult[1];
         if (userdataKey in userdata) {
-          context[component][key] = userdata[key];
+          context[component][key] = userdata[userdataKey];
         }
       }
     }

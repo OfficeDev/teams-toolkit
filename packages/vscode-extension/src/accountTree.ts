@@ -29,6 +29,7 @@ import * as util from "util";
 import * as StringResources from "./resources/Strings.json";
 import { StringContext } from "./utils/stringContext";
 import { registerEnvTreeHandler } from "./envTree";
+import { TreeViewCommand } from "./treeview/commandsTreeViewProvider";
 
 export async function getSubscriptionId(): Promise<string | undefined> {
   const subscriptionInfo = await AzureAccountManager.getSelectedSubscription();
@@ -121,8 +122,22 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       // show nothing if internal error (TODO: may add back if full status is required later)
       return [];
     } else if (isSideloadingAllowed === true) {
-      // show nothing if status is good (TODO: may add back if full status is required later)
-      return [];
+      return [
+        {
+          commandId: "fx-extension.checkSideloading",
+          label: StringResources.vsc.accountTree.sideloadingPass,
+          callback: () => {
+            return Promise.resolve(ok(null));
+          },
+          parent: "fx-extension.signinM365",
+          contextValue: "checkSideloading",
+          icon: "pass",
+          tooltip: {
+            isMarkdown: false,
+            value: StringResources.vsc.accountTree.sideloadingPassTooltip,
+          },
+        },
+      ];
     } else {
       showSideloadingWarning();
       return [
@@ -138,7 +153,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           icon: "warning",
           tooltip: {
             isMarkdown: false,
-            value: StringResources.vsc.accountTree.sideloadingTooltip,
+            value: StringResources.vsc.accountTree.sideloadingWarningTooltip,
           },
         },
       ];
@@ -183,6 +198,11 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   };
 
   const signinM365Callback = async (args?: any[]): Promise<Result<null, FxError>> => {
+    if (args && args.length > 1) {
+      const command: TreeViewCommand = args[1];
+      if (command && command.contextValue === "signedinM365") return ok(null);
+    }
+
     tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginClick, {
       [TelemetryProperty.TriggerFrom]:
         args && args.length > 0 ? TelemetryTiggerFrom.TreeView : TelemetryTiggerFrom.CommandPalette,
@@ -208,6 +228,11 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
   };
 
   const signinAzureCallback = async (args?: any[]): Promise<Result<null, FxError>> => {
+    if (args && args.length > 1) {
+      const command: TreeViewCommand = args[1];
+      if (command && command.contextValue === "signedinAzure") return ok(null);
+    }
+
     if (AzureAccountManager.getAccountInfo() === undefined) {
       tools.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.LoginClick, {
         [TelemetryProperty.TriggerFrom]:
@@ -455,12 +480,19 @@ function showSideloadingWarning() {
     "warn",
     StringResources.vsc.accountTree.sideloadingMessage,
     false,
+    StringResources.vsc.accountTree.sideloadingJoinM365,
     StringResources.vsc.common.readMore
   )
     .then(async (result) => {
       if (result.isOk() && result.value === StringResources.vsc.common.readMore) {
         await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingReadmore);
+      } else if (
+        result.isOk() &&
+        result.value === StringResources.vsc.accountTree.sideloadingJoinM365
+      ) {
+        await VS_CODE_UI.openUrl("https://developer.microsoft.com/microsoft-365/dev-program");
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingJoinM365);
       }
     })
     .catch((error) => {});

@@ -48,7 +48,7 @@ import {
   NgrokTunnelNotConnected,
   InvalidLocalBotEndpointFormat,
 } from "./util/error";
-import { prepareLocalAuthService } from "./util/localService";
+import { getAuthServiceFolder, prepareLocalAuthService } from "./util/localService";
 import { getNgrokHttpUrl } from "./util/ngrok";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
@@ -426,6 +426,10 @@ export class LocalDebugPlugin implements Plugin {
         LocalSettingsBackendKeys.FunctionEndpoint
       ) as string;
 
+      const localAuthPackagePath = ctx.localSettings?.auth?.get(
+        LocalSettingsAuthKeys.SimpleAuthFilePath
+      ) as string;
+
       if (includeFrontend) {
         if (includeAuth) {
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
@@ -433,6 +437,7 @@ export class LocalDebugPlugin implements Plugin {
             EnvKeysFrontend.LoginUrl
           ] = `${localTabEndpoint}/auth-start.html`;
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.ClientId] = clientId;
+          await prepareLocalAuthService(localAuthPackagePath);
         }
 
         if (includeBackend) {
@@ -511,6 +516,7 @@ export class LocalDebugPlugin implements Plugin {
     return ok(undefined);
   }
 
+  // Note: this may be called before `localDebug` so do not throw if any value is missing
   public async getLocalDebugEnvs(ctx: PluginContext): Promise<Record<string, string>> {
     const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
     const includeBackend = ProjectSettingLoader.includeBackend(ctx);
@@ -526,9 +532,6 @@ export class LocalDebugPlugin implements Plugin {
       LocalSettingsTeamsAppKeys.TenantId
     ) as string;
 
-    const localAuthPackagePath = ctx.localSettings?.auth?.get(
-      LocalSettingsAuthKeys.SimpleAuthFilePath
-    ) as string;
     const localAuthEndpoint = ctx.localSettings?.auth?.get(
       LocalSettingsAuthKeys.SimpleAuthServiceEndpoint
     ) as string;
@@ -567,12 +570,7 @@ export class LocalDebugPlugin implements Plugin {
         ] = `https://login.microsoftonline.com/${teamsAppTenantId}`;
         localEnvs[LocalEnvAuthKeys.TabEndpoint] = localTabEndpoint;
         localEnvs[LocalEnvAuthKeys.AllowedAppIds] = getAllowedAppIds().join(";");
-
-        if (localAuthPackagePath) {
-          localEnvs[LocalEnvAuthKeys.ServicePath] = await prepareLocalAuthService(
-            localAuthPackagePath
-          );
-        }
+        localEnvs[LocalEnvAuthKeys.ServicePath] = getAuthServiceFolder();
       }
 
       if (includeBackend) {
@@ -628,6 +626,28 @@ export class LocalDebugPlugin implements Plugin {
       if (includeBackend) {
         localEnvs[LocalEnvBackendKeys.ApiEndpoint] = localFuncEndpoint;
       }
+    }
+
+    // TODO: This is to load .env.teamsfx.local for each component. Remove this after fully supporting custom local debug.
+    try {
+      const localEnvMultiProvider = new LocalEnvMultiProvider(ctx.root);
+      if (includeFrontend) {
+        const customEnvs = (
+          await localEnvMultiProvider.loadFrontendLocalEnvs(includeBackend, includeAuth)
+        ).customizedLocalEnvs;
+        this.appendEnvWithPrefix(customEnvs, localEnvs, "FRONTEND_");
+      }
+      if (includeBackend) {
+        const customEnvs = (await localEnvMultiProvider.loadBackendLocalEnvs()).customizedLocalEnvs;
+        this.appendEnvWithPrefix(customEnvs, localEnvs, "BACKEND_");
+      }
+      if (includeBot) {
+        const customEnvs = (await localEnvMultiProvider.loadBotLocalEnvs(false))
+          .customizedLocalEnvs;
+        this.appendEnvWithPrefix(customEnvs, localEnvs, "BOT_");
+      }
+    } catch (error) {
+      ctx.logProvider?.error(`Cannot load .env.teamsfx.local. ${error}`);
     }
 
     return localEnvs;
@@ -692,6 +712,20 @@ export class LocalDebugPlugin implements Plugin {
       // Initialize a local settings on scaffolding
       ctx.localSettings = localSettingsProvider.init(includeFrontend, includeBackend, includeBot);
       await localSettingsProvider.save(ctx.localSettings);
+    }
+  }
+
+  appendEnvWithPrefix(
+    source: { [key: string]: string },
+    target: { [key: string]: string },
+    prefix: string
+  ) {
+    for (const key of Object.keys(source)) {
+      const prefixKey = `${prefix}${key}`;
+      if (target[prefixKey] === undefined || target[prefixKey] === "") {
+        // only append and do not override
+        target[prefixKey] = source[key];
+      }
     }
   }
 }

@@ -93,13 +93,13 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
     sandbox.restore();
   });
   const EnvParams = [
-    { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "false" },
-    { TEAMSFX_APIV2: "false", TEAMSFX_INSIDER_PREVIEW: "true" },
-    { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "false" },
-    { TEAMSFX_APIV2: "true", TEAMSFX_INSIDER_PREVIEW: "true" },
+    { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "false" },
+    { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "true" },
+    { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "false" },
+    { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true" },
   ];
   for (const param of EnvParams) {
-    describe(`Multi-Env: ${param.TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
+    describe(`Multi-Env: ${param.__TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
       let mockedEnvRestore: RestoreFn;
       beforeEach(() => {
         mockedEnvRestore = mockedEnv(param);

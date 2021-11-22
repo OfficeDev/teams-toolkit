@@ -2,9 +2,9 @@
 // Licensed under the MIT license.
 import * as msal from "@azure/msal-node";
 import mockedEnv from "mocked-env";
-import urljoin from "url-join";
 import { JwtPayload } from "jwt-decode";
 import * as dotenv from "dotenv";
+const urljoin = require("url-join");
 
 /**
  * Get Access Token from a specific AAD app client id.
@@ -94,7 +94,7 @@ export function MockEnvironmentVariable(): () => void {
     M365_AUTHORITY_HOST: process.env.SDK_INTEGRATION_TEST_AAD_AUTHORITY_HOST,
 
     SQL_ENDPOINT: process.env.SDK_INTEGRATION_SQL_ENDPOINT,
-    SQL_DATABASE: process.env.SDK_INTEGRATION_SQL_DATABASE_NAME,
+    SQL_DATABASE_NAME: process.env.SDK_INTEGRATION_SQL_DATABASE_NAME,
     SQL_USER_NAME: process.env.SDK_INTEGRATION_SQL_USER_NAME,
     SQL_PASSWORD: process.env.SDK_INTEGRATION_SQL_PASSWORD,
   });

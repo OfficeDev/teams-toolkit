@@ -19,7 +19,7 @@ import {
   Json,
 } from "@microsoft/teamsfx-api";
 import { getStrings, isArmSupportEnabled } from "../../../../common/tools";
-import { blockV1Project, getAzureSolutionSettings, reloadV2Plugins } from "./utils";
+import { getAzureSolutionSettings, reloadV2Plugins } from "./utils";
 import {
   SolutionError,
   SolutionTelemetryComponentName,
@@ -54,10 +54,6 @@ export async function executeUserTask(
   envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
 ): Promise<Result<unknown, FxError>> {
-  const blockResult = blockV1Project(ctx.projectSetting.solutionSettings);
-  if (blockResult.isErr()) {
-    return err(blockResult.error);
-  }
   const namespace = func.namespace;
   const method = func.method;
   const array = namespace.split("/");
@@ -223,14 +219,17 @@ export async function addCapability(
     return ok({});
   }
 
-  if (
+  const alreadyHaveBotAndAddBot =
     (settings.capabilities?.includes(BotOptionItem.id) ||
       settings.capabilities?.includes(MessageExtensionItem.id)) &&
     (capabilitiesAnswer.includes(BotOptionItem.id) ||
-      capabilitiesAnswer.includes(MessageExtensionItem.id))
-  ) {
+      capabilitiesAnswer.includes(MessageExtensionItem.id));
+  const alreadyHaveTabAndAddTab =
+    settings.capabilities?.includes(TabOptionItem.id) &&
+    capabilitiesAnswer.includes(TabOptionItem.id);
+  if (alreadyHaveBotAndAddBot || alreadyHaveTabAndAddTab) {
     const e = returnUserError(
-      new Error("Application already contains a Bot and/or Messaging Extension"),
+      new Error("There are no additional capabilities you can add to your project."),
       SolutionSource,
       SolutionError.FailedToAddCapability
     );
@@ -243,7 +242,6 @@ export async function addCapability(
     );
   }
   let change = false;
-  const notifications: string[] = [];
   const localDebugPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.LocalDebugPlugin);
   const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
   const frontendPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
@@ -255,13 +253,14 @@ export async function addCapability(
       capabilities.push(cap);
       change = true;
       if (cap === TabOptionItem.id) {
-        notifications.push("Azure Tab Frontend");
         pluginsToScaffold.push(frontendPlugin);
+        pluginsToScaffold.push(
+          Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SimpleAuthPlugin)
+        );
       } else if (
         (cap === BotOptionItem.id || cap === MessageExtensionItem.id) &&
         !pluginsToScaffold.includes(botPlugin)
       ) {
-        notifications.push("Bot/MessageExtension");
         pluginsToScaffold.push(botPlugin);
       }
     }
@@ -269,14 +268,12 @@ export async function addCapability(
 
   if (change) {
     if (isArmSupportEnabled()) {
-      const confirmed = await confirmRegenerateArmTemplate(ctx.userInteraction);
-      if (!confirmed) {
-        return ok({});
-      }
+      showUpdateArmTemplateNotice(ctx.userInteraction);
     }
     settings.capabilities = capabilities;
     reloadV2Plugins(settings);
-    ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
+    const pluginNames = pluginsToScaffold.map((p) => p.name).join(",");
+    ctx.logProvider?.info(`start scaffolding ${pluginNames}.....`);
     const scaffoldRes = await scaffoldCodeAndResourceTemplate(
       ctx,
       inputs,
@@ -285,7 +282,7 @@ export async function addCapability(
       true
     );
     if (scaffoldRes.isErr()) {
-      ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
+      ctx.logProvider?.info(`failed to scaffold ${pluginNames}!`);
       ctx.projectSetting.solutionSettings = originalSettings;
       return err(
         sendErrorTelemetryThenReturnError(
@@ -295,13 +292,18 @@ export async function addCapability(
         )
       );
     }
-    ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
-    const msg = util.format(
+    ctx.logProvider?.info(`finish scaffolding ${pluginNames}!`);
+    const addNames = capabilitiesAnswer.map((c) => `'${c}'`).join(" and ");
+    const single = capabilitiesAnswer.length === 1;
+    const template =
       inputs.platform === Platform.CLI
-        ? getStrings().solution.AddCapabilityNoticeForCli
-        : getStrings().solution.AddCapabilityNotice,
-      notifications.join(",")
-    );
+        ? single
+          ? getStrings().solution.AddCapabilityNoticeForCli
+          : getStrings().solution.AddCapabilitiesNoticeForCli
+        : single
+        ? getStrings().solution.AddCapabilityNotice
+        : getStrings().solution.AddCapabilitiesNotice;
+    const msg = util.format(template, addNames);
     ctx.userInteraction.showMessage("info", msg, false);
 
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
@@ -321,14 +323,9 @@ export async function addCapability(
   return ok({});
 }
 
-export async function confirmRegenerateArmTemplate(ui?: UserInteraction): Promise<boolean> {
-  const msg: string = util.format(getStrings().solution.RegenerateArmTemplateConfirmNotice);
-  const okItem = "Ok";
-  const confirmRes = await ui?.showMessage("warn", msg, true, okItem);
-
-  const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
-
-  return confirm === okItem;
+export function showUpdateArmTemplateNotice(ui?: UserInteraction) {
+  const msg: string = util.format(getStrings().solution.UpdateArmTemplateNotice);
+  ui?.showMessage("info", msg, false);
 }
 
 async function scaffoldCodeAndResourceTemplate(
@@ -438,10 +435,7 @@ export async function addResource(
 
   if (notifications.length > 0) {
     if (isArmSupportEnabled() && addNewResoruceToProvision) {
-      const confirmed = await confirmRegenerateArmTemplate(ctx.userInteraction);
-      if (!confirmed) {
-        return ok(Void);
-      }
+      showUpdateArmTemplateNotice(ctx.userInteraction);
     }
     settings.azureResources = azureResource;
     reloadV2Plugins(settings);

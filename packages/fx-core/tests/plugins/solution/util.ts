@@ -40,6 +40,7 @@ import {
   SharepointTokenProvider,
 } from "@microsoft/teamsfx-api";
 import { MockPermissionRequestProvider } from "../../core/utils";
+import { ArmTemplateResult } from "../../../src/common/armInterface";
 
 export const validManifest = {
   $schema:
@@ -105,63 +106,82 @@ export function mockExecuteUserTaskThatAlwaysSucceeds(plugin: v2.ResourcePlugin)
   };
 }
 
-export const mockedFehostScaffoldArmResult = {
-  Modules: {
-    frontendHostingProvision: {
-      Content: "Mocked frontend hosting provision module content",
-    },
-  },
-  Orchestration: {
-    ParameterTemplate: {
-      Content: "Mocked frontend hosting parameter content",
-      ParameterJson: { FrontendParameter: "FrontendParameterValue" },
-    },
-    VariableTemplate: {
-      Content: "Mocked frontend hosting variable content",
-    },
-    ModuleTemplate: {
-      Content:
+export function mockedFehostScaffoldArmResult(): ArmTemplateResult {
+  const res: ArmTemplateResult = {
+    Provision: {
+      Orchestration:
         "Mocked frontend hosting module content. Module path: {{PluginOutput.fx-resource-frontend-hosting.Modules.frontendHostingProvision.Path}}. Variable: {{PluginOutput.fx-resource-simple-auth.Outputs.endpoint}}",
-      Outputs: {
-        endpoint: "Mocked frontend hosting endpoint",
+      Modules: {
+        frontendHostingProvision: "Mocked frontend hosting provision module content",
       },
     },
-    OutputTemplate: {
-      Content: "Mocked frontend hosting output content",
+    Configuration: {
+      Orchestration: "",
     },
-  },
-};
+    Parameters: {
+      FrontendParameter: "FrontendParameterValue",
+    },
+  };
+  return res;
+}
 
-export const mockedSimpleAuthScaffoldArmResult = {
-  Modules: {
-    simpleAuthProvision: {
-      Content: "Mocked simple auth provision module content",
-    },
-  },
-  Orchestration: {
-    ParameterTemplate: {
-      Content: "Mocked simple auth parameter content",
-      ParameterJson: { SimpleAuthParameter: "SimpleAuthParameterValue" },
-    },
-    VariableTemplate: {
-      Content: "Mocked simple auth variable content",
-    },
-    ModuleTemplate: {
-      Content:
+export function mockedSimpleAuthScaffoldArmResult(): ArmTemplateResult {
+  const res: ArmTemplateResult = {
+    Provision: {
+      Orchestration:
         "Mocked simple auth module content. Module path: {{PluginOutput.fx-resource-simple-auth.Modules.simpleAuthProvision.Path}}. Variable: {{PluginOutput.fx-resource-frontend-hosting.Outputs.endpoint}}",
-      Outputs: {
+      Modules: {
+        simpleAuthProvision: "Mocked simple auth provision module content",
+      },
+      Reference: {
         endpoint: "Mocked simple auth endpoint",
       },
     },
-    OutputTemplate: {
-      Content: "Mocked simple auth output content",
+    Configuration: {
+      Orchestration: "",
     },
-  },
-};
+    Parameters: {
+      SimpleAuthParameter: "SimpleAuthParameterValue",
+    },
+  };
+  return res;
+}
 
-export const mockedAadScaffoldArmResult = {
-  Orchestration: {},
-};
+export function mockedAadScaffoldArmResult(): ArmTemplateResult {
+  const res: ArmTemplateResult = {
+    Provision: {
+      Orchestration: "",
+    },
+    Configuration: {
+      Orchestration: "",
+    },
+  };
+  return res;
+}
+
+export function mockedBotArmTemplateResultFunc(): ArmTemplateResult {
+  const res: ArmTemplateResult = {
+    Provision: {
+      Orchestration: "Bot Provision module content content and outputs",
+      Modules: {
+        bot: "Mocked bot Provision content. simple auth endpoint: {{PluginOutput.fx-resource-simple-auth.References.endpoint}}",
+      },
+      Reference: {
+        URI: "Mocked bot URL",
+      },
+    },
+    Configuration: {
+      Orchestration: "Bot Configuration module content and outputs",
+      Modules: {
+        bot: "Mocked bot Configuration content, Module path: {{PluginOutput.fx-resource-simple-auth.Configuration.bot.ConfigPath}}",
+      },
+    },
+    Parameters: {
+      BotParameter: "BotParameterValue",
+    },
+  };
+  return res;
+}
 
 export class MockedLogProvider implements LogProvider {
   async info(message: { content: string; color: Colors }[] | string | any): Promise<boolean> {

@@ -340,6 +340,12 @@ export class MigrateV1ProjectError extends FrontendPluginError {
   }
 }
 
+export class NotImplemented extends FrontendPluginError {
+  constructor() {
+    super(ErrorType.System, "NotImplemented", "Not Implemented", []);
+  }
+}
+
 export class UserTaskNotImplementedError extends FrontendPluginError {
   constructor(taskName: string) {
     super(

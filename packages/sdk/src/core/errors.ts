@@ -111,7 +111,7 @@ export class ErrorWithCode extends Error {
   constructor(message?: string, code?: ErrorCode) {
     if (!code) {
       super(message);
-      return;
+      return this;
     }
 
     super(message);

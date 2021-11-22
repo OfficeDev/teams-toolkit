@@ -58,6 +58,7 @@ import {
 import {
   deepCopy,
   getHashedEnv,
+  getResourceGroupInPortal,
   getStrings,
   isArmSupportEnabled,
   isCheckAccountError,
@@ -79,7 +80,6 @@ import {
 } from "./arm";
 import { checkM365Tenant, checkSubscription, fillInCommonQuestions } from "./commonQuestions";
 import {
-  ARM_TEMPLATE_OUTPUT,
   DEFAULT_PERMISSION_REQUEST,
   GLOBAL_CONFIG,
   LOCAL_APPLICATION_ID_URIS,
@@ -100,6 +100,7 @@ import {
   SOLUTION_PROVISION_SUCCEEDED,
   Void,
   SolutionSource,
+  RESOURCE_GROUP_NAME,
 } from "./constants";
 import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
 import {
@@ -115,13 +116,12 @@ import {
   createCapabilityQuestion,
   createV1CapabilityQuestion,
   DeployPluginSelectQuestion,
-  FrontendHostTypeQuestion,
   HostTypeOptionAzure,
-  HostTypeOptionSPFx,
   MessageExtensionItem,
   ProgrammingLanguageQuestion,
   TabOptionItem,
   GetUserEmailQuestion,
+  TabSPFxItem,
 } from "./question";
 import {
   getActivatedResourcePlugins,
@@ -133,12 +133,11 @@ import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/uti
 import {
   canAddCapability,
   canAddResource,
-  confirmRegenerateArmTemplate,
+  showUpdateArmTemplateNotice,
   extractParamForRegisterTeamsAppAndAad,
   ParamForRegisterTeamsAppAndAad,
 } from "./v2/executeUserTask";
 import {
-  blockV1Project,
   isAzureProject,
   ensurePermissionRequest,
   parseTeamsAppTenantId,
@@ -150,6 +149,7 @@ import { scaffoldReadme } from "./v2/scaffolding";
 import { environmentManager } from "../../..";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { LOCAL_TENANT_ID } from ".";
+import { HelpLinks } from "./constants";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -373,7 +373,6 @@ export class TeamsAppSolution implements Solution {
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
     });
 
-    ctx.ui?.showMessage("info", `Success: ${getStrings().solution.MigrateSuccessNotice}`, false);
     return ok(Void);
   }
 
@@ -398,10 +397,6 @@ export class TeamsAppSolution implements Solution {
   }
 
   async update(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-    if (v1Blocked.isErr()) {
-      return v1Blocked;
-    }
     return await this.executeAddResource(ctx);
   }
 
@@ -460,7 +455,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     if (isArmSupportEnabled() && generateResourceTemplate && this.isAzureProject(ctx)) {
-      return await generateArmTemplate(ctx);
+      return await generateArmTemplate(ctx, selectedPlugins);
     } else {
       return res;
     }
@@ -530,11 +525,6 @@ export class TeamsAppSolution implements Solution {
    */
   @hooks([ErrorHandlerMW])
   async provision(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-    if (v1Blocked.isErr()) {
-      return v1Blocked;
-    }
-
     const canProvision = this.checkWhetherSolutionIsIdle();
     if (canProvision.isErr()) {
       return canProvision;
@@ -563,12 +553,23 @@ export class TeamsAppSolution implements Solution {
 
       const provisionResult = await this.doProvision(ctx);
       if (provisionResult.isOk()) {
+        const url = getResourceGroupInPortal(ctx);
         const msg = util.format(
           `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
           ctx.projectSettings?.appName
         );
         ctx.logProvider?.info(msg);
-        ctx.ui?.showMessage("info", msg, false);
+        if (url) {
+          const title = "View Provisioned Resources";
+          ctx.ui?.showMessage("info", msg, false, title).then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === title) {
+              ctx.ui!.openUrl(url!);
+            }
+          });
+        } else {
+          ctx.ui?.showMessage("info", msg, false);
+        }
         ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
       } else {
         if (
@@ -701,7 +702,6 @@ export class TeamsAppSolution implements Solution {
         return ok(undefined);
       },
       async () => {
-        ctx.envInfo.state.get(GLOBAL_CONFIG)?.delete(ARM_TEMPLATE_OUTPUT);
         ctx.logProvider?.info(
           util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
         );
@@ -712,11 +712,6 @@ export class TeamsAppSolution implements Solution {
 
   @hooks([ErrorHandlerMW])
   async deploy(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-    if (v1Blocked.isErr()) {
-      return v1Blocked;
-    }
-
     const isAzureProject = this.isAzureProject(ctx);
     const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
     if (isAzureProject && !provisioned) {
@@ -834,11 +829,6 @@ export class TeamsAppSolution implements Solution {
   }
   @hooks([ErrorHandlerMW])
   async publish(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-    if (v1Blocked.isErr()) {
-      return v1Blocked;
-    }
-
     const checkRes = this.checkWhetherSolutionIsIdle();
     if (checkRes.isErr()) return err(checkRes.error);
     const isAzureProject = this.isAzureProject(ctx);
@@ -965,9 +955,9 @@ export class TeamsAppSolution implements Solution {
       node.addChild(capNode);
 
       // 1.1 hostType
-      const hostTypeNode = new QTreeNode(FrontendHostTypeQuestion);
-      hostTypeNode.condition = { contains: TabOptionItem.id };
-      capNode.addChild(hostTypeNode);
+      //const hostTypeNode = new QTreeNode(FrontendHostTypeQuestion);
+      //hostTypeNode.condition = { contains: TabOptionItem.id };
+      //capNode.addChild(hostTypeNode);
 
       // 1.1.1 SPFX Tab
       const spfxPlugin: Plugin = new SpfxPlugin();
@@ -977,8 +967,8 @@ export class TeamsAppSolution implements Solution {
         if (res.isErr()) return res;
         if (res.value) {
           const spfxNode = res.value as QTreeNode;
-          spfxNode.condition = { equals: HostTypeOptionSPFx.id };
-          if (spfxNode.data) hostTypeNode.addChild(spfxNode);
+          spfxNode.condition = { contains: TabSPFxItem.id };
+          if (spfxNode.data) capNode.addChild(spfxNode);
         }
       }
 
@@ -990,8 +980,8 @@ export class TeamsAppSolution implements Solution {
       if (tabRes.isErr()) return tabRes;
       if (tabRes.value) {
         const tabNode = tabRes.value;
-        tabNode.condition = { equals: HostTypeOptionAzure.id };
-        hostTypeNode.addChild(tabNode);
+        tabNode.condition = { contains: TabOptionItem.id };
+        capNode.addChild(tabNode);
       }
 
       // 1.2 Bot
@@ -1017,10 +1007,6 @@ export class TeamsAppSolution implements Solution {
       node.addChild(capNode);
     } else if (stage === Stage.provision) {
       if (isDynamicQuestion) {
-        const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-        if (v1Blocked.isErr()) {
-          return err(v1Blocked.error);
-        }
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
         if (provisioned) return ok(undefined);
       }
@@ -1050,11 +1036,6 @@ export class TeamsAppSolution implements Solution {
       }
     } else if (stage === Stage.deploy) {
       if (isDynamicQuestion) {
-        const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-        if (v1Blocked.isErr()) {
-          return err(v1Blocked.error);
-        }
-
         const isAzureProject = this.isAzureProject(ctx);
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
         if (isAzureProject && !provisioned) {
@@ -1062,7 +1043,8 @@ export class TeamsAppSolution implements Solution {
             returnUserError(
               new Error(getStrings().solution.FailedToDeployBeforeProvision),
               SolutionSource,
-              SolutionError.CannotDeployBeforeProvision
+              SolutionError.CannotDeployBeforeProvision,
+              HelpLinks.WhyNeedProvision
             )
           );
         }
@@ -1124,20 +1106,18 @@ export class TeamsAppSolution implements Solution {
       }
     } else if (stage === Stage.publish) {
       if (isDynamicQuestion) {
-        const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-        if (v1Blocked.isErr()) {
-          return err(v1Blocked.error);
-        }
         const isAzureProject = this.isAzureProject(ctx);
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
         if (!provisioned) {
+          const errorMsg = isAzureProject
+            ? getStrings().solution.FailedToPublishBeforeProvision
+            : getStrings().solution.SPFxAskProvisionBeforePublish;
           return err(
-            new UserError(
+            returnUserError(
+              new Error(errorMsg),
+              SolutionSource,
               SolutionError.CannotPublishBeforeProvision,
-              isAzureProject
-                ? getStrings().solution.FailedToPublishBeforeProvision
-                : getStrings().solution.SPFxAskProvisionBeforePublish,
-              SolutionSource
+              HelpLinks.WhyNeedProvision
             )
           );
         }
@@ -1359,6 +1339,8 @@ export class TeamsAppSolution implements Solution {
       if (stateResult.state != CollaborationState.OK) {
         if (ctx.answers?.platform === Platform.CLI) {
           ctx.ui?.showMessage("warn", stateResult.message!, false);
+        } else if (ctx.answers?.platform === Platform.VSCode) {
+          ctx.logProvider?.warning(stateResult.message!);
         }
         return ok({
           state: stateResult.state,
@@ -1882,6 +1864,8 @@ export class TeamsAppSolution implements Solution {
       if (stateResult.state != CollaborationState.OK) {
         if (ctx.answers?.platform === Platform.CLI) {
           ctx.ui?.showMessage("warn", stateResult.message!, false);
+        } else if (ctx.answers?.platform === Platform.VSCode) {
+          ctx.logProvider?.warning(stateResult.message!);
         }
         return ok({
           state: stateResult.state,
@@ -1909,35 +1893,18 @@ export class TeamsAppSolution implements Solution {
       );
 
       const envName = ctx.envInfo.envName;
-      if (ctx.answers?.platform === Platform.CLI) {
-        const aadAppTenantId = ctx.envInfo.state?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-        if (!envName) {
-          return err(
-            sendErrorTelemetryThenReturnError(
-              SolutionTelemetryEvent.ListCollaborator,
-              returnSystemError(
-                new Error("Failed to get env name."),
-                SolutionSource,
-                SolutionError.FailedToGetEnvName
-              ),
-              ctx.telemetryReporter
-            )
-          );
-        }
-
-        const message = [
-          { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
-          { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
-          {
-            content: `Starting list all collaborators for environment: `,
-            color: Colors.BRIGHT_WHITE,
-          },
-          { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
-          { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
-          { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
-        ];
-
-        ctx.ui?.showMessage("info", message, false);
+      if (!envName) {
+        return err(
+          sendErrorTelemetryThenReturnError(
+            SolutionTelemetryEvent.ListCollaborator,
+            returnSystemError(
+              new Error("Failed to get env name."),
+              SolutionSource,
+              SolutionError.FailedToGetEnvName
+            ),
+            ctx.telemetryReporter
+          )
+        );
       }
 
       const results = await executeConcurrently("", listCollaboratorWithCtx);
@@ -1975,6 +1942,9 @@ export class TeamsAppSolution implements Solution {
       const teamsAppOwners: TeamsAppAdmin[] = results[0].isErr() ? [] : results[0].value;
       const aadOwners: AadOwner[] = results[1].isErr() ? [] : results[1].value;
       const collaborators: Collaborator[] = [];
+      const teamsAppId: string = teamsAppOwners[0]?.resourceId ?? "";
+      const aadAppId: string = aadOwners[0]?.resourceId ?? "";
+      const aadAppTenantId = ctx.envInfo.state?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
 
       for (const teamsAppOwner of teamsAppOwners) {
         const aadOwner = aadOwners.find(
@@ -1994,32 +1964,43 @@ export class TeamsAppSolution implements Solution {
         });
       }
 
-      if (ctx.answers?.platform === Platform.CLI) {
-        for (const collaborator of collaborators) {
-          const message = [
-            { content: `Account: `, color: Colors.BRIGHT_WHITE },
-            { content: collaborator.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
-            { content: `Resource ID: `, color: Colors.BRIGHT_WHITE },
-            { content: collaborator.teamsAppResourceId, color: Colors.BRIGHT_MAGENTA },
-            { content: `, Resource Name: `, color: Colors.BRIGHT_WHITE },
-            { content: `Teams App`, color: Colors.BRIGHT_MAGENTA },
-            { content: `, Permission: `, color: Colors.BRIGHT_WHITE },
-            { content: `Administrator`, color: Colors.BRIGHT_MAGENTA },
-          ];
+      if (ctx.answers?.platform === Platform.CLI || ctx.answers?.platform === Platform.VSCode) {
+        const message = [
+          { content: `Listing M365 permissions\n`, color: Colors.BRIGHT_WHITE },
+          { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
+          { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
+          {
+            content: `Starting list all teams app owners for environment: `,
+            color: Colors.BRIGHT_WHITE,
+          },
+          { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
+          { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
+          { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
+          { content: `M365 Teams App (ID: `, color: Colors.BRIGHT_WHITE },
+          { content: teamsAppId, color: Colors.BRIGHT_MAGENTA },
+          { content: `), SSO AAD App (ID: `, color: Colors.BRIGHT_WHITE },
+          { content: aadAppId, color: Colors.BRIGHT_MAGENTA },
+          { content: `)\n`, color: Colors.BRIGHT_WHITE },
+        ];
 
-          if (collaborator.aadResourceId) {
-            message.push(
-              { content: `\nResource ID: `, color: Colors.BRIGHT_WHITE },
-              { content: collaborator.aadResourceId, color: Colors.BRIGHT_MAGENTA },
-              { content: `, Resource Name: `, color: Colors.BRIGHT_WHITE },
-              { content: `AAD App`, color: Colors.BRIGHT_MAGENTA },
-              { content: `, Permission: `, color: Colors.BRIGHT_WHITE },
-              { content: `Owner`, color: Colors.BRIGHT_MAGENTA }
-            );
+        for (const collaborator of collaborators) {
+          message.push(
+            { content: `Teams App Owner: `, color: Colors.BRIGHT_WHITE },
+            { content: collaborator.userPrincipalName, color: Colors.BRIGHT_MAGENTA },
+            { content: `. `, color: Colors.BRIGHT_WHITE }
+          );
+
+          if (!collaborator.isAadOwner) {
+            message.push({ content: `(Not owner of SSO AAD app)`, color: Colors.BRIGHT_YELLOW });
           }
 
           message.push({ content: "\n", color: Colors.BRIGHT_WHITE });
+        }
+
+        if (ctx.answers?.platform === Platform.CLI) {
           ctx.ui?.showMessage("info", message, false);
+        } else if (ctx.answers?.platform === Platform.VSCode) {
+          ctx.logProvider?.info(message);
         }
       }
 
@@ -2074,7 +2055,7 @@ export class TeamsAppSolution implements Solution {
     const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
     if (!provisioned) {
       const warningMsg =
-        "Failed to process because the resources have not been provisioned yet. Make sure you do the provision first.";
+        "The resources have not been provisioned yet. Please provision the resources first.";
       return {
         state: CollaborationState.NotProvisioned,
         message: warningMsg,
@@ -2122,11 +2103,6 @@ export class TeamsAppSolution implements Solution {
     func: Func,
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-    if (v1Blocked.isErr()) {
-      return err(v1Blocked.error);
-    }
-
     const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers!.platform!);
     const settings = this.getAzureSolutionSettings(ctx);
 
@@ -2246,11 +2222,6 @@ export class TeamsAppSolution implements Solution {
   async getQuestionsForAddCapability(
     ctx: SolutionContext
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const v1Blocked = blockV1Project(ctx.projectSettings?.solutionSettings);
-    if (v1Blocked.isErr()) {
-      return err(v1Blocked.error);
-    }
-
     const isDynamicQuestion = DynamicPlatforms.includes(ctx.answers!.platform!);
     const settings = this.getAzureSolutionSettings(ctx);
 
@@ -2424,10 +2395,7 @@ export class TeamsAppSolution implements Solution {
 
     if (notifications.length > 0) {
       if (isArmSupportEnabled() && addNewResoruceToProvision) {
-        const confirmed = await confirmRegenerateArmTemplate(ctx.ui);
-        if (!confirmed) {
-          return ok(Void);
-        }
+        showUpdateArmTemplateNotice(ctx.ui);
       }
       settings.azureResources = azureResource;
       await this.reloadPlugins(settings);
@@ -2492,15 +2460,17 @@ export class TeamsAppSolution implements Solution {
       });
       return ok(Void);
     }
-
-    if (
+    const alreadyHaveBotAndAddBot =
       (settings.capabilities?.includes(BotOptionItem.id) ||
         settings.capabilities?.includes(MessageExtensionItem.id)) &&
       (capabilitiesAnswer.includes(BotOptionItem.id) ||
-        capabilitiesAnswer.includes(MessageExtensionItem.id))
-    ) {
+        capabilitiesAnswer.includes(MessageExtensionItem.id));
+    const alreadyHaveTabAndAddTab =
+      settings.capabilities?.includes(TabOptionItem.id) &&
+      capabilitiesAnswer.includes(TabOptionItem.id);
+    if (alreadyHaveBotAndAddBot || alreadyHaveTabAndAddTab) {
       const e = returnUserError(
-        new Error("Application already contains a Bot and/or Messaging Extension"),
+        new Error("There are no additional capabilities you can add to your project."),
         SolutionSource,
         SolutionError.FailedToAddCapability
       );
@@ -2513,7 +2483,6 @@ export class TeamsAppSolution implements Solution {
       );
     }
     let change = false;
-    const notifications: string[] = [];
     const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin, this.AppStudioPlugin];
     const capabilities = Array.from(settings.capabilities);
     for (const cap of capabilitiesAnswer!) {
@@ -2521,13 +2490,12 @@ export class TeamsAppSolution implements Solution {
         capabilities.push(cap);
         change = true;
         if (cap === TabOptionItem.id) {
-          notifications.push("Azure Tab Frontend");
           pluginsToScaffold.push(this.FrontendPlugin);
+          pluginsToScaffold.push(Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin));
         } else if (
           (cap === BotOptionItem.id || cap === MessageExtensionItem.id) &&
           !pluginsToScaffold.includes(this.BotPlugin)
         ) {
-          notifications.push("Bot/MessageExtension");
           pluginsToScaffold.push(this.BotPlugin);
         }
       }
@@ -2535,17 +2503,15 @@ export class TeamsAppSolution implements Solution {
 
     if (change) {
       if (isArmSupportEnabled()) {
-        const confirmed = await confirmRegenerateArmTemplate(ctx.ui);
-        if (!confirmed) {
-          return ok(Void);
-        }
+        showUpdateArmTemplateNotice(ctx.ui);
       }
       settings.capabilities = capabilities;
       await this.reloadPlugins(settings);
-      ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
+      const pluginNames = pluginsToScaffold.map((p) => p.name).join(",");
+      ctx.logProvider?.info(`start scaffolding ${pluginNames}.....`);
       const scaffoldRes = await this.doScaffold(ctx, pluginsToScaffold, true);
       if (scaffoldRes.isErr()) {
-        ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
+        ctx.logProvider?.info(`failed to scaffold ${pluginNames}!`);
         ctx.projectSettings!.solutionSettings = originalSettings;
         return err(
           sendErrorTelemetryThenReturnError(
@@ -2555,14 +2521,19 @@ export class TeamsAppSolution implements Solution {
           )
         );
       }
-      ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
+      ctx.logProvider?.info(`finish scaffolding ${pluginNames}!`);
       ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false);
-      const msg = util.format(
+      const addNames = capabilitiesAnswer.map((c) => `'${c}'`).join(" and ");
+      const single = capabilitiesAnswer.length === 1;
+      const template =
         ctx.answers.platform === Platform.CLI
-          ? getStrings().solution.AddCapabilityNoticeForCli
-          : getStrings().solution.AddCapabilityNotice,
-        notifications.join(",")
-      );
+          ? single
+            ? getStrings().solution.AddCapabilityNoticeForCli
+            : getStrings().solution.AddCapabilitiesNoticeForCli
+          : single
+          ? getStrings().solution.AddCapabilityNotice
+          : getStrings().solution.AddCapabilitiesNotice;
+      const msg = util.format(template, addNames);
       ctx.ui?.showMessage("info", msg, false);
 
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {

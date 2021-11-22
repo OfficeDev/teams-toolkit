@@ -35,7 +35,8 @@ export class LocalSettingsProvider {
   public init(
     includeFrontend: boolean,
     includeBackend: boolean,
-    includeBotOrMessageExtension: boolean
+    includeBotOrMessageExtension: boolean,
+    migrateFromV1 = false
   ): LocalSettings {
     // initialize Teams app related config for local debug.
     const teamsAppLocalConfig = new ConfigMap();
@@ -46,7 +47,9 @@ export class LocalSettingsProvider {
       teamsApp: teamsAppLocalConfig,
     };
 
-    localSettings.auth = this.initSimpleAuth();
+    if (!migrateFromV1) {
+      localSettings.auth = this.initSimpleAuth();
+    }
 
     // initialize frontend and simple auth local settings.
     if (includeFrontend) {

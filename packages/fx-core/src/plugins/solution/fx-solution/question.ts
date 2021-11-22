@@ -38,6 +38,14 @@ export const MessageExtensionItem: OptionItem = {
   detail: "Inserting app content or acting on a message without leaving the conversation",
 };
 
+export const TabSPFxItem: OptionItem = {
+  id: "TabSPFx",
+  label: "Tab(SPFx)",
+  cliName: "tab-spfx",
+  description: "UI-base app with SPFx framework",
+  detail: "Teams-aware webpages with SPFx framework embedded in Microsoft Teams",
+};
+
 export enum AzureSolutionQuestionNames {
   Capabilities = "capabilities",
   V1Capability = "v1-capability",
@@ -85,10 +93,40 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
     name: AzureSolutionQuestionNames.Capabilities,
     title: "Select capabilities",
     type: "multiSelect",
-    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
+    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
     default: [TabOptionItem.id],
     placeholder: "Select at least 1 capability",
-    validation: { minItems: 1 },
+    validation: {
+      validFunc: async (input: string[]): Promise<string | undefined> => {
+        const name = input as string[];
+        if (name.length === 0) {
+          return "Select at at least 1 capability";
+        }
+        if (
+          name.length > 1 &&
+          (name.includes(TabSPFxItem.id) || name.includes(TabSPFxItem.label))
+        ) {
+          return "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Message Extension capabilities are not available";
+        }
+
+        return undefined;
+      },
+    },
+    onDidChangeSelection: async function (
+      currentSelectedIds: Set<string>,
+      previousSelectedIds: Set<string>
+    ): Promise<Set<string>> {
+      if (currentSelectedIds.size > 1 && currentSelectedIds.has(TabSPFxItem.id)) {
+        if (previousSelectedIds.has(TabSPFxItem.id)) {
+          currentSelectedIds.delete(TabSPFxItem.id);
+        } else {
+          currentSelectedIds.clear();
+          currentSelectedIds.add(TabSPFxItem.id);
+        }
+      }
+
+      return currentSelectedIds;
+    },
   };
 }
 
@@ -219,8 +257,8 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     { id: "typescript", label: "TypeScript" },
   ],
   dynamicOptions: (inputs: Inputs): StaticOptions => {
-    const hostType = inputs[AzureSolutionQuestionNames.HostType] as string;
-    if (HostTypeOptionSPFx.id === hostType) return [{ id: "typescript", label: "TypeScript" }];
+    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+    if (cpas.includes(TabSPFxItem.id)) return [{ id: "typescript", label: "TypeScript" }];
     return [
       { id: "javascript", label: "JavaScript" },
       { id: "typescript", label: "TypeScript" },
@@ -228,13 +266,13 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
   },
   skipSingleOption: true,
   default: (inputs: Inputs) => {
-    const hostType = inputs[AzureSolutionQuestionNames.HostType] as string;
-    if (HostTypeOptionSPFx.id === hostType) return "typescript";
+    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+    if (cpas.includes(TabSPFxItem.id)) return "typescript";
     return "javascript";
   },
   placeholder: (inputs: Inputs): string => {
-    const hostType = inputs[AzureSolutionQuestionNames.HostType] as string;
-    if (HostTypeOptionSPFx.id === hostType) return "SPFx is currently supporting TypeScript only.";
+    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+    if (cpas.includes(TabSPFxItem.id)) return "SPFx is currently supporting TypeScript only.";
     return "Select a programming language.";
   },
 };
@@ -242,16 +280,16 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
 export const GetUserEmailQuestion: TextInputQuestion = {
   name: "email",
   type: "text",
-  title: "Invite a collaborator (email or user principal name)",
+  title: "Add owner to Teams/AAD app for the account under the same M365 tenant (email)",
   validation: {
     validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
       if (!input || input.trim() === "") {
-        return "email address or user principal name cannot be null or empty";
+        return "Email address cannot be null or empty";
       }
 
       const re = /\S+@\S+\.\S+/;
       if (!re.test(input)) {
-        return "email address or user principal name is not valid";
+        return "Email address is not valid";
       }
       return undefined;
     },

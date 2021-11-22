@@ -30,7 +30,8 @@ import {
 } from "../../../src/plugins/solution/fx-solution/question";
 import _ from "lodash";
 import path from "path";
-import { createV2Context, getTemplatesFolder, newEnvInfo, newProjectSettings } from "../../../src";
+import { getTemplatesFolder, newProjectSettings } from "../../../src";
+import { newEnvInfo } from "../../../src/core/tools";
 import { validManifest } from "./util";
 import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
@@ -42,6 +43,7 @@ import { getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-sol
 import { MockTools } from "../../core/utils";
 import { assert } from "console";
 import { LocalCrypto } from "../../../src/core/crypto";
+import { ArmTemplateResult } from "../../../src/common/armInterface";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -81,8 +83,9 @@ describe("Solution scaffold() reading valid manifest file", () => {
   const fileContent: Map<string, any> = new Map();
   const readmePath = path.join(getTemplatesFolder(), "plugins", "solution", "README.md");
   const mockedReadMeContent = "mocked readme content";
-
-  beforeEach(() => {
+  const testFolder = "./tests/plugins/solution/testproject";
+  beforeEach(async () => {
+    await fs.ensureDir(testFolder);
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
     });
@@ -94,16 +97,21 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mocker.stub(fs, "copy").callsFake((src: string, dest: string) => {
       fileContent.set(dest, mockedReadMeContent);
     });
+    mocker.stub(fs, "appendFile").callsFake(async (path: number | PathLike, data: any) => {
+      fileContent.set(path.toString(), data);
+    });
   });
 
-  afterEach(() => {
+  afterEach(async () => {
     mocker.restore();
+    await fs.remove(testFolder);
   });
 
   it("should work for happy path with only tab", async () => {
     fileContent.clear();
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -127,6 +135,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     fileContent.clear();
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -152,6 +161,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
     fileContent.clear();
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -176,12 +186,13 @@ describe("Solution scaffold() reading valid manifest file", () => {
   it("should work and generate arm template when project requires Azure services", async () => {
     // add dedicated test case to test ARM feature enabled behavior
     const restore = mockedEnv({
-      TEAMSFX_INSIDER_PREVIEW: "1",
+      __TEAMSFX_INSIDER_PREVIEW: "1",
     });
 
     fileContent.clear();
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -201,24 +212,36 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
     // mock plugin behavior
     mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedFehostScaffoldArmResult);
+      const res: ArmTemplateResult = mockedSimpleAuthScaffoldArmResult();
+      return ok(res);
     });
 
     mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok(mockedSimpleAuthScaffoldArmResult);
+      const res: ArmTemplateResult = mockedFehostScaffoldArmResult();
+      return ok(res);
     });
 
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;
     // only need to check whether related files exist, tests to the content is covered by other test cases
-    expect(fileContent.size).equals(5);
-    expect(fileContent.has(path.join("./templates/azure", "main.bicep"))).to.be.true;
+    expect(fileContent.size).equals(6);
+    expect(fileContent.has(path.join(testFolder, "./templates/azure", "provision.bicep"))).to.be
+      .true;
+    expect(fileContent.has(path.join(testFolder, "./templates/azure", "config.bicep"))).to.be.true;
     expect(
-      fileContent.has(path.join("./templates/azure/modules", "frontendHostingProvision.bicep"))
+      fileContent.has(
+        path.join(testFolder, "./templates/azure/provision", "frontendHostingProvision.bicep")
+      )
     ).to.be.true;
-    expect(fileContent.has(path.join("./templates/azure/modules", "simpleAuthProvision.bicep"))).to
+    expect(
+      fileContent.has(
+        path.join(testFolder, "./templates/azure/provision", "simpleAuthProvision.bicep")
+      )
+    ).to.be.true;
+    expect(fileContent.has(path.join(testFolder, "./templates/azure/provision", "identity.bicep")))
+      .to.be.true;
+    expect(fileContent.has(path.join(testFolder, "./.fx/configs", "azure.parameters.dev.json"))).to
       .be.true;
-    expect(fileContent.has(path.join("./.fx/configs", "azure.parameters.dev.json"))).to.be.true;
 
     restore();
   });
@@ -226,12 +249,13 @@ describe("Solution scaffold() reading valid manifest file", () => {
   it("should work and not generate arm template when project does not require Azure services", async () => {
     // add dedicated test case to test ARM feature enabled behavior
     const restore = mockedEnv({
-      TEAMSFX_INSIDER_PREVIEW: "1",
+      __TEAMSFX_INSIDER_PREVIEW: "1",
     });
 
     fileContent.clear();
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
+    mockedCtx.root = testFolder;
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),

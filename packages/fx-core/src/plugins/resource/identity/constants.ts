@@ -42,19 +42,15 @@ export class Telemetry {
   };
 }
 export class IdentityBicep {
-  static readonly identityName: string = "userAssignedIdentityProvision.outputs.identityName";
+  static readonly identityName: string = "provisionOutputs.identityOutput.value.identityName";
   static readonly identityClientId: string =
-    "userAssignedIdentityProvision.outputs.identityClientId";
+    "provisionOutputs.identityOutput.value.identityClientId";
   static readonly identityResourceId: string =
     "userAssignedIdentityProvision.outputs.identityResourceId";
-}
-
-export class IdentityArmOutput {
-  static readonly identityName: string = "identity_identityName";
-  static readonly identityClientId: string = "identity_identityClientId";
-  static readonly identityResourceId: string = "identity_identityResourceId";
+  static readonly identityPrincipalId: string =
+    "userAssignedIdentityProvision.outputs.identityPrincipalId";
 }
 
 export class IdentityBicepFile {
-  static readonly moduleTemplateFileName: string = "userAssignedIdentity.template.bicep";
+  static readonly moduleTempalteFilename: string = "identityProvision.template.bicep";
 }

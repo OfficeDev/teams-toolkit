@@ -22,15 +22,13 @@ import {
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
-import jsum from "jsum";
 import * as dotenv from "dotenv";
 import {
-  deserializeDict,
   dataNeedEncryption,
-  mergeSerectData,
+  replaceTemplateWithUserData,
   PathNotExistError,
   serializeDict,
-  sperateSecretData,
+  separateSecretData,
   WriteFileError,
   mapToJson,
   objectToMap,
@@ -39,17 +37,19 @@ import {
   ModifiedSecretError,
 } from "..";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
-import { readJson } from "../common/fileUtils";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
-import { isMultiEnvEnabled } from "../common";
+import { compileHandlebarsTemplateString, isMultiEnvEnabled } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
+import { ConstantString } from "../common/constants";
 
 export interface EnvStateFiles {
   envState: string;
   userDataFile: string;
 }
+
+export const envPrefix = "$env.";
 
 class EnvironmentManager {
   public readonly envNameRegex = /^[\w\d-_]+$/;
@@ -59,7 +59,6 @@ class EnvironmentManager {
   private readonly defaultEnvName = "default";
   private readonly defaultEnvNameNew = "dev";
   private readonly ajv;
-  private readonly checksumKey = "_checksum";
   private readonly schema = "https://aka.ms/teamsfx-env-config-schema";
   private readonly envConfigDescription =
     `You can customize the TeamsFx config for different environments.` +
@@ -153,11 +152,8 @@ class EnvironmentManager {
     const envFiles = this.getEnvStateFilesPath(envName, projectPath);
 
     const data = envData instanceof Map ? mapToJson(envData) : envData;
-    const secrets = sperateSecretData(data);
+    const secrets = separateSecretData(data);
     this.encrypt(secrets, cryptoProvider);
-    if (Object.keys(secrets).length) {
-      secrets[this.checksumKey] = jsum.digest(secrets, "SHA256", "hex");
-    }
 
     try {
       await fs.writeFile(envFiles.envState, JSON.stringify(data, null, 4));
@@ -249,10 +245,15 @@ class EnvironmentManager {
     const validate = this.ajv.compile<EnvConfig>(envConfigSchema);
     let data;
     try {
-      data = await fs.readJson(envConfigPath);
+      data = await fs.readFile(envConfigPath, ConstantString.UTF8Encoding);
+
+      // resolve environment variables
+      data = this.expandEnvironmentVariables(data);
+      data = JSON.parse(data);
     } catch (error) {
       return err(InvalidEnvConfigError(envName, `Failed to read env config JSON: ${error}`));
     }
+
     if (validate(data)) {
       return ok(data);
     }
@@ -278,12 +279,23 @@ class EnvironmentManager {
       return ok(data);
     }
 
-    const envData = await readJson(envFiles.envState);
+    const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });
 
-    mergeSerectData(userData, envData);
-    const data = objectToMap(envData);
+    const result = replaceTemplateWithUserData(template, userData);
+
+    const resultJson: Json = JSON.parse(result);
+
+    const data = objectToMap(resultJson);
 
     return ok(data);
+  }
+
+  private expandEnvironmentVariables(templateContent: string): string {
+    if (!templateContent) {
+      return templateContent;
+    }
+
+    return compileHandlebarsTemplateString(templateContent, { $env: process.env });
   }
 
   private getEnvNameFromPath(filePath: string): string | null {
@@ -322,23 +334,15 @@ class EnvironmentManager {
     }
 
     const content = await fs.readFile(userDataPath, "UTF-8");
-    const secrets = deserializeDict(content);
+    const secrets = dotenv.parse(content);
 
     const res = this.decrypt(secrets, cryptoProvider);
     if (res.isErr()) {
-      if (!this.checksumMatch(secrets)) {
-        sendTelemetryErrorEvent(
-          Component.core,
-          TelemetryEvent.DecryptUserdata,
-          ModifiedSecretError()
-        );
-      } else {
-        const fxError: SystemError = res.error;
-        const fileName = basename(userDataPath);
-        fxError.message = `Project update failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file '*.userdata' is not modified, please report to us by click 'Report Issue' button.`;
-        fxError.userData = `file: ${fileName}\n------------FILE START--------\n${content}\n------------FILE END----------`;
-        sendTelemetryErrorEvent(Component.core, TelemetryEvent.DecryptUserdata, fxError);
-      }
+      const fxError: SystemError = res.error;
+      const fileName = basename(userDataPath);
+      fxError.message = `Project update failed because of ${fxError.name}(file:${fileName}):${fxError.message}, if your local file '*.userdata' is not modified, please report to us by click 'Report Issue' button.`;
+      fxError.userData = `file: ${fileName}\n------------FILE START--------\n${content}\n------------FILE END----------`;
+      sendTelemetryErrorEvent(Component.core, TelemetryEvent.DecryptUserdata, fxError);
     }
     return res;
   }
@@ -380,15 +384,6 @@ class EnvironmentManager {
     }
 
     return ok(secrets);
-  }
-
-  private checksumMatch(secrets: Record<string, string>): boolean {
-    const checksum = secrets[this.checksumKey];
-    if (checksum) {
-      delete secrets[this.checksumKey];
-      return jsum.digest(secrets, "SHA256", "hex") === checksum;
-    }
-    return true;
   }
 
   public getDefaultEnvName() {

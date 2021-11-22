@@ -375,7 +375,7 @@ export class ConcurrentError extends UserError {
     super({
       source: source,
       message:
-        "Concurrent operation error, please wait until the running task finish or you can reload the window to cancel it.",
+        "Previous task is still running. Please wait util your previous task to finish and try again.",
     });
   }
 }
@@ -390,7 +390,7 @@ export class InvalidProjectError extends UserError {
   constructor(source: string, msg?: string) {
     super({
       source: source,
-      message: `The command only works for project created by Teamsfx Toolkit. ${
+      message: `The command only works for project created by Teams Toolkit. ${
         msg ? ": " + msg : ""
       }`,
     });

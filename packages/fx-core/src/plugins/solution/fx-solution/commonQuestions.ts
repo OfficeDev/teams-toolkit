@@ -24,6 +24,7 @@ import {
   TokenProvider,
   UserError,
   Void,
+  Err,
 } from "@microsoft/teamsfx-api";
 import {
   GLOBAL_CONFIG,
@@ -33,6 +34,9 @@ import {
   RESOURCE_GROUP_NAME,
   SolutionError,
   SolutionSource,
+  FailedToCheckResourceGroupExistenceError,
+  SUBSCRIPTION_ID,
+  UnauthorizedToCheckResourceGroupError,
 } from "./constants";
 import { v4 as uuidv4 } from "uuid";
 import { ResourceManagementClient } from "@azure/arm-resources";
@@ -48,13 +52,13 @@ import {
 import { getHashedEnv } from "../../../common/tools";
 import { desensitize } from "../../../core/middleware/questionModel";
 import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
-import { SUBSCRIPTION_ID } from ".";
 import { SolutionPlugin } from "../../resource/localdebug/constants";
 import {
   CustomizeResourceGroupType,
   TelemetryEvent,
   TelemetryProperty,
 } from "../../../common/telemetry";
+import { RestError } from "@azure/ms-rest-js";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -115,7 +119,7 @@ export async function checkSubscription(
         SolutionError.SubscriptionNotFound,
         `The subscription '${subscriptionId}'${subscriptionName} for '${
           envInfo.envName
-        }'(Environment) is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
+        }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
           envInfo.envName
         )}' file.`,
@@ -144,7 +148,7 @@ export async function checkM365Tenant(
     return err(
       new UserError(
         SolutionError.TeamsAppTenantIdNotRight,
-        `The M365 tenant id '${m365TenantId}'(which is used before) for '${envInfo.envName}'(Environment) does not match the current account, please use the right M365 account.`,
+        `The signed in M365 account does not match the M365 tenant used in previous provision for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
         "Solution"
       )
     );
@@ -429,7 +433,7 @@ async function askCommonQuestions(
   //   4. asking user with a popup
   const resourceGroupNameFromEnvConfig = ctx.envInfo.config.azure?.resourceGroupName;
   const resourceGroupNameFromState = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(RESOURCE_GROUP_NAME);
-  const resourceGroupLocationFromProfile = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(LOCATION);
+  const resourceGroupLocationFromState = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(LOCATION);
   const defaultResourceGroupName = `${appName.replace(" ", "_")}${
     isMultiEnvEnabled() ? "-" + ctx.envInfo.envName : ""
   }-rg`;
@@ -480,39 +484,25 @@ async function askCommonQuestions(
     telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
       CustomizeResourceGroupType.EnvConfig;
     resourceGroupInfo = maybeResourceGroupInfo;
-  } else if (resourceGroupNameFromState && resourceGroupLocationFromProfile) {
-    try {
-      const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupNameFromState);
-      if (checkRes.body) {
-        resourceGroupInfo = {
-          createNewResourceGroup: false,
-          name: resourceGroupNameFromState,
-          location: resourceGroupLocationFromProfile,
-        };
-      } else {
-        resourceGroupInfo = {
-          createNewResourceGroup: true,
-          name: resourceGroupNameFromState,
-          location: resourceGroupLocationFromProfile,
-        };
-      }
-
-      telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
-        CustomizeResourceGroupType.EnvState;
-    } catch (e) {
-      let error;
-      const errorMessage = `Failed to check the existence of the resource group '${resourceGroupNameFromState}', error: '${e}'`;
-      if (e instanceof Error) {
-        // reuse the original error object to prevent losing the stack info
-        e.message = errorMessage;
-        error = e;
-      } else {
-        error = new Error(errorMessage);
-      }
-      return err(
-        returnUserError(error, SolutionSource, SolutionError.FailedToCheckResourceGroupExistence)
-      );
+  } else if (resourceGroupNameFromState && resourceGroupLocationFromState) {
+    const maybeExist = await checkResourceGroupExistence(
+      rmClient,
+      resourceGroupNameFromState,
+      subscriptionResult.value.subscriptionId,
+      subscriptionResult.value.subscriptionName
+    );
+    if (maybeExist.isErr()) {
+      return err(maybeExist.error);
     }
+    const exist = maybeExist.value;
+    resourceGroupInfo = {
+      createNewResourceGroup: !exist,
+      name: resourceGroupNameFromState,
+      location: resourceGroupLocationFromState,
+    };
+
+    telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
+      CustomizeResourceGroupType.EnvState;
   } else if (ctx.answers && ctx.ui) {
     const resourceGroupInfoResult = await askResourceGroupInfo(
       ctx,
@@ -552,7 +542,13 @@ async function askCommonQuestions(
   ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckResourceGroup, telemetryProperties);
 
   if (resourceGroupInfo.createNewResourceGroup) {
-    const maybeRgName = await createNewResourceGroup(rmClient, resourceGroupInfo, ctx.logProvider);
+    const maybeRgName = await createNewResourceGroup(
+      rmClient,
+      resourceGroupInfo,
+      subscriptionResult.value.subscriptionId,
+      subscriptionResult.value.subscriptionName,
+      ctx.logProvider
+    );
     if (maybeRgName.isErr()) {
       return err(maybeRgName.error);
     }
@@ -637,12 +633,35 @@ export async function fillInCommonQuestions(
 async function createNewResourceGroup(
   rmClient: ResourceManagementClient,
   rgInfo: ResourceGroupInfo,
+  subscriptionId: string,
+  subscriptionName: string,
   logProvider?: LogProvider
 ): Promise<Result<string, FxError>> {
+  const maybeExist = await checkResourceGroupExistence(
+    rmClient,
+    rgInfo.name,
+    subscriptionId,
+    subscriptionName
+  );
+  if (maybeExist.isErr()) {
+    return err(maybeExist.error);
+  }
+
+  if (maybeExist.value) {
+    return err(
+      returnUserError(
+        new Error(`Failed to create resource group "${rgInfo.name}": the resource group exists`),
+        SolutionSource,
+        SolutionError.FailedToCreateResourceGroup
+      )
+    );
+  }
+
   let response: ResourceGroupsCreateOrUpdateResponse;
   try {
     response = await rmClient.resourceGroups.createOrUpdate(rgInfo.name, {
       location: rgInfo.location,
+      tags: { "created-by": "teamsfx" },
     });
   } catch (e) {
     let errMsg: string;
@@ -672,4 +691,52 @@ async function createNewResourceGroup(
     `[${PluginDisplayName.Solution}] askCommonQuestions - resource group:'${response.name}' created!`
   );
   return ok(response.name);
+}
+
+function handleRestError<T>(
+  restError: RestError,
+  resourceGroupName: string,
+  subscriptionId: string,
+  subscriptionName: string
+): Err<T, FxError> {
+  // ARM API will return 403 with empty body when users does not have permission to access the resource group
+  if (restError.statusCode === 403) {
+    return err(
+      new UnauthorizedToCheckResourceGroupError(resourceGroupName, subscriptionId, subscriptionName)
+    );
+  } else {
+    return err(
+      new FailedToCheckResourceGroupExistenceError(
+        restError,
+        resourceGroupName,
+        subscriptionId,
+        subscriptionName
+      )
+    );
+  }
+}
+
+export async function checkResourceGroupExistence(
+  rmClient: ResourceManagementClient,
+  resourceGroupName: string,
+  subscriptionId: string,
+  subscriptionName: string
+): Promise<Result<boolean, FxError>> {
+  try {
+    const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
+    return ok(!!checkRes.body);
+  } catch (e) {
+    if (e instanceof RestError) {
+      return handleRestError(e, resourceGroupName, subscriptionId, subscriptionName);
+    } else {
+      return err(
+        new FailedToCheckResourceGroupExistenceError(
+          e,
+          resourceGroupName,
+          subscriptionId,
+          subscriptionName
+        )
+      );
+    }
+  }
 }

@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
+import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
-import { expect } from "chai";
-
+import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import {
   AadValidator,
   AppStudioValidator,
@@ -14,7 +15,6 @@ import {
   SimpleAuthValidator,
   SqlValidator,
 } from "../../commonlib";
-
 import {
   cleanUp,
   execAsync,
@@ -26,21 +26,8 @@ import {
   mockTeamsfxMultiEnvFeatureFlag,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
-import { deserializeDict } from "@microsoft/teamsfx-core";
-import {
-  err,
-  FxError,
-  Result,
-  ok,
-  ConfigFolderName,
-  StatesFolderName,
-  EnvStateFileNameTemplate,
-  EnvNamePlaceholder,
-  AppPackageFolderName,
-} from "@microsoft/teamsfx-api";
 
-describe("Create single tab/bot/function", function () {
+describe("Multi Env Happy Path for Azure", function () {
   const env = "e2e";
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
@@ -48,8 +35,7 @@ describe("Create single tab/bot/function", function () {
   const projectPath = path.resolve(testFolder, appName);
   const processEnv = mockTeamsfxMultiEnvFeatureFlag();
 
-  it(`Happy path`, async function () {
-    // new a project (tab + bot + function)
+  it(`Can create/provision/deploy/build/validate/launch remote a azure tab/function/sql/bot project`, async function () {
     try {
       let result;
       result = await execAsync(
@@ -128,11 +114,11 @@ describe("Create single tab/bot/function", function () {
         await SimpleAuthValidator.validate(simpleAuth, aad, "B1", true);
 
         // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
+        const frontend = FrontendValidator.init(context, true);
         await FrontendValidator.validateProvision(frontend);
 
         // Validate Function App
-        const func = FunctionValidator.init(context);
+        const func = FunctionValidator.init(context, true);
         await FunctionValidator.validateProvision(func, false, true);
 
         // Validate SQL
@@ -140,8 +126,8 @@ describe("Create single tab/bot/function", function () {
         await SqlValidator.validateSql();
 
         // Validate Bot Provision
-        const bot = BotValidator.init(context);
-        await BotValidator.validateProvision(bot);
+        const bot = BotValidator.init(context, true);
+        await BotValidator.validateProvision(bot, true);
       }
 
       // deploy
@@ -161,15 +147,15 @@ describe("Create single tab/bot/function", function () {
         const context = contextResult.value;
 
         // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
+        const frontend = FrontendValidator.init(context, true);
         await FrontendValidator.validateDeploy(frontend);
 
         // Validate Function App
-        const func = FunctionValidator.init(context);
+        const func = FunctionValidator.init(context, true);
         await FunctionValidator.validateDeploy(func);
 
         // Validate Bot Deploy
-        const bot = BotValidator.init(context);
+        const bot = BotValidator.init(context, true);
         await BotValidator.validateDeploy(bot);
       }
 
@@ -194,7 +180,7 @@ describe("Create single tab/bot/function", function () {
 
       {
         // Validate package
-        const file = `${projectPath}/${AppPackageFolderName}/appPackage.${env}.zip`;
+        const file = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`;
         expect(await fs.pathExists(file)).to.be.true;
       }
 

@@ -15,7 +15,6 @@ import { LocalDebugPluginInfo } from "../../../../../src/plugins/resource/locald
 import { LocalDebugPlugin } from "../../../../../src/plugins/resource/localdebug";
 import * as uuid from "uuid";
 import { newEnvInfo } from "../../../../../src/core/tools";
-import { FeatureFlagName } from "../../../../../src/common/constants";
 import { isMultiEnvEnabled } from "../../../../../src";
 chai.use(chaiAsPromised);
 
@@ -40,7 +39,6 @@ describe(LocalDebugPluginInfo.pluginName, () => {
   describe("scaffold", () => {
     let pluginContext: PluginContext;
     let plugin: LocalDebugPlugin;
-    let flagInsiderPreview: string | undefined;
 
     beforeEach(() => {
       pluginContext = {
@@ -51,11 +49,6 @@ describe(LocalDebugPluginInfo.pluginName, () => {
       } as PluginContext;
       plugin = new LocalDebugPlugin();
       fs.emptyDirSync(pluginContext.root);
-      flagInsiderPreview = process.env[FeatureFlagName.InsiderPreview];
-    });
-
-    afterEach(() => {
-      process.env[FeatureFlagName.InsiderPreview] = flagInsiderPreview;
     });
 
     const parameters1: TestParameter[] = [
@@ -64,14 +57,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: isMultiEnvEnabled() ? 25 : 30,
+        numLocalEnvs: isMultiEnvEnabled() ? 30 : 30,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: isMultiEnvEnabled() ? 25 : 30,
+        numLocalEnvs: isMultiEnvEnabled() ? 30 : 30,
       },
     ];
     parameters1.forEach((parameter: TestParameter) => {
@@ -127,14 +120,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 4,
         numCompounds: 2,
         numTasks: 6,
-        numLocalEnvs: isMultiEnvEnabled() ? 15 : 16,
+        numLocalEnvs: isMultiEnvEnabled() ? 16 : 16,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 4,
         numCompounds: 2,
         numTasks: 6,
-        numLocalEnvs: isMultiEnvEnabled() ? 15 : 16,
+        numLocalEnvs: isMultiEnvEnabled() ? 16 : 16,
       },
     ];
     parameters2.forEach((parameter) => {
@@ -185,14 +178,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 7,
-        numLocalEnvs: isMultiEnvEnabled() ? 8 : 14,
+        numLocalEnvs: isMultiEnvEnabled() ? 12 : 14,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 7,
-        numLocalEnvs: isMultiEnvEnabled() ? 8 : 14,
+        numLocalEnvs: isMultiEnvEnabled() ? 12 : 14,
       },
     ];
     parameters3.forEach((parameter) => {
@@ -239,14 +232,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 6,
         numCompounds: 2,
         numTasks: 12,
-        numLocalEnvs: isMultiEnvEnabled() ? 33 : 44,
+        numLocalEnvs: isMultiEnvEnabled() ? 42 : 44,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 6,
         numCompounds: 2,
         numTasks: 12,
-        numLocalEnvs: isMultiEnvEnabled() ? 33 : 44,
+        numLocalEnvs: isMultiEnvEnabled() ? 42 : 44,
       },
     ];
     parameters4.forEach((parameter) => {
@@ -303,14 +296,14 @@ describe(LocalDebugPluginInfo.pluginName, () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: isMultiEnvEnabled() ? 23 : 30,
+        numLocalEnvs: isMultiEnvEnabled() ? 28 : 30,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: isMultiEnvEnabled() ? 23 : 30,
+        numLocalEnvs: isMultiEnvEnabled() ? 28 : 30,
       },
     ];
     parameters5.forEach((parameter) => {
@@ -486,6 +479,10 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     });
 
     it("multi env", async () => {
+      if (!isMultiEnvEnabled()) {
+        // This feature only exists when insider preview is enabled
+        return;
+      }
       pluginContext.envInfo = newEnvInfo(
         undefined,
         undefined,
@@ -509,7 +506,6 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
       const packageJsonPath = path.resolve(__dirname, "../data/package.json");
       fs.writeFileSync(packageJsonPath, "{}");
-      process.env[FeatureFlagName.InsiderPreview] = "true";
 
       const result = await plugin.scaffold(pluginContext);
       chai.assert.isTrue(result.isOk());
@@ -552,6 +548,67 @@ describe(LocalDebugPluginInfo.pluginName, () => {
     it("happy path", async () => {
       const result = await plugin.postLocalDebug(pluginContext);
       chai.assert.isTrue(result.isOk());
+    });
+  });
+
+  describe("getLocalDebugEnvs", () => {
+    let pluginContext: PluginContext;
+    let plugin: LocalDebugPlugin;
+
+    beforeEach(() => {
+      pluginContext = {
+        root: path.resolve(__dirname, "../data/"),
+        envInfo: newEnvInfo(),
+        config: new Map(),
+        answers: { platform: Platform.VSCode },
+      } as PluginContext;
+      plugin = new LocalDebugPlugin();
+      fs.emptyDirSync(pluginContext.root);
+    });
+
+    it("multi-env", async () => {
+      if (!isMultiEnvEnabled()) {
+        // This feature only exists when insider preview is enabled
+        return;
+      }
+      pluginContext.envInfo = newEnvInfo(
+        undefined,
+        undefined,
+        new Map([["solution", new Map([["programmingLanguage", "javascript"]])]])
+      );
+      pluginContext.projectSettings = {
+        appName: "",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          name: "",
+          version: "",
+          activeResourcePlugins: [
+            "fx-resource-aad-app-for-teams",
+            "fx-resource-simple-auth",
+            "fx-resource-frontend-hosting",
+            "fx-resource-function",
+            "fx-resource-bot",
+          ],
+        },
+      };
+
+      const frontendEnvPath = path.resolve(__dirname, "../data/tabs/.env.teamsfx.local");
+      fs.ensureFileSync(frontendEnvPath);
+      fs.writeFileSync(frontendEnvPath, "FOO=FRONTEND");
+      const backendEnvPath = path.resolve(__dirname, "../data/api/.env.teamsfx.local");
+      fs.ensureFileSync(backendEnvPath);
+      fs.writeFileSync(backendEnvPath, "FOO=BACKEND");
+      const botEnvPath = path.resolve(__dirname, "../data/bot/.env.teamsfx.local");
+      fs.ensureFileSync(botEnvPath);
+      fs.writeFileSync(botEnvPath, "FOO=BOT");
+
+      const localEnvs = await plugin.getLocalDebugEnvs(pluginContext);
+
+      chai.assert.isTrue(localEnvs !== undefined);
+      chai.assert.equal(localEnvs["FRONTEND_FOO"], "FRONTEND");
+      chai.assert.equal(localEnvs["BACKEND_FOO"], "BACKEND");
+      chai.assert.equal(localEnvs["BOT_FOO"], "BOT");
+      chai.assert.isTrue(Object.keys(localEnvs).length > 3);
     });
   });
 

@@ -41,6 +41,7 @@ import {
   UserCancelError,
   v2,
   Void,
+  BuildFolderName,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import { AxiosResponse } from "axios";
@@ -48,7 +49,7 @@ import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import * as uuid from "uuid";
-import { environmentManager } from "..";
+import { environmentManager, sampleProvider } from "..";
 import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
@@ -63,9 +64,11 @@ import {
 import {
   downloadSampleHook,
   fetchCodeZip,
+  isFeatureFlagEnabled,
   isMultiEnvEnabled,
   mapToJson,
   saveFilesRecursively,
+  getRootDirectory,
 } from "../common/tools";
 import { PluginNames } from "../plugins";
 import { getAllV2ResourcePlugins } from "../plugins/solution/fx-solution/ResourcePluginContainer";
@@ -102,7 +105,11 @@ import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
 import { ProjectMigratorMW } from "./middleware/projectMigrator";
-import { newSolutionContext, ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
+import {
+  loadProjectSettings,
+  newSolutionContext,
+  ProjectSettingsLoaderMW,
+} from "./middleware/projectSettingsLoader";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { QuestionModelMW } from "./middleware/questionModel";
@@ -127,8 +134,8 @@ import {
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
 import { flattenConfigJson, newEnvInfo } from "./tools";
-import { getRootDirectory } from "../common/tools";
 import { LocalCrypto } from "./crypto";
+import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -141,14 +148,23 @@ export interface CoreHookContext extends HookContext {
   localSettings?: Json;
 }
 
-// API V2 feature flag
-export function isV2() {
-  const flag = process.env[FeatureFlagName.APIV2];
+function featureFlagEnabled(flagName: string): boolean {
+  const flag = process.env[flagName];
   if (flag !== undefined && flag.toLowerCase() === "true") {
     return true;
   } else {
     return false;
   }
+}
+
+// API V2 feature flag
+export function isV2() {
+  return featureFlagEnabled(FeatureFlagName.APIV2);
+}
+
+// On VS calling CLI, interactive questions need to be skipped.
+export function isVsCallingCli() {
+  return featureFlagEnabled(FeatureFlagName.VSCallingCLI);
 }
 
 export let Logger: LogProvider;
@@ -175,6 +191,7 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    SupportV1ConditionMW(true),
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -197,7 +214,7 @@ export class FxCore implements Core {
     const multiEnv = isMultiEnvEnabled();
     if (scratch === ScratchOptionNo.id) {
       // create from sample
-      const downloadRes = await downloadSample(this, inputs);
+      const downloadRes = await downloadSample(this, inputs, ctx);
       if (downloadRes.isErr()) {
         return err(downloadRes.error);
       }
@@ -235,12 +252,12 @@ export class FxCore implements Core {
       }
       const projectSettings: ProjectSettings = {
         appName: appName,
-        projectId: uuid.v4(),
+        projectId: inputs.projectId ? inputs.projectId : uuid.v4(),
         solutionSettings: {
           name: "",
           version: "1.0.0",
         },
-        version: "1.0.0",
+        version: getProjectSettingsVersion(),
         isFromSample: false,
       };
       ctx.projectSettings = projectSettings;
@@ -262,7 +279,6 @@ export class FxCore implements Core {
         }
         ctx.solutionV2 = solution;
         projectSettings.solutionSettings.name = solution.name;
-        projectSettings.version = "2.0.0";
         const contextV2 = createV2Context(this, projectSettings);
         ctx.contextV2 = contextV2;
         const scaffoldSourceCodeRes = await solution.scaffoldSourceCode(contextV2, inputs);
@@ -343,11 +359,12 @@ export class FxCore implements Core {
 
   @hooks([
     ErrorHandlerMW,
+    SupportV1ConditionMW(true),
     MigrateConditionHandlerMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
-    EnvInfoWriterMW(),
+    EnvInfoWriterMW(true),
   ])
   async migrateV1Project(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     currentStage = Stage.migrateV1;
@@ -465,6 +482,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -522,6 +540,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -566,6 +585,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectUpgraderMW,
     ProjectSettingsLoaderMW,
@@ -648,6 +668,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -689,6 +710,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -747,6 +769,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -788,6 +811,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -821,6 +845,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -852,6 +877,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -868,6 +894,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -884,6 +911,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
@@ -900,6 +928,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     SolutionLoaderMW(),
@@ -910,6 +939,27 @@ export class FxCore implements Core {
     currentStage = Stage.listAllCollaborators;
     inputs.stage = Stage.listAllCollaborators;
     return await ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(false),
+    ContextInjectorMW,
+  ])
+  async getSelectedEnv(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<string | undefined, FxError>> {
+    if (!isMultiEnvEnabled()) {
+      return err(new TaskNotSupportError("getSelectedEnv"));
+    }
+    if (isV2()) {
+      return ok(ctx?.envInfoV2?.envName);
+    } else {
+      return ok(ctx?.solutionContext?.envInfo.envName);
+    }
   }
 
   async _getQuestionsForUserTask(
@@ -1017,6 +1067,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     ContextInjectorMW,
@@ -1039,6 +1090,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     ContextInjectorMW,
@@ -1065,6 +1117,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),
     EnvInfoLoaderMW(true),
@@ -1176,6 +1229,7 @@ export class FxCore implements Core {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     SolutionLoaderMW(),
@@ -1317,6 +1371,7 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
             `${ArchiveLogFileName}`,
             ".env.teamsfx.local",
             "subscriptionInfo.json",
+            BuildFolderName,
           ].join("\n")
         : `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
     );
@@ -1326,89 +1381,87 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
   return ok(null);
 }
 export async function downloadSample(
-  fxcore: FxCore,
-  inputs: Inputs
+  fxCore: FxCore,
+  inputs: Inputs,
+  ctx: CoreHookContext
 ): Promise<Result<string, FxError>> {
-  let folder = inputs[QuestionRootFolder.name] as string;
-  if (inputs.platform === Platform.VSCode) {
-    folder = getRootDirectory();
-    await fs.ensureDir(folder);
-  }
-  const sample = inputs[CoreQuestionNames.Samples] as OptionItem;
-  if (sample && sample.data && folder) {
-    const url = sample.data as string;
-    const sampleId = sample.id;
+  let fxError;
+  const progress = fxCore.tools.ui.createProgressBar("Fetch sample app", 3);
+  progress.start();
+  const telemetryProperties: any = {
+    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+    module: "fx-core",
+  };
+  try {
+    let folder = inputs[QuestionRootFolder.name] as string;
+    if (inputs.platform === Platform.VSCode) {
+      folder = getRootDirectory();
+      await fs.ensureDir(folder);
+    }
+    const sampleId = inputs[CoreQuestionNames.Samples] as string;
+    if (!(sampleId && folder)) {
+      throw InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs);
+    }
+    telemetryProperties[TelemetryProperty.SampleAppName] = sampleId;
+    const samples = sampleProvider.SampleCollection.samples.filter(
+      (sample) => sample.id.toLowerCase() === sampleId.toLowerCase()
+    );
+    if (samples.length === 0) {
+      throw InvalidInputError(`invalid sample id: '${sampleId}'`, inputs);
+    }
+    const sample = samples[0];
+    const url = sample.link as string;
     const sampleAppPath = path.resolve(folder, sampleId);
     if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
-      return err(ProjectFolderExistError(sampleAppPath));
+      throw ProjectFolderExistError(sampleAppPath);
     }
-
-    let fetchRes: AxiosResponse<any> | undefined;
-    const task1: RunnableTask<Void> = {
-      name: `Download code from '${url}'`,
-      run: async (...args: any): Promise<Result<Void, FxError>> => {
-        try {
-          sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSampleStart, {
-            [TelemetryProperty.SampleAppName]: sample.id,
-            module: "fx-core",
-          });
-          fetchRes = await fetchCodeZip(url);
-          if (fetchRes !== undefined) {
-            sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, {
-              [TelemetryProperty.SampleAppName]: sample.id,
-              [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-              module: "fx-core",
-            });
-            return ok(Void);
-          } else return err(FetchSampleError());
-        } catch (e) {
-          sendTelemetryErrorEvent(Component.core, TelemetryEvent.DownloadSample, assembleError(e), {
-            [TelemetryProperty.SampleAppName]: sample.id,
-            module: "fx-core",
-          });
-          return err(assembleError(e));
-        }
-      },
-    };
-
-    const task2: RunnableTask<Void> = {
-      name: "Save and unzip package",
-      run: async (...args: any): Promise<Result<Void, FxError>> => {
-        if (fetchRes) {
-          await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
-        }
-        return ok(Void);
-      },
-    };
-    const task3: RunnableTask<Void> = {
-      name: "post process",
-      run: async (...args: any): Promise<Result<Void, FxError>> => {
-        await downloadSampleHook(sampleId, sampleAppPath);
-        return ok(Void);
-      },
-    };
-    const group = new GroupOfTasks<Void>([task1, task2, task3], {
-      sequential: true,
-      fastFail: true,
-    });
-    const runRes = await fxcore.tools.ui.runWithProgress(group, {
-      showProgress: true,
-      cancellable: false,
-    });
-    if (runRes.isOk()) {
-      return ok(sampleAppPath);
-    } else {
-      return err(runRes.error);
+    progress.next(`Downloading from ${url}`);
+    const fetchRes = await fetchCodeZip(url);
+    if (fetchRes === undefined) {
+      throw new SystemError(
+        "FetchSampleError",
+        "Fetch sample app error: empty zip file",
+        CoreSource
+      );
     }
+    progress.next("Unzipping the sample package");
+    await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+    await downloadSampleHook(sampleId, sampleAppPath);
+    progress.next("Update project settings");
+    const loadInputs: Inputs = {
+      ...inputs,
+      projectPath: sampleAppPath,
+    };
+    const projectSettingsRes = await loadProjectSettings(loadInputs, isMultiEnvEnabled());
+    if (projectSettingsRes.isOk()) {
+      const projectSettings = projectSettingsRes.value;
+      projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
+      inputs.projectId = projectSettings.projectId;
+      telemetryProperties[TelemetryProperty.ProjectId] = projectSettings.projectId;
+      ctx.projectSettings = projectSettings;
+      inputs.projectPath = sampleAppPath;
+    }
+    progress.end(true);
+    return ok(sampleAppPath);
+  } catch (e) {
+    fxError = assembleError(e);
+    progress.end(false);
+    telemetryProperties[TelemetryProperty.Success] = TelemetrySuccess.No;
+    sendTelemetryErrorEvent(
+      Component.core,
+      TelemetryEvent.DownloadSample,
+      fxError,
+      telemetryProperties
+    );
+    return err(fxError);
   }
-  return err(InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs));
 }
 
 export function newProjectSettings(): ProjectSettings {
   const projectSettings: ProjectSettings = {
     appName: "",
     projectId: uuid.v4(),
-    version: "2.0.0",
+    version: getProjectSettingsVersion(),
     solutionSettings: {
       name: "",
     },
@@ -1435,6 +1488,11 @@ export function undefinedName(objs: any[], names: string[]) {
     }
   }
   return undefined;
+}
+
+export function getProjectSettingsVersion() {
+  if (isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false)) return "2.0.0";
+  else return "1.0.0";
 }
 
 export * from "./error";

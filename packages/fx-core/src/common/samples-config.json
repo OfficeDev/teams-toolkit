@@ -25,7 +25,9 @@
             "title": "Contact Exporter using Graph Toolkit",
             "shortDescription": "Contact Exporter app of Microsoft Teams Tab app.",
             "fullDescription": "Contact Exporter app can export your teams contact info to Excel files, and it is using Microsoft Graph Toolkit as UI component. This app only has a Tab frontend.",
-            "tags": ["Tab", "JS", "Ready to F5 Preview"]
+            "tags": ["Tab", "JS", "Ready to F5 Preview"],
+            "time": "5min to run",
+            "configuration": "F5 ready"
         },
         {
             "id": "todo-list-with-Azure-backend",

@@ -7,7 +7,7 @@ import { Inputs, Void } from "../types";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
 import {
-  AzureResource,
+  CloudResource,
   LocalResource,
   RuntimeStacks,
   TeamsAppLocalResourceProfile,
@@ -57,8 +57,8 @@ export interface ResourceProvider {
     ctx: Context,
     inputs: ProvisionInputs,
     tokenProvider: TokenProvider,
-    resourceProfile?: AzureResource
-  ) => Promise<Result<AzureResource, FxError>>;
+    resourceProfile?: CloudResource
+  ) => Promise<Result<CloudResource, FxError>>;
 
   generateResourceTemplate?: (
     ctx: Context,
@@ -75,7 +75,7 @@ export interface ResourceProvider {
   deploy?: (
     ctx: Context,
     inputs: DeploymentInputs,
-    resourceProfile: AzureResource,
+    resourceProfile: CloudResource,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
 }

@@ -27,7 +27,7 @@ export enum AzureResourceTypes {
 /**
  * defines the provision output of HostingPlugin
  */
-export interface AzureResource extends Json {
+export interface CloudResource extends Json {
   type: string;
   name: string;
   resourceId: string; //resourceId
@@ -43,24 +43,24 @@ export interface AzureResource extends Json {
   location?: string;
 }
 
-export interface AzureManagedIdentity extends AzureResource {
+export interface AzureManagedIdentity extends CloudResource {
   type: AzureResourceTypes.ManagedIdentity;
   clientId: string;
 }
 
-export interface AzureStorageAccount extends AzureResource {
+export interface AzureStorageAccount extends CloudResource {
   type: AzureResourceTypes.AzureStorageAccount;
   endpoint: string;
 }
 
-export interface AzureSQLDatabase extends AzureResource {
+export interface AzureSQLDatabase extends CloudResource {
   type: AzureResourceTypes.AzureSQL;
   endpoint: string;
   adminUserName: string;
   databaseName: string;
 }
 
-export interface AzureBot extends AzureResource {
+export interface AzureBot extends CloudResource {
   type: AzureResourceTypes.AzureBot;
   endpoint: string;
   botId: string;
@@ -71,12 +71,12 @@ export interface AzureBot extends AzureResource {
   botRedirectUri?: string; // ???
 }
 
-export interface WebApp extends AzureResource {
+export interface WebApp extends CloudResource {
   type: AzureResourceTypes.AzureWebApp;
   endpoint: string;
 }
 
-export interface AzureActiveDirectoryApp extends AzureResource {
+export interface AzureActiveDirectoryApp extends CloudResource {
   type: AzureResourceTypes.AAD;
   clientId: string;
   clientSecret: string;
@@ -141,9 +141,7 @@ export interface LocalBotResource extends LocalResource {
  */
 export interface TeamsFxResourceProfile {
   solution: AzureCommonConfig;
-  tab?: AzureResource;
-  bot?: AzureBot;
-  resources?: AzureResource[];
+  resources?: CloudResource[];
   aad?: AzureActiveDirectoryApp;
   teamsApp: TeamsAppResource;
 }
@@ -162,7 +160,7 @@ export interface TeamsAppLocalResourceProfile {
 /**
  * example of TeamsAppResourceProfile
  */
-const resourceProfile: TeamsFxResourceProfile = {
+const profile1: TeamsFxResourceProfile = {
   solution: {
     resourceNameSuffix: "595516",
     resourceGroupName: "fullcap-dev-rg",
@@ -172,48 +170,47 @@ const resourceProfile: TeamsFxResourceProfile = {
     location: "Central US",
     provisionSucceeded: true,
   },
-  tab: {
-    name: "tab",
-    type: AzureResourceTypes.AzureStorageAccount,
-    resourceId:
-      "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Storage/storageAccounts/frontendstgwtdxzjx6olulg",
-    resourceName: "frontendstgwtdxzjx6olulg",
-    endpoint: "https://frontendstgwtdxzjx6olulg.z19.web.core.windows.net",
-  },
-  bot: {
-    name: "bot",
-    type: AzureResourceTypes.AzureBot,
-    resourceId:
-      "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/fullcapdev230e29-bot-sites", //resourceId
-    resourceName: "fullcapdev230e29-bot-sites",
-    endpoint: "https://fullcapdev230e29-bot-sites.azurewebsites.net",
-    botId: "baaec4f5-8c99-4ba5-b896-376ab8d519fa",
-    botPassword: "xxxx",
-    aadObjectId: "3067c7a1-8584-4cd4-8093-febf0ae378ab", //bot AAD App Id
-    appServicePlan: "fullcapdev230e29-bot-serverfarms", // use for deploy
-    botChannelReg: "fullcapdev230e29-bot-service", // Azure Bot
-  },
-  aad: {
-    name: "simpleAuth",
-    type: AzureResourceTypes.AAD,
-    resourceId: "3154034a-4ce1-48f7-809f-e8dd91ac5b4c",
-    resourceName: "xxxaad",
-    clientId: "0a9f0107-a78a-40a9-9740-812b1f13bf37",
-    clientSecret: "{{fx-resource-aad-app-for-teams.clientSecret}}",
-    objectId: "1d4be2b5-ee59-4ca6-a03e-c84bd49c6075",
-    oauth2PermissionScopeId: "c883327a-4435-4bc8-bced-f57542f2c94e",
-    tenantId: "72f988bf-86f1-41af-91ab-2d7cd011db47",
-    oauthHost: "https://login.microsoftonline.com",
-    oauthAuthority: "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47",
-    applicationIdUris:
-      "api://frontendstgwtdxzjx6olulg.z19.web.core.windows.net/botid-baaec4f5-8c99-4ba5-b896-376ab8d519fa",
-  },
   teamsApp: {
     teamsAppId: "3949bacf-b098-4b03-9bb1-ca94196c90f8",
     tenantId: "72f988bf-86f1-41af-91ab-2d7cd011db47",
   },
-
   resources: [
+    {
+      name: "AzureStorageAccount_1",
+      type: AzureResourceTypes.AzureStorageAccount,
+      resourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Storage/storageAccounts/frontendstgwtdxzjx6olulg",
+      resourceName: "frontendstgwtdxzjx6olulg",
+      endpoint: "https://frontendstgwtdxzjx6olulg.z19.web.core.windows.net",
+    },
+    {
+      name: "AzureBot_1",
+      type: AzureResourceTypes.AzureBot,
+      resourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.BotService/botServices/huajietestbot1",
+      resourceName: "huajietestbot1",
+      botId: "baaec4f5-8c99-4ba5-b896-376ab8d519fa",
+      botPassword: "xxxx",
+      aadObjectId: "3067c7a1-8584-4cd4-8093-febf0ae378ab", //bot AAD App Id
+      appServicePlan: "fullcapdev230e29-bot-serverfarms", // use for deploy
+      botChannelReg: "fullcapdev230e29-bot-service", // Azure Bot
+    },
+    {
+      name: "AzureWebApp_1",
+      type: AzureResourceTypes.AzureWebApp,
+      resourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/fullcapdev230e29-bot-sites", //resourceId
+      resourceName: "fullcapdev230e29-bot-sites",
+      endpoint: "https://fullcapdev230e29-bot-sites.azurewebsites.net",
+    },
+    {
+      name: "AzureFunction_1",
+      type: AzureResourceTypes.AzureFunctionApp,
+      resourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/fullcap102dev517e3f-function-webapp",
+      resourceName: "fullcapdev230e29-simpleauth-webapp",
+      endpoint: "https://fullcapdev230e29-simpleauth-webapp.azurewebsites.net",
+    },
     {
       name: "SimpleAuth",
       type: AzureResourceTypes.AzureWebApp,
@@ -223,15 +220,22 @@ const resourceProfile: TeamsFxResourceProfile = {
       endpoint: "https://fullcapdev230e29-simpleauth-webapp.azurewebsites.net",
     },
     {
-      name: "AzureFunction",
-      type: AzureResourceTypes.AzureFunctionApp,
-      resourceId:
-        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/fullcap102dev517e3f-function-webapp",
-      resourceName: "fullcapdev230e29-simpleauth-webapp",
-      endpoint: "https://fullcapdev230e29-simpleauth-webapp.azurewebsites.net",
+      name: "AAD",
+      type: AzureResourceTypes.AAD,
+      resourceId: "3154034a-4ce1-48f7-809f-e8dd91ac5b4c",
+      resourceName: "xxxaad",
+      clientId: "0a9f0107-a78a-40a9-9740-812b1f13bf37",
+      clientSecret: "{{fx-resource-aad-app-for-teams.clientSecret}}",
+      objectId: "1d4be2b5-ee59-4ca6-a03e-c84bd49c6075",
+      oauth2PermissionScopeId: "c883327a-4435-4bc8-bced-f57542f2c94e",
+      tenantId: "72f988bf-86f1-41af-91ab-2d7cd011db47",
+      oauthHost: "https://login.microsoftonline.com",
+      oauthAuthority: "https://login.microsoftonline.com/72f988bf-86f1-41af-91ab-2d7cd011db47",
+      applicationIdUris:
+        "api://frontendstgwtdxzjx6olulg.z19.web.core.windows.net/botid-baaec4f5-8c99-4ba5-b896-376ab8d519fa",
     },
     {
-      name: "AzureSQL",
+      name: "AzureSQL_1",
       type: AzureResourceTypes.AzureSQL,
       resourceId:
         "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Sql/servers/fullcapdev230e29-sql-server",
@@ -241,12 +245,96 @@ const resourceProfile: TeamsFxResourceProfile = {
       databaseName: "fullcapdev230e29-database",
     },
     {
-      name: "ManagedIdentity",
+      name: "ManagedIdentity_1",
       type: AzureResourceTypes.ManagedIdentity,
       resourceId:
         "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.ManagedIdentity/userAssignedIdentities/fullcap102dev517e3f-managedIdentity",
       resourceName: "fullcap102dev517e3f-managedIdentity",
       clientId: "bab9c110-d477-4cd4-9903-a01e426ec68a",
+    },
+  ],
+};
+
+const profile2: TeamsFxResourceProfile = {
+  solution: {
+    resourceNameSuffix: "595516",
+    resourceGroupName: "fullcap-dev-rg",
+    tenantId: "9f3429dc-50f4-44df-af81-f1078d49a57a",
+    subscriptionId: "63f43cd3-ab63-429d-80ad-950ec8359724",
+    subscriptionName: "Visual Studio Enterprise Subscription",
+    location: "Central US",
+    provisionSucceeded: true,
+  },
+  teamsApp: {
+    teamsAppId: "3949bacf-b098-4b03-9bb1-ca94196c90f8",
+    tenantId: "72f988bf-86f1-41af-91ab-2d7cd011db47",
+  },
+  resources: [
+    {
+      name: "AzureBot_1",
+      type: AzureResourceTypes.AzureBot,
+      resourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.BotService/botServices/huajietestbot1",
+      resourceName: "huajietestbot1",
+      botId: "baaec4f5-8c99-4ba5-b896-376ab8d519fa",
+      botPassword: "xxxx",
+      aadObjectId: "3067c7a1-8584-4cd4-8093-febf0ae378ab", //bot AAD App Id
+      appServicePlan: "fullcapdev230e29-bot-serverfarms", // use for deploy
+      botChannelReg: "fullcapdev230e29-bot-service", // Azure Bot
+    },
+    {
+      name: "AzureWebApp_1",
+      type: AzureResourceTypes.AzureWebApp,
+      resourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/fullcapdev230e29-bot-sites", //resourceId
+      resourceName: "fullcapdev230e29-bot-sites",
+      endpoint: "https://fullcapdev230e29-bot-sites.azurewebsites.net",
+    },
+  ],
+};
+
+const profile3: TeamsFxResourceProfile = {
+  solution: {
+    resourceNameSuffix: "595516",
+    resourceGroupName: "fullcap-dev-rg",
+    tenantId: "9f3429dc-50f4-44df-af81-f1078d49a57a",
+    subscriptionId: "63f43cd3-ab63-429d-80ad-950ec8359724",
+    subscriptionName: "Visual Studio Enterprise Subscription",
+    location: "Central US",
+    provisionSucceeded: true,
+  },
+  teamsApp: {
+    teamsAppId: "3949bacf-b098-4b03-9bb1-ca94196c90f8",
+    tenantId: "72f988bf-86f1-41af-91ab-2d7cd011db47",
+  },
+  resources: [
+    {
+      name: "AzureBot_1",
+      type: AzureResourceTypes.AzureBot,
+      resourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.BotService/botServices/huajietestbot1",
+      resourceName: "huajietestbot1",
+      botId: "baaec4f5-8c99-4ba5-b896-376ab8d519fa",
+      botPassword: "xxxx",
+      aadObjectId: "3067c7a1-8584-4cd4-8093-febf0ae378ab", //bot AAD App Id
+      appServicePlan: "fullcapdev230e29-bot-serverfarms", // use for deploy
+      botChannelReg: "fullcapdev230e29-bot-service", // Azure Bot
+    },
+    {
+      name: "AzureWebApp_1",
+      type: AzureResourceTypes.AzureWebApp,
+      resourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/fullcapdev230e29-bot-sites",
+      resourceName: "fullcapdev230e29-bot-sites",
+      endpoint: "https://fullcapdev230e29-bot-sites.azurewebsites.net",
+    },
+    {
+      name: "AzureWebApp_2",
+      type: AzureResourceTypes.AzureWebApp,
+      resourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/fullcapdev230e29-bot-sites22",
+      resourceName: "fullcapdev230e29-bot-sites22",
+      endpoint: "https://fullcapdev230e2922-bot-sites.azurewebsites.net",
     },
   ],
 };

@@ -16,7 +16,7 @@ import vsCodeLogProvider from "../commonlib/log";
 import jscodeshift = require("jscodeshift");
 import transform from "./migrationTool/replaceSDK";
 import transformTs from "./migrationTool/ts/replaceTsSDK";
-import { ExtensionSource } from "../error";
+import { ExtensionErrors, ExtensionSource } from "../error";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 import * as constants from "./constants";
@@ -64,17 +64,17 @@ export class TeamsAppMigrationHandler {
         return ok(false);
       }
     } catch (e: any) {
-      return err(returnSystemError(e, ExtensionSource, "UpdatePackageJsonError"));
+      return err(returnSystemError(e, ExtensionSource, ExtensionErrors.UpdatePackageJsonError));
     }
 
     return ok(true);
   }
 
-  public async updateCodes(): Promise<Result<null, FxError>> {
+  public async updateCodes(): Promise<Result<string[], FxError>> {
     try {
-      return await updateCodes(this.sourcePath, TeamsAppMigrationHandler.excludeFolders);
+      return ok(await updateCodes(this.sourcePath, TeamsAppMigrationHandler.excludeFolders));
     } catch (e: any) {
-      return err(returnSystemError(e, ExtensionSource, "UpdateCodesError"));
+      return err(returnSystemError(e, ExtensionSource, ExtensionErrors.UpdateCodesError));
     }
   }
 
@@ -91,15 +91,12 @@ export class TeamsAppMigrationHandler {
       await fs.writeJSON(this.sourcePath, manifest, { spaces: 4, EOL: os.EOL });
       return ok(null);
     } catch (e: any) {
-      return err(returnUserError(e, ExtensionSource, "UpdateManifestError"));
+      return err(returnUserError(e, ExtensionSource, ExtensionErrors.UpdateManifestError));
     }
   }
 }
 
-async function updateCodes(
-  dirPath: string,
-  excludeFolders?: Set<string>
-): Promise<Result<null, FxError>> {
+async function updateCodes(dirPath: string, excludeFolders?: Set<string>): Promise<string[]> {
   const failedFiles: string[] = [];
   const names = await fs.readdir(dirPath);
   for (const name of names) {
@@ -107,22 +104,16 @@ async function updateCodes(
     const stat = await fs.stat(filePath);
     if (stat.isDirectory()) {
       if (!excludeFolders?.has(name)) {
-        await updateCodes(filePath, excludeFolders);
+        failedFiles.push(...(await updateCodes(filePath, excludeFolders)));
       }
     } else if (stat.isFile()) {
       const extname = path.extname(filePath);
       if (constants.tsExtNames.includes(extname)) {
-        vsCodeLogProvider.info(
-          util.format(StringResources.vsc.migrateTeamsTabApp.updateCode, "typescript", filePath)
-        );
         const result = await updateCodeInplace(filePath, "ts");
         if (result.isErr()) {
           failedFiles.push(filePath);
         }
       } else if (constants.jsExtNames.includes(extname)) {
-        vsCodeLogProvider.info(
-          util.format(StringResources.vsc.migrateTeamsTabApp.updateCode, "javascript", filePath)
-        );
         const result = await updateCodeInplace(filePath, "js");
         if (result.isErr()) {
           failedFiles.push(filePath);
@@ -132,17 +123,7 @@ async function updateCodes(
       }
     }
   }
-
-  if (failedFiles.length > 0) {
-    return err(
-      returnUserError(
-        new Error(`Failed to migrate files: ${JSON.stringify(failedFiles)}`),
-        ExtensionSource,
-        "UpdateCodesError"
-      )
-    );
-  }
-  return ok(null);
+  return failedFiles;
 }
 
 async function updateCodeInplace(
@@ -151,6 +132,17 @@ async function updateCodeInplace(
 ): Promise<Result<null, FxError>> {
   try {
     const sourceCode = (await fs.readFile(filePath)).toString();
+    // skip files that do not import Teams client SDK
+    if (!sourceCode.includes(constants.teamsClientSDKName)) {
+      return ok(null);
+    }
+    vsCodeLogProvider.info(
+      util.format(
+        StringResources.vsc.migrateTeamsTabApp.updatingCode,
+        type === "ts" ? "typescript" : "javascript",
+        filePath
+      )
+    );
     const fileInfo: jscodeshift.FileInfo = {
       path: filePath,
       source: sourceCode,
@@ -169,9 +161,14 @@ async function updateCodeInplace(
     }
     return ok(null);
   } catch (error: any) {
-    const message = `Failed to migrate file ${filePath}. Detail: ${error?.message ?? "None"}.`;
+    const message = util.format(
+      StringResources.vsc.migrateTeamsTabApp.updateCodeError,
+      filePath,
+      error.code,
+      error.message
+    );
     vsCodeLogProvider.warning(message);
-    const fxError = returnUserError(new Error(message), ExtensionSource, "UpdateCodeError");
+    const fxError = returnUserError(error, ExtensionSource, ExtensionErrors.UpdateCodeError);
     ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.MigrateTeamsTabAppCode, fxError);
     return err(fxError);
   }

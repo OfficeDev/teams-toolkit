@@ -439,11 +439,17 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 }
 
 export function isMultiEnvEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
+  return (
+    !isFeatureFlagEnabled(FeatureFlagName.RollbackToTeamsToolkitV2, false) &&
+    isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)
+  );
 }
 
 export function isArmSupportEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
+  return (
+    !isFeatureFlagEnabled(FeatureFlagName.RollbackToTeamsToolkitV2, false) &&
+    isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)
+  );
 }
 
 export function isBicepEnvCheckerEnabled(): boolean {
@@ -451,7 +457,10 @@ export function isBicepEnvCheckerEnabled(): boolean {
 }
 
 export function isRemoteCollaborateEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
+  return (
+    !isFeatureFlagEnabled(FeatureFlagName.RollbackToTeamsToolkitV2, false) &&
+    isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)
+  );
 }
 
 export function getRootDirectory(): string {

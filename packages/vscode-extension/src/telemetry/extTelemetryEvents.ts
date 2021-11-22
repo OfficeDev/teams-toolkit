@@ -108,7 +108,6 @@ export enum TelemetryEvent {
   MigrateV1ProjectNotificationStart = "migrate-v1-project-notification-start",
   MigrateV1ProjectNotification = "migrate-v1-project-notification",
 
-  ViewEnvironment = "view-environment",
   OpenSubscriptionInPortal = "open-subscription-in-portal",
   OpenResourceGroupInPortal = "open-resource-group-in-portal",
 
@@ -189,6 +188,7 @@ export enum TelemetryProperty {
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
   IsFromSample = "is-from-sample",
+  UpdateFailedFiles = "update-failed-files",
 }
 
 export enum TelemetrySuccess {

@@ -32,6 +32,12 @@ import * as Deploy from "./ops/deploy";
 import { Logger } from "../utils/logger";
 import path from "path";
 import fs from "fs-extra";
+import {
+  getResourceGroupNameFromResourceId,
+  getSiteNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+  isArmSupportEnabled,
+} from "../../../..";
 
 type Site = WebSiteManagementModels.Site;
 
@@ -48,6 +54,7 @@ export interface BlazorPluginConfig {
   endpoint?: string;
   domain?: string;
   projectFilePath?: string;
+  webAppResourceId?: string;
 
   /* Intermediate  */
   site?: Site;
@@ -72,6 +79,15 @@ export class BlazorPluginImpl {
     this.config.webAppName = ctx.config.get(ConfigInfo.webAppName) as string;
     this.config.appServicePlanName = ctx.config.get(ConfigInfo.appServicePlanName) as string;
     this.config.projectFilePath = ctx.config.get(ConfigInfo.projectFilePath) as string;
+
+    // Resource id priors to other configs
+    const webAppResourceId = ctx.config.get(ConfigKey.webAppResourceId) as string;
+    if (webAppResourceId) {
+      this.config.webAppResourceId = webAppResourceId;
+      this.config.resourceGroupName = getResourceGroupNameFromResourceId(webAppResourceId);
+      this.config.webAppName = getSiteNameFromResourceId(webAppResourceId);
+      this.config.subscriptionId = getSubscriptionIdFromResourceId(webAppResourceId);
+    }
   }
 
   private syncConfigToContext(ctx: PluginContext): void {
@@ -108,6 +124,8 @@ export class BlazorPluginImpl {
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartProvision(PluginInfo.displayName));
     // TODO: const progressHandler = await ProgressHelper.startProvisionProgressHandler(ctx);
+
+    this.syncConfigFromContext(ctx);
 
     const resourceGroupName = this.checkAndGet(
       this.config.resourceGroupName,
@@ -155,6 +173,12 @@ export class BlazorPluginImpl {
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (isArmSupportEnabled()) {
+      return ok(undefined);
+    }
+
+    this.syncConfigFromContext(ctx);
+
     const resourceGroupName = this.checkAndGet(
       this.config.resourceGroupName,
       ConfigKey.resourceGroupName

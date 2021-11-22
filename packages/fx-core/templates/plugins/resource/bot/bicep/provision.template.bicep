@@ -13,7 +13,6 @@ output botOutput object = {
   siteName: botProvision.outputs.botWebAppName
   validDomain: botProvision.outputs.botDomain
   appServicePlanName: botProvision.outputs.appServicePlanName
-  botChannelRegName: botProvision.outputs.botServiceName
   botWebAppResourceId: botProvision.outputs.botWebAppResourceId
   siteEndpoint: botProvision.outputs.botWebAppEndpoint
 }

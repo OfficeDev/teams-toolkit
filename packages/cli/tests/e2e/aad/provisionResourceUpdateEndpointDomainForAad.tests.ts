@@ -29,8 +29,10 @@ function test(vsCallingCli: boolean) {
 
     it(`Provision Resource: Update Domain and Endpoint for AAD - Test Plan Id 9576711`, async function () {
       const env = cloneDeep(process.env);
-      if (vsCallingCli) {
-        env["VS_CALLING_CLI"] = "true";
+      if (!isMultiEnvEnabled()) {
+        if (vsCallingCli) {
+          env["VS_CALLING_CLI"] = "true";
+        }
       }
       // new a project
       await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {

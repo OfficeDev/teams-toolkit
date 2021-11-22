@@ -279,14 +279,6 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     await result;
     return ok(undefined);
   } catch (error) {
-    const errorMessage = format(
-      getStrings().solution.DeployArmTemplates.FailNotice,
-      PluginDisplayName.Solution,
-      resourceGroupName,
-      deploymentName
-    );
-    ctx.logProvider?.error(errorMessage + ` Detailed error: ${error.message}`);
-
     // return the error if the template is invalid
     if (error.code === InvalidTemplateErrorCode) {
       return err(
@@ -304,13 +296,22 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
         returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure);
       }
 
-      ctx.logProvider?.error(
-        `[${PluginDisplayName.Solution}] ${deploymentName} -> ${JSON.stringify(
-          formattedDeploymentError(deploymentError),
-          undefined,
-          2
-        )}`
+      const deploymentErrorMessage = JSON.stringify(
+        formattedDeploymentError(deploymentError),
+        undefined,
+        2
       );
+      const errorMessage = format(
+        getStrings().solution.DeployArmTemplates.FailNotice,
+        PluginDisplayName.Solution,
+        resourceGroupName,
+        deploymentName
+      );
+      ctx.logProvider?.error(
+        errorMessage +
+          `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${ArmHelpLink}.`
+      );
+
       let failedDeployments: string[] = [];
       if (deploymentError.subErrors) {
         failedDeployments = Object.keys(deploymentError.subErrors);

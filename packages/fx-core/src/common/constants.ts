@@ -52,6 +52,7 @@ export class FeatureFlagName {
   static readonly APIV2 = "TEAMSFX_APIV2";
   // This will default to true and this environment is only for tests. It does not expose to user.
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
+  static readonly RollbackToTeamsToolkitV2 = "TEAMSFX_ROLLBACK_TO_TEAMS_TOOLKIT_V2";
   static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
   static readonly VSCallingCLI = "VS_CALLING_CLI";
 }

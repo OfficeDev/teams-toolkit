@@ -269,50 +269,6 @@ describe("Get AppDefinition and Update", () => {
       chai
         .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
         .equals(AppStudioError.GetLocalDebugConfigFailedError.name);
-      if (isMultiEnvEnabled()) {
-        chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes("tabEndpoint");
-      } else {
-        chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes("{baseUrl}");
-      }
-    }
-  });
-
-  it("doesn't have both tab endpoint and tab domain in local config and should return error", async () => {
-    if (isMultiEnvEnabled()) {
-      localSettings.frontend?.delete(LocalSettingsFrontendKeys.TabEndpoint);
-    } else {
-      LDEBUG_ConfigMap.delete(LOCAL_DEBUG_TAB_ENDPOINT);
-      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
-      configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
-      configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
-    }
-    ctx = {
-      root: getAzureProjectRoot(),
-      envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
-      config: new ConfigMap(),
-      cryptoProvider: new LocalCrypto(""),
-      localSettings,
-    };
-    ctx.projectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        name: "azure",
-        version: "1.0",
-        capabilities: ["Bot"],
-      },
-    };
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
-    chai.assert.isTrue(getAppDefinitionAndResult.isErr());
-    if (getAppDefinitionAndResult.isErr()) {
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
-        .equals(AppStudioError.GetLocalDebugConfigFailedError.name);
-      if (isMultiEnvEnabled()) {
-        chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes("tabEndpoint");
-      } else {
-        chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes("{baseUrl}");
-      }
     }
   });
 

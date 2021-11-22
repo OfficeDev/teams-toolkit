@@ -1672,6 +1672,15 @@ export class AppStudioPluginImpl {
       await fs.readFile(await this.getManifestTemplatePath(ctx.root, isLocalDebug))
     ).toString();
 
+    // Bot only project, without frontend hosting
+    let endpoint = tabEndpoint;
+    const solutionSettings: AzureSolutionSettings = ctx.projectSettings
+      ?.solutionSettings as AzureSolutionSettings;
+    const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
+    if (!tabEndpoint && !hasFrontend) {
+      endpoint = DEFAULT_DEVELOPER_WEBSITE_URL;
+    }
+
     if (isMultiEnvEnabled()) {
       const customizedKeys = getCustomizedKeys("", JSON.parse(manifest));
       this.commonProperties = {
@@ -1681,7 +1690,7 @@ export class AppStudioPluginImpl {
         config: ctx.envInfo.config,
         state: {
           "fx-resource-frontend-hosting": {
-            endpoint: tabEndpoint ?? "{{{state.fx-resource-frontend-hosting.endpoint}}}",
+            endpoint: endpoint ?? "{{{state.fx-resource-frontend-hosting.endpoint}}}",
           },
           "fx-resource-aad-app-for-teams": {
             clientId: aadId ?? "{{state.fx-resource-aad-app-for-teams.clientId}}",
@@ -1769,7 +1778,7 @@ export class AppStudioPluginImpl {
           webApplicationInfoResource
         );
         manifest = checkAndConfig(manifest, "appClientId", aadId);
-        manifest = checkAndConfig(manifest, "baseUrl", tabEndpoint);
+        manifest = checkAndConfig(manifest, "baseUrl", endpoint);
         manifest = checkAndConfig(manifest, "botId", botId);
       } catch (e) {
         if (isLocalDebug) {
@@ -1823,12 +1832,6 @@ export class AppStudioPluginImpl {
 
     for (const domain of validDomains) {
       updatedManifest.validDomains?.push(domain);
-    }
-
-    if (!tabEndpoint && updatedManifest.developer) {
-      updatedManifest.developer.websiteUrl = DEFAULT_DEVELOPER_WEBSITE_URL;
-      updatedManifest.developer.termsOfUseUrl = DEFAULT_DEVELOPER_TERM_OF_USE_URL;
-      updatedManifest.developer.privacyUrl = DEFAULT_DEVELOPER_PRIVACY_URL;
     }
 
     const appDefinition = this.convertToAppDefinition(updatedManifest, false);

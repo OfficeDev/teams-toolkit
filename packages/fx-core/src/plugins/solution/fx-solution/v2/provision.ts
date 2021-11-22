@@ -272,7 +272,7 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
       username,
       subscriptionName ? subscriptionName : subscriptionId
     );
-    confirmRes = await ctx.ui?.showMessage("warn", msgNew, true, "Provision", "Pricing calculator");
+    confirmRes = await ctx.ui?.showMessage("warn", msgNew, true, "Provision");
   } else {
     confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision", "Pricing calculator");
   }

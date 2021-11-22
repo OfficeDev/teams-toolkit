@@ -1,7 +1,7 @@
 export const CONFIGURATION_PREFIX = "fx-extension";
 export enum ConfigurationKey {
   BicepEnvCheckerEnable = "validateBicep",
-  InsiderPreview = "insiderPreview",
+  RollbackToTeamsToolkitV2 = "rollbackToTeamsToolkitV2",
   RootDirectory = "defaultProjectRootDirectory",
 }
 

@@ -14,13 +14,13 @@ Use the library to:
 
 ## Getting started
 
-TeamsFx SDK is pre-configured in scaffolded project using TeamsFx toolkit or cli.
+TeamsFx SDK is pre-configured in scaffolded project using Teams Toolkit extension for Visual Studio and vscode, or the `teamsfx` cli from the `teamsfx-cli` npm package.
 Please check the [README](https://github.com/OfficeDev/TeamsFx/blob/main/packages/vscode-extension/README.md) to see how to create a Teams App project.
 
 ### Prerequisites
 
 - Node.js version 10.x.x or higher
-- A project created by TeamsFx toolkit VS Code extension or Cli tool.
+- A project created by the Teams Toolkit VS Code extension or `teamsfx` CLI tool.
 - If your project has installed `botbuilder` related [packages](https://github.com/Microsoft/botbuilder-js#packages) as dependencies, ensure they are of the same version and the version `>= 4.9.3`. ([Issue - all of the BOTBUILDER packages should be the same version](https://github.com/BotBuilderCommunity/botbuilder-community-js/issues/57#issuecomment-508538548))
 
 ### Install the `@microsoft/teamsfx` package

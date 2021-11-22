@@ -2,9 +2,6 @@
 
 TeamsFx helps automate your development workflow when building a Teams application. This document provides tools and pre-cooked templates for you to get started when setting up CI/CD pipelines with the most popular development platforms including Github, Azure DevOps and Jenkins.
 
-> Note: 
-Ensure that you follow the instructions from [Enable-Preview-Features-in-Teams-Toolkit](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit) to enable preview features. CI/CD support for non-preview mode can be referred to [this link](https://aka.ms/teamsfx-cicd-guide). 
-
 |Tools and Templates|Description|
 |---|---|
 |[teamsfx-cli-action](https://github.com/OfficeDev/teamsfx-cli-action)|A ready-to-use GitHub Action that integrates with TeamsFx CLI.|

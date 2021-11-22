@@ -13,13 +13,15 @@ import { FrontendPluginError } from "../resources/errors";
 
 export class TelemetryHelper {
   private static ctx?: PluginContext;
+  private static component?: string;
 
-  static setContext(ctx: PluginContext): void {
+  static setContext(ctx: PluginContext, component?: string): void {
     this.ctx = ctx;
+    this.component = component;
   }
 
   private static fillCommonProperty(properties: { [key: string]: string }): void {
-    properties[TelemetryKey.Component] = FrontendPluginInfo.PluginName;
+    properties[TelemetryKey.Component] = this.component ?? FrontendPluginInfo.PluginName;
     properties[TelemetryKey.AppId] =
       (this.ctx?.envInfo.state
         .get(DependentPluginInfo.SolutionPluginName)

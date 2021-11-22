@@ -8,6 +8,12 @@ import path from "path";
 
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 
+import {
+  getSubscriptionIdFromResourceId,
+  getResourceGroupNameFromResourceId,
+  getSiteNameFromResourceId,
+} from "./utilities";
+
 const baseUrlAppSettings = (subscriptionId: string, rg: string, name: string) =>
   `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/appsettings/list?api-version=2019-08-01`;
 const baseUrlPlan = (subscriptionId: string, rg: string, name: string) =>
@@ -49,7 +55,7 @@ class DependentPluginInfo {
 
 interface IBotObject {
   siteName: string;
-  appServicePlan: string;
+  appServicePlan?: string;
   expectValues: Map<string, string>;
 }
 
@@ -57,38 +63,72 @@ export class BotValidator {
   private static subscriptionId: string;
   private static rg: string;
 
-  public static init(ctx: any): IBotObject {
+  private static botWebAppResourceIdKeyName = "botWebAppResourceId";
+
+  public static init(ctx: any, insiderPreview = false): IBotObject {
     console.log("Start to init validator for Bot.");
 
-    const botObject = ctx[DependentPluginInfo.botPluginName] as IBotObject;
-    chai.assert.exists(botObject);
+    let botObject: IBotObject;
 
-    this.subscriptionId =
-      ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.subscriptionId];
-    chai.assert.exists(this.subscriptionId);
+    if (insiderPreview) {
+      const resourceId = ctx[DependentPluginInfo.botPluginName][this.botWebAppResourceIdKeyName];
+      this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
+      this.rg = getResourceGroupNameFromResourceId(resourceId);
 
-    this.rg = ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.resourceGroupName];
-    chai.assert.exists(this.rg);
+      const expectValues = new Map<string, string>([]);
+      expectValues.set(
+        BaseConfig.BOT_ID,
+        ctx[DependentPluginInfo.botPluginName][DependentPluginInfo.botId] as string
+      );
+      expectValues.set(
+        BaseConfig.M365_APPLICATION_ID_URI,
+        ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.applicationIdUris] as string
+      );
+      expectValues.set(BaseConfig.M365_AUTHORITY_HOST, "https://login.microsoftonline.com");
+      expectValues.set(
+        BaseConfig.M365_CLIENT_ID,
+        ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.aadClientId] as string
+      );
+      expectValues.set(
+        BaseConfig.M365_TENANT_ID,
+        ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.teamsAppTenantId] as string
+      );
 
-    const expectValues = new Map<string, string>([]);
-    expectValues.set(
-      BaseConfig.BOT_ID,
-      ctx[DependentPluginInfo.botPluginName][DependentPluginInfo.botId] as string
-    );
-    expectValues.set(
-      BaseConfig.M365_APPLICATION_ID_URI,
-      ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.applicationIdUris] as string
-    );
-    expectValues.set(BaseConfig.M365_AUTHORITY_HOST, "https://login.microsoftonline.com");
-    expectValues.set(
-      BaseConfig.M365_CLIENT_ID,
-      ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.aadClientId] as string
-    );
-    expectValues.set(
-      BaseConfig.M365_TENANT_ID,
-      ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.teamsAppTenantId] as string
-    );
-    botObject.expectValues = expectValues;
+      botObject = {
+        siteName: getSiteNameFromResourceId(resourceId),
+        expectValues: expectValues,
+      };
+    } else {
+      botObject = ctx[DependentPluginInfo.botPluginName] as IBotObject;
+      chai.assert.exists(botObject);
+
+      this.subscriptionId =
+        ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.subscriptionId];
+      chai.assert.exists(this.subscriptionId);
+
+      this.rg = ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.resourceGroupName];
+      chai.assert.exists(this.rg);
+
+      const expectValues = new Map<string, string>([]);
+      expectValues.set(
+        BaseConfig.BOT_ID,
+        ctx[DependentPluginInfo.botPluginName][DependentPluginInfo.botId] as string
+      );
+      expectValues.set(
+        BaseConfig.M365_APPLICATION_ID_URI,
+        ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.applicationIdUris] as string
+      );
+      expectValues.set(BaseConfig.M365_AUTHORITY_HOST, "https://login.microsoftonline.com");
+      expectValues.set(
+        BaseConfig.M365_CLIENT_ID,
+        ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.aadClientId] as string
+      );
+      expectValues.set(
+        BaseConfig.M365_TENANT_ID,
+        ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.teamsAppTenantId] as string
+      );
+      botObject.expectValues = expectValues;
+    }
 
     console.log("Successfully init validator for Bot.");
     return botObject;
@@ -110,7 +150,10 @@ export class BotValidator {
     });
   }
 
-  public static async validateProvision(botObject: IBotObject): Promise<void> {
+  public static async validateProvision(
+    botObject: IBotObject,
+    insiderPreviewEnabled = false
+  ): Promise<void> {
     console.log("Start to validate Bot Provision.");
 
     const tokenProvider = MockAzureAccountProvider;
@@ -133,14 +176,16 @@ export class BotValidator {
       }
     });
 
-    console.log("Validating app service plan.");
-    const servicePlanResponse = await this.getWebappServicePlan(
-      this.subscriptionId,
-      this.rg,
-      botObject.appServicePlan,
-      token as string
-    );
-    chai.assert(servicePlanResponse, botObject.appServicePlan);
+    if (!insiderPreviewEnabled) {
+      console.log("Validating app service plan.");
+      const servicePlanResponse = await this.getWebappServicePlan(
+        this.subscriptionId,
+        this.rg,
+        botObject.appServicePlan!,
+        token as string
+      );
+      chai.assert(servicePlanResponse, botObject.appServicePlan);
+    }
 
     console.log("Successfully validate Bot Provision.");
   }

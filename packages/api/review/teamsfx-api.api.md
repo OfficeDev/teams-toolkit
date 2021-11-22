@@ -638,6 +638,8 @@ export interface Inputs extends Json {
     // (undocumented)
     platform: Platform;
     // (undocumented)
+    projectId?: string;
+    // (undocumented)
     projectPath?: string;
     // (undocumented)
     sourceEnvName?: string;

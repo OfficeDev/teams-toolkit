@@ -4,649 +4,315 @@ import "mocha";
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import dotenv from "dotenv";
-import sinon from "sinon";
-import { v4 } from "uuid";
+import { assert, createSandbox, match } from "sinon";
 import fs from "fs-extra";
-import md5 from "md5";
-import {
-  after_if,
-  before_if,
-  MockAzureAccountProvider,
-  it_if,
-  ApimHelper,
-  EnvConfig,
-} from "./testUtil";
 import { ApimService } from "../../../../src/plugins/resource/apim/services/apimService";
 import { ApiManagementClient } from "@azure/arm-apimanagement";
-import { AssertNotEmpty } from "../../../../src/plugins/resource/apim/error";
-import { OpenApiSchemaVersion } from "../../../../src/plugins/resource/apim/constants";
-import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
+import {
+  ApimDefaultValues,
+  OpenApiSchemaVersion,
+} from "../../../../src/plugins/resource/apim/constants";
+import {
+  mockApimService,
+  mockApiManagementService,
+  StubbedClass,
+  DefaultTestInput,
+  mockApiVersionSet,
+  mockApi,
+  mockProductApi,
+  mockCredential,
+  MockTokenCredentials,
+} from "./mock";
+
 dotenv.config();
 chai.use(chaiAsPromised);
 
-const UT_SUFFIX = v4().substring(0, 6);
-const UT_RESOURCE_GROUP = "localtest";
-const UT_APIM_NAME = `fx-apim-local-unit-test-${UT_SUFFIX}`;
-const UT_PRODUCT_NAME = "fx-apim-local-unit-test-product";
-const UT_OAUTH_SERVER_NAME = "fx-apim-local-unit-test-oauth-server";
-const UT_API_NAME = "fx-apim-local-unit-test-api";
-const UT_TEST_DATA_FOLDER = "./tests/plugins/resource/apim/unit/data/apimService";
-const UT_USER_ID = "mocked-user-id";
+const UT_TEST_DATA_FOLDER = "./tests/plugins/resource/apim/data/apimService";
 
 describe("ApimService", () => {
-  let apimClient: ApiManagementClient;
-  let apimService: ApimService;
-  let apimHelper: ApimHelper;
-
-  before_if(EnvConfig.enableTest, async () => {
-    const result = await buildService();
-    apimClient = result.apiManagementClient;
-    apimService = result.apimService;
-    apimHelper = result.apimHelper;
-
-    await apimClient.apiManagementService.createOrUpdate(UT_RESOURCE_GROUP, UT_APIM_NAME, {
-      publisherName: "fx-apim-ut@microsoft.com",
-      publisherEmail: "fx-apim-ut@microsoft.com",
-      sku: {
-        name: "Consumption",
-        capacity: 0,
-      },
-      location: EnvConfig.defaultLocation,
-    });
-  });
-
-  after_if(EnvConfig.enableTest, async () => {
-    await apimHelper.deleteApim(UT_RESOURCE_GROUP, UT_APIM_NAME);
-  });
-
   describe("#getService()", () => {
-    const sandbox = sinon.createSandbox();
-
+    const sandbox = createSandbox();
+    let apimService: ApimService | undefined;
+    let apiManagementClient: StubbedClass<ApiManagementClient> | undefined;
+    let apiManagementServiceStub: any;
+    beforeEach(async () => {
+      const res = mockApimService(sandbox);
+      apimService = res.apimService;
+      apiManagementClient = res.apiManagementClient;
+      apiManagementServiceStub = mockApiManagementService(sandbox);
+      apiManagementClient.apiManagementService = apiManagementServiceStub;
+    });
     afterEach(() => {
       sandbox.restore();
     });
 
-    it_if(EnvConfig.enableTest, "not exist", async () => {
-      // Arrange
-      const spy = sandbox.spy(apimClient.apiManagementService, "get");
-
-      // Act & Assert
+    it("not exist", async () => {
       chai
-        .expect(await apimService.getService(UT_RESOURCE_GROUP, "not-exist-service"))
+        .expect(
+          await apimService!.getService(
+            DefaultTestInput.resourceGroup.existing,
+            DefaultTestInput.apimServiceName.new
+          )
+        )
         .to.equal(undefined);
-      sinon.assert.calledOnce(spy);
+      sandbox.assert.calledOnce(apiManagementServiceStub!.get);
     });
 
-    it_if(EnvConfig.enableTest, "exist", async () => {
-      // Arrange
-      const spy = sandbox.spy(apimClient.apiManagementService, "get");
-
-      // Act & Assert
+    it("exist", async () => {
       chai
-        .expect(await apimService.getService(UT_RESOURCE_GROUP, UT_APIM_NAME))
+        .expect(
+          await apimService!.getService(
+            DefaultTestInput.resourceGroup.existing,
+            DefaultTestInput.apimServiceName.existing
+          )
+        )
         .to.not.equal(undefined);
-      sinon.assert.calledOnce(spy);
+      assert.calledOnce(apiManagementServiceStub!.get);
     });
 
-    it_if(EnvConfig.enableTest, "not exist resource group", async () => {
-      // Arrange
-      const spy = sandbox.spy(apimClient.apiManagementService, "get");
-
-      // Act & Assert
+    it("not exist resource group", async () => {
       await chai
-        .expect(apimService.getService("not-exist-resource-group", UT_APIM_NAME))
-        .to.be.rejectedWith();
-      sinon.assert.calledOnce(spy);
+        .expect(
+          apimService!.getService(
+            DefaultTestInput.resourceGroup.new,
+            DefaultTestInput.apimServiceName.existing
+          )
+        )
+        .to.be.rejectedWith(
+          `Resource group '${DefaultTestInput.resourceGroup.new}' could not be found.`
+        );
+      assert.calledOnce(apiManagementServiceStub!.get);
     });
   });
 
-  describe("#listService()", () => {
-    const sandbox = sinon.createSandbox();
-
+  describe("#getUserId()", () => {
+    const sandbox = createSandbox();
+    let apimService: ApimService | undefined;
+    let credential: StubbedClass<MockTokenCredentials> | undefined;
+    beforeEach(async () => {
+      const res = mockApimService(sandbox);
+      apimService = res.apimService;
+      credential = res.credential;
+    });
     afterEach(() => {
       sandbox.restore();
     });
 
-    it_if(EnvConfig.enableTest, "find service", async () => {
-      // Arrange
-      const spy = sandbox.spy(apimClient.apiManagementService, "list");
+    it("exist user id", async () => {
+      mockCredential(sandbox, credential!, { userId: "test@test.com" });
+      chai.expect(await apimService!.getUserId()).to.equal("test@test.com");
+      sandbox.assert.calledOnce(credential!.getToken);
+    });
 
-      // Act & Assert
-      chai.expect(await apimService.listService()).to.deep.include({
-        serviceName: UT_APIM_NAME,
-        resourceGroupName: UT_RESOURCE_GROUP,
-      });
-      sinon.assert.calledOnce(spy);
+    it("not exist user id", async () => {
+      mockCredential(sandbox, credential!, {});
+      chai.expect(await apimService!.getUserId()).to.equal(ApimDefaultValues.userId);
+      assert.calledOnce(credential!.getToken);
     });
   });
 
   describe("#createService()", () => {
-    const sandbox = sinon.createSandbox();
-    const newServiceName = `${UT_APIM_NAME}-create`;
+    const sandbox = createSandbox();
+    let apimService: ApimService | undefined;
+    let apiManagementClient: StubbedClass<ApiManagementClient> | undefined;
+    let apiManagementServiceStub: any;
 
+    beforeEach(() => {
+      const res = mockApimService(sandbox);
+      apimService = res.apimService;
+      apiManagementClient = res.apiManagementClient;
+      apiManagementServiceStub = mockApiManagementService(sandbox);
+      apiManagementClient.apiManagementService = apiManagementServiceStub;
+    });
     afterEach(() => {
       sandbox.restore();
     });
 
-    after_if(EnvConfig.enableTest, async () => {
-      await apimHelper.deleteApim(UT_RESOURCE_GROUP, newServiceName);
+    it("create a new service", async () => {
+      await apimService!.createService(
+        DefaultTestInput.resourceGroup.existing,
+        DefaultTestInput.apimServiceName.new,
+        "eastus",
+        "test@uitest.com"
+      );
+
+      sandbox.assert.calledOnceWithMatch(
+        apiManagementServiceStub.createOrUpdate,
+        DefaultTestInput.resourceGroup.existing,
+        DefaultTestInput.apimServiceName.new,
+        match
+          .has("location", "eastus")
+          .and(match.has("publisherName", "test@uitest.com"))
+          .and(match.has("sku", match.has("name", "Consumption").and(match.has("capacity", 0))))
+      );
+
+      assert.calledOnce(apiManagementServiceStub.createOrUpdate);
+      assert.calledOnce(apiManagementServiceStub.get);
     });
 
-    it_if(EnvConfig.enableTest, "create a new service", async () => {
-      // Arrange
-      const spy = sandbox.spy(apimClient.apiManagementService, "createOrUpdate");
-
-      // Act
-      await apimService.createService(
-        UT_RESOURCE_GROUP,
-        newServiceName,
-        EnvConfig.defaultLocation,
-        UT_USER_ID
+    it("skip an existing service", async () => {
+      await apimService!.createService(
+        DefaultTestInput.resourceGroup.existing,
+        DefaultTestInput.apimServiceName.existing,
+        "eastus",
+        "test@uitest.com"
       );
 
-      // Assert
-      sinon.assert.calledOnce(spy);
-      const result = await apimService.getService(UT_RESOURCE_GROUP, newServiceName);
-      chai.assert.exists(result);
-    });
-
-    it_if(EnvConfig.enableTest, "skip an existing service", async () => {
-      // Arrange
-      const spy = sandbox.spy(apimClient.apiManagementService, "createOrUpdate");
-
-      // Act
-      await apimService.createService(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        EnvConfig.defaultLocation,
-        UT_USER_ID
-      );
-
-      // Assert
-      sinon.assert.notCalled(spy);
-    });
-  });
-
-  describe("#createProduct()", () => {
-    const sandbox = sinon.createSandbox();
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it_if(EnvConfig.enableTest, "create a new product", async () => {
-      // Arrange
-      const newProductName = `${UT_PRODUCT_NAME}-create`;
-      const spy = sandbox.spy(apimClient.product, "createOrUpdate");
-
-      // Act
-      await apimService.createProduct(UT_RESOURCE_GROUP, UT_APIM_NAME, newProductName);
-
-      // Assert
-      sinon.assert.calledOnce(spy);
-      const result = await apimService.getProduct(UT_RESOURCE_GROUP, UT_APIM_NAME, newProductName);
-      chai.assert.exists(result);
-      chai.assert.isFalse(result?.subscriptionRequired);
-    });
-
-    it_if(EnvConfig.enableTest, "skip an existing product", async () => {
-      // Arrange
-      const existingProductName = `${UT_PRODUCT_NAME}-existing`;
-      await apimService.createProduct(UT_RESOURCE_GROUP, UT_APIM_NAME, existingProductName);
-      const spy = sandbox.spy(apimClient.product, "createOrUpdate");
-
-      // Act
-      await apimService.createProduct(UT_RESOURCE_GROUP, UT_APIM_NAME, existingProductName);
-
-      // Assert
-      sinon.assert.notCalled(spy);
-    });
-  });
-
-  describe("#createOrUpdateOAuthService()", () => {
-    const sandbox = sinon.createSandbox();
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    it_if(EnvConfig.enableTest, "create a new OAuth server", async () => {
-      // Arrange
-      const newOAuthServerName = `${UT_OAUTH_SERVER_NAME}-create`;
-      const spy = sandbox.spy(apimClient.authorizationServer, "createOrUpdate");
-
-      // Act
-      await apimService.createOrUpdateOAuthService(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        newOAuthServerName,
-        "tenant-id",
-        "test-client-id",
-        "test-client-secret",
-        "api://scope"
-      );
-
-      // Assert
-      sinon.assert.calledOnce(spy);
-      const oAuthServer = await apimService.getOAuthServer(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        newOAuthServerName
-      );
-      chai.assert.isTrue(!!oAuthServer);
-      chai.assert.equal(oAuthServer?.name, newOAuthServerName);
-      chai.assert.equal(
-        oAuthServer?.authorizationEndpoint,
-        `https://login.microsoftonline.com/tenant-id/oauth2/v2.0/authorize`
-      );
-      chai.assert.equal(
-        oAuthServer?.tokenEndpoint,
-        `https://login.microsoftonline.com/tenant-id/oauth2/v2.0/token`
-      );
-      chai.assert.equal(oAuthServer?.displayName, newOAuthServerName);
-      chai.assert.equal(oAuthServer?.clientId, "test-client-id");
-      chai.assert.equal(oAuthServer?.defaultScope, "api://scope");
-    });
-
-    it_if(EnvConfig.enableTest, "update an existing OAuth server", async () => {
-      // Arrange
-      const updateOAuthServerName = `${UT_OAUTH_SERVER_NAME}-update`;
-      await apimService.createOrUpdateOAuthService(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        updateOAuthServerName,
-        "tenant-id",
-        "test-client-id",
-        "test-client-secret",
-        "api://scope"
-      );
-
-      const spy = sandbox.spy(apimClient.authorizationServer, "createOrUpdate");
-
-      // Act
-      const testSuffix = v4().substring(0, 6);
-      await apimService.createOrUpdateOAuthService(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        updateOAuthServerName,
-        `tenant-id-${testSuffix}`,
-        `client-id-${testSuffix}`,
-        `client-secret-${testSuffix}`,
-        `api://${testSuffix}`
-      );
-
-      // Assert
-      sinon.assert.calledOnce(spy);
-      const oAuthServer = await apimService.getOAuthServer(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        updateOAuthServerName
-      );
-      chai.assert.isTrue(!!oAuthServer);
-      chai.assert.equal(oAuthServer?.name, updateOAuthServerName);
-      chai.assert.equal(
-        oAuthServer?.authorizationEndpoint,
-        `https://login.microsoftonline.com/tenant-id-${testSuffix}/oauth2/v2.0/authorize`
-      );
-      chai.assert.equal(
-        oAuthServer?.tokenEndpoint,
-        `https://login.microsoftonline.com/tenant-id-${testSuffix}/oauth2/v2.0/token`
-      );
-      chai.assert.equal(oAuthServer?.displayName, updateOAuthServerName);
-      chai.assert.equal(oAuthServer?.clientId, `client-id-${testSuffix}`);
-      chai.assert.equal(oAuthServer?.defaultScope, `api://${testSuffix}`);
+      assert.notCalled(apiManagementServiceStub.createOrUpdate);
+      assert.calledOnce(apiManagementServiceStub.get);
     });
   });
 
   describe("#createVersionSet()", () => {
-    const sandbox = sinon.createSandbox();
+    const sandbox = createSandbox();
+    let apimService: ApimService | undefined;
+    let apiManagementClient: StubbedClass<ApiManagementClient> | undefined;
+    let apiVersionSet: any;
+
+    beforeEach(() => {
+      const res = mockApimService(sandbox);
+      apimService = res.apimService;
+      apiManagementClient = res.apiManagementClient;
+      apiVersionSet = mockApiVersionSet(sandbox);
+      apiManagementClient.apiVersionSet = apiVersionSet;
+    });
 
     afterEach(() => {
       sandbox.restore();
     });
 
-    it_if(EnvConfig.enableTest, "create a new version set", async () => {
-      // Arrange
-      const newVersionSetId = md5(`${UT_API_NAME}-create`);
-      const spy = sandbox.spy(apimClient.apiVersionSet, "createOrUpdate");
-
-      // Act
-      await apimService.createVersionSet(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        newVersionSetId,
-        UT_API_NAME
+    it("create a new version set", async () => {
+      await apimService!.createVersionSet(
+        DefaultTestInput.resourceGroup.existing,
+        DefaultTestInput.apimServiceName.existing,
+        DefaultTestInput.versionSet.new,
+        "test-version-set-name"
       );
 
-      // Assert
-      sinon.assert.calledOnce(spy);
-      const versionSetResult = await apimService.getVersionSet(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        newVersionSetId
+      sandbox.assert.calledOnceWithMatch(
+        apiVersionSet.createOrUpdate,
+        DefaultTestInput.resourceGroup.existing,
+        DefaultTestInput.apimServiceName.existing,
+        DefaultTestInput.versionSet.new,
+        match.has("displayName", "test-version-set-name")
       );
-      chai.assert.equal(versionSetResult?.displayName, UT_API_NAME);
+      assert.calledOnce(apiVersionSet.get);
     });
 
-    it_if(EnvConfig.enableTest, "skip to create an existing version set", async () => {
-      // Arrange
-      const existingVersionSetId = md5(`${UT_API_NAME}-existing`);
-      await apimService.createVersionSet(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        existingVersionSetId,
-        UT_API_NAME
-      );
-      const spy = sandbox.spy(apimClient.apiVersionSet, "createOrUpdate");
-
-      // Act
-      await apimService.createVersionSet(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        existingVersionSetId,
-        UT_API_NAME
+    it("skip to create an existing version set", async () => {
+      await apimService!.createVersionSet(
+        DefaultTestInput.resourceGroup.existing,
+        DefaultTestInput.apimServiceName.existing,
+        DefaultTestInput.versionSet.existing
       );
 
-      // Assert
-      sinon.assert.notCalled(spy);
+      assert.notCalled(apiVersionSet.createOrUpdate);
+      assert.calledOnce(apiVersionSet.get);
     });
   });
 
   describe("#importApi()", async () => {
-    const sandbox = sinon.createSandbox();
-    const newApiName = `${UT_API_NAME}-create`;
-    const newVersionSetId = md5(newApiName);
-    const existingApiName = `${UT_API_NAME}-existing`;
-    const existingVersionSetId = md5(existingApiName);
+    const sandbox = createSandbox();
+    let apimService: ApimService | undefined;
+    let apiManagementClient: StubbedClass<ApiManagementClient> | undefined;
+    let api: any;
 
-    before_if(EnvConfig.enableTest, async () => {
-      await apimService.createOrUpdateOAuthService(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        UT_OAUTH_SERVER_NAME,
-        "tenant-id",
-        "test-client-id",
-        "test-client-secret",
-        "api://scope"
-      );
-      await apimService.createVersionSet(UT_RESOURCE_GROUP, UT_APIM_NAME, newVersionSetId);
-      await apimService.createVersionSet(UT_RESOURCE_GROUP, UT_APIM_NAME, existingVersionSetId);
+    beforeEach(() => {
+      const res = mockApimService(sandbox);
+      apimService = res.apimService;
+      apiManagementClient = res.apiManagementClient;
+      api = mockApi(sandbox);
+      apiManagementClient.api = api;
     });
 
     afterEach(() => {
       sandbox.restore();
     });
 
-    it_if(EnvConfig.enableTest, "create a new API", async () => {
-      // Arrange
-      const newApiId = `${newApiName}-v1`;
-      const spec = await loadSpec("create");
-      const spy = sandbox.spy(apimClient.api, "createOrUpdate");
-
-      // Act
-      await apimService.importApi(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        newApiId,
-        newApiName,
-        "v1",
-        newVersionSetId,
-        UT_OAUTH_SERVER_NAME,
-        OpenApiSchemaVersion.V3,
-        spec
-      );
-
-      // Assert
-      sinon.assert.calledOnce(spy);
-      const api = await apimService.getApi(UT_RESOURCE_GROUP, UT_APIM_NAME, newApiId);
-      chai.assert.equal(api?.displayName, spec.info.title);
-      chai.assert.include(api?.apiVersionSetId, newVersionSetId);
-      chai.assert.equal(
-        api?.authenticationSettings?.oAuth2?.authorizationServerId,
-        UT_OAUTH_SERVER_NAME
-      );
-      chai.assert.equal(api?.path, newApiName);
-      chai.assert.equal(api?.apiVersion, "v1");
-    });
-
-    it_if(EnvConfig.enableTest, "create a new API version", async () => {
-      // Arrange
-      const existingApiId = `${existingApiName}-v1`;
+    // TODO Validation error;
+    it("create a new API", async () => {
       const spec = await loadSpec("existing");
-      await apimService.importApi(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        existingApiId,
-        existingApiName,
+      await apimService!.importApi(
+        DefaultTestInput.resourceGroup.existing,
+        DefaultTestInput.apimServiceName.existing,
+        DefaultTestInput.apiId.new,
+        "test-api-path",
         "v1",
-        existingVersionSetId,
-        UT_OAUTH_SERVER_NAME,
+        "test-version-set-id",
+        "test-oauth-server-id",
         OpenApiSchemaVersion.V3,
         spec
       );
 
-      const newVersionApiId = `${existingApiName}-v2`;
-      const newSpec = await loadSpec("existing");
-      const spy = sandbox.spy(apimClient.api, "createOrUpdate");
-
-      // Act
-      await apimService.importApi(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        newVersionApiId,
-        existingApiName,
-        "v2",
-        existingVersionSetId,
-        UT_OAUTH_SERVER_NAME,
-        OpenApiSchemaVersion.V3,
-        newSpec
+      sandbox.assert.calledOnceWithMatch(
+        api.createOrUpdate,
+        DefaultTestInput.resourceGroup.existing,
+        DefaultTestInput.apimServiceName.existing,
+        DefaultTestInput.apiId.new,
+        match
+          .has(
+            "authenticationSettings",
+            match.has("oAuth2", match.has("authorizationServerId", "test-oauth-server-id"))
+          )
+          .and(match.has("path", "test-api-path"))
+          .and(match.has("apiVersion", "v1"))
+          .and(match.has("apiVersionSetId", "/apiVersionSets/test-version-set-id"))
+          .and(match.has("format", "openapi+json"))
+          .and(match.has("value", match.string))
+          .and(match.has("subscriptionRequired", false))
       );
-
-      // Assert
-      sinon.assert.calledOnce(spy);
-      const api = await apimService.getApi(UT_RESOURCE_GROUP, UT_APIM_NAME, newVersionApiId);
-      chai.assert.equal(api?.displayName, spec.info.title);
-      chai.assert.include(api?.apiVersionSetId, existingVersionSetId);
-      chai.assert.equal(
-        api?.authenticationSettings?.oAuth2?.authorizationServerId,
-        UT_OAUTH_SERVER_NAME
-      );
-      chai.assert.equal(api?.path, existingApiName);
-      chai.assert.equal(api?.apiVersion, "v2");
-    });
-
-    it_if(EnvConfig.enableTest, "update an existing API version", async () => {
-      // Arrange
-      const existingApiId = `${existingApiName}-v1`;
-      const spec = await loadSpec("existing");
-      await apimService.importApi(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        existingApiId,
-        existingApiName,
-        "v1",
-        existingVersionSetId,
-        UT_OAUTH_SERVER_NAME,
-        OpenApiSchemaVersion.V3,
-        spec
-      );
-
-      const newSpec = await loadSpec("existing-version");
-      const spy = sandbox.spy(apimClient.api, "createOrUpdate");
-
-      // Act
-      await apimService.importApi(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        existingApiId,
-        existingApiName,
-        "v1",
-        existingVersionSetId,
-        UT_OAUTH_SERVER_NAME,
-        OpenApiSchemaVersion.V3,
-        newSpec
-      );
-
-      // Assert
-      sinon.assert.calledOnce(spy);
-      const api = await apimService.getApi(UT_RESOURCE_GROUP, UT_APIM_NAME, existingApiId);
-      chai.assert.equal(api?.displayName, newSpec.info.title);
-      chai.assert.include(api?.apiVersionSetId, existingVersionSetId);
-      chai.assert.equal(
-        api?.authenticationSettings?.oAuth2?.authorizationServerId,
-        UT_OAUTH_SERVER_NAME
-      );
-      chai.assert.equal(api?.path, existingApiName);
-      chai.assert.equal(api?.apiVersion, "v1");
     });
   });
 
   describe("#addApiToProduct()", () => {
-    const sandbox = sinon.createSandbox();
-    const newApiName = `${UT_API_NAME}-add-api-2-product`;
-    const newApiId = `${newApiName}-v1`;
+    const sandbox = createSandbox();
+    let apimService: ApimService | undefined;
+    let apiManagementClient: StubbedClass<ApiManagementClient> | undefined;
+    let productApi: any;
 
-    before_if(EnvConfig.enableTest, async () => {
-      await apimService.createOrUpdateOAuthService(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        UT_OAUTH_SERVER_NAME,
-        "tenant-id",
-        "test-client-id",
-        "test-client-secret",
-        "api://scope"
-      );
-      await apimService.createVersionSet(UT_RESOURCE_GROUP, UT_APIM_NAME, md5(newApiName));
-      const spec = await loadSpec(newApiName);
-      await apimService.importApi(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        newApiId,
-        newApiName,
-        "v1",
-        md5(newApiName),
-        UT_OAUTH_SERVER_NAME,
-        OpenApiSchemaVersion.V3,
-        spec
-      );
-      await apimService.createProduct(UT_RESOURCE_GROUP, UT_APIM_NAME, UT_PRODUCT_NAME);
+    beforeEach(() => {
+      const res = mockApimService(sandbox);
+      apimService = res.apimService;
+      apiManagementClient = res.apiManagementClient;
+      productApi = mockProductApi(sandbox);
+      apiManagementClient.productApi = productApi;
     });
 
     afterEach(() => {
       sandbox.restore();
     });
 
-    it_if(EnvConfig.enableTest, "add api to a product", async () => {
-      // Arrange
-      const spy = sandbox.spy(apimClient.productApi, "createOrUpdate");
-
-      // Act
-      await apimService.addApiToProduct(UT_RESOURCE_GROUP, UT_APIM_NAME, UT_PRODUCT_NAME, newApiId);
-      await apimService.addApiToProduct(UT_RESOURCE_GROUP, UT_APIM_NAME, UT_PRODUCT_NAME, newApiId);
-
-      // Assert
-      sinon.assert.calledOnce(spy);
-    });
-  });
-
-  describe("#listApi()", () => {
-    const sandbox = sinon.createSandbox();
-    const testData: { apiName: string; apiVersions: string[] }[] = [
-      { apiName: `${UT_API_NAME}-list-0`, apiVersions: [] },
-      { apiName: `${UT_API_NAME}-list-1`, apiVersions: ["v1"] },
-      { apiName: `${UT_API_NAME}-list-2`, apiVersions: ["v1", "v2"] },
-    ];
-    before_if(EnvConfig.enableTest, async () => {
-      await apimService.createOrUpdateOAuthService(
-        UT_RESOURCE_GROUP,
-        UT_APIM_NAME,
-        UT_OAUTH_SERVER_NAME,
-        "tenant-id",
-        "test-client-id",
-        "test-client-secret",
-        "api://scope"
+    it("add api to a product", async () => {
+      await apimService!.addApiToProduct(
+        DefaultTestInput.resourceGroup.existing,
+        DefaultTestInput.apimServiceName.existing,
+        DefaultTestInput.productId.new,
+        DefaultTestInput.apiId.new
       );
 
-      for (const data of testData) {
-        await apimService.createVersionSet(UT_RESOURCE_GROUP, UT_APIM_NAME, md5(data.apiName));
-        for (const apiVersion of data.apiVersions) {
-          const spec = await loadSpec(data.apiName);
-          const apiId = `${data.apiName}-${apiVersion}`;
-          await apimService.importApi(
-            UT_RESOURCE_GROUP,
-            UT_APIM_NAME,
-            apiId,
-            data.apiName,
-            apiVersion,
-            md5(data.apiName),
-            UT_OAUTH_SERVER_NAME,
-            OpenApiSchemaVersion.V3,
-            spec
-          );
-        }
-      }
-    });
-
-    afterEach(() => {
-      sandbox.restore();
-    });
-
-    testData.forEach((data) => {
-      it_if(
-        EnvConfig.enableTest,
-        `list ${data.apiVersions.length} api in a version set`,
-        async () => {
-          // Arrange
-          const spy = sandbox.spy(apimClient.api, "listByService");
-
-          // Act
-          const apis = await apimService.listApi(
-            UT_RESOURCE_GROUP,
-            UT_APIM_NAME,
-            md5(data.apiName)
-          );
-
-          // Assert
-          sinon.assert.calledOnce(spy);
-          chai.assert.equal(apis.length, data.apiVersions.length);
-          chai.assert.includeMembers(
-            apis.map((api) => api.name),
-            data.apiVersions.map((apiVersion) => `${data.apiName}-${apiVersion}`)
-          );
-        }
+      assert.calledOnce(productApi.checkEntityExists);
+      sandbox.assert.calledOnceWithMatch(
+        productApi.createOrUpdate,
+        DefaultTestInput.resourceGroup.existing,
+        DefaultTestInput.apimServiceName.existing,
+        DefaultTestInput.productId.new,
+        DefaultTestInput.apiId.new
       );
+    });
+
+    it("skip add api to a product", async () => {
+      await apimService!.addApiToProduct(
+        DefaultTestInput.resourceGroup.existing,
+        DefaultTestInput.apimServiceName.existing,
+        DefaultTestInput.productId.existing,
+        DefaultTestInput.apiId.existing
+      );
+
+      assert.calledOnce(productApi.checkEntityExists);
+      assert.notCalled(productApi.createOrUpdate);
     });
   });
 });
-
-async function buildService(): Promise<{
-  apiManagementClient: ApiManagementClient;
-  apimService: ApimService;
-  apimHelper: ApimHelper;
-}> {
-  const mockAzureAccountProvider = new MockAzureAccountProvider();
-  await mockAzureAccountProvider.login(
-    EnvConfig.servicePrincipalClientId,
-    EnvConfig.servicePrincipalClientSecret,
-    EnvConfig.tenantId
-  );
-  const credential = AssertNotEmpty(
-    "credential",
-    await mockAzureAccountProvider.getAccountCredentialAsync()
-  );
-  const apiManagementClient = new ApiManagementClient(credential, EnvConfig.subscriptionId);
-  const resourceProviderClient = new Providers(
-    new ResourceManagementClientContext(credential, EnvConfig.subscriptionId)
-  );
-  const apimService = new ApimService(
-    apiManagementClient,
-    resourceProviderClient,
-    credential,
-    EnvConfig.subscriptionId
-  );
-  const apimHelper = new ApimHelper(apiManagementClient);
-  return { apiManagementClient, apimService, apimHelper };
-}
 
 async function loadSpec(titleSuffix: string): Promise<any> {
   const spec = await fs.readJson(`${UT_TEST_DATA_FOLDER}/openapi.json`, { encoding: "utf-8" });

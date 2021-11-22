@@ -75,10 +75,11 @@
       "previewACDesciption": "Preview and author Adaptive Cards directly in Visual Studio Code",
       "grantPermissionSucceeded": "Added account: '%s' to the environment '%s' as a collaborator.",
       "grantPermissionWarning": "You need to handle Azure resource permissions manually on Azure Portal.",
-      "noM365AccountSignedIn": "No M365 account signed in. Please sign in to M365.",
+      "m365AccountNotSignedIn": "No M365 account signed in. Please sign in to M365.",
       "m365TenantNotMatch": "The M365 tenant id(which is used to provision before) does not match the current account.",
-      "azureAccountNotMatch": "The Azure account does not match.",
-      "m365AccountNotMatch": "The M365 account does not match."
+      "m365AccountNotMatch": "The signed in M365 account does not match the M365 tenant used in previous provision. Please sign out and sign in with correct M365 account.",
+      "azureAccountNotSignedIn": "No Azure account signed in. Please sign in to Azure.",
+      "azureAccountNotMatch": "The signed in Azure account does not have permission to access the subscription '%s' used in previous provision. Please sign out and sign in with correct Azure account."
     },
     "handlers": {
       "concurrentTriggerTask": "Task '%s' is still running. Wait for it to complete before starting another task.",
@@ -104,13 +105,16 @@
       "invalidProject": "Failed to debug Teams App. The project is not a valid Teams project.",
       "editSecretTitle": "Edit the decrypted secret value",
       "decryptFailed": "Failed to decrypt secrect.",
-      "openEnvFailed": "Can not open project environment %s.",
       "findEnvFailed": "Can not find project environment %s.",
       "resourceInfoNotFound": "Can not load %s info for environment %s.",
       "localDebugDescription": "Your project is successfully created at %s (You can change default location in settings). You can continue to run local debug for the app.",
       "localDebugTitle": "Local debug",
       "configTitle": "Change location",
-      "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension."
+      "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension.",
+      "teamsAppIdNotFound": "Failed to find 'fx-resource-appstudio.teamsAppId' in 'state.%s.json'.",
+      "provisionBeforeGrantPermission": "You must provision the project first before adding owners for others",
+      "doProvisionBeforeDeployNotificaion": "Resources in your Teams app must be provisioned before the deployment. Do you want to provision it first?",
+      "ok": "Ok"
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",
@@ -196,10 +200,13 @@
       "m365AccountTooltip": "M365 ACCOUNT  \nThe Teams Toolkit requires an Microsoft 365 organizational account where Teams is running and has been registered.",
       "azureAccountTooltip": "AZURE ACCOUNT  \nThe Teams Toolkit may require an Azure subscription to deploy the Azure resources for your project.",
       "specifySubscription": "Specify subscription",
-      "sideloadingWarning": "No custom app permission",
+      "sideloadingPass": "Sideloading enabled",
+      "sideloadingPassTooltip": "You have sideloading permission already. You're good to install your app to Teams!",
+      "sideloadingWarning": "Sideloading disabled",
+      "sideloadingWarningTooltip": "Your M365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams!",
       "sideloadingRefresh": "Refresh",
-      "sideloadingTooltip": "Custom app permission is required to load your app within Teams.",
-      "sideloadingMessage": "[Teams Toolkit] Your Microsoft 365 account doesn't have a sideloading permission. Without this permission, you cannot load your app within Teams. Contact to your administrator to resolve this issue or signin another account with sideloading permission."
+      "sideloadingMessage": "[Teams Toolkit] Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams! Please applying for a Microsoft 365 developer tenant by joining Microsoft developer program or contact your tenant admin to resolve the issue.",
+      "sideloadingJoinM365": "Join M365 Developer Program"
     },
     "qm": {
       "emptySelection": "select option is empty",
@@ -239,6 +246,40 @@
     "upgrade": {
       "banner": "Teams Toolkit has been updated to v%s — check out what's new!",
       "whatIsNewTitle": "What's New"
+    },
+    "upgradeToMultiEnvAndBicep": {
+      "learnMoreText": "Learn More",
+      "learnMoreLink": "https://aka.ms/teamsfx-existing-aad-doc",
+      "outputMsg": "Please set \"AAD_APP_CLIENT_SECRET\" = \"%s\" in your system environment variable. Read this wiki(%s) to for more details.",
+      "showMsg": "Please set \"AAD_APP_CLIENT_SECRET\" = \"%s\" in your system environment variable.\\nYou can also click Learn More for more details."
+    },
+    "migrateTeamsTabApp": {
+      "selectFolderConfig": {
+        "name": "Select Teams Tab App to Upgrade",
+        "title": "Select Teams Tab App to Upgrade"
+      },
+      "warningMessage": "Teams Toolkit will update in place the Teams Tab app you selected to use Teams client SDK v2. We recommend to use git for better tracking file changes before upgrading.",
+      "upgrade": "Upgrade",
+      "success": "Successfully upgraded the Teams Tab app %s.",
+      "updatingCode": "Updating %s code in %s.",
+      "updateCodeError": "Failed to update file %s, code: %s, message: %s.",
+      "updateCodesErrorOutput": "Failed to update %d files: %s.",
+      "updateCodesErrorMessage":"Failed to update %d files: %s, etc. Please refer to output channel for more details.",
+      "progressTitle": "Upgrade Teams Tab App to Extend in Outlook and Office",
+      "updatingPackageJson": "Updating package.json to use @microsoft/teams-js v2.",
+      "updatePackageJsonWarning": "No @microsoft/teams-js dependency found in %s. Nothing to upgrade.",
+      "updatingCodes": "Updating codes to use @microsoft/teams-js v2."
+    },
+    "migrateTeamsManifest": {
+      "selectFileConfig": {
+        "name": "Select Teams Manifest to Upgrade",
+        "title": "Select Teams Manifest to Upgrade"
+      },
+      "warningMessage": "Teams Toolkit will update in place the Teams manifest file you selected to work in Outlook and Office. We recommend to use git for better tracking file changes before upgrading.",
+      "upgrade": "Upgrade",
+      "success": "Successfully upgraded the Teams manifest %s.",
+      "progressTitle": "Upgrade Teams Manifest to Extend in Outlook and Office",
+      "updateManifest": "Update Teams manifest."
     }
   }
 }

@@ -42,7 +42,7 @@ export class AADRegistration {
           }
         );
       } catch (e) {
-        throw this.handleError(e, CreateAppError);
+        throw AADRegistration.handleError(e, CreateAppError);
       }
 
       if (!regResponse || !utils.isHttpCodeOkOrCreated(regResponse.status)) {
@@ -69,7 +69,7 @@ export class AADRegistration {
         }
       );
     } catch (e) {
-      throw this.handleError(e, CreateSecretError);
+      throw AADRegistration.handleError(e, CreateSecretError);
     }
 
     if (!genResponse || !genResponse.data) {

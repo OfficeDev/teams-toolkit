@@ -3,6 +3,7 @@ param provisionParameters object
 param userAssignedIdentityId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
+var botAadAppClientId = provisionParameters['botAadAppClientId']
 var botServiceName = contains(provisionParameters, 'botServiceName') ? provisionParameters['botServiceName'] : '${resourceBaseName}'
 var botServiceSku = contains(provisionParameters, 'botServiceSku') ? provisionParameters['botServiceSku'] : 'F0'
 var botDisplayName = contains(provisionParameters, 'botDisplayName') ? provisionParameters['botDisplayName'] : '${resourceBaseName}'

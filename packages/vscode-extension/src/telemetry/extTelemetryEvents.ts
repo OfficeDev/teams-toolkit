@@ -34,6 +34,9 @@ export enum TelemetryEvent {
   ValidateManifestStart = "validate-manifest-start",
   ValidateManifest = "validate-manifest",
 
+  UpdatePreviewManifestStart = "update-preview-manifest-start",
+  UpdatePreviewManifest = "update-preview-manifest",
+
   getManifestTemplatePath = "get-manifest-path",
 
   BuildStart = "build-start",
@@ -105,7 +108,6 @@ export enum TelemetryEvent {
   MigrateV1ProjectNotificationStart = "migrate-v1-project-notification-start",
   MigrateV1ProjectNotification = "migrate-v1-project-notification",
 
-  ViewEnvironment = "view-environment",
   OpenSubscriptionInPortal = "open-subscription-in-portal",
   OpenResourceGroupInPortal = "open-resource-group-in-portal",
 
@@ -122,6 +124,7 @@ export enum TelemetryEvent {
 
   CheckPermissionStart = "check-permission-start",
   CheckPermission = "check-permission",
+  OpenSideloadingJoinM365 = "open-sideloading-joinm365",
   OpenSideloadingReadmore = "open-sideloading-readmore",
 
   ShowWhatIsNewNotification = "show-what-is-new-notification",
@@ -139,6 +142,11 @@ export enum TelemetryEvent {
   MigrateTeamsTabAppCode = "migrate-teams-tab-app-code",
   MigrateTeamsManifestStart = "migrate-teams-manifest-start",
   MigrateTeamsManifest = "migrate-teams-manifest",
+
+  TreeViewLocalDebug = "treeview-localdebug",
+
+  TreeViewPreviewStart = "treeview-preview-start",
+  TreeViewPreview = "treeview-preview",
 }
 
 export enum TelemetryProperty {
@@ -181,6 +189,7 @@ export enum TelemetryProperty {
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
   IsFromSample = "is-from-sample",
+  UpdateFailedFiles = "update-failed-files",
 }
 
 export enum TelemetrySuccess {
@@ -193,6 +202,7 @@ export enum TelemetryTiggerFrom {
   TreeView = "TreeView",
   Webview = "Webview",
   CodeLens = "CodeLens",
+  EditorTitle = "EditorTitle",
   Other = "Other",
   Unknow = "Unknow",
 }

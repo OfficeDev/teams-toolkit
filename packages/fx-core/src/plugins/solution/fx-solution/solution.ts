@@ -133,7 +133,7 @@ import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/uti
 import {
   canAddCapability,
   canAddResource,
-  confirmRegenerateArmTemplate,
+  showUpdateArmTemplateNotice,
   extractParamForRegisterTeamsAppAndAad,
   ParamForRegisterTeamsAppAndAad,
 } from "./v2/executeUserTask";
@@ -1333,6 +1333,8 @@ export class TeamsAppSolution implements Solution {
       if (stateResult.state != CollaborationState.OK) {
         if (ctx.answers?.platform === Platform.CLI) {
           ctx.ui?.showMessage("warn", stateResult.message!, false);
+        } else if (ctx.answers?.platform === Platform.VSCode) {
+          ctx.logProvider?.warning(stateResult.message!);
         }
         return ok({
           state: stateResult.state,
@@ -1856,6 +1858,8 @@ export class TeamsAppSolution implements Solution {
       if (stateResult.state != CollaborationState.OK) {
         if (ctx.answers?.platform === Platform.CLI) {
           ctx.ui?.showMessage("warn", stateResult.message!, false);
+        } else if (ctx.answers?.platform === Platform.VSCode) {
+          ctx.logProvider?.warning(stateResult.message!);
         }
         return ok({
           state: stateResult.state,
@@ -1883,35 +1887,18 @@ export class TeamsAppSolution implements Solution {
       );
 
       const envName = ctx.envInfo.envName;
-      if (ctx.answers?.platform === Platform.CLI || ctx.answers?.platform === Platform.VSCode) {
-        const aadAppTenantId = ctx.envInfo.state?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-        if (!envName) {
-          return err(
-            sendErrorTelemetryThenReturnError(
-              SolutionTelemetryEvent.ListCollaborator,
-              returnSystemError(
-                new Error("Failed to get env name."),
-                SolutionSource,
-                SolutionError.FailedToGetEnvName
-              ),
-              ctx.telemetryReporter
-            )
-          );
-        }
-
-        const message = [
-          { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
-          { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
-          {
-            content: `Starting list all collaborators for environment: `,
-            color: Colors.BRIGHT_WHITE,
-          },
-          { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
-          { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
-          { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
-        ];
-
-        ctx.ui?.showMessage("info", message, false);
+      if (!envName) {
+        return err(
+          sendErrorTelemetryThenReturnError(
+            SolutionTelemetryEvent.ListCollaborator,
+            returnSystemError(
+              new Error("Failed to get env name."),
+              SolutionSource,
+              SolutionError.FailedToGetEnvName
+            ),
+            ctx.telemetryReporter
+          )
+        );
       }
 
       const results = await executeConcurrently("", listCollaboratorWithCtx);
@@ -1949,6 +1936,9 @@ export class TeamsAppSolution implements Solution {
       const teamsAppOwners: TeamsAppAdmin[] = results[0].isErr() ? [] : results[0].value;
       const aadOwners: AadOwner[] = results[1].isErr() ? [] : results[1].value;
       const collaborators: Collaborator[] = [];
+      const teamsAppId: string = teamsAppOwners[0]?.resourceId ?? "";
+      const aadAppId: string = aadOwners[0]?.resourceId ?? "";
+      const aadAppTenantId = ctx.envInfo.state?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
 
       for (const teamsAppOwner of teamsAppOwners) {
         const aadOwner = aadOwners.find(
@@ -1969,31 +1959,42 @@ export class TeamsAppSolution implements Solution {
       }
 
       if (ctx.answers?.platform === Platform.CLI || ctx.answers?.platform === Platform.VSCode) {
-        for (const collaborator of collaborators) {
-          const message = [
-            { content: `Account: `, color: Colors.BRIGHT_WHITE },
-            { content: collaborator.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
-            { content: `Resource ID: `, color: Colors.BRIGHT_WHITE },
-            { content: collaborator.teamsAppResourceId, color: Colors.BRIGHT_MAGENTA },
-            { content: `, Resource Name: `, color: Colors.BRIGHT_WHITE },
-            { content: `Teams App`, color: Colors.BRIGHT_MAGENTA },
-            { content: `, Permission: `, color: Colors.BRIGHT_WHITE },
-            { content: `Administrator`, color: Colors.BRIGHT_MAGENTA },
-          ];
+        const message = [
+          { content: `Listing M365 permissions\n`, color: Colors.BRIGHT_WHITE },
+          { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
+          { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
+          {
+            content: `Starting list all teams app owners for environment: `,
+            color: Colors.BRIGHT_WHITE,
+          },
+          { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
+          { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
+          { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
+          { content: `M365 Teams App (ID: `, color: Colors.BRIGHT_WHITE },
+          { content: teamsAppId, color: Colors.BRIGHT_MAGENTA },
+          { content: `), SSO AAD App (ID: `, color: Colors.BRIGHT_WHITE },
+          { content: aadAppId, color: Colors.BRIGHT_MAGENTA },
+          { content: `)\n`, color: Colors.BRIGHT_WHITE },
+        ];
 
-          if (collaborator.aadResourceId) {
-            message.push(
-              { content: `\nResource ID: `, color: Colors.BRIGHT_WHITE },
-              { content: collaborator.aadResourceId, color: Colors.BRIGHT_MAGENTA },
-              { content: `, Resource Name: `, color: Colors.BRIGHT_WHITE },
-              { content: `AAD App`, color: Colors.BRIGHT_MAGENTA },
-              { content: `, Permission: `, color: Colors.BRIGHT_WHITE },
-              { content: `Owner`, color: Colors.BRIGHT_MAGENTA }
-            );
+        for (const collaborator of collaborators) {
+          message.push(
+            { content: `Teams App Owner: `, color: Colors.BRIGHT_WHITE },
+            { content: collaborator.userPrincipalName, color: Colors.BRIGHT_MAGENTA },
+            { content: `. `, color: Colors.BRIGHT_WHITE }
+          );
+
+          if (!collaborator.isAadOwner) {
+            message.push({ content: `(Not owner of SSO AAD app)`, color: Colors.BRIGHT_YELLOW });
           }
 
           message.push({ content: "\n", color: Colors.BRIGHT_WHITE });
+        }
+
+        if (ctx.answers?.platform === Platform.CLI) {
           ctx.ui?.showMessage("info", message, false);
+        } else if (ctx.answers?.platform === Platform.VSCode) {
+          ctx.logProvider?.info(message);
         }
       }
 
@@ -2048,7 +2049,7 @@ export class TeamsAppSolution implements Solution {
     const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
     if (!provisioned) {
       const warningMsg =
-        "Failed to process because the resources have not been provisioned yet. Make sure you do the provision first.";
+        "The resources have not been provisioned yet. Please provision the resources first.";
       return {
         state: CollaborationState.NotProvisioned,
         message: warningMsg,
@@ -2388,10 +2389,7 @@ export class TeamsAppSolution implements Solution {
 
     if (notifications.length > 0) {
       if (isArmSupportEnabled() && addNewResoruceToProvision) {
-        const confirmed = await confirmRegenerateArmTemplate(ctx.ui);
-        if (!confirmed) {
-          return ok(Void);
-        }
+        showUpdateArmTemplateNotice(ctx.ui);
       }
       settings.azureResources = azureResource;
       await this.reloadPlugins(settings);
@@ -2499,10 +2497,7 @@ export class TeamsAppSolution implements Solution {
 
     if (change) {
       if (isArmSupportEnabled()) {
-        const confirmed = await confirmRegenerateArmTemplate(ctx.ui);
-        if (!confirmed) {
-          return ok(Void);
-        }
+        showUpdateArmTemplateNotice(ctx.ui);
       }
       settings.capabilities = capabilities;
       await this.reloadPlugins(settings);

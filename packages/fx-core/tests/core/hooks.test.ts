@@ -282,7 +282,7 @@ describe("Middleware - others", () => {
 
     it("Should not upgrade for the new multi env project", async () => {
       sandbox.stub(process, "env").get(() => {
-        return { TEAMSFX_INSIDER_PREVIEW: "true" };
+        return { __TEAMSFX_INSIDER_PREVIEW: "true" };
       });
 
       envJson = MockLatestVersion2_3_0Context();
@@ -568,7 +568,7 @@ describe("Middleware - others", () => {
         path.join(projectPath, ".fx", "settings.json")
       );
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_INSIDER_PREVIEW: "true",
+        __TEAMSFX_INSIDER_PREVIEW: "true",
       });
     });
     afterEach(async () => {
@@ -631,7 +631,7 @@ describe("Middleware - others", () => {
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
       mockedEnvRestore = mockedEnv({
-        TEAMSFX_INSIDER_PREVIEW: "true",
+        __TEAMSFX_INSIDER_PREVIEW: "true",
       });
       sandbox.stub(MockUserInteraction.prototype, "showMessage").resolves(ok("Upgrade"));
     });

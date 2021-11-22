@@ -44,6 +44,7 @@ import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
+  LocalSettingsTeamsAppKeys,
 } from "../../../../../src/common/localSettingsConstants";
 import { getAzureProjectRoot } from "../helper";
 
@@ -123,6 +124,7 @@ describe("Post Local Debug", () => {
           [LocalSettingsFrontendKeys.TabEndpoint, localDebugTabEndpoint],
           [LocalSettingsFrontendKeys.TabDomain, localDebugTabDomain],
         ]),
+        teamsApp: new ConfigMap([[LocalSettingsTeamsAppKeys.TeamsAppId, uuid.v4()]]),
       };
     }
 

@@ -3,10 +3,10 @@
 
 "use strict";
 
+import "./console/screen";
 import yargs from "yargs";
 import { hideBin } from "yargs/helpers";
 
-import "./console/screen";
 import { registerCommands } from "./cmds";
 import * as constants from "./constants";
 import { registerPrompts } from "./prompts";

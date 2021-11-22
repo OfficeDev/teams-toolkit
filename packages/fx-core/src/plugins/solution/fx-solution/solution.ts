@@ -58,6 +58,7 @@ import {
 import {
   deepCopy,
   getHashedEnv,
+  getResourceGroupInPortal,
   getStrings,
   isArmSupportEnabled,
   isCheckAccountError,
@@ -99,6 +100,7 @@ import {
   SOLUTION_PROVISION_SUCCEEDED,
   Void,
   SolutionSource,
+  RESOURCE_GROUP_NAME,
 } from "./constants";
 import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
 import {
@@ -561,12 +563,23 @@ export class TeamsAppSolution implements Solution {
 
       const provisionResult = await this.doProvision(ctx);
       if (provisionResult.isOk()) {
+        const url = getResourceGroupInPortal(ctx);
         const msg = util.format(
           `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
           ctx.projectSettings?.appName
         );
         ctx.logProvider?.info(msg);
-        ctx.ui?.showMessage("info", msg, false);
+        if (url) {
+          const title = "View Provisioned Resources";
+          ctx.ui?.showMessage("info", msg, false, title).then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === title) {
+              ctx.ui!.openUrl(url!);
+            }
+          });
+        } else {
+          ctx.ui?.showMessage("info", msg, false);
+        }
         ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
       } else {
         if (

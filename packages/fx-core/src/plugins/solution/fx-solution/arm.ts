@@ -312,13 +312,6 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
           `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${ArmHelpLink}.`
       );
 
-      // ctx.logProvider?.error(
-      //   `[${PluginDisplayName.Solution}] ${deploymentName} -> ${JSON.stringify(
-      //     formattedDeploymentError(deploymentError),
-      //     undefined,
-      //     2
-      //   )}`
-      // );
       let failedDeployments: string[] = [];
       if (deploymentError.subErrors) {
         failedDeployments = Object.keys(deploymentError.subErrors);

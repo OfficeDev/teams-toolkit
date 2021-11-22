@@ -413,16 +413,12 @@ export async function askSubscription(
   return ok(resultSub);
 }
 
-export function getSubscriptionUrl(subscriptionId: string, tenantId: string): string {
-  return `${AzurePortalUrl}/#@${tenantId}/resource/subscriptions/${subscriptionId}`;
-}
-
 export function getResourceGroupInPortal(ctx: SolutionContext): string | undefined {
   const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(SUBSCRIPTION_ID);
   const tenantId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString("tenantId");
   const resourceGroupName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
   if (subscriptionId && tenantId && resourceGroupName) {
-    return `${getSubscriptionUrl(subscriptionId, tenantId)}/resourceGroups/${resourceGroupName}`;
+    return `${AzurePortalUrl}/#@${tenantId}/resource/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}`;
   } else {
     return undefined;
   }

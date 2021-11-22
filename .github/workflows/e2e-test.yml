@@ -84,6 +84,10 @@ jobs:
                 cases+=($t)
               fi
             done
+            if [ ${#cases[@]} -eq 0 ]; then
+              echo "Please add E2E TEST for your PR"
+              exit 1
+            fi
             prCases=`printf '%s\n' "${cases[@]}" | jq -R . | jq -sc .`
             echo "::set-output name=cases::$prCases"
           fi

@@ -16,9 +16,6 @@
     "teamsfx-server"
   ],
   "preferGlobal": true,
-  "bin": {
-    "teamsfx": "/server.js"
-  },
   "scripts": {
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.sh src/**/*.ps1 lib/",
     "build": "rimraf lib && tsc -p ./ && npm run copy-files",
@@ -91,7 +88,7 @@
   },
   "dependencies": {
     "@microsoft/teamsfx-api": "^0.10.0",
-    "@microsoft/teamsfx-core": "^0.10.0",
+    "@microsoft/teamsfx-core": "^0.11.0",
     "@azure/arm-apimanagement": "^6.0.0",
     "@azure/arm-resources": "^4.0.0",
     "@azure/arm-sql": "^7.0.2",

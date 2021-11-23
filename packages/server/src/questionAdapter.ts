@@ -16,6 +16,8 @@ import {
   ValidateFunc,
 } from "@microsoft/teamsfx-api";
 
+import { CustomizeFuncRequestType, CustomizeFuncType } from "./APIs";
+
 export let GlobalFuncId = 0;
 export type FuncType = LocalFunc<any> | ValidateFunc<any> | OnSelectionChangeFunc;
 
@@ -32,16 +34,20 @@ export function getFunc(id: number): FuncType | undefined {
   return func;
 }
 
-export async function callFunc(rpc: Rpc, ...params: any[]): Promise<Result<any, FxError>> {
-  const func = getFunc(rpc.id);
+export async function callFunc(
+  type: CustomizeFuncType,
+  id: number,
+  ...params: any[]
+): Promise<Result<any, FxError>> {
+  const func = getFunc(id);
   if (func) {
     let result: any;
     try {
-      if (rpc.type === "LocalFunc") {
+      if (type === "LocalFunc") {
         result = await (func as LocalFunc<any>)(params[0]);
-      } else if (rpc.type === "ValidateFunc") {
+      } else if (type === "ValidateFunc") {
         result = await (func as ValidateFunc<any>)(params[0], params[1]);
-      } else if (rpc.type === "OnSelectionChangeFunc") {
+      } else if (type === "OnSelectionChangeFunc") {
         result = await (func as OnSelectionChangeFunc)(
           new Set<string>(params[0]),
           new Set<string>(params[1])
@@ -52,50 +58,54 @@ export async function callFunc(rpc: Rpc, ...params: any[]): Promise<Result<any, 
       return err(assembleError(e));
     }
   }
-  return err(new SystemError("FuncNotFound", `Function not found, id:${rpc.id}`, "FxCoreServer"));
+  return err(new SystemError("FuncNotFound", `Function not found, id: ${id}`, "FxCoreServer"));
 }
 
 export function visit(question: Question): void {
   if (question.type === "func") {
     const id = setFunc(question.func);
-    (question as any).func = { type: "LocalFunc", id: id } as Rpc;
+    (question as any).func = { type: "LocalFunc", id: id } as CustomizeFuncRequestType;
   } else {
     if (typeof question.default === "function") {
       const id = setFunc(question.default);
-      (question as any).default = { type: "LocalFunc", id: id } as Rpc;
+      (question as any).default = { type: "LocalFunc", id: id } as CustomizeFuncRequestType;
     }
     if (typeof question.placeholder === "function") {
       const id = setFunc(question.placeholder);
-      (question as any).placeholder = { type: "LocalFunc", id: id } as Rpc;
+      (question as any).placeholder = { type: "LocalFunc", id: id } as CustomizeFuncRequestType;
     }
     if (typeof question.prompt === "function") {
       const id = setFunc(question.prompt);
-      (question as any).prompt = { type: "LocalFunc", id: id } as Rpc;
+      (question as any).prompt = { type: "LocalFunc", id: id } as CustomizeFuncRequestType;
     }
     if (question.validation) {
       if ((question.validation as any).validFunc) {
         const id = setFunc((question.validation as any).validFunc);
-        (question.validation as any).validFunc = { type: "ValidateFunc", id: id } as Rpc;
+        (question.validation as any).validFunc = {
+          type: "ValidateFunc",
+          id: id,
+        } as CustomizeFuncRequestType;
       }
     }
     if (question.type === "singleSelect" || question.type === "multiSelect") {
       if (question.dynamicOptions) {
         const id = setFunc(question.dynamicOptions);
-        (question as any).dynamicOptions = { type: "LocalFunc", id: id } as Rpc;
+        (question as any).dynamicOptions = {
+          type: "LocalFunc",
+          id: id,
+        } as CustomizeFuncRequestType;
       }
       if (question.type === "multiSelect") {
         if (question.onDidChangeSelection) {
           const id = setFunc(question.onDidChangeSelection);
-          (question as any).onDidChangeSelection = { type: "OnSelectionChangeFunc", id: id } as Rpc;
+          (question as any).onDidChangeSelection = {
+            type: "OnSelectionChangeFunc",
+            id: id,
+          } as CustomizeFuncRequestType;
         }
       }
     }
   }
-}
-
-export interface Rpc {
-  type: "LocalFunc" | "ValidateFunc" | "OnSelectionChangeFunc";
-  id: number;
 }
 
 export function traverseToJson(root: QTreeNode): void {
@@ -103,7 +113,7 @@ export function traverseToJson(root: QTreeNode): void {
     const cond: any = root.condition;
     if (cond.validFunc) {
       const id = setFunc(cond.validFunc);
-      cond.validFunc = { type: "ValidateFunc", id: id } as Rpc;
+      cond.validFunc = { type: "ValidateFunc", id: id } as CustomizeFuncRequestType;
     }
   }
   if (root.data.type !== "group") {

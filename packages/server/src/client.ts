@@ -16,11 +16,9 @@ const wsStream = WebSocket.createWebSocketStream(ws, { encoding: "utf8" });
 const connection = createMessageConnection(wsStream, wsStream);
 connection.listen();
 
-test();
-
 async function test() {
   connection.onRequest(
-    `${Namespaces.UserInteraction}/selectOption`,
+    `${Namespaces.UserInteraction}/SelectOption`,
     async (config: SingleSelectConfig) => {
       if (config.name === "scratch") {
         return { type: "success", result: config.options[0] };
@@ -38,7 +36,7 @@ async function test() {
     }
   );
   connection.onRequest(
-    `${Namespaces.UserInteraction}/selectOptions`,
+    `${Namespaces.UserInteraction}/SelectOptions`,
     async (config: SingleSelectConfig) => {
       if (config.name === "capabilities") {
         return { type: "success", result: ["Tab"] };
@@ -53,17 +51,23 @@ async function test() {
     }
   );
   connection.onRequest(
-    `${Namespaces.UserInteraction}/selectFolder`,
+    `${Namespaces.UserInteraction}/SelectFolder`,
     async (config: SingleSelectConfig) => {
       return { type: "success", result: os.tmpdir() };
     }
   );
   connection.onRequest(
-    `${Namespaces.UserInteraction}/inputText`,
+    `${Namespaces.UserInteraction}/InputText`,
     async (config: SingleSelectConfig) => {
       return { type: "success", result: `demoapp${new Date().getTime()}` };
     }
   );
-  const res = await sendRequest(connection, `${Namespaces.Core}/createProject`, { platform: "vs" });
+  const res = await sendRequest(connection, `${Namespaces.Server}/createProjectRequest`, {
+    platform: "vs",
+  });
   console.log(res);
 }
+
+(async () => {
+  await test();
+})();

@@ -3,22 +3,17 @@
 
 import { createMessageConnection } from "vscode-jsonrpc/node";
 import WebSocket from "ws";
-import { createProject, initCore, provisionResources } from "./handler";
-import { Namespaces } from "./namespace";
+import ServerConnection from "./serverConnection";
 
 const port = 7920;
 const wss = new WebSocket.Server({ port: port });
 
 wss.on("connection", async function cb(ws) {
-  console.log(`connection`);
   const wsStream = WebSocket.createWebSocketStream(ws, { encoding: "utf8" });
-  const connection = createMessageConnection(wsStream, wsStream);
-  initCore(connection);
+  const connection = new ServerConnection(createMessageConnection(wsStream, wsStream));
   ws.on("message", (ms) => {
     console.log(`recv:${ms.toString()}`);
   });
-  connection.onRequest(`${Namespaces.Core}/createProject`, createProject);
-  connection.onRequest(`${Namespaces.Core}/provisionResources`, provisionResources);
   connection.listen();
 });
 

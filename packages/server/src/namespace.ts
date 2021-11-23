@@ -2,7 +2,14 @@
 // Licensed under the MIT license.
 
 export enum Namespaces {
-  Core = "Core",
+  /**
+   * server-side namespace
+   */
+  Server = "server",
+
+  /**
+   * client-side namespaces
+   */
   Logger = "Logger",
   AzureAccountProvider = "AzureAccountProvider",
   GraphTokenProvider = "GraphTokenProvider",

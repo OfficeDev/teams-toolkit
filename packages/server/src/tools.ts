@@ -47,10 +47,11 @@ import {
   DeviceTokenCredentials,
 } from "../../api/node_modules/@azure/ms-rest-nodeauth/dist/lib/msRestNodeAuth";
 import { Namespaces } from "./namespace";
-import { Rpc, setFunc } from "./questionAdapter";
+import { setFunc } from "./questionAdapter";
 import { sendNotification, sendRequest } from "./utils";
 import { MemoryCache } from "./memoryCache";
 import { env } from "./constant";
+import { CustomizeFuncRequestType } from "./APIs";
 
 export class RemoteLogProvider implements LogProvider {
   connection: MessageConnection;
@@ -445,7 +446,7 @@ export class RemoteUserInteraction implements UserInteraction {
   private convertConfigToJson(config: UIConfig<any>) {
     if (config.validation) {
       const funcId = setFunc(config.validation);
-      (config as any).validation = { type: "ValidateFunc", id: funcId } as Rpc;
+      (config as any).validation = { type: "ValidateFunc", id: funcId } as CustomizeFuncRequestType;
     }
   }
 }

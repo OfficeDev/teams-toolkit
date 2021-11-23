@@ -12,10 +12,12 @@ import {
   getUniqueAppName,
   getConfigFileName,
   cleanUp,
+  setSimpleAuthSkuNameToB1,
+  setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
-import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 describe("Import API into API Management", function () {
   const testProcessEnv = Object.assign({}, process.env);
@@ -45,6 +47,10 @@ describe("Import API into API Management", function () {
         }
       );
       console.log(`Add APIM resource. Error message: ${result.stderr}`);
+
+      if (isMultiEnvEnabled()) {
+        setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+      }
 
       result = await execAsyncWithRetry(`teamsfx provision`, {
         cwd: projectPath,

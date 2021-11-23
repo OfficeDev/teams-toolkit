@@ -43,10 +43,7 @@ function test(vsCallingCli: boolean) {
 
       {
         if (isMultiEnvEnabled()) {
-          if (!vsCallingCli) {
-            // On VS calling CLI, simple auth plugin is not activated.
-            setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-          }
+          setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
         } else {
           // set fx-resource-simple-auth.skuName as B1
           const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);

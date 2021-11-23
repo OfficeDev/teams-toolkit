@@ -13,9 +13,10 @@ import {
   getTestFolder,
   getUniqueAppName,
   cleanUp,
+  setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
-import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 describe("Provision", function () {
   const testFolder = getTestFolder();
@@ -35,6 +36,9 @@ describe("Provision", function () {
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
+    if (isMultiEnvEnabled()) {
+      setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    }
     // provision
     await execAsyncWithRetry(`teamsfx provision --subscription ${subscription}`, {
       cwd: projectPath,

@@ -132,6 +132,18 @@ export async function setBotSkuNameToB1(projectPath: string) {
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
+export async function setBotSkuNameToB1Bicep(projectPath: string, envName: string) {
+  const bicepParameterFile = path.join(
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    `azure.parameters.${envName}.json`
+  );
+  const parametersFilePath = path.resolve(projectPath, bicepParameterFile);
+  const parameters = await fs.readJSON(parametersFilePath);
+  parameters["parameters"]["provisionParameters"]["value"]["botWebAppSKU"] = "B1";
+  return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
+}
+
 export async function cleanupSharePointPackage(appId: string) {
   if (appId) {
     try {
@@ -155,6 +167,9 @@ export async function cleanUpAadApp(
   envName = "dev"
 ) {
   const envFilePath = path.resolve(projectPath, getEnvFilePathSuffix(isMultiEnvEnabled, envName));
+  if (!(await fs.pathExists(envFilePath))) {
+    return;
+  }
   const context = await fs.readJSON(envFilePath);
   const manager = await AadManager.init();
   const promises: Promise<boolean>[] = [];
@@ -300,6 +315,33 @@ export async function readContext(projectPath: string): Promise<any> {
 
   // Read Context and UserData
   const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+
+  let userData: Record<string, string> = {};
+  if (await fs.pathExists(userDataFilePath)) {
+    const dictContent = await fs.readFile(userDataFilePath, "UTF-8");
+    userData = dotenv.parse(dictContent);
+  }
+
+  // Read from userdata.
+  for (const plugin in context) {
+    const pluginContext = context[plugin];
+    for (const key in pluginContext) {
+      if (typeof pluginContext[key] === "string" && isSecretPattern(pluginContext[key])) {
+        const secretKey = `${plugin}.${key}`;
+        pluginContext[key] = userData[secretKey] ?? undefined;
+      }
+    }
+  }
+
+  return context;
+}
+
+export async function readContextMultiEnv(projectPath: string, envName: string): Promise<any> {
+  const contextFilePath = `${projectPath}/.fx/states/state.${envName}.json`;
+  const userDataFilePath = `${projectPath}/.fx/states/${envName}.userdata`;
+
+  // Read Context and UserData
+  const context = await fs.readJSON(contextFilePath);
 
   let userData: Record<string, string> = {};
   if (await fs.pathExists(userDataFilePath)) {

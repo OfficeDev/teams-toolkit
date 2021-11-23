@@ -13,8 +13,10 @@ import {
   getTestFolder,
   getUniqueAppName,
   cleanUp,
+  setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 describe("Provision", function () {
   const testFolder = getTestFolder();
@@ -34,6 +36,9 @@ describe("Provision", function () {
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
+    if (isMultiEnvEnabled()) {
+      setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    }
     // provision
     await execAsyncWithRetry(`teamsfx provision --subscription ${subscription}`, {
       cwd: projectPath,
@@ -41,16 +46,29 @@ describe("Provision", function () {
       timeout: 0,
     });
 
-    // Get context
-    const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+    if (isMultiEnvEnabled()) {
+      // Get context
+      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-    // Validate Aad App
-    const aad = AadValidator.init(context, false, AppStudioLogin);
-    await AadValidator.validate(aad);
+      // Validate Aad App
+      const aad = AadValidator.init(context, false, AppStudioLogin);
+      await AadValidator.validate(aad);
 
-    // Validate Simple Auth
-    const simpleAuth = SimpleAuthValidator.init(context);
-    await SimpleAuthValidator.validate(simpleAuth, aad, "D1");
+      // Validate Simple Auth
+      const simpleAuth = SimpleAuthValidator.init(context);
+      await SimpleAuthValidator.validate(simpleAuth, aad, "D1", true);
+    } else {
+      // Get context
+      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+
+      // Validate Aad App
+      const aad = AadValidator.init(context, false, AppStudioLogin);
+      await AadValidator.validate(aad);
+
+      // Validate Simple Auth
+      const simpleAuth = SimpleAuthValidator.init(context);
+      await SimpleAuthValidator.validate(simpleAuth, aad, "D1");
+    }
 
     // deploy
     await execAsyncWithRetry(`teamsfx deploy frontend-hosting`, {
@@ -62,6 +80,10 @@ describe("Provision", function () {
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, false);
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, false, false, true);
+    } else {
+      await cleanUp(appName, projectPath, true, false, false);
+    }
   });
 });

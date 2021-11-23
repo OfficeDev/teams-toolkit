@@ -24,6 +24,7 @@ import {
   getUniqueAppName,
   loadContext,
   mockTeamsfxMultiEnvFeatureFlag,
+  setBotSkuNameToB1Bicep,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 
@@ -68,6 +69,7 @@ describe("Multi Env Happy Path for Azure", function () {
 
       // update SKU from free to B1 to prevent free SKU limit error
       await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await setBotSkuNameToB1Bicep(projectPath, env);
       console.log(`[Successfully] update simple auth sku to B1`);
 
       // list env

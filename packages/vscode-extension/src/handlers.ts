@@ -1575,7 +1575,7 @@ export function cmdHdlDisposeTreeView() {
 }
 
 export async function showError(e: UserError | SystemError) {
-  if (e.stack) {
+  if (e.stack && e instanceof SystemError) {
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
   } else {
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}`);

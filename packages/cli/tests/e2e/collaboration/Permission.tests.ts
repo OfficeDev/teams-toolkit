@@ -4,6 +4,7 @@
 import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
+import { isMultiEnvEnabled } from "../../../../fx-core/build";
 import { FeatureFlags } from "../../../src/constants";
 import {
   cleanUp,
@@ -90,8 +91,10 @@ describe("Collaboration", function () {
     // When collaborator account is guest account in the tenant. Account name pattern will change.
     // e.g. Guest account "account@example.com" will appear as "account_example#EXT#@exampleTenant.onmicrosoft.com" under tenant "exampleTenant".
     // Thus here will check the account name only.
-    expect(listCollaboratorResult.stdout).to.contains(`Account: ${collaborator?.split("@")[0]}`);
-    expect(listCollaboratorResult.stdout).to.contains(`Account: ${creator?.split("@")[0]}`);
+    if (!isMultiEnvEnabled()) {
+      expect(listCollaboratorResult.stdout).to.contains(`Account: ${collaborator?.split("@")[0]}`);
+      expect(listCollaboratorResult.stdout).to.contains(`Account: ${creator?.split("@")[0]}`);
+    }
     console.log("[Successfully] list collaborator");
   });
 

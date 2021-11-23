@@ -9,17 +9,6 @@ import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
 import { LocalResource, TeamsAppLocalResourceProfile } from "./localResourceProfile";
 import { CloudResource, ResourceProfile } from "./resourceProfile";
 import { RuntimeStacks } from "./solutionSettings";
-export interface FrameworkProvider {
-  name: string;
-  options: ScaffoldOption[];
-  scaffold: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
-}
-
-export interface SampleProvider {
-  name: string;
-  options: ScaffoldOption[];
-  scaffoldSample: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
-}
 
 export interface ScaffoldOption extends OptionItem {
   data: {

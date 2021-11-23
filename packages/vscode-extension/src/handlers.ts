@@ -1460,6 +1460,7 @@ export async function listCollaborator(env: string): Promise<void> {
     if (result.value.state !== CollaborationState.OK) {
       window.showWarningMessage(result.value.message);
     }
+    VsCodeLogInstance.outputChannel.show();
   } catch (e) {
     result = wrapError(e);
   }

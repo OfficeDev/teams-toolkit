@@ -495,8 +495,14 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.provision);
-  await registerEnvTreeHandler();
-  return result;
+
+  if (result.isErr() && isUserCancelError(result.error)) {
+    return result;
+  } else {
+    // refresh env tree except provision cancelled.
+    await registerEnvTreeHandler();
+    return result;
+  }
 }
 
 export async function deployHandler(args?: any[]): Promise<Result<null, FxError>> {

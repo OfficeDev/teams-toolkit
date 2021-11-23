@@ -5,7 +5,7 @@
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { CoreHookContext, FxCore, isV2 } from "..";
-import { isMultiEnvEnabled } from "../../common";
+import { getStrings, isMultiEnvEnabled } from "../../common";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
 import { shouldIgnored } from "./projectSettingsLoader";
@@ -19,6 +19,7 @@ export function EnvInfoWriterMW(skip = false): Middleware {
     try {
       await next();
     } catch (e) {
+      if ((e as any)["name"] === getStrings().solution.CancelProvision) throw e;
       error1 = e;
     }
     let error2: any = undefined;

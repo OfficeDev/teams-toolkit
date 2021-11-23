@@ -543,12 +543,12 @@
       },
       {
         "command": "fx-extension.preview",
-        "title": "Preview",
+        "title": "Preview Teams app",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.previewWithIcon",
-        "title": "Preview",
+        "title": "Preview Teams app",
         "icon": "$(run)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },

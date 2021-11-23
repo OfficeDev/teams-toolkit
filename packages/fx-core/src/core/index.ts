@@ -8,7 +8,6 @@ import {
   ArchiveLogFileName,
   assembleError,
   ConfigFolderName,
-  ConfigMap,
   Core,
   CoreCallbackEvent,
   CoreCallbackFunc,
@@ -16,20 +15,17 @@ import {
   Func,
   FunctionRouter,
   FxError,
-  GroupOfTasks,
   InputConfigsFolderName,
   Inputs,
   Json,
   LogProvider,
   ok,
-  OptionItem,
   Platform,
   ProjectConfig,
   ProjectSettings,
   StatesFolderName,
   QTreeNode,
   Result,
-  RunnableTask,
   SingleSelectQuestion,
   Solution,
   SolutionConfig,
@@ -44,7 +40,6 @@ import {
   BuildFolderName,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
-import { AxiosResponse } from "axios";
 import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -56,7 +51,6 @@ import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   Component,
   sendTelemetryErrorEvent,
-  sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
@@ -78,7 +72,6 @@ import {
   ArchiveUserFileError,
   CopyFileError,
   CoreSource,
-  FetchSampleError,
   FunctionRouterError,
   InvalidInputError,
   LoadSolutionError,

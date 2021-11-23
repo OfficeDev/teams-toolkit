@@ -11,7 +11,6 @@ import {
   PluginContext,
   TeamsAppManifest,
   LogProvider,
-  ProjectSettings,
   IComposeExtension,
   IBot,
   AppPackageFolderName,
@@ -33,7 +32,6 @@ import {
 import { ICommand, ICommandList } from "../../solution/fx-solution/appstudio/interface";
 import {
   BotOptionItem,
-  HostTypeOptionAzure,
   MessageExtensionItem,
   TabOptionItem,
 } from "../../solution/fx-solution/question";
@@ -62,8 +60,6 @@ import {
   COMPOSE_EXTENSIONS_TPL,
   TEAMS_APP_SHORT_NAME_MAX_LENGTH,
   DEFAULT_DEVELOPER_WEBSITE_URL,
-  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
-  DEFAULT_DEVELOPER_PRIVACY_URL,
   FRONTEND_ENDPOINT,
   FRONTEND_DOMAIN,
   LOCAL_BOT_ID,
@@ -113,6 +109,7 @@ import {
 } from "./utils/utils";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
+import { HelpLinks } from "../../../common/constants";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -436,7 +433,8 @@ export class AppStudioPluginImpl {
           return err(
             AppStudioResultFactory.UserError(
               AppStudioError.GetRemoteConfigError.name,
-              AppStudioError.GetRemoteConfigError.message("Manifest validation failed")
+              AppStudioError.GetRemoteConfigError.message("Manifest validation failed"),
+              HelpLinks.WhyNeedProvision
             )
           );
         } else {
@@ -503,7 +501,8 @@ export class AppStudioPluginImpl {
         ) {
           throw AppStudioResultFactory.UserError(
             AppStudioError.GetRemoteConfigError.name,
-            AppStudioError.GetRemoteConfigError.message("Update manifest failed")
+            AppStudioError.GetRemoteConfigError.message("Update manifest failed"),
+            HelpLinks.WhyNeedProvision
           );
         } else {
           throw appManifest.error;
@@ -766,7 +765,8 @@ export class AppStudioPluginImpl {
         ) {
           throw AppStudioResultFactory.UserError(
             AppStudioError.GetRemoteConfigError.name,
-            AppStudioError.GetRemoteConfigError.message("Teams package build failed")
+            AppStudioError.GetRemoteConfigError.message("Teams package build failed"),
+            HelpLinks.WhyNeedProvision
           );
         } else {
           throw manifest.error;
@@ -1659,7 +1659,8 @@ export class AppStudioPluginImpl {
               AppStudioError.GetRemoteConfigFailedError.message(
                 new Error(`Data required: ${BOT_DOMAIN}`),
                 isProvisionSucceeded
-              )
+              ),
+              HelpLinks.WhyNeedProvision
             )
           );
         }
@@ -1756,7 +1757,8 @@ export class AppStudioPluginImpl {
               AppStudioError.GetRemoteConfigFailedError.message(
                 new Error(`Data required: ${tokens.join(",")}`),
                 isProvisionSucceeded
-              )
+              ),
+              HelpLinks.WhyNeedProvision
             )
           );
         }
@@ -1792,7 +1794,8 @@ export class AppStudioPluginImpl {
           return err(
             AppStudioResultFactory.UserError(
               AppStudioError.GetRemoteConfigFailedError.name,
-              AppStudioError.GetRemoteConfigFailedError.message(e, isProvisionSucceeded)
+              AppStudioError.GetRemoteConfigFailedError.message(e, isProvisionSucceeded),
+              HelpLinks.WhyNeedProvision
             )
           );
         }

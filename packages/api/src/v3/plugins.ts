@@ -15,28 +15,40 @@ import {
 } from "./resourceProfile";
 export interface FrameworkProvider {
   name: string;
-  runtimeStacks: RuntimeStacks[];
-  languages: string[];
-  frameworkOptions: OptionItem[];
+  options: ScaffoldOption[];
   scaffold: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 
 export interface SampleProvider {
   name: string;
-  runtimeStacks: RuntimeStacks[];
-  languages: string[];
-  sampleOptions: OptionItem[];
+  options: ScaffoldOption[];
   scaffoldSample: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+}
+
+export interface ScaffoldOption extends OptionItem {
+  data: {
+    runtimeStack: string;
+    language: string;
+    tags: string[];
+    scope: ("tab" | "bot" | "me")[];
+  };
+}
+
+export interface ScaffoldPlugin {
+  name: string;
+  options: ScaffoldOption[];
+  subFolderName?: string;
+  scaffold: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 
 export interface ResourceProvider {
   name: string;
-  resourceOptions: OptionItem[];
+  option: OptionItem;
   runtimeStacks?: RuntimeStacks[];
   /**
-   * return dependent components when activating plugins
+   * return dependent plugin names
    */
-  getDependencies?(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>>;
+  pluginDependencies?(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>>;
 
   provisionLocalResource?: (
     ctx: Context,

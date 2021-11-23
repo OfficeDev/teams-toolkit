@@ -46,6 +46,11 @@ export interface Resource extends Json {
   buildFolder?: string;
 
   language?: string;
+
+  /**
+   * resource ids that current resource depends on
+   */
+  resources?: string[];
 }
 
 export interface TeamsFxSolutionSettings extends SolutionSettings {
@@ -94,6 +99,7 @@ const settings1: TeamsFxSolutionSettings = {
     {
       name: "SimpleAuth",
       provider: "SimpleAuthPlugin",
+      resources: ["AzureWebApp_1"],
     },
     {
       name: "AAD",

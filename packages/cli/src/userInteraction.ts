@@ -463,9 +463,7 @@ export class CLIUserInteraction implements UserInteraction {
   }
 
   public async openUrl(link: string): Promise<Result<boolean, FxError>> {
-    if (!this.ciEnabled) {
-      await open(link);
-    }
+    if (!this.ciEnabled) await open(link);
     return ok(true);
   }
 

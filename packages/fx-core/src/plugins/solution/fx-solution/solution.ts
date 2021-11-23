@@ -373,14 +373,6 @@ export class TeamsAppSolution implements Solution {
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
     });
 
-    ctx.ui
-      ?.showMessage("info", `${getStrings().solution.MigrateSuccessNotice}`, false, "Reload")
-      .then((result) => {
-        const userSelected = result.isOk() ? result.value : undefined;
-        if (userSelected === "Reload") {
-          ctx.ui?.reload?.();
-        }
-      });
     return ok(Void);
   }
 

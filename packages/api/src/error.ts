@@ -112,7 +112,6 @@ export class UserError extends Error implements FxError {
 
     //source
     this.source = option.source || "unknown";
-    w;
 
     //stack
     if (stack) {

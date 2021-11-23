@@ -40,7 +40,7 @@ export interface LocalBotResource extends LocalResource {
 /**
  * common local resource profiles
  */
-export interface LocalResourceProfile {
+export interface LocalResourceState {
   app: Json;
   resources?: LocalResource[];
 }
@@ -48,7 +48,7 @@ export interface LocalResourceProfile {
 /**
  * defines local resource profiles
  */
-export interface TeamsAppLocalResourceProfile {
+export interface TeamsAppLocalResourceState {
   app: TeamsAppResource;
   resources?: LocalResource[];
 }

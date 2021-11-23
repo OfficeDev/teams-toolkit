@@ -6,7 +6,11 @@ import { OptionItem } from "../qm";
 import { Inputs, Void } from "../types";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
-import { LocalResource, TeamsAppLocalResourceProfile } from "./localResourceProfile";
+import {
+  LocalResource,
+  LocalResourceState,
+  TeamsAppLocalResourceState as LocalResourceProfile,
+} from "./localResourceStates";
 import { CloudResource, ResourceStates } from "./resourceStates";
 import { RuntimeStacks } from "./solutionSettings";
 
@@ -25,7 +29,7 @@ export interface ScaffoldPlugin {
   scaffold: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 
-export interface ResourceProvider {
+export interface ResourcePlugin {
   name: string;
   option: OptionItem;
   runtimeStacks?: RuntimeStacks[];
@@ -38,14 +42,14 @@ export interface ResourceProvider {
     ctx: Context,
     inputs: Inputs,
     tokenProvider: TokenProvider,
-    teamsAppLocalResourceProfile?: TeamsAppLocalResourceProfile
+    teamsAppLocalResourceProfile?: LocalResourceProfile
   ) => Promise<Result<LocalResource, FxError>>;
 
   //all plugins are built-in plugins: aad, appStudio, localDebug, simpleAuth, bot
   configureLocalResource?: (
     ctx: Context,
     inputs: Inputs,
-    teamsAppLocalResourceProfile: TeamsAppLocalResourceProfile,
+    localResourceState: LocalResourceState,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
@@ -53,7 +57,7 @@ export interface ResourceProvider {
     ctx: Context,
     inputs: ProvisionInputs,
     tokenProvider: TokenProvider,
-    resourceProfile?: CloudResource
+    resourceState?: CloudResource
   ) => Promise<Result<CloudResource, FxError>>;
 
   /// after add resource
@@ -65,7 +69,7 @@ export interface ResourceProvider {
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    appResourceProfile: ResourceStates,
+    resourceStates: ResourceStates,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
 

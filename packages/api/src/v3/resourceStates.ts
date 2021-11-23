@@ -15,9 +15,13 @@ export interface CloudResource extends Json {
   secretFields?: string[];
 }
 
+export interface AppResource extends Json {
+  appId: string;
+}
+
 export interface ResourceStates {
   solution: Json;
-  app: Json;
+  app: AppResource;
   resources?: CloudResource[];
 }
 
@@ -39,8 +43,7 @@ export interface AzureSolutionConfig extends Json {
   provisionSucceeded: boolean;
 }
 
-export interface TeamsAppResource extends Json {
-  teamsAppId: string;
+export interface TeamsAppResource extends AppResource {
   tenantId: string;
 }
 
@@ -60,14 +63,6 @@ export interface AzureManagedIdentity extends AzureResource {
 export interface AzureStorageAccount extends AzureResource {
   type: "AzureStorageAccount";
   endpoint: string;
-}
-
-////////////////////AzureSQL.ts////////////////
-export interface AzureSQL extends AzureResource {
-  type: "AzureSQL";
-  endpoint: string;
-  adminUserName: string;
-  databaseName: string;
 }
 
 ////////////////////AzureBot.ts////////////////

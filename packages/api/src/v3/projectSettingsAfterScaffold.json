@@ -1,0 +1,59 @@
+{
+    "appName": "sampleApp",
+    "projectId": "dfc5814c-5309-4d27-8b18-823e89b6c11d",
+    "solutionSettings": {
+        "name": "TeamsFxSolutionPlugin",
+        "version": "2.0.0",
+        "modules":{
+          "tab": {
+            "runtimeStack": "Node12LTS",
+            "language": "javascript",
+            "subFolderName": "tabs",
+            "resources": ["AzureStorageAccount_1"]
+          },
+          "bot":{
+            "runtimeStack": "Node12LTS",
+            "language": "javascript",
+            "subFolderName": "bot",
+            "resources": ["AzureBot_1", "AzureWebApp_1"]
+          },
+          "backend":{
+            "runtimeStack": "Node12LTS",
+            "language": "javascript",
+            "subFolderName": "api",
+            "resources": ["AzureFunction_1"]
+          }
+        },
+        "resources":[
+          {
+            "name": "AzureStorageAccount_1",
+            "type": "AzureStorageAccount",
+            "provider": "AzureStorageAccountPlugin",
+            "provisionBicepFile": "templates/azure/AzureStorageAccount_1.provision.bicep",
+            "configurationBicepFile": "templates/azure/AzureStorageAccount_1.configuration.bicep"
+          },
+          {
+            "name": "AzureBot_1",
+            "type": "AzureBot",
+            "provider": "AzureBotPlugin",
+            "provisionBicepFile": "templates/azure/AzureBot_1.provision.bicep",
+            "configurationBicepFile": "templates/azure/AzureBot_1.configuration.bicep"
+          },
+          {
+            "name": "AzureWebApp_1",
+            "type": "AzureWebApp",
+            "provider": "AzureWebAppPlugin",
+            "provisionBicepFile": "templates/azure/AzureWebApp_1.provision.bicep",
+            "configurationBicepFile": "templates/azure/AzureWebApp_1.configuration.bicep"
+          },
+          {
+            "name": "AzureFunction_1",
+            "type": "AzureFunction",
+            "provider": "AzureFunctionPlugin",
+            "provisionBicepFile": "templates/azure/AzureFunction_1.provision.bicep",
+            "configurationBicepFile": "templates/azure/AzureFunction_1.configuration.bicep"
+          }
+        ]
+    },
+    "version": "3.0.0"
+}

@@ -1,0 +1,15 @@
+{
+    "appName": "sampleApp",
+    "projectId": "dfc5814c-5309-4d27-8b18-823e89b6c11d",
+    "solutionSettings": {
+        "name": "TeamsFxSolutionPlugin",
+        "version": "2.0.0",
+        "modules":{
+          "tab": {},
+          "bot":{},
+          "backend":{}
+        },
+        "resources":[]
+    },
+    "version": "3.0.0"
+}

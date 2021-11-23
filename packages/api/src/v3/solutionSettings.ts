@@ -110,6 +110,10 @@ const settings1: TeamsFxSolutionSettings = {
       provider: "AzureSQLPlugin",
     },
     {
+      name: "AzureSQL_2",
+      provider: "AzureSQLPlugin",
+    },
+    {
       name: "ManagedIdentity_1",
       provider: "ManagedIdentityPlugin",
     },
@@ -136,11 +140,14 @@ const settings2: TeamsFxSolutionSettings = {
   resources: [
     {
       name: "AzureBot_1",
-      provider: "AzureBotPlugin",
+      type: "AzureBot",
+      bicepFile: "templates/${name}/default.bicep",
+      // outputFile: "templates/${name}/output.${env}.bicep",   specification
     },
     {
       name: "AzureWebApp_1",
-      provider: "AzureWebAppPlugin",
+      type: "AzureWebApp",
+      bicepFile: "xxx",
     },
   ],
 };

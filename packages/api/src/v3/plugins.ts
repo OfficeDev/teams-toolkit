@@ -11,7 +11,7 @@ import {
   LocalResource,
   RuntimeStacks,
   TeamsAppLocalResourceProfile,
-  TeamsFxResourceProfile,
+  ResourceProfile,
 } from "./resourceProfile";
 export interface FrameworkProvider {
   name: string;
@@ -72,15 +72,16 @@ export interface ResourceProvider {
     resourceProfile?: CloudResource
   ) => Promise<Result<CloudResource, FxError>>;
 
+  /// after add resource
   generateResourceTemplate?: (
     ctx: Context,
-    inputs: Inputs
+    inputs: Inputs /// specific inputs
   ) => Promise<Result<ResourceTemplate, FxError>>;
 
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    appResourceProfile: TeamsFxResourceProfile,
+    appResourceProfile: ResourceProfile,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
 

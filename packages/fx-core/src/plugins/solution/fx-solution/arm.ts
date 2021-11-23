@@ -22,7 +22,7 @@ import { format } from "util";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
-import { ArmHelpLink, ConstantString, PluginDisplayName } from "../../../common/constants";
+import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
 import { getResourceGroupNameFromResourceId, waitSeconds, getUuid } from "../../../common/tools";
 import { environmentManager } from "../../..";
 import {
@@ -44,15 +44,11 @@ import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { executeCommand } from "../../../common/cpUtils";
 import { TEAMS_FX_RESOURCE_ID_KEY } from ".";
 import os from "os";
+import { DeploymentOperation } from "@azure/arm-resources/esm/models";
 
-// Old folder structure constants
-const templateFolder = "templates";
-const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionFileName = "provision.bicep";
 const bicepOrchestrationConfigFileName = "config.bicep";
-
-// New folder structure constants
 const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
@@ -108,10 +104,35 @@ type DeployContext = {
   deploymentName: string;
 };
 
+type OperationStatus = {
+  resourceName: string;
+  status: string;
+};
+
+export function getRequiredOperation(
+  operation: DeploymentOperation,
+  deployCtx: DeployContext
+): OperationStatus | undefined {
+  if (
+    operation.properties?.targetResource?.resourceName &&
+    operation.properties.provisioningState &&
+    operation.properties?.timestamp &&
+    operation.properties.timestamp.getTime() > deployCtx.deploymentStartTime
+  ) {
+    return {
+      resourceName: operation.properties?.targetResource?.resourceName,
+      status: operation.properties.provisioningState,
+    };
+  } else {
+    return undefined;
+  }
+}
+
 export async function pollDeploymentStatus(deployCtx: DeployContext) {
   const failedCount = 4;
   let tryCount = 0;
   let previousStatus: { [key: string]: string } = {};
+  let polledOperations: string[] = [];
   deployCtx.ctx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
@@ -131,17 +152,28 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
       }
 
       const currentStatus: { [key: string]: string } = {};
-      operations.forEach((operation) => {
-        if (
-          operation.properties?.targetResource?.resourceName &&
-          operation.properties.provisioningState &&
-          operation.properties?.timestamp &&
-          operation.properties.timestamp.getTime() > deployCtx.deploymentStartTime
-        ) {
-          currentStatus[operation.properties.targetResource.resourceName] =
-            operation.properties.provisioningState;
-        }
-      });
+      await Promise.all(
+        operations.map(async (o) => {
+          const operation = getRequiredOperation(o, deployCtx);
+          if (operation) {
+            currentStatus[operation.resourceName] = operation.status;
+            if (!polledOperations.includes(operation.resourceName)) {
+              polledOperations.push(operation.resourceName);
+              const subOperations = await deployCtx.client.deploymentOperations.list(
+                deployCtx.resourceGroupName,
+                operation.resourceName
+              );
+              subOperations.forEach((sub) => {
+                const subOperation = getRequiredOperation(sub, deployCtx);
+                if (subOperation) {
+                  currentStatus[subOperation.resourceName] = subOperation.status;
+                }
+              });
+            }
+          }
+        })
+      );
+
       for (const key in currentStatus) {
         if (currentStatus[key] !== previousStatus[key]) {
           deployCtx.ctx.logProvider?.info(
@@ -150,6 +182,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
         }
       }
       previousStatus = currentStatus;
+      polledOperations = [];
     } catch (error) {
       tryCount++;
       if (tryCount > failedCount) {
@@ -241,14 +274,6 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     await result;
     return ok(undefined);
   } catch (error) {
-    const errorMessage = format(
-      getStrings().solution.DeployArmTemplates.FailNotice,
-      PluginDisplayName.Solution,
-      resourceGroupName,
-      deploymentName
-    );
-    ctx.logProvider?.error(errorMessage + ` Detailed error: ${error.message}`);
-
     // return the error if the template is invalid
     if (error.code === InvalidTemplateErrorCode) {
       return err(
@@ -266,13 +291,22 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
         returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure);
       }
 
-      ctx.logProvider?.error(
-        `[${PluginDisplayName.Solution}] ${deploymentName} -> ${JSON.stringify(
-          formattedDeploymentError(deploymentError),
-          undefined,
-          2
-        )}`
+      const deploymentErrorMessage = JSON.stringify(
+        formattedDeploymentError(deploymentError),
+        undefined,
+        2
       );
+      const errorMessage = format(
+        getStrings().solution.DeployArmTemplates.FailNotice,
+        PluginDisplayName.Solution,
+        resourceGroupName,
+        deploymentName
+      );
+      ctx.logProvider?.error(
+        errorMessage +
+          `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`
+      );
+
       let failedDeployments: string[] = [];
       if (deploymentError.subErrors) {
         failedDeployments = Object.keys(deploymentError.subErrors);
@@ -500,7 +534,7 @@ async function doGenerateArmTemplate(
                 duplicateParamError,
                 SolutionSource,
                 SolutionError.FailedToUpdateArmParameters,
-                ArmHelpLink
+                HelpLinks.ArmHelpLink
               )
             );
           }
@@ -520,7 +554,7 @@ async function doGenerateArmTemplate(
               parameterFileError,
               SolutionSource,
               SolutionError.FailedToUpdateArmParameters,
-              ArmHelpLink
+              HelpLinks.ArmHelpLink
             )
           );
         }
@@ -927,7 +961,7 @@ function formattedDeploymentName(failedDeployments: string[]): Result<void, FxEr
       returnError,
       SolutionSource,
       SolutionError.FailedToDeployArmTemplatesToAzure,
-      ArmHelpLink
+      HelpLinks.ArmHelpLink
     )
   );
 }

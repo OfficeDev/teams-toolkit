@@ -19,6 +19,7 @@ import {
   LocalSettingsProvider,
 } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
+import * as util from "util";
 import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import * as StringResources from "./resources/Strings.json";
@@ -40,6 +41,11 @@ let environmentTreeProvider: CommandsTreeViewProvider;
 let collaboratorsRecordCache: Record<string, TreeItem[]> = {};
 let permissionCache: Record<string, boolean> = {};
 const mutex = new Mutex();
+
+interface accountStatus {
+  isOk: boolean;
+  warnings: string[];
+}
 
 export async function registerEnvTreeHandler(
   forceUpdateCollaboratorList = true
@@ -67,6 +73,17 @@ export async function registerEnvTreeHandler(
         showEnvList.push(item);
         const provisionSucceeded = await getProvisionSucceedFromEnv(item);
         const isLocal = item === LocalEnvironmentName;
+
+        const accountStatusResult = await CheckAccountForEnvrironment(item);
+        let envIcon = provisionSucceeded ? "folder-active" : "symbol-folder";
+        const isIconCustom: boolean = isLocal ? false : !accountStatusResult.isOk;
+        let accountTip = "";
+
+        if (item !== LocalEnvironmentName && !accountStatusResult.isOk) {
+          envIcon = "warning";
+          accountTip = formatWarningMessages(accountStatusResult.warnings);
+        }
+
         environmentTreeProvider.add([
           {
             commandId: "fx-extension.environment." + item,
@@ -78,8 +95,12 @@ export async function registerEnvTreeHandler(
               : provisionSucceeded
               ? "environment-provisioned"
               : "environment",
-            icon: provisionSucceeded ? "folder-active" : "symbol-folder",
-            isCustom: false,
+            icon: envIcon,
+            tooltip: {
+              isMarkdown: false,
+              value: accountTip,
+            },
+            isCustom: isIconCustom,
             expanded: isLocal ? undefined : true,
           },
         ]);
@@ -246,7 +267,7 @@ async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeIte
     environmentTreeProvider.findCommand("fx-extension.environment." + env) &&
     env !== LocalEnvironmentName
   ) {
-    let envSubItems: TreeItem[] = [];
+    const envSubItems: TreeItem[] = [];
     const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
     if (subscriptionInfo) {
       const subscriptionTreeItem: TreeItem = {
@@ -273,19 +294,6 @@ async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeIte
 
         envSubItems.push(resourceGroupTreeItem);
       }
-
-      const warningItem = await checkSubscriptionPermission(env, subscriptionInfo.subscriptionId);
-      if (warningItem) {
-        envSubItems = [warningItem].concat(envSubItems);
-      }
-    }
-
-    const m365TenantId = await getM365TenantFromEnv(env);
-    if (m365TenantId) {
-      const warningItem = await checkM365Permission(env, m365TenantId);
-      if (warningItem) {
-        envSubItems = [warningItem].concat(envSubItems);
-      }
     }
 
     return envSubItems;
@@ -294,18 +302,65 @@ async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeIte
   return [];
 }
 
-function checkAzureAccountStatus(env: string): TreeItem | undefined {
-  if (AzureAccountManager.getAccountInfo() === undefined) {
-    return {
-      commandId: `fx-extension.environment.checkAzureAccount.${env}`,
-      label: StringResources.vsc.commandsTreeViewProvider.noAzureAccountSignedIn,
-      icon: "warning",
-      isCustom: true,
-      parent: `fx-extension.environment.${env}`,
-    };
+function formatWarningMessages(warnings: string[]): string {
+  let warningMessage = "";
+  if (warnings.length > 1) {
+    const formatedWarnings = warnings.map((warning) => "> ".concat(warning));
+    warningMessage = formatedWarnings.join("\n");
   } else {
-    return undefined;
+    warningMessage = warnings[0];
   }
+
+  return warningMessage;
+}
+async function CheckAccountForEnvrironment(env: string): Promise<accountStatus> {
+  let checkResult = true;
+  const warnings: string[] = [];
+
+  // Check M365 account status
+  const loginStatus = await AppStudioLogin.getInstance().getStatus();
+  if (loginStatus.status == signedIn) {
+    // Signed account doesn't match
+    const m365TenantId = await getM365TenantFromEnv(env);
+    if (m365TenantId && (loginStatus.accountInfo as any).tid !== m365TenantId) {
+      checkResult = false;
+      warnings.push(StringResources.vsc.commandsTreeViewProvider.m365AccountNotMatch);
+    }
+  } else {
+    // Not signed in
+    checkResult = false;
+    warnings.push(StringResources.vsc.commandsTreeViewProvider.m365AccountNotSignedIn);
+  }
+
+  // Check Azure account status
+  if (AzureAccountManager.getAccountInfo() !== undefined) {
+    const subscriptions: SubscriptionInfo[] = await AzureAccountManager.listSubscriptions();
+    const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
+    const provisionedSubId = subscriptionInfo?.subscriptionId;
+
+    if (provisionedSubId) {
+      const targetSub = subscriptions.find(
+        (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
+      );
+      if (targetSub === undefined) {
+        checkResult = false;
+        warnings.push(
+          util.format(
+            StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
+            subscriptionInfo?.subscriptionName
+          )
+        );
+      }
+    }
+  } else {
+    checkResult = false;
+    warnings.push(StringResources.vsc.commandsTreeViewProvider.azureAccountNotSignedIn);
+  }
+
+  return {
+    isOk: checkResult,
+    warnings: warnings,
+  };
 }
 
 async function checkSubscriptionPermission(
@@ -328,38 +383,6 @@ async function checkSubscriptionPermission(
         label: StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
         tooltip: {
           value: StringResources.vsc.commandsTreeViewProvider.noSubscriptionFoundInAzureAccount,
-          isMarkdown: false,
-        },
-        icon: "warning",
-        isCustom: true,
-        parent: `fx-extension.environment.${env}`,
-      };
-
-      return warningTreeItem;
-    }
-  }
-
-  return undefined;
-}
-
-async function checkM365Permission(
-  env: string,
-  m365TenantId: string
-): Promise<TreeItem | undefined> {
-  const loginStatus = await AppStudioLogin.getInstance().getStatus();
-  if (loginStatus.status === signedIn) {
-    let checkSucceeded = false;
-
-    if ((loginStatus.accountInfo as any).tid === m365TenantId) {
-      checkSucceeded = true;
-    }
-
-    if (!checkSucceeded) {
-      const warningTreeItem: TreeItem = {
-        commandId: `fx-extension.environment.${env}.checkM365Tenant`,
-        label: StringResources.vsc.commandsTreeViewProvider.m365AccountNotMatch,
-        tooltip: {
-          value: StringResources.vsc.commandsTreeViewProvider.m365TenantNotMatch,
           isMarkdown: false,
         },
         icon: "warning",

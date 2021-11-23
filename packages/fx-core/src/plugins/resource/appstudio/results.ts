@@ -8,9 +8,9 @@ export class AppStudioResultFactory {
   public static UserError(
     name: string,
     message: string,
-    innerError?: any,
+    helpLink?: string,
     stack?: string,
-    helpLink?: string
+    innerError?: any
   ): UserError {
     return new UserError(name, message, Constants.PLUGIN_NAME, stack, helpLink, innerError);
   }

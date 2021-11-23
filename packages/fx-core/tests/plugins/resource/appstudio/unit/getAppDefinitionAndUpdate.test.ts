@@ -13,6 +13,7 @@ import {
   FRONTEND_DOMAIN,
   LOCAL_BOT_ID,
   BOT_ID,
+  Constants,
 } from "./../../../../../src/plugins/resource/appstudio/constants";
 import {
   LOCAL_DEBUG_TAB_ENDPOINT,
@@ -44,6 +45,7 @@ import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
+  LocalSettingsTeamsAppKeys,
 } from "../../../../../src/common/localSettingsConstants";
 
 describe("Get AppDefinition and Update", () => {
@@ -63,6 +65,7 @@ describe("Get AppDefinition and Update", () => {
   let BOT_ConfigMap: ConfigMap;
   let LDEBUG_ConfigMap: ConfigMap;
   let FE_ConfigMap: ConfigMap;
+  let APPST_ConfigMap: ConfigMap;
   let configOfOtherPlugins: Map<string, ConfigMap>;
   const sandbox = sinon.createSandbox();
 
@@ -85,6 +88,7 @@ describe("Get AppDefinition and Update", () => {
           [LocalSettingsFrontendKeys.TabEndpoint, localDebugTabEndpoint],
           [LocalSettingsFrontendKeys.TabDomain, localDebugTabDomain],
         ]),
+        teamsApp: new ConfigMap([[LocalSettingsTeamsAppKeys.TeamsAppId, uuid.v4()]]),
       };
     }
 
@@ -113,6 +117,9 @@ describe("Get AppDefinition and Update", () => {
     FE_ConfigMap = new ConfigMap();
     FE_ConfigMap.set(FRONTEND_ENDPOINT, "frontend endpoint");
     FE_ConfigMap.set(FRONTEND_DOMAIN, "frontend domain");
+
+    APPST_ConfigMap = new ConfigMap();
+    APPST_ConfigMap.set(Constants.TEAMS_APP_ID, "my app");
   });
 
   afterEach(() => {
@@ -180,9 +187,15 @@ describe("Get AppDefinition and Update", () => {
       chai
         .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
         .equals(AppStudioError.GetLocalDebugConfigFailedError.name);
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
-        .includes("webApplicationInfoResource");
+      if (isMultiEnvEnabled()) {
+        chai
+          .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
+          .includes("applicationIdUris");
+      } else {
+        chai
+          .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
+          .includes("webApplicationInfoResource");
+      }
     }
   });
 
@@ -215,9 +228,11 @@ describe("Get AppDefinition and Update", () => {
       chai
         .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
         .equals(AppStudioError.GetLocalDebugConfigFailedError.name);
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
-        .includes(LOCAL_DEBUG_AAD_ID);
+      if (isMultiEnvEnabled()) {
+        chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes("clientId");
+      } else {
+        chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes("{appClientId}");
+      }
     }
   });
 
@@ -254,50 +269,6 @@ describe("Get AppDefinition and Update", () => {
       chai
         .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
         .equals(AppStudioError.GetLocalDebugConfigFailedError.name);
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
-        .includes(LOCAL_DEBUG_TAB_ENDPOINT);
-      chai.expect(getAppDefinitionAndResult._unsafeUnwrapErr().message).includes(LOCAL_BOT_ID);
-    }
-  });
-
-  it("doesn't have both tab endpoint and tab domain in local config and should return error", async () => {
-    if (isMultiEnvEnabled()) {
-      localSettings.frontend?.delete(LocalSettingsFrontendKeys.TabEndpoint);
-    } else {
-      LDEBUG_ConfigMap.delete(LOCAL_DEBUG_TAB_ENDPOINT);
-      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
-      configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
-      configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
-    }
-    ctx = {
-      root: getAzureProjectRoot(),
-      envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
-      config: new ConfigMap(),
-      cryptoProvider: new LocalCrypto(""),
-      localSettings,
-    };
-    ctx.projectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        name: "azure",
-        version: "1.0",
-        capabilities: ["Bot"],
-      },
-    };
-    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
-    chai.assert.isTrue(getAppDefinitionAndResult.isErr());
-    if (getAppDefinitionAndResult.isErr()) {
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().name)
-        .equals(AppStudioError.InvalidLocalDebugConfigurationDataError.name);
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
-        .includes(LOCAL_DEBUG_TAB_ENDPOINT);
-      chai
-        .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
-        .includes(LOCAL_DEBUG_TAB_DOMAIN);
     }
   });
 

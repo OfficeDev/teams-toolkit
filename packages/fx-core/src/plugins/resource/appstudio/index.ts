@@ -205,7 +205,8 @@ export class AppStudioPlugin implements Plugin {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.TeamsPackageBuildError.name,
-          AppStudioError.TeamsPackageBuildError.message(error)
+          AppStudioError.TeamsPackageBuildError.message(error),
+          error.helpLink
         )
       );
     }
@@ -304,7 +305,8 @@ export class AppStudioPlugin implements Plugin {
           return err(
             AppStudioResultFactory.UserError(
               AppStudioError.TeamsPackageBuildError.name,
-              AppStudioError.TeamsPackageBuildError.message(error)
+              AppStudioError.TeamsPackageBuildError.message(error),
+              error.helpLink
             )
           );
         }
@@ -487,7 +489,11 @@ export class AppStudioPlugin implements Plugin {
     } else if (func.method === "migrateV1Project") {
       return await this.migrateV1Project(ctx);
     } else if (func.method === "getManifestTemplatePath") {
-      const filePath = await this.appStudioPluginImpl.getManifestTemplatePath(ctx.root);
+      const isLocalDebug = (func.params.type as string) === "localDebug";
+      const filePath = await this.appStudioPluginImpl.getManifestTemplatePath(
+        ctx.root,
+        isLocalDebug
+      );
       return ok(filePath);
     } else if (func.method === "updateManifest") {
       return await this.updateManifest(ctx, func.params && func.params.envName === "local");

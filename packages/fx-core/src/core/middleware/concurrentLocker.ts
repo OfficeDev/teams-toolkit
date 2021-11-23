@@ -16,6 +16,7 @@ import * as path from "path";
 import { lock, unlock } from "proper-lockfile";
 import { promisify } from "util";
 import { FxCore } from "..";
+import { waitSeconds } from "../..";
 import { CallbackRegistry } from "../callback";
 import { CoreSource, InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";
 import { getLockFolder } from "../tools";
@@ -52,7 +53,6 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
   const taskName = `${ctx.method} ${
     ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
   }`;
-  const sleep = promisify(setTimeout);
   let acquired = false;
   for (let i = 0; i < 10; ++i) {
     try {
@@ -77,7 +77,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
         // logger?.warning(
         //   `[core] failed to acquire lock for task ${taskName} on: ${configFolder}, error: ${e} try again ... `
         // );
-        await sleep(1000);
+        await waitSeconds(1);
         continue;
       }
       throw e;

@@ -27,5 +27,9 @@ If you have already provisioned the bot service before the migration, and you wa
 
 ### Use exsiting bot
 If you want to reuse the existing bot that has been provision, please follow [this step](https://aka.ms/teamsfx-migration-guide#manual-work-to-use-existing-bot).
+
+### Local debug with SQL
+If you want to connect to an Azure SQL instance when local debug your Teams app, you can refer to [this document](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#manual-work-to-local-debug-with-sql) for help.
+
 ## Restore Your Project Configurations
 Read this [wiki](https://aka.ms/teamsfx-migration-guide) if you want to restore your configuration files or learn more about this upgrade.

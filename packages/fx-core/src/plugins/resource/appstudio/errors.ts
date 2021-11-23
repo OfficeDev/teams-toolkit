@@ -72,18 +72,17 @@ export class AppStudioError {
 
   public static readonly GetLocalDebugConfigFailedError = {
     name: "GetLocalDebugConfigFailed",
-    message: (domain: string, doProvision: boolean) =>
-      `Missing configuration data for manifest. ${
-        doProvision ? "Run 'provision' first." : ""
-      } Data required: ${domain}.`,
+    message: (error: any) => `Missing configuration data for manifest. ${error.message}`,
   };
 
   public static readonly GetRemoteConfigFailedError = {
     name: "GetRemoteConfigFailed",
-    message: (domain: string, doProvision: boolean) =>
-      `Missing configuration data for manifest. ${
-        doProvision ? "Run 'provision' first." : ""
-      } Data required: ${domain}.`,
+    message: (error: any, isProvisionSucceeded: boolean) =>
+      `Missing configuration data for manifest. ${error.message}. ${
+        isProvisionSucceeded
+          ? ""
+          : "Run 'Provision in the cloud' first. Click Get Help to learn more about why you need to provision."
+      }`,
   };
 
   public static readonly InvalidLocalDebugConfigurationDataError = {
@@ -132,7 +131,7 @@ export class AppStudioError {
   public static readonly GetRemoteConfigError = {
     name: "GetRemoteConfigError",
     message: (error: string) =>
-      `${error}. You must run 'Provision in the cloud' first to fill out certain fields in manifest.`,
+      `${error}. You must run 'Provision in the cloud' first to fill out certain fields in manifest. Click Get Help to learn more about why you need to provision.`,
   };
 
   public static readonly UnhandledError = {

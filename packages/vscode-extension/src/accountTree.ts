@@ -122,8 +122,22 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       // show nothing if internal error (TODO: may add back if full status is required later)
       return [];
     } else if (isSideloadingAllowed === true) {
-      // show nothing if status is good (TODO: may add back if full status is required later)
-      return [];
+      return [
+        {
+          commandId: "fx-extension.checkSideloading",
+          label: StringResources.vsc.accountTree.sideloadingPass,
+          callback: () => {
+            return Promise.resolve(ok(null));
+          },
+          parent: "fx-extension.signinM365",
+          contextValue: "checkSideloading",
+          icon: "pass",
+          tooltip: {
+            isMarkdown: false,
+            value: StringResources.vsc.accountTree.sideloadingPassTooltip,
+          },
+        },
+      ];
     } else {
       showSideloadingWarning();
       return [
@@ -139,7 +153,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           icon: "warning",
           tooltip: {
             isMarkdown: false,
-            value: StringResources.vsc.accountTree.sideloadingTooltip,
+            value: StringResources.vsc.accountTree.sideloadingWarningTooltip,
           },
         },
       ];
@@ -466,12 +480,19 @@ function showSideloadingWarning() {
     "warn",
     StringResources.vsc.accountTree.sideloadingMessage,
     false,
+    StringResources.vsc.accountTree.sideloadingJoinM365,
     StringResources.vsc.common.readMore
   )
     .then(async (result) => {
       if (result.isOk() && result.value === StringResources.vsc.common.readMore) {
         await VS_CODE_UI.openUrl("https://aka.ms/teamsfx-custom-app");
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingReadmore);
+      } else if (
+        result.isOk() &&
+        result.value === StringResources.vsc.accountTree.sideloadingJoinM365
+      ) {
+        await VS_CODE_UI.openUrl("https://developer.microsoft.com/microsoft-365/dev-program");
+        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenSideloadingJoinM365);
       }
     })
     .catch((error) => {});

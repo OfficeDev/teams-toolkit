@@ -105,7 +105,7 @@ export interface AzureActiveDirectoryApp extends AzureResource {
 /**
  * example of TeamsAppResourceProfile
  */
-const profile1: ResourceProfile = {
+const profile1: TeamsFxAzureResourceProfile = {
   solution: {
     resourceNameSuffix: "595516",
     resourceGroupName: "fullcap-dev-rg",

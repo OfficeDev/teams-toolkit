@@ -6,13 +6,9 @@ import { OptionItem } from "../qm";
 import { Inputs, Void } from "../types";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
-import {
-  CloudResource,
-  LocalResource,
-  RuntimeStacks,
-  TeamsAppLocalResourceProfile,
-  ResourceProfile,
-} from "./resourceProfile";
+import { LocalResource, TeamsAppLocalResourceProfile } from "./localResourceProfile";
+import { CloudResource, ResourceProfile } from "./resourceProfile";
+import { RuntimeStacks } from "./solutionSettings";
 export interface FrameworkProvider {
   name: string;
   options: ScaffoldOption[];
@@ -30,7 +26,7 @@ export interface ScaffoldOption extends OptionItem {
     runtimeStack: string;
     language: string;
     tags: string[];
-    scope: ("tab" | "bot" | "me")[];
+    scope: ("tab" | "bot" | "backend")[];
   };
 }
 

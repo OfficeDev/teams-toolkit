@@ -77,7 +77,7 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
 
     let targetEnvName: string;
     if (!skip && !inputs.ignoreEnvInfo && isMultiEnvEnabled()) {
-      // TODO: This is a workaround for collabrator feature to programmatically load an env in extension.
+      // TODO: This is a workaround for collabrator & manifest preview feature to programmatically load an env in extension.
       if (inputs.env) {
         const result = await useUserSetEnv(inputs.projectPath, inputs.env);
         if (result.isErr()) {

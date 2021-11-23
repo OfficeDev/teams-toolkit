@@ -119,7 +119,7 @@ export async function checkSubscription(
         SolutionError.SubscriptionNotFound,
         `The subscription '${subscriptionId}'${subscriptionName} for '${
           envInfo.envName
-        }'(Environment) is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
+        }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
           envInfo.envName
         )}' file.`,
@@ -148,7 +148,7 @@ export async function checkM365Tenant(
     return err(
       new UserError(
         SolutionError.TeamsAppTenantIdNotRight,
-        `The M365 tenant id '${m365TenantId}'(which is used before) for '${envInfo.envName}'(Environment) does not match the current account, please use the right M365 account.`,
+        `The signed in M365 account does not match the M365 tenant used in previous provision for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
         "Solution"
       )
     );

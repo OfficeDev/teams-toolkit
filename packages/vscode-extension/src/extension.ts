@@ -37,6 +37,7 @@ import {
   StatesFolderName,
   AdaptiveCardsFolderName,
   AppPackageFolderName,
+  BuildFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
 import { registerEnvTreeHandler } from "./envTree";
@@ -279,6 +280,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(openConfigCmd);
 
+  const updateManifestCmd = vscode.commands.registerCommand(
+    "fx-extension.updatePreviewFile",
+    (...args) => Correlator.run(handlers.updatePreviewManifest, args)
+  );
+  context.subscriptions.push(updateManifestCmd);
+
   const createNewEnvironment = vscode.commands.registerCommand(
     "fx-extension.addEnvironment",
     (...args) => Correlator.run(handlers.createNewEnvironment, args)
@@ -291,21 +298,31 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(refreshEnvironment);
 
-  const viewEnvironment = vscode.commands.registerCommand(
-    "fx-extension.viewEnvironment",
-    (node) => {
-      Correlator.run(handlers.viewEnvironment, node.command.title);
-    }
-  );
-  context.subscriptions.push(viewEnvironment);
+  const localDebug = vscode.commands.registerCommand("fx-extension.localdebug", (node) => {
+    Correlator.run(handlers.treeViewLocalDebugHandler);
+  });
+  context.subscriptions.push(localDebug);
 
-  const viewEnvironmentWithIcon = vscode.commands.registerCommand(
-    "fx-extension.viewEnvironmentWithIcon",
+  const localDebugWithIcon = vscode.commands.registerCommand(
+    "fx-extension.localdebugWithIcon",
     (node) => {
-      Correlator.run(handlers.viewEnvironment, node.command.title);
+      Correlator.run(handlers.treeViewLocalDebugHandler);
     }
   );
-  context.subscriptions.push(viewEnvironmentWithIcon);
+  context.subscriptions.push(localDebugWithIcon);
+
+  const preview = vscode.commands.registerCommand("fx-extension.preview", (node) => {
+    Correlator.run(handlers.treeViewPreviewHandler, node.command.title);
+  });
+  context.subscriptions.push(preview);
+
+  const previewWithIcon = vscode.commands.registerCommand(
+    "fx-extension.previewWithIcon",
+    (node) => {
+      Correlator.run(handlers.treeViewPreviewHandler, node.command.title);
+    }
+  );
+  context.subscriptions.push(previewWithIcon);
 
   const openSubscriptionInPortal = vscode.commands.registerCommand(
     "fx-extension.openSubscriptionInPortal",
@@ -334,6 +351,15 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(grantPermission);
 
+  const listCollaborator = vscode.commands.registerCommand(
+    "fx-extension.listCollaborator",
+    (node) => {
+      const envName = node.commandId.split(".").pop();
+      Correlator.run(handlers.listCollaborator, envName);
+    }
+  );
+  context.subscriptions.push(listCollaborator);
+
   const workspacePath = getWorkspacePath();
   vscode.commands.executeCommand(
     "setContext",
@@ -358,9 +384,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const userDataSelector = {
     language: "plaintext",
     scheme: "file",
-    pattern: isMultiEnvEnabled()
-      ? `**/.${ConfigFolderName}/${StatesFolderName}/*.userdata`
-      : `**/.${ConfigFolderName}/*.userdata`,
+    pattern: "**/*.userdata",
   };
   const localDebugDataSelector = {
     language: "json",
@@ -384,6 +408,11 @@ export async function activate(context: vscode.ExtensionContext) {
     scheme: "file",
     pattern: `**/manifest.*.template.json`,
   };
+  const manifestPreviewSelector = {
+    language: "json",
+    scheme: "file",
+    pattern: `**/${BuildFolderName}/${AppPackageFolderName}/manifest.*.json`,
+  };
 
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(userDataSelector, codelensProvider)
@@ -400,6 +429,12 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.languages.registerCodeLensProvider(
       manifestTemplateSelecctor,
+      manifestTemplateCodeLensProvider
+    )
+  );
+  context.subscriptions.push(
+    vscode.languages.registerCodeLensProvider(
+      manifestPreviewSelector,
       manifestTemplateCodeLensProvider
     )
   );

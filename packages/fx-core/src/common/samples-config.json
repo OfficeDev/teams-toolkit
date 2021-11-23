@@ -7,63 +7,90 @@
             "title": "Hello World Tab",
             "shortDescription": "A Hello World app of Microsoft Teams Tab app",
             "fullDescription": "This is a Hello World app of Microsoft Teams Tab app which accomplishes very simple function like single-sign on. You can run this app locally or deploy it to Microsoft Azure. This app only has a Tab frontend.",
-            "tags": ["Tab", "TS", "Ready to F5 Preview"]
+            "tags": ["Tab", "TS", "Ready to F5 Preview"],
+            "time": "5min to run",
+            "configuration": "F5 ready"
         },
         {
             "id": "hello-world-tab-with-backend",
             "title": "Hello World Tab with Backend",
             "shortDescription": "A Hello World app of Microsoft Teams Tab app which has a backend service",
             "fullDescription": "This is a Hello World app of Microsoft Teams Tab app which accomplishes very simple function like single-sign on. You can run this app locally or deploy it to Microsoft Azure. This app has a Tab frontend and a backend service using Azure Function.",
-            "tags": ["Tab", "TS", "Azure function", "Ready to F5 Preview"]
+            "tags": ["Tab", "TS", "Azure function", "Ready to F5 Preview"],
+            "time": "5min to run",
+            "configuration": "F5 ready"
+        },
+        {
+            "id": "graph-toolkit-contact-exporter",
+            "title": "Contact Exporter using Graph Toolkit",
+            "shortDescription": "Contact Exporter app of Microsoft Teams Tab app.",
+            "fullDescription": "Contact Exporter app can export your teams contact info to Excel files, and it is using Microsoft Graph Toolkit as UI component. This app only has a Tab frontend.",
+            "tags": ["Tab", "JS", "Ready to F5 Preview"],
+            "time": "5min to run",
+            "configuration": "F5 ready"
         },
         {
             "id": "todo-list-with-Azure-backend",
             "title": "Todo List with backend on Azure",
             "shortDescription": "Todo List app with Azure Function backend and Azure SQL database",
             "fullDescription": "Todo List provides an easy way to manage to-do items in Teams Client. This app helps enabling task collaboration and management for your team. The frontend is a React app and the backend is hosted on Azure. You will need an Azure subscription to run the app.",
-            "tags": ["React", "Azure function", "Azure SQL", "JS", "CI/CD"]
+            "tags": ["React", "Azure function", "Azure SQL", "JS", "CI/CD"],
+            "time": "30min to run",
+            "configuration": "Manual configurations required(User need to run script to create SQL DB schema)"
         },
         {
             "id": "todo-list-SPFx",
             "title": "Todo List with SPFx",
             "shortDescription": "Todo List app hosting on SharePoint",
             "fullDescription": "Todo List with SPFx is a Todo List for individuals to manage his/her personal to-do items. This app is hosted on Sharepoint. There is no requirements to deploy Azure resources.",
-            "tags": ["SharePoint", "SPFx", "TS"]
+            "tags": ["SharePoint", "SPFx", "TS"],
+            "time": "1hr to run",
+            "configuration": "Manual configurations required(Manual config work on SharePoint site)"
         },
         {
             "id": "share-now",
             "title": "Share Now",
             "shortDescription": "Knowledge sharing app contains a Tab and a Message Extension",
             "fullDescription": "Share Now promotes the exchange of information between colleagues by enabling users to share content within the Teams environment. Users engage the app to share items of interest, discover new shared content, set preferences, and bookmark favorites for later reading.",
-            "tags": ["Tab", "Message Extension", "TS"]
+            "tags": ["Tab", "Message Extension", "TS"],
+            "time": "30min to run",
+            "configuration": "F5 ready"
         },
         {
             "id": "in-meeting-app",
             "title": "In-meeting App",
             "shortDescription": "A template for apps using only in the context of a Teams meeting",
             "fullDescription": "In-meeting app is a hello-world template which shows how to build an app in the context of a Teams meeting. This is a hello-world sample which does not provide any functional feature. This app contains a side panel and a Bot which only shows user profile and can only be added to a Teams meeting.",
-            "tags": ["Meeting extension", "JS"]
+            "tags": ["Meeting extension", "JS"],
+            "time": "4hr to run",
+            "configuration": "Manual configurations required(All manual work, register app and so on..)"
         },
         {
             "id": "faq-plus",
             "title": "FAQ Plus",
             "shortDescription": "Conversational Bot which answers common questions, looping human when bots unable to help",
             "fullDescription": "FAQ Plus is a conversational Q&A bot providing an easy way to answer frequently asked questions by users. One can ask a question and the bot responds with information in the knowledge base. If the answer is not in the knowledge base, the bot submits the question to a pre-configured team of experts who help provide support.",
-            "tags": ["Easy QnA", "Bot", "JS"]
+            "tags": ["Easy QnA", "Bot", "JS"],
+            "time": "1hr to run",
+            "configuration": "Manual configurations required(Manually populate meta data to QnA service)"
         },
         {
             "id": "todo-list-with-Azure-backend-M365",
             "title": "Todo List (Works in Teams, Outlook and Office)",
             "shortDescription": "Todo List app that runs across Microsoft 365 including Teams, Outlook and Office",
             "fullDescription": "Todo List app helps to manage personal to do items and also runs across Microsoft 365, including Teams, Outlook and Office. The frontend is a React app and the backend is an Azure Function. You can optionally deploy and host the app in Azure.",
-            "tags": ["React", "Azure function", "JS", "Outlook", "Office"]
+            "tags": ["React", "Azure function", "JS", "Outlook", "Office"],
+            "time": "5min to run",
+            "configuration": "F5 ready"
         },
         {
             "id": "NPM-search-connector-M365",
             "title": "NPM Search Connector",
             "shortDescription": "Search and Share an NPM Package in Teams and Outlook (Web)",
             "fullDescription": "NPM Search Connector is a Messaging Extension that runs across M365 including Teams and Outlook (Web). It allows you to perform a quick search for a NPM package and insert package details into conversations for easy sharing. The front end is built with Adaptive Cards and the backend is an Azure Bot Service.",
-            "tags": ["Message Extension", "JS", "Outlook"]
+            "tags": ["Message Extension", "JS", "Outlook"],
+            "time": "10min to run",
+            "configuration": "Manual configurations required(Manually configure Outlook in Bot Channel Registration)"
         }
     ]
 }

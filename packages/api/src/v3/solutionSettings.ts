@@ -14,9 +14,9 @@ export enum RuntimeStacks {
 }
 
 export interface Module extends Json {
-  runtimeStack: RuntimeStacks;
-  language: string;
-  resources: string[];
+  runtimeStack?: RuntimeStacks;
+  language?: string;
+  resources?: string[];
   subFolderName?: string;
 }
 
@@ -28,12 +28,7 @@ export interface Resource extends Json {
   /**
    * plugin name
    */
-  provider?: string;
-  /**
-   * resource ids that current resource depends on
-   */
-  resources?: string[];
-
+  provider: string;
   /**
    * bicep files
    */
@@ -42,9 +37,11 @@ export interface Resource extends Json {
 }
 
 export interface TeamsFxSolutionSettings extends SolutionSettings {
-  tab?: Module;
-  bot?: Module;
-  backend?: Module;
+  modules: {
+    tab?: Module;
+    bot?: Module;
+    backend?: Module;
+  };
   resources?: Resource[];
 }
 
@@ -53,23 +50,25 @@ export interface TeamsFxSolutionSettings extends SolutionSettings {
  */
 const settings1: TeamsFxSolutionSettings = {
   name: "TeamsFxSolutionPlugin",
-  tab: {
-    runtimeStack: RuntimeStacks.Node12LTS,
-    language: "javascript",
-    subFolderName: "tabs",
-    resources: ["AzureStorageAccount_1"],
-  },
-  bot: {
-    runtimeStack: RuntimeStacks.Node12LTS,
-    language: "javascript",
-    subFolderName: "bot",
-    resources: ["AzureBot_1", "AzureWebApp_1"],
-  },
-  backend: {
-    runtimeStack: RuntimeStacks.Node12LTS,
-    language: "javascript",
-    subFolderName: "api",
-    resources: ["AzureFunction_1"],
+  modules: {
+    tab: {
+      runtimeStack: RuntimeStacks.Node12LTS,
+      language: "javascript",
+      subFolderName: "tabs",
+      resources: ["AzureStorageAccount_1"],
+    },
+    bot: {
+      runtimeStack: RuntimeStacks.Node12LTS,
+      language: "javascript",
+      subFolderName: "bot",
+      resources: ["AzureBot_1", "AzureWebApp_1"],
+    },
+    backend: {
+      runtimeStack: RuntimeStacks.Node12LTS,
+      language: "javascript",
+      subFolderName: "api",
+      resources: ["AzureFunction_1"],
+    },
   },
   resources: [
     {
@@ -120,13 +119,6 @@ const settings1: TeamsFxSolutionSettings = {
       configurationBicepFile: "templates/azure/AzureSQL_1.configuration.bicep",
     },
     {
-      name: "AzureSQL_2",
-      type: "AzureSQL",
-      provider: "AzureSQLPlugin",
-      provisionBicepFile: "templates/azure/AzureSQL_2.provision.bicep",
-      configurationBicepFile: "templates/azure/AzureSQL_2.configuration.bicep",
-    },
-    {
       name: "ManagedIdentity_1",
       type: "ManagedIdentity",
       provider: "ManagedIdentityPlugin",
@@ -141,23 +133,19 @@ const settings1: TeamsFxSolutionSettings = {
  */
 const settings2: TeamsFxSolutionSettings = {
   name: "TeamsFxSolutionPlugin",
-  tab: {
-    runtimeStack: RuntimeStacks.DoNet_5,
-    language: "csharp",
-    subFolderName: "tabs",
-    resources: ["AzureWebApp_1"],
-  },
-  bot: {
-    runtimeStack: RuntimeStacks.DoNet_5,
-    language: "csharp",
-    subFolderName: "bot",
-    resources: ["AzureBot_1", "AzureWebApp_1"],
-  },
-  backend: {
-    runtimeStack: RuntimeStacks.Node12LTS,
-    language: "javascript",
-    subFolderName: "api",
-    resources: ["AzureFunction_1"],
+  modules: {
+    tab: {
+      runtimeStack: RuntimeStacks.DoNet_5,
+      language: "csharp",
+      subFolderName: "tabs",
+      resources: ["AzureWebApp_1"],
+    },
+    bot: {
+      runtimeStack: RuntimeStacks.DoNet_5,
+      language: "csharp",
+      subFolderName: "bot",
+      resources: ["AzureBot_1", "AzureWebApp_1"],
+    },
   },
   resources: [
     {
@@ -174,13 +162,6 @@ const settings2: TeamsFxSolutionSettings = {
       provisionBicepFile: "templates/azure/AzureWebApp_1.provision.bicep",
       configurationBicepFile: "templates/azure/AzureWebApp_1.configuration.bicep",
     },
-    {
-      name: "AzureFunction_1",
-      type: "AzureFunction",
-      provider: "AzureFunctionPlugin",
-      provisionBicepFile: "templates/azure/AzureFunction_1.provision.bicep",
-      configurationBicepFile: "templates/azure/AzureFunction_1.configuration.bicep",
-    },
   ],
 };
 
@@ -189,17 +170,19 @@ const settings2: TeamsFxSolutionSettings = {
  */
 const settings3: TeamsFxSolutionSettings = {
   name: "TeamsFxSolutionPlugin",
-  tab: {
-    runtimeStack: RuntimeStacks.DoNet_5,
-    language: "csharp",
-    subFolderName: "tabs",
-    resources: ["AzureWebApp_1"],
-  },
-  bot: {
-    runtimeStack: RuntimeStacks.DoNet_5,
-    language: "csharp",
-    subFolderName: "bot",
-    resources: ["AzureBot_1", "AzureWebApp_2"],
+  modules: {
+    tab: {
+      runtimeStack: RuntimeStacks.DoNet_5,
+      language: "csharp",
+      subFolderName: "tabs",
+      resources: ["AzureWebApp_1"],
+    },
+    bot: {
+      runtimeStack: RuntimeStacks.DoNet_5,
+      language: "csharp",
+      subFolderName: "bot",
+      resources: ["AzureBot_1", "AzureWebApp_2"],
+    },
   },
   resources: [
     {

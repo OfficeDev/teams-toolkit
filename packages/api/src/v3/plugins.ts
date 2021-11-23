@@ -7,7 +7,7 @@ import { Inputs, Void } from "../types";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
 import { LocalResource, TeamsAppLocalResourceProfile } from "./localResourceProfile";
-import { CloudResource, ResourceProfile } from "./resourceProfile";
+import { CloudResource, ResourceStates } from "./resourceStates";
 import { RuntimeStacks } from "./solutionSettings";
 
 export interface ScaffoldOption extends OptionItem {
@@ -22,7 +22,6 @@ export interface ScaffoldOption extends OptionItem {
 export interface ScaffoldPlugin {
   name: string;
   options: ScaffoldOption[];
-  subFolderName?: string;
   scaffold: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
 
@@ -66,7 +65,7 @@ export interface ResourceProvider {
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    appResourceProfile: ResourceProfile,
+    appResourceProfile: ResourceStates,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
 

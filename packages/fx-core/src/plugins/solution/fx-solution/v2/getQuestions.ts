@@ -21,7 +21,7 @@ import {
 import Container from "typedi";
 import { getStrings } from "../../../../common";
 import { checkSubscription } from "../commonQuestions";
-import { CancelError, SolutionError, SolutionSource } from "../constants";
+import { SolutionError, SolutionSource, HelpLinks } from "../constants";
 import {
   addCapabilityQuestion,
   AskSubscriptionQuestion,
@@ -215,7 +215,8 @@ export async function getQuestions(
           returnUserError(
             new Error(getStrings().solution.FailedToDeployBeforeProvision),
             SolutionSource,
-            SolutionError.CannotDeployBeforeProvision
+            SolutionError.CannotDeployBeforeProvision,
+            HelpLinks.WhyNeedProvision
           )
         );
       }
@@ -268,13 +269,15 @@ export async function getQuestions(
       const isAzure = isAzureProject(solutionSettings);
       const provisioned = checkWetherProvisionSucceeded(envInfo.state);
       if (!provisioned) {
+        const errorMsg = isAzure
+          ? getStrings().solution.FailedToPublishBeforeProvision
+          : getStrings().solution.SPFxAskProvisionBeforePublish;
         return err(
-          new UserError(
+          returnUserError(
+            new Error(errorMsg),
+            SolutionSource,
             SolutionError.CannotPublishBeforeProvision,
-            isAzure
-              ? getStrings().solution.FailedToPublishBeforeProvision
-              : getStrings().solution.SPFxAskProvisionBeforePublish,
-            SolutionSource
+            HelpLinks.WhyNeedProvision
           )
         );
       }

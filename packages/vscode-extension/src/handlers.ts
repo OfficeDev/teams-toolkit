@@ -569,22 +569,6 @@ export async function runCommand(
       }
       case Stage.deploy: {
         result = await core.deployArtifacts(inputs);
-        // experiment only: show notification in the middle instead of right bottom corner.
-        if (result.isErr() && result.error.name === "CannotDeployBeforeProvision") {
-          const askUserDoProvision = await vscode.window.showWarningMessage(
-            StringResources.vsc.handlers.doProvisionBeforeDeployNotificaion,
-            //{ modal: true },
-            StringResources.vsc.handlers.ok
-          );
-          if (askUserDoProvision === StringResources.vsc.handlers.ok) {
-            //result = await core.provisionResources(inputs);
-            result = ok(null);
-          } else {
-            result = err(
-              new UserError(ExtensionErrors.UserCancel, ExtensionErrors.UserCancel, ExtensionSource)
-            );
-          }
-        }
         break;
       }
       case Stage.publish: {
@@ -1023,10 +1007,13 @@ async function openUpgradeChangeLogsHandler() {
 
       const workspacePath: string = workspace.workspaceFolders[0].uri.fsPath;
       const backupName = ".backup";
-      const backupFolder: string = (await fs.pathExists(path.join(workspacePath, backupName)))
-        ? path.join(workspacePath, backupName)
-        : path.join(workspacePath, `.teamsfx${backupName}`);
-      const uri = Uri.file(path.join(backupFolder, "upgrade-change-logs.md"));
+      const changeLogsName = "upgrade-change-logs.md";
+      const changeLogsPath: string = (await fs.pathExists(
+        path.join(workspacePath, backupName, changeLogsName)
+      ))
+        ? path.join(workspacePath, backupName, changeLogsName)
+        : path.join(workspacePath, `.teamsfx${backupName}`, changeLogsName);
+      const uri = Uri.file(changeLogsPath);
 
       workspace.openTextDocument(uri).then(() => {
         const PreviewMarkdownCommand = "markdown.showPreview";

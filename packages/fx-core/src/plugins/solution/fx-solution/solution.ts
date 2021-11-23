@@ -58,6 +58,7 @@ import {
 import {
   deepCopy,
   getHashedEnv,
+  getResourceGroupInPortal,
   getStrings,
   isArmSupportEnabled,
   isCheckAccountError,
@@ -99,6 +100,7 @@ import {
   SOLUTION_PROVISION_SUCCEEDED,
   Void,
   SolutionSource,
+  RESOURCE_GROUP_NAME,
 } from "./constants";
 import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
 import {
@@ -114,9 +116,7 @@ import {
   createCapabilityQuestion,
   createV1CapabilityQuestion,
   DeployPluginSelectQuestion,
-  FrontendHostTypeQuestion,
   HostTypeOptionAzure,
-  HostTypeOptionSPFx,
   MessageExtensionItem,
   ProgrammingLanguageQuestion,
   TabOptionItem,
@@ -149,7 +149,7 @@ import { scaffoldReadme } from "./v2/scaffolding";
 import { environmentManager } from "../../..";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { LOCAL_TENANT_ID } from ".";
-import { buildAppConfiguration } from "@azure/msal-node";
+import { HelpLinks } from "./constants";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -373,14 +373,6 @@ export class TeamsAppSolution implements Solution {
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
     });
 
-    ctx.ui
-      ?.showMessage("info", `${getStrings().solution.MigrateSuccessNotice}`, false, "Reload")
-      .then((result) => {
-        const userSelected = result.isOk() ? result.value : undefined;
-        if (userSelected === "Reload") {
-          ctx.ui?.reload?.();
-        }
-      });
     return ok(Void);
   }
 
@@ -561,12 +553,23 @@ export class TeamsAppSolution implements Solution {
 
       const provisionResult = await this.doProvision(ctx);
       if (provisionResult.isOk()) {
+        const url = getResourceGroupInPortal(ctx);
         const msg = util.format(
           `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
           ctx.projectSettings?.appName
         );
         ctx.logProvider?.info(msg);
-        ctx.ui?.showMessage("info", msg, false);
+        if (url) {
+          const title = "View Provisioned Resources";
+          ctx.ui?.showMessage("info", msg, false, title).then((result) => {
+            const userSelected = result.isOk() ? result.value : undefined;
+            if (userSelected === title) {
+              ctx.ui!.openUrl(url!);
+            }
+          });
+        } else {
+          ctx.ui?.showMessage("info", msg, false);
+        }
         ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
       } else {
         if (
@@ -1040,7 +1043,8 @@ export class TeamsAppSolution implements Solution {
             returnUserError(
               new Error(getStrings().solution.FailedToDeployBeforeProvision),
               SolutionSource,
-              SolutionError.CannotDeployBeforeProvision
+              SolutionError.CannotDeployBeforeProvision,
+              HelpLinks.WhyNeedProvision
             )
           );
         }
@@ -1105,13 +1109,15 @@ export class TeamsAppSolution implements Solution {
         const isAzureProject = this.isAzureProject(ctx);
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
         if (!provisioned) {
+          const errorMsg = isAzureProject
+            ? getStrings().solution.FailedToPublishBeforeProvision
+            : getStrings().solution.SPFxAskProvisionBeforePublish;
           return err(
-            new UserError(
+            returnUserError(
+              new Error(errorMsg),
+              SolutionSource,
               SolutionError.CannotPublishBeforeProvision,
-              isAzureProject
-                ? getStrings().solution.FailedToPublishBeforeProvision
-                : getStrings().solution.SPFxAskProvisionBeforePublish,
-              SolutionSource
+              HelpLinks.WhyNeedProvision
             )
           );
         }

@@ -315,10 +315,6 @@
           "when": "fx-extension.v1Project"
         },
         {
-          "command": "fx-extension.addEnvironment",
-          "when": "false"
-        },
-        {
           "command": "fx-extension.refreshEnvironment",
           "when": "false"
         },
@@ -535,7 +531,7 @@
       },
       {
         "command": "fx-extension.addEnvironment",
-        "title": "Teams: Create new environment copy",
+        "title": "Teams: Create new environment",
         "icon": "$(add)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },

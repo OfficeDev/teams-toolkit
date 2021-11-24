@@ -56,18 +56,6 @@ const transformTs: Transform = (file: FileInfo, api: API, options: Options): str
     .find(CallExpression)
     .filter(isTeamsClientSDKTsImportCallExpression);
 
-  /**
-   * if there is no Teams Client SDK imported, nothing should be replaced
-   */
-  if (
-    teamsClientSDKImportDeclarationPaths.length == 0 &&
-    teamsClientSDKTsImportEqualsDeclarationPaths.length === 0 &&
-    teamsClientSDKRequireCallExpressionPaths.length === 0 &&
-    teamsClientSDKImportCallExpressionPaths.length === 0
-  ) {
-    return null;
-  }
-
   const importInfo = getTeamsClientSDKReferencePrefixes(
     teamsClientSDKImportDeclarationPaths,
     teamsClientSDKTsImportEqualsDeclarationPaths

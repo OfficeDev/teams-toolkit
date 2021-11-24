@@ -669,6 +669,8 @@ async function removeExpiredFields(devState: string, devUserData: string): Promi
   }
   const expiredStateKeys: [string, string][] = [
     [PluginNames.LDEBUG, ""],
+    // for version 2.0.1
+    [PluginNames.FUNC, defaultFunctionName],
     [PluginNames.SOLUTION, programmingLanguage],
     [PluginNames.SOLUTION, defaultFunctionName],
     [PluginNames.SOLUTION, "localDebugTeamsAppId"],

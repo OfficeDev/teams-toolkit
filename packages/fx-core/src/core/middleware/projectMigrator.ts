@@ -918,7 +918,7 @@ async function updateConfig(ctx: CoreHookContext) {
   if (needUpdate && envConfig[ResourcePlugins.Function]?.[EnvConfigName.FuncAppName]) {
     envConfig[ResourcePlugins.Function][
       EnvConfigName.FunctionAppResourceId
-    ] = `${configPrefix}/providers/Microsoft.Web/${
+    ] = `${configPrefix}/providers/Microsoft.Web/sites/${
       envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]
     }`;
     delete envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName];

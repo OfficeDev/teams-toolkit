@@ -4,13 +4,13 @@ import { OptionItem } from "../qm";
 import { Context, ProvisionInputs } from "../v2";
 import { ResourcePlugin } from "./plugins";
 import { ResourceStates, TeamsFxAzureResourceStates } from "./resourceStates";
-import { AzureSQL } from "./sql";
+import { AzureSQL } from "./AzureSQLPlugin";
 
 export class AzureFunctionPlugin implements ResourcePlugin {
-  name = "AzureFunctionPluginV3";
+  name = "AzureFunctionPlugin";
   option: OptionItem = {
-    id: "AzureFunctionPluginV3",
-    label: "Azure Function",
+    id: "AzureFunctionPlugin",
+    label: "Azure Function App",
   };
   async configureResource(
     ctx: Context,

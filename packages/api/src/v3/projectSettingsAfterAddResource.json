@@ -9,10 +9,10 @@
             "resources": ["AzureStorageAccount_1"]
           },
           "bot":{
-            "resources": ["AzureBot_1", "AzureWebApp_1"]
+            "resources": ["AzureBot_1"]
           },
           "backend":{
-            "resources": ["AzureFunction_1"]
+            "resources": ["AzureFunction_1", "AzureSQL_1"]
           }
         },
         "resources":[
@@ -37,6 +37,7 @@
             "provisionBicepFile": "templates/azure/AzureWebApp_1.provision.bicep",
             "configurationBicepFile": "templates/azure/AzureWebApp_1.configuration.bicep"
           },
+
           {
             "name": "AzureFunction_1",
             "type": "AzureFunction",

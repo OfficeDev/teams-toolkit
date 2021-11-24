@@ -65,18 +65,6 @@ export interface AzureStorageAccount extends AzureResource {
   endpoint: string;
 }
 
-////////////////////AzureBot.ts////////////////
-export interface AzureBot extends AzureResource {
-  type: "AzureBot";
-  endpoint: string;
-  botId: string;
-  botPassword: string;
-  aadObjectId: string; //bot AAD App Id
-  appServicePlan: string; // use for deploy
-  botChannelReg: string; // Azure Bot
-  botRedirectUri?: string; // ???
-}
-
 ////////////////////AzureWebApp.ts////////////////
 export interface AzureWebApp extends AzureResource {
   type: "AzureWebApp";
@@ -111,7 +99,7 @@ const profile1: TeamsFxAzureResourceStates = {
     provisionSucceeded: true,
   },
   app: {
-    teamsAppId: "3949bacf-b098-4b03-9bb1-ca94196c90f8",
+    appId: "3949bacf-b098-4b03-9bb1-ca94196c90f8",
     tenantId: "72f988bf-86f1-41af-91ab-2d7cd011db47",
   },
   resources: [
@@ -206,7 +194,7 @@ const profile2: ResourceStates = {
     provisionSucceeded: true,
   },
   app: {
-    teamsAppId: "3949bacf-b098-4b03-9bb1-ca94196c90f8",
+    appId: "3949bacf-b098-4b03-9bb1-ca94196c90f8",
     tenantId: "72f988bf-86f1-41af-91ab-2d7cd011db47",
   },
   resources: [

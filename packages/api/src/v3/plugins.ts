@@ -14,27 +14,55 @@ import {
 import { CloudResource, ResourceStates } from "./resourceStates";
 import { RuntimeStacks } from "./solutionSettings";
 
-export interface ScaffoldOption extends OptionItem {
-  data: {
-    runtimeStack: string;
-    language: string;
-    tags: string[];
-    scope: ("tab" | "bot" | "backend")[];
-  };
+export interface ScaffoldTemplate {
+  id: string;
+  runtimeStack: string;
+  language: string;
+  tags: string[];
+  scope: ("tab" | "bot" | "backend")[];
+}
+
+export interface ScaffoldInputs extends Inputs {
+  templateId: string;
+  runtimeStack: RuntimeStacks;
+  language: string;
+  subFolderName: string;
 }
 
 export interface ScaffoldPlugin {
+  /**
+   * unique identifier for plugin
+   */
   name: string;
-  options: ScaffoldOption[];
-  scaffold: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+  /**
+   * Source code template descriptions
+   */
+  templates: ScaffoldTemplate[];
+  /**
+   * scaffold source code
+   */
+  scaffold: (ctx: Context, inputs: ScaffoldInputs) => Promise<Result<Void, FxError>>;
 }
 
 export interface ResourcePlugin {
+  /**
+   * unique identifier for plugin
+   */
   name: string;
-  option: OptionItem;
+  /**
+   * resource type the plugin provide
+   */
+  resourceType: string;
+  /**
+   * resource description
+   */
+  description: string;
+  /**
+   * for compute
+   */
   runtimeStacks?: RuntimeStacks[];
   /**
-   * return dependent plugin names
+   * return dependent plugin names, when adding resource, the toolkit will add all dependent resources
    */
   pluginDependencies?(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>>;
 

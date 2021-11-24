@@ -32,8 +32,8 @@ export interface Resource extends Json {
   /**
    * bicep files
    */
-  provisionBicepFile?: string;
-  configurationBicepFile?: string;
+  // provisionBicepFile?: string;
+  // configurationBicepFile?: string;
 }
 
 export interface TeamsFxSolutionSettings extends SolutionSettings {
@@ -189,22 +189,16 @@ const settings3: TeamsFxSolutionSettings = {
       name: "AzureBot_1",
       type: "AzureBot",
       provider: "AzureBotPlugin",
-      provisionBicepFile: "templates/azure/AzureBot_1.provision.bicep",
-      configurationBicepFile: "templates/azure/AzureBot_1.configuration.bicep",
     },
     {
       name: "AzureWebApp_1",
-      type: "AzureFunction",
+      type: "AzureWebApp",
       provider: "AzureWebAppPlugin",
-      provisionBicepFile: "templates/azure/AzureWebApp_1.provision.bicep",
-      configurationBicepFile: "templates/azure/AzureWebApp_1.configuration.bicep",
     },
     {
       name: "AzureWebApp_2",
-      type: "AzureFunction",
+      type: "AzureWebApp",
       provider: "AzureWebAppPlugin",
-      provisionBicepFile: "templates/azure/AzureWebApp_2.provision.bicep",
-      configurationBicepFile: "templates/azure/AzureWebApp_2.configuration.bicep",
     },
   ],
 };

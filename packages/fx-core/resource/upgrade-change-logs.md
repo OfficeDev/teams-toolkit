@@ -1,5 +1,7 @@
-# Change Logs for Project Structure Upgrade
-Congratulations! You have successfully upgraded your Teams App project structure. We have updated the configuration files so that your project is compatible with the latest Teams Toolkit features, including using the IaC approach for resource provision with pre-cooked ARM templates tailored to your project and defining multiple environments within the project.
+# Congratulations! You have successfully upgraded your Teams App project structure
+
+## Change Logs for Project Structure Upgrade
+We have updated the configuration files so that your project is compatible with the latest Teams Toolkit features, including using the IaC approach for resource provision with pre-cooked ARM templates tailored to your project and defining multiple environments within the project.
 
 ## Know about the changes we made
 

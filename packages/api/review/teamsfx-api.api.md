@@ -587,11 +587,9 @@ export interface ILocalizationInfo {
     // (undocumented)
     additionalLanguages?: {
         languageTag: string;
-        file?: string;
+        file: string;
     }[];
     defaultLanguageTag: string;
-    // (undocumented)
-    languages: any[];
 }
 
 // @public (undocumented)

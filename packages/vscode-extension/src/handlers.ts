@@ -1460,6 +1460,8 @@ export async function listCollaborator(env: string): Promise<void> {
     if (result.value.state !== CollaborationState.OK) {
       window.showWarningMessage(result.value.message);
     }
+
+    // TODO: For short-term workaround. Remove after webview is ready.
     VsCodeLogInstance.outputChannel.show();
   } catch (e) {
     result = wrapError(e);

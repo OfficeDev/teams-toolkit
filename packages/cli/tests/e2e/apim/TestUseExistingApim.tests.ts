@@ -10,7 +10,6 @@ import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  setSimpleAuthSkuNameToB1,
   getConfigFileName,
   cleanUp,
   cleanUpResourceGroup,
@@ -18,6 +17,7 @@ import {
 } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
+import { isArmSupportEnabled } from "@microsoft/teamsfx-core";
 
 describe("Use an existing API Management Service", function () {
   const testFolder = getTestFolder();
@@ -26,23 +26,27 @@ describe("Use an existing API Management Service", function () {
   const projectPath = path.resolve(testFolder, appName);
   const existingRGName = `${appName}existing`;
   const existingRGNameExtend = `${existingRGName}-rg`;
+  const testProcessEnv = Object.assign({}, process.env);
+  testProcessEnv["SIMPLE_AUTH_SKU_NAME"] = "B1";
 
   it(`Import API into an existing API Management Service`, async function () {
+    if (isArmSupportEnabled()) {
+      return;
+    }
+
     // new a project
     let result = await execAsync(`teamsfx new --app-name ${appName} --interactive false`, {
       cwd: testFolder,
-      env: process.env,
+      env: testProcessEnv,
       timeout: 0,
     });
     console.log(`Create new project. Error message: ${result.stderr}`);
-
-    await setSimpleAuthSkuNameToB1(projectPath);
 
     result = await execAsyncWithRetry(
       `teamsfx resource add azure-apim --subscription ${subscriptionId} --apim-resource-group ${existingRGNameExtend} --apim-service-name ${appName}-existing-apim`,
       {
         cwd: projectPath,
-        env: process.env,
+        env: testProcessEnv,
         timeout: 0,
       }
     );
@@ -56,7 +60,7 @@ describe("Use an existing API Management Service", function () {
 
     result = await execAsyncWithRetry(`teamsfx provision`, {
       cwd: projectPath,
-      env: process.env,
+      env: testProcessEnv,
       timeout: 0,
     });
     console.log(`Provision. Error message: ${result.stderr}`);
@@ -65,6 +69,8 @@ describe("Use an existing API Management Service", function () {
     await ApimValidator.validateProvision(
       provisionContext,
       appName,
+      subscriptionId,
+      false,
       existingRGNameExtend,
       `${appName}-existing-apim`
     );
@@ -73,7 +79,7 @@ describe("Use an existing API Management Service", function () {
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
       {
         cwd: projectPath,
-        env: process.env,
+        env: testProcessEnv,
         timeout: 0,
       },
       3,
@@ -82,10 +88,13 @@ describe("Use an existing API Management Service", function () {
     console.log(`Deploy. Error message: ${result.stderr}`);
 
     const deployContext = await fs.readJSON(getConfigFileName(appName));
-    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
+    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1", false);
   });
 
   after(async () => {
+    if (isArmSupportEnabled()) {
+      return;
+    }
     await Promise.all([
       // clean up another resource group
       cleanUpResourceGroup(existingRGName),

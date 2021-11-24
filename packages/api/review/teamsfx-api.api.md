@@ -1528,7 +1528,7 @@ export enum TreeCategory {
     // (undocumented)
     Project = 3,
     // (undocumented)
-    Provison = 4
+    Provision = 4
 }
 
 // @public (undocumented)

@@ -298,22 +298,6 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(refreshEnvironment);
 
-  const viewEnvironment = vscode.commands.registerCommand(
-    "fx-extension.viewEnvironment",
-    (node) => {
-      Correlator.run(handlers.viewEnvironment, node.command.title);
-    }
-  );
-  context.subscriptions.push(viewEnvironment);
-
-  const viewEnvironmentWithIcon = vscode.commands.registerCommand(
-    "fx-extension.viewEnvironmentWithIcon",
-    (node) => {
-      Correlator.run(handlers.viewEnvironment, node.command.title);
-    }
-  );
-  context.subscriptions.push(viewEnvironmentWithIcon);
-
   const localDebug = vscode.commands.registerCommand("fx-extension.localdebug", (node) => {
     Correlator.run(handlers.treeViewLocalDebugHandler);
   });

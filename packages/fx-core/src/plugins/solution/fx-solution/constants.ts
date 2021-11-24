@@ -183,6 +183,10 @@ export const CancelError = new UserError("UserCancel", "UserCancel", "Solution")
 // This is the max length specified in
 // https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json
 
+export class HelpLinks {
+  static readonly WhyNeedProvision = "https://aka.ms/teamsfx/whyneedprovision";
+}
+
 export enum SolutionTelemetryEvent {
   CreateStart = "create-start",
   Create = "create",

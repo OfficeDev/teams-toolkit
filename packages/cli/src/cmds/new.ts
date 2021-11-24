@@ -155,7 +155,10 @@ class NewTemplate extends YargsCommand {
 
     const core = activeRes.value;
 
-    const templateName = args["template-name"] as string;
+    const hitTempaltes = constants.templates.filter(
+      (t) => t.sampleAppName.toLocaleLowerCase() === args["template-name"]
+    );
+    const templateName = hitTempaltes[0].sampleAppName;
     const inputs = getSystemInputs();
     inputs["scratch"] = "no";
     const properties: any = {
@@ -175,7 +178,7 @@ class NewTemplate extends YargsCommand {
       return err(result.error);
     }
 
-    const sampleAppFolder = path.resolve(folder, templateName);
+    const sampleAppFolder = result.value;
     CLILogProvider.necessaryLog(
       LogLevel.Info,
       `Downloaded the '${CLILogProvider.white(templateName)}' sample to '${CLILogProvider.white(

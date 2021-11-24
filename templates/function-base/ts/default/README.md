@@ -57,7 +57,11 @@ Then following requests sent to the Azure function app will be handled by new no
 
 ## Edit the manifest
 
-You can find the Teams manifest in `.fx/manifest.source.json`. It contains template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more.
+You can find the Teams app manifest in `templates/appPackage` folder. The folder contains two manifest files:
+* `manifest.local.template.json`: Manifest file for Teams app running locally.
+* `manifest.remote.template.json`: Manifest file for Teams app running remotely (After deployed to Azure).
+
+Both files contain template arguments with `{...}` statements which will be replaced at build time. You may add any extra properties or permissions you require to this file. See the [schema reference](https://docs.microsoft.com/en-us/microsoftteams/platform/resources/schema/manifest-schema) for more information.
 
 ## Deploy to Azure
 

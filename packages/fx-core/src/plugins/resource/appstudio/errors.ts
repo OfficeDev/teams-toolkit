@@ -72,7 +72,8 @@ export class AppStudioError {
 
   public static readonly GetLocalDebugConfigFailedError = {
     name: "GetLocalDebugConfigFailed",
-    message: (error: any) => `Missing configuration data for manifest. ${error.message}`,
+    message: (error: any) =>
+      `Missing configuration data for manifest. You may need to run 'Local debug' first. ${error.message}`,
   };
 
   public static readonly GetRemoteConfigFailedError = {

@@ -3,7 +3,7 @@ param provisionParameters object
 param userAssignedIdentityObjectId string
 
 var resourceBaseName = provisionParameters.resourceBaseName
-var keyVaultName = contains(provisionParameters, 'keyVaultName') ? provisionParameters['keyVaultName'] : '${resourceBaseName}-kv'
+var keyVaultName = contains(provisionParameters, 'keyVaultName') ? provisionParameters['keyVaultName'] : '${resourceBaseName}'
 var tenantId = subscription().tenantId
 var m365ClientSecretName = 'm365ClientSecret'
 var m365ClientSecret = provisionParameters['m365ClientSecret']

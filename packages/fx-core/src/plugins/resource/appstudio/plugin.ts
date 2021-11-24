@@ -352,14 +352,14 @@ export class AppStudioPluginImpl {
     return ok(remoteTeamsAppId);
   }
 
-  public async postProvision(ctx: PluginContext): Promise<string> {
+  public async postProvision(ctx: PluginContext): Promise<Result<string, FxError>> {
     const remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
     let manifestString: string;
     const appDirectory = await getAppDirectory(ctx.root);
     const manifestPath = await this.getManifestTemplatePath(ctx.root);
     const manifestResult = await this.reloadManifestAndCheckRequiredFields(manifestPath);
     if (manifestResult.isErr()) {
-      throw manifestResult;
+      return err(manifestResult.error);
     } else {
       manifestString = JSON.stringify(manifestResult.value);
     }
@@ -383,13 +383,13 @@ export class AppStudioPluginImpl {
         false
       );
       if (appDefinitionRes.isErr()) {
-        throw err(appDefinitionRes.error);
+        return err(appDefinitionRes.error);
       }
       appDefinition = appDefinitionRes.value;
     } else {
       const remoteManifest = await this.getAppDefinitionAndManifest(ctx, false);
       if (remoteManifest.isErr()) {
-        throw err(remoteManifest.error);
+        return err(remoteManifest.error);
       }
       [appDefinition] = remoteManifest.value;
     }
@@ -406,11 +406,11 @@ export class AppStudioPluginImpl {
       ctx.logProvider
     );
     if (result.isErr()) {
-      throw result.error;
+      return err(result.error);
     }
 
     ctx.logProvider?.info(`Teams app updated: ${result.value}`);
-    return remoteTeamsAppId;
+    return ok(remoteTeamsAppId);
   }
 
   public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {

@@ -32,6 +32,7 @@ import {
   getM365TenantFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
+  isSPFxProject,
 } from "./utils/commonUtils";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { Mutex } from "async-mutex";
@@ -84,17 +85,29 @@ export async function registerEnvTreeHandler(
           accountTip = formatWarningMessages(accountStatusResult.warnings);
         }
 
+        let contextValue = "environment";
+
+        if (isLocal) {
+          contextValue = "local";
+        } else {
+          if (await isSPFxProject(workspacePath)) {
+            contextValue = "spfx-" + contextValue;
+          } else {
+            contextValue = "azure-" + contextValue;
+          }
+
+          if (provisionSucceeded) {
+            contextValue = contextValue + "-provisioned";
+          }
+        }
+
         environmentTreeProvider.add([
           {
             commandId: "fx-extension.environment." + item,
             label: item,
             description: provisionSucceeded ? "(Provisioned)" : "",
             parent: TreeCategory.Environment,
-            contextValue: isLocal
-              ? "local"
-              : provisionSucceeded
-              ? "environment-provisioned"
-              : "environment",
+            contextValue: contextValue,
             icon: envIcon,
             tooltip: {
               isMarkdown: false,

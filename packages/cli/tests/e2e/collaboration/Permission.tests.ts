@@ -3,7 +3,7 @@
 
 import { expect } from "chai";
 import path from "path";
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager, isRemoteCollaborateEnabled } from "@microsoft/teamsfx-core";
 import {
   cleanUp,
   execAsync,
@@ -11,7 +11,6 @@ import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  setSimpleAuthSkuNameToB1,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 
@@ -24,6 +23,9 @@ describe("Collaboration", function () {
   const creator = process.env["M365_ACCOUNT_NAME"];
 
   it("Collaboration: CLI with permission status and permission grant", async function () {
+    if (!isRemoteCollaborateEnabled()) {
+      return;
+    }
     // new a project
     await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
       cwd: testFolder,
@@ -32,11 +34,7 @@ describe("Collaboration", function () {
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    if (isMultiEnvEnabled()) {
-      await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    } else {
-      await setSimpleAuthSkuNameToB1(projectPath);
-    }
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
 
     // provision
     await execAsyncWithRetry(`teamsfx provision --subscription ${subscription}`, {
@@ -92,7 +90,7 @@ describe("Collaboration", function () {
     // When collaborator account is guest account in the tenant. Account name pattern will change.
     // e.g. Guest account "account@example.com" will appear as "account_example#EXT#@exampleTenant.onmicrosoft.com" under tenant "exampleTenant".
     // Thus here will check the account name only.
-    if (!isMultiEnvEnabled()) {
+    if (!isRemoteCollaborateEnabled()) {
       expect(listCollaboratorResult.stdout).to.contains(`Account: ${collaborator?.split("@")[0]}`);
       expect(listCollaboratorResult.stdout).to.contains(`Account: ${creator?.split("@")[0]}`);
     }
@@ -101,10 +99,8 @@ describe("Collaboration", function () {
 
   after(async () => {
     // clean up
-    if (isMultiEnvEnabled()) {
+    if (isRemoteCollaborateEnabled()) {
       await cleanUp(appName, projectPath, true, false, false, true);
-    } else {
-      await cleanUp(appName, projectPath);
     }
   });
 });

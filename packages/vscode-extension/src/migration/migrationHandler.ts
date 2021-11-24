@@ -132,10 +132,6 @@ async function updateCodeInplace(
 ): Promise<Result<null, FxError>> {
   try {
     const sourceCode = (await fs.readFile(filePath)).toString();
-    // skip files that do not import Teams client SDK
-    if (!sourceCode.includes(constants.teamsClientSDKName)) {
-      return ok(null);
-    }
     vsCodeLogProvider.info(
       util.format(
         StringResources.vsc.migrateTeamsTabApp.updatingCode,

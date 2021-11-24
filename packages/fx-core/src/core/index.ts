@@ -1404,9 +1404,12 @@ export async function downloadSample(
     }
     const sample = samples[0];
     const url = sample.link as string;
-    const sampleAppPath = path.resolve(folder, sampleId);
+    let sampleAppPath = path.resolve(folder, sampleId);
     if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
-      throw ProjectFolderExistError(sampleAppPath);
+      let suffix = 1;
+      while (await fs.pathExists(sampleAppPath)) {
+        sampleAppPath = `${folder}/${sampleId}_${suffix++}`;
+      }
     }
     progress.next(`Downloading from ${url}`);
     const fetchRes = await fetchCodeZip(url);
@@ -1418,7 +1421,7 @@ export async function downloadSample(
       );
     }
     progress.next("Unzipping the sample package");
-    await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+    await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, sampleAppPath);
     await downloadSampleHook(sampleId, sampleAppPath);
     progress.next("Update project settings");
     const loadInputs: Inputs = {

@@ -290,7 +290,9 @@ export async function saveFilesRecursively(
           entry.entryName.split("/").includes(appFolder)
       )
       .map(async (entry) => {
-        const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
+        const entryPath = entry.entryName.substring(
+          entry.entryName.indexOf(appFolder) + appFolder.length
+        );
         const filePath = path.join(dstPath, entryPath);
         await fs.ensureDir(path.dirname(filePath));
         await fs.writeFile(filePath, entry.getData());

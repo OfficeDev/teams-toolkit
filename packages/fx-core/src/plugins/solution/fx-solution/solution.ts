@@ -2243,7 +2243,7 @@ export class TeamsAppSolution implements Solution {
 
     if (alreadyHaveBotOrMe && alreadyHaveTab) {
       const cannotAddCapWarnMsg =
-        "Your App already has both Tab and Bot/Message Extension, can not Add Capability.";
+        "Your App already has both Tab and Bot/Messaging extension, can not Add Capability.";
       ctx.ui?.showMessage("error", cannotAddCapWarnMsg, false);
       return ok(undefined);
     }

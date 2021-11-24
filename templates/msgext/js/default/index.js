@@ -40,7 +40,7 @@ const messageExtensionBot = new MessageExtensionBot();
 // Create HTTP server.
 const server = express();
 const port = process.env.port || process.env.PORT || 3978;
-server.listen(port, () => console.log(`\Bot/Message Extension service listening at https://localhost:${port}`));
+server.listen(port, () => console.log(`\Bot/Messaging extension service listening at https://localhost:${port}`));
 
 // Listen for incoming requests.
 server.post("/api/messages", (req, res) => {

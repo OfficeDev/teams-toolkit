@@ -59,7 +59,7 @@ Incremental version for Teams Toolkit with multiple bugs fixed and the following
 New Feature:
 
 - Support projects migration from Teams Toolkit V1 to V2. If your Teams projects are created using Teams Toolkit V1, try migrate your project follow the [migration instructions](https://aka.ms/teamsfx-migrate-v1).
-- Support local debug experience for Teams Tab/Bot/Message Extension project migrated from Teams Toolkit V1.
+- Support local debug experience for Teams Tab/Bot/Messaging extension project migrated from Teams Toolkit V1.
 - Check permission to turn-on Teams custom app uploading when user sign-in to M365 account. Learn more about [Teams app uploading or sideloading permission](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading).
 - (Preview Feature) Support provision cloud resources using Azure Resource Manager. To enable this feature, please follow [instructions](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit).
 

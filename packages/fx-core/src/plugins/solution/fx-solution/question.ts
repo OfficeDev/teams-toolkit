@@ -106,7 +106,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
           name.length > 1 &&
           (name.includes(TabSPFxItem.id) || name.includes(TabSPFxItem.label))
         ) {
-          return "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Message Extension capabilities are not available";
+          return "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Messaging extension capabilities are not available";
         }
 
         return undefined;

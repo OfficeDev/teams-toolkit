@@ -6,7 +6,7 @@ Messaging Extensions are implemented on top of the Bot support architecture with
 
 A bot, chatbot, or conversational bot is an app that responds to simple commands sent in chat and replies in meaningful ways. Examples of bots in everyday use include: bots that notify about build failures, bots that provide information about the weather or bus schedules, or provide travel information. A bot interaction can be a quick question and answer, or it can be a complex conversation. Being a cloud application, a bot can provide valuable and secure access to cloud services and corporate resources.
 
-This is a simple hello world application with both Bot and Message extension capabilities.
+This is a simple hello world application with both Bot and Messaging extension capabilities.
 
 ## Prerequisites
 

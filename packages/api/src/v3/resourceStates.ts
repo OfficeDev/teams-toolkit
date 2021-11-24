@@ -53,37 +53,6 @@ export interface TeamsFxAzureResourceStates extends ResourceStates {
   resources?: AzureResource[];
 }
 
-////////////////////AzureManagedIdentity.ts////////////////
-export interface AzureManagedIdentity extends AzureResource {
-  type: "AzureManagedIdentity";
-  clientId: string;
-}
-
-////////////////////AzureStorageAccount.ts////////////////
-export interface AzureStorageAccount extends AzureResource {
-  type: "AzureStorageAccount";
-  endpoint: string;
-}
-
-////////////////////AzureWebApp.ts////////////////
-export interface AzureWebApp extends AzureResource {
-  type: "AzureWebApp";
-  endpoint: string;
-}
-
-////////////////////AzureWebApp.ts////////////////
-export interface AzureActiveDirectoryApp extends AzureResource {
-  type: "AAD";
-  clientId: string;
-  clientSecret: string;
-  objectId: string;
-  oauth2PermissionScopeId: string;
-  tenantId: string;
-  oauthHost: string;
-  oauthAuthority: string;
-  applicationIdUris: string;
-}
-
 ///////////////example/////////////////////////
 /**
  * example of TeamsAppResourceProfile

@@ -19,7 +19,7 @@ export interface ScaffoldTemplate {
   runtimeStack: string;
   language: string;
   tags: string[];
-  scope: ("tab" | "bot" | "backend")[];
+  scopes: ("tab" | "bot" | "backend")[];
 }
 
 export interface ScaffoldInputs extends Inputs {
@@ -56,7 +56,11 @@ export interface ResourcePlugin {
   /**
    * resource description
    */
-  description: string;
+  description?: string;
+  /**
+   * scopes for resource to add
+   */
+  scopes?: ("tab" | "bot" | "backend")[];
   /**
    * for compute
    */

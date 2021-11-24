@@ -6,44 +6,28 @@
         "version": "2.0.0",
         "modules":{
           "tab": {
-            "resources": ["AzureStorageAccount_1"]
+            "resources": ["AzureStorage_1"]
           },
           "bot":{
             "resources": ["AzureBot_1"]
-          },
-          "backend":{
-            "resources": ["AzureFunction_1", "AzureSQL_1"]
           }
         },
         "resources":[
           {
-            "name": "AzureStorageAccount_1",
-            "type": "AzureStorageAccount",
-            "provider": "AzureStorageAccountPlugin",
-            "provisionBicepFile": "templates/azure/AzureStorageAccount_1.provision.bicep",
-            "configurationBicepFile": "templates/azure/AzureStorageAccount_1.configuration.bicep"
+            "name": "AzureStorage_1",
+            "type": "AzureStorage",
+            "provider": "AzureStoragePlugin"
           },
           {
             "name": "AzureBot_1",
             "type": "AzureBot",
             "provider": "AzureBotPlugin",
-            "provisionBicepFile": "templates/azure/AzureBot_1.provision.bicep",
-            "configurationBicepFile": "templates/azure/AzureBot_1.configuration.bicep"
+            "resources": "AzureWebApp_1"
           },
           {
             "name": "AzureWebApp_1",
             "type": "AzureWebApp",
-            "provider": "AzureWebAppPlugin",
-            "provisionBicepFile": "templates/azure/AzureWebApp_1.provision.bicep",
-            "configurationBicepFile": "templates/azure/AzureWebApp_1.configuration.bicep"
-          },
-
-          {
-            "name": "AzureFunction_1",
-            "type": "AzureFunction",
-            "provider": "AzureFunctionPlugin",
-            "provisionBicepFile": "templates/azure/AzureFunction_1.provision.bicep",
-            "configurationBicepFile": "templates/azure/AzureFunction_1.configuration.bicep"
+            "provider": "AzureWebAppPlugin"
           }
         ]
     },

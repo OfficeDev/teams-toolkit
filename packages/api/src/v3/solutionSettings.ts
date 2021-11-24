@@ -30,10 +30,9 @@ export interface Resource extends Json {
    */
   provider: string;
   /**
-   * bicep files
+   * dependent resource ids
    */
-  // provisionBicepFile?: string;
-  // configurationBicepFile?: string;
+  resources?: string[];
 }
 
 export interface TeamsFxSolutionSettings extends SolutionSettings {

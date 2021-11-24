@@ -1,17 +1,15 @@
+////////////////////AzureFunctionPlugin.ts////////////////
 import { ok } from "neverthrow";
 import { AzureAccountProvider, FxError, Result, Void } from "..";
-import { OptionItem } from "../qm";
 import { Context, ProvisionInputs } from "../v2";
+import { AzureSQL } from "./AzureSQLPlugin";
 import { ResourcePlugin } from "./plugins";
 import { ResourceStates, TeamsFxAzureResourceStates } from "./resourceStates";
-import { AzureSQL } from "./AzureSQLPlugin";
 
 export class AzureFunctionPlugin implements ResourcePlugin {
   name = "AzureFunctionPlugin";
-  option: OptionItem = {
-    id: "AzureFunctionPlugin",
-    label: "Azure Function App",
-  };
+  resourceType = "AzureFunction";
+  description = "Azure Function App";
   async configureResource(
     ctx: Context,
     inputs: ProvisionInputs,

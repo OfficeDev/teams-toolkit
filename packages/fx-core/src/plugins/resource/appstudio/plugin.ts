@@ -1710,25 +1710,25 @@ export class AppStudioPluginImpl {
         },
         localSettings: {
           frontend: {
-            tabEndpoint: endpoint ?? "{{{localSettings.frontend.tabEndpoint}}}",
+            tabEndpoint: endpoint ? endpoint : "{{{localSettings.frontend.tabEndpoint}}}",
           },
           auth: {
-            clientId:
-              ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) ??
-              "{{localSettings.auth.clientId}}",
-            applicationIdUris:
-              ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris) ??
-              "{{{localSettings.auth.applicationIdUris}}}",
+            clientId: ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
+              ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)
+              : "{{localSettings.auth.clientId}}",
+            applicationIdUris: ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
+              ? ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris)
+              : "{{{localSettings.auth.applicationIdUris}}}",
           },
           teamsApp: {
-            teamsAppId:
-              ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId) ??
-              "{{localSettings.teamsApp.teamsAppId}}",
+            teamsAppId: ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+              ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId)
+              : "{{localSettings.teamsApp.teamsAppId}}",
           },
           bot: {
-            botId:
-              ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) ??
-              "{{localSettings.bot.botId}}",
+            botId: ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
+              ? ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
+              : "{{localSettings.bot.botId}}",
           },
         },
       };

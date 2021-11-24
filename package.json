@@ -7,7 +7,7 @@
     "install-eslint": "cd packages/eslint-config && npm install",
     "lint:staged": "lerna run lint:staged --stream",
     "lint": "lerna run lint --stream",
-    "manual-version:rc": "lerna version --preid=rc --no-push --no-changelog --no-private --ignore-scripts",
+    "manual-version:rc": "lerna version --preid=rc --no-push --no-changelog --ignore-scripts",
     "prepare": "husky install"
   },
   "devDependencies": {

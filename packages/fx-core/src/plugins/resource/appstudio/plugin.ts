@@ -1674,11 +1674,13 @@ export class AppStudioPluginImpl {
     ).toString();
 
     // Bot only project, without frontend hosting
-    let endpoint = tabEndpoint;
+    let endpoint = isLocalDebug
+      ? ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint)
+      : tabEndpoint;
     const solutionSettings: AzureSolutionSettings = ctx.projectSettings
       ?.solutionSettings as AzureSolutionSettings;
     const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
-    if (!tabEndpoint && !hasFrontend) {
+    if (!endpoint && !hasFrontend) {
       endpoint = DEFAULT_DEVELOPER_WEBSITE_URL;
     }
 
@@ -1708,9 +1710,7 @@ export class AppStudioPluginImpl {
         },
         localSettings: {
           frontend: {
-            tabEndpoint:
-              ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) ??
-              "{{{localSettings.frontend.tabEndpoint}}}",
+            tabEndpoint: endpoint ?? "{{{localSettings.frontend.tabEndpoint}}}",
           },
           auth: {
             clientId:

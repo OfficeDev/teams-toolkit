@@ -74,17 +74,29 @@ export async function registerEnvTreeHandler(
         const provisionSucceeded = await getProvisionSucceedFromEnv(item);
         const isLocal = item === LocalEnvironmentName;
 
+        let contextValue = "environment";
+
+        if (isLocal) {
+          contextValue = "local";
+        } else {
+          if (await isSPFxProject(workspacePath)) {
+            contextValue = "spfx-" + contextValue;
+          } else {
+            contextValue = "azure-" + contextValue;
+          }
+
+          if (provisionSucceeded) {
+            contextValue = contextValue + "-provisioned";
+          }
+        }
+
         environmentTreeProvider.add([
           {
             commandId: "fx-extension.environment." + item,
             label: item,
             description: provisionSucceeded ? "(Provisioned)" : "",
             parent: TreeCategory.Environment,
-            contextValue: isLocal
-              ? "local"
-              : provisionSucceeded
-              ? "environment-provisioned"
-              : "environment",
+            contextValue: contextValue,
             icon: provisionSucceeded ? "folder-active" : "symbol-folder",
             isCustom: false,
             expanded: isLocal ? undefined : true,

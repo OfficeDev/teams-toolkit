@@ -4,10 +4,10 @@ import { FxError, ok, PluginContext, Result } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
-import { ScaffoldArmTemplateResult, ArmTemplateResult } from "../../../common/armInterface";
-import { generateBicepFiles, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
+import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { Constants } from "./constants";
+import { ResultFactory } from "./result";
 
 export class KeyVaultPluginImpl {
   public async generateArmTemplates(
@@ -38,6 +38,6 @@ export class KeyVaultPluginImpl {
       },
     };
 
-    return ok(result);
+    return ResultFactory.Success(result);
   }
 }

@@ -10,23 +10,21 @@ import {
   Result,
   FxError,
 } from "@microsoft/teamsfx-api";
-import {
-  AzureResourceKeyVault,
-  HostTypeOptionAzure,
-  TabOptionItem,
-} from "../../solution/fx-solution/question";
+import { AzureResourceKeyVault, HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { KeyVaultPluginImpl } from "./plugin";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { isArmSupportEnabled, isVsCallingCli } from "../../..";
 import { ArmTemplateResult } from "../../../common/armInterface";
+import { ResultFactory, TeamsFxResult } from "./result";
+import { Constants, Telemetry } from "./constants";
+import { TelemetryUtils } from "./utils/telemetry";
 
 @Service(ResourcePlugins.KeyVaultPlugin)
 export class KeyVaultPlugin implements Plugin {
-  name = "fx-resource-key-vault";
-  displayName = "Key Vault";
+  name = Constants.KeyVaultPlugin.pluginName;
+  displayName = Constants.KeyVaultPlugin.displayName;
+
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    const cap = solutionSettings.capabilities || [];
     const azureResources = solutionSettings.azureResources || [];
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&
@@ -38,7 +36,44 @@ export class KeyVaultPlugin implements Plugin {
   public async generateArmTemplates(
     ctx: PluginContext
   ): Promise<Result<ArmTemplateResult, FxError>> {
-    return this.keyVaultPluginImpl.generateArmTemplates(ctx);
+    TelemetryUtils.init(ctx);
+    return this.runWithErrorHandling(
+      () => this.keyVaultPluginImpl.generateArmTemplates(ctx),
+      ctx,
+      Constants.Stage.generateArmTemplates
+    );
+  }
+
+  private async runWithErrorHandling(
+    fn: () => Promise<TeamsFxResult>,
+    ctx: PluginContext,
+    stage: string
+  ): Promise<TeamsFxResult> {
+    try {
+      TelemetryUtils.sendEvent(`${stage}-start`);
+      const res: TeamsFxResult = await fn();
+      TelemetryUtils.sendEvent(stage);
+      return res;
+    } catch (e) {
+      if (!(e instanceof Error || e instanceof SystemError || e instanceof UserError)) {
+        e = new Error(e.toString());
+      }
+      ctx.logProvider?.error(e.message);
+
+      if (e instanceof SystemError || e instanceof UserError) {
+        TelemetryUtils.sendErrorEvent(
+          stage,
+          e.name,
+          e instanceof UserError ? Telemetry.userError : Telemetry.systemError,
+          e.message
+        );
+        return err(e);
+      } else {
+        const UnhandledErrorCode = "UnhandledError";
+        TelemetryUtils.sendErrorEvent(stage, UnhandledErrorCode, Telemetry.systemError, e?.message);
+        return err(ResultFactory.SystemError(UnhandledErrorCode, e?.message, e));
+      }
+    }
   }
 }
 

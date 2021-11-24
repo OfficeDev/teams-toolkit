@@ -138,25 +138,11 @@ export function objectToConfigMap(o?: Json): ConfigMap {
 }
 
 const SecretDataMatchers = [
-  "solution.localDebugTeamsAppId",
-  "solution.teamsAppTenantId",
   "fx-resource-aad-app-for-teams.clientSecret",
-  "fx-resource-aad-app-for-teams.local_clientSecret",
-  "fx-resource-aad-app-for-teams.local_clientId",
-  "fx-resource-aad-app-for-teams.local_objectId",
-  "fx-resource-aad-app-for-teams.local_oauth2PermissionScopeId",
-  "fx-resource-aad-app-for-teams.local_tenantId",
-  "fx-resource-aad-app-for-teams.local_applicationIdUris",
   "fx-resource-simple-auth.filePath",
   "fx-resource-simple-auth.environmentVariableParams",
   "fx-resource-local-debug.*",
   "fx-resource-bot.botPassword",
-  "fx-resource-bot.localBotPassword",
-  "fx-resource-bot.localBotId",
-  "fx-resource-bot.localObjectId",
-  "fx-resource-bot.local_redirectUri",
-  "fx-resource-bot.bots",
-  "fx-resource-bot.composeExtensions",
   "fx-resource-apim.apimClientAADClientSecret",
   "fx-resource-azure-sql.adminPassword",
 ];

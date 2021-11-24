@@ -23,7 +23,6 @@
         "full": "Full description of testapp-local-debug"
     },
     "accentColor": "#FFFFFF",
-    "bots": [],
     "composeExtensions": [],
     "configurableTabs": [
         {
@@ -54,5 +53,36 @@
     "webApplicationInfo": {
         "id": "{{localSettings.auth.clientId}}",
         "resource": "{{{localSettings.auth.applicationIdUris}}}"
-    }
+    },
+    "bots": [
+        {
+            "botId": "{{localSettings.bot.botId}}",
+            "scopes": [
+                "personal",
+                "team",
+                "groupchat"
+            ],
+            "supportsFiles": false,
+            "isNotificationOnly": false,
+            "commandLists": [
+                {
+                    "scopes": [
+                        "personal",
+                        "team",
+                        "groupchat"
+                    ],
+                    "commands": [
+                        {
+                            "title": "welcome",
+                            "description": "Resend welcome card of this Bot"
+                        },
+                        {
+                            "title": "learn",
+                            "description": "Learn about Adaptive Card and Bot Command"
+                        }
+                    ]
+                }
+            ]
+        }
+    ]
 }

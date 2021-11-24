@@ -123,7 +123,6 @@ export class AppStudioPluginImpl {
     isLocalDebug: boolean,
     manifest: TeamsAppManifest
   ): Promise<Result<string, FxError>> {
-    let appDefinition: IAppDefinition;
     let teamsAppId: Result<string, FxError>;
     const appDirectory = await getAppDirectory(ctx.root);
     const appStudioToken = await ctx.appStudioToken?.getAccessToken();
@@ -134,8 +133,6 @@ export class AppStudioPluginImpl {
       if (appDefinitionAndManifest.isErr()) {
         return err(appDefinitionAndManifest.error);
       }
-
-      appDefinition = appDefinitionAndManifest.value[0];
 
       const localTeamsAppID = await this.getTeamsAppId(ctx, true);
 
@@ -153,7 +150,7 @@ export class AppStudioPluginImpl {
 
       teamsAppId = await this.updateApp(
         ctx,
-        appDefinition,
+        appDefinitionAndManifest.value[0],
         appStudioToken!,
         isLocalDebug,
         createIfNotExist,
@@ -164,11 +161,14 @@ export class AppStudioPluginImpl {
 
       return teamsAppId;
     } else {
-      appDefinition = await this.convertToAppDefinition(ctx, manifest, true);
+      const appDefinitionRes = await this.convertToAppDefinition(ctx, manifest, true);
+      if (appDefinitionRes.isErr()) {
+        return err(appDefinitionRes.error);
+      }
 
       teamsAppId = await this.updateApp(
         ctx,
-        appDefinition,
+        appDefinitionRes.value,
         appStudioToken!,
         isLocalDebug,
         true,
@@ -234,10 +234,13 @@ export class AppStudioPluginImpl {
       }
     }
 
-    const appDefinition: IAppDefinition = await this.convertToAppDefinition(ctx, manifest, false);
+    const appDefinition = await this.convertToAppDefinition(ctx, manifest, false);
+    if (appDefinition.isErr()) {
+      return err(appDefinition.error);
+    }
     const teamsAppId = await this.updateApp(
       ctx,
-      appDefinition,
+      appDefinition.value,
       appStudioToken!,
       true,
       create,
@@ -374,7 +377,15 @@ export class AppStudioPluginImpl {
         };
         manifestString = Mustache.render(manifestString, view);
       }
-      appDefinition = await this.convertToAppDefinition(ctx, JSON.parse(manifestString), false);
+      const appDefinitionRes = await this.convertToAppDefinition(
+        ctx,
+        JSON.parse(manifestString),
+        false
+      );
+      if (appDefinitionRes.isErr()) {
+        throw err(appDefinitionRes.error);
+      }
+      appDefinition = appDefinitionRes.value;
     } else {
       const remoteManifest = await this.getAppDefinitionAndManifest(ctx, false);
       if (remoteManifest.isErr()) {
@@ -490,7 +501,11 @@ export class AppStudioPluginImpl {
 
       manifestString = Mustache.render(manifestString, view);
       manifest = JSON.parse(manifestString);
-      appDefinition = await this.convertToAppDefinition(ctx, manifest, false);
+      const appDefinitionRes = await this.convertToAppDefinition(ctx, manifest, false);
+      if (appDefinitionRes.isErr()) {
+        throw err(appDefinitionRes.error);
+      }
+      appDefinition = appDefinitionRes.value;
     } else {
       const appManifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
       if (appManifest.isErr()) {
@@ -818,6 +833,29 @@ export class AppStudioPluginImpl {
     zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
     zip.addLocalFile(colorFile, isMultiEnvEnabled() ? MANIFEST_RESOURCES : "");
     zip.addLocalFile(outlineFile, isMultiEnvEnabled() ? MANIFEST_RESOURCES : "");
+
+    // localization file
+    if (
+      manifest.localizationInfo &&
+      manifest.localizationInfo.additionalLanguages &&
+      manifest.localizationInfo.additionalLanguages.length > 0
+    ) {
+      await Promise.all(
+        manifest.localizationInfo.additionalLanguages.map(async function (language: any) {
+          const file = language.file;
+          const fileName = `${appDirectory}/${file}`;
+          if (!(await fs.pathExists(fileName))) {
+            throw AppStudioResultFactory.UserError(
+              AppStudioError.FileNotFoundError.name,
+              AppStudioError.FileNotFoundError.message(fileName)
+            );
+          }
+          const dir = path.dirname(file);
+          zip.addLocalFile(fileName, dir === "." ? "" : dir);
+        })
+      );
+    }
+
     zip.writeZip(zipFileName);
 
     if (isSPFxProject(ctx.projectSettings)) {
@@ -1081,7 +1119,10 @@ export class AppStudioPluginImpl {
       await publishProgress?.next(
         `Updating app definition for app ${remoteTeamsAppId} in app studio`
       );
-      const appDefinition = await this.convertToAppDefinition(ctx, manifest, true);
+      const appDefinitionRes = await this.convertToAppDefinition(ctx, manifest, true);
+      if (appDefinitionRes.isErr()) {
+        throw appDefinitionRes.error;
+      }
       let appStudioToken = await ctx?.appStudioToken?.getAccessToken();
       const colorIconContent =
         manifest.icons.color && !manifest.icons.color.startsWith("https://")
@@ -1094,7 +1135,7 @@ export class AppStudioPluginImpl {
       try {
         await AppStudioClient.updateApp(
           remoteTeamsAppId,
-          appDefinition,
+          appDefinitionRes.value,
           appStudioToken!,
           undefined,
           colorIconContent,
@@ -1417,7 +1458,7 @@ export class AppStudioPluginImpl {
     ctx: PluginContext,
     appManifest: TeamsAppManifest,
     ignoreIcon: boolean
-  ): Promise<IAppDefinition> {
+  ): Promise<Result<IAppDefinition, FxError>> {
     const appDefinition: IAppDefinition = {
       appName: appManifest.name.short,
       validDomains: appManifest.validDomains,
@@ -1456,20 +1497,27 @@ export class AppStudioPluginImpl {
     if (appManifest.localizationInfo) {
       let languages: ILanguage[] = [];
       if (appManifest.localizationInfo.additionalLanguages) {
-        languages = await Promise.all(
-          appManifest.localizationInfo.additionalLanguages!.map(async function (item: any) {
-            const templateDirectory = await getAppDirectory(ctx.root);
-            const fileName = `${templateDirectory}/${item.file}`;
-            if (!(await fs.pathExists(fileName))) {
-              throw new Error();
-            }
-            const content = await fs.readJSON(fileName);
-            return {
-              languageTag: item.languageTag,
-              file: content,
-            };
-          })
-        );
+        try {
+          languages = await Promise.all(
+            appManifest.localizationInfo.additionalLanguages!.map(async function (item: any) {
+              const templateDirectory = await getAppDirectory(ctx.root);
+              const fileName = `${templateDirectory}/${item.file}`;
+              if (!(await fs.pathExists(fileName))) {
+                throw AppStudioResultFactory.UserError(
+                  AppStudioError.FileNotFoundError.name,
+                  AppStudioError.FileNotFoundError.message(fileName)
+                );
+              }
+              const content = await fs.readJSON(fileName);
+              return {
+                languageTag: item.languageTag,
+                file: content,
+              };
+            })
+          );
+        } catch (error) {
+          return err(error);
+        }
       }
       appDefinition.localizationInfo = {
         defaultLanguageTag: appManifest.localizationInfo.defaultLanguageTag,
@@ -1492,7 +1540,7 @@ export class AppStudioPluginImpl {
       appDefinition.outlineIcon = appManifest.icons.outline;
     }
 
-    return appDefinition;
+    return ok(appDefinition);
   }
 
   private async createApp(
@@ -1855,7 +1903,11 @@ export class AppStudioPluginImpl {
       updatedManifest.developer.privacyUrl = DEFAULT_DEVELOPER_PRIVACY_URL;
     }
 
-    const appDefinition = await this.convertToAppDefinition(ctx, updatedManifest, false);
+    const appDefinitionRes = await this.convertToAppDefinition(ctx, updatedManifest, false);
+    if (appDefinitionRes.isErr()) {
+      return err(appDefinitionRes.error);
+    }
+    const appDefinition = appDefinitionRes.value;
 
     if (isLocalDebug && !isMultiEnvEnabled()) {
       const appName = getLocalAppName(appDefinition.shortName ?? "");

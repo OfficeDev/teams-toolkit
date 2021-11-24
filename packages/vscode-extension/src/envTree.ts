@@ -32,9 +32,11 @@ import {
   getM365TenantFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
+  isSPFxProject,
 } from "./utils/commonUtils";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { Mutex } from "async-mutex";
+import { ext } from "./extensionVariables";
 
 const showEnvList: Array<string> = [];
 let environmentTreeProvider: CommandsTreeViewProvider;
@@ -321,28 +323,31 @@ async function checkAccountForEnvrironment(env: string): Promise<accountStatus |
   }
 
   // Check Azure account status
-  if (AzureAccountManager.getAccountInfo() !== undefined) {
-    const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
-    const provisionedSubId = subscriptionInfo?.subscriptionId;
+  const isSpfxProject = await isSPFxProject(ext.workspaceUri.fsPath);
+  if (!isSpfxProject) {
+    if (AzureAccountManager.getAccountInfo() !== undefined) {
+      const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
+      const provisionedSubId = subscriptionInfo?.subscriptionId;
 
-    if (provisionedSubId) {
-      const subscriptions: SubscriptionInfo[] = await AzureAccountManager.listSubscriptions();
-      const targetSub = subscriptions.find(
-        (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
-      );
-      if (targetSub === undefined) {
-        checkResult = false;
-        warnings.push(
-          util.format(
-            StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
-            subscriptionInfo?.subscriptionName
-          )
+      if (provisionedSubId) {
+        const subscriptions: SubscriptionInfo[] = await AzureAccountManager.listSubscriptions();
+        const targetSub = subscriptions.find(
+          (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
         );
+        if (targetSub === undefined) {
+          checkResult = false;
+          warnings.push(
+            util.format(
+              StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
+              subscriptionInfo?.subscriptionName
+            )
+          );
+        }
       }
+    } else {
+      checkResult = false;
+      warnings.push(StringResources.vsc.commandsTreeViewProvider.azureAccountNotSignedIn);
     }
-  } else {
-    checkResult = false;
-    warnings.push(StringResources.vsc.commandsTreeViewProvider.azureAccountNotSignedIn);
   }
 
   return {

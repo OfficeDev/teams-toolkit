@@ -36,6 +36,7 @@ import {
 } from "./utils/commonUtils";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { Mutex } from "async-mutex";
+import { ext } from "./extensionVariables";
 
 const showEnvList: Array<string> = [];
 let environmentTreeProvider: CommandsTreeViewProvider;
@@ -67,9 +68,7 @@ export async function registerEnvTreeHandler(
       }
       showEnvList.splice(0);
 
-      const envNames = (await localSettingsExists(workspacePath))
-        ? [LocalEnvironmentName].concat(envNamesResult.value)
-        : envNamesResult.value;
+      const envNames = [LocalEnvironmentName].concat(envNamesResult.value);
       for (const item of envNames) {
         showEnvList.push(item);
         const provisionSucceeded = await getProvisionSucceedFromEnv(item);
@@ -254,11 +253,6 @@ function generateCollaboratorParentNode(env: string): TreeItem {
   };
 }
 
-async function localSettingsExists(projectRoot: string): Promise<boolean> {
-  const provider = new LocalSettingsProvider(projectRoot);
-  return await fs.pathExists(provider.localSettingsFilePath);
-}
-
 async function appendSubscriptionAndResourceGroupNode(env: string): Promise<void> {
   if (
     environmentTreeProvider &&
@@ -334,28 +328,31 @@ async function checkAccountForEnvrironment(env: string): Promise<accountStatus |
   }
 
   // Check Azure account status
-  if (AzureAccountManager.getAccountInfo() !== undefined) {
-    const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
-    const provisionedSubId = subscriptionInfo?.subscriptionId;
+  const isSpfxProject = await isSPFxProject(ext.workspaceUri.fsPath);
+  if (!isSpfxProject) {
+    if (AzureAccountManager.getAccountInfo() !== undefined) {
+      const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
+      const provisionedSubId = subscriptionInfo?.subscriptionId;
 
-    if (provisionedSubId) {
-      const subscriptions: SubscriptionInfo[] = await AzureAccountManager.listSubscriptions();
-      const targetSub = subscriptions.find(
-        (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
-      );
-      if (targetSub === undefined) {
-        checkResult = false;
-        warnings.push(
-          util.format(
-            StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
-            subscriptionInfo?.subscriptionName
-          )
+      if (provisionedSubId) {
+        const subscriptions: SubscriptionInfo[] = await AzureAccountManager.listSubscriptions();
+        const targetSub = subscriptions.find(
+          (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
         );
+        if (targetSub === undefined) {
+          checkResult = false;
+          warnings.push(
+            util.format(
+              StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
+              subscriptionInfo?.subscriptionName
+            )
+          );
+        }
       }
+    } else {
+      checkResult = false;
+      warnings.push(StringResources.vsc.commandsTreeViewProvider.azureAccountNotSignedIn);
     }
-  } else {
-    checkResult = false;
-    warnings.push(StringResources.vsc.commandsTreeViewProvider.azureAccountNotSignedIn);
   }
 
   return {

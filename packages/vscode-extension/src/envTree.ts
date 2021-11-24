@@ -68,9 +68,7 @@ export async function registerEnvTreeHandler(
       }
       showEnvList.splice(0);
 
-      const envNames = (await localSettingsExists(workspacePath))
-        ? [LocalEnvironmentName].concat(envNamesResult.value)
-        : envNamesResult.value;
+      const envNames = [LocalEnvironmentName].concat(envNamesResult.value);
       for (const item of envNames) {
         showEnvList.push(item);
         const provisionSucceeded = await getProvisionSucceedFromEnv(item);
@@ -241,11 +239,6 @@ function generateCollaboratorParentNode(env: string): TreeItem {
     parent: "fx-extension.environment." + env,
     expanded: false,
   };
-}
-
-async function localSettingsExists(projectRoot: string): Promise<boolean> {
-  const provider = new LocalSettingsProvider(projectRoot);
-  return await fs.pathExists(provider.localSettingsFilePath);
 }
 
 async function appendSubscriptionAndResourceGroupNode(env: string): Promise<void> {

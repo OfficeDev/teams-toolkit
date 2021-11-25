@@ -132,8 +132,8 @@ class EnvConfigName {
 export class ArmParameters {
   static readonly FEStorageName = "frontendHostingStorageName";
   static readonly IdentityName = "userAssignedIdentityName";
-  static readonly SQLServer = "azureSqlServerName";
-  static readonly SQLDatabase = "azureSqlDatabaseName";
+  static readonly SQLServer = "sqlServerName";
+  static readonly SQLDatabase = "sqlDatabaseName";
   static readonly SimpleAuthSku = "simpleAuthSku";
   static readonly functionServerName = "functionServerfarmsName";
   static readonly functionStorageName = "functionStorageName";
@@ -945,7 +945,7 @@ async function updateConfig(ctx: CoreHookContext) {
   if (needUpdate && envConfig[ResourcePlugins.Function]?.[EnvConfigName.FuncAppName]) {
     envConfig[ResourcePlugins.Function][
       EnvConfigName.FunctionAppResourceId
-    ] = `${configPrefix}/providers/Microsoft.Web/${
+    ] = `${configPrefix}/providers/Microsoft.Web/sites/${
       envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]
     }`;
     delete envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName];

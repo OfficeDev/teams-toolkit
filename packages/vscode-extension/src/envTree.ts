@@ -32,6 +32,7 @@ import {
   getM365TenantFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
+  isSPFxProject,
 } from "./utils/commonUtils";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { Mutex } from "async-mutex";
@@ -74,7 +75,7 @@ export async function registerEnvTreeHandler(
         const provisionSucceeded = await getProvisionSucceedFromEnv(item);
         const isLocal = item === LocalEnvironmentName;
 
-        const accountStatusResult = await CheckAccountForEnvrironment(item);
+        const accountStatusResult = await CheckAccountForEnvironment(item, workspacePath);
         let envIcon = provisionSucceeded ? "folder-active" : "symbol-folder";
         const isIconCustom: boolean = isLocal ? false : !accountStatusResult.isOk;
         let accountTip = "";
@@ -313,7 +314,10 @@ function formatWarningMessages(warnings: string[]): string {
 
   return warningMessage;
 }
-async function CheckAccountForEnvrironment(env: string): Promise<accountStatus> {
+async function CheckAccountForEnvironment(
+  env: string,
+  workspacePath: string
+): Promise<accountStatus> {
   let checkResult = true;
   const warnings: string[] = [];
 
@@ -332,29 +336,32 @@ async function CheckAccountForEnvrironment(env: string): Promise<accountStatus> 
     warnings.push(StringResources.vsc.commandsTreeViewProvider.m365AccountNotSignedIn);
   }
 
+  const isSPFX = await isSPFxProject(workspacePath);
   // Check Azure account status
-  if (AzureAccountManager.getAccountInfo() !== undefined) {
-    const subscriptions: SubscriptionInfo[] = await AzureAccountManager.listSubscriptions();
-    const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
-    const provisionedSubId = subscriptionInfo?.subscriptionId;
+  if (!isSPFX) {
+    if (AzureAccountManager.getAccountInfo() !== undefined) {
+      const subscriptions: SubscriptionInfo[] = await AzureAccountManager.listSubscriptions();
+      const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
+      const provisionedSubId = subscriptionInfo?.subscriptionId;
 
-    if (provisionedSubId) {
-      const targetSub = subscriptions.find(
-        (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
-      );
-      if (targetSub === undefined) {
-        checkResult = false;
-        warnings.push(
-          util.format(
-            StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
-            subscriptionInfo?.subscriptionName
-          )
+      if (provisionedSubId) {
+        const targetSub = subscriptions.find(
+          (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
         );
+        if (targetSub === undefined) {
+          checkResult = false;
+          warnings.push(
+            util.format(
+              StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
+              subscriptionInfo?.subscriptionName
+            )
+          );
+        }
       }
+    } else {
+      checkResult = false;
+      warnings.push(StringResources.vsc.commandsTreeViewProvider.azureAccountNotSignedIn);
     }
-  } else {
-    checkResult = false;
-    warnings.push(StringResources.vsc.commandsTreeViewProvider.azureAccountNotSignedIn);
   }
 
   return {

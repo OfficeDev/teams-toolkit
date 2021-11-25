@@ -265,7 +265,7 @@ async function appendSubscriptionAndResourceGroupNode(env: string): Promise<void
       const subscriptionTreeItem: TreeItem = {
         commandId: `fx-extension.environment.subscription.${env}`,
         contextValue: "openSubscriptionInPortal",
-        label: subscriptionInfo.subscriptionName,
+        label: subscriptionInfo.subscriptionName ?? subscriptionInfo.subscriptionId,
         icon: "key",
         isCustom: false,
         parent: "fx-extension.environment." + env,
@@ -344,7 +344,7 @@ async function checkAccountForEnvrironment(env: string): Promise<accountStatus |
           warnings.push(
             util.format(
               StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
-              subscriptionInfo?.subscriptionName
+              subscriptionInfo?.subscriptionName ?? subscriptionInfo?.subscriptionId
             )
           );
         }

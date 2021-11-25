@@ -332,7 +332,7 @@ async function executeGrantPermissionsV1(
   return [permissions, errors];
 }
 
-// Execute plugins' grantPermission() using legacy API
+// Execute plugins' grantPermission() using v2 API
 async function executeGrantPermissionsV2(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,

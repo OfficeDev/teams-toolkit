@@ -1,3 +1,23 @@
+## BT.FreeServerFarmsQuotaError
+
+### Error Message
+
+The maximum number of Free App Service Plan allowed in a Subscription is 10.
+
+### Mitigation
+
+There are two methods to mitigate this issue:
+
+#### Method #1
+1. Delete other Free App Service Plan. Just go to [Azure Portal](https://portal.azure.com/), find some useless Free App Service Plans and delete them. To quickly filter Free App Service Plan, use Azure Cli Command: `az appservice plan list --query "[?sku.tier=='Free']"`. 
+2. Run `Provision` command again.
+
+
+#### Method #2
+1. Open `.fx\env.default.json` file.
+2. Set value of 'skuName' config of 'fx-resource-bot' to, for example, B1.
+3. Run `Provision` command again.
+
 ## BT.MissingSubscriptionRegistrationError
 
 ### Eror Message

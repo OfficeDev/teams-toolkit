@@ -7,36 +7,36 @@
             "title": "Hello World Tab",
             "shortDescription": "A Hello World app of Microsoft Teams Tab app",
             "fullDescription": "This is a Hello World app of Microsoft Teams Tab app which accomplishes very simple function like single-sign on. You can run this app locally or deploy it to Microsoft Azure. This app only has a Tab frontend.",
-            "tags": ["Tab", "TS", "Ready to F5 Preview"],
+            "tags": ["Tab", "TS"],
             "time": "5min to run",
-            "configuration": "F5 ready"
+            "configuration": "Ready for local debug"
         },
         {
             "id": "hello-world-tab-with-backend",
             "title": "Hello World Tab with Backend",
             "shortDescription": "A Hello World app of Microsoft Teams Tab app which has a backend service",
             "fullDescription": "This is a Hello World app of Microsoft Teams Tab app which accomplishes very simple function like single-sign on. You can run this app locally or deploy it to Microsoft Azure. This app has a Tab frontend and a backend service using Azure Function.",
-            "tags": ["Tab", "TS", "Azure function", "Ready to F5 Preview"],
+            "tags": ["Tab", "TS", "Azure function"],
             "time": "5min to run",
-            "configuration": "F5 ready"
+            "configuration": "Ready for local debug"
         },
         {
             "id": "hello-world-bot",
             "title": "Hello World Bot",
             "shortDescription": "A Hello World app of Microsoft Teams Bot app",
             "fullDescription": "This is a Hello World app of Microsoft Teams Bot app demonstrating how to create commands and build adaptive cards that best for automation.",
-            "tags": ["Bot", "TS", "Adaptive Cards", "Ready to F5 Preview"],
+            "tags": ["Bot", "TS", "Adaptive Cards"],
             "time": "5min to run",
-            "configuration": "F5 ready"
+            "configuration": "Ready for local debug"
         },
         {
             "id": "graph-toolkit-contact-exporter",
             "title": "Contact Exporter using Graph Toolkit",
             "shortDescription": "Contact Exporter app of Microsoft Teams Tab app.",
             "fullDescription": "Contact Exporter app can export your teams contact info to Excel files, and it is using Microsoft Graph Toolkit as UI component. This app only has a Tab frontend.",
-            "tags": ["Tab", "JS", "Ready to F5 Preview"],
+            "tags": ["Tab", "JS"],
             "time": "5min to run",
-            "configuration": "F5 ready"
+            "configuration": "Ready for local debug"
         },
         {
             "id": "todo-list-with-Azure-backend",
@@ -63,7 +63,7 @@
             "fullDescription": "Share Now promotes the exchange of information between colleagues by enabling users to share content within the Teams environment. Users engage the app to share items of interest, discover new shared content, set preferences, and bookmark favorites for later reading.",
             "tags": ["Tab", "Messaging extension", "TS"],
             "time": "30min to run",
-            "configuration": "F5 ready"
+            "configuration": "Ready for local debug"
         },
         {
             "id": "in-meeting-app",
@@ -90,7 +90,7 @@
             "fullDescription": "Todo List app helps to manage personal to do items and also runs across Microsoft 365, including Teams, Outlook and Office. The frontend is a React app and the backend is an Azure Function. You can optionally deploy and host the app in Azure.",
             "tags": ["React", "Azure function", "JS", "Outlook", "Office"],
             "time": "5min to run",
-            "configuration": "F5 ready"
+            "configuration": "Ready for local debug"
         },
         {
             "id": "NPM-search-connector-M365",

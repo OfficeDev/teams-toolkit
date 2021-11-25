@@ -1,7 +1,8 @@
 # Changelog
 
 ## 3.0.0 - Nov 29, 2021
-Big version for Teams Toolkit with new features to support customize cloud resources, multiple cloud environments, collaborations and some bug fix.
+Big version for Teams Toolkit with new features to support cloud resources customization, multiple cloud environments, collaborations and some bug fix.
+
 New Features:
 - Adopt ARM templates to provision Azure cloud resources, support customization of cloud resources. Refer to [Provision cloud resources](https://aka.ms/provision-doc) for more information.
 - Developers can create and manage multiple cloud environments with different customizations for each environment. Refer to [Manage multiple environment](https://aka.ms/multi-env-doc) for more information.
@@ -9,12 +10,13 @@ New Features:
 - Support manifest customization for both local and remote environment. Refer to [Customize manifest](https://aka.ms/customize-manifest-doc) for more information.
 - Support flexible add cloud resources to your project using ARM template. Refer to [Add cloud resources](https://aka.ms/add-resources-doc) for more information.
 - Add more Teams Sample Apps which support local run with no need to manually set up environment.
+
 Enhancement:
 - Improve UI: In sample gallery, add time and effort estimation for each sample.
 - Improve UI: multiple enhancement to the Tree View. For example, provide documents links in Tree View, and enrich the tooltip descriptions.
 - Reduce the required user inputs in order to create new project.
-- Some samples are upgraded to adopt new features in Teams Toolkit.
-- Enhanced the status and messages showed in Teams Toolkit.
+- Enhance the status and messages showed in Teams Toolkit.
+- Samples are upgraded to adopt new features in Teams Toolkit.
 
 ## 2.10.0 - Nov 15, 2021 
 

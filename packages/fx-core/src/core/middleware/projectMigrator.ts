@@ -132,8 +132,8 @@ class EnvConfigName {
 export class ArmParameters {
   static readonly FEStorageName = "frontendHostingStorageName";
   static readonly IdentityName = "userAssignedIdentityName";
-  static readonly SQLServer = "azureSqlServerName";
-  static readonly SQLDatabase = "azureSqlDatabaseName";
+  static readonly SQLServer = "sqlServerName";
+  static readonly SQLDatabase = "sqlDatabaseName";
   static readonly SimpleAuthSku = "simpleAuthSku";
   static readonly functionServerName = "functionServerfarmsName";
   static readonly functionStorageName = "functionStorageName";
@@ -327,6 +327,8 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
+    const core = ctx.self as FxCore;
+    core.tools.logProvider.error(`[core] Failed to upgrade project, error: '${err}'`);
     await handleError(projectPath, ctx, backupFolder);
     throw err;
   }
@@ -375,7 +377,13 @@ async function handleError(
   ctx: CoreHookContext,
   backupFolder: string | undefined
 ) {
-  await cleanup(projectPath, backupFolder);
+  try {
+    await cleanup(projectPath, backupFolder);
+  } catch (e) {
+    // try my best to cleanup
+    const core = ctx.self as FxCore;
+    core.tools.logProvider.error(`[core] Failed to cleanup the backup, error: '${e}'`);
+  }
   const core = ctx.self as FxCore;
   core.tools.ui
     .showMessage(
@@ -937,7 +945,7 @@ async function updateConfig(ctx: CoreHookContext) {
   if (needUpdate && envConfig[ResourcePlugins.Function]?.[EnvConfigName.FuncAppName]) {
     envConfig[ResourcePlugins.Function][
       EnvConfigName.FunctionAppResourceId
-    ] = `${configPrefix}/providers/Microsoft.Web/${
+    ] = `${configPrefix}/providers/Microsoft.Web/sites/${
       envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]
     }`;
     delete envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName];

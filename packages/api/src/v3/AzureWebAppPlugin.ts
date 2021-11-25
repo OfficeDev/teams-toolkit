@@ -1,7 +1,7 @@
 ////////////////////AzureBotPlugin.ts////////////////
 
 import { ResourcePlugin } from "./plugins";
-import { AzureResource } from "./resourceStates";
+import { AzureResource } from "./resourceModel";
 
 export interface AzureWebApp extends AzureResource {
   type: "AzureWebApp";

@@ -1,7 +1,7 @@
 ////////////////////ManagedIdentityPlugin.ts////////////////
 
 import { ResourcePlugin } from "./plugins";
-import { AzureResource } from "./resourceStates";
+import { AzureResource } from "./resourceModel";
 
 export interface AzureManagedIdentity extends AzureResource {
   type: "AzureManagedIdentity";

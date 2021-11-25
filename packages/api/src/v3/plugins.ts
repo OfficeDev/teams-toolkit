@@ -8,7 +8,7 @@ import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
 import { LocalResource, LocalResourceState } from "./localResourceStates";
-import { CloudResource, ResourceStates } from "./resourceStates";
+import { CloudResource, ResourceStates } from "./resourceModel";
 import { RuntimeStacks } from "./solutionSettings";
 
 export interface ScaffoldTemplate {

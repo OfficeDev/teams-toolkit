@@ -1,7 +1,7 @@
 ////////////////////AadPlugin.ts////////////////
 
 import { ResourcePlugin } from "./plugins";
-import { AzureResource } from "./resourceStates";
+import { AzureResource } from "./resourceModel";
 
 export interface AadApp extends AzureResource {
   type: "AadApp";

@@ -3,8 +3,6 @@
 
 import { Json } from "../types";
 
-/////////////common part////////////////////////////
-
 export interface CloudResource extends Json {
   type: string;
   name: string;

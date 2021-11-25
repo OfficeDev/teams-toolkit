@@ -4,7 +4,7 @@ import { AzureAccountProvider, FxError, Result, Void } from "..";
 import { Context, ProvisionInputs } from "../v2";
 import { AzureSQL } from "./AzureSQLPlugin";
 import { ResourcePlugin } from "./plugins";
-import { ResourceStates, TeamsFxAzureResourceStates } from "./resourceStates";
+import { ResourceStates, TeamsFxAzureResourceStates } from "./resourceModel";
 
 export class AzureFunctionPlugin implements ResourcePlugin {
   name = "AzureFunctionPlugin";

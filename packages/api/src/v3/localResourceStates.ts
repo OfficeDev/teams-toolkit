@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Json } from "../types";
-import { TeamsAppResource } from "./resourceStates";
+import { TeamsAppResource } from "./resourceModel";
 
 export interface LocalResource extends Json {
   type: string;

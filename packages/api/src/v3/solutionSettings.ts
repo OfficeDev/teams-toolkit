@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { Json, SolutionSettings } from "../types";
-import { CloudResource } from "./resourceStates";
+import { CloudResource } from "./resourceModel";
 
 export enum RuntimeStacks {
   DoNet_6_EA = ".NET 6(Early Access)",
@@ -14,13 +14,20 @@ export enum RuntimeStacks {
   Node14LTS = "Node 14 LTS",
 }
 
+/**
+ * Module is basic building block of the App
+ */
 export interface Module extends Json {
   runtimeStack?: RuntimeStacks;
   language?: string;
   resources?: string[];
   subFolderName?: string;
+  buildPath?: string;
 }
 
+/**
+ * Cloud resource model
+ */
 export interface Resource extends Json {
   /**
    * unique name
@@ -34,7 +41,6 @@ export interface Resource extends Json {
    * dependent resource ids
    */
   resources?: string[];
-
   /**
    * for existing resource, the toolkit will ignore provision and deployment,
    * user will provide the existing resource as provision output

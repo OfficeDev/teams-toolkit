@@ -4,7 +4,7 @@ import { ok } from "neverthrow";
 import { FxError, Inputs, Result } from "..";
 import { Context } from "../v2";
 import { ResourcePlugin } from "./plugins";
-import { AzureResource } from "./resourceStates";
+import { AzureResource } from "./resourceModel";
 
 export interface AzureBot extends AzureResource {
   type: "AzureBot";

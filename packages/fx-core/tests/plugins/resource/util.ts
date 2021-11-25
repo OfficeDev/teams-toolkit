@@ -1,6 +1,6 @@
 import { Json } from "@microsoft/teamsfx-api";
 import { compileHandlebarsTemplateString } from "../../../src";
-import { ScaffoldArmTemplateResult, ArmTemplateResult } from "../../../src/common/armInterface";
+import { ArmTemplateResult } from "../../../src/common/armInterface";
 
 export function mockSolutionUpdateArmTemplates(
   mockedData: Json,

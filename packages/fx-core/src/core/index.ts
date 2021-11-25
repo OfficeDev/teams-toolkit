@@ -50,6 +50,7 @@ import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   Component,
+  sendTelemetryEvent,
   sendTelemetryErrorEvent,
   TelemetryEvent,
   TelemetryProperty,
@@ -166,6 +167,7 @@ export let currentStage: Stage;
 export let TOOLS: Tools;
 export class FxCore implements Core {
   tools: Tools;
+  isFromSample?: boolean;
 
   constructor(tools: Tools) {
     this.tools = tools;
@@ -1438,6 +1440,7 @@ export async function downloadSample(
       inputs.projectPath = sampleAppPath;
     }
     progress.end(true);
+    sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, telemetryProperties);
     return ok(sampleAppPath);
   } catch (e) {
     fxError = assembleError(e);

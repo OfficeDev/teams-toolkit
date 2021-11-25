@@ -327,6 +327,8 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
+    const core = ctx.self as FxCore;
+    core.tools.logProvider.error(`[core] Failed to upgrade project, error: '${err}'`);
     await handleError(projectPath, ctx, backupFolder);
     throw err;
   }
@@ -375,7 +377,13 @@ async function handleError(
   ctx: CoreHookContext,
   backupFolder: string | undefined
 ) {
-  await cleanup(projectPath, backupFolder);
+  try {
+    await cleanup(projectPath, backupFolder);
+  } catch (e) {
+    // try my best to cleanup
+    const core = ctx.self as FxCore;
+    core.tools.logProvider.error(`[core] Failed to cleanup the backup, error: '${e}'`);
+  }
   const core = ctx.self as FxCore;
   core.tools.ui
     .showMessage(

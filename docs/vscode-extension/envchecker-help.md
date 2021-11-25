@@ -111,14 +111,17 @@ The `global.json` file is not required, so if it doesn't contain anything other 
 ### Mitigation
 Since Bot and Messaging Extension require public address as bot endpoint, Teams Toolkit by default uses a built-in ngrok to create a tunnel connection forwarding localhost address to public address.
 
-To use your own tunneling service (skip built-in ngrok installation), set the following configurations in *.fx/default.userdata* under the project root, then start debugging, like:
+To use your own tunneling service (skip built-in ngrok installation), set the following configurations in *.fx/localSettings.json* under the project root, then start debugging, like:
 
-```
-fx-resource-local-debug.skipNgrok=true
-fx-resource-local-debug.localBotEndpoint=https://767787237c6b.ngrok.io
+``` json
+    "bot": {
+        "skipNgrok": true,
+        "botDomain": "767787237c6b.ngrok.io",
+        "botEndpoint": "https://767787237c6b.ngrok.io"
+    }
 ```
 
-Note that the `localBotEndpoint` should use https protocol.
+Note that the `botEndpoint` should use https protocol.
 
 ## Teams Toolkit Validation Settings
 

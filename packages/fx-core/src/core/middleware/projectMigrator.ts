@@ -132,7 +132,7 @@ export class ArmParameters {
   static readonly FEStorageName = "frontendHostingStorageName";
   static readonly IdentityName = "userAssignedIdentityName";
   static readonly SQLServer = "sqlServerName";
-  static readonly SQLDatabase = "azureSqlDatabaseName";
+  static readonly SQLDatabase = "sqlDatabaseName";
   static readonly SimpleAuthSku = "simpleAuthSku";
   static readonly functionServerName = "functionServerfarmsName";
   static readonly functionStorageName = "functionStorageName";

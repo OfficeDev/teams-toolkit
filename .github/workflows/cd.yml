@@ -117,6 +117,12 @@ jobs:
               git push -d origin $(git tag --points-at HEAD | grep templates | grep rc)
           fi
       
+      - name: sync up templates deps with sdk version for RC
+        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') && !contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
+        run: |
+          node sdk-sync-up-version.js
+        working-directory: ./.github/scripts
+      
       - name: generate templates
         run: |
           curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
@@ -250,12 +256,6 @@ jobs:
         if: ${{ github.event_name == 'schedule' || (github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/dev' && github.event.inputs.preid == 'alpha')}}
         run: |
           npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
-
-      - name: sync up templates deps with sdk version for RC
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') && !contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
-        run: |
-          node sdk-sync-up-version.js
-        working-directory: ./.github/scripts
 
       - name: update cli ai key
         if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}

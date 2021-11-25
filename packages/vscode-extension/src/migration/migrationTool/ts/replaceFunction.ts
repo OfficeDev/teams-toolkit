@@ -1,5 +1,6 @@
 import {
   ASTPath,
+  CommentLine,
   identifier,
   Identifier,
   JSCodeshift,
@@ -49,13 +50,14 @@ export function replaceFunction(
         targetReplacement.callbackToPromise &&
         path.node.arguments.length > targetReplacement.callbackPosition
       ) {
-        path.node.comments = [
-          j.commentLine(CommentMessages.APIWithCallbackChangedToPromise, true, false),
-        ];
+        addComment(
+          path,
+          j.commentLine(CommentMessages.APIWithCallbackChangedToPromise, true, false)
+        );
         if (
           targetReplacement.sourceTokens[targetReplacement.sourceTokens.length - 1] === "getContext"
         ) {
-          path.node.comments.push(j.commentLine(CommentMessages.ContextSchemaChanged, true, false));
+          addComment(path, j.commentLine(CommentMessages.ContextSchemaChanged, true, false));
         }
       }
       // Replace the function node
@@ -142,4 +144,30 @@ function visitRootMemberExpression(node: ExpressionKind | Identifier): string[] 
     result.push(node.name);
   }
   return result;
+}
+
+/**
+ * Add comment to previous line.
+ * @param path the expression path
+ * @param comment the comment to add
+ */
+function addComment(path: ASTPath, comment: CommentLine): void {
+  let node: any = path.node;
+  const startLine = node.loc?.start?.line;
+  if (startLine !== undefined) {
+    // locate the current line's statement
+    while (path.parent !== undefined) {
+      node = path.node;
+      path = path.parent;
+      if ((path.node as any).loc?.start?.line !== startLine) {
+        break;
+      }
+    }
+  }
+
+  if (node.comments === undefined) {
+    node.comments = [comment];
+  } else {
+    node.comments.push(comment);
+  }
 }

@@ -54,13 +54,13 @@ const settings1: TeamsFxSolutionSettings = {
       runtimeStack: RuntimeStacks.Node12LTS,
       language: "javascript",
       subFolderName: "tabs",
-      resources: ["AzureStorageAccount_1"],
+      resources: ["AzureStorage_1"],
     },
     bot: {
       runtimeStack: RuntimeStacks.Node12LTS,
       language: "javascript",
       subFolderName: "bot",
-      resources: ["AzureBot_1", "AzureWebApp_1"],
+      resources: ["AzureBot_1"],
     },
     backend: {
       runtimeStack: RuntimeStacks.Node12LTS,
@@ -71,39 +71,29 @@ const settings1: TeamsFxSolutionSettings = {
   },
   resources: [
     {
-      name: "AzureStorageAccount_1",
-      type: "AzureStorageAccount",
-      provider: "AzureStorageAccountPlugin",
-      provisionBicepFile: "templates/azure/AzureStorageAccount_1.provision.bicep",
-      configurationBicepFile: "templates/azure/AzureStorageAccount_1.configuration.bicep",
+      name: "AzureStorage_1",
+      type: "AzureStorage",
+      provider: "AzureStoragePlugin",
     },
     {
       name: "AzureBot_1",
       type: "AzureBot",
       provider: "AzureBotPlugin",
-      provisionBicepFile: "templates/azure/AzureBot_1.provision.bicep",
-      configurationBicepFile: "templates/azure/AzureBot_1.configuration.bicep",
     },
     {
       name: "AzureWebApp_1",
       type: "AzureWebApp",
       provider: "AzureWebAppPlugin",
-      provisionBicepFile: "templates/azure/AzureWebApp_1.provision.bicep",
-      configurationBicepFile: "templates/azure/AzureWebApp_1.configuration.bicep",
     },
     {
       name: "AzureFunction_1",
       type: "AzureFunction",
       provider: "AzureFunctionPlugin",
-      provisionBicepFile: "templates/azure/AzureFunction_1.provision.bicep",
-      configurationBicepFile: "templates/azure/AzureFunction_1.configuration.bicep",
     },
     {
       name: "SimpleAuth",
       provider: "SimpleAuthPlugin",
       resources: ["AzureWebApp_1"],
-      provisionBicepFile: "templates/azure/SimpleAuth.provision.bicep",
-      configurationBicepFile: "templates/azure/SimpleAuth.configuration.bicep",
     },
     {
       name: "AAD",
@@ -114,15 +104,11 @@ const settings1: TeamsFxSolutionSettings = {
       name: "AzureSQL_1",
       type: "AzureSQL",
       provider: "AzureSQLPlugin",
-      provisionBicepFile: "templates/azure/AzureSQL_1.provision.bicep",
-      configurationBicepFile: "templates/azure/AzureSQL_1.configuration.bicep",
     },
     {
       name: "ManagedIdentity_1",
       type: "ManagedIdentity",
       provider: "ManagedIdentityPlugin",
-      provisionBicepFile: "templates/azure/ManagedIdentity_1.provision.bicep",
-      configurationBicepFile: "templates/azure/ManagedIdentity_1.configuration.bicep",
     },
   ],
 };
@@ -143,7 +129,7 @@ const settings2: TeamsFxSolutionSettings = {
       runtimeStack: RuntimeStacks.DoNet_5,
       language: "csharp",
       subFolderName: "bot",
-      resources: ["AzureBot_1", "AzureWebApp_1"],
+      resources: ["AzureBot_1"],
     },
   },
   resources: [
@@ -151,15 +137,12 @@ const settings2: TeamsFxSolutionSettings = {
       name: "AzureBot_1",
       type: "AzureBot",
       provider: "AzureBotPlugin",
-      provisionBicepFile: "templates/azure/AzureBot_1.provision.bicep",
-      configurationBicepFile: "templates/azure/AzureBot_1.configuration.bicep",
+      resources: ["AzureWebApp_1"],
     },
     {
       name: "AzureWebApp_1",
       type: "AzureWebApp",
       provider: "AzureWebAppPlugin",
-      provisionBicepFile: "templates/azure/AzureWebApp_1.provision.bicep",
-      configurationBicepFile: "templates/azure/AzureWebApp_1.configuration.bicep",
     },
   ],
 };
@@ -180,7 +163,7 @@ const settings3: TeamsFxSolutionSettings = {
       runtimeStack: RuntimeStacks.DoNet_5,
       language: "csharp",
       subFolderName: "bot",
-      resources: ["AzureBot_1", "AzureWebApp_2"],
+      resources: ["AzureBot_1"],
     },
   },
   resources: [
@@ -188,6 +171,7 @@ const settings3: TeamsFxSolutionSettings = {
       name: "AzureBot_1",
       type: "AzureBot",
       provider: "AzureBotPlugin",
+      resources: ["AzureWebApp_2"],
     },
     {
       name: "AzureWebApp_1",

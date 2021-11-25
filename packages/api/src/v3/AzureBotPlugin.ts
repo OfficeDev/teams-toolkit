@@ -21,7 +21,7 @@ export class AzureBotPlugin implements ResourcePlugin {
   name = "AzureBotPlugin";
   resourceType = "AzureBot";
   description = "Azure Bot";
-  scopes: ("tab" | "bot" | "backend")[] = ["bot"];
+  modules: ("tab" | "bot" | "backend")[] = ["bot"];
   async pluginDependencies?(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>> {
     return ok(["AzureWebAppPlugin"]);
   }

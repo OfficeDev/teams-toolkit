@@ -12,5 +12,5 @@ export class AzureWebAppPlugin implements ResourcePlugin {
   name = "AzureWebAppPlugin";
   resourceType = "AzureWebApp";
   description = "Azure Web App";
-  scopes: ("tab" | "bot" | "backend")[] = ["tab", "bot"];
+  modules = ["tab", "bot"];
 }

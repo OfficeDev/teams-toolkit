@@ -12,5 +12,5 @@ export class AzureStoragePlugin implements ResourcePlugin {
   name = "AzureStoragePlugin";
   resourceType = "AzureStorage";
   description = "Azure Storage";
-  scopes: ("tab" | "bot" | "backend")[] = ["tab"];
+  modules = ["tab"];
 }

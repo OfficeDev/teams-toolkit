@@ -48,7 +48,7 @@ export interface LocalResourceState {
 /**
  * defines local resource profiles
  */
-export interface TeamsAppLocalResourceState {
+export interface TeamsAppLocalResourceStates {
   app: TeamsAppResource;
   resources?: LocalResource[];
 }

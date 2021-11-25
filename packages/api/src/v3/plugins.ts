@@ -1,16 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureAccountProvider, FxError, Result, TokenProvider } from "..";
-import { OptionItem } from "../qm";
+import { Result } from "neverthrow";
+import { FxError } from "../error";
 import { Inputs, Void } from "../types";
+import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
-import {
-  LocalResource,
-  LocalResourceState,
-  TeamsAppLocalResourceState as LocalResourceProfile,
-} from "./localResourceStates";
+import { LocalResource, LocalResourceState } from "./localResourceStates";
 import { CloudResource, ResourceStates } from "./resourceStates";
 import { RuntimeStacks } from "./solutionSettings";
 
@@ -19,7 +16,7 @@ export interface ScaffoldTemplate {
   runtimeStack: string;
   language: string;
   tags: string[];
-  scopes: ("tab" | "bot" | "backend")[];
+  modules: string[];
 }
 
 export interface ScaffoldInputs extends Inputs {
@@ -60,7 +57,7 @@ export interface ResourcePlugin {
   /**
    * scopes for resource to add
    */
-  scopes?: ("tab" | "bot" | "backend")[];
+  modules?: string[];
   /**
    * for compute
    */
@@ -74,7 +71,7 @@ export interface ResourcePlugin {
     ctx: Context,
     inputs: Inputs,
     tokenProvider: TokenProvider,
-    teamsAppLocalResourceProfile?: LocalResourceProfile
+    teamsAppLocalResourceProfile?: LocalResourceState
   ) => Promise<Result<LocalResource, FxError>>;
 
   //all plugins are built-in plugins: aad, appStudio, localDebug, simpleAuth, bot
@@ -92,10 +89,9 @@ export interface ResourcePlugin {
     resourceState?: CloudResource
   ) => Promise<Result<CloudResource, FxError>>;
 
-  /// after add resource
   generateResourceTemplate?: (
     ctx: Context,
-    inputs: Inputs /// specific inputs
+    inputs: Inputs /// parameters schema?
   ) => Promise<Result<ResourceTemplate, FxError>>;
 
   configureResource?: (

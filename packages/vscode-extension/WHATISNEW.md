@@ -6,7 +6,7 @@
 
 ## 3.0.0 - Nov 29, 2021
 
-Big version for Teams Toolkit with new features to support customize cloud resources, multiple cloud environments, collaborations and some bug fix.
+Major version for Teams Toolkit with new features to support cloud resources customization, multiple cloud environments, collaborations and some bug fix.
 
 New Features:
 
@@ -20,7 +20,7 @@ New Features:
     ![Collaborate with others](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/collaboration.png)
 
 - Support manifest customization for both local and remote environment. Refer to [Customize manifest](https://aka.ms/customize-manifest-doc) for more information.
-- Support flexible add cloud resources to your project using ARM template. Refer to [Add cloud resources](https://aka.ms/add-resources-doc) for more information.
+- Provide flexibility to add cloud resources to your project using ARM template. Refer to [Add cloud resources](https://aka.ms/add-resources-doc) for more information.
       
     ![Add cloud resources](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/add-resource.png)
 
@@ -34,8 +34,8 @@ Enhancement:
 
 - Improve UI: multiple enhancement to the Tree View. For example, provide documents links in Tree View, and enrich the tooltip descriptions.
 - Reduce the required user inputs in order to create new project.
-- Some samples are upgraded to adopt new features in Teams Toolkit.
-- Enhanced the status and messages showed in Teams Toolkit.
+- Enhance the status and messages showed in Teams Toolkit.
+- Upgrade samples to adopt new features in Teams Toolkit.
 
 ## 2.10.0 - Nov 15, 2021 
 
@@ -51,7 +51,7 @@ New Features:
  ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/M365sample2.png)
  
  ![Alt Text](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/M365sample1.png)
- 
+
 ## 2.9.0 - Nov 01, 2021 
 
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:

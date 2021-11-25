@@ -1,7 +1,7 @@
 # Changelog
 
 ## 3.0.0 - Nov 29, 2021
-Big version for Teams Toolkit with new features to support cloud resources customization, multiple cloud environments, collaborations and some bug fix.
+Major version for Teams Toolkit with new features to support cloud resources customization, multiple cloud environments, collaborations and some bug fix.
 
 New Features:
 - Adopt ARM templates to provision Azure cloud resources, support customization of cloud resources. Refer to [Provision cloud resources](https://aka.ms/provision-doc) for more information.

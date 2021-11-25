@@ -471,18 +471,23 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
       return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
     }
   } else {
-    const selectedEnv = await askTargetEnvironment();
-    if (selectedEnv.isErr()) {
-      return err(selectedEnv.error);
-    }
-    const env = selectedEnv.value;
-    const isLocalDebug = env === "local";
-    if (isLocalDebug) {
-      func.params.type = "localDebug";
-      return await runUserTask(func, TelemetryEvent.Build, true);
+    if (isMultiEnvEnabled()) {
+      const selectedEnv = await askTargetEnvironment();
+      if (selectedEnv.isErr()) {
+        return err(selectedEnv.error);
+      }
+      const env = selectedEnv.value;
+      const isLocalDebug = env === "local";
+      if (isLocalDebug) {
+        func.params.type = "localDebug";
+        return await runUserTask(func, TelemetryEvent.Build, true);
+      } else {
+        func.params.type = "remote";
+        return await runUserTask(func, TelemetryEvent.Build, false, env);
+      }
     } else {
       func.params.type = "remote";
-      return await runUserTask(func, TelemetryEvent.Build, false, env);
+      return await runUserTask(func, TelemetryEvent.Build, false);
     }
   }
 }

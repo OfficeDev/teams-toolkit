@@ -1,6 +1,6 @@
 # Collaborating 
 
-Multiple developers collaborating on a Teams application should set up their own environments for development including unique [M365 Developer Tenants](https://developer.microsoft.com/en-us/microsoft-365/dev-program) and application registrations in Azure Active Directory. This way each developer runs their code under a different application identity. Our extension provide ability for developers to set up their own local-debug environment. **Every developer can simply press `F5` to start his own application locally.**
+Multiple developers collaborating on a Teams app should set up their own environments for development including unique [M365 Developer Tenants](https://developer.microsoft.com/en-us/microsoft-365/dev-program) and application registrations in Azure Active Directory. This way each developer runs their code under a different application identity. Our extension provide ability for developers to set up their own local-debug environment. **Every developer can simply press `F5` to start his own application locally.**
 
 If you want to share the local-debug environment, please follow the steps in [Sharing Local Environment](#sharing-local-environment).
 
@@ -18,11 +18,11 @@ As the person creating the project (creator), follow these steps to allow others
 ### Add collaborators to application registration
 1. [Creator] Go to the [Azure Portal](https://portal.azure.com) and select "Azure Active Directory".
 2. [Creator] Select "App Registrations" and select your Azure AD app.
-3. [Creator] Select "Owners" and click "Add Owners" to add each collaborator as a owner with an administrator role.
+3. [Creator] Select "Owners" and click "Add Owners" to add each collaborator as an owner with an administrator role.
 
 ### Add collaborators as owner of teams app
 1. [Creator] Go to the [Teams Developer Portal](https://dev.teams.microsoft.com/apps/) and select your teams app.
-2. [Creator] Select "Owners" and click "Add an owner" to add each collaborator as a owner.
+2. [Creator] Select "Owners" and click "Add an owner" to add each collaborator as an owner.
 
 ### Add collaborators as owner of bot (Only necessary when bot is enabled in the project)
 1. [Creator] Go to the [Bot Framework](https://dev.botframework.com/bots) and select your bot.

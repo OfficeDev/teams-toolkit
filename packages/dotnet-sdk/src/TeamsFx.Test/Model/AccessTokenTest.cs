@@ -1,8 +1,6 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
 
-using System;
-
 using Microsoft.VisualStudio.TestTools.UnitTesting;
 
 namespace Microsoft.TeamsFx.Test;

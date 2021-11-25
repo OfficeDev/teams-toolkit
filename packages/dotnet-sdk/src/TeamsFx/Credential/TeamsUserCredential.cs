@@ -11,15 +11,11 @@ using Microsoft.TeamsFx.Configuration;
 using Microsoft.TeamsFx.Helper;
 using Microsoft.TeamsFx.Model;
 
-using System;
 using System.Diagnostics.CodeAnalysis;
 using System.Net;
-using System.Net.Http;
 using System.Net.Http.Headers;
 using System.Text;
 using System.Text.Json;
-using System.Threading;
-using System.Threading.Tasks;
 
 using AccessToken = Microsoft.TeamsFx.Model.AccessToken;
 

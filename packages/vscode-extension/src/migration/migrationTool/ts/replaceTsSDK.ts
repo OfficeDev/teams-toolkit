@@ -13,6 +13,7 @@ import {
   Options,
   Collection,
   CallExpression,
+  Identifier,
 } from "jscodeshift";
 import { replaceFunction } from "./replaceFunction";
 import { replaceEnum } from "./replaceEnum";
@@ -24,6 +25,7 @@ import {
   replaceImport,
 } from "./replaceTsImport";
 import { replaceInterface } from "./replaceTsInterface";
+import * as constants from "../../constants";
 
 /**
  * core function to migrate sdk in a TypeScript file and would be called and executed
@@ -54,28 +56,39 @@ const transformTs: Transform = (file: FileInfo, api: API, options: Options): str
     .find(CallExpression)
     .filter(isTeamsClientSDKTsImportCallExpression);
 
-  /**
-   * if there is no Teams Client SDK imported, nothing should be replaced
-   */
-  if (
-    teamsClientSDKImportDeclarationPaths.length == 0 &&
-    teamsClientSDKTsImportEqualsDeclarationPaths.length === 0 &&
-    teamsClientSDKRequireCallExpressionPaths.length === 0 &&
-    teamsClientSDKImportCallExpressionPaths.length === 0
-  ) {
-    return null;
-  }
-
   const importInfo = getTeamsClientSDKReferencePrefixes(
     teamsClientSDKImportDeclarationPaths,
     teamsClientSDKTsImportEqualsDeclarationPaths
   );
+
+  // If there is
+  //   1. import * as microsoftTeams from "@microsoft/teams-js", or
+  //   2. import microsoftTeams from "@microsoft/teams-js", or
+  //   3. import "@microsoft/teams-js", or
+  //   4. import microsoftTeams = require("@microsoft/teams-js")
+  const hasImportDeclaration = importInfo.importEntireModuleInfo.some(
+    (info) => info.alias === constants.teamsClientSDKDefaultNamespace
+  );
+  const teamsClientSDKReferences = root
+    .find(Identifier)
+    .filter((p) => p.node.name === constants.teamsClientSDKDefaultNamespace);
+  if (!hasImportDeclaration && teamsClientSDKReferences.length > 0) {
+    // import * as microsoftTeams from "@microsoft/teams-js"
+    importInfo.importEntireModuleInfo.push({
+      type: "ImportNamespaceSpecifier",
+      alias: constants.teamsClientSDKDefaultNamespace,
+    });
+  }
 
   replaceFunction(j, root, importInfo);
 
   replaceInterface(j, root, importInfo);
 
   replaceEnum(j, root, importInfo);
+
+  if (!hasImportDeclaration && teamsClientSDKReferences.length > 0) {
+    importInfo.importEntireModuleInfo.pop();
+  }
 
   replaceImport(
     teamsClientSDKImportDeclarationPaths,

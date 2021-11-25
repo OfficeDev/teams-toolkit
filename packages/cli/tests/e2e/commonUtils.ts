@@ -207,12 +207,16 @@ export async function cleanUpAadApp(
   return Promise.all(promises);
 }
 
-export async function cleanUpResourceGroup(appName: string, envName?: string) {
+export async function cleanUpResourceGroup(
+  appName: string,
+  isMultiEnvEnabled: boolean,
+  envName?: string
+) {
   return new Promise<boolean>(async (resolve) => {
     const manager = await ResourceGroupManager.init();
     if (appName) {
       let name = `${appName}-rg`;
-      if (envName) {
+      if (isMultiEnvEnabled) {
         name = `${appName}-${envName}-rg`;
       }
       if (await manager.hasResourceGroup(name)) {
@@ -264,7 +268,7 @@ export async function cleanUp(
     // delete aad app
     cleanUpAadAppPromise,
     // remove resouce group
-    cleanUpResourceGroup(appName, envName),
+    cleanUpResourceGroup(appName, isMultiEnvEnabled, envName),
     // remove project
     //cleanUpLocalProject(projectPath, cleanUpAadAppPromise),
   ]);

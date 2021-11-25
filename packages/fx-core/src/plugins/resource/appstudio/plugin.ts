@@ -1736,7 +1736,9 @@ export class AppStudioPluginImpl {
       const tokens = [
         ...new Set(
           Mustache.parse(manifest)
-            .filter((x) => x[0] != "text")
+            .filter((x) => {
+              return x[0] != "text" && x[1] != "localSettings.teamsApp.teamsAppId";
+            })
             .map((x) => x[1])
         ),
       ];

@@ -1,46 +1,27 @@
 import {
-  AzureSolutionSettings,
-  Colors,
   err,
   FxError,
   GraphTokenProvider,
-  Inputs,
   ok,
   Platform,
-  PluginContext,
   Result,
   returnSystemError,
   returnUserError,
-  SolutionConfig,
-  SolutionContext,
-  v2,
-  Void,
-  Plugin,
-  Err,
-  TokenProvider,
   TelemetryReporter,
   UserInteraction,
-  LogProvider,
-  ConfigMap,
-  Json,
   CryptoProvider,
 } from "@microsoft/teamsfx-api";
 import {
   AadOwner,
   CollaborationState,
-  CollaborationStateResult,
   Collaborator,
   getHashedEnv,
   ListCollaboratorResult,
-  PermissionsResult,
-  ResourcePermission,
   TeamsAppAdmin,
 } from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
-  GLOBAL_CONFIG,
   PluginNames,
-  REMOTE_TENANT_ID,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
@@ -48,96 +29,14 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
 } from "../constants";
-import { PluginsWithContext } from "../solution";
-import { getPluginContext, sendErrorTelemetryThenReturnError } from "../utils/util";
-import { executeConcurrently, LifecyclesWithContext } from "../executor";
-import {
-  getActivatedResourcePlugins,
-  getActivatedV2ResourcePlugins,
-  ResourcePlugins,
-  ResourcePluginsV2,
-} from "../ResourcePluginContainer";
-import { flattenConfigMap } from "../../../resource/utils4v2";
-import {
-  NamedThunk,
-  executeConcurrently as executeNamedThunkConcurrently,
-  executeThunks,
-} from "./executor";
+import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import {
   CollabApiParam,
   getCurrentCollaborationState,
   getCurrentUserInfo,
-  getUserInfo,
 } from "./collaborationUtil";
-import { getPluginAndContextArray } from "./utils";
 import { environmentManager } from "../../../..";
-import { Container } from "typedi";
-
-async function executeListCollaboratorV2(
-  ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath,
-  envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
-  tokenProvider: TokenProvider,
-  userInfo: IUserList
-): Promise<[Result<any, FxError>[], Err<any, FxError>[]]> {
-  const plugins: v2.ResourcePlugin[] = [
-    Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin),
-    Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin),
-  ];
-
-  const thunks: NamedThunk<Json>[] = plugins
-    .filter((plugin) => !!plugin.listCollaborator)
-    .map((plugin) => {
-      return {
-        pluginName: `${plugin.name}`,
-        taskName: "listCollaborator",
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        thunk: () => plugin.listCollaborator!(ctx, inputs, envInfo, tokenProvider, userInfo),
-      };
-    });
-
-  const results = await executeThunks(thunks, ctx.logProvider);
-  const errors: Err<any, FxError>[] = [];
-  for (const r of results) {
-    if (r.isErr()) {
-      errors.push(r);
-    }
-  }
-  return [results, errors];
-}
-
-async function executeListCollaboratorV1(
-  ctx: SolutionContext,
-  userInfo: IUserList
-): Promise<[Result<any, FxError>[], Err<any, FxError>[]]> {
-  const pluginsWithCtx: PluginsWithContext[] = getPluginAndContextArray(ctx, [
-    Container.get<Plugin>(ResourcePlugins.AppStudioPlugin),
-    Container.get<Plugin>(ResourcePlugins.AadPlugin),
-  ]);
-
-  const listCollaboratorWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
-    ([plugin, context]) => {
-      return [
-        plugin?.listCollaborator
-          ? (ctx: PluginContext) => plugin!.listCollaborator!.bind(plugin)(ctx, userInfo)
-          : undefined,
-        context,
-        plugin.name,
-      ];
-    }
-  );
-
-  const results = await executeConcurrently("", listCollaboratorWithCtx);
-
-  const errors: any = [];
-
-  for (const result of results) {
-    if (result.isErr()) {
-      errors.push(result);
-    }
-  }
-  return [results, errors];
-}
+import { executeListCollaboratorV1, executeListCollaboratorV2 } from "./listCollaborator";
 
 async function listAllCollaboratorsImpl(
   param: CollabApiParam,

@@ -4,18 +4,14 @@ import {
   err,
   FxError,
   GraphTokenProvider,
-  Inputs,
   ok,
   Platform,
   PluginContext,
   Result,
   returnSystemError,
   returnUserError,
-  SolutionConfig,
   SolutionContext,
   v2,
-  Void,
-  Plugin,
   Err,
   TokenProvider,
   TelemetryReporter,
@@ -24,15 +20,9 @@ import {
   ConfigMap,
   Json,
 } from "@microsoft/teamsfx-api";
-import {
-  CollaborationState,
-  CollaborationStateResult,
-  PermissionsResult,
-  ResourcePermission,
-} from "../../../../common";
+import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
-  GLOBAL_CONFIG,
   PluginNames,
   REMOTE_TENANT_ID,
   SolutionError,
@@ -43,7 +33,7 @@ import {
   SolutionTelemetrySuccess,
 } from "../constants";
 import { PluginsWithContext } from "../solution";
-import { getPluginContext, sendErrorTelemetryThenReturnError } from "../utils/util";
+import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { executeConcurrently, LifecyclesWithContext } from "../executor";
 import {
   getActivatedResourcePlugins,

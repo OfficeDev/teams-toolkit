@@ -8,7 +8,6 @@ import { hooks } from "@feathersjs/hooks/lib";
 import {
   ArchiveFolderName,
   AzureSolutionSettings,
-  Colors,
   combine,
   ConfigMap,
   DynamicPlatforms,
@@ -45,16 +44,7 @@ import { Container, Service } from "typedi";
 import * as util from "util";
 import { PluginDisplayName } from "../../../common/constants";
 import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
-import {
-  AadOwner,
-  CollaborationState,
-  CollaborationStateResult,
-  Collaborator,
-  ListCollaboratorResult,
-  PermissionsResult,
-  ResourcePermission,
-  TeamsAppAdmin,
-} from "../../../common/permissionInterface";
+import { ListCollaboratorResult, PermissionsResult } from "../../../common/permissionInterface";
 import {
   deepCopy,
   getHashedEnv,
@@ -91,7 +81,6 @@ import {
   REMOTE_APPLICATION_ID_URIS,
   REMOTE_CLIENT_SECRET,
   REMOTE_TEAMS_APP_ID,
-  REMOTE_TENANT_ID,
   SolutionError,
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
@@ -100,7 +89,6 @@ import {
   SOLUTION_PROVISION_SUCCEEDED,
   Void,
   SolutionSource,
-  RESOURCE_GROUP_NAME,
 } from "./constants";
 import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
 import {
@@ -148,6 +136,7 @@ import { askForProvisionConsent } from "./v2/provision";
 import { grantPermission } from "./v2/grantPermission";
 import { checkPermission } from "./v2/checkPermission";
 import { listAllCollaborators } from "./v2/listAllCollaborators";
+import { listCollaborator } from "./v2/listCollaborator";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { LOCAL_TENANT_ID } from ".";
@@ -1336,238 +1325,7 @@ export class TeamsAppSolution implements Solution {
 
   @hooks([ErrorHandlerMW])
   async listCollaborator(ctx: SolutionContext): Promise<Result<ListCollaboratorResult, FxError>> {
-    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ListCollaboratorStart, {
-      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-    });
-
-    try {
-      const result = await this.getCurrentUserInfo(ctx);
-      if (result.isErr()) {
-        return err(
-          sendErrorTelemetryThenReturnError(
-            SolutionTelemetryEvent.ListCollaborator,
-            result.error,
-            ctx.telemetryReporter
-          )
-        );
-      }
-
-      const stateResult = await this.getCurrentCollaborationState(ctx, result.value);
-
-      if (stateResult.state != CollaborationState.OK) {
-        if (ctx.answers?.platform === Platform.CLI) {
-          ctx.ui?.showMessage("warn", stateResult.message!, false);
-        } else if (ctx.answers?.platform === Platform.VSCode) {
-          ctx.logProvider?.warning(stateResult.message!);
-        }
-        return ok({
-          state: stateResult.state,
-          message: stateResult.message,
-        });
-      }
-
-      const userInfo = result.value as IUserList;
-
-      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
-        this.AppStudioPlugin,
-        this.AadPlugin,
-      ]);
-
-      const listCollaboratorWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
-        ([plugin, context]) => {
-          return [
-            plugin?.listCollaborator
-              ? (ctx: PluginContext) => plugin!.listCollaborator!.bind(plugin)(ctx, userInfo)
-              : undefined,
-            context,
-            plugin.name,
-          ];
-        }
-      );
-
-      const envName = ctx.envInfo.envName;
-      if (!envName) {
-        return err(
-          sendErrorTelemetryThenReturnError(
-            SolutionTelemetryEvent.ListCollaborator,
-            returnSystemError(
-              new Error("Failed to get env name."),
-              SolutionSource,
-              SolutionError.FailedToGetEnvName
-            ),
-            ctx.telemetryReporter
-          )
-        );
-      }
-
-      const results = await executeConcurrently("", listCollaboratorWithCtx);
-
-      const errors: any = [];
-
-      for (const result of results) {
-        if (result.isErr()) {
-          errors.push(result);
-        }
-      }
-
-      let errorMsg = "";
-      if (errors.length > 0) {
-        errorMsg += `Failed to list collaborator for the project.\n Error details: \n`;
-        for (const fxError of errors) {
-          errorMsg += fxError.error.message + "\n";
-        }
-      }
-
-      if (errorMsg) {
-        return err(
-          sendErrorTelemetryThenReturnError(
-            SolutionTelemetryEvent.ListCollaborator,
-            returnUserError(
-              new Error(errorMsg),
-              SolutionSource,
-              SolutionError.FailedToListCollaborator
-            ),
-            ctx.telemetryReporter
-          )
-        );
-      }
-
-      const teamsAppOwners: TeamsAppAdmin[] = results[0].isErr() ? [] : results[0].value;
-      const aadOwners: AadOwner[] = results[1].isErr() ? [] : results[1].value;
-      const collaborators: Collaborator[] = [];
-      const teamsAppId: string = teamsAppOwners[0]?.resourceId ?? "";
-      const aadAppId: string = aadOwners[0]?.resourceId ?? "";
-      const aadAppTenantId = ctx.envInfo.state?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-
-      for (const teamsAppOwner of teamsAppOwners) {
-        const aadOwner = aadOwners.find(
-          (owner) => owner.userObjectId === teamsAppOwner.userObjectId
-        );
-
-        collaborators.push({
-          // For guest account, aadOwner.userPrincipalName will be user's email, and is easy to read.
-          userPrincipalName:
-            aadOwner?.userPrincipalName ??
-            teamsAppOwner.userPrincipalName ??
-            teamsAppOwner.userObjectId,
-          userObjectId: teamsAppOwner.userObjectId,
-          isAadOwner: aadOwner ? true : false,
-          aadResourceId: aadOwner ? aadOwner.resourceId : undefined,
-          teamsAppResourceId: teamsAppOwner.resourceId,
-        });
-      }
-
-      if (ctx.answers?.platform === Platform.CLI || ctx.answers?.platform === Platform.VSCode) {
-        const message = [
-          { content: `Listing M365 permissions\n`, color: Colors.BRIGHT_WHITE },
-          { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
-          { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
-          {
-            content: `Starting list all teams app owners for environment: `,
-            color: Colors.BRIGHT_WHITE,
-          },
-          { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
-          { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
-          { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
-          { content: `M365 Teams App (ID: `, color: Colors.BRIGHT_WHITE },
-          { content: teamsAppId, color: Colors.BRIGHT_MAGENTA },
-          { content: `), SSO AAD App (ID: `, color: Colors.BRIGHT_WHITE },
-          { content: aadAppId, color: Colors.BRIGHT_MAGENTA },
-          { content: `)\n`, color: Colors.BRIGHT_WHITE },
-        ];
-
-        for (const collaborator of collaborators) {
-          message.push(
-            { content: `Teams App Owner: `, color: Colors.BRIGHT_WHITE },
-            { content: collaborator.userPrincipalName, color: Colors.BRIGHT_MAGENTA },
-            { content: `. `, color: Colors.BRIGHT_WHITE }
-          );
-
-          if (!collaborator.isAadOwner) {
-            message.push({ content: `(Not owner of SSO AAD app)`, color: Colors.BRIGHT_YELLOW });
-          }
-
-          message.push({ content: "\n", color: Colors.BRIGHT_WHITE });
-        }
-
-        if (ctx.answers?.platform === Platform.CLI) {
-          ctx.ui?.showMessage("info", message, false);
-        } else if (ctx.answers?.platform === Platform.VSCode) {
-          ctx.logProvider?.info(message);
-        }
-      }
-
-      const aadOwnerCount = collaborators.filter(
-        (collaborator) => collaborator.aadResourceId && collaborator.isAadOwner
-      ).length;
-      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ListCollaborator, {
-        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-        [SolutionTelemetryProperty.CollaboratorCount]: collaborators.length.toString(),
-        [SolutionTelemetryProperty.AadOwnerCount]: aadOwnerCount.toString(),
-        [SolutionTelemetryProperty.Env]: getHashedEnv(envName),
-      });
-
-      return ok({
-        collaborators: collaborators,
-        state: CollaborationState.OK,
-      });
-    } finally {
-      this.runningState = SolutionRunningState.Idle;
-    }
-  }
-
-  private async getCurrentUserInfo(ctx: SolutionContext): Promise<Result<IUserList, FxError>> {
-    const user = await this.getUserInfo(ctx);
-
-    if (!user) {
-      return err(
-        returnSystemError(
-          new Error("Failed to retrieve current user info from graph token"),
-          SolutionSource,
-          SolutionError.FailedToRetrieveUserInfo
-        )
-      );
-    }
-
-    return ok(user);
-  }
-
-  private getCurrentCollaborationState(
-    ctx: SolutionContext,
-    user: IUserList
-  ): CollaborationStateResult {
-    const canProcess = this.checkWhetherSolutionIsIdle();
-    if (canProcess.isErr()) {
-      return {
-        state: CollaborationState.SolutionIsNotIdle,
-        message: canProcess.error.message,
-      };
-    }
-
-    const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
-    if (!provisioned) {
-      const warningMsg =
-        "The resources have not been provisioned yet. Please provision the resources first.";
-      return {
-        state: CollaborationState.NotProvisioned,
-        message: warningMsg,
-      };
-    }
-
-    const aadAppTenantId = ctx.envInfo.state?.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
-    if (!aadAppTenantId || user.tenantId != (aadAppTenantId as string)) {
-      const warningMsg =
-        "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account.";
-      return {
-        state: CollaborationState.M365TenantNotMatch,
-        message: warningMsg,
-      };
-    }
-
-    return {
-      state: CollaborationState.OK,
-    };
+    return listCollaborator({ apiVersion: 1, ctx });
   }
 
   private loadTeamsAppTenantId(
@@ -2318,55 +2076,5 @@ export class TeamsAppSolution implements Solution {
       tenantId: maybeTenantId.value,
       applicationIdUri: configResult.value.applicationIdUri,
     });
-  }
-
-  private async getUserInfo(ctx: SolutionContext, email?: string): Promise<IUserList | undefined> {
-    const currentUser = await ctx.graphTokenProvider?.getJsonObject();
-
-    if (!currentUser) {
-      return undefined;
-    }
-
-    const tenantId = currentUser["tid"] as string;
-    let aadId = currentUser["oid"] as string;
-    let userPrincipalName = currentUser["unique_name"] as string;
-    let displayName = currentUser["name"] as string;
-    const isAdministrator = true;
-
-    if (email) {
-      const graphToken = await ctx.graphTokenProvider?.getAccessToken();
-      const instance = axios.create({
-        baseURL: "https://graph.microsoft.com/v1.0",
-      });
-      instance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
-      const res = await instance.get(
-        `/users?$filter=startsWith(mail,'${email}') or startsWith(userPrincipalName, '${email}')`
-      );
-      if (!res || !res.data || !res.data.value) {
-        return undefined;
-      }
-
-      const collaborator = res.data.value.find(
-        (user: any) =>
-          user.mail.toLowerCase() === email.toLowerCase() ||
-          user.userPrincipalName.toLowerCase() === email.toLowerCase()
-      );
-
-      if (!collaborator) {
-        return undefined;
-      }
-
-      aadId = collaborator.id;
-      userPrincipalName = collaborator.userPrincipalName;
-      displayName = collaborator.displayName;
-    }
-
-    return {
-      tenantId,
-      aadId,
-      userPrincipalName,
-      displayName,
-      isAdministrator,
-    };
   }
 }

@@ -21,6 +21,15 @@
             "configuration": "F5 ready"
         },
         {
+            "id": "hello-world-bot",
+            "title": "Hello World Bot",
+            "shortDescription": "A Hello World app of Microsoft Teams Bot app",
+            "fullDescription": "This is a Hello World app of Microsoft Teams Bot app demonstrating how to create commands and build adaptive cards that best for automation.",
+            "tags": ["Bot", "TS", "Adaptive Cards", "Ready to F5 Preview"],
+            "time": "5min to run",
+            "configuration": "F5 ready"
+        },
+        {
             "id": "graph-toolkit-contact-exporter",
             "title": "Contact Exporter using Graph Toolkit",
             "shortDescription": "Contact Exporter app of Microsoft Teams Tab app.",

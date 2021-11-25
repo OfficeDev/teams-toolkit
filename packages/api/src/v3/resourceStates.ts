@@ -202,7 +202,7 @@ const profile3: ResourceStates = {
     armOutput: {},
   },
   app: {
-    teamsAppId: "3949bacf-b098-4b03-9bb1-ca94196c90f8",
+    appId: "3949bacf-b098-4b03-9bb1-ca94196c90f8",
     tenantId: "72f988bf-86f1-41af-91ab-2d7cd011db47",
   },
   resources: [

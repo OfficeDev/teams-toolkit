@@ -1,6 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, FxError, Result, ok, Platform, Colors, err } from "@microsoft/teamsfx-api";
+import {
+  PluginContext,
+  FxError,
+  Result,
+  ok,
+  Platform,
+  Colors,
+  err,
+  UserCancelError,
+} from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
 import * as fs from "fs-extra";
@@ -275,7 +284,6 @@ export class SPFxPluginImpl {
           "warn",
           util.format(getStrings().plugins.SPFx.createAppCatalogNotice, tenant.value),
           true,
-          "OK",
           Constants.READ_MORE
         );
         const confirm = res?.isOk() ? res.value : undefined;
@@ -305,7 +313,7 @@ export class SPFxPluginImpl {
             break;
           case Constants.READ_MORE:
             ctx.ui?.openUrl(Constants.CREATE_APP_CATALOG_GUIDE);
-            break;
+            return ok(UserCancelError);
           default:
             return ok(undefined);
         }

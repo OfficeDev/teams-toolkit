@@ -1737,7 +1737,7 @@ export class AppStudioPluginImpl {
         ...new Set(
           Mustache.parse(manifest)
             .filter((x) => {
-              x[0] != "text" && x[1] != "localSettings.teamsApp.teamsAppId";
+              return x[0] != "text" && x[1] != "localSettings.teamsApp.teamsAppId";
             })
             .map((x) => x[1])
         ),

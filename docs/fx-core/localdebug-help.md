@@ -76,7 +76,7 @@ To use your own tunneling service, set the `skipNgrok`, `botDomain`, and `botEnd
     }
 }
 ```
-Please note that the `localBotEndpoint` should use https protocol.
+Please note that the `botEndpoint` should use https protocol.
 
 ## What to do if Teams shows "App not found" when the Teams web client is opened?
 ### Error

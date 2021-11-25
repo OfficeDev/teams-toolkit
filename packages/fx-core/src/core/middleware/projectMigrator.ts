@@ -334,15 +334,15 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
 }
 
 async function getManifestPath(fx: string, projectPath: string): Promise<string> {
-  // 2.0.1 <= version <= 2.3.1
-  if (await fs.pathExists(path.join(fx, REMOTE_MANIFEST))) {
-    return path.join(fx, REMOTE_MANIFEST);
+  if (await fs.pathExists(path.join(projectPath, AppPackageFolderName, REMOTE_MANIFEST))) {
+    return path.join(projectPath, AppPackageFolderName, REMOTE_MANIFEST);
   }
   // 2.3.2<= version <= 2.4.1
   if (await fs.pathExists(path.join(fx, AppPackageFolderName, REMOTE_MANIFEST))) {
     return path.join(fx, AppPackageFolderName, REMOTE_MANIFEST);
   }
-  return path.join(projectPath, AppPackageFolderName, REMOTE_MANIFEST);
+  // 2.0.1 <= version <= 2.3.1
+  return path.join(fx, REMOTE_MANIFEST);
 }
 
 async function preCheckKeyFiles(projectPath: string, ctx: CoreHookContext): Promise<void> {
@@ -551,10 +551,10 @@ async function copyManifest(projectPath: string, fx: string, target: string) {
       ? "outline.png"
       : manifest.icons.outline;
 
-    if (color !== "") {
+    if (color !== "" && (await fs.pathExists(path.join(fx, color)))) {
       await fs.copy(path.join(fx, color), path.join(target, color));
     }
-    if (outline !== "") {
+    if (outline !== "" && (await fs.pathExists(path.join(fx, outline)))) {
       await fs.copy(path.join(fx, outline), path.join(target, outline));
     }
   }

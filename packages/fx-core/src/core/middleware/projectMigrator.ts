@@ -7,6 +7,7 @@ import {
   ConfigFolderName,
   EnvConfig,
   err,
+  ok,
   InputConfigsFolderName,
   Inputs,
   Platform,
@@ -147,6 +148,11 @@ export class ArmParameters {
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await needMigrateToArmAndMultiEnv(ctx)) && checkMethod(ctx)) {
+    if (!checkUserTasks(ctx)) {
+      ctx.result = ok(undefined);
+      return;
+    }
+
     const core = ctx.self as FxCore;
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
@@ -226,6 +232,19 @@ function checkMethod(ctx: CoreHookContext): boolean {
   const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
   if (ctx.method && methods.has(ctx.method) && fromReloadFlag) return false;
   fromReloadFlag = ctx.method != undefined && methods.has(ctx.method);
+  return true;
+}
+
+function checkUserTasks(ctx: CoreHookContext): boolean {
+  const userTaskArgs: Set<string> = new Set([
+    "getProgrammingLanguage",
+    "getLocalDebugEnvs",
+    "getSkipNgrokConfig",
+  ]);
+  const userTaskMethod = ctx.arguments[0]?.["method"];
+  if (ctx.method === "executeUserTask" && userTaskArgs.has(userTaskMethod)) {
+    return false;
+  }
   return true;
 }
 

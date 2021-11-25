@@ -1,5 +1,5 @@
-# Teams Toolkit V1 bot / message extension app migration
-## Debug Bot / Message Extension App migrated from V1
+# Teams Toolkit V1 bot / messaging extension app migration
+## Debug Bot / Messaging extension App migrated from V1
 Start debugging the project by hitting the `F5` key in Visual Studio Code. Alternatively use the `Run and Debug Activity Panel` in Visual Studio Code and click the `Start Debugging` green arrow button. 
 
 > Note: A new teams app will be created for local debug.

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { Json, SolutionSettings } from "../types";
+import { CloudResource } from "./resourceStates";
 
 export enum RuntimeStacks {
   DoNet_6_EA = ".NET 6(Early Access)",
@@ -33,13 +34,19 @@ export interface Resource extends Json {
    * dependent resource ids
    */
   resources?: string[];
+
+  /**
+   * for existing resource, the toolkit will ignore provision and deployment,
+   * user will provide the existing resource as provision output
+   */
+  existing?: CloudResource;
 }
 
 export interface TeamsFxSolutionSettings extends SolutionSettings {
   modules: {
     tab?: Module;
     bot?: Module;
-    backend?: Module;
+    backends?: Module[];
   };
   resources?: Resource[];
 }
@@ -62,12 +69,14 @@ const settings1: TeamsFxSolutionSettings = {
       subFolderName: "bot",
       resources: ["AzureBot_1"],
     },
-    backend: {
-      runtimeStack: RuntimeStacks.Node12LTS,
-      language: "javascript",
-      subFolderName: "api",
-      resources: ["AzureFunction_1"],
-    },
+    backends: [
+      {
+        runtimeStack: RuntimeStacks.Node12LTS,
+        language: "javascript",
+        subFolderName: "api",
+        resources: ["AzureFunction_1"],
+      },
+    ],
   },
   resources: [
     {

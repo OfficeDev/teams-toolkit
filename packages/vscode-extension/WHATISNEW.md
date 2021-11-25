@@ -10,19 +10,19 @@ Big version for Teams Toolkit with new features to support customize cloud resou
 
 New Features:
 
-- Adopt ARM templates to provision Azure cloud resources, support customization of cloud resources. Refer to [Provision cloud resources](aka.ms/provision-doc) for more information.
-- Developers can create and manage multiple cloud environments with different customizations for each environment. Refer to [Manage multiple environment](aka.ms/multi-env-doc) for more information.
+- Adopt ARM templates to provision Azure cloud resources, support customization of cloud resources. Refer to [Provision cloud resources](https://aka.ms/provision-doc) for more information.
+- Developers can create and manage multiple cloud environments with different customizations for each environment. Refer to [Manage multiple environment](https://aka.ms/multi-env-doc) for more information.
 
-    ![create multiple environments](./img/create-env.png)
+    ![create multiple environments](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/create-env.png)
 
-- Developers can collaborate with others on the same project. Refer to [Collaborations in Teams Toolkit](aka.ms/ttk-collaboration-doc) for more information.
+- Developers can collaborate with others on the same project. Refer to [Collaborations in Teams Toolkit](https://aka.ms/ttk-collaboration-doc) for more information.
     
-    ![Collaborate with others](./img/collaboration.png)
+    ![Collaborate with others](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/collaboration.png)
 
-- Support manifest customization for both local and remote environment. Refer to [Customize manifest](aka.ms/customize-manifest-doc) for more information.
-- Support flexible add cloud resources to your project using ARM template. Refer to [Add cloud resources](aka.ms/add-resources-doc) for more information.
+- Support manifest customization for both local and remote environment. Refer to [Customize manifest](https://aka.ms/customize-manifest-doc) for more information.
+- Support flexible add cloud resources to your project using ARM template. Refer to [Add cloud resources](https://aka.ms/add-resources-doc) for more information.
       
-    ![Add cloud resources](./img/add-resource.png)
+    ![Add cloud resources](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/add-resource.png)
 
 - Add more Teams Sample Apps which support local run with no need to manually set up environment.
 
@@ -30,7 +30,7 @@ Enhancement:
 
 - Improve UI: In sample gallery, add time and effort estimation for each sample.
 
-    ![Sample gallery UI](./img/sample-ui.png)
+    ![Sample gallery UI](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/sample-ui.png)
 
 - Improve UI: multiple enhancement to the Tree View. For example, provide documents links in Tree View, and enrich the tooltip descriptions.
 - Reduce the required user inputs in order to create new project.

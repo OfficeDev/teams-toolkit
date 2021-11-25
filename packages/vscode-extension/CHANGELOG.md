@@ -8,7 +8,7 @@ New Features:
 - Developers can create and manage multiple cloud environments with different customizations for each environment. Refer to [Manage multiple environment](https://aka.ms/multi-env-doc) for more information.
 - Developers can collaborate with others on the same project. Refer to [Collaborations in Teams Toolkit](https://aka.ms/collaboration-doc) for more information.
 - Support manifest customization for both local and remote environment. Refer to [Customize manifest](https://aka.ms/customize-manifest-doc) for more information.
-- Support flexible add cloud resources to your project using ARM template. Refer to [Add cloud resources](https://aka.ms/add-resources-doc) for more information.
+- Provide flexibility to add cloud resources to your project using ARM template. Refer to [Add cloud resources](https://aka.ms/add-resources-doc) for more information.
 - Add more Teams Sample Apps which support local run with no need to manually set up environment.
 
 Enhancement:
@@ -16,7 +16,7 @@ Enhancement:
 - Improve UI: multiple enhancement to the Tree View. For example, provide documents links in Tree View, and enrich the tooltip descriptions.
 - Reduce the required user inputs in order to create new project.
 - Enhance the status and messages showed in Teams Toolkit.
-- Samples are upgraded to adopt new features in Teams Toolkit.
+- Upgrade samples to adopt new features in Teams Toolkit.
 
 ## 2.10.0 - Nov 15, 2021 
 

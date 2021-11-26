@@ -11,10 +11,10 @@ After project upgrade, the new file structure will consist:
 ## Know what you need to do
 Below are the important things you should know about after upgrading your project.
 
-* Execute [provision again for project contains Bot / Messaging Extension](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#reprovision-bot-project) capability.
-* Update properties for Azure [API Management (APIM) Service ](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#customize-apim-service)
+* Execute [provision again if your project contains Bot / Messaging Extension](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#reprovision-bot-project) capability.
+* Update properties if your project contains Azure [API Management (APIM) Service ](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#customize-apim-service)
 * Connect to an [Azure SQL instance when local debug](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#local-debug-with-sql) your Teams app.
-* Reset Environment Variables if you used [existing AAD app](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/fx-core/using-existing-aad.md#set-necessary-info-in-teamsfx-project).
+* Reset environment variables if you used an [existing AAD app](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/fx-core/using-existing-aad.md#set-necessary-info-in-teamsfx-project).
 * [Change resource names](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features#change-resource-name-when-creating-a-new-environment) when creating a new environment.
 
 

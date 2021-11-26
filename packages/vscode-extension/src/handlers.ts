@@ -259,16 +259,11 @@ async function getIsFromSample() {
   if (core) {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
-    const projectConfigRes = await core.getProjectConfig(input);
+    await core.getProjectConfig(input);
 
-    if (projectConfigRes.isOk() && projectConfigRes.value) {
-      const projectSettings = projectConfigRes.value.settings;
-      if (projectSettings) {
-        return projectSettings.isFromSample;
-      }
-    }
-    return undefined;
+    return core.isFromSample;
   }
+  return undefined;
 }
 
 async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonly Uri[]) {
@@ -476,18 +471,23 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
       return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
     }
   } else {
-    const selectedEnv = await askTargetEnvironment();
-    if (selectedEnv.isErr()) {
-      return err(selectedEnv.error);
-    }
-    const env = selectedEnv.value;
-    const isLocalDebug = env === "local";
-    if (isLocalDebug) {
-      func.params.type = "localDebug";
-      return await runUserTask(func, TelemetryEvent.Build, true);
+    if (isMultiEnvEnabled()) {
+      const selectedEnv = await askTargetEnvironment();
+      if (selectedEnv.isErr()) {
+        return err(selectedEnv.error);
+      }
+      const env = selectedEnv.value;
+      const isLocalDebug = env === "local";
+      if (isLocalDebug) {
+        func.params.type = "localDebug";
+        return await runUserTask(func, TelemetryEvent.Build, true);
+      } else {
+        func.params.type = "remote";
+        return await runUserTask(func, TelemetryEvent.Build, false, env);
+      }
     } else {
       func.params.type = "remote";
-      return await runUserTask(func, TelemetryEvent.Build, false, env);
+      return await runUserTask(func, TelemetryEvent.Build, false);
     }
   }
 }
@@ -495,8 +495,14 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.provision);
-  await registerEnvTreeHandler();
-  return result;
+
+  if (result.isErr() && isUserCancelError(result.error)) {
+    return result;
+  } else {
+    // refresh env tree except provision cancelled.
+    await registerEnvTreeHandler();
+    return result;
+  }
 }
 
 export async function deployHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -1575,7 +1581,7 @@ export function cmdHdlDisposeTreeView() {
 }
 
 export async function showError(e: UserError | SystemError) {
-  if (e.stack) {
+  if (e.stack && e instanceof SystemError) {
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
   } else {
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}`);

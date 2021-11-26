@@ -32,18 +32,18 @@ import {
   SolutionSource,
 } from "../constants";
 import * as util from "util";
-import { isUndefined } from "lodash";
+import _, { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
 import { fillInCommonQuestions } from "../commonQuestions";
 import { deployArmTemplates } from "../arm";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
-import _ from "lodash";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { isV2, isVsCallingCli } from "../../../../core";
 import { Constants } from "../../../resource/appstudio/constants";
+import { assignJsonInc } from "../../../resource/utils4v2";
 
 export async function provisionResource(
   ctx: v2.Context,
@@ -239,10 +239,23 @@ export async function provisionResource(
     ctx.logProvider?.info(msg);
     ctx.userInteraction.showMessage("info", msg, false);
     solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = true;
-    const output = configureResourceResult.output;
-    output.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
-
-    return new v2.FxSuccess(combineRecords(output));
+    const configOutput = configureResourceResult.output;
+    configOutput.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
+    const res1 = combineRecords(provisionResult.output);
+    const res2 = combineRecords(configOutput);
+    for (const key of Object.keys(res2)) {
+      if (!newEnvInfo.state[key]) {
+        newEnvInfo.state[key].output = res2[key].output;
+      } else {
+        const newOutput = assignJsonInc(newEnvInfo.state[key].output, res2[key].output);
+        if (newOutput) newEnvInfo.state[key].output = newOutput;
+      }
+    }
+    for (const key of Object.keys(newEnvInfo.state)) {
+      if (!res1[key]) res1[key] = { output: {}, secrets: {} };
+      res1[key].output = newEnvInfo.state[key].output;
+    }
+    return new v2.FxSuccess(res1);
   }
 }
 

@@ -132,6 +132,18 @@ export async function setBotSkuNameToB1(projectPath: string) {
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
+export async function setBotSkuNameToB1Bicep(projectPath: string, envName: string) {
+  const bicepParameterFile = path.join(
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    `azure.parameters.${envName}.json`
+  );
+  const parametersFilePath = path.resolve(projectPath, bicepParameterFile);
+  const parameters = await fs.readJSON(parametersFilePath);
+  parameters["parameters"]["provisionParameters"]["value"]["botWebAppSKU"] = "B1";
+  return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
+}
+
 export async function cleanupSharePointPackage(appId: string) {
   if (appId) {
     try {
@@ -155,6 +167,9 @@ export async function cleanUpAadApp(
   envName = "dev"
 ) {
   const envFilePath = path.resolve(projectPath, getEnvFilePathSuffix(isMultiEnvEnabled, envName));
+  if (!(await fs.pathExists(envFilePath))) {
+    return;
+  }
   const context = await fs.readJSON(envFilePath);
   const manager = await AadManager.init();
   const promises: Promise<boolean>[] = [];
@@ -192,11 +207,18 @@ export async function cleanUpAadApp(
   return Promise.all(promises);
 }
 
-export async function cleanUpResourceGroup(appName: string) {
+export async function cleanUpResourceGroup(
+  appName: string,
+  isMultiEnvEnabled: boolean,
+  envName?: string
+) {
   return new Promise<boolean>(async (resolve) => {
     const manager = await ResourceGroupManager.init();
     if (appName) {
-      const name = `${appName}-rg`;
+      let name = `${appName}-rg`;
+      if (isMultiEnvEnabled) {
+        name = `${appName}-${envName}-rg`;
+      }
       if (await manager.hasResourceGroup(name)) {
         const result = await manager.deleteResourceGroup(name);
         if (result) {
@@ -246,7 +268,7 @@ export async function cleanUp(
     // delete aad app
     cleanUpAadAppPromise,
     // remove resouce group
-    cleanUpResourceGroup(appName),
+    cleanUpResourceGroup(appName, isMultiEnvEnabled, envName),
     // remove project
     //cleanUpLocalProject(projectPath, cleanUpAadAppPromise),
   ]);
@@ -300,6 +322,33 @@ export async function readContext(projectPath: string): Promise<any> {
 
   // Read Context and UserData
   const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+
+  let userData: Record<string, string> = {};
+  if (await fs.pathExists(userDataFilePath)) {
+    const dictContent = await fs.readFile(userDataFilePath, "UTF-8");
+    userData = dotenv.parse(dictContent);
+  }
+
+  // Read from userdata.
+  for (const plugin in context) {
+    const pluginContext = context[plugin];
+    for (const key in pluginContext) {
+      if (typeof pluginContext[key] === "string" && isSecretPattern(pluginContext[key])) {
+        const secretKey = `${plugin}.${key}`;
+        pluginContext[key] = userData[secretKey] ?? undefined;
+      }
+    }
+  }
+
+  return context;
+}
+
+export async function readContextMultiEnv(projectPath: string, envName: string): Promise<any> {
+  const contextFilePath = `${projectPath}/.fx/states/state.${envName}.json`;
+  const userDataFilePath = `${projectPath}/.fx/states/${envName}.userdata`;
+
+  // Read Context and UserData
+  const context = await fs.readJSON(contextFilePath);
 
   let userData: Record<string, string> = {};
   if (await fs.pathExists(userDataFilePath)) {

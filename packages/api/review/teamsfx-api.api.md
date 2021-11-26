@@ -585,11 +585,9 @@ export interface ILocalizationInfo {
     // (undocumented)
     additionalLanguages?: {
         languageTag: string;
-        file?: string;
+        file: string;
     }[];
     defaultLanguageTag: string;
-    // (undocumented)
-    languages: any[];
 }
 
 // @public (undocumented)
@@ -1538,7 +1536,7 @@ export enum TreeCategory {
     // (undocumented)
     Project = 3,
     // (undocumented)
-    Provison = 4
+    Provision = 4
 }
 
 // @public (undocumented)

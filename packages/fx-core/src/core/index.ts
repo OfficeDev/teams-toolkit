@@ -173,7 +173,7 @@ export let currentStage: Stage;
 export let TOOLS: Tools;
 export class FxCore implements Core {
   tools: Tools;
-
+  isFromSample?: boolean;
   constructor(tools: Tools) {
     this.tools = tools;
     TOOLS = tools;
@@ -1496,6 +1496,7 @@ export async function downloadSample(
       inputs.projectPath = sampleAppPath;
     }
     progress.end(true);
+    sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, telemetryProperties);
     return ok(sampleAppPath);
   } catch (e) {
     fxError = assembleError(e);

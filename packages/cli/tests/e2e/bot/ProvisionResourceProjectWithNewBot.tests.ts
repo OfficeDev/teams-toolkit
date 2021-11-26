@@ -15,8 +15,11 @@ import {
   setBotSkuNameToB1,
   cleanUp,
   readContext,
+  setBotSkuNameToB1Bicep,
+  readContextMultiEnv,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 describe("Provision", function () {
   const testFolder = getTestFolder();
@@ -32,7 +35,11 @@ describe("Provision", function () {
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    await setBotSkuNameToB1(projectPath);
+    if (isMultiEnvEnabled()) {
+      await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    } else {
+      await setBotSkuNameToB1(projectPath);
+    }
 
     // set subscription
     await execAsync(`teamsfx account set --subscription ${subscription}`, {
@@ -53,17 +60,34 @@ describe("Provision", function () {
     console.log(`[Successfully] provision for ${projectPath}`);
 
     {
-      // Validate provision
-      // Get context
-      const context = await readContext(projectPath);
+      if (isMultiEnvEnabled()) {
+        // Validate provision
+        // Get context
+        const context = await readContextMultiEnv(
+          projectPath,
+          environmentManager.getDefaultEnvName()
+        );
 
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
-      await AadValidator.validate(aad);
+        // Validate Aad App
+        const aad = AadValidator.init(context, false, AppStudioLogin);
+        await AadValidator.validate(aad);
 
-      // Validate Bot Provision
-      const bot = BotValidator.init(context);
-      await BotValidator.validateProvision(bot);
+        // Validate Bot Provision
+        const bot = BotValidator.init(context, true);
+        await BotValidator.validateProvision(bot, true);
+      } else {
+        // Validate provision
+        // Get context
+        const context = await readContext(projectPath);
+
+        // Validate Aad App
+        const aad = AadValidator.init(context, false, AppStudioLogin);
+        await AadValidator.validate(aad);
+
+        // Validate Bot Provision
+        const bot = BotValidator.init(context);
+        await BotValidator.validateProvision(bot);
+      }
     }
 
     // deploy
@@ -75,14 +99,25 @@ describe("Provision", function () {
     console.log(`[Successfully] deploy for ${projectPath}`);
 
     {
-      // Validate deployment
+      if (isMultiEnvEnabled()) {
+        // Validate deployment
 
-      // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+        // Get context
+        const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-      // Validate Bot Deploy
-      const bot = BotValidator.init(context);
-      await BotValidator.validateDeploy(bot);
+        // Validate Bot Deploy
+        const bot = BotValidator.init(context, true);
+        await BotValidator.validateDeploy(bot);
+      } else {
+        // Validate deployment
+
+        // Get context
+        const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+
+        // Validate Bot Deploy
+        const bot = BotValidator.init(context);
+        await BotValidator.validateDeploy(bot);
+      }
     }
 
     // test (validate)
@@ -112,6 +147,10 @@ describe("Provision", function () {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
     // disable temporarily to protect env for debug
-    await cleanUp(appName, projectPath, true, true, false);
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, true, false, true);
+    } else {
+      await cleanUp(appName, projectPath, true, true, false);
+    }
   });
 });

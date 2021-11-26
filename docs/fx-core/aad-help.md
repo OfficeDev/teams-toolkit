@@ -23,7 +23,7 @@ Failed to update application property. Error detail: The host name should not be
 
 ### Scenario One: Setup CDN as storage custom domain
 #### Step #1 Note Frontend Info
-1. Open `.fx\env.default.json` file
+1. Open `.fx\states\state.{envName}.json` file
 2. Note the resource group name, fronend storage name.
 
     ![image](../images/fx-core/aad/appIdUri-config.png)
@@ -36,24 +36,19 @@ Failed to update application property. Error detail: The host name should not be
 1. Navigate to your created CDN endpoint and copy the endpoint hostname. For example, "https://sample.azureedge.net"
 
 ### Step #3 Update Frontend Info
-1. Open `.fx\env.default.json` file
-1. Find `fx-resource-aad-app-for-teams`. Add two new keys "domain" and "endpoint" with domain and endpoint of CDN.
+1. Open `tamplates\azure\provision\frontendHosting.bicep` file, and find the following two lines:
+    ```
+    output endpoint string = 'https://${siteDomain}'
+    output domain string = siteDomain
+    ```
 
-    ![image](../images/fx-core/aad/appIdUri-config-add.png)
+1. Replace `siteDomain` with your CDN endpoint as following. Note you need to use your CDN endpoint copied above.
+   ```
+   output endpoint string = 'https://sample.azureedge.net'
+   output domain string = 'sample.azureedge.net'
+   ```
 
 1. Run "TeamsFx - Provision in the cloud" and "TeamsFx - Deploy to the cloud" or press F5 to start local debug.
-1. After adding your app to your teams client, go to teams app store and add app studio, navigate to manifest editor and select your app. Edit the manifest and replace all storage endpoint with your CDN endpoint.
-
-    Including:
-   * App details → Developer information → Website
-   * App details → App URLs → Privacy statement, Terms of use
-   * Tab → Personal Tab → Content URL, Website URL
-   * Domains and permissions → Single-Sign-On
-
-    Review your App Manifest(preview) to make sure all xxxx.xxx.web.core.windows.net/ are replaced by xxxx.azureedge.net/. Finally click Test and distribute → install to reinstall the app.
-
-    *Note: You only need to edit the manifest the first time you run your app.*
-1. If you're using Azure Functions for backend api, remember to add your CDN endpoint to function's allowed origin list to enable CORS. [Learn More](https://docs.microsoft.com/en-us/azure/azure-functions/functions-how-to-use-azure-function-app-settings?tabs=portal#cors).
 
 
 ## aad.ParsePermissionError

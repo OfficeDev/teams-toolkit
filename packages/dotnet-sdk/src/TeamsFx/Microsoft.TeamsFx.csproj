@@ -4,7 +4,7 @@
     <TargetFramework>net6.0</TargetFramework>
     <AssemblyName>Microsoft.TeamsFx</AssemblyName>
     <RootNamespace>Microsoft.TeamsFx</RootNamespace>
-    <Version>0.3.0-rc</Version>
+    <Version>0.3.1-rc</Version>
     <Authors>Microsoft</Authors>
     <Company>Microsoft</Company>
     <RepositoryUrl>https://github.com/OfficeDev/TeamsFx</RepositoryUrl>
@@ -14,6 +14,7 @@
     <GenerateDocumentationFile>true</GenerateDocumentationFile>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <Description>This package aims to reduce the developer tasks of implementing identity and access to cloud resources down to single-line statements with "zero configuration".</Description>
+    <ImplicitUsings>enable</ImplicitUsings>
   </PropertyGroup>
 
   <ItemGroup>

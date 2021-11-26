@@ -1,39 +1,35 @@
 ﻿// Copyright (c) Microsoft Corporation.
 // Licensed under the MIT License.
+namespace Microsoft.TeamsFx.Model;
 
-using System;
-
-namespace Microsoft.TeamsFx.Model
+internal class SimpleAuthError
 {
-    internal class SimpleAuthError
-    {
-        public string type;
+    public string type;
 
-        public string message;
-    }
+    public string message;
+}
 
-    internal class SimpleAuthAccessToken
-    {
-        public string scope;
+internal class SimpleAuthAccessToken
+{
+    public string scope;
 
-        public DateTimeOffset expires_on;
+    public DateTimeOffset expires_on;
 
-        public string access_token;
-    }
+    public string access_token;
+}
 
-    internal class AuthCode
-    {
-        public string code;
+internal class AuthCode
+{
+    public string code;
 
-        public string codeVerifier;
+    public string codeVerifier;
 
-        public string redirectUri;
-    }
+    public string redirectUri;
+}
 
-    internal class GrantType
-    {
-        public static string AuthCode = "authorization_code";
+internal class GrantType
+{
+    public static string AuthCode = "authorization_code";
 
-        public static string SsoToken = "sso_token";
-    }
+    public static string SsoToken = "sso_token";
 }

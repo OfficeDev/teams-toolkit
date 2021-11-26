@@ -9,7 +9,7 @@ export interface AzureManagedIdentity extends AzureResource {
 }
 
 export class ManagedIdentityPlugin implements ResourcePlugin {
-  name = "ManagedIdentity";
-  resourceType = "ManagedIdentity";
+  name = "fx-resource-azure-identity";
+  resourceType = "AzureManagedIdentity";
   description = "Managed Identity";
 }

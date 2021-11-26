@@ -7,7 +7,7 @@ import { ResourcePlugin } from "./plugins";
 import { ResourceStates, TeamsFxAzureResourceStates } from "./resourceModel";
 
 export class AzureFunctionPlugin implements ResourcePlugin {
-  name = "AzureFunctionPlugin";
+  name = "fx-resource-azure-function";
   resourceType = "AzureFunction";
   description = "Azure Function App";
   async configureResource(
@@ -17,11 +17,15 @@ export class AzureFunctionPlugin implements ResourcePlugin {
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
     const teamsFxResourceStates = resourceStates as TeamsFxAzureResourceStates;
-    const sqlState = teamsFxResourceStates.resources?.filter(
-      (r) => r.name === "AzureSQL"
-    )[0] as AzureSQL;
-    const userName = sqlState.adminUserName;
-    const dabatase = sqlState.databaseName;
+    if (teamsFxResourceStates.resources) {
+      const sql = teamsFxResourceStates.resources["fx-resource-azure-sql"];
+      if (sql && typeof sql === "object") {
+        const sqlState = sql as AzureSQL;
+        const userName = sqlState.adminUserName;
+        const dabatase = sqlState.databaseName;
+      }
+    }
+
     //update app settings;
     return ok(Void);
   }

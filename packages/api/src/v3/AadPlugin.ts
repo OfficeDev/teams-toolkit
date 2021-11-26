@@ -16,7 +16,7 @@ export interface AadApp extends AzureResource {
 }
 
 export class AadPlugin implements ResourcePlugin {
-  name = "AadPlugin";
+  name = "fx-resource-azure-aad";
   resourceType = "AadApp";
   description = "AAD App Registration, provide single-sign-on feature for the Teams App";
 }

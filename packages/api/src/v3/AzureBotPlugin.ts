@@ -18,11 +18,11 @@ export interface AzureBot extends AzureResource {
 }
 
 export class AzureBotPlugin implements ResourcePlugin {
-  name = "AzureBotPlugin";
+  name = "fx-resource-azure-bot";
   resourceType = "AzureBot";
   description = "Azure Bot";
   modules: ("tab" | "bot" | "backend")[] = ["bot"];
   async pluginDependencies?(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>> {
-    return ok(["AzureWebAppPlugin"]);
+    return ok(["fx-resource-azure-web-app"]);
   }
 }

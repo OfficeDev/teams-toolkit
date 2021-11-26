@@ -9,7 +9,7 @@ export interface AzureWebApp extends AzureResource {
 }
 
 export class AzureWebAppPlugin implements ResourcePlugin {
-  name = "AzureWebAppPlugin";
+  name = "fx-resource-azure-web-app";
   resourceType = "AzureWebApp";
   description = "Azure Web App";
   modules = ["tab", "bot"];

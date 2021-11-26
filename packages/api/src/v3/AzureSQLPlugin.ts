@@ -13,10 +13,10 @@ export interface AzureSQL extends AzureResource {
 }
 
 export class AzureSQLPlugin implements ResourcePlugin {
-  name = "AzureSQLPlugin";
+  name = "fx-resource-azure-sql";
   resourceType = "AzureSQL";
   description = "Azure Function App will be also selected to access Azure SQL Database";
   async pluginDependencies(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>> {
-    return ok(["ManagedIdentityPlugin"]);
+    return ok(["fx-resource-azure-identity"]);
   }
 }

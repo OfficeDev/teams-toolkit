@@ -35,30 +35,30 @@ const settings1: TeamsFxSolutionSettings = {
   hostType: "",
   capabilities: [],
   azureResources: [],
-  name: "TeamsFxSolutionPlugin",
+  name: "fx-solution-azure-v3",
   modules: {
     tab: {
       dir: "tabs",
-      hostingPlugin: "AzureStoragePlugin",
+      hostingPlugin: "fx-resource-azure-storage",
     },
     bot: {
       dir: "bot",
-      hostingPlugin: "AzureWebAppPlugin",
+      hostingPlugin: "fx-resource-azure-web-app",
     },
     backends: [
       {
         dir: "api",
-        hostingPlugin: "AzureFunctionPlugin",
+        hostingPlugin: "fx-resource-azure-function",
       },
     ],
   },
   activeResourcePlugins: [
-    "AzureStoragePlugin",
-    "AzureWebAppPlugin",
-    "AzureFunctionPlugin",
-    "AzureBotPlugin",
-    "SimpleAuthPlugin",
-    "AzureSQLPlugin",
-    "ManagedIdentityPlugin",
+    "fx-resource-azure-storage",
+    "fx-resource-azure-web-app",
+    "fx-resource-azure-function",
+    "fx-resource-azure-bot",
+    "fx-resource-azure-simple-auth",
+    "fx-resource-azure-sql",
+    "fx-resource-azure-identity",
   ],
 };

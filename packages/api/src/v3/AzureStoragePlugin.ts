@@ -9,7 +9,7 @@ export interface AzureStorage extends AzureResource {
 }
 
 export class AzureStoragePlugin implements ResourcePlugin {
-  name = "AzureStoragePlugin";
+  name = "fx-resource-azure-storage";
   resourceType = "AzureStorage";
   description = "Azure Storage";
   modules = ["tab"];

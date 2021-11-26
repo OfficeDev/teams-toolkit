@@ -66,12 +66,17 @@ Or, if there's no `.env.teamsfx.local` file in your project (e.g., migrated from
 Since Bot and Messaging Extension requires a public address as the messaging endpoint, ngrok will be used by default to automatically create a tunnel connection forwarding localhost address to public address.
 
 ### Mitigation
-To use your own tunneling service, set the following configurations in *.fx/default.userdata* under the project root, then start debugging, like:
+To use your own tunneling service, set the `skipNgrok`, `botDomain`, and `botEndpoint` configurations in *.fx/configs/localSettings.json* under the project root, then start debugging, like:
+```json
+{
+    "bot": {
+        "skipNgrok": true,
+        "botDomain": "02f6-2404-f801-9000-1a-908c-79ca-3a8-ee86.ngrok.io",
+        "botEndpoint": "https://02f6-2404-f801-9000-1a-908c-79ca-3a8-ee86.ngrok.io"
+    }
+}
 ```
-fx-resource-local-debug.skipNgrok=true
-fx-resource-local-debug.localBotEndpoint=https://767787237c6b.ngrok.io
-```
-Please note that the `localBotEndpoint` should use https protocol.
+Please note that the `botEndpoint` should use https protocol.
 
 ## What to do if Teams shows "App not found" when the Teams web client is opened?
 ### Error
@@ -119,9 +124,13 @@ Since Teams requires https Tab hosting endpoint, a localhost development certifi
 ### Mitigation
 We recommend you to install the development certificate. However, if you do not want to install the development certificate and do not want the confirmation window to pop up every time during debugging, you can follow the script bellow to disable the development certificate.
 
-Set the following configuration in *.fx/default.userdata* under the project root, then start debugging, like:
-```
-fx-resource-local-debug.trustDevCert=false
+Set the `trustDevCert` configuration in *.fx/configs/localSettings.json* under the project root, then start debugging, like:
+```json
+{
+    "frontend": {
+        "trustDevCert": false,
+    }
+}
 ```
 If so, an error will show in the Tab page of your app, look like:
 

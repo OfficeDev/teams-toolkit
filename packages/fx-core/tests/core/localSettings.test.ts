@@ -80,7 +80,8 @@ describe("LocalSettings provider APIs", () => {
       const updatedLocalSettings = localSettingsProvider.incrementalInit(
         localSettings!,
         addBackaned,
-        addBot
+        addBot,
+        false
       );
 
       assertLocalSettings(updatedLocalSettings, true, true, true);

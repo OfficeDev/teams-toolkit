@@ -123,7 +123,9 @@ export class ResourceAddSql extends YargsCommand {
     const core = result.value;
 
     {
-      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
+      const inputs = getSystemInputs(rootFolder);
+      inputs.ignoreEnvInfo = true;
+      const result = await core.executeUserTask(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead,
@@ -192,7 +194,9 @@ export class ResourceAddApim extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
+      const inputs = getSystemInputs(rootFolder);
+      inputs.ignoreEnvInfo = true;
+      const result = await core.executeUserTask(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead,
@@ -243,7 +247,9 @@ export class ResourceAddFunction extends YargsCommand {
 
     const core = result.value;
     {
-      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
+      const inputs = getSystemInputs(rootFolder);
+      inputs.ignoreEnvInfo = true;
+      const result = await core.executeUserTask(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
           [TelemetryProperty.Resources]: this.commandHead,

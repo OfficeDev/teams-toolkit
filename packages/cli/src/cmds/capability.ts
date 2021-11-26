@@ -12,7 +12,11 @@ import activate from "../activate";
 import { getSystemInputs } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
-import { TelemetryEvent, TelemetryProperty, TelemetrySuccess } from "../telemetry/cliTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
 import HelpParamGenerator from "../helpParamGenerator";
 
@@ -36,23 +40,25 @@ export class CapabilityAddTab extends YargsCommand {
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
-        [TelemetryProperty.Capabilities]: this.commandHead
+        [TelemetryProperty.Capabilities]: this.commandHead,
       });
       return err(result.error);
     }
 
     const func = {
       namespace: "fx-solution-azure",
-      method: "addCapability"
+      method: "addCapability",
     };
 
     const core = result.value;
 
     {
-      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
+      const inputs = getSystemInputs(rootFolder);
+      inputs.ignoreEnvInfo = true;
+      const result = await core.executeUserTask(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
-          [TelemetryProperty.Capabilities]: this.commandHead
+          [TelemetryProperty.Capabilities]: this.commandHead,
         });
         return err(result.error);
       }
@@ -60,7 +66,7 @@ export class CapabilityAddTab extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.AddCap, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.Capabilities]: this.commandHead
+      [TelemetryProperty.Capabilities]: this.commandHead,
     });
     return ok(null);
   }
@@ -85,22 +91,24 @@ export class CapabilityAddBot extends YargsCommand {
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
-        [TelemetryProperty.Capabilities]: this.commandHead
+        [TelemetryProperty.Capabilities]: this.commandHead,
       });
       return err(result.error);
     }
 
     const func = {
       namespace: "fx-solution-azure",
-      method: "addCapability"
+      method: "addCapability",
     };
 
     const core = result.value;
     {
-      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
+      const inputs = getSystemInputs(rootFolder);
+      inputs.ignoreEnvInfo = true;
+      const result = await core.executeUserTask(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
-          [TelemetryProperty.Capabilities]: this.commandHead
+          [TelemetryProperty.Capabilities]: this.commandHead,
         });
         return err(result.error);
       }
@@ -108,7 +116,7 @@ export class CapabilityAddBot extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.AddCap, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.Capabilities]: this.commandHead
+      [TelemetryProperty.Capabilities]: this.commandHead,
     });
     return ok(null);
   }
@@ -134,22 +142,24 @@ export class CapabilityAddMessageExtension extends YargsCommand {
     const result = await activate(rootFolder);
     if (result.isErr()) {
       CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
-        [TelemetryProperty.Capabilities]: this.commandHead
+        [TelemetryProperty.Capabilities]: this.commandHead,
       });
       return err(result.error);
     }
 
     const func = {
       namespace: "fx-solution-azure",
-      method: "addCapability"
+      method: "addCapability",
     };
 
     const core = result.value;
     {
-      const result = await core.executeUserTask(func, getSystemInputs(rootFolder));
+      const inputs = getSystemInputs(rootFolder);
+      inputs.ignoreEnvInfo = true;
+      const result = await core.executeUserTask(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, result.error, {
-          [TelemetryProperty.Capabilities]: this.commandHead
+          [TelemetryProperty.Capabilities]: this.commandHead,
         });
         return err(result.error);
       }
@@ -157,19 +167,22 @@ export class CapabilityAddMessageExtension extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.AddCap, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      [TelemetryProperty.Capabilities]: this.commandHead
+      [TelemetryProperty.Capabilities]: this.commandHead,
     });
     return ok(null);
   }
 }
-
 
 export class CapabilityAdd extends YargsCommand {
   public readonly commandHead = `add`;
   public readonly command = `${this.commandHead} <capability>`;
   public readonly description = "Add new capabilities to the current application";
 
-  public readonly subCommands: YargsCommand[] = [new CapabilityAddTab(), new CapabilityAddBot(), new CapabilityAddMessageExtension()];
+  public readonly subCommands: YargsCommand[] = [
+    new CapabilityAddTab(),
+    new CapabilityAddBot(),
+    new CapabilityAddMessageExtension(),
+  ];
 
   public builder(yargs: Argv): Argv<any> {
     this.subCommands.forEach((cmd) => {

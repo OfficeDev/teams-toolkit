@@ -52,11 +52,7 @@ import {
 } from "../ResourcePluginContainer";
 import { flattenConfigMap } from "../../../resource/utils4v2";
 import { NamedThunk, executeConcurrently as executeNamedThunkConcurrently } from "./executor";
-import {
-  CollabApiParam,
-  getCurrentCollaborationState,
-  getCurrentUserInfo,
-} from "./collaborationUtil";
+import { CollabApiParam, CollaborationUtil } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
 
 async function executeCheckPermissionV1(
@@ -153,7 +149,7 @@ async function checkPermissionImpl(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
 
-  const result = await getCurrentUserInfo(graphTokenProvider);
+  const result = await CollaborationUtil.getCurrentUserInfo(graphTokenProvider);
   if (result.isErr()) {
     return err(
       sendErrorTelemetryThenReturnError(
@@ -164,7 +160,7 @@ async function checkPermissionImpl(
     );
   }
 
-  const stateResult = getCurrentCollaborationState(envState, result.value);
+  const stateResult = CollaborationUtil.getCurrentCollaborationState(envState, result.value);
 
   if (stateResult.state != CollaborationState.OK) {
     if (platform === Platform.CLI) {

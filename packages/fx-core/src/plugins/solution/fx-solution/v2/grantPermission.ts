@@ -41,12 +41,7 @@ import {
 } from "../ResourcePluginContainer";
 import { flattenConfigMap } from "../../../resource/utils4v2";
 import { NamedThunk, executeConcurrently as executeNamedThunkConcurrently } from "./executor";
-import {
-  CollabApiParam,
-  getCurrentCollaborationState,
-  getCurrentUserInfo,
-  getUserInfo,
-} from "./collaborationUtil";
+import { CollaborationUtil, CollabApiParam } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
 
 async function grantPermissionImpl(
@@ -66,7 +61,7 @@ async function grantPermissionImpl(
 
   const progressBar = ui?.createProgressBar("Granting permission", 1);
   try {
-    const result = await getCurrentUserInfo(graphTokenProvider);
+    const result = await CollaborationUtil.getCurrentUserInfo(graphTokenProvider);
     if (result.isErr()) {
       return err(
         sendErrorTelemetryThenReturnError(
@@ -77,7 +72,7 @@ async function grantPermissionImpl(
       );
     }
 
-    const stateResult = getCurrentCollaborationState(envState, result.value);
+    const stateResult = CollaborationUtil.getCurrentCollaborationState(envState, result.value);
 
     if (stateResult.state != CollaborationState.OK) {
       if (platform === Platform.CLI) {
@@ -105,7 +100,7 @@ async function grantPermissionImpl(
       );
     }
 
-    const userInfo = await getUserInfo(graphTokenProvider, email);
+    const userInfo = await CollaborationUtil.getUserInfo(graphTokenProvider, email);
 
     if (!userInfo) {
       return err(
@@ -240,6 +235,7 @@ export async function grantPermission(
     const graphTokenProvider = param.ctx.graphTokenProvider;
     const logProvider = param.ctx.logProvider;
     const platform = param.ctx.answers?.platform;
+    const email = param.ctx.answers?.email;
     return grantPermissionImpl(
       param,
       envState,
@@ -248,7 +244,8 @@ export async function grantPermission(
       ui,
       graphTokenProvider,
       logProvider,
-      platform
+      platform,
+      email
     );
   } else {
     const configMap = ConfigMap.fromJSON(param.envInfo.state);
@@ -268,6 +265,7 @@ export async function grantPermission(
     const graphTokenProvider = param.tokenProvider.graphTokenProvider;
     const logProvider = param.ctx.logProvider;
     const platform = param.inputs?.platform;
+    const email = param.inputs?.email;
     return grantPermissionImpl(
       param,
       envState,
@@ -276,7 +274,8 @@ export async function grantPermission(
       ui,
       graphTokenProvider,
       logProvider,
-      platform
+      platform,
+      email
     );
   }
 }

@@ -34,6 +34,7 @@ import Container from "typedi";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { CollaborationState, newEnvInfo } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
+import { CollaborationUtil } from "../../../src/plugins/solution/fx-solution/v2/collaborationUtil";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -59,42 +60,6 @@ describe("grantPermission() for Teamsfx projects", () => {
       cryptoProvider: new LocalCrypto(""),
     };
   }
-
-  it("should return SolutionIsNotIdle state if solution state is not idle", async () => {
-    const solution = new TeamsAppSolution();
-    expect(solution.runningState).equal(SolutionRunningState.Idle);
-
-    const mockedCtx = mockSolutionContext();
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: "fake_tid",
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
-
-    solution.runningState = SolutionRunningState.ProvisionInProgress;
-    let result = await solution.grantPermission(mockedCtx);
-    expect(result.isErr()).to.be.false;
-    if (!result.isErr()) {
-      expect(result.value.state).equals(CollaborationState.SolutionIsNotIdle);
-    }
-
-    solution.runningState = SolutionRunningState.DeployInProgress;
-    result = await solution.grantPermission(mockedCtx);
-    expect(result.isErr()).to.be.false;
-    if (!result.isErr()) {
-      expect(result.value.state).equals(CollaborationState.SolutionIsNotIdle);
-    }
-
-    solution.runningState = SolutionRunningState.PublishInProgress;
-    result = await solution.grantPermission(mockedCtx);
-    expect(result.isErr()).to.be.false;
-    if (!result.isErr()) {
-      expect(result.value.state).equals(CollaborationState.SolutionIsNotIdle);
-    }
-
-    sandbox.restore();
-  });
 
   it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
     const solution = new TeamsAppSolution();
@@ -290,7 +255,7 @@ describe("grantPermission() for Teamsfx projects", () => {
       });
 
     sandbox
-      .stub(solution as any, "getUserInfo")
+      .stub(CollaborationUtil, "getUserInfo")
       .onCall(0)
       .resolves({
         tenantId: mockProjectTenantId,
@@ -359,7 +324,7 @@ describe("grantPermission() for Teamsfx projects", () => {
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
 
     sandbox
-      .stub(solution as any, "getUserInfo")
+      .stub(CollaborationUtil, "getUserInfo")
       .onCall(0)
       .resolves({
         tenantId: mockProjectTenantId,

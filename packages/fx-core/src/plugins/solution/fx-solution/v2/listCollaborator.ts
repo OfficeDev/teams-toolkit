@@ -44,11 +44,7 @@ import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { executeConcurrently, LifecyclesWithContext } from "../executor";
 import { ResourcePlugins, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { NamedThunk, executeThunks } from "./executor";
-import {
-  CollabApiParam,
-  getCurrentCollaborationState,
-  getCurrentUserInfo,
-} from "./collaborationUtil";
+import { CollabApiParam, CollaborationUtil } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
 import { Container } from "typedi";
 import { flattenConfigMap } from "../../../resource/utils4v2";
@@ -133,7 +129,7 @@ async function listCollaboratorImpl(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
 
-  const result = await getCurrentUserInfo(graphTokenProvider);
+  const result = await CollaborationUtil.getCurrentUserInfo(graphTokenProvider);
   if (result.isErr()) {
     return err(
       sendErrorTelemetryThenReturnError(
@@ -144,7 +140,7 @@ async function listCollaboratorImpl(
     );
   }
 
-  const stateResult = getCurrentCollaborationState(envState, result.value);
+  const stateResult = CollaborationUtil.getCurrentCollaborationState(envState, result.value);
 
   if (stateResult.state != CollaborationState.OK) {
     if (platform === Platform.CLI) {

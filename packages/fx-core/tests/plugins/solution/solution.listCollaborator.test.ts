@@ -61,43 +61,6 @@ describe("listCollaborator() for Teamsfx projects", () => {
     };
   }
 
-  it("should return SolutionIsNotIdle state if solution state is not idle", async () => {
-    const solution = new TeamsAppSolution();
-    expect(solution.runningState).equal(SolutionRunningState.Idle);
-
-    const mockedCtx = mockSolutionContext();
-
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: "fake_tid",
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
-
-    solution.runningState = SolutionRunningState.ProvisionInProgress;
-    let result = await solution.listCollaborator(mockedCtx);
-    expect(result.isErr()).to.be.false;
-
-    if (!result.isErr()) {
-      expect(result.value.state).equals(CollaborationState.SolutionIsNotIdle);
-    }
-
-    solution.runningState = SolutionRunningState.DeployInProgress;
-    result = await solution.listCollaborator(mockedCtx);
-    expect(result.isErr()).to.be.false;
-    if (!result.isErr()) {
-      expect(result.value.state).equals(CollaborationState.SolutionIsNotIdle);
-    }
-    solution.runningState = SolutionRunningState.PublishInProgress;
-    result = await solution.listCollaborator(mockedCtx);
-    expect(result.isErr()).to.be.false;
-    if (!result.isErr()) {
-      expect(result.value.state).equals(CollaborationState.SolutionIsNotIdle);
-    }
-
-    sandbox.restore();
-  });
-
   it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();

@@ -30,11 +30,7 @@ import {
   SolutionTelemetrySuccess,
 } from "../constants";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
-import {
-  CollabApiParam,
-  getCurrentCollaborationState,
-  getCurrentUserInfo,
-} from "./collaborationUtil";
+import { CollabApiParam, CollaborationUtil } from "./collaborationUtil";
 import { environmentManager } from "../../../..";
 import { executeListCollaboratorV1, executeListCollaboratorV2 } from "./listCollaborator";
 
@@ -63,7 +59,7 @@ async function listAllCollaboratorsImpl(
     );
   }
 
-  const result = await getCurrentUserInfo(graphTokenProvider);
+  const result = await CollaborationUtil.getCurrentUserInfo(graphTokenProvider);
   if (result.isErr()) {
     return err(
       sendErrorTelemetryThenReturnError(
@@ -82,7 +78,10 @@ async function listAllCollaboratorsImpl(
         throw envInfo.error;
       }
 
-      const stateResult = getCurrentCollaborationState(envInfo.value.state, result.value);
+      const stateResult = CollaborationUtil.getCurrentCollaborationState(
+        envInfo.value.state,
+        result.value
+      );
 
       if (stateResult.state != CollaborationState.OK) {
         if (platform === Platform.CLI) {
@@ -194,7 +193,7 @@ export async function listAllCollaborators(
     const ui = param.ctx.ui;
     const graphTokenProvider = param.ctx.graphTokenProvider;
     const platform = param.ctx.answers?.platform;
-    const projectPath = param.ctx.answers?.projectPath;
+    const projectPath = param.ctx.root;
     if (!projectPath) {
       return err(
         returnSystemError(

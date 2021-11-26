@@ -26,6 +26,7 @@ import {
   ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
+  collaborationApiAdaptor,
   configureLocalResourceAdapter,
   configureResourceAdapter,
   executeUserTaskAdapter,
@@ -115,6 +116,60 @@ export class AadPluginV2 implements ResourcePlugin {
       envInfo,
       tokenProvider,
       this.plugin
+    );
+  }
+
+  async grantPermission(
+    ctx: Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider,
+    userInfo: Json
+  ): Promise<Result<Json, FxError>> {
+    return collaborationApiAdaptor(
+      ctx,
+      inputs,
+      envInfo,
+      tokenProvider,
+      userInfo,
+      this.plugin,
+      "grantPermission"
+    );
+  }
+
+  async checkPermission(
+    ctx: Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider,
+    userInfo: Json
+  ): Promise<Result<Json, FxError>> {
+    return collaborationApiAdaptor(
+      ctx,
+      inputs,
+      envInfo,
+      tokenProvider,
+      userInfo,
+      this.plugin,
+      "checkPermission"
+    );
+  }
+
+  async listCollaborator(
+    ctx: Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider,
+    userInfo: Json
+  ): Promise<Result<Json, FxError>> {
+    return collaborationApiAdaptor(
+      ctx,
+      inputs,
+      envInfo,
+      tokenProvider,
+      userInfo,
+      this.plugin,
+      "listCollaborator"
     );
   }
 }

@@ -7,7 +7,7 @@ import { Inputs, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
-import { LocalResource, LocalResourceState } from "./localResourceStates";
+import { LocalResource, LocalResourceStates } from "./localResourceStates";
 import { CloudResource, ResourceStates } from "./resourceModel";
 
 export interface ScaffoldTemplate {
@@ -64,14 +64,14 @@ export interface ResourcePlugin {
     ctx: Context,
     inputs: Inputs,
     tokenProvider: TokenProvider,
-    teamsAppLocalResourceProfile?: LocalResourceState
+    localResourceStates?: LocalResourceStates
   ) => Promise<Result<LocalResource, FxError>>;
 
   //all plugins are built-in plugins: aad, appStudio, localDebug, simpleAuth, bot
   configureLocalResource?: (
     ctx: Context,
     inputs: Inputs,
-    localResourceState: LocalResourceState,
+    localResourceState: LocalResourceStates,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
@@ -90,14 +90,14 @@ export interface ResourcePlugin {
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    resourceStates: ResourceStates,
+    envState: ResourceStates,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
 
   deploy?: (
     ctx: Context,
     inputs: DeploymentInputs,
-    resourceProfile: CloudResource,
+    envState: CloudResource,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
 }

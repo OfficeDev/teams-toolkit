@@ -40,7 +40,7 @@ export interface LocalBotResource extends LocalResource {
 /**
  * common local resource profiles
  */
-export interface LocalResourceState {
+export interface LocalResourceStates {
   app: Json;
   resources?: LocalResource[];
 }

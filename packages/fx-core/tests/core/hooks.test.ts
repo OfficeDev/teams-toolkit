@@ -659,7 +659,7 @@ describe("Middleware - others", () => {
       const my = new MyClass();
       try {
         const res = await my.other(inputs);
-        assert.isUndefined(res);
+        assert.isTrue(res.isOk());
         const configDev = await fs.readJson(
           path.join(inputs.projectPath, ".fx", "configs", "config.dev.json")
         );
@@ -719,7 +719,7 @@ describe("Middleware - others", () => {
 
       try {
         const res = await my.other(inputs);
-        assert.isUndefined(res);
+        assert.isTrue(res.isOk());
 
         const azureParameterExists = await fs.pathExists(
           path.join(inputs.projectPath!, ".fx/configs/azure.parameters.dev.json")
@@ -775,7 +775,7 @@ describe("Middleware - others", () => {
 
       try {
         const res = await my.other(inputs);
-        assert.isUndefined(res);
+        assert.isTrue(res.isOk());
 
         const azureParameterExists = await fs.pathExists(
           path.join(inputs.projectPath!, ".fx/configs/azure.parameters.dev.json")

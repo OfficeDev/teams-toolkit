@@ -4,7 +4,6 @@
 
 import { OptionItem } from "./qm";
 import { Platform, Stage, VsCodeEnv } from "./constants";
-import { RuntimeStacks } from "./v3";
 
 export type Json = Record<string, any>;
 
@@ -195,9 +194,6 @@ export interface Inputs extends Json {
   ignoreEnvInfo?: boolean;
   env?: string;
   projectId?: string;
-  runtimeStack?: RuntimeStacks;
-  language?: string;
-  subFolderName?: string;
 }
 
 export interface ProjectConfig {

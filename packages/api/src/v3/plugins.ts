@@ -9,11 +9,9 @@ import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
 import { LocalResource, LocalResourceState } from "./localResourceStates";
 import { CloudResource, ResourceStates } from "./resourceModel";
-import { RuntimeStacks } from "./solutionSettings";
 
 export interface ScaffoldTemplate {
   id: string;
-  runtimeStack: string;
   language: string;
   tags: string[];
   modules: string[];
@@ -21,7 +19,6 @@ export interface ScaffoldTemplate {
 
 export interface ScaffoldInputs extends Inputs {
   templateId: string;
-  runtimeStack: RuntimeStacks;
   language: string;
   subFolderName: string;
 }
@@ -58,10 +55,6 @@ export interface ResourcePlugin {
    * scopes for resource to add
    */
   modules?: string[];
-  /**
-   * for compute
-   */
-  runtimeStacks?: RuntimeStacks[];
   /**
    * return dependent plugin names, when adding resource, the toolkit will add all dependent resources
    */

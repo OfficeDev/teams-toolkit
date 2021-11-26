@@ -68,7 +68,7 @@ Toolkit v2 will pop-up a dialog to show the target message endpoint for bot. Use
 After updating message endpoint is done, continue to deploy and try the remote experience.
 
 ## Configuration schema for bot
-This section is to describe configuration items in `fx-resource-bot` section of `.fx/env.default.json`.
+This section is to describe configuration items in `fx-resource-bot` section of `.fx/states/state.{envName}.json`.
 
 Config Name | Config Type | Description
 ------|------|------

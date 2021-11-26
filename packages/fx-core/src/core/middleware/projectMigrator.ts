@@ -177,6 +177,8 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
 
     try {
       await migrateToArmAndMultiEnv(ctx);
+      // return ok for the lifecycle functions to prevent breaking error handling logic.
+      ctx.result = ok({});
     } catch (error) {
       // Strictly speaking, this telemetry event is not required because errorHandlerMW will send error telemetry anyway.
       // But it makes it easier to separate projectMigratorMW errors from other provision errors.

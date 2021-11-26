@@ -3,32 +3,32 @@
 
 import {
   AppPackageFolderName,
+  assembleError,
   AzureSolutionSettings,
+  BuildFolderName,
   ConfigFolderName,
   EnvConfig,
   err,
-  ok,
   InputConfigsFolderName,
   Inputs,
+  LogProvider,
+  ok,
   Platform,
   ProjectSettings,
   ProjectSettingsFileName,
-  StatesFolderName,
   returnSystemError,
+  StatesFolderName,
   TeamsAppManifest,
-  LogProvider,
-  BuildFolderName,
-  assembleError,
 } from "@microsoft/teamsfx-api";
 import {
   CoreHookContext,
+  environmentManager,
+  getResourceFolder,
+  NotJsonError,
+  ProjectSettingError,
   serializeDict,
   SolutionConfigError,
-  ProjectSettingError,
-  NotJsonError,
-  environmentManager,
   SPFxConfigError,
-  getResourceFolder,
 } from "../..";
 import { globalStateUpdate } from "../../common/globalState";
 import { UpgradeCanceledError } from "../error";
@@ -41,9 +41,9 @@ import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { CoreSource, FxCore } from "..";
 import {
-  isMultiEnvEnabled,
-  isArmSupportEnabled,
   getStrings,
+  isArmSupportEnabled,
+  isMultiEnvEnabled,
   isSPFxProject,
 } from "../../common/tools";
 import { loadProjectSettings } from "./projectSettingsLoader";
@@ -132,8 +132,8 @@ class EnvConfigName {
 export class ArmParameters {
   static readonly FEStorageName = "frontendHostingStorageName";
   static readonly IdentityName = "userAssignedIdentityName";
-  static readonly SQLServer = "azureSqlServerName";
-  static readonly SQLDatabase = "azureSqlDatabaseName";
+  static readonly SQLServer = "sqlServerName";
+  static readonly SQLDatabase = "sqlDatabaseName";
   static readonly SimpleAuthSku = "simpleAuthSku";
   static readonly functionServerName = "functionServerfarmsName";
   static readonly functionStorageName = "functionStorageName";
@@ -327,18 +327,30 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
+    const core = ctx.self as FxCore;
+    core.tools.logProvider.error(`[core] Failed to upgrade project, error: '${err}'`);
     await handleError(projectPath, ctx, backupFolder);
     throw err;
   }
   await postMigration(projectPath, ctx, inputs, backupFolder);
 }
 
+async function getManifestPath(fx: string, projectPath: string): Promise<string> {
+  if (await fs.pathExists(path.join(projectPath, AppPackageFolderName, REMOTE_MANIFEST))) {
+    return path.join(projectPath, AppPackageFolderName, REMOTE_MANIFEST);
+  }
+  // 2.3.2<= version <= 2.4.1
+  if (await fs.pathExists(path.join(fx, AppPackageFolderName, REMOTE_MANIFEST))) {
+    return path.join(fx, AppPackageFolderName, REMOTE_MANIFEST);
+  }
+  // 2.0.1 <= version <= 2.3.1
+  return path.join(fx, REMOTE_MANIFEST);
+}
+
 async function preCheckKeyFiles(projectPath: string, ctx: CoreHookContext): Promise<void> {
   const core = ctx.self as FxCore;
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
-  const manifestPath = (await fs.pathExists(path.join(fx, AppPackageFolderName, REMOTE_MANIFEST)))
-    ? path.join(fx, AppPackageFolderName, REMOTE_MANIFEST)
-    : path.join(projectPath, AppPackageFolderName, REMOTE_MANIFEST);
+  const manifestPath = await getManifestPath(fx, projectPath);
   await preReadJsonFile(path.join(fx, "env.default.json"), core);
   await preReadJsonFile(path.join(fx, "settings.json"), core);
   await preReadJsonFile(manifestPath, core);
@@ -375,7 +387,13 @@ async function handleError(
   ctx: CoreHookContext,
   backupFolder: string | undefined
 ) {
-  await cleanup(projectPath, backupFolder);
+  try {
+    await cleanup(projectPath, backupFolder);
+  } catch (e) {
+    // try my best to cleanup
+    const core = ctx.self as FxCore;
+    core.tools.logProvider.error(`[core] Failed to cleanup the backup, error: '${e}'`);
+  }
   const core = ctx.self as FxCore;
   core.tools.ui
     .showMessage(
@@ -524,6 +542,32 @@ async function getManifest(sourceManifestFile: string): Promise<TeamsAppManifest
   return await readJson(sourceManifestFile);
 }
 
+async function copyManifest(projectPath: string, fx: string, target: string) {
+  if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
+    await fs.copy(path.join(projectPath, AppPackageFolderName), target);
+  } else if (await fs.pathExists(path.join(fx, AppPackageFolderName))) {
+    // version <= 2.4.1
+    await fs.copy(path.join(fx, AppPackageFolderName), target);
+  } else {
+    // version <= 2.3.1
+    await fs.copy(path.join(fx, REMOTE_MANIFEST), path.join(target, REMOTE_MANIFEST));
+    const manifest: TeamsAppManifest = await getManifest(path.join(target, REMOTE_MANIFEST));
+    const color = (await fs.pathExists(path.join(fx, "color.png")))
+      ? "color.png"
+      : manifest.icons.color;
+    const outline = (await fs.pathExists(path.join(fx, "outline.png")))
+      ? "outline.png"
+      : manifest.icons.outline;
+
+    if (color !== "" && (await fs.pathExists(path.join(fx, color)))) {
+      await fs.copy(path.join(fx, color), path.join(target, color));
+    }
+    if (outline !== "" && (await fs.pathExists(path.join(fx, outline)))) {
+      await fs.copy(path.join(fx, outline), path.join(target, outline));
+    }
+  }
+}
+
 async function migrateMultiEnv(projectPath: string): Promise<void> {
   const { fx, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   const {
@@ -587,12 +631,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   }
 
   // appPackage
-  if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
-    await fs.copy(path.join(projectPath, AppPackageFolderName), templateAppPackage);
-  } else if (await fs.pathExists(path.join(fx, AppPackageFolderName))) {
-    // version <= 2.4.1
-    await fs.copy(path.join(fx, AppPackageFolderName), templateAppPackage);
-  }
+  await copyManifest(projectPath, fx, templateAppPackage);
   const sourceManifestFile = path.join(templateAppPackage, REMOTE_MANIFEST);
   const manifest: TeamsAppManifest = await getManifest(sourceManifestFile);
   await fs.remove(sourceManifestFile);
@@ -638,6 +677,8 @@ async function removeExpiredFields(devState: string, devUserData: string): Promi
   }
   const expiredStateKeys: [string, string][] = [
     [PluginNames.LDEBUG, ""],
+    // for version 2.0.1
+    [PluginNames.FUNC, defaultFunctionName],
     [PluginNames.SOLUTION, programmingLanguage],
     [PluginNames.SOLUTION, defaultFunctionName],
     [PluginNames.SOLUTION, "localDebugTeamsAppId"],
@@ -751,12 +792,8 @@ async function backup(projectPath: string, backupFolder: string): Promise<void> 
       await fs.copy(path.join(fx, file), path.join(backupFx, file));
     }
   }
-  if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
-    await fs.copy(path.join(projectPath, AppPackageFolderName), backupAppPackage);
-  } else if (await fs.pathExists(path.join(fx, AppPackageFolderName))) {
-    // version <= 2.4.1
-    await fs.copy(path.join(fx, AppPackageFolderName), backupAppPackage);
-  }
+
+  await copyManifest(projectPath, fx, backupAppPackage);
 }
 
 // append folder path to .gitignore under the project root.
@@ -799,6 +836,10 @@ async function removeOldProjectFiles(projectPath: string): Promise<void> {
   await fs.remove(path.join(fx, "new.env.default.json"));
   // version <= 2.4.1, remove .fx/appPackage.
   await fs.remove(path.join(fx, AppPackageFolderName));
+  // version <= 3.2.1
+  await fs.remove(path.join(fx, REMOTE_MANIFEST));
+  await fs.remove(path.join(fx, "color.png"));
+  await fs.remove(path.join(fx, "outline.png"));
 }
 
 async function ensureProjectSettings(
@@ -937,7 +978,7 @@ async function updateConfig(ctx: CoreHookContext) {
   if (needUpdate && envConfig[ResourcePlugins.Function]?.[EnvConfigName.FuncAppName]) {
     envConfig[ResourcePlugins.Function][
       EnvConfigName.FunctionAppResourceId
-    ] = `${configPrefix}/providers/Microsoft.Web/${
+    ] = `${configPrefix}/providers/Microsoft.Web/sites/${
       envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]
     }`;
     delete envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName];

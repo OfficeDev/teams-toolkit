@@ -1,6 +1,6 @@
 ## Overview
 
-`.fx/env.default.json` file has the following schema:
+`.fx/states/state.{envName}.json` file has the following schema:
 
 ```
 {
@@ -37,7 +37,7 @@
 We will describe the configuration schema for each section.
 
 ## Configuration schema for solution
-This section is to describe configuration items in `solution` section of .fx/env.default.json.
+This section is to describe configuration items in `solution` section of `.fx/states/state.{envName}.json`.
 
 Config Name | Config Type | Description
 ------|------|------
@@ -53,7 +53,7 @@ permissionRequest|string|the file content of permission.json file in root folder
 
 
 ## Configuration schema for bot
-This section is to describe configuration items in `fx-resource-bot` section of `.fx/env.default.json`.
+This section is to describe configuration items in `fx-resource-bot` section of `.fx/states/state.{envName}.json`.
 
 Config Name | Config Type | Description
 ------|------|------
@@ -72,17 +72,17 @@ appServicePlan|string|The Azure App Service Plan name for the Azure Web App whic
 botChannelReg|string|The Azure Bot Channels Registration name for bot registration.
 
 ## Configuration schema for MS identity
-This section is to describe configuration items in `fx-resource-identity` section of `.fx/env.default.json`.
+This section is to describe configuration items in `fx-resource-identity` section of `.fx/states/state.{envName}.json`.
 
 Config Name | Config Type | Description
 ------|------|------
-identity|string|Identity present name end user input/
-identityName|string|Full path resource name. '/subscriptions/${subscriptionId}/resourcegroups/${resourceGroup}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${identity}'
-identityId|string|Client Id of the identity.
+identityName|string|Identity present name end user input/
+identityResourceId|string|Full path resource name. '/subscriptions/${subscriptionId}/resourcegroups/${resourceGroup}/providers/Microsoft.ManagedIdentity/userAssignedIdentities/${identity}'
+identityClientId|string|Client Id of the identity.
 
 ## Configuration schema for frontend hosting
 
-This section is to describe configuration items in `fx-resource-frontend-hosting` section of `.fx/env.default.json`.
+This section is to describe configuration items in `fx-resource-frontend-hosting` section of `.fx/states/state.{envName}.json`.
 
 Config Name | Config Type | Description
 ------|------|------
@@ -94,7 +94,7 @@ configurableTabs|string|Output. The value of configurableTabs field in manifest.
 
 ## Configuration schema for Azure SQL
 
-This section is to describe configuration items in `fx-resource-azure-sql` section of `.fx/env.default.json`.
+This section is to describe configuration items in `fx-resource-azure-sql` section of `.fx/states/state.{envName}.json`.
 
 Config Name | Config Type | Description
 ------|------|------
@@ -103,7 +103,7 @@ databaseName|string|The created database name
 
 ## Configuration schema for Azure Functions
 
-This section is to describe configuration items in `fx-resource-function` section of `.fx/env.default.json`.
+This section is to describe configuration items in `fx-resource-function` section of `.fx/states/state.{envName}.json`.
 
 Config Name | Config Type | Description
 ------|------|------
@@ -115,7 +115,7 @@ appServicePlanName|string|Output. The name of the Azure App Service Plan used by
 
 ## Configuration schema for simple auth
 
-This section is to describe configuration items in `fx-resource-simple-auth` section of `.fx/env.default.json`.
+This section is to describe configuration items in `fx-resource-simple-auth` section of `.fx/states/state.{envName}.json`.
 
 Config Name | Config Type | Description
 ------|------|------
@@ -126,7 +126,7 @@ endpoint|string|Output. The endpoint of Runtime Connector. https://domain.com
 
 ## Configuration schema for Azure Active Directory
 
-This section is to describe configuration items in `fx-resource-aad-app-for-teams` section of `.fx/env.default.json`.
+This section is to describe configuration items in `fx-resource-aad-app-for-teams` section of `.fx/states/state.{envName}.json`.
 
 Config Name | Config Type | Description
 ------|------|------
@@ -144,7 +144,7 @@ tenantId / local_tenantId|string|Ouptut. The tenant id of aad app.
 
 ## Configuration schema for API Management
 
-This section is to describe configuration items in `fx-resource-apim` section of `.fx/env.default.json`.
+This section is to describe configuration items in `fx-resource-apim` section of `.fx/states/state.{envName}.json`.
 
 Config Name | Config Type | Description
 ------|------|------

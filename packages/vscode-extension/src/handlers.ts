@@ -259,16 +259,10 @@ async function getIsFromSample() {
   if (core) {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
-    const projectConfigRes = await core.getProjectConfig(input);
-
-    if (projectConfigRes.isOk() && projectConfigRes.value) {
-      const projectSettings = projectConfigRes.value.settings;
-      if (projectSettings) {
-        return projectSettings.isFromSample;
-      }
-    }
-    return undefined;
+    await core.getProjectConfig(input);
+    return core.isFromSample;
   }
+  return undefined;
 }
 
 async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonly Uri[]) {

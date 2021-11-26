@@ -1674,9 +1674,7 @@ export class AppStudioPluginImpl {
     ).toString();
 
     // Bot only project, without frontend hosting
-    let endpoint = isLocalDebug
-      ? ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint)
-      : tabEndpoint;
+    let endpoint = tabEndpoint;
     const solutionSettings: AzureSolutionSettings = ctx.projectSettings
       ?.solutionSettings as AzureSolutionSettings;
     const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
@@ -1736,7 +1734,9 @@ export class AppStudioPluginImpl {
       const tokens = [
         ...new Set(
           Mustache.parse(manifest)
-            .filter((x) => x[0] != "text")
+            .filter((x) => {
+              return x[0] != "text" && x[1] != "localSettings.teamsApp.teamsAppId";
+            })
             .map((x) => x[1])
         ),
       ];

@@ -21,7 +21,7 @@ The maximum number of Free App Service Plan allowed in a Subscription is 10.
 There are two methods to mitigate this issue:
 #### Method #1
 1. Delete other Free App Service Plan
-1. Run `Provision` command again
+1. Run `TeamsFx - Provision in the cloud` command again
 
 #### Method #2
 1. Locate the segment wrapped the error in output.
@@ -32,7 +32,7 @@ There are two methods to mitigate this issue:
 1. If the error wrapped by `botProvision` segment, add property `botWebAppSku` to `provisionParameters` and set the value to "B1" or other valid values.
 
     ![image](../../images/fx-core/arm/bot-sku-config.png)
-1. Run `Provision` command again
+1. Run `TeamsFx - Provision in the cloud` command again
 
 ***
 
@@ -44,7 +44,7 @@ The storage account named xxx already exists under the subscription.
 The name 'xxx' already exists. Choose a different name.
 
 ### Mitigation
-This error indicates the name for one or multiple Azure resources that going to be created already exists. The default name for all Azure resources is calculated based on the `resourceBaseName` parameter in `.fx/configs/azure.parameters.{your_env_name}.json`. Please update the value of `resourceBaseName` to fix this error.
+This error indicates the name for one or multiple Azure resources that going to be created already exists. The default name for all Azure resources is calculated based on the `resourceBaseName` parameter in `.fx/configs/azure.parameters.{envName}.json`. Please update the value of `resourceBaseName` to fix this error.
 
 ***
 
@@ -54,7 +54,7 @@ Cannot move or create server. Subscription 'xxx' will exceed server quota.
 ### Mitigation
 
 1. Delete other SQL server
-1. Run `Provision` command again
+1. Run `TeamsFx - Provision in the cloud` command again
 
 ***
 

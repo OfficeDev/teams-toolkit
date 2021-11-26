@@ -1,5 +1,23 @@
 # Changelog
 
+## 3.0.0 - Nov 29, 2021
+Major version for Teams Toolkit with new features to support cloud resources customization, multiple cloud environments, collaborations and some bug fix.
+
+New Features:
+- Adopt ARM templates to provision Azure cloud resources, support customization of cloud resources. Refer to [Provision cloud resources](https://aka.ms/provision-doc) for more information.
+- Developers can create and manage multiple cloud environments with different customizations for each environment. Refer to [Manage multiple environment](https://aka.ms/multi-env-doc) for more information.
+- Developers can collaborate with others on the same project. Refer to [Collaborations in Teams Toolkit](https://aka.ms/collaboration-doc) for more information.
+- Support manifest customization for both local and remote environment. Refer to [Customize manifest](https://aka.ms/customize-manifest-doc) for more information.
+- Provide flexibility to add cloud resources to your project using ARM template. Refer to [Add cloud resources](https://aka.ms/add-resources-doc) for more information.
+- Add more Teams Sample Apps which support local run with no need to manually set up environment.
+
+Enhancement:
+- Improve UI: In sample gallery, add time and effort estimation for each sample.
+- Improve UI: multiple enhancement to the Tree View. For example, provide documents links in Tree View, and enrich the tooltip descriptions.
+- Reduce the required user inputs in order to create new project.
+- Enhance the status and messages showed in Teams Toolkit.
+- Upgrade samples to adopt new features in Teams Toolkit.
+
 ## 2.10.0 - Nov 15, 2021 
 
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
@@ -59,7 +77,7 @@ Incremental version for Teams Toolkit with multiple bugs fixed and the following
 New Feature:
 
 - Support projects migration from Teams Toolkit V1 to V2. If your Teams projects are created using Teams Toolkit V1, try migrate your project follow the [migration instructions](https://aka.ms/teamsfx-migrate-v1).
-- Support local debug experience for Teams Tab/Bot/Message Extension project migrated from Teams Toolkit V1.
+- Support local debug experience for Teams Tab/Bot/Messaging extension project migrated from Teams Toolkit V1.
 - Check permission to turn-on Teams custom app uploading when user sign-in to M365 account. Learn more about [Teams app uploading or sideloading permission](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/prepare-your-o365-tenant#enable-custom-teams-apps-and-turn-on-custom-app-uploading).
 - (Preview Feature) Support provision cloud resources using Azure Resource Manager. To enable this feature, please follow [instructions](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit).
 

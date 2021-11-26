@@ -95,7 +95,7 @@ jobs:
         uses: actions/upload-artifact@v2
         with:
           name: appPackage
-          path: appPackage/appPackage.${{env.TEAMSFX_ENV_NAME}}.zip
+          path: build/appPackage/appPackage.${{env.TEAMSFX_ENV_NAME}}.zip
 
       - name: Publish Teams App
         uses: OfficeDev/teamsfx-cli-action@v1

@@ -13,6 +13,7 @@ import { CloudResource, ResourceStates } from "./resourceModel";
 export interface ScaffoldTemplate {
   id: string;
   language: string;
+  description: string;
   tags: string[];
   modules: string[];
 }
@@ -20,7 +21,7 @@ export interface ScaffoldTemplate {
 export interface ScaffoldInputs extends Inputs {
   templateId: string;
   language: string;
-  subFolderName: string;
+  dir?: string;
 }
 
 export interface ScaffoldPlugin {
@@ -53,6 +54,7 @@ export interface ResourcePlugin {
   description?: string;
   /**
    * scopes for resource to add
+   * if not defined, no limitation
    */
   modules?: string[];
   /**
@@ -67,7 +69,6 @@ export interface ResourcePlugin {
     localResourceStates?: LocalResourceStates
   ) => Promise<Result<LocalResource, FxError>>;
 
-  //all plugins are built-in plugins: aad, appStudio, localDebug, simpleAuth, bot
   configureLocalResource?: (
     ctx: Context,
     inputs: Inputs,

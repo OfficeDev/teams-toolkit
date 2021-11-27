@@ -25,6 +25,10 @@ export interface TeamsFxSolutionSettings extends AzureSolutionSettings {
     bot?: Module;
     backends?: Module[];
   };
+  /**
+   * describe the app module
+   */
+  app: Module;
 }
 
 /**
@@ -51,6 +55,9 @@ const settings1: TeamsFxSolutionSettings = {
         hostingPlugin: "fx-resource-azure-function",
       },
     ],
+  },
+  app: {
+    hostingPlugin: "fx-resource-app-studio",
   },
   activeResourcePlugins: [
     "fx-resource-azure-storage",

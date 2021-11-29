@@ -74,7 +74,10 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
     const envInfo: EnvInfoV2 = params[2];
     const tokenProvider = params[3];
 
-    this.root = inputs.projectPath ?? "";
+    if (!inputs.projectPath) {
+      throw new Error(`ivalid project path: ${inputs.projectPath}`);
+    }
+    this.root = inputs.projectPath;
     this.targetEnvName = inputs.targetEnvName;
     this.logProvider = v2context.logProvider;
     this.telemetryReporter = v2context.telemetryReporter;
@@ -115,7 +118,10 @@ export class CollaboratorContextAdapter extends BaseSolutionContextAdaptor {
     const inputs: Inputs = params[1];
     const envInfo = params[2];
     const tokenProvider = params[3];
-    this.root = inputs.projectPath ?? "";
+    if (!inputs.projectPath) {
+      throw new Error(`ivalid project path: ${inputs.projectPath}`);
+    }
+    this.root = inputs.projectPath;
     this.targetEnvName = inputs.targetEnvName;
     this.logProvider = v2context.logProvider;
     this.telemetryReporter = v2context.telemetryReporter;

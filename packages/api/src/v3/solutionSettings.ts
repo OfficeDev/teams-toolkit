@@ -67,5 +67,6 @@ const settings1: TeamsFxSolutionSettings = {
     "fx-resource-azure-simple-auth",
     "fx-resource-azure-sql",
     "fx-resource-azure-identity",
+    "fx-resource-app-studio",
   ],
 };

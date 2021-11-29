@@ -8,7 +8,7 @@ import { Inputs, Json, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeepReadonly } from "../v2/types";
-import { ResourceStates } from "./resourceModel";
+import { ResourceStates } from "./resourceStates";
 
 export interface ScaffoldTemplate {
   id: string;

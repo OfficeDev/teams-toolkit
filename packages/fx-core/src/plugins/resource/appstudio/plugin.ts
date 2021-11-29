@@ -825,7 +825,7 @@ export class AppStudioPluginImpl {
       if (await fs.pathExists(manifestFileName)) {
         await fs.chmod(manifestFileName, 0o777);
       }
-      await fs.writeFile(manifestFileName, manifestString, { mode: 0o000 });
+      await fs.writeFile(manifestFileName, manifestString, { mode: 0o555 });
     }
 
     zip.writeZip(zipFileName);

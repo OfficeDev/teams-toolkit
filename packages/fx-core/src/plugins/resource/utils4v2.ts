@@ -472,5 +472,5 @@ export async function collaborationApiAdaptor(
   pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();
-  return fn(pluginContext, userInfo);
+  return fn.bind(plugin)(pluginContext, userInfo);
 }

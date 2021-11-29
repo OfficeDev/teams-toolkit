@@ -67,8 +67,9 @@ export async function executeListCollaboratorV2(
       return {
         pluginName: `${plugin.name}`,
         taskName: "listCollaborator",
-        // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-        thunk: () => plugin.listCollaborator!(ctx, inputs, envInfo, tokenProvider, userInfo),
+        thunk: () =>
+          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+          plugin.listCollaborator!(ctx, inputs, envInfo, tokenProvider, userInfo),
       };
     });
 

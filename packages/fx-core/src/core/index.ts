@@ -1097,6 +1097,7 @@ export class FxCore implements Core {
       if (isV2()) {
         const solutionV2 = solution as v2.SolutionPlugin;
         if (solutionV2.getQuestions) {
+          inputs.stage = stage;
           res = await solutionV2.getQuestions(
             ctx as v2.Context,
             inputs,

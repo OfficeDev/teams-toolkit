@@ -18,10 +18,7 @@ export interface AppResource extends Json {
 
 export interface ResourceStates {
   solution: Json;
-  app: AppResource;
-  resources?: {
-    [key in string]: CloudResource | CloudResource[];
-  };
+  [key: string]: CloudResource | CloudResource[];
 }
 
 ////////////Azure Solution/////////////////////
@@ -48,10 +45,7 @@ export interface TeamsAppResource extends AppResource {
 
 export interface TeamsFxAzureResourceStates extends ResourceStates {
   solution: AzureSolutionConfig;
-  app: TeamsAppResource;
-  resources?: {
-    [key in string]: AzureResource | AzureResource[];
-  };
+  [key: string]: AzureResource | AzureResource[];
 }
 
 ///////////////example/////////////////////////

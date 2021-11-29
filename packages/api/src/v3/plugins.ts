@@ -3,12 +3,11 @@
 
 import { Result } from "neverthrow";
 import { FxError } from "../error";
-import { Inputs, Void } from "../types";
+import { Inputs, Json, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
-import { Context, DeploymentInputs, ProvisionInputs } from "../v2/types";
-import { LocalResource, LocalResourceStates } from "./localResourceStates";
-import { CloudResource, ResourceStates } from "./resourceModel";
+import { Context, DeepReadonly } from "../v2/types";
+import { ResourceStates } from "./resourceModel";
 
 export interface ScaffoldTemplate {
   id: string;
@@ -38,7 +37,13 @@ export interface ScaffoldPlugin {
    */
   scaffold: (ctx: Context, inputs: ScaffoldInputs) => Promise<Result<Void, FxError>>;
 }
-
+export interface EnvInfoV3 {
+  envName: string;
+  // input
+  config: Json;
+  // output
+  state: ResourceStates;
+}
 export interface ResourcePlugin {
   /**
    * unique identifier for plugin
@@ -62,43 +67,48 @@ export interface ResourcePlugin {
    */
   pluginDependencies?(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>>;
 
+  /**
+   * For example, add resource of APIM, this method will scaffold some openapi files
+   */
+  scaffold?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+
   provisionLocalResource?: (
     ctx: Context,
     inputs: Inputs,
-    tokenProvider: TokenProvider,
-    localResourceStates?: LocalResourceStates
-  ) => Promise<Result<LocalResource, FxError>>;
+    localSettings: Json,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Void, FxError>>;
 
   configureLocalResource?: (
     ctx: Context,
     inputs: Inputs,
-    localResourceState: LocalResourceStates,
+    localSettings: Json,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
   provisionResource?: (
     ctx: Context,
-    inputs: ProvisionInputs,
-    tokenProvider: TokenProvider,
-    resourceState?: CloudResource
-  ) => Promise<Result<CloudResource, FxError>>;
+    inputs: Inputs,
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<EnvInfoV3, FxError>>;
 
   generateResourceTemplate?: (
     ctx: Context,
-    inputs: Inputs /// parameters schema?
+    inputs: Inputs
   ) => Promise<Result<ResourceTemplate, FxError>>;
 
   configureResource?: (
     ctx: Context,
-    inputs: ProvisionInputs,
-    envState: ResourceStates,
+    inputs: Inputs,
+    envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
 
   deploy?: (
     ctx: Context,
-    inputs: DeploymentInputs,
-    envState: CloudResource,
+    inputs: Inputs,
+    envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
 }

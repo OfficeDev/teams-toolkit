@@ -5,9 +5,10 @@
         "name": "TeamsFxSolutionPlugin",
         "version": "3.0.0",
         "hostType": "",
-        "capabilities": [],
+        "capabilities": ["Tab"],
         "azureResources": [],
         "modules":{
+          "tab": {}
         },
         "activeResourcePlugins": [
           "fx-resource-app-studio"

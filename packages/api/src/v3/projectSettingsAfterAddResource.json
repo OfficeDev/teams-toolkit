@@ -1,35 +1,46 @@
 {
-    "appName": "sampleApp",
-    "projectId": "dfc5814c-5309-4d27-8b18-823e89b6c11d",
-    "solutionSettings": {
-        "name": "TeamsFxSolutionPlugin",
-        "version": "2.0.0",
-        "modules":{
-          "tab": {
-            "resources": ["AzureStorage_1"]
-          },
-          "bot":{
-            "resources": ["AzureBot_1"]
-          }
-        },
-        "resources":[
-          {
-            "name": "AzureStorage_1",
-            "type": "AzureStorage",
-            "provider": "AzureStoragePlugin"
-          },
-          {
-            "name": "AzureBot_1",
-            "type": "AzureBot",
-            "provider": "AzureBotPlugin",
-            "resources": "AzureWebApp_1"
-          },
-          {
-            "name": "AzureWebApp_1",
-            "type": "AzureWebApp",
-            "provider": "AzureWebAppPlugin"
-          }
-        ]
-    },
-    "version": "3.0.0"
+  "appName": "sampleApp",
+  "projectId": "dfc5814c-5309-4d27-8b18-823e89b6c11d",
+  "solutionSettings": {
+      "name": "TeamsFxSolutionPlugin",
+      "version": "3.0.0",
+      "hostType": "Azure",
+        "capabilities": ["Tab"],
+      "azureResources": [],
+      "modules":{
+        "tab": {
+          "dir": "tabs",
+          "hostingPlugin": "fx-resource-azure-storage"
+        }
+      },
+      "activeResourcePlugins": [
+        "fx-resource-app-studio",
+        "fx-resource-azure-storage"
+      ]
+  },
+  "version": "2.0.0"
+}
+
+{
+  "appName": "sampleApp",
+  "projectId": "dfc5814c-5309-4d27-8b18-823e89b6c11d",
+  "solutionSettings": {
+      "name": "TeamsFxSolutionPlugin",
+      "version": "3.0.0",
+      "hostType": "Azure",
+        "capabilities": ["Tab"],
+      "azureResources": [],
+      "modules":{
+        "tab": {
+          "dir": "tabs",
+          "hostingPlugin": "fx-resource-azure-storage"
+        }
+      },
+      "activeResourcePlugins": [
+        "fx-resource-app-studio",
+        "fx-resource-azure-storage",
+        "fx-resource-aad-app-for-teams"
+      ]
+  },
+  "version": "2.0.0"
 }

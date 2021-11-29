@@ -8,9 +8,9 @@ import * as os from "os";
 import * as path from "path";
 
 
-const clusterName = "teamsfxaggregation.eastus";
-const appId = "fde970ca-50b2-459b-b0ed-34cf646e0fdd";
-const appKey = "1v~-zHq.2M0x6tW~JF.le~H6FcR3qLzo18";
+const clusterName = process.env.KUSTO_CLUSTER_NAME;
+const appId = process.env.KUSTO_AAD_APP_ID;
+const appKey = process.env.KUSTO_AAD_APP_KEY;
 const authorityId = "microsoft.com";
 
 

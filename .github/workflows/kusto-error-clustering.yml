@@ -10,7 +10,10 @@ jobs:
     name: run kusto error clustering (self-hosted linux 8cpu node14) 
 
     runs-on: [self-hosted, linux, 8cpu]
-
+    env:
+      KUSTO_CLUSTER_NAME: ${{ secrets.KUSTO_CLUSTER_NAME }}
+      KUSTO_AAD_APP_ID: ${{ secrets.KUSTO_AAD_APP_ID }}
+      KUSTO_AAD_APP_KEY: ${{ secrets.KUSTO_AAD_APP_KEY }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2

@@ -448,6 +448,30 @@ export async function getParameterJson(ctx: SolutionContext) {
   return parameterJson;
 }
 
+function generateArmFromResult(
+  result: ArmTemplateResult,
+  bicepOrchestrationTemplate: BicepOrchestrationContent,
+  pluginWithArm: Plugin & ArmResourcePlugin,
+  moduleConfigFiles: Map<string, string>,
+  moduleProvisionFiles: Map<string, string>
+) {
+  bicepOrchestrationTemplate.applyTemplate(pluginWithArm.name, result);
+  if (result.Configuration?.Modules) {
+    for (const module of Object.entries(result.Configuration.Modules)) {
+      const moduleName = module[0];
+      const moduleValue = module[1] as string;
+      moduleConfigFiles.set(generateBicepModuleConfigFilePath(moduleName), moduleValue);
+    }
+  }
+  if (result.Provision?.Modules) {
+    for (const module of Object.entries(result.Provision.Modules)) {
+      const moduleName = module[0];
+      const moduleValue = module[1] as string;
+      moduleProvisionFiles.set(generateBicepModuleProvisionFilePath(moduleName), moduleValue);
+    }
+  }
+}
+
 async function doGenerateArmTemplate(
   ctx: SolutionContext,
   selectedPlugins: Plugin[]
@@ -464,7 +488,32 @@ async function doGenerateArmTemplate(
   // Get bicep content from each resource plugin
   for (const plugin of plugins) {
     const pluginWithArm = plugin as Plugin & ArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
-    if (pluginWithArm.generateArmTemplates) {
+    if (
+      pluginWithArm.updateArmTemplates &&
+      selectedPlugins.find((pluginItem) => pluginItem === pluginWithArm)
+    ) {
+      const pluginContext = getPluginContext(ctx, pluginWithArm.name);
+      const result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<
+        ArmTemplateResult,
+        FxError
+      >;
+      if (result.isOk()) {
+        generateArmFromResult(
+          result.value,
+          bicepOrchestrationTemplate,
+          pluginWithArm,
+          moduleProvisionFiles,
+          moduleConfigFiles
+        );
+      } else {
+        const msg = format(
+          getStrings().solution.UpdateArmTemplateFailNotice,
+          ctx.projectSettings?.appName
+        );
+        ctx.logProvider?.error(msg);
+        return result;
+      }
+    } else if (pluginWithArm.generateArmTemplates) {
       // find method using method name
       const pluginContext = getPluginContext(ctx, pluginWithArm.name);
       const result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
@@ -482,22 +531,13 @@ async function doGenerateArmTemplate(
           if (result.value.Provision?.Modules) delete result.value.Provision?.Modules;
           if (result.value.Parameters) delete result.value.Parameters;
         }
-        bicepOrchestrationTemplate.applyTemplate(pluginWithArm.name, result.value);
-        if (result.value.Configuration?.Modules) {
-          for (const module of Object.entries(result.value.Configuration.Modules)) {
-            const moduleName = module[0];
-            const moduleValue = module[1] as string;
-            moduleConfigFiles.set(generateBicepModuleConfigFilePath(moduleName), moduleValue);
-          }
-        }
-
-        if (result.value.Provision?.Modules) {
-          for (const module of Object.entries(result.value.Provision.Modules)) {
-            const moduleName = module[0];
-            const moduleValue = module[1] as string;
-            moduleProvisionFiles.set(generateBicepModuleProvisionFilePath(moduleName), moduleValue);
-          }
-        }
+        generateArmFromResult(
+          result.value,
+          bicepOrchestrationTemplate,
+          pluginWithArm,
+          moduleProvisionFiles,
+          moduleConfigFiles
+        );
       } else {
         const msg = format(
           getStrings().solution.GenerateArmTemplateFailNotice,

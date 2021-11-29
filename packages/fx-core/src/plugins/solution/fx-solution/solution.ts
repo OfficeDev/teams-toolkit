@@ -101,6 +101,7 @@ import {
   Void,
   SolutionSource,
   RESOURCE_GROUP_NAME,
+  HelpLinks,
 } from "./constants";
 import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
 import {
@@ -150,7 +151,6 @@ import { scaffoldReadme } from "./v2/scaffolding";
 import { environmentManager } from "../../..";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { LOCAL_TENANT_ID } from ".";
-import { HelpLinks } from "./constants";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -2164,7 +2164,9 @@ export class TeamsAppSolution implements Solution {
           azure_function.condition = { contains: AzureResourceFunction.id };
         } else {
           // if not function activated, select any option will trigger function question
-          azure_function.condition = { minItems: 1 };
+          azure_function.condition = {
+            containsAny: [AzureResourceApim.id, AzureResourceFunction.id, AzureResourceSQL.id],
+          };
         }
         if (azure_function.data) addAzureResourceNode.addChild(azure_function);
       }

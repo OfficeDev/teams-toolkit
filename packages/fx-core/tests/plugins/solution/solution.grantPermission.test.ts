@@ -3,7 +3,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
+import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   ConfigMap,
   SolutionConfig,
@@ -61,6 +61,10 @@ describe("grantPermission() for Teamsfx projects", () => {
     };
   }
 
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
@@ -86,7 +90,6 @@ describe("grantPermission() for Teamsfx projects", () => {
     if (!result.isErr()) {
       expect(result.value.state).equals(CollaborationState.NotProvisioned);
     }
-    sandbox.restore();
   });
 
   it("should return error if cannot get current user info", async () => {
@@ -111,7 +114,6 @@ describe("grantPermission() for Teamsfx projects", () => {
     const result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToRetrieveUserInfo);
-    sandbox.restore();
   });
 
   it("should return M365TenantNotMatch state if tenant is not match", async () => {
@@ -144,7 +146,6 @@ describe("grantPermission() for Teamsfx projects", () => {
     if (!result.isErr()) {
       expect(result.value.state).equals(CollaborationState.M365TenantNotMatch);
     }
-    sandbox.restore();
   });
 
   it("should return error if user email is undefined", async () => {
@@ -184,7 +185,6 @@ describe("grantPermission() for Teamsfx projects", () => {
     const result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.EmailCannotBeEmptyOrSame);
-    sandbox.restore();
   });
 
   it("should return error if cannot find user from email", async () => {
@@ -219,7 +219,6 @@ describe("grantPermission() for Teamsfx projects", () => {
     const result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotFindUserInCurrentTenant);
-    sandbox.restore();
   });
 
   it("should return error if grant permission failed", async () => {
@@ -304,8 +303,6 @@ describe("grantPermission() for Teamsfx projects", () => {
     const result = await solution.grantPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToGrantPermission);
-
-    sandbox.restore();
   });
 
   it("happy path", async () => {
@@ -375,7 +372,5 @@ describe("grantPermission() for Teamsfx projects", () => {
       chai.assert.fail("result is error");
     }
     expect(result.value.permissions!.length).equal(2);
-
-    sinon.restore();
   });
 });

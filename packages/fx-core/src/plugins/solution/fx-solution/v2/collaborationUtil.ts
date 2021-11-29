@@ -42,7 +42,7 @@ export class CollaborationUtil {
     if (!user) {
       return err(
         returnSystemError(
-          new Error("Failed to retrieve current user info from graph token"),
+          new Error("Failed to retrieve current user info from graph token."),
           SolutionSource,
           SolutionError.FailedToRetrieveUserInfo
         )

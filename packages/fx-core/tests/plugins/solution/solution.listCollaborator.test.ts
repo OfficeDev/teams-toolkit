@@ -3,7 +3,7 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
+import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   ConfigMap,
   SolutionConfig,
@@ -33,6 +33,7 @@ import Container from "typedi";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { CollaborationState, newEnvInfo } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
+import { CollaborationUtil } from "../../../src/plugins/solution/fx-solution/v2/collaborationUtil";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -61,6 +62,10 @@ describe("listCollaborator() for Teamsfx projects", () => {
     };
   }
 
+  afterEach(() => {
+    sandbox.restore();
+  });
+
   it("should return NotProvisioned state if Teamsfx project hasn't been provisioned", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
@@ -75,20 +80,22 @@ describe("listCollaborator() for Teamsfx projects", () => {
       },
     };
 
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: "fake_tid",
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
+    sandbox.stub(CollaborationUtil, "getUserInfo").resolves({
+      tenantId: "fake_tid",
+      aadId: "fake_oid",
+      userPrincipalName: "fake_unique_name",
+      displayName: "displayName",
+      isAdministrator: true,
     });
 
     const result = await solution.listCollaborator(mockedCtx);
+    if (result.isErr()) {
+      console.log(`!!! ${result.error.name}: ${result.error.message}`);
+    }
     expect(result.isErr()).to.be.false;
     if (!result.isErr()) {
       expect(result.value.state).equals(CollaborationState.NotProvisioned);
     }
-
-    sandbox.restore();
   });
 
   it("should return error if cannot get user info", async () => {
@@ -113,7 +120,6 @@ describe("listCollaborator() for Teamsfx projects", () => {
     const result = await solution.listCollaborator(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToRetrieveUserInfo);
-    sandbox.restore();
   });
 
   it("should return M365TenantNotMatch state if tenant is not match", async () => {
@@ -146,7 +152,6 @@ describe("listCollaborator() for Teamsfx projects", () => {
     if (!result.isErr()) {
       expect(result.value.state).equals(CollaborationState.M365TenantNotMatch);
     }
-    sandbox.restore();
   });
 
   it("should return error if list collaborator failed", async () => {
@@ -201,7 +206,6 @@ describe("listCollaborator() for Teamsfx projects", () => {
     const result = await solution.listCollaborator(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToListCollaborator);
-    sinon.restore();
   });
 
   it("happy path", async () => {
@@ -264,6 +268,5 @@ describe("listCollaborator() for Teamsfx projects", () => {
     expect(result.value.collaborators![0].userPrincipalName).equal("fake-user-principal-name");
     expect(result.value.collaborators![0].aadResourceId).equal("fake-aad-resource-id");
     expect(result.value.collaborators![0].teamsAppResourceId).equal("fake-teams-app-resource-id");
-    sinon.restore();
   });
 });

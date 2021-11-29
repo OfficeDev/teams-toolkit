@@ -99,7 +99,6 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         CollaborationState.NotProvisioned
       );
     }
-    sandbox.restore();
   });
 
   it("should return error if cannot get user info", async () => {
@@ -124,7 +123,6 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
     const result = await solution.listAllCollaborators(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToRetrieveUserInfo);
-    sandbox.restore();
   });
 
   it("should return M365TenantNotMatch state if tenant is not match", async () => {
@@ -161,7 +159,6 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         CollaborationState.M365TenantNotMatch
       );
     }
-    sandbox.restore();
   });
 
   it("should return error if list collaborator failed", async () => {
@@ -224,7 +221,6 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         SolutionError.FailedToListCollaborator
       );
     }
-    sandbox.restore();
   });
 
   it("happy path", async () => {
@@ -298,6 +294,5 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
     expect(result.value[mockedCtx.envInfo.envName].collaborators![0].teamsAppResourceId).equal(
       "fake-teams-app-resource-id"
     );
-    sandbox.restore();
   });
 });

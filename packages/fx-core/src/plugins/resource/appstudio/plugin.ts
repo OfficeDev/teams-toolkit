@@ -780,24 +780,39 @@ export class AppStudioPluginImpl {
         AppStudioError.NotADirectoryError.message(appDirectory)
       );
     }
-    const manifest: TeamsAppManifest = JSON.parse(manifestString);
-    const colorFile = `${appDirectory}/${manifest.icons.color}`;
+    const zip = new AdmZip();
+    zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
 
-    let fileExists = await this.checkFileExist(colorFile);
-    if (!fileExists) {
-      throw AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(colorFile)
-      );
+    const manifest: TeamsAppManifest = JSON.parse(manifestString);
+
+    // color icon
+    if (manifest.icons.color && !manifest.icons.color.startsWith("https://")) {
+      const colorFile = `${appDirectory}/${manifest.icons.color}`;
+      const fileExists = await this.checkFileExist(colorFile);
+      if (!fileExists) {
+        throw AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(colorFile)
+        );
+      }
+
+      const dir = path.dirname(manifest.icons.color);
+      zip.addLocalFile(colorFile, dir === "." ? "" : dir);
     }
 
-    const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
-    fileExists = await this.checkFileExist(outlineFile);
-    if (!fileExists) {
-      throw AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(outlineFile)
-      );
+    // outline icon
+    if (manifest.icons.outline && !manifest.icons.outline.startsWith("https://")) {
+      const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
+      const fileExists = await this.checkFileExist(outlineFile);
+      if (!fileExists) {
+        throw AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(outlineFile)
+        );
+      }
+
+      const dir = path.dirname(manifest.icons.outline);
+      zip.addLocalFile(outlineFile, dir === "." ? "" : dir);
     }
 
     if (isMultiEnvEnabled()) {
@@ -813,10 +828,6 @@ export class AppStudioPluginImpl {
       await fs.writeFile(manifestFileName, manifestString, { mode: 0o000 });
     }
 
-    const zip = new AdmZip();
-    zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
-    zip.addLocalFile(colorFile, isMultiEnvEnabled() ? MANIFEST_RESOURCES : "");
-    zip.addLocalFile(outlineFile, isMultiEnvEnabled() ? MANIFEST_RESOURCES : "");
     zip.writeZip(zipFileName);
 
     if (isSPFxProject(ctx.projectSettings)) {

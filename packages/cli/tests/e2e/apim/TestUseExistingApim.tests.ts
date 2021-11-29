@@ -97,7 +97,7 @@ describe("Use an existing API Management Service", function () {
     }
     await Promise.all([
       // clean up another resource group
-      cleanUpResourceGroup(existingRGName),
+      cleanUpResourceGroup(existingRGName, false),
       // clean up other resources
       cleanUp(appName, projectPath, true, false, true),
     ]);

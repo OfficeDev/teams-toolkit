@@ -1102,8 +1102,13 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
   }
   // manage identity
   if (envConfig[ResourcePlugins.Identity]?.[EnvConfigName.Identity]) {
+    // Teams Toolkit <= 2.7
     parameterObj[ArmParameters.IdentityName] =
       envConfig[ResourcePlugins.Identity][EnvConfigName.Identity];
+  } else if (envConfig[ResourcePlugins.Identity]?.[EnvConfigName.IdentityName]) {
+    // Teams Toolkit >= 2.8
+    parameterObj[ArmParameters.IdentityName] =
+      envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityName];
   }
   // azure SQL
   if (envConfig[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlEndpoint]) {

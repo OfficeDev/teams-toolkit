@@ -488,9 +488,10 @@ async function doGenerateArmTemplate(
   // Get bicep content from each resource plugin
   for (const plugin of plugins) {
     const pluginWithArm = plugin as Plugin & ArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
+    // plugin not selected need to be update.
     if (
       pluginWithArm.updateArmTemplates &&
-      selectedPlugins.find((pluginItem) => pluginItem === pluginWithArm)
+      !selectedPlugins.find((pluginItem) => pluginItem === pluginWithArm)
     ) {
       const pluginContext = getPluginContext(ctx, pluginWithArm.name);
       const result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<
@@ -521,6 +522,7 @@ async function doGenerateArmTemplate(
         FxError
       >;
       if (result.isOk()) {
+        // Once plugins implement updateArmTemplate interface, these code need to be deleted.
         if (
           selectedPlugins.length != 0 &&
           !selectedPlugins.find(({ name }) => name === pluginWithArm.name)

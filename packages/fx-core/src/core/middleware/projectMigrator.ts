@@ -309,13 +309,14 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   }
 
   let backupFolder: string | undefined;
+  const core = ctx.self as FxCore;
   try {
     backupFolder = await getBackupFolder(projectPath);
     await backup(projectPath, backupFolder);
     await updateConfig(ctx);
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnvStart);
-    await migrateMultiEnv(projectPath);
+    await migrateMultiEnv(projectPath, core.tools.logProvider);
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnv);
 
     const loadRes = await loadProjectSettings(inputs);
@@ -329,7 +330,6 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
-    const core = ctx.self as FxCore;
     core.tools.logProvider.error(`[core] Failed to upgrade project, error: '${err}'`);
     await handleError(projectPath, ctx, backupFolder);
     throw err;
@@ -514,7 +514,7 @@ async function generateRemoteTemplate(manifestString: string) {
   return manifest;
 }
 
-async function generateLocalTemplate(manifestString: string) {
+async function generateLocalTemplate(manifestString: string, isSPFx: boolean, log: LogProvider) {
   manifestString = manifestString.replace(new RegExp("{version}", "g"), "1.0.0");
   manifestString = manifestString.replace(
     new RegExp("{baseUrl}", "g"),
@@ -537,6 +537,30 @@ async function generateLocalTemplate(manifestString: string) {
     (manifest.name.full ? manifest.name.full : manifest.name.short) + "-local-debug";
   manifest.name.short = getLocalAppName(manifest.name.short);
   manifest.id = "{{localSettings.teamsApp.teamsAppId}}";
+
+  // SPFx teams workbench url needs to be updated
+  if (isSPFx) {
+    if (manifest.configurableTabs) {
+      for (const [index, tab] of manifest.configurableTabs.entries()) {
+        const reg = /[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/;
+        const result = tab.configurationUrl.match(reg);
+        if (result && result.length > 0) {
+          const componentID = result[0];
+          tab.configurationUrl = `https://{teamSiteDomain}{teamSitePath}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest={teamSitePath}/_layouts/15/TeamsWorkBench.aspx%3FcomponentId=${componentID}%26openPropertyPane=true%26teams%26forceLocale={locale}%26loadSPFX%3Dtrue%26debugManifestsFile%3Dhttps%3A%2F%2Flocalhost%3A4321%2Ftemp%2Fmanifests.js`;
+        } else {
+          const message = `[core] Cannot find componentID in configurableTabs[${index}].configrationUrl, Teams workbench debug may fail.`;
+          log.warning(message);
+        }
+      }
+    }
+    if (manifest.staticTabs) {
+      for (const tab of manifest.staticTabs) {
+        const componentID = tab.entityId;
+        tab.contentUrl = `https://{teamSiteDomain}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest={teamSitePath}/_layouts/15/TeamsWorkBench.aspx%3FcomponentId=${componentID}%26teams%26personal%26forceLocale={locale}%26loadSPFX%3Dtrue%26debugManifestsFile%3Dhttps%3A%2F%2Flocalhost%3A4321%2Ftemp%2Fmanifests.js`;
+      }
+    }
+  }
+
   return manifest;
 }
 
@@ -570,7 +594,7 @@ async function copyManifest(projectPath: string, fx: string, target: string) {
   }
 }
 
-async function migrateMultiEnv(projectPath: string): Promise<void> {
+async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<void> {
   const { fx, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   const {
     hasFrontend,
@@ -645,7 +669,11 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   }
 
   // generate manifest.local.template.json
-  const localManifest: TeamsAppManifest = await generateLocalTemplate(JSON.stringify(manifest));
+  const localManifest: TeamsAppManifest = await generateLocalTemplate(
+    JSON.stringify(manifest),
+    isSPFx,
+    log
+  );
   const targetLocalManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
   await fs.writeFile(targetLocalManifestFile, JSON.stringify(localManifest, null, 4));
 
@@ -1102,8 +1130,13 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
   }
   // manage identity
   if (envConfig[ResourcePlugins.Identity]?.[EnvConfigName.Identity]) {
+    // Teams Toolkit <= 2.7
     parameterObj[ArmParameters.IdentityName] =
       envConfig[ResourcePlugins.Identity][EnvConfigName.Identity];
+  } else if (envConfig[ResourcePlugins.Identity]?.[EnvConfigName.IdentityName]) {
+    // Teams Toolkit >= 2.8
+    parameterObj[ArmParameters.IdentityName] =
+      envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityName];
   }
   // azure SQL
   if (envConfig[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlEndpoint]) {

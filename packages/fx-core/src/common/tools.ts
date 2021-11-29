@@ -437,7 +437,7 @@ export function isArmSupportEnabled(): boolean {
 }
 
 export function isBicepEnvCheckerEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, false);
+  return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
 
 export function isRemoteCollaborateEnabled(): boolean {

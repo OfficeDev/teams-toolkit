@@ -9,10 +9,16 @@ Start debugging the project by hitting the `F5` key in Visual Studio Code. Alter
 > Note: A new AAD app will be created for local debug.
 
 ### [Optional] Set Bot Messaging Endpoint
-By default, Ngrok will be started automatically after `F5` to tunnel from the Teams client to localhost. If you want to configure the bot messaging endpoint by yourself, set the following configurations in *.fx/default.userdata* under the project root, then start debugging, like:
+By default, Ngrok will be started automatically after `F5` to tunnel from the Teams client to localhost. If you want to configure the bot messaging endpoint by yourself, set the `skipNgrok`, `botDomain` and `botEndpoint` configurations in *.fx/configs/localSettings.json* under the project root, then start debugging, like:
+```json
+{
+    "bot": {
+        "skipNgrok": true,
+        "botDomain": "02f6-2404-f801-9000-1a-908c-79ca-3a8-ee86.ngrok.io",
+        "botEndpoint": "https://02f6-2404-f801-9000-1a-908c-79ca-3a8-ee86.ngrok.io"
+    }
+}
 ```
-fx-resource-local-debug.skipNgrok=true
-fx-resource-local-debug.localBotEndpoint=https://767787237c6b.ngrok.io/api/messages
 ```
 
 ## Edit the manifest

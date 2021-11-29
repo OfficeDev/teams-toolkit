@@ -91,7 +91,7 @@ export const AzureResourceApim: OptionItem = {
 export const AzureResourceKeyVault: OptionItem = {
   id: "keyvault",
   label: "Azure Key Vault",
-  description: "Description for Azure Key Vault",
+  description: "Secure runtime application secrets with Azure Key Vault",
 };
 
 export function createCapabilityQuestion(): MultiSelectQuestion {

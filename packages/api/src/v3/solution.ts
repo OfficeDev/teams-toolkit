@@ -7,13 +7,6 @@ export type StrictOmit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 export type SolutionPluginV3 = StrictOmit<v2.SolutionPlugin, "getQuestions"> & {
   /**
-   * scaffold will be an independent stage
-   */
-  scaffoldSourceCode: (
-    ctx: Context,
-    inputs: InputsWithProjectPath
-  ) => Promise<Result<Void, FxError>>;
-  /**
    * add resource is no more implemented in executeUserTask
    * steps:
    * 1. update project settings

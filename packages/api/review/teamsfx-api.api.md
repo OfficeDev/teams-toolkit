@@ -1308,6 +1308,8 @@ export enum Stage {
     // (undocumented)
     grantPermission = "grantPermission",
     // (undocumented)
+    init = "init",
+    // (undocumented)
     listAllCollaborators = "listAllCollaborators",
     // (undocumented)
     listCollaborator = "listCollaborator",
@@ -1323,6 +1325,8 @@ export enum Stage {
     publish = "publish",
     // (undocumented)
     removeEnv = "removeEnv",
+    // (undocumented)
+    scaffold = "scaffold",
     // (undocumented)
     switchEnv = "switchEnv",
     // (undocumented)

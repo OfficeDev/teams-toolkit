@@ -20,17 +20,20 @@ export interface Module {
   hostingPlugin?: string;
 }
 
+/**
+ * Module descriptions for project
+ * modules are added after adding capability for the App
+ */
+export interface Modules {
+  tab?: Module;
+  bot?: Module;
+  backends?: Module[];
+}
+
 export interface TeamsFxSolutionSettings extends AzureSolutionSettings {
   /**
    * upgrade solution settings version to 3.0.0
    */
   version: "3.0.0";
-  /**
-   * modules are added after adding capability for the App
-   */
-  modules: {
-    tab?: Module;
-    bot?: Module;
-    backends?: Module[];
-  };
+  modules: Modules;
 }

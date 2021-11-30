@@ -9,7 +9,7 @@ import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { DeepReadonly, EnvInfoV2, InputsWithProjectPath } from "../v2/types";
 import { ResourceStates } from "./resourceStates";
-import { TeamsFxSolutionSettings } from "./solutionSettings";
+import { Modules, TeamsFxSolutionSettings } from "./solutionSettings";
 
 /**
  * Upgrade EnvInfoV2, specify the state type as ResourceStates
@@ -28,15 +28,32 @@ export interface ContextV3 extends v2.Context {
 
 export interface ScaffoldTemplate {
   id: string;
+  /**
+   * programming language
+   */
   language: string;
+  /**
+   * description of the template
+   */
   description: string;
-  tags: string[];
-  modules: string[];
+  /**
+   * what module does the template work for
+   */
+  modules: (keyof Modules)[];
 }
 
 export interface ScaffoldInputs extends InputsWithProjectPath {
+  /**
+   * scaffold template id
+   */
   templateId: string;
-  language: string;
+  /**
+   * programming language
+   */
+  language?: string;
+  /**
+   * customized source root dir name
+   */
   dir?: string;
 }
 
@@ -79,9 +96,9 @@ export interface ResourcePlugin extends Plugin {
    */
   description?: string;
   /**
-   * scopes for resource to add; if not defined, no limitation
+   * what module does the resource works for, if not specified, there is no limit
    */
-  modules?: string[];
+  modules?: (keyof Modules)[];
   /**
    * return dependent plugin names, when adding resource, the toolkit will add all dependent resources
    */

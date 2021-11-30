@@ -23,6 +23,9 @@ describe("Create single tab", function () {
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
 
+  // Should succeed on the 3rd try
+  this.retries(2);
+
   it("Create react app without Azure Function", async () => {
     // new a project ( tab only )
     await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities tab `, {

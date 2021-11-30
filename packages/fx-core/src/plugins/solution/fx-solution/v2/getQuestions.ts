@@ -19,9 +19,10 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
-import { getStrings } from "../../../../common";
+import { getStrings } from "../../../../common/tools";
+import { HelpLinks } from "../../../../common/constants";
 import { checkSubscription } from "../commonQuestions";
-import { SolutionError, SolutionSource, HelpLinks } from "../constants";
+import { SolutionError, SolutionSource } from "../constants";
 import {
   addCapabilityQuestion,
   AskSubscriptionQuestion,
@@ -356,7 +357,8 @@ export async function getQuestionsForAddCapability(
     capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id);
 
   if (alreadyHaveBotOrMe && alreadyHaveTab) {
-    const cannotAddCapWarnMsg = "Your App already has both Tab and Bot/Me, can not Add Capability.";
+    const cannotAddCapWarnMsg =
+      "Your App already has both Tab and Bot/Messaging extension, can not Add Capability.";
     ctx.userInteraction?.showMessage("error", cannotAddCapWarnMsg, false);
     return ok(undefined);
   }

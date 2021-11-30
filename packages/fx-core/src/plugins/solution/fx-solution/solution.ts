@@ -140,7 +140,7 @@ import { listCollaborator } from "./v2/listCollaborator";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { LOCAL_TENANT_ID } from ".";
-import { HelpLinks } from "./constants";
+import { HelpLinks } from "../../../common/constants";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -1495,7 +1495,7 @@ export class TeamsAppSolution implements Solution {
 
     if (alreadyHaveBotOrMe && alreadyHaveTab) {
       const cannotAddCapWarnMsg =
-        "Your App already has both Tab and Bot/Me, can not Add Capability.";
+        "Your App already has both Tab and Bot/Messaging extension, can not Add Capability.";
       ctx.ui?.showMessage("error", cannotAddCapWarnMsg, false);
       return ok(undefined);
     }

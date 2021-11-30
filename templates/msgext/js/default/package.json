@@ -4,7 +4,7 @@
   "msteams": {
     "teamsAppId": null
   },
-  "description": "Microsoft Teams message extension quickstart",
+  "description": "Microsoft Teams messaging extension quickstart",
   "author": "Microsoft",
   "license": "MIT",
   "main": "index.js",

@@ -52,10 +52,6 @@ resource functionApp 'Microsoft.Web/sites@2021-02-01' = {
           value: '1'
         }
         {
-          name: 'WEBSITE_CONTENTSHARE'
-          value: toLower(functionAppName)
-        }
-        {
           name: 'WEBSITE_NODE_DEFAULT_VERSION'
           value: '~14'
         }

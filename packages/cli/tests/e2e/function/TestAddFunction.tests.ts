@@ -5,7 +5,7 @@ import fs from "fs-extra";
 import path from "path";
 
 import { AadValidator, FunctionValidator, SimpleAuthValidator } from "../../commonlib";
-
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import {
   execAsync,
   execAsyncWithRetry,
@@ -14,6 +14,7 @@ import {
   getUniqueAppName,
   setSimpleAuthSkuNameToB1,
   cleanUp,
+  setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 
@@ -23,6 +24,9 @@ describe("Test Add Function", function () {
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
 
+  // Should succeed on the 3rd try
+  this.retries(2);
+
   it(`Create Tab Then Add Function`, async function () {
     await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities tab`, {
       cwd: testFolder,
@@ -31,7 +35,11 @@ describe("Test Add Function", function () {
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    await setSimpleAuthSkuNameToB1(projectPath);
+    if (isMultiEnvEnabled()) {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    } else {
+      await setSimpleAuthSkuNameToB1(projectPath);
+    }
 
     await execAsync(`teamsfx resource add azure-function --function-name func1`, {
       cwd: projectPath,
@@ -66,21 +74,39 @@ describe("Test Add Function", function () {
     console.log(`[Successfully] provision for ${projectPath}`);
 
     {
-      // Validate provision
-      // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+      if (isMultiEnvEnabled()) {
+        // Validate provision
+        // Get context
+        const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
-      await AadValidator.validate(aad);
+        // Validate Aad App
+        const aad = AadValidator.init(context, false, AppStudioLogin);
+        await AadValidator.validate(aad);
 
-      // Validate Simple Auth
-      const simpleAuth = SimpleAuthValidator.init(context);
-      await SimpleAuthValidator.validate(simpleAuth, aad);
+        // Validate Simple Auth
+        const simpleAuth = SimpleAuthValidator.init(context);
+        await SimpleAuthValidator.validate(simpleAuth, aad, "B1", true);
 
-      // Validate Function App
-      const func = FunctionValidator.init(context);
-      await FunctionValidator.validateProvision(func, false);
+        // Validate Function App
+        const func = FunctionValidator.init(context, true);
+        await FunctionValidator.validateProvision(func, false, true);
+      } else {
+        // Validate provision
+        // Get context
+        const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+
+        // Validate Aad App
+        const aad = AadValidator.init(context, false, AppStudioLogin);
+        await AadValidator.validate(aad);
+
+        // Validate Simple Auth
+        const simpleAuth = SimpleAuthValidator.init(context);
+        await SimpleAuthValidator.validate(simpleAuth, aad);
+
+        // Validate Function App
+        const func = FunctionValidator.init(context);
+        await FunctionValidator.validateProvision(func, false);
+      }
     }
 
     // deploy
@@ -92,14 +118,25 @@ describe("Test Add Function", function () {
     console.log(`[Successfully] deploy for ${projectPath}`);
 
     {
-      // Validate deployment
+      if (isMultiEnvEnabled()) {
+        // Validate deployment
 
-      // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+        // Get context
+        const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-      // Validate Function App
-      const func = FunctionValidator.init(context);
-      await FunctionValidator.validateDeploy(func);
+        // Validate Function App
+        const func = FunctionValidator.init(context, true);
+        await FunctionValidator.validateDeploy(func);
+      } else {
+        // Validate deployment
+
+        // Get context
+        const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+
+        // Validate Function App
+        const func = FunctionValidator.init(context);
+        await FunctionValidator.validateDeploy(func);
+      }
     }
 
     // validate
@@ -143,6 +180,10 @@ describe("Test Add Function", function () {
   after(async () => {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
-    await cleanUp(appName, projectPath);
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, false, false, true);
+    } else {
+      await cleanUp(appName, projectPath);
+    }
   });
 });

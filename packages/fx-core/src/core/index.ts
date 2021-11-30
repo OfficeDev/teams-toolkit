@@ -883,7 +883,20 @@ export class FxCore implements Core {
   async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.grantPermission;
     inputs.stage = Stage.grantPermission;
-    return await ctx!.solution!.grantPermission!(ctx!.solutionContext!);
+    if (!isV2()) {
+      return ctx!.solution!.grantPermission!(ctx!.solutionContext!);
+    } else {
+      const projectPath = inputs.projectPath;
+      if (!projectPath) {
+        return err(new ObjectIsUndefinedError("projectPath"));
+      }
+      return ctx!.solutionV2!.grantPermission!(
+        ctx!.contextV2!,
+        { ...inputs, projectPath: projectPath },
+        ctx!.envInfoV2!,
+        this.tools.tokenProvider
+      );
+    }
   }
 
   @hooks([
@@ -900,7 +913,21 @@ export class FxCore implements Core {
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.checkPermission;
     inputs.stage = Stage.checkPermission;
-    return await ctx!.solution!.checkPermission!(ctx!.solutionContext!);
+
+    if (!isV2()) {
+      return ctx!.solution!.checkPermission!(ctx!.solutionContext!);
+    } else {
+      const projectPath = inputs.projectPath;
+      if (!projectPath) {
+        return err(new ObjectIsUndefinedError("projectPath"));
+      }
+      return ctx!.solutionV2!.checkPermission!(
+        ctx!.contextV2!,
+        { ...inputs, projectPath: projectPath },
+        ctx!.envInfoV2!,
+        this.tools.tokenProvider
+      );
+    }
   }
 
   @hooks([
@@ -917,7 +944,21 @@ export class FxCore implements Core {
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listCollaborator;
     inputs.stage = Stage.listCollaborator;
-    return await ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
+
+    if (!isV2()) {
+      return ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
+    } else {
+      const projectPath = inputs.projectPath;
+      if (!projectPath) {
+        return err(new ObjectIsUndefinedError("projectPath"));
+      }
+      return ctx!.solutionV2!.listCollaborator!(
+        ctx!.contextV2!,
+        { ...inputs, projectPath: projectPath },
+        ctx!.envInfoV2!,
+        this.tools.tokenProvider
+      );
+    }
   }
 
   @hooks([
@@ -933,7 +974,20 @@ export class FxCore implements Core {
   async listAllCollaborators(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listAllCollaborators;
     inputs.stage = Stage.listAllCollaborators;
-    return await ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
+    if (!isV2()) {
+      return ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
+    } else {
+      const projectPath = inputs.projectPath;
+      if (!projectPath) {
+        return err(new ObjectIsUndefinedError("projectPath"));
+      }
+      return ctx!.solutionV2!.listAllCollaborators!(
+        ctx!.contextV2!,
+        { ...inputs, projectPath: projectPath },
+        ctx!.envInfoV2!,
+        this.tools.tokenProvider
+      );
+    }
   }
 
   @hooks([
@@ -1038,6 +1092,7 @@ export class FxCore implements Core {
       if (isV2()) {
         const solutionV2 = solution as v2.SolutionPlugin;
         if (solutionV2.getQuestions) {
+          inputs.stage = stage;
           res = await solutionV2.getQuestions(
             ctx as v2.Context,
             inputs,

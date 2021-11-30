@@ -107,11 +107,33 @@ export class AppStudioPlugin implements Plugin {
    * @returns {string} - Remote teams app id
    */
   public async postProvision(ctx: PluginContext): Promise<Result<string, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.postProvision);
     const remoteTeamsAppId = await this.appStudioPluginImpl.postProvision(ctx);
-    if (isMultiEnvEnabled()) {
-      await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, false);
+    if (remoteTeamsAppId.isErr()) {
+      TelemetryUtils.sendErrorEvent(
+        TelemetryEventName.postProvision,
+        remoteTeamsAppId.error,
+        this.appStudioPluginImpl.commonProperties
+      );
+      return err(remoteTeamsAppId.error);
     }
-    return ok(remoteTeamsAppId);
+    if (isMultiEnvEnabled()) {
+      const result = await this.buildTeamsPackage(ctx, false);
+      if (result.isErr()) {
+        TelemetryUtils.sendErrorEvent(
+          TelemetryEventName.postProvision,
+          result.error,
+          this.appStudioPluginImpl.commonProperties
+        );
+        return err(result.error);
+      }
+    }
+    TelemetryUtils.sendSuccessEvent(
+      TelemetryEventName.postProvision,
+      this.appStudioPluginImpl.commonProperties
+    );
+    return remoteTeamsAppId;
   }
 
   /**

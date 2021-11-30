@@ -93,6 +93,7 @@ export class AdaptiveCardCodeLensProvider implements vscode.CodeLensProvider {
 export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider {
   private schemaRegex = /\$schema/;
   private manifestConfigDataRegex = /{{config.manifest[\.a-zA-Z]+}}/g;
+  private manifestStateDataRegex = /{{state\.[a-zA-Z-_]+\.\w+}}/g;
 
   public provideCodeLenses(
     document: vscode.TextDocument
@@ -135,26 +136,38 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
     }
 
     if (document.fileName.endsWith("manifest.remote.template.json")) {
-      const configRegex = new RegExp(this.manifestConfigDataRegex);
-      let matches;
-      while ((matches = configRegex.exec(text)) !== null) {
-        const line = document.lineAt(document.positionAt(matches.index).line);
-        const indexOf = line.text.indexOf(matches[0]);
-        const position = new vscode.Position(line.lineNumber, indexOf);
-        const range = document.getWordRangeAtPosition(
-          position,
-          new RegExp(this.manifestConfigDataRegex)
-        );
-        const command = {
-          title: "🖊️Go to config file",
-          command: "fx-extension.openConfig",
-        };
-        if (range) {
-          codeLenses.push(new vscode.CodeLens(range, command));
-        }
-      }
+      const configCodelenses = this.calculateCodeLens(document, this.manifestConfigDataRegex, {
+        title: "🖊️Edit the config file",
+        command: "fx-extension.openConfigState",
+        arguments: [{ type: "config" }],
+      });
+      codeLenses.push(...configCodelenses);
+
+      const stateCodelenses = this.calculateCodeLens(document, this.manifestStateDataRegex, {
+        title: "👁️View the state file",
+        command: "fx-extension.openConfigState",
+        arguments: [{ type: "state" }],
+      });
+      codeLenses.push(...stateCodelenses);
     }
 
+    return codeLenses;
+  }
+
+  private calculateCodeLens(document: vscode.TextDocument, regex: RegExp, command: vscode.Command) {
+    let matches;
+    const codeLenses: vscode.CodeLens[] = [];
+    const text = document.getText();
+    while ((matches = regex.exec(text)) !== null) {
+      const line = document.lineAt(document.positionAt(matches.index).line);
+      const indexOf = line.text.indexOf(matches[0]);
+      const position = new vscode.Position(line.lineNumber, indexOf);
+      const range = document.getWordRangeAtPosition(position, new RegExp(regex));
+
+      if (range) {
+        codeLenses.push(new vscode.CodeLens(range, command));
+      }
+    }
     return codeLenses;
   }
 

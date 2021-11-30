@@ -7,7 +7,7 @@
     "install-eslint": "cd packages/eslint-config && npm install",
     "lint:staged": "lerna run lint:staged --stream",
     "lint": "lerna run lint --stream",
-    "manual-version:rc": "lerna version --preid=rc --no-push --no-changelog --no-private --ignore-scripts",
+    "manual-version:rc": "lerna version --preid=rc --no-push --no-changelog --ignore-scripts",
     "prepare": "husky install"
   },
   "devDependencies": {
@@ -26,9 +26,5 @@
   "bin": {
     "teamsfx": "./packages/cli/cli.js"
   },
-  "dependencies": {
-    "azure-kusto-data": "^2.2.3",
-    "azure-kusto-ingest": "^2.2.3",
-    "logmining": "^1.2.3"
-  }
+  "dependencies": {}
 }

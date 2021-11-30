@@ -40,11 +40,13 @@ import {
   SubscriptionInfo,
   ConfigFolderName,
   EnvConfigFileNameTemplate,
+  EnvStateFileNameTemplate,
   EnvNamePlaceholder,
   SelectFolderConfig,
   SelectFileConfig,
   SingleSelectConfig,
   ConcurrentError,
+  StatesFolderName,
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -260,6 +262,7 @@ async function getIsFromSample() {
     const input = getSystemInputs();
     input.ignoreEnvInfo = true;
     await core.getProjectConfig(input);
+
     return core.isFromSample;
   }
   return undefined;
@@ -470,18 +473,23 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
       return await runUserTask(func, TelemetryEvent.Build, false, args[1]);
     }
   } else {
-    const selectedEnv = await askTargetEnvironment();
-    if (selectedEnv.isErr()) {
-      return err(selectedEnv.error);
-    }
-    const env = selectedEnv.value;
-    const isLocalDebug = env === "local";
-    if (isLocalDebug) {
-      func.params.type = "localDebug";
-      return await runUserTask(func, TelemetryEvent.Build, true);
+    if (isMultiEnvEnabled()) {
+      const selectedEnv = await askTargetEnvironment();
+      if (selectedEnv.isErr()) {
+        return err(selectedEnv.error);
+      }
+      const env = selectedEnv.value;
+      const isLocalDebug = env === "local";
+      if (isLocalDebug) {
+        func.params.type = "localDebug";
+        return await runUserTask(func, TelemetryEvent.Build, true);
+      } else {
+        func.params.type = "remote";
+        return await runUserTask(func, TelemetryEvent.Build, false, env);
+      }
     } else {
       func.params.type = "remote";
-      return await runUserTask(func, TelemetryEvent.Build, false, env);
+      return await runUserTask(func, TelemetryEvent.Build, false);
     }
   }
 }
@@ -489,8 +497,14 @@ export async function buildPackageHandler(args?: any[]): Promise<Result<any, FxE
 export async function provisionHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ProvisionStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.provision);
-  await registerEnvTreeHandler();
-  return result;
+
+  if (result.isErr() && isUserCancelError(result.error)) {
+    return result;
+  } else {
+    // refresh env tree except provision cancelled.
+    await registerEnvTreeHandler();
+    return result;
+  }
 }
 
 export async function deployHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -1572,7 +1586,7 @@ export function cmdHdlDisposeTreeView() {
 }
 
 export async function showError(e: UserError | SystemError) {
-  if (e.stack) {
+  if (e.stack && e instanceof SystemError) {
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
   } else {
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}`);
@@ -1813,8 +1827,8 @@ export async function openPreviewManifest(args: any[]): Promise<Result<any, FxEr
     return err(error);
   }
 }
-export async function openConfigFile() {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestConfigStart);
+export async function openConfigStateFile(args: any[]) {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestConfigStateStart);
   const workspacePath = getWorkspacePath();
   if (!workspacePath) {
     const noOpenWorkspaceError = new UserError(
@@ -1823,7 +1837,10 @@ export async function openConfigFile() {
       ExtensionSource
     );
     showError(noOpenWorkspaceError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfig, noOpenWorkspaceError);
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.OpenManifestConfigState,
+      noOpenWorkspaceError
+    );
     return err(noOpenWorkspaceError);
   }
 
@@ -1834,7 +1851,10 @@ export async function openConfigFile() {
       ExtensionSource
     );
     showError(invalidProjectError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfig, invalidProjectError);
+    ExtTelemetry.sendTelemetryErrorEvent(
+      TelemetryEvent.OpenManifestConfigState,
+      invalidProjectError
+    );
     return err(invalidProjectError);
   }
 
@@ -1842,28 +1862,40 @@ export async function openConfigFile() {
   inputs.ignoreEnvInfo = false;
   const envName = await core.getSelectedEnv(inputs);
   if (envName.isErr()) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfig, envName.error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, envName.error);
     return err(envName.error);
   }
-  const configPath = path.resolve(
-    `${workspacePath}/.${ConfigFolderName}/${InputConfigsFolderName}/`,
-    EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName.value!)
-  );
-  if (!(await fs.pathExists(configPath))) {
+
+  let sourcePath: string;
+  let isConfig = false;
+  if (args && args.length > 0 && args[0].type === "config") {
+    isConfig = true;
+    sourcePath = path.resolve(
+      `${workspacePath}/.${ConfigFolderName}/${InputConfigsFolderName}/`,
+      EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, envName.value!)
+    );
+  } else {
+    sourcePath = path.resolve(
+      `${workspacePath}/.${ConfigFolderName}/${StatesFolderName}/`,
+      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, envName.value!)
+    );
+  }
+
+  if (!(await fs.pathExists(sourcePath))) {
     const noEnvError = new UserError(
-      ExtensionErrors.EnvConfigNotFoundError,
+      isConfig ? ExtensionErrors.EnvConfigNotFoundError : ExtensionErrors.EnvStateNotFoundError,
       util.format(StringResources.vsc.handlers.findEnvFailed, env),
       ExtensionSource
     );
     showError(noEnvError);
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfig, noEnvError);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.OpenManifestConfigState, noEnvError);
     return err(noEnvError);
   }
 
-  workspace.openTextDocument(configPath).then((document) => {
+  workspace.openTextDocument(sourcePath).then((document) => {
     window.showTextDocument(document);
   });
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestConfig, {
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.OpenManifestConfigState, {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
   });
 }
@@ -1892,12 +1924,28 @@ export async function updatePreviewManifest(args: any[]) {
     },
   };
 
-  return await runUserTask(
+  const result = await runUserTask(
     func,
     TelemetryEvent.UpdatePreviewManifest,
     env && env === "local" ? true : false,
     env
   );
+
+  if (!args || args.length === 0) {
+    const workspacePath = getWorkspacePath();
+    const inputs = getSystemInputs();
+    inputs.ignoreEnvInfo = true;
+    const env = await core.getSelectedEnv(inputs);
+    if (env.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdatePreviewManifest, env.error);
+      return err(env.error);
+    }
+    const manifestPath = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env.value}.json`;
+    workspace.openTextDocument(manifestPath).then((document) => {
+      window.showTextDocument(document);
+    });
+  }
+  return result;
 }
 
 export async function signOutAzure(isFromTreeView: boolean) {

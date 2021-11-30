@@ -60,38 +60,7 @@ describe("checkPermission() for Teamsfx projects", () => {
     };
   }
 
-  it("should return SolutionIsNotIdle state if solution state is not idle", async () => {
-    const solution = new TeamsAppSolution();
-    expect(solution.runningState).equal(SolutionRunningState.Idle);
-
-    const mockedCtx = mockSolutionContext();
-
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: "fake_tid",
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
-
-    solution.runningState = SolutionRunningState.ProvisionInProgress;
-    let result = await solution.checkPermission(mockedCtx);
-    expect(result.isErr()).to.be.false;
-    if (!result.isErr()) {
-      expect(result.value.state).equals(CollaborationState.SolutionIsNotIdle);
-    }
-
-    solution.runningState = SolutionRunningState.DeployInProgress;
-    result = await solution.checkPermission(mockedCtx);
-    expect(result.isErr()).to.be.false;
-    if (!result.isErr()) {
-      expect(result.value.state).equals(CollaborationState.SolutionIsNotIdle);
-    }
-    solution.runningState = SolutionRunningState.PublishInProgress;
-    result = await solution.checkPermission(mockedCtx);
-    expect(result.isErr()).to.be.false;
-    if (!result.isErr()) {
-      expect(result.value.state).equals(CollaborationState.SolutionIsNotIdle);
-    }
+  afterEach(() => {
     sandbox.restore();
   });
 
@@ -121,8 +90,6 @@ describe("checkPermission() for Teamsfx projects", () => {
     if (!result.isErr()) {
       expect(result.value.state).equals(CollaborationState.NotProvisioned);
     }
-
-    sandbox.restore();
   });
 
   it("should return error if cannot get user info", async () => {
@@ -147,7 +114,6 @@ describe("checkPermission() for Teamsfx projects", () => {
     const result = await solution.checkPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToRetrieveUserInfo);
-    sandbox.restore();
   });
 
   it("should return M365TenantNotMatch state if tenant is not match", async () => {
@@ -180,7 +146,6 @@ describe("checkPermission() for Teamsfx projects", () => {
     if (!result.isErr()) {
       expect(result.value.state).equals(CollaborationState.M365TenantNotMatch);
     }
-    sandbox.restore();
   });
 
   it("should return error if check permission failed", async () => {
@@ -236,7 +201,6 @@ describe("checkPermission() for Teamsfx projects", () => {
     const result = await solution.checkPermission(mockedCtx);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals("FailedToCheckPermission");
-    sinon.restore();
   });
 
   it("happy path", async () => {
@@ -294,6 +258,5 @@ describe("checkPermission() for Teamsfx projects", () => {
       chai.assert.fail("result is error");
     }
     expect(result.value.permissions!.length).equal(2);
-    sinon.restore();
   });
 });

@@ -18,6 +18,7 @@ import {
   Stage,
   TokenProvider,
   Void,
+  v2,
 } from "@microsoft/teamsfx-api";
 import {
   BicepTemplate,
@@ -30,9 +31,14 @@ import {
   ResourceTemplate,
   SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
-import { CryptoDataMatchers, mapToJson } from "../../common/tools";
+import { CryptoDataMatchers, isMultiEnvEnabled, mapToJson } from "../../common/tools";
 import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
-import { InvalidStateError, NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core/error";
+import {
+  InvalidStateError,
+  MultipleEnvNotEnabledError,
+  NoProjectOpenedError,
+  PluginHasNoTaskImpl,
+} from "../../core/error";
 import { newEnvInfo } from "../../core/tools";
 import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
 
@@ -434,4 +440,37 @@ export function setLocalSettingsV1(pluginContext: PluginContext, localSettings: 
     bot: ConfigMap.fromJSON(localSettings.bot),
     frontend: ConfigMap.fromJSON(localSettings.frontend),
   };
+}
+
+export async function collaborationApiAdaptor(
+  ctx: Context,
+  inputs: v2.InputsWithProjectPath,
+  envInfo: DeepReadonly<EnvInfoV2>,
+  tokenProvider: TokenProvider,
+  userInfo: Json,
+  plugin: Plugin,
+  taskName: "grantPermission" | "listCollaborator" | "checkPermission"
+): Promise<Result<Json, FxError>> {
+  // API v2 only works with multiple env enabled
+  if (!isMultiEnvEnabled()) {
+    return err(MultipleEnvNotEnabledError());
+  }
+  const fn = plugin[taskName];
+  if (!fn) {
+    return err(PluginHasNoTaskImpl(plugin.displayName, taskName));
+  }
+
+  const state: ConfigMap | undefined = ConfigMap.fromJSON(envInfo.state);
+  if (!state) {
+    return err(InvalidStateError(plugin.name, envInfo.state));
+  }
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
+  pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+  pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  pluginContext.envInfo = newEnvInfo();
+  pluginContext.envInfo.state = flattenConfigMap(state);
+  pluginContext.envInfo.config = envInfo.config as EnvConfig;
+  pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();
+  return fn.bind(plugin)(pluginContext, userInfo);
 }

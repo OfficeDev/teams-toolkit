@@ -3,7 +3,13 @@
 "use strict";
 
 import { Result } from "neverthrow";
-import { DeepReadonly, DeploymentInputs, ProvisionInputs, ResourceProvisionOutput } from ".";
+import {
+  DeepReadonly,
+  DeploymentInputs,
+  InputsWithProjectPath,
+  ProvisionInputs,
+  ResourceProvisionOutput,
+} from ".";
 import { Stage } from "../constants";
 import { EnvInfo } from "../context";
 import {
@@ -92,8 +98,7 @@ export interface SolutionPlugin {
    * Depends on the output of {@link package}. Uploads Teams package to AppStudio
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - User answers to questions defined in {@link getQuestionsForLifecycleTask}
-   * @param {Json} provisionInputConfig - contains the user customized values for manifest placeholders
-   * @param {Json} provisionOutputs - contains the provision output values for manifest placeholders
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view to the current env
    * @param {AppStudioTokenProvider} tokenProvider - Token for AppStudio
    */
   publishApplication: (
@@ -148,24 +153,35 @@ export interface SolutionPlugin {
    */
   createEnv?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
   activateEnv?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+
   /**
    * For grant and check permission in remote collaboration
    */
   grantPermission?: (
     ctx: Context,
-    inputs: Inputs,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
-  ) => Promise<Result<any, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
   checkPermission?: (
     ctx: Context,
-    inputs: Inputs,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
-  ) => Promise<Result<any, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
   listCollaborator?: (
     ctx: Context,
-    inputs: Inputs,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
-  ) => Promise<Result<any, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
+
+  listAllCollaborators?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Json, FxError>>;
 
   //legacy API for compatibility reason
   getQuestions?: (

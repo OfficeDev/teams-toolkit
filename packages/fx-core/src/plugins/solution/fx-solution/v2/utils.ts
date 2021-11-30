@@ -12,6 +12,8 @@ import {
   returnSystemError,
   SolutionSettings,
   Json,
+  SolutionContext,
+  Plugin,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 import {
@@ -33,6 +35,8 @@ import {
   TabSPFxItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
+import { PluginsWithContext } from "../solution";
+import { getPluginContext } from "../utils/util";
 
 export function getSelectedPlugins(azureSettings: AzureSolutionSettings): v2.ResourcePlugin[] {
   const plugins = getActivatedV2ResourcePlugins(azureSettings);
@@ -225,4 +229,11 @@ export function fillInSolutionSettings(
 
 export function checkWetherProvisionSucceeded(config: Json): boolean {
   return config[GLOBAL_CONFIG] && config[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
+}
+
+export function getPluginAndContextArray(
+  ctx: SolutionContext,
+  selectedPlugins: Plugin[]
+): PluginsWithContext[] {
+  return selectedPlugins.map((plugin) => [plugin, getPluginContext(ctx, plugin.name)]);
 }

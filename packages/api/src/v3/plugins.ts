@@ -7,7 +7,7 @@ import { FxError } from "../error";
 import { Inputs, Json, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
-import { Context, DeepReadonly, EnvInfoV2 } from "../v2/types";
+import { DeepReadonly, EnvInfoV2, InputsWithProjectPath } from "../v2/types";
 import { ResourceStates } from "./resourceStates";
 import { TeamsFxSolutionSettings } from "./solutionSettings";
 
@@ -34,7 +34,7 @@ export interface ScaffoldTemplate {
   modules: string[];
 }
 
-export interface ScaffoldInputs extends Inputs {
+export interface ScaffoldInputs extends InputsWithProjectPath {
   templateId: string;
   language: string;
   dir?: string;
@@ -99,7 +99,7 @@ export interface ResourcePlugin extends Plugin {
    * add resource is a new lifecycle task for resource plugin, which will do some extra work after project settings is updated,
    * for example, APIM will scaffold the openapi folder with files
    */
-  addResource?: (ctx: ContextV3, inputs: Inputs) => Promise<Result<Void, FxError>>;
+  addResource?: (ctx: ContextV3, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
 
   getQuestionsForLocalProvision?: (
     ctx: ContextV3,
@@ -110,14 +110,14 @@ export interface ResourcePlugin extends Plugin {
 
   provisionLocalResource?: (
     ctx: ContextV3,
-    inputs: Inputs,
+    inputs: InputsWithProjectPath,
     localSettings: Json,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
   configureLocalResource?: (
     ctx: ContextV3,
-    inputs: Inputs,
+    inputs: InputsWithProjectPath,
     localSettings: Json,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
@@ -131,19 +131,19 @@ export interface ResourcePlugin extends Plugin {
 
   provisionResource?: (
     ctx: ContextV3,
-    inputs: Inputs,
+    inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<EnvInfoV3, FxError>>;
 
   generateResourceTemplate?: (
     ctx: ContextV3,
-    inputs: Inputs
+    inputs: InputsWithProjectPath
   ) => Promise<Result<ResourceTemplate, FxError>>;
 
   configureResource?: (
     ctx: ContextV3,
-    inputs: Inputs,
+    inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
@@ -157,7 +157,7 @@ export interface ResourcePlugin extends Plugin {
 
   deploy?: (
     ctx: ContextV3,
-    inputs: Inputs,
+    inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
@@ -173,7 +173,7 @@ export interface ResourcePlugin extends Plugin {
 
   executeUserTask?: (
     ctx: ContextV3,
-    inputs: Inputs,
+    inputs: InputsWithProjectPath,
     func: Func,
     localSettings: Json,
     envInfo: EnvInfoV3,

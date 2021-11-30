@@ -138,25 +138,11 @@ export function objectToConfigMap(o?: Json): ConfigMap {
 }
 
 const SecretDataMatchers = [
-  "solution.localDebugTeamsAppId",
-  "solution.teamsAppTenantId",
   "fx-resource-aad-app-for-teams.clientSecret",
-  "fx-resource-aad-app-for-teams.local_clientSecret",
-  "fx-resource-aad-app-for-teams.local_clientId",
-  "fx-resource-aad-app-for-teams.local_objectId",
-  "fx-resource-aad-app-for-teams.local_oauth2PermissionScopeId",
-  "fx-resource-aad-app-for-teams.local_tenantId",
-  "fx-resource-aad-app-for-teams.local_applicationIdUris",
   "fx-resource-simple-auth.filePath",
   "fx-resource-simple-auth.environmentVariableParams",
   "fx-resource-local-debug.*",
   "fx-resource-bot.botPassword",
-  "fx-resource-bot.localBotPassword",
-  "fx-resource-bot.localBotId",
-  "fx-resource-bot.localObjectId",
-  "fx-resource-bot.local_redirectUri",
-  "fx-resource-bot.bots",
-  "fx-resource-bot.composeExtensions",
   "fx-resource-apim.apimClientAADClientSecret",
   "fx-resource-azure-sql.adminPassword",
 ];
@@ -290,7 +276,9 @@ export async function saveFilesRecursively(
           entry.entryName.split("/").includes(appFolder)
       )
       .map(async (entry) => {
-        const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
+        const entryPath = entry.entryName.substring(
+          entry.entryName.indexOf(appFolder) + appFolder.length
+        );
         const filePath = path.join(dstPath, entryPath);
         await fs.ensureDir(path.dirname(filePath));
         await fs.writeFile(filePath, entry.getData());
@@ -449,7 +437,7 @@ export function isArmSupportEnabled(): boolean {
 }
 
 export function isBicepEnvCheckerEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, false);
+  return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
 
 export function isRemoteCollaborateEnabled(): boolean {

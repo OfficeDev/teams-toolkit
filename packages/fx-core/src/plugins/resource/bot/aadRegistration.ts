@@ -128,8 +128,8 @@ export class AADRegistration {
         ErrorType.User,
         errorDetail.name,
         errorDetail.message(...args),
+        [],
         error,
-        undefined,
         helpLink ?? errorDetail.helpLink
       );
     } else {

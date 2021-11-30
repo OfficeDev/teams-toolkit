@@ -72,7 +72,7 @@ npx teamsfx package --env ${TEAMSFX_ENV_NAME}
 
 # Upload Teams App's Package as artifacts.
 # Choose what your workflow/pipeline platform provided to
-# upload appPackage/appPackage.staging.zip as artifacts.
+# upload build/appPackage/appPackage.staging.zip as artifacts.
 
 # Publish Teams App.
 npx teamsfx publish --env ${TEAMSFX_ENV_NAME}

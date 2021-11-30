@@ -22,7 +22,7 @@ import { format } from "util";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
-import { ArmHelpLink, ConstantString, PluginDisplayName } from "../../../common/constants";
+import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
 import { getResourceGroupNameFromResourceId, waitSeconds, getUuid } from "../../../common/tools";
 import { environmentManager } from "../../..";
 import {
@@ -46,14 +46,9 @@ import { TEAMS_FX_RESOURCE_ID_KEY } from ".";
 import os from "os";
 import { DeploymentOperation } from "@azure/arm-resources/esm/models";
 
-// Old folder structure constants
-const templateFolder = "templates";
-const parameterFolder = "parameters";
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionFileName = "provision.bicep";
 const bicepOrchestrationConfigFileName = "config.bicep";
-
-// New folder structure constants
 const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
@@ -309,7 +304,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       );
       ctx.logProvider?.error(
         errorMessage +
-          `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${ArmHelpLink}.`
+          `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`
       );
 
       let failedDeployments: string[] = [];
@@ -539,7 +534,7 @@ async function doGenerateArmTemplate(
                 duplicateParamError,
                 SolutionSource,
                 SolutionError.FailedToUpdateArmParameters,
-                ArmHelpLink
+                HelpLinks.ArmHelpLink
               )
             );
           }
@@ -559,7 +554,7 @@ async function doGenerateArmTemplate(
               parameterFileError,
               SolutionSource,
               SolutionError.FailedToUpdateArmParameters,
-              ArmHelpLink
+              HelpLinks.ArmHelpLink
             )
           );
         }
@@ -966,7 +961,7 @@ function formattedDeploymentName(failedDeployments: string[]): Result<void, FxEr
       returnError,
       SolutionSource,
       SolutionError.FailedToDeployArmTemplatesToAzure,
-      ArmHelpLink
+      HelpLinks.ArmHelpLink
     )
   );
 }

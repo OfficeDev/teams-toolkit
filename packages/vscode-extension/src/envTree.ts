@@ -32,9 +32,11 @@ import {
   getM365TenantFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
+  isSPFxProject,
 } from "./utils/commonUtils";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { Mutex } from "async-mutex";
+import { ext } from "./extensionVariables";
 
 const showEnvList: Array<string> = [];
 let environmentTreeProvider: CommandsTreeViewProvider;
@@ -66,22 +68,26 @@ export async function registerEnvTreeHandler(
       }
       showEnvList.splice(0);
 
-      const envNames = (await localSettingsExists(workspacePath))
-        ? [LocalEnvironmentName].concat(envNamesResult.value)
-        : envNamesResult.value;
+      const envNames = [LocalEnvironmentName].concat(envNamesResult.value);
       for (const item of envNames) {
         showEnvList.push(item);
         const provisionSucceeded = await getProvisionSucceedFromEnv(item);
         const isLocal = item === LocalEnvironmentName;
 
-        const accountStatusResult = await CheckAccountForEnvrironment(item);
-        let envIcon = provisionSucceeded ? "folder-active" : "symbol-folder";
-        const isIconCustom: boolean = isLocal ? false : !accountStatusResult.isOk;
-        let accountTip = "";
+        let contextValue = "environment";
 
-        if (item !== LocalEnvironmentName && !accountStatusResult.isOk) {
-          envIcon = "warning";
-          accountTip = formatWarningMessages(accountStatusResult.warnings);
+        if (isLocal) {
+          contextValue = "local";
+        } else {
+          if (await isSPFxProject(workspacePath)) {
+            contextValue = "spfx-" + contextValue;
+          } else {
+            contextValue = "azure-" + contextValue;
+          }
+
+          if (provisionSucceeded) {
+            contextValue = contextValue + "-provisioned";
+          }
         }
 
         environmentTreeProvider.add([
@@ -90,21 +96,14 @@ export async function registerEnvTreeHandler(
             label: item,
             description: provisionSucceeded ? "(Provisioned)" : "",
             parent: TreeCategory.Environment,
-            contextValue: isLocal
-              ? "local"
-              : provisionSucceeded
-              ? "environment-provisioned"
-              : "environment",
-            icon: envIcon,
-            tooltip: {
-              isMarkdown: false,
-              value: accountTip,
-            },
-            isCustom: isIconCustom,
+            contextValue: contextValue,
+            icon: provisionSucceeded ? "folder-active" : "symbol-folder",
+            isCustom: false,
             expanded: isLocal ? undefined : true,
           },
         ]);
       }
+
       await checkAllEnv(envNamesResult.value);
 
       // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
@@ -122,10 +121,8 @@ export async function registerEnvTreeHandler(
 
 async function checkAllEnv(itemList: Array<string>) {
   for (const item of itemList) {
-    let envSubItems: TreeItem[] = [];
-
-    envSubItems = envSubItems.concat(await getSubscriptionAndResourceGroupNode(item));
-    await environmentTreeProvider.add(envSubItems);
+    await appendWarningItem(item);
+    await appendSubscriptionAndResourceGroupNode(item);
   }
 }
 
@@ -256,12 +253,7 @@ function generateCollaboratorParentNode(env: string): TreeItem {
   };
 }
 
-async function localSettingsExists(projectRoot: string): Promise<boolean> {
-  const provider = new LocalSettingsProvider(projectRoot);
-  return await fs.pathExists(provider.localSettingsFilePath);
-}
-
-async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeItem[]> {
+async function appendSubscriptionAndResourceGroupNode(env: string): Promise<void> {
   if (
     environmentTreeProvider &&
     environmentTreeProvider.findCommand("fx-extension.environment." + env) &&
@@ -273,7 +265,7 @@ async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeIte
       const subscriptionTreeItem: TreeItem = {
         commandId: `fx-extension.environment.subscription.${env}`,
         contextValue: "openSubscriptionInPortal",
-        label: subscriptionInfo.subscriptionName,
+        label: subscriptionInfo.subscriptionName ?? subscriptionInfo.subscriptionId,
         icon: "key",
         isCustom: false,
         parent: "fx-extension.environment." + env,
@@ -296,10 +288,8 @@ async function getSubscriptionAndResourceGroupNode(env: string): Promise<TreeIte
       }
     }
 
-    return envSubItems;
+    await environmentTreeProvider.add(envSubItems);
   }
-
-  return [];
 }
 
 function formatWarningMessages(warnings: string[]): string {
@@ -313,7 +303,12 @@ function formatWarningMessages(warnings: string[]): string {
 
   return warningMessage;
 }
-async function CheckAccountForEnvrironment(env: string): Promise<accountStatus> {
+
+async function checkAccountForEnvrironment(env: string): Promise<accountStatus | undefined> {
+  if (env === LocalEnvironmentName) {
+    return undefined;
+  }
+
   let checkResult = true;
   const warnings: string[] = [];
 
@@ -333,28 +328,31 @@ async function CheckAccountForEnvrironment(env: string): Promise<accountStatus> 
   }
 
   // Check Azure account status
-  if (AzureAccountManager.getAccountInfo() !== undefined) {
-    const subscriptions: SubscriptionInfo[] = await AzureAccountManager.listSubscriptions();
-    const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
-    const provisionedSubId = subscriptionInfo?.subscriptionId;
+  const isSpfxProject = await isSPFxProject(ext.workspaceUri.fsPath);
+  if (!isSpfxProject) {
+    if (AzureAccountManager.getAccountInfo() !== undefined) {
+      const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
+      const provisionedSubId = subscriptionInfo?.subscriptionId;
 
-    if (provisionedSubId) {
-      const targetSub = subscriptions.find(
-        (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
-      );
-      if (targetSub === undefined) {
-        checkResult = false;
-        warnings.push(
-          util.format(
-            StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
-            subscriptionInfo?.subscriptionName
-          )
+      if (provisionedSubId) {
+        const subscriptions: SubscriptionInfo[] = await AzureAccountManager.listSubscriptions();
+        const targetSub = subscriptions.find(
+          (sub) => sub.subscriptionId === subscriptionInfo?.subscriptionId
         );
+        if (targetSub === undefined) {
+          checkResult = false;
+          warnings.push(
+            util.format(
+              StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
+              subscriptionInfo?.subscriptionName ?? subscriptionInfo?.subscriptionId
+            )
+          );
+        }
       }
+    } else {
+      checkResult = false;
+      warnings.push(StringResources.vsc.commandsTreeViewProvider.azureAccountNotSignedIn);
     }
-  } else {
-    checkResult = false;
-    warnings.push(StringResources.vsc.commandsTreeViewProvider.azureAccountNotSignedIn);
   }
 
   return {
@@ -363,36 +361,22 @@ async function CheckAccountForEnvrironment(env: string): Promise<accountStatus> 
   };
 }
 
-async function checkSubscriptionPermission(
-  env: string,
-  subscriptionId: string
-): Promise<TreeItem | undefined> {
-  if (tools.tokenProvider.azureAccountProvider.getAccountInfo()) {
-    const subscriptions: SubscriptionInfo[] =
-      await tools.tokenProvider.azureAccountProvider.listSubscriptions();
+async function appendWarningItem(env: string): Promise<void> {
+  const checkResult = await checkAccountForEnvrironment(env);
 
-    let checkSucceeded = false;
-    if (subscriptions) {
-      const targetSub = subscriptions.find((sub) => sub.subscriptionId === subscriptionId);
-      checkSucceeded = targetSub !== undefined;
-    }
+  if (checkResult !== undefined && !checkResult.isOk) {
+    const warningTreeItem: TreeItem = {
+      commandId: `fx-extension.environment.accountStatus.${env}`,
+      label: `Sign in with your correct Azure / M365 account`,
+      tooltip: {
+        value: formatWarningMessages(checkResult.warnings),
+        isMarkdown: false,
+      },
+      icon: "warning",
+      isCustom: false,
+      parent: `fx-extension.environment.${env}`,
+    };
 
-    if (!checkSucceeded) {
-      const warningTreeItem: TreeItem = {
-        commandId: `fx-extension.environment.checkSubscription.${env}`,
-        label: StringResources.vsc.commandsTreeViewProvider.azureAccountNotMatch,
-        tooltip: {
-          value: StringResources.vsc.commandsTreeViewProvider.noSubscriptionFoundInAzureAccount,
-          isMarkdown: false,
-        },
-        icon: "warning",
-        isCustom: true,
-        parent: `fx-extension.environment.${env}`,
-      };
-
-      return warningTreeItem;
-    }
+    await environmentTreeProvider.add([warningTreeItem]);
   }
-
-  return undefined;
 }

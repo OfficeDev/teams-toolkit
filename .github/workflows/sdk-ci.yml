@@ -6,6 +6,7 @@ on:
       - main
     paths:
       - packages/sdk/**
+  workflow_dispatch:
 
 jobs:
   build-and-test-on-latest-version:
@@ -13,7 +14,7 @@ jobs:
 
     strategy:
       matrix:
-        os: [ubuntu-latest, windows-latest, macos-latest]
+        os: [ubuntu-latest, windows-latest]
         node-version: [14]
 
     runs-on: ${{ matrix.os }}
@@ -30,6 +31,13 @@ jobs:
       - name: Setup project
         run: |
           npm run setup
+
+      # https://github.com/ryanclark/karma-webpack/issues/494
+      - name: Windows temp dir fix
+        if: matrix.os == 'windows-latest'
+        run: |
+          echo TEMP="D:\Temp" >> $env:GITHUB_ENV
+          echo TMP="D:\Temp" >> $env:GITHUB_ENV
 
       - name: Remove package-lock(Windows)
         if: matrix.os == 'windows-latest'

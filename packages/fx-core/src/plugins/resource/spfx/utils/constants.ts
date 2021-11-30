@@ -6,8 +6,8 @@ export class Constants {
   public static readonly MAX_ALIAS_LENGTH = 40;
   public static readonly MAX_BUNDLE_NAME_LENGTH = 64;
   public static readonly CALLED_ID = "teamsdev";
-  public static readonly APP_CATALOG_REFRESH_TIME = 2000;
-  public static readonly APP_CATALOG_MAX_TIMES = 30;
+  public static readonly APP_CATALOG_REFRESH_TIME = 10000;
+  public static readonly APP_CATALOG_MAX_TIMES = 12;
   public static readonly PLUGIN_NAME = "SPFx";
   public static readonly PLUGIN_DEV_NAME = "fx-resource-spfx";
   public static readonly BUILD_SHAREPOINT_PACKAGE = "Build SharePoint Package";

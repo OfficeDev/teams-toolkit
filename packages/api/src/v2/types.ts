@@ -51,8 +51,10 @@ export type SolutionInputs = {
   provisionSucceeded?: boolean;
 };
 
-export type ProvisionInputs = Inputs & SolutionInputs & { projectPath: string };
-export type DeploymentInputs = Inputs & SolutionInputs & { projectPath: string };
+export type InputsWithProjectPath = Inputs & { projectPath: string };
+
+export type ProvisionInputs = InputsWithProjectPath & SolutionInputs;
+export type DeploymentInputs = InputsWithProjectPath & SolutionInputs;
 
 export class FxSuccess<T> {
   kind: "success";

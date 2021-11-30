@@ -74,30 +74,6 @@ jobs:
             echo "::set-output name=cases::$inputCases"
           fi
 
-      - name: List cases for pull request
-        id: pr-cases
-        if: ${{ github.event_name == 'pull_request' }}
-        working-directory: packages/cli
-        run: |
-          npm install --global conventional-commits-parser
-          declare -a types=("fix" "feat" "refactor")
-          type=`echo "${{ github.event.pull_request.title }}" |  conventional-commits-parser | jq -r '.[].type'`
-          if [[ " ${types[*]} " =~ " ${type} " ]]; then
-            body='${{ github.event.pull_request.body }}'
-            declare -a cases
-            for t in $(find tests/e2e -name "*.tests.ts" -printf "%f\n" | sed 's/.tests.ts//'); do
-              if [[ $body == *$t* ]]; then
-                cases+=($t)
-              fi
-            done
-            if [ ${#cases[@]} -eq 0 ]; then
-              echo "Please add E2E TEST for your PR"
-              exit 1
-            fi
-            prCases=`printf '%s\n' "${cases[@]}" | jq -R . | jq -sc .`
-            echo "::set-output name=cases::$prCases"
-          fi
-
       - name: E2E Test clean
         working-directory: packages/cli
         run: |

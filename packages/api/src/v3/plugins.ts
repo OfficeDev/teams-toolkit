@@ -2,13 +2,29 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { Func, MultiSelectQuestion, QTreeNode } from "..";
+import { Func, ProjectSettings, QTreeNode, v2 } from "..";
 import { FxError } from "../error";
 import { Inputs, Json, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
-import { Context, DeepReadonly } from "../v2/types";
+import { Context, DeepReadonly, EnvInfoV2 } from "../v2/types";
 import { ResourceStates } from "./resourceStates";
+import { TeamsFxSolutionSettings } from "./solutionSettings";
+
+/**
+ * Upgrade EnvInfoV2, specify the state type as ResourceStates
+ */
+export interface EnvInfoV3 extends EnvInfoV2 {
+  state: ResourceStates;
+}
+
+export interface ProjectSettingsV3 extends ProjectSettings {
+  solutionSettings: TeamsFxSolutionSettings;
+}
+
+export interface ContextV3 extends v2.Context {
+  projectSetting: ProjectSettingsV3;
+}
 
 export interface ScaffoldTemplate {
   id: string;
@@ -29,11 +45,13 @@ export interface Plugin {
    * unique identifier for plugin
    */
   name: string;
-
+  /**
+   * display name for the plugin
+   */
   displayName?: string;
 }
 
-export interface ScaffoldPlugin {
+export interface ScaffoldPlugin extends Plugin {
   /**
    * Source code template descriptions
    */
@@ -42,29 +60,16 @@ export interface ScaffoldPlugin {
    * get questions before scaffolding
    */
   getQuestionsForScaffolding?: (
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   /**
    * scaffold source code
    */
-  scaffold: (ctx: Context, inputs: ScaffoldInputs) => Promise<Result<Void, FxError>>;
+  scaffold: (ctx: ContextV3, inputs: ScaffoldInputs) => Promise<Result<Void, FxError>>;
 }
-export interface EnvInfoV3 {
-  envName: string;
-  // input
-  config: Json;
-  // output
-  state: ResourceStates;
-}
-export interface MultiSelectQuestionNode extends QTreeNode {
-  data: MultiSelectQuestion;
-}
-export interface ResourcePlugin {
-  /**
-   * unique identifier for plugin
-   */
-  name: string;
+
+export interface ResourcePlugin extends Plugin {
   /**
    * resource type the plugin provide
    */
@@ -74,87 +79,91 @@ export interface ResourcePlugin {
    */
   description?: string;
   /**
-   * scopes for resource to add
-   * if not defined, no limitation
+   * scopes for resource to add; if not defined, no limitation
    */
   modules?: string[];
   /**
    * return dependent plugin names, when adding resource, the toolkit will add all dependent resources
    */
-  pluginDependencies?(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>>;
+  pluginDependencies?(ctx: ContextV3, inputs: Inputs): Promise<Result<string[], FxError>>;
 
+  /**
+   * customize questions needed for add resource operation
+   */
   getQuestionsForAddResource?: (
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
+
   /**
-   * For example, add resource of APIM, this method will scaffold some "openapi" folder
+   * add resource is a new lifecycle task for resource plugin, which will do some extra work after project settings is updated,
+   * for example, APIM will scaffold the openapi folder with files
    */
-  addResource?: (ctx: Context, inputs: Inputs) => Promise<Result<Void, FxError>>;
+  addResource?: (ctx: ContextV3, inputs: Inputs) => Promise<Result<Void, FxError>>;
 
   getQuestionsForLocalProvision?: (
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs,
     localSettings: DeepReadonly<Json>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   provisionLocalResource?: (
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
   configureLocalResource?: (
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs,
     localSettings: Json,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
   getQuestionsForProvision?: (
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   provisionResource?: (
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<EnvInfoV3, FxError>>;
 
   generateResourceTemplate?: (
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs
   ) => Promise<Result<ResourceTemplate, FxError>>;
 
   configureResource?: (
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
 
   getQuestionsForDeploy?: (
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   deploy?: (
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
 
   getQuestionsForUserTask?: (
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs,
     func: Func,
     localSettings: Json,
@@ -163,7 +172,7 @@ export interface ResourcePlugin {
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   executeUserTask?: (
-    ctx: Context,
+    ctx: ContextV3,
     inputs: Inputs,
     func: Func,
     localSettings: Json,

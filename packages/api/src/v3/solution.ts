@@ -1,17 +1,11 @@
 import Module from "module";
 import { FxError, Inputs, Json, QTreeNode, Result, TokenProvider, v2, Void } from "..";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
-import { ScaffoldTemplate } from "./plugins";
 import { EnvInfoV3 } from "./types";
 
 export type StrictOmit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 export type SolutionPluginV3 = StrictOmit<v2.SolutionPlugin, "getQuestions"> & {
-  /**
-   * Source code template descriptions
-   */
-  getTemplates: (ctx: Context, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
-
   /**
    * scaffold will be an independent stage
    */
@@ -81,13 +75,10 @@ export type SolutionPluginV3 = StrictOmit<v2.SolutionPlugin, "getQuestions"> & {
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
-  provisionLocalResource?: (
-    ctx: Context,
-    inputs: InputsWithProjectPath,
-    localSettings: Json,
-    tokenProvider: TokenProvider
-  ) => Promise<Result<Void, FxError>>;
-
+  /**
+   * 1. modify the envInfo type to EnvInfoV3
+   * 2. modify the return type, to simplify the implementation cost, for partial success scenario, solution will directly update the envInfo input
+   */
   provisionResource?: (
     ctx: Context,
     inputs: InputsWithProjectPath,

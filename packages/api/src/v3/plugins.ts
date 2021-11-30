@@ -117,7 +117,9 @@ export interface ResourcePlugin extends Plugin {
    * for example, APIM will scaffold the openapi folder with files
    */
   addResource?: (ctx: ContextV3, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-
+  /**
+   * customize questions needed for local debug
+   */
   getQuestionsForLocalProvision?: (
     ctx: ContextV3,
     inputs: Inputs,
@@ -138,7 +140,9 @@ export interface ResourcePlugin extends Plugin {
     localSettings: Json,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
-
+  /**
+   * customize questions needed for provision
+   */
   getQuestionsForProvision?: (
     ctx: ContextV3,
     inputs: Inputs,
@@ -164,7 +168,9 @@ export interface ResourcePlugin extends Plugin {
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
-
+  /**
+   * customize questions needed for deploy
+   */
   getQuestionsForDeploy?: (
     ctx: ContextV3,
     inputs: Inputs,
@@ -178,7 +184,9 @@ export interface ResourcePlugin extends Plugin {
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
-
+  /**
+   * customize questions needed for user task
+   */
   getQuestionsForUserTask?: (
     ctx: ContextV3,
     inputs: Inputs,
@@ -190,7 +198,7 @@ export interface ResourcePlugin extends Plugin {
 
   executeUserTask?: (
     ctx: ContextV3,
-    inputs: InputsWithProjectPath,
+    inputs: Inputs,
     func: Func,
     localSettings: Json,
     envInfo: EnvInfoV3,

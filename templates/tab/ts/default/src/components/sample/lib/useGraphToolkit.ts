@@ -1,6 +1,6 @@
 import { LogLevel, setLogLevel, setLogFunction } from "@microsoft/teamsfx";
 import { Providers, ProvidersChangedState, ProviderState } from "@microsoft/mgt-element";
-import { TeamsFxProvider } from "../../../TeamsFxProvider";
+import { TeamsFxProvider } from "@microsoft/mgt-teamsfx-provider";
 import React from "react";
 
 export function useGraphToolkit() {

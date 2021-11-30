@@ -92,54 +92,11 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
     sandbox.stub(environmentManager, "loadEnvInfo").resolves(ok(mockedCtx.envInfo));
 
     const result = await solution.listAllCollaborators(mockedCtx);
+
     expect(result.isErr()).to.be.false;
     if (!result.isErr()) {
       expect(result.value[mockedCtx.envInfo.envName].state).equals(
         CollaborationState.NotProvisioned
-      );
-    }
-  });
-
-  it("should return SolutionIsNotIdle state if solution state is not idle", async () => {
-    const solution = new TeamsAppSolution();
-    expect(solution.runningState).equal(SolutionRunningState.Idle);
-
-    const mockedCtx = mockSolutionContext();
-
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: "fake_tid",
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
-
-    sandbox.stub(environmentManager, "listEnvConfigs").resolves(ok([mockedCtx.envInfo.envName]));
-    sandbox.stub(environmentManager, "loadEnvInfo").resolves(ok(mockedCtx.envInfo));
-
-    solution.runningState = SolutionRunningState.ProvisionInProgress;
-    let result = await solution.listAllCollaborators(mockedCtx);
-    expect(result.isErr()).to.be.false;
-
-    if (!result.isErr()) {
-      expect(result.value[mockedCtx.envInfo.envName].state).equals(
-        CollaborationState.SolutionIsNotIdle
-      );
-    }
-
-    solution.runningState = SolutionRunningState.DeployInProgress;
-    result = await solution.listAllCollaborators(mockedCtx);
-    expect(result.isErr()).to.be.false;
-    if (!result.isErr()) {
-      expect(result.value[mockedCtx.envInfo.envName].state).equals(
-        CollaborationState.SolutionIsNotIdle
-      );
-    }
-    solution.runningState = SolutionRunningState.PublishInProgress;
-    result = await solution.listAllCollaborators(mockedCtx);
-    expect(result.isErr()).to.be.false;
-    if (!result.isErr()) {
-      expect(result.value[mockedCtx.envInfo.envName].state).equals(
-        CollaborationState.SolutionIsNotIdle
       );
     }
   });
@@ -202,7 +159,6 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         CollaborationState.M365TenantNotMatch
       );
     }
-    sandbox.restore();
   });
 
   it("should return error if list collaborator failed", async () => {
@@ -338,6 +294,5 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
     expect(result.value[mockedCtx.envInfo.envName].collaborators![0].teamsAppResourceId).equal(
       "fake-teams-app-resource-id"
     );
-    sinon.restore();
   });
 });

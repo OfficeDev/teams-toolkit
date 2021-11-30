@@ -12,6 +12,9 @@ describe("Azure App Scaffold", function () {
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
 
+  // Should succeed on the 3rd try
+  this.retries(2);
+
   it(`Tab + Bot + Function in TypeScript`, async function () {
     const lang = "typescript";
 

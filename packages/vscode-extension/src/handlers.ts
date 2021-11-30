@@ -1901,12 +1901,28 @@ export async function updatePreviewManifest(args: any[]) {
     },
   };
 
-  return await runUserTask(
+  const result = await runUserTask(
     func,
     TelemetryEvent.UpdatePreviewManifest,
     env && env === "local" ? true : false,
     env
   );
+
+  if (!args || args.length === 0) {
+    const workspacePath = getWorkspacePath();
+    const inputs = getSystemInputs();
+    inputs.ignoreEnvInfo = true;
+    const env = await core.getSelectedEnv(inputs);
+    if (env.isErr()) {
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdatePreviewManifest, env.error);
+      return err(env.error);
+    }
+    const manifestPath = `${workspacePath}/${BuildFolderName}/${AppPackageFolderName}/manifest.${env.value}.json`;
+    workspace.openTextDocument(manifestPath).then((document) => {
+      window.showTextDocument(document);
+    });
+  }
+  return result;
 }
 
 export async function signOutAzure(isFromTreeView: boolean) {

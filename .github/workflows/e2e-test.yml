@@ -137,11 +137,10 @@ jobs:
       - name: run test
         working-directory: packages/cli
         run: |
-          file=`find tests/e2e -name $case".tests.ts"`
+          file=`find tests/e2e -name "${{ matrix.cases }}.tests.ts"`
           if [ ! -z "$file" ]; then
             npx mocha --reporter @mochajs/json-file-reporter $file
           fi
-          done
 
       - name: Upload test report
         uses: actions/upload-artifact@v2

@@ -130,7 +130,7 @@ describe("apimManager.generateArmTemplates", () => {
     ];
 
     // Act
-    const result = await apimManager.generateArmTemplates();
+    const result = await apimManager.updateArmTemplates();
 
     // Assert
     const testProvisionModuleFileName = "apimProvision.result.bicep";

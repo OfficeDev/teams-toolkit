@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Aocheng Wang <aochengwang@microsoft.com>
+ */
+
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
 import fs from "fs-extra";

@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
-
 // Licensed under the MIT license.
+
+/**
+ * @author Bowen Song <bowen.song@microsoft.com>
+ */
 
 import fs from "fs-extra";
 

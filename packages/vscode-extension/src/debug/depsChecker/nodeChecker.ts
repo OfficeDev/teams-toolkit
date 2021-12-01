@@ -15,10 +15,10 @@ class NodeVersion {
 }
 
 export abstract class NodeChecker implements IDepsChecker {
-  protected abstract readonly _nodeNotSupportedHelpLink: string;
   protected abstract readonly _nodeNotFoundHelpLink: string;
   protected abstract readonly _nodeNotSupportedEvent: DepsCheckerEvent;
   protected abstract getSupportedVersions(): Promise<string[]>;
+  protected abstract getNodeNotSupportedHelpLink(): Promise<string>;
 
   private readonly _telemetry: IDepsTelemetry;
   protected readonly _adapter: IDepsAdapter;
@@ -58,7 +58,7 @@ export abstract class NodeChecker implements IDepsChecker {
           .join(currentVersion.version)
           .split("@SupportedVersions")
           .join(supportedVersionsString),
-        this._nodeNotSupportedHelpLink
+        await this.getNodeNotSupportedHelpLink()
       );
     }
 

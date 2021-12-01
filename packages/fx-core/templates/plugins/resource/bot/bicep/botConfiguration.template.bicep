@@ -9,7 +9,7 @@ param currentAppSettings object
 var botWebAppName = split(provisionOutputs.botOutput.value.botWebAppResourceId, '/')[8]
 var m365ClientId = provisionParameters['m365ClientId']
 {{#contains 'fx-resource-key-vault' Plugins}}
-var m365ClientSecret = provisionOutputs.keyVaultOutput.value.m365ClientSecretReference
+var m365ClientSecret = {{../PluginOutput.fx-resource-key-vault.References.m365ClientSecretReference}}
 {{/contains}}
 {{#notContains 'fx-resource-key-vault' Plugins}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']
@@ -18,7 +18,7 @@ var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var botAadAppClientId = provisionParameters['botAadAppClientId']
 {{#contains 'fx-resource-key-vault' Plugins}}
-var botAadAppClientSecret = provisionOutputs.keyVaultOutput.value.botClientSecretReference
+var botAadAppClientSecret = {{../PluginOutput.fx-resource-key-vault.References.botClientSecretReference}}
 {{/contains}}
 {{#notContains 'fx-resource-key-vault' Plugins}}
 var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']

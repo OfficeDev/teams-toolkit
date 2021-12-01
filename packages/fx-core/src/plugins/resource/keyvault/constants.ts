@@ -17,6 +17,11 @@ export class Constants {
     shortName: "kv",
   };
 
+  static readonly KeyVaultBicep = {
+    m365ClientSecretReference: "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference",
+    botClientSecretReference: "provisionOutputs.keyVaultOutput.value.botClientSecretReference",
+  };
+
   static readonly Stage = {
     generateArmTemplates: "generate-arm-templates",
   };

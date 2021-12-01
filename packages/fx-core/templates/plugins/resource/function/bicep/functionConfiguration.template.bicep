@@ -12,7 +12,7 @@ var functionAppName = split({{PluginOutput.fx-resource-function.References.funct
 
 var m365ClientId = provisionParameters['m365ClientId']
 {{#contains 'fx-resource-key-vault' Plugins}}
-var m365ClientSecret = provisionOutputs.keyVaultOutput.value.m365ClientSecretReference
+var m365ClientSecret = {{../PluginOutput.fx-resource-key-vault.References.m365ClientSecretReference}}
 {{/contains}}
 {{#notContains 'fx-resource-key-vault' Plugins}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']

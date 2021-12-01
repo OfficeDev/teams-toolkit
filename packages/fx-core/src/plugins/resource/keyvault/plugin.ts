@@ -32,6 +32,10 @@ export class KeyVaultPluginImpl {
           path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
           ConstantString.UTF8Encoding
         ),
+        Reference: {
+          m365ClientSecretReference: Constants.KeyVaultBicep.m365ClientSecretReference,
+          botClientSecretReference: Constants.KeyVaultBicep.botClientSecretReference,
+        },
         Modules: {
           keyVault: await fs.readFile(provisionModuleResult, ConstantString.UTF8Encoding),
         },

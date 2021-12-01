@@ -10,7 +10,6 @@ var m365ClientSecret = provisionParameters['m365ClientSecret']
 var botClientSecretName = 'botClientSecret'
 var botClientSecret = contains(provisionParameters, 'botAadAppClientSecret') ? provisionParameters['botAadAppClientSecret'] : ''
 
-
 resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   name: keyVaultName
   location: resourceGroup().location

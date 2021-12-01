@@ -110,6 +110,7 @@ import {
   TabOptionItem,
   GetUserEmailQuestion,
   TabSPFxItem,
+  AzureResourceKeyVault,
 } from "./question";
 import {
   getActivatedResourcePlugins,
@@ -163,6 +164,7 @@ export class TeamsAppSolution implements Solution {
   FunctionPlugin: Plugin;
   SqlPlugin: Plugin;
   ApimPlugin: Plugin;
+  KeyVaultPlugin: Plugin;
   LocalDebugPlugin: Plugin;
 
   name = "fx-solution-azure";
@@ -178,6 +180,7 @@ export class TeamsAppSolution implements Solution {
     this.FunctionPlugin = Container.get<Plugin>(ResourcePlugins.FunctionPlugin);
     this.SqlPlugin = Container.get<Plugin>(ResourcePlugins.SqlPlugin);
     this.ApimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin);
+    this.KeyVaultPlugin = Container.get<Plugin>(ResourcePlugins.KeyVaultPlugin);
     this.LocalDebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
     this.runningState = SolutionRunningState.Idle;
   }
@@ -1388,14 +1391,17 @@ export class TeamsAppSolution implements Solution {
     const functionPlugin: Plugin = this.FunctionPlugin;
     const sqlPlugin: Plugin = this.SqlPlugin;
     const apimPlugin: Plugin = this.ApimPlugin;
+    const keyVaultPlugin: Plugin = this.KeyVaultPlugin;
     const alreadyHaveFunction = selectedPlugins.includes(functionPlugin.name);
     const alreadyHaveSQL = selectedPlugins.includes(sqlPlugin.name);
     const alreadyHaveAPIM = selectedPlugins.includes(apimPlugin.name);
+    const alreadyHavekeyVault = selectedPlugins.includes(keyVaultPlugin.name);
 
     const addQuestion = createAddAzureResourceQuestion(
       alreadyHaveFunction,
       alreadyHaveSQL,
-      alreadyHaveAPIM
+      alreadyHaveAPIM,
+      alreadyHavekeyVault
     );
 
     const addAzureResourceNode = new QTreeNode(addQuestion);
@@ -1412,7 +1418,9 @@ export class TeamsAppSolution implements Solution {
           azure_function.condition = { contains: AzureResourceFunction.id };
         } else {
           // if not function activated, select any option will trigger function question
-          azure_function.condition = { minItems: 1 };
+          azure_function.condition = {
+            containsAny: [AzureResourceApim.id, AzureResourceFunction.id, AzureResourceSQL.id],
+          };
         }
         if (azure_function.data) addAzureResourceNode.addChild(azure_function);
       }
@@ -1584,9 +1592,11 @@ export class TeamsAppSolution implements Solution {
     const functionPlugin: Plugin = this.FunctionPlugin;
     const sqlPlugin: Plugin = this.SqlPlugin;
     const apimPlugin: Plugin = this.ApimPlugin;
+    const keyVaultPlugin: Plugin = this.KeyVaultPlugin;
     const alreadyHaveFunction = selectedPlugins?.includes(functionPlugin.name);
     const alreadyHaveSql = selectedPlugins?.includes(sqlPlugin.name);
     const alreadyHaveApim = selectedPlugins?.includes(apimPlugin.name);
+    const alreadyHaveKeyVault = selectedPlugins?.includes(keyVaultPlugin.name);
 
     const addResourcesAnswer = ctx.answers[AzureSolutionQuestionNames.AddResources] as string[];
 
@@ -1603,6 +1613,7 @@ export class TeamsAppSolution implements Solution {
     const addSQL = addResourcesAnswer.includes(AzureResourceSQL.id);
     const addFunc = addResourcesAnswer.includes(AzureResourceFunction.id);
     const addApim = addResourcesAnswer.includes(AzureResourceApim.id);
+    const addKeyVault = addResourcesAnswer.includes(AzureResourceKeyVault.id);
 
     if ((alreadyHaveSql && addSQL) || (alreadyHaveApim && addApim)) {
       const e = returnUserError(
@@ -1641,6 +1652,12 @@ export class TeamsAppSolution implements Solution {
       pluginsToScaffold.push(apimPlugin);
       azureResource.push(AzureResourceApim.id);
       notifications.push(AzureResourceApim.label);
+      addNewResoruceToProvision = true;
+    }
+    if (addKeyVault && !alreadyHaveKeyVault) {
+      pluginsToScaffold.push(keyVaultPlugin);
+      azureResource.push(AzureResourceKeyVault.id);
+      notifications.push(AzureResourceKeyVault.label);
       addNewResoruceToProvision = true;
     }
 

@@ -196,6 +196,7 @@ jobs:
             email=`cat $file | grep '@author' | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
 
             if [ -z "$email" ]; then
+              description="$description <tr> <td>$case</td> <td>N/A</td> </tr> "
               continue
             fi
 

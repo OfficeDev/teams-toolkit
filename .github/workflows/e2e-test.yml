@@ -139,7 +139,7 @@ jobs:
         run: |
           file=`find tests/e2e -name $case".tests.ts"`
           if [ ! -z "$file" ]; then
-            npx mocha --reporter @mochajs/json-file-reporter $f
+            npx mocha --reporter @mochajs/json-file-reporter $file
           fi
           done
 

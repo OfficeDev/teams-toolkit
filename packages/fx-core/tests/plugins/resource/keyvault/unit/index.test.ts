@@ -8,7 +8,7 @@ import * as path from "path";
 import { TestHelper } from "../helper";
 import * as fs from "fs-extra";
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { ConstantString, mockSolutionUpdateArmTemplates } from "../../util";
+import { ConstantString, mockSolutionGenerateArmTemplates } from "../../util";
 import { KeyVaultPlugin } from "../../../../../src";
 import { Constants } from "../../../../../src/plugins/resource/keyvault/constants";
 
@@ -53,7 +53,7 @@ describe("keyVaultPlugin", () => {
 
     chai.assert.isTrue(generateArmTemplatesResult.isOk());
     if (generateArmTemplatesResult.isOk()) {
-      const result = mockSolutionUpdateArmTemplates(
+      const result = mockSolutionGenerateArmTemplates(
         mockedSolutionDataContext,
         generateArmTemplatesResult.value
       );

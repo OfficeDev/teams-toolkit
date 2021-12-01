@@ -138,7 +138,6 @@ describe("checkPermission() for Teamsfx projects", () => {
       name: "fake_name",
     });
 
-    mockedCtx.envInfo.state.set(PluginNames.SOLUTION, new ConfigMap());
     mockedCtx.envInfo.state
       .get(PluginNames.SOLUTION)
       ?.set(REMOTE_TEAMS_APP_TENANT_ID, mockProjectTenantId);
@@ -197,7 +196,6 @@ describe("checkPermission() for Teamsfx projects", () => {
       ]);
     };
 
-    mockedCtx.envInfo.state.set(PluginNames.SOLUTION, new ConfigMap());
     mockedCtx.envInfo.state
       .get(PluginNames.SOLUTION)
       ?.set(REMOTE_TEAMS_APP_TENANT_ID, mockProjectTenantId);
@@ -254,7 +252,6 @@ describe("checkPermission() for Teamsfx projects", () => {
         },
       ]);
     };
-    mockedCtx.envInfo.state.set(PluginNames.SOLUTION, new ConfigMap());
     mockedCtx.envInfo.state
       .get(PluginNames.SOLUTION)
       ?.set(REMOTE_TEAMS_APP_TENANT_ID, mockProjectTenantId);

@@ -12,15 +12,7 @@ jobs:
     # You can uncomment the line below to use environments (refer to https://docs.github.com/en/actions/reference/environments). 
     #environment: test_environment
     env:
-      AZURE_ACCOUNT_NAME: ${{secrets.AZURE_ACCOUNT_NAME}}
-      AZURE_ACCOUNT_PASSWORD: ${{secrets.AZURE_ACCOUNT_PASSWORD}}
       AZURE_SUBSCRIPTION_ID: ${{secrets.AZURE_SUBSCRIPTION_ID}}
-      AZURE_TENANT_ID: ${{secrets.AZURE_TENANT_ID}}
-      M365_ACCOUNT_NAME: ${{secrets.M365_ACCOUNT_NAME}}
-      M365_ACCOUNT_PASSWORD: ${{secrets.M365_ACCOUNT_PASSWORD}}
-
-      # insider preview features are enabled by default
-
       # To specify the env name for multi-env feature.
       TEAMSFX_ENV_NAME: staging
 
@@ -46,6 +38,16 @@ jobs:
       # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
       - name: Run Unit Test
         run: cd tabs && npm run test && cd -
+
+      - name: Login Azure by service principal 
+        uses: OfficeDev/teamsfx-cli-action@v1
+        with:
+          commands: account login azure 
+          service-principal: true
+          username: ${{secrets.AZURE_SERVICE_PRINCIPAL_NAME}}
+          password: ${{secrets.AZURE_SERVICE_PRINCIPAL_PASSWORD}}
+          tenant: ${{secrets.AZURE_TENANT_ID}}
+          env: ${{env.TEAMSFX_ENV_NAME}}
 
       # We suggest to do the `teamsfx provision` step manually or in a separate workflow. The following steps are for your reference.
       # After provisioning, you should commit necessary files under .fx into the repository.
@@ -96,9 +98,3 @@ jobs:
         with:
           name: appPackage
           path: build/appPackage/appPackage.${{env.TEAMSFX_ENV_NAME}}.zip
-
-      - name: Publish Teams App
-        uses: OfficeDev/teamsfx-cli-action@v1
-        with:
-          commands: publish
-          env: ${{env.TEAMSFX_ENV_NAME}}

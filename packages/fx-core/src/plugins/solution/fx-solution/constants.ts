@@ -167,7 +167,7 @@ export const LOCAL_APPLICATION_ID_URIS = "local_applicationIdUris";
 export const REMOTE_APPLICATION_ID_URIS = "applicationIdUris";
 export const LOCAL_CLIENT_SECRET = "local_clientSecret";
 export const REMOTE_CLIENT_SECRET = "clientSecret";
-export const REMOTE_TENANT_ID = "tenantId";
+export const REMOTE_TEAMS_APP_TENANT_ID = "teamsAppTenantId";
 export const LOCAL_TENANT_ID = "local_tenantId";
 // Teams App Id for local debug
 export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";

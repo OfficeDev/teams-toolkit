@@ -24,7 +24,6 @@ import { CollaborationState, PermissionsResult, ResourcePermission } from "../..
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
   PluginNames,
-  REMOTE_TENANT_ID,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
@@ -43,6 +42,7 @@ import { flattenConfigMap } from "../../../resource/utils4v2";
 import { NamedThunk, executeConcurrently as executeNamedThunkConcurrently } from "./executor";
 import { CollaborationUtil, CollabApiParam } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
+import { REMOTE_TEAMS_APP_TENANT_ID } from "..";
 
 async function grantPermissionImpl(
   param: CollabApiParam,
@@ -122,7 +122,7 @@ async function grantPermissionImpl(
     progressBar?.next(`Grant permission for user ${email}`);
 
     if (platform === Platform.CLI) {
-      const aadAppTenantId = envState.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+      const aadAppTenantId = envState.get(PluginNames.SOLUTION)?.get(REMOTE_TEAMS_APP_TENANT_ID);
       if (!envName) {
         return err(
           sendErrorTelemetryThenReturnError(

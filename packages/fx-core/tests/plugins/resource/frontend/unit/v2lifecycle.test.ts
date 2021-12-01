@@ -21,7 +21,11 @@ import {
   ResourcePluginsV2,
 } from "../../../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { MockTools, randomAppName } from "../../../../core/utils";
-import { ConstantString, mockSolutionUpdateArmTemplates } from "../../util";
+import {
+  ConstantString,
+  mockSolutionGenerateArmTemplates,
+  mockSolutionUpdateArmTemplates,
+} from "../../util";
 
 describe("Frontend hosting V2", () => {
   const sandbox = sinon.createSandbox();
@@ -111,7 +115,7 @@ describe("Frontend hosting V2", () => {
     };
     assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplates(
+      const expectedResult = mockSolutionGenerateArmTemplates(
         mockedSolutionDataContext,
         result.value.template as ArmTemplateResult
       );

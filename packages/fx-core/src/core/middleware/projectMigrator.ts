@@ -3,31 +3,32 @@
 
 import {
   AppPackageFolderName,
+  assembleError,
   AzureSolutionSettings,
+  BuildFolderName,
   ConfigFolderName,
   EnvConfig,
   err,
   InputConfigsFolderName,
   Inputs,
+  LogProvider,
+  ok,
   Platform,
   ProjectSettings,
   ProjectSettingsFileName,
-  StatesFolderName,
   returnSystemError,
+  StatesFolderName,
   TeamsAppManifest,
-  LogProvider,
-  BuildFolderName,
-  assembleError,
 } from "@microsoft/teamsfx-api";
 import {
   CoreHookContext,
+  environmentManager,
+  getResourceFolder,
+  NotJsonError,
+  ProjectSettingError,
   serializeDict,
   SolutionConfigError,
-  ProjectSettingError,
-  NotJsonError,
-  environmentManager,
   SPFxConfigError,
-  getResourceFolder,
 } from "../..";
 import { globalStateUpdate } from "../../common/globalState";
 import { UpgradeCanceledError } from "../error";
@@ -40,9 +41,9 @@ import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { CoreSource, FxCore } from "..";
 import {
-  isMultiEnvEnabled,
-  isArmSupportEnabled,
   getStrings,
+  isArmSupportEnabled,
+  isMultiEnvEnabled,
   isSPFxProject,
 } from "../../common/tools";
 import { loadProjectSettings } from "./projectSettingsLoader";
@@ -131,8 +132,8 @@ class EnvConfigName {
 export class ArmParameters {
   static readonly FEStorageName = "frontendHostingStorageName";
   static readonly IdentityName = "userAssignedIdentityName";
-  static readonly SQLServer = "azureSqlServerName";
-  static readonly SQLDatabase = "azureSqlDatabaseName";
+  static readonly SQLServer = "sqlServerName";
+  static readonly SQLDatabase = "sqlDatabaseName";
   static readonly SimpleAuthSku = "simpleAuthSku";
   static readonly functionServerName = "functionServerfarmsName";
   static readonly functionStorageName = "functionStorageName";
@@ -147,6 +148,11 @@ export class ArmParameters {
 
 export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   if ((await needMigrateToArmAndMultiEnv(ctx)) && checkMethod(ctx)) {
+    if (!checkUserTasks(ctx)) {
+      ctx.result = ok(undefined);
+      return;
+    }
+
     const core = ctx.self as FxCore;
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
@@ -171,6 +177,8 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
 
     try {
       await migrateToArmAndMultiEnv(ctx);
+      // return ok for the lifecycle functions to prevent breaking error handling logic.
+      ctx.result = ok({});
     } catch (error) {
       // Strictly speaking, this telemetry event is not required because errorHandlerMW will send error telemetry anyway.
       // But it makes it easier to separate projectMigratorMW errors from other provision errors.
@@ -226,6 +234,19 @@ function checkMethod(ctx: CoreHookContext): boolean {
   const methods: Set<string> = new Set(["getProjectConfig", "checkPermission"]);
   if (ctx.method && methods.has(ctx.method) && fromReloadFlag) return false;
   fromReloadFlag = ctx.method != undefined && methods.has(ctx.method);
+  return true;
+}
+
+function checkUserTasks(ctx: CoreHookContext): boolean {
+  const userTaskArgs: Set<string> = new Set([
+    "getProgrammingLanguage",
+    "getLocalDebugEnvs",
+    "getSkipNgrokConfig",
+  ]);
+  const userTaskMethod = ctx.arguments[0]?.["method"];
+  if (ctx.method === "executeUserTask" && userTaskArgs.has(userTaskMethod)) {
+    return false;
+  }
   return true;
 }
 
@@ -288,13 +309,14 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   }
 
   let backupFolder: string | undefined;
+  const core = ctx.self as FxCore;
   try {
     backupFolder = await getBackupFolder(projectPath);
     await backup(projectPath, backupFolder);
     await updateConfig(ctx);
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnvStart);
-    await migrateMultiEnv(projectPath);
+    await migrateMultiEnv(projectPath, core.tools.logProvider);
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnv);
 
     const loadRes = await loadProjectSettings(inputs);
@@ -308,18 +330,29 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
+    core.tools.logProvider.error(`[core] Failed to upgrade project, error: '${err}'`);
     await handleError(projectPath, ctx, backupFolder);
     throw err;
   }
   await postMigration(projectPath, ctx, inputs, backupFolder);
 }
 
+async function getManifestPath(fx: string, projectPath: string): Promise<string> {
+  if (await fs.pathExists(path.join(projectPath, AppPackageFolderName, REMOTE_MANIFEST))) {
+    return path.join(projectPath, AppPackageFolderName, REMOTE_MANIFEST);
+  }
+  // 2.3.2<= version <= 2.4.1
+  if (await fs.pathExists(path.join(fx, AppPackageFolderName, REMOTE_MANIFEST))) {
+    return path.join(fx, AppPackageFolderName, REMOTE_MANIFEST);
+  }
+  // 2.0.1 <= version <= 2.3.1
+  return path.join(fx, REMOTE_MANIFEST);
+}
+
 async function preCheckKeyFiles(projectPath: string, ctx: CoreHookContext): Promise<void> {
   const core = ctx.self as FxCore;
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
-  const manifestPath = (await fs.pathExists(path.join(fx, AppPackageFolderName, REMOTE_MANIFEST)))
-    ? path.join(fx, AppPackageFolderName, REMOTE_MANIFEST)
-    : path.join(projectPath, AppPackageFolderName, REMOTE_MANIFEST);
+  const manifestPath = await getManifestPath(fx, projectPath);
   await preReadJsonFile(path.join(fx, "env.default.json"), core);
   await preReadJsonFile(path.join(fx, "settings.json"), core);
   await preReadJsonFile(manifestPath, core);
@@ -356,7 +389,13 @@ async function handleError(
   ctx: CoreHookContext,
   backupFolder: string | undefined
 ) {
-  await cleanup(projectPath, backupFolder);
+  try {
+    await cleanup(projectPath, backupFolder);
+  } catch (e) {
+    // try my best to cleanup
+    const core = ctx.self as FxCore;
+    core.tools.logProvider.error(`[core] Failed to cleanup the backup, error: '${e}'`);
+  }
   const core = ctx.self as FxCore;
   core.tools.ui
     .showMessage(
@@ -475,7 +514,7 @@ async function generateRemoteTemplate(manifestString: string) {
   return manifest;
 }
 
-async function generateLocalTemplate(manifestString: string) {
+async function generateLocalTemplate(manifestString: string, isSPFx: boolean, log: LogProvider) {
   manifestString = manifestString.replace(new RegExp("{version}", "g"), "1.0.0");
   manifestString = manifestString.replace(
     new RegExp("{baseUrl}", "g"),
@@ -498,6 +537,30 @@ async function generateLocalTemplate(manifestString: string) {
     (manifest.name.full ? manifest.name.full : manifest.name.short) + "-local-debug";
   manifest.name.short = getLocalAppName(manifest.name.short);
   manifest.id = "{{localSettings.teamsApp.teamsAppId}}";
+
+  // SPFx teams workbench url needs to be updated
+  if (isSPFx) {
+    if (manifest.configurableTabs) {
+      for (const [index, tab] of manifest.configurableTabs.entries()) {
+        const reg = /[a-fA-F0-9]{8}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{4}-[a-fA-F0-9]{12}/;
+        const result = tab.configurationUrl.match(reg);
+        if (result && result.length > 0) {
+          const componentID = result[0];
+          tab.configurationUrl = `https://{teamSiteDomain}{teamSitePath}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest={teamSitePath}/_layouts/15/TeamsWorkBench.aspx%3FcomponentId=${componentID}%26openPropertyPane=true%26teams%26forceLocale={locale}%26loadSPFX%3Dtrue%26debugManifestsFile%3Dhttps%3A%2F%2Flocalhost%3A4321%2Ftemp%2Fmanifests.js`;
+        } else {
+          const message = `[core] Cannot find componentID in configurableTabs[${index}].configrationUrl, Teams workbench debug may fail.`;
+          log.warning(message);
+        }
+      }
+    }
+    if (manifest.staticTabs) {
+      for (const tab of manifest.staticTabs) {
+        const componentID = tab.entityId;
+        tab.contentUrl = `https://{teamSiteDomain}/_layouts/15/TeamsLogon.aspx?SPFX=true&dest={teamSitePath}/_layouts/15/TeamsWorkBench.aspx%3FcomponentId=${componentID}%26teams%26personal%26forceLocale={locale}%26loadSPFX%3Dtrue%26debugManifestsFile%3Dhttps%3A%2F%2Flocalhost%3A4321%2Ftemp%2Fmanifests.js`;
+      }
+    }
+  }
+
   return manifest;
 }
 
@@ -505,7 +568,33 @@ async function getManifest(sourceManifestFile: string): Promise<TeamsAppManifest
   return await readJson(sourceManifestFile);
 }
 
-async function migrateMultiEnv(projectPath: string): Promise<void> {
+async function copyManifest(projectPath: string, fx: string, target: string) {
+  if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
+    await fs.copy(path.join(projectPath, AppPackageFolderName), target);
+  } else if (await fs.pathExists(path.join(fx, AppPackageFolderName))) {
+    // version <= 2.4.1
+    await fs.copy(path.join(fx, AppPackageFolderName), target);
+  } else {
+    // version <= 2.3.1
+    await fs.copy(path.join(fx, REMOTE_MANIFEST), path.join(target, REMOTE_MANIFEST));
+    const manifest: TeamsAppManifest = await getManifest(path.join(target, REMOTE_MANIFEST));
+    const color = (await fs.pathExists(path.join(fx, "color.png")))
+      ? "color.png"
+      : manifest.icons.color;
+    const outline = (await fs.pathExists(path.join(fx, "outline.png")))
+      ? "outline.png"
+      : manifest.icons.outline;
+
+    if (color !== "" && (await fs.pathExists(path.join(fx, color)))) {
+      await fs.copy(path.join(fx, color), path.join(target, color));
+    }
+    if (outline !== "" && (await fs.pathExists(path.join(fx, outline)))) {
+      await fs.copy(path.join(fx, outline), path.join(target, outline));
+    }
+  }
+}
+
+async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<void> {
   const { fx, fxConfig, templateAppPackage, fxState } = await getMultiEnvFolders(projectPath);
   const {
     hasFrontend,
@@ -568,12 +657,7 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   }
 
   // appPackage
-  if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
-    await fs.copy(path.join(projectPath, AppPackageFolderName), templateAppPackage);
-  } else if (await fs.pathExists(path.join(fx, AppPackageFolderName))) {
-    // version <= 2.4.1
-    await fs.copy(path.join(fx, AppPackageFolderName), templateAppPackage);
-  }
+  await copyManifest(projectPath, fx, templateAppPackage);
   const sourceManifestFile = path.join(templateAppPackage, REMOTE_MANIFEST);
   const manifest: TeamsAppManifest = await getManifest(sourceManifestFile);
   await fs.remove(sourceManifestFile);
@@ -585,7 +669,11 @@ async function migrateMultiEnv(projectPath: string): Promise<void> {
   }
 
   // generate manifest.local.template.json
-  const localManifest: TeamsAppManifest = await generateLocalTemplate(JSON.stringify(manifest));
+  const localManifest: TeamsAppManifest = await generateLocalTemplate(
+    JSON.stringify(manifest),
+    isSPFx,
+    log
+  );
   const targetLocalManifestFile = path.join(templateAppPackage, MANIFEST_LOCAL);
   await fs.writeFile(targetLocalManifestFile, JSON.stringify(localManifest, null, 4));
 
@@ -619,6 +707,8 @@ async function removeExpiredFields(devState: string, devUserData: string): Promi
   }
   const expiredStateKeys: [string, string][] = [
     [PluginNames.LDEBUG, ""],
+    // for version 2.0.1
+    [PluginNames.FUNC, defaultFunctionName],
     [PluginNames.SOLUTION, programmingLanguage],
     [PluginNames.SOLUTION, defaultFunctionName],
     [PluginNames.SOLUTION, "localDebugTeamsAppId"],
@@ -732,12 +822,8 @@ async function backup(projectPath: string, backupFolder: string): Promise<void> 
       await fs.copy(path.join(fx, file), path.join(backupFx, file));
     }
   }
-  if (await fs.pathExists(path.join(projectPath, AppPackageFolderName))) {
-    await fs.copy(path.join(projectPath, AppPackageFolderName), backupAppPackage);
-  } else if (await fs.pathExists(path.join(fx, AppPackageFolderName))) {
-    // version <= 2.4.1
-    await fs.copy(path.join(fx, AppPackageFolderName), backupAppPackage);
-  }
+
+  await copyManifest(projectPath, fx, backupAppPackage);
 }
 
 // append folder path to .gitignore under the project root.
@@ -780,6 +866,10 @@ async function removeOldProjectFiles(projectPath: string): Promise<void> {
   await fs.remove(path.join(fx, "new.env.default.json"));
   // version <= 2.4.1, remove .fx/appPackage.
   await fs.remove(path.join(fx, AppPackageFolderName));
+  // version <= 3.2.1
+  await fs.remove(path.join(fx, REMOTE_MANIFEST));
+  await fs.remove(path.join(fx, "color.png"));
+  await fs.remove(path.join(fx, "outline.png"));
 }
 
 async function ensureProjectSettings(
@@ -918,7 +1008,7 @@ async function updateConfig(ctx: CoreHookContext) {
   if (needUpdate && envConfig[ResourcePlugins.Function]?.[EnvConfigName.FuncAppName]) {
     envConfig[ResourcePlugins.Function][
       EnvConfigName.FunctionAppResourceId
-    ] = `${configPrefix}/providers/Microsoft.Web/${
+    ] = `${configPrefix}/providers/Microsoft.Web/sites/${
       envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName]
     }`;
     delete envConfig[ResourcePlugins.Function][EnvConfigName.FuncAppName];
@@ -1040,8 +1130,13 @@ async function generateArmParameterJson(ctx: CoreHookContext) {
   }
   // manage identity
   if (envConfig[ResourcePlugins.Identity]?.[EnvConfigName.Identity]) {
+    // Teams Toolkit <= 2.7
     parameterObj[ArmParameters.IdentityName] =
       envConfig[ResourcePlugins.Identity][EnvConfigName.Identity];
+  } else if (envConfig[ResourcePlugins.Identity]?.[EnvConfigName.IdentityName]) {
+    // Teams Toolkit >= 2.8
+    parameterObj[ArmParameters.IdentityName] =
+      envConfig[ResourcePlugins.Identity][EnvConfigName.IdentityName];
   }
   // azure SQL
   if (envConfig[ResourcePlugins.AzureSQL]?.[EnvConfigName.SqlEndpoint]) {

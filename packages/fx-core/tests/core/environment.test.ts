@@ -89,7 +89,7 @@ describe("APIs of Environment Manager", () => {
   };
   const envStateDataWithCredential = {
     solution: {
-      teamsAppTenantId: "{{solution.teamsAppTenantId}}",
+      teamsAppTenantId: decryptedValue,
       key: "value",
     },
   };
@@ -500,12 +500,7 @@ describe("APIs of Environment Manager", () => {
         projectPath
       );
 
-      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}`;
       assert.deepEqual(JSON.parse(fileMap.get(envFiles.envState)), envStateDataWithCredential);
-      assert.equal(
-        formatContent(fileMap.get(envFiles.userDataFile)),
-        formatContent(expectedUserDataFileContent)
-      );
     });
 
     it("with userdata: write environment state with target env", async () => {
@@ -518,14 +513,9 @@ describe("APIs of Environment Manager", () => {
       const envFiles = environmentManager.getEnvStateFilesPath(targetEnvName, projectPath);
 
       const expectedEnvStateContent = JSON.stringify(envStateDataWithCredential, null, 4);
-      const expectedUserDataFileContent = `solution.teamsAppTenantId=${encryptedSecret}`;
       assert.equal(
         formatContent(fileMap.get(envFiles.envState)),
         formatContent(expectedEnvStateContent)
-      );
-      assert.equal(
-        formatContent(fileMap.get(envFiles.userDataFile)),
-        formatContent(expectedUserDataFileContent)
       );
     });
   });

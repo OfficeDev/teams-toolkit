@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.10.0",
+  "version": "3.0.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -239,7 +239,7 @@
         },
         {
           "command": "fx-extension.listCollaborator",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/",
+          "when": "view == teamsfx-environment && viewItem =~ /azure-environment/",
           "group": "inline@3"
         },
         {
@@ -254,7 +254,7 @@
         },
         {
           "command": "fx-extension.grantPermission",
-          "when": "view == teamsfx-environment && viewItem =~ /environment/",
+          "when": "view == teamsfx-environment && viewItem =~ /azure-environment/",
           "group": "inline@3"
         }
       ],
@@ -781,9 +781,9 @@
       {
         "title": "Teams Toolkit",
         "properties": {
-          "fx-extension.rollbackToTeamsToolkitV2": {
+          "fx-extension.(Obsolete)WorkOnTeamsToolkitV2ProjectConfigurationFiles": {
             "type": "boolean",
-            "description": "Rollback to Teams Toolkit v2. Notice the setting will be obsolete and removed soon. (requires reload of VS Code)",
+            "description": "Temporarily work on Teams Toolkit V2 project configuration files. This setting is obsolete and will be removed soon. (Requires reload of VS Code)",
             "default": false
           },
           "fx-extension.validateNode": {
@@ -945,8 +945,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.10.0",
-    "@microsoft/teamsfx-core": "^0.11.0",
+    "@microsoft/teamsfx-api": "^0.11.0",
+    "@microsoft/teamsfx-core": "^1.0.0",
     "@npmcli/arborist": "^4.0.4",
     "@npmcli/package-json": "^1.0.1",
     "async-mutex": "^0.3.1",

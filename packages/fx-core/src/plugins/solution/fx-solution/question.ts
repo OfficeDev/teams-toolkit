@@ -193,11 +193,13 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
 export function createAddAzureResourceQuestion(
   alreadyHaveFunction: boolean,
   alreadhHaveSQL: boolean,
-  alreadyHaveAPIM: boolean
+  alreadyHaveAPIM: boolean,
+  alreadyHavekeyVault: boolean
 ): MultiSelectQuestion {
-  const options: OptionItem[] = [AzureResourceFunction, AzureResourceKeyVault];
+  const options: OptionItem[] = [AzureResourceFunction];
   if (!alreadhHaveSQL) options.push(AzureResourceSQL);
   if (!alreadyHaveAPIM) options.push(AzureResourceApim);
+  if (!alreadyHavekeyVault) options.push(AzureResourceKeyVault);
   return {
     name: AzureSolutionQuestionNames.AddResources,
     title: "Cloud resources",

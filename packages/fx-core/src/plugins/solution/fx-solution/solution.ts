@@ -1391,14 +1391,17 @@ export class TeamsAppSolution implements Solution {
     const functionPlugin: Plugin = this.FunctionPlugin;
     const sqlPlugin: Plugin = this.SqlPlugin;
     const apimPlugin: Plugin = this.ApimPlugin;
+    const keyVaultPlugin: Plugin = this.KeyVaultPlugin;
     const alreadyHaveFunction = selectedPlugins.includes(functionPlugin.name);
     const alreadyHaveSQL = selectedPlugins.includes(sqlPlugin.name);
     const alreadyHaveAPIM = selectedPlugins.includes(apimPlugin.name);
+    const alreadyHavekeyVault = selectedPlugins.includes(keyVaultPlugin.name);
 
     const addQuestion = createAddAzureResourceQuestion(
       alreadyHaveFunction,
       alreadyHaveSQL,
-      alreadyHaveAPIM
+      alreadyHaveAPIM,
+      alreadyHavekeyVault
     );
 
     const addAzureResourceNode = new QTreeNode(addQuestion);

@@ -201,7 +201,7 @@ jobs:
             fi
 
             if [ ! -v "email_uid[$email]" ]; then
-              resp=$(curl -u :${{ secrets.ADO_PAT }} "https://vssps.dev.azure.com/msazure/_apis/identities?searchFilter=General&filterValue=$i&queryMembership=None&api-version=6.0")
+              resp=$(curl -u :${{ secrets.ADO_PAT }} "https://vssps.dev.azure.com/msazure/_apis/identities?searchFilter=General&filterValue=$email&queryMembership=None&api-version=6.0")
               uid=$(echo $resp | jq '.value | .[] | .id' | xargs echo)
               email_uid[$i]=$uid
             fi

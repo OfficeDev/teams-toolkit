@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Zhiyu You <zhiyu.you@microsoft.com>
+ */
+
 import fs from "fs-extra";
 import path from "path";
 import { AadValidator, FrontendValidator, SimpleAuthValidator } from "../../commonlib";

@@ -55,7 +55,7 @@ export class AppStudioPlugin implements Plugin {
           name: Constants.BUILD_OR_PUBLISH_QUESTION,
           type: "singleSelect",
           staticOptions: [manuallySubmitOption, autoPublishOption],
-          title: "Teams Toolkit: Publish to Teams",
+          title: "Teams: Publish to Teams",
           default: autoPublishOption.id,
         });
         appStudioQuestions.addChild(buildOrPublish);

@@ -61,6 +61,7 @@
     "fs-extra": "^9.1.0",
     "glob": "^7.1.6",
     "got": "^11.8.2",
+    "handlebars": "^4.7.7",
     "http-close": "^1.0.0",
     "ignore": "^5.1.8",
     "install": "^0.13.0",

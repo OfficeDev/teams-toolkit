@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Chaoyi Yuan <chyuan@microsoft.com>
+ */
+
 import fs from "fs-extra";
 import path from "path";
 

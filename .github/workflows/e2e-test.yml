@@ -219,7 +219,7 @@ jobs:
           method: POST
           payload: |
             {
-              "to": "vsciotadt@microsoft.com",
+              "to": "haolong@microsoft.com",
               "body": "<table class=\"w3-table w3-striped w3-bordered\">${{ steps.list-failed-jobs.outputs.description }}</table> <br /> The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}",
               "subject": "[Failure] TeamsFx CLI E2E Test ${{ github.run-id }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"

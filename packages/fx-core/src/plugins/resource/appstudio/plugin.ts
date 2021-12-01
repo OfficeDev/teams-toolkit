@@ -1164,14 +1164,12 @@ export class AppStudioPluginImpl {
         throw appDefinitionRes.error;
       }
       let appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-      const colorIconContent =
-        manifest.icons.color && !manifest.icons.color.startsWith("https://")
-          ? (await fs.readFile(`${appDirectory}/${manifest.icons.color}`)).toString("base64")
-          : undefined;
-      const outlineIconContent =
-        manifest.icons.outline && !manifest.icons.outline.startsWith("https://")
-          ? (await fs.readFile(`${appDirectory}/${manifest.icons.outline}`)).toString("base64")
-          : undefined;
+      const colorIconContent = manifest.icons.color
+        ? (await fs.readFile(`${appDirectory}/${manifest.icons.color}`)).toString("base64")
+        : undefined;
+      const outlineIconContent = manifest.icons.outline
+        ? (await fs.readFile(`${appDirectory}/${manifest.icons.outline}`)).toString("base64")
+        : undefined;
       try {
         await AppStudioClient.updateApp(
           remoteTeamsAppId,

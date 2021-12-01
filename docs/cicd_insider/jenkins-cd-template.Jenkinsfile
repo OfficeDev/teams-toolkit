@@ -107,7 +107,7 @@ pipeline {
 
         stage('Upload Teams App package as artifact') {
             steps {
-                archiveArtifacts artifacts: 'appPackage/appPackage.staging.zip'
+                archiveArtifacts artifacts: 'build/appPackage/appPackage.staging.zip'
             }
         }
 

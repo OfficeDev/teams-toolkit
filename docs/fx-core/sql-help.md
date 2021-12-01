@@ -7,18 +7,16 @@
 ### Mitigation
 
 #### Step #1 add skip flag
-1. Open `.fx\env.default.json` file.
-1. Set value of 'skipAddingUser' config of 'fx-resource-azure-sql'.
-
-      ![image](../images/fx-core/sql/add-flag.png)
-
-1. Run `Provision` command again.
+1. Open `.fx\configs\config.{envName}.json` file.
+1. Add a key named 'skipAddingSqlUser', and set the value to true.
+1. Run `TeamsFx - Provision in the cloud` command again.
 
 #### Step #2 add database user manually
 
 To make sure the identity user can access to database correctly, you should add database user manually.
 Since the current logged in account hasn't enough permission to add database user, you may get a user account have enough permission to access to database. 
-1. Find values of 'sqlEndpoint', 'databaseName' config of 'fx-resource-azure-sql' and value of 'identity' config of 'fx-resource-identity'.
+1.  Open `.fx\states\state.{envName}.json` file.
+1. Find values of 'sqlEndpoint', 'databaseName' config of 'fx-resource-azure-sql' and value of 'identityName' config of 'fx-resource-identity'.
 
       ![image](../images/fx-core/sql/config.png)
 
@@ -31,11 +29,11 @@ Since the current logged in account hasn't enough permission to add database use
 1. Create contained database users. Execute Transact-SQL. 
 
    ```
-   CREATE USER [{identity}] FROM EXTERNAL PROVIDER;
+   CREATE USER [{identityName}] FROM EXTERNAL PROVIDER;
    go
-   sp_addrolemember  'db_datareader',  '{identity}';
+   sp_addrolemember  'db_datareader',  '{identityName}';
    go
-   sp_addrolemember  'db_datawriter',  '{identity}';
+   sp_addrolemember  'db_datawriter',  '{identityName}';
    go
    ```
 
@@ -50,8 +48,8 @@ Failed to access `sql server`.
 ### Mitigation
 
 #### Manage IP firewall rules
-1. Open `.fx\env.default.json` file. Find values of 'sqlEndpoint' config of 'fx-resource-azure-sql'.
+1. Open `.fx\states\state.{envName}.json` file. Find values of 'sqlEndpoint' config of 'fx-resource-azure-sql'.
 
-      ![image](../images/fx-core/sql/add-flag.png)
+      ![image](../images/fx-core/sql/config.png)
 
 1. Refer to [ Manage IP firewall rules](https://docs.microsoft.com/en-us/azure/azure-sql/database/firewall-configure#from-the-database-overview-page) to add local firewall rule for the 'sqlEndpoint' in step 1

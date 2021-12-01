@@ -11,7 +11,6 @@ import {
   PluginContext,
   TeamsAppManifest,
   LogProvider,
-  ProjectSettings,
   IComposeExtension,
   IBot,
   AppPackageFolderName,
@@ -34,7 +33,6 @@ import {
 import { ICommand, ICommandList } from "../../solution/fx-solution/appstudio/interface";
 import {
   BotOptionItem,
-  HostTypeOptionAzure,
   MessageExtensionItem,
   TabOptionItem,
 } from "../../solution/fx-solution/question";
@@ -63,8 +61,6 @@ import {
   COMPOSE_EXTENSIONS_TPL,
   TEAMS_APP_SHORT_NAME_MAX_LENGTH,
   DEFAULT_DEVELOPER_WEBSITE_URL,
-  DEFAULT_DEVELOPER_TERM_OF_USE_URL,
-  DEFAULT_DEVELOPER_PRIVACY_URL,
   FRONTEND_ENDPOINT,
   FRONTEND_DOMAIN,
   LOCAL_BOT_ID,
@@ -114,6 +110,7 @@ import {
 } from "./utils/utils";
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
+import { HelpLinks } from "../../../common/constants";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -448,7 +445,8 @@ export class AppStudioPluginImpl {
           return err(
             AppStudioResultFactory.UserError(
               AppStudioError.GetRemoteConfigError.name,
-              AppStudioError.GetRemoteConfigError.message("Manifest validation failed")
+              AppStudioError.GetRemoteConfigError.message("Manifest validation failed"),
+              HelpLinks.WhyNeedProvision
             )
           );
         } else {
@@ -519,7 +517,8 @@ export class AppStudioPluginImpl {
         ) {
           throw AppStudioResultFactory.UserError(
             AppStudioError.GetRemoteConfigError.name,
-            AppStudioError.GetRemoteConfigError.message("Update manifest failed")
+            AppStudioError.GetRemoteConfigError.message("Update manifest failed"),
+            HelpLinks.WhyNeedProvision
           );
         } else {
           throw appManifest.error;
@@ -782,7 +781,8 @@ export class AppStudioPluginImpl {
         ) {
           throw AppStudioResultFactory.UserError(
             AppStudioError.GetRemoteConfigError.name,
-            AppStudioError.GetRemoteConfigError.message("Teams package build failed")
+            AppStudioError.GetRemoteConfigError.message("Teams package build failed"),
+            HelpLinks.WhyNeedProvision
           );
         } else {
           throw manifest.error;
@@ -796,24 +796,39 @@ export class AppStudioPluginImpl {
         AppStudioError.NotADirectoryError.message(appDirectory)
       );
     }
-    const manifest: TeamsAppManifest = JSON.parse(manifestString);
-    const colorFile = `${appDirectory}/${manifest.icons.color}`;
+    const zip = new AdmZip();
+    zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
 
-    let fileExists = await this.checkFileExist(colorFile);
-    if (!fileExists) {
-      throw AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(colorFile)
-      );
+    const manifest: TeamsAppManifest = JSON.parse(manifestString);
+
+    // color icon
+    if (manifest.icons.color && !manifest.icons.color.startsWith("https://")) {
+      const colorFile = `${appDirectory}/${manifest.icons.color}`;
+      const fileExists = await this.checkFileExist(colorFile);
+      if (!fileExists) {
+        throw AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(colorFile)
+        );
+      }
+
+      const dir = path.dirname(manifest.icons.color);
+      zip.addLocalFile(colorFile, dir === "." ? "" : dir);
     }
 
-    const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
-    fileExists = await this.checkFileExist(outlineFile);
-    if (!fileExists) {
-      throw AppStudioResultFactory.UserError(
-        AppStudioError.FileNotFoundError.name,
-        AppStudioError.FileNotFoundError.message(outlineFile)
-      );
+    // outline icon
+    if (manifest.icons.outline && !manifest.icons.outline.startsWith("https://")) {
+      const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
+      const fileExists = await this.checkFileExist(outlineFile);
+      if (!fileExists) {
+        throw AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(outlineFile)
+        );
+      }
+
+      const dir = path.dirname(manifest.icons.outline);
+      zip.addLocalFile(outlineFile, dir === "." ? "" : dir);
     }
 
     if (isMultiEnvEnabled()) {
@@ -823,16 +838,8 @@ export class AppStudioPluginImpl {
         `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/manifest.` +
         (isLocalDebug ? "local" : ctx.envInfo.envName) +
         `.json`;
-      if (await fs.pathExists(manifestFileName)) {
-        await fs.chmod(manifestFileName, 0o777);
-      }
-      await fs.writeFile(manifestFileName, manifestString, { mode: 0o000 });
+      await fs.writeFile(manifestFileName, manifestString);
     }
-
-    const zip = new AdmZip();
-    zip.addFile(Constants.MANIFEST_FILE, Buffer.from(manifestString));
-    zip.addLocalFile(colorFile, isMultiEnvEnabled() ? MANIFEST_RESOURCES : "");
-    zip.addLocalFile(outlineFile, isMultiEnvEnabled() ? MANIFEST_RESOURCES : "");
 
     // localization file
     if (
@@ -1731,7 +1738,8 @@ export class AppStudioPluginImpl {
               AppStudioError.GetRemoteConfigFailedError.message(
                 new Error(`Data required: ${BOT_DOMAIN}`),
                 isProvisionSucceeded
-              )
+              ),
+              HelpLinks.WhyNeedProvision
             )
           );
         }
@@ -1807,7 +1815,9 @@ export class AppStudioPluginImpl {
       const tokens = [
         ...new Set(
           Mustache.parse(manifest)
-            .filter((x) => x[0] != "text")
+            .filter((x) => {
+              return x[0] != "text" && x[1] != "localSettings.teamsApp.teamsAppId";
+            })
             .map((x) => x[1])
         ),
       ];
@@ -1828,7 +1838,8 @@ export class AppStudioPluginImpl {
               AppStudioError.GetRemoteConfigFailedError.message(
                 new Error(`Data required: ${tokens.join(",")}`),
                 isProvisionSucceeded
-              )
+              ),
+              HelpLinks.WhyNeedProvision
             )
           );
         }
@@ -1864,7 +1875,8 @@ export class AppStudioPluginImpl {
           return err(
             AppStudioResultFactory.UserError(
               AppStudioError.GetRemoteConfigFailedError.name,
-              AppStudioError.GetRemoteConfigFailedError.message(e, isProvisionSucceeded)
+              AppStudioError.GetRemoteConfigFailedError.message(e, isProvisionSucceeded),
+              HelpLinks.WhyNeedProvision
             )
           );
         }

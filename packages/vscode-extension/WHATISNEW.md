@@ -1,7 +1,41 @@
+- [3.0.0 - Nov 29 2021](#300---nov-29-2021)
 - [2.10.0 - Nov 15 2021](#2100---nov-15-2021)
 - [2.9.0 - Nov 01 2021](#290---nov-01-2021)
 - [2.8.0 - Oct 18 2021](#280---oct-18-2021)
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
+
+## 3.0.0 - Nov 29, 2021
+
+Major version for Teams Toolkit with new features to support cloud resources customization, multiple cloud environments, collaborations and some bug fix.
+
+New Features:
+
+- Adopt ARM templates to provision Azure cloud resources, support customization of cloud resources. Refer to [Provision cloud resources](https://aka.ms/provision-doc) for more information.
+- Developers can create and manage multiple cloud environments with different customizations for each environment. Refer to [Manage multiple environment](https://aka.ms/multi-env-doc) for more information.
+
+    ![create multiple environments](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/create-env.png)
+
+- Developers can collaborate with others on the same project. Refer to [Collaborations in Teams Toolkit](https://aka.ms/ttk-collaboration-doc) for more information.
+    
+    ![Collaborate with others](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/collaboration.png)
+
+- Support manifest customization for both local and remote environment. Refer to [Customize manifest](https://aka.ms/customize-manifest-doc) for more information.
+- Provide flexibility to add cloud resources to your project using ARM template. Refer to [Add cloud resources](https://aka.ms/add-resources-doc) for more information.
+      
+    ![Add cloud resources](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/add-resource.png)
+
+- Add more Teams Sample Apps which support local run with no need to manually set up environment.
+
+Enhancement:
+
+- Improve UI: In sample gallery, add time and effort estimation for each sample.
+
+    ![Sample gallery UI](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/sample-ui.png)
+
+- Improve UI: multiple enhancement to the Tree View. For example, provide documents links in Tree View, and enrich the tooltip descriptions.
+- Reduce the required user inputs in order to create new project.
+- Enhance the status and messages showed in Teams Toolkit.
+- Upgrade samples to adopt new features in Teams Toolkit.
 
 ## 2.10.0 - Nov 15, 2021 
 

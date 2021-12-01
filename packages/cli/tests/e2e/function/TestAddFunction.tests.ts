@@ -24,6 +24,9 @@ describe("Test Add Function", function () {
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
 
+  // Should succeed on the 3rd try
+  this.retries(2);
+
   it(`Create Tab Then Add Function`, async function () {
     await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities tab`, {
       cwd: testFolder,

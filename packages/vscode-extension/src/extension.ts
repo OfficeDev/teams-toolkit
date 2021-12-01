@@ -274,11 +274,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(manifestTemplateCodeLensCmd);
 
-  const openConfigCmd = vscode.commands.registerCommand(
-    "fx-extension.openConfig",
-    (cipher, selection) => Correlator.run(handlers.openConfigFile)
+  const openConfigStateCmd = vscode.commands.registerCommand(
+    "fx-extension.openConfigState",
+    (...args) => Correlator.run(handlers.openConfigStateFile, args)
   );
-  context.subscriptions.push(openConfigCmd);
+  context.subscriptions.push(openConfigStateCmd);
 
   const updateManifestCmd = vscode.commands.registerCommand(
     "fx-extension.updatePreviewFile",

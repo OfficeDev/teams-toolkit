@@ -227,7 +227,8 @@ export class AppStudioPlugin implements Plugin {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.TeamsPackageBuildError.name,
-          AppStudioError.TeamsPackageBuildError.message(error)
+          AppStudioError.TeamsPackageBuildError.message(error),
+          error.helpLink
         )
       );
     }
@@ -326,7 +327,8 @@ export class AppStudioPlugin implements Plugin {
           return err(
             AppStudioResultFactory.UserError(
               AppStudioError.TeamsPackageBuildError.name,
-              AppStudioError.TeamsPackageBuildError.message(error)
+              AppStudioError.TeamsPackageBuildError.message(error),
+              error.helpLink
             )
           );
         }

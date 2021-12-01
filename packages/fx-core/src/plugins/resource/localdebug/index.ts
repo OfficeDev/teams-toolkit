@@ -705,7 +705,8 @@ export class LocalDebugPlugin implements Plugin {
       ctx.localSettings = localSettingsProvider.incrementalInit(
         ctx.localSettings,
         includeBackend,
-        includeBot
+        includeBot,
+        includeFrontend
       );
       await localSettingsProvider.save(ctx.localSettings);
     } else {

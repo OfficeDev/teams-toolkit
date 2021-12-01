@@ -5,7 +5,10 @@ export class ConstantString {
   static readonly rootFolder = "TeamsApps";
 }
 
-export const ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
+export class HelpLinks {
+  static readonly WhyNeedProvision = "https://aka.ms/teamsfx/whyneedprovision";
+  static readonly ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
+}
 
 export class Bicep {
   static readonly ParameterOrchestrationFileName: string = "param.template.bicep";

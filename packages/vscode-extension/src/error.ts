@@ -17,6 +17,7 @@ export enum ExtensionErrors {
   InvalidProject = "InvalidProject",
   FetchSampleError = "FetchSampleError",
   EnvConfigNotFoundError = "EnvConfigNotFoundError",
+  EnvStateNotFoundError = "EnvStateNotFoundError",
   EnvResourceInfoNotFoundError = "EnvResourceInfoNotFoundError",
   NoWorkspaceError = "NoWorkSpaceError",
   UpdatePackageJsonError = "UpdatePackageJsonError",

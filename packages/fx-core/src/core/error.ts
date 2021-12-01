@@ -194,6 +194,14 @@ export function ProjectSettingsUndefinedError(): SystemError {
   );
 }
 
+export function MultipleEnvNotEnabledError(): SystemError {
+  return new SystemError(
+    "MultipleEnvNotEnabledError",
+    "MultipleEnv feature is not enabled",
+    CoreSource
+  );
+}
+
 export function ProjectEnvNotExistError(env: string): UserError {
   return new UserError(
     "ProjectEnvNotExistError",

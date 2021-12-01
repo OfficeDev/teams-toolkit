@@ -8,7 +8,6 @@ import {
   ArchiveLogFileName,
   assembleError,
   ConfigFolderName,
-  ConfigMap,
   Core,
   CoreCallbackEvent,
   CoreCallbackFunc,
@@ -16,20 +15,17 @@ import {
   Func,
   FunctionRouter,
   FxError,
-  GroupOfTasks,
   InputConfigsFolderName,
   Inputs,
   Json,
   LogProvider,
   ok,
-  OptionItem,
   Platform,
   ProjectConfig,
   ProjectSettings,
   StatesFolderName,
   QTreeNode,
   Result,
-  RunnableTask,
   SingleSelectQuestion,
   Solution,
   SolutionConfig,
@@ -44,7 +40,6 @@ import {
   BuildFolderName,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
-import { AxiosResponse } from "axios";
 import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -55,8 +50,8 @@ import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   Component,
-  sendTelemetryErrorEvent,
   sendTelemetryEvent,
+  sendTelemetryErrorEvent,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
@@ -78,7 +73,6 @@ import {
   ArchiveUserFileError,
   CopyFileError,
   CoreSource,
-  FetchSampleError,
   FunctionRouterError,
   InvalidInputError,
   LoadSolutionError,
@@ -174,6 +168,7 @@ export let TOOLS: Tools;
 export class FxCore implements Core {
   tools: Tools;
   isFromSample?: boolean;
+
   constructor(tools: Tools) {
     this.tools = tools;
     TOOLS = tools;
@@ -888,7 +883,20 @@ export class FxCore implements Core {
   async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.grantPermission;
     inputs.stage = Stage.grantPermission;
-    return await ctx!.solution!.grantPermission!(ctx!.solutionContext!);
+    if (!isV2()) {
+      return ctx!.solution!.grantPermission!(ctx!.solutionContext!);
+    } else {
+      const projectPath = inputs.projectPath;
+      if (!projectPath) {
+        return err(new ObjectIsUndefinedError("projectPath"));
+      }
+      return ctx!.solutionV2!.grantPermission!(
+        ctx!.contextV2!,
+        { ...inputs, projectPath: projectPath },
+        ctx!.envInfoV2!,
+        this.tools.tokenProvider
+      );
+    }
   }
 
   @hooks([
@@ -905,7 +913,21 @@ export class FxCore implements Core {
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.checkPermission;
     inputs.stage = Stage.checkPermission;
-    return await ctx!.solution!.checkPermission!(ctx!.solutionContext!);
+
+    if (!isV2()) {
+      return ctx!.solution!.checkPermission!(ctx!.solutionContext!);
+    } else {
+      const projectPath = inputs.projectPath;
+      if (!projectPath) {
+        return err(new ObjectIsUndefinedError("projectPath"));
+      }
+      return ctx!.solutionV2!.checkPermission!(
+        ctx!.contextV2!,
+        { ...inputs, projectPath: projectPath },
+        ctx!.envInfoV2!,
+        this.tools.tokenProvider
+      );
+    }
   }
 
   @hooks([
@@ -922,7 +944,21 @@ export class FxCore implements Core {
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listCollaborator;
     inputs.stage = Stage.listCollaborator;
-    return await ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
+
+    if (!isV2()) {
+      return ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
+    } else {
+      const projectPath = inputs.projectPath;
+      if (!projectPath) {
+        return err(new ObjectIsUndefinedError("projectPath"));
+      }
+      return ctx!.solutionV2!.listCollaborator!(
+        ctx!.contextV2!,
+        { ...inputs, projectPath: projectPath },
+        ctx!.envInfoV2!,
+        this.tools.tokenProvider
+      );
+    }
   }
 
   @hooks([
@@ -938,7 +974,20 @@ export class FxCore implements Core {
   async listAllCollaborators(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listAllCollaborators;
     inputs.stage = Stage.listAllCollaborators;
-    return await ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
+    if (!isV2()) {
+      return ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
+    } else {
+      const projectPath = inputs.projectPath;
+      if (!projectPath) {
+        return err(new ObjectIsUndefinedError("projectPath"));
+      }
+      return ctx!.solutionV2!.listAllCollaborators!(
+        ctx!.contextV2!,
+        { ...inputs, projectPath: projectPath },
+        ctx!.envInfoV2!,
+        this.tools.tokenProvider
+      );
+    }
   }
 
   @hooks([
@@ -1043,6 +1092,7 @@ export class FxCore implements Core {
       if (isV2()) {
         const solutionV2 = solution as v2.SolutionPlugin;
         if (solutionV2.getQuestions) {
+          inputs.stage = stage;
           res = await solutionV2.getQuestions(
             ctx as v2.Context,
             inputs,
@@ -1411,9 +1461,12 @@ export async function downloadSample(
     }
     const sample = samples[0];
     const url = sample.link as string;
-    const sampleAppPath = path.resolve(folder, sampleId);
+    let sampleAppPath = path.resolve(folder, sampleId);
     if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
-      throw ProjectFolderExistError(sampleAppPath);
+      let suffix = 1;
+      while (await fs.pathExists(sampleAppPath)) {
+        sampleAppPath = `${folder}/${sampleId}_${suffix++}`;
+      }
     }
     progress.next(`Downloading from ${url}`);
     const fetchRes = await fetchCodeZip(url);
@@ -1425,7 +1478,7 @@ export async function downloadSample(
       );
     }
     progress.next("Unzipping the sample package");
-    await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, folder);
+    await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, sampleAppPath);
     await downloadSampleHook(sampleId, sampleAppPath);
     progress.next("Update project settings");
     const loadInputs: Inputs = {

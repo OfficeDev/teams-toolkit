@@ -141,7 +141,6 @@ jobs:
           if [ ! -z "$file" ]; then
             npx mocha --reporter @mochajs/json-file-reporter $file
           fi
-          done
 
       - name: Upload test report
         uses: actions/upload-artifact@v2

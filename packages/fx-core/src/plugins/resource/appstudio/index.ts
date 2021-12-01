@@ -152,7 +152,6 @@ export class AppStudioPlugin implements Plugin {
     if (validationResult.length > 0) {
       const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
       ctx.logProvider?.error("Manifest Validation failed!");
-      ctx.ui?.showMessage("error", errMessage, false);
       const properties: { [key: string]: string } = this.appStudioPluginImpl.commonProperties;
       properties[TelemetryPropertyKey.validationResult] = validationResult.join("\n");
       const validationFailed = AppStudioResultFactory.UserError(

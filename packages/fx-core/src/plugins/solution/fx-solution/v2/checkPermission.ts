@@ -34,7 +34,7 @@ import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition
 import {
   GLOBAL_CONFIG,
   PluginNames,
-  REMOTE_TENANT_ID,
+  REMOTE_TEAMS_APP_TENANT_ID,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
@@ -175,7 +175,7 @@ async function checkPermissionImpl(
   const userInfo = result.value as IUserList;
 
   if (platform === Platform.CLI) {
-    const aadAppTenantId = envState.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+    const aadAppTenantId = envState.get(PluginNames.SOLUTION)?.get(REMOTE_TEAMS_APP_TENANT_ID);
     if (!envName) {
       return err(
         sendErrorTelemetryThenReturnError(

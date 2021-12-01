@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       cases:
-        description: 'specific cases to be excuted. Sample: ["TestCreateTab", "AzureAppScaffold"])'
+        description: 'specific cases to be excuted. \nSample:\n ["TestCreateTab", "AzureAppScaffold"]'
         required: false
   schedule:
     - cron: "0 4,7,10 * * *"

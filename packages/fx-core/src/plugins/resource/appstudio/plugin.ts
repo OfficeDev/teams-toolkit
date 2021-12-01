@@ -456,7 +456,40 @@ export class AppStudioPluginImpl {
         manifestString = JSON.stringify(appDefinitionAndManifest.value[1]);
       }
     }
-    return ok(await AppStudioClient.validateManifest(manifestString, appStudioToken!));
+    const errors: string[] = await AppStudioClient.validateManifest(
+      manifestString,
+      appStudioToken!
+    );
+    const manifest: TeamsAppManifest = JSON.parse(manifestString);
+    const appDirectory = await getAppDirectory(ctx.root);
+    if (manifest.icons.outline) {
+      if (
+        manifest.icons.outline.startsWith("https://") ||
+        manifest.icons.outline.startsWith("http://")
+      ) {
+        errors.push("icons.outline should be a relative path, URL is not supported");
+      } else {
+        const outlineFile = path.join(appDirectory, manifest.icons.outline);
+        if (!(await fs.pathExists(outlineFile))) {
+          errors.push(`icons.outline "${outlineFile}" cannot be found.`);
+        }
+      }
+    }
+
+    if (manifest.icons.color) {
+      if (
+        manifest.icons.color.startsWith("https://") ||
+        manifest.icons.color.startsWith("http://")
+      ) {
+        errors.push("icons.color should be a relative path, URL is not supported");
+      } else {
+        const colorFile = path.join(appDirectory, manifest.icons.color);
+        if (!(await fs.pathExists(colorFile))) {
+          errors.push(`icons.color "${colorFile}" cannot be found.`);
+        }
+      }
+    }
+    return ok(errors);
   }
 
   public async updateManifest(

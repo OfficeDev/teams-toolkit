@@ -100,7 +100,7 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       validFunc: async (input: string[]): Promise<string | undefined> => {
         const name = input as string[];
         if (name.length === 0) {
-          return "Select at at least 1 capability";
+          return "Select at least 1 capability";
         }
         if (
           name.length > 1 &&

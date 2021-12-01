@@ -36,6 +36,8 @@ import {
   UserInteraction,
   Colors,
   IProgressHandler,
+  Json,
+  OnSelectionChangeFunc,
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
@@ -264,11 +266,15 @@ export class CLIUserInteraction implements UserInteraction {
   private toChoices<T>(
     option: StaticOptions,
     defaultValue?: T
-  ): [string[] | ChoiceOptions[], T | undefined] {
+  ): [string[] | ChoiceOptions[], T | undefined, { [x: string]: string }] {
+    const mapping: Json = {};
     if (typeof option[0] === "string") {
-      return [option as string[], defaultValue];
+      const choices = option as string[];
+      choices.forEach((s) => (mapping[s] = s));
+      return [choices, defaultValue, mapping];
     } else {
       const choices = (option as OptionItem[]).map((op) => {
+        mapping[op.label] = op.id;
         return {
           name: op.label,
           extra: {
@@ -280,18 +286,30 @@ export class CLIUserInteraction implements UserInteraction {
       const ids = (option as OptionItem[]).map((op) => op.id);
       if (typeof defaultValue === "string" || typeof defaultValue === "undefined") {
         const index = this.findIndex(ids, defaultValue);
-        return [choices, choices[index]?.name as any];
+        return [choices, choices[index]?.name as any, mapping];
       } else {
         const indexes = this.findIndexes(ids, defaultValue as any);
-        return [choices, this.getSubArray(choices, indexes).map((choice) => choice.name) as any];
+        return [
+          choices,
+          this.getSubArray(choices, indexes).map((choice) => choice.name) as any,
+          mapping,
+        ];
       }
     }
   }
 
   private toValidationFunc<T>(
-    validate?: (input: T) => string | undefined | Promise<string | undefined>
+    validate?: (input: T) => string | undefined | Promise<string | undefined>,
+    mapping?: { [x: string]: string }
   ): ValidationType<T> {
     return (input: T) => {
+      if (mapping) {
+        if (typeof input === "string") {
+          input = mapping[input] as any;
+        } else if (Array.isArray(input)) {
+          input = input.map((i) => mapping[i]) as any;
+        }
+      }
       return new Promise(async (resolve) => {
         const result = await validate?.(input);
         if (result === undefined) {
@@ -321,13 +339,13 @@ export class CLIUserInteraction implements UserInteraction {
     }
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(config.options, config.default);
+      const [choices, defaultValue, mapping] = this.toChoices(config.options, config.default);
       const result = await this.singleSelect(
         config.name,
         config.title,
         choices,
         defaultValue,
-        this.toValidationFunc(config.validation)
+        this.toValidationFunc(config.validation, mapping)
       );
       if (result.isOk()) {
         const index = this.findIndex(
@@ -357,13 +375,13 @@ export class CLIUserInteraction implements UserInteraction {
   ): Promise<Result<MultiSelectResult, FxError>> {
     this.updatePresetAnswerFromConfig(config);
     return new Promise(async (resolve) => {
-      const [choices, defaultValue] = this.toChoices(config.options, config.default);
+      const [choices, defaultValue, mapping] = this.toChoices(config.options, config.default);
       const result = await this.multiSelect(
         config.name,
         config.title,
         choices,
         defaultValue,
-        this.toValidationFunc(config.validation)
+        this.toValidationFunc(config.validation, mapping)
       );
       if (result.isOk()) {
         const indexes = this.findIndexes(

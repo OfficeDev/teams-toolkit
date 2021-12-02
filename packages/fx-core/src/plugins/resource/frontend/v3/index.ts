@@ -47,7 +47,7 @@ export class ReactTabScaffoldPluginV3 implements v3.ScaffoldPlugin {
       },
     ]);
   }
-  async scaffold(ctx: v2.Context, inputs: Inputs): Promise<Result<Void, FxError>> {
+  async scaffold(ctx: v2.Context, inputs: v3.ScaffoldInputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
   }
 }

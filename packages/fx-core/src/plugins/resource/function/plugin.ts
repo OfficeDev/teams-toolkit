@@ -76,8 +76,8 @@ import { FuncPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
-import { generateBicepFiles, getTemplatesFolder } from "../../..";
-import { ArmTemplateResult, ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { getTemplatesFolder } from "../../../folder";
+import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import {
   getResourceGroupNameFromResourceId,

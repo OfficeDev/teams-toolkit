@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Bowen Song <bowen.song@microsoft.com>
+ */
+
 import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import path from "path";

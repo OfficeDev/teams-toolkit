@@ -32,7 +32,7 @@ import {
   SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
 import { CryptoDataMatchers, isMultiEnvEnabled, mapToJson } from "../../common/tools";
-import { ArmResourcePlugin, ScaffoldArmTemplateResult } from "../../common/armInterface";
+import { ArmTemplateResult } from "../../common/armInterface";
 import {
   InvalidStateError,
   MultipleEnvNotEnabledError,
@@ -70,7 +70,7 @@ export function convert2PluginContext(
 export async function scaffoldSourceCodeAdapter(
   ctx: Context,
   inputs: Inputs,
-  plugin: Plugin & ArmResourcePlugin
+  plugin: Plugin
 ): Promise<Result<Void, FxError>> {
   if (!plugin.scaffold && !plugin.postScaffold)
     return err(PluginHasNoTaskImpl(plugin.displayName, "scaffold"));
@@ -105,7 +105,7 @@ export async function scaffoldSourceCodeAdapter(
 export async function generateResourceTemplateAdapter(
   ctx: Context,
   inputs: Inputs,
-  plugin: Plugin & ArmResourcePlugin
+  plugin: Plugin
 ): Promise<Result<ResourceTemplate, FxError>> {
   if (!plugin.generateArmTemplates)
     return err(PluginHasNoTaskImpl(plugin.displayName, "generateArmTemplates"));
@@ -114,7 +114,7 @@ export async function generateResourceTemplateAdapter(
   if (armRes.isErr()) {
     return err(armRes.error);
   }
-  const output: ScaffoldArmTemplateResult = armRes.value as ScaffoldArmTemplateResult;
+  const output: ArmTemplateResult = armRes.value as ArmTemplateResult;
   const bicepTemplate: BicepTemplate = { kind: "bicep", template: output };
   return ok(bicepTemplate);
 }
@@ -201,7 +201,7 @@ export async function configureResourceAdapter(
   inputs: ProvisionInputs,
   envInfo: Readonly<EnvInfoV2>,
   tokenProvider: TokenProvider,
-  plugin: Plugin & ArmResourcePlugin
+  plugin: Plugin
 ): Promise<Result<ResourceProvisionOutput, FxError>> {
   if (!plugin.postProvision) return err(PluginHasNoTaskImpl(plugin.displayName, "postProvision"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
@@ -230,7 +230,7 @@ export async function deployAdapter(
   inputs: DeploymentInputs,
   provisionOutput: Json,
   tokenProvider: AzureAccountProvider,
-  plugin: Plugin & ArmResourcePlugin
+  plugin: Plugin
 ): Promise<Result<Void, FxError>> {
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
@@ -261,7 +261,7 @@ export async function provisionLocalResourceAdapter(
   inputs: Inputs,
   localSettings: Json,
   tokenProvider: TokenProvider,
-  plugin: Plugin & ArmResourcePlugin
+  plugin: Plugin
 ): Promise<Result<Json, FxError>> {
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
@@ -283,7 +283,7 @@ export async function configureLocalResourceAdapter(
   inputs: Inputs,
   localSettings: Json,
   tokenProvider: TokenProvider,
-  plugin: Plugin & ArmResourcePlugin
+  plugin: Plugin
 ): Promise<Result<Json, FxError>> {
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);

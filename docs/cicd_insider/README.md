@@ -223,13 +223,13 @@ Briefly, the steps include:
 
 For detailed guidelines, refer to [the official document](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal). There're three ways to create service principal, [Azure portal](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-create-service-principal-portal), [PowerShell](https://docs.microsoft.com/en-us/azure/active-directory/develop/howto-authenticate-service-principal-powershell), [Azure CLI](https://docs.microsoft.com/en-us/cli/azure/create-an-azure-service-principal-azure-cli), and you can choose the way you like.
 
-# How to publish Teams app using Teams dev portal? 
+# How to publish Teams app using Developer Portal for Teams? 
 If there's any changes related to Teams app's manifest file, you may want to publish the Teams app again to update the manifest.
 
-To publish Teams app manually, you may leverage [Teams' dev portal](https://dev.teams.microsoft.com/home).
+To publish Teams app manually, you may leverage [Developer Portal for Teams](https://dev.teams.microsoft.com/home).
 
 Steps:
-1. Sign in [Teams' dev portal ](https://dev.teams.microsoft.com) using the corresponding account.
+1. Sign in [Developer Portal for Teams](https://dev.teams.microsoft.com) using the corresponding account.
 2. Import your app package in zip by clicking `App -> Import app -> Replace`.
 3. Click the target app in app list, and you will go to the overview page.
 4. Publish your app by clicking `Publish -> Publish to your org`

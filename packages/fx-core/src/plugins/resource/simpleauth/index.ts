@@ -68,6 +68,14 @@ export class SimpleAuthPlugin implements Plugin {
     );
   }
 
+  public async updateArmTemplates(ctx: PluginContext): Promise<SimpleAuthResult> {
+    return this.runWithSimpleAuthError(
+      () => this.simpleAuthPluginImpl.updateArmTemplates(ctx),
+      ctx,
+      Messages.EndGenerateArmTemplates.telemetry
+    );
+  }
+
   public async generateArmTemplates(ctx: PluginContext): Promise<SimpleAuthResult> {
     return this.runWithSimpleAuthError(
       () => this.simpleAuthPluginImpl.generateArmTemplates(ctx),

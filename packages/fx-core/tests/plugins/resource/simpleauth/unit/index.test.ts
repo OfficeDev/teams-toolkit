@@ -188,7 +188,7 @@ describe("simpleAuthPlugin", () => {
         activeResourcePlugins: activeResourcePlugins,
       },
     };
-    const generateArmTemplatesResult = await simpleAuthPlugin.generateArmTemplates(pluginContext);
+    const generateArmTemplatesResult = await simpleAuthPlugin.updateArmTemplates(pluginContext);
 
     // Assert
     const testProvisionModuleFileName = "simpleAuthProvision.result.bicep";

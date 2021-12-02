@@ -115,6 +115,41 @@ export class SimpleAuthPluginImpl {
     return ResultFactory.Success();
   }
 
+  public async updateArmTemplates(ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
+
+    const bicepTemplateDirectory = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "simpleauth",
+      "bicep"
+    );
+
+    const configModuleFilePath = path.join(
+      bicepTemplateDirectory,
+      Constants.configModuleTemplateFileName
+    );
+
+    const result: ArmTemplateResult = {
+      Provision: {
+        Reference: {
+          skuName: Constants.SimpleAuthBicepOutputSkuName,
+          endpoint: Constants.SimpleAuthBicepOutputEndpoint,
+        },
+      },
+      Configuration: {
+        Modules: {
+          simpleAuth: await fs.readFile(configModuleFilePath, ConstantString.UTF8Encoding),
+        },
+      },
+    };
+
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
+    return ResultFactory.Success(result);
+  }
+
   public async generateArmTemplates(
     ctx: PluginContext
   ): Promise<Result<ArmTemplateResult, FxError>> {

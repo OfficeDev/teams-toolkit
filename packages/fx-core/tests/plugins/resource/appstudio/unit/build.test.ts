@@ -85,4 +85,34 @@ describe("Build Teams Package", () => {
       await fs.remove(manifestFile);
     }
   });
+
+  it("Build local debug package should fail without local debug configurations", async () => {
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
+      tabEndpoint: "",
+      tabDomain: "",
+      aadId: "",
+      botDomain: "",
+      botId: "",
+      webApplicationInfoResource: "",
+      teamsAppId: "",
+    });
+
+    const builtPackage = await plugin.buildTeamsPackage(ctx, true);
+    chai.assert.isTrue(builtPackage.isErr());
+  });
+
+  it("Build local debug package should succeed with local debug configurations", async () => {
+    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
+      tabEndpoint: "tabEndpoint",
+      tabDomain: "tabDomain",
+      aadId: "aadId",
+      botDomain: "botDomain",
+      botId: "botId",
+      webApplicationInfoResource: "webApplicationInfoResource",
+      teamsAppId: "teamsAppId",
+    });
+
+    const builtPackage = await plugin.buildTeamsPackage(ctx, true);
+    chai.assert.isTrue(builtPackage.isOk());
+  });
 });

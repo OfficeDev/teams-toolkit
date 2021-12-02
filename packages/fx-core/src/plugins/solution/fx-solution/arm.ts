@@ -15,7 +15,7 @@ import {
   EnvNamePlaceholder,
   LogProvider,
 } from "@microsoft/teamsfx-api";
-import { ArmResourcePlugin, ArmTemplateResult } from "../../../common/armInterface";
+import { ArmTemplateResult } from "../../../common/armInterface";
 import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import { format } from "util";
@@ -446,7 +446,7 @@ export async function getParameterJson(ctx: SolutionContext) {
 function generateArmFromResult(
   result: ArmTemplateResult,
   bicepOrchestrationTemplate: BicepOrchestrationContent,
-  pluginWithArm: Plugin & ArmResourcePlugin,
+  pluginWithArm: Plugin,
   moduleConfigFiles: Map<string, string>,
   moduleProvisionFiles: Map<string, string>
 ) {
@@ -482,7 +482,7 @@ async function doGenerateArmTemplate(
   const moduleConfigFiles = new Map<string, string>();
   // Get bicep content from each resource plugin
   for (const plugin of plugins) {
-    const pluginWithArm = plugin as Plugin & ArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
+    const pluginWithArm = plugin as Plugin; // Temporary solution before adding it to teamsfx-api
     // plugin not selected need to be update.
     if (
       pluginWithArm.updateArmTemplates &&

@@ -23,12 +23,11 @@ import { HostTypeOptionAzure } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { Links } from "../bot/constants";
-import { ArmResourcePlugin, ArmTemplateResult } from "../../../common/armInterface";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import "./v2";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
 @Service(ResourcePlugins.AadPlugin)
-export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
+export class AadAppForTeamsPlugin implements Plugin {
   name = "fx-resource-aad-app-for-teams";
   displayName = "AAD";
   activate(solutionSettings: AzureSolutionSettings): boolean {
@@ -79,9 +78,7 @@ export class AadAppForTeamsPlugin implements Plugin, ArmResourcePlugin {
     );
   }
 
-  public async generateArmTemplates(
-    ctx: PluginContext
-  ): Promise<Result<ArmTemplateResult, FxError>> {
+  public async generateArmTemplates(ctx: PluginContext): Promise<AadResult> {
     return await this.runWithExceptionCatchingAsync(
       () => this.pluginImpl.generateArmTemplates(ctx),
       ctx,

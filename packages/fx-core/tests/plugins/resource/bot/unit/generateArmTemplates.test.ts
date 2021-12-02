@@ -122,7 +122,7 @@ describe("Bot Generates Arm Templates", () => {
     pluginContext.projectSettings!.solutionSettings = azureSolutionSettings;
 
     // Act
-    const result = await botPlugin.generateArmTemplates(pluginContext);
+    const result = await botPlugin.updateArmTemplates(pluginContext);
 
     // Assert
     const provisionModuleFileName = "botProvision.result.bicep";

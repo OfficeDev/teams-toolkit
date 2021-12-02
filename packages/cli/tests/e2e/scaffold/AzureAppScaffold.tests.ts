@@ -3,6 +3,10 @@
 
 import path from "path";
 
+/**
+ * @author Zhijie Huang <zhijie.huang@microsoft.com>
+ */
+
 import { BotValidator, FrontendValidator, FunctionValidator } from "../../commonlib";
 
 import { execAsync, getTestFolder, getUniqueAppName, cleanUpLocalProject } from "../commonUtils";

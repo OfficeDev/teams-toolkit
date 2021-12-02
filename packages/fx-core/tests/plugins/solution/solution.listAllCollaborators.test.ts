@@ -23,7 +23,7 @@ import {
 import {
   GLOBAL_CONFIG,
   PluginNames,
-  REMOTE_TENANT_ID,
+  REMOTE_TEAMS_APP_TENANT_ID,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../../../src/plugins/solution/fx-solution/constants";
@@ -147,8 +147,9 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
       name: "fake_name",
     });
 
-    mockedCtx.envInfo.state.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.envInfo.state.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.state
+      .get(PluginNames.SOLUTION)
+      ?.set(REMOTE_TEAMS_APP_TENANT_ID, mockProjectTenantId);
     sandbox.stub(environmentManager, "listEnvConfigs").resolves(ok([mockedCtx.envInfo.envName]));
     sandbox.stub(environmentManager, "loadEnvInfo").resolves(ok(mockedCtx.envInfo));
 
@@ -210,8 +211,9 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
       ]);
     };
 
-    mockedCtx.envInfo.state.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.envInfo.state.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.state
+      .get(PluginNames.SOLUTION)
+      ?.set(REMOTE_TEAMS_APP_TENANT_ID, mockProjectTenantId);
 
     const result = await solution.listAllCollaborators(mockedCtx);
     expect(result.isErr()).to.be.false;
@@ -273,8 +275,9 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         },
       ]);
     };
-    mockedCtx.envInfo.state.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.envInfo.state.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.state
+      .get(PluginNames.SOLUTION)
+      ?.set(REMOTE_TEAMS_APP_TENANT_ID, mockProjectTenantId);
 
     const result = await solution.listAllCollaborators(mockedCtx);
     if (result.isErr()) {

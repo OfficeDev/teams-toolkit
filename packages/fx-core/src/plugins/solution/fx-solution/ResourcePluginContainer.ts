@@ -17,6 +17,7 @@ export const ResourcePlugins = {
   ApimPlugin: "ApimPlugin",
   AppStudioPlugin: "AppStudioPlugin",
   SimpleAuthPlugin: "SimpleAuthPlugin",
+  KeyVaultPlugin: "KeyVaultPlugin",
 };
 
 export const ResourcePluginsV2 = {

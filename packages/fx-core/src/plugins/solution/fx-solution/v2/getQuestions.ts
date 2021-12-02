@@ -436,7 +436,8 @@ export async function getQuestionsForAddResource(
   const addQuestion = createAddAzureResourceQuestion(
     alreadyHaveFunction,
     alreadyHaveSQL,
-    alreadyHaveAPIM
+    alreadyHaveAPIM,
+    false // TODO: to support Key Vault plugin in fx-core v2
   );
 
   const addAzureResourceNode = new QTreeNode(addQuestion);

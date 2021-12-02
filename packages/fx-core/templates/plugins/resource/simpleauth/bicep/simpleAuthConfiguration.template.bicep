@@ -9,7 +9,12 @@ param currentAppSettings object
 var webAppName = split(provisionOutputs.simpleAuthOutput.value.webAppResourceId, '/')[8]
 
 var m365ClientId = provisionParameters['m365ClientId']
+{{#contains 'fx-resource-key-vault' Plugins}}
+var m365ClientSecret = {{../PluginOutput.fx-resource-key-vault.References.m365ClientSecretReference}}
+{{/contains}}
+{{#notContains 'fx-resource-key-vault' Plugins}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']
+{{/notContains}}
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)

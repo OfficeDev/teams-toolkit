@@ -49,7 +49,6 @@ npx teamsfx account login azure --service-principal --username ${SP_NAME} --pass
 # You should copy content of .fx/states/${TEAMSFX_ENV_NAME}.userdata, and export them in your environment which can be refered by the step with name 'Generate userdata'. 
 
 # Provision hosting environment.
-# export TEAMSFX_BICEP_ENV_CHECKER_ENABLE=true
 # npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID} --env ${TEAMSFX_ENV_NAME}
 
 # Commit provision configs if necessary.

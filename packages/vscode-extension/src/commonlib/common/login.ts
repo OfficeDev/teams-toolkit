@@ -16,8 +16,8 @@ export abstract class login {
     immediateCall = true
   ): Promise<boolean> {
     this.statusChangeMap.set(name, statusChange);
-    const loginStatus: LoginStatus = await this.getStatus();
     if (immediateCall) {
+      const loginStatus: LoginStatus = await this.getStatus();
       statusChange(loginStatus.status, loginStatus.token, loginStatus.accountInfo);
     }
     return true;

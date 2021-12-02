@@ -10,7 +10,12 @@ import * as path from "path";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
 import { FrontendPlugin } from "../../../../../src";
-import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
+import {
+  ConstantString,
+  mockSolutionGenerateArmTemplates,
+  mockSolutionUpdateArmTemplates,
+  ResourcePlugins,
+} from "../../util";
 
 chai.use(chaiAsPromised);
 
@@ -52,7 +57,7 @@ describe("FrontendGenerateArmTemplates", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplates(
+      const expectedResult = mockSolutionGenerateArmTemplates(
         mockedSolutionDataContext,
         result.value
       );

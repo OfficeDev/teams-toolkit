@@ -1,8 +1,8 @@
 import { Json } from "@microsoft/teamsfx-api";
 import { compileHandlebarsTemplateString } from "../../../src";
-import { ScaffoldArmTemplateResult, ArmTemplateResult } from "../../../src/common/armInterface";
+import { ArmTemplateResult } from "../../../src/common/armInterface";
 
-export function mockSolutionUpdateArmTemplates(
+export function mockSolutionGenerateArmTemplates(
   mockedData: Json,
   template: ArmTemplateResult
 ): ArmTemplateResult {
@@ -52,6 +52,34 @@ export function mockSolutionUpdateArmTemplates(
     }
   }
   result.Parameters = template.Parameters;
+  return result;
+}
+
+export function mockSolutionUpdateArmTemplates(
+  mockedData: Json,
+  template: ArmTemplateResult
+): ArmTemplateResult {
+  const result: ArmTemplateResult = {
+    Configuration: {
+      Modules: {},
+    },
+    Provision: {
+      Reference: {},
+    },
+  };
+  if (template.Configuration) {
+    if (template.Configuration?.Modules) {
+      for (const moduleItem of Object.entries(template.Configuration.Modules)) {
+        result.Configuration!.Modules![moduleItem[0]] = compileHandlebarsTemplateString(
+          moduleItem[1],
+          mockedData
+        );
+      }
+    }
+  }
+  if (template.Provision) {
+    result.Provision!.Reference = template.Provision?.Reference;
+  }
   return result;
 }
 

@@ -55,7 +55,7 @@ export class AppStudioPlugin implements Plugin {
           name: Constants.BUILD_OR_PUBLISH_QUESTION,
           type: "singleSelect",
           staticOptions: [manuallySubmitOption, autoPublishOption],
-          title: "Teams Toolkit: Publish to Teams",
+          title: "Teams: Publish to Teams",
           default: autoPublishOption.id,
         });
         appStudioQuestions.addChild(buildOrPublish);
@@ -152,7 +152,6 @@ export class AppStudioPlugin implements Plugin {
     if (validationResult.length > 0) {
       const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
       ctx.logProvider?.error("Manifest Validation failed!");
-      ctx.ui?.showMessage("error", errMessage, false);
       const properties: { [key: string]: string } = this.appStudioPluginImpl.commonProperties;
       properties[TelemetryPropertyKey.validationResult] = validationResult.join("\n");
       const validationFailed = AppStudioResultFactory.UserError(

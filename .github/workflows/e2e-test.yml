@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       cases:
-        description: "specific cases to be excuted."
+        description: 'specific cases to be excuted. Sample: ["TestCreateTab", "AzureAppScaffold"]'
         required: false
   schedule:
     - cron: "0 4,7,10 * * *"
@@ -137,11 +137,10 @@ jobs:
       - name: run test
         working-directory: packages/cli
         run: |
-          for f in $(find tests/e2e -name "*.tests.ts"); do
-            if [[ $f == *"${{ matrix.cases }}"* ]]; then
-              npx mocha --reporter @mochajs/json-file-reporter $f
-            fi
-          done
+          file=`find tests/e2e -name "${{ matrix.cases }}.tests.ts"`
+          if [ ! -z "$file" ]; then
+            npx mocha --reporter @mochajs/json-file-reporter $file
+          fi
 
       - name: Upload test report
         uses: actions/upload-artifact@v2
@@ -175,6 +174,46 @@ jobs:
     needs: execute-case
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: List failed jobs
+        id: list-failed-jobs
+        working-directory: packages/cli
+        run: |
+          result=`curl \
+            -u :${{ secrets.GITHUB_TOKEN }}\
+            https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs`
+
+          failures=`echo $result | jq -r '.jobs[]| select(.name | contains("execute")) | select(.conclusion=="failure").name'`
+
+          declare -A email_uid
+          description="<tr> <th>Case</th> <th>Author</th> </tr>"
+          emails="vsciotadt@microsoft.com"
+          while IFS= read -r failure;
+          do
+            case=${failure:14:-1}
+            file=`find tests/e2e -name $case".tests.ts"`
+            email=`cat $file | grep '@author' | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
+
+            if [ -z "$email" ]; then
+              description="$description <tr> <td>$case</td> <td>N/A</td> </tr> "
+              continue
+            fi
+            emails="$emails;$email"
+
+            if [ ! -v "email_uid[$email]" ]; then
+              resp=$(curl -u :${{ secrets.ADO_PAT }} "https://vssps.dev.azure.com/msazure/_apis/identities?searchFilter=General&filterValue=$email&queryMembership=None&api-version=6.0")
+              uid=$(echo $resp | jq '.value | .[] | .id' | xargs echo)
+              email_uid[$email]=$uid
+            fi
+
+            description="$description <tr> <td>$case</td> <td><a href=\\\"#\\\" data-vss-mention=\\\"version:2.0,${email_uid[$email]}\\\">$email</a></td> </tr> "
+          done <<< $failures
+
+          echo "::set-output name=description::$description"
+          echo "::set-output name=emails::$emails"
+
       - name: Send E-mail to the whole team
         uses: satak/webrequest-action@master
         if: ${{  github.event_name == 'schedule' }}
@@ -183,8 +222,8 @@ jobs:
           method: POST
           payload: |
             {
-              "to": "vsciotadt@microsoft.com",
-              "body": "TeamsFx CLI E2E Test failed. The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}",
+              "to": "${{ steps.list-failed-jobs.outputs.emails }}",
+              "body": "<table class=\"w3-table w3-striped w3-bordered\">${{ steps.list-failed-jobs.outputs.description }}</table> <br /> The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}",
               "subject": "[Failure] TeamsFx CLI E2E Test ${{ github.run-id }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"
             }

@@ -46,6 +46,8 @@ Steps to create secrets by environment in GitHub:
 |AZURE_SUBSCRIPTION_ID|To identify the subscription in which the resources will be provisioned.|
 |AZURE_TENANT_ID|To identify the tenant in which the subscription resides.|
 
+To create Azure service principals for use, refer to [here](#how-to-create-azure-service-principals-for-use).
+
 ## Setup CI/CD Pipelines with Azure DevOps
 
 You can set up automated pipelines in Azure DevOps, and make a reference on the scripts and steps below to get started:
@@ -143,6 +145,8 @@ Steps to create Pipeline variables in Azure DevOps:
 |AZURE_SUBSCRIPTION_ID|To identify the subscription in which the resources will be provisioned.|
 |AZURE_TENANT_ID|To identify the tenant in which the subscription resides.|
 
+To create Azure service principals for use, refer to [here](#how-to-create-azure-service-principals-for-use).
+
 ## CI/CD Pipeline Templates in Jenkins
 
 To add these templates to your repository, you will need your versions of [jenkins-ci-template.Jenkinsfile](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd_insider/jenkins-ci-template.Jenkinsfile) and  [jenkins-cd-template.Jenkinsfile](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd_insider/jenkins-cd-template.Jenkinsfile) to be located in your repository by branch.
@@ -183,6 +187,8 @@ Please follow [using-credentials](https://www.jenkins.io/doc/book/using/using-cr
 |AZURE_SUBSCRIPTION_ID|To identify the subscription in which the resources will be provisioned.|
 |AZURE_TENANT_ID|To identify the tenant in which the subscription resides.|
 
+To create Azure service principals for use, refer to [here](#how-to-create-azure-service-principals-for-use).
+
 ## Getting started guide for other platforms
 You can follow the pre-defined example bash scripts to build and customize CI/CD pipelines on other platforms:
 * [CI Scripts](https://github.com/OfficeDev/TeamsFx/blob/main/docs/cicd_insider/others-script-ci-template.sh)
@@ -203,6 +209,8 @@ The following table gives details about the required environment variables used 
 |AZURE_SERVICE_PRINCIPAL_PASSWORD|The password of Azure service principal.|
 |AZURE_SUBSCRIPTION_ID|To identify the subscription in which the resources will be provisioned.|
 |AZURE_TENANT_ID|To identify the tenant in which the subscription resides.|
+
+To create Azure service principals for use, refer to [here](#how-to-create-azure-service-principals-for-use).
 
 # How to create Azure service principals for use?
 To provision and deploy resources targeting Azure inside CI/CD, you must create an Azure service principal for use.
@@ -230,3 +238,4 @@ Steps:
 * [Quick Start for GitHub Actions](https://docs.github.com/en/actions/quickstart#creating-your-first-workflow)
 * [Create your first Azure DevOps Pipeline](https://docs.microsoft.com/en-us/azure/devops/pipelines/create-first-pipeline?view=azure-devops&tabs=java%2Ctfs-2018-2%2Cbrowser)
 * [Create your first Jenkins Pipeline](https://www.jenkins.io/doc/pipeline/tour/hello-world/)
+* [Manage your apps with the Developer Portal for Microsoft Teams](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/build-and-test/teams-developer-portal)

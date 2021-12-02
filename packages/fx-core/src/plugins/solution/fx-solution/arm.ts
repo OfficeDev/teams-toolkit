@@ -179,19 +179,23 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
             currentStatus[operation.resourceName] = operation.status;
             if (!polledOperations.includes(operation.resourceName)) {
               polledOperations.push(operation.resourceName);
-
-              if (operation.subscriptionId === deployCtx.client.subscriptionId) {
-                const subOperations = await deployCtx.client.deploymentOperations.list(
-                  operation.resourceGroupName,
-                  operation.resourceName
-                );
-                subOperations.forEach((sub) => {
-                  const subOperation = getRequiredOperation(sub, deployCtx);
-                  if (subOperation) {
-                    currentStatus[subOperation.resourceName] = subOperation.status;
-                  }
-                });
+              let client = deployCtx.client;
+              if (operation.subscriptionId !== deployCtx.client.subscriptionId) {
+                const azureToken =
+                  await deployCtx.ctx.azureAccountProvider?.getAccountCredentialAsync();
+                client = new ResourceManagementClient(azureToken!, operation.subscriptionId);
               }
+
+              const subOperations = await client.deploymentOperations.list(
+                operation.resourceGroupName,
+                operation.resourceName
+              );
+              subOperations.forEach((sub) => {
+                const subOperation = getRequiredOperation(sub, deployCtx);
+                if (subOperation) {
+                  currentStatus[subOperation.resourceName] = subOperation.status;
+                }
+              });
             }
           }
         })

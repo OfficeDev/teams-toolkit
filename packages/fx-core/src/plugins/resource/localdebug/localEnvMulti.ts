@@ -32,7 +32,6 @@ export const EnvKeysBackend = Object.freeze({
   TenantId: "M365_TENANT_ID",
   ClientId: "M365_CLIENT_ID",
   ClientSecret: "M365_CLIENT_SECRET",
-  IdentityId: "IDENTITY_ID",
   ApiEndpoint: "API_ENDPOINT",
   ApplicationIdUri: "M365_APPLICATION_ID_URI",
   AllowedAppIds: "ALLOWED_APP_IDS",
@@ -53,7 +52,6 @@ export const EnvKeysBot = Object.freeze({
   TenantID: "M365_TENANT_ID",
   OauthAuthority: "M365_AUTHORITY_HOST",
   LoginEndpoint: "INITIATE_LOGIN_ENDPOINT",
-  IdentityId: "IDENTITY_ID",
   ApiEndpoint: "API_ENDPOINT",
   ApplicationIdUri: "M365_APPLICATION_ID_URI",
 });
@@ -177,7 +175,6 @@ export class LocalEnvMultiProvider {
     result.teamsfxLocalEnvs[EnvKeysBackend.TenantId] = "";
     result.teamsfxLocalEnvs[EnvKeysBackend.ClientId] = "";
     result.teamsfxLocalEnvs[EnvKeysBackend.ClientSecret] = "";
-    result.teamsfxLocalEnvs[EnvKeysBackend.IdentityId] = "";
     result.teamsfxLocalEnvs[EnvKeysBackend.ApiEndpoint] = "";
     result.teamsfxLocalEnvs[EnvKeysBackend.ApplicationIdUri] = "";
     result.teamsfxLocalEnvs[EnvKeysBackend.AllowedAppIds] = "";
@@ -207,7 +204,6 @@ export class LocalEnvMultiProvider {
       result.teamsfxLocalEnvs[EnvKeysBot.TenantID] = "";
       result.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] = "";
       result.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = "";
-      result.teamsfxLocalEnvs[EnvKeysBot.IdentityId] = "";
       result.teamsfxLocalEnvs[EnvKeysBot.ApiEndpoint] = "";
       result.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = "";
 

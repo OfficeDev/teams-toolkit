@@ -922,6 +922,8 @@ interface Plugin_2 {
     // (undocumented)
     displayName: string;
     executeUserTask?: (func: Func, ctx: PluginContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
+    generateArmTemplates?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
     getQuestions?: (stage: Stage, ctx: PluginContext) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForUserTask?: (func: Func, ctx: PluginContext) => Promise<Result<QTreeNode | undefined, FxError>>;
     grantPermission?: (ctx: PluginContext, userInfo: Record<string, any>) => Promise<Result<any, FxError>>;
@@ -955,6 +957,8 @@ interface Plugin_2 {
     publish?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     scaffold?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+    // (undocumented)
+    updateArmTemplates?: (ctx: PluginContext) => Promise<Result<any, FxError>>;
 }
 export { Plugin_2 as Plugin }
 
@@ -1308,6 +1312,8 @@ export enum Stage {
     // (undocumented)
     grantPermission = "grantPermission",
     // (undocumented)
+    init = "init",
+    // (undocumented)
     listAllCollaborators = "listAllCollaborators",
     // (undocumented)
     listCollaborator = "listCollaborator",
@@ -1323,6 +1329,8 @@ export enum Stage {
     publish = "publish",
     // (undocumented)
     removeEnv = "removeEnv",
+    // (undocumented)
+    scaffold = "scaffold",
     // (undocumented)
     switchEnv = "switchEnv",
     // (undocumented)

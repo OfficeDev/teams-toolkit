@@ -15,8 +15,11 @@ import {
   EnvNamePlaceholder,
   LogProvider,
 } from "@microsoft/teamsfx-api";
-import { ArmResourcePlugin, ArmTemplateResult } from "../../../common/armInterface";
-import { getActivatedResourcePlugins } from "./ResourcePluginContainer";
+import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../common/armInterface";
+import {
+  getActivatedResourcePlugins,
+  getActivatedV2ResourcePlugins,
+} from "./ResourcePluginContainer";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import { format } from "util";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
@@ -29,7 +32,7 @@ import {
   getUuid,
   getSubscriptionIdFromResourceId,
 } from "../../../common/tools";
-import { environmentManager } from "../../..";
+import { environmentManager, isV2 } from "../../..";
 import {
   GLOBAL_CONFIG,
   PluginNames,
@@ -50,6 +53,7 @@ import { executeCommand } from "../../../common/cpUtils";
 import { TEAMS_FX_RESOURCE_ID_KEY } from ".";
 import os from "os";
 import { DeploymentOperation } from "@azure/arm-resources/esm/models";
+import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionFileName = "provision.bicep";
@@ -67,7 +71,7 @@ const InvalidTemplateErrorCode = "InvalidTemplate";
 // Get ARM template content from each resource plugin and output to project folder
 export async function generateArmTemplate(
   ctx: SolutionContext,
-  selectedPlugins: Plugin[] = []
+  selectedPlugins: NamedArmResourcePlugin[] = []
 ): Promise<Result<any, FxError>> {
   let result: Result<void, FxError>;
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplateStart, {
@@ -475,7 +479,7 @@ export async function getParameterJson(ctx: SolutionContext) {
 function generateArmFromResult(
   result: ArmTemplateResult,
   bicepOrchestrationTemplate: BicepOrchestrationContent,
-  pluginWithArm: Plugin & ArmResourcePlugin,
+  pluginWithArm: NamedArmResourcePlugin,
   moduleConfigFiles: Map<string, string>,
   moduleProvisionFiles: Map<string, string>
 ) {
@@ -498,11 +502,15 @@ function generateArmFromResult(
 
 async function doGenerateArmTemplate(
   ctx: SolutionContext,
-  selectedPlugins: Plugin[]
+  selectedPlugins: NamedArmResourcePlugin[]
 ): Promise<Result<any, FxError>> {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const baseName = generateResourceBaseName(ctx.projectSettings!.appName, ctx.envInfo!.envName);
-  const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
+  const plugins = isV2()
+    ? getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+        (p) => new NamedArmResourcePluginAdaptor(p)
+      )
+    : getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
   const bicepOrchestrationTemplate = new BicepOrchestrationContent(
     plugins.map((p) => p.name),
     baseName
@@ -511,7 +519,7 @@ async function doGenerateArmTemplate(
   const moduleConfigFiles = new Map<string, string>();
   // Get bicep content from each resource plugin
   for (const plugin of plugins) {
-    const pluginWithArm = plugin as Plugin & ArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
+    const pluginWithArm = plugin as NamedArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
     // plugin not selected need to be update.
     if (
       pluginWithArm.updateArmTemplates &&
@@ -888,7 +896,11 @@ function generateBicepModuleConfigFilePath(moduleFileName: string) {
 
 function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: string): string {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-  const plugins = getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
+  const plugins = isV2()
+    ? getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+        (p) => new NamedArmResourcePluginAdaptor(p)
+      )
+    : getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
   const stateVariables: Record<string, Record<string, any>> = {};
   const availableVariables: Record<string, Record<string, any>> = { state: stateVariables };
   // Add plugin contexts to available variables

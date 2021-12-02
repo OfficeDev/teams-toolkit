@@ -44,7 +44,10 @@ import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { Container } from "typedi";
 import { scaffoldByPlugins } from "./scaffolding";
-import { generateResourceTemplate } from "./generateResourceTemplate";
+import {
+  generateResourceTemplate,
+  generateResourceTemplateForPlugins,
+} from "./generateResourceTemplate";
 
 export async function executeUserTask(
   ctx: v2.Context,
@@ -342,7 +345,7 @@ async function scaffoldCodeAndResourceTemplate(
   if (!generateTemplate || !isArmSupportEnabled()) {
     return result;
   }
-  return generateResourceTemplate(ctx, inputs);
+  return generateResourceTemplateForPlugins(ctx, inputs, plugins);
 }
 
 export async function addResource(

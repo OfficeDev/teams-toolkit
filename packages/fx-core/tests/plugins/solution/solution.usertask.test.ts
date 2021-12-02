@@ -277,6 +277,7 @@ describe("V2 implementation", () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
+      projectPath: "./",
     };
     mockedInputs[AzureSolutionQuestionNames.Capabilities] = [TabOptionItem.id];
 
@@ -538,6 +539,7 @@ describe("V2 implementation", () => {
       const mockedCtx = new MockedV2Context(projectSettings);
       const mockedInputs: Inputs = {
         platform: Platform.VSCode,
+        projectPath: "./",
       };
 
       const result = await new ScaffoldingContextAdapter([mockedCtx, mockedInputs]);

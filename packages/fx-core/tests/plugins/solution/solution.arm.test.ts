@@ -37,7 +37,6 @@ import { ArmTemplateResult } from "../../../src/common/armInterface";
 import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 import { it } from "mocha";
 import path from "path";
-import { ArmResourcePlugin } from "../../../src/common/armInterface";
 import mockedEnv from "mocked-env";
 import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { ResourceManagementModels, Deployments } from "@azure/arm-resources";
@@ -47,6 +46,9 @@ import {
   mockedSimpleAuthScaffoldArmResult,
   mockedAadScaffoldArmResult,
   mockedBotArmTemplateResultFunc,
+  MockedUserInteraction,
+  MockedLogProvider,
+  MockedTelemetryReporter,
 } from "./util";
 import * as tools from "../../../src/common/tools";
 import * as cpUtils from "../../../src/common/cpUtils";
@@ -64,13 +66,11 @@ let mockedEnvRestore: () => void;
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin &
-  ArmResourcePlugin;
-const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin) as Plugin &
-  ArmResourcePlugin;
-const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin & ArmResourcePlugin;
-const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin & ArmResourcePlugin;
-const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin) as Plugin & ArmResourcePlugin;
+const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin;
+const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin) as Plugin;
+const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin;
+const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin;
+const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin) as Plugin;
 
 const baseFolder = "./templates/azure";
 const templatesFolder = "./templates";
@@ -103,6 +103,9 @@ function mockSolutionContext(): SolutionContext {
     projectSettings: undefined,
     azureAccountProvider: Object as any & AzureAccountProvider,
     cryptoProvider: new LocalCrypto(""),
+    ui: new MockedUserInteraction(),
+    logProvider: new MockedLogProvider(),
+    telemetryReporter: new MockedTelemetryReporter(),
   };
 }
 

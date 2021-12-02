@@ -309,6 +309,35 @@ describe("Get AppDefinition and Update", () => {
     }
   });
 
+  it("should work for bot only project local debug", async () => {
+    if (isMultiEnvEnabled()) {
+      localSettings.frontend = undefined;
+      localSettings.teamsApp = undefined;
+    } else {
+      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    }
+    ctx = {
+      root: getAzureProjectRoot(),
+      envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
+      config: new ConfigMap(),
+      cryptoProvider: new LocalCrypto(""),
+      localSettings,
+    };
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
+      },
+    };
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
+    chai.assert.isTrue(getAppDefinitionAndResult.isOk());
+  });
+
   it("should work and get config for creating manifest for happy path", async () => {
     configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
     configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);

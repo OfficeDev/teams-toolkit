@@ -96,7 +96,7 @@ describe("identityPlugin", () => {
       version: "1.0.0",
       activeResourcePlugins: activeResourcePlugins,
     } as AzureSolutionSettings;
-    const result = await identityPlugin.generateArmTemplates(pluginContext);
+    const result = await identityPlugin.udpateArmTemplates(pluginContext);
 
     // Assert
     const testModuleFileName = "identityProvision.result.bicep";

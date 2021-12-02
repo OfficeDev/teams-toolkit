@@ -140,7 +140,7 @@ import { listAllCollaborators } from "./v2/listAllCollaborators";
 import { listCollaborator } from "./v2/listCollaborator";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
-import { LOCAL_TENANT_ID } from ".";
+import { LOCAL_TENANT_ID, REMOTE_TEAMS_APP_TENANT_ID } from ".";
 import { HelpLinks } from "../../../common/constants";
 
 export type LoadedPlugin = Plugin;
@@ -565,6 +565,13 @@ export class TeamsAppSolution implements Solution {
           ctx.ui?.showMessage("info", msg, false);
         }
         ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+
+        if (!this.isAzureProject(ctx) && isMultiEnvEnabled()) {
+          const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+          ctx.envInfo.state
+            .get(GLOBAL_CONFIG)
+            ?.set(REMOTE_TEAMS_APP_TENANT_ID, (appStudioTokenJson as any).tid);
+        }
       } else {
         if (
           !isUserCancelError(provisionResult.error) &&

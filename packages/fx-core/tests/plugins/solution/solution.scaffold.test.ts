@@ -37,7 +37,6 @@ import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import mockedEnv from "mocked-env";
-import { ArmResourcePlugin } from "../../../src/common/armInterface";
 import { mockedFehostScaffoldArmResult, mockedSimpleAuthScaffoldArmResult } from "./util";
 import { getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
 import { MockTools } from "../../core/utils";
@@ -47,10 +46,8 @@ import { ArmTemplateResult } from "../../../src/common/armInterface";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin &
-  ArmResourcePlugin;
-const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin) as Plugin &
-  ArmResourcePlugin;
+const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin;
+const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin) as Plugin;
 const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
 const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
 const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);

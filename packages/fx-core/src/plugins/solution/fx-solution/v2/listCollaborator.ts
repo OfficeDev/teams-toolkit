@@ -31,7 +31,6 @@ import {
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
   PluginNames,
-  REMOTE_TENANT_ID,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
@@ -48,6 +47,7 @@ import { CollabApiParam, CollaborationUtil } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
 import { Container } from "typedi";
 import { flattenConfigMap } from "../../../resource/utils4v2";
+import { REMOTE_TEAMS_APP_TENANT_ID } from "..";
 
 export async function executeListCollaboratorV2(
   ctx: v2.Context,
@@ -209,7 +209,7 @@ async function listCollaboratorImpl(
   const collaborators: Collaborator[] = [];
   const teamsAppId: string = teamsAppOwners[0]?.resourceId ?? "";
   const aadAppId: string = aadOwners[0]?.resourceId ?? "";
-  const aadAppTenantId = envState.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+  const aadAppTenantId = envState.get(PluginNames.SOLUTION)?.get(REMOTE_TEAMS_APP_TENANT_ID);
 
   for (const teamsAppOwner of teamsAppOwners) {
     const aadOwner = aadOwners.find((owner) => owner.userObjectId === teamsAppOwner.userObjectId);

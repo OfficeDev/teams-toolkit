@@ -17,7 +17,7 @@ import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition
 import {
   GLOBAL_CONFIG,
   PluginNames,
-  REMOTE_TENANT_ID,
+  REMOTE_TEAMS_APP_TENANT_ID,
   SolutionError,
   SolutionSource,
   SOLUTION_PROVISION_SUCCEEDED,
@@ -123,7 +123,7 @@ export class CollaborationUtil {
       };
     }
 
-    const aadAppTenantId = envState.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+    const aadAppTenantId = envState.get(PluginNames.SOLUTION)?.get(REMOTE_TEAMS_APP_TENANT_ID);
     if (!aadAppTenantId || user.tenantId != (aadAppTenantId as string)) {
       const warningMsg =
         "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account.";

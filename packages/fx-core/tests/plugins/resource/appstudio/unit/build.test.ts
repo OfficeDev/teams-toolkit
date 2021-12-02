@@ -12,23 +12,50 @@ import {
   Plugin,
   ok,
   Platform,
+  LocalSettings,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import AdmZip from "adm-zip";
-import { newEnvInfo } from "../../../../../src";
+import { isMultiEnvEnabled, newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "../helper";
+import { v4 as uuid } from "uuid";
+import {
+  LocalSettingsAuthKeys,
+  LocalSettingsBotKeys,
+  LocalSettingsFrontendKeys,
+  LocalSettingsTeamsAppKeys,
+} from "../../../../../src/common/localSettingsConstants";
 
 describe("Build Teams Package", () => {
   let plugin: AppStudioPlugin;
   let ctx: PluginContext;
+  let localSettings: LocalSettings;
   let BotPlugin: Plugin;
   let selectedPlugins: Plugin[];
   const sandbox = sinon.createSandbox();
 
+  const localDebugApplicationIdUris = "local web application info source";
+  const localDebugClientId = uuid();
+  const localDebugBotId = uuid();
+  const localDebugBotDomain = "local debug bot domain";
+
   beforeEach(async () => {
+    if (isMultiEnvEnabled()) {
+      localSettings = {
+        auth: new ConfigMap([
+          [LocalSettingsAuthKeys.ApplicationIdUris, localDebugApplicationIdUris],
+          [LocalSettingsAuthKeys.ClientId, localDebugClientId],
+        ]),
+        bot: new ConfigMap([
+          [LocalSettingsBotKeys.BotId, localDebugBotId],
+          [LocalSettingsBotKeys.BotDomain, localDebugBotDomain],
+        ]),
+        teamsApp: new ConfigMap([[LocalSettingsTeamsAppKeys.TeamsAppId, uuid()]]),
+      };
+    }
     plugin = new AppStudioPlugin();
     ctx = {
       root: getAzureProjectRoot(),
@@ -96,12 +123,14 @@ describe("Build Teams Package", () => {
       webApplicationInfoResource: "",
       teamsAppId: "",
     });
+    sandbox.stub(fs, "move").resolves();
 
     const builtPackage = await plugin.buildTeamsPackage(ctx, true);
     chai.assert.isTrue(builtPackage.isErr());
   });
 
   it("Build local debug package should succeed with local debug configurations", async () => {
+    ctx.localSettings = localSettings;
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
       tabEndpoint: "tabEndpoint",
       tabDomain: "tabDomain",
@@ -111,8 +140,10 @@ describe("Build Teams Package", () => {
       webApplicationInfoResource: "webApplicationInfoResource",
       teamsAppId: "teamsAppId",
     });
+    sandbox.stub(fs, "move").resolves();
 
     const builtPackage = await plugin.buildTeamsPackage(ctx, true);
+    console.log(builtPackage);
     chai.assert.isTrue(builtPackage.isOk());
   });
 });

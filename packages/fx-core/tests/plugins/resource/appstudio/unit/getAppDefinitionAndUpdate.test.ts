@@ -61,6 +61,22 @@ describe("Get AppDefinition and Update", () => {
   const localDebugBotId = uuid.v4();
   const localDebugBotDomain = "local debug bot domain";
 
+  const appDef: IAppDefinition = {
+    appName: "my app",
+    teamsAppId: "appId",
+    userList: [
+      {
+        tenantId: uuid.v4(),
+        aadId: uuid.v4(),
+        displayName: "displayName",
+        userPrincipalName: "principalName",
+        isAdministrator: true,
+      },
+    ],
+    outlineIcon: isMultiEnvEnabled() ? "resources/outline.png" : "outline.png",
+    colorIcon: isMultiEnvEnabled() ? "resources/color.png" : "color.png",
+  };
+
   let AAD_ConfigMap: ConfigMap;
   let BOT_ConfigMap: ConfigMap;
   let LDEBUG_ConfigMap: ConfigMap;
@@ -322,6 +338,7 @@ describe("Get AppDefinition and Update", () => {
       root: getAzureProjectRoot(),
       envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
       config: new ConfigMap(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
       cryptoProvider: new LocalCrypto(""),
       localSettings,
     };
@@ -334,7 +351,12 @@ describe("Get AppDefinition and Update", () => {
         capabilities: ["Bot"],
       },
     };
+
+    sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
+    sandbox.stub(AppStudioClient, "updateApp").resolves(appDef);
+
     const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
+    console.log(getAppDefinitionAndResult);
     chai.assert.isTrue(getAppDefinitionAndResult.isOk());
   });
 
@@ -684,22 +706,6 @@ describe("Get AppDefinition and Update", () => {
         version: "1.0",
         capabilities: ["Bot"],
       },
-    };
-
-    const appDef: IAppDefinition = {
-      appName: "my app",
-      teamsAppId: "appId",
-      userList: [
-        {
-          tenantId: uuid.v4(),
-          aadId: uuid.v4(),
-          displayName: "displayName",
-          userPrincipalName: "principalName",
-          isAdministrator: true,
-        },
-      ],
-      outlineIcon: isMultiEnvEnabled() ? "resources/outline.png" : "outline.png",
-      colorIcon: isMultiEnvEnabled() ? "resources/color.png" : "color.png",
     };
 
     const fakeAxiosInstance = axios.create();

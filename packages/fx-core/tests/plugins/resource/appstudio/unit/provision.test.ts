@@ -62,26 +62,28 @@ describe("Provision Teams app with Azure", () => {
       },
     };
 
-    sandbox.stub(AppStudioClient, "getAppByTeamsAppId").resolves(undefined);
     sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
-    sandbox.stub(AppStudioClient, "updateApp").resolves(appDef);
 
-    sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
-      tabEndpoint: undefined, // tabEndpoint should be undefined for bot only project
-      tabDomain: undefined,
-      aadId: "aadId",
-      botDomain: "botDomain",
-      botId: "botId",
-      webApplicationInfoResource: "webApplicationInfoResource",
-      teamsAppId: undefined,
-    });
-
-    let teamsAppId = await plugin.provision(ctx);
+    const teamsAppId = await plugin.provision(ctx);
     chai.assert.isTrue(teamsAppId.isOk());
     if (teamsAppId.isOk()) {
       chai.assert.isNotEmpty(teamsAppId.value);
     }
+  });
 
+  it("Post provision Bot only app", async () => {
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: uuid(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
+        activeResourcePlugins: ["fx-resource-bot"],
+      },
+    };
+
+    sandbox.stub(AppStudioClient, "updateApp").resolves(appDef);
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
       tabEndpoint: undefined,
       tabDomain: undefined,
@@ -92,10 +94,7 @@ describe("Provision Teams app with Azure", () => {
       teamsAppId: uuid(),
     });
 
-    teamsAppId = await plugin.provision(ctx);
+    const teamsAppId = await plugin.postProvision(ctx);
     chai.assert.isTrue(teamsAppId.isOk());
-    if (teamsAppId.isOk()) {
-      chai.assert.isNotEmpty(teamsAppId.value);
-    }
   });
 });

@@ -34,6 +34,11 @@ export const ResourcePluginsV2 = {
   SimpleAuthPlugin: "SimpleAuthPluginV2",
 };
 
+export const ResourcePluginsNamesV3 = {
+  ScaffoldReactTab: "fx-scaffold-react-tab",
+  AzureStoragePlugin: "fx-resource-azure-storage",
+};
+
 /**
  * @returns all registered resource plugins
  */

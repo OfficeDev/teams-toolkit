@@ -57,7 +57,7 @@ export interface ScaffoldPlugin extends Plugin {
   /**
    * Source code template descriptions
    */
-  templates: ScaffoldTemplate[];
+  getTemplates: (ctx: Context, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
   /**
    * get questions before scaffolding
    */
@@ -154,7 +154,7 @@ export interface ResourcePlugin extends Plugin {
     ctx: Context,
     inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
   /**
    * customize questions needed for deploy

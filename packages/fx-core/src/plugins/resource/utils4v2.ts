@@ -26,6 +26,7 @@ import {
   DeepReadonly,
   DeploymentInputs,
   EnvInfoV2,
+  InputsWithProjectPath,
   ProvisionInputs,
   ResourceProvisionOutput,
   ResourceTemplate,
@@ -41,6 +42,7 @@ import {
 } from "../../core/error";
 import { newEnvInfo } from "../../core/tools";
 import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
+import { EnvInfoV3 } from "../../../../api/build/v3";
 
 export function convert2PluginContext(
   pluginName: string,
@@ -104,7 +106,7 @@ export async function scaffoldSourceCodeAdapter(
 
 export async function generateResourceTemplateAdapter(
   ctx: Context,
-  inputs: Inputs,
+  inputs: Inputs | InputsWithProjectPath,
   plugin: Plugin
 ): Promise<Result<ResourceTemplate, FxError>> {
   if (!plugin.generateArmTemplates)
@@ -118,7 +120,22 @@ export async function generateResourceTemplateAdapter(
   const bicepTemplate: BicepTemplate = { kind: "bicep", template: output };
   return ok(bicepTemplate);
 }
-
+export async function updateResourceTemplateAdapter(
+  ctx: Context,
+  inputs: Inputs | InputsWithProjectPath,
+  plugin: Plugin
+): Promise<Result<ResourceTemplate, FxError>> {
+  if (!plugin.updateArmTemplates)
+    return err(PluginHasNoTaskImpl(plugin.displayName, "updateArmTemplates"));
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
+  const armRes = await plugin.updateArmTemplates(pluginContext);
+  if (armRes.isErr()) {
+    return err(armRes.error);
+  }
+  const output: ArmTemplateResult = armRes.value as ArmTemplateResult;
+  const bicepTemplate: BicepTemplate = { kind: "bicep", template: output };
+  return ok(bicepTemplate);
+}
 export async function provisionResourceAdapter(
   ctx: Context,
   inputs: ProvisionInputs,
@@ -227,7 +244,7 @@ export async function configureResourceAdapter(
 
 export async function deployAdapter(
   ctx: Context,
-  inputs: DeploymentInputs,
+  inputs: DeploymentInputs | InputsWithProjectPath,
   provisionOutput: Json,
   tokenProvider: AzureAccountProvider,
   plugin: Plugin
@@ -305,7 +322,7 @@ export async function executeUserTaskAdapter(
   inputs: Inputs,
   func: Func,
   localSettings: Json,
-  envInfo: EnvInfoV2,
+  envInfo: EnvInfoV2 | EnvInfoV3,
   tokenProvider: TokenProvider,
   plugin: Plugin
 ): Promise<Result<unknown, FxError>> {

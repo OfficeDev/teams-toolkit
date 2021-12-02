@@ -660,6 +660,37 @@ export class FunctionPluginImpl {
     return ResultFactory.Success();
   }
 
+  public async updateArmTemplates(ctx: PluginContext): Promise<FxResult> {
+    const bicepTemplateDirectory = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "function",
+      "bicep"
+    );
+
+    const configFuncTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      FunctionBicepFile.configuraitonTemplateFileName
+    );
+
+    const result: ArmTemplateResult = {
+      Provision: {
+        Reference: {
+          functionAppResourceId: FunctionBicep.functionAppResourceId,
+          functionEndpoint: FunctionBicep.functionEndpoint,
+        },
+      },
+      Configuration: {
+        Modules: {
+          function: await fs.readFile(configFuncTemplateFilePath, ConstantString.UTF8Encoding),
+        },
+      },
+    };
+
+    return ResultFactory.Success(result);
+  }
+
   public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),

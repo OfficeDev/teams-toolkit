@@ -146,7 +146,10 @@ export interface ResourcePlugin extends Plugin {
     ctx: Context,
     inputs: InputsWithProjectPath
   ) => Promise<Result<ResourceTemplate, FxError>>;
-
+  updateResourceTemplate?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath
+  ) => Promise<Result<ResourceTemplate, FxError>>;
   configureResource?: (
     ctx: Context,
     inputs: InputsWithProjectPath,

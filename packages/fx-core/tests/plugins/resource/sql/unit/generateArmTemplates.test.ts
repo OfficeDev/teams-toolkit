@@ -104,7 +104,7 @@ describe("generateArmTemplates", () => {
       version: "1.0.0",
       activeResourcePlugins: activeResourcePlugins,
     } as AzureSolutionSettings;
-    const result = await sqlPlugin.generateArmTemplates(pluginContext);
+    const result = await sqlPlugin.updateArmtemplates(pluginContext);
 
     // Assert
     const testModuleFileName = "sqlProvision.result.bicep";

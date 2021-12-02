@@ -47,7 +47,6 @@ jobs:
           username: ${{secrets.AZURE_SERVICE_PRINCIPAL_NAME}}
           password: ${{secrets.AZURE_SERVICE_PRINCIPAL_PASSWORD}}
           tenant: ${{secrets.AZURE_TENANT_ID}}
-          env: ${{env.TEAMSFX_ENV_NAME}}
 
       # We suggest to do the `teamsfx provision` step manually or in a separate workflow. The following steps are for your reference.
       # After provisioning, you should commit necessary files under .fx into the repository.

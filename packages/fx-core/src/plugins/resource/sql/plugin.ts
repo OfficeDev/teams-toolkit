@@ -329,7 +329,7 @@ export class SqlPluginImpl {
   }
 
   private async loadSkipAddingUser(ctx: PluginContext) {
-    const skipAddingUser = ctx.config.get(Constants.skipAddingUser);
+    const skipAddingUser = ctx.envInfo.config?.[Constants.skipAddingSqlUser];
     if (skipAddingUser === undefined) {
       this.config.skipAddingUser = (await ctx.azureAccountProvider?.getIdentityCredentialAsync())
         ? false

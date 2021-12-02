@@ -144,6 +144,18 @@ export async function setBotSkuNameToB1Bicep(projectPath: string, envName: strin
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
 }
 
+export async function setSkipAddingSqlUserToConfig(projectPath: string, envName: string) {
+  const configFile = path.join(
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    `config.${envName}.json`
+  );
+  const configFilePath = path.resolve(projectPath, configFile);
+  const config = await fs.readJSON(configFilePath);
+  config["skipAddingSqlUser"] = true;
+  return fs.writeJSON(configFilePath, config, { spaces: 4 });
+}
+
 export async function cleanupSharePointPackage(appId: string) {
   if (appId) {
     try {

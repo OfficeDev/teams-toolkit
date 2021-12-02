@@ -39,7 +39,6 @@ import {
   configureResourceAdapter,
   convert2PluginContext,
   executeUserTaskAdapter,
-  generateResourceTemplateAdapter,
   getQuestionsAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
@@ -58,13 +57,6 @@ export class AppStudioPluginV2 implements ResourcePlugin {
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
-  }
-
-  async generateResourceTemplate(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<ResourceTemplate, FxError>> {
-    return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 
   async provisionResource(

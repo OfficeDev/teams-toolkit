@@ -46,6 +46,9 @@ import {
   mockedSimpleAuthScaffoldArmResult,
   mockedAadScaffoldArmResult,
   mockedBotArmTemplateResultFunc,
+  MockedUserInteraction,
+  MockedLogProvider,
+  MockedTelemetryReporter,
 } from "./util";
 import * as tools from "../../../src/common/tools";
 import * as cpUtils from "../../../src/common/cpUtils";
@@ -100,6 +103,9 @@ function mockSolutionContext(): SolutionContext {
     projectSettings: undefined,
     azureAccountProvider: Object as any & AzureAccountProvider,
     cryptoProvider: new LocalCrypto(""),
+    ui: new MockedUserInteraction(),
+    logProvider: new MockedLogProvider(),
+    telemetryReporter: new MockedTelemetryReporter(),
   };
 }
 

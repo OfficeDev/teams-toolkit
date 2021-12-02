@@ -196,6 +196,7 @@ export class NamedArmResourcePluginAdaptor implements NamedArmResourcePlugin {
         cryptoProvider: ctx.cryptoProvider,
         projectSetting: ctx.projectSettings,
       };
+      ctx.answers.projectPath = ctx.root;
       const result = await fn(v2ctx, ctx.answers);
       return result.map((r) => r.template);
     };

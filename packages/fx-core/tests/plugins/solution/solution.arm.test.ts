@@ -788,6 +788,7 @@ describe("Arm Template Failed Test", () => {
         properties: {
           targetResource: {
             resourceName: "test resource",
+            id: "/subscriptions/1756abc0-3554-4341-8d6a-46674962ffff/resourceGroups/test52-dev-rg/providers/Microsoft.Resources/deployments/addTeamsFxConfigurations",
           },
           provisioningState: "Running",
           timestamp: Date.now(),

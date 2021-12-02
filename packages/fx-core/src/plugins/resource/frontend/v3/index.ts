@@ -27,6 +27,7 @@ import {
   scaffoldSourceCodeAdapter,
   updateResourceTemplateAdapter,
 } from "../../utils4v2";
+import { configureResourceAdapterV3, provisionResourceAdapterV3 } from "../../utils4v3";
 
 @Service(ResourcePluginsNamesV3.ScaffoldReactTab)
 export class ReactTabScaffoldPluginV3 implements v3.ScaffoldPlugin {
@@ -72,22 +73,22 @@ export class AzureStoragePluginV3 implements v3.ResourcePlugin {
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
     return await updateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
-  // async provisionResource(
-  //   ctx: v2.Context,
-  //   inputs: v2.InputsWithProjectPath,
-  //   envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-  //   tokenProvider: TokenProvider
-  // ): Promise<Result<v3.EnvInfoV3, FxError>> {
-  //   return provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
-  // }
-  // async configureResource(
-  //   ctx: v2.Context,
-  //   inputs: v2.InputsWithProjectPath,
-  //   envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-  //   tokenProvider: TokenProvider
-  // ): Promise<Result<Void, FxError>> {
-  //   return await configureResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
-  // }
+  async provisionResource(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<v3.CloudResource, FxError>> {
+    return provisionResourceAdapterV3(ctx, inputs, envInfo, tokenProvider, this.plugin);
+  }
+  async configureResource(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<Void, FxError>> {
+    return await configureResourceAdapterV3(ctx, inputs, envInfo, tokenProvider, this.plugin);
+  }
   async deploy(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,

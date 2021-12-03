@@ -1606,7 +1606,10 @@ export async function showError(e: UserError | SystemError) {
       },
     };
 
-    const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, help);
+    const button = await window.showErrorMessage(
+      `[${errorCode}]: ${e.userData ?? e.message}`,
+      help
+    );
     if (button) await button.run();
   } else if (e instanceof SystemError) {
     const sysError = e as SystemError;

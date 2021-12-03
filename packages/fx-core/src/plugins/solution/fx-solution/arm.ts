@@ -329,15 +329,18 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
         undefined,
         2
       );
-      const errorMessage = format(
+      let errorMessage = format(
         getStrings().solution.DeployArmTemplates.FailNotice,
         PluginDisplayName.Solution,
         resourceGroupName,
         deploymentName
       );
-      ctx.logProvider?.error(
-        errorMessage +
-          `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`
+      errorMessage += `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`;
+      const returnError = returnUserError(
+        new Error(errorMessage),
+        SolutionSource,
+        SolutionError.FailedToDeployArmTemplatesToAzure,
+        HelpLinks.ArmHelpLink
       );
 
       let failedDeployments: string[] = [];
@@ -346,7 +349,8 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       } else {
         failedDeployments.push(deploymentName);
       }
-      return formattedDeploymentName(failedDeployments);
+      returnError.userData = formattedNotificationMessage(failedDeployments);
+      return err(returnError);
     } else {
       return result;
     }
@@ -1032,21 +1036,11 @@ async function getDeploymentError(
   return deploymentError;
 }
 
-function formattedDeploymentName(failedDeployments: string[]): Result<void, FxError> {
+function formattedNotificationMessage(failedDeployments: string[]): string {
   const format = failedDeployments.map((deployment) => deployment + " module");
-  const returnError = new Error(
-    `resource deployments (${format.join(
-      ", "
-    )}) for your project failed. Please refer to output channel for more error details.`
-  );
-  return err(
-    returnUserError(
-      returnError,
-      SolutionSource,
-      SolutionError.FailedToDeployArmTemplatesToAzure,
-      HelpLinks.ArmHelpLink
-    )
-  );
+  return `resource deployments (${format.join(
+    ", "
+  )}) for your project failed. Please refer to output channel for more error details.`;
 }
 
 export function formattedDeploymentError(deploymentError: any): any {

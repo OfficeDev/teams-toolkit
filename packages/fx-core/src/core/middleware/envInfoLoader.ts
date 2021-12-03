@@ -45,6 +45,7 @@ import { shouldIgnored } from "./projectSettingsLoader";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
 import { mapToJson } from "../../common";
+import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
@@ -121,11 +122,33 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
 
     if (isV2()) {
       const envInfo = result.value.envInfo;
-      const state: Json = mapToJson(envInfo.state);
+      const state: Json = legacySolutionConfig2EnvState(envInfo.state);
       ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, state };
     }
     await next();
   };
+}
+
+/**
+ * Converts solution config map to envInfo state Json compatible to API v2.
+ * e.g. Map("solution" -> Map("tenantId" -> "aaa", "secret1": "bbb") } will be converted to
+ * {"solution": { "output": { "tenantId": "aaa" }, "secrets": { "secret1": "bbb" } } }.
+ * secret field names are now a hard-coded list collected from all first party plugins.
+ *
+ * @param solutionConfig solution config map
+ * @returns envInfo state Json with output and secrets fields.
+ */
+function legacySolutionConfig2EnvState(solutionConfig: SolutionConfig): Json {
+  const output: Json = {};
+  for (const [pluginName, pluginConfig] of solutionConfig) {
+    if (pluginConfig instanceof Map) {
+      output[pluginName] = legacyConfig2EnvState(pluginConfig, pluginName);
+    } else {
+      throw Error(`invalid config type ${typeof pluginConfig}`);
+    }
+  }
+
+  return output;
 }
 
 export async function loadSolutionContext(

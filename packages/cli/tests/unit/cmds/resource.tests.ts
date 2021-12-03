@@ -211,6 +211,7 @@ describe("Resource Command Tests", function () {
       "azure-sql",
       "azure-apim",
       "azure-function",
+      "azure-key-vault",
       "show <resource-type>",
       "azure-function",
       "azure-sql",

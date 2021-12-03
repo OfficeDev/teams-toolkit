@@ -997,6 +997,8 @@ export interface ProjectSettings {
     // (undocumented)
     appName: string;
     // (undocumented)
+    createdFrom?: string;
+    // (undocumented)
     defaultFunctionName?: string;
     // (undocumented)
     isFromSample?: boolean;

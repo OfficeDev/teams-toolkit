@@ -172,6 +172,7 @@ export let TOOLS: Tools;
 export class FxCore implements Core {
   tools: Tools;
   isFromSample?: boolean;
+  createdFrom?: string;
 
   constructor(tools: Tools) {
     this.tools = tools;

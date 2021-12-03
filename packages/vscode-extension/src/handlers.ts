@@ -273,11 +273,16 @@ async function getIsFromSample() {
 async function getCreatedFrom(): Promise<string | undefined> {
   if (core) {
     const input = getSystemInputs();
-    const projectConfig = await core.getProjectConfig(input);
+    // TODO: from the experience of 'is-from-sample':
+    // in some circumstances, getProjectConfig() returns undefined even projectSettings.json is valid.
+    // This is a workaround to prevent that. We can change to the following code after the root cause is found.
+    // const projectConfig = await core.getProjectConfig(input);
     // ignore errors for telemetry
-    if (projectConfig.isOk()) {
-      return projectConfig.value?.settings?.createdFrom;
-    }
+    // if (projectConfig.isOk()) {
+    //   return projectConfig.value?.settings?.createdFrom;
+    // }
+    await core.getProjectConfig(input);
+    return core.createdFrom;
   }
   return undefined;
 }

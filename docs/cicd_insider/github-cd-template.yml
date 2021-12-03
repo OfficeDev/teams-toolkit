@@ -12,7 +12,6 @@ jobs:
     # You can uncomment the line below to use environments (refer to https://docs.github.com/en/actions/reference/environments). 
     #environment: test_environment
     env:
-      AZURE_SUBSCRIPTION_ID: ${{secrets.AZURE_SUBSCRIPTION_ID}}
       # To specify the env name for multi-env feature.
       TEAMSFX_ENV_NAME: staging
 
@@ -55,7 +54,7 @@ jobs:
       #  uses: OfficeDev/teamsfx-cli-action@v1
       #  with:
       #    commands: provision
-      #    subscription: ${{env.AZURE_SUBSCRIPTION_ID}}
+      #    subscription: ${{secrets.AZURE_SUBSCRIPTION_ID}}
       #    env: ${{env.TEAMSFX_ENV_NAME}}
 
       #- name: Commit provision configs if necessary

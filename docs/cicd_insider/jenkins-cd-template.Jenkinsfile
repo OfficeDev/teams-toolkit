@@ -11,7 +11,6 @@ pipeline {
 
     // To learn more about environment, please refer to https://www.jenkins.io/doc/book/pipeline/syntax/#environment.
     environment {
-        AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
         // To enable @microsoft/teamsfx-cli running in CI mode, turn on CI_ENABLED like below.
         // In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
         CI_ENABLED = 'true'
@@ -65,6 +64,9 @@ pipeline {
         // After provisioning, you should commit necessary files under .fx into the repository.
         // You should upload .fx/states/${TEAMSFX_ENV_NAME}.userdata into credentials (https://www.jenkins.io/doc/book/using/using-credentials/) in type of `Secret file` which can be refered by the stage with name 'Generate userdata'. 
         // stage('Provision hosting environment') {
+        //     environment {
+        //         AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
+        //     }
         //     steps {
         //         sh 'npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID} --env ${TEAMSFX_ENV_NAME}'
         //     }

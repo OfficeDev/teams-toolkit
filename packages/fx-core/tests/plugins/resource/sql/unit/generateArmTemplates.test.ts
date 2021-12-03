@@ -122,19 +122,14 @@ describe("generateArmTemplates", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplates(
-        mockedSolutionDataContext,
-        result.value
-      );
-
-      chai.assert.exists(expectedResult.Provision!.Reference!.sqlResourceId);
-      chai.assert.exists(expectedResult.Provision!.Reference!.sqlEndpoint);
-      chai.assert.exists(expectedResult.Provision!.Reference!.databaseName);
-      chai.assert.notExists(expectedResult.Provision!.Orchestration);
-      chai.assert.notExists(expectedResult.Provision!.Modules);
-      chai.assert.notExists(expectedResult.Configuration!.Orchestration);
-      chai.assert.isEmpty(expectedResult.Configuration!.Modules);
-      chai.assert.notExists(expectedResult.Parameters);
+      chai.assert.exists(result.value.Provision!.Reference!.sqlResourceId);
+      chai.assert.exists(result.value.valuetedResult.Provision!.Reference!.sqlEndpoint);
+      chai.assert.exists(result.value.Provision!.Reference!.databaseName);
+      chai.assert.notExists(result.value.Provision!.Orchestration);
+      chai.assert.notExists(result.value.Provision!.Modules);
+      chai.assert.notExists(result.value.Configuration!.Orchestration);
+      chai.assert.isEmpty(result.value.Configuration!.Modules);
+      chai.assert.notExists(result.value.Parameters);
     }
   });
 });

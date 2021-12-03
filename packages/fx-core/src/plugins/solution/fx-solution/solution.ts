@@ -1641,13 +1641,11 @@ export class TeamsAppSolution implements Solution {
     const notifications: string[] = [];
     const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin];
     const azureResource = Array.from(settings.azureResources || []);
-    if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
+    if (addFunc && !alreadyHaveFunction) {
       pluginsToScaffold.push(functionPlugin);
-      if (!azureResource.includes(AzureResourceFunction.id)) {
-        azureResource.push(AzureResourceFunction.id);
-        addNewResoruceToProvision = true;
-      }
+      azureResource.push(AzureResourceFunction.id);
       notifications.push(AzureResourceFunction.label);
+      addNewResoruceToProvision = true;
     }
     if (addSQL && !alreadyHaveSql) {
       pluginsToScaffold.push(sqlPlugin);

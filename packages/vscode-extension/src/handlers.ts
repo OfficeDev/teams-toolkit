@@ -222,6 +222,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await openSampleReadmeHandler();
     await postUpgrade();
     ExtTelemetry.isFromSample = await getIsFromSample();
+    ExtTelemetry.createdFrom = await getCreatedFrom();
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
@@ -264,6 +265,19 @@ async function getIsFromSample() {
     await core.getProjectConfig(input);
 
     return core.isFromSample;
+  }
+  return undefined;
+}
+
+// only used for telemetry
+async function getCreatedFrom(): Promise<string | undefined> {
+  if (core) {
+    const input = getSystemInputs();
+    const projectConfig = await core.getProjectConfig(input);
+    // ignore errors for telemetry
+    if (projectConfig.isOk()) {
+      return projectConfig.value?.settings?.createdFrom;
+    }
   }
   return undefined;
 }

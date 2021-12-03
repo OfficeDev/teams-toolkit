@@ -7,14 +7,14 @@
 <b>Signature:</b>
 
 ```typescript
-export declare function assembleError(e: Error, source?: string): FxError;
+export declare function assembleError(e: any, source?: string): FxError;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  e | Error |  |
+|  e | any |  |
 |  source | string |  |
 
 <b>Returns:</b>

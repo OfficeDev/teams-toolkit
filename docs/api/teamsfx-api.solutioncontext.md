@@ -15,5 +15,5 @@ export interface SolutionContext extends Context
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [config](./teamsfx-api.solutioncontext.config.md) | [SolutionConfig](./teamsfx-api.solutionconfig.md) |  |
+|  [envInfo](./teamsfx-api.solutioncontext.envinfo.md) | [EnvInfo](./teamsfx-api.envinfo.md) |  |
 

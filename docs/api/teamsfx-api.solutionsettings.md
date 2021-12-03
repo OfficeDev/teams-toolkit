@@ -9,14 +9,14 @@ solution settings
 <b>Signature:</b>
 
 ```typescript
-export interface SolutionSettings extends Dict<ConfigValue> 
+export interface SolutionSettings extends Json 
 ```
-<b>Extends:</b> [Dict](./teamsfx-api.dict.md)<!-- -->&lt;[ConfigValue](./teamsfx-api.configvalue.md)<!-- -->&gt;
+<b>Extends:</b> [Json](./teamsfx-api.json.md)
 
 ## Properties
 
 |  Property | Type | Description |
 |  --- | --- | --- |
 |  [name](./teamsfx-api.solutionsettings.name.md) | string |  |
-|  [version](./teamsfx-api.solutionsettings.version.md) | string |  |
+|  [version?](./teamsfx-api.solutionsettings.version.md) | string | <i>(Optional)</i> |
 

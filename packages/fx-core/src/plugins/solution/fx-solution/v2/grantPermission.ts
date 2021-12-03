@@ -20,7 +20,12 @@ import {
   ConfigMap,
   Json,
 } from "@microsoft/teamsfx-api";
-import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
+import {
+  CollaborationState,
+  isSPFxProject,
+  PermissionsResult,
+  ResourcePermission,
+} from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
   PluginNames,
@@ -184,11 +189,19 @@ async function grantPermissionImpl(
         ui?.showMessage("info", message, false);
       }
 
-      ui?.showMessage(
-        "info",
-        `\nSkip grant permission for Azure resources. You may want to handle that via Azure portal. `,
-        false
-      );
+      if (CollaborationUtil.isSpfxProject(param.ctx)) {
+        ui?.showMessage(
+          "info",
+          `\nIf added user is not SharePoint site admin, you need to handle that via SharePoint admin center.`,
+          false
+        );
+      } else {
+        ui?.showMessage(
+          "info",
+          `\nIf added user cannot access Azure resources, you need to handle that via Azure portal.`,
+          false
+        );
+      }
 
       if (errorMsg) {
         ui?.showMessage("error", errorMsg, false);

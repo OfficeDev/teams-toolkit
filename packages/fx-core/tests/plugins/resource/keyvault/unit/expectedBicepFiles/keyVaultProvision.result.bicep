@@ -9,6 +9,7 @@ var m365ClientSecretName = 'm365ClientSecret'
 var m365ClientSecret = provisionParameters['m365ClientSecret']
 var botClientSecretName = 'botClientSecret'
 var botClientSecret = contains(provisionParameters, 'botAadAppClientSecret') ? provisionParameters['botAadAppClientSecret'] : ''
+var keyVaultSkuName = contains(provisionParameters, 'keyVaultSkuName') ? provisionParameters['keyVaultSkuName'] : 'standard'
 
 resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   name: keyVaultName
@@ -27,7 +28,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
       }
     ]
     sku: {
-      name: 'standard'
+      name: keyVaultSkuName // You can follow https://aka.ms/teamsfx-bicep-add-param-tutorial to add "keyVaultSkuName" property to provisionParameters to override the default value "standard".
       family: 'A'
     }
   }

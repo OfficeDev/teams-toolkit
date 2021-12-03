@@ -92,7 +92,7 @@ export namespace ExtTelemetry {
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
-    if (createdFrom != undefined) {
+    if (createdFrom !== undefined) {
       properties![TelemetryProperty.CreatedFrom] = createdFrom.toString();
     }
 
@@ -136,7 +136,7 @@ export namespace ExtTelemetry {
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
-    if (createdFrom != undefined) {
+    if (createdFrom !== undefined) {
       properties![TelemetryProperty.CreatedFrom] = createdFrom.toString();
     }
 
@@ -166,7 +166,7 @@ export namespace ExtTelemetry {
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
-    if (createdFrom != undefined) {
+    if (createdFrom !== undefined) {
       properties![TelemetryProperty.CreatedFrom] = createdFrom.toString();
     }
 

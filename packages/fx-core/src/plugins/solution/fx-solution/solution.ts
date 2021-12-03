@@ -1622,9 +1622,13 @@ export class TeamsAppSolution implements Solution {
     const addApim = addResourcesAnswer.includes(AzureResourceApim.id);
     const addKeyVault = addResourcesAnswer.includes(AzureResourceKeyVault.id);
 
-    if ((alreadyHaveSql && addSQL) || (alreadyHaveApim && addApim)) {
+    if (
+      (alreadyHaveSql && addSQL) ||
+      (alreadyHaveApim && addApim) ||
+      (alreadyHaveKeyVault && addKeyVault)
+    ) {
       const e = returnUserError(
-        new Error("SQL/APIM is already added."),
+        new Error("SQL/APIM/KeyVault is already added."),
         SolutionSource,
         SolutionError.AddResourceNotSupport
       );

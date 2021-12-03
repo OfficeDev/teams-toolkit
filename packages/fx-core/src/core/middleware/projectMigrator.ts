@@ -884,6 +884,11 @@ async function ensureProjectSettings(
     settings.defaultFunctionName =
       settings.defaultFunctionName || envDefault[PluginNames.FUNC]?.[defaultFunctionName];
   }
+  if (!settings.createdFrom) {
+    // We won't know the exact version when the project is created.
+    // But we know it is from core <1.0 (extension < 3.0).
+    settings.createdFrom = "<1.0";
+  }
   settings.version = "2.0.0";
   await fs.writeFile(projectSettingPath, JSON.stringify(settings, null, 4), {
     encoding: "UTF-8",

@@ -114,19 +114,15 @@ describe("identityPlugin", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplates(
-        mockedSolutionDataContext,
-        result.value
-      );
-      chai.assert.notExists(expectedResult.Provision!.Modules);
-      chai.assert.notExists(expectedResult.Provision!.Orchestration);
-      chai.assert.exists(expectedResult.Provision!.Reference!.identityName);
-      chai.assert.exists(expectedResult.Provision!.Reference!.identityClientId);
-      chai.assert.exists(expectedResult.Provision!.Reference!.identityResourceId);
-      chai.assert.exists(expectedResult.Provision!.Reference!.identityPrincipalId);
-      chai.assert.notExists(expectedResult.Configuration!.Orchestration);
-      chai.assert.isEmpty(expectedResult.Configuration!.Modules);
-      chai.assert.notExists(expectedResult.Parameters);
+      chai.assert.notExists(result.value.Provision!.Modules);
+      chai.assert.notExists(result.value.Provision!.Orchestration);
+      chai.assert.exists(result.value.Provision!.Reference!.identityName);
+      chai.assert.exists(result.value.Provision!.Reference!.identityClientId);
+      chai.assert.exists(result.value.Provision!.Reference!.identityResourceId);
+      chai.assert.exists(result.value.Provision!.Reference!.identityPrincipalId);
+      chai.assert.notExists(result.value.Configuration!.Orchestration);
+      chai.assert.isEmpty(result.value.Configuration!.Modules);
+      chai.assert.notExists(result.value.Parameters);
     }
   });
 });

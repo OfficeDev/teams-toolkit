@@ -10,27 +10,31 @@ import { SubscriptionClient } from "@azure/arm-subscriptions";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { AzureAccountProvider, ConfigFolderName, err, FxError, ok, Result, SubscriptionInfo } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, ConfigFolderName, SubscriptionInfo } from "@microsoft/teamsfx-api";
 
 import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
 import { login, LoginStatus } from "./common/login";
-import { signedOut } from "./common/constant";
-
-const clientId = process.env.E2E_CLIENT_ID ?? "";
-const secret = process.env.E2E_SECRET ?? "";
-const tenantId = process.env.E2E_TENANT_ID ?? "";
+import { clearAzureSP, loadAzureSP, saveAzureSP } from "./cacheAccess";
+import { subscriptionInfoFile } from "./common/constant";
+import { isWorkspaceSupported } from "../utils";
 
 /**
- * Prepare for service princle login, not fully implemented
+ * Prepare for service principal login, not fully implemented
  */
 export class AzureAccountManager extends login implements AzureAccountProvider {
   static tokenCredentialsBase: TokenCredentialsBase;
 
   static tokenCredential: TokenCredential;
 
-  static subscriptionId: string;
+  private static subscriptionId: string | undefined;
 
   private static instance: AzureAccountManager;
+
+  private static clientId: string;
+  private static secret: string;
+  private static tenantId: string;
+  private static subscriptionName: string | undefined;
+  private static rootPath: string | undefined;
 
   /**
    * Gets instance
@@ -44,12 +48,31 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     return AzureAccountManager.instance;
   }
 
+  public async init(clientId: string, secret: string, tenantId: string): Promise<void> {
+    AzureAccountManager.clientId = clientId;
+    AzureAccountManager.secret = secret;
+    AzureAccountManager.tenantId = tenantId;
+    await saveAzureSP(clientId, secret, tenantId);
+    return;
+  }
+
+  public async load(): Promise<boolean> {
+    const data = await loadAzureSP();
+    if (data) {
+      AzureAccountManager.clientId = data.clientId;
+      AzureAccountManager.secret = data.secret;
+      AzureAccountManager.tenantId = data.tenantId;
+    }
+    return false;
+  }
+
   async getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
+    await this.load();
     if (AzureAccountManager.tokenCredentialsBase == undefined) {
       const authres = await msRestNodeAuth.loginWithServicePrincipalSecretWithAuthResponse(
-        clientId,
-        secret,
-        tenantId
+        AzureAccountManager.clientId,
+        AzureAccountManager.secret,
+        AzureAccountManager.tenantId
       );
       AzureAccountManager.tokenCredentialsBase = authres.credentials;
     }
@@ -60,8 +83,13 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async getIdentityCredentialAsync(): Promise<TokenCredential | undefined> {
+    await this.load();
     if (AzureAccountManager.tokenCredential == undefined) {
-      const identityCredential = new identity.ClientSecretCredential(tenantId, clientId, secret);
+      const identityCredential = new identity.ClientSecretCredential(
+        AzureAccountManager.tenantId,
+        AzureAccountManager.clientId,
+        AzureAccountManager.secret
+      );
       const credentialChain = new identity.ChainedTokenCredential(identityCredential);
       AzureAccountManager.tokenCredential = credentialChain;
     }
@@ -75,16 +103,14 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    * singnout from Azure
    */
   async signout(): Promise<boolean> {
-    // await vscode.commands.executeCommand("azure-account.logout");
-    // if (AzureAccountManager.statusChange !== undefined) {
-    //   await AzureAccountManager.statusChange("SignedOut", undefined, undefined);
-    // }
-    return new Promise((resolve) => {
+    return new Promise(async (resolve) => {
+      await clearAzureSP();
       resolve(true);
     });
   }
 
   async getSubscriptionList(azureToken: TokenCredentialsBase): Promise<AzureSubscription[]> {
+    await this.load();
     const client = new SubscriptionClient(azureToken);
     const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
     const subs: Partial<AzureSubscription>[] = subscriptions.map((sub) => {
@@ -98,30 +124,6 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     });
   }
 
-  public async setSubscriptionId(
-    subscriptionId: string,
-    root_folder = "./"
-  ): Promise<Result<null, FxError>> {
-    const token = await this.getAccountCredentialAsync();
-    const subscriptions = await this.getSubscriptionList(token!);
-
-    if (subscriptions.findIndex((sub) => sub.subscriptionId === subscriptionId) < 0) {
-      return err(NotFoundSubscriptionId());
-    }
-    AzureAccountManager.subscriptionId = subscriptionId;
-
-    /// TODO: use api's constant
-    const configPath = path.resolve(root_folder, `.${ConfigFolderName}/env.default.json`);
-    if (!(await fs.pathExists(configPath))) {
-      return err(NotSupportedProjectType());
-    }
-    const configJson = await fs.readJson(configPath);
-    configJson["solution"].subscriptionId = subscriptionId;
-    await fs.writeFile(configPath, JSON.stringify(configJson, null, 4));
-
-    return ok(null);
-  }
-
   async getStatus(): Promise<LoginStatus> {
     throw new Error("Method not implemented.");
   }
@@ -129,22 +131,125 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {
     throw new Error("Method not implemented.");
   }
-  listSubscriptions(): Promise<SubscriptionInfo[]> {
-    throw new Error("Method not implemented.");
+
+  async listSubscriptions(): Promise<SubscriptionInfo[]> {
+    const credential = await this.getAccountCredentialAsync();
+    if (credential) {
+      const client = new SubscriptionClient(credential);
+      const tenants = await listAll(client.tenants, client.tenants.list());
+      let answers: SubscriptionInfo[] = [];
+      for (const tenant of tenants) {
+        if (tenant.tenantId) {
+          const authres = await msRestNodeAuth.loginWithServicePrincipalSecretWithAuthResponse(
+            AzureAccountManager.clientId,
+            AzureAccountManager.secret,
+            AzureAccountManager.tenantId
+          );
+          const client = new SubscriptionClient(authres.credentials);
+          const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
+          const filteredsubs = subscriptions.filter(
+            (sub) => !!sub.displayName && !!sub.subscriptionId
+          );
+          answers = answers.concat(
+            filteredsubs.map((sub) => {
+              return {
+                subscriptionName: sub.displayName!,
+                subscriptionId: sub.subscriptionId!,
+                tenantId: tenant.tenantId!,
+              };
+            })
+          );
+        }
+      }
+      return answers;
+    }
+    return [];
   }
-  setSubscription(subscriptionId: string): Promise<void> {
-    throw new Error("Method not implemented.");
+
+  async setSubscription(subscriptionId: string): Promise<void> {
+    const list = await this.listSubscriptions();
+    for (let i = 0; i < list.length; ++i) {
+      const item = list[i];
+      if (item.subscriptionId === subscriptionId) {
+        await this.saveSubscription({
+          subscriptionId: item.subscriptionId,
+          subscriptionName: item.subscriptionName,
+          tenantId: item.tenantId,
+        });
+        AzureAccountManager.tenantId = item.tenantId;
+        AzureAccountManager.subscriptionId = item.subscriptionId;
+        AzureAccountManager.subscriptionName = item.subscriptionName;
+        return;
+      }
+    }
+    throw NotFoundSubscriptionId();
   }
+
+  async saveSubscription(subscriptionInfo: SubscriptionInfo): Promise<void> {
+    const subscriptionFilePath = await this.getSubscriptionInfoPath();
+    if (!subscriptionFilePath) {
+      return;
+    } else {
+      await fs.writeFile(subscriptionFilePath, JSON.stringify(subscriptionInfo, null, 4));
+    }
+  }
+
+  async getSubscriptionInfoPath(): Promise<string | undefined> {
+    if (AzureAccountManager.rootPath) {
+      if (isWorkspaceSupported(AzureAccountManager.rootPath)) {
+        const subscriptionFile = path.join(
+          AzureAccountManager.rootPath,
+          `.${ConfigFolderName}`,
+          subscriptionInfoFile
+        );
+        return subscriptionFile;
+      } else {
+        return undefined;
+      }
+    } else {
+      return undefined;
+    }
+  }
+
   getAccountInfo(): Record<string, string> | undefined {
-    throw new Error("Method not implemented.");
+    return {};
   }
 
-  getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
-    throw new Error("Method not implemented.");
+  async getSelectedSubscription(): Promise<SubscriptionInfo | undefined> {
+    await this.readSubscription();
+    if (AzureAccountManager.subscriptionId) {
+      const selectedSub: SubscriptionInfo = {
+        subscriptionId: AzureAccountManager.subscriptionId,
+        tenantId: AzureAccountManager.tenantId!,
+        subscriptionName: AzureAccountManager.subscriptionName ?? "",
+      };
+      return selectedSub;
+    } else {
+      return undefined;
+    }
   }
 
-  selectSubscription(subscriptionId?: string): Promise<string | undefined> {
-    throw new Error("Method not implemented.");
+  public setRootPath(rootPath: string): void {
+    AzureAccountManager.rootPath = rootPath;
+  }
+
+  async readSubscription(): Promise<SubscriptionInfo | undefined> {
+    const subscriptionFIlePath = await this.getSubscriptionInfoPath();
+    if (subscriptionFIlePath === undefined) {
+      return undefined;
+    }
+    const content = (await fs.readFile(subscriptionFIlePath)).toString();
+    if (content.length == 0) {
+      return undefined;
+    }
+    const subscriptionJson = JSON.parse(content);
+    AzureAccountManager.subscriptionId = subscriptionJson.subscriptionId;
+    AzureAccountManager.subscriptionName = subscriptionJson.subscriptionName;
+    return {
+      subscriptionId: subscriptionJson.subscriptionId,
+      tenantId: subscriptionJson.tenantId,
+      subscriptionName: subscriptionJson.subscriptionName,
+    };
   }
 }
 

@@ -10,6 +10,7 @@ import { Colors, FxError, LogLevel, ok, Question, Result } from "@microsoft/team
 import { YargsCommand } from "../yargsCommand";
 import AppStudioTokenProvider from "../commonlib/appStudioLogin";
 import AzureTokenProvider from "../commonlib/azureLogin";
+import AzureTokenCIProvider from "../commonlib/azureLoginCI";
 import { signedIn } from "../commonlib/common/constant";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
@@ -46,10 +47,21 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
   return Promise.resolve(result !== undefined);
 }
 
-async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Promise<boolean> {
-  const result = await AzureTokenProvider.getAccountCredentialAsync(true, tenantId);
+async function outputAzureInfo(
+  commandType: "login" | "show",
+  tenantId = "",
+  isServicePrincipal = false,
+  userName = "",
+  password = ""
+): Promise<boolean> {
+  let azureProvider = AzureTokenProvider;
+  if (isServicePrincipal === true) {
+    await AzureTokenCIProvider.init(userName, password, tenantId);
+    azureProvider = AzureTokenCIProvider;
+  }
+  const result = await azureProvider.getAccountCredentialAsync(true, tenantId);
   if (result) {
-    const subscriptions = await AzureTokenProvider.listSubscriptions();
+    const subscriptions = await azureProvider.listSubscriptions();
     if (commandType === "login") {
       const message = [
         {
@@ -67,8 +79,8 @@ async function outputAzureInfo(commandType: "login" | "show", tenantId = ""): Pr
       CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(subscriptions, null, 2), true);
     } else {
       try {
-        AzureTokenProvider.setRootPath("./");
-        const subscriptionInfo = await AzureTokenProvider.readSubscription();
+        azureProvider.setRootPath("./");
+        const subscriptionInfo = await azureProvider.readSubscription();
         if (subscriptionInfo) {
           CLILogProvider.necessaryLog(
             LogLevel.Info,
@@ -169,6 +181,23 @@ class AccountLogin extends YargsCommand {
         description: "Authenticate with a specific Azure Active Directory tenant.",
         type: "string",
         default: "",
+      })
+      .options("service-principal", {
+        description: "Authenticate Azure with a credential representing a service principal",
+        type: "boolean",
+        default: "false",
+      })
+      .options("username", {
+        alias: "u",
+        description: "Client ID for service principal",
+        type: "string",
+        default: "",
+      })
+      .options("password", {
+        alias: "p",
+        description: "Client ID for service principal",
+        type: "string",
+        default: "Credentials like secret for a service principal",
       });
   }
 
@@ -176,7 +205,13 @@ class AccountLogin extends YargsCommand {
     switch (args.service) {
       case "azure": {
         await AzureTokenProvider.signout();
-        await outputAzureInfo("login", args.tenant);
+        await outputAzureInfo(
+          "login",
+          args.tenant,
+          args["service-principal"] as any,
+          args.username,
+          args.password
+        );
         break;
       }
       case "m365": {

@@ -15,6 +15,7 @@ const cacheDir = os.homedir + `/.${ConfigFolderName}/account`;
 const cachePath = os.homedir + `/.${ConfigFolderName}/account/token.cache.`;
 const accountPath = os.homedir + `/.${ConfigFolderName}/account/homeId.cache.`;
 const cachePathEnd = ".json";
+const azureSPPath = os.homedir + `/.${ConfigFolderName}/account/azure.sp`;
 
 // the friendly service name to store secret in keytar
 const serviceName = "Microsoft Teams Toolkit";
@@ -201,3 +202,54 @@ export async function loadAccountId(accountName: string) {
 
   return undefined;
 }
+
+export async function saveAzureSP(
+  clientId: string,
+  secret: string,
+  tenantId: string
+): Promise<void> {
+  await fs.ensureDir(cacheDir);
+  const azureSPCrypto = new AccountCrypto("azure-sp");
+  const data: AzureSPConfig = {
+    clientId: clientId,
+    secret: secret,
+    tenantId: tenantId,
+  };
+  await fs.writeFile(azureSPPath, await azureSPCrypto.encrypt(JSON.stringify(data)), UTF8);
+}
+
+export async function clearAzureSP(): Promise<void> {
+  await fs.ensureDir(cacheDir);
+  await fs.remove(azureSPPath);
+}
+
+export async function loadAzureSP(): Promise<AzureSPConfig | undefined> {
+  await fs.ensureDir(cacheDir);
+  const azureSPCrypto = new AccountCrypto("azure-sp");
+  if (await fs.pathExists(azureSPPath)) {
+    const data = await azureSPCrypto.decrypt(await fs.readFile(azureSPPath, UTF8));
+    return JSON.parse(data);
+  }
+
+  return undefined;
+}
+
+export function checkAzureSPFile(): boolean {
+  if (fs.existsSync(azureSPPath)) {
+    const data = fs.readFileSync(azureSPPath, UTF8);
+    const dataJson = JSON.parse(data);
+    if (Object.keys(dataJson).length > 0) {
+      return true;
+    } else {
+      return false;
+    }
+  } else {
+    return false;
+  }
+}
+
+export type AzureSPConfig = {
+  clientId: string;
+  secret: string;
+  tenantId: string;
+};

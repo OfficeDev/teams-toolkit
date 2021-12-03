@@ -16,7 +16,7 @@ import {
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
 import CLILogProvider from "./log";
-import { CryptoCachePlugin } from "./cacheAccess";
+import { checkAzureSPFile, clearAzureSP, CryptoCachePlugin } from "./cacheAccess";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { LogLevel } from "@azure/msal-node";
 import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
@@ -324,6 +324,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
     await AzureAccountManager.codeFlowInstance.logout();
     await this.notifyStatus();
+    await clearAzureSP();
     return Promise.resolve(true);
   }
 
@@ -632,11 +633,17 @@ async function listAll<T>(
 }
 
 import AzureAccountProviderUserPassword from "./azureLoginUserPassword";
+import AzureLoginCI from "./azureLoginCI";
 
 const ciEnabled = process.env.CI_ENABLED;
+// todo delete ciEnabled
 const azureLogin =
   ciEnabled && ciEnabled === "true"
-    ? AzureAccountProviderUserPassword
+    ? checkAzureSPFile()
+      ? AzureLoginCI
+      : AzureAccountProviderUserPassword
+    : checkAzureSPFile()
+    ? AzureLoginCI
     : AzureAccountManager.getInstance();
 
 export default azureLogin;

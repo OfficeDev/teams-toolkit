@@ -143,7 +143,7 @@ describe("FunctionGenerateArmTemplates", () => {
       version: "1.0.0",
       activeResourcePlugins: activeResourcePlugins,
     } as AzureSolutionSettings;
-    const result = await functionPlugin.updateArmTemplates(pluginContext);
+    const result = await functionPlugin.generateArmTemplates(pluginContext);
 
     // Assert
     const testProvisionModuleFileName = "functionProvision.result.bicep";

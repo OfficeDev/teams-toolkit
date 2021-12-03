@@ -192,13 +192,13 @@ async function grantPermissionImpl(
       if (CollaborationUtil.isSpfxProject(param.ctx)) {
         ui?.showMessage(
           "info",
-          `\nIf added user is not SharePoint site admin, you need to handle that via SharePoint admin center.`,
+          `\nIf added user is not a SharePoint App Catalog site admin, you need to handle that via SharePoint admin center, please refer to this link for more details: https://docs.microsoft.com/en-us/sharepoint/manage-site-collection-administrators`,
           false
         );
       } else {
         ui?.showMessage(
           "info",
-          `\nIf added user cannot access Azure resources, you need to handle that via Azure portal.`,
+          `\nIf added user cannot access Azure resources, you need to handle that via Azure portal,  please refer to this link for more details: https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current`,
           false
         );
       }

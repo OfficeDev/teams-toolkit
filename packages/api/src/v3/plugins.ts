@@ -3,6 +3,7 @@
 
 import { Result } from "neverthrow";
 import { Func, QTreeNode } from "..";
+import { Platform } from "../constants";
 import { FxError } from "../error";
 import { Inputs, Json, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
@@ -25,6 +26,10 @@ export interface ScaffoldTemplate {
    * what module does the template work for
    */
   modules: (keyof Modules)[];
+  /**
+   * what platform does this template applies to, if not specified, no restriction
+   */
+  platforms?: Platform[];
 }
 
 export interface ScaffoldInputs extends InputsWithProjectPath {

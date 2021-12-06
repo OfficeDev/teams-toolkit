@@ -4,7 +4,19 @@
 "use strict";
 
 import path from "path";
-import { FxError, err, ok, Result, Stage, LogLevel } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  err,
+  ok,
+  Result,
+  Stage,
+  LogLevel,
+  AzureSolutionSettings,
+  Inputs,
+  Platform,
+  ProjectConfig,
+} from "@microsoft/teamsfx-api";
+
 import { Argv, Options } from "yargs";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
@@ -17,12 +29,39 @@ import activate from "../activate";
 import { argsToInputs, getSystemInputs } from "../utils";
 import HelpParamGenerator from "../helpParamGenerator";
 import CLILogProvider from "../commonlib/log";
+import { FxCore } from "@microsoft/teamsfx-core";
 
 const azureMessage =
   "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
   "required to grant permission to Azure resources.\n" +
   "Assign Azure roles using the Azure portal: " +
   "https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current";
+
+const spfxMessage =
+  "Notice: SPFX deployment permission needs to be handled manually by SharePoint site administrator.\n" +
+  "Manage site admins using SharePoint admin center: " +
+  "https://docs.microsoft.com/en-us/sharepoint/manage-site-collection-administrators";
+
+async function isSpfxProject(
+  rootFolder: string,
+  core: FxCore
+): Promise<Result<boolean | undefined, FxError>> {
+  const inputs: Inputs = {
+    platform: Platform.CLI,
+    projectPath: rootFolder,
+  };
+
+  const configResult = await core.getProjectConfig(inputs);
+  if (configResult.isErr()) {
+    return err(configResult.error);
+  }
+  const config = configResult.value;
+
+  const activeResourcePlugins = (config?.settings?.solutionSettings as AzureSolutionSettings)
+    .activeResourcePlugins;
+  const isSpfx = activeResourcePlugins.some((pluginName) => pluginName === "fx-resource-spfx");
+  return ok(isSpfx);
+}
 
 export class PermissionStatus extends YargsCommand {
   public readonly commandHead = `status`;
@@ -51,10 +90,21 @@ export class PermissionStatus extends YargsCommand {
       return err(result.error);
     }
 
-    CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
-
     const core = result.value;
     const listAll = args[this.listAllCollaborators];
+
+    const isSpfx = await isSpfxProject(rootFolder, core);
+    if (isSpfx.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, isSpfx.error);
+      return err(isSpfx.error);
+    }
+
+    if (!isSpfx.value) {
+      CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
+    } else {
+      CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
+    }
+
     {
       const result = listAll
         ? await core.listCollaborator(getSystemInputs(rootFolder, args.env))
@@ -98,10 +148,21 @@ export class PermissionGrant extends YargsCommand {
       return err(result.error);
     }
 
-    CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
-
     const answers = argsToInputs(this.params, args);
     const core = result.value;
+
+    const isSpfx = await isSpfxProject(rootFolder, core);
+    if (isSpfx.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, isSpfx.error);
+      return err(isSpfx.error);
+    }
+
+    if (!isSpfx.value) {
+      CLILogProvider.necessaryLog(LogLevel.Info, azureMessage);
+    } else {
+      CLILogProvider.necessaryLog(LogLevel.Info, spfxMessage);
+    }
+
     {
       const result = await core.grantPermission(answers);
       if (result.isErr()) {

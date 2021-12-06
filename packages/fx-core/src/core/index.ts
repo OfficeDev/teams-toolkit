@@ -569,7 +569,7 @@ export class FxCore implements Core {
           ctx.contextV2,
           inputs,
           ctx.envInfoV2.state,
-          this.tools.tokenProvider.azureAccountProvider
+          this.tools.tokenProvider
         );
       else return ok(Void);
     } else {

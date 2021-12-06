@@ -1,5 +1,5 @@
 import {
-  AzureAccountProvider,
+  TokenProvider,
   err,
   FxError,
   Inputs,
@@ -33,7 +33,7 @@ export async function deploy(
   ctx: v2.Context,
   inputs: Inputs,
   provisionOutputs: Json,
-  tokenProvider: AzureAccountProvider
+  tokenProvider: TokenProvider
 ): Promise<Result<Void, FxError>> {
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
   const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;

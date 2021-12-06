@@ -42,7 +42,7 @@ resource clientSecretKv 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = if (len
   }
 }
 
-resource botVlientSecretKv 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = if (length(botClientSecret) != 0) {
+resource botClientSecretKv 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = if (length(botClientSecret) != 0) {
   parent: keyVault
   name: botClientSecretName
   properties: {

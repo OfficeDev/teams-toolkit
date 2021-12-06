@@ -1642,8 +1642,8 @@ export class TeamsAppSolution implements Solution {
     const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin];
     const azureResource = Array.from(settings.azureResources || []);
     if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
+      pluginsToScaffold.push(functionPlugin);
       if (!azureResource.includes(AzureResourceFunction.id)) {
-        pluginsToScaffold.push(functionPlugin);
         azureResource.push(AzureResourceFunction.id);
         addNewResoruceToProvision = true;
       }

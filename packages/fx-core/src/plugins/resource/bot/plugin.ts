@@ -196,7 +196,7 @@ export class TeamsBotImpl {
     const result: ArmTemplateResult = {
       Provision: {
         Reference: {
-          resourceId: BotBicep.hostName,
+          resourceId: BotBicep.resourceId,
           hostName: BotBicep.hostName,
           webAppEndpoint: BotBicep.webAppEndpoint,
         },

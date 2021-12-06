@@ -42,7 +42,7 @@ import Mustache from "mustache";
 import path from "path";
 import { Container, Service } from "typedi";
 import * as util from "util";
-import { PluginDisplayName } from "../../../common/constants";
+import { PluginDisplayName, HelpLinks } from "../../../common/constants";
 import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
 import { ListCollaboratorResult, PermissionsResult } from "../../../common/permissionInterface";
 import {
@@ -143,7 +143,6 @@ import { listCollaborator } from "./v2/listCollaborator";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { LOCAL_TENANT_ID, REMOTE_TEAMS_APP_TENANT_ID } from ".";
-import { HelpLinks } from "../../../common/constants";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -422,12 +421,13 @@ export class TeamsAppSolution implements Solution {
 
   async doScaffold(
     ctx: SolutionContext,
-    selectedPlugins: LoadedPlugin[],
-    generateResourceTemplate: boolean
+    pluginsToScaffold: LoadedPlugin[],
+    generateResourceTemplate: boolean,
+    pluginsToDoArm?: LoadedPlugin[]
   ): Promise<Result<any, FxError>> {
     const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
       ctx,
-      selectedPlugins
+      pluginsToScaffold
     );
     const preScaffoldWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
       return [plugin?.preScaffold?.bind(plugin), context, plugin.name];
@@ -451,7 +451,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     if (isArmSupportEnabled() && generateResourceTemplate && this.isAzureProject(ctx)) {
-      return await generateArmTemplate(ctx, selectedPlugins);
+      return await generateArmTemplate(ctx, pluginsToDoArm ? pluginsToDoArm : pluginsToScaffold);
     } else {
       return res;
     }
@@ -1647,45 +1647,55 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
-    let addNewResoruceToProvision = false;
+    let addNewResourceToProvision = false;
     const notifications: string[] = [];
     const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin];
+    const pluginsToDoArm: LoadedPlugin[] = [];
     const azureResource = Array.from(settings.azureResources || []);
     if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
       pluginsToScaffold.push(functionPlugin);
       if (!azureResource.includes(AzureResourceFunction.id)) {
         azureResource.push(AzureResourceFunction.id);
-        addNewResoruceToProvision = true;
+        addNewResourceToProvision = true;
+        pluginsToDoArm.push(functionPlugin);
       }
       notifications.push(AzureResourceFunction.label);
     }
     if (addSQL && !alreadyHaveSql) {
       pluginsToScaffold.push(sqlPlugin);
+      pluginsToDoArm.push(sqlPlugin);
       azureResource.push(AzureResourceSQL.id);
       notifications.push(AzureResourceSQL.label);
-      addNewResoruceToProvision = true;
+      addNewResourceToProvision = true;
     }
     if (addApim && !alreadyHaveApim) {
       pluginsToScaffold.push(apimPlugin);
+      pluginsToDoArm.push(apimPlugin);
       azureResource.push(AzureResourceApim.id);
       notifications.push(AzureResourceApim.label);
-      addNewResoruceToProvision = true;
+      addNewResourceToProvision = true;
     }
     if (addKeyVault && !alreadyHaveKeyVault) {
       pluginsToScaffold.push(keyVaultPlugin);
+      pluginsToDoArm.push(keyVaultPlugin);
       azureResource.push(AzureResourceKeyVault.id);
       notifications.push(AzureResourceKeyVault.label);
-      addNewResoruceToProvision = true;
+      addNewResourceToProvision = true;
     }
 
     if (notifications.length > 0) {
-      if (isArmSupportEnabled() && addNewResoruceToProvision) {
+      if (isArmSupportEnabled() && addNewResourceToProvision) {
         showUpdateArmTemplateNotice(ctx.ui);
       }
       settings.azureResources = azureResource;
       await this.reloadPlugins(settings);
       ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
-      const scaffoldRes = await this.doScaffold(ctx, pluginsToScaffold, addNewResoruceToProvision);
+      const scaffoldRes = await this.doScaffold(
+        ctx,
+        pluginsToScaffold,
+        addNewResourceToProvision,
+        pluginsToDoArm
+      );
       if (scaffoldRes.isErr()) {
         ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
         ctx.projectSettings!.solutionSettings = originalSettings;
@@ -1698,7 +1708,7 @@ export class TeamsAppSolution implements Solution {
         );
       }
       ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
-      if (addNewResoruceToProvision)
+      if (addNewResourceToProvision)
         ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
       ctx.ui?.showMessage(
         "info",

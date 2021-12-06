@@ -94,7 +94,7 @@ describe("simpleAuthPlugin", () => {
 
   it("generate arm templates: only simple auth plugin", async function () {
     const activeResourcePlugins = [Constants.AadAppPlugin.id, Constants.SimpleAuthPlugin.id];
-    testGenerateArmTemplates(activeResourcePlugins, "simpleAuthConfig.result.bicep");
+    await testGenerateArmTemplates(activeResourcePlugins, "simpleAuthConfig.result.bicep");
   });
 
   it("generate arm templates: simple auth plugin + key vault plugin", async function () {
@@ -103,15 +103,24 @@ describe("simpleAuthPlugin", () => {
       "fx-resource-key-vault",
       Constants.SimpleAuthPlugin.id,
     ];
-    testGenerateArmTemplates(
+    await testGenerateArmTemplates(
       activeResourcePlugins,
-      "simpleAuthConfigWithKeyVaultPlugin.result.bicep"
+      "simpleAuthConfigWithKeyVaultPlugin.result.bicep",
+      {
+        "fx-resource-key-vault": {
+          References: {
+            m365ClientSecretReference:
+              "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference",
+          },
+        },
+      }
     );
   });
 
   async function testGenerateArmTemplates(
     activeResourcePlugins: string[],
-    testConfigurationModuleFileName: string
+    testConfigurationModuleFileName: string,
+    addtionalPluginOutput: any = {}
   ): Promise<void> {
     // Act
     pluginContext.projectSettings = {
@@ -127,22 +136,23 @@ describe("simpleAuthPlugin", () => {
 
     // Assert
     const testProvisionModuleFileName = "simpleAuthProvision.result.bicep";
-    const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
-        "fx-resource-simple-auth": {
-          Provision: {
-            simpleAuth: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
-            },
+    const simpleAuthOutput = {
+      "fx-resource-simple-auth": {
+        Provision: {
+          simpleAuth: {
+            ProvisionPath: `./${testProvisionModuleFileName}`,
           },
-          Configuration: {
-            simpleAuth: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
-            },
+        },
+        Configuration: {
+          simpleAuth: {
+            ConfigPath: `./${testConfigurationModuleFileName}`,
           },
         },
       },
+    }
+    const mockedSolutionDataContext = {
+      Plugins: activeResourcePlugins,
+      PluginOutput: { ...simpleAuthOutput, ...addtionalPluginOutput },
     };
 
     chai.assert.isTrue(generateArmTemplatesResult.isOk());

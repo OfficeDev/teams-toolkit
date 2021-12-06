@@ -9,7 +9,7 @@ param currentAppSettings object
 var webAppName = split(provisionOutputs.simpleAuthOutput.value.webAppResourceId, '/')[8]
 
 var m365ClientId = provisionParameters['m365ClientId']
-var m365ClientSecret = 'dddddd'
+var m365ClientSecret = provisionOutputs.keyVaultOutput.value.m365ClientSecretReference
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)

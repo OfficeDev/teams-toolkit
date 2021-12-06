@@ -40,7 +40,6 @@
     "out/**/*"
   ],
   "activationEvents": [
-    "*",
     "onCommand:fx-extension.openWelcome",
     "onCommand:fx-extension.openSamples",
     "onCommand:fx-extension.openDocument",
@@ -82,7 +81,7 @@
     "viewsWelcome": [
       {
         "view": "teamsfx-empty-project",
-        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome) or [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
+        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Walk Through](command:workbench.action.openWalkthrough?%5B%22TeamsDevApp.ms-teams-vscode-extension%23teamsToolkitWelcome%22%5D) or [Quick Start](command:fx-extension.openWelcome) or [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
       },
       {
         "view": "teamsfx-empty-project-and-check-upgrade",
@@ -481,8 +480,8 @@
       },
       {
         "command": "fx-extension.validate-dependencies",
-        "title": "Teams - Validate Dependencies",
-        "enablement": "never"
+        "title": "Teams - Validate Dependencies"
+        
       },
       {
         "command": "fx-extension.validate-spfx-dependencies",
@@ -831,6 +830,125 @@
         "language": "teamsfx-toolkit-output",
         "scopeName": "teamsfx-toolkit.output",
         "path": "./syntaxes/teamsfx-toolkit-output.tmLanguage"
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "teamsToolkitWelcome",
+        "title": "Quick start",
+        "description": "Jumpstart your Teams app development experience",
+        "steps": [
+          {
+            "id": "teamsToolkitCapailities",
+            "title": "What are Teams app \"Capabilities\"",
+            "description": "[Capabilities](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/capabilities-overview) are the extension points for building apps on the Microsoft Teams platform.\n[Watch Tutorial](https://aka.ms/teamsfx-video)",
+            "media": {
+              "svg": "media/learn.svg",
+              "altText": "Watch"
+            }
+          },
+          {
+            "id": "teamsToolkitCommands",
+            "title": "Explore Teams Toolkit commands",
+            "description": "Open Command Palette (Ctrl+Shift+P) and type ‘Teams’ to find all relevant commands. Use [Command Line Interface (CLI)](https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli) to increase productivity\n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3Eteams%22%5D)",
+            "media": {
+              "svg": "media/step_commands.svg",
+              "altText": "Display Teams Commands"
+            }
+          },
+          {
+            "id": "teamsToolkitM365AccountNotSignIned",
+            "title": "Prepare M365 account",
+            "description": "The Teams Toolkit requires a Microsoft 365 (Organizational Account) where Teams is running and has been registered.\nYou can still experience making a Teams app by using a testing account from [M365 Developer Program](https://developer.microsoft.com/en-us/microsoft-365/dev-program).\n[Sign in to M365](command:fx-extension.signinM365)",
+            "media": {
+              "svg": "media/step_m365.svg",
+              "altText": "M365 Account"
+            },
+            "when": "!fx-extension.isM365SignIned"
+          },
+          {
+            "id": "teamsToolkitM365AccountSignIned",
+            "title": "Prepare M365 account",
+            "description": "You have successfully signed in with your M365 account.",
+            "media": {
+              "svg": "media/step_m365.svg",
+              "altText": "M365 Account"
+            },
+            "when": "fx-extension.isM365SignIned"
+          },
+          {
+            "id": "teamsToolkitAzureAccountNotSignIned",
+            "title": "Prepare Azure account",
+            "description": "The Teams Toolkit requires an Azure account and subscription to deploy the Azure resources for your project.\nYou will not be charged without your further confirmation.\n[Sign in to Azure](command:fx-extension.signinAzure)",
+            "media": {
+              "image": "media/step_azure.png",
+              "altText": "Azure Account"
+            },
+            "when": "!fx-extension.isAzureSignIned"
+          },
+          {
+            "id": "teamsToolkitAzureAccountSignIned",
+            "title": "Prepare Azure account",
+            "description": "You have successfully signed in with your Azure account.",
+            "media": {
+              "image": "media/step_azure.png",
+              "altText": "Azure Account"
+            },
+            "when": "fx-extension.isAzureSignIned"
+          },
+          {
+            "id": "teamsToolkitCreate",
+            "title": "Build your first Teams app",
+            "description": "Build a Teams app from the scratch or explore our samples to help you quickly get started with the basic Teams app concepts and code structures.\n[Create New Project](command:fx-extension.create)",
+            "media": {
+              "image": "media/todolist-sample.gif",
+              "altText": "Create New Project"
+            }
+          }
+        ]
+      },
+      {
+        "id": "teamsToolkitTryTab",
+        "title": "Teams App: Try Tab App",
+        "description": "Try your Teams Tab app development experience",
+        "steps": [
+          {
+            "id": "tryTabLocalDebug",
+            "title": "Run Local Debug",
+            "description": "Preview your first Teams app by running local debug.\n[Local Debug](command:toSide:workbench.action.debug.selectandstart)",
+            "media": {
+              "svg": "media/learn.svg",
+              "altText": "Watch"
+            }
+          },
+          {
+            "id": "tryTabChangeProjectLocation",
+            "title": "Change Project Location",
+            "description": "Change your project location. \n[Change Project Location](command:toSide:workbench.action.openSettings?%5B%22fx-extension.defaultProjectRootDirectory%22%5D)",
+            "media": {
+              "image": "media/todolist-sample.gif",
+              "altText": "Change Location Gif"
+            }
+          },
+          {
+            "id": "tryTabChangeDeploy",
+            "title": "Browser Preview",
+            "description": "Browser Preview. \n[Browser Preview](command:toSide:simpleBrowser.show?%5B%22https://www.bing.com%22%5D)",
+            "media": {
+              "image": "media/step_azure.png",
+              "altText": "Browser Preview"
+            }
+          },
+          {
+            "id": "tryTabChangePublish",
+            "title": "Browser Preview With Signin",
+            "description": "Browser Preview With Signin. \n[Browser Preview](command:toSide:simpleBrowser.show?%5B%22https://portal.azure.com%22%5D)",
+            "media": {
+              "image": "media/step_azure.png",
+              "altText": "Browser Preview"
+            }
+          }
+        ]
       }
     ]
   },

@@ -168,8 +168,10 @@ export async function activate(): Promise<Result<Void, FxError>> {
       (status, token, accountInfo) => {
         if (status === signedIn) {
           window.showInformationMessage(StringResources.vsc.handlers.azureSignIn);
+          //vscode.commands.executeCommand("setContext", "fx-extension.isAzureSignIned", true);
         } else if (status === signedOut) {
           window.showInformationMessage(StringResources.vsc.handlers.azureSignOut);
+          //vscode.commands.executeCommand("setContext", "fx-extension.isAzureSignIned", false);
         }
         return Promise.resolve();
       },
@@ -189,8 +191,10 @@ export async function activate(): Promise<Result<Void, FxError>> {
     ) => {
       if (status === signedIn) {
         window.showInformationMessage(StringResources.vsc.handlers.m365SignIn);
+        //vscode.commands.executeCommand("setContext", "fx-extension.isM365SignIned", true);
       } else if (status === signedOut) {
         window.showInformationMessage(StringResources.vsc.handlers.m365SignOut);
+        //vscode.commands.executeCommand("setContext", "fx-extension.isM365SignIned", false);
       }
       return Promise.resolve();
     };

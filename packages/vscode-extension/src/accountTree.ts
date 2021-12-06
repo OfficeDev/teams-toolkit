@@ -277,6 +277,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
     accountInfo?: Record<string, unknown> | undefined
   ) => {
     if (status === "SignedIn") {
+      //vscode.commands.executeCommand("setContext", "fx-extension.isM365SignIned", true);
       if (token !== undefined && accountInfo !== undefined) {
         const treeItem = {
           commandId: "fx-extension.signinM365",
@@ -307,6 +308,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         },
       ]);
     } else if (status === "SignedOut") {
+      //vscode.commands.executeCommand("setContext", "fx-extension.isM365SignIned", false);
       tools.treeProvider?.refresh([
         {
           commandId: "fx-extension.signinM365",
@@ -340,6 +342,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       accountInfo?: Record<string, unknown> | undefined
     ) => {
       if (status === "SignedIn") {
+        //vscode.commands.executeCommand("setContext", "fx-extension.isAzureSignIned", true);
         const token = await tools.tokenProvider.azureAccountProvider.getAccountCredentialAsync();
         if (token !== undefined) {
           tools.treeProvider?.refresh([
@@ -367,6 +370,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           },
         ]);
       } else if (status === "SignedOut") {
+        //vscode.commands.executeCommand("setContext", "fx-extension.isAzureSignIned", false);
         tools.treeProvider?.refresh([
           {
             commandId: "fx-extension.signinAzure",

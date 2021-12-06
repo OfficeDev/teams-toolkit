@@ -180,6 +180,7 @@ describe("Migrate", () => {
     };
 
     const result = await plugin.migrateV1Project(ctx);
+    console.log(result);
     chai.expect(result.isOk()).equals(true);
 
     const manifest: TeamsAppManifest = JSON.parse(

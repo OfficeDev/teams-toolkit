@@ -20,7 +20,12 @@ import {
   ConfigMap,
   Json,
 } from "@microsoft/teamsfx-api";
-import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
+import {
+  CollaborationState,
+  isSPFxProject,
+  PermissionsResult,
+  ResourcePermission,
+} from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
   PluginNames,
@@ -184,11 +189,19 @@ async function grantPermissionImpl(
         ui?.showMessage("info", message, false);
       }
 
-      ui?.showMessage(
-        "info",
-        `\nSkip grant permission for Azure resources. You may want to handle that via Azure portal. `,
-        false
-      );
+      if (CollaborationUtil.isSpfxProject(param.ctx)) {
+        ui?.showMessage(
+          "info",
+          `\nIf added user is not a SharePoint App Catalog site admin, you need to handle that via SharePoint admin center, please refer to this link for more details: https://docs.microsoft.com/en-us/sharepoint/manage-site-collection-administrators`,
+          false
+        );
+      } else {
+        ui?.showMessage(
+          "info",
+          `\nIf added user cannot access Azure resources, you need to handle that via Azure portal,  please refer to this link for more details: https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current`,
+          false
+        );
+      }
 
       if (errorMsg) {
         ui?.showMessage("error", errorMsg, false);

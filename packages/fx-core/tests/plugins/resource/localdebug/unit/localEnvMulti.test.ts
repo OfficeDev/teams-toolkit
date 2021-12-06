@@ -77,7 +77,6 @@ describe("LocalEnvProvider-MultiEnv", () => {
         M365_CLIENT_SECRET=f\n\
         # ENV COMMENT\n\
         \n\
-        IDENTITY_ID=g\n\
         API_ENDPOINT=h\n\
         M365_APPLICATION_ID_URI=i\n\
         ALLOWED_APP_IDS=j\n\
@@ -90,7 +89,6 @@ describe("LocalEnvProvider-MultiEnv", () => {
           M365_TENANT_ID: "d",
           M365_CLIENT_ID: "e",
           M365_CLIENT_SECRET: "f",
-          IDENTITY_ID: "g",
           API_ENDPOINT: "h",
           M365_APPLICATION_ID_URI: "i",
           ALLOWED_APP_IDS: "j",
@@ -122,7 +120,6 @@ describe("LocalEnvProvider-MultiEnv", () => {
         M365_AUTHORITY_HOST=f\n\
         # ENV COMMENT\n\
         INITIATE_LOGIN_ENDPOINT=g\n\
-        IDENTITY_ID=h\n\
         API_ENDPOINT=i\n\
         M365_APPLICATION_ID_URI=j\n\
         MYENV2=2\n";
@@ -135,7 +132,6 @@ describe("LocalEnvProvider-MultiEnv", () => {
           M365_TENANT_ID: "e",
           M365_AUTHORITY_HOST: "f",
           INITIATE_LOGIN_ENDPOINT: "g",
-          IDENTITY_ID: "h",
           API_ENDPOINT: "i",
           M365_APPLICATION_ID_URI: "j",
         },
@@ -315,13 +311,13 @@ describe("LocalEnvProvider-MultiEnv", () => {
 
     it("backend", () => {
       const envs = localEnvMultiProvider.initBackendLocalEnvs();
-      chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 10);
+      chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 9);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 4);
     });
 
     it("bot", () => {
       const envs = localEnvMultiProvider.initBotLocalEnvs(false);
-      chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 10);
+      chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 9);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 4);
     });
 

@@ -58,8 +58,11 @@ export async function executeListCollaboratorV2(
 ): Promise<[Result<any, FxError>[], Err<any, FxError>[]]> {
   const plugins: v2.ResourcePlugin[] = [
     Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin),
-    Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin),
   ];
+
+  if (CollaborationUtil.AadResourcePluginsActivated(ctx)) {
+    plugins.push(Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin));
+  }
 
   const thunks: NamedThunk<Json>[] = plugins
     .filter((plugin) => !!plugin.listCollaborator)
@@ -87,10 +90,13 @@ export async function executeListCollaboratorV1(
   ctx: SolutionContext,
   userInfo: IUserList
 ): Promise<[Result<any, FxError>[], Err<any, FxError>[]]> {
-  const pluginsWithCtx: PluginsWithContext[] = getPluginAndContextArray(ctx, [
-    Container.get<Plugin>(ResourcePlugins.AppStudioPlugin),
-    Container.get<Plugin>(ResourcePlugins.AadPlugin),
-  ]);
+  const plugins = [Container.get<Plugin>(ResourcePlugins.AppStudioPlugin)];
+
+  if (CollaborationUtil.AadResourcePluginsActivated(ctx)) {
+    plugins.push(Container.get<Plugin>(ResourcePlugins.AadPlugin));
+  }
+
+  const pluginsWithCtx: PluginsWithContext[] = getPluginAndContextArray(ctx, plugins);
 
   const listCollaboratorWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(
     ([plugin, context]) => {
@@ -204,8 +210,10 @@ async function listCollaboratorImpl(
     );
   }
 
+  const isAadActivated = CollaborationUtil.AadResourcePluginsActivated(param.ctx);
   const teamsAppOwners: TeamsAppAdmin[] = results[0].isErr() ? [] : results[0].value;
-  const aadOwners: AadOwner[] = results[1].isErr() ? [] : results[1].value;
+  const aadOwners: AadOwner[] =
+    (results[1] && results[1].isErr()) || !results[1] ? [] : results[1].value;
   const collaborators: Collaborator[] = [];
   const teamsAppId: string = teamsAppOwners[0]?.resourceId ?? "";
   const aadAppId: string = aadOwners[0]?.resourceId ?? "";
@@ -241,10 +249,17 @@ async function listCollaboratorImpl(
       { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
       { content: `M365 Teams App (ID: `, color: Colors.BRIGHT_WHITE },
       { content: teamsAppId, color: Colors.BRIGHT_MAGENTA },
-      { content: `), SSO AAD App (ID: `, color: Colors.BRIGHT_WHITE },
-      { content: aadAppId, color: Colors.BRIGHT_MAGENTA },
-      { content: `)\n`, color: Colors.BRIGHT_WHITE },
     ];
+
+    if (isAadActivated) {
+      message.push(
+        { content: `), SSO AAD App (ID: `, color: Colors.BRIGHT_WHITE },
+        { content: aadAppId, color: Colors.BRIGHT_MAGENTA },
+        { content: `)\n`, color: Colors.BRIGHT_WHITE }
+      );
+    } else {
+      message.push({ content: ")\n", color: Colors.BRIGHT_WHITE });
+    }
 
     for (const collaborator of collaborators) {
       message.push(
@@ -253,7 +268,7 @@ async function listCollaboratorImpl(
         { content: `. `, color: Colors.BRIGHT_WHITE }
       );
 
-      if (!collaborator.isAadOwner) {
+      if (isAadActivated && !collaborator.isAadOwner) {
         message.push({ content: `(Not owner of SSO AAD app)`, color: Colors.BRIGHT_YELLOW });
       }
 

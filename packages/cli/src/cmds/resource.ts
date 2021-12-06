@@ -73,6 +73,7 @@ export class ResourceAdd extends YargsCommand {
     new ResourceAddSql(),
     new ResourceAddApim(),
     new ResourceAddFunction(),
+    new ResourceAddKeyVault(),
   ];
 
   public builder(yargs: Argv): Argv<any> {
@@ -221,6 +222,59 @@ export class ResourceAddFunction extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addResource-function");
+    return yargs.options(this.params);
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    const rootFolder = path.resolve(args.folder || "./");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
+      [TelemetryProperty.Resources]: this.commandHead,
+    });
+
+    CLIUIInstance.updatePresetAnswers(this.params, args);
+
+    const result = await activate(rootFolder);
+    if (result.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
+        [TelemetryProperty.Resources]: this.commandHead,
+      });
+      return err(result.error);
+    }
+
+    const func = {
+      namespace: "fx-solution-azure",
+      method: "addResource",
+    };
+
+    const core = result.value;
+    {
+      const inputs = getSystemInputs(rootFolder);
+      inputs.ignoreEnvInfo = true;
+      const result = await core.executeUserTask(func, inputs);
+      if (result.isErr()) {
+        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, result.error, {
+          [TelemetryProperty.Resources]: this.commandHead,
+        });
+        return err(result.error);
+      }
+    }
+
+    CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateProject, {
+      [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+      [TelemetryProperty.Resources]: this.commandHead,
+    });
+    return ok(null);
+  }
+}
+
+export class ResourceAddKeyVault extends YargsCommand {
+  public readonly commandHead = `azure-keyvault`;
+  public readonly command = `${this.commandHead}`;
+  public readonly description = "Add a new Azure Key Vault service.";
+  public params: { [_: string]: Options } = {};
+
+  public builder(yargs: Argv): Argv<any> {
+    this.params = HelpParamGenerator.getYargsParamForHelp("addResource-keyvault");
     return yargs.options(this.params);
   }
 

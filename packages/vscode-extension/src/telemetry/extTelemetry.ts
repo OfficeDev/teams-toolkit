@@ -21,6 +21,7 @@ export namespace ExtTelemetry {
   export let hasSentTelemetry = false;
   /* eslint-disable prefer-const */
   export let isFromSample: boolean | undefined = undefined;
+  export let createdFrom: string | undefined = undefined;
 
   export function setHasSentTelemetry(eventName: string) {
     if (eventName === "query-expfeature") return;
@@ -34,6 +35,7 @@ export namespace ExtTelemetry {
   export class Reporter extends vscode.Disposable {
     constructor(ctx: vscode.ExtensionContext) {
       super(() => reporter.dispose());
+
       reporter = new VSCodeTelemetryReporter(
         extensionPackage.aiKey,
         extensionPackage.version,
@@ -90,6 +92,9 @@ export namespace ExtTelemetry {
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
+    if (createdFrom !== undefined) {
+      properties![TelemetryProperty.CreatedFrom] = createdFrom.toString();
+    }
 
     reporter.sendTelemetryEvent(eventName, properties, measurements);
   }
@@ -131,6 +136,9 @@ export namespace ExtTelemetry {
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
     }
+    if (createdFrom !== undefined) {
+      properties![TelemetryProperty.CreatedFrom] = createdFrom.toString();
+    }
 
     reporter.sendTelemetryErrorEvent(eventName, properties, measurements, errorProps);
   }
@@ -157,6 +165,9 @@ export namespace ExtTelemetry {
 
     if (isFromSample != undefined) {
       properties![TelemetryProperty.IsFromSample] = isFromSample.toString();
+    }
+    if (createdFrom !== undefined) {
+      properties![TelemetryProperty.CreatedFrom] = createdFrom.toString();
     }
 
     reporter.sendTelemetryException(error, properties, measurements);

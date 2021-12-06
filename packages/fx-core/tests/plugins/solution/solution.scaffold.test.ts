@@ -32,7 +32,12 @@ import _ from "lodash";
 import path from "path";
 import { getTemplatesFolder, newProjectSettings } from "../../../src";
 import { newEnvInfo } from "../../../src/core/tools";
-import { validManifest } from "./util";
+import {
+  MockedLogProvider,
+  MockedTelemetryReporter,
+  MockedUserInteraction,
+  validManifest,
+} from "./util";
 import * as uuid from "uuid";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
@@ -60,6 +65,9 @@ function mockSolutionContext(): SolutionContext {
     answers: { platform: Platform.VSCode },
     projectSettings: undefined,
     cryptoProvider: new LocalCrypto(""),
+    ui: new MockedUserInteraction(),
+    logProvider: new MockedLogProvider(),
+    telemetryReporter: new MockedTelemetryReporter(),
   };
 }
 

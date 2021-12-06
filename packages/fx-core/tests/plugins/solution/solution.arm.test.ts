@@ -46,6 +46,9 @@ import {
   mockedSimpleAuthScaffoldArmResult,
   mockedAadScaffoldArmResult,
   mockedBotArmTemplateResultFunc,
+  MockedUserInteraction,
+  MockedLogProvider,
+  MockedTelemetryReporter,
 } from "./util";
 import * as tools from "../../../src/common/tools";
 import * as cpUtils from "../../../src/common/cpUtils";
@@ -100,6 +103,9 @@ function mockSolutionContext(): SolutionContext {
     projectSettings: undefined,
     azureAccountProvider: Object as any & AzureAccountProvider,
     cryptoProvider: new LocalCrypto(""),
+    ui: new MockedUserInteraction(),
+    logProvider: new MockedLogProvider(),
+    telemetryReporter: new MockedTelemetryReporter(),
   };
 }
 
@@ -362,6 +368,10 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
     expect(
       await fs.readFile(path.join(projectArmTemplateFolder, "../provision/bot.bicep"), fileEncoding)
     ).equals("Mocked bot Provision content. simple auth endpoint: Mocked simple auth endpoint");
+
+    expect(
+      await fs.readFile(path.join(projectArmTemplateFolder, "../teamsFx/bot.bicep"), fileEncoding)
+    ).equals("Mocked bot Configuration content, bot webAppEndpoint: Mock web app end point");
   });
 });
 
@@ -785,6 +795,7 @@ describe("Arm Template Failed Test", () => {
         properties: {
           targetResource: {
             resourceName: "test resource",
+            id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Resources/deployments/addTeamsFxConfigurations",
           },
           provisioningState: "Running",
           timestamp: Date.now(),

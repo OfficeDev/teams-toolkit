@@ -26,7 +26,12 @@ import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import path from "path";
 import * as fs from "fs-extra";
 import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
-import { getResourceGroupNameFromResourceId, waitSeconds, getUuid } from "../../../common/tools";
+import {
+  getResourceGroupNameFromResourceId,
+  waitSeconds,
+  getUuid,
+  getSubscriptionIdFromResourceId,
+} from "../../../common/tools";
 import { environmentManager, isV2 } from "../../..";
 import {
   GLOBAL_CONFIG,
@@ -110,6 +115,8 @@ type DeployContext = {
 
 type OperationStatus = {
   resourceName: string;
+  resourceGroupName: string;
+  subscriptionId: string;
   status: string;
 };
 
@@ -119,14 +126,27 @@ export function getRequiredOperation(
 ): OperationStatus | undefined {
   if (
     operation.properties?.targetResource?.resourceName &&
+    operation.properties?.targetResource?.id &&
     operation.properties.provisioningState &&
     operation.properties?.timestamp &&
     operation.properties.timestamp.getTime() > deployCtx.deploymentStartTime
   ) {
-    return {
-      resourceName: operation.properties?.targetResource?.resourceName,
-      status: operation.properties.provisioningState,
-    };
+    try {
+      const resourceGroupName = getResourceGroupNameFromResourceId(
+        operation.properties.targetResource.id
+      );
+      const subscriptionId = getSubscriptionIdFromResourceId(
+        operation.properties.targetResource.id
+      );
+      return {
+        resourceName: operation.properties?.targetResource?.resourceName,
+        resourceGroupName: resourceGroupName,
+        subscriptionId: subscriptionId,
+        status: operation.properties.provisioningState,
+      };
+    } catch (error) {
+      return undefined;
+    }
   } else {
     return undefined;
   }
@@ -163,8 +183,15 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
             currentStatus[operation.resourceName] = operation.status;
             if (!polledOperations.includes(operation.resourceName)) {
               polledOperations.push(operation.resourceName);
-              const subOperations = await deployCtx.client.deploymentOperations.list(
-                deployCtx.resourceGroupName,
+              let client = deployCtx.client;
+              if (operation.subscriptionId !== deployCtx.client.subscriptionId) {
+                const azureToken =
+                  await deployCtx.ctx.azureAccountProvider?.getAccountCredentialAsync();
+                client = new ResourceManagementClient(azureToken!, operation.subscriptionId);
+              }
+
+              const subOperations = await client.deploymentOperations.list(
+                operation.resourceGroupName,
                 operation.resourceName
               );
               subOperations.forEach((sub) => {
@@ -292,7 +319,9 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
 
       // return thrown error if deploymentError is empty
       if (!deploymentError) {
-        returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure);
+        return err(
+          returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+        );
       }
 
       const deploymentErrorMessage = JSON.stringify(

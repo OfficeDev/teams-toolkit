@@ -189,6 +189,7 @@ export enum TelemetryProperty {
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
   IsFromSample = "is-from-sample",
+  CreatedFrom = "created-from",
   UpdateFailedFiles = "update-failed-files",
 }
 

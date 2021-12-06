@@ -362,6 +362,24 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
   return undefined;
 }
 
+// Only used for telemetry
+export function getCreatedFrom(rootFolder: string | undefined): string | undefined {
+  if (!rootFolder) {
+    return undefined;
+  }
+  try {
+    if (isWorkspaceSupported(rootFolder)) {
+      const result = readSettingsFileSync(rootFolder);
+      if (result.isOk()) {
+        return result.value.createdFrom;
+      }
+    }
+  } catch (e) {
+    // ignore errors for telemetry
+  }
+  return undefined;
+}
+
 export function getLocalTeamsAppId(rootfolder: string | undefined): any {
   if (!rootfolder) {
     return undefined;

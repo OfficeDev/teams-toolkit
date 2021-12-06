@@ -3,6 +3,7 @@
 
 import { Result } from "neverthrow";
 import { Func, QTreeNode } from "..";
+import { Platform } from "../constants";
 import { FxError } from "../error";
 import { Inputs, Json, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
@@ -25,6 +26,10 @@ export interface ScaffoldTemplate {
    * what module does the template work for
    */
   modules: (keyof Modules)[];
+  /**
+   * what platform does this template applies to, if not specified, no restriction
+   */
+  platforms?: Platform[];
 }
 
 export interface ScaffoldInputs extends InputsWithProjectPath {
@@ -57,7 +62,7 @@ export interface ScaffoldPlugin extends Plugin {
   /**
    * Source code template descriptions
    */
-  templates: ScaffoldTemplate[];
+  getTemplates: (ctx: Context, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
   /**
    * get questions before scaffolding
    */
@@ -68,7 +73,7 @@ export interface ScaffoldPlugin extends Plugin {
   /**
    * scaffold source code
    */
-  scaffold: (ctx: Context, inputs: ScaffoldInputs) => Promise<Result<Void, FxError>>;
+  scaffold: (ctx: Context, inputs: ScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
 }
 
 export interface ResourcePlugin extends Plugin {

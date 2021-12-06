@@ -236,6 +236,14 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
+        activeResourcePlugins: [
+          "fx-resource-frontend-hosting",
+          "fx-resource-identity",
+          "fx-resource-aad-app-for-teams",
+          "fx-resource-local-debug",
+          "fx-resource-appstudio",
+          "fx-resource-simple-auth",
+        ],
       },
     };
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);

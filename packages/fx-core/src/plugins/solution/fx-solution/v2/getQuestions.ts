@@ -42,6 +42,7 @@ import {
   MessageExtensionItem,
   ProgrammingLanguageQuestion,
   TabOptionItem,
+  TabSPFxItem,
 } from "../question";
 import {
   getAllV2ResourcePluginMap,
@@ -61,11 +62,6 @@ export async function getQuestionsForScaffolding(
   const capNode = new QTreeNode(capQuestion);
   node.addChild(capNode);
 
-  // 1.1 hostType
-  const hostTypeNode = new QTreeNode(FrontendHostTypeQuestion);
-  hostTypeNode.condition = { contains: TabOptionItem.id };
-  capNode.addChild(hostTypeNode);
-
   // 1.1.1 SPFX Tab
   const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
     ResourcePluginsV2.SpfxPlugin
@@ -75,8 +71,8 @@ export async function getQuestionsForScaffolding(
     if (res.isErr()) return res;
     if (res.value) {
       const spfxNode = res.value as QTreeNode;
-      spfxNode.condition = { equals: HostTypeOptionSPFx.id };
-      if (spfxNode.data) hostTypeNode.addChild(spfxNode);
+      spfxNode.condition = { equals: TabSPFxItem.id };
+      if (spfxNode.data) capNode.addChild(spfxNode);
     }
   }
 
@@ -90,7 +86,7 @@ export async function getQuestionsForScaffolding(
   if (tabRes.value) {
     const tabNode = tabRes.value;
     tabNode.condition = { equals: HostTypeOptionAzure.id };
-    hostTypeNode.addChild(tabNode);
+    capNode.addChild(tabNode);
   }
 
   // 1.2 Bot

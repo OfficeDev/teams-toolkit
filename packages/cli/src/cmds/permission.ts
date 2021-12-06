@@ -4,18 +4,7 @@
 "use strict";
 
 import path from "path";
-import {
-  FxError,
-  err,
-  ok,
-  Result,
-  Stage,
-  LogLevel,
-  AzureSolutionSettings,
-  Inputs,
-  Platform,
-  ProjectConfig,
-} from "@microsoft/teamsfx-api";
+import { FxError, err, ok, Result, Stage, LogLevel } from "@microsoft/teamsfx-api";
 
 import { Argv, Options } from "yargs";
 import { YargsCommand } from "../yargsCommand";
@@ -26,10 +15,9 @@ import {
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
 import activate from "../activate";
-import { argsToInputs, getSystemInputs } from "../utils";
+import { argsToInputs, getSystemInputs, isSpfxProject } from "../utils";
 import HelpParamGenerator from "../helpParamGenerator";
 import CLILogProvider from "../commonlib/log";
-import { FxCore } from "@microsoft/teamsfx-core";
 
 const azureMessage =
   "Notice: Azure resources permission needs to be handled by subscription owner since privileged account is " +
@@ -41,27 +29,6 @@ const spfxMessage =
   "Notice: SPFX deployment permission needs to be handled manually by SharePoint site administrator.\n" +
   "Manage site admins using SharePoint admin center: " +
   "https://docs.microsoft.com/en-us/sharepoint/manage-site-collection-administrators";
-
-async function isSpfxProject(
-  rootFolder: string,
-  core: FxCore
-): Promise<Result<boolean | undefined, FxError>> {
-  const inputs: Inputs = {
-    platform: Platform.CLI,
-    projectPath: rootFolder,
-  };
-
-  const configResult = await core.getProjectConfig(inputs);
-  if (configResult.isErr()) {
-    return err(configResult.error);
-  }
-  const config = configResult.value;
-
-  const activeResourcePlugins = (config?.settings?.solutionSettings as AzureSolutionSettings)
-    .activeResourcePlugins;
-  const isSpfx = activeResourcePlugins.some((pluginName) => pluginName === "fx-resource-spfx");
-  return ok(isSpfx);
-}
 
 export class PermissionStatus extends YargsCommand {
   public readonly commandHead = `status`;

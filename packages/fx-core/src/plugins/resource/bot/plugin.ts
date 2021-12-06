@@ -189,8 +189,6 @@ export class TeamsBotImpl {
   }
 
   public async updateArmTemplates(context: PluginContext): Promise<FxResult> {
-    this.ctx = context;
-    await this.config.restoreConfigFromContext(context);
     Logger.info(Messages.UpdatingArmTemplatesBot);
 
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
@@ -198,7 +196,7 @@ export class TeamsBotImpl {
     const result: ArmTemplateResult = {
       Provision: {
         Reference: {
-          resourceId: BotBicep.resourceId,
+          resourceId: BotBicep.hostName,
           hostName: BotBicep.hostName,
           webAppEndpoint: BotBicep.webAppEndpoint,
         },
@@ -218,8 +216,6 @@ export class TeamsBotImpl {
   }
 
   public async generateArmTemplates(context: PluginContext): Promise<FxResult> {
-    this.ctx = context;
-    await this.config.restoreConfigFromContext(context);
     Logger.info(Messages.GeneratingArmTemplatesBot);
 
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);

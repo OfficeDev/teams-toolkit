@@ -168,8 +168,20 @@ describe("Bot Generates Arm Templates", () => {
       chai.assert.notExists(compiledResult.Configuration!.Orchestration);
       chai.assert.notExists(compiledResult.Parameters);
       chai.assert.exists(compiledResult.Provision!.Reference!.resourceId);
+      chai.assert.strictEqual(
+        compiledResult.Provision!.Reference!.resourceId,
+        "provisionOutputs.botOutput.value.botWebAppResourceId"
+      );
       chai.assert.exists(compiledResult.Provision!.Reference!.hostName);
+      chai.assert.strictEqual(
+        compiledResult.Provision!.Reference!.hostName,
+        "provisionOutputs.botOutput.value.validDomain"
+      );
       chai.assert.exists(compiledResult.Provision!.Reference!.webAppEndpoint);
+      chai.assert.strictEqual(
+        compiledResult.Provision!.Reference!.webAppEndpoint,
+        "provisionOutputs.botOutputs.value.botWebAppEndpoint"
+      );
     }
   });
 });

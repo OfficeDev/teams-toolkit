@@ -71,7 +71,7 @@ export async function getQuestionsForScaffolding(
     if (res.isErr()) return res;
     if (res.value) {
       const spfxNode = res.value as QTreeNode;
-      spfxNode.condition = { equals: TabSPFxItem.id };
+      spfxNode.condition = { contains: TabSPFxItem.id };
       if (spfxNode.data) capNode.addChild(spfxNode);
     }
   }

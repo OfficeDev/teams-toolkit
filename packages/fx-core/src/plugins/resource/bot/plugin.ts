@@ -191,7 +191,7 @@ export class TeamsBotImpl {
   public async updateArmTemplates(context: PluginContext): Promise<FxResult> {
     this.ctx = context;
     await this.config.restoreConfigFromContext(context);
-    Logger.info(Messages.GeneratingArmTemplatesBot);
+    Logger.info(Messages.UpdatingArmTemplatesBot);
 
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
 
@@ -213,7 +213,7 @@ export class TeamsBotImpl {
       },
     };
 
-    Logger.info(Messages.SuccessfullyGenerateArmTemplatesBot);
+    Logger.info(Messages.SuccessfullyUpdateArmTemplatesBot);
     return ResultFactory.Success(result);
   }
 

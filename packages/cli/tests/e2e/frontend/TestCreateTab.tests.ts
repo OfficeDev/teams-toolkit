@@ -22,22 +22,12 @@ import {
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 
 describe("Create single tab", function () {
-  let testFolder: string;
-  let appName: string;
-  let subscription: string;
-  let projectPath: string;
+  const testFolder = getTestFolder();
+  const appName = getUniqueAppName();
+  const subscription = getSubscriptionId();
+  const projectPath = path.resolve(testFolder, appName);
 
-  // Should succeed on the 3rd try
-  this.retries(2);
-
-  beforeEach(() => {
-    testFolder = getTestFolder();
-    appName = getUniqueAppName();
-    subscription = getSubscriptionId();
-    projectPath = path.resolve(testFolder, appName);
-  });
-
-  afterEach(async () => {
+  after(async () => {
     // clean up
     if (isMultiEnvEnabled()) {
       await cleanUp(appName, projectPath, true, false, false, true);

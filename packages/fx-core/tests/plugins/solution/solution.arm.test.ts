@@ -368,6 +368,10 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
     expect(
       await fs.readFile(path.join(projectArmTemplateFolder, "../provision/bot.bicep"), fileEncoding)
     ).equals("Mocked bot Provision content. simple auth endpoint: Mocked simple auth endpoint");
+
+    expect(
+      await fs.readFile(path.join(projectArmTemplateFolder, "../teamsFx/bot.bicep"), fileEncoding)
+    ).equals("Mocked bot Configuration content, bot webAppEndpoint: Mock web app end point");
   });
 });
 

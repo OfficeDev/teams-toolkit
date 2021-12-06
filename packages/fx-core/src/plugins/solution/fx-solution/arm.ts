@@ -480,8 +480,8 @@ function generateArmFromResult(
   result: ArmTemplateResult,
   bicepOrchestrationTemplate: BicepOrchestrationContent,
   pluginWithArm: NamedArmResourcePlugin,
-  moduleConfigFiles: Map<string, string>,
-  moduleProvisionFiles: Map<string, string>
+  moduleProvisionFiles: Map<string, string>,
+  moduleConfigFiles: Map<string, string>
 ) {
   bicepOrchestrationTemplate.applyTemplate(pluginWithArm.name, result);
   if (result.Configuration?.Modules) {

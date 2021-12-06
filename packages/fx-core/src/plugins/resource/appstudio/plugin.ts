@@ -261,7 +261,7 @@ export class AppStudioPluginImpl {
       AppPackageFolderName,
       V1ManifestFileName
     );
-    const manifestSourceRes = await this.reloadManifestAndCheckRequiredFields(archiveManifestPath);
+    const manifestSourceRes = await this.reloadManifest(archiveManifestPath);
     if (manifestSourceRes.isErr()) {
       throw manifestSourceRes.error;
     }
@@ -299,27 +299,6 @@ export class AppStudioPluginImpl {
     return manifest;
   }
 
-  public async reloadManifestAndCheckRequiredFields(
-    manifestPath: string
-  ): Promise<Result<TeamsAppManifest, FxError>> {
-    const result = await this.reloadManifest(manifestPath);
-    return result.andThen((manifest) => {
-      if (
-        manifest === undefined ||
-        manifest.name.short === undefined ||
-        manifest.name.short.length === 0
-      ) {
-        return err(
-          AppStudioResultFactory.SystemError(
-            AppStudioError.ManifestLoadFailedError.name,
-            AppStudioError.ManifestLoadFailedError.message("Name is missing")
-          )
-        );
-      }
-      return ok(manifest);
-    });
-  }
-
   public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
     let remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
 
@@ -354,7 +333,7 @@ export class AppStudioPluginImpl {
     let manifestString: string;
     const appDirectory = await getAppDirectory(ctx.root);
     const manifestPath = await this.getManifestTemplatePath(ctx.root);
-    const manifestResult = await this.reloadManifestAndCheckRequiredFields(manifestPath);
+    const manifestResult = await this.reloadManifest(manifestPath);
     if (manifestResult.isErr()) {
       return err(manifestResult.error);
     } else {
@@ -469,7 +448,7 @@ export class AppStudioPluginImpl {
     let manifestString: string;
     const appDirectory = await getAppDirectory(ctx.root);
     const manifestPath = await this.getManifestTemplatePath(ctx.root, isLocalDebug);
-    const manifestResult = await this.reloadManifestAndCheckRequiredFields(manifestPath);
+    const manifestResult = await this.reloadManifest(manifestPath);
     if (manifestResult.isErr()) {
       throw manifestResult;
     } else {
@@ -938,7 +917,7 @@ export class AppStudioPluginImpl {
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
     let teamsAppId;
     const manifestPath = await this.getManifestTemplatePath(ctx.root, true);
-    const manifest = await this.reloadManifestAndCheckRequiredFields(manifestPath);
+    const manifest = await this.reloadManifest(manifestPath);
     if (manifest.isErr()) {
       return err(manifest.error);
     }

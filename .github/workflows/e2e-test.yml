@@ -189,6 +189,7 @@ jobs:
 
           declare -A email_uid
           description="<tr> <th>Case</th> <th>Author</th> </tr>"
+          emails="vsciotadt@microsoft.com"
           while IFS= read -r failure;
           do
             case=${failure:14:-1}
@@ -199,6 +200,7 @@ jobs:
               description="$description <tr> <td>$case</td> <td>N/A</td> </tr> "
               continue
             fi
+            emails="$emails;$email"
 
             if [ ! -v "email_uid[$email]" ]; then
               resp=$(curl -u :${{ secrets.ADO_PAT }} "https://vssps.dev.azure.com/msazure/_apis/identities?searchFilter=General&filterValue=$email&queryMembership=None&api-version=6.0")
@@ -210,6 +212,7 @@ jobs:
           done <<< $failures
 
           echo "::set-output name=description::$description"
+          echo "::set-output name=emails::$emails"
 
       - name: Send E-mail to the whole team
         uses: satak/webrequest-action@master
@@ -219,7 +222,7 @@ jobs:
           method: POST
           payload: |
             {
-              "to": "vsciotadt@microsoft.com",
+              "to": "${{ steps.list-failed-jobs.outputs.emails }}",
               "body": "<table class=\"w3-table w3-striped w3-bordered\">${{ steps.list-failed-jobs.outputs.description }}</table> <br /> The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}",
               "subject": "[Failure] TeamsFx CLI E2E Test ${{ github.run-id }}",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"

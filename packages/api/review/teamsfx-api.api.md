@@ -1256,7 +1256,7 @@ interface ScaffoldInputs extends InputsWithProjectPath {
 interface ScaffoldPlugin extends Plugin_3 {
     getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     getTemplates: (ctx: Context_2, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
-    scaffold: (ctx: Context_2, inputs: ScaffoldInputs) => Promise<Result<Void, FxError>>;
+    scaffold: (ctx: Context_2, inputs: ScaffoldInputs) => Promise<Result<Json, FxError>>;
 }
 
 // @public (undocumented)

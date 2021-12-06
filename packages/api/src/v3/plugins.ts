@@ -73,7 +73,7 @@ export interface ScaffoldPlugin extends Plugin {
   /**
    * scaffold source code
    */
-  scaffold: (ctx: Context, inputs: ScaffoldInputs) => Promise<Result<Void, FxError>>;
+  scaffold: (ctx: Context, inputs: ScaffoldInputs) => Promise<Result<Json, FxError>>;
 }
 
 export interface ResourcePlugin extends Plugin {

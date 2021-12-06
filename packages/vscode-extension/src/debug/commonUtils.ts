@@ -149,6 +149,14 @@ export async function getProgrammingLanguage(): Promise<string | undefined> {
   return programmingLanguage as string;
 }
 
+export async function getLocalDebugLaunchNamePrefix(): Promise<string | undefined> {
+  const localDebugLaunchNamePrefix = await executeLocalDebugUserTask(
+    "getLocalDebugLaunchNamePrefix"
+  );
+
+  return localDebugLaunchNamePrefix as string;
+}
+
 async function executeLocalDebugUserTask(
   funcName: string,
   params?: any,

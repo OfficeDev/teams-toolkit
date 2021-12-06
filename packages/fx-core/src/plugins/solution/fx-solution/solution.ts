@@ -134,6 +134,7 @@ import {
   parseTeamsAppTenantId,
   fillInSolutionSettings,
   parseUserName,
+  checkWhetherLocalDebugM365TenantMatches,
 } from "./v2/utils";
 import { askForProvisionConsent } from "./v2/provision";
 import { grantPermission } from "./v2/grantPermission";
@@ -1195,33 +1196,12 @@ export class TeamsAppSolution implements Solution {
       const localDebugTenantId = isMultiEnvEnabled()
         ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TenantId)
         : ctx.envInfo.state.get(PluginNames.AAD)?.get(LOCAL_TENANT_ID);
-      if (localDebugTenantId) {
-        const m365TenantId = parseTeamsAppTenantId(await ctx.appStudioToken?.getJsonObject());
-        if (m365TenantId.isErr()) {
-          throw err(m365TenantId.error);
-        }
-
-        const m365UserAccount = parseUserName(await ctx.appStudioToken?.getJsonObject());
-        if (m365UserAccount.isErr()) {
-          throw err(m365UserAccount.error);
-        }
-
-        if (m365TenantId.value !== localDebugTenantId) {
-          const errorMessage: string = util.format(
-            getStrings().solution.LocalDebugTenantConfirmNotice,
-            localDebugTenantId,
-            m365UserAccount.value,
-            isMultiEnvEnabled() ? "localSettings.json" : "default.userdata"
-          );
-
-          return err(
-            returnUserError(
-              new Error(errorMessage),
-              "Solution",
-              SolutionError.CannotLocalDebugInDifferentTenant
-            )
-          );
-        }
+      const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
+        localDebugTenantId,
+        ctx.appStudioToken
+      );
+      if (m365TenantMatches.isErr()) {
+        return m365TenantMatches;
       }
 
       checkPoint = 3;

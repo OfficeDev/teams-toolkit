@@ -13,7 +13,7 @@ export class CommentMessages {
 }
 
 export const teamsClientSDKName = "@microsoft/teams-js";
-export const teamsClientSDKVersion = "2.0.0-beta.1";
+export const teamsClientSDKVersion = "2.0.0-beta.2";
 export const teamsManifestSchema =
   "https://raw.githubusercontent.com/OfficeDev/microsoft-teams-app-schema/preview/DevPreview/MicrosoftTeams.schema.json";
 export const teamsManifestVersion = "m365DevPreview";

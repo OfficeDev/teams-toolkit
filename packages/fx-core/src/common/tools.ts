@@ -401,10 +401,11 @@ export async function askSubscription(
   return ok(resultSub);
 }
 
-export function getResourceGroupInPortal(ctx: SolutionContext): string | undefined {
-  const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(SUBSCRIPTION_ID);
-  const tenantId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString("tenantId");
-  const resourceGroupName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
+export function getResourceGroupInPortal(
+  subscriptionId?: string,
+  tenantId?: string,
+  resourceGroupName?: string
+): string | undefined {
   if (subscriptionId && tenantId && resourceGroupName) {
     return `${AzurePortalUrl}/#@${tenantId}/resource/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}`;
   } else {

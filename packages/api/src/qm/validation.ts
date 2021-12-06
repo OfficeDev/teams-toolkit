@@ -215,20 +215,24 @@ export async function validate<T extends string | string[] | undefined>(
           return `'${arrayToValidate}' ${validateResult.errors[0].message}`;
         }
       }
-      if (stringArrayValidation.equals && stringArrayValidation.equals instanceof Array) {
-        stringArrayValidation.enum = stringArrayValidation.equals;
-        stringArrayValidation.containsAll = stringArrayValidation.equals;
+      if (stringArrayValidation.equals) {
+        if (stringArrayValidation.equals instanceof Array) {
+          stringArrayValidation.enum = stringArrayValidation.equals;
+          stringArrayValidation.containsAll = stringArrayValidation.equals;
+        } else {
+          return `Array '${arrayToValidate}' does not equals to string:'${stringArrayValidation.equals}'`;
+        }
       }
       if (stringArrayValidation.enum) {
         for (const item of arrayToValidate) {
           if (!stringArrayValidation.enum.includes(item)) {
-            return `'${arrayToValidate}' does not meet enum:'${stringArrayValidation.enum}'`;
+            return `'${arrayToValidate}' does not meet with enum:'${stringArrayValidation.enum}'`;
           }
         }
       }
       if (stringArrayValidation.contains) {
         if (!arrayToValidate.includes(stringArrayValidation.contains)) {
-          return `'${arrayToValidate}' does not meet contains:'${stringArrayValidation.contains}'`;
+          return `'${arrayToValidate}' does not meet with contains:'${stringArrayValidation.contains}'`;
         }
       }
       if (stringArrayValidation.containsAll) {
@@ -236,7 +240,7 @@ export async function validate<T extends string | string[] | undefined>(
         if (containsAll.length > 0) {
           for (const i of containsAll) {
             if (!arrayToValidate.includes(i)) {
-              return `'${arrayToValidate}' does not meet containsAll:'${containsAll}'`;
+              return `'${arrayToValidate}' does not meet with containsAll:'${containsAll}'`;
             }
           }
         }

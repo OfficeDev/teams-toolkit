@@ -11,7 +11,12 @@ import {
   SolutionContext,
   returnSystemError,
 } from "@microsoft/teamsfx-api";
-import { getStrings, isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common/tools";
+import {
+  getResourceGroupInPortal,
+  getStrings,
+  isArmSupportEnabled,
+  isMultiEnvEnabled,
+} from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
 import {
   combineRecords,
@@ -30,6 +35,7 @@ import {
   SUBSCRIPTION_ID,
   SUBSCRIPTION_NAME,
   SolutionSource,
+  RESOURCE_GROUP_NAME,
 } from "../constants";
 import * as util from "util";
 import _, { isUndefined } from "lodash";
@@ -106,8 +112,9 @@ export async function provisionResource(
     }
   }
 
-  const plugins = getSelectedPlugins(azureSolutionSettings);
   const solutionInputs = extractSolutionInputs(newEnvInfo.state[GLOBAL_CONFIG]["output"]);
+
+  const plugins = getSelectedPlugins(azureSolutionSettings);
   const provisionThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionResource))
     .map((plugin) => {
@@ -180,7 +187,7 @@ export async function provisionResource(
     }
   }
 
-  if (isV2()) {
+  if (isV2() && !isAzureProject(azureSolutionSettings)) {
     solutionInputs.remoteTeamsAppId =
       newEnvInfo.state[PluginNames.APPST]["output"][Constants.TEAMS_APP_ID];
   }
@@ -232,12 +239,28 @@ export async function provisionResource(
       delete newEnvInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
     }
 
+    const url = getResourceGroupInPortal(
+      solutionInputs.subscriptionId,
+      solutionInputs.tenantId,
+      solutionInputs.resourceGroupName
+    );
     const msg = util.format(
       `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
       ctx.projectSetting.appName
     );
     ctx.logProvider?.info(msg);
-    ctx.userInteraction.showMessage("info", msg, false);
+    if (url) {
+      const title = "View Provisioned Resources";
+      ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
+        const userSelected = result.isOk() ? result.value : undefined;
+        if (userSelected === title) {
+          ctx.userInteraction.openUrl(url);
+        }
+      });
+    } else {
+      ctx.userInteraction.showMessage("info", msg, false);
+    }
+
     solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = true;
     const configOutput = configureResourceResult.output;
     configOutput.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });

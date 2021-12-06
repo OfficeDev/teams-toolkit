@@ -61,6 +61,22 @@ describe("Get AppDefinition and Update", () => {
   const localDebugBotId = uuid.v4();
   const localDebugBotDomain = "local debug bot domain";
 
+  const appDef: IAppDefinition = {
+    appName: "my app",
+    teamsAppId: "appId",
+    userList: [
+      {
+        tenantId: uuid.v4(),
+        aadId: uuid.v4(),
+        displayName: "displayName",
+        userPrincipalName: "principalName",
+        isAdministrator: true,
+      },
+    ],
+    outlineIcon: isMultiEnvEnabled() ? "resources/outline.png" : "outline.png",
+    colorIcon: isMultiEnvEnabled() ? "resources/color.png" : "color.png",
+  };
+
   let AAD_ConfigMap: ConfigMap;
   let BOT_ConfigMap: ConfigMap;
   let LDEBUG_ConfigMap: ConfigMap;
@@ -307,6 +323,41 @@ describe("Get AppDefinition and Update", () => {
         .expect(getAppDefinitionAndResult._unsafeUnwrapErr().message)
         .includes(LOCAL_DEBUG_BOT_DOMAIN);
     }
+  });
+
+  it("should work for bot only project local debug", async () => {
+    if (isMultiEnvEnabled()) {
+      localSettings.frontend = undefined;
+      localSettings.teamsApp = undefined;
+    } else {
+      configOfOtherPlugins.set(PluginNames.AAD, AAD_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.LDEBUG, LDEBUG_ConfigMap);
+      configOfOtherPlugins.set(PluginNames.BOT, BOT_ConfigMap);
+    }
+    ctx = {
+      root: getAzureProjectRoot(),
+      envInfo: newEnvInfo(undefined, undefined, configOfOtherPlugins),
+      config: new ConfigMap(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
+      cryptoProvider: new LocalCrypto(""),
+      localSettings,
+    };
+    ctx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "azure",
+        version: "1.0",
+        capabilities: ["Bot"],
+      },
+    };
+
+    sandbox.stub(AppStudioClient, "createApp").resolves(appDef);
+    sandbox.stub(AppStudioClient, "updateApp").resolves(appDef);
+
+    const getAppDefinitionAndResult = await plugin.getAppDefinitionAndUpdate(ctx, true, manifest);
+    console.log(getAppDefinitionAndResult);
+    chai.assert.isTrue(getAppDefinitionAndResult.isOk());
   });
 
   it("should work and get config for creating manifest for happy path", async () => {
@@ -655,22 +706,6 @@ describe("Get AppDefinition and Update", () => {
         version: "1.0",
         capabilities: ["Bot"],
       },
-    };
-
-    const appDef: IAppDefinition = {
-      appName: "my app",
-      teamsAppId: "appId",
-      userList: [
-        {
-          tenantId: uuid.v4(),
-          aadId: uuid.v4(),
-          displayName: "displayName",
-          userPrincipalName: "principalName",
-          isAdministrator: true,
-        },
-      ],
-      outlineIcon: isMultiEnvEnabled() ? "resources/outline.png" : "outline.png",
-      colorIcon: isMultiEnvEnabled() ? "resources/color.png" : "color.png",
     };
 
     const fakeAxiosInstance = axios.create();

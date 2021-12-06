@@ -6,7 +6,7 @@ import * as chai from "chai";
 import sinon from "sinon";
 import fs from "fs-extra";
 import path from "path";
-import { v4 as uuid, v4 } from "uuid";
+import { v4 as uuid } from "uuid";
 import { ConfigMap, PluginContext, ok, Platform, Plugin } from "@microsoft/teamsfx-api";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";

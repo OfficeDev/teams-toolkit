@@ -274,6 +274,7 @@ export enum PluginLifeCycle {
   Scaffold = "scaffold",
   Provision = "provision",
   GenerateArmTemplates = "generate-arm-templates",
+  UpdateArmTemplates = "update-arm-templates",
   PostProvision = "post-provision",
   Deploy = "deploy",
   GetQuestionsForUserTask = "get-questions-for-user-task",

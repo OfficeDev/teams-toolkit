@@ -76,7 +76,7 @@ export class ApimPlugin implements Plugin {
 
   public async updateArmTemplates(ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> {
     return await this.executeWithFxError(
-      PluginLifeCycle.GenerateArmTemplates,
+      PluginLifeCycle.UpdateArmTemplates,
       _updateArmTemplates,
       ctx
     );

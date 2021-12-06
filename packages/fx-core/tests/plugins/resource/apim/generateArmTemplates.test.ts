@@ -186,6 +186,10 @@ describe("apimManager.generateArmTemplates", () => {
     chai.assert.notExists(expectedResult.Configuration!.Orchestration);
     chai.assert.notExists(expectedResult.Parameters);
     chai.assert.exists(expectedResult.Provision!.Reference!.serviceResourceId);
+    chai.assert.strictEqual(
+      expectedResult.Provision!.Reference!.serviceResourceId,
+      "provisionOutputs.apimOutput.value.serviceResourceId"
+    );
   });
 
   async function mockApimManager(): Promise<ApimManager> {

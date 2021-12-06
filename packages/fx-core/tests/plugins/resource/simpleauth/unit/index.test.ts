@@ -93,8 +93,27 @@ describe("simpleAuthPlugin", () => {
   });
 
   it("generate arm templates: only simple auth plugin", async function () {
-    // Act
     const activeResourcePlugins = [Constants.AadAppPlugin.id, Constants.SimpleAuthPlugin.id];
+    testGenerateArmTemplates(activeResourcePlugins, "simpleAuthConfig.result.bicep");
+  });
+
+  it("generate arm templates: simple auth plugin + key vault plugin", async function () {
+    const activeResourcePlugins = [
+      Constants.AadAppPlugin.id,
+      "fx-resource-key-vault",
+      Constants.SimpleAuthPlugin.id,
+    ];
+    testGenerateArmTemplates(
+      activeResourcePlugins,
+      "simpleAuthConfigWithKeyVaultPlugin.result.bicep"
+    );
+  });
+
+  async function testGenerateArmTemplates(
+    activeResourcePlugins: string[],
+    testConfigurationModuleFileName: string
+  ): Promise<void> {
+    // Act
     pluginContext.projectSettings = {
       appName: "test_generate_arm_template_with_only_simple_auth_plugin_app",
       projectId: uuid.v4(),
@@ -108,7 +127,6 @@ describe("simpleAuthPlugin", () => {
 
     // Assert
     const testProvisionModuleFileName = "simpleAuthProvision.result.bicep";
-    const testConfigurationModuleFileName = "simpleAuthConfig.result.bicep";
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: {
@@ -174,7 +192,7 @@ describe("simpleAuthPlugin", () => {
       chai.assert.isUndefined(expectedResult.Parameters);
       chai.assert.isNotNull(expectedResult.Provision!.Reference);
     }
-  });
+  }
 
   it("update arm templates: only simple auth plugin", async function () {
     // Act

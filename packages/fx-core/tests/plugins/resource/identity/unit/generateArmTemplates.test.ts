@@ -99,29 +99,31 @@ describe("identityPlugin", () => {
     const result = await identityPlugin.udpateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "identityProvision.result.bicep";
-    const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
-        "fx-resource-identity": {
-          Provision: {
-            identity: {
-              ProvisionPath: `./${testModuleFileName}`,
-            },
-          },
-        },
-      },
-    };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
       chai.assert.notExists(result.value.Provision!.Modules);
       chai.assert.notExists(result.value.Provision!.Orchestration);
       chai.assert.exists(result.value.Provision!.Reference!.identityName);
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.identityName,
+        "provisionOutputs.identityOutput.value.identityName"
+      );
       chai.assert.exists(result.value.Provision!.Reference!.identityClientId);
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.identityClientId,
+        "provisionOutputs.identityOutput.value.identityClientId"
+      );
       chai.assert.exists(result.value.Provision!.Reference!.identityResourceId);
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.identityResourceId,
+        "userAssignedIdentityProvision.outputs.identityResourceId"
+      );
       chai.assert.exists(result.value.Provision!.Reference!.identityPrincipalId);
-      chai.assert.notExists(result.value.Configuration!.Orchestration);
-      chai.assert.isEmpty(result.value.Configuration!.Modules);
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.identityPrincipalId,
+        "userAssignedIdentityProvision.outputs.identityPrincipalId"
+      );
+      chai.assert.notExists(result.value.Configuration);
       chai.assert.notExists(result.value.Parameters);
     }
   });

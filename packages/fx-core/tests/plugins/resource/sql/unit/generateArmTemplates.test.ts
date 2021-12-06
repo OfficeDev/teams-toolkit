@@ -106,29 +106,23 @@ describe("generateArmTemplates", () => {
     } as AzureSolutionSettings;
     const result = await sqlPlugin.updateArmtemplates(pluginContext);
 
-    // Assert
-    const testModuleFileName = "sqlProvision.result.bicep";
-    const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
-        "fx-resource-azure-sql": {
-          Provision: {
-            azureSql: {
-              ProvisionPath: `./${testModuleFileName}`,
-            },
-          },
-        },
-      },
-    };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      chai.assert.exists(result.value.Provision!.Reference!.sqlResourceId);
-      chai.assert.exists(result.value.valuetedResult.Provision!.Reference!.sqlEndpoint);
-      chai.assert.exists(result.value.Provision!.Reference!.databaseName);
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.sqlResourceId,
+        "provisionOutputs.azureSqlOutput.value.sqlResourceId"
+      );
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.sqlEndpoint,
+        "provisionOutputs.azureSqlOutput.value.sqlEndpoint"
+      );
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.databaseName,
+        "provisionOutputs.azureSqlOutput.value.databaseName"
+      );
       chai.assert.notExists(result.value.Provision!.Orchestration);
       chai.assert.notExists(result.value.Provision!.Modules);
-      chai.assert.notExists(result.value.Configuration!.Orchestration);
-      chai.assert.isEmpty(result.value.Configuration!.Modules);
+      chai.assert.notExists(result.value.Configuration);
       chai.assert.notExists(result.value.Parameters);
     }
   });

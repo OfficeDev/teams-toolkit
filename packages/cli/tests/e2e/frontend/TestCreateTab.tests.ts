@@ -22,13 +22,29 @@ import {
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 
 describe("Create single tab", function () {
-  const testFolder = getTestFolder();
-  const appName = getUniqueAppName();
-  const subscription = getSubscriptionId();
-  const projectPath = path.resolve(testFolder, appName);
+  let testFolder: string;
+  let appName: string;
+  let subscription: string;
+  let projectPath: string;
 
   // Should succeed on the 3rd try
   this.retries(2);
+
+  beforeEach(() => {
+    testFolder = getTestFolder();
+    appName = getUniqueAppName();
+    subscription = getSubscriptionId();
+    projectPath = path.resolve(testFolder, appName);
+  });
+
+  afterEach(async () => {
+    // clean up
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, false, false, true);
+    } else {
+      await cleanUp(appName, projectPath);
+    }
+  });
 
   it("Create react app without Azure Function", async () => {
     // new a project ( tab only )
@@ -129,15 +145,6 @@ describe("Create single tab", function () {
         const frontend = FrontendValidator.init(context);
         await FrontendValidator.validateDeploy(frontend);
       }
-    }
-  });
-
-  after(async () => {
-    // clean up
-    if (isMultiEnvEnabled()) {
-      await cleanUp(appName, projectPath, true, false, false, true);
-    } else {
-      await cleanUp(appName, projectPath);
     }
   });
 });

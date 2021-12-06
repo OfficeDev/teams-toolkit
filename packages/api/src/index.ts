@@ -15,7 +15,8 @@ export * from "./utils";
 export * from "./error";
 export * from "./qm";
 export * from "./schemas";
-// api-extractor doesn't support export * as v2 from "./v2"; So we try to export a variable instead.
+
+// because there are some same definitions v1/v2/v3 has, use namespace to export them
 export { v2 };
 export { v3 };
 export * from "neverthrow";

@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-solutionSettings?: SolutionSettings;
+solutionSettings: SolutionSettings;
 ```

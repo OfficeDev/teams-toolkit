@@ -7,10 +7,10 @@
 <b>Signature:</b>
 
 ```typescript
-export declare function loadOptions(q: Question, inputs: Inputs): Promise<{
+export declare function loadOptions(q: Question, inputs: Inputs): Promise<Result<{
     autoSkip: boolean;
     options?: StaticOptions;
-}>;
+}, FxError>>;
 ```
 
 ## Parameters
@@ -22,5 +22,5 @@ export declare function loadOptions(q: Question, inputs: Inputs): Promise<{
 
 <b>Returns:</b>
 
-Promise&lt;{ autoSkip: boolean; options?: [StaticOptions](./teamsfx-api.staticoptions.md)<!-- -->; }&gt;
+Promise&lt;Result&lt;{ autoSkip: boolean; options?: [StaticOptions](./teamsfx-api.staticoptions.md)<!-- -->; }, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt;
 

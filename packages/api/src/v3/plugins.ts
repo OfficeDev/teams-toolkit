@@ -9,6 +9,7 @@ import { Inputs, Json, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
+import { CloudResource } from "./resourceStates";
 import { Modules } from "./solutionSettings";
 import { EnvInfoV3 } from "./types";
 
@@ -145,7 +146,7 @@ export interface ResourcePlugin extends Plugin {
     inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
-  ) => Promise<Result<EnvInfoV3, FxError>>;
+  ) => Promise<Result<CloudResource, FxError>>;
 
   generateResourceTemplate?: (
     ctx: Context,
@@ -159,7 +160,7 @@ export interface ResourcePlugin extends Plugin {
     ctx: Context,
     inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
   /**
    * customize questions needed for deploy

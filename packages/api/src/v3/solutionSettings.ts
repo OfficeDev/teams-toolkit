@@ -7,27 +7,25 @@ import { AzureSolutionSettings } from "../types";
  */
 export interface Module {
   /**
+   * capabilities that the module supports
+   */
+  capabilities: string[];
+  /**
    * root directory name
    */
   dir?: string;
   /**
-   * build directory name
+   * relative path for the built artifact, it can be a folder path or a file path, depends the deployment type
    */
-  buildDir?: string;
+  buildPath?: string;
   /**
-   * hostingPlugin is available after add resource, this is an important mapping between module and resource plugin
+   * hostingPlugin is available after add resource, this is an mapping between module and resource plugin
    */
   hostingPlugin?: string;
-}
-
-/**
- * Module descriptions for project
- * modules are added after adding capability for the App
- */
-export interface Modules {
-  tab?: Module;
-  bot?: Module;
-  backends?: Module[];
+  /**
+   * deployment type for bits
+   */
+  deployType?: string;
 }
 
 export interface TeamsFxSolutionSettings extends AzureSolutionSettings {
@@ -35,5 +33,5 @@ export interface TeamsFxSolutionSettings extends AzureSolutionSettings {
    * upgrade solution settings version to 3.0.0
    */
   version: "3.0.0";
-  modules: Modules;
+  modules: Module[];
 }

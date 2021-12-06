@@ -868,19 +868,11 @@ export function mergeConfigMap(lhs?: ConfigMap, rhs?: ConfigMap): ConfigMap | un
 
 // @public
 interface Module {
-    buildDir?: string;
+    buildPath?: string;
+    capabilities: string[];
+    deployType?: string;
     dir?: string;
     hostingPlugin?: string;
-}
-
-// @public
-interface Modules {
-    // (undocumented)
-    backends?: Module[];
-    // (undocumented)
-    bot?: Module;
-    // (undocumented)
-    tab?: Module;
 }
 
 // @public (undocumented)
@@ -1194,7 +1186,6 @@ interface ResourcePlugin_2 extends Plugin_3 {
     getQuestionsForLocalProvision?: (ctx: Context_2, inputs: Inputs, localSettings: DeepReadonly<Json>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    modules?: (keyof Modules)[];
     pluginDependencies?(ctx: Context_2, inputs: Inputs): Promise<Result<string[], FxError>>;
     // (undocumented)
     provisionLocalResource?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
@@ -1247,9 +1238,9 @@ export interface RunnableTask<T> {
 
 // @public (undocumented)
 interface ScaffoldInputs extends InputsWithProjectPath {
+    buildPath?: string;
     dir?: string;
-    language?: string;
-    templateId: string;
+    templateName: string;
 }
 
 // @public (undocumented)
@@ -1259,14 +1250,11 @@ interface ScaffoldPlugin extends Plugin_3 {
     scaffold: (ctx: Context_2, inputs: ScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
 }
 
-// @public (undocumented)
+// @public
 interface ScaffoldTemplate {
     description: string;
-    // (undocumented)
-    id: string;
     language: string;
-    modules: (keyof Modules)[];
-    platforms?: Platform[];
+    name: string;
 }
 
 // @public
@@ -1616,7 +1604,7 @@ interface TeamsFxAzureResourceStates extends ResourceStates {
 // @public (undocumented)
 interface TeamsFxSolutionSettings extends AzureSolutionSettings {
     // (undocumented)
-    modules: Modules;
+    modules: Module[];
     version: "3.0.0";
 }
 
@@ -1874,7 +1862,6 @@ declare namespace v3 {
         ScaffoldPlugin,
         ResourcePlugin_2 as ResourcePlugin,
         Module,
-        Modules,
         TeamsFxSolutionSettings,
         StrictOmit,
         SolutionPluginV3,

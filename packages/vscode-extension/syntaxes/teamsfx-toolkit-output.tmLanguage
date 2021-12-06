@@ -81,6 +81,20 @@
                         <key>name</key>
                         <string>token.warn-token</string>
                     </dict>
+                </dict>
+                <key>match</key>
+                <string>M365 Teams App \(ID: (.*)\)</string>
+                <key>name</key>
+                <string>teamsfx-toolkit.listCollaborator.appId</string>
+            </dict>
+            <dict>
+                <key>captures</key>
+                <dict>
+                    <key>1</key>
+                    <dict>
+                        <key>name</key>
+                        <string>token.warn-token</string>
+                    </dict>
                     <key>2</key>
                     <dict>
                         <key>name</key>

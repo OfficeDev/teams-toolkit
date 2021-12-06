@@ -171,14 +171,17 @@ export class HelpParamGenerator {
         (node) => (node.condition as any).minItems === 1
       );
       const resourcesNodes = rootCopy.children!.filter(
-        (node) => (node.condition as any).contains === resourceName
-      )[0];
+        (node) =>
+          (node.condition as any).contains === resourceName ||
+          (node.condition as any).containsAny?.includes(resourceName)
+      );
       (rootCopy.data as any).default = [resourceName];
       (rootCopy.data as any).hide = true;
       rootCopy.children = undefined;
-      nodes = [rootCopy]
-        .concat(mustHaveNodes)
-        .concat(resourcesNodes ? flattenNodes(resourcesNodes) : []);
+      nodes = [rootCopy].concat(mustHaveNodes);
+      if (resourcesNodes) {
+        resourcesNodes.forEach((node) => (nodes = nodes.concat(flattenNodes(node))));
+      }
     } else if (capabilityId && root?.children) {
       const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
       // Do CLI map for capability add

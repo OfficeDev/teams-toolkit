@@ -1,7 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, PluginContext } from "@microsoft/teamsfx-api";
+import { Plugin } from "@microsoft/teamsfx-api";
+
+export type ArmResourcePlugin = Pick<Plugin, "generateArmTemplates" | "updateArmTemplates">;
+
+export type NamedArmResourcePlugin = { name: string } & ArmResourcePlugin;
 
 export interface BicepOrchestrationTemplate {
   Content: string;

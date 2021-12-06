@@ -11,7 +11,7 @@ import {
 } from "./cliTelemetryEvents";
 import { FxError, UserError } from "@microsoft/teamsfx-api";
 import { getHashedEnv } from "@microsoft/teamsfx-core";
-import { getTeamsAppId } from "../utils";
+import { getCreatedFrom, getTeamsAppId } from "../utils";
 
 export function makeEnvProperty(
   env: string | undefined
@@ -60,6 +60,10 @@ export class CliTelemetry {
     }
 
     properties[TelemetryProperty.AppId] = getTeamsAppId(CliTelemetry.rootFolder);
+    const createdFrom = getCreatedFrom(CliTelemetry.rootFolder);
+    if (createdFrom !== undefined) {
+      properties[TelemetryProperty.CreatedFrom] = createdFrom;
+    }
 
     CliTelemetry.reporter
       .withRootFolder(CliTelemetry.rootFolder)
@@ -82,6 +86,10 @@ export class CliTelemetry {
     }
 
     properties[TelemetryProperty.AppId] = getTeamsAppId(CliTelemetry.rootFolder);
+    const createdFrom = getCreatedFrom(CliTelemetry.rootFolder);
+    if (createdFrom !== undefined) {
+      properties[TelemetryProperty.CreatedFrom] = createdFrom;
+    }
 
     properties[TelemetryProperty.Success] = TelemetrySuccess.No;
     if (error instanceof UserError) {
@@ -112,6 +120,10 @@ export class CliTelemetry {
     }
 
     properties[TelemetryProperty.AppId] = getTeamsAppId(CliTelemetry.rootFolder);
+    const createdFrom = getCreatedFrom(CliTelemetry.rootFolder);
+    if (createdFrom !== undefined) {
+      properties[TelemetryProperty.CreatedFrom] = createdFrom;
+    }
 
     CliTelemetry.reporter
       .withRootFolder(CliTelemetry.rootFolder)

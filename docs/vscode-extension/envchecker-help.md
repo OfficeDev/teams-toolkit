@@ -6,8 +6,8 @@ Teams Toolkit will help to check if the required dependencies are installed.
 
 Current required dependencies:
 
-* [Node.js](https://nodejs.org/en/download/).
-* [.NET SDK](https://dotnet.microsoft.com/download): To start simpleAuth service for local debugging and install the customized function binding extension.
+* [Node.js](https://nodejs.org/en/about/releases/).
+* [.NET SDK](https://dotnet.microsoft.com/download/): To start simpleAuth service for local debugging and install the customized function binding extension.
 
 Please Note:
 - For `Node.js`, Teams Toolkit will check its existence, and provide with the link to users where and how to install.
@@ -15,10 +15,13 @@ Please Note:
 
 ## How to install Node.js?
 
-Please refer to [nodejs.org](https://nodejs.org/) to download and install the supported versions:
+Please refer to [the official site](https://nodejs.org/en/about/releases/) to download and install the supported versions:
 
-- For `Azure` hosting, please refer to the supported versions [here](#nodenotsupportedazure-hosting).
-- For `SPFx` hosting, please refer to the supported versions [here](#nodenotsupportedspfx-hosting).
+| Project type | Node.js LTS versions | Details |
+| -- | -- | -- |
+| Azure hosting projects without Functions | 10, 12, **14 (recommended)**, 16 | All Node.js LTS [versions](#nodenotsupportedazure-hosting) |
+| Azure hosting projects with Functions | 10, 12, **14 (recommended)** | Refer to the details [here](#nodenotsupportedazure-functions) |
+| SPFx hosting projects | 10, 12, **14 (recommended)** | Refer to the details [here](#nodenotsupportedspfx-hosting) |
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
@@ -49,15 +52,29 @@ Please refer to [the official website](https://docs.microsoft.com/en-us/azure/az
 As the Teams Toolkit project is implemented by `Node.js`, it's required to install the npm pacakges and run the project in local. 
 
 ### Mitigation
-Please refer to [nodejs.org](https://nodejs.org/) to install the right version: currently only LTS versions (v10, v12 and v14) are supported by Teams Toolkit, and `Node v14` would be recommended to be installed.
+Please refer to [the official website](https://nodejs.org/en/about/releases/) to install the right version: currently only LTS versions (v10, v12, v14 and v16) are supported by Teams Toolkit that does not containing Azure Functions or SPFx, and `Node v14` would be recommended to be installed.
+
+**NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
+
+### Mitigation
+Please refer to [the official website](https://nodejs.org/en/about/releases/) to install the right version: currently only LTS versions (v10, v12 and v14) are supported by Teams Toolkit for projects containing Azure Functions and `Node v14` would be recommended to be installed.
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
 
 ## NodeNotSupported(Azure hosting)
 ### Notification Message
+> Node.js (*node_version*) is not in the supported version list (v10, v12, v14, v16).
+
+When `Azure` is selected as the hosting type and the project does not contain Azure Functions, only LTS versions (v10, v12, v14 and v16) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
+
+### Mitigation
+Please refer to [the guide](#how-to-install-nodejs) to install `Node.js`.
+
+## NodeNotSupported(Azure Functions)
+### Notification Message
 > Node.js (*node_version*) is not in the supported version list (v10, v12, v14).
 
-When `Azure` is selected as the hosting type, only LTS versions (v10, v12 and v14) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
+When `Azure` is selected as the hosting type and the project contains Azure Functions, only LTS versions (v10, v12 and v14) of Node.js are supported by Teams Toolkit currently, please make sure the installed Node.js meets this requirement. In addition, **Node v14 (LTS)** would be recommended to be installed.
 
 ### Mitigation
 Please refer to [the guide](#how-to-install-nodejs) to install `Node.js`.

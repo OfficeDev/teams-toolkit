@@ -84,13 +84,6 @@ export async function scaffoldSourceCode(
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await scaffoldReadme(capabilities, azureResources, inputs.projectPath!);
-
-    ctx.userInteraction.showMessage(
-      "info",
-      `Success: ${getStrings().solution.ScaffoldSuccessNotice}`,
-      false
-    );
-
     if (isAzureProject(solutionSettings)) {
       await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
         spaces: 4,
@@ -112,6 +105,11 @@ export async function scaffoldSourceCode(
         }
       }
     }
+    ctx.userInteraction.showMessage(
+      "info",
+      `Success: ${getStrings().solution.ScaffoldSuccessNotice}`,
+      false
+    );
     return ok(Void);
   } else {
     return err(result.error);

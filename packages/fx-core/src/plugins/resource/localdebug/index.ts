@@ -653,18 +653,6 @@ export class LocalDebugPlugin implements Plugin {
     return localEnvs;
   }
 
-  public async getLocalDebugLaunchNamePrefix(ctx: PluginContext): Promise<string | undefined> {
-    try {
-      const launchConfig = await fs.readJSON(`${ctx.root}/.vscode/launch.json`);
-      const isSpfx = ProjectSettingLoader.isSpfx(ctx);
-      return Launch.getLaunchNamePrefix(launchConfig, isSpfx);
-    } catch (error) {
-      ctx.logProvider?.error(
-        `Cannot get launch configuration from '${ctx.root}/.vscode/launch.json'. ${error}`
-      );
-      return undefined;
-    }
-  }
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     if (func.method == "getLaunchInput") {
       const env = func.params as string;
@@ -700,9 +688,6 @@ export class LocalDebugPlugin implements Plugin {
       return ok(localEnvs);
     } else if (func.method === "migrateV1Project") {
       return await this.scaffold(ctx);
-    } else if (func.method === "getLocalDebugLaunchNamePrefix") {
-      const namePrefix = await this.getLocalDebugLaunchNamePrefix(ctx);
-      return ok(namePrefix);
     }
 
     return ok(undefined);

@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { LaunchBrowser } from "./constants";
 import * as os from "os";
+import { LaunchBrowser } from "./constants";
 
 export function generateConfigurations(
   includeFrontend: boolean,
@@ -523,22 +523,4 @@ export function generateSpfxCompounds(): Record<string, unknown>[] {
     }
   );
   return launchCompounds;
-}
-
-export function getLaunchNamePrefix(launchConfig: any, isSPFxProject: boolean): string | undefined {
-  try {
-    const defaultCompoundNames = isSPFxProject
-      ? ["Teams workbench (Edge)", "Teams workbench (Chrome)"]
-      : ["Debug (Edge)", "Debug (Chrome)"];
-    const compounds = launchConfig.compounds as any[];
-    for (const compound of compounds) {
-      const name = compound?.name;
-      if (name && defaultCompoundNames.includes(name)) {
-        return isSPFxProject ? "Teams workbench" : "Debug";
-      }
-    }
-    return undefined;
-  } catch (err) {
-    return undefined;
-  }
 }

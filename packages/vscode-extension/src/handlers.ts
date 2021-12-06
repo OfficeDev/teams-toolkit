@@ -390,11 +390,7 @@ export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, 
 
 export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewLocalDebug);
-  const localDebugLaunchNamePrefix = await commonUtils.getLocalDebugLaunchNamePrefix();
-  await vscode.commands.executeCommand(
-    "workbench.action.quickOpen",
-    `debug ${localDebugLaunchNamePrefix ?? ""}`
-  );
+  await vscode.commands.executeCommand("workbench.action.quickOpen", "debug ");
 
   return ok(null);
 }

@@ -36,7 +36,7 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
 } from "../../../..";
-import { ResourcePluginsNamesV3, ResourcePluginsV2 } from "../ResourcePluginContainer";
+import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { Container } from "typedi";
 
 export async function scaffoldSourceCode(

@@ -1069,6 +1069,8 @@ export interface ProjectSettings {
     // (undocumented)
     appName: string;
     // (undocumented)
+    createdFrom?: string;
+    // (undocumented)
     defaultFunctionName?: string;
     // (undocumented)
     isFromSample?: boolean;
@@ -1179,7 +1181,7 @@ interface ResourcePlugin_2 extends Plugin_3 {
     // (undocumented)
     configureLocalResource?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     description?: string;
@@ -1197,7 +1199,7 @@ interface ResourcePlugin_2 extends Plugin_3 {
     // (undocumented)
     provisionLocalResource?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<CloudResource, FxError>>;
+    provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<EnvInfoV3, FxError>>;
     resourceType: string;
     // (undocumented)
     updateResourceTemplate?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2, FxError>>;
@@ -1254,7 +1256,7 @@ interface ScaffoldInputs extends InputsWithProjectPath {
 interface ScaffoldPlugin extends Plugin_3 {
     getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     getTemplates: (ctx: Context_2, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
-    scaffold: (ctx: Context_2, inputs: ScaffoldInputs) => Promise<Result<Void, FxError>>;
+    scaffold: (ctx: Context_2, inputs: ScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
 }
 
 // @public (undocumented)
@@ -1264,6 +1266,7 @@ interface ScaffoldTemplate {
     id: string;
     language: string;
     modules: (keyof Modules)[];
+    platforms?: Platform[];
 }
 
 // @public

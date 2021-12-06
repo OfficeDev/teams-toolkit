@@ -10,6 +10,8 @@ import {
   Inputs,
   InputTextConfig,
   InputTextResult,
+  MultiSelectConfig,
+  MultiSelectResult,
   ok,
   OptionItem,
   Platform,
@@ -299,6 +301,88 @@ describe("Core basic APIs", () => {
         }
       });
     });
+  });
+
+  it("create project with correct createdFrom", async () => {
+    assert.isTrue(true);
+    appName = randomAppName();
+    projectPath = path.join(os.homedir(), "TeamsApps", appName);
+    const expectedInputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      projectPath: projectPath,
+      solution: mockSolution.name,
+      stage: Stage.create,
+    };
+    sandbox
+      .stub<any, any>(ui, "inputText")
+      .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
+        if (config.name === CoreQuestionNames.AppName) {
+          return ok({
+            type: "success",
+            result: expectedInputs[CoreQuestionNames.AppName] as string,
+          });
+        }
+        throw InvalidInputError("invalid question");
+      });
+    sandbox
+      .stub<any, any>(ui, "selectFolder")
+      .callsFake(
+        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
+          if (config.name === CoreQuestionNames.Folder) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.Folder] as string,
+            });
+          }
+          throw InvalidInputError("invalid question");
+        }
+      );
+    sandbox
+      .stub<any, any>(ui, "selectOption")
+      .callsFake(
+        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
+          if (config.name === CoreQuestionNames.CreateFromScratch) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
+            });
+          }
+          throw err(InvalidInputError("invalid question"));
+        }
+      );
+    sandbox
+      .stub<any, any>(ui, "selectOptions")
+      .callsFake(async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+        if (config.name == "capabilities") {
+          return ok({ type: "success", result: ["Tab"] });
+        }
+        throw err(InvalidInputError("invalid question"));
+      });
+    const core = new FxCore(tools);
+    {
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const res = await core.createProject(inputs);
+      assert.isTrue(res.isOk());
+      if (res.isErr()) {
+        console.log(res.error);
+      }
+      assert.deepEqual(expectedInputs, inputs);
+
+      const projectSettingsResult = await loadProjectSettings(
+        inputs,
+        commonTools.isMultiEnvEnabled()
+      );
+      if (projectSettingsResult.isErr()) {
+        assert.fail("failed to load project settings");
+      }
+
+      const projectSettings = projectSettingsResult.value;
+      const validSettingsResult = validateSettings(projectSettings);
+      assert.isTrue(validSettingsResult === undefined);
+      projectSettings.createdFrom == require("../../package.json").version;
+    }
   });
 
   async function case1() {

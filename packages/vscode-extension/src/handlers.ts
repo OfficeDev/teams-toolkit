@@ -222,6 +222,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await openSampleReadmeHandler();
     await postUpgrade();
     ExtTelemetry.isFromSample = await getIsFromSample();
+    ExtTelemetry.createdFrom = await getCreatedFrom();
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
@@ -264,6 +265,24 @@ async function getIsFromSample() {
     await core.getProjectConfig(input);
 
     return core.isFromSample;
+  }
+  return undefined;
+}
+
+// only used for telemetry
+async function getCreatedFrom(): Promise<string | undefined> {
+  if (core) {
+    const input = getSystemInputs();
+    // TODO: from the experience of 'is-from-sample':
+    // in some circumstances, getProjectConfig() returns undefined even projectSettings.json is valid.
+    // This is a workaround to prevent that. We can change to the following code after the root cause is found.
+    // const projectConfig = await core.getProjectConfig(input);
+    // ignore errors for telemetry
+    // if (projectConfig.isOk()) {
+    //   return projectConfig.value?.settings?.createdFrom;
+    // }
+    await core.getProjectConfig(input);
+    return core.createdFrom;
   }
   return undefined;
 }

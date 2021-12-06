@@ -46,6 +46,9 @@ import {
   mockedSimpleAuthScaffoldArmResult,
   mockedAadScaffoldArmResult,
   mockedBotArmTemplateResultFunc,
+  MockedUserInteraction,
+  MockedLogProvider,
+  MockedTelemetryReporter,
 } from "./util";
 import * as tools from "../../../src/common/tools";
 import * as cpUtils from "../../../src/common/cpUtils";
@@ -100,6 +103,9 @@ function mockSolutionContext(): SolutionContext {
     projectSettings: undefined,
     azureAccountProvider: Object as any & AzureAccountProvider,
     cryptoProvider: new LocalCrypto(""),
+    ui: new MockedUserInteraction(),
+    logProvider: new MockedLogProvider(),
+    telemetryReporter: new MockedTelemetryReporter(),
   };
 }
 
@@ -785,6 +791,7 @@ describe("Arm Template Failed Test", () => {
         properties: {
           targetResource: {
             resourceName: "test resource",
+            id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Resources/deployments/addTeamsFxConfigurations",
           },
           provisioningState: "Running",
           timestamp: Date.now(),

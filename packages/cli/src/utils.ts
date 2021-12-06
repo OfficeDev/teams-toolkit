@@ -41,6 +41,8 @@ import {
   localSettingsFileName,
 } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
+import { FxCore } from "@microsoft/teamsfx-core";
+import { isSPFxProject } from "@microsoft/teamsfx-core";
 
 export type Json = { [_: string]: any };
 
@@ -565,4 +567,22 @@ export function getAllFeatureFlags(): string[] | undefined {
     });
 
   return result;
+}
+
+export async function isSpfxProject(
+  rootFolder: string,
+  core: FxCore
+): Promise<Result<boolean | undefined, FxError>> {
+  const inputs: Inputs = {
+    platform: Platform.CLI,
+    projectPath: rootFolder,
+  };
+
+  const configResult = await core.getProjectConfig(inputs);
+  if (configResult.isErr()) {
+    return err(configResult.error);
+  }
+  const config = configResult.value;
+  const projectSettings = config?.settings;
+  return ok(isSPFxProject(projectSettings));
 }

@@ -294,6 +294,7 @@ export const PluginLifeCycleToProgressStep: { [key in PluginLifeCycle]: Progress
   [PluginLifeCycle.Scaffold]: ProgressStep.Scaffold,
   [PluginLifeCycle.Provision]: ProgressStep.Provision,
   [PluginLifeCycle.GenerateArmTemplates]: ProgressStep.None,
+  [PluginLifeCycle.UpdateArmTemplates]: ProgressStep.None,
   [PluginLifeCycle.PostProvision]: ProgressStep.PostProvision,
   [PluginLifeCycle.Deploy]: ProgressStep.Deploy,
   [PluginLifeCycle.GetQuestionsForUserTask]: ProgressStep.None,

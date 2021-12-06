@@ -48,18 +48,6 @@ describe("Account Command Tests", function () {
       loglevels.push(level);
     });
 
-    sandbox
-      .stub(AzureTokenProvider, "getSubscriptionInfoFromEnv")
-      .onFirstCall()
-      .returns(
-        Promise.resolve({
-          subscriptionId: "subscriptionId",
-          subscriptionName: "subscriptionName",
-          tenantId: "tenantId",
-        })
-      )
-      .onSecondCall()
-      .returns(Promise.resolve(undefined));
     sandbox.stub(Utils, "setSubscriptionId").callsFake(async (id?: string, folder?: string) => {
       if (!id) return ok(null);
       else return err(NotFoundSubscriptionId());
@@ -116,6 +104,18 @@ describe("Account Command Tests", function () {
       .returns(Promise.resolve(undefined));
     sandbox.stub(AzureTokenProvider, "listSubscriptions").returns(Promise.resolve([]));
     sandbox
+      .stub(AzureTokenProvider, "readSubscription")
+      .onFirstCall()
+      .returns(
+        Promise.resolve({
+          subscriptionName: "",
+          subscriptionId: "",
+          tenantId: "",
+        })
+      )
+      .onSecondCall()
+      .returns(Promise.resolve(undefined));
+    sandbox
       .stub(AzureTokenProvider, "signout")
       .onFirstCall()
       .returns(Promise.resolve(true))
@@ -148,7 +148,15 @@ describe("Account Command Tests", function () {
       "logout <service>",
       "set",
     ]);
-    expect(options).deep.equals(["action", "tenant", "folder", "subscription"]);
+    expect(options).deep.equals([
+      "action",
+      "tenant",
+      "service-principal",
+      "username",
+      "password",
+      "folder",
+      "subscription",
+    ]);
     expect(positionals).deep.equals(["service", "service"]);
   });
 

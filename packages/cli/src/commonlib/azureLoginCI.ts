@@ -15,7 +15,7 @@ import { AzureAccountProvider, ConfigFolderName, SubscriptionInfo } from "@micro
 import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
 import { login, LoginStatus } from "./common/login";
 import { clearAzureSP, loadAzureSP, saveAzureSP } from "./cacheAccess";
-import { subscriptionInfoFile } from "./common/constant";
+import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
 import { isWorkspaceSupported } from "../utils";
 
 /**
@@ -125,7 +125,19 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   async getStatus(): Promise<LoginStatus> {
-    throw new Error("Method not implemented.");
+    await this.load();
+    if (
+      AzureAccountManager.clientId &&
+      AzureAccountManager.secret &&
+      AzureAccountManager.tenantId
+    ) {
+      return {
+        status: signedIn,
+      };
+    }
+    return {
+      status: signedOut,
+    };
   }
 
   getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined> {

@@ -585,7 +585,7 @@ export class AppStudioPluginImpl {
       : `${ctx.root}/${AppPackageFolderName}`;
 
     await fs.ensureDir(newAppPackageFolder);
-    if (await this.checkFileExist(archiveManifestPath)) {
+    if (await fs.pathExists(archiveManifestPath)) {
       manifest = await this.createV1Manifest(ctx);
 
       const resourcesDir = isMultiEnvEnabled()
@@ -595,7 +595,7 @@ export class AppStudioPluginImpl {
 
       if (manifest?.icons?.color && !manifest.icons.color.startsWith("https://")) {
         const archiveColorFile = path.join(archiveAppPackageFolder, manifest.icons.color);
-        const existColorFile = await this.checkFileExist(archiveColorFile);
+        const existColorFile = await fs.pathExists(archiveColorFile);
         const newColorFileName = existColorFile
           ? path.basename(manifest.icons.color)
           : DEFAULT_COLOR_PNG_FILENAME;
@@ -610,7 +610,7 @@ export class AppStudioPluginImpl {
 
       if (manifest?.icons?.outline && !manifest.icons.outline.startsWith("https://")) {
         const archiveOutlineFile = path.join(archiveAppPackageFolder, manifest.icons.outline);
-        const existOutlineFile = await this.checkFileExist(archiveOutlineFile);
+        const existOutlineFile = await fs.pathExists(archiveOutlineFile);
         const newOutlineFileName = existOutlineFile
           ? path.basename(manifest.icons.outline)
           : DEFAULT_OUTLINE_PNG_FILENAME;
@@ -784,7 +784,7 @@ export class AppStudioPluginImpl {
     // color icon
     if (manifest.icons.color && !manifest.icons.color.startsWith("https://")) {
       const colorFile = `${appDirectory}/${manifest.icons.color}`;
-      const fileExists = await this.checkFileExist(colorFile);
+      const fileExists = await fs.pathExists(colorFile);
       if (!fileExists) {
         throw AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
@@ -799,7 +799,7 @@ export class AppStudioPluginImpl {
     // outline icon
     if (manifest.icons.outline && !manifest.icons.outline.startsWith("https://")) {
       const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
-      const fileExists = await this.checkFileExist(outlineFile);
+      const fileExists = await fs.pathExists(outlineFile);
       if (!fileExists) {
         throw AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
@@ -853,7 +853,7 @@ export class AppStudioPluginImpl {
       await fs.ensureDir(path.join(ctx.root, `${AppPackageFolderName}`));
 
       const formerZipFileName = `${appDirectory}/appPackage.zip`;
-      if (await this.checkFileExist(formerZipFileName)) {
+      if (await fs.pathExists(formerZipFileName)) {
         await fs.remove(formerZipFileName);
       }
 
@@ -1146,15 +1146,6 @@ export class AppStudioPluginImpl {
       }
     } finally {
       await publishProgress?.end(true);
-    }
-  }
-
-  private async checkFileExist(filePath: string): Promise<boolean> {
-    try {
-      await fs.stat(filePath);
-      return true;
-    } catch (error) {
-      return false;
     }
   }
 

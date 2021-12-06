@@ -62,7 +62,7 @@ export interface ScaffoldPlugin extends Plugin {
   /**
    * Source code template descriptions
    */
-  templates: ScaffoldTemplate[];
+  getTemplates: (ctx: Context, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
   /**
    * get questions before scaffolding
    */

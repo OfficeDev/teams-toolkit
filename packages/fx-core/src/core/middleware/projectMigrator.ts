@@ -1091,9 +1091,12 @@ async function generateArmTempaltesFiles(ctx: CoreHookContext) {
     throw SolutionConfigError();
   }
   minorCtx.solutionContext = result.value;
+  const plugins = getActivatedResourcePlugins(
+    minorCtx.projectSettings?.solutionSettings as AzureSolutionSettings
+  );
   // generate bicep files.
   try {
-    await generateArmTemplate(minorCtx.solutionContext);
+    await generateArmTemplate(minorCtx.solutionContext, plugins);
   } catch (error) {
     throw error;
   }

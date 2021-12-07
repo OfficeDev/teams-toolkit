@@ -521,7 +521,7 @@ async function doGenerateArmTemplate(
   for (const plugin of plugins) {
     const pluginWithArm = plugin as NamedArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
     const pluginContext = getPluginContext(ctx, pluginWithArm.name);
-    let result: Result<ArmTemplateResult, FxError> = {};
+    let result: Result<ArmTemplateResult, FxError>;
     let errMessage = "";
     if (
       pluginWithArm.updateArmTemplates &&
@@ -533,7 +533,10 @@ async function doGenerateArmTemplate(
         FxError
       >;
       errMessage = getStrings().solution.UpdateArmTemplateFailNotice;
-    } else if (pluginWithArm.generateArmTemplates) {
+    } else if (
+      pluginWithArm.generateArmTemplates &&
+      selectedPlugins.find((pluginItem) => pluginItem === pluginWithArm)
+    ) {
       result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,
         FxError

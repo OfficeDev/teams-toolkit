@@ -71,7 +71,7 @@ export class SqlPlugin implements Plugin {
     );
   }
 
-  public async updateArmtemplates(ctx: PluginContext): Promise<SqlResult> {
+  public async updateArmTemplates(ctx: PluginContext): Promise<SqlResult> {
     return this.runWithSqlError(
       Telemetry.stage.generateArmTemplates,
       () => this.sqlImpl.updateArmTemplates(ctx),

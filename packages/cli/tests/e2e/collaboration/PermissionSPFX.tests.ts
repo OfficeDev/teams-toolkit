@@ -49,6 +49,9 @@ describe("Collaboration", function () {
     });
     console.log("[Successfully] provision");
 
+    const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
+    appId = solutionConfig["solution"]["id"];
+
     // Check Permission
     const checkPermissionResult = await execAsyncWithRetry(`teamsfx permission status`, {
       cwd: projectPath,
@@ -96,16 +99,17 @@ describe("Collaboration", function () {
       `Teams App Owner: ${collaborator?.split("@")[0]}`
     );
     console.log("[Successfully] list collaborator");
-
-    const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
-    appId = solutionConfig["solution"]["id"];
   });
 
   after(async () => {
     // clean up
     if (isRemoteCollaborateEnabled()) {
-      await cleanUpLocalProject(projectPath);
-      await cleanupSharePointPackage(appId);
+      if (projectPath) {
+        await cleanUpLocalProject(projectPath);
+      }
+      if (appId) {
+        await cleanupSharePointPackage(appId);
+      }
     }
   });
 });

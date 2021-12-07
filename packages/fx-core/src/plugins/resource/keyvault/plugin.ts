@@ -44,4 +44,17 @@ export class KeyVaultPluginImpl {
 
     return ResultFactory.Success(result);
   }
+
+  public async updateArmTemplates(ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> {
+    const result: ArmTemplateResult = {
+      Provision: {
+        Reference: {
+          m365ClientSecretReference: Constants.KeyVaultBicep.m365ClientSecretReference,
+          botClientSecretReference: Constants.KeyVaultBicep.botClientSecretReference,
+        },
+      },
+    };
+
+    return ResultFactory.Success(result);
+  }
 }

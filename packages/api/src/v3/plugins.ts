@@ -10,11 +10,16 @@ import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
 import { CloudResource } from "./resourceStates";
-import { Modules } from "./solutionSettings";
 import { EnvInfoV3 } from "./types";
 
+/**
+ * Description of scaffolding templates
+ */
 export interface ScaffoldTemplate {
-  id: string;
+  /**
+   * unique identifier for the template
+   */
+  name: string;
   /**
    * programming language
    */
@@ -23,29 +28,21 @@ export interface ScaffoldTemplate {
    * description of the template
    */
   description: string;
-  /**
-   * what module does the template work for
-   */
-  modules: (keyof Modules)[];
-  /**
-   * what platform does this template applies to, if not specified, no restriction
-   */
-  platforms?: Platform[];
 }
 
 export interface ScaffoldInputs extends InputsWithProjectPath {
   /**
-   * scaffold template id
+   * scaffold template name
    */
-  templateId: string;
-  /**
-   * programming language
-   */
-  language?: string;
+  templateName: string;
   /**
    * customized source root dir name
    */
   dir?: string;
+  /**
+   * customized build directory name
+   */
+  buildPath?: string;
 }
 
 export interface Plugin {
@@ -86,10 +83,6 @@ export interface ResourcePlugin extends Plugin {
    * resource description
    */
   description?: string;
-  /**
-   * what module does the resource works for, if not specified, there is no limit
-   */
-  modules?: (keyof Modules)[];
   /**
    * return dependent plugin names, when adding resource, the toolkit will add all dependent resources
    */

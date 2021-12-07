@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-publishApplication: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+publishApplication: (inputs: Inputs) => Promise<Result<Void, FxError>>;
 ```

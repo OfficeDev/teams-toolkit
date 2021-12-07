@@ -104,37 +104,26 @@ describe("generateArmTemplates", () => {
       version: "1.0.0",
       activeResourcePlugins: activeResourcePlugins,
     } as AzureSolutionSettings;
-    const result = await sqlPlugin.generateArmTemplates(pluginContext);
+    const result = await sqlPlugin.updateArmtemplates(pluginContext);
 
-    // Assert
-    const testModuleFileName = "sqlProvision.result.bicep";
-    const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
-        "fx-resource-azure-sql": {
-          Provision: {
-            azureSql: {
-              ProvisionPath: `./${testModuleFileName}`,
-            },
-          },
-        },
-      },
-    };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplates(
-        mockedSolutionDataContext,
-        result.value
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.sqlResourceId,
+        "provisionOutputs.azureSqlOutput.value.sqlResourceId"
       );
-
-      chai.assert.exists(expectedResult.Provision!.Reference!.sqlResourceId);
-      chai.assert.exists(expectedResult.Provision!.Reference!.sqlEndpoint);
-      chai.assert.exists(expectedResult.Provision!.Reference!.databaseName);
-      chai.assert.notExists(expectedResult.Provision!.Orchestration);
-      chai.assert.notExists(expectedResult.Provision!.Modules);
-      chai.assert.notExists(expectedResult.Configuration!.Orchestration);
-      chai.assert.isEmpty(expectedResult.Configuration!.Modules);
-      chai.assert.notExists(expectedResult.Parameters);
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.sqlEndpoint,
+        "provisionOutputs.azureSqlOutput.value.sqlEndpoint"
+      );
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.databaseName,
+        "provisionOutputs.azureSqlOutput.value.databaseName"
+      );
+      chai.assert.notExists(result.value.Provision!.Orchestration);
+      chai.assert.notExists(result.value.Provision!.Modules);
+      chai.assert.notExists(result.value.Configuration);
+      chai.assert.notExists(result.value.Parameters);
     }
   });
 });

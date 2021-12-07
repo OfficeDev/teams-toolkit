@@ -16,6 +16,6 @@ export interface ProjectStates
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [resources](./teamsfx-api.projectstates.resources.md) | { \[k: string\]: [Dict](./teamsfx-api.dict.md)<!-- -->&lt;[ConfigValue](./teamsfx-api.configvalue.md)<!-- -->&gt;; } |  |
-|  [solution](./teamsfx-api.projectstates.solution.md) | [Dict](./teamsfx-api.dict.md)<!-- -->&lt;[ConfigValue](./teamsfx-api.configvalue.md)<!-- -->&gt; |  |
+|  [resources](./teamsfx-api.projectstates.resources.md) | { \[k: string\]: Record&lt;string, [ConfigValue](./teamsfx-api.configvalue.md)<!-- -->&gt;; } |  |
+|  [solution](./teamsfx-api.projectstates.solution.md) | Record&lt;string, [ConfigValue](./teamsfx-api.configvalue.md)<!-- -->&gt; |  |
 

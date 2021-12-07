@@ -30,7 +30,7 @@ export class Constants {
   public static readonly sqlEndpoint: string = "sqlEndpoint";
   public static readonly sqlResourceId: string = "sqlResourceId";
   public static readonly databaseName: string = "databaseName";
-  public static readonly skipAddingUser: string = "skipAddingUser";
+  public static readonly skipAddingSqlUser: string = "skipAddingSqlUser";
   public static readonly admin: string = "admin";
   public static readonly adminPassword: string = "adminPassword";
 

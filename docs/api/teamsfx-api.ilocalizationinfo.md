@@ -14,7 +14,6 @@ export interface ILocalizationInfo
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [additionalLanguages?](./teamsfx-api.ilocalizationinfo.additionallanguages.md) | { languageTag: string; file?: string; }\[\] | <i>(Optional)</i> |
+|  [additionalLanguages?](./teamsfx-api.ilocalizationinfo.additionallanguages.md) | { languageTag: string; file: string; }\[\] | <i>(Optional)</i> |
 |  [defaultLanguageTag](./teamsfx-api.ilocalizationinfo.defaultlanguagetag.md) | string | The language tag of the strings in this top level manifest file. |
-|  [languages](./teamsfx-api.ilocalizationinfo.languages.md) | any\[\] |  |
 

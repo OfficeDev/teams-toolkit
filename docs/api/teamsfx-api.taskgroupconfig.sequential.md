@@ -4,7 +4,7 @@
 
 ## TaskGroupConfig.sequential property
 
-if true, the tasks in the group are running in paralel if false, the tasks are running in sequence.
+if true, the tasks in the group are running in parallel if false, the tasks are running in sequence.
 
 <b>Signature:</b>
 

@@ -3,11 +3,13 @@
 
 import { Result } from "neverthrow";
 import { Func, QTreeNode } from "..";
+import { Platform } from "../constants";
 import { FxError } from "../error";
 import { Inputs, Json, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
+import { CloudResource } from "./resourceStates";
 import { Modules } from "./solutionSettings";
 import { EnvInfoV3 } from "./types";
 
@@ -25,6 +27,10 @@ export interface ScaffoldTemplate {
    * what module does the template work for
    */
   modules: (keyof Modules)[];
+  /**
+   * what platform does this template applies to, if not specified, no restriction
+   */
+  platforms?: Platform[];
 }
 
 export interface ScaffoldInputs extends InputsWithProjectPath {
@@ -57,7 +63,7 @@ export interface ScaffoldPlugin extends Plugin {
   /**
    * Source code template descriptions
    */
-  templates: ScaffoldTemplate[];
+  getTemplates: (ctx: Context, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
   /**
    * get questions before scaffolding
    */
@@ -68,7 +74,7 @@ export interface ScaffoldPlugin extends Plugin {
   /**
    * scaffold source code
    */
-  scaffold: (ctx: Context, inputs: ScaffoldInputs) => Promise<Result<Void, FxError>>;
+  scaffold: (ctx: Context, inputs: ScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
 }
 
 export interface ResourcePlugin extends Plugin {
@@ -140,7 +146,7 @@ export interface ResourcePlugin extends Plugin {
     inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
-  ) => Promise<Result<EnvInfoV3, FxError>>;
+  ) => Promise<Result<CloudResource, FxError>>;
 
   generateResourceTemplate?: (
     ctx: Context,
@@ -154,7 +160,7 @@ export interface ResourcePlugin extends Plugin {
     ctx: Context,
     inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
   /**
    * customize questions needed for deploy

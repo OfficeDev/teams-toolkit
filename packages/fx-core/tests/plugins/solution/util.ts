@@ -147,6 +147,17 @@ export function mockedSimpleAuthScaffoldArmResult(): ArmTemplateResult {
   return res;
 }
 
+export function mockedSimpleAuthUpdateArmResult(): ArmTemplateResult {
+  const res: ArmTemplateResult = {
+    Provision: {
+      Reference: {
+        endpoint: "Mocked simple auth endpoint",
+      },
+    },
+  };
+  return res;
+}
+
 export function mockedAadScaffoldArmResult(): ArmTemplateResult {
   const res: ArmTemplateResult = {
     Provision: {
@@ -168,12 +179,14 @@ export function mockedBotArmTemplateResultFunc(): ArmTemplateResult {
       },
       Reference: {
         URI: "Mocked bot URL",
+        webAppEndpoint: "Mock web app end point",
       },
     },
     Configuration: {
-      Orchestration: "Bot Configuration module content and outputs",
+      Orchestration:
+        "Mocked bot Orchestration content, Module path: {{PluginOutput.fx-resource-bot.Configuration.bot.ConfigPath}}",
       Modules: {
-        bot: "Mocked bot Configuration content, Module path: {{PluginOutput.fx-resource-simple-auth.Configuration.bot.ConfigPath}}",
+        bot: "Mocked bot Configuration content, bot webAppEndpoint: {{PluginOutput.fx-resource-bot.References.webAppEndpoint}}",
       },
     },
     Parameters: {

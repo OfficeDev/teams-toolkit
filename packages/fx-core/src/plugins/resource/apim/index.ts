@@ -74,6 +74,14 @@ export class ApimPlugin implements Plugin {
     return await this.executeWithFxError(PluginLifeCycle.Scaffold, _scaffold, ctx);
   }
 
+  public async updateArmTemplates(ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> {
+    return await this.executeWithFxError(
+      PluginLifeCycle.UpdateArmTemplates,
+      _updateArmTemplates,
+      ctx
+    );
+  }
+
   public async generateArmTemplates(
     ctx: PluginContext
   ): Promise<Result<ArmTemplateResult, FxError>> {
@@ -220,6 +228,14 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
     ProgressMessages[ProgressStep.Provision].CreateAad
   );
   await aadManager.provision(apimConfig, appName);
+}
+
+async function _updateArmTemplates(
+  ctx: PluginContext,
+  progressBar: ProgressBar
+): Promise<ArmTemplateResult> {
+  const apimManager = await Factory.buildApimManager(ctx);
+  return await apimManager.updateArmTemplates();
 }
 
 async function _generateArmTemplates(

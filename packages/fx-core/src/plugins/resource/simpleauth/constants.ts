@@ -1,7 +1,4 @@
 // Copyright (c) Microsoft Corporation.
-
-import { Message } from "../identity/utils/messages";
-
 // Licensed under the MIT license.
 export class Constants {
   static readonly SolutionPlugin = {

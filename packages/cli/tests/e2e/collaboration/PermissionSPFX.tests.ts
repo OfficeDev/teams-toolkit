@@ -7,41 +7,42 @@
 
 import { expect } from "chai";
 import path from "path";
-import { environmentManager, isRemoteCollaborateEnabled } from "@microsoft/teamsfx-core";
+import * as fs from "fs-extra";
+import { isRemoteCollaborateEnabled } from "@microsoft/teamsfx-core";
 import {
-  cleanUp,
+  cleanUpLocalProject,
+  cleanupSharePointPackage,
   execAsync,
   execAsyncWithRetry,
-  getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 
 describe("Collaboration", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
-  const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
   const collaborator = process.env["M365_ACCOUNT_COLLABORATOR"];
   const creator = process.env["M365_ACCOUNT_NAME"];
+  let appId: string;
 
-  it("Collaboration: CLI with permission status and permission grant", async function () {
+  it("Collaboration: CLI with permission status and permission grant - spfx", async function () {
     if (!isRemoteCollaborateEnabled()) {
       return;
     }
     // new a project
-    await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
+    await execAsync(
+      `teamsfx new --interactive false --capabilities tab-spfx --app-name ${appName}`,
+      {
+        cwd: testFolder,
+        env: process.env,
+        timeout: 0,
+      }
+    );
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-
     // provision
-    await execAsyncWithRetry(`teamsfx provision --subscription ${subscription}`, {
+    await execAsyncWithRetry(`teamsfx provision`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
@@ -55,9 +56,6 @@ describe("Collaboration", function () {
       timeout: 0,
     });
 
-    expect(checkPermissionResult.stdout).to.contains(
-      "Resource Name: Azure AD App, Permission: Owner"
-    );
     expect(checkPermissionResult.stdout).to.contains(
       "Resource Name: Teams App, Permission: Administrator"
     );
@@ -73,9 +71,6 @@ describe("Collaboration", function () {
       }
     );
 
-    expect(grantCollaboratorResult.stdout).to.contains(
-      "Owner permission has been granted to Azure AD App"
-    );
     expect(grantCollaboratorResult.stdout).to.contains(
       "Administrator permission has been granted to Teams App"
     );
@@ -100,14 +95,17 @@ describe("Collaboration", function () {
     expect(listCollaboratorResult.stdout).to.contains(
       `Teams App Owner: ${collaborator?.split("@")[0]}`
     );
-
     console.log("[Successfully] list collaborator");
+
+    const solutionConfig = await fs.readJson(`${projectPath}/SPFx/config/package-solution.json`);
+    appId = solutionConfig["solution"]["id"];
   });
 
   after(async () => {
     // clean up
     if (isRemoteCollaborateEnabled()) {
-      await cleanUp(appName, projectPath, true, false, false, true);
+      await cleanUpLocalProject(projectPath);
+      await cleanupSharePointPackage(appId);
     }
   });
 });

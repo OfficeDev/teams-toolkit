@@ -222,7 +222,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await openSampleReadmeHandler();
     await postUpgrade();
     ExtTelemetry.isFromSample = await getIsFromSample();
-    ExtTelemetry.createdFrom = await getCreatedFrom();
+    ExtTelemetry.settingsVersion = await getSettingsVersion();
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
@@ -270,7 +270,7 @@ async function getIsFromSample() {
 }
 
 // only used for telemetry
-async function getCreatedFrom(): Promise<string | undefined> {
+async function getSettingsVersion(): Promise<string | undefined> {
   if (core) {
     const input = getSystemInputs();
     // TODO: from the experience of 'is-from-sample':
@@ -279,10 +279,10 @@ async function getCreatedFrom(): Promise<string | undefined> {
     // const projectConfig = await core.getProjectConfig(input);
     // ignore errors for telemetry
     // if (projectConfig.isOk()) {
-    //   return projectConfig.value?.settings?.createdFrom;
+    //   return projectConfig.value?.settings?.version;
     // }
     await core.getProjectConfig(input);
-    return core.createdFrom;
+    return core.settingsVersion;
   }
   return undefined;
 }

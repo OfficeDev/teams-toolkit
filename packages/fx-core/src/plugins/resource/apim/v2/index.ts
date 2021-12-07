@@ -113,7 +113,7 @@ export class ApimPluginV2 implements ResourcePlugin {
     ctx: Context,
     inputs: DeploymentInputs,
     provisionOutput: Json,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     // const questionRes = await this.plugin.getQuestions(
     //   Stage.deploy,

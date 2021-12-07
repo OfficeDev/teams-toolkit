@@ -255,6 +255,7 @@ async function appendSubscriptionAndResourceGroupNode(env: string): Promise<void
   ) {
     const envSubItems: TreeItem[] = [];
     const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
+
     if (subscriptionInfo) {
       const subscriptionTreeItem: TreeItem = {
         commandId: `fx-extension.environment.subscription.${env}`,
@@ -265,7 +266,11 @@ async function appendSubscriptionAndResourceGroupNode(env: string): Promise<void
           isMarkdown: false,
           value: `'${env}' environment is provisioned in Azure subscription '${
             subscriptionInfo.subscriptionName ?? subscriptionInfo.subscriptionId
-          }'`,
+          }'${
+            subscriptionInfo.subscriptionName
+              ? " (ID: " + subscriptionInfo.subscriptionId + ")"
+              : ""
+          }`,
         },
         icon: "key",
         isCustom: false,

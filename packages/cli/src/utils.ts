@@ -365,7 +365,7 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
 }
 
 // Only used for telemetry
-export function getCreatedFrom(rootFolder: string | undefined): string | undefined {
+export function getSettingsVersion(rootFolder: string | undefined): string | undefined {
   if (!rootFolder) {
     return undefined;
   }
@@ -373,7 +373,7 @@ export function getCreatedFrom(rootFolder: string | undefined): string | undefin
     if (isWorkspaceSupported(rootFolder)) {
       const result = readSettingsFileSync(rootFolder);
       if (result.isOk()) {
-        return result.value.createdFrom;
+        return result.value.version;
       }
     }
   } catch (e) {

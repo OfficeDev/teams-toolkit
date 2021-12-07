@@ -264,13 +264,18 @@ async function appendSubscriptionAndResourceGroupNode(env: string): Promise<void
         description: subscriptionInfo.subscriptionId,
         tooltip: {
           isMarkdown: false,
-          value: `'${env}' environment is provisioned in Azure subscription '${
-            subscriptionInfo.subscriptionName ?? subscriptionInfo.subscriptionId
-          }'${
-            subscriptionInfo.subscriptionName
-              ? " (ID: " + subscriptionInfo.subscriptionId + ")"
-              : ""
-          }`,
+          value: subscriptionInfo.subscriptionName
+            ? util.format(
+                StringResources.vsc.envTree.subscriptionTooltip,
+                env,
+                subscriptionInfo.subscriptionName,
+                subscriptionInfo.subscriptionId
+              )
+            : util.format(
+                StringResources.vsc.envTree.subscriptionTooltipWithoutName,
+                env,
+                subscriptionInfo.subscriptionId
+              ),
         },
         icon: "key",
         isCustom: false,

@@ -147,6 +147,17 @@ export function mockedSimpleAuthScaffoldArmResult(): ArmTemplateResult {
   return res;
 }
 
+export function mockedSimpleAuthUpdateArmResult(): ArmTemplateResult {
+  const res: ArmTemplateResult = {
+    Provision: {
+      Reference: {
+        endpoint: "Mocked simple auth endpoint",
+      },
+    },
+  };
+  return res;
+}
+
 export function mockedAadScaffoldArmResult(): ArmTemplateResult {
   const res: ArmTemplateResult = {
     Provision: {

@@ -24,7 +24,4 @@ export const MigrateConditionHandlerMW: Middleware = async (
   }
 
   await next();
-  if (ctx.result?.isOk()) {
-    await ctx?.self.tools.ui.reload?.();
-  }
 };

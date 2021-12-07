@@ -5,13 +5,19 @@
 
 import { Argv, Options } from "yargs";
 
-import { Colors, FxError, LogLevel, ok, Question, Result } from "@microsoft/teamsfx-api";
+import { Colors, FxError, LogLevel, ok, Question, Result, UserError } from "@microsoft/teamsfx-api";
 
 import { YargsCommand } from "../yargsCommand";
 import AppStudioTokenProvider from "../commonlib/appStudioLogin";
 import AzureTokenProvider from "../commonlib/azureLogin";
 import AzureTokenCIProvider from "../commonlib/azureLoginCI";
-import { signedIn } from "../commonlib/common/constant";
+import {
+  codeFlowLoginFormat,
+  loginComponent,
+  servicePrincipalLoginFormat,
+  signedIn,
+  usageError,
+} from "../commonlib/common/constant";
 import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { getColorizedString, setSubscriptionId, toLocaleLowerCase, toYargsOptions } from "../utils";
@@ -234,6 +240,15 @@ class AzureLogin extends YargsCommand {
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    if ((args["service-principal"] as any) === true) {
+      if (!args.username || !args.password || !args.tenant) {
+        throw new UserError(usageError, servicePrincipalLoginFormat, loginComponent);
+      }
+    } else {
+      if (args.username || args.password || args.tenant) {
+        throw new UserError(usageError, codeFlowLoginFormat, loginComponent);
+      }
+    }
     await AzureTokenProvider.signout();
     await outputAzureInfo(
       "login",

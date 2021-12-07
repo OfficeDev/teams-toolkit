@@ -260,6 +260,13 @@ async function appendSubscriptionAndResourceGroupNode(env: string): Promise<void
         commandId: `fx-extension.environment.subscription.${env}`,
         contextValue: "openSubscriptionInPortal",
         label: subscriptionInfo.subscriptionName ?? subscriptionInfo.subscriptionId,
+        description: subscriptionInfo.subscriptionId,
+        tooltip: {
+          isMarkdown: false,
+          value: `'${env}' environment is provisioned in Azure subscription '${
+            subscriptionInfo.subscriptionName ?? subscriptionInfo.subscriptionId
+          }'`,
+        },
         icon: "key",
         isCustom: false,
         parent: "fx-extension.environment." + env,

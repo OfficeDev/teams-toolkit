@@ -520,66 +520,40 @@ async function doGenerateArmTemplate(
   // Get bicep content from each resource plugin
   for (const plugin of plugins) {
     const pluginWithArm = plugin as NamedArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
-    // plugin not selected need to be update.
+    const pluginContext = getPluginContext(ctx, pluginWithArm.name);
+    let result: Result<ArmTemplateResult, FxError> = {};
+    let errMessage = "";
     if (
       pluginWithArm.updateArmTemplates &&
+      selectedPlugins.length != 0 &&
       !selectedPlugins.find((pluginItem) => pluginItem === pluginWithArm)
     ) {
-      const pluginContext = getPluginContext(ctx, pluginWithArm.name);
-      const result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<
+      result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,
         FxError
       >;
-      if (result.isOk()) {
-        generateArmFromResult(
-          result.value,
-          bicepOrchestrationTemplate,
-          pluginWithArm,
-          moduleProvisionFiles,
-          moduleConfigFiles
-        );
-      } else {
-        const msg = format(
-          getStrings().solution.UpdateArmTemplateFailNotice,
-          ctx.projectSettings?.appName
-        );
-        ctx.logProvider?.error(msg);
-        return result;
-      }
+      errMessage = getStrings().solution.UpdateArmTemplateFailNotice;
     } else if (pluginWithArm.generateArmTemplates) {
-      // find method using method name
-      const pluginContext = getPluginContext(ctx, pluginWithArm.name);
-      const result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
+      result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,
         FxError
       >;
-      if (result.isOk()) {
-        // Once plugins implement updateArmTemplate interface, these code need to be deleted.
-        if (
-          selectedPlugins.length != 0 &&
-          !selectedPlugins.find(({ name }) => name === pluginWithArm.name)
-        ) {
-          if (result.value.Configuration?.Orchestration)
-            delete result.value.Configuration?.Orchestration;
-          if (result.value.Provision?.Orchestration) delete result.value.Provision?.Orchestration;
-          if (result.value.Provision?.Modules) delete result.value.Provision?.Modules;
-          if (result.value.Parameters) delete result.value.Parameters;
-        }
-        generateArmFromResult(
-          result.value,
-          bicepOrchestrationTemplate,
-          pluginWithArm,
-          moduleProvisionFiles,
-          moduleConfigFiles
-        );
-      } else {
-        const msg = format(
-          getStrings().solution.GenerateArmTemplateFailNotice,
-          ctx.projectSettings?.appName
-        );
-        ctx.logProvider?.error(msg);
-        return result;
-      }
+      errMessage = getStrings().solution.GenerateArmTemplateFailNotice;
+    } else {
+      continue;
+    }
+    if (result.isOk()) {
+      generateArmFromResult(
+        result.value,
+        bicepOrchestrationTemplate,
+        pluginWithArm,
+        moduleProvisionFiles,
+        moduleConfigFiles
+      );
+    } else {
+      const msg = format(errMessage, ctx.projectSettings?.appName);
+      ctx.logProvider?.error(msg);
+      return result;
     }
   }
 

@@ -44,6 +44,15 @@ export class KeyVaultPlugin implements Plugin {
     );
   }
 
+  public async updateArmTemplates(ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> {
+    TelemetryUtils.init(ctx);
+    return this.runWithErrorHandling(
+      () => this.keyVaultPluginImpl.updateArmTemplates(ctx),
+      ctx,
+      Constants.Stage.updateArmTemplates
+    );
+  }
+
   private async runWithErrorHandling(
     fn: () => Promise<TeamsFxResult>,
     ctx: PluginContext,

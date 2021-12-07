@@ -1,5 +1,5 @@
 import { Core, FxError, Result, Void } from "..";
-import { Context, InputsWithProjectPath } from "../v2";
+import { InputsWithProjectPath } from "../v2";
 
 export interface CoreV3 extends Core {
   /**
@@ -12,8 +12,20 @@ export interface CoreV3 extends Core {
   /**
    * scaffold will be an independent stage
    */
-  scaffoldSourceCode: (
-    ctx: Context,
-    inputs: InputsWithProjectPath
-  ) => Promise<Result<Void, FxError>>;
+  scaffold: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+  /**
+   * A module is a connection between the local code and cloud resource for deployment stage.
+   * addModule only update project settings while add capability does more.
+   */
+  addModule: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+
+  /**
+   * addResource is separated from executeUserTask
+   */
+  addResource: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+
+  /**
+   * addCapability is separated from executeUserTask
+   */
+  addCapability: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
 }

@@ -117,7 +117,7 @@ export class SimpleAuthPluginImpl {
 
   public async updateArmTemplates(ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> {
     TelemetryUtils.init(ctx);
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartUpdateArmTemplates);
 
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
@@ -146,7 +146,7 @@ export class SimpleAuthPluginImpl {
       },
     };
 
-    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndUpdateArmTemplates);
     return ResultFactory.Success(result);
   }
 

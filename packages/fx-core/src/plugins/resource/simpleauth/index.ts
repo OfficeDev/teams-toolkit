@@ -72,7 +72,7 @@ export class SimpleAuthPlugin implements Plugin {
     return this.runWithSimpleAuthError(
       () => this.simpleAuthPluginImpl.updateArmTemplates(ctx),
       ctx,
-      Messages.EndGenerateArmTemplates.telemetry
+      Messages.EndUpdateArmTemplates.telemetry
     );
   }
 

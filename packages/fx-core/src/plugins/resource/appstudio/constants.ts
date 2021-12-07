@@ -45,6 +45,8 @@ export const DEFAULT_COLOR_PNG_FILENAME = "color.png";
 export const DEFAULT_OUTLINE_PNG_FILENAME = "outline.png";
 export const MANIFEST_RESOURCES = "resources";
 export const APP_PACKAGE_FOLDER_FOR_MULTI_ENV = "templates/appPackage";
+export const RETRY_INTERVAL = 30000;
+export const RETRY_MAX_TIMES = 6;
 /**
  * Config Keys that are useful for remote collaboration
  */

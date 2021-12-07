@@ -8,7 +8,7 @@ import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
 import { getAppStudioEndpoint } from "../../..";
-import { Constants, ErrorMessages } from "./constants";
+import { Constants, ErrorMessages, RETRY_INTERVAL, RETRY_MAX_TIMES } from "./constants";
 import { sleep } from "../spfx/utils/utils";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
@@ -126,7 +126,7 @@ export namespace AppStudioClient {
     const requester = createRequesterWithToken(appStudioToken);
     let retry = 0;
     let response = null;
-    while (response == null && retry < 10) {
+    while (response == null && retry < RETRY_MAX_TIMES) {
       try {
         response = await requester.get(`/api/appdefinitions/${teamsAppId}`);
         if (response && response.data) {
@@ -139,7 +139,7 @@ export namespace AppStudioClient {
         );
         retry++;
       }
-      await sleep(30000);
+      await sleep(RETRY_INTERVAL);
     }
     const errorMessage = `Cannot get the app definition with app ID ${teamsAppId}, after retry ${retry} times.`;
     await logProvider?.error(errorMessage);
@@ -190,7 +190,7 @@ export namespace AppStudioClient {
       }
       let retry = 0;
       let response = null;
-      while (response == null && retry < 10) {
+      while (response == null && retry < RETRY_MAX_TIMES) {
         try {
           response = await requester.post(
             `/api/appdefinitions/${teamsAppId}/override`,
@@ -202,13 +202,13 @@ export namespace AppStudioClient {
           }
         } catch (e: any) {
           logProvider?.warning(
-            `Cannot get the app definition with app ID ${teamsAppId}, due to status: ${e.response?.status}, ${e.name}: ${e.message}, retry: ${retry} times.`
+            `Update app definition: cannot get the app definition with app ID ${teamsAppId}, due to status: ${e.response?.status}, ${e.name}: ${e.message}, retry: ${retry} times.`
           );
           retry++;
         }
-        await sleep(30000);
+        await sleep(RETRY_INTERVAL);
       }
-      const errorMessage = `Cannot get the app definition with app ID ${teamsAppId}, after retry ${retry} times.`;
+      const errorMessage = `Update app definition: cannot get the app definition with app ID ${teamsAppId}, after retry ${retry} times.`;
       await logProvider?.error(errorMessage);
       throw new Error(errorMessage);
     }

@@ -17,6 +17,8 @@ import { login, LoginStatus } from "./common/login";
 import { clearAzureSP, loadAzureSP, saveAzureSP } from "./cacheAccess";
 import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
 import { isWorkspaceSupported } from "../utils";
+import CLILogProvider from "./log";
+import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
 
 /**
  * Prepare for service principal login, not fully implemented
@@ -52,7 +54,13 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     AzureAccountManager.clientId = clientId;
     AzureAccountManager.secret = secret;
     AzureAccountManager.tenantId = tenantId;
-    await saveAzureSP(clientId, secret, tenantId);
+    try {
+      await this.getAccountCredentialAsync();
+      await saveAzureSP(clientId, secret, tenantId);
+    } catch (error) {
+      CLILogProvider.necessaryLog(LLevel.Info, JSON.stringify(error));
+      throw error;
+    }
     return;
   }
 

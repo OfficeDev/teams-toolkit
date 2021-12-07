@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { Argv } from "yargs";
+import { Argv, Options } from "yargs";
 
 import { Colors, FxError, LogLevel, ok, Question, Result } from "@microsoft/teamsfx-api";
 
@@ -169,14 +169,46 @@ class AccountLogin extends YargsCommand {
   public readonly command = `${this.commandHead} <service>`;
   public readonly description = "Log in to the selected cloud service.";
 
+  public readonly subCommands: YargsCommand[] = [new M365Login(), new AzureLogin()];
+
+  public builder(yargs: Argv): Argv<any> {
+    this.subCommands.forEach((cmd) => {
+      yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
+    });
+
+    return yargs;
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    return ok(null);
+  }
+}
+
+class M365Login extends YargsCommand {
+  public readonly commandHead = `m365`;
+  public readonly command = `${this.commandHead}`;
+  public readonly description = "Log in to M365.";
+  public params: { [_: string]: Options } = {};
+
+  public builder(yargs: Argv): Argv<any> {
+    return yargs.options(this.params);
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    await AppStudioTokenProvider.signout();
+    await outputM365Info("login");
+    return ok(null);
+  }
+}
+
+class AzureLogin extends YargsCommand {
+  public readonly commandHead = `azure`;
+  public readonly command = `${this.commandHead}`;
+  public readonly description = "Log in to Azure.";
+  public params: { [_: string]: Options } = {};
+
   public builder(yargs: Argv): Argv<any> {
     return yargs
-      .positional("service", {
-        description: "Azure or M365",
-        type: "string",
-        choices: ["azure", "m365"],
-        coerce: toLocaleLowerCase,
-      })
       .options("tenant", {
         description: "Authenticate with a specific Azure Active Directory tenant.",
         type: "string",
@@ -195,31 +227,21 @@ class AccountLogin extends YargsCommand {
       })
       .options("password", {
         alias: "p",
-        description: "Client ID for service principal",
+        description: "Client ID or cert path for service principal",
         type: "string",
-        default: "Credentials like secret for a service principal",
+        default: "",
       });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    switch (args.service) {
-      case "azure": {
-        await AzureTokenProvider.signout();
-        await outputAzureInfo(
-          "login",
-          args.tenant,
-          args["service-principal"] as any,
-          args.username,
-          args.password
-        );
-        break;
-      }
-      case "m365": {
-        await AppStudioTokenProvider.signout();
-        await outputM365Info("login");
-        break;
-      }
-    }
+    await AzureTokenProvider.signout();
+    await outputAzureInfo(
+      "login",
+      args.tenant,
+      args["service-principal"] as any,
+      args.username,
+      args.password
+    );
     return ok(null);
   }
 }

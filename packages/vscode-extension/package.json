@@ -851,7 +851,7 @@
           {
             "id": "teamsToolkitCommands",
             "title": "Explore Teams Toolkit commands",
-            "description": "Open Command Palette (Ctrl+Shift+P) and type ‘Teams’ to find all relevant commands. Use [Command Line Interface (CLI)](https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli) to increase productivity\n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3Eteams%22%5D)",
+            "description": "Open Command Palette (Ctrl+Shift+P) and type 'Teams' to find all relevant commands. Use [Command Line Interface (CLI)](https://github.com/OfficeDev/TeamsFx/tree/main/packages/cli) to increase productivity\n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3Eteams%22%5D)",
             "media": {
               "svg": "media/step_commands.svg",
               "altText": "Display Teams Commands"

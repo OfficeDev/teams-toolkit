@@ -288,7 +288,7 @@ describe("v2 implementation for publish()", () => {
     const mockedEnvInfo: v2.EnvInfoV2 = {
       envName: "default",
       config: { manifest: { appName: { short: "test-app" } } },
-      state: { solution: {} },
+      state: { solution: { output: {}, secrets: {} } },
     };
 
     const solution = new TeamsAppSolutionV2();

@@ -66,7 +66,11 @@ const mockedProvider: TokenProvider = {
   graphTokenProvider: new MockGraphTokenProvider(),
   sharepointTokenProvider: new MockSharepointTokenProvider(),
 };
-const envInfo: EnvInfoV2 = { envName: "default", config: {}, state: { solution: {} } };
+const envInfo: EnvInfoV2 = {
+  envName: "default",
+  config: {},
+  state: { solution: { output: {}, secrets: {} } },
+};
 
 describe("getQuestionsForScaffolding()", async () => {
   const mocker = sinon.createSandbox();
@@ -147,10 +151,10 @@ describe("getQuestionsForScaffolding()", async () => {
       platform: Platform.VSCode,
       stage: Stage.deploy,
     };
-    envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = false;
+    envInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = false;
     const result1 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result1.isErr());
-    envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
+    envInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = true;
     const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result2.isOk());
     if (result2.isOk()) {
@@ -165,7 +169,7 @@ describe("getQuestionsForScaffolding()", async () => {
       platform: Platform.VSCode,
       stage: Stage.publish,
     };
-    envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = false;
+    envInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = false;
     const result1 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result1.isErr());
 
@@ -174,7 +178,7 @@ describe("getQuestionsForScaffolding()", async () => {
     const result11 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result11.isErr());
 
-    envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
+    envInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = true;
     const result2 = await getQuestions(mockedCtx, mockedInputs, envInfo, mockedProvider);
     assert.isTrue(result2.isOk());
     if (result2.isOk()) {

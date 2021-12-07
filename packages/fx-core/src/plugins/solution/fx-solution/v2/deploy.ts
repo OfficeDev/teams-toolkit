@@ -36,7 +36,9 @@ export async function deploy(
   tokenProvider: TokenProvider
 ): Promise<Result<Void, FxError>> {
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
-  const provisioned = provisionOutputs[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] as boolean;
+  const provisioned = provisionOutputs[GLOBAL_CONFIG]["output"][
+    SOLUTION_PROVISION_SUCCEEDED
+  ] as boolean;
 
   if (inAzureProject && !provisioned) {
     return err(
@@ -74,7 +76,7 @@ export async function deploy(
             ctx,
             {
               ...inputs,
-              ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]),
+              ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]["output"]),
               projectPath: inputs.projectPath!,
             },
             provisionOutputs,

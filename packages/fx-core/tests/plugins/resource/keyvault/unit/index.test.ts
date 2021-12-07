@@ -8,7 +8,11 @@ import * as path from "path";
 import { TestHelper } from "../helper";
 import * as fs from "fs-extra";
 import { PluginContext } from "@microsoft/teamsfx-api";
-import { ConstantString, mockSolutionGenerateArmTemplates } from "../../util";
+import {
+  ConstantString,
+  mockSolutionGenerateArmTemplates,
+  mockSolutionUpdateArmTemplates,
+} from "../../util";
 import { KeyVaultPlugin } from "../../../../../src";
 import { Constants } from "../../../../../src/plugins/resource/keyvault/constants";
 
@@ -72,6 +76,30 @@ describe("keyVaultPlugin", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(result.Provision!.Orchestration, orchestrationProvisionFile);
+    }
+  });
+
+  it("update arm templates", async function () {
+    // Act
+    const generateArmTemplatesResult = await keyVaultPlugin.updateArmTemplates(pluginContext);
+    // Assert
+    chai.assert.isTrue(generateArmTemplatesResult.isOk());
+    if (generateArmTemplatesResult.isOk()) {
+      const result = generateArmTemplatesResult.value;
+      chai.assert.exists(result.Provision!.Reference!.m365ClientSecretReference);
+      chai.assert.exists(result.Provision!.Reference!.botClientSecretReference);
+      chai.assert.notExists(result.Parameters);
+      chai.assert.notExists(result.Configuration);
+      chai.assert.notExists(result.Provision!.Modules);
+      chai.assert.notExists(result.Provision!.Orchestration);
+      chai.assert.strictEqual(
+        result.Provision!.Reference!.m365ClientSecretReference,
+        "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference"
+      );
+      chai.assert.strictEqual(
+        result.Provision!.Reference!.botClientSecretReference,
+        "provisionOutputs.keyVaultOutput.value.botClientSecretReference"
+      );
     }
   });
 });

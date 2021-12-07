@@ -10,7 +10,9 @@ import {
   returnSystemError,
   err,
   SolutionConfig,
+  SolutionSettings,
 } from "@microsoft/teamsfx-api";
+import { Context } from "@microsoft/teamsfx-api/build/v2/types";
 import axios from "axios";
 import { CollaborationState, CollaborationStateResult } from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
@@ -136,5 +138,34 @@ export class CollaborationUtil {
     return {
       state: CollaborationState.OK,
     };
+  }
+
+  private static getProjectSettings(ctx: SolutionContext | Context): SolutionSettings | undefined {
+    let solutionSettings;
+    if ("projectSettings" in ctx) {
+      solutionSettings = (ctx as SolutionContext).projectSettings?.solutionSettings;
+    } else {
+      solutionSettings = (ctx as Context).projectSetting.solutionSettings;
+    }
+
+    return solutionSettings;
+  }
+
+  static isSpfxProject(ctx: SolutionContext | Context): boolean {
+    const solutionSettings = this.getProjectSettings(ctx);
+    if (solutionSettings) {
+      const selectedPlugins = solutionSettings.activeResourcePlugins;
+      return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
+    }
+    return false;
+  }
+
+  static AadResourcePluginsActivated(ctx: SolutionContext | Context): boolean {
+    const solutionSettings = this.getProjectSettings(ctx);
+    if (solutionSettings) {
+      const selectedPlugins = solutionSettings.activeResourcePlugins;
+      return selectedPlugins && selectedPlugins.indexOf("fx-resource-aad-app-for-teams") !== -1;
+    }
+    return false;
   }
 }

@@ -15,5 +15,5 @@ export interface Func extends FunctionRouter
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [params?](./teamsfx-api.func.params.md) | unknown | <i>(Optional)</i> |
+|  [params?](./teamsfx-api.func.params.md) | any | <i>(Optional)</i> |
 

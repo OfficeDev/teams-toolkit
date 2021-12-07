@@ -239,7 +239,7 @@
         },
         {
           "command": "fx-extension.listCollaborator",
-          "when": "view == teamsfx-environment && viewItem =~ /azure-environment/",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         },
         {
@@ -254,7 +254,7 @@
         },
         {
           "command": "fx-extension.grantPermission",
-          "when": "view == teamsfx-environment && viewItem =~ /azure-environment/",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         }
       ],
@@ -543,12 +543,12 @@
       },
       {
         "command": "fx-extension.preview",
-        "title": "Preview",
+        "title": "Preview App",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.previewWithIcon",
-        "title": "Preview",
+        "title": "Preview App",
         "icon": "$(run)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },

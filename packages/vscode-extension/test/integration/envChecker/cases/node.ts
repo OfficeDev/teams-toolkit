@@ -8,11 +8,10 @@ import { DepsChecker } from "../../../../src/debug/depsChecker/checker";
 import { TestAdapter } from "../adapters/testAdapter";
 import { TestLogger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
-import { isLinux } from "../../../../src/utils/commonUtils";
 import { AzureNodeChecker } from "../../../../src/debug/depsChecker/azureNodeChecker";
 
-const azureSupportedNodeVersions = ["10", "12", "14"];
+const functionsSupportedNodeVersions = ["10", "12", "14"];
+const azureSupportedNodeVersions = ["10", "12", "14", "16"];
 
 function createTestChecker(
   hasTeamsfxBackend: boolean,
@@ -38,11 +37,23 @@ function createTestChecker(
 suite("NodeChecker E2E Test", async () => {
   test("Node supported version is installed", async function (this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
-    if (!(nodeVersion != null && azureSupportedNodeVersions.includes(nodeVersion))) {
+    if (!(nodeVersion != null && functionsSupportedNodeVersions.includes(nodeVersion))) {
       this.skip();
     }
 
     const [checker, _] = createTestChecker(true);
+
+    const shouldContinue = await checker.resolve();
+    chai.assert.isTrue(shouldContinue);
+  });
+
+  test("Node supported version is installed for tab-only projects", async function (this: Mocha.Context) {
+    const nodeVersion = await nodeUtils.getNodeVersion();
+    if (!(nodeVersion != null && azureSupportedNodeVersions.includes(nodeVersion))) {
+      this.skip();
+    }
+
+    const [checker, _] = createTestChecker(false);
 
     const shouldContinue = await checker.resolve();
     chai.assert.isTrue(shouldContinue);
@@ -61,7 +72,7 @@ suite("NodeChecker E2E Test", async () => {
 
   test("Node unsupported version is installed, and the user clicks continue", async function (this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
-    if (!(nodeVersion != null && !azureSupportedNodeVersions.includes(nodeVersion))) {
+    if (!(nodeVersion != null && !functionsSupportedNodeVersions.includes(nodeVersion))) {
       this.skip();
     }
 
@@ -73,7 +84,7 @@ suite("NodeChecker E2E Test", async () => {
 
   test("Node unsupported version is installed, and the user clicks cancel", async function (this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
-    if (!(nodeVersion != null && !azureSupportedNodeVersions.includes(nodeVersion))) {
+    if (!(nodeVersion != null && !functionsSupportedNodeVersions.includes(nodeVersion))) {
       this.skip();
     }
 

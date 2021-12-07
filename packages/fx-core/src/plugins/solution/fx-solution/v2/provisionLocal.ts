@@ -12,9 +12,11 @@ import {
 } from "@microsoft/teamsfx-api";
 import { executeConcurrently } from "./executor";
 import {
+  checkWhetherLocalDebugM365TenantMatches,
   ensurePermissionRequest,
   getAzureSolutionSettings,
   getSelectedPlugins,
+  isAzureProject,
   loadTeamsAppTenantIdForLocal,
 } from "./utils";
 import { PluginNames, SolutionError, SolutionSource } from "../constants";
@@ -23,6 +25,8 @@ import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
+import { isMultiEnvEnabled } from "../../../../common/tools";
+import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 
 export async function provisionLocalResource(
   ctx: v2.Context,
@@ -40,21 +44,34 @@ export async function provisionLocalResource(
     );
   }
   const azureSolutionSettings = getAzureSolutionSettings(ctx);
-  if (ctx.permissionRequestProvider === undefined) {
-    ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
-  }
-  const result = await ensurePermissionRequest(
-    azureSolutionSettings,
-    ctx.permissionRequestProvider
-  );
-  if (result.isErr()) {
-    return new v2.FxFailure(result.error);
+  if (isAzureProject(azureSolutionSettings)) {
+    if (ctx.permissionRequestProvider === undefined) {
+      ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
+    }
+    const result = await ensurePermissionRequest(
+      azureSolutionSettings,
+      ctx.permissionRequestProvider
+    );
+    if (result.isErr()) {
+      return new v2.FxFailure(result.error);
+    }
   }
 
   // Just to trigger M365 login before the concurrent execution of localDebug.
   // Because concurrent execution of localDebug may getAccessToken() concurrently, which
   // causes 2 M365 logins before the token caching in common lib takes effect.
   await tokenProvider.appStudioToken.getAccessToken();
+
+  // Pop-up window to confirm if local debug in another tenant
+  const localDebugTenantId = localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId];
+
+  const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
+    localDebugTenantId,
+    tokenProvider.appStudioToken
+  );
+  if (m365TenantMatches.isErr()) {
+    return new v2.FxFailure(m365TenantMatches.error);
+  }
 
   const plugins: v2.ResourcePlugin[] = getSelectedPlugins(azureSolutionSettings);
   const provisionLocalResourceThunks = plugins
@@ -74,30 +91,32 @@ export async function provisionLocalResource(
   }
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
-  if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
-    const result = await aadPlugin.executeUserTask(
-      ctx,
-      inputs,
-      {
-        namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-        method: "setApplicationInContext",
-        params: { isLocal: true },
-      },
-      localSettings,
-      { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} },
-      tokenProvider
-    );
-    if (result.isErr()) {
-      return new v2.FxPartialSuccess(localSettings, result.error);
+  if (isAzureProject(azureSolutionSettings)) {
+    if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
+      const result = await aadPlugin.executeUserTask(
+        ctx,
+        inputs,
+        {
+          namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+          method: "setApplicationInContext",
+          params: { isLocal: true },
+        },
+        localSettings,
+        { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} },
+        tokenProvider
+      );
+      if (result.isErr()) {
+        return new v2.FxPartialSuccess(localSettings, result.error);
+      }
+    } else {
+      return new v2.FxFailure(
+        returnSystemError(
+          new Error("AAD plugin not selected or executeUserTask is undefined"),
+          SolutionSource,
+          SolutionError.InternelError
+        )
+      );
     }
-  } else {
-    return new v2.FxFailure(
-      returnSystemError(
-        new Error("AAD plugin not selected or executeUserTask is undefined"),
-        SolutionSource,
-        SolutionError.InternelError
-      )
-    );
   }
 
   const parseTenantIdresult = loadTeamsAppTenantIdForLocal(

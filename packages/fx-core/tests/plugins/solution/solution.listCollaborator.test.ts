@@ -25,7 +25,10 @@ import {
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../../../src/plugins/solution/fx-solution/constants";
-import { HostTypeOptionAzure } from "../../../src/plugins/solution/fx-solution/question";
+import {
+  HostTypeOptionAzure,
+  HostTypeOptionSPFx,
+} from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
 import sinon from "sinon";
 import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
@@ -221,6 +224,14 @@ describe("listCollaborator() for Teamsfx projects", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
+        activeResourcePlugins: [
+          "fx-resource-frontend-hosting",
+          "fx-resource-identity",
+          "fx-resource-aad-app-for-teams",
+          "fx-resource-local-debug",
+          "fx-resource-appstudio",
+          "fx-resource-simple-auth",
+        ],
       },
     };
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
@@ -270,6 +281,62 @@ describe("listCollaborator() for Teamsfx projects", () => {
     expect(result.value.collaborators![0].userObjectId).equal("fake-user-object-id");
     expect(result.value.collaborators![0].userPrincipalName).equal("fake-user-principal-name");
     expect(result.value.collaborators![0].aadResourceId).equal("fake-aad-resource-id");
+    expect(result.value.collaborators![0].teamsAppResourceId).equal("fake-teams-app-resource-id");
+  });
+
+  it("happy path without aad", async () => {
+    const solution = new TeamsAppSolution();
+    const mockedCtx = mockSolutionContext();
+
+    mockedCtx.projectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionSPFx.id,
+        name: "SPFx",
+        version: "1.0",
+        activeResourcePlugins: [
+          "fx-resource-spfx",
+          "fx-resource-local-debug",
+          "fx-resource-appstudio",
+        ],
+      },
+    };
+    mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+
+    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
+      tid: mockProjectTenantId,
+      oid: "fake_oid",
+      unique_name: "fake_unique_name",
+      name: "fake_name",
+    });
+
+    appStudioPlugin.listCollaborator = async function (
+      _ctx: PluginContext
+    ): Promise<Result<any, FxError>> {
+      return ok([
+        {
+          userObjectId: "fake-user-object-id",
+          displayName: "fake-display-name",
+          userPrincipalName: "fake-user-principal-name",
+          resourceId: "fake-teams-app-resource-id",
+        },
+      ]);
+    };
+    mockedCtx.envInfo.state
+      .get(PluginNames.SOLUTION)
+      ?.set(REMOTE_TEAMS_APP_TENANT_ID, mockProjectTenantId);
+
+    const result = await solution.listCollaborator(mockedCtx);
+    if (result.isErr()) {
+      chai.assert.fail("result is error");
+    }
+    console.log(result.value.collaborators);
+    expect(result.value.collaborators!.length).equal(1);
+    expect(result.value.collaborators![0].isAadOwner).equal(false);
+    expect(result.value.collaborators![0].userObjectId).equal("fake-user-object-id");
+    expect(result.value.collaborators![0].userPrincipalName).equal("fake-user-principal-name");
+    expect(result.value.collaborators![0].aadResourceId).equal(undefined);
     expect(result.value.collaborators![0].teamsAppResourceId).equal("fake-teams-app-resource-id");
   });
 });

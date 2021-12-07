@@ -9,17 +9,15 @@ Constructs a new instance of the `UserError` class
 <b>Signature:</b>
 
 ```typescript
-constructor(name: string, message: string, source: string, stack?: string, helpLink?: string, innerError?: any);
+constructor(error: Error, source?: string, name?: string, helpLink?: string);
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  name | string |  |
-|  message | string |  |
+|  error | Error |  |
 |  source | string |  |
-|  stack | string |  |
+|  name | string |  |
 |  helpLink | string |  |
-|  innerError | any |  |
 

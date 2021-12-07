@@ -185,7 +185,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       sendTelemetryErrorEvent(
         Component.core,
         TelemetryEvent.ProjectMigratorError,
-        assembleError(err, CoreSource)
+        assembleError(error, CoreSource)
       );
       throw error;
     }

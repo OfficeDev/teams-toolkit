@@ -70,6 +70,10 @@ export class Messages {
   public static readonly SuccessfullyGenerateArmTemplatesBot =
     "Successfully generating ARM templates of bot.";
 
+  public static readonly UpdatingArmTemplatesBot = "Updating ARM templates of bot.";
+  public static readonly SuccessfullyUpdateArmTemplatesBot =
+    "Successfully updating ARM templates of bot.";
+
   public static readonly SuccessfullyGetExistingBotAadAppCredential =
     "Successfully get existing bot AAD app credential.";
   public static readonly SuccessfullyCreatedBotAadApp = "Successfully created bot AAD app.";

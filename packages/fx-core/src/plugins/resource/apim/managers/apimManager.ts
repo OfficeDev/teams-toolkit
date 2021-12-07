@@ -207,6 +207,28 @@ export class ApimManager {
     await apimService.addApiToProduct(resourceGroupName, apimServiceName, productId, apiId);
   }
 
+  public async updateArmTemplates(): Promise<ArmTemplateResult> {
+    const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
+
+    const result: ArmTemplateResult = {
+      Provision: {
+        Reference: {
+          serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
+        },
+      },
+      Configuration: {
+        Modules: {
+          apim: await fs.readFile(
+            path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
+            ConstantString.UTF8Encoding
+          ),
+        },
+      },
+    };
+
+    return result;
+  }
+
   public async generateArmTemplates(): Promise<ArmTemplateResult> {
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
 

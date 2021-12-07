@@ -130,6 +130,10 @@ import {
 import { flattenConfigJson, newEnvInfo } from "./tools";
 import { LocalCrypto } from "./crypto";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
+// TODO: For package.json,
+// use require instead of import because of core building/packaging method.
+// Using import will cause the build folder structure to change.
+const corePackage = require("../../package.json");
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -168,6 +172,7 @@ export let TOOLS: Tools;
 export class FxCore implements Core {
   tools: Tools;
   isFromSample?: boolean;
+  settingsVersion?: string;
 
   constructor(tools: Tools) {
     this.tools = tools;
@@ -245,6 +250,7 @@ export class FxCore implements Core {
       if (basicFolderRes.isErr()) {
         return err(basicFolderRes.error);
       }
+
       const projectSettings: ProjectSettings = {
         appName: appName,
         projectId: inputs.projectId ? inputs.projectId : uuid.v4(),
@@ -1545,7 +1551,7 @@ export function undefinedName(objs: any[], names: string[]) {
 }
 
 export function getProjectSettingsVersion() {
-  if (isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false)) return "2.0.0";
+  if (isMultiEnvEnabled()) return "2.0.0";
   else return "1.0.0";
 }
 

@@ -94,7 +94,11 @@ describe("simpleAuthPlugin", () => {
 
   it("generate arm templates: only simple auth plugin", async function () {
     const activeResourcePlugins = [Constants.AadAppPlugin.id, Constants.SimpleAuthPlugin.id];
-    await testGenerateArmTemplates(activeResourcePlugins, "simpleAuthConfig.result.bicep");
+    await testGenerateArmTemplates(
+      activeResourcePlugins,
+      "simpleAuthConfig.result.bicep",
+      "config.result.bicep"
+    );
   });
 
   it("generate arm templates: simple auth plugin + key vault plugin", async function () {
@@ -106,6 +110,7 @@ describe("simpleAuthPlugin", () => {
     await testGenerateArmTemplates(
       activeResourcePlugins,
       "simpleAuthConfigWithKeyVaultPlugin.result.bicep",
+      "configWithKeyVaultPlugin.result.bicep",
       {
         "fx-resource-key-vault": {
           References: {
@@ -120,6 +125,7 @@ describe("simpleAuthPlugin", () => {
   async function testGenerateArmTemplates(
     activeResourcePlugins: string[],
     testConfigurationModuleFileName: string,
+    testConfigurationFileName: string,
     addtionalPluginOutput: any = {}
   ): Promise<void> {
     // Act
@@ -145,7 +151,7 @@ describe("simpleAuthPlugin", () => {
         },
         Configuration: {
           simpleAuth: {
-            ConfigPath: `./simpleAuthConfig.result.bicep`,
+            ConfigPath: `./${testConfigurationModuleFileName}`,
           },
         },
       },
@@ -192,7 +198,10 @@ describe("simpleAuthPlugin", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(expectedResult.Provision!.Orchestration, orchestrationProvisionFile);
-      const expectedConfigFilePath = path.join(expectedBicepFileDirectory, "config.result.bicep");
+      const expectedConfigFilePath = path.join(
+        expectedBicepFileDirectory,
+        testConfigurationFileName
+      );
 
       const OrchestrationConfigFile = await fs.readFile(
         expectedConfigFilePath,

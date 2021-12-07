@@ -118,7 +118,7 @@ export class BotPluginV2 implements ResourcePlugin {
     ctx: Context,
     inputs: DeploymentInputs,
     provisionOutput: Json,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }

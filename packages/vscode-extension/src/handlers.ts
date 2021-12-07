@@ -373,10 +373,8 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<any,
     getTriggerFromProperty(args)
   );
   const result = await runCommand(Stage.migrateV1);
-  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
-  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.default", false);
   if (result.isOk()) {
-    commands.executeCommand("vscode.openFolder", result.value);
+    commands.executeCommand("workbench.action.reloadWindow", result.value);
   }
   return result;
 }
@@ -1563,7 +1561,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
     const disposables = await TreeViewManagerInstance.registerEmptyProjectTreeViews();
     context.subscriptions.push(...disposables);
   } else {
-    const disposables = await TreeViewManagerInstance.registerTreeViews();
+    const disposables = await TreeViewManagerInstance.registerTreeViews(getWorkspacePath());
     context.subscriptions.push(...disposables);
   }
 

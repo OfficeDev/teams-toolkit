@@ -346,6 +346,43 @@ class MockedTokenCredentials extends TokenCredentialsBase {
   }
 }
 
+export class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
+  async getAccessToken(showDialog?: boolean): Promise<string> {
+    return "someFakeToken";
+  }
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    return {
+      tid: "222",
+    };
+  }
+  signout(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeCallback(
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  removeStatusChangeMap(name: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+}
+
 export class MockedGraphTokenProvider implements GraphTokenProvider {
   async getAccessToken(showDialog?: boolean): Promise<string> {
     return "some token";

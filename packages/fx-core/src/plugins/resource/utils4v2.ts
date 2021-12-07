@@ -244,13 +244,17 @@ export async function deployAdapter(
   ctx: Context,
   inputs: DeploymentInputs,
   provisionOutput: Json,
-  tokenProvider: AzureAccountProvider,
+  tokenProvider: TokenProvider,
   plugin: Plugin
 ): Promise<Result<Void, FxError>> {
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   setEnvInfoV1ByStateV2(plugin.name, pluginContext, provisionOutput);
-  pluginContext.azureAccountProvider = tokenProvider;
+  pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+  pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+  pluginContext.sharepointTokenProvider = tokenProvider.sharepointTokenProvider;
+
   if (plugin.preDeploy) {
     const preRes = await plugin.preDeploy(pluginContext);
     if (preRes.isErr()) {

@@ -130,6 +130,7 @@ import {
 import { flattenConfigJson, newEnvInfo } from "./tools";
 import { LocalCrypto } from "./crypto";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
+import { merge } from "lodash";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -509,14 +510,10 @@ export class FxCore implements Core {
         this.tools.tokenProvider
       );
       if (result.kind === "success") {
-        // Remove all "output" and "secret" fields for backward compatibility.
-        // todo(yefuwang): handle "output" and "secret" fields in middlewares.
-        const state = flattenConfigJson(result.output);
-        ctx.envInfoV2.state = { ...ctx.envInfoV2.state, ...state };
+        ctx.envInfoV2.state = merge(ctx.envInfoV2.state, result.output);
         return ok(Void);
       } else if (result.kind === "partialSuccess") {
-        const state = flattenConfigJson(result.output);
-        ctx.envInfoV2.state = { ...ctx.envInfoV2.state, ...state };
+        ctx.envInfoV2.state = merge(ctx.envInfoV2.state, result.output);
         return err(result.error);
       } else {
         return err(result.error);
@@ -568,7 +565,7 @@ export class FxCore implements Core {
           ctx.contextV2,
           inputs,
           ctx.envInfoV2.state,
-          this.tools.tokenProvider.azureAccountProvider
+          this.tools.tokenProvider
         );
       else return ok(Void);
     } else {

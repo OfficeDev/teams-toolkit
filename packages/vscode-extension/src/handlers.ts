@@ -390,7 +390,8 @@ export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, 
 
 export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewLocalDebug);
-  await vscode.commands.executeCommand("workbench.action.quickOpen", "debug Debug");
+  await vscode.commands.executeCommand("workbench.action.quickOpen", "debug ");
+
   return ok(null);
 }
 

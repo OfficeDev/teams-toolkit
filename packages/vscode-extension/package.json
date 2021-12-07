@@ -543,12 +543,12 @@
       },
       {
         "command": "fx-extension.preview",
-        "title": "Preview",
+        "title": "Preview App",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.previewWithIcon",
-        "title": "Preview",
+        "title": "Preview App",
         "icon": "$(run)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },

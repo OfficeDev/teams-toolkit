@@ -40,6 +40,7 @@
     "out/**/*"
   ],
   "activationEvents": [
+    "*",
     "onCommand:fx-extension.openWelcome",
     "onCommand:fx-extension.openSamples",
     "onCommand:fx-extension.openDocument",
@@ -81,7 +82,7 @@
     "viewsWelcome": [
       {
         "view": "teamsfx-empty-project",
-        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Walk Through](command:workbench.action.openWalkthrough?%5B%22TeamsDevApp.ms-teams-vscode-extension%23teamsToolkitWelcome%22%5D) or [Quick Start](command:fx-extension.openWelcome) or [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
+        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Walk Through](command:workbench.action.openWalkthrough?%5B%22TeamsDevApp.ms-teams-vscode-extension%23teamsToolkitWelcome%22%5D) or [Quick Start](command:fx-extension.openWelcome) or [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\n[After Create Tab](command:workbench.action.openWalkthrough?%5B%22TeamsDevApp.ms-teams-vscode-extension%23teamsToolkitTryTab%22%5D)"
       },
       {
         "view": "teamsfx-empty-project-and-check-upgrade",
@@ -911,11 +912,21 @@
         "id": "teamsToolkitTryTab",
         "title": "Teams App: Try Tab App",
         "description": "Try your Teams Tab app development experience",
+        "when": "false",
         "steps": [
+          {
+            "id": "tryTabVisitTreeView",
+            "title": "View Teams Toolkit Tree View",
+            "description": "View Teams Toolkit Tree View.\n[View Teams Toolkit Tree View](command:workbench.view.extension.teamsfx)",
+            "media": {
+              "svg": "media/learn.svg",
+              "altText": "Watch"
+            }
+          },
           {
             "id": "tryTabLocalDebug",
             "title": "Run Local Debug",
-            "description": "Preview your first Teams app by running local debug.\n[Local Debug](command:toSide:workbench.action.debug.selectandstart)",
+            "description": "Preview your first Teams app by running local debug.\n[Local Debug](command:workbench.action.debug.selectandstart)",
             "media": {
               "svg": "media/learn.svg",
               "altText": "Watch"

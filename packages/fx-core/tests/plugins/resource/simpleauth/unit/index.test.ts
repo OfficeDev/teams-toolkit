@@ -145,11 +145,11 @@ describe("simpleAuthPlugin", () => {
         },
         Configuration: {
           simpleAuth: {
-            ConfigPath: `./${testConfigurationModuleFileName}`,
+            ConfigPath: `./simpleAuthConfig.result.bicep`,
           },
         },
       },
-    }
+    };
     const mockedSolutionDataContext = {
       Plugins: activeResourcePlugins,
       PluginOutput: { ...simpleAuthOutput, ...addtionalPluginOutput },

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { Func, FxError, Inputs, Result, Void } from "..";
 import { InputsWithProjectPath } from "../v2";
 

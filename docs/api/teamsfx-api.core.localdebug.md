@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-localDebug: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+localDebug: (inputs: Inputs) => Promise<Result<Void, FxError>>;
 ```

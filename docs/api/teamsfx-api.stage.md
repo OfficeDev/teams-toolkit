@@ -14,14 +14,26 @@ export declare enum Stage
 
 |  Member | Value | Description |
 |  --- | --- | --- |
+|  activateEnv | <code>&quot;activateEnv&quot;</code> |  |
 |  build | <code>&quot;build&quot;</code> |  |
+|  checkPermission | <code>&quot;checkPermission&quot;</code> |  |
 |  create | <code>&quot;create&quot;</code> |  |
 |  createEnv | <code>&quot;createEnv&quot;</code> |  |
 |  debug | <code>&quot;debug&quot;</code> |  |
 |  deploy | <code>&quot;deploy&quot;</code> |  |
+|  getProjectConfig | <code>&quot;getProjectConfig&quot;</code> |  |
+|  getQuestions | <code>&quot;getQuestions&quot;</code> |  |
+|  grantPermission | <code>&quot;grantPermission&quot;</code> |  |
+|  init | <code>&quot;init&quot;</code> |  |
+|  listAllCollaborators | <code>&quot;listAllCollaborators&quot;</code> |  |
+|  listCollaborator | <code>&quot;listCollaborator&quot;</code> |  |
+|  listEnv | <code>&quot;listEnv&quot;</code> |  |
+|  migrateV1 | <code>&quot;migrateV1&quot;</code> |  |
+|  package | <code>&quot;package&quot;</code> |  |
 |  provision | <code>&quot;provision&quot;</code> |  |
 |  publish | <code>&quot;publish&quot;</code> |  |
 |  removeEnv | <code>&quot;removeEnv&quot;</code> |  |
+|  scaffold | <code>&quot;scaffold&quot;</code> |  |
 |  switchEnv | <code>&quot;switchEnv&quot;</code> |  |
 |  update | <code>&quot;update&quot;</code> |  |
 |  userTask | <code>&quot;userTask&quot;</code> |  |

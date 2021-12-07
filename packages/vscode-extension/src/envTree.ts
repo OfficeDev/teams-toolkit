@@ -79,12 +79,6 @@ export async function registerEnvTreeHandler(
         if (isLocal) {
           contextValue = "local";
         } else {
-          if (await isSPFxProject(workspacePath)) {
-            contextValue = "spfx-" + contextValue;
-          } else {
-            contextValue = "azure-" + contextValue;
-          }
-
           if (provisionSucceeded) {
             contextValue = contextValue + "-provisioned";
           }

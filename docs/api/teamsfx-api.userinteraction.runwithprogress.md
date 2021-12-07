@@ -17,7 +17,7 @@ runWithProgress<T>(task: RunnableTask<T>, config: TaskConfig, ...args: any): Pro
 |  Parameter | Type | Description |
 |  --- | --- | --- |
 |  task | [RunnableTask](./teamsfx-api.runnabletask.md)<!-- -->&lt;T&gt; | a runnable task with progress definition |
-|  config | [TaskConfig](./teamsfx-api.taskconfig.md) | task running confiuration |
+|  config | [TaskConfig](./teamsfx-api.taskconfig.md) | task running configuration |
 |  args | any | args for task run() API |
 
 <b>Returns:</b>

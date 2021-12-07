@@ -20,7 +20,9 @@ describe("Permission Command Tests", function () {
   let telemetryEvents: string[] = [];
   let registeredCommands: string[] = [];
 
-  before(() => {
+  beforeEach(() => {
+    telemetryEvents = [];
+    registeredCommands = [];
     sandbox
       .stub<any, any>(yargs, "command")
       .callsFake((command: string, description: string, builder: any, handler: any) => {
@@ -33,6 +35,7 @@ describe("Permission Command Tests", function () {
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });
+
     sandbox.stub(CliTelemetry, "sendTelemetryEvent").callsFake((eventName: string) => {
       telemetryEvents.push(eventName);
     });
@@ -41,6 +44,7 @@ describe("Permission Command Tests", function () {
       .callsFake((eventName: string, error: FxError) => {
         telemetryEvents.push(eventName);
       });
+
     sandbox.stub(FxCore.prototype, "checkPermission").callsFake(async (inputs: Inputs) => {
       if (inputs.projectPath?.includes("real")) return ok("");
       else return err(NotSupportedProjectType());
@@ -52,13 +56,8 @@ describe("Permission Command Tests", function () {
     sandbox.stub(Utils, "isRemoteCollaborationEnabled").returns(true);
   });
 
-  after(() => {
+  afterEach(() => {
     sandbox.restore();
-  });
-
-  beforeEach(() => {
-    telemetryEvents = [];
-    registeredCommands = [];
   });
 
   it("Permission - Configs", () => {
@@ -72,6 +71,8 @@ describe("Permission Command Tests", function () {
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
     };
+    sandbox.stub(Utils, "isSpfxProject").resolves(ok(false));
+
     await cmd.handler(args);
     expect(telemetryEvents).deep.equals([
       TelemetryEvent.CheckPermissionStart,
@@ -81,6 +82,34 @@ describe("Permission Command Tests", function () {
 
   it("Permission Grant - Happy Path", async () => {
     const cmd = new PermissionGrant();
+    sandbox.stub(Utils, "isSpfxProject").resolves(ok(false));
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+      [constants.CollaboratorEmailNode.data.name as string]: "email",
+    };
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.GrantPermissionStart,
+      TelemetryEvent.GrantPermission,
+    ]);
+  });
+
+  it("Permission Status SPFX - Happy Path", async () => {
+    const cmd = new PermissionStatus();
+    const args = {
+      [constants.RootFolderNode.data.name as string]: "real",
+    };
+    sandbox.stub(Utils, "isSpfxProject").resolves(ok(true));
+    await cmd.handler(args);
+    expect(telemetryEvents).deep.equals([
+      TelemetryEvent.CheckPermissionStart,
+      TelemetryEvent.CheckPermission,
+    ]);
+  });
+
+  it("Permission Grant SPFX - Happy Path", async () => {
+    const cmd = new PermissionGrant();
+    sandbox.stub(Utils, "isSpfxProject").resolves(ok(true));
     const args = {
       [constants.RootFolderNode.data.name as string]: "real",
       [constants.CollaboratorEmailNode.data.name as string]: "email",

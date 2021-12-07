@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-provisionResources: (systemInputs: Inputs) => Promise<Result<Void, FxError>>;
+provisionResources: (inputs: Inputs) => Promise<Result<Void, FxError>>;
 ```

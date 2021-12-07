@@ -244,6 +244,19 @@ export class SqlPluginImpl {
     return ok(undefined);
   }
 
+  public async updateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
+    const result: ArmTemplateResult = {
+      Provision: {
+        Reference: {
+          sqlResourceId: AzureSqlBicep.sqlResourceId,
+          sqlEndpoint: AzureSqlBicep.sqlEndpoint,
+          databaseName: AzureSqlBicep.databaseName,
+        },
+      },
+    };
+    return ok(result);
+  }
+
   public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),

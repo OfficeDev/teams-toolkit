@@ -7,7 +7,7 @@
 <b>Signature:</b>
 
 ```typescript
-export declare function traverse(root: QTreeNode, inputs: Inputs, ui: UserInteraction): Promise<Result<Void, FxError>>;
+export declare function traverse(root: QTreeNode, inputs: Inputs, ui: UserInteraction, telemetryReporter?: TelemetryReporter): Promise<Result<Void, FxError>>;
 ```
 
 ## Parameters
@@ -17,6 +17,7 @@ export declare function traverse(root: QTreeNode, inputs: Inputs, ui: UserIntera
 |  root | [QTreeNode](./teamsfx-api.qtreenode.md) |  |
 |  inputs | [Inputs](./teamsfx-api.inputs.md) |  |
 |  ui | [UserInteraction](./teamsfx-api.userinteraction.md) |  |
+|  telemetryReporter | [TelemetryReporter](./teamsfx-api.telemetryreporter.md) |  |
 
 <b>Returns:</b>
 

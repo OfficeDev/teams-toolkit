@@ -4,7 +4,7 @@
 
 ## UserInteraction.showMessage() method
 
-Show an information/warnning/error message to users. Optionally provide an array of items which will be presented as clickable buttons.
+Show an information/warning/error message to users. Optionally provide an array of items which will be presented as clickable buttons.
 
 <b>Signature:</b>
 

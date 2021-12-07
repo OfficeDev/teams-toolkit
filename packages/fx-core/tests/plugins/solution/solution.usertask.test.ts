@@ -357,7 +357,7 @@ describe("V2 implementation", () => {
     );
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
-    expect(result._unsafeUnwrapErr().message).contains("SQL/APIM is already added");
+    expect(result._unsafeUnwrapErr().message).contains("SQL/APIM/KeyVault is already added");
   });
 
   it("should return ok when adding SQL resource to a project without SQL", async () => {

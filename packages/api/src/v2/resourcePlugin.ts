@@ -91,7 +91,10 @@ export interface ResourcePlugin {
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<ResourceTemplate, FxError>>;
-
+  updateResourceTemplate?: (
+    ctx: Context,
+    inputs: Inputs
+  ) => Promise<Result<ResourceTemplate, FxError>>;
   /**
    * provisionResource() runs before ARM/Bicep provision when Provision command is called.
    * There are two reasons why a resource needs to implement this method:

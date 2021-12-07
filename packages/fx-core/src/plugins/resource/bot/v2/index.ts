@@ -34,10 +34,10 @@ import {
   deployAdapter,
   executeUserTaskAdapter,
   generateResourceTemplateAdapter,
-  getQuestionsForScaffoldingAdapter,
   provisionLocalResourceAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
+  updateResourceTemplateAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.BotPlugin)
@@ -60,6 +60,12 @@ export class BotPluginV2 implements ResourcePlugin {
     inputs: Inputs
   ): Promise<Result<ResourceTemplate, FxError>> {
     return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
+  }
+  async updateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return await updateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
   async provisionResource(
     ctx: Context,

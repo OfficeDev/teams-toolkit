@@ -44,6 +44,7 @@ import { WebResourceLike, HttpHeaders } from "@azure/ms-rest-js";
 import {
   mockedFehostScaffoldArmResult,
   mockedSimpleAuthScaffoldArmResult,
+  mockedSimpleAuthUpdateArmResult,
   mockedAadScaffoldArmResult,
   mockedBotArmTemplateResultFunc,
   MockedUserInteraction,
@@ -184,8 +185,8 @@ describe("Generate ARM Template for project", () => {
 
     const projectArmTemplateFolder = path.join(testFolder, templateFolder);
     const projectArmParameterFolder = path.join(testFolder, configFolderName);
-    const projectArmBaseFolder = path.join(testFolder, baseFolder);
-    const result = await generateArmTemplate(mockedCtx);
+    const selectedPlugins: Plugin[] = [aadPlugin, simpleAuthPlugin, fehostPlugin];
+    const result = await generateArmTemplate(mockedCtx, selectedPlugins);
     expect(result.isOk()).to.be.true;
     expect(
       await fs.readFile(path.join(projectArmTemplateFolder, "../main.bicep"), fileEncoding)
@@ -267,6 +268,11 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
 
     mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
       const res: ArmTemplateResult = mockedSimpleAuthScaffoldArmResult();
+      return ok(res);
+    });
+
+    mocker.stub(simpleAuthPlugin, "updateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      const res: ArmTemplateResult = mockedSimpleAuthUpdateArmResult();
       return ok(res);
     });
 

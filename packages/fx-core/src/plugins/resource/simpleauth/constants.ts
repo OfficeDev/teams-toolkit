@@ -168,6 +168,14 @@ export class Messages {
     log: Messages.getLog("Successfully generated arm templates"),
     telemetry: Messages.getEventName("generate-arm-templates"),
   };
+  static readonly StartUpdateArmTemplates: Message = {
+    log: Messages.getLog("Starting updating arm templates"),
+    telemetry: Messages.getEventName("update-arm-templates-start"),
+  };
+  static readonly EndUpdateArmTemplates: Message = {
+    log: Messages.getLog("Successfully generated arm templates"),
+    telemetry: Messages.getEventName("update-arm-templates"),
+  };
   static readonly StartPostProvision: Message = {
     log: Messages.getLog("Post-provisioning"),
     telemetry: Messages.getEventName("post-provision-start"),

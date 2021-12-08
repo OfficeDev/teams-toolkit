@@ -8,8 +8,8 @@ import { AppStudioError } from "./errors";
 import { IPublishingAppDenition } from "./interfaces/IPublishingAppDefinition";
 import { AppStudioResultFactory } from "./results";
 import { getAppStudioEndpoint } from "../../..";
-import { Constants, ErrorMessages, RETRY_INTERVAL, RETRY_MAX_TIMES } from "./constants";
-import { sleep } from "../spfx/utils/utils";
+import { Constants, ErrorMessages } from "./constants";
+import { RetryHandler } from "../bot/utils/retryHandler";
 
 // eslint-disable-next-line @typescript-eslint/no-namespace
 export namespace AppStudioClient {
@@ -124,26 +124,25 @@ export namespace AppStudioClient {
     logProvider?: LogProvider
   ): Promise<IAppDefinition> {
     const requester = createRequesterWithToken(appStudioToken);
-    let retry = 0;
-    let response = null;
-    while (response == null && retry < RETRY_MAX_TIMES) {
-      try {
-        response = await requester.get(`/api/appdefinitions/${teamsAppId}`);
-        if (response && response.data) {
-          const app = <IAppDefinition>response.data;
-          return app;
-        }
-      } catch (e: any) {
-        logProvider?.warning(
-          `Cannot get the app definition with app ID ${teamsAppId}, due to status: ${e.response?.status}, ${e.name}: ${e.message}, retry: ${retry} times.`
+    try {
+      const response = await RetryHandler.Retry(() =>
+        requester.get(`/api/appdefinitions/${teamsAppId}`)
+      );
+      if (response && response.data) {
+        const app = <IAppDefinition>response.data;
+        return app;
+      } else {
+        throw new Error(
+          `Cannot get the app definition with app ID ${teamsAppId}, response: ${JSON.stringify(
+            response ?? ""
+          )}`
         );
-        retry++;
       }
-      await sleep(RETRY_INTERVAL);
+    } catch (e: any) {
+      const errorMessage = `Cannot get the app definition with app ID ${teamsAppId}, due to status: ${e.response?.status}, ${e.name}: ${e.message}`;
+      await logProvider?.error(errorMessage);
+      throw new Error(errorMessage);
     }
-    const errorMessage = `Cannot get the app definition with app ID ${teamsAppId}, after retry ${retry} times.`;
-    await logProvider?.error(errorMessage);
-    throw new Error(errorMessage);
   }
 
   /**
@@ -188,31 +187,26 @@ export namespace AppStudioClient {
         appDefinition.colorIcon = result.colorIconUrl;
         appDefinition.outlineIcon = result.outlineIconUrl;
       }
-      let retry = 0;
-      let response = null;
-      while (response == null && retry < RETRY_MAX_TIMES) {
-        try {
-          response = await requester.post(
-            `/api/appdefinitions/${teamsAppId}/override`,
-            appDefinition
+      try {
+        const response = await RetryHandler.Retry(() =>
+          requester.post(`/api/appdefinitions/${teamsAppId}/override`, appDefinition)
+        );
+        if (response && response.data) {
+          const app = <IAppDefinition>response.data;
+          return app;
+        } else {
+          throw new Error(
+            `Cannot update the app definition with app ID ${teamsAppId}, response: ${JSON.stringify(
+              response ?? ""
+            )}`
           );
-          if (response && response.data) {
-            const app = <IAppDefinition>response.data;
-            return app;
-          }
-        } catch (e: any) {
-          logProvider?.warning(
-            `Update app definition: cannot get the app definition with app ID ${teamsAppId}, due to status: ${e.response?.status}, ${e.name}: ${e.message}, retry: ${retry} times.`
-          );
-          retry++;
         }
-        await sleep(RETRY_INTERVAL);
+      } catch (e: any) {
+        const errorMessage = `Update app definition: cannot get the app definition with app ID ${teamsAppId}, due to status: ${e.response?.status}, ${e.name}: ${e.message}`;
+        await logProvider?.error(errorMessage);
+        throw new Error(errorMessage);
       }
-      const errorMessage = `Update app definition: cannot get the app definition with app ID ${teamsAppId}, after retry ${retry} times.`;
-      await logProvider?.error(errorMessage);
-      throw new Error(errorMessage);
     }
-
     throw new Error(`invalid appDefinition[${appDefinition}] or appStudioToken[${appStudioToken}]`);
   }
 

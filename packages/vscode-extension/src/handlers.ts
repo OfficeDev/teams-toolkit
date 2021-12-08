@@ -273,6 +273,8 @@ async function getIsFromSample() {
 async function getSettingsVersion(): Promise<string | undefined> {
   if (core) {
     const input = getSystemInputs();
+    input.ignoreEnvInfo = true;
+
     // TODO: from the experience of 'is-from-sample':
     // in some circumstances, getProjectConfig() returns undefined even projectSettings.json is valid.
     // This is a workaround to prevent that. We can change to the following code after the root cause is found.

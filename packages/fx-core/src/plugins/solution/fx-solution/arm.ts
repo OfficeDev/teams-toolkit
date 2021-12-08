@@ -308,7 +308,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     // return the error if the template is invalid
     if (error.code === InvalidTemplateErrorCode) {
       return err(
-        returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+        returnUserError(error, SolutionSource, SolutionError.FailedToValidateArmTemplates)
       );
     }
 
@@ -323,12 +323,8 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
           returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
         );
       }
-
-      const deploymentErrorMessage = JSON.stringify(
-        formattedDeploymentError(deploymentError),
-        undefined,
-        2
-      );
+      const deploymentErrorObj = formattedDeploymentError(deploymentError);
+      const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
       const errorMessage = format(
         getStrings().solution.DeployArmTemplates.FailNotice,
         PluginDisplayName.Solution,
@@ -346,7 +342,9 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       } else {
         failedDeployments.push(deploymentName);
       }
-      return formattedDeploymentName(failedDeployments);
+      const returnError = formattedDeploymentName(failedDeployments);
+      returnError.innerError = JSON.stringify(deploymentErrorObj);
+      return err(returnError);
     } else {
       return result;
     }
@@ -399,10 +397,15 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
       });
     } else {
+      const errorProperties: { [key: string]: string } = {};
+      if (result.error.innerError) {
+        errorProperties[SolutionTelemetryProperty.ArmDeploymentError] = result.error.innerError;
+      }
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.ArmDeployment,
         result.error,
-        ctx.telemetryReporter
+        ctx.telemetryReporter,
+        errorProperties
       );
     }
   } catch (error) {
@@ -1008,20 +1011,18 @@ async function getDeploymentError(
   return deploymentError;
 }
 
-function formattedDeploymentName(failedDeployments: string[]): Result<void, FxError> {
+function formattedDeploymentName(failedDeployments: string[]): FxError {
   const format = failedDeployments.map((deployment) => deployment + " module");
   const returnError = new Error(
     `resource deployments (${format.join(
       ", "
     )}) for your project failed. Please refer to output channel for more error details.`
   );
-  return err(
-    returnUserError(
-      returnError,
-      SolutionSource,
-      SolutionError.FailedToDeployArmTemplatesToAzure,
-      HelpLinks.ArmHelpLink
-    )
+  return returnUserError(
+    returnError,
+    SolutionSource,
+    SolutionError.FailedToDeployArmTemplatesToAzure,
+    HelpLinks.ArmHelpLink
   );
 }
 

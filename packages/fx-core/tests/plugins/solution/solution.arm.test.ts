@@ -844,13 +844,13 @@ describe("Arm Template Failed Test", () => {
               message: "bot inner error",
             },
             subErrors: {
-              usefulError: {
+              skuError: {
                 error: {
-                  code: "usefulError",
-                  message: "useful error",
+                  code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+                  message: "The maximum number of Free ServerFarms allowed in a Subscription is 10",
                 },
               },
-              uselessError: {
+              evaluationError: {
                 error: {
                   code: "DeploymentOperationFailed",
                   message:
@@ -865,9 +865,9 @@ describe("Arm Template Failed Test", () => {
     const res = formattedDeploymentError(errors);
     chai.assert.deepEqual(res, {
       botProvision: {
-        usefulError: {
-          code: "usefulError",
-          message: "useful error",
+        skuError: {
+          code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+          message: "The maximum number of Free ServerFarms allowed in a Subscription is 10",
         },
       },
     });

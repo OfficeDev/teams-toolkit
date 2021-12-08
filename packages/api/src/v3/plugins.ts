@@ -2,9 +2,8 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { Func, QTreeNode } from "..";
-import { Platform } from "../constants";
 import { FxError } from "../error";
+import { Func, QTreeNode } from "../qm/question";
 import { Inputs, Json, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";

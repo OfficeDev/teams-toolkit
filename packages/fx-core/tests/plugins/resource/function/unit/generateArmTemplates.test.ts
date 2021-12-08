@@ -56,7 +56,7 @@ describe("FunctionGenerateArmTemplates", () => {
     await testGenerateArmTemplates(
       activeResourcePlugins,
       "functionConfigWithKeyVaultPlugin.result.bicep",
-      "configWithKeyVaultPlugin.result",
+      "configWithKeyVaultPlugin.result.bicep",
       {
         "fx-resource-key-vault": {
           References: {

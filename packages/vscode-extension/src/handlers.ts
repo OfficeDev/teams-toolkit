@@ -1307,7 +1307,7 @@ export async function openResourceGroupInPortal(env: string): Promise<Result<Voi
 
 export async function grantPermission(env: string): Promise<Result<Void, FxError>> {
   let result: Result<any, FxError> = ok(Void);
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermission);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermissionStart);
 
   let inputs: Inputs | undefined;
   try {
@@ -1471,7 +1471,6 @@ export async function listCollaborator(env: string): Promise<void> {
   let result: Result<any, FxError> = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
 
-  const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
   let inputs: Inputs | undefined;
   try {
     const checkCoreRes = checkCoreNotEmpty();
@@ -1496,7 +1495,7 @@ export async function listCollaborator(env: string): Promise<void> {
     result = wrapError(e);
   }
 
-  await processResult(eventName, result, inputs);
+  await processResult(TelemetryEvent.ListCollaborator, result, inputs);
 }
 
 export async function openM365AccountHandler() {

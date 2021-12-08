@@ -2,11 +2,18 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { DeepReadonly, InputsWithProjectPath } from ".";
-import { FxError, QTreeNode, TokenProvider, Void, Func, Json, Inputs, EnvInfo } from "../index";
-import { AzureSolutionSettings } from "../types";
-import { AppStudioTokenProvider, AzureAccountProvider } from "../utils";
-import { Context, DeploymentInputs, EnvInfoV2, FxResult, ProvisionInputs } from "./types";
+import { FxError } from "../error";
+import { Func, QTreeNode } from "../qm/question";
+import { AzureSolutionSettings, Inputs, Json, Void } from "../types";
+import { AppStudioTokenProvider, TokenProvider } from "../utils";
+import {
+  Context,
+  DeepReadonly,
+  DeploymentInputs,
+  EnvInfoV2,
+  InputsWithProjectPath,
+  ProvisionInputs,
+} from "./types";
 
 export type ResourceTemplate = BicepTemplate | JsonTemplate;
 

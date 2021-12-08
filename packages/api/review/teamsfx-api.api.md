@@ -613,7 +613,12 @@ interface ICore {
     }) => Promise<Result<Void, FxError>>;
     deployArtifacts: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     executeUserTask: (func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
-    init: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+    getQuestions: (task: Stage, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    getQuestionsForUserTask?: (router: FunctionRouter, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    init: (inputs: InputsWithProjectPath & {
+        solution?: string;
+    }) => Promise<Result<Void, FxError>>;
     provisionResources: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     publishApplication: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     scaffold: (inputs: InputsWithProjectPath & {
@@ -1460,7 +1465,6 @@ type SolutionProvisionOutput = Record<string, ResourceProvisionOutput>;
 export interface SolutionSettings extends Json {
     // (undocumented)
     name: string;
-    // (undocumented)
     version?: string;
 }
 
@@ -1468,6 +1472,12 @@ export interface SolutionSettings extends Json {
 export enum Stage {
     // (undocumented)
     activateEnv = "activateEnv",
+    // (undocumented)
+    addCapability = "addCapability",
+    // (undocumented)
+    addModule = "addModule",
+    // (undocumented)
+    addResource = "addResource",
     // (undocumented)
     build = "build",
     // (undocumented)

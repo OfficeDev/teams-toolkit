@@ -3,7 +3,8 @@
 
 import { err, ok, Result } from "neverthrow";
 import { FxError, UserCancelError } from "../error";
-import { OnSelectionChangeFunc, OptionItem, StaticOptions } from "../qm/question";
+import { OnSelectionChangeFunc, StaticOptions } from "../qm/question";
+import { OptionItem } from "../types";
 import { Colors } from "./../utils/log";
 
 /**

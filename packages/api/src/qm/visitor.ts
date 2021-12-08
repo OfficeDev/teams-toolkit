@@ -7,7 +7,6 @@ import {
   Question,
   SingleSelectQuestion,
   StaticOptions,
-  OptionItem,
   MultiSelectQuestion,
 } from "./question";
 import { getValidationFunction, validate } from "./validation";
@@ -15,11 +14,10 @@ import {
   assembleError,
   EmptyOptionError,
   FxError,
-  returnSystemError,
   returnUserError,
   UserCancelError,
 } from "../error";
-import { Inputs, Void } from "../types";
+import { Inputs, OptionItem, Void } from "../types";
 import { InputResult, UserInteraction } from "./ui";
 import { err, ok, Result } from "neverthrow";
 import { TelemetryReporter } from "../utils/telemetry";

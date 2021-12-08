@@ -2,7 +2,11 @@
 // Licensed under the MIT license.
 import * as jsonschema from "jsonschema";
 import { Inputs } from "../types";
-import { ValidateFunc } from "./question";
+
+export type ValidateFunc<T> = (
+  input: T,
+  inputs?: Inputs
+) => string | undefined | Promise<string | undefined>;
 
 /**
  * Validation for Any Instance Type

@@ -421,8 +421,7 @@ export class AppStudioPlugin implements Plugin {
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.checkPermission);
       return ok(checkPermissionResult);
     } catch (error) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.checkPermission, error);
-      return err(
+      const fxError =
         error.name && error.name >= 400 && error.name < 500
           ? AppStudioResultFactory.UserError(
               AppStudioError.CheckPermissionFailedError.name,
@@ -431,8 +430,9 @@ export class AppStudioPlugin implements Plugin {
           : AppStudioResultFactory.SystemError(
               AppStudioError.CheckPermissionFailedError.name,
               AppStudioError.CheckPermissionFailedError.message(error)
-            )
-      );
+            );
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.checkPermission, fxError);
+      return err(fxError);
     }
   }
 
@@ -451,13 +451,18 @@ export class AppStudioPlugin implements Plugin {
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.grantPermission);
       return ok(grantPermissionResult);
     } catch (error) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.grantPermission, error);
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.GrantPermissionFailedError.name,
-          error.message
-        )
-      );
+      const fxError =
+        error.name && error.name >= 400 && error.name < 500
+          ? AppStudioResultFactory.UserError(
+              AppStudioError.GrantPermissionFailedError.name,
+              AppStudioError.GrantPermissionFailedError.message(error.message)
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.GrantPermissionFailedError.name,
+              AppStudioError.GrantPermissionFailedError.message(error.message)
+            );
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.grantPermission, fxError);
+      return err(fxError);
     }
   }
 
@@ -470,13 +475,18 @@ export class AppStudioPlugin implements Plugin {
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.listCollaborator);
       return ok(listCollaborator);
     } catch (error) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.listCollaborator, error);
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.ListCollaboratorFailedError.name,
-          AppStudioError.ListCollaboratorFailedError.message(error)
-        )
-      );
+      const fxError =
+        error.name && error.name >= 400 && error.name < 500
+          ? AppStudioResultFactory.UserError(
+              AppStudioError.ListCollaboratorFailedError.name,
+              AppStudioError.ListCollaboratorFailedError.message(error)
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.ListCollaboratorFailedError.name,
+              AppStudioError.ListCollaboratorFailedError.message(error)
+            );
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.listCollaborator, fxError);
+      return err(fxError);
     }
   }
 

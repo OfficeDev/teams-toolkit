@@ -27,8 +27,14 @@ describe("Create single tab", function () {
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
 
-  // Should succeed on the 3rd try
-  this.retries(2);
+  after(async () => {
+    // clean up
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, false, false, true);
+    } else {
+      await cleanUp(appName, projectPath);
+    }
+  });
 
   it("Create react app without Azure Function", async () => {
     // new a project ( tab only )
@@ -129,15 +135,6 @@ describe("Create single tab", function () {
         const frontend = FrontendValidator.init(context);
         await FrontendValidator.validateDeploy(frontend);
       }
-    }
-  });
-
-  after(async () => {
-    // clean up
-    if (isMultiEnvEnabled()) {
-      await cleanUp(appName, projectPath, true, false, false, true);
-    } else {
-      await cleanUp(appName, projectPath);
     }
   });
 });

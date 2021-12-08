@@ -610,8 +610,11 @@ interface ICore {
     }) => Promise<Result<Void, FxError>>;
     addResource: (inputs: InputsWithProjectPath & {
         moduleIndex?: number;
+        pluginName?: string;
     }) => Promise<Result<Void, FxError>>;
-    deployArtifacts: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+    deployArtifacts: (inputs: InputsWithProjectPath & {
+        moduleIndex?: number;
+    }) => Promise<Result<Void, FxError>>;
     executeUserTask: (func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
     getQuestions: (task: Stage, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
@@ -623,6 +626,7 @@ interface ICore {
     publishApplication: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     scaffold: (inputs: InputsWithProjectPath & {
         moduleIndex?: number;
+        pluginName?: string;
     }) => Promise<Result<Void, FxError>>;
 }
 
@@ -772,11 +776,12 @@ export function isAutoSkipSelect(q: Question): boolean;
 interface ISolution {
     // (undocumented)
     addModule: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        capabilities?: string[];
+        capabilities: string[];
     }) => Promise<Result<Void, FxError>>;
     // (undocumented)
     addResource: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        moduleIndex?: number;
+        moduleIndex: number;
+        pluginName: string;
     }) => Promise<Result<Void, FxError>>;
     // (undocumented)
     deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
@@ -797,7 +802,9 @@ interface ISolution {
     // (undocumented)
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
-    init: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+    init: (ctx: Context_2, inputs: InputsWithProjectPath & {
+        capabilities: string[];
+    }) => Promise<Result<Void, FxError>>;
     // (undocumented)
     name: string;
     // (undocumented)
@@ -808,7 +815,8 @@ interface ISolution {
     publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     scaffold: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        moduleIndex?: number;
+        moduleIndex: number;
+        pluginName: string;
     }) => Promise<Result<Void, FxError>>;
 }
 

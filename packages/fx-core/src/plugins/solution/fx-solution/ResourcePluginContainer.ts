@@ -35,6 +35,16 @@ export const ResourcePluginsV2 = {
   KeyVaultPlugin: "KeyVaultPluginV2",
 };
 
+export const BuiltInResourcePluginNames = {
+  AzureWebApp: "fx-resource-azure-web-app",
+  AzureStorage: "fx-resource-azure-storage",
+};
+
+export const BuiltInScaffoldPluginNames = {
+  ASPDNet: "fx-scaffold-aspdnet",
+  ReactTab: "fx-scaffold-react-tab",
+};
+
 /**
  * @returns all registered resource plugins
  */

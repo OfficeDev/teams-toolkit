@@ -114,6 +114,17 @@ export class FrontendPlugin implements Plugin {
     );
   }
 
+  public async updateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (isVsCallingCli()) {
+      throw new NotImplemented();
+    }
+
+    FrontendPlugin.setContext(ctx);
+    return this.runWithErrorHandling(ctx, TelemetryEvent.UpdateArmTemplates, () =>
+      this.frontendPluginImpl.updateArmTemplates(ctx)
+    );
+  }
+
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
     if (isVsCallingCli()) {
       throw new NotImplemented();

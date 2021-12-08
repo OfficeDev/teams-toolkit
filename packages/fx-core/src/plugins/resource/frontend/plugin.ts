@@ -187,6 +187,21 @@ export class FrontendPluginImpl {
     return ok(undefined);
   }
 
+  public async updateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
+    Logger.info(Messages.StartUpdateArmTemplates(PluginInfo.DisplayName));
+
+    const result: ArmTemplateResult = {
+      Provision: {
+        Reference: {
+          endpoint: FrontendOutputBicepSnippet.Endpoint,
+          domain: FrontendOutputBicepSnippet.Domain,
+        },
+      },
+    };
+
+    return ok(result);
+  }
+
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartGenerateArmTemplates(PluginInfo.DisplayName));
 

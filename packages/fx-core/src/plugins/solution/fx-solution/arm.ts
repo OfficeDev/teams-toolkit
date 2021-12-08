@@ -537,7 +537,7 @@ async function doGenerateArmTemplate(
       errMessage = getStrings().solution.UpdateArmTemplateFailNotice;
     } else if (
       pluginWithArm.generateArmTemplates &&
-      selectedPlugins.find((pluginItem) => pluginItem === pluginWithArm)
+      selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
     ) {
       result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,

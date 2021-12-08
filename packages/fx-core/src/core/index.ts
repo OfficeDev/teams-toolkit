@@ -164,8 +164,8 @@ export function isV3() {
 }
 
 // API V2 feature flag
-export function isV2() {
-  return featureFlagEnabled(FeatureFlagName.APIV2);
+export function isV2(): boolean {
+  return isMultiEnvEnabled();
 }
 
 // On VS calling CLI, interactive questions need to be skipped.

@@ -98,11 +98,7 @@ export async function executeConcurrently<R>(
 
   if (failed) {
     if (ret.length === 0) {
-      if (errors.length === 1) {
-        return new v2.FxFailure(errors[0]);
-      } else {
-        return new v2.FxFailure(mergeFxErrors(errors));
-      }
+      return new v2.FxFailure(mergeFxErrors(errors));
     } else {
       return new v2.FxPartialSuccess(ret, mergeFxErrors(errors));
     }
@@ -112,6 +108,9 @@ export async function executeConcurrently<R>(
 }
 
 function mergeFxErrors(errors: FxError[]): FxError {
+  if (errors.length === 1) {
+    return errors[0];
+  }
   let hasSystemError = false;
   const errMsgs: string[] = [];
   for (const err of errors) {

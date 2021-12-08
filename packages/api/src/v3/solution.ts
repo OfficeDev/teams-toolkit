@@ -35,7 +35,7 @@ export interface ISolution {
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   scaffold: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { moduleIndex: number; pluginName: string }
+    inputs: InputsWithProjectPath & { moduleIndex: number; templateName: string }
   ) => Promise<Result<Void, FxError>>;
 
   /**

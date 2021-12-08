@@ -12,7 +12,7 @@ export async function getQuestionsForScaffold(
 }
 export async function scaffold(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { moduleIndex: number; pluginName: string }
+  inputs: v2.InputsWithProjectPath & { moduleIndex: number; templateName: string }
 ): Promise<Result<Void, FxError>> {
   const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
   const module = solutionSettings.modules[inputs.moduleIndex];

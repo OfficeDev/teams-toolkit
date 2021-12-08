@@ -816,7 +816,7 @@ interface ISolution {
     // (undocumented)
     scaffold: (ctx: Context_2, inputs: InputsWithProjectPath & {
         moduleIndex: number;
-        pluginName: string;
+        templateName: string;
     }) => Promise<Result<Void, FxError>>;
 }
 

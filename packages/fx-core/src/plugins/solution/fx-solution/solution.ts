@@ -1431,11 +1431,11 @@ export class TeamsAppSolution implements Solution {
       const res = await apimPlugin.getQuestionsForUserTask(func, pluginCtx);
       if (res.isErr()) return res;
       if (res.value) {
-        const groupNode = new QTreeNode({ type: "group" });
-        groupNode.condition = { contains: AzureResourceApim.id };
-        addAzureResourceNode.addChild(groupNode);
         const apim = res.value as QTreeNode;
-        if (apim.data) {
+        if (apim.data.type !== "group" || (apim.children && apim.children.length > 0)) {
+          const groupNode = new QTreeNode({ type: "group" });
+          groupNode.condition = { contains: AzureResourceApim.id };
+          addAzureResourceNode.addChild(groupNode);
           const funcNode = new QTreeNode(AskSubscriptionQuestion);
           AskSubscriptionQuestion.func = async (
             inputs: Inputs

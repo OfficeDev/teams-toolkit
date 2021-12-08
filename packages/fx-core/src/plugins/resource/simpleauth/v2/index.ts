@@ -23,6 +23,7 @@ import {
   generateResourceTemplateAdapter,
   provisionLocalResourceAdapter,
   provisionResourceAdapter,
+  updateResourceTemplateAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.SimpleAuthPlugin)
@@ -41,7 +42,12 @@ export class SimpleAuthPluginV2 implements v2.ResourcePlugin {
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
     return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
-
+  async updateResourceTemplate(
+    ctx: v2.Context,
+    inputs: Inputs
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return await updateResourceTemplateAdapter(ctx, inputs, this.plugin);
+  }
   async provisionLocalResource(
     ctx: v2.Context,
     inputs: Inputs,

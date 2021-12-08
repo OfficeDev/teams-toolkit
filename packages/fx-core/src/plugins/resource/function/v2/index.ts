@@ -37,6 +37,7 @@ import {
   getQuestionsForUserTaskAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
+  updateResourceTemplateAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.FunctionPlugin)
@@ -60,7 +61,12 @@ export class FunctionPluginV2 implements ResourcePlugin {
   ): Promise<Result<ResourceTemplate, FxError>> {
     return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
-
+  async updateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<ResourceTemplate, FxError>> {
+    return await updateResourceTemplateAdapter(ctx, inputs, this.plugin);
+  }
   async provisionResource(
     ctx: Context,
     inputs: ProvisionInputs,

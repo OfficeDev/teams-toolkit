@@ -18,7 +18,7 @@ import { ArmTemplateResult } from "../../../common/armInterface";
 import { ResultFactory, TeamsFxResult } from "./result";
 import { Constants, Telemetry } from "./constants";
 import { TelemetryUtils } from "./utils/telemetry";
-
+import "./v2";
 @Service(ResourcePlugins.KeyVaultPlugin)
 export class KeyVaultPlugin implements Plugin {
   name = Constants.KeyVaultPlugin.pluginName;

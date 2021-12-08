@@ -39,7 +39,7 @@ import path from "path";
 import os from "os";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
-import { CoreSource, FxCore } from "..";
+import { CoreSource, FxCore, isV2 } from "..";
 import {
   getStrings,
   isArmSupportEnabled,
@@ -56,7 +56,10 @@ import {
 } from "../../plugins/solution/fx-solution/question";
 import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
-import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
+import {
+  getActivatedResourcePlugins,
+  getActivatedV2ResourcePlugins,
+} from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
 import {
   MANIFEST_LOCAL,
@@ -78,6 +81,7 @@ import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 import util from "util";
 import { LocalEnvMultiProvider } from "../../plugins/resource/localdebug/localEnvMulti";
+import { NamedArmResourcePluginAdaptor } from "../../plugins/solution/fx-solution/v2/adaptor";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -1092,7 +1096,10 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
   }
   minorCtx.solutionContext = result.value;
   const settings = minorCtx.projectSettings?.solutionSettings as AzureSolutionSettings;
-  const activePlugins = getActivatedResourcePlugins(settings);
+  const activePlugins = isV2()
+    ? getActivatedV2ResourcePlugins(settings).map((p) => new NamedArmResourcePluginAdaptor(p))
+    : getActivatedResourcePlugins(settings);
+
   // generate bicep files.
   try {
     await generateArmTemplate(minorCtx.solutionContext, activePlugins);

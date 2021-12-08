@@ -233,7 +233,7 @@ export class AzureLogin extends YargsCommand {
       })
       .options("password", {
         alias: "p",
-        description: "Client ID or cert path for service principal",
+        description: "Provide client secret or a pem file with key and public certificate.",
         type: "string",
         default: "",
       })
@@ -241,6 +241,10 @@ export class AzureLogin extends YargsCommand {
       .example(
         "teamsfx account login azure --service-principal -u USERNAME  -p SECRET --tenant TENANT_ID",
         "Log in with a service principal using client secret."
+      )
+      .example(
+        'teamsfx account login azure --service-principal -u USERNAME  -p "C:/Users/mycertfile.pem" --tenant TENANT_ID',
+        "Log in with a service principal using client certificate."
       );
   }
 

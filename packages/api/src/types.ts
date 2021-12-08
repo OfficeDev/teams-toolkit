@@ -150,6 +150,9 @@ export interface ProjectSettings {
  */
 export interface SolutionSettings extends Json {
   name: string;
+  /**
+   * solution settings schema version
+   */
   version?: string;
 }
 

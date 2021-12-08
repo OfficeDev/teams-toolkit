@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { FxError } from "..";
 import { UserInteraction } from "../qm/ui";
 import { Inputs, Json, ProjectSettings } from "../types";
 import {
@@ -13,6 +12,7 @@ import {
   ExpServiceProvider,
 } from "../utils";
 import { EnvInfo } from "../context";
+import { FxError } from "../error";
 
 export type PluginName = string;
 

@@ -8,6 +8,7 @@ import {
   SystemError,
   returnUserError,
   UserError,
+  UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../../../common/constants";
 import { SolutionError, SolutionSource } from "../constants";
@@ -96,16 +97,15 @@ export async function executeConcurrently<R>(
     );
 
   if (failed) {
-    const errMsg = JSON.stringify(errors.map((e) => `${e.name}:${e.message}`));
-    return ret.length === 0
-      ? new v2.FxFailure(
-          returnSystemError(
-            new Error(`Failed to run tasks concurrently due to ${errMsg}`),
-            SolutionSource,
-            SolutionError.InternelError
-          )
-        )
-      : new v2.FxPartialSuccess(ret, mergeFxErrors(errors));
+    if (ret.length === 0) {
+      if (errors.length === 1) {
+        return new v2.FxFailure(errors[0]);
+      } else {
+        return new v2.FxFailure(mergeFxErrors(errors));
+      }
+    } else {
+      return new v2.FxPartialSuccess(ret, mergeFxErrors(errors));
+    }
   }
 
   return new v2.FxSuccess(ret);

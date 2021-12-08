@@ -1561,7 +1561,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
     const disposables = await TreeViewManagerInstance.registerEmptyProjectTreeViews();
     context.subscriptions.push(...disposables);
   } else {
-    const disposables = await TreeViewManagerInstance.registerTreeViews();
+    const disposables = await TreeViewManagerInstance.registerTreeViews(getWorkspacePath());
     context.subscriptions.push(...disposables);
   }
 

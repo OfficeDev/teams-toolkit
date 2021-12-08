@@ -19,6 +19,7 @@ import {
   ProjectSettings,
   Inputs,
   Json,
+  TokenProvider,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -33,7 +34,14 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
 } from "../../../src/plugins/solution/fx-solution/question";
-import { MockedAzureAccountProvider, MockedV2Context, validManifest } from "./util";
+import {
+  MockedAppStudioTokenProvider,
+  MockedAzureAccountProvider,
+  MockedGraphTokenProvider,
+  MockedSharepointProvider,
+  MockedV2Context,
+  validManifest,
+} from "./util";
 import _ from "lodash";
 import * as uuid from "uuid";
 import { AadAppForTeamsPlugin, newEnvInfo } from "../../../src";
@@ -252,14 +260,19 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
-    const mockedProvider = new MockedAzureAccountProvider();
+    const mockedTokenProvider: TokenProvider = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
+      graphTokenProvider: new MockedGraphTokenProvider(),
+      sharepointTokenProvider: new MockedSharepointProvider(),
+    };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
     const provisionOutput: Record<string, Json> = {
-      solution: {},
+      solution: { output: {}, secrets: {} },
     };
-    const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedProvider);
+    const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedTokenProvider);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotDeployBeforeProvision);
   });
@@ -276,14 +289,19 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
-    const mockedProvider = new MockedAzureAccountProvider();
+    const mockedTokenProvider: TokenProvider = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
+      graphTokenProvider: new MockedGraphTokenProvider(),
+      sharepointTokenProvider: new MockedSharepointProvider(),
+    };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
     const provisionOutput: Record<string, Json> = {
-      solution: { provisionSucceeded: true },
+      solution: { output: { provisionSucceeded: true } },
     };
-    const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedProvider);
+    const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedTokenProvider);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.NoResourcePluginSelected);
   });
@@ -300,16 +318,21 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
-    const mockedProvider = new MockedAzureAccountProvider();
+    const mockedTokenProvider: TokenProvider = {
+      azureAccountProvider: new MockedAzureAccountProvider(),
+      appStudioToken: new MockedAppStudioTokenProvider(),
+      graphTokenProvider: new MockedGraphTokenProvider(),
+      sharepointTokenProvider: new MockedSharepointProvider(),
+    };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
     mockedInputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
     const provisionOutput: Record<string, Json> = {
-      solution: { provisionSucceeded: true },
+      solution: { output: { provisionSucceeded: true } },
     };
     mockDeployThatAlwaysSucceed(fehostPlugin);
-    const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedProvider);
+    const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedTokenProvider);
 
     expect(result.isOk()).to.be.true;
   });

@@ -115,7 +115,7 @@ describe("SPFX V2", () => {
       context,
       deployInputs,
       { output: {}, secrets: {}, states: {} },
-      tools.tokenProvider.azureAccountProvider
+      tools.tokenProvider
     );
     assert.isTrue(res.isOk());
   });

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  AzureAccountProvider,
   AzureSolutionSettings,
   FxError,
   Inputs,
@@ -10,6 +9,7 @@ import {
   QTreeNode,
   Result,
   Void,
+  TokenProvider,
 } from "@microsoft/teamsfx-api";
 import { Context, DeploymentInputs, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
@@ -50,7 +50,7 @@ export class SpfxPluginV2 implements ResourcePlugin {
     ctx: Context,
     inputs: DeploymentInputs,
     provisionOutput: Json,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
   }

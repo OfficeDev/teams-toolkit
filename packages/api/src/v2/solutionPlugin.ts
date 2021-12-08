@@ -84,14 +84,14 @@ export interface SolutionPlugin {
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - system inputs
    * @param {Json} provisionOutputs - provision outputs
-   * @param {AzureAccountProvider} tokenProvider - Tokens for Azure and AppStudio
+   * @param {TokenProvider} tokenProvider - Token providers for Azure, AppStudio and m365.
    *
    */
   deploy?: (
     ctx: Context,
     inputs: Inputs,
     provisionOutputs: Json,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
   /**

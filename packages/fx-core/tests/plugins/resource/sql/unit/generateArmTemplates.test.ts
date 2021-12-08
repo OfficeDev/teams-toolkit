@@ -104,7 +104,7 @@ describe("generateArmTemplates", () => {
       version: "1.0.0",
       activeResourcePlugins: activeResourcePlugins,
     } as AzureSolutionSettings;
-    const result = await sqlPlugin.updateArmtemplates(pluginContext);
+    const result = await sqlPlugin.updateArmTemplates(pluginContext);
 
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {

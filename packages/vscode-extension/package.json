@@ -437,11 +437,13 @@
       },
       {
         "command": "fx-extension.update",
-        "title": "Teams: Add cloud resources"
+        "title": "Teams: Add cloud resources",
+        "enablement": "!fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.addCapability",
-        "title": "Teams: Add capabilities"
+        "title": "Teams: Add capabilities",
+        "enablement": "!fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.openManifest",

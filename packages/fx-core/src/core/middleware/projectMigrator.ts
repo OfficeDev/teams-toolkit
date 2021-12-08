@@ -970,7 +970,7 @@ function preCheckEnvEnabled() {
 }
 
 export async function migrateArm(ctx: CoreHookContext) {
-  await generateArmTempaltesFiles(ctx);
+  await generateArmTemplatesFiles(ctx);
   await generateArmParameterJson(ctx);
 }
 
@@ -1061,7 +1061,7 @@ async function updateConfig(ctx: CoreHookContext) {
   await fs.writeFile(path.join(fx, "new.env.default.json"), JSON.stringify(envConfig, null, 4));
 }
 
-async function generateArmTempaltesFiles(ctx: CoreHookContext) {
+async function generateArmTemplatesFiles(ctx: CoreHookContext) {
   const minorCtx: CoreHookContext = { arguments: ctx.arguments };
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const core = ctx.self as FxCore;
@@ -1091,12 +1091,11 @@ async function generateArmTempaltesFiles(ctx: CoreHookContext) {
     throw SolutionConfigError();
   }
   minorCtx.solutionContext = result.value;
-  const plugins = getActivatedResourcePlugins(
-    minorCtx.projectSettings?.solutionSettings as AzureSolutionSettings
-  );
+  const settings = minorCtx.projectSettings?.solutionSettings as AzureSolutionSettings;
+  const activePlugins = getActivatedResourcePlugins(settings);
   // generate bicep files.
   try {
-    await generateArmTemplate(minorCtx.solutionContext, plugins);
+    await generateArmTemplate(minorCtx.solutionContext, activePlugins);
   } catch (error) {
     throw error;
   }

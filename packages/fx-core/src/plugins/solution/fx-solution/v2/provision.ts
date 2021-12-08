@@ -187,7 +187,7 @@ export async function provisionResource(
     }
   }
 
-  if (isV2() && !isAzureProject(azureSolutionSettings)) {
+  if (isV2() && isAzureProject(azureSolutionSettings)) {
     solutionInputs.remoteTeamsAppId =
       newEnvInfo.state[PluginNames.APPST]["output"][Constants.TEAMS_APP_ID];
   }

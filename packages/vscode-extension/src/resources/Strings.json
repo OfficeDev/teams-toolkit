@@ -206,6 +206,10 @@
       "sideloadingMessage": "[Teams Toolkit] Your Microsoft 365 tenant admin hasn't enabled sideloading permission for your account. You can't install your app to Teams! Please applying for a Microsoft 365 developer tenant by joining Microsoft developer program or contact your tenant admin to resolve the issue.",
       "sideloadingJoinM365": "Join M365 Developer Program"
     },
+    "envTree": {
+      "subscriptionTooltip": "'%s' environment is provisioned in Azure subscription '%s' (ID: %s)",
+      "subscriptionTooltipWithoutName": "'%s' environment is provisioned in Azure subscription '%s'"
+    },
     "qm": {
       "emptySelection": "select option is empty",
       "ok": "ok (Enter)",

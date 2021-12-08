@@ -6,12 +6,14 @@ import { AxiosInstance, default as axios } from "axios";
 import { AADRegistrationConstants } from "./constants";
 import { IAADDefinition } from "./appStudio/interfaces/IAADDefinition";
 import { AppStudio } from "./appStudio/appStudio";
-import { CheckThrowSomethingMissing, ErrorType, PluginError, ProvisionError } from "./errors";
+import {
+  CheckThrowSomethingMissing,
+  CreateAADAppError,
+  CreateAADSecretError,
+  ProvisionError,
+} from "./errors";
 import { CommonStrings } from "./resources/strings";
 import { BotAuthCredential } from "./botAuthCredential";
-import { AadError, CreateAppError, CreateSecretError } from "../aad/errors";
-import { Constants } from "../aad/constants";
-import { GraphErrorCodes } from "../aad/errorCodes";
 
 export class AADRegistration {
   public static async registerAADAppAndGetSecretByGraph(
@@ -21,12 +23,9 @@ export class AADRegistration {
     msAppId?: string
   ): Promise<BotAuthCredential> {
     const axiosInstance: AxiosInstance = axios.create({
-      headers: {
-        post: {
-          Authorization: `Bearer ${graphToken}`,
-        },
-      },
+      baseURL: AADRegistrationConstants.GRAPH_REST_BASE_URL,
     });
+    axiosInstance.defaults.headers.common["Authorization"] = `Bearer ${graphToken}`;
 
     const result = new BotAuthCredential();
 
@@ -42,7 +41,7 @@ export class AADRegistration {
           }
         );
       } catch (e) {
-        throw AADRegistration.handleError(e, CreateAppError);
+        throw new CreateAADAppError(e);
       }
 
       if (!regResponse || !utils.isHttpCodeOkOrCreated(regResponse.status)) {
@@ -69,7 +68,7 @@ export class AADRegistration {
         }
       );
     } catch (e) {
-      throw AADRegistration.handleError(e, CreateSecretError);
+      throw new CreateAADSecretError(e);
     }
 
     if (!genResponse || !genResponse.data) {
@@ -113,34 +112,5 @@ export class AADRegistration {
     result.clientSecret = password.value;
 
     return result;
-  }
-
-  private static handleError(error: any, errorDetail: AadError, ...args: string[]): PluginError {
-    if (
-      error?.response?.status >= Constants.statusCodeUserError &&
-      error?.response?.status < Constants.statusCodeServerError
-    ) {
-      // User Error
-      // If known error code, will update help link.
-      const errorCode = error?.response?.data?.error?.code;
-      const helpLink = GraphErrorCodes.get(errorCode);
-      return new PluginError(
-        ErrorType.User,
-        errorDetail.name,
-        errorDetail.message(...args),
-        [],
-        error,
-        helpLink ?? errorDetail.helpLink
-      );
-    } else {
-      // System Error
-      return new PluginError(
-        ErrorType.System,
-        errorDetail.name,
-        errorDetail.message(...args),
-        [],
-        error
-      );
-    }
   }
 }

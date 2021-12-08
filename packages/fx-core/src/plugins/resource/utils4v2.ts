@@ -118,7 +118,22 @@ export async function generateResourceTemplateAdapter(
   const bicepTemplate: BicepTemplate = { kind: "bicep", template: output };
   return ok(bicepTemplate);
 }
-
+export async function updateResourceTemplateAdapter(
+  ctx: Context,
+  inputs: Inputs,
+  plugin: Plugin
+): Promise<Result<ResourceTemplate, FxError>> {
+  if (!plugin.updateArmTemplates)
+    return err(PluginHasNoTaskImpl(plugin.displayName, "updateArmTemplates"));
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
+  const armRes = await plugin.updateArmTemplates(pluginContext);
+  if (armRes.isErr()) {
+    return err(armRes.error);
+  }
+  const output: ArmTemplateResult = armRes.value as ArmTemplateResult;
+  const bicepTemplate: BicepTemplate = { kind: "bicep", template: output };
+  return ok(bicepTemplate);
+}
 export async function provisionResourceAdapter(
   ctx: Context,
   inputs: ProvisionInputs,

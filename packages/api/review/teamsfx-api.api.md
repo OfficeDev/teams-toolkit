@@ -4,9 +4,6 @@
 
 ```ts
 
-/// <reference types="node" />
-
-import { default as Module_2 } from 'module';
 import { Result } from 'neverthrow';
 import { TokenCredential } from '@azure/core-http';
 import { TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
@@ -272,12 +269,6 @@ export enum CoreCallbackEvent {
 
 // @public (undocumented)
 export type CoreCallbackFunc = (err?: FxError, data?: any) => void;
-
-// @public (undocumented)
-interface CoreV3 extends Core {
-    init: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-    scaffoldSourceCode: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-}
 
 // @public
 export interface CryptoProvider {
@@ -613,6 +604,24 @@ export interface IConnector {
 }
 
 // @public (undocumented)
+interface ICore {
+    addModule: (inputs: InputsWithProjectPath & {
+        capabilities?: string[];
+    }) => Promise<Result<Void, FxError>>;
+    addResource: (inputs: InputsWithProjectPath & {
+        moduleIndex?: number;
+    }) => Promise<Result<Void, FxError>>;
+    deployArtifacts: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+    executeUserTask: (func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
+    init: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+    provisionResources: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+    publishApplication: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+    scaffold: (inputs: InputsWithProjectPath & {
+        moduleIndex?: number;
+    }) => Promise<Result<Void, FxError>>;
+}
+
+// @public (undocumented)
 export interface IDeveloper {
     mpnId?: string;
     name: string;
@@ -753,6 +762,50 @@ export interface IProgressHandler {
 
 // @public (undocumented)
 export function isAutoSkipSelect(q: Question): boolean;
+
+// @public (undocumented)
+interface ISolution {
+    // (undocumented)
+    addModule: (ctx: Context_2, inputs: InputsWithProjectPath & {
+        capabilities?: string[];
+    }) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    addResource: (ctx: Context_2, inputs: InputsWithProjectPath & {
+        moduleIndex?: number;
+    }) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
+    getQuestionsForAddModule?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForAddResource?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    getQuestionsForDeploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForInit?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    getQuestionsForLocalProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: DeepReadonly<Json>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    getQuestionsForProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    getQuestionsForPublish?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForScaffolding?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    // (undocumented)
+    init: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    name: string;
+    // (undocumented)
+    provisionLocalResources?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
+    // (undocumented)
+    provisionResources?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<EnvInfoV3, FxError>>;
+    // (undocumented)
+    publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    scaffold: (ctx: Context_2, inputs: InputsWithProjectPath & {
+        moduleIndex?: number;
+    }) => Promise<Result<Void, FxError>>;
+}
 
 // @public (undocumented)
 export interface IStaticTab {
@@ -1163,6 +1216,8 @@ interface ResourcePlugin {
     provisionResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<ResourceProvisionOutput, FxError>>;
     publishApplication?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    updateResourceTemplate?: (ctx: Context_2, inputs: Inputs) => Promise<Result<ResourceTemplate_2, FxError>>;
 }
 
 // @public (undocumented)
@@ -1186,7 +1241,7 @@ interface ResourcePlugin_2 extends Plugin_3 {
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     pluginDependencies?(ctx: Context_2, inputs: Inputs): Promise<Result<string[], FxError>>;
     // (undocumented)
-    provisionLocalResource?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    provisionLocalResource?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
     // (undocumented)
     provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<CloudResource, FxError>>;
     resourceType: string;
@@ -1399,19 +1454,6 @@ interface SolutionPlugin {
 }
 
 // @public (undocumented)
-type SolutionPluginV3 = StrictOmit<v2.SolutionPlugin, "getQuestions"> & {
-    addResource: (ctx: Context_2, localSettings: Json, inputs: InputsWithProjectPath & {
-        module?: keyof Module_2;
-    }) => Promise<Result<Void, FxError>>;
-    addCapability: (ctx: Context_2, localSettings: Json, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-    getQuestionsForAddResource?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForLocalProvision?: (ctx: Context_2, inputs: Inputs, localSettings: DeepReadonly<Json>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-};
-
-// @public (undocumented)
 type SolutionProvisionOutput = Record<string, ResourceProvisionOutput>;
 
 // @public
@@ -1486,9 +1528,6 @@ export interface StaticValidation {
     equals?: unknown;
     required?: boolean;
 }
-
-// @public (undocumented)
-type StrictOmit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 // @public
 export interface StringArrayValidation extends StaticValidation {
@@ -1861,9 +1900,8 @@ declare namespace v3 {
         ResourcePlugin_2 as ResourcePlugin,
         Module,
         TeamsFxSolutionSettings,
-        StrictOmit,
-        SolutionPluginV3,
-        CoreV3
+        ISolution,
+        ICore
     }
 }
 export { v3 }

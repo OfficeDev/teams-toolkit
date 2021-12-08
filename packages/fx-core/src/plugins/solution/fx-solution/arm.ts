@@ -525,8 +525,7 @@ async function doGenerateArmTemplate(
     let errMessage = "";
     if (
       pluginWithArm.updateArmTemplates &&
-      selectedPlugins.length != 0 &&
-      !selectedPlugins.find((pluginItem) => pluginItem === pluginWithArm)
+      !selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
     ) {
       result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,

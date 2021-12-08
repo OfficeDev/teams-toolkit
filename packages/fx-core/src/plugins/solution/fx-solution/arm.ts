@@ -523,7 +523,7 @@ async function doGenerateArmTemplate(
     // plugin not selected need to be update.
     if (
       pluginWithArm.updateArmTemplates &&
-      !selectedPlugins.find((pluginItem) => pluginItem === pluginWithArm)
+      !selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
     ) {
       const pluginContext = getPluginContext(ctx, pluginWithArm.name);
       const result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<

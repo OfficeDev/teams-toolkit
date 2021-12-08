@@ -96,7 +96,7 @@ describe("identityPlugin", () => {
       version: "1.0.0",
       activeResourcePlugins: activeResourcePlugins,
     } as AzureSolutionSettings;
-    const result = await identityPlugin.udpateArmTemplates(pluginContext);
+    const result = await identityPlugin.updateArmTemplates(pluginContext);
 
     // Assert
     chai.assert.isTrue(result.isOk());

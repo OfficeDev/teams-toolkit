@@ -114,7 +114,7 @@ export class IdentityPlugin implements Plugin {
     return ok(undefined);
   }
 
-  public async udpateArmTemplates(ctx: PluginContext): Promise<Result> {
+  public async updateArmTemplates(ctx: PluginContext): Promise<Result> {
     const result: ArmTemplateResult = {
       Provision: {
         Reference: {

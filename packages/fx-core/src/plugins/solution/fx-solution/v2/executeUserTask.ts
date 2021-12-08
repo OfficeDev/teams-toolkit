@@ -32,6 +32,7 @@ import * as util from "util";
 import {
   AzureResourceApim,
   AzureResourceFunction,
+  AzureResourceKeyVault,
   AzureResourceSQL,
   AzureSolutionQuestionNames,
   BotOptionItem,
@@ -375,10 +376,12 @@ export async function addResource(
   const functionPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
   const sqlPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin);
   const apimPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.ApimPlugin);
+  const keyVaultPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.KeyVaultPlugin);
+  const localDebugPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.LocalDebugPlugin);
   const alreadyHaveFunction = selectedPlugins?.includes(functionPlugin.name);
   const alreadyHaveSql = selectedPlugins?.includes(sqlPlugin.name);
   const alreadyHaveApim = selectedPlugins?.includes(apimPlugin.name);
-  const localDebugPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.LocalDebugPlugin);
+  const alreadyHaveKeyVault = selectedPlugins?.includes(keyVaultPlugin.name);
 
   const addResourcesAnswer = inputs[AzureSolutionQuestionNames.AddResources] as string[];
 
@@ -395,10 +398,15 @@ export async function addResource(
   const addSQL = addResourcesAnswer.includes(AzureResourceSQL.id);
   const addFunc = addResourcesAnswer.includes(AzureResourceFunction.id);
   const addApim = addResourcesAnswer.includes(AzureResourceApim.id);
+  const addKeyVault = addResourcesAnswer.includes(AzureResourceKeyVault.id);
 
-  if ((alreadyHaveSql && addSQL) || (alreadyHaveApim && addApim)) {
+  if (
+    (alreadyHaveSql && addSQL) ||
+    (alreadyHaveApim && addApim) ||
+    (alreadyHaveKeyVault && addKeyVault)
+  ) {
     const e = returnUserError(
-      new Error("SQL/APIM is already added."),
+      new Error("SQL/APIM/KeyVault is already added."),
       SolutionSource,
       SolutionError.AddResourceNotSupport
     );
@@ -444,7 +452,13 @@ export async function addResource(
     pluginsToDoArm.push(apimPlugin);
     scaffoldApim = true;
   }
-
+  if (addKeyVault && !alreadyHaveKeyVault) {
+    pluginsToScaffold.push(keyVaultPlugin);
+    pluginsToDoArm.push(keyVaultPlugin);
+    azureResource.push(AzureResourceKeyVault.id);
+    notifications.push(AzureResourceKeyVault.label);
+    addNewResourceToProvision = true;
+  }
   if (notifications.length > 0) {
     if (isArmSupportEnabled() && addNewResourceToProvision) {
       showUpdateArmTemplateNotice(ctx.userInteraction);

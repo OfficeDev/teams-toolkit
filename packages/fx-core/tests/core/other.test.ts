@@ -248,7 +248,7 @@ describe("Other test case", () => {
     restore();
 
     restore = mockedEnv({
-      [FeatureFlagName.rootDirectory]: "${homeDir}\\TeamsApps",
+      [FeatureFlagName.rootDirectory]: "${homeDir}/TeamsApps",
     });
 
     assert.equal(getRootDirectory(), path.join(os.homedir(), "TeamsApps"));

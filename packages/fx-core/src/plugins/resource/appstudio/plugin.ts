@@ -1068,9 +1068,17 @@ export class AppStudioPluginImpl {
       }
     }
 
-    const userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
-    if (!userLists) {
-      return [];
+    let userLists;
+    try {
+      userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
+      if (!userLists) {
+        return [];
+      }
+    } catch (error) {
+      if (error.name === 404) {
+        error.message = ErrorMessages.TeamsAppNotFound(teamsAppId);
+      }
+      throw error;
     }
 
     const teamsAppAdmin: TeamsAppAdmin[] = userLists

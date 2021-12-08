@@ -27,6 +27,8 @@ export class ErrorMessages {
     `Failed to get configuration value "${configName}" for ${plugin}.`;
   static readonly ParseUserInfoError = "Failed to parse userInfo.";
   static readonly GrantPermissionFailed = "Response is empty or user is not added.";
+  static readonly TeamsAppNotFound = (teamsAppId: string) =>
+    `Cannot find Teams App with id: ${teamsAppId}. Maybe your current M365 account doesn't not have permission, or the Teams App has already been deleted.`;
 }
 
 /**

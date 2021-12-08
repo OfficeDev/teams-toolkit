@@ -19,6 +19,7 @@ import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
 import { isWorkspaceSupported } from "../utils";
 import CLILogProvider from "./log";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
+import * as os from "os";
 
 /**
  * Prepare for service principal login, not fully implemented
@@ -52,11 +53,22 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   public async init(clientId: string, secret: string, tenantId: string): Promise<void> {
     AzureAccountManager.clientId = clientId;
-    AzureAccountManager.secret = secret;
+    if (secret[0] === "~") {
+      const expandPath = path.join(os.homedir(), secret.slice(1));
+      if (fs.pathExistsSync(expandPath)) {
+        AzureAccountManager.secret = expandPath;
+      } else {
+        AzureAccountManager.secret = secret;
+      }
+    } else if (fs.pathExistsSync(secret)) {
+      AzureAccountManager.secret = secret;
+    } else {
+      AzureAccountManager.secret = secret;
+    }
     AzureAccountManager.tenantId = tenantId;
     try {
       await this.getAccountCredentialAsync();
-      await saveAzureSP(clientId, secret, tenantId);
+      await saveAzureSP(clientId, AzureAccountManager.secret, tenantId);
     } catch (error) {
       CLILogProvider.necessaryLog(LLevel.Info, JSON.stringify(error));
       throw error;
@@ -77,12 +89,22 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   async getAccountCredentialAsync(): Promise<TokenCredentialsBase | undefined> {
     await this.load();
     if (AzureAccountManager.tokenCredentialsBase == undefined) {
-      const authres = await msRestNodeAuth.loginWithServicePrincipalSecretWithAuthResponse(
-        AzureAccountManager.clientId,
-        AzureAccountManager.secret,
-        AzureAccountManager.tenantId
-      );
-      AzureAccountManager.tokenCredentialsBase = authres.credentials;
+      let authres;
+      if (await fs.pathExists(AzureAccountManager.secret)) {
+        authres = await msRestNodeAuth.loginWithServicePrincipalCertificate(
+          AzureAccountManager.clientId,
+          AzureAccountManager.secret,
+          AzureAccountManager.tenantId
+        );
+        AzureAccountManager.tokenCredentialsBase = authres;
+      } else {
+        authres = await msRestNodeAuth.loginWithServicePrincipalSecretWithAuthResponse(
+          AzureAccountManager.clientId,
+          AzureAccountManager.secret,
+          AzureAccountManager.tenantId
+        );
+        AzureAccountManager.tokenCredentialsBase = authres.credentials;
+      }
     }
 
     return new Promise((resolve) => {
@@ -160,12 +182,23 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
       let answers: SubscriptionInfo[] = [];
       for (const tenant of tenants) {
         if (tenant.tenantId) {
-          const authres = await msRestNodeAuth.loginWithServicePrincipalSecretWithAuthResponse(
-            AzureAccountManager.clientId,
-            AzureAccountManager.secret,
-            AzureAccountManager.tenantId
-          );
-          const client = new SubscriptionClient(authres.credentials);
+          let credential;
+          if (await fs.pathExists(AzureAccountManager.secret)) {
+            const authres = await msRestNodeAuth.loginWithServicePrincipalCertificate(
+              AzureAccountManager.clientId,
+              AzureAccountManager.secret,
+              AzureAccountManager.tenantId
+            );
+            credential = authres;
+          } else {
+            const authres = await msRestNodeAuth.loginWithServicePrincipalSecretWithAuthResponse(
+              AzureAccountManager.clientId,
+              AzureAccountManager.secret,
+              AzureAccountManager.tenantId
+            );
+            credential = authres.credentials;
+          }
+          const client = new SubscriptionClient(credential);
           const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
           const filteredsubs = subscriptions.filter(
             (sub) => !!sub.displayName && !!sub.subscriptionId

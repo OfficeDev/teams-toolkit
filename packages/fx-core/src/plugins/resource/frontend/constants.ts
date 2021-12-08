@@ -121,6 +121,7 @@ export class TelemetryEvent {
   static readonly DeploymentInfoNotFound = "deployment-info-not-found";
 
   static readonly GenerateArmTemplates = "generate-arm-templates";
+  static readonly UpdateArmTemplates = "update-arm-templates";
   static readonly ExecuteUserTask = "execute-user-task";
 }
 

@@ -79,4 +79,39 @@ describe("FrontendGenerateArmTemplates", () => {
       chai.assert.isUndefined(expectedResult.Parameters);
     }
   });
+
+  it("update bicep arm templates", async () => {
+    // Act
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.SimpleAuth,
+      ResourcePlugins.FrontendHosting,
+    ];
+    const pluginContext: PluginContext = TestHelper.getFakePluginContext();
+    pluginContext.projectSettings!.solutionSettings = {
+      name: "test_solution",
+      version: "1.0.0",
+      activeResourcePlugins: activeResourcePlugins,
+    } as AzureSolutionSettings;
+    const result = await frontendPlugin.updateArmTemplates(pluginContext);
+
+    // Assert
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      chai.assert.exists(result.value.Provision!.Reference!.endpoint);
+      chai.assert.exists(result.value.Provision!.Reference!.domain);
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.endpoint,
+        "provisionOutputs.frontendHostingOutput.value.endpoint"
+      );
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.domain,
+        "provisionOutputs.frontendHostingOutput.value.domain"
+      );
+      chai.assert.notExists(result.value.Provision!.Orchestration);
+      chai.assert.notExists(result.value.Provision!.Modules);
+      chai.assert.notExists(result.value.Parameters);
+      chai.assert.notExists(result.value.Configuration);
+    }
+  });
 });

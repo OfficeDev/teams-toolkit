@@ -246,5 +246,12 @@ describe("Other test case", () => {
 
     assert.equal(getRootDirectory(), os.tmpdir());
     restore();
+
+    restore = mockedEnv({
+      [FeatureFlagName.rootDirectory]: "${homeDir}\\TeamsApps",
+    });
+
+    assert.equal(getRootDirectory(), path.join(os.homedir(), "TeamsApps"));
+    restore();
   });
 });

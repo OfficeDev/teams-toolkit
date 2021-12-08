@@ -117,13 +117,11 @@ export function replaceImport(
     }
   });
 
+  const importDeclarations: ImportDeclaration[] = [];
+
   if (importSpecifiers.length > 0) {
     const importSpecifierNode = importDeclaration(importSpecifiers, literal(teamsClientSDKName));
-    if (importDeclarationPaths.length > 0) {
-      importDeclarationPaths.at(0).insertBefore(importSpecifierNode);
-    } else {
-      tsImportEqualsDeclarationPaths.at(0).insertBefore(importSpecifierNode);
-    }
+    importDeclarations.push(importSpecifierNode);
   }
 
   const importEntireModuleTargetSet: Set<string> = new Set();
@@ -140,23 +138,30 @@ export function replaceImport(
         [importDefaultSpecifier(identifier(info.alias))],
         literal(teamsClientSDKName)
       );
-      importDeclarationPaths.at(0).insertBefore(node);
+      importDeclarations.push(node);
     } else if (info.type === "ImportNamespaceSpecifier") {
       // i.e. source: import * as msft from "@microsoft/teams-js";
       //      target: import * as msft from "@microsoft/teams-js";
-      // i.e. source: import from "@microsoft/teams-js";
+      // i.e. source: import "@microsoft/teams-js";
       //      target: import * as microsoftTeams from "@microsoft/teams-js";
       const node = importDeclaration(
         [importNamespaceSpecifier(identifier(info.alias))],
         literal(teamsClientSDKName)
       );
-      importDeclarationPaths.at(0).insertBefore(node);
-    } else {
+      importDeclarations.push(node);
+    } else if (info.type === "TSImportEqualsDeclaration") {
+      // i.e. source: import msft = require("@microsoft/teams-js");
+      //      target: import msft = require("@microsoft/teams-js");
       tsImportEqualsDeclarationPaths.forEach((p) => {
         (p.node.moduleReference as TSExternalModuleReference).expression.value = teamsClientSDKName;
       });
     }
   });
+
+  if (importDeclarations.length > 0) {
+    importDeclarations[0].comments = importDeclarationPaths.paths()[0].node.comments;
+    importDeclarationPaths.paths()[0].insertBefore(...importDeclarations);
+  }
 
   importDeclarationPaths.remove();
 

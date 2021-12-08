@@ -28,6 +28,7 @@ import {
   IPersonalCommand,
   IGroupChatCommand,
   IUserList,
+  ILanguage,
 } from "./interfaces/IAppDefinition";
 import { ICommand, ICommandList } from "../../solution/fx-solution/appstudio/interface";
 import {
@@ -119,7 +120,6 @@ export class AppStudioPluginImpl {
     isLocalDebug: boolean,
     manifest: TeamsAppManifest
   ): Promise<Result<string, FxError>> {
-    let appDefinition: IAppDefinition;
     let teamsAppId: Result<string, FxError>;
     const appDirectory = await getAppDirectory(ctx.root);
     const appStudioToken = await ctx.appStudioToken?.getAccessToken();
@@ -130,8 +130,6 @@ export class AppStudioPluginImpl {
       if (appDefinitionAndManifest.isErr()) {
         return err(appDefinitionAndManifest.error);
       }
-
-      appDefinition = appDefinitionAndManifest.value[0];
 
       const localTeamsAppID = await this.getTeamsAppId(ctx, true);
 
@@ -149,7 +147,7 @@ export class AppStudioPluginImpl {
 
       teamsAppId = await this.updateApp(
         ctx,
-        appDefinition,
+        appDefinitionAndManifest.value[0],
         appStudioToken!,
         isLocalDebug,
         createIfNotExist,
@@ -160,11 +158,14 @@ export class AppStudioPluginImpl {
 
       return teamsAppId;
     } else {
-      appDefinition = this.convertToAppDefinition(manifest, true);
+      const appDefinitionRes = await this.convertToAppDefinition(ctx, manifest, true);
+      if (appDefinitionRes.isErr()) {
+        return err(appDefinitionRes.error);
+      }
 
       teamsAppId = await this.updateApp(
         ctx,
-        appDefinition,
+        appDefinitionRes.value,
         appStudioToken!,
         isLocalDebug,
         true,
@@ -230,10 +231,13 @@ export class AppStudioPluginImpl {
       }
     }
 
-    const appDefinition: IAppDefinition = this.convertToAppDefinition(manifest, false);
+    const appDefinition = await this.convertToAppDefinition(ctx, manifest, false);
+    if (appDefinition.isErr()) {
+      return err(appDefinition.error);
+    }
     const teamsAppId = await this.updateApp(
       ctx,
-      appDefinition,
+      appDefinition.value,
       appStudioToken!,
       true,
       create,
@@ -345,14 +349,14 @@ export class AppStudioPluginImpl {
     return ok(remoteTeamsAppId);
   }
 
-  public async postProvision(ctx: PluginContext): Promise<string> {
+  public async postProvision(ctx: PluginContext): Promise<Result<string, FxError>> {
     const remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
     let manifestString: string;
     const appDirectory = await getAppDirectory(ctx.root);
     const manifestPath = await this.getManifestTemplatePath(ctx.root);
     const manifestResult = await this.reloadManifestAndCheckRequiredFields(manifestPath);
     if (manifestResult.isErr()) {
-      throw manifestResult;
+      return err(manifestResult.error);
     } else {
       manifestString = JSON.stringify(manifestResult.value);
     }
@@ -370,11 +374,19 @@ export class AppStudioPluginImpl {
         };
         manifestString = Mustache.render(manifestString, view);
       }
-      appDefinition = this.convertToAppDefinition(JSON.parse(manifestString), false);
+      const appDefinitionRes = await this.convertToAppDefinition(
+        ctx,
+        JSON.parse(manifestString),
+        false
+      );
+      if (appDefinitionRes.isErr()) {
+        return err(appDefinitionRes.error);
+      }
+      appDefinition = appDefinitionRes.value;
     } else {
       const remoteManifest = await this.getAppDefinitionAndManifest(ctx, false);
       if (remoteManifest.isErr()) {
-        throw err(remoteManifest.error);
+        return err(remoteManifest.error);
       }
       [appDefinition] = remoteManifest.value;
     }
@@ -391,11 +403,11 @@ export class AppStudioPluginImpl {
       ctx.logProvider
     );
     if (result.isErr()) {
-      throw result.error;
+      return err(result.error);
     }
 
     ctx.logProvider?.info(`Teams app updated: ${result.value}`);
-    return remoteTeamsAppId;
+    return ok(remoteTeamsAppId);
   }
 
   public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
@@ -444,7 +456,40 @@ export class AppStudioPluginImpl {
         manifestString = JSON.stringify(appDefinitionAndManifest.value[1]);
       }
     }
-    return ok(await AppStudioClient.validateManifest(manifestString, appStudioToken!));
+    const errors: string[] = await AppStudioClient.validateManifest(
+      manifestString,
+      appStudioToken!
+    );
+    const manifest: TeamsAppManifest = JSON.parse(manifestString);
+    const appDirectory = await getAppDirectory(ctx.root);
+    if (manifest.icons.outline) {
+      if (
+        manifest.icons.outline.startsWith("https://") ||
+        manifest.icons.outline.startsWith("http://")
+      ) {
+        errors.push("icons.outline should be a relative path, URL is not supported");
+      } else {
+        const outlineFile = path.join(appDirectory, manifest.icons.outline);
+        if (!(await fs.pathExists(outlineFile))) {
+          errors.push(`icons.outline "${outlineFile}" cannot be found.`);
+        }
+      }
+    }
+
+    if (manifest.icons.color) {
+      if (
+        manifest.icons.color.startsWith("https://") ||
+        manifest.icons.color.startsWith("http://")
+      ) {
+        errors.push("icons.color should be a relative path, URL is not supported");
+      } else {
+        const colorFile = path.join(appDirectory, manifest.icons.color);
+        if (!(await fs.pathExists(colorFile))) {
+          errors.push(`icons.color "${colorFile}" cannot be found.`);
+        }
+      }
+    }
+    return ok(errors);
   }
 
   public async updateManifest(
@@ -487,7 +532,11 @@ export class AppStudioPluginImpl {
 
       manifestString = Mustache.render(manifestString, view);
       manifest = JSON.parse(manifestString);
-      appDefinition = this.convertToAppDefinition(manifest, false);
+      const appDefinitionRes = await this.convertToAppDefinition(ctx, manifest, false);
+      if (appDefinitionRes.isErr()) {
+        throw err(appDefinitionRes.error);
+      }
+      appDefinition = appDefinitionRes.value;
     } else {
       const appManifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
       if (appManifest.isErr()) {
@@ -825,6 +874,28 @@ export class AppStudioPluginImpl {
       await fs.writeFile(manifestFileName, manifestString);
     }
 
+    // localization file
+    if (
+      manifest.localizationInfo &&
+      manifest.localizationInfo.additionalLanguages &&
+      manifest.localizationInfo.additionalLanguages.length > 0
+    ) {
+      await Promise.all(
+        manifest.localizationInfo.additionalLanguages.map(async function (language: any) {
+          const file = language.file;
+          const fileName = `${appDirectory}/${file}`;
+          if (!(await fs.pathExists(fileName))) {
+            throw AppStudioResultFactory.UserError(
+              AppStudioError.FileNotFoundError.name,
+              AppStudioError.FileNotFoundError.message(fileName)
+            );
+          }
+          const dir = path.dirname(file);
+          zip.addLocalFile(fileName, dir === "." ? "" : dir);
+        })
+      );
+    }
+
     zip.writeZip(zipFileName);
 
     if (isSPFxProject(ctx.projectSettings)) {
@@ -997,9 +1068,17 @@ export class AppStudioPluginImpl {
       }
     }
 
-    const userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
-    if (!userLists) {
-      return [];
+    let userLists;
+    try {
+      userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
+      if (!userLists) {
+        return [];
+      }
+    } catch (error) {
+      if (error.name === 404) {
+        error.message = ErrorMessages.TeamsAppNotFound(teamsAppId);
+      }
+      throw error;
     }
 
     const teamsAppAdmin: TeamsAppAdmin[] = userLists
@@ -1088,20 +1167,21 @@ export class AppStudioPluginImpl {
       await publishProgress?.next(
         `Updating app definition for app ${remoteTeamsAppId} in app studio`
       );
-      const appDefinition = this.convertToAppDefinition(manifest, true);
+      const appDefinitionRes = await this.convertToAppDefinition(ctx, manifest, true);
+      if (appDefinitionRes.isErr()) {
+        throw appDefinitionRes.error;
+      }
       let appStudioToken = await ctx?.appStudioToken?.getAccessToken();
-      const colorIconContent =
-        manifest.icons.color && !manifest.icons.color.startsWith("https://")
-          ? (await fs.readFile(`${appDirectory}/${manifest.icons.color}`)).toString("base64")
-          : undefined;
-      const outlineIconContent =
-        manifest.icons.outline && !manifest.icons.outline.startsWith("https://")
-          ? (await fs.readFile(`${appDirectory}/${manifest.icons.outline}`)).toString("base64")
-          : undefined;
+      const colorIconContent = manifest.icons.color
+        ? (await fs.readFile(`${appDirectory}/${manifest.icons.color}`)).toString("base64")
+        : undefined;
+      const outlineIconContent = manifest.icons.outline
+        ? (await fs.readFile(`${appDirectory}/${manifest.icons.outline}`)).toString("base64")
+        : undefined;
       try {
         await AppStudioClient.updateApp(
           remoteTeamsAppId,
-          appDefinition,
+          appDefinitionRes.value,
           appStudioToken!,
           undefined,
           colorIconContent,
@@ -1420,10 +1500,11 @@ export class AppStudioPluginImpl {
    *
    * Refer to AppDefinitionProfile.cs
    */
-  private convertToAppDefinition(
+  private async convertToAppDefinition(
+    ctx: PluginContext,
     appManifest: TeamsAppManifest,
     ignoreIcon: boolean
-  ): IAppDefinition {
+  ): Promise<Result<IAppDefinition, FxError>> {
     const appDefinition: IAppDefinition = {
       appName: appManifest.name.short,
       validDomains: appManifest.validDomains,
@@ -1459,7 +1540,36 @@ export class AppStudioPluginImpl {
 
     appDefinition.connectors = appManifest.connectors;
     appDefinition.devicePermissions = appManifest.devicePermissions;
-    appDefinition.localizationInfo = appManifest.localizationInfo;
+    if (appManifest.localizationInfo) {
+      let languages: ILanguage[] = [];
+      if (appManifest.localizationInfo.additionalLanguages) {
+        try {
+          languages = await Promise.all(
+            appManifest.localizationInfo.additionalLanguages!.map(async function (item: any) {
+              const templateDirectory = await getAppDirectory(ctx.root);
+              const fileName = `${templateDirectory}/${item.file}`;
+              if (!(await fs.pathExists(fileName))) {
+                throw AppStudioResultFactory.UserError(
+                  AppStudioError.FileNotFoundError.name,
+                  AppStudioError.FileNotFoundError.message(fileName)
+                );
+              }
+              const content = await fs.readJSON(fileName);
+              return {
+                languageTag: item.languageTag,
+                file: content,
+              };
+            })
+          );
+        } catch (error) {
+          return err(error);
+        }
+      }
+      appDefinition.localizationInfo = {
+        defaultLanguageTag: appManifest.localizationInfo.defaultLanguageTag,
+        languages: languages,
+      };
+    }
 
     if (appManifest.webApplicationInfo) {
       appDefinition.webApplicationInfoId = appManifest.webApplicationInfo.id;
@@ -1476,7 +1586,7 @@ export class AppStudioPluginImpl {
       appDefinition.outlineIcon = appManifest.icons.outline;
     }
 
-    return appDefinition;
+    return ok(appDefinition);
   }
 
   private async createApp(
@@ -1845,7 +1955,11 @@ export class AppStudioPluginImpl {
       updatedManifest.validDomains?.push(domain);
     }
 
-    const appDefinition = this.convertToAppDefinition(updatedManifest, false);
+    const appDefinitionRes = await this.convertToAppDefinition(ctx, updatedManifest, false);
+    if (appDefinitionRes.isErr()) {
+      return err(appDefinitionRes.error);
+    }
+    const appDefinition = appDefinitionRes.value;
 
     if (isLocalDebug && !isMultiEnvEnabled()) {
       const appName = getLocalAppName(appDefinition.shortName ?? "");

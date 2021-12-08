@@ -114,6 +114,21 @@ export class IdentityPlugin implements Plugin {
     return ok(undefined);
   }
 
+  public async updateArmTemplates(ctx: PluginContext): Promise<Result> {
+    const result: ArmTemplateResult = {
+      Provision: {
+        Reference: {
+          identityName: IdentityBicep.identityName,
+          identityClientId: IdentityBicep.identityClientId,
+          identityResourceId: IdentityBicep.identityResourceId,
+          identityPrincipalId: IdentityBicep.identityPrincipalId,
+        },
+      },
+    };
+
+    return ok(result);
+  }
+
   public async generateArmTemplates(ctx: PluginContext): Promise<Result> {
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),

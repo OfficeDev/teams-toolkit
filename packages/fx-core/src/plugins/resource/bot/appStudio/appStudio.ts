@@ -6,11 +6,11 @@ import { AxiosInstance, default as axios } from "axios";
 import {
   AADAppCheckingError,
   ConfigUpdatingError,
+  MessageEndpointUpdatingError,
   ProvisionError,
   SomethingMissingError,
 } from "../errors";
 import { CommonStrings, ConfigNames } from "../resources/strings";
-import { LifecycleFuncNames } from "../constants";
 import { RetryHandler } from "../utils/retryHandler";
 import { getAppStudioEndpoint } from "../../../..";
 import { Messages } from "../resources/messages";
@@ -193,7 +193,7 @@ export class AppStudio {
         axiosInstance.post(`${AppStudio.baseUrl}/api/botframework/${botId}`, registration)
       );
     } catch (e) {
-      throw new ConfigUpdatingError(ConfigNames.MESSAGE_ENDPOINT, e);
+      throw new MessageEndpointUpdatingError(registration.messagingEndpoint, e);
     }
 
     if (!response || !response.data) {

@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Aocheng Wang <aochengwang@microsoft.com>
+ */
+
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import { expect } from "chai";
 import fs from "fs-extra";
@@ -24,6 +28,7 @@ import {
   getUniqueAppName,
   loadContext,
   mockTeamsfxMultiEnvFeatureFlag,
+  setBotSkuNameToB1Bicep,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 
@@ -68,6 +73,7 @@ describe("Multi Env Happy Path for Azure", function () {
 
       // update SKU from free to B1 to prevent free SKU limit error
       await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+      await setBotSkuNameToB1Bicep(projectPath, env);
       console.log(`[Successfully] update simple auth sku to B1`);
 
       // list env

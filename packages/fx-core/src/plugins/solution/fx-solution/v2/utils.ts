@@ -10,10 +10,13 @@ import {
   returnUserError,
   PermissionRequestProvider,
   returnSystemError,
-  SolutionSettings,
   Json,
+  SolutionContext,
+  Plugin,
+  AppStudioTokenProvider,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
+import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -33,6 +36,9 @@ import {
   TabSPFxItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
+import { PluginsWithContext } from "../solution";
+import { getPluginContext } from "../utils/util";
+import * as util from "util";
 
 export function getSelectedPlugins(azureSettings: AzureSolutionSettings): v2.ResourcePlugin[] {
   const plugins = getActivatedV2ResourcePlugins(azureSettings);
@@ -156,6 +162,42 @@ export function parseUserName(appStudioToken?: Record<string, unknown>): Result<
   return ok(userName);
 }
 
+export async function checkWhetherLocalDebugM365TenantMatches(
+  localDebugTenantId?: string,
+  appStudioTokenProvider?: AppStudioTokenProvider
+): Promise<Result<Void, FxError>> {
+  if (localDebugTenantId) {
+    const m365TenantId = parseTeamsAppTenantId(await appStudioTokenProvider?.getJsonObject());
+    if (m365TenantId.isErr()) {
+      throw err(m365TenantId.error);
+    }
+
+    const m365UserAccount = parseUserName(await appStudioTokenProvider?.getJsonObject());
+    if (m365UserAccount.isErr()) {
+      throw err(m365UserAccount.error);
+    }
+
+    if (m365TenantId.value !== localDebugTenantId) {
+      const errorMessage: string = util.format(
+        getStrings().solution.LocalDebugTenantConfirmNotice,
+        localDebugTenantId,
+        m365UserAccount.value,
+        isMultiEnvEnabled() ? "localSettings.json" : "default.userdata"
+      );
+
+      return err(
+        returnUserError(
+          new Error(errorMessage),
+          "Solution",
+          SolutionError.CannotLocalDebugInDifferentTenant
+        )
+      );
+    }
+  }
+
+  return ok(Void);
+}
+
 // Loads teams app tenant id into local settings.
 export function loadTeamsAppTenantIdForLocal(
   localSettings: v2.LocalSettings,
@@ -224,5 +266,16 @@ export function fillInSolutionSettings(
 }
 
 export function checkWetherProvisionSucceeded(config: Json): boolean {
-  return config[GLOBAL_CONFIG] && config[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
+  return (
+    config[GLOBAL_CONFIG] &&
+    config[GLOBAL_CONFIG]["output"] &&
+    config[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED]
+  );
+}
+
+export function getPluginAndContextArray(
+  ctx: SolutionContext,
+  selectedPlugins: Plugin[]
+): PluginsWithContext[] {
+  return selectedPlugins.map((plugin) => [plugin, getPluginContext(ctx, plugin.name)]);
 }

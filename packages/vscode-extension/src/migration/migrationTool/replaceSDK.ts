@@ -14,6 +14,7 @@ import {
   TSImportEqualsDeclaration,
   CallExpression,
   ImportExpression,
+  Identifier,
 } from "jscodeshift";
 import { Collection } from "jscodeshift/src/Collection";
 import { replaceFunction } from "./ts/replaceFunction";
@@ -24,6 +25,7 @@ import {
   isTeamsClientSDKJsRequireCallExpression,
   replaceImport,
 } from "./ts/replaceTsImport";
+import * as constants from "../constants";
 
 /**
  * core function to migrate sdk in a JavaScript file and would be called and executed
@@ -58,24 +60,35 @@ const transform: Transform = (file: FileInfo, api: API, options: Options): strin
     .find(ImportExpression)
     .filter(isTeamsClientSDKJsImportExpression);
 
-  /**
-   * if there is no Teams Client SDK imported, nothing should be replaced
-   */
-  if (
-    teamsClientSDKImportDeclarationPaths.length === 0 &&
-    teamsClientSDKTsImportEqualsDeclarationPaths.length === 0 &&
-    teamsClientSDKRequireCallExpressionPaths.length === 0 &&
-    teamsClientSDKImportExpressionPaths.length === 0
-  ) {
-    return null;
-  }
-
   const importInfo = getTeamsClientSDKReferencePrefixes(
     teamsClientSDKImportDeclarationPaths,
     teamsClientSDKTsImportEqualsDeclarationPaths
   );
 
+  // If there is
+  //   1. import * as microsoftTeams from "@microsoft/teams-js", or
+  //   2. import microsoftTeams from "@microsoft/teams-js", or
+  //   3. import "@microsoft/teams-js", or
+  //   4. import microsoftTeams = require("@microsoft/teams-js")
+  const hasImportDeclaration = importInfo.importEntireModuleInfo.some(
+    (info) => info.alias === constants.teamsClientSDKDefaultNamespace
+  );
+  const teamsClientSDKReferences = root
+    .find(Identifier)
+    .filter((p) => p.node.name === constants.teamsClientSDKDefaultNamespace);
+  if (!hasImportDeclaration && teamsClientSDKReferences.length > 0) {
+    // import * as microsoftTeams from "@microsoft/teams-js"
+    importInfo.importEntireModuleInfo.push({
+      type: "ImportNamespaceSpecifier",
+      alias: constants.teamsClientSDKDefaultNamespace,
+    });
+  }
+
   replaceFunction(j, root, importInfo);
+
+  if (!hasImportDeclaration && teamsClientSDKReferences.length > 0) {
+    importInfo.importEntireModuleInfo.pop();
+  }
 
   replaceImport(
     teamsClientSDKImportDeclarationPaths,

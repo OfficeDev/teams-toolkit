@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Result, PluginContext } from "@microsoft/teamsfx-api";
+import { Plugin } from "@microsoft/teamsfx-api";
 
-// WIP: Put the interfaces here temporary to unblock development, they will be moved to the V2 teamsfx-api in the future.
-export interface ArmResourcePlugin {
-  generateArmTemplates?: (ctx: PluginContext) => Promise<Result<ArmTemplateResult, FxError>>;
-}
+export type ArmResourcePlugin = Pick<Plugin, "generateArmTemplates" | "updateArmTemplates">;
+
+export type NamedArmResourcePlugin = { name: string } & ArmResourcePlugin;
 
 export interface BicepOrchestrationTemplate {
   Content: string;
@@ -31,12 +30,7 @@ export interface BicepOrchestration {
   OutputTemplate?: BicepOrchestrationTemplate;
 }
 
-export interface ScaffoldArmTemplateResult extends Record<string, unknown> {
-  Modules?: { [moduleFileName: string]: BicepModule };
-  Orchestration: BicepOrchestration;
-}
-
-export interface ArmTemplateResult extends Record<string, unknown> {
+export interface ArmTemplateResult extends Record<any, unknown> {
   Provision?: {
     Orchestration?: string;
     Reference?: Record<string, unknown>;

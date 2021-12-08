@@ -94,8 +94,8 @@ export enum TelemetryEvent {
   EditSecretStart = "edit-secret-start",
   EditSecret = "edit-secret",
 
-  OpenManifestConfigStart = "open-manifest-config-start",
-  OpenManifestConfig = "open-manifest-config",
+  OpenManifestConfigStateStart = "open-manifest-config-state-start",
+  OpenManifestConfigState = "open-manifest-config-state",
 
   OpenTeamsApp = "open-teams-app",
   UpdateTeamsApp = "update-teams-app",
@@ -189,6 +189,7 @@ export enum TelemetryProperty {
   SourceEnv = "sourceEnv",
   TargetEnv = "targetEnv",
   IsFromSample = "is-from-sample",
+  SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
 }
 

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { FxError } from "..";
 import { UserInteraction } from "../qm/ui";
 import { Inputs, Json, ProjectSettings } from "../types";
 import {
@@ -13,6 +12,7 @@ import {
   ExpServiceProvider,
 } from "../utils";
 import { EnvInfo } from "../context";
+import { FxError } from "../error";
 
 export type PluginName = string;
 
@@ -51,8 +51,10 @@ export type SolutionInputs = {
   provisionSucceeded?: boolean;
 };
 
-export type ProvisionInputs = Inputs & SolutionInputs & { projectPath: string };
-export type DeploymentInputs = Inputs & SolutionInputs & { projectPath: string };
+export type InputsWithProjectPath = Inputs & { projectPath: string };
+
+export type ProvisionInputs = InputsWithProjectPath & SolutionInputs;
+export type DeploymentInputs = InputsWithProjectPath & SolutionInputs;
 
 export class FxSuccess<T> {
   kind: "success";

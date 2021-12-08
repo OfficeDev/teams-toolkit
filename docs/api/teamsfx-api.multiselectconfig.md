@@ -17,7 +17,7 @@ export interface MultiSelectConfig extends UIConfig<string[]>
 
 |  Property | Type | Description |
 |  --- | --- | --- |
-|  [onDidChangeSelection?](./teamsfx-api.multiselectconfig.ondidchangeselection.md) | (currentSelectedIds: Set&lt;string&gt;, previousSelectedIds: Set&lt;string&gt;) =&gt; Promise&lt;Set&lt;string&gt;&gt; | <i>(Optional)</i> a callback function which is triggered when the selected values change, which can change the final selected values. |
+|  [onDidChangeSelection?](./teamsfx-api.multiselectconfig.ondidchangeselection.md) | [OnSelectionChangeFunc](./teamsfx-api.onselectionchangefunc.md) | <i>(Optional)</i> a callback function which is triggered when the selected values change, which can change the final selected values. |
 |  [options](./teamsfx-api.multiselectconfig.options.md) | [StaticOptions](./teamsfx-api.staticoptions.md) | option array |
 |  [returnObject?](./teamsfx-api.multiselectconfig.returnobject.md) | boolean | <i>(Optional)</i> This config only works for option items with <code>OptionItem[]</code> type. If <code>returnObject</code> is true, the answer value is an array of <code>OptionItem</code> objects; otherwise, the answer value is an array of <code>id</code> strings. In case of option items with <code>string[]</code> type, whether <code>returnObject</code> is true or false, the returned answer value is always a string array. |
 

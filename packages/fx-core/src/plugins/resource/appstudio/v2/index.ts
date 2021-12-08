@@ -3,7 +3,6 @@
 
 import {
   AppStudioTokenProvider,
-  AzureAccountProvider,
   AzureSolutionSettings,
   ConfigMap,
   err,
@@ -15,16 +14,13 @@ import {
   PluginContext,
   QTreeNode,
   Result,
-  Stage,
   TokenProvider,
-  traverse,
   v2,
   Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
   DeepReadonly,
-  DeploymentInputs,
   ProvisionInputs,
   ResourcePlugin,
   ResourceProvisionOutput,
@@ -38,12 +34,11 @@ import {
   ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
 import {
+  collaborationApiAdaptor,
   configureLocalResourceAdapter,
   configureResourceAdapter,
   convert2PluginContext,
-  deployAdapter,
   executeUserTaskAdapter,
-  generateResourceTemplateAdapter,
   getQuestionsAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
@@ -62,13 +57,6 @@ export class AppStudioPluginV2 implements ResourcePlugin {
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     return await scaffoldSourceCodeAdapter(ctx, inputs, this.plugin);
-  }
-
-  async generateResourceTemplate(
-    ctx: Context,
-    inputs: Inputs
-  ): Promise<Result<ResourceTemplate, FxError>> {
-    return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 
   async provisionResource(
@@ -165,5 +153,59 @@ export class AppStudioPluginV2 implements ResourcePlugin {
       return err(postRes.error);
     }
     return ok(Void);
+  }
+
+  async grantPermission(
+    ctx: Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider,
+    userInfo: Json
+  ): Promise<Result<Json, FxError>> {
+    return collaborationApiAdaptor(
+      ctx,
+      inputs,
+      envInfo,
+      tokenProvider,
+      userInfo,
+      this.plugin,
+      "grantPermission"
+    );
+  }
+
+  async checkPermission(
+    ctx: Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider,
+    userInfo: Json
+  ): Promise<Result<Json, FxError>> {
+    return collaborationApiAdaptor(
+      ctx,
+      inputs,
+      envInfo,
+      tokenProvider,
+      userInfo,
+      this.plugin,
+      "checkPermission"
+    );
+  }
+
+  async listCollaborator(
+    ctx: Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
+    tokenProvider: TokenProvider,
+    userInfo: Json
+  ): Promise<Result<Json, FxError>> {
+    return collaborationApiAdaptor(
+      ctx,
+      inputs,
+      envInfo,
+      tokenProvider,
+      userInfo,
+      this.plugin,
+      "listCollaborator"
+    );
   }
 }

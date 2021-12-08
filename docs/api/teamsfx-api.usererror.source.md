@@ -4,7 +4,7 @@
 
 ## UserError.source property
 
-Source name of error. (plugin name, eg: tab-scaffhold-plugin)
+Source name of error. (plugin name, eg: tab-scaffold-plugin)
 
 <b>Signature:</b>
 

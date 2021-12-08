@@ -20,7 +20,7 @@ jobs:
       # macos-latest is 10.15. We need to test 11 as well.
       matrix: # TODO: add more versions and cases where Node.js do not exist
         os: [windows-latest, macos-latest, macos-11, ubuntu-latest]
-        node-version: [10, 12, 14]
+        node-version: [12, 14, 16]
         func-version: [none, 2, 3]
         dotnet-version: [none, 3.1.x, 5.0.x]
       max-parallel: 30

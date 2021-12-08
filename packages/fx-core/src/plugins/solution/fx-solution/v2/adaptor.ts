@@ -16,8 +16,15 @@ import {
   EnvConfig,
   PermissionRequestProvider,
   Json,
+  PluginContext,
+  Result,
+  FxError,
+  err,
+  returnSystemError,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { PluginNames, SolutionError, SolutionSource } from "..";
+import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../../common/armInterface";
 import { LocalCrypto } from "../../../../core/crypto";
 import { newEnvInfo } from "../../../../core/tools";
 import { flattenConfigMap, legacyConfig2EnvState } from "../../../resource/utils4v2";
@@ -49,7 +56,10 @@ export class ScaffoldingContextAdapter extends BaseSolutionContextAdaptor {
     super();
     const v2context: v2.Context = params[0];
     const inputs: Inputs = params[1];
-    this.root = inputs.projectPath ?? "";
+    if (!inputs.projectPath) {
+      throw new Error(`ivalid project path: ${inputs.projectPath}`);
+    }
+    this.root = inputs.projectPath;
     this.targetEnvName = inputs.targetEnvName;
     this.logProvider = v2context.logProvider;
     this.telemetryReporter = v2context.telemetryReporter;
@@ -72,15 +82,18 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
     const v2context: v2.Context = params[0];
     const inputs: Inputs = params[1];
     const envInfo: EnvInfoV2 = params[2];
-    const tokenProvidier = params[3];
+    const tokenProvider = params[3];
 
-    this.root = inputs.projectPath ?? "";
+    if (!inputs.projectPath) {
+      throw new Error(`ivalid project path: ${inputs.projectPath}`);
+    }
+    this.root = inputs.projectPath;
     this.targetEnvName = inputs.targetEnvName;
     this.logProvider = v2context.logProvider;
     this.telemetryReporter = v2context.telemetryReporter;
-    this.azureAccountProvider = tokenProvidier.azureAccountProvider;
-    this.graphTokenProvider = tokenProvidier.graphTokenProvider;
-    this.appStudioToken = tokenProvidier.appStudioToken;
+    this.azureAccountProvider = tokenProvider.azureAccountProvider;
+    this.graphTokenProvider = tokenProvider.graphTokenProvider;
+    this.appStudioToken = tokenProvider.appStudioToken;
     this.treeProvider = undefined;
     this.answers = inputs;
     this.projectSettings = v2context.projectSetting;
@@ -105,5 +118,124 @@ export class ProvisionContextAdapter extends BaseSolutionContextAdaptor {
         return { name: pluginName, result: legacyConfig2EnvState(state, pluginName) };
       })
     );
+  }
+}
+
+export class CollaboratorContextAdapter extends BaseSolutionContextAdaptor {
+  constructor(params: Parameters<NonNullable<v2.SolutionPlugin["grantPermission"]>>) {
+    super();
+    const v2context: v2.Context = params[0];
+    const inputs: Inputs = params[1];
+    const envInfo = params[2];
+    const tokenProvider = params[3];
+    if (!inputs.projectPath) {
+      throw new Error(`ivalid project path: ${inputs.projectPath}`);
+    }
+    this.root = inputs.projectPath;
+    this.targetEnvName = inputs.targetEnvName;
+    this.logProvider = v2context.logProvider;
+    this.telemetryReporter = v2context.telemetryReporter;
+    this.azureAccountProvider = tokenProvider.azureAccountProvider;
+    this.graphTokenProvider = tokenProvider.graphTokenProvider;
+    this.appStudioToken = tokenProvider.appStudioToken;
+    this.treeProvider = undefined;
+    this.answers = inputs;
+    this.projectSettings = v2context.projectSetting;
+    this.localSettings = undefined;
+    this.ui = v2context.userInteraction;
+    this.cryptoProvider = v2context.cryptoProvider;
+    this.permissionRequestProvider = v2context.permissionRequestProvider;
+    const state = ConfigMap.fromJSON(envInfo.state);
+    if (!state) {
+      throw new Error(`failed to convert profile ${JSON.stringify(envInfo.state)}`);
+    }
+    this.envInfo = {
+      envName: envInfo.envName,
+      config: envInfo.config as EnvConfig,
+      state: flattenConfigMap(state),
+    };
+  }
+}
+
+export class NamedArmResourcePluginAdaptor implements NamedArmResourcePlugin {
+  name: string;
+  generateArmTemplates?: (ctx: PluginContext) => Promise<Result<ArmTemplateResult, FxError>>;
+  updateArmTemplates?: (ctx: PluginContext) => Promise<Result<ArmTemplateResult, FxError>>;
+  constructor(v2Plugin: v2.ResourcePlugin) {
+    this.name = v2Plugin.name;
+    if (v2Plugin.generateResourceTemplate) {
+      const fn = v2Plugin.generateResourceTemplate.bind(v2Plugin);
+      this.generateArmTemplates = this._generateArmTemplates(fn);
+    }
+    if (v2Plugin.updateResourceTemplate) {
+      const fn = v2Plugin.updateResourceTemplate.bind(v2Plugin);
+      this.updateArmTemplates = this._updateArmTemplates(fn);
+    }
+  }
+
+  _generateArmTemplates(
+    fn: NonNullable<v2.ResourcePlugin["generateResourceTemplate"]>
+  ): (ctx: PluginContext) => Promise<Result<ArmTemplateResult, FxError>> {
+    return async (ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> => {
+      if (
+        !ctx.ui ||
+        !ctx.logProvider ||
+        !ctx.telemetryReporter ||
+        !ctx.cryptoProvider ||
+        !ctx.projectSettings ||
+        !ctx.answers
+      ) {
+        return err(
+          returnSystemError(
+            new Error(`invalid plugin context`),
+            SolutionSource,
+            SolutionError.InternelError
+          )
+        );
+      }
+      const v2ctx: v2.Context = {
+        userInteraction: ctx.ui,
+        logProvider: ctx.logProvider,
+        telemetryReporter: ctx.telemetryReporter,
+        cryptoProvider: ctx.cryptoProvider,
+        projectSetting: ctx.projectSettings,
+      };
+      ctx.answers.projectPath = ctx.root;
+      const result = await fn(v2ctx, ctx.answers);
+      return result.map((r) => r.template);
+    };
+  }
+
+  _updateArmTemplates(
+    fn: NonNullable<v2.ResourcePlugin["updateResourceTemplate"]>
+  ): (ctx: PluginContext) => Promise<Result<ArmTemplateResult, FxError>> {
+    return async (ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> => {
+      if (
+        !ctx.ui ||
+        !ctx.logProvider ||
+        !ctx.telemetryReporter ||
+        !ctx.cryptoProvider ||
+        !ctx.projectSettings ||
+        !ctx.answers
+      ) {
+        return err(
+          returnSystemError(
+            new Error(`invalid plugin context`),
+            SolutionSource,
+            SolutionError.InternelError
+          )
+        );
+      }
+      const v2ctx: v2.Context = {
+        userInteraction: ctx.ui,
+        logProvider: ctx.logProvider,
+        telemetryReporter: ctx.telemetryReporter,
+        cryptoProvider: ctx.cryptoProvider,
+        projectSetting: ctx.projectSettings,
+      };
+      ctx.answers.projectPath = ctx.root;
+      const result = await fn(v2ctx, ctx.answers);
+      return result.map((r) => r.template);
+    };
   }
 }

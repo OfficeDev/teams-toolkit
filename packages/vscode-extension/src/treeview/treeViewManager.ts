@@ -7,6 +7,7 @@ import * as StringResources from "../resources/Strings.json";
 import { CommandsTreeViewProvider, TreeViewCommand } from "./commandsTreeViewProvider";
 import { TreeCategory } from "@microsoft/teamsfx-api";
 import { AdaptiveCardCodeLensProvider } from "../codeLensProvider";
+import { isSPFxProject } from "../utils/commonUtils";
 
 class TreeViewManager {
   private static instance: TreeViewManager;
@@ -23,7 +24,7 @@ class TreeViewManager {
     return TreeViewManager.instance;
   }
 
-  public async registerTreeViews() {
+  public async registerTreeViews(workspacePath: string | undefined) {
     const disposables = [];
 
     const accountProvider = new CommandsTreeViewProvider([]);
@@ -53,24 +54,32 @@ class TreeViewManager {
         undefined,
         { name: "library", custom: false }
       ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.addCapabilitiesDescription,
-        "fx-extension.addCapability",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "addCapability", custom: true }
-      ),
-      new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.addResourcesTitleNew,
-        StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
-        "fx-extension.update",
-        vscode.TreeItemCollapsibleState.None,
-        undefined,
-        undefined,
-        { name: "addResources", custom: true }
-      ),
+    ];
+
+    if (workspacePath && !(await isSPFxProject(workspacePath))) {
+      developmentCommand.push(
+        new TreeViewCommand(
+          StringResources.vsc.commandsTreeViewProvider.addCapabilitiesTitleNew,
+          StringResources.vsc.commandsTreeViewProvider.addCapabilitiesDescription,
+          "fx-extension.addCapability",
+          vscode.TreeItemCollapsibleState.None,
+          undefined,
+          undefined,
+          { name: "addCapability", custom: true }
+        ),
+        new TreeViewCommand(
+          StringResources.vsc.commandsTreeViewProvider.addResourcesTitleNew,
+          StringResources.vsc.commandsTreeViewProvider.addResourcesDescription,
+          "fx-extension.update",
+          vscode.TreeItemCollapsibleState.None,
+          undefined,
+          undefined,
+          { name: "addResources", custom: true }
+        )
+      );
+    }
+
+    developmentCommand.push(
       new TreeViewCommand(
         StringResources.vsc.commandsTreeViewProvider.manifestEditorTitleNew,
         StringResources.vsc.commandsTreeViewProvider.manifestEditorDescription,
@@ -79,8 +88,8 @@ class TreeViewManager {
         undefined,
         undefined,
         { name: "edit", custom: false }
-      ),
-    ];
+      )
+    );
 
     if (await AdaptiveCardCodeLensProvider.detectedAdaptiveCards()) {
       developmentCommand.push(

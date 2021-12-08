@@ -130,6 +130,11 @@ import {
 import { flattenConfigJson, newEnvInfo } from "./tools";
 import { LocalCrypto } from "./crypto";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
+import { merge } from "lodash";
+// TODO: For package.json,
+// use require instead of import because of core building/packaging method.
+// Using import will cause the build folder structure to change.
+const corePackage = require("../../package.json");
 
 export interface CoreHookContext extends HookContext {
   projectSettings?: ProjectSettings;
@@ -152,8 +157,8 @@ function featureFlagEnabled(flagName: string): boolean {
 }
 
 // API V2 feature flag
-export function isV2() {
-  return featureFlagEnabled(FeatureFlagName.APIV2);
+export function isV2(): boolean {
+  return isMultiEnvEnabled();
 }
 
 // On VS calling CLI, interactive questions need to be skipped.
@@ -168,6 +173,7 @@ export let TOOLS: Tools;
 export class FxCore implements Core {
   tools: Tools;
   isFromSample?: boolean;
+  settingsVersion?: string;
 
   constructor(tools: Tools) {
     this.tools = tools;
@@ -245,6 +251,7 @@ export class FxCore implements Core {
       if (basicFolderRes.isErr()) {
         return err(basicFolderRes.error);
       }
+
       const projectSettings: ProjectSettings = {
         appName: appName,
         projectId: inputs.projectId ? inputs.projectId : uuid.v4(),
@@ -503,14 +510,10 @@ export class FxCore implements Core {
         this.tools.tokenProvider
       );
       if (result.kind === "success") {
-        // Remove all "output" and "secret" fields for backward compatibility.
-        // todo(yefuwang): handle "output" and "secret" fields in middlewares.
-        const state = flattenConfigJson(result.output);
-        ctx.envInfoV2.state = { ...ctx.envInfoV2.state, ...state };
+        ctx.envInfoV2.state = merge(ctx.envInfoV2.state, result.output);
         return ok(Void);
       } else if (result.kind === "partialSuccess") {
-        const state = flattenConfigJson(result.output);
-        ctx.envInfoV2.state = { ...ctx.envInfoV2.state, ...state };
+        ctx.envInfoV2.state = merge(ctx.envInfoV2.state, result.output);
         return err(result.error);
       } else {
         return err(result.error);
@@ -562,7 +565,7 @@ export class FxCore implements Core {
           ctx.contextV2,
           inputs,
           ctx.envInfoV2.state,
-          this.tools.tokenProvider.azureAccountProvider
+          this.tools.tokenProvider
         );
       else return ok(Void);
     } else {
@@ -883,7 +886,20 @@ export class FxCore implements Core {
   async grantPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.grantPermission;
     inputs.stage = Stage.grantPermission;
-    return await ctx!.solution!.grantPermission!(ctx!.solutionContext!);
+    if (!isV2()) {
+      return ctx!.solution!.grantPermission!(ctx!.solutionContext!);
+    } else {
+      const projectPath = inputs.projectPath;
+      if (!projectPath) {
+        return err(new ObjectIsUndefinedError("projectPath"));
+      }
+      return ctx!.solutionV2!.grantPermission!(
+        ctx!.contextV2!,
+        { ...inputs, projectPath: projectPath },
+        ctx!.envInfoV2!,
+        this.tools.tokenProvider
+      );
+    }
   }
 
   @hooks([
@@ -900,7 +916,21 @@ export class FxCore implements Core {
   async checkPermission(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.checkPermission;
     inputs.stage = Stage.checkPermission;
-    return await ctx!.solution!.checkPermission!(ctx!.solutionContext!);
+
+    if (!isV2()) {
+      return ctx!.solution!.checkPermission!(ctx!.solutionContext!);
+    } else {
+      const projectPath = inputs.projectPath;
+      if (!projectPath) {
+        return err(new ObjectIsUndefinedError("projectPath"));
+      }
+      return ctx!.solutionV2!.checkPermission!(
+        ctx!.contextV2!,
+        { ...inputs, projectPath: projectPath },
+        ctx!.envInfoV2!,
+        this.tools.tokenProvider
+      );
+    }
   }
 
   @hooks([
@@ -917,7 +947,21 @@ export class FxCore implements Core {
   async listCollaborator(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listCollaborator;
     inputs.stage = Stage.listCollaborator;
-    return await ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
+
+    if (!isV2()) {
+      return ctx!.solution!.listCollaborator!(ctx!.solutionContext!);
+    } else {
+      const projectPath = inputs.projectPath;
+      if (!projectPath) {
+        return err(new ObjectIsUndefinedError("projectPath"));
+      }
+      return ctx!.solutionV2!.listCollaborator!(
+        ctx!.contextV2!,
+        { ...inputs, projectPath: projectPath },
+        ctx!.envInfoV2!,
+        this.tools.tokenProvider
+      );
+    }
   }
 
   @hooks([
@@ -933,7 +977,20 @@ export class FxCore implements Core {
   async listAllCollaborators(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
     currentStage = Stage.listAllCollaborators;
     inputs.stage = Stage.listAllCollaborators;
-    return await ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
+    if (!isV2()) {
+      return ctx!.solution!.listAllCollaborators!(ctx!.solutionContext!);
+    } else {
+      const projectPath = inputs.projectPath;
+      if (!projectPath) {
+        return err(new ObjectIsUndefinedError("projectPath"));
+      }
+      return ctx!.solutionV2!.listAllCollaborators!(
+        ctx!.contextV2!,
+        { ...inputs, projectPath: projectPath },
+        ctx!.envInfoV2!,
+        this.tools.tokenProvider
+      );
+    }
   }
 
   @hooks([
@@ -1038,6 +1095,7 @@ export class FxCore implements Core {
       if (isV2()) {
         const solutionV2 = solution as v2.SolutionPlugin;
         if (solutionV2.getQuestions) {
+          inputs.stage = stage;
           res = await solutionV2.getQuestions(
             ctx as v2.Context,
             inputs,
@@ -1490,7 +1548,7 @@ export function undefinedName(objs: any[], names: string[]) {
 }
 
 export function getProjectSettingsVersion() {
-  if (isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, false)) return "2.0.0";
+  if (isMultiEnvEnabled()) return "2.0.0";
   else return "1.0.0";
 }
 

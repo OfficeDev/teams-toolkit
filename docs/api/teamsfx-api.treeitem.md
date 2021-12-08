@@ -17,7 +17,10 @@ export interface TreeItem
 |  [callback?](./teamsfx-api.treeitem.callback.md) | (args: any) =&gt; Promise&lt;Result&lt;null, [FxError](./teamsfx-api.fxerror.md)<!-- -->&gt;&gt; | <i>(Optional)</i> |
 |  [commandId](./teamsfx-api.treeitem.commandid.md) | string |  |
 |  [contextValue?](./teamsfx-api.treeitem.contextvalue.md) | string | <i>(Optional)</i> |
+|  [description?](./teamsfx-api.treeitem.description.md) | string | <i>(Optional)</i> |
+|  [expanded?](./teamsfx-api.treeitem.expanded.md) | boolean | <i>(Optional)</i> |
 |  [icon?](./teamsfx-api.treeitem.icon.md) | string | <i>(Optional)</i> |
+|  [isCustom?](./teamsfx-api.treeitem.iscustom.md) | boolean | <i>(Optional)</i> |
 |  [label](./teamsfx-api.treeitem.label.md) | string |  |
 |  [parent?](./teamsfx-api.treeitem.parent.md) | [TreeCategory](./teamsfx-api.treecategory.md) \| string | <i>(Optional)</i> |
 |  [subTreeItems?](./teamsfx-api.treeitem.subtreeitems.md) | [TreeItem](./teamsfx-api.treeitem.md)<!-- -->\[\] | <i>(Optional)</i> |

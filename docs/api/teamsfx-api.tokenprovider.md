@@ -11,7 +11,8 @@ export declare type TokenProvider = {
     azureAccountProvider: AzureAccountProvider;
     graphTokenProvider: GraphTokenProvider;
     appStudioToken: AppStudioTokenProvider;
+    sharepointTokenProvider: SharepointTokenProvider;
 };
 ```
-<b>References:</b> [AzureAccountProvider](./teamsfx-api.azureaccountprovider.md)<!-- -->, [GraphTokenProvider](./teamsfx-api.graphtokenprovider.md)<!-- -->, [AppStudioTokenProvider](./teamsfx-api.appstudiotokenprovider.md)
+<b>References:</b> [AzureAccountProvider](./teamsfx-api.azureaccountprovider.md)<!-- -->, [GraphTokenProvider](./teamsfx-api.graphtokenprovider.md)<!-- -->, [AppStudioTokenProvider](./teamsfx-api.appstudiotokenprovider.md)<!-- -->, [SharepointTokenProvider](./teamsfx-api.sharepointtokenprovider.md)
 

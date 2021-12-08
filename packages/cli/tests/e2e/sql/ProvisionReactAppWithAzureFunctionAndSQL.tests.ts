@@ -1,6 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Zhaofeng Xu <zhaofengxu@microsoft.com>
+ */
+
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import path from "path";
 
@@ -14,6 +19,7 @@ import {
   getUniqueAppName,
   setSimpleAuthSkuNameToB1,
   cleanUp,
+  setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 
 describe("Provision to Azure with SQL", function () {
@@ -22,7 +28,7 @@ describe("Provision to Azure with SQL", function () {
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
 
-  it(`Provision react app with Azure Function and SQL - Test Plan ID 9454227`, async function () {
+  it(`Provision react app with Azure Function and SQL`, async function () {
     // new a project ( tab + function + sql )
     await execAsync(
       `teamsfx new --interactive false --app-name ${appName} --capabilities tab --azure-resources function sql`,
@@ -34,7 +40,11 @@ describe("Provision to Azure with SQL", function () {
     );
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    await setSimpleAuthSkuNameToB1(projectPath);
+    if (isMultiEnvEnabled()) {
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    } else {
+      await setSimpleAuthSkuNameToB1(projectPath);
+    }
 
     // provision
     await execAsyncWithRetry(
@@ -46,16 +56,29 @@ describe("Provision to Azure with SQL", function () {
       }
     );
 
-    // Get context
-    const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+    if (isMultiEnvEnabled()) {
+      // Get context
+      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-    // Validate Aad App
-    await SqlValidator.init(context);
-    await SqlValidator.validateSql();
+      // Validate Aad App
+      await SqlValidator.init(context);
+      await SqlValidator.validateSql();
+    } else {
+      // Get context
+      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
+
+      // Validate Aad App
+      await SqlValidator.init(context);
+      await SqlValidator.validateSql();
+    }
   });
 
   after(async () => {
     // clean up
-    await cleanUp(appName, projectPath, true, false, false);
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, false, false, true);
+    } else {
+      await cleanUp(appName, projectPath, true, false, false);
+    }
   });
 });

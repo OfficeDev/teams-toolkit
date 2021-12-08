@@ -39,7 +39,7 @@ import path from "path";
 import os from "os";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
-import { CoreSource, FxCore } from "..";
+import { CoreSource, FxCore, isV2 } from "..";
 import {
   getStrings,
   isArmSupportEnabled,
@@ -56,7 +56,10 @@ import {
 } from "../../plugins/solution/fx-solution/question";
 import { loadSolutionContext } from "./envInfoLoader";
 import { ResourcePlugins } from "../../common/constants";
-import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
+import {
+  getActivatedResourcePlugins,
+  getActivatedV2ResourcePlugins,
+} from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { LocalDebugConfigKeys } from "../../plugins/resource/localdebug/constants";
 import {
   MANIFEST_LOCAL,
@@ -78,6 +81,7 @@ import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 import util from "util";
 import { LocalEnvMultiProvider } from "../../plugins/resource/localdebug/localEnvMulti";
+import { NamedArmResourcePluginAdaptor } from "../../plugins/solution/fx-solution/v2/adaptor";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -185,7 +189,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       sendTelemetryErrorEvent(
         Component.core,
         TelemetryEvent.ProjectMigratorError,
-        assembleError(err, CoreSource)
+        assembleError(error, CoreSource)
       );
       throw error;
     }
@@ -970,7 +974,7 @@ function preCheckEnvEnabled() {
 }
 
 export async function migrateArm(ctx: CoreHookContext) {
-  await generateArmTempaltesFiles(ctx);
+  await generateArmTemplatesFiles(ctx);
   await generateArmParameterJson(ctx);
 }
 
@@ -1061,7 +1065,7 @@ async function updateConfig(ctx: CoreHookContext) {
   await fs.writeFile(path.join(fx, "new.env.default.json"), JSON.stringify(envConfig, null, 4));
 }
 
-async function generateArmTempaltesFiles(ctx: CoreHookContext) {
+async function generateArmTemplatesFiles(ctx: CoreHookContext) {
   const minorCtx: CoreHookContext = { arguments: ctx.arguments };
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const core = ctx.self as FxCore;
@@ -1091,9 +1095,14 @@ async function generateArmTempaltesFiles(ctx: CoreHookContext) {
     throw SolutionConfigError();
   }
   minorCtx.solutionContext = result.value;
+  const settings = minorCtx.projectSettings?.solutionSettings as AzureSolutionSettings;
+  const activePlugins = isV2()
+    ? getActivatedV2ResourcePlugins(settings).map((p) => new NamedArmResourcePluginAdaptor(p))
+    : getActivatedResourcePlugins(settings);
+
   // generate bicep files.
   try {
-    await generateArmTemplate(minorCtx.solutionContext);
+    await generateArmTemplate(minorCtx.solutionContext, activePlugins);
   } catch (error) {
     throw error;
   }

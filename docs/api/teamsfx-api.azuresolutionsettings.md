@@ -19,4 +19,5 @@ export interface AzureSolutionSettings extends SolutionSettings
 |  [azureResources](./teamsfx-api.azuresolutionsettings.azureresources.md) | string\[\] |  |
 |  [capabilities](./teamsfx-api.azuresolutionsettings.capabilities.md) | string\[\] |  |
 |  [hostType](./teamsfx-api.azuresolutionsettings.hosttype.md) | string |  |
+|  [migrateFromV1?](./teamsfx-api.azuresolutionsettings.migratefromv1.md) | boolean | <i>(Optional)</i> |
 

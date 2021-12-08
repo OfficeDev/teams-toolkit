@@ -37,7 +37,6 @@ import { ArmTemplateResult } from "../../../src/common/armInterface";
 import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 import { it } from "mocha";
 import path from "path";
-import { ArmResourcePlugin } from "../../../src/common/armInterface";
 import mockedEnv from "mocked-env";
 import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { ResourceManagementModels, Deployments } from "@azure/arm-resources";
@@ -45,8 +44,12 @@ import { WebResourceLike, HttpHeaders } from "@azure/ms-rest-js";
 import {
   mockedFehostScaffoldArmResult,
   mockedSimpleAuthScaffoldArmResult,
+  mockedSimpleAuthUpdateArmResult,
   mockedAadScaffoldArmResult,
   mockedBotArmTemplateResultFunc,
+  MockedUserInteraction,
+  MockedLogProvider,
+  MockedTelemetryReporter,
 } from "./util";
 import * as tools from "../../../src/common/tools";
 import * as cpUtils from "../../../src/common/cpUtils";
@@ -64,13 +67,11 @@ let mockedEnvRestore: () => void;
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
-const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin &
-  ArmResourcePlugin;
-const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin) as Plugin &
-  ArmResourcePlugin;
-const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin & ArmResourcePlugin;
-const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin & ArmResourcePlugin;
-const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin) as Plugin & ArmResourcePlugin;
+const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin;
+const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin) as Plugin;
+const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin;
+const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin;
+const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin) as Plugin;
 
 const baseFolder = "./templates/azure";
 const templatesFolder = "./templates";
@@ -103,6 +104,9 @@ function mockSolutionContext(): SolutionContext {
     projectSettings: undefined,
     azureAccountProvider: Object as any & AzureAccountProvider,
     cryptoProvider: new LocalCrypto(""),
+    ui: new MockedUserInteraction(),
+    logProvider: new MockedLogProvider(),
+    telemetryReporter: new MockedTelemetryReporter(),
   };
 }
 
@@ -181,8 +185,8 @@ describe("Generate ARM Template for project", () => {
 
     const projectArmTemplateFolder = path.join(testFolder, templateFolder);
     const projectArmParameterFolder = path.join(testFolder, configFolderName);
-    const projectArmBaseFolder = path.join(testFolder, baseFolder);
-    const result = await generateArmTemplate(mockedCtx);
+    const selectedPlugins: Plugin[] = [aadPlugin, simpleAuthPlugin, fehostPlugin];
+    const result = await generateArmTemplate(mockedCtx, selectedPlugins);
     expect(result.isOk()).to.be.true;
     expect(
       await fs.readFile(path.join(projectArmTemplateFolder, "../main.bicep"), fileEncoding)
@@ -264,6 +268,11 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
 
     mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
       const res: ArmTemplateResult = mockedSimpleAuthScaffoldArmResult();
+      return ok(res);
+    });
+
+    mocker.stub(simpleAuthPlugin, "updateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      const res: ArmTemplateResult = mockedSimpleAuthUpdateArmResult();
       return ok(res);
     });
 
@@ -365,6 +374,10 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
     expect(
       await fs.readFile(path.join(projectArmTemplateFolder, "../provision/bot.bicep"), fileEncoding)
     ).equals("Mocked bot Provision content. simple auth endpoint: Mocked simple auth endpoint");
+
+    expect(
+      await fs.readFile(path.join(projectArmTemplateFolder, "../teamsFx/bot.bicep"), fileEncoding)
+    ).equals("Mocked bot Configuration content, bot webAppEndpoint: Mock web app end point");
   });
 });
 
@@ -788,6 +801,7 @@ describe("Arm Template Failed Test", () => {
         properties: {
           targetResource: {
             resourceName: "test resource",
+            id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Resources/deployments/addTeamsFxConfigurations",
           },
           provisioningState: "Running",
           timestamp: Date.now(),
@@ -830,13 +844,13 @@ describe("Arm Template Failed Test", () => {
               message: "bot inner error",
             },
             subErrors: {
-              usefulError: {
+              skuError: {
                 error: {
-                  code: "usefulError",
-                  message: "useful error",
+                  code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+                  message: "The maximum number of Free ServerFarms allowed in a Subscription is 10",
                 },
               },
-              uselessError: {
+              evaluationError: {
                 error: {
                   code: "DeploymentOperationFailed",
                   message:
@@ -851,9 +865,9 @@ describe("Arm Template Failed Test", () => {
     const res = formattedDeploymentError(errors);
     chai.assert.deepEqual(res, {
       botProvision: {
-        usefulError: {
-          code: "usefulError",
-          message: "useful error",
+        skuError: {
+          code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+          message: "The maximum number of Free ServerFarms allowed in a Subscription is 10",
         },
       },
     });

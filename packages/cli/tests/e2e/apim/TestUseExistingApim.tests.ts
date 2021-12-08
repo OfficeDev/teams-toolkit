@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
+ */
+
 import fs from "fs-extra";
 import path from "path";
 import { ApimValidator } from "../../commonlib";
@@ -97,7 +101,7 @@ describe("Use an existing API Management Service", function () {
     }
     await Promise.all([
       // clean up another resource group
-      cleanUpResourceGroup(existingRGName),
+      cleanUpResourceGroup(existingRGName, false),
       // clean up other resources
       cleanUp(appName, projectPath, true, false, true),
     ]);

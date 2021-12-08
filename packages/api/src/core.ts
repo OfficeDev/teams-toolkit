@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { Stage } from ".";
-import { CoreCallbackEvent } from "./constants";
+import { CoreCallbackEvent, Stage } from "./constants";
 import { FxError } from "./error";
 import { Func, FunctionRouter, QTreeNode } from "./qm";
 import { Inputs, Void } from "./types";

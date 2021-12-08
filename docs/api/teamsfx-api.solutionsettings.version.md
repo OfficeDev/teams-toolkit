@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-version: string;
+version?: string;
 ```

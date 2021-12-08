@@ -147,6 +147,17 @@ export function mockedSimpleAuthScaffoldArmResult(): ArmTemplateResult {
   return res;
 }
 
+export function mockedSimpleAuthUpdateArmResult(): ArmTemplateResult {
+  const res: ArmTemplateResult = {
+    Provision: {
+      Reference: {
+        endpoint: "Mocked simple auth endpoint",
+      },
+    },
+  };
+  return res;
+}
+
 export function mockedAadScaffoldArmResult(): ArmTemplateResult {
   const res: ArmTemplateResult = {
     Provision: {
@@ -168,12 +179,14 @@ export function mockedBotArmTemplateResultFunc(): ArmTemplateResult {
       },
       Reference: {
         URI: "Mocked bot URL",
+        webAppEndpoint: "Mock web app end point",
       },
     },
     Configuration: {
-      Orchestration: "Bot Configuration module content and outputs",
+      Orchestration:
+        "Mocked bot Orchestration content, Module path: {{PluginOutput.fx-resource-bot.Configuration.bot.ConfigPath}}",
       Modules: {
-        bot: "Mocked bot Configuration content, Module path: {{PluginOutput.fx-resource-simple-auth.Configuration.bot.ConfigPath}}",
+        bot: "Mocked bot Configuration content, bot webAppEndpoint: {{PluginOutput.fx-resource-bot.References.webAppEndpoint}}",
       },
     },
     Parameters: {
@@ -330,6 +343,43 @@ class MockedTokenCredentials extends TokenCredentialsBase {
       resource: "mock",
       accessToken: "mock",
     };
+  }
+}
+
+export class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
+  async getAccessToken(showDialog?: boolean): Promise<string> {
+    return "someFakeToken";
+  }
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    return {
+      tid: "222",
+    };
+  }
+  signout(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeCallback(
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  removeStatusChangeMap(name: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
   }
 }
 

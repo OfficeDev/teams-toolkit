@@ -80,7 +80,7 @@ describe("skipAddingUser", () => {
     chai.assert.isTrue(sqlPlugin.sqlImpl.config.skipAddingUser);
 
     // set config true
-    pluginContext.config.set(Constants.skipAddingUser, true);
+    pluginContext.envInfo.config[Constants.skipAddingSqlUser] = true;
     // Act
     preProvisionResult = await sqlPlugin.preProvision(pluginContext);
 
@@ -89,7 +89,8 @@ describe("skipAddingUser", () => {
     chai.assert.isTrue(sqlPlugin.sqlImpl.config.skipAddingUser);
 
     // set config false
-    pluginContext.config.set(Constants.skipAddingUser, false);
+    pluginContext.envInfo.config[Constants.skipAddingSqlUser] = false;
+
     // Act
     preProvisionResult = await sqlPlugin.preProvision(pluginContext);
 

@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Ning Liu <nliu@microsoft.com>
+ */
+
 import * as fs from "fs-extra";
 import * as path from "path";
 import { expect } from "chai";
@@ -12,8 +16,10 @@ import {
   getTestFolder,
   getUniqueAppName,
   readContext,
+  readContextMultiEnv,
 } from "../commonUtils";
 import { AppStudioValidator, SharepointValidator } from "../../commonlib";
+import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 describe("Start a new project", function () {
   const testFolder = getTestFolder();
@@ -77,12 +83,24 @@ describe("Start a new project", function () {
     expect(result.stderr).to.eq("");
 
     {
-      // Get context
-      const context = await readContext(projectPath);
+      if (isMultiEnvEnabled()) {
+        // Get context
+        const context = await readContextMultiEnv(
+          projectPath,
+          environmentManager.getDefaultEnvName()
+        );
 
-      // Only check Teams App existence
-      const appStudio = AppStudioValidator.init(context);
-      AppStudioValidator.validateTeamsAppExist(appStudio);
+        // Only check Teams App existence
+        const appStudio = AppStudioValidator.init(context);
+        AppStudioValidator.validateTeamsAppExist(appStudio);
+      } else {
+        // Get context
+        const context = await readContext(projectPath);
+
+        // Only check Teams App existence
+        const appStudio = AppStudioValidator.init(context);
+        AppStudioValidator.validateTeamsAppExist(appStudio);
+      }
     }
 
     // deploy

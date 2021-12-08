@@ -23,7 +23,7 @@ import {
 import {
   GLOBAL_CONFIG,
   PluginNames,
-  REMOTE_TENANT_ID,
+  REMOTE_TEAMS_APP_TENANT_ID,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../../../src/plugins/solution/fx-solution/constants";
@@ -92,54 +92,11 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
     sandbox.stub(environmentManager, "loadEnvInfo").resolves(ok(mockedCtx.envInfo));
 
     const result = await solution.listAllCollaborators(mockedCtx);
+
     expect(result.isErr()).to.be.false;
     if (!result.isErr()) {
       expect(result.value[mockedCtx.envInfo.envName].state).equals(
         CollaborationState.NotProvisioned
-      );
-    }
-  });
-
-  it("should return SolutionIsNotIdle state if solution state is not idle", async () => {
-    const solution = new TeamsAppSolution();
-    expect(solution.runningState).equal(SolutionRunningState.Idle);
-
-    const mockedCtx = mockSolutionContext();
-
-    sandbox.stub(mockedCtx.graphTokenProvider as GraphTokenProvider, "getJsonObject").resolves({
-      tid: "fake_tid",
-      oid: "fake_oid",
-      unique_name: "fake_unique_name",
-      name: "fake_name",
-    });
-
-    sandbox.stub(environmentManager, "listEnvConfigs").resolves(ok([mockedCtx.envInfo.envName]));
-    sandbox.stub(environmentManager, "loadEnvInfo").resolves(ok(mockedCtx.envInfo));
-
-    solution.runningState = SolutionRunningState.ProvisionInProgress;
-    let result = await solution.listAllCollaborators(mockedCtx);
-    expect(result.isErr()).to.be.false;
-
-    if (!result.isErr()) {
-      expect(result.value[mockedCtx.envInfo.envName].state).equals(
-        CollaborationState.SolutionIsNotIdle
-      );
-    }
-
-    solution.runningState = SolutionRunningState.DeployInProgress;
-    result = await solution.listAllCollaborators(mockedCtx);
-    expect(result.isErr()).to.be.false;
-    if (!result.isErr()) {
-      expect(result.value[mockedCtx.envInfo.envName].state).equals(
-        CollaborationState.SolutionIsNotIdle
-      );
-    }
-    solution.runningState = SolutionRunningState.PublishInProgress;
-    result = await solution.listAllCollaborators(mockedCtx);
-    expect(result.isErr()).to.be.false;
-    if (!result.isErr()) {
-      expect(result.value[mockedCtx.envInfo.envName].state).equals(
-        CollaborationState.SolutionIsNotIdle
       );
     }
   });
@@ -190,8 +147,9 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
       name: "fake_name",
     });
 
-    mockedCtx.envInfo.state.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.envInfo.state.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.state
+      .get(PluginNames.SOLUTION)
+      ?.set(REMOTE_TEAMS_APP_TENANT_ID, mockProjectTenantId);
     sandbox.stub(environmentManager, "listEnvConfigs").resolves(ok([mockedCtx.envInfo.envName]));
     sandbox.stub(environmentManager, "loadEnvInfo").resolves(ok(mockedCtx.envInfo));
 
@@ -202,7 +160,6 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         CollaborationState.M365TenantNotMatch
       );
     }
-    sandbox.restore();
   });
 
   it("should return error if list collaborator failed", async () => {
@@ -254,8 +211,9 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
       ]);
     };
 
-    mockedCtx.envInfo.state.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.envInfo.state.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.state
+      .get(PluginNames.SOLUTION)
+      ?.set(REMOTE_TEAMS_APP_TENANT_ID, mockProjectTenantId);
 
     const result = await solution.listAllCollaborators(mockedCtx);
     expect(result.isErr()).to.be.false;
@@ -278,6 +236,14 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         hostType: HostTypeOptionAzure.id,
         name: "azure",
         version: "1.0",
+        activeResourcePlugins: [
+          "fx-resource-frontend-hosting",
+          "fx-resource-identity",
+          "fx-resource-aad-app-for-teams",
+          "fx-resource-local-debug",
+          "fx-resource-appstudio",
+          "fx-resource-simple-auth",
+        ],
       },
     };
     mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
@@ -317,8 +283,9 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
         },
       ]);
     };
-    mockedCtx.envInfo.state.set(PluginNames.AAD, new ConfigMap());
-    mockedCtx.envInfo.state.get(PluginNames.AAD)?.set(REMOTE_TENANT_ID, mockProjectTenantId);
+    mockedCtx.envInfo.state
+      .get(PluginNames.SOLUTION)
+      ?.set(REMOTE_TEAMS_APP_TENANT_ID, mockProjectTenantId);
 
     const result = await solution.listAllCollaborators(mockedCtx);
     if (result.isErr()) {
@@ -338,6 +305,5 @@ describe("listAllCollaborators() for Teamsfx projects", () => {
     expect(result.value[mockedCtx.envInfo.envName].collaborators![0].teamsAppResourceId).equal(
       "fake-teams-app-resource-id"
     );
-    sinon.restore();
   });
 });

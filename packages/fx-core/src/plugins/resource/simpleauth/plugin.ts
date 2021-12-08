@@ -10,9 +10,9 @@ import { TelemetryUtils } from "./utils/telemetry";
 import { WebAppClient } from "./webAppClient";
 import * as path from "path";
 import * as fs from "fs-extra";
-import { getTemplatesFolder } from "../../..";
-import { ScaffoldArmTemplateResult, ArmTemplateResult } from "../../../common/armInterface";
-import { generateBicepFiles, isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
+import { getTemplatesFolder } from "../../../folder";
+import { ArmTemplateResult } from "../../../common/armInterface";
+import { isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
 import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
 import { Bicep, ConstantString } from "../../../common/constants";
 
@@ -113,6 +113,41 @@ export class SimpleAuthPluginImpl {
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndPostProvision);
     return ResultFactory.Success();
+  }
+
+  public async updateArmTemplates(ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> {
+    TelemetryUtils.init(ctx);
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartUpdateArmTemplates);
+
+    const bicepTemplateDirectory = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "simpleauth",
+      "bicep"
+    );
+
+    const configModuleFilePath = path.join(
+      bicepTemplateDirectory,
+      Constants.configModuleTemplateFileName
+    );
+
+    const result: ArmTemplateResult = {
+      Provision: {
+        Reference: {
+          skuName: Constants.SimpleAuthBicepOutputSkuName,
+          endpoint: Constants.SimpleAuthBicepOutputEndpoint,
+        },
+      },
+      Configuration: {
+        Modules: {
+          simpleAuth: await fs.readFile(configModuleFilePath, ConstantString.UTF8Encoding),
+        },
+      },
+    };
+
+    Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndUpdateArmTemplates);
+    return ResultFactory.Success(result);
   }
 
   public async generateArmTemplates(

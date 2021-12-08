@@ -45,11 +45,10 @@ export class SqlValidator {
     console.log("Successfully init validator for Azure AD app.");
   }
 
-  public static async validateSql() {
+  public static async validateSql(count = 1) {
     const query = `select name as username from sys.database_principals where type not in ('A', 'G', 'R', 'X') and sid is not null and name = '${this.identity}';`;
     const res = await this.doQuery(this.accessToken!, query);
-    console.log(res.length);
-    chai.expect(res.length).to.equal(1);
+    chai.expect(res.length).to.equal(count);
   }
 
   private static getConfig(ctx: any) {

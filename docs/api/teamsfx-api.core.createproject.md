@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-createProject: (systemInputs: Inputs) => Promise<Result<string, FxError>>;
+createProject: (inputs: Inputs) => Promise<Result<string, FxError>>;
 ```

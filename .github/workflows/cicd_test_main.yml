@@ -1,0 +1,23 @@
+name: Trigger CICD Test From Main
+
+on:
+  workflow_run:
+    workflows: ["CD"]
+    branches: ["main"]
+    types: ["completed"]
+
+jobs:
+  TriggerCICDTestFromDev:
+    runs-on: ubuntu-latest
+    if: ${{ github.event.workflow_run.conclusion == 'success' }}
+    steps:
+      - name: Trigger TeamsFx-CICD-Test
+        env:
+            TEAMSFX_CICD_TOKEN: ${{ secrets.TEAMSFX_CICD_TOKEN }}
+        run: |
+            curl \
+                -u IvanJobs:${TEAMSFX_CICD_TOKEN} \
+                -x POST \
+                -H "Accept: application/vnd.github.v3+json" \
+                https://api.github.com/repos/OfficeDev/TeamsFx-CICD-Test/actions/workflows/trigger_cicd_by_main.yml/dispatches \
+                -d "{\"ref\":\"main\"}" 

@@ -1,7 +1,10 @@
-import { Core, FxError, Result, Void } from "..";
-import { Context, InputsWithProjectPath } from "../v2";
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
 
-export interface CoreV3 extends Core {
+import { Func, FxError, Inputs, Result, Void } from "..";
+import { InputsWithProjectPath } from "../v2";
+
+export interface ICore {
   /**
    * init means enable TeamsFx feature for current project folder. There are two cases:
    * 1. Init in an empty folder
@@ -12,8 +15,40 @@ export interface CoreV3 extends Core {
   /**
    * scaffold will be an independent stage
    */
-  scaffoldSourceCode: (
-    ctx: Context,
-    inputs: InputsWithProjectPath
+  scaffold: (
+    inputs: InputsWithProjectPath & { moduleIndex?: number }
   ) => Promise<Result<Void, FxError>>;
+  /**
+   * A module is a connection between the local code and cloud resource for deployment stage.
+   * addModule only update project settings while add capability does more.
+   */
+  addModule: (
+    inputs: InputsWithProjectPath & { capabilities?: string[] }
+  ) => Promise<Result<Void, FxError>>;
+  /**
+   * addResource is separated from executeUserTask
+   */
+  addResource: (
+    inputs: InputsWithProjectPath & { moduleIndex?: number }
+  ) => Promise<Result<Void, FxError>>;
+
+  /**
+   * provision resources
+   */
+  provisionResources: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+
+  /**
+   * deploy bits
+   */
+  deployArtifacts: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+
+  /**
+   * publish application
+   */
+  publishApplication: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+
+  /**
+   * execute user customized task
+   */
+  executeUserTask: (func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
 }

@@ -116,7 +116,7 @@ export interface ResourcePlugin extends Plugin {
     inputs: InputsWithProjectPath,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
 
   configureLocalResource?: (
     ctx: Context,
@@ -140,6 +140,12 @@ export interface ResourcePlugin extends Plugin {
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<CloudResource, FxError>>;
+  configureResource?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Void, FxError>>;
 
   generateResourceTemplate?: (
     ctx: Context,
@@ -149,12 +155,7 @@ export interface ResourcePlugin extends Plugin {
     ctx: Context,
     inputs: InputsWithProjectPath
   ) => Promise<Result<ResourceTemplate, FxError>>;
-  configureResource?: (
-    ctx: Context,
-    inputs: InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV3>,
-    tokenProvider: TokenProvider
-  ) => Promise<Result<Void, FxError>>;
+
   /**
    * customize questions needed for deploy
    */
@@ -164,13 +165,13 @@ export interface ResourcePlugin extends Plugin {
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
-
   deploy?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
+
   /**
    * customize questions needed for user task
    */

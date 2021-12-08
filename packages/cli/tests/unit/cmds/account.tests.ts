@@ -6,7 +6,7 @@ import yargs, { Options } from "yargs";
 
 import { err, LogLevel, ok, UserError } from "@microsoft/teamsfx-api";
 
-import Account from "../../../src/cmds/account";
+import Account, { AzureLogin, M365Login } from "../../../src/cmds/account";
 import * as Utils from "../../../src/utils";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
@@ -145,6 +145,8 @@ describe("Account Command Tests", function () {
       "account <action>",
       "show",
       "login <service>",
+      "m365",
+      "azure",
       "logout <service>",
       "set",
     ]);
@@ -157,7 +159,7 @@ describe("Account Command Tests", function () {
       "folder",
       "subscription",
     ]);
-    expect(positionals).deep.equals(["service", "service"]);
+    expect(positionals).deep.equals(["service"]);
   });
 
   it("Account Command Running Check", async () => {
@@ -187,30 +189,26 @@ describe("Account Command Tests", function () {
   });
 
   it("Account Login Azure Command Running Check - Success", async () => {
-    const cmd = new Account();
-    const login = cmd.subCommands.find((cmd) => cmd.commandHead === "login");
-    await login!.handler({ service: "azure" });
+    const cmd = new AzureLogin();
+    await cmd!.handler({});
     expect(loglevels).deep.equals([LogLevel.Info, LogLevel.Info, LogLevel.Info]);
   });
 
   it("Account Login Azure Command Running Check - Failed", async () => {
-    const cmd = new Account();
-    const login = cmd.subCommands.find((cmd) => cmd.commandHead === "login");
-    await login!.handler({ service: "azure" });
+    const cmd = new AzureLogin();
+    await cmd!.handler({});
     expect(loglevels).deep.equals([LogLevel.Error]);
   });
 
   it("Account Login M365 Command Running Check - Success", async () => {
-    const cmd = new Account();
-    const login = cmd.subCommands.find((cmd) => cmd.commandHead === "login");
-    await login!.handler({ service: "m365" });
+    const cmd = new M365Login();
+    await cmd!.handler({});
     expect(loglevels).deep.equals([LogLevel.Info]);
   });
 
   it("Account Login M365 Command Running Check - Failed", async () => {
-    const cmd = new Account();
-    const login = cmd.subCommands.find((cmd) => cmd.commandHead === "login");
-    await login!.handler({ service: "m365" });
+    const cmd = new M365Login();
+    await cmd!.handler({});
     expect(loglevels).deep.equals([LogLevel.Error]);
   });
 

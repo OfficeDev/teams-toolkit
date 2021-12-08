@@ -190,7 +190,7 @@ class AccountLogin extends YargsCommand {
   }
 }
 
-class M365Login extends YargsCommand {
+export class M365Login extends YargsCommand {
   public readonly commandHead = `m365`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Log in to M365.";
@@ -207,7 +207,7 @@ class M365Login extends YargsCommand {
   }
 }
 
-class AzureLogin extends YargsCommand {
+export class AzureLogin extends YargsCommand {
   public readonly commandHead = `azure`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Log in to Azure.";

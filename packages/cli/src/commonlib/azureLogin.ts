@@ -647,3 +647,14 @@ const azureLogin =
     : AzureAccountManager.getInstance();
 
 export default azureLogin;
+
+// todo merge with default export, this function fix bug when user already logins with service principal, and he logins interactively, default azureLogin will return azureLoginCIProvider
+export function getAzureProvider() {
+  return ciEnabled && ciEnabled === "true"
+    ? checkAzureSPFile()
+      ? AzureLoginCI
+      : AzureAccountProviderUserPassword
+    : checkAzureSPFile()
+    ? AzureLoginCI
+    : AzureAccountManager.getInstance();
+}

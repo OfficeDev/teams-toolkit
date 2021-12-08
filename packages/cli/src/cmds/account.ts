@@ -9,7 +9,7 @@ import { Colors, FxError, LogLevel, ok, Question, Result, UserError } from "@mic
 
 import { YargsCommand } from "../yargsCommand";
 import AppStudioTokenProvider from "../commonlib/appStudioLogin";
-import AzureTokenProvider from "../commonlib/azureLogin";
+import AzureTokenProvider, { getAzureProvider } from "../commonlib/azureLogin";
 import AzureTokenCIProvider from "../commonlib/azureLoginCI";
 import {
   codeFlowLoginFormat,
@@ -60,8 +60,8 @@ async function outputAzureInfo(
   userName = "",
   password = ""
 ): Promise<boolean> {
-  let azureProvider = AzureTokenProvider;
-  if (isServicePrincipal === true) {
+  let azureProvider = getAzureProvider();
+  if (isServicePrincipal === true || (await AzureTokenCIProvider.load())) {
     await AzureTokenCIProvider.init(userName, password, tenantId);
     azureProvider = AzureTokenCIProvider;
   }
@@ -236,7 +236,12 @@ export class AzureLogin extends YargsCommand {
         description: "Client ID or cert path for service principal",
         type: "string",
         default: "",
-      });
+      })
+      .example("teamsfx account login azure", "Log in interactively.")
+      .example(
+        "teamsfx account login azure --service-principal -u USERNAME  -p SECRET --tenant TENANT_ID",
+        "Log in with a service principal using client secret."
+      );
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

@@ -1,17 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AppStudioTokenProvider,
-  Func,
-  FxError,
-  Inputs,
-  Json,
-  QTreeNode,
-  Result,
-  TokenProvider,
-  Void,
-} from "..";
+import { Result } from "neverthrow";
+import { FxError } from "../error";
+import { Func, QTreeNode } from "../qm/question";
+import { Inputs, Json, Void } from "../types";
+import { AppStudioTokenProvider, TokenProvider } from "../utils/login";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
 import { EnvInfoV3 } from "./types";
 

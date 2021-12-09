@@ -1,17 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, FxError, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
+import { err, FxError, Json, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
 import { CapabilityAlreadyAddedError } from "../error";
+import { capabilitiesQuestion } from "./questions";
 
 export async function getQuestionsForAddModule(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  return ok(undefined);
+  return ok(new QTreeNode(capabilitiesQuestion));
 }
 export async function addModule(
   ctx: v2.Context,
+  localSettings: Json,
   inputs: v2.InputsWithProjectPath & { capabilities: string[] }
 ): Promise<Result<Void, FxError>> {
   const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;

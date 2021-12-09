@@ -775,13 +775,13 @@ export function isAutoSkipSelect(q: Question): boolean;
 // @public (undocumented)
 interface ISolution {
     // (undocumented)
-    addModule: (ctx: Context_2, inputs: InputsWithProjectPath & {
+    addModule: (ctx: Context_2, localSettings: Json, inputs: InputsWithProjectPath & {
         capabilities: string[];
     }) => Promise<Result<Void, FxError>>;
     // (undocumented)
     addResource: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        moduleIndex: number;
-        pluginName: string;
+        module: number;
+        resource: string;
     }) => Promise<Result<Void, FxError>>;
     // (undocumented)
     deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
@@ -798,7 +798,7 @@ interface ISolution {
     getQuestionsForProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForPublish?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForScaffolding?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForScaffold?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
@@ -814,9 +814,9 @@ interface ISolution {
     // (undocumented)
     publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    scaffold: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        moduleIndex: number;
-        templateName: string;
+    scaffold: (ctx: Context_2, inputs: PluginScaffoldInputs & {
+        module?: number;
+        template: OptionItem;
     }) => Promise<Result<Void, FxError>>;
 }
 
@@ -1110,6 +1110,14 @@ export type PluginIdentity = string;
 type PluginName = string;
 
 // @public (undocumented)
+interface PluginScaffoldInputs extends InputsWithProjectPath {
+    buildPath?: string;
+    dir?: string;
+    module: number;
+    template: string;
+}
+
+// @public (undocumented)
 export const ProductName = "teamsfx";
 
 // @public (undocumented)
@@ -1303,17 +1311,10 @@ export interface RunnableTask<T> {
 }
 
 // @public (undocumented)
-interface ScaffoldInputs extends InputsWithProjectPath {
-    buildPath?: string;
-    dir?: string;
-    templateName: string;
-}
-
-// @public (undocumented)
 interface ScaffoldPlugin extends Plugin_3 {
     getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     getTemplates: (ctx: Context_2, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
-    scaffold: (ctx: Context_2, inputs: ScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
+    scaffold: (ctx: Context_2, inputs: PluginScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
 }
 
 // @public
@@ -1912,7 +1913,7 @@ declare namespace v3 {
         TeamsAppResource,
         TeamsFxAzureResourceStates,
         ScaffoldTemplate,
-        ScaffoldInputs,
+        PluginScaffoldInputs,
         Plugin_3 as Plugin,
         ScaffoldPlugin,
         ResourcePlugin_2 as ResourcePlugin,

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
-import { SolutionNameV3 } from "./solution";
+import { SolutionNameV3 } from "./constants";
 
 export async function getQuestionsForInit(
   ctx: v2.Context,

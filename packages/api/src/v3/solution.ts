@@ -4,9 +4,10 @@
 import { Result } from "neverthrow";
 import { FxError } from "../error";
 import { Func, QTreeNode } from "../qm/question";
-import { Inputs, Json, Void } from "../types";
+import { Inputs, Json, OptionItem, Void } from "../types";
 import { AppStudioTokenProvider, TokenProvider } from "../utils/login";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
+import { PluginScaffoldInputs } from "./plugins";
 import { EnvInfoV3 } from "./types";
 
 // export type StrictOmit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
@@ -29,13 +30,13 @@ export interface ISolution {
   /**
    * scaffold
    */
-  getQuestionsForScaffolding?: (
+  getQuestionsForScaffold?: (
     ctx: Context,
     inputs: InputsWithProjectPath
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   scaffold: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { moduleIndex: number; templateName: string }
+    inputs: PluginScaffoldInputs & { module?: number; template: OptionItem }
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -47,7 +48,7 @@ export interface ISolution {
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   addResource: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { moduleIndex: number; pluginName: string }
+    inputs: InputsWithProjectPath & { module: number; resource: string }
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -59,6 +60,7 @@ export interface ISolution {
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   addModule: (
     ctx: Context,
+    localSettings: Json,
     inputs: InputsWithProjectPath & { capabilities: string[] }
   ) => Promise<Result<Void, FxError>>;
 

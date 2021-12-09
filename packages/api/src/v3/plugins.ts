@@ -29,11 +29,15 @@ export interface ScaffoldTemplate {
   description: string;
 }
 
-export interface ScaffoldInputs extends InputsWithProjectPath {
+export interface PluginScaffoldInputs extends InputsWithProjectPath {
   /**
    * scaffold template name
    */
-  templateName: string;
+  template: string;
+  /**
+   * module index
+   */
+  module: number;
   /**
    * customized source root dir name
    */
@@ -70,7 +74,10 @@ export interface ScaffoldPlugin extends Plugin {
   /**
    * scaffold source code
    */
-  scaffold: (ctx: Context, inputs: ScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
+  scaffold: (
+    ctx: Context,
+    inputs: PluginScaffoldInputs
+  ) => Promise<Result<Json | undefined, FxError>>;
 }
 
 export interface ResourcePlugin extends Plugin {

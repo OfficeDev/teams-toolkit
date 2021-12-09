@@ -33,7 +33,9 @@ import sinon from "sinon";
 import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
 import Container from "typedi";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { CollaborationState, environmentManager, newEnvInfo } from "../../../src";
+import { CollaborationState } from "../../../src/common/permissionInterface";
+import { environmentManager } from "../../../src/core/environment";
+import { newEnvInfo } from "../../../src/core/tools";
 import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);

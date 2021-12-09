@@ -44,7 +44,8 @@ import {
 } from "./util";
 import _ from "lodash";
 import * as uuid from "uuid";
-import { AadAppForTeamsPlugin, newEnvInfo } from "../../../src";
+import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
+import { newEnvInfo } from "../../../src/core/tools";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import { deploy } from "../../../src/plugins/solution/fx-solution/v2/deploy";

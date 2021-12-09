@@ -17,14 +17,18 @@ import { CoreHookContext } from "../..";
 import {
   ContextInjectorMW,
   ErrorHandlerMW,
+  ProjectSettingsLoaderMW,
   ProjectSettingsWriterMW,
   QuestionModelMW,
 } from "../middleware";
 import { addModule } from "./addModule";
 import { init } from "./init";
 import { QuestionModelMW_V3 } from "./mw/questionModel";
+import { SolutionLoaderMW_V3 } from "./mw/solutionLoader";
 
 export class FxCoreV3 implements v3.ICore {
+  isFromSample?: boolean;
+  settingsVersion?: string;
   @hooks([ErrorHandlerMW, QuestionModelMW_V3, ContextInjectorMW, ProjectSettingsWriterMW])
   async init(
     inputs: v2.InputsWithProjectPath & { solution?: string },
@@ -32,7 +36,20 @@ export class FxCoreV3 implements v3.ICore {
   ): Promise<Result<Void, FxError>> {
     return init(inputs, ctx);
   }
-  addModule = addModule;
+  @hooks([
+    ErrorHandlerMW,
+    QuestionModelMW_V3,
+    ContextInjectorMW,
+    ProjectSettingsLoaderMW,
+    SolutionLoaderMW_V3,
+    ProjectSettingsWriterMW,
+  ])
+  async addModule(
+    inputs: v2.InputsWithProjectPath & { capabilities?: string[] },
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    return addModule(inputs, ctx);
+  }
   async scaffold(inputs: v2.InputsWithProjectPath): Promise<Result<Void, FxError>> {
     return err(new NotImplementedError("CoreV3", "scaffold"));
   }

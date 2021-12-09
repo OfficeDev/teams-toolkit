@@ -27,6 +27,7 @@ export async function addModule(
       return err(new CapabilityAlreadyAddedError(cap));
     }
   }
+  solutionSettings.capabilities = Array.from(capSet);
   solutionSettings.modules.push(module);
   //TODO
   //call localDebug plugin's scaffold API

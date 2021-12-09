@@ -53,6 +53,7 @@ import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
 import * as uuid from "uuid";
+import { Capability } from "@azure/arm-appservice/esm/models/mappers";
 /**
  * Since FxCoreV3 has change the semantics for each atomic commands, FxCoreAdapter is an adapter to make sure that FxCoreAdapter's APIs have the same semantics as FxCore
  */
@@ -130,8 +131,25 @@ export class FxCoreAdapter implements Core {
 
       inputs.projectPath = projectPath;
       delete inputs.solution;
+      inputs.capabilities = [];
       const initRes = await this.core.init(inputs as v2.InputsWithProjectPath);
       if (initRes.isErr()) return err(initRes.error);
+      const capabilities = inputs.capabilities as string[];
+      if (capabilities) {
+        if (capabilities.includes("Tab")) {
+          inputs.capabilities = ["Tab"];
+          const addRes = await this.core.addModule(inputs as v2.InputsWithProjectPath);
+          if (addRes.isErr()) return err(addRes.error);
+        }
+        if (capabilities.includes("Bot") || capabilities.includes("MessagingExtension")) {
+          inputs.capabilities = [];
+          if (capabilities.includes("Bot")) inputs.capabilities.push("Bot");
+          if (capabilities.includes("MessagingExtension"))
+            inputs.capabilities.push("MessagingExtension");
+          const addRes = await this.core.addModule(inputs as v2.InputsWithProjectPath);
+          if (addRes.isErr()) return err(addRes.error);
+        }
+      }
     }
 
     if (inputs.platform === Platform.VSCode) {

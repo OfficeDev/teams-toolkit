@@ -20,7 +20,7 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-import { createV2Context, isV2 } from "..";
+import { createV2Context, isV2, TOOLS } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { isMultiEnvEnabled } from "../../common";
 import { readJson } from "../../common/fileUtils";
@@ -65,10 +65,10 @@ export const ProjectSettingsLoaderMW: Middleware = async (
     }
 
     ctx.projectSettings = projectSettings;
-    (ctx.self as FxCore).isFromSample = projectSettings.isFromSample === true;
-    (ctx.self as FxCore).settingsVersion = projectSettings.version;
+    (ctx.self as any).isFromSample = projectSettings.isFromSample === true;
+    (ctx.self as any).settingsVersion = projectSettings.version;
     if (isV2()) {
-      (ctx.self as FxCore).tools.cryptoProvider = new LocalCrypto(projectSettings.projectId);
+      TOOLS.cryptoProvider = new LocalCrypto(projectSettings.projectId);
       ctx.contextV2 = createV2Context(projectSettings);
     }
   }

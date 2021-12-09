@@ -45,7 +45,7 @@ describe("Create a new API Management Service", function () {
       await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
 
       result = await execAsyncWithRetry(
-        `teamsfx resource add azure-apim --subscription ${subscriptionId}`,
+        `teamsfx resource add azure-apim`,
         {
           cwd: projectPath,
           env: testProcessEnv,

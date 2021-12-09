@@ -410,5 +410,5 @@ export function endLocalDebugSession() {
 }
 
 export function getLocalDebugSessionId(): string {
-  return localDebugCorrelationId || "undefined";
+  return localDebugCorrelationId || "no-session-id";
 }

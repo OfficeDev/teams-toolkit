@@ -77,6 +77,6 @@ export async function scaffold(
   inputs.manifest = manifest;
   //call appstudio.scaffold() API
   const appstudioPlugin = Container.get<v3.ScaffoldPlugin>(BuiltInResourcePluginNames.AppStudio);
-  appstudioPlugin.scaffold(ctx, inputs);
+  await appstudioPlugin.scaffold(ctx, inputs);
   return ok(Void);
 }

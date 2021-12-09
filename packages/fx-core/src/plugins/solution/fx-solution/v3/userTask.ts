@@ -34,5 +34,5 @@ export async function executeUserTask(
   envInfo: v3.EnvInfoV3,
   tokenProvider: TokenProvider
 ): Promise<Result<unknown, FxError>> {
-  return err(new NotImplementedError("Solution", "publishApplication"));
+  return err(new NotImplementedError("Solution", "executeUserTask"));
 }

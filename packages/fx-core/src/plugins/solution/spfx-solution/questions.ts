@@ -5,7 +5,7 @@ import { ResourcePluginsV2 } from "../fx-solution/ResourcePluginContainer";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
-  inputs: Inputs
+  inputs: v2.InputsWithProjectPath
 ): Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>> {
   const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
     ResourcePluginsV2.SpfxPlugin

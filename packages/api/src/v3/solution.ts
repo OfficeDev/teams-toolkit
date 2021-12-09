@@ -29,7 +29,7 @@ export interface ISolution {
   getQuestionsForScaffolding?: (
     ctx: Context,
     inputs: InputsWithProjectPath
-  ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  ) => Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>>;
   scaffold: (
     ctx: Context,
     inputs: InputsWithProjectPath & { moduleIndex?: number }

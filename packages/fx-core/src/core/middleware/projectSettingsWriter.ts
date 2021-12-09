@@ -16,7 +16,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { CoreHookContext, FxCore, isV2 } from "..";
+import { CoreHookContext, TOOLS } from "..";
 import { isMultiEnvEnabled } from "../../common";
 import { WriteFileError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
@@ -53,9 +53,8 @@ export const ProjectSettingsWriterMW: Middleware = async (
       } else {
         settingFile = path.resolve(confFolderPath, "settings.json");
       }
-      const core = ctx.self as FxCore;
       await fs.writeFile(settingFile, JSON.stringify(projectSettings, null, 4));
-      core.tools.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
+      TOOLS.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
     } catch (e) {
       if ((ctx.result as Result<any, FxError>).isOk()) {
         ctx.result = err(WriteFileError(e));

@@ -63,6 +63,7 @@ import {
   LocalSettingsProvider,
   CollaborationState,
   getHashedEnv,
+  FxCoreAdapter,
 } from "@microsoft/teamsfx-core";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
@@ -137,8 +138,10 @@ import { AzurePortalUrl, ConfigurationKey } from "./constants";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { generateAccountHint } from "./debug/teamsfxDebugProvider";
 import { returnUserError } from "@microsoft/teamsfx-api";
+import { FxCoreV3 } from "../../fx-core/build/core/v3/core";
 
 export let core: FxCore;
+export let corev3: FxCoreAdapter;
 export let tools: Tools;
 export function getWorkspacePath(): string | undefined {
   const workspacePath: string | undefined = workspace.workspaceFolders?.length
@@ -215,6 +218,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
       expServiceProvider: exp.getExpService(),
     };
     core = new FxCore(tools);
+    corev3 = new FxCoreAdapter();
     registerCoreEvents();
     await registerAccountTreeHandler();
     await registerEnvTreeHandler();
@@ -573,7 +577,7 @@ export async function runCommand(
         if (TreatmentVariableValue.removeCreateFromSample) {
           inputs["scratch"] = "yes";
         }
-        const tmpResult = await core.createProject(inputs);
+        const tmpResult = await corev3.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
         } else {

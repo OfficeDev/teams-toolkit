@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
-import { SolutionNameV3 } from "./constants";
+import { TeamsFxAzureSolutionNameV3 } from "./constants";
 
 export async function getQuestionsForInit(
   ctx: v2.Context,
@@ -17,7 +17,7 @@ export async function init(
 ): Promise<Result<Void, FxError>> {
   const solutionSettings: v3.TeamsFxSolutionSettings = {
     version: "3.0.0",
-    name: SolutionNameV3,
+    name: TeamsFxAzureSolutionNameV3,
     capabilities: inputs.capabilities,
     hostType: "",
     azureResources: [],

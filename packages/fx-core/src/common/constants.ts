@@ -58,4 +58,5 @@ export class FeatureFlagName {
   static readonly RollbackToTeamsToolkitV2 = "TEAMSFX_ROLLBACK_TO_TEAMS_TOOLKIT_V2";
   static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
   static readonly VSCallingCLI = "VS_CALLING_CLI";
+  static readonly APIV3 = "TEAMSFX_APIV3";
 }

@@ -38,6 +38,7 @@ import {
   v2,
   Void,
   BuildFolderName,
+  v3,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -145,6 +146,9 @@ export interface CoreHookContext extends HookContext {
   solutionV2?: v2.SolutionPlugin;
   envInfoV2?: v2.EnvInfoV2;
   localSettings?: Json;
+  //for v3
+  envInfoV3?: v3.EnvInfoV3;
+  solutionV3?: v3.ISolution;
 }
 
 function featureFlagEnabled(flagName: string): boolean {
@@ -159,6 +163,10 @@ function featureFlagEnabled(flagName: string): boolean {
 // API V2 feature flag
 export function isV2(): boolean {
   return isMultiEnvEnabled();
+}
+
+export function isV3(): boolean {
+  return featureFlagEnabled(FeatureFlagName.APIV3);
 }
 
 // On VS calling CLI, interactive questions need to be skipped.
@@ -215,7 +223,7 @@ export class FxCore implements Core {
     const multiEnv = isMultiEnvEnabled();
     if (scratch === ScratchOptionNo.id) {
       // create from sample
-      const downloadRes = await downloadSample(this, inputs, ctx);
+      const downloadRes = await downloadSample(inputs, ctx);
       if (downloadRes.isErr()) {
         return err(downloadRes.error);
       }
@@ -281,7 +289,7 @@ export class FxCore implements Core {
         }
         ctx.solutionV2 = solution;
         projectSettings.solutionSettings.name = solution.name;
-        const contextV2 = createV2Context(this, projectSettings);
+        const contextV2 = createV2Context(projectSettings);
         ctx.contextV2 = contextV2;
         const scaffoldSourceCodeRes = await solution.scaffoldSourceCode(contextV2, inputs);
         if (scaffoldSourceCodeRes.isErr()) {
@@ -738,7 +746,7 @@ export class FxCore implements Core {
           );
           return err(new ObjectIsUndefinedError(`executeUserTask input stuff: ${name}`));
         }
-        if (!ctx.contextV2) ctx.contextV2 = createV2Context(this, newProjectSettings());
+        if (!ctx.contextV2) ctx.contextV2 = createV2Context(newProjectSettings());
         if (ctx.solutionV2.executeUserTask) {
           if (!ctx.localSettings) ctx.localSettings = {};
           const res = await ctx.solutionV2.executeUserTask(
@@ -784,24 +792,22 @@ export class FxCore implements Core {
     currentStage = Stage.getQuestions;
     if (stage === Stage.create) {
       delete inputs.projectPath;
-      return await this._getQuestionsForCreateProject(inputs);
+      return await _getQuestionsForCreateProject(inputs);
     } else {
       if (isV2()) {
-        const contextV2 = ctx.contextV2
-          ? ctx.contextV2
-          : createV2Context(this, newProjectSettings());
+        const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
         const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
         const envInfoV2 = ctx.envInfoV2
           ? ctx.envInfoV2
           : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
         inputs.stage = stage;
-        return await this._getQuestions(contextV2, solutionV2, stage, inputs, envInfoV2);
+        return await _getQuestions(contextV2, solutionV2, stage, inputs, envInfoV2);
       } else {
         const solutionContext = ctx.solutionContext
           ? ctx.solutionContext
           : await newSolutionContext(this.tools, inputs);
         const solution = ctx.solution ? ctx.solution : getAllSolutionPlugins()[0];
-        return await this._getQuestions(solutionContext, solution, stage, inputs);
+        return await _getQuestions(solutionContext, solution, stage, inputs);
       }
     }
   }
@@ -825,18 +831,18 @@ export class FxCore implements Core {
     inputs.stage = Stage.getQuestions;
     currentStage = Stage.getQuestions;
     if (isV2()) {
-      const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(this, newProjectSettings());
+      const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
       const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
       const envInfoV2 = ctx.envInfoV2
         ? ctx.envInfoV2
         : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
-      return await this._getQuestionsForUserTask(contextV2, solutionV2, func, inputs, envInfoV2);
+      return await _getQuestionsForUserTask(contextV2, solutionV2, func, inputs, envInfoV2);
     } else {
       const solutionContext = ctx.solutionContext
         ? ctx.solutionContext
         : await newSolutionContext(this.tools, inputs);
       const solution = ctx.solution ? ctx.solution : getAllSolutionPlugins()[0];
-      return await this._getQuestionsForUserTask(solutionContext, solution, func, inputs);
+      return await _getQuestionsForUserTask(solutionContext, solution, func, inputs);
     }
   }
 
@@ -1012,109 +1018,6 @@ export class FxCore implements Core {
     } else {
       return ok(ctx?.solutionContext?.envInfo.envName);
     }
-  }
-
-  async _getQuestionsForUserTask(
-    ctx: SolutionContext | v2.Context,
-    solution: Solution | v2.SolutionPlugin,
-    func: FunctionRouter,
-    inputs: Inputs,
-    envInfo?: v2.EnvInfoV2
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const namespace = func.namespace;
-    const array = namespace ? namespace.split("/") : [];
-    if (namespace && "" !== namespace && array.length > 0) {
-      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
-      if (isV2()) {
-        const solutionV2 = solution as v2.SolutionPlugin;
-        if (solutionV2.getQuestionsForUserTask) {
-          res = await solutionV2.getQuestionsForUserTask(
-            ctx as v2.Context,
-            inputs,
-            func,
-            envInfo!,
-            this.tools.tokenProvider
-          );
-        }
-      } else {
-        const solutionv1 = solution as Solution;
-        if (solutionv1.getQuestionsForUserTask) {
-          res = await solutionv1.getQuestionsForUserTask(func, ctx as SolutionContext);
-        }
-      }
-      if (res.isOk()) {
-        if (res.value) {
-          const node = res.value.trim();
-          return ok(node);
-        }
-      }
-      return res;
-    }
-    return err(FunctionRouterError(func));
-  }
-
-  async _getQuestionsForMigrateV1Project(
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const node = new QTreeNode({ type: "group" });
-    const globalSolutions: Solution[] = await getAllSolutionPlugins();
-    const solutionContext = await newSolutionContext(this.tools, inputs);
-
-    for (const v of globalSolutions) {
-      if (v.getQuestions) {
-        const res = await v.getQuestions(Stage.migrateV1, solutionContext);
-        if (res.isErr()) return res;
-        if (res.value) {
-          const solutionNode = res.value as QTreeNode;
-          solutionNode.condition = { equals: v.name };
-          if (solutionNode.data) node.addChild(solutionNode);
-        }
-      }
-    }
-
-    const defaultAppNameFunc = new QTreeNode(DefaultAppNameFunc);
-    node.addChild(defaultAppNameFunc);
-
-    const appNameQuestion = new QTreeNode(QuestionV1AppName);
-    appNameQuestion.condition = {
-      validFunc: (input: any) => (!input ? undefined : "App name is auto generated."),
-    };
-    defaultAppNameFunc.addChild(appNameQuestion);
-    return ok(node.trim());
-  }
-
-  async _getQuestions(
-    ctx: SolutionContext | v2.Context,
-    solution: Solution | v2.SolutionPlugin,
-    stage: Stage,
-    inputs: Inputs,
-    envInfo?: v2.EnvInfoV2
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    if (stage !== Stage.create) {
-      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
-      if (isV2()) {
-        const solutionV2 = solution as v2.SolutionPlugin;
-        if (solutionV2.getQuestions) {
-          inputs.stage = stage;
-          res = await solutionV2.getQuestions(
-            ctx as v2.Context,
-            inputs,
-            envInfo!,
-            this.tools.tokenProvider
-          );
-        }
-      } else {
-        res = await (solution as Solution).getQuestions(stage, ctx as SolutionContext);
-      }
-      if (res.isErr()) return res;
-      if (res.value) {
-        const node = res.value as QTreeNode;
-        if (node.data) {
-          return ok(node.trim());
-        }
-      }
-    }
-    return ok(undefined);
   }
 
   @hooks([
@@ -1330,62 +1233,163 @@ export class FxCore implements Core {
     this.tools.ui.showMessage("info", `[${env}] is activated.`, false);
     return ok(Void);
   }
+}
+export async function _getQuestionsForCreateProject(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
+  // create new
+  const createNew = new QTreeNode({ type: "group" });
+  node.addChild(createNew);
+  createNew.condition = { equals: ScratchOptionYes.id };
+  const globalSolutions: Solution[] | v2.SolutionPlugin[] = isV2()
+    ? await getAllSolutionPluginsV2()
+    : await getAllSolutionPlugins();
+  const solutionNames: string[] = globalSolutions.map((s) => s.name);
+  const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
+  selectSolution.staticOptions = solutionNames;
+  const solutionSelectNode = new QTreeNode(selectSolution);
+  createNew.addChild(solutionSelectNode);
+  const context = isV2()
+    ? createV2Context(newProjectSettings())
+    : await newSolutionContext(TOOLS, inputs);
+  for (const solutionPlugin of globalSolutions) {
+    let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
+    if (isV2()) {
+      const v2plugin = solutionPlugin as v2.SolutionPlugin;
+      res = v2plugin.getQuestionsForScaffolding
+        ? await v2plugin.getQuestionsForScaffolding(context as v2.Context, inputs)
+        : ok(undefined);
+    } else {
+      const v1plugin = solutionPlugin as Solution;
+      res = v1plugin.getQuestions
+        ? await v1plugin.getQuestions(Stage.create, context as SolutionContext)
+        : ok(undefined);
+    }
+    if (res.isErr()) return res;
+    if (res.value) {
+      const solutionNode = res.value as QTreeNode;
+      solutionNode.condition = { equals: solutionPlugin.name };
+      if (solutionNode.data) solutionSelectNode.addChild(solutionNode);
+    }
+  }
+  if (inputs.platform !== Platform.VSCode) {
+    createNew.addChild(new QTreeNode(QuestionRootFolder));
+  }
+  createNew.addChild(new QTreeNode(QuestionAppName));
 
-  async _getQuestionsForCreateProject(
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
-    // create new
-    const createNew = new QTreeNode({ type: "group" });
-    node.addChild(createNew);
-    createNew.condition = { equals: ScratchOptionYes.id };
-    const globalSolutions: Solution[] | v2.SolutionPlugin[] = isV2()
-      ? await getAllSolutionPluginsV2()
-      : await getAllSolutionPlugins();
-    const solutionNames: string[] = globalSolutions.map((s) => s.name);
-    const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
-    selectSolution.staticOptions = solutionNames;
-    const solutionSelectNode = new QTreeNode(selectSolution);
-    createNew.addChild(solutionSelectNode);
-    const context = isV2()
-      ? createV2Context(this, newProjectSettings())
-      : await newSolutionContext(this.tools, inputs);
-    for (const solutionPlugin of globalSolutions) {
-      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
-      if (isV2()) {
-        const v2plugin = solutionPlugin as v2.SolutionPlugin;
-        res = v2plugin.getQuestionsForScaffolding
-          ? await v2plugin.getQuestionsForScaffolding(context as v2.Context, inputs)
-          : ok(undefined);
-      } else {
-        const v1plugin = solutionPlugin as Solution;
-        res = v1plugin.getQuestions
-          ? await v1plugin.getQuestions(Stage.create, context as SolutionContext)
-          : ok(undefined);
+  // create from sample
+  const sampleNode = new QTreeNode(SampleSelect);
+  node.addChild(sampleNode);
+  sampleNode.condition = { equals: ScratchOptionNo.id };
+  if (inputs.platform !== Platform.VSCode) {
+    sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+  }
+  return ok(node.trim());
+}
+
+export async function _getQuestionsForUserTask(
+  ctx: SolutionContext | v2.Context,
+  solution: Solution | v2.SolutionPlugin,
+  func: FunctionRouter,
+  inputs: Inputs,
+  envInfo?: v2.EnvInfoV2
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const namespace = func.namespace;
+  const array = namespace ? namespace.split("/") : [];
+  if (namespace && "" !== namespace && array.length > 0) {
+    let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
+    if (isV2()) {
+      const solutionV2 = solution as v2.SolutionPlugin;
+      if (solutionV2.getQuestionsForUserTask) {
+        res = await solutionV2.getQuestionsForUserTask(
+          ctx as v2.Context,
+          inputs,
+          func,
+          envInfo!,
+          TOOLS.tokenProvider
+        );
       }
+    } else {
+      const solutionv1 = solution as Solution;
+      if (solutionv1.getQuestionsForUserTask) {
+        res = await solutionv1.getQuestionsForUserTask(func, ctx as SolutionContext);
+      }
+    }
+    if (res.isOk()) {
+      if (res.value) {
+        const node = res.value.trim();
+        return ok(node);
+      }
+    }
+    return res;
+  }
+  return err(FunctionRouterError(func));
+}
+
+export async function _getQuestionsForMigrateV1Project(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const node = new QTreeNode({ type: "group" });
+  const globalSolutions: Solution[] = await getAllSolutionPlugins();
+  const solutionContext = await newSolutionContext(TOOLS, inputs);
+
+  for (const v of globalSolutions) {
+    if (v.getQuestions) {
+      const res = await v.getQuestions(Stage.migrateV1, solutionContext);
       if (res.isErr()) return res;
       if (res.value) {
         const solutionNode = res.value as QTreeNode;
-        solutionNode.condition = { equals: solutionPlugin.name };
-        if (solutionNode.data) solutionSelectNode.addChild(solutionNode);
+        solutionNode.condition = { equals: v.name };
+        if (solutionNode.data) node.addChild(solutionNode);
       }
     }
-    if (inputs.platform !== Platform.VSCode) {
-      createNew.addChild(new QTreeNode(QuestionRootFolder));
-    }
-    createNew.addChild(new QTreeNode(QuestionAppName));
-
-    // create from sample
-    const sampleNode = new QTreeNode(SampleSelect);
-    node.addChild(sampleNode);
-    sampleNode.condition = { equals: ScratchOptionNo.id };
-    if (inputs.platform !== Platform.VSCode) {
-      sampleNode.addChild(new QTreeNode(QuestionRootFolder));
-    }
-    return ok(node.trim());
   }
+
+  const defaultAppNameFunc = new QTreeNode(DefaultAppNameFunc);
+  node.addChild(defaultAppNameFunc);
+
+  const appNameQuestion = new QTreeNode(QuestionV1AppName);
+  appNameQuestion.condition = {
+    validFunc: (input: any) => (!input ? undefined : "App name is auto generated."),
+  };
+  defaultAppNameFunc.addChild(appNameQuestion);
+  return ok(node.trim());
 }
 
+export async function _getQuestions(
+  ctx: SolutionContext | v2.Context,
+  solution: Solution | v2.SolutionPlugin,
+  stage: Stage,
+  inputs: Inputs,
+  envInfo?: v2.EnvInfoV2
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (stage !== Stage.create) {
+    let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
+    if (isV2()) {
+      const solutionV2 = solution as v2.SolutionPlugin;
+      if (solutionV2.getQuestions) {
+        inputs.stage = stage;
+        res = await solutionV2.getQuestions(
+          ctx as v2.Context,
+          inputs,
+          envInfo!,
+          TOOLS.tokenProvider
+        );
+      }
+    } else {
+      res = await (solution as Solution).getQuestions(stage, ctx as SolutionContext);
+    }
+    if (res.isErr()) return res;
+    if (res.value) {
+      const node = res.value as QTreeNode;
+      if (node.data) {
+        return ok(node.trim());
+      }
+    }
+  }
+  return ok(undefined);
+}
 export async function createBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {
   if (!inputs.projectPath) {
     return err(new ObjectIsUndefinedError("projectPath"));
@@ -1434,12 +1438,11 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
   return ok(null);
 }
 export async function downloadSample(
-  fxCore: FxCore,
   inputs: Inputs,
   ctx: CoreHookContext
 ): Promise<Result<string, FxError>> {
   let fxError;
-  const progress = fxCore.tools.ui.createProgressBar("Fetch sample app", 3);
+  const progress = TOOLS.ui.createProgressBar("Fetch sample app", 3);
   progress.start();
   const telemetryProperties: any = {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -1526,13 +1529,13 @@ export function newProjectSettings(): ProjectSettings {
   return projectSettings;
 }
 
-export function createV2Context(core: FxCore, projectSettings: ProjectSettings): v2.Context {
+export function createV2Context(projectSettings: ProjectSettings): v2.Context {
   const context: v2.Context = {
-    userInteraction: core.tools.ui,
-    logProvider: core.tools.logProvider,
-    telemetryReporter: core.tools.telemetryReporter!,
+    userInteraction: TOOLS.ui,
+    logProvider: TOOLS.logProvider,
+    telemetryReporter: TOOLS.telemetryReporter!,
     cryptoProvider: new LocalCrypto(projectSettings.projectId),
-    permissionRequestProvider: core.tools.permissionRequest,
+    permissionRequestProvider: TOOLS.permissionRequest,
     projectSetting: projectSettings,
   };
   return context;
@@ -1554,3 +1557,4 @@ export function getProjectSettingsVersion() {
 
 export * from "./error";
 export * from "./tools";
+export * from "./v3";

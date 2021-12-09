@@ -19,7 +19,7 @@ export interface ISolution {
    */
   getQuestionsForInit?: (
     ctx: Context,
-    inputs: InputsWithProjectPath
+    inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   init: (
     ctx: Context,

@@ -13,7 +13,14 @@ import {
   Stage,
   traverse,
 } from "@microsoft/teamsfx-api";
-import { isV2 } from "..";
+import {
+  isV2,
+  TOOLS,
+  _getQuestions,
+  _getQuestionsForCreateProject,
+  _getQuestionsForMigrateV1Project,
+  _getQuestionsForUserTask,
+} from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
 
@@ -23,13 +30,12 @@ import { deepCopy } from "../../common";
 export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1];
   const method = ctx.method;
-  const core = ctx.self as FxCore;
 
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "createProject") {
-    getQuestionRes = await core._getQuestionsForCreateProject(inputs);
+    getQuestionRes = await _getQuestionsForCreateProject(inputs);
   } else if (method === "migrateV1Project") {
-    const res = await core.tools.ui.showMessage(
+    const res = await TOOLS.ui.showMessage(
       "warn",
       "We will update your project to make it compatible with the latest Teams Toolkit. We recommend to use git for better tracking file changes before migration. Your original project files will be archived to the .archive folder. You can refer to .archive.log which provides detailed information about the archive process.",
       true,
@@ -37,18 +43,18 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
     );
     const answer = res?.isOk() ? res.value : undefined;
     if (!answer || answer != "OK") {
-      core.tools.logProvider.info(`[core] V1 project migration was canceled.`);
+      TOOLS.logProvider.info(`[core] V1 project migration was canceled.`);
       ctx.result = ok(null);
       return;
     }
-    getQuestionRes = await core._getQuestionsForMigrateV1Project(inputs);
+    getQuestionRes = await _getQuestionsForMigrateV1Project(inputs);
   } else {
     if ((isV2() && ctx.solutionV2 && ctx.contextV2) || (ctx.solution && ctx.solutionContext)) {
       const solution = isV2() ? ctx.solutionV2 : ctx.solution;
       const context = isV2() ? ctx.contextV2 : ctx.solutionContext;
       if (solution && context) {
         if (method === "provisionResources") {
-          getQuestionRes = await core._getQuestions(
+          getQuestionRes = await _getQuestions(
             context,
             solution,
             Stage.provision,
@@ -56,7 +62,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             isV2() ? ctx.envInfoV2 : undefined
           );
         } else if (method === "localDebug") {
-          getQuestionRes = await core._getQuestions(
+          getQuestionRes = await _getQuestions(
             context,
             solution,
             Stage.debug,
@@ -64,7 +70,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             isV2() ? ctx.envInfoV2 : undefined
           );
         } else if (method === "deployArtifacts") {
-          getQuestionRes = await core._getQuestions(
+          getQuestionRes = await _getQuestions(
             context,
             solution,
             Stage.deploy,
@@ -72,7 +78,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             isV2() ? ctx.envInfoV2 : undefined
           );
         } else if (method === "publishApplication") {
-          getQuestionRes = await core._getQuestions(
+          getQuestionRes = await _getQuestions(
             context,
             solution,
             Stage.publish,
@@ -81,7 +87,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
           );
         } else if (method === "executeUserTask") {
           const func = ctx.arguments[0] as Func;
-          getQuestionRes = await core._getQuestionsForUserTask(
+          getQuestionRes = await _getQuestionsForUserTask(
             context,
             solution,
             func,
@@ -89,7 +95,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             isV2() ? ctx.envInfoV2 : undefined
           );
         } else if (method === "grantPermission") {
-          getQuestionRes = await core._getQuestions(
+          getQuestionRes = await _getQuestions(
             context,
             solution,
             Stage.grantPermission,
@@ -102,25 +108,25 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   }
 
   if (getQuestionRes.isErr()) {
-    core.tools.logProvider.error(
+    TOOLS.logProvider.error(
       `[core] failed to get questions for ${method}: ${getQuestionRes.error.message}`
     );
     ctx.result = err(getQuestionRes.error);
     return;
   }
 
-  core.tools.logProvider.debug(`[core] success to get questions for ${method}`);
+  TOOLS.logProvider.debug(`[core] success to get questions for ${method}`);
 
   const node = getQuestionRes.value;
   if (node) {
-    const res = await traverse(node, inputs, core.tools.ui, core.tools.telemetryReporter);
+    const res = await traverse(node, inputs, TOOLS.ui, TOOLS.telemetryReporter);
     if (res.isErr()) {
-      core.tools.logProvider.debug(`[core] failed to run question model for ${method}`);
+      TOOLS.logProvider.debug(`[core] failed to run question model for ${method}`);
       ctx.result = err(res.error);
       return;
     }
     const desensitized = desensitize(node, inputs);
-    core.tools.logProvider.info(
+    TOOLS.logProvider.info(
       `[core] success to run question model for ${method}, answers:${JSON.stringify(desensitized)}`
     );
   }

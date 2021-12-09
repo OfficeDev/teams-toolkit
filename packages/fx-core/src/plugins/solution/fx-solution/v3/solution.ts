@@ -5,7 +5,7 @@ import { v3 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { addModule, getQuestionsForAddModule } from "./addModule";
 import { addResource, getQuestionsForAddResource } from "./addResource";
-import { SolutionNameV3 } from "./constants";
+import { TeamsFxAzureSolutionNameV3 } from "./constants";
 import { deploy, getQuestionsForDeploy } from "./deploy";
 import { init } from "./init";
 import { getQuestionsForProvision, provisionResources } from "./provision";
@@ -14,9 +14,9 @@ import { getQuestionsForPublish, publishApplication } from "./publish";
 import { getQuestionsForScaffold, scaffold } from "./scaffold";
 import { executeUserTask, getQuestionsForUserTask } from "./userTask";
 
-@Service(SolutionNameV3)
+@Service(TeamsFxAzureSolutionNameV3)
 export class TeamsFxAzureSolution implements v3.ISolution {
-  name = SolutionNameV3;
+  name = TeamsFxAzureSolutionNameV3;
   init = init;
   getQuestionsForScaffold = getQuestionsForScaffold;
   scaffold = scaffold;

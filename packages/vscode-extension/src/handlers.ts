@@ -138,7 +138,6 @@ import { AzurePortalUrl, ConfigurationKey } from "./constants";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { generateAccountHint } from "./debug/teamsfxDebugProvider";
 import { returnUserError } from "@microsoft/teamsfx-api";
-import { FxCoreV3 } from "../../fx-core/build/core/v3/core";
 
 export let core: FxCore;
 export let corev3: FxCoreAdapter;

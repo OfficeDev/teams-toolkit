@@ -84,6 +84,7 @@ import {
   TaskNotSupportError,
   WriteFileError,
   ProjectFolderInvalidError,
+  FetchSampleError,
 } from "./error";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
@@ -1469,16 +1470,14 @@ export async function downloadSample(
       }
     }
     progress.next(`Downloading from ${url}`);
-    const fetchRes = await fetchCodeZip(url);
-    if (fetchRes === undefined) {
-      throw new SystemError(
-        "FetchSampleError",
-        "Fetch sample app error: empty zip file",
-        CoreSource
-      );
+    const fetchRes = await fetchCodeZip(url, sample.id);
+    if (fetchRes.isErr()) {
+      throw fetchRes.error;
+    } else if (!fetchRes.value) {
+      throw FetchSampleError(sample.id);
     }
     progress.next("Unzipping the sample package");
-    await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, sampleAppPath);
+    await saveFilesRecursively(new AdmZip(fetchRes.value.data), sampleId, sampleAppPath);
     await downloadSampleHook(sampleId, sampleAppPath);
     progress.next("Update project settings");
     const loadInputs: Inputs = {

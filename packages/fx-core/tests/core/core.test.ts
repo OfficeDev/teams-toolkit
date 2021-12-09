@@ -51,6 +51,11 @@ import { loadSolutionContext } from "../../src/core/middleware/envInfoLoader";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import {
   CoreQuestionNames,
+  ProgrammingLanguageQuestion,
+  BotOptionItem,
+  MessageExtensionItem,
+  TabOptionItem,
+  TabSPFxItem,
   SampleSelect,
   ScratchOptionNoVSC,
   ScratchOptionYesVSC,
@@ -1019,4 +1024,76 @@ describe("Core basic APIs", () => {
       assert.isTrue(activateEnvRes.isOk());
     }
   }
+
+  it("ProgrammingLanguageQuestion", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
+    };
+    if (
+      ProgrammingLanguageQuestion.dynamicOptions &&
+      ProgrammingLanguageQuestion.placeholder &&
+      typeof ProgrammingLanguageQuestion.placeholder === "function"
+    ) {
+      const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
+      assert.deepEqual([{ id: "typescript", label: "TypeScript" }], options);
+      const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
+      assert.equal("SPFx is currently supporting TypeScript only.", placeholder);
+    }
+
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
+    });
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [BotOptionItem.id],
+    });
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [MessageExtensionItem.id],
+    });
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
+    });
+
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, MessageExtensionItem.id],
+    });
+
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [BotOptionItem.id, MessageExtensionItem.id],
+    });
+
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [
+        TabOptionItem.id,
+        BotOptionItem.id,
+        MessageExtensionItem.id,
+      ],
+    });
+
+    function languageAssert(inputs: Inputs) {
+      if (
+        ProgrammingLanguageQuestion.dynamicOptions &&
+        ProgrammingLanguageQuestion.placeholder &&
+        typeof ProgrammingLanguageQuestion.placeholder === "function"
+      ) {
+        const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
+        assert.deepEqual(
+          [
+            { id: "javascript", label: "JavaScript" },
+            { id: "typescript", label: "TypeScript" },
+          ],
+          options
+        );
+        const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
+        assert.equal("Select a programming language.", placeholder);
+      }
+    }
+  });
 });

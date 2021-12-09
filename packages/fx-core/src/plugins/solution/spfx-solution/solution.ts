@@ -13,33 +13,32 @@ import {
 import { PluginDisplayName } from "../../../common/constants";
 import Module from "module";
 import {
-  scaffoldSourceCode,
+  init,
+  scaffold,
   generateResourceTemplate,
-  provisionResource,
   publishApplication,
   addResource,
-  addCapability,
+  addModule,
 } from "./scaffolding";
 import { Service } from "typedi";
 import { SolutionPluginsV2 } from "../../../core/SolutionPluginContainer";
 import { getQuestionsForScaffolding } from "./questions";
 
 @Service(SolutionPluginsV2.TeamsSPFxSolution)
-export class TeamsSPFxSolution implements v3.SolutionPluginV3 {
+export class TeamsSPFxSolution implements v3.ISolution {
   name = "fx-solution-spfx";
   displayName: string = PluginDisplayName.SpfxSolution;
 
-  scaffoldSourceCode: (ctx: v2.Context, inputs: Inputs) => Promise<Result<Void, FxError>> =
-    scaffoldSourceCode;
+  init: (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => Promise<Result<Void, FxError>> =
+    init;
+
+  scaffold: (
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath & { moduleIndex?: number }
+  ) => Promise<Result<Void, FxError>> = scaffold;
+
   generateResourceTemplate: (ctx: v2.Context, inputs: Inputs) => Promise<Result<Json, FxError>> =
     generateResourceTemplate;
-
-  provisionResources: (
-    ctx: v2.Context,
-    inputs: Inputs,
-    envInfo: v2.EnvInfoV2,
-    tokenProvider: TokenProvider
-  ) => Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> = provisionResource;
 
   publishApplication: (
     ctx: v2.Context,
@@ -50,18 +49,16 @@ export class TeamsSPFxSolution implements v3.SolutionPluginV3 {
 
   addResource: (
     ctx: v2.Context,
-    localSettings: Json,
-    inputs: v2.InputsWithProjectPath & { module?: keyof Module }
+    inputs: v2.InputsWithProjectPath & { moduleIndex?: number }
   ) => Promise<Result<Void, FxError>> = addResource;
 
-  addCapability: (
+  addModule: (
     ctx: v2.Context,
-    localSettings: Json,
-    inputs: v2.InputsWithProjectPath
-  ) => Promise<Result<Void, FxError>> = addCapability;
+    inputs: v2.InputsWithProjectPath & { capabilities?: string[] }
+  ) => Promise<Result<Void, FxError>> = addModule;
 
   getQuestionsForScaffolding?: (
     ctx: v2.Context,
-    inputs: Inputs
+    inputs: v2.InputsWithProjectPath
   ) => Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>> = getQuestionsForScaffolding;
 }

@@ -32,7 +32,7 @@ export interface ISolution {
   getQuestionsForScaffold?: (
     ctx: Context,
     inputs: InputsWithProjectPath
-  ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  ) => Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>>;
   /**
    * scaffold is a repeatable lifecycle stage
    *

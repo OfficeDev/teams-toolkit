@@ -11,9 +11,16 @@ import {
 } from "@microsoft/teamsfx-api";
 import Module from "module";
 
-export async function scaffoldSourceCode(
+export async function init(
   ctx: v2.Context,
-  inputs: Inputs
+  inputs: v2.InputsWithProjectPath
+): Promise<Result<Void, FxError>> {
+  return ok(Void);
+}
+
+export async function scaffold(
+  ctx: v2.Context,
+  inputs: v2.InputsWithProjectPath
 ): Promise<Result<Void, FxError>> {
   return ok(Void);
 }
@@ -23,16 +30,6 @@ export async function generateResourceTemplate(
   inputs: Inputs
 ): Promise<Result<Json, FxError>> {
   return ok({});
-}
-
-export async function provisionResource(
-  ctx: v2.Context,
-  inputs: Inputs,
-  envInfo: v2.EnvInfoV2,
-  tokenProvider: TokenProvider
-): Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> {
-  const res: v2.SolutionProvisionOutput = {};
-  return new v2.FxSuccess(res);
 }
 
 export async function publishApplication(
@@ -46,15 +43,13 @@ export async function publishApplication(
 
 export async function addResource(
   ctx: v2.Context,
-  localSettings: Json,
   inputs: v2.InputsWithProjectPath & { module?: keyof Module }
 ): Promise<Result<Void, FxError>> {
   return ok(Void);
 }
 
-export async function addCapability(
+export async function addModule(
   ctx: v2.Context,
-  localSettings: Json,
   inputs: v2.InputsWithProjectPath & { module?: keyof Module }
 ): Promise<Result<Void, FxError>> {
   return ok(Void);

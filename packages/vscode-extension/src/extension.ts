@@ -30,7 +30,12 @@ import {
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./utils/migrateV1";
-import { canUpgradeToArmAndMultiEnv, isTeamsfx, syncFeatureFlags } from "./utils/commonUtils";
+import {
+  canUpgradeToArmAndMultiEnv,
+  isTeamsfx,
+  syncFeatureFlags,
+  isValidNode,
+} from "./utils/commonUtils";
 import {
   ConfigFolderName,
   InputConfigsFolderName,
@@ -51,6 +56,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // load the feature flags.
   syncFeatureFlags();
+
+  // Init VSC context key
+  initializeContextKey();
 
   VS_CODE_UI = new VsCodeUI(context);
   // Init context
@@ -505,6 +513,14 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   openWelcomePageAfterExtensionInstallation();
+}
+
+function initializeContextKey() {
+  if (isValidNode()) {
+    vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", false);
+  } else {
+    vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", true);
+  }
 }
 
 // this method is called when your extension is deactivated

@@ -960,6 +960,83 @@
             }
           }
         ]
+      },
+      {
+        "id": "teamsToolkitTryTab1",
+        "title": "Teams App: Try Tab App 1",
+        "description": "Try your Teams Tab app development experience",
+        "when": "false",
+        "steps": [
+          {
+            "id": "tryTabVisitTreeView",
+            "title": "View Teams Toolkit Tree View",
+            "description": "View Teams Toolkit Tree View.\n[View Teams Toolkit Tree View](command:workbench.view.extension.teamsfx)",
+            "media": {
+              "svg": "media/learn.svg",
+              "altText": "Watch"
+            }
+          },
+          {
+            "id": "tryTabLocalDebug",
+            "title": "Run Local Debug",
+            "description": "Preview your first Teams app by running local debug.\n[Local Debug](command:workbench.action.debug.selectandstart)",
+            "media": {
+              "svg": "media/learn.svg",
+              "altText": "Watch"
+            }
+          }
+        ]
+      },
+      {
+        "id": "teamsToolkitTryTab2",
+        "title": "Teams App: Try Tab App 2",
+        "description": "Try your Teams Tab app development experience",
+        "steps": [
+          {
+            "id": "tryTabVisitTreeView",
+            "title": "View Teams Toolkit Tree View",
+            "description": "View Teams Toolkit Tree View.\n[View Teams Toolkit Tree View](command:workbench.view.extension.teamsfx)",
+            "media": {
+              "svg": "media/learn.svg",
+              "altText": "Watch"
+            }
+          },
+          {
+            "id": "tryTabLocalDebug",
+            "title": "Run Local Debug",
+            "description": "Preview your first Teams app by running local debug.\n[Local Debug](command:workbench.action.debug.selectandstart)",
+            "media": {
+              "svg": "media/learn.svg",
+              "altText": "Watch"
+            }
+          }
+        ]
+      },
+      {
+        "id": "teamsToolkitTest3",
+        "title": "Teams App: Test",
+        "description": "Try your Teams Tab app development experience",
+        "steps": [
+          {
+            "id": "tryTabVisitTreeView",
+            "title": "View Teams Toolkit Tree View",
+            "description": "View Teams Toolkit Tree View.\n[View Teams Toolkit Tree View](command:workbench.view.extension.teamsfx)",
+            "media": {
+              "svg": "media/learn.svg",
+              "altText": "Watch"
+            }
+          },
+          {
+            "id": "installNode",
+            "title": "Install Node",
+            "description": "Preview your first Teams app by running local debug.\n[Local Debug](command:workbench.action.debug.selectandstart)",
+            "media": {
+              "svg": "media/learn.svg",
+              "altText": "Watch"
+            },
+            "when": "fx-extension.isNotValidNode"
+          }
+        ]
       }
     ]
   },

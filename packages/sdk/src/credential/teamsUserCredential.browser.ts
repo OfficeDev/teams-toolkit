@@ -132,6 +132,8 @@ export class TeamsUserCredential implements TokenCredential {
   /**
    * Get access token from credential.
    *
+   * Important: Graph access tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
+   *
    * @example
    * ```typescript
    * await credential.getToken([]) // Get SSO token using empty string array

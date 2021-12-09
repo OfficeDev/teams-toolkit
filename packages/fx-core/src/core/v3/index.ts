@@ -129,6 +129,7 @@ export class FxCoreAdapter implements Core {
       ctx.projectSettings = projectSettings;
 
       inputs.projectPath = projectPath;
+      delete inputs.solution;
       const initRes = await this.core.init(inputs as v2.InputsWithProjectPath);
       if (initRes.isErr()) return err(initRes.error);
     }

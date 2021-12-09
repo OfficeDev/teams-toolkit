@@ -768,11 +768,9 @@ export function isAutoSkipSelect(q: Question): boolean;
 
 // @public (undocumented)
 interface ISolution {
-    // (undocumented)
     addModule: (ctx: Context_2, localSettings: Json, inputs: InputsWithProjectPath & {
         capabilities: string[];
     }) => Promise<Result<Void, FxError>>;
-    // (undocumented)
     addResource: (ctx: Context_2, inputs: InputsWithProjectPath & {
         module?: number;
         resource: string;
@@ -807,8 +805,7 @@ interface ISolution {
     provisionResources?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<EnvInfoV3, FxError>>;
     // (undocumented)
     publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    scaffold: (ctx: Context_2, inputs: PluginScaffoldInputs & {
+    scaffold: (ctx: Context_2, inputs: InputsWithProjectPath & {
         module?: number;
         template: OptionItem;
     }) => Promise<Result<Void, FxError>>;
@@ -1107,7 +1104,7 @@ type PluginName = string;
 interface PluginScaffoldInputs extends InputsWithProjectPath {
     buildPath?: string;
     dir?: string;
-    module: number;
+    module?: number;
     template: string;
 }
 

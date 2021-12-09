@@ -7,7 +7,6 @@ import { Func, QTreeNode } from "../qm/question";
 import { Inputs, Json, OptionItem, Void } from "../types";
 import { AppStudioTokenProvider, TokenProvider } from "../utils/login";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
-import { PluginScaffoldInputs } from "./plugins";
 import { EnvInfoV3 } from "./types";
 
 // export type StrictOmit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
@@ -34,9 +33,17 @@ export interface ISolution {
     ctx: Context,
     inputs: InputsWithProjectPath
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  /**
+   * scaffold is a repeatable lifecycle stage
+   *
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {Inputs} inputs - module: module index(0,1,2), template: template name
+   *
+   * @returns Void
+   */
   scaffold: (
     ctx: Context,
-    inputs: PluginScaffoldInputs & { module?: number; template: OptionItem }
+    inputs: InputsWithProjectPath & { module?: number; template: OptionItem }
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -46,6 +53,14 @@ export interface ISolution {
     ctx: Context,
     inputs: InputsWithProjectPath
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  /**
+   * addResource
+   *
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {Inputs} inputs - module: module index(0,1,2), template: template name
+   *
+   * @returns Void
+   */
   addResource: (
     ctx: Context,
     inputs: InputsWithProjectPath & { module?: number; resource: string }
@@ -58,6 +73,12 @@ export interface ISolution {
     ctx: Context,
     inputs: InputsWithProjectPath
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
+
+  /**
+   * addModule means adding a sub-project
+   *
+   * @param {string[]} capabilities - capabilities for the module
+   */
   addModule: (
     ctx: Context,
     localSettings: Json,

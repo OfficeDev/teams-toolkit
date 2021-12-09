@@ -39,6 +39,10 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           return debugConfiguration;
         }
 
+        // Attach correlation-id to DebugConfiguration so concurrent debug sessions are correctly handled in this stage.
+        // For backend and bot debug sessions, debugConfiguration.url is undefined so we need to set correlation id early.
+        debugConfiguration.teamsfxCorrelationId = commonUtils.getLocalDebugSessionId();
+
         if (debugConfiguration.url === undefined) {
           return debugConfiguration;
         }
@@ -74,8 +78,6 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
           isLocalSideloadingConfiguration ? localTeamsAppIdPlaceholder : teamsAppIdPlaceholder,
           debugConfig.appId
         );
-        // attach correlation-id to DebugConfiguration so concurrent debug sessions are correctly handled in this stage.
-        debugConfiguration.teamsfxCorrelationId = commonUtils.getLocalDebugSessionId();
 
         const accountHintPlaceholder = "${account-hint}";
         const isaccountHintConfiguration: boolean = (debugConfiguration.url as string).includes(

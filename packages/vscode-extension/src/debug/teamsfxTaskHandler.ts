@@ -406,7 +406,8 @@ export function registerTeamsfxTaskAndDebugEvents(): void {
   ext.context.subscriptions.push(
     vscode.debug.onDidStartDebugSession((event: vscode.DebugSession) =>
       Correlator.runWithId(
-        event.configuration.teamsfxCorrelationId || "undefined",
+        // fallback to retrieve correlation id from the global variable.
+        event.configuration.teamsfxCorrelationId || getLocalDebugSessionId(),
         onDidStartDebugSessionHandler,
         event
       )
@@ -415,7 +416,7 @@ export function registerTeamsfxTaskAndDebugEvents(): void {
   ext.context.subscriptions.push(
     vscode.debug.onDidTerminateDebugSession((event: vscode.DebugSession) =>
       Correlator.runWithId(
-        event.configuration.teamsfxCorrelationId || "undefined",
+        event.configuration.teamsfxCorrelationId || getLocalDebugSessionId(),
         onDidTerminateDebugSessionHandler,
         event
       )

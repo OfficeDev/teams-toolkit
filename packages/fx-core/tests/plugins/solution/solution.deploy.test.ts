@@ -48,7 +48,7 @@ import { AadAppForTeamsPlugin, newEnvInfo } from "../../../src";
 import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import { deploy } from "../../../src/plugins/solution/fx-solution/v2/deploy";
-import { ResourceProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);
@@ -269,10 +269,14 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
-    const provisionOutput: Record<string, Json> = {
-      solution: { output: {}, secrets: {} },
+    const envInfo: EnvInfoV2 = {
+      envName: "default",
+      config: {},
+      state: {
+        solution: { output: {}, secrets: {} },
+      },
     };
-    const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedTokenProvider);
+    const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.CannotDeployBeforeProvision);
   });
@@ -298,10 +302,14 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
     };
-    const provisionOutput: Record<string, Json> = {
-      solution: { output: { provisionSucceeded: true } },
+    const envInfo: EnvInfoV2 = {
+      envName: "default",
+      config: {},
+      state: {
+        solution: { output: { provisionSucceeded: true }, secrets: {} },
+      },
     };
-    const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedTokenProvider);
+    const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.NoResourcePluginSelected);
   });
@@ -328,11 +336,15 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       platform: Platform.VSCode,
     };
     mockedInputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
-    const provisionOutput: Record<string, Json> = {
-      solution: { output: { provisionSucceeded: true } },
+    const envInfo: EnvInfoV2 = {
+      envName: "default",
+      config: {},
+      state: {
+        solution: { output: { provisionSucceeded: true }, secrets: {} },
+      },
     };
     mockDeployThatAlwaysSucceed(fehostPlugin);
-    const result = await deploy(mockedCtx, mockedInputs, provisionOutput, mockedTokenProvider);
+    const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
 
     expect(result.isOk()).to.be.true;
   });

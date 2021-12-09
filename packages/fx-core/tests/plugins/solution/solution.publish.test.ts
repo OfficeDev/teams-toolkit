@@ -51,7 +51,7 @@ import {
   ResourcePluginsV2,
 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
-import { newEnvInfo } from "../../../src";
+import { newEnvInfo } from "../../../src/core/tools";
 import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
 import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
 import { LocalCrypto } from "../../../src/core/crypto";

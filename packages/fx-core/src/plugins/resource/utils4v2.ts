@@ -49,7 +49,7 @@ export function convert2PluginContext(
   ignoreEmptyProjectPath = false
 ): PluginContext {
   if (!ignoreEmptyProjectPath && !inputs.projectPath) throw NoProjectOpenedError();
-  const envInfo = newEnvInfo();
+  const envInfo = newEnvInfo(inputs.env ?? inputs.targetEnvName);
   const config = new ConfigMap();
   envInfo.state.set(pluginName, config);
   const pluginContext: PluginContext = {

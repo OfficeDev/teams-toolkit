@@ -192,6 +192,8 @@
       "cancelMessage": "userCancelled"
     },
     "accountTree": {
+      "noSubscriptions": "No subscriptions discovered",
+      "noSubscriptionsTooltip": "You have no subscriptions. You can't provision or deploy your resources to Azure!",
       "totalSubscriptions": "%d subscriptions discovered",
       "signingInM365": "M365: Signing in...",
       "signingInAzure": "Azure: Signing in...",

@@ -132,7 +132,7 @@ export class TeamsUserCredential implements TokenCredential {
   /**
    * Get access token from credential.
    *
-   * Important: Graph access tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
+   * Important: Access tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
    *
    * @example
    * ```typescript

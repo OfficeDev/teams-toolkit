@@ -38,7 +38,7 @@ import {
   RESOURCE_GROUP_NAME,
 } from "../constants";
 import * as util from "util";
-import _, { isUndefined } from "lodash";
+import _, { assign, isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
 import { fillInCommonQuestions } from "../commonQuestions";
@@ -266,18 +266,7 @@ export async function provisionResource(
     configOutput.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
     const res1 = combineRecords(provisionResult.output);
     const res2 = combineRecords(configOutput);
-    for (const key of Object.keys(res2)) {
-      if (!newEnvInfo.state[key]) {
-        newEnvInfo.state[key].output = res2[key].output;
-      } else {
-        const newOutput = assignJsonInc(newEnvInfo.state[key].output, res2[key].output);
-        if (newOutput) newEnvInfo.state[key].output = newOutput;
-      }
-    }
-    for (const key of Object.keys(newEnvInfo.state)) {
-      if (!res1[key]) res1[key] = { output: {}, secrets: {} };
-      res1[key].output = newEnvInfo.state[key].output;
-    }
+    _.assign(res1, res2);
     return new v2.FxSuccess(res1);
   }
 }

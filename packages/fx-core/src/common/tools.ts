@@ -453,7 +453,7 @@ export function getRootDirectory(): string {
   if (root === undefined || root === "") {
     return path.join(os.homedir(), ConstantString.rootFolder);
   } else {
-    return root.replace("${homeDir}", os.homedir());
+    return path.resolve(root.replace("${homeDir}", os.homedir()));
   }
 }
 

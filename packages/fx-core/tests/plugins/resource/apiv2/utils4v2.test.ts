@@ -100,7 +100,12 @@ describe("API V2 adapter", () => {
       plugin1: { k1: "v1" },
       plugin2: { k2: "v2" },
     };
-    setEnvInfoV1ByStateV2("plugin1", pluginContext, provisionOutputs);
+    const envInfo: EnvInfoV2 = {
+      envName: "default",
+      config: {},
+      state: provisionOutputs,
+    };
+    setEnvInfoV1ByStateV2("plugin1", pluginContext, envInfo);
     assert.equal(pluginContext.config.get("k1"), "v1");
     assert.equal((pluginContext.envInfo.state.get("plugin2") as ConfigMap).get("k2"), "v2");
   });

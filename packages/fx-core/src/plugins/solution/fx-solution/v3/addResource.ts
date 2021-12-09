@@ -12,15 +12,9 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { notDeepEqual } from "assert";
-import { groupBy } from "lodash";
 import { Container } from "typedi";
-import { ResourceAlreadyAddedError } from "../error";
-import {
-  createSelectModuleQuestionNode,
-  selectModulesQuestion,
-  selectResourceQuestion,
-} from "./questions";
+import { ResourceAlreadyAddedError } from "./error";
+import { createSelectModuleQuestionNode, selectResourceQuestion } from "./questions";
 
 function getAllResourcePlugins(): v3.ResourcePlugin[] {
   return [];

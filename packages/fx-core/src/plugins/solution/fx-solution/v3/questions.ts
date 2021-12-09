@@ -8,7 +8,6 @@ import {
   SingleSelectQuestion,
   v3,
 } from "@microsoft/teamsfx-api";
-import { CurriedFunction3 } from "lodash";
 import { BotOptionItem, MessageExtensionItem, TabOptionItem } from "../question";
 
 export enum SolutionV3QuestionNames {

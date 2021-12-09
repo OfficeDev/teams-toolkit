@@ -12,9 +12,9 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import Container from "typedi";
-import { InvalidInputError } from "../error";
-import { BuiltInResourcePluginNames } from "../ResourcePluginContainer";
+import { Container } from "typedi";
+import { BuiltInResourcePluginNames } from "./constants";
+import { InvalidInputError } from "./error";
 import { createSelectModuleQuestionNode, selectScaffoldTemplateQuestion } from "./questions";
 
 function getAllScaffoldPlugins(): v3.ScaffoldPlugin[] {

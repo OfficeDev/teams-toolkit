@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { err, FxError, Json, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
-import { CapabilityAlreadyAddedError } from "../error";
+import { CapabilityAlreadyAddedError } from "./error";
 import { selectCapabilitiesQuestion } from "./questions";
 
 export async function getQuestionsForAddModule(

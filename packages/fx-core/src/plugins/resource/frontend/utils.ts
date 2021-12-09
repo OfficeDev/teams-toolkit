@@ -87,12 +87,11 @@ export class Utils {
           Logger.debug(standardOutput);
           if (error) {
             Logger.error(`Failed to run command: "${command}".`);
+            if (stderr) {
+              Logger.error(stderr);
+            }
             Logger.error(error.message);
             reject(error);
-          }
-          if (stderr) {
-            Logger.error(stderr);
-            reject(stderr);
           }
           resolve(standardOutput);
         }

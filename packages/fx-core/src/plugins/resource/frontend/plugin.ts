@@ -59,7 +59,7 @@ import { Bicep, ConstantString } from "../../../common/constants";
 import { EnvironmentUtils } from "./utils/environment-utils";
 import { copyFiles, isArmSupportEnabled } from "../../../common";
 import { AzureResourceFunction } from "../../solution/fx-solution/question";
-import { EnvKeys, saveEnvFile } from "./env";
+import { EnvKeys, loadEnvFile, saveEnvFile } from "./env";
 
 export class FrontendPluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -182,7 +182,9 @@ export class FrontendPluginImpl {
 
     const componentPath: string = path.join(ctx.root, FrontendPathInfo.WorkingDir);
 
-    await FrontendDeployment.doFrontendBuild(componentPath);
+    const envs = await loadEnvFile(ctx.envInfo.envName, componentPath);
+
+    await FrontendDeployment.doFrontendBuild(componentPath, envs);
     await FrontendDeployment.doFrontendDeployment(client, componentPath);
 
     await ProgressHelper.endDeployProgress(true);

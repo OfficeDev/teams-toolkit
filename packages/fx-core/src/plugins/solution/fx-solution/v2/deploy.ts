@@ -32,9 +32,10 @@ import {
 export async function deploy(
   ctx: v2.Context,
   inputs: Inputs,
-  provisionOutputs: Json,
+  envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider
 ): Promise<Result<Void, FxError>> {
+  const provisionOutputs: Json = envInfo.state;
   const inAzureProject = isAzureProject(getAzureSolutionSettings(ctx));
   const provisioned = provisionOutputs[GLOBAL_CONFIG]["output"][
     SOLUTION_PROVISION_SUCCEEDED
@@ -79,7 +80,7 @@ export async function deploy(
               ...extractSolutionInputs(provisionOutputs[GLOBAL_CONFIG]["output"]),
               projectPath: inputs.projectPath!,
             },
-            provisionOutputs,
+            envInfo,
             tokenProvider
           ),
       };

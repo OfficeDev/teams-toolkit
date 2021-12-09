@@ -88,10 +88,10 @@ export class FunctionPluginV2 implements ResourcePlugin {
   async deploy(
     ctx: Context,
     inputs: DeploymentInputs,
-    provisionOutput: Json,
+    envInfo: DeepReadonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
+    return await deployAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async executeUserTask(

@@ -90,7 +90,7 @@ export interface SolutionPlugin {
   deploy?: (
     ctx: Context,
     inputs: Inputs,
-    provisionOutputs: Json,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 

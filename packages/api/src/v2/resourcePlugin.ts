@@ -160,7 +160,7 @@ export interface ResourcePlugin {
   deploy?: (
     ctx: Context,
     inputs: DeploymentInputs,
-    provisionOutputs: Json,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 

@@ -39,14 +39,6 @@ export class Commands {
   static BuildFrontend = "npm run build";
 }
 
-export class EnvironmentVariables {
-  static FuncEndpoint = "REACT_APP_FUNC_ENDPOINT";
-  static FuncName = "REACT_APP_FUNC_NAME";
-  static RuntimeEndpoint = "REACT_APP_TEAMSFX_ENDPOINT";
-  static StartLoginPage = "REACT_APP_START_LOGIN_PAGE_URL";
-  static ClientID = "REACT_APP_CLIENT_ID";
-}
-
 export class FrontendPathInfo {
   static WorkingDir = "tabs";
   static TemplateRelativeDir = path.join("plugins", "resource", "frontend");

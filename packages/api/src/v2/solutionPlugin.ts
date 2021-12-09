@@ -83,7 +83,7 @@ export interface SolutionPlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - system inputs
-   * @param {Json} provisionOutputs - provision outputs
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
    * @param {TokenProvider} tokenProvider - Token providers for Azure, AppStudio and m365.
    *
    */

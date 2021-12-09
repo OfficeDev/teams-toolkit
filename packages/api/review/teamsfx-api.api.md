@@ -608,10 +608,7 @@ interface ICore {
     addModule: (inputs: InputsWithProjectPath & {
         capabilities?: string[];
     }) => Promise<Result<Void, FxError>>;
-    addResource: (inputs: InputsWithProjectPath & {
-        moduleIndex?: number;
-        pluginName?: string;
-    }) => Promise<Result<Void, FxError>>;
+    addResource: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     deployArtifacts: (inputs: InputsWithProjectPath & {
         moduleIndex?: number;
     }) => Promise<Result<Void, FxError>>;
@@ -624,10 +621,7 @@ interface ICore {
     }) => Promise<Result<Void, FxError>>;
     provisionResources: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     publishApplication: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-    scaffold: (inputs: InputsWithProjectPath & {
-        moduleIndex?: number;
-        pluginName?: string;
-    }) => Promise<Result<Void, FxError>>;
+    scaffold: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)

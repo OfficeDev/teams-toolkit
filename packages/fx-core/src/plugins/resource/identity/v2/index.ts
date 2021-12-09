@@ -22,7 +22,11 @@ import {
   ResourcePlugins,
   ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
-import { generateResourceTemplateAdapter, provisionResourceAdapter } from "../../utils4v2";
+import {
+  generateResourceTemplateAdapter,
+  provisionResourceAdapter,
+  updateResourceTemplateAdapter,
+} from "../../utils4v2";
 
 @Service(ResourcePluginsV2.IdentityPlugin)
 export class IdentityPluginV2 implements ResourcePlugin {
@@ -48,5 +52,12 @@ export class IdentityPluginV2 implements ResourcePlugin {
     inputs: Inputs
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
     return generateResourceTemplateAdapter(ctx, inputs, this.plugin);
+  }
+
+  async updateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return updateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 }

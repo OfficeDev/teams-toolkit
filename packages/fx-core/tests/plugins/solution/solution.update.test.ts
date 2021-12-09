@@ -41,7 +41,7 @@ import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/Resou
 import Container from "typedi";
 import { MockUserInteraction } from "../../core/utils";
 import mockedEnv from "mocked-env";
-import { newEnvInfo } from "../../../src";
+import { newEnvInfo } from "../../../src/core/tools";
 import { LocalCrypto } from "../../../src/core/crypto";
 
 const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);

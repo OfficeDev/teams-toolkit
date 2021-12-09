@@ -96,7 +96,7 @@ export enum TelemetryProperty {
   ListAllCollaborators = "list-all-collaborators",
   FeatureFlags = "feature-flags",
   Env = "env",
-  CreatedFrom = "created-from",
+  SettingsVersion = "settings-version",
 }
 
 export enum TelemetrySuccess {

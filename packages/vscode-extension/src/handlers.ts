@@ -222,7 +222,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await openSampleReadmeHandler();
     await postUpgrade();
     ExtTelemetry.isFromSample = await getIsFromSample();
-    ExtTelemetry.createdFrom = await getCreatedFrom();
+    ExtTelemetry.settingsVersion = await getSettingsVersion();
 
     if (workspacePath) {
       // refresh env tree when env config files added or deleted.
@@ -270,19 +270,21 @@ async function getIsFromSample() {
 }
 
 // only used for telemetry
-async function getCreatedFrom(): Promise<string | undefined> {
+async function getSettingsVersion(): Promise<string | undefined> {
   if (core) {
     const input = getSystemInputs();
+    input.ignoreEnvInfo = true;
+
     // TODO: from the experience of 'is-from-sample':
     // in some circumstances, getProjectConfig() returns undefined even projectSettings.json is valid.
     // This is a workaround to prevent that. We can change to the following code after the root cause is found.
     // const projectConfig = await core.getProjectConfig(input);
     // ignore errors for telemetry
     // if (projectConfig.isOk()) {
-    //   return projectConfig.value?.settings?.createdFrom;
+    //   return projectConfig.value?.settings?.version;
     // }
     await core.getProjectConfig(input);
-    return core.createdFrom;
+    return core.settingsVersion;
   }
   return undefined;
 }
@@ -373,10 +375,8 @@ export async function migrateV1ProjectHandler(args?: any[]): Promise<Result<any,
     getTriggerFromProperty(args)
   );
   const result = await runCommand(Stage.migrateV1);
-  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.treeview", true);
-  await vscode.commands.executeCommand("setContext", "fx-extension.sidebarWelcome.default", false);
   if (result.isOk()) {
-    commands.executeCommand("vscode.openFolder", result.value);
+    commands.executeCommand("workbench.action.reloadWindow", result.value);
   }
   return result;
 }
@@ -390,7 +390,8 @@ export async function selectAndDebugHandler(args?: any[]): Promise<Result<null, 
 
 export async function treeViewLocalDebugHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewLocalDebug);
-  await vscode.commands.executeCommand("workbench.action.quickOpen", "debug Debug");
+  await vscode.commands.executeCommand("workbench.action.quickOpen", "debug ");
+
   return ok(null);
 }
 
@@ -1308,7 +1309,7 @@ export async function openResourceGroupInPortal(env: string): Promise<Result<Voi
 
 export async function grantPermission(env: string): Promise<Result<Void, FxError>> {
   let result: Result<any, FxError> = ok(Void);
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermission);
+  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermissionStart);
 
   let inputs: Inputs | undefined;
   try {
@@ -1472,7 +1473,6 @@ export async function listCollaborator(env: string): Promise<void> {
   let result: Result<any, FxError> = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListCollaboratorStart);
 
-  const eventName = ExtTelemetry.stageToEvent(Stage.grantPermission);
   let inputs: Inputs | undefined;
   try {
     const checkCoreRes = checkCoreNotEmpty();
@@ -1497,7 +1497,7 @@ export async function listCollaborator(env: string): Promise<void> {
     result = wrapError(e);
   }
 
-  await processResult(eventName, result, inputs);
+  await processResult(TelemetryEvent.ListCollaborator, result, inputs);
 }
 
 export async function openM365AccountHandler() {
@@ -1562,7 +1562,7 @@ export async function cmdHdlLoadTreeView(context: ExtensionContext) {
     const disposables = await TreeViewManagerInstance.registerEmptyProjectTreeViews();
     context.subscriptions.push(...disposables);
   } else {
-    const disposables = await TreeViewManagerInstance.registerTreeViews();
+    const disposables = await TreeViewManagerInstance.registerTreeViews(getWorkspacePath());
     context.subscriptions.push(...disposables);
   }
 

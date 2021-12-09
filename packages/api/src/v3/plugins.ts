@@ -2,18 +2,23 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { Func, QTreeNode } from "..";
-import { Platform } from "../constants";
 import { FxError } from "../error";
+import { Func, QTreeNode } from "../qm/question";
 import { Inputs, Json, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
-import { Modules } from "./solutionSettings";
+import { CloudResource } from "./resourceStates";
 import { EnvInfoV3 } from "./types";
 
+/**
+ * Description of scaffolding templates
+ */
 export interface ScaffoldTemplate {
-  id: string;
+  /**
+   * unique identifier for the template
+   */
+  name: string;
   /**
    * programming language
    */
@@ -22,29 +27,21 @@ export interface ScaffoldTemplate {
    * description of the template
    */
   description: string;
-  /**
-   * what module does the template work for
-   */
-  modules: (keyof Modules)[];
-  /**
-   * what platform does this template applies to, if not specified, no restriction
-   */
-  platforms?: Platform[];
 }
 
 export interface ScaffoldInputs extends InputsWithProjectPath {
   /**
-   * scaffold template id
+   * scaffold template name
    */
-  templateId: string;
-  /**
-   * programming language
-   */
-  language?: string;
+  templateName: string;
   /**
    * customized source root dir name
    */
   dir?: string;
+  /**
+   * customized build directory name
+   */
+  buildPath?: string;
 }
 
 export interface Plugin {
@@ -86,10 +83,6 @@ export interface ResourcePlugin extends Plugin {
    */
   description?: string;
   /**
-   * what module does the resource works for, if not specified, there is no limit
-   */
-  modules?: (keyof Modules)[];
-  /**
    * return dependent plugin names, when adding resource, the toolkit will add all dependent resources
    */
   pluginDependencies?(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>>;
@@ -122,7 +115,7 @@ export interface ResourcePlugin extends Plugin {
     inputs: InputsWithProjectPath,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Void, FxError>>;
+  ) => Promise<Result<Json, FxError>>;
 
   configureLocalResource?: (
     ctx: Context,
@@ -145,7 +138,13 @@ export interface ResourcePlugin extends Plugin {
     inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
-  ) => Promise<Result<EnvInfoV3, FxError>>;
+  ) => Promise<Result<CloudResource, FxError>>;
+  configureResource?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Void, FxError>>;
 
   generateResourceTemplate?: (
     ctx: Context,
@@ -155,12 +154,7 @@ export interface ResourcePlugin extends Plugin {
     ctx: Context,
     inputs: InputsWithProjectPath
   ) => Promise<Result<ResourceTemplate, FxError>>;
-  configureResource?: (
-    ctx: Context,
-    inputs: InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
-  ) => Promise<Result<Void, FxError>>;
+
   /**
    * customize questions needed for deploy
    */
@@ -170,13 +164,13 @@ export interface ResourcePlugin extends Plugin {
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
-
   deploy?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
+
   /**
    * customize questions needed for user task
    */

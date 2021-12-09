@@ -71,6 +71,14 @@ export class SqlPlugin implements Plugin {
     );
   }
 
+  public async updateArmTemplates(ctx: PluginContext): Promise<SqlResult> {
+    return this.runWithSqlError(
+      Telemetry.stage.generateArmTemplates,
+      () => this.sqlImpl.updateArmTemplates(ctx),
+      ctx
+    );
+  }
+
   public async generateArmTemplates(ctx: PluginContext): Promise<SqlResult> {
     return this.runWithSqlError(
       Telemetry.stage.generateArmTemplates,

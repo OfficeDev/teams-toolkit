@@ -93,8 +93,42 @@ describe("simpleAuthPlugin", () => {
   });
 
   it("generate arm templates: only simple auth plugin", async function () {
-    // Act
     const activeResourcePlugins = [Constants.AadAppPlugin.id, Constants.SimpleAuthPlugin.id];
+    await testGenerateArmTemplates(
+      activeResourcePlugins,
+      "simpleAuthConfig.result.bicep",
+      "config.result.bicep"
+    );
+  });
+
+  it("generate arm templates: simple auth plugin + key vault plugin", async function () {
+    const activeResourcePlugins = [
+      Constants.AadAppPlugin.id,
+      "fx-resource-key-vault",
+      Constants.SimpleAuthPlugin.id,
+    ];
+    await testGenerateArmTemplates(
+      activeResourcePlugins,
+      "simpleAuthConfigWithKeyVaultPlugin.result.bicep",
+      "configWithKeyVaultPlugin.result.bicep",
+      {
+        "fx-resource-key-vault": {
+          References: {
+            m365ClientSecretReference:
+              "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference",
+          },
+        },
+      }
+    );
+  });
+
+  async function testGenerateArmTemplates(
+    activeResourcePlugins: string[],
+    testConfigurationModuleFileName: string,
+    testConfigurationFileName: string,
+    addtionalPluginOutput: any = {}
+  ): Promise<void> {
+    // Act
     pluginContext.projectSettings = {
       appName: "test_generate_arm_template_with_only_simple_auth_plugin_app",
       projectId: uuid.v4(),
@@ -108,23 +142,23 @@ describe("simpleAuthPlugin", () => {
 
     // Assert
     const testProvisionModuleFileName = "simpleAuthProvision.result.bicep";
-    const testConfigurationModuleFileName = "simpleAuthConfig.result.bicep";
-    const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
-        "fx-resource-simple-auth": {
-          Provision: {
-            simpleAuth: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
-            },
+    const simpleAuthOutput = {
+      "fx-resource-simple-auth": {
+        Provision: {
+          simpleAuth: {
+            ProvisionPath: `./${testProvisionModuleFileName}`,
           },
-          Configuration: {
-            simpleAuth: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
-            },
+        },
+        Configuration: {
+          simpleAuth: {
+            ConfigPath: `./${testConfigurationModuleFileName}`,
           },
         },
       },
+    };
+    const mockedSolutionDataContext = {
+      Plugins: activeResourcePlugins,
+      PluginOutput: { ...simpleAuthOutput, ...addtionalPluginOutput },
     };
 
     chai.assert.isTrue(generateArmTemplatesResult.isOk());
@@ -164,7 +198,10 @@ describe("simpleAuthPlugin", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(expectedResult.Provision!.Orchestration, orchestrationProvisionFile);
-      const expectedConfigFilePath = path.join(expectedBicepFileDirectory, "config.result.bicep");
+      const expectedConfigFilePath = path.join(
+        expectedBicepFileDirectory,
+        testConfigurationFileName
+      );
 
       const OrchestrationConfigFile = await fs.readFile(
         expectedConfigFilePath,
@@ -174,7 +211,7 @@ describe("simpleAuthPlugin", () => {
       chai.assert.isUndefined(expectedResult.Parameters);
       chai.assert.isNotNull(expectedResult.Provision!.Reference);
     }
-  });
+  }
 
   it("update arm templates: only simple auth plugin", async function () {
     // Act
@@ -188,7 +225,7 @@ describe("simpleAuthPlugin", () => {
         activeResourcePlugins: activeResourcePlugins,
       },
     };
-    const generateArmTemplatesResult = await simpleAuthPlugin.generateArmTemplates(pluginContext);
+    const generateArmTemplatesResult = await simpleAuthPlugin.updateArmTemplates(pluginContext);
 
     // Assert
     const testProvisionModuleFileName = "simpleAuthProvision.result.bicep";

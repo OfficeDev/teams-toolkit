@@ -118,7 +118,22 @@ export async function generateResourceTemplateAdapter(
   const bicepTemplate: BicepTemplate = { kind: "bicep", template: output };
   return ok(bicepTemplate);
 }
-
+export async function updateResourceTemplateAdapter(
+  ctx: Context,
+  inputs: Inputs,
+  plugin: Plugin
+): Promise<Result<ResourceTemplate, FxError>> {
+  if (!plugin.updateArmTemplates)
+    return err(PluginHasNoTaskImpl(plugin.displayName, "updateArmTemplates"));
+  const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
+  const armRes = await plugin.updateArmTemplates(pluginContext);
+  if (armRes.isErr()) {
+    return err(armRes.error);
+  }
+  const output: ArmTemplateResult = armRes.value as ArmTemplateResult;
+  const bicepTemplate: BicepTemplate = { kind: "bicep", template: output };
+  return ok(bicepTemplate);
+}
 export async function provisionResourceAdapter(
   ctx: Context,
   inputs: ProvisionInputs,
@@ -229,13 +244,17 @@ export async function deployAdapter(
   ctx: Context,
   inputs: DeploymentInputs,
   provisionOutput: Json,
-  tokenProvider: AzureAccountProvider,
+  tokenProvider: TokenProvider,
   plugin: Plugin
 ): Promise<Result<Void, FxError>> {
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   setEnvInfoV1ByStateV2(plugin.name, pluginContext, provisionOutput);
-  pluginContext.azureAccountProvider = tokenProvider;
+  pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
+  pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
+  pluginContext.appStudioToken = tokenProvider.appStudioToken;
+  pluginContext.sharepointTokenProvider = tokenProvider.sharepointTokenProvider;
+
   if (plugin.preDeploy) {
     const preRes = await plugin.preDeploy(pluginContext);
     if (preRes.isErr()) {

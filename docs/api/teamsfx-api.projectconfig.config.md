@@ -7,5 +7,5 @@
 <b>Signature:</b>
 
 ```typescript
-config?: SolutionConfig;
+config?: SolutionConfig | Json;
 ```

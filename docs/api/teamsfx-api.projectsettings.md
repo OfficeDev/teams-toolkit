@@ -17,7 +17,11 @@ export interface ProjectSettings
 |  Property | Type | Description |
 |  --- | --- | --- |
 |  [appName](./teamsfx-api.projectsettings.appname.md) | string |  |
-|  [currentEnv?](./teamsfx-api.projectsettings.currentenv.md) | string | <i>(Optional)</i> |
+|  [createdFrom?](./teamsfx-api.projectsettings.createdfrom.md) | string | <i>(Optional)</i> |
+|  [defaultFunctionName?](./teamsfx-api.projectsettings.defaultfunctionname.md) | string | <i>(Optional)</i> |
+|  [isFromSample?](./teamsfx-api.projectsettings.isfromsample.md) | boolean | <i>(Optional)</i> |
+|  [programmingLanguage?](./teamsfx-api.projectsettings.programminglanguage.md) | string | <i>(Optional)</i> |
 |  [projectId](./teamsfx-api.projectsettings.projectid.md) | string |  |
-|  [solutionSettings?](./teamsfx-api.projectsettings.solutionsettings.md) | [SolutionSettings](./teamsfx-api.solutionsettings.md) | <i>(Optional)</i> |
+|  [solutionSettings](./teamsfx-api.projectsettings.solutionsettings.md) | [SolutionSettings](./teamsfx-api.solutionsettings.md) |  |
+|  [version?](./teamsfx-api.projectsettings.version.md) | string | <i>(Optional)</i> |
 

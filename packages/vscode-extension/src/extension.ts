@@ -30,7 +30,12 @@ import {
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./utils/migrateV1";
-import { canUpgradeToArmAndMultiEnv, isTeamsfx, syncFeatureFlags } from "./utils/commonUtils";
+import {
+  canUpgradeToArmAndMultiEnv,
+  isSPFxProject,
+  isTeamsfx,
+  syncFeatureFlags,
+} from "./utils/commonUtils";
 import {
   ConfigFolderName,
   InputConfigsFolderName,
@@ -372,6 +377,12 @@ export async function activate(context: vscode.ExtensionContext) {
     "setContext",
     "fx-extension.isMultiEnvEnabled",
     isMultiEnvEnabled() && isValidProject(workspacePath)
+  );
+
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isSPFx",
+    workspacePath && (await isSPFxProject(workspacePath))
   );
 
   vscode.commands.executeCommand(

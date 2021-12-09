@@ -44,6 +44,7 @@ import { WebResourceLike, HttpHeaders } from "@azure/ms-rest-js";
 import {
   mockedFehostScaffoldArmResult,
   mockedSimpleAuthScaffoldArmResult,
+  mockedSimpleAuthUpdateArmResult,
   mockedAadScaffoldArmResult,
   mockedBotArmTemplateResultFunc,
   MockedUserInteraction,
@@ -184,8 +185,8 @@ describe("Generate ARM Template for project", () => {
 
     const projectArmTemplateFolder = path.join(testFolder, templateFolder);
     const projectArmParameterFolder = path.join(testFolder, configFolderName);
-    const projectArmBaseFolder = path.join(testFolder, baseFolder);
-    const result = await generateArmTemplate(mockedCtx);
+    const selectedPlugins: Plugin[] = [aadPlugin, simpleAuthPlugin, fehostPlugin];
+    const result = await generateArmTemplate(mockedCtx, selectedPlugins);
     expect(result.isOk()).to.be.true;
     expect(
       await fs.readFile(path.join(projectArmTemplateFolder, "../main.bicep"), fileEncoding)
@@ -267,6 +268,11 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
 
     mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
       const res: ArmTemplateResult = mockedSimpleAuthScaffoldArmResult();
+      return ok(res);
+    });
+
+    mocker.stub(simpleAuthPlugin, "updateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      const res: ArmTemplateResult = mockedSimpleAuthUpdateArmResult();
       return ok(res);
     });
 
@@ -368,6 +374,10 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
     expect(
       await fs.readFile(path.join(projectArmTemplateFolder, "../provision/bot.bicep"), fileEncoding)
     ).equals("Mocked bot Provision content. simple auth endpoint: Mocked simple auth endpoint");
+
+    expect(
+      await fs.readFile(path.join(projectArmTemplateFolder, "../teamsFx/bot.bicep"), fileEncoding)
+    ).equals("Mocked bot Configuration content, bot webAppEndpoint: Mock web app end point");
   });
 });
 
@@ -834,13 +844,13 @@ describe("Arm Template Failed Test", () => {
               message: "bot inner error",
             },
             subErrors: {
-              usefulError: {
+              skuError: {
                 error: {
-                  code: "usefulError",
-                  message: "useful error",
+                  code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+                  message: "The maximum number of Free ServerFarms allowed in a Subscription is 10",
                 },
               },
-              uselessError: {
+              evaluationError: {
                 error: {
                   code: "DeploymentOperationFailed",
                   message:
@@ -855,9 +865,9 @@ describe("Arm Template Failed Test", () => {
     const res = formattedDeploymentError(errors);
     chai.assert.deepEqual(res, {
       botProvision: {
-        usefulError: {
-          code: "usefulError",
-          message: "useful error",
+        skuError: {
+          code: "MaxNumberOfServerFarmsInSkuPerSubscription",
+          message: "The maximum number of Free ServerFarms allowed in a Subscription is 10",
         },
       },
     });

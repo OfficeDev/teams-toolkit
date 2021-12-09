@@ -984,9 +984,17 @@ export class AppStudioPluginImpl {
       }
     }
 
-    const userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
-    if (!userLists) {
-      return [];
+    let userLists;
+    try {
+      userLists = await AppStudioClient.getUserList(teamsAppId, appStudioToken as string);
+      if (!userLists) {
+        return [];
+      }
+    } catch (error) {
+      if (error.name === 404) {
+        error.message = ErrorMessages.TeamsAppNotFound(teamsAppId);
+      }
+      throw error;
     }
 
     const teamsAppAdmin: TeamsAppAdmin[] = userLists
@@ -1691,9 +1699,7 @@ export class AppStudioPluginImpl {
     ).toString();
 
     // Bot only project, without frontend hosting
-    let endpoint = isLocalDebug
-      ? ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint)
-      : tabEndpoint;
+    let endpoint = tabEndpoint;
     const solutionSettings: AzureSolutionSettings = ctx.projectSettings
       ?.solutionSettings as AzureSolutionSettings;
     const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);

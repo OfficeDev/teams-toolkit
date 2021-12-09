@@ -13,7 +13,7 @@ export class RetryHandler {
         return response;
       } catch (e) {
         if (retries <= 0) {
-          break;
+          throw e;
         } else {
           await new Promise((resolve) => setTimeout(resolve, Retry.BACKOFF_TIME_MS));
         }

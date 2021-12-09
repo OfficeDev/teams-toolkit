@@ -32,6 +32,7 @@ import * as util from "util";
 import {
   AzureResourceApim,
   AzureResourceFunction,
+  AzureResourceKeyVault,
   AzureResourceSQL,
   AzureSolutionQuestionNames,
   BotOptionItem,
@@ -335,17 +336,22 @@ async function scaffoldCodeAndResourceTemplate(
   ctx: v2.Context,
   inputs: Inputs,
   localSettings: Json,
-  plugins: v2.ResourcePlugin[],
-  generateTemplate: boolean
+  pluginsToScaffold: v2.ResourcePlugin[],
+  generateTemplate: boolean,
+  pluginsToDoArm?: v2.ResourcePlugin[]
 ): Promise<Result<unknown, FxError>> {
-  const result = await scaffoldByPlugins(ctx, inputs, localSettings, plugins);
+  const result = await scaffoldByPlugins(ctx, inputs, localSettings, pluginsToScaffold);
   if (result.isErr()) {
     return result;
   }
   if (!generateTemplate || !isArmSupportEnabled()) {
     return result;
   }
-  return generateResourceTemplateForPlugins(ctx, inputs, plugins);
+  return generateResourceTemplateForPlugins(
+    ctx,
+    inputs,
+    pluginsToDoArm ? pluginsToDoArm : pluginsToScaffold
+  );
 }
 
 export async function addResource(
@@ -370,10 +376,12 @@ export async function addResource(
   const functionPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
   const sqlPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin);
   const apimPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.ApimPlugin);
+  const keyVaultPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.KeyVaultPlugin);
+  const localDebugPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.LocalDebugPlugin);
   const alreadyHaveFunction = selectedPlugins?.includes(functionPlugin.name);
   const alreadyHaveSql = selectedPlugins?.includes(sqlPlugin.name);
   const alreadyHaveApim = selectedPlugins?.includes(apimPlugin.name);
-  const localDebugPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.LocalDebugPlugin);
+  const alreadyHaveKeyVault = selectedPlugins?.includes(keyVaultPlugin.name);
 
   const addResourcesAnswer = inputs[AzureSolutionQuestionNames.AddResources] as string[];
 
@@ -390,10 +398,15 @@ export async function addResource(
   const addSQL = addResourcesAnswer.includes(AzureResourceSQL.id);
   const addFunc = addResourcesAnswer.includes(AzureResourceFunction.id);
   const addApim = addResourcesAnswer.includes(AzureResourceApim.id);
+  const addKeyVault = addResourcesAnswer.includes(AzureResourceKeyVault.id);
 
-  if ((alreadyHaveSql && addSQL) || (alreadyHaveApim && addApim)) {
+  if (
+    (alreadyHaveSql && addSQL) ||
+    (alreadyHaveApim && addApim) ||
+    (alreadyHaveKeyVault && addKeyVault)
+  ) {
     const e = returnUserError(
-      new Error("SQL/APIM is already added."),
+      new Error("SQL/APIM/KeyVault is already added."),
       SolutionSource,
       SolutionError.AddResourceNotSupport
     );
@@ -406,24 +419,27 @@ export async function addResource(
     );
   }
 
-  let addNewResoruceToProvision = false;
+  let addNewResourceToProvision = false;
   const notifications: string[] = [];
   const pluginsToScaffold: v2.ResourcePlugin[] = [localDebugPlugin];
+  const pluginsToDoArm: v2.ResourcePlugin[] = [];
   const azureResource = Array.from(settings.azureResources || []);
   let scaffoldApim = false;
   if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
     pluginsToScaffold.push(functionPlugin);
     if (!azureResource.includes(AzureResourceFunction.id)) {
       azureResource.push(AzureResourceFunction.id);
-      addNewResoruceToProvision = true;
+      addNewResourceToProvision = true;
+      pluginsToDoArm.push(functionPlugin);
     }
     notifications.push(AzureResourceFunction.label);
   }
   if (addSQL && !alreadyHaveSql) {
     pluginsToScaffold.push(sqlPlugin);
+    pluginsToDoArm.push(sqlPlugin);
     azureResource.push(AzureResourceSQL.id);
     notifications.push(AzureResourceSQL.label);
-    addNewResoruceToProvision = true;
+    addNewResourceToProvision = true;
   }
   if (addApim && !alreadyHaveApim) {
     // We don't add apimPlugin into pluginsToScaffold because
@@ -432,12 +448,19 @@ export async function addResource(
     // The scaffolding will run later as a usertask as a work around.
     azureResource.push(AzureResourceApim.id);
     notifications.push(AzureResourceApim.label);
-    addNewResoruceToProvision = true;
+    addNewResourceToProvision = true;
+    pluginsToDoArm.push(apimPlugin);
     scaffoldApim = true;
   }
-
+  if (addKeyVault && !alreadyHaveKeyVault) {
+    pluginsToScaffold.push(keyVaultPlugin);
+    pluginsToDoArm.push(keyVaultPlugin);
+    azureResource.push(AzureResourceKeyVault.id);
+    notifications.push(AzureResourceKeyVault.label);
+    addNewResourceToProvision = true;
+  }
   if (notifications.length > 0) {
-    if (isArmSupportEnabled() && addNewResoruceToProvision) {
+    if (isArmSupportEnabled() && addNewResourceToProvision) {
       showUpdateArmTemplateNotice(ctx.userInteraction);
     }
     settings.azureResources = azureResource;
@@ -448,7 +471,8 @@ export async function addResource(
       inputs,
       localSettings,
       pluginsToScaffold,
-      addNewResoruceToProvision
+      addNewResourceToProvision,
+      pluginsToDoArm
     );
 
     if (scaffoldApim) {
@@ -497,7 +521,7 @@ export async function addResource(
     [SolutionTelemetryProperty.Resources]: addResourcesAnswer.join(";"),
   });
   return ok(
-    addNewResoruceToProvision
+    addNewResourceToProvision
       ? { solutionSettings: settings, solutionConfig: { provisionSucceeded: false } }
       : Void
   );

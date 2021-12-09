@@ -36,11 +36,13 @@ import {
   convert2PluginContext,
   deployAdapter,
   executeUserTaskAdapter,
+  generateResourceTemplateAdapter,
   getQuestionsAdapter,
   getQuestionsForScaffoldingAdapter,
   getQuestionsForUserTaskAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
+  updateResourceTemplateAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.ApimPlugin)
@@ -113,7 +115,7 @@ export class ApimPluginV2 implements ResourcePlugin {
     ctx: Context,
     inputs: DeploymentInputs,
     provisionOutput: Json,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     // const questionRes = await this.plugin.getQuestions(
     //   Stage.deploy,
@@ -148,5 +150,19 @@ export class ApimPluginV2 implements ResourcePlugin {
       tokenProvider,
       this.plugin
     );
+  }
+
+  async generateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
+  }
+
+  async updateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return await updateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 }

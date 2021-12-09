@@ -308,7 +308,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     // return the error if the template is invalid
     if (error.code === InvalidTemplateErrorCode) {
       return err(
-        returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+        returnUserError(error, SolutionSource, SolutionError.FailedToValidateArmTemplates)
       );
     }
 
@@ -323,12 +323,8 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
           returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
         );
       }
-
-      const deploymentErrorMessage = JSON.stringify(
-        formattedDeploymentError(deploymentError),
-        undefined,
-        2
-      );
+      const deploymentErrorObj = formattedDeploymentError(deploymentError);
+      const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
       const errorMessage = format(
         getStrings().solution.DeployArmTemplates.FailNotice,
         PluginDisplayName.Solution,
@@ -346,7 +342,9 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       } else {
         failedDeployments.push(deploymentName);
       }
-      return formattedDeploymentName(failedDeployments);
+      const returnError = formattedDeploymentName(failedDeployments);
+      returnError.innerError = JSON.stringify(deploymentErrorObj);
+      return err(returnError);
     } else {
       return result;
     }
@@ -399,10 +397,15 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
       });
     } else {
+      const errorProperties: { [key: string]: string } = {};
+      if (result.error.innerError) {
+        errorProperties[SolutionTelemetryProperty.ArmDeploymentError] = result.error.innerError;
+      }
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.ArmDeployment,
         result.error,
-        ctx.telemetryReporter
+        ctx.telemetryReporter,
+        errorProperties
       );
     }
   } catch (error) {
@@ -480,8 +483,8 @@ function generateArmFromResult(
   result: ArmTemplateResult,
   bicepOrchestrationTemplate: BicepOrchestrationContent,
   pluginWithArm: NamedArmResourcePlugin,
-  moduleConfigFiles: Map<string, string>,
-  moduleProvisionFiles: Map<string, string>
+  moduleProvisionFiles: Map<string, string>,
+  moduleConfigFiles: Map<string, string>
 ) {
   bicepOrchestrationTemplate.applyTemplate(pluginWithArm.name, result);
   if (result.Configuration?.Modules) {
@@ -520,66 +523,42 @@ async function doGenerateArmTemplate(
   // Get bicep content from each resource plugin
   for (const plugin of plugins) {
     const pluginWithArm = plugin as NamedArmResourcePlugin; // Temporary solution before adding it to teamsfx-api
-    // plugin not selected need to be update.
+    const pluginContext = getPluginContext(ctx, pluginWithArm.name);
+    let result: Result<ArmTemplateResult, FxError>;
+    let errMessage = "";
     if (
       pluginWithArm.updateArmTemplates &&
-      !selectedPlugins.find((pluginItem) => pluginItem === pluginWithArm)
+      !selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
     ) {
-      const pluginContext = getPluginContext(ctx, pluginWithArm.name);
-      const result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<
+      result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,
         FxError
       >;
-      if (result.isOk()) {
-        generateArmFromResult(
-          result.value,
-          bicepOrchestrationTemplate,
-          pluginWithArm,
-          moduleProvisionFiles,
-          moduleConfigFiles
-        );
-      } else {
-        const msg = format(
-          getStrings().solution.UpdateArmTemplateFailNotice,
-          ctx.projectSettings?.appName
-        );
-        ctx.logProvider?.error(msg);
-        return result;
-      }
-    } else if (pluginWithArm.generateArmTemplates) {
-      // find method using method name
-      const pluginContext = getPluginContext(ctx, pluginWithArm.name);
-      const result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
+      errMessage = getStrings().solution.UpdateArmTemplateFailNotice;
+    } else if (
+      pluginWithArm.generateArmTemplates &&
+      selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
+    ) {
+      result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,
         FxError
       >;
-      if (result.isOk()) {
-        // Once plugins implement updateArmTemplate interface, these code need to be deleted.
-        if (
-          selectedPlugins.length != 0 &&
-          !selectedPlugins.find(({ name }) => name === pluginWithArm.name)
-        ) {
-          if (result.value.Configuration?.Orchestration)
-            delete result.value.Configuration?.Orchestration;
-          if (result.value.Provision?.Orchestration) delete result.value.Provision?.Orchestration;
-          if (result.value.Provision?.Modules) delete result.value.Provision?.Modules;
-          if (result.value.Parameters) delete result.value.Parameters;
-        }
-        generateArmFromResult(
-          result.value,
-          bicepOrchestrationTemplate,
-          pluginWithArm,
-          moduleProvisionFiles,
-          moduleConfigFiles
-        );
-      } else {
-        const msg = format(
-          getStrings().solution.GenerateArmTemplateFailNotice,
-          ctx.projectSettings?.appName
-        );
-        ctx.logProvider?.error(msg);
-        return result;
-      }
+      errMessage = getStrings().solution.GenerateArmTemplateFailNotice;
+    } else {
+      continue;
+    }
+    if (result.isOk()) {
+      generateArmFromResult(
+        result.value,
+        bicepOrchestrationTemplate,
+        pluginWithArm,
+        moduleProvisionFiles,
+        moduleConfigFiles
+      );
+    } else {
+      const msg = format(errMessage, ctx.projectSettings?.appName);
+      ctx.logProvider?.error(msg);
+      return result;
     }
   }
 
@@ -1032,20 +1011,18 @@ async function getDeploymentError(
   return deploymentError;
 }
 
-function formattedDeploymentName(failedDeployments: string[]): Result<void, FxError> {
+function formattedDeploymentName(failedDeployments: string[]): FxError {
   const format = failedDeployments.map((deployment) => deployment + " module");
   const returnError = new Error(
     `resource deployments (${format.join(
       ", "
     )}) for your project failed. Please refer to output channel for more error details.`
   );
-  return err(
-    returnUserError(
-      returnError,
-      SolutionSource,
-      SolutionError.FailedToDeployArmTemplatesToAzure,
-      HelpLinks.ArmHelpLink
-    )
+  return returnUserError(
+    returnError,
+    SolutionSource,
+    SolutionError.FailedToDeployArmTemplatesToAzure,
+    HelpLinks.ArmHelpLink
   );
 }
 

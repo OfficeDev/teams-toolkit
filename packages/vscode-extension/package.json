@@ -239,7 +239,7 @@
         },
         {
           "command": "fx-extension.listCollaborator",
-          "when": "view == teamsfx-environment && viewItem =~ /azure-environment/",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         },
         {
@@ -254,7 +254,7 @@
         },
         {
           "command": "fx-extension.grantPermission",
-          "when": "view == teamsfx-environment && viewItem =~ /azure-environment/",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
           "group": "inline@3"
         }
       ],
@@ -437,11 +437,13 @@
       },
       {
         "command": "fx-extension.update",
-        "title": "Teams: Add cloud resources"
+        "title": "Teams: Add cloud resources",
+        "enablement": "!fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.addCapability",
-        "title": "Teams: Add capabilities"
+        "title": "Teams: Add capabilities",
+        "enablement": "!fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.openManifest",
@@ -543,12 +545,12 @@
       },
       {
         "command": "fx-extension.preview",
-        "title": "Preview",
+        "title": "Preview App",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.previewWithIcon",
-        "title": "Preview",
+        "title": "Preview App",
         "icon": "$(run)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
@@ -813,7 +815,8 @@
           },
           "fx-extension.defaultProjectRootDirectory": {
             "type": "string",
-            "description": "Set the default root directory for creating new teams app project. By default, the root directory is $HOME_DIR/TeamsApps. (requries reload of VS Code)"
+            "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requries reload of VS Code)",
+            "default": "${homeDir}/TeamsApps"
           }
         }
       }

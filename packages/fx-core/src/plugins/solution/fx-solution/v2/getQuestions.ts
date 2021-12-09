@@ -425,15 +425,18 @@ export async function getQuestionsForAddResource(
   const apimPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
     ResourcePluginsV2.ApimPlugin
   );
+  const keyVaultPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+    ResourcePluginsV2.KeyVaultPlugin
+  );
   const alreadyHaveFunction = selectedPlugins.includes(functionPlugin.name);
   const alreadyHaveSQL = selectedPlugins.includes(sqlPlugin.name);
   const alreadyHaveAPIM = selectedPlugins.includes(apimPlugin.name);
-
+  const alreadyHavekeyVault = selectedPlugins.includes(keyVaultPlugin.name);
   const addQuestion = createAddAzureResourceQuestion(
     alreadyHaveFunction,
     alreadyHaveSQL,
     alreadyHaveAPIM,
-    false // TODO: to support Key Vault plugin in fx-core v2
+    alreadyHavekeyVault
   );
 
   const addAzureResourceNode = new QTreeNode(addQuestion);
@@ -455,49 +458,51 @@ export async function getQuestionsForAddResource(
         azure_function.condition = { contains: AzureResourceFunction.id };
       } else {
         // if not function activated, select any option will trigger function question
-        azure_function.condition = { minItems: 1 };
+        azure_function.condition = {
+          containsAny: [AzureResourceApim.id, AzureResourceFunction.id, AzureResourceSQL.id],
+        };
       }
       if (azure_function.data) addAzureResourceNode.addChild(azure_function);
     }
   }
 
-  //Azure SQL
-  if (sqlPlugin.getQuestionsForUserTask && !alreadyHaveSQL) {
-    const res = await sqlPlugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
-    if (res.isErr()) return res;
-    if (res.value) {
-      const azure_sql = res.value as QTreeNode;
-      azure_sql.condition = { contains: AzureResourceSQL.id };
-      if (azure_sql.data) addAzureResourceNode.addChild(azure_sql);
-    }
-  }
+  // //Azure SQL
+  // if (sqlPlugin.getQuestionsForUserTask && !alreadyHaveSQL) {
+  //   const res = await sqlPlugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
+  //   if (res.isErr()) return res;
+  //   if (res.value) {
+  //     const azure_sql = res.value as QTreeNode;
+  //     azure_sql.condition = { contains: AzureResourceSQL.id };
+  //     if (azure_sql.data) addAzureResourceNode.addChild(azure_sql);
+  //   }
+  // }
 
-  //APIM
-  if (apimPlugin.getQuestionsForUserTask && (!alreadyHaveAPIM || !isDynamicQuestion)) {
-    const res = await apimPlugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
-    if (res.isErr()) return res;
-    if (res.value) {
-      const groupNode = new QTreeNode({ type: "group" });
-      groupNode.condition = { contains: AzureResourceApim.id };
-      addAzureResourceNode.addChild(groupNode);
-      const apim = res.value as QTreeNode;
-      if (apim.data) {
-        const funcNode = new QTreeNode(AskSubscriptionQuestion);
-        AskSubscriptionQuestion.func = async (
-          inputs: Inputs
-        ): Promise<Result<SubscriptionInfo, FxError>> => {
-          const res = await checkSubscription(envInfo, tokenProvider.azureAccountProvider);
-          if (res.isOk()) {
-            const sub = res.value;
-            inputs.subscriptionId = sub.subscriptionId;
-            inputs.tenantId = sub.tenantId;
-          }
-          return res;
-        };
-        groupNode.addChild(funcNode);
-        groupNode.addChild(apim);
-      }
-    }
-  }
+  // //APIM
+  // if (apimPlugin.getQuestionsForUserTask && (!alreadyHaveAPIM || !isDynamicQuestion)) {
+  //   const res = await apimPlugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
+  //   if (res.isErr()) return res;
+  //   if (res.value) {
+  //     const apim = res.value as QTreeNode;
+  //     if (apim.data.type !== "group" || (apim.children && apim.children.length > 0)) {
+  //       const groupNode = new QTreeNode({ type: "group" });
+  //       groupNode.condition = { contains: AzureResourceApim.id };
+  //       addAzureResourceNode.addChild(groupNode);
+  //       const funcNode = new QTreeNode(AskSubscriptionQuestion);
+  //       AskSubscriptionQuestion.func = async (
+  //         inputs: Inputs
+  //       ): Promise<Result<SubscriptionInfo, FxError>> => {
+  //         const res = await checkSubscription(envInfo, tokenProvider.azureAccountProvider);
+  //         if (res.isOk()) {
+  //           const sub = res.value;
+  //           inputs.subscriptionId = sub.subscriptionId;
+  //           inputs.tenantId = sub.tenantId;
+  //         }
+  //         return res;
+  //       };
+  //       groupNode.addChild(funcNode);
+  //       groupNode.addChild(apim);
+  //     }
+  //   }
+  // }
   return ok(addAzureResourceNode);
 }

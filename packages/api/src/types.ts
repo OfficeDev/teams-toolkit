@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { OptionItem } from "./qm";
 import { Platform, Stage, VsCodeEnv } from "./constants";
 
 export type Json = Record<string, any>;
@@ -16,6 +15,36 @@ export type ReadonlyPluginConfig = ReadonlyMap<string, ConfigValue>;
 
 export type SolutionConfig = Map<PluginIdentity, PluginConfig>;
 export type ReadonlySolutionConfig = ReadonlyMap<PluginIdentity, ReadonlyPluginConfig>;
+
+/**
+ * Definition of option item in single selection or multiple selection
+ */
+export interface OptionItem {
+  /**
+   * unique identifier of the option item in the option list
+   */
+  id: string;
+  /**
+   * display name
+   */
+  label: string;
+  /**
+   * short description
+   */
+  description?: string;
+  /**
+   * detailed description
+   */
+  detail?: string;
+  /**
+   * customized user data, which is not displayed
+   */
+  data?: unknown;
+  /**
+   * CLI display name. CLI will use `cliName` as display name, and use `id` instead if `cliName` is undefined.
+   */
+  cliName?: string;
+}
 
 export class ConfigMap extends Map<string, ConfigValue> {
   getString(k: string, defaultValue?: string): string | undefined {
@@ -143,7 +172,6 @@ export interface ProjectSettings {
   defaultFunctionName?: string;
   solutionSettings: SolutionSettings;
   isFromSample?: boolean;
-  createdFrom?: string;
 }
 
 /**
@@ -151,6 +179,9 @@ export interface ProjectSettings {
  */
 export interface SolutionSettings extends Json {
   name: string;
+  /**
+   * solution settings schema version
+   */
   version?: string;
 }
 

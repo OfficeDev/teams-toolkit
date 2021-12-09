@@ -41,6 +41,8 @@ import {
   localSettingsFileName,
 } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
+import { FxCore } from "@microsoft/teamsfx-core";
+import { isSPFxProject } from "@microsoft/teamsfx-core";
 
 export type Json = { [_: string]: any };
 
@@ -363,7 +365,7 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
 }
 
 // Only used for telemetry
-export function getCreatedFrom(rootFolder: string | undefined): string | undefined {
+export function getSettingsVersion(rootFolder: string | undefined): string | undefined {
   if (!rootFolder) {
     return undefined;
   }
@@ -371,7 +373,7 @@ export function getCreatedFrom(rootFolder: string | undefined): string | undefin
     if (isWorkspaceSupported(rootFolder)) {
       const result = readSettingsFileSync(rootFolder);
       if (result.isOk()) {
-        return result.value.createdFrom;
+        return result.value.version;
       }
     }
   } catch (e) {
@@ -565,4 +567,22 @@ export function getAllFeatureFlags(): string[] | undefined {
     });
 
   return result;
+}
+
+export async function isSpfxProject(
+  rootFolder: string,
+  core: FxCore
+): Promise<Result<boolean | undefined, FxError>> {
+  const inputs: Inputs = {
+    platform: Platform.CLI,
+    projectPath: rootFolder,
+  };
+
+  const configResult = await core.getProjectConfig(inputs);
+  if (configResult.isErr()) {
+    return err(configResult.error);
+  }
+  const config = configResult.value;
+  const projectSettings = config?.settings;
+  return ok(isSPFxProject(projectSettings));
 }

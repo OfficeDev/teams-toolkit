@@ -303,7 +303,7 @@ describe("Core basic APIs", () => {
     });
   });
 
-  it("create project with correct createdFrom", async () => {
+  it("create project with correct version", async () => {
     assert.isTrue(true);
     appName = randomAppName();
     projectPath = path.join(os.homedir(), "TeamsApps", appName);
@@ -381,7 +381,7 @@ describe("Core basic APIs", () => {
       const projectSettings = projectSettingsResult.value;
       const validSettingsResult = validateSettings(projectSettings);
       assert.isTrue(validSettingsResult === undefined);
-      projectSettings.createdFrom == require("../../package.json").version;
+      projectSettings.version == "2.0.0";
     }
   });
 

@@ -7,9 +7,9 @@
 <b>Signature:</b>
 
 ```typescript
-toJSON(): Dict<unknown>;
+toJSON(): Json;
 ```
 <b>Returns:</b>
 
-[Dict](./teamsfx-api.dict.md)<!-- -->&lt;unknown&gt;
+[Json](./teamsfx-api.json.md)
 

@@ -4,7 +4,7 @@
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { CoreHookContext, FxCore, isV2 } from "..";
+import { CoreHookContext, flattenConfigJson, FxCore, isV2 } from "..";
 import { getStrings, isMultiEnvEnabled } from "../../common";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
@@ -57,8 +57,9 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
     if (isMultiEnvEnabled() && provisionOutputs[PluginNames.LDEBUG]) {
       delete provisionOutputs[PluginNames.LDEBUG];
     }
+    const envState = flattenConfigJson(provisionOutputs);
     const envStatePath = await environmentManager.writeEnvState(
-      provisionOutputs,
+      envState,
       inputs.projectPath,
       ctx.contextV2!.cryptoProvider,
       envInfoV2.envName

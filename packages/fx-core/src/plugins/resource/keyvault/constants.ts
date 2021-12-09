@@ -24,6 +24,7 @@ export class Constants {
 
   static readonly Stage = {
     generateArmTemplates: "generate-arm-templates",
+    updateArmTemplates: "update-arm-templates",
   };
 }
 

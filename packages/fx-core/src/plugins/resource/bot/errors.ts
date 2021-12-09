@@ -1,6 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Constants } from "../aad/constants";
+import { GraphErrorCodes } from "../aad/errorCodes";
+import { CreateAppError, CreateSecretError } from "../aad/errors";
 import { ErrorNames, AzureConstants } from "./constants";
 import { Messages } from "./resources/messages";
 import { CommonStrings } from "./resources/strings";
@@ -16,7 +19,7 @@ export class PluginError extends Error {
   public details: string;
   public suggestions: string[];
   public errorType: ErrorType;
-  public innerError?: Error;
+  public innerError?: any;
   public helpLink?: string;
 
   constructor(
@@ -24,7 +27,7 @@ export class PluginError extends Error {
     name: string,
     details: string,
     suggestions: string[],
-    innerError?: Error,
+    innerError?: any,
     helpLink?: string
   ) {
     super(details);
@@ -34,11 +37,35 @@ export class PluginError extends Error {
     this.errorType = type;
     this.innerError = innerError;
     this.helpLink = helpLink;
+    this.inferFromInnerError();
     Object.setPrototypeOf(this, PluginError.prototype);
   }
 
   genMessage(): string {
-    return `${this.message} Suggestions: ${this.suggestions.join(" ")}`;
+    let msg = `${this.message} `;
+    if (this.suggestions.length > 0) {
+      msg += `Suggestions: ${this.suggestions.join(" ")}`;
+    }
+    return msg;
+  }
+
+  inferFromInnerError() {
+    if (!this.innerError) return;
+
+    const errorCode = this.innerError.response?.data?.error?.code;
+    const helpLink = GraphErrorCodes.get(errorCode);
+    if (helpLink) this.helpLink = helpLink;
+
+    const statusCode = this.innerError.response?.status;
+    if (
+      statusCode &&
+      statusCode >= Constants.statusCodeUserError &&
+      statusCode < Constants.statusCodeServerError
+    ) {
+      this.errorType = ErrorType.User;
+    } else {
+      this.errorType = ErrorType.System;
+    }
   }
 }
 
@@ -71,14 +98,26 @@ export class UserInputsError extends PluginError {
 }
 
 export class AADAppCheckingError extends PluginError {
-  constructor(innerError?: Error) {
+  constructor(innerError?: any) {
     super(
-      ErrorType.System,
+      ErrorType.User,
       ErrorNames.CALL_APPSTUDIO_API_ERROR,
       Messages.FailToCallAppStudioForCheckingAADApp,
       [Messages.RetryTheCurrentStep],
       innerError
     );
+  }
+}
+
+export class CreateAADAppError extends PluginError {
+  constructor(innerError?: any) {
+    super(ErrorType.User, CreateAppError.name, CreateAppError.message(), [], innerError);
+  }
+}
+
+export class CreateAADSecretError extends PluginError {
+  constructor(innerError?: any) {
+    super(ErrorType.User, CreateSecretError.name, CreateSecretError.message(), [], innerError);
   }
 }
 
@@ -94,7 +133,7 @@ export class TemplateZipFallbackError extends PluginError {
 }
 
 export class ClientCreationError extends PluginError {
-  constructor(clientName: string, innerError?: Error) {
+  constructor(clientName: string, innerError?: any) {
     super(
       ErrorType.User,
       ErrorNames.CLIENT_CREATION_ERROR,
@@ -106,7 +145,7 @@ export class ClientCreationError extends PluginError {
 }
 
 export class ProvisionError extends PluginError {
-  constructor(resource: string, innerError?: Error) {
+  constructor(resource: string, innerError?: any) {
     super(
       ErrorType.User,
       ErrorNames.PROVISION_ERROR,
@@ -141,7 +180,7 @@ export class UnzipError extends PluginError {
 }
 
 export class ConfigUpdatingError extends PluginError {
-  constructor(configName: string, innerError?: Error) {
+  constructor(configName: string, innerError?: any) {
     super(
       ErrorType.User,
       ErrorNames.CONFIG_UPDATING_ERROR,
@@ -175,7 +214,7 @@ export class PackDirExistenceError extends PluginError {
 }
 
 export class ListPublishingCredentialsError extends PluginError {
-  constructor(innerError?: Error) {
+  constructor(innerError?: any) {
     super(
       ErrorType.User,
       ErrorNames.LIST_PUBLISHING_CREDENTIALS_ERROR,
@@ -187,7 +226,7 @@ export class ListPublishingCredentialsError extends PluginError {
 }
 
 export class ZipDeployError extends PluginError {
-  constructor(innerError?: Error) {
+  constructor(innerError?: any) {
     super(
       ErrorType.User,
       ErrorNames.ZIP_DEPLOY_ERROR,
@@ -199,7 +238,7 @@ export class ZipDeployError extends PluginError {
 }
 
 export class MessageEndpointUpdatingError extends PluginError {
-  constructor(endpoint: string, innerError?: Error) {
+  constructor(endpoint: string, innerError?: any) {
     super(
       ErrorType.User,
       ErrorNames.MSG_ENDPOINT_UPDATING_ERROR,
@@ -211,7 +250,7 @@ export class MessageEndpointUpdatingError extends PluginError {
 }
 
 export class DownloadError extends PluginError {
-  constructor(url: string, innerError?: Error) {
+  constructor(url: string, innerError?: any) {
     super(
       ErrorType.User,
       ErrorNames.DOWNLOAD_ERROR,
@@ -234,7 +273,7 @@ export class TemplateProjectNotFoundError extends PluginError {
 }
 
 export class CommandExecutionError extends PluginError {
-  constructor(cmd: string, innerError?: Error) {
+  constructor(cmd: string, innerError?: any) {
     super(
       ErrorType.User,
       ErrorNames.COMMAND_EXECUTION_ERROR,
@@ -246,7 +285,7 @@ export class CommandExecutionError extends PluginError {
 }
 
 export class FreeServerFarmsQuotaError extends PluginError {
-  constructor(innerError?: Error) {
+  constructor(innerError?: any) {
     super(
       ErrorType.User,
       ErrorNames.FREE_SERVER_FARMS_QUOTA_ERROR,
@@ -259,7 +298,7 @@ export class FreeServerFarmsQuotaError extends PluginError {
 }
 
 export class InvalidBotDataError extends PluginError {
-  constructor(innerError: Error) {
+  constructor(innerError: any) {
     super(
       ErrorType.User,
       ErrorNames.INVALID_BOT_DATA_ERROR,
@@ -271,7 +310,7 @@ export class InvalidBotDataError extends PluginError {
 }
 
 export class RegisterResourceProviderError extends PluginError {
-  constructor(innerError?: Error) {
+  constructor(innerError?: any) {
     super(
       ErrorType.User,
       "RegisterResourceProviderError",
@@ -287,7 +326,7 @@ export class RegisterResourceProviderError extends PluginError {
 
 // for the use of migrating v1 project
 export class MigrateV1ProjectError extends PluginError {
-  constructor(innerError?: Error) {
+  constructor(innerError?: any) {
     super(
       ErrorType.User,
       "MigrateV1ProjectError",

@@ -2,11 +2,18 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { DeepReadonly, InputsWithProjectPath } from ".";
-import { FxError, QTreeNode, TokenProvider, Void, Func, Json, Inputs, EnvInfo } from "../index";
-import { AzureSolutionSettings } from "../types";
-import { AppStudioTokenProvider, AzureAccountProvider } from "../utils";
-import { Context, DeploymentInputs, EnvInfoV2, FxResult, ProvisionInputs } from "./types";
+import { FxError } from "../error";
+import { Func, QTreeNode } from "../qm/question";
+import { AzureSolutionSettings, Inputs, Json, Void } from "../types";
+import { AppStudioTokenProvider, TokenProvider } from "../utils";
+import {
+  Context,
+  DeepReadonly,
+  DeploymentInputs,
+  EnvInfoV2,
+  InputsWithProjectPath,
+  ProvisionInputs,
+} from "./types";
 
 export type ResourceTemplate = BicepTemplate | JsonTemplate;
 
@@ -91,7 +98,10 @@ export interface ResourcePlugin {
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<ResourceTemplate, FxError>>;
-
+  updateResourceTemplate?: (
+    ctx: Context,
+    inputs: Inputs
+  ) => Promise<Result<ResourceTemplate, FxError>>;
   /**
    * provisionResource() runs before ARM/Bicep provision when Provision command is called.
    * There are two reasons why a resource needs to implement this method:
@@ -140,18 +150,18 @@ export interface ResourcePlugin {
   /**
    * Depends on the provision output values returned by {@link provisionResource}, ARM/Bicep provision
    * and {@link configureResource}.
-   * Plugins are expected to deploy code to cloud using access tokens provided by {@link AzureAccountProvider}.
+   * Plugins are expected to deploy code to cloud using access tokens provided by {@link TokenProvider}.
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {DeploymentInputs} inputs - inputs injected by Toolkit runtime and solution.
    * @param {Json} provisionOutputs - state containing provision outputs modeled after state.${env}.json
-   * @param {AzureAccountProvider} tokenProvider - Tokens for Azure and AppStudio
+   * @param {TokenProvider} tokenProvider - Token provider for Azure, AppStudio and m365
    */
   deploy?: (
     ctx: Context,
     inputs: DeploymentInputs,
     provisionOutputs: Json,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
   /**

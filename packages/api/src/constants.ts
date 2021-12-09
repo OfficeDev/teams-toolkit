@@ -63,8 +63,11 @@ export enum Stage {
   listAllCollaborators = "listAllCollaborators",
   getQuestions = "getQuestions",
   getProjectConfig = "getProjectConfig",
-  scaffold = "scaffold",
   init = "init",
+  addModule = "addModule",
+  scaffold = "scaffold",
+  addResource = "addResource",
+  addCapability = "addCapability",
 }
 
 export enum TelemetryEvent {

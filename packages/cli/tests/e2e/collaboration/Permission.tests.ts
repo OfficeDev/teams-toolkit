@@ -94,10 +94,13 @@ describe("Collaboration", function () {
     // When collaborator account is guest account in the tenant. Account name pattern will change.
     // e.g. Guest account "account@example.com" will appear as "account_example#EXT#@exampleTenant.onmicrosoft.com" under tenant "exampleTenant".
     // Thus here will check the account name only.
-    if (!isRemoteCollaborateEnabled()) {
-      expect(listCollaboratorResult.stdout).to.contains(`Account: ${collaborator?.split("@")[0]}`);
-      expect(listCollaboratorResult.stdout).to.contains(`Account: ${creator?.split("@")[0]}`);
-    }
+    expect(listCollaboratorResult.stdout).to.contains(
+      `Account used to check: ${creator?.split("@")[0]}`
+    );
+    expect(listCollaboratorResult.stdout).to.contains(
+      `Teams App Owner: ${collaborator?.split("@")[0]}`
+    );
+
     console.log("[Successfully] list collaborator");
   });
 

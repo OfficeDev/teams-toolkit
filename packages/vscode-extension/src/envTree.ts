@@ -79,12 +79,6 @@ export async function registerEnvTreeHandler(
         if (isLocal) {
           contextValue = "local";
         } else {
-          if (await isSPFxProject(workspacePath)) {
-            contextValue = "spfx-" + contextValue;
-          } else {
-            contextValue = "azure-" + contextValue;
-          }
-
           if (provisionSucceeded) {
             contextValue = contextValue + "-provisioned";
           }
@@ -261,11 +255,28 @@ async function appendSubscriptionAndResourceGroupNode(env: string): Promise<void
   ) {
     const envSubItems: TreeItem[] = [];
     const subscriptionInfo = await getSubscriptionInfoFromEnv(env);
+
     if (subscriptionInfo) {
       const subscriptionTreeItem: TreeItem = {
         commandId: `fx-extension.environment.subscription.${env}`,
         contextValue: "openSubscriptionInPortal",
         label: subscriptionInfo.subscriptionName ?? subscriptionInfo.subscriptionId,
+        description: subscriptionInfo.subscriptionId,
+        tooltip: {
+          isMarkdown: false,
+          value: subscriptionInfo.subscriptionName
+            ? util.format(
+                StringResources.vsc.envTree.subscriptionTooltip,
+                env,
+                subscriptionInfo.subscriptionName,
+                subscriptionInfo.subscriptionId
+              )
+            : util.format(
+                StringResources.vsc.envTree.subscriptionTooltipWithoutName,
+                env,
+                subscriptionInfo.subscriptionId
+              ),
+        },
         icon: "key",
         isCustom: false,
         parent: "fx-extension.environment." + env,

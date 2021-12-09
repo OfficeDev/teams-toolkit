@@ -50,7 +50,7 @@ var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teams
 
 resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${webAppName}/appsettings'
-  properties: union({
+  properties: {
     AAD_METADATA_ADDRESS: aadMetadataAddress
     ALLOWED_APP_IDS: authorizedClientApplicationIds
     IDENTIFIER_URI: m365ApplicationIdUri
@@ -60,5 +60,5 @@ resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     {{#contains 'fx-resource-frontend-hosting' Plugins}}
     TAB_APP_ENDPOINT: tabAppEndpoint
     {{/contains}}
-  }, currentAppSettings)
+  }
 }

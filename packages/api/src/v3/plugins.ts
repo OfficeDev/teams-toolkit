@@ -37,7 +37,7 @@ export interface PluginScaffoldInputs extends InputsWithProjectPath {
   /**
    * module index
    */
-  module: number;
+  module?: number;
   /**
    * customized source root dir name
    */

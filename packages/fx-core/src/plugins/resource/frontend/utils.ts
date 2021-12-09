@@ -67,7 +67,11 @@ export class Utils {
     throw error;
   }
 
-  static async execute(command: string, workingDir?: string, ignoreError = false): Promise<string> {
+  static async execute(
+    command: string,
+    workingDir?: string,
+    env?: NodeJS.ProcessEnv
+  ): Promise<string> {
     return new Promise((resolve, reject) => {
       Logger.info(`Start to run command: "${command}".`);
 
@@ -76,18 +80,23 @@ export class Utils {
         workingDir = this.capitalizeFirstLetter(path.resolve(workingDir ?? Constants.EmptyString));
       }
 
-      exec(command, { cwd: workingDir }, (error, standardOutput) => {
-        Logger.debug(standardOutput);
-        if (error) {
-          Logger.error(`Failed to run command: "${command}".`);
-          if (!ignoreError) {
+      exec(
+        command,
+        { cwd: workingDir, env: { ...process.env, ...env } },
+        (error, standardOutput, stderr) => {
+          Logger.debug(standardOutput);
+          if (error) {
+            Logger.error(`Failed to run command: "${command}".`);
             Logger.error(error.message);
             reject(error);
           }
-          Logger.warning(error.message);
+          if (stderr) {
+            Logger.error(stderr);
+            reject(stderr);
+          }
+          resolve(standardOutput);
         }
-        resolve(standardOutput);
-      });
+      );
     });
   }
 

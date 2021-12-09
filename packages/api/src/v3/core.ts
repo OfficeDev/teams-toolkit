@@ -27,13 +27,13 @@ export interface ICore {
    * scaffold will be an independent stage
    */
   scaffold: (
-    inputs: InputsWithProjectPath & { moduleIndex?: number }
+    inputs: InputsWithProjectPath & { moduleIndex?: number; pluginName?: string }
   ) => Promise<Result<Void, FxError>>;
   /**
    * addResource is separated from executeUserTask
    */
   addResource: (
-    inputs: InputsWithProjectPath & { moduleIndex?: number }
+    inputs: InputsWithProjectPath & { moduleIndex?: number; pluginName?: string }
   ) => Promise<Result<Void, FxError>>;
   /**
    * provision resources
@@ -43,7 +43,9 @@ export interface ICore {
   /**
    * deploy bits
    */
-  deployArtifacts: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+  deployArtifacts: (
+    inputs: InputsWithProjectPath & { moduleIndex?: number }
+  ) => Promise<Result<Void, FxError>>;
 
   /**
    * publish application

@@ -55,7 +55,7 @@ export async function getQuestionsForScaffold(
 }
 export async function scaffold(
   ctx: v2.Context,
-  inputs: v3.PluginScaffoldInputs & { module?: number; template: OptionItem }
+  inputs: v2.InputsWithProjectPath & { module?: number; template: OptionItem }
 ): Promise<Result<Void, FxError>> {
   const template = inputs.template;
   if (!template.data) {
@@ -64,9 +64,12 @@ export async function scaffold(
   const data = template.data as { pluginName: string; templateName: string };
   const pluginName = data.pluginName;
   const templateName = data.templateName;
-  (inputs as any).template = templateName;
   const plugin = Container.get<v3.ScaffoldPlugin>(pluginName);
-  const res = await plugin.scaffold(ctx, inputs);
+  const pluginInputs: v3.PluginScaffoldInputs = {
+    ...inputs,
+    template: templateName,
+  };
+  const res = await plugin.scaffold(ctx, pluginInputs);
   if (res.isErr()) {
     return err(res.error);
   }
@@ -77,6 +80,6 @@ export async function scaffold(
   inputs.manifest = manifest;
   //call appstudio.scaffold() API
   const appstudioPlugin = Container.get<v3.ScaffoldPlugin>(BuiltInResourcePluginNames.AppStudio);
-  await appstudioPlugin.scaffold(ctx, inputs);
+  await appstudioPlugin.scaffold(ctx, pluginInputs);
   return ok(Void);
 }

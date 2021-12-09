@@ -1104,7 +1104,7 @@ type PluginName = string;
 interface PluginScaffoldInputs extends InputsWithProjectPath {
     buildPath?: string;
     dir?: string;
-    module: number;
+    module?: number;
     template: string;
 }
 

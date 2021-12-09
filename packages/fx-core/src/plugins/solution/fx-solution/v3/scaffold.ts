@@ -14,6 +14,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
 import { InvalidInputError } from "../error";
+import { BuiltInResourcePluginNames } from "../ResourcePluginContainer";
 import { scaffoldTemplatesQuestion } from "./questions";
 
 function getAllScaffoldPlugins(): v3.ScaffoldPlugin[] {
@@ -70,7 +71,7 @@ export async function scaffold(
   }
   inputs.manifest = manifest;
   //call appstudio.scaffold() API
-  const appstudioPlugin = Container.get<v3.ScaffoldPlugin>("fx-resource-appstudio");
+  const appstudioPlugin = Container.get<v3.ScaffoldPlugin>(BuiltInResourcePluginNames.AppStudio);
   appstudioPlugin.scaffold(ctx, inputs);
   return ok(Void);
 }

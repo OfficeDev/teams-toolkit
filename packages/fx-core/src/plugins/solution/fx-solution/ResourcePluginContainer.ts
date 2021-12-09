@@ -36,13 +36,8 @@ export const ResourcePluginsV2 = {
 };
 
 export const BuiltInResourcePluginNames = {
-  AzureWebApp: "fx-resource-azure-web-app",
-  AzureStorage: "fx-resource-azure-storage",
-};
-
-export const BuiltInScaffoldPluginNames = {
-  ASPDNet: "fx-scaffold-aspdnet",
-  ReactTab: "fx-scaffold-react-tab",
+  AppStudio: "fx-resource-appstudio",
+  AAD: "fx-resource-aad",
 };
 
 /**

@@ -39,10 +39,10 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
     inputs: v3.PluginScaffoldInputs
   ): Promise<Result<Json | undefined, FxError>> {
     ctx.logProvider.info("fx-scaffold-react-tab:scaffold");
-    await fs.ensureDir(path.join(inputs.projectPath, "react-tab"));
+    if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "tabs"));
     const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
     if (inputs.module !== undefined) {
-      solutionSettings.modules[Number(inputs.module)].dir = "react-tab";
+      solutionSettings.modules[Number(inputs.module)].dir = "tabs";
       solutionSettings.modules[Number(inputs.module)].deployType = "folder";
     }
     return ok(undefined);
@@ -70,7 +70,7 @@ export class BlazorTabScaffoldPlugin implements v3.ScaffoldPlugin {
     inputs: v3.PluginScaffoldInputs
   ): Promise<Result<Json | undefined, FxError>> {
     ctx.logProvider.info("fx-scaffold-blazor-tab:scaffold");
-    await fs.ensureDir(path.join(inputs.projectPath, "aspdnet"));
+    if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "aspdnet"));
     const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
     if (inputs.module !== undefined) {
       solutionSettings.modules[Number(inputs.module)].dir = "aspdnet";
@@ -95,8 +95,10 @@ export async function getQuestionsForScaffold(
   const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
   const scaffoldPlugins = getAllScaffoldPlugins();
   const node = new QTreeNode({ type: "group" });
-  const moduleNode = createSelectModuleQuestionNode(solutionSettings.modules);
-  node.addChild(moduleNode);
+  if (solutionSettings.modules) {
+    const moduleNode = createSelectModuleQuestionNode(solutionSettings.modules);
+    node.addChild(moduleNode);
+  }
   const templateNode = new QTreeNode(selectScaffoldTemplateQuestion);
   const staticOptions: OptionItem[] = [];
   for (const plugin of scaffoldPlugins) {

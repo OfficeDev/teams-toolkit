@@ -271,7 +271,7 @@ export async function deployAdapter(
       return err(postRes.error);
     }
   }
-  setStateV2ByConfigMapInc(plugin.name, envInfo, pluginContext.config);
+  setStateV2ByConfigMapInc(plugin.name, envInfo.state, pluginContext.config);
   return ok(Void);
 }
 

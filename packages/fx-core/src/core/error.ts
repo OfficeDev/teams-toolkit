@@ -137,7 +137,11 @@ export class TaskNotSupportError extends SystemError {
 }
 
 export function FetchSampleError(sampleId: string): UserError {
-  return new UserError("FetchSampleError", `Empty zip file for ${sampleId}`, CoreSource);
+  return new UserError(
+    "FetchSampleError",
+    `Failed to get data from remote repository for ${sampleId}`,
+    CoreSource
+  );
 }
 
 export function InvalidInputError(reason: string, inputs?: Inputs): UserError {

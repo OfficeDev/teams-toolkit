@@ -125,7 +125,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
     {
       label: "prepare local environment",
       type: "shell",
-      command: "echo ${command:fx-extension.pre-debug-check}",
+      command: "exit ${command:fx-extension.pre-debug-check}",
     },
     {
       label: "prepare dev env",
@@ -182,7 +182,7 @@ function prepareLocalEnvironment(): Record<string, unknown> {
   return {
     label: "prepare local environment",
     type: "shell",
-    command: "echo ${command:fx-extension.pre-debug-check}",
+    command: "exit ${command:fx-extension.pre-debug-check}",
   };
 }
 

@@ -47,6 +47,7 @@ import {
   SingleSelectConfig,
   ConcurrentError,
   StatesFolderName,
+  v2,
 } from "@microsoft/teamsfx-api";
 import {
   isUserCancelError,
@@ -137,7 +138,6 @@ import { AzurePortalUrl, ConfigurationKey } from "./constants";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { generateAccountHint } from "./debug/teamsfxDebugProvider";
 import { returnUserError } from "@microsoft/teamsfx-api";
-
 export let core: FxCore;
 export let tools: Tools;
 export function getWorkspacePath(): string | undefined {
@@ -531,7 +531,22 @@ export async function deployHandler(args?: any[]): Promise<Result<null, FxError>
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DeployStart, getTriggerFromProperty(args));
   return await runCommand(Stage.deploy);
 }
-
+export async function initHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent("init-start", getTriggerFromProperty(args));
+  return await runCommand(Stage.init);
+}
+export async function addModuleHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent("add-module-start", getTriggerFromProperty(args));
+  return await runCommand(Stage.addModule);
+}
+export async function scaffoldHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent("scaffold-start", getTriggerFromProperty(args));
+  return await runCommand(Stage.scaffold);
+}
+export async function addResourceV3Handler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent("add-resource-v3-start", getTriggerFromProperty(args));
+  return await runCommand(Stage.addResource);
+}
 export async function publishHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart, getTriggerFromProperty(args));
   return await runCommand(Stage.publish);
@@ -619,6 +634,22 @@ export async function runCommand(
       }
       case Stage.listCollaborator: {
         result = await core.listCollaborator(inputs);
+        break;
+      }
+      case Stage.init: {
+        result = await core.init(inputs as v2.InputsWithProjectPath);
+        break;
+      }
+      case Stage.addModule: {
+        result = await core.addModule(inputs as v2.InputsWithProjectPath);
+        break;
+      }
+      case Stage.scaffold: {
+        result = await core.scaffold(inputs as v2.InputsWithProjectPath);
+        break;
+      }
+      case Stage.addResource: {
+        result = await core.addResource(inputs as v2.InputsWithProjectPath);
         break;
       }
       default:

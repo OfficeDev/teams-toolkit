@@ -604,23 +604,12 @@ export interface IConnector {
 }
 
 // @public (undocumented)
-interface ICore {
-    addModule: (inputs: InputsWithProjectPath & {
-        capabilities?: string[];
-    }) => Promise<Result<Void, FxError>>;
+interface ICore extends Core {
+    addModule: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     addResource: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-    deployArtifacts: (inputs: InputsWithProjectPath & {
-        moduleIndex?: number;
-    }) => Promise<Result<Void, FxError>>;
-    executeUserTask: (func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
-    getQuestions: (task: Stage, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    // (undocumented)
-    getQuestionsForUserTask?: (router: FunctionRouter, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     init: (inputs: InputsWithProjectPath & {
         solution?: string;
     }) => Promise<Result<Void, FxError>>;
-    provisionResources: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-    publishApplication: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     scaffold: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
 }
 
@@ -769,11 +758,11 @@ export function isAutoSkipSelect(q: Question): boolean;
 // @public (undocumented)
 interface ISolution {
     addModule: (ctx: Context_2, localSettings: Json, inputs: InputsWithProjectPath & {
-        capabilities: string[];
+        capabilities?: string[];
     }) => Promise<Result<Void, FxError>>;
     addResource: (ctx: Context_2, inputs: InputsWithProjectPath & {
         module?: number;
-        resource: string;
+        resource?: string;
     }) => Promise<Result<Void, FxError>>;
     // (undocumented)
     deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
@@ -783,7 +772,7 @@ interface ISolution {
     getQuestionsForAddResource?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForDeploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForInit?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForInit?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForLocalProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: DeepReadonly<Json>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
@@ -794,9 +783,7 @@ interface ISolution {
     // (undocumented)
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
-    init: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        capabilities: string[];
-    }) => Promise<Result<Void, FxError>>;
+    init: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     // (undocumented)
     name: string;
     // (undocumented)
@@ -807,7 +794,7 @@ interface ISolution {
     publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffold: (ctx: Context_2, inputs: InputsWithProjectPath & {
         module?: number;
-        template: OptionItem;
+        template?: OptionItem;
     }) => Promise<Result<Void, FxError>>;
 }
 

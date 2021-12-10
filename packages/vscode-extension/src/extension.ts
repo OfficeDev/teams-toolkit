@@ -113,6 +113,27 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(deployCmd);
 
+  const initCmd = vscode.commands.registerCommand("fx-extension.initV3", (...args) =>
+    Correlator.run(handlers.initHandler, args)
+  );
+  context.subscriptions.push(initCmd);
+
+  const addModuleCmd = vscode.commands.registerCommand("fx-extension.addModuleV3", (...args) =>
+    Correlator.run(handlers.addModuleHandler, args)
+  );
+  context.subscriptions.push(addModuleCmd);
+
+  const scaffoldCmd = vscode.commands.registerCommand("fx-extension.scaffoldV3", (...args) =>
+    Correlator.run(handlers.scaffoldHandler, args)
+  );
+  context.subscriptions.push(scaffoldCmd);
+
+  const addResourceV3Cmd = vscode.commands.registerCommand(
+    "fx-extension.addResourceV3",
+    (...args) => Correlator.run(handlers.addResourceV3Handler, args)
+  );
+  context.subscriptions.push(addResourceV3Cmd);
+
   const validateManifestCmd = vscode.commands.registerCommand(
     "fx-extension.validateManifest",
     (...args) => Correlator.run(handlers.validateManifestHandler, args)

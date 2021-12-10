@@ -147,6 +147,10 @@ export enum TelemetryEvent {
 
   TreeViewPreviewStart = "treeview-preview-start",
   TreeViewPreview = "treeview-preview",
+
+  init = "init",
+  addModule = "add-module",
+  scaffold = "scaffold",
 }
 
 export enum TelemetryProperty {

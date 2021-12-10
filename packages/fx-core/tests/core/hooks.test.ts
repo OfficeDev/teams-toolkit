@@ -63,6 +63,7 @@ import {
 } from "./utils";
 import * as dotenv from "dotenv";
 let mockedEnvRestore: () => void;
+const fileEncoding = "UTF8";
 describe("Middleware - others", () => {
   const sandbox = sinon.createSandbox();
   const mockSolution = new MockSolution();
@@ -553,20 +554,11 @@ describe("Middleware - others", () => {
 
   describe("migrateArm success", () => {
     const sandbox = sinon.createSandbox();
-    const appName = randomAppName();
     const projectPath = "MigrationArmSuccessTestSample";
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, ".fx"));
       sandbox.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
-      await fs.copy(
-        path.join(__dirname, "../samples/migration/.fx/env.default.json"),
-        path.join(projectPath, ".fx", "env.default.json")
-      );
-      await fs.copy(
-        path.join(__dirname, "../samples/migration/.fx/settings.json"),
-        path.join(projectPath, ".fx", "settings.json")
-      );
       mockedEnvRestore = mockedEnv({
         __TEAMSFX_INSIDER_PREVIEW: "true",
       });
@@ -576,7 +568,164 @@ describe("Middleware - others", () => {
       sandbox.restore();
       mockedEnvRestore();
     });
+    it("successfully migrate arm templates only tab", async () => {
+      await fs.copy(
+        path.join(__dirname, "../samples/migrationV1Tab/.fx/env.default.json"),
+        path.join(projectPath, ".fx", "env.default.json")
+      );
+      await fs.copy(
+        path.join(__dirname, "../samples/migrationV1Tab/.fx/settings.json"),
+        path.join(projectPath, ".fx", "settings.json")
+      );
+      class MyClass {
+        tools = new MockTools();
+        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        other: [migrateArm],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: projectPath,
+        ignoreEnvInfo: true,
+      };
+      await my.other(inputs);
+      assert.isTrue(await fs.pathExists(path.join(projectPath, ".fx", "configs")));
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json"))
+      );
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure")));
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, "templates", "azure", "main.bicep"))
+      );
+      const identityBicepFilePath = path.join(
+        __dirname,
+        "../plugins/resource/identity/unit/expectedBicepFiles"
+      );
+      assert.isTrue(
+        await fs.pathExists(
+          path.join(projectPath, "templates", "azure", "provision", "identity.bicep")
+        )
+      );
+      assert.strictEqual(
+        await fs.readFile(
+          path.join(projectPath, "templates", "azure", "provision", "identity.bicep"),
+          fileEncoding
+        ),
+        await fs.readFile(
+          path.join(identityBicepFilePath, "identityProvision.result.bicep"),
+          fileEncoding
+        )
+      );
+      const botBicepFilePath = path.join(
+        __dirname,
+        "../plugins/resource/frontend/unit/expectedBicepFiles"
+      );
+      assert.isTrue(
+        await fs.pathExists(
+          path.join(projectPath, "templates", "azure", "provision", "frontendHosting.bicep")
+        )
+      );
+      assert.strictEqual(
+        await fs.readFile(
+          path.join(projectPath, "templates", "azure", "provision", "frontendHosting.bicep"),
+          fileEncoding
+        ),
+        await fs.readFile(
+          path.join(botBicepFilePath, "frontendProvision.result.bicep"),
+          fileEncoding
+        )
+      );
+    });
+    it("successfully migration arm templates only tab", async () => {
+      await fs.copy(
+        path.join(__dirname, "../samples/migrationV1Bot/.fx/env.default.json"),
+        path.join(projectPath, ".fx", "env.default.json")
+      );
+      await fs.copy(
+        path.join(__dirname, "../samples/migrationV1Bot/.fx/settings.json"),
+        path.join(projectPath, ".fx", "settings.json")
+      );
+      class MyClass {
+        tools = new MockTools();
+        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+          return ok("");
+        }
+      }
+      hooks(MyClass, {
+        other: [migrateArm],
+      });
+      const my = new MyClass();
+      const inputs: Inputs = {
+        platform: Platform.VSCode,
+        projectPath: projectPath,
+        ignoreEnvInfo: true,
+      };
+      await my.other(inputs);
+      assert.isTrue(await fs.pathExists(path.join(projectPath, ".fx", "configs")));
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, ".fx", "configs", "azure.parameters.dev.json"))
+      );
+      assert.isTrue(await fs.pathExists(path.join(projectPath, "templates", "azure")));
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, "templates", "azure", "main.bicep"))
+      );
+      const identityBicepFilePath = path.join(
+        __dirname,
+        "../plugins/resource/identity/unit/expectedBicepFiles"
+      );
+      assert.isTrue(
+        await fs.pathExists(
+          path.join(projectPath, "templates", "azure", "provision", "identity.bicep")
+        )
+      );
+      assert.strictEqual(
+        await fs.readFile(
+          path.join(projectPath, "templates", "azure", "provision", "identity.bicep"),
+          fileEncoding
+        ),
+        await fs.readFile(
+          path.join(identityBicepFilePath, "identityProvision.result.bicep"),
+          fileEncoding
+        )
+      );
+      const botBicepFilePath = path.join(
+        __dirname,
+        "../plugins/resource/bot/unit/expectedBicepFiles"
+      );
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, "templates", "azure", "provision", "bot.bicep"))
+      );
+      assert.strictEqual(
+        await fs.readFile(
+          path.join(projectPath, "templates", "azure", "provision", "bot.bicep"),
+          fileEncoding
+        ),
+        await fs.readFile(path.join(botBicepFilePath, "botProvision.result.bicep"), fileEncoding)
+      );
+      assert.isTrue(
+        await fs.pathExists(path.join(projectPath, "templates", "azure", "teamsFx", "bot.bicep"))
+      );
+      assert.strictEqual(
+        await fs.readFile(
+          path.join(projectPath, "templates", "azure", "teamsFx", "bot.bicep"),
+          fileEncoding
+        ),
+        await fs.readFile(path.join(botBicepFilePath, "botConfig.result.bicep"), fileEncoding)
+      );
+    });
     it("successfully migration arm templates", async () => {
+      await fs.copy(
+        path.join(__dirname, "../samples/migration/.fx/env.default.json"),
+        path.join(projectPath, ".fx", "env.default.json")
+      );
+      await fs.copy(
+        path.join(__dirname, "../samples/migration/.fx/settings.json"),
+        path.join(projectPath, ".fx", "settings.json")
+      );
       class MyClass {
         tools = new MockTools();
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {

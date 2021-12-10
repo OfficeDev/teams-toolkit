@@ -21,10 +21,7 @@ import {
   FrontendHostTypeQuestion,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
-  MessageExtensionItem,
-  ProgrammingLanguageQuestion,
   TabOptionItem,
-  TabSPFxItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { Container } from "typedi";
 

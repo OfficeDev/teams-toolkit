@@ -791,9 +791,9 @@ async function validateDependenciesCore(depsChecker: DepsChecker): Promise<strin
   shouldContinue = shouldContinue && (await ngrokChecker.resolve());
 
   if (!shouldContinue) {
-    // TODO: better mechanism to stop the tasks and debug session.
     await debug.stopDebugging();
-    return `'debug stopped'`;
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
   }
 }
 
@@ -820,7 +820,8 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
       } catch (error) {
         await DepsChecker.handleErrorWithDisplay(error, vscodeAdapter);
         await debug.stopDebugging();
-        return `'debug stopped'`;
+        // return non-zero value to let task "exit ${command:xxx}" to exit
+        return "1";
       }
     }
   }
@@ -829,7 +830,7 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
 /**
  * call localDebug on core
  */
-export async function preDebugCheckHandler(): Promise<void> {
+export async function preDebugCheckHandler(): Promise<string | undefined> {
   try {
     const localAppId = commonUtils.getLocalTeamsAppId() as string;
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
@@ -851,7 +852,8 @@ export async function preDebugCheckHandler(): Promise<void> {
       // ignore telemetry error
       terminateAllRunningTeamsfxTasks();
       await debug.stopDebugging();
-      return;
+      // return non-zero value to let task "exit ${command:xxx}" to exit
+      return "1";
     }
   }
 
@@ -886,6 +888,8 @@ export async function preDebugCheckHandler(): Promise<void> {
           await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
         }
       });
+      // return non-zero value to let task "exit ${command:xxx}" to exit
+      return "1";
     }
   }
 }

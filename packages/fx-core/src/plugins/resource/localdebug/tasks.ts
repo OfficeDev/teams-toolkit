@@ -72,15 +72,8 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
   return [
     {
       label: "dependency check",
-      type: "process",
-      command: "${command:fx-extension.validate-spfx-dependencies}",
-      presentation: {
-        close: true,
-        reveal: "never",
-        focus: false,
-        revealProblems: "never",
-        panel: "dedicated",
-      },
+      type: "shell",
+      command: "exit ${command:fx-extension.validate-spfx-dependencies}",
     },
     {
       label: "spfx npm install",
@@ -165,15 +158,8 @@ function preDebugCheck(includeBot: boolean, isMigrateFromV1: boolean): Record<st
 function dependencyCheck(): Record<string, unknown> {
   return {
     label: "dependency check",
-    type: "process",
-    command: "${command:fx-extension.validate-dependencies}",
-    presentation: {
-      close: true,
-      reveal: "never",
-      focus: false,
-      revealProblems: "never",
-      panel: "dedicated",
-    },
+    type: "shell",
+    command: "exit ${command:fx-extension.validate-dependencies}",
   };
 }
 
@@ -268,15 +254,8 @@ function backendNpmInstall(): Record<string, unknown> {
 function backendExtensionsInstall(): Record<string, unknown> {
   return {
     label: "backend extensions install",
-    type: "process",
-    command: "${command:fx-extension.backend-extensions-install}",
-    presentation: {
-      close: true,
-      reveal: "never",
-      focus: false,
-      revealProblems: "never",
-      panel: "dedicated",
-    },
+    type: "shell",
+    command: "exit ${command:fx-extension.backend-extensions-install}",
   };
 }
 

@@ -8,7 +8,6 @@ export function generateSettings(includeBackend: boolean): Record<string, unknow
    */
   const settings: Record<string, unknown> = {
     "debug.onTaskErrors": "abort",
-    "terminal.integrated.showExitAlert": false,
   };
   if (includeBackend) {
     // Ensure that Azure Function Extension does not kill the backend process

@@ -564,7 +564,7 @@ export class FxCore implements Core {
         return await ctx.solutionV2.deploy(
           ctx.contextV2,
           inputs,
-          ctx.envInfoV2.state,
+          ctx.envInfoV2,
           this.tools.tokenProvider
         );
       else return ok(Void);

@@ -243,13 +243,13 @@ export async function configureResourceAdapter(
 export async function deployAdapter(
   ctx: Context,
   inputs: DeploymentInputs,
-  provisionOutput: Json,
+  envInfo: DeepReadonly<EnvInfoV2>,
   tokenProvider: TokenProvider,
   plugin: Plugin
 ): Promise<Result<Void, FxError>> {
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
-  setEnvInfoV1ByStateV2(plugin.name, pluginContext, provisionOutput);
+  setEnvInfoV1ByStateV2(plugin.name, pluginContext, envInfo);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
@@ -271,7 +271,7 @@ export async function deployAdapter(
       return err(postRes.error);
     }
   }
-  setStateV2ByConfigMapInc(plugin.name, provisionOutput, pluginContext.config);
+  setStateV2ByConfigMapInc(plugin.name, envInfo.state, pluginContext.config);
   return ok(Void);
 }
 
@@ -334,7 +334,7 @@ export async function executeUserTaskAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  setEnvInfoV1ByStateV2(plugin.name, pluginContext, envInfo.state);
+  setEnvInfoV1ByStateV2(plugin.name, pluginContext, envInfo);
   setLocalSettingsV1(pluginContext, localSettings);
   const res = await plugin.executeUserTask(func, pluginContext);
   if (res.isErr()) return err(res.error);
@@ -397,12 +397,12 @@ export function setStateV2ByConfigMapInc(pluginName: string, state: Json, config
 export function setEnvInfoV1ByStateV2(
   pluginName: string,
   pluginContext: PluginContext,
-  stateV2: Json
+  envInfoV2: EnvInfoV2
 ): void {
   const envInfo = newEnvInfo();
-  let stateV1: ConfigMap | undefined = ConfigMap.fromJSON(stateV2);
+  let stateV1: ConfigMap | undefined = ConfigMap.fromJSON(envInfoV2.state);
   if (!stateV1) {
-    throw InvalidStateError(pluginName, stateV2);
+    throw InvalidStateError(pluginName, envInfoV2.state);
   }
   stateV1 = flattenConfigMap(stateV1);
   let selfConfigMap: ConfigMap | undefined = stateV1.get(pluginName);
@@ -410,6 +410,8 @@ export function setEnvInfoV1ByStateV2(
     selfConfigMap = new ConfigMap();
     stateV1.set(pluginName, selfConfigMap);
   }
+  envInfo.envName = envInfoV2.envName;
+  envInfo.config = envInfoV2.config as EnvConfig;
   envInfo.state = stateV1;
   pluginContext.config = selfConfigMap;
   pluginContext.envInfo = envInfo;

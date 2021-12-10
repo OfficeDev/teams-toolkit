@@ -109,7 +109,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
           Object.keys(settings).some((key) => key === "azureFunctions.stopFuncTaskPostDebug")
         );
         chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
-        chai.assert.equal(Object.keys(settings).length, 5);
+        chai.assert.equal(Object.keys(settings).length, 4);
 
         await assertLocalDebugLocalEnvs(parameter.numLocalEnvs, plugin, pluginContext);
       });
@@ -168,7 +168,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
-        chai.assert.equal(Object.keys(settings).length, 2);
+        chai.assert.equal(Object.keys(settings).length, 1);
 
         await assertLocalDebugLocalEnvs(parameter.numLocalEnvs, plugin, pluginContext);
       });
@@ -223,7 +223,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
-        chai.assert.equal(Object.keys(settings).length, 2);
+        chai.assert.equal(Object.keys(settings).length, 1);
 
         await assertLocalDebugLocalEnvs(parameter.numLocalEnvs, plugin, pluginContext);
       });
@@ -288,7 +288,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
           Object.keys(settings).some((key) => key === "azureFunctions.stopFuncTaskPostDebug")
         );
         chai.assert.equal(settings["azureFunctions.stopFuncTaskPostDebug"], false);
-        chai.assert.equal(Object.keys(settings).length, 5);
+        chai.assert.equal(Object.keys(settings).length, 4);
 
         await assertLocalDebugLocalEnvs(parameter.numLocalEnvs, plugin, pluginContext);
       });
@@ -348,7 +348,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
         //assert output settings.json
         const settings = fs.readJSONSync(expectedSettingsFile);
-        chai.assert.equal(Object.keys(settings).length, 2);
+        chai.assert.equal(Object.keys(settings).length, 1);
 
         await assertLocalDebugLocalEnvs(parameter.numLocalEnvs, plugin, pluginContext);
       });
@@ -384,7 +384,7 @@ describe(LocalDebugPluginInfo.pluginName, () => {
 
       //assert output settings.json
       const settings = fs.readJSONSync(expectedSettingsFile);
-      chai.assert.equal(Object.keys(settings).length, 2);
+      chai.assert.equal(Object.keys(settings).length, 1);
 
       //no local.env
       chai.assert.isFalse(fs.existsSync(expectedLocalEnvFile));

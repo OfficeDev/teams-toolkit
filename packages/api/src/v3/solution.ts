@@ -19,12 +19,9 @@ export interface ISolution {
    */
   getQuestionsForInit?: (
     ctx: Context,
-    inputs: InputsWithProjectPath
+    inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
-  init: (
-    ctx: Context,
-    inputs: InputsWithProjectPath & { capabilities: string[] }
-  ) => Promise<Result<Void, FxError>>;
+  init: (ctx: Context, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
 
   /**
    * scaffold
@@ -43,7 +40,7 @@ export interface ISolution {
    */
   scaffold: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { module?: number; template: OptionItem }
+    inputs: InputsWithProjectPath & { module?: number; template?: OptionItem }
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -63,7 +60,7 @@ export interface ISolution {
    */
   addResource: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { module?: number; resource: string }
+    inputs: InputsWithProjectPath & { module?: number; resource?: string }
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -82,7 +79,7 @@ export interface ISolution {
   addModule: (
     ctx: Context,
     localSettings: Json,
-    inputs: InputsWithProjectPath & { capabilities: string[] }
+    inputs: InputsWithProjectPath & { capabilities?: string[] }
   ) => Promise<Result<Void, FxError>>;
 
   //provision

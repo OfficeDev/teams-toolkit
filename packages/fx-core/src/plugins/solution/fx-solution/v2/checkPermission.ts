@@ -4,18 +4,14 @@ import {
   err,
   FxError,
   GraphTokenProvider,
-  Inputs,
   ok,
   Platform,
   PluginContext,
   Result,
   returnSystemError,
   returnUserError,
-  SolutionConfig,
   SolutionContext,
   v2,
-  Void,
-  Plugin,
   Err,
   TokenProvider,
   TelemetryReporter,
@@ -24,15 +20,9 @@ import {
   ConfigMap,
   Json,
 } from "@microsoft/teamsfx-api";
-import {
-  CollaborationState,
-  CollaborationStateResult,
-  PermissionsResult,
-  ResourcePermission,
-} from "../../../../common";
+import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
-  GLOBAL_CONFIG,
   PluginNames,
   REMOTE_TEAMS_APP_TENANT_ID,
   SolutionError,
@@ -41,10 +31,9 @@ import {
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
-  SOLUTION_PROVISION_SUCCEEDED,
 } from "../constants";
 import { PluginsWithContext } from "../solution";
-import { getPluginContext, sendErrorTelemetryThenReturnError } from "../utils/util";
+import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { executeConcurrently, LifecyclesWithContext } from "../executor";
 import {
   getActivatedResourcePlugins,
@@ -54,7 +43,6 @@ import { flattenConfigMap } from "../../../resource/utils4v2";
 import { NamedThunk, executeConcurrently as executeNamedThunkConcurrently } from "./executor";
 import { CollabApiParam, CollaborationUtil } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
-import { isArray, result } from "lodash";
 
 async function executeCheckPermissionV1(
   ctx: SolutionContext,

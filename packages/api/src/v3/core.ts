@@ -2,13 +2,12 @@
 // Licensed under the MIT license.
 
 import { Result } from "neverthrow";
-import { Stage } from "../constants";
+import { Core } from "../core";
 import { FxError } from "../error";
-import { Func, FunctionRouter, QTreeNode } from "../qm/question";
-import { Inputs, Void } from "../types";
+import { Void } from "../types";
 import { InputsWithProjectPath } from "../v2/types";
 
-export interface ICore {
+export interface ICore extends Core {
   /**
    * init means enable TeamsFx feature for current project folder. There are two cases:
    * 1. Init in an empty folder
@@ -28,37 +27,7 @@ export interface ICore {
    */
   scaffold: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
   /**
-   * addResource is separated from executeUserTask
+   * addResource is different from the addResource in userTask
    */
   addResource: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-  /**
-   * provision resources
-   */
-  provisionResources: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-
-  /**
-   * deploy bits
-   */
-  deployArtifacts: (
-    inputs: InputsWithProjectPath & { moduleIndex?: number }
-  ) => Promise<Result<Void, FxError>>;
-
-  /**
-   * publish application
-   */
-  publishApplication: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-
-  /**
-   * execute user customized task
-   */
-  executeUserTask: (func: Func, inputs: Inputs) => Promise<Result<unknown, FxError>>;
-
-  /**
-   * only for CLI
-   */
-  getQuestions: (task: Stage, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-  getQuestionsForUserTask?: (
-    router: FunctionRouter,
-    inputs: Inputs
-  ) => Promise<Result<QTreeNode | undefined, FxError>>;
 }

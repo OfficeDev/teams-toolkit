@@ -136,8 +136,12 @@ export class TaskNotSupportError extends SystemError {
   }
 }
 
-export function FetchSampleError(): UserError {
-  return new UserError("FetchSampleError", "Failed to download sample app", CoreSource);
+export function FetchSampleError(sampleId: string): UserError {
+  return new UserError(
+    "FetchSampleError",
+    `Failed to get data from remote repository for ${sampleId}`,
+    CoreSource
+  );
 }
 
 export function InvalidInputError(reason: string, inputs?: Inputs): UserError {

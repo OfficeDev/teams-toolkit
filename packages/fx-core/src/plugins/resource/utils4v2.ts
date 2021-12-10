@@ -41,6 +41,7 @@ import {
 } from "../../core/error";
 import { newEnvInfo } from "../../core/tools";
 import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
+import _ from "lodash";
 
 export function convert2PluginContext(
   pluginName: string,
@@ -49,7 +50,7 @@ export function convert2PluginContext(
   ignoreEmptyProjectPath = false
 ): PluginContext {
   if (!ignoreEmptyProjectPath && !inputs.projectPath) throw NoProjectOpenedError();
-  const envInfo = newEnvInfo(inputs.env ?? inputs.targetEnvName);
+  const envInfo = newEnvInfo(inputs.env);
   const config = new ConfigMap();
   envInfo.state.set(pluginName, config);
   const pluginContext: PluginContext = {
@@ -154,7 +155,6 @@ export async function provisionResourceAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  pluginContext.envInfo = newEnvInfo();
   pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();
@@ -228,7 +228,6 @@ export async function configureResourceAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  pluginContext.envInfo = newEnvInfo();
   pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();
@@ -271,6 +270,9 @@ export async function deployAdapter(
       return err(postRes.error);
     }
   }
+  // We are making an exception for APIM plugin to modify envInfo, which should be immutable
+  // during deployment. Becasue it is the only plugin that needs to do so. Remove the following
+  // line after APIM is refactored not to change env state.
   setStateV2ByConfigMapInc(plugin.name, envInfo.state, pluginContext.config);
   return ok(Void);
 }
@@ -362,13 +364,13 @@ export async function getQuestionsAdapter(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestions) return ok(undefined);
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs, true);
-  const config = ConfigMap.fromJSON(envInfo.state[plugin.name]) || new ConfigMap();
-  pluginContext.config = config;
+  setEnvInfoV1ByStateV2(plugin.name, pluginContext, envInfo);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   return await plugin.getQuestions(inputs.stage!, pluginContext);
 }
+
 export async function getQuestionsForUserTaskAdapter(
   ctx: Context,
   inputs: Inputs,
@@ -379,8 +381,7 @@ export async function getQuestionsForUserTaskAdapter(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestionsForUserTask) return ok(undefined);
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs, true);
-  const config = ConfigMap.fromJSON(envInfo.state[plugin.name]) || new ConfigMap();
-  pluginContext.config = config;
+  setEnvInfoV1ByStateV2(plugin.name, pluginContext, envInfo);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
@@ -388,10 +389,8 @@ export async function getQuestionsForUserTaskAdapter(
 }
 
 export function setStateV2ByConfigMapInc(pluginName: string, state: Json, config: ConfigMap): void {
-  const source = mapToJson(config);
-  const subTarget = state[pluginName] || {};
-  assignJsonInc(subTarget, source);
-  state[pluginName] = subTarget;
+  const pluginConfig = legacyConfig2EnvState(config, pluginName);
+  state[pluginName] = _.assign(state[pluginName], pluginConfig);
 }
 
 export function setEnvInfoV1ByStateV2(
@@ -489,7 +488,6 @@ export async function collaborationApiAdaptor(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  pluginContext.envInfo = newEnvInfo();
   pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();

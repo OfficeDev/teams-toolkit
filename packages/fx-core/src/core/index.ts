@@ -83,6 +83,7 @@ import {
   ProjectFolderNotExistError,
   TaskNotSupportError,
   WriteFileError,
+  ProjectFolderInvalidError,
 } from "./error";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
@@ -207,7 +208,11 @@ export class FxCore implements Core {
     let folder = inputs[QuestionRootFolder.name] as string;
     if (inputs.platform === Platform.VSCode) {
       folder = getRootDirectory();
-      await fs.ensureDir(folder);
+      try {
+        await fs.ensureDir(folder);
+      } catch (e) {
+        throw ProjectFolderInvalidError(folder);
+      }
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;

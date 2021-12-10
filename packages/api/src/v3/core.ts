@@ -19,9 +19,7 @@ export interface ICore extends Core {
    * A module is a connection between the local code and cloud resource for deployment stage.
    * addModule only update project settings while add capability does more.
    */
-  addModule: (
-    inputs: InputsWithProjectPath & { capabilities?: string[] }
-  ) => Promise<Result<Void, FxError>>;
+  addModule: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
   /**
    * scaffold will be an independent stage
    */

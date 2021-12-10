@@ -605,9 +605,7 @@ export interface IConnector {
 
 // @public (undocumented)
 interface ICore extends Core {
-    addModule: (inputs: InputsWithProjectPath & {
-        capabilities?: string[];
-    }) => Promise<Result<Void, FxError>>;
+    addModule: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     addResource: (inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     init: (inputs: InputsWithProjectPath & {
         solution?: string;
@@ -760,11 +758,11 @@ export function isAutoSkipSelect(q: Question): boolean;
 // @public (undocumented)
 interface ISolution {
     addModule: (ctx: Context_2, localSettings: Json, inputs: InputsWithProjectPath & {
-        capabilities: string[];
+        capabilities?: string[];
     }) => Promise<Result<Void, FxError>>;
     addResource: (ctx: Context_2, inputs: InputsWithProjectPath & {
         module?: number;
-        resource: string;
+        resource?: string;
     }) => Promise<Result<Void, FxError>>;
     // (undocumented)
     deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
@@ -785,9 +783,7 @@ interface ISolution {
     // (undocumented)
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
-    init: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        capabilities: string[];
-    }) => Promise<Result<Void, FxError>>;
+    init: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
     // (undocumented)
     name: string;
     // (undocumented)
@@ -798,7 +794,7 @@ interface ISolution {
     publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffold: (ctx: Context_2, inputs: InputsWithProjectPath & {
         module?: number;
-        template: OptionItem;
+        template?: OptionItem;
     }) => Promise<Result<Void, FxError>>;
 }
 

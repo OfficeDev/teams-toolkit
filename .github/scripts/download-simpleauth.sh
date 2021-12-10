@@ -1,5 +1,4 @@
 #!/bin/bash
-declare -A simpleauthFilesMd5=( ["0.1.0"]="e59ce68a26b74dba473e34c381678910" ["0.1.1"]="01f306767cb689dac8d973deccc1062d" ["0.1.2"]="d329b68923b81217e11230c5700ec5bf")
 version=$(head ./packages/fx-core/templates/plugins/resource/simpleauth/version.txt -n 1)
 targetMd5=$(sed "2q;d" ./packages/fx-core/templates/plugins/resource/simpleauth/version.txt | cut -d ' ' -f 2)
 echo "Download SimpleAuth Version: $version with MD5: $targetMd5"

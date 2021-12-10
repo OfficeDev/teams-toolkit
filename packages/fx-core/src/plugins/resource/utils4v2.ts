@@ -50,7 +50,7 @@ export function convert2PluginContext(
   ignoreEmptyProjectPath = false
 ): PluginContext {
   if (!ignoreEmptyProjectPath && !inputs.projectPath) throw NoProjectOpenedError();
-  const envInfo = newEnvInfo(inputs.env ?? inputs.targetEnvName);
+  const envInfo = newEnvInfo(inputs.env);
   const config = new ConfigMap();
   envInfo.state.set(pluginName, config);
   const pluginContext: PluginContext = {
@@ -155,7 +155,6 @@ export async function provisionResourceAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  pluginContext.envInfo = newEnvInfo();
   pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();
@@ -229,7 +228,6 @@ export async function configureResourceAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  pluginContext.envInfo = newEnvInfo();
   pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();
@@ -490,7 +488,6 @@ export async function collaborationApiAdaptor(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  pluginContext.envInfo = newEnvInfo();
   pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();

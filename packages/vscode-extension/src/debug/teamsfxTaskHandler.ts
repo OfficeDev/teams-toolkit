@@ -4,12 +4,17 @@
 import { ProductName } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
 
-import { getLocalTeamsAppId, loadTeamsFxDevScript } from "./commonUtils";
+import {
+  endLocalDebugSession,
+  getLocalDebugSessionId,
+  getLocalTeamsAppId,
+  loadTeamsFxDevScript,
+} from "./commonUtils";
 import { ext } from "../extensionVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { getTeamsAppId } from "../utils/commonUtils";
-import { getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
+import { Correlator, getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
 import { getNpmInstallLogInfo } from "./npmLogHandler";
 import * as path from "path";
 import { errorDetail, issueLink, issueTemplate } from "./constants";
@@ -376,17 +381,45 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
     }
 
     allRunningDebugSessions.delete(event.id);
+    if (allRunningDebugSessions.size == 0) {
+      endLocalDebugSession();
+    }
     allRunningTeamsfxTasks.clear();
   }
 }
 
 export function registerTeamsfxTaskAndDebugEvents(): void {
-  ext.context.subscriptions.push(vscode.tasks.onDidStartTaskProcess(onDidStartTaskProcessHandler));
-  ext.context.subscriptions.push(vscode.tasks.onDidEndTaskProcess(onDidEndTaskProcessHandler));
   ext.context.subscriptions.push(
-    vscode.debug.onDidStartDebugSession(onDidStartDebugSessionHandler)
+    vscode.tasks.onDidStartTaskProcess((event: vscode.TaskProcessStartEvent) =>
+      Correlator.runWithId(getLocalDebugSessionId(), onDidStartTaskProcessHandler, event)
+    )
+  );
+
+  ext.context.subscriptions.push(
+    vscode.tasks.onDidEndTaskProcess((event: vscode.TaskProcessEndEvent) =>
+      Correlator.runWithId(getLocalDebugSessionId(), onDidEndTaskProcessHandler, event)
+    )
+  );
+
+  // debug session handler use correlation-id from event.configuration.teamsfxCorrelationId
+  // to minimize concurrent debug session affecting correlation-id
+  ext.context.subscriptions.push(
+    vscode.debug.onDidStartDebugSession((event: vscode.DebugSession) =>
+      Correlator.runWithId(
+        // fallback to retrieve correlation id from the global variable.
+        event.configuration.teamsfxCorrelationId || getLocalDebugSessionId(),
+        onDidStartDebugSessionHandler,
+        event
+      )
+    )
   );
   ext.context.subscriptions.push(
-    vscode.debug.onDidTerminateDebugSession(onDidTerminateDebugSessionHandler)
+    vscode.debug.onDidTerminateDebugSession((event: vscode.DebugSession) =>
+      Correlator.runWithId(
+        event.configuration.teamsfxCorrelationId || getLocalDebugSessionId(),
+        onDidTerminateDebugSessionHandler,
+        event
+      )
+    )
   );
 }

@@ -20,7 +20,7 @@ import {
   SolutionContext,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
 import { glob } from "glob";
@@ -46,6 +46,7 @@ import {
   SUBSCRIPTION_ID,
 } from "../plugins/solution/fx-solution/constants";
 import Mustache from "mustache";
+import { FetchSampleError } from "../core/error";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -242,9 +243,13 @@ export function serializeDict(dict: Record<string, string>): string {
   return array.join("\n");
 }
 
-export async function fetchCodeZip(url: string) {
+export async function fetchCodeZip(
+  url: string,
+  sampleId: string
+): Promise<Result<AxiosResponse<any> | undefined, FxError>> {
   let retries = 3;
   let result = undefined;
+  const error = FetchSampleError(sampleId);
   while (retries > 0) {
     retries--;
     try {
@@ -252,13 +257,18 @@ export async function fetchCodeZip(url: string) {
         responseType: "arraybuffer",
       });
       if (result.status === 200 || result.status === 201) {
-        return result;
+        return ok(result);
       }
     } catch (e) {
       await new Promise<void>((resolve: () => void): NodeJS.Timer => setTimeout(resolve, 10000));
+      if (e.response) {
+        error.message += `, status code: ${e.response.status}`;
+      } else if (e.request && e.code === "ENOTFOUND") {
+        error.message += ". Network issue, please check your network connectivity";
+      }
     }
   }
-  return result;
+  return err(error);
 }
 
 export async function saveFilesRecursively(

@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-cli",
-  "version": "0.9.0-rc.2",
+  "version": "0.9.0-rc.3",
   "author": "Microsoft Corporation",
   "description": "",
   "license": "MIT",
@@ -103,7 +103,7 @@
     "@azure/identity": "^1.3.0",
     "@azure/ms-rest-nodeauth": "^3.0.6",
     "@microsoft/teamsfx-api": "^0.12.0-rc.1",
-    "@microsoft/teamsfx-core": "^1.1.0-rc.2",
+    "@microsoft/teamsfx-core": "^1.1.0-rc.3",
     "adm-zip": "^0.5.5",
     "applicationinsights": "^1.8.10",
     "async-mutex": "^0.3.1",

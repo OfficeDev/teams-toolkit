@@ -50,6 +50,7 @@ export async function addResource(
 
 export async function addModule(
   ctx: v2.Context,
+  localSettings: Json,
   inputs: v2.InputsWithProjectPath & { module?: keyof Module }
 ): Promise<Result<Void, FxError>> {
   return ok(Void);

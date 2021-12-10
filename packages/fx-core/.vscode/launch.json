@@ -11,7 +11,7 @@
         "ts-node/register",
         "--no-timeouts",
         "--colors",
-        "${workspaceFolder}/tests/**/*.test.ts"
+        "${workspaceFolder}/tests/plugins/solution/solution.arm.test.ts"
       ],
       "console": "integratedTerminal",
       "internalConsoleOptions": "neverOpen",

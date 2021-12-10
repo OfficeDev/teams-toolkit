@@ -54,6 +54,7 @@ import { flattenConfigMap } from "../../../resource/utils4v2";
 import { NamedThunk, executeConcurrently as executeNamedThunkConcurrently } from "./executor";
 import { CollabApiParam, CollaborationUtil } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
+import { isArray, result } from "lodash";
 
 async function executeCheckPermissionV1(
   ctx: SolutionContext,
@@ -117,22 +118,9 @@ async function executeCheckPermissionV2(
       };
     });
 
-  const result = await executeNamedThunkConcurrently(thunks, ctx.logProvider);
+  const results = await executeNamedThunkConcurrently(thunks, ctx.logProvider);
 
-  let permissions: ResourcePermission[];
-  let errors: Err<any, FxError>[];
-  if (result.kind === "success") {
-    permissions = result.output.map((entry) => entry.result as ResourcePermission);
-    errors = [];
-  } else if (result.kind === "partialSuccess") {
-    permissions = result.output.map((entry) => entry.result as ResourcePermission);
-    errors = [err(result.error)];
-  } else {
-    permissions = [];
-    errors = [err(result.error)];
-  }
-
-  return [permissions, errors];
+  return CollaborationUtil.collectPermissionsAndErrors(results);
 }
 
 async function checkPermissionImpl(

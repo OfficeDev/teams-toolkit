@@ -20,7 +20,6 @@
     "restify": "~8.5.1"
   },
   "devDependencies": {
-    "ngrok": "^3.4.0",
     "nodemon": "^2.0.7"
   }
 }

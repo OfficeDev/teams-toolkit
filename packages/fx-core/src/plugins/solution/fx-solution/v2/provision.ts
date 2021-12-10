@@ -36,6 +36,7 @@ import {
   SUBSCRIPTION_NAME,
   SolutionSource,
   RESOURCE_GROUP_NAME,
+  REMOTE_TEAMS_APP_TENANT_ID,
 } from "../constants";
 import * as util from "util";
 import _, { isUndefined } from "lodash";
@@ -262,6 +263,10 @@ export async function provisionResource(
     }
 
     solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = true;
+    if (!isAzureProject(azureSolutionSettings)) {
+      const appStudioTokenJson = await tokenProvider.appStudioToken.getJsonObject();
+      solutionInputs[REMOTE_TEAMS_APP_TENANT_ID] = (appStudioTokenJson as any).tid;
+    }
     const configOutput = configureResourceResult.output;
     configOutput.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
     const res1 = combineRecords(provisionResult.output);

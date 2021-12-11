@@ -6,6 +6,10 @@ import { assert } from "chai";
 import "mocha";
 import "reflect-metadata";
 import * as uuid from "uuid";
+import {
+  addResource,
+  getQuestionsForAddResource,
+} from "../../../src/plugins/solution/fx-solution/v3/addResource";
 import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import {
   getQuestionsForScaffold,
@@ -13,8 +17,8 @@ import {
 } from "../../../src/plugins/solution/fx-solution/v3/scaffold";
 import { MockedV2Context } from "../solution/util";
 
-describe("SolutionV3 - scaffold", () => {
-  it("scaffold", async () => {
+describe("SolutionV3 - addResource", () => {
+  it("addResource", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -33,17 +37,10 @@ describe("SolutionV3 - scaffold", () => {
       platform: Platform.VSCode,
       projectPath: ".",
       module: 0,
-      template: {
-        id: "1",
-        label: "1",
-        data: {
-          pluginName: "fx-scaffold-react-tab",
-          templateName: "ReactTab",
-        },
-      },
+      resource: "fx-resource-azure-storage",
       test: true,
     };
-    const res = await scaffold(ctx, inputs);
+    const res = await addResource(ctx, inputs);
     assert.isTrue(res.isOk());
     assert.deepEqual(projectSettings.solutionSettings, {
       name: TeamsFxAzureSolutionNameV3,
@@ -51,25 +48,12 @@ describe("SolutionV3 - scaffold", () => {
       capabilities: ["Tab"],
       hostType: "",
       azureResources: [],
-      modules: [{ capabilities: ["Tab"], dir: "tabs", deployType: "folder" }],
-      activeResourcePlugins: [],
-    });
-
-    inputs.template.data.pluginName = "fx-scaffold-blazor-tab";
-    const res2 = await scaffold(ctx, inputs);
-    assert.isTrue(res2.isOk());
-    assert.deepEqual(projectSettings.solutionSettings, {
-      name: TeamsFxAzureSolutionNameV3,
-      version: "3.0.0",
-      capabilities: ["Tab"],
-      hostType: "",
-      azureResources: [],
-      modules: [{ capabilities: ["Tab"], dir: "aspdnet", deployType: "zip" }],
-      activeResourcePlugins: [],
+      modules: [{ capabilities: ["Tab"], hostingPlugin: "fx-resource-azure-storage" }],
+      activeResourcePlugins: ["fx-resource-azure-storage", "fx-resource-azure-web-app"],
     });
   });
 
-  it("getQuestionsForScaffold", async () => {
+  it("getQuestionsForAddResource", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -88,7 +72,7 @@ describe("SolutionV3 - scaffold", () => {
       platform: Platform.VSCode,
       projectPath: ".",
     };
-    const res = await getQuestionsForScaffold(ctx, inputs);
+    const res = await getQuestionsForAddResource(ctx, inputs);
     assert.isTrue(res.isOk());
   });
 });

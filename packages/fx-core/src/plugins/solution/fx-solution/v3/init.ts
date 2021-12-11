@@ -19,7 +19,7 @@ export async function init(
     version: "3.0.0",
     name: TeamsFxAzureSolutionNameV3,
     capabilities: [],
-    hostType: "",
+    hostType: "Azure",
     azureResources: [],
     modules: [],
     activeResourcePlugins: [],

@@ -1,16 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Platform, ProjectSettings, v2 } from "@microsoft/teamsfx-api";
+import { Platform, ProjectSettings, v2, v3 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import * as uuid from "uuid";
+import {
+  publishApplication,
+  getQuestionsForPublish,
+} from "../../../src/plugins/solution/fx-solution/v3/publish";
 import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
-import { getQuestionsForInit, init } from "../../../src/plugins/solution/fx-solution/v3/init";
-import { MockedV2Context } from "../solution/util";
+import { MockedAppStudioTokenProvider, MockedV2Context } from "../solution/util";
 
-describe("SolutionV3 - init", () => {
-  it("init", async () => {
+describe("SolutionV3 - publish", () => {
+  it("publish", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -23,20 +26,21 @@ describe("SolutionV3 - init", () => {
       platform: Platform.VSCode,
       projectPath: ".",
     };
-    const res = await init(ctx, inputs);
-    assert.isTrue(res.isOk());
-    assert.deepEqual(projectSettings.solutionSettings, {
-      name: TeamsFxAzureSolutionNameV3,
-      version: "3.0.0",
-      capabilities: [],
-      hostType: "Azure",
-      azureResources: [],
-      modules: [],
-      activeResourcePlugins: [],
-    });
+    const envInfov3: v3.EnvInfoV3 = {
+      envName: "dev",
+      state: { solution: {} },
+      config: {},
+    };
+    const res = await publishApplication(
+      ctx,
+      inputs,
+      envInfov3,
+      new MockedAppStudioTokenProvider()
+    );
+    assert.isTrue(res.isErr());
   });
 
-  it("getQuestionsForInit", async () => {
+  it("getQuestionsForPublish", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -49,7 +53,17 @@ describe("SolutionV3 - init", () => {
       platform: Platform.VSCode,
       projectPath: ".",
     };
-    const res = await getQuestionsForInit(ctx, inputs);
+    const envInfov3: v3.EnvInfoV3 = {
+      envName: "dev",
+      state: { solution: {} },
+      config: {},
+    };
+    const res = await getQuestionsForPublish(
+      ctx,
+      inputs,
+      envInfov3,
+      new MockedAppStudioTokenProvider()
+    );
     assert.isTrue(res.isOk());
   });
 });

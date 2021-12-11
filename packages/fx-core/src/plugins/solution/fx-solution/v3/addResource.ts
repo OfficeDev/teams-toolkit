@@ -4,6 +4,7 @@
 import {
   err,
   FxError,
+  Inputs,
   ok,
   OptionItem,
   QTreeNode,
@@ -23,15 +24,20 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
   resourceType = "Azure Storage";
   description = "Azure Storage";
   name = "fx-resource-azure-storage";
+  async pluginDependencies(ctx: v2.Context, inputs: Inputs): Promise<Result<string[], FxError>> {
+    return ok(["fx-resource-azure-web-app"]);
+  }
   async generateResourceTemplate(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
-    await fs.writeFile(
-      path.join(inputs.projectPath, "templates", "azure", "AzureStorage.bicep"),
-      ""
-    );
+    if (!inputs.test) {
+      await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
+      await fs.writeFile(
+        path.join(inputs.projectPath, "templates", "azure", "AzureStorage.bicep"),
+        ""
+      );
+    }
     return ok({ kind: "bicep", template: {} });
   }
 }
@@ -45,11 +51,13 @@ export class AzureWebAppPlugin implements v3.ResourcePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
-    await fs.writeFile(
-      path.join(inputs.projectPath, "templates", "azure", "AzureWebApp.bicep"),
-      ""
-    );
+    if (!inputs.test) {
+      await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
+      await fs.writeFile(
+        path.join(inputs.projectPath, "templates", "azure", "AzureWebApp.bicep"),
+        ""
+      );
+    }
     return ok({ kind: "bicep", template: {} });
   }
 }

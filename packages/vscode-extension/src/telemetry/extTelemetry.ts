@@ -63,6 +63,14 @@ export namespace ExtTelemetry {
         return TelemetryEvent.CreateNewEnvironment;
       case Stage.grantPermission:
         return TelemetryEvent.GrantPermission;
+      case Stage.init:
+        return TelemetryEvent.init;
+      case Stage.addModule:
+        return TelemetryEvent.addModule;
+      case Stage.scaffold:
+        return TelemetryEvent.addModule;
+      case Stage.addResource:
+        return TelemetryEvent.addModule;
       default:
         return undefined;
     }

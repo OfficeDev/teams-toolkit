@@ -12,13 +12,10 @@ import {
   Result,
   Stage,
   traverse,
-  v2,
-  v3,
 } from "@microsoft/teamsfx-api";
-import { isV2, TOOLS } from "..";
+import { isV2 } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
-import { getQuestionsForInit } from "../v3/init";
 
 /**
  * This middleware will help to collect input from question flow
@@ -32,7 +29,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   if (method === "createProject") {
     getQuestionRes = await core._getQuestionsForCreateProject(inputs);
   } else if (method === "migrateV1Project") {
-    const res = await TOOLS.ui.showMessage(
+    const res = await core.tools.ui.showMessage(
       "warn",
       "We will update your project to make it compatible with the latest Teams Toolkit. We recommend to use git for better tracking file changes before migration. Your original project files will be archived to the .archive folder. You can refer to .archive.log which provides detailed information about the archive process.",
       true,
@@ -40,118 +37,90 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
     );
     const answer = res?.isOk() ? res.value : undefined;
     if (!answer || answer != "OK") {
-      TOOLS.logProvider.info(`[core] V1 project migration was canceled.`);
+      core.tools.logProvider.info(`[core] V1 project migration was canceled.`);
       ctx.result = ok(null);
       return;
     }
     getQuestionRes = await core._getQuestionsForMigrateV1Project(inputs);
   } else {
-    if (method === "init") {
-      getQuestionRes = await getQuestionsForInit(inputs);
-    } else if (method === "init" || "addModule" || "scaffold" || "addResource") {
-      const solutionV3 = ctx.solutionV3;
-      const contextV2 = ctx.contextV2;
-      if (solutionV3 && contextV2) {
-        if (method === "addModule") {
-          getQuestionRes = await getQuestionsForAddModule(
-            inputs as v2.InputsWithProjectPath,
-            solutionV3,
-            contextV2
+    if ((isV2() && ctx.solutionV2 && ctx.contextV2) || (ctx.solution && ctx.solutionContext)) {
+      const solution = isV2() ? ctx.solutionV2 : ctx.solution;
+      const context = isV2() ? ctx.contextV2 : ctx.solutionContext;
+      if (solution && context) {
+        if (method === "provisionResources") {
+          getQuestionRes = await core._getQuestions(
+            context,
+            solution,
+            Stage.provision,
+            inputs,
+            isV2() ? ctx.envInfoV2 : undefined
           );
-        } else if (method === "scaffold") {
-          getQuestionRes = await getQuestionsForScaffold(
-            inputs as v2.InputsWithProjectPath,
-            solutionV3,
-            contextV2
+        } else if (method === "localDebug") {
+          getQuestionRes = await core._getQuestions(
+            context,
+            solution,
+            Stage.debug,
+            inputs,
+            isV2() ? ctx.envInfoV2 : undefined
           );
-        } else if (method === "addResource") {
-          getQuestionRes = await getQuestionsForAddResource(
-            inputs as v2.InputsWithProjectPath,
-            solutionV3,
-            contextV2
+        } else if (method === "deployArtifacts") {
+          getQuestionRes = await core._getQuestions(
+            context,
+            solution,
+            Stage.deploy,
+            inputs,
+            isV2() ? ctx.envInfoV2 : undefined
           );
-        }
-      }
-    } else {
-      if ((isV2() && ctx.solutionV2 && ctx.contextV2) || (ctx.solution && ctx.solutionContext)) {
-        const solution = isV2() ? ctx.solutionV2 : ctx.solution;
-        const context = isV2() ? ctx.contextV2 : ctx.solutionContext;
-        if (solution && context) {
-          if (method === "provisionResources") {
-            getQuestionRes = await core._getQuestions(
-              context,
-              solution,
-              Stage.provision,
-              inputs,
-              isV2() ? ctx.envInfoV2 : undefined
-            );
-          } else if (method === "localDebug") {
-            getQuestionRes = await core._getQuestions(
-              context,
-              solution,
-              Stage.debug,
-              inputs,
-              isV2() ? ctx.envInfoV2 : undefined
-            );
-          } else if (method === "deployArtifacts") {
-            getQuestionRes = await core._getQuestions(
-              context,
-              solution,
-              Stage.deploy,
-              inputs,
-              isV2() ? ctx.envInfoV2 : undefined
-            );
-          } else if (method === "publishApplication") {
-            getQuestionRes = await core._getQuestions(
-              context,
-              solution,
-              Stage.publish,
-              inputs,
-              isV2() ? ctx.envInfoV2 : undefined
-            );
-          } else if (method === "executeUserTask") {
-            const func = ctx.arguments[0] as Func;
-            getQuestionRes = await core._getQuestionsForUserTask(
-              context,
-              solution,
-              func,
-              inputs,
-              isV2() ? ctx.envInfoV2 : undefined
-            );
-          } else if (method === "grantPermission") {
-            getQuestionRes = await core._getQuestions(
-              context,
-              solution,
-              Stage.grantPermission,
-              inputs,
-              isV2() ? ctx.envInfoV2 : undefined
-            );
-          }
+        } else if (method === "publishApplication") {
+          getQuestionRes = await core._getQuestions(
+            context,
+            solution,
+            Stage.publish,
+            inputs,
+            isV2() ? ctx.envInfoV2 : undefined
+          );
+        } else if (method === "executeUserTask") {
+          const func = ctx.arguments[0] as Func;
+          getQuestionRes = await core._getQuestionsForUserTask(
+            context,
+            solution,
+            func,
+            inputs,
+            isV2() ? ctx.envInfoV2 : undefined
+          );
+        } else if (method === "grantPermission") {
+          getQuestionRes = await core._getQuestions(
+            context,
+            solution,
+            Stage.grantPermission,
+            inputs,
+            isV2() ? ctx.envInfoV2 : undefined
+          );
         }
       }
     }
   }
 
   if (getQuestionRes.isErr()) {
-    TOOLS.logProvider.error(
+    core.tools.logProvider.error(
       `[core] failed to get questions for ${method}: ${getQuestionRes.error.message}`
     );
     ctx.result = err(getQuestionRes.error);
     return;
   }
 
-  TOOLS.logProvider.debug(`[core] success to get questions for ${method}`);
+  core.tools.logProvider.debug(`[core] success to get questions for ${method}`);
 
   const node = getQuestionRes.value;
   if (node) {
-    const res = await traverse(node, inputs, TOOLS.ui, TOOLS.telemetryReporter);
+    const res = await traverse(node, inputs, core.tools.ui, core.tools.telemetryReporter);
     if (res.isErr()) {
-      TOOLS.logProvider.debug(`[core] failed to run question model for ${method}`);
+      core.tools.logProvider.debug(`[core] failed to run question model for ${method}`);
       ctx.result = err(res.error);
       return;
     }
     const desensitized = desensitize(node, inputs);
-    TOOLS.logProvider.info(
+    core.tools.logProvider.info(
       `[core] success to run question model for ${method}, answers:${JSON.stringify(desensitized)}`
     );
   }
@@ -175,40 +144,4 @@ export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<strin
   for (const child of node.children || []) {
     traverseToCollectPasswordNodes(child, names);
   }
-}
-
-export async function getQuestionsForScaffold(
-  inputs: v2.InputsWithProjectPath,
-  solution: v3.ISolution,
-  context: v2.Context
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (solution.getQuestionsForScaffold) {
-    const res = await solution.getQuestionsForScaffold(context, inputs);
-    return res;
-  }
-  return ok(undefined);
-}
-
-export async function getQuestionsForAddModule(
-  inputs: v2.InputsWithProjectPath,
-  solution: v3.ISolution,
-  context: v2.Context
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (solution.getQuestionsForAddModule) {
-    const res = await solution.getQuestionsForAddModule(context, inputs);
-    return res;
-  }
-  return ok(undefined);
-}
-
-export async function getQuestionsForAddResource(
-  inputs: v2.InputsWithProjectPath,
-  solution: v3.ISolution,
-  context: v2.Context
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (solution.getQuestionsForAddResource) {
-    const res = await solution.getQuestionsForAddResource(context, inputs);
-    return res;
-  }
-  return ok(undefined);
 }

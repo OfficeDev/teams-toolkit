@@ -136,6 +136,7 @@ import { flattenConfigJson, newEnvInfo } from "./tools";
 import { LocalCrypto } from "./crypto";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
 import { merge } from "lodash";
+import { QuestionModelMW_V3 } from "./v3/mw/questionModel";
 import { init } from "./v3/init";
 import { SolutionLoaderMW_V3 } from "./v3/mw/solutionLoader";
 import { ProjectSettingsLoaderMW_V3 } from "./v3/mw/projectSettingsLoader";
@@ -1391,7 +1392,7 @@ export class FxCore implements v3.ICore {
     return ok(node.trim());
   }
 
-  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
+  @hooks([ErrorHandlerMW, QuestionModelMW_V3, ContextInjectorMW, ProjectSettingsWriterMW])
   async init(
     inputs: v2.InputsWithProjectPath & { solution?: string },
     ctx?: CoreHookContext
@@ -1402,7 +1403,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,
     SolutionLoaderMW_V3,
-    QuestionModelMW,
+    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
   ])
@@ -1424,7 +1425,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,
     SolutionLoaderMW_V3,
-    QuestionModelMW,
+    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
   ])
@@ -1442,7 +1443,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,
     SolutionLoaderMW_V3,
-    QuestionModelMW,
+    QuestionModelMW_V3,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
   ])

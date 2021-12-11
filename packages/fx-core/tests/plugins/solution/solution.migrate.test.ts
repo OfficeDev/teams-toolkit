@@ -20,7 +20,7 @@ import {
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
-import { newEnvInfo } from "../../../src";
+import { newEnvInfo } from "../../../src/core/tools";
 import { LocalCrypto } from "../../../src/core/crypto";
 
 chai.use(chaiAsPromised);

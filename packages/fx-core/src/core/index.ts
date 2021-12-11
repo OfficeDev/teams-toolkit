@@ -83,6 +83,8 @@ import {
   ProjectFolderNotExistError,
   TaskNotSupportError,
   WriteFileError,
+  ProjectFolderInvalidError,
+  FetchSampleError,
 } from "./error";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
@@ -207,7 +209,11 @@ export class FxCore implements Core {
     let folder = inputs[QuestionRootFolder.name] as string;
     if (inputs.platform === Platform.VSCode) {
       folder = getRootDirectory();
-      await fs.ensureDir(folder);
+      try {
+        await fs.ensureDir(folder);
+      } catch (e) {
+        throw ProjectFolderInvalidError(folder);
+      }
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
@@ -857,19 +863,11 @@ export class FxCore implements Core {
     if (!ctx) return err(new ObjectIsUndefinedError("getProjectConfig input stuff"));
     inputs.stage = Stage.getProjectConfig;
     currentStage = Stage.getProjectConfig;
-    if (isV2()) {
-      return ok({
-        settings: ctx!.projectSettings,
-        config: ctx!.envInfoV2?.state,
-        localSettings: ctx!.localSettings,
-      });
-    } else {
-      return ok({
-        settings: ctx!.projectSettings,
-        config: ctx!.solutionContext?.envInfo.state,
-        localSettings: ctx!.solutionContext?.localSettings,
-      });
-    }
+    return ok({
+      settings: ctx!.projectSettings,
+      config: ctx!.solutionContext?.envInfo.state,
+      localSettings: ctx!.solutionContext?.localSettings,
+    });
   }
 
   @hooks([
@@ -1472,16 +1470,14 @@ export async function downloadSample(
       }
     }
     progress.next(`Downloading from ${url}`);
-    const fetchRes = await fetchCodeZip(url);
-    if (fetchRes === undefined) {
-      throw new SystemError(
-        "FetchSampleError",
-        "Fetch sample app error: empty zip file",
-        CoreSource
-      );
+    const fetchRes = await fetchCodeZip(url, sample.id);
+    if (fetchRes.isErr()) {
+      throw fetchRes.error;
+    } else if (!fetchRes.value) {
+      throw FetchSampleError(sample.id);
     }
     progress.next("Unzipping the sample package");
-    await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, sampleAppPath);
+    await saveFilesRecursively(new AdmZip(fetchRes.value.data), sampleId, sampleAppPath);
     await downloadSampleHook(sampleId, sampleAppPath);
     progress.next("Update project settings");
     const loadInputs: Inputs = {

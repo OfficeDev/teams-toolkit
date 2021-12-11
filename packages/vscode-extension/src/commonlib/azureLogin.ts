@@ -379,6 +379,8 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
 
   async getStatus(): Promise<LoginStatus> {
     const azureAccount = this.getAzureAccount();
+    // add this to make sure Azure Account Extension has fully initialized
+    await azureAccount.waitForSubscriptions();
     if (azureAccount.status === loggedIn) {
       const credential = await this.doGetAccountCredentialAsync();
       const token = await credential?.getToken();

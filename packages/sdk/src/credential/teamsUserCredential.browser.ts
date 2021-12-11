@@ -132,6 +132,8 @@ export class TeamsUserCredential implements TokenCredential {
   /**
    * Get access token from credential.
    *
+   * Important: Access tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
+   *
    * @example
    * ```typescript
    * await credential.getToken([]) // Get SSO token using empty string array
@@ -236,6 +238,7 @@ export class TeamsUserCredential implements TokenCredential {
 
         const tokenResult: AccessTokenResult = response.data;
         const key = await this.getAccessTokenCacheKey(scopesStr);
+        // Important: tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
         this.setTokenCache(key, {
           token: tokenResult.access_token,
           expiresOnTimestamp: tokenResult.expires_on,

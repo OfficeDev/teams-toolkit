@@ -4,10 +4,6 @@
 import { assert } from "chai";
 import "mocha";
 import { Inputs, Platform, AzureSolutionSettings } from "@microsoft/teamsfx-api";
-import fs from "fs-extra";
-import * as path from "path";
-import * as os from "os";
-import sinon from "sinon";
 import {
   getAllResourcePluginMap,
   getAllResourcePlugins,

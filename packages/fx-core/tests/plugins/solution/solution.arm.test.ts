@@ -758,7 +758,12 @@ describe("Deploy ARM Template to Azure", () => {
 
 describe("Poll Deployment Status", () => {
   const mocker = sinon.createSandbox();
+  let mockedCtx: SolutionContext;
+  let mockedDeployCtx: any;
+
   beforeEach(async () => {
+    mockedCtx = TestHelper.mockSolutionContext();
+    mockedDeployCtx = TestHelper.getMockedDeployCtx(mockedCtx);
     mocker.stub(tools, "waitSeconds").resolves();
   });
 
@@ -767,8 +772,6 @@ describe("Poll Deployment Status", () => {
   });
 
   it("should get pollDeploymentStatus error", async () => {
-    const mockedCtx = TestHelper.mockSolutionContext();
-    const mockedDeployCtx: any = TestHelper.getMockedDeployCtx(mockedCtx);
     const mockedErrorMsg = "mocked error";
     mockedDeployCtx.client = {
       deploymentOperations: {
@@ -784,7 +787,6 @@ describe("Poll Deployment Status", () => {
   });
 
   it("pollDeploymentStatus OK", async () => {
-    const mockedCtx = TestHelper.mockSolutionContext();
     const operations = [
       {
         properties: {
@@ -797,7 +799,6 @@ describe("Poll Deployment Status", () => {
         },
       },
     ];
-    const mockedDeployCtx: any = TestHelper.getMockedDeployCtx(mockedCtx);
     let count = 0;
     mockedDeployCtx.client = {
       deploymentOperations: {

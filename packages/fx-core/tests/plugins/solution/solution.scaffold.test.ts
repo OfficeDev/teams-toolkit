@@ -9,7 +9,6 @@ import {
   ok,
   PluginContext,
   Result,
-  SolutionConfig,
   SolutionContext,
   Void,
   Plugin,
@@ -39,26 +38,24 @@ import {
   validManifest,
 } from "./util";
 import * as uuid from "uuid";
-import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import Container from "typedi";
 import mockedEnv from "mocked-env";
-import { mockedFehostScaffoldArmResult, mockedSimpleAuthScaffoldArmResult } from "./util";
 import { getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
 import { MockTools } from "../../core/utils";
 import { assert } from "console";
 import { LocalCrypto } from "../../../src/core/crypto";
-import { ArmTemplateResult } from "../../../src/common/armInterface";
+import { TestHelper } from "./helper";
+import {
+  botPlugin,
+  fehostPlugin,
+  simpleAuthPlugin,
+  spfxPlugin,
+  localdebugPlugin,
+  appStudioPlugin,
+} from "../../constants";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin) as Plugin;
-const simpleAuthPlugin = Container.get<Plugin>(ResourcePlugins.SimpleAuthPlugin) as Plugin;
-const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
-const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
-const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
-const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
 function mockSolutionContext(): SolutionContext {
-  const config: SolutionConfig = new Map();
   return {
     root: ".",
     envInfo: newEnvInfo(),
@@ -216,15 +213,8 @@ describe("Solution scaffold() reading valid manifest file", () => {
     mockScaffoldThatAlwaysSucceed(appStudioPlugin);
     mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["dev"]));
     // mock plugin behavior
-    mocker.stub(fehostPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      const res: ArmTemplateResult = mockedSimpleAuthScaffoldArmResult();
-      return ok(res);
-    });
-
-    mocker.stub(simpleAuthPlugin, "generateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      const res: ArmTemplateResult = mockedFehostScaffoldArmResult();
-      return ok(res);
-    });
+    TestHelper.mockedFehostGenerateArmTemplates(mocker);
+    TestHelper.mockedSimpleAuthGenerateArmTemplates(mocker);
 
     const result = await solution.scaffold(mockedCtx);
     expect(result.isOk()).to.be.true;

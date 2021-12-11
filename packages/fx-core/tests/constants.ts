@@ -20,6 +20,11 @@ export const identityPlugin = Container.get<Plugin>(ResourcePlugins.IdentityPlug
 export const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin) as Plugin;
 export const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin;
 export const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin) as Plugin;
+export const localdebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin) as Plugin;
+export const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin) as Plugin;
+export const sqlPlugin = Container.get<Plugin>(ResourcePlugins.SqlPlugin) as Plugin;
+export const functionPlugin = Container.get<Plugin>(ResourcePlugins.FunctionPlugin) as Plugin;
+export const apimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin) as Plugin;
 
 export class TestFilePath {
   static readonly armTemplateBaseFolder = "./templates/azure";

@@ -8,7 +8,7 @@ import {
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
 import path from "path";
-import { environmentManager, newEnvInfo } from "../../../src";
+import { environmentManager } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
 import { v4 as uuid } from "uuid";
 import { ArmTemplateResult } from "../../../src/common/armInterface";
@@ -81,13 +81,14 @@ export class TestHelper {
     };
   }
 
-  static getMockedDeployCtx(mockedCtx: any) {
+  static getMockedDeployCtx(mockedCtx: SolutionContext): any {
     return {
       resourceGroupName: "poll-deployment-rg",
       deploymentName: "poll-deployment",
       finished: false,
       deploymentStartTime: Date.now(),
       ctx: mockedCtx,
+      client: undefined,
     };
   }
 

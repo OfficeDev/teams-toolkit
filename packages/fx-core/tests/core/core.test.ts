@@ -317,9 +317,10 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
-      solution: mockSolution.name,
       stage: Stage.create,
     };
+    expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+    expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
     sandbox
       .stub<any, any>(ui, "inputText")
       .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
@@ -353,6 +354,11 @@ describe("Core basic APIs", () => {
               type: "success",
               result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
             });
+          } else if (config.name === CoreQuestionNames.ProgrammingLanguage) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
+            });
           }
           throw err(InvalidInputError("invalid question"));
         }
@@ -361,7 +367,7 @@ describe("Core basic APIs", () => {
       .stub<any, any>(ui, "selectOptions")
       .callsFake(async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
         if (config.name == "capabilities") {
-          return ok({ type: "success", result: ["Tab"] });
+          return ok({ type: "success", result: expectedInputs[CoreQuestionNames.Capabilities] });
         }
         throw err(InvalidInputError("invalid question"));
       });
@@ -398,9 +404,10 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
-      solution: mockSolution.name,
       stage: Stage.create,
     };
+    expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+    expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
     sandbox
       .stub<any, any>(ui, "inputText")
       .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
@@ -434,10 +441,23 @@ describe("Core basic APIs", () => {
               type: "success",
               result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
             });
+          } else if (config.name === CoreQuestionNames.ProgrammingLanguage) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
+            });
           }
           throw err(InvalidInputError("invalid question"));
         }
       );
+    sandbox
+      .stub<any, any>(ui, "selectOptions")
+      .callsFake(async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+        if (config.name == "capabilities") {
+          return ok({ type: "success", result: expectedInputs[CoreQuestionNames.Capabilities] });
+        }
+        throw err(InvalidInputError("invalid question"));
+      });
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -591,9 +611,10 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
-      solution: mockSolution.name,
       stage: Stage.getQuestions,
     };
+    expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+    expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
     sandbox
       .stub<any, any>(ui, "inputText")
       .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
@@ -627,11 +648,23 @@ describe("Core basic APIs", () => {
               type: "success",
               result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
             });
+          } else if (config.name === CoreQuestionNames.ProgrammingLanguage) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
+            });
           }
           throw err(InvalidInputError("invalid question"));
         }
       );
-
+    sandbox
+      .stub<any, any>(ui, "selectOptions")
+      .callsFake(async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+        if (config.name == "capabilities") {
+          return ok({ type: "success", result: expectedInputs[CoreQuestionNames.Capabilities] });
+        }
+        throw err(InvalidInputError("invalid question"));
+      });
     const core = new FxCore(tools);
     const inputs: Inputs = { platform: Platform.CLI };
     const res = await core.getQuestions(Stage.create, inputs);
@@ -786,8 +819,9 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
-      solution: mockSolution.name,
     };
+    expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+    expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
     sandbox
       .stub<any, any>(ui, "inputText")
       .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
@@ -821,10 +855,23 @@ describe("Core basic APIs", () => {
               type: "success",
               result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
             });
+          } else if (config.name === CoreQuestionNames.ProgrammingLanguage) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
+            });
           }
           throw InvalidInputError("invalid question");
         }
       );
+    sandbox
+      .stub<any, any>(ui, "selectOptions")
+      .callsFake(async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+        if (config.name == "capabilities") {
+          return ok({ type: "success", result: expectedInputs[CoreQuestionNames.Capabilities] });
+        }
+        throw err(InvalidInputError("invalid question"));
+      });
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.CLI };
@@ -853,10 +900,11 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
-      solution: mockSolution.name,
       env: "dev",
       stage: Stage.create,
     };
+    expectedInputs[CoreQuestionNames.Capabilities] = TabOptionItem.id;
+    expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
 
     const newEnvName = "newEnv";
     sandbox
@@ -898,10 +946,23 @@ describe("Core basic APIs", () => {
               type: "success",
               result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
             });
+          } else if (config.name === CoreQuestionNames.ProgrammingLanguage) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
+            });
           }
           throw err(InvalidInputError("invalid question"));
         }
       );
+    sandbox
+      .stub<any, any>(ui, "selectOptions")
+      .callsFake(async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+        if (config.name == "capabilities") {
+          return ok({ type: "success", result: expectedInputs[CoreQuestionNames.Capabilities] });
+        }
+        throw err(InvalidInputError("invalid question"));
+      });
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
@@ -951,10 +1012,11 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
-      solution: mockSolution.name,
       env: "dev",
       stage: Stage.create,
     };
+    expectedInputs[CoreQuestionNames.Capabilities] = TabOptionItem.id;
+    expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
     sandbox
       .stub<any, any>(ui, "inputText")
       .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
@@ -994,10 +1056,23 @@ describe("Core basic APIs", () => {
               type: "success",
               result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
             });
+          } else if (config.name === CoreQuestionNames.ProgrammingLanguage) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
+            });
           }
           throw err(InvalidInputError("invalid question"));
         }
       );
+    sandbox
+      .stub<any, any>(ui, "selectOptions")
+      .callsFake(async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+        if (config.name == "capabilities") {
+          return ok({ type: "success", result: expectedInputs[CoreQuestionNames.Capabilities] });
+        }
+        throw err(InvalidInputError("invalid question"));
+      });
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.CLI, env: "dev" };

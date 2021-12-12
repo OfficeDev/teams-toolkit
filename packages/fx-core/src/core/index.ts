@@ -127,6 +127,7 @@ import {
   getAllSolutionPlugins,
   getAllSolutionPluginsV2,
   getSolutionPluginByCap,
+  getSolutionPluginByCapV1,
   getSolutionPluginByName,
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
@@ -324,7 +325,7 @@ export class FxCore implements Core {
           };
         }
       } else {
-        const solution = await getSolutionPluginByName(inputs[CoreQuestionNames.Solution]);
+        const solution = await getSolutionPluginByCapV1(inputs[CoreQuestionNames.Capabilities]);
         if (!solution) {
           return err(new LoadSolutionError());
         }

@@ -50,6 +50,10 @@ export function getSolutionPluginByCap(cap: string[]): v2.SolutionPlugin | undef
   }
 }
 
+export function getSolutionPluginByCapV1(cap: string[]): Solution | undefined {
+  return Container.get<Solution>(SolutionPlugins.AzureTeamsSolution);
+}
+
 export function getSolutionPluginV2ByName(name: string): v2.SolutionPlugin | undefined {
   const solutions = getAllSolutionPluginsV2().filter((s) => s.name === name);
   if (solutions.length > 0) return solutions[0];

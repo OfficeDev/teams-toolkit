@@ -42,14 +42,11 @@ describe("Import API into API Management", function () {
       });
       console.log(`Create new project. Error message: ${result.stderr}`);
 
-      result = await execAsyncWithRetry(
-        `teamsfx resource add azure-apim --subscription ${subscriptionId}`,
-        {
-          cwd: projectPath,
-          env: testProcessEnv,
-          timeout: 0,
-        }
-      );
+      result = await execAsyncWithRetry(`teamsfx resource add azure-apim`, {
+        cwd: projectPath,
+        env: testProcessEnv,
+        timeout: 0,
+      });
       console.log(`Add APIM resource. Error message: ${result.stderr}`);
 
       if (isMultiEnvEnabled()) {

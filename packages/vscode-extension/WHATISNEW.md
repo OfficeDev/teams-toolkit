@@ -1,8 +1,19 @@
+- [3.1.0 - Nov 29 2021](#310---dec-13-2021)
 - [3.0.0 - Nov 29 2021](#300---nov-29-2021)
 - [2.10.0 - Nov 15 2021](#2100---nov-15-2021)
 - [2.9.0 - Nov 01 2021](#290---nov-01-2021)
 - [2.8.0 - Oct 18 2021](#280---oct-18-2021)
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
+
+## 3.1.0 - Dec 13, 2021
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- Integrate with Azure Key Vault to secure your application secrets at runtime.
+    ![key vault integration](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/key_vault.gif)
+
+- View state file and edit environment configurations from manifest with code lens.
+    ![manifest code lens](https://raw.githubusercontent.com/OfficeDev/TeamsFx/main/packages/vscode-extension/img/manifest_code_lens.gif)
 
 ## 3.0.0 - Nov 29, 2021
 

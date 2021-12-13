@@ -871,7 +871,11 @@ export class AppStudioPluginImpl {
         `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/manifest.` +
         (isLocalDebug ? "local" : ctx.envInfo.envName) +
         `.json`;
+      if (await fs.pathExists(manifestFileName)) {
+        await fs.chmod(manifestFileName, 0o777);
+      }
       await fs.writeFile(manifestFileName, manifestString);
+      await fs.chmod(manifestFileName, 0o444);
     }
 
     // localization file

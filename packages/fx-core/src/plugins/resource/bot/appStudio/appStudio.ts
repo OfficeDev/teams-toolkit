@@ -157,8 +157,9 @@ export class AppStudio {
     let response = undefined;
     try {
       if (registration.botId) {
-        const getBotRegistrationResponse = await RetryHandler.Retry(() =>
-          axiosInstance.get(`${AppStudio.baseUrl}/api/botframework/${registration.botId}`)
+        const getBotRegistrationResponse = await RetryHandler.Retry(
+          () => axiosInstance.get(`${AppStudio.baseUrl}/api/botframework/${registration.botId}`),
+          true
         );
         if (getBotRegistrationResponse && getBotRegistrationResponse.data) {
           Logger.info(Messages.BotResourceExist("Appstudio"));

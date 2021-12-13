@@ -97,8 +97,8 @@ describe("FunctionGenerateArmTemplates", () => {
           },
         },
         References: {
-          functionAppResourceId: FunctionBicep.functionAppResourceId,
-          functionEndpoint: FunctionBicep.functionEndpoint,
+          functionAppResourceId: "provisionOutputs.functionOutput.value.functionAppResourceId",
+          functionEndpoint: "provisionOutputs.functionOutput.value.functionEndpoint",
         },
       },
       "fx-resource-frontend-hosting": {

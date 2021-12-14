@@ -50,13 +50,13 @@ export const LocalSettingsLoaderMW: Middleware = async (
         exists = false;
       }
     }
-    if (isV2()) {
-      if (exists) {
-        ctx.localSettings = await localSettingsProvider.loadV2(ctx.contextV2?.cryptoProvider);
-      } else {
-        ctx.localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
-      }
-    } else if (ctx.solutionContext) {
+    //load two versions to make sure compatible
+    if (exists) {
+      ctx.localSettings = await localSettingsProvider.loadV2(ctx.contextV2?.cryptoProvider);
+    } else {
+      ctx.localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
+    }
+    if (ctx.solutionContext) {
       if (exists) {
         ctx.solutionContext.localSettings = await localSettingsProvider.load(
           ctx.solutionContext.cryptoProvider

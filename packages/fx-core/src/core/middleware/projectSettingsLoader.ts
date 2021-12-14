@@ -69,7 +69,7 @@ export const ProjectSettingsLoaderMW: Middleware = async (
     (ctx.self as FxCore).settingsVersion = projectSettings.version;
     if (isV2()) {
       (ctx.self as FxCore).tools.cryptoProvider = new LocalCrypto(projectSettings.projectId);
-      ctx.contextV2 = createV2Context(ctx.self as FxCore, projectSettings);
+      ctx.contextV2 = createV2Context(projectSettings);
     }
   }
 

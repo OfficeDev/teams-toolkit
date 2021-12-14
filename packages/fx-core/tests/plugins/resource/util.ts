@@ -97,4 +97,5 @@ export class ResourcePlugins {
   static readonly Function = "fx-resource-function";
   static readonly Identity = "fx-resource-identity";
   static readonly Apim = "fx-resource-apim";
+  static readonly KeyVault = "fx-resource-key-vault";
 }

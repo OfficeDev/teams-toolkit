@@ -10,9 +10,7 @@ import {
   AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
-import fs, { PathLike } from "fs-extra";
-import * as uuid from "uuid";
-import os from "os";
+import fs from "fs-extra";
 import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
@@ -195,22 +193,6 @@ Mocked simple auth configuration orchestration content. Module path: './teamsFx/
         fileEncoding
       )
     ).equals(TestFileContent.feHostProvisionModule);
-    expect(
-      await fs.readFile(path.join(projectArmTemplateFolder, "../config.bicep"), fileEncoding)
-    ).equals(
-      `@secure()
-param provisionParameters object
-param provisionOutputs object` + os.EOL
-    );
-    expect(
-      await fs.readFile(path.join(projectArmTemplateFolder, "../provision.bicep"), fileEncoding)
-    ).equals(
-      `@secure()
-param provisionParameters object` +
-        os.EOL +
-        `Mocked frontend hosting module content. Module path: ./provision/frontendHostingProvision.bicep. Variable: Mocked simple auth endpoint
-Mocked simple auth module content. Module path: ./provision/simpleAuthProvision.bicep. Variable: Mocked front end host endpoint`
-    );
     expect(
       await fs.readFile(
         path.join(
@@ -441,27 +423,6 @@ Mocked simple auth module content. Module path: ./provision/simpleAuthProvision.
     }
   }
 }`.replace(/\r?\n/g, os.EOL)
-    );
-    expect(
-      await fs.readFile(path.join(projectArmTemplateFolder, "../provision.bicep"), fileEncoding)
-    ).equals(
-      `@secure()
-param provisionParameters object` +
-        os.EOL +
-        `Mocked frontend hosting module content. Module path: ./provision/frontendHostingProvision.bicep. Variable: Mocked simple auth endpoint
-Mocked simple auth module content. Module path: ./provision/simpleAuthProvision.bicep. Variable: Mocked front end host endpoint` +
-        os.EOL +
-        `Bot Provision module content content and outputs, Module path: ./provision/bot.bicep.`
-    );
-    expect(
-      await fs.readFile(path.join(projectArmTemplateFolder, "../config.bicep"), fileEncoding)
-    ).equals(
-      `@secure()
-param provisionParameters object
-param provisionOutputs object` +
-        os.EOL +
-        os.EOL +
-        `Mocked bot Orchestration content, Module path: ./teamsFx/bot.bicep`
     );
     expect(
       await fs.readFile(

@@ -1580,10 +1580,14 @@ export async function downloadSample(
     if (projectSettingsRes.isOk()) {
       const projectSettings = projectSettingsRes.value;
       projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
+      projectSettings.isFromSample = true;
       inputs.projectId = projectSettings.projectId;
       telemetryProperties[TelemetryProperty.ProjectId] = projectSettings.projectId;
       ctx.projectSettings = projectSettings;
       inputs.projectPath = sampleAppPath;
+    } else {
+      telemetryProperties[TelemetryProperty.ProjectId] =
+        "unknown, failed to set projectId in projectSettings.json";
     }
     progress.end(true);
     sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, telemetryProperties);

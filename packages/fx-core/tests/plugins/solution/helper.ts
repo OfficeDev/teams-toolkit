@@ -6,6 +6,10 @@ import {
   AzureAccountProvider,
   ConfigMap,
   SubscriptionInfo,
+  Plugin,
+  Result,
+  FxError,
+  Void,
 } from "@microsoft/teamsfx-api";
 import path from "path";
 import { environmentManager } from "../../../src";
@@ -287,5 +291,17 @@ export class TestHelper {
         resolve(TestHelper.armTemplateJson);
       })
     );
+  }
+
+  static mockScaffoldThatAlwaysSucceed(plugin: Plugin) {
+    plugin.preScaffold = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
+      return ok(Void);
+    };
+    plugin.scaffold = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
+      return ok(Void);
+    };
+    plugin.postScaffold = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
+      return ok(Void);
+    };
   }
 }

@@ -793,7 +793,7 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 /**
  * check & install required dependencies during local debug when selected hosting type is Azure.
  */
-export async function validateDependenciesHandler(): Promise<void> {
+export async function validateDependenciesHandler(): Promise<string | undefined> {
   const nodeChecker = new AzureNodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
   const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
   const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
@@ -802,19 +802,19 @@ export async function validateDependenciesHandler(): Promise<void> {
     dotnetChecker,
     funcChecker,
   ]);
-  await validateDependenciesCore(depsChecker);
+  return await validateDependenciesCore(depsChecker);
 }
 
 /**
  * check & install required dependencies during local debug when selected hosting type is SPFx.
  */
-export async function validateSpfxDependenciesHandler(): Promise<void> {
+export async function validateSpfxDependenciesHandler(): Promise<string | undefined> {
   const nodeChecker = new SPFxNodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
   const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [nodeChecker]);
-  await validateDependenciesCore(depsChecker);
+  return await validateDependenciesCore(depsChecker);
 }
 
-async function validateDependenciesCore(depsChecker: DepsChecker): Promise<void> {
+async function validateDependenciesCore(depsChecker: DepsChecker): Promise<string | undefined> {
   let shouldContinue = await depsChecker.resolve();
 
   // TODO: integrate into DepsChecker after all checkers support linux
@@ -823,15 +823,15 @@ async function validateDependenciesCore(depsChecker: DepsChecker): Promise<void>
 
   if (!shouldContinue) {
     await debug.stopDebugging();
-    // TODO: better mechanism to stop the tasks and debug session.
-    throw new Error("debug stopped.");
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
   }
 }
 
 /**
  * install functions binding before launch local debug
  */
-export async function backendExtensionsInstallHandler(): Promise<void> {
+export async function backendExtensionsInstallHandler(): Promise<string | undefined> {
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const backendRoot = await commonUtils.getProjectRoot(
@@ -850,7 +850,9 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
         await backendExtensionsInstaller.install(backendRoot);
       } catch (error) {
         await DepsChecker.handleErrorWithDisplay(error, vscodeAdapter);
-        throw error;
+        await debug.stopDebugging();
+        // return non-zero value to let task "exit ${command:xxx}" to exit
+        return "1";
       }
     }
   }
@@ -859,7 +861,7 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
 /**
  * call localDebug on core
  */
-export async function preDebugCheckHandler(): Promise<void> {
+export async function preDebugCheckHandler(): Promise<string | undefined> {
   try {
     const localAppId = commonUtils.getLocalTeamsAppId() as string;
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
@@ -880,7 +882,9 @@ export async function preDebugCheckHandler(): Promise<void> {
     } finally {
       // ignore telemetry error
       terminateAllRunningTeamsfxTasks();
-      throw result.error;
+      await debug.stopDebugging();
+      // return non-zero value to let task "exit ${command:xxx}" to exit
+      return "1";
     }
   }
 
@@ -903,9 +907,20 @@ export async function preDebugCheckHandler(): Promise<void> {
       });
     } finally {
       // ignore telemetry error
-      window.showErrorMessage(message);
       terminateAllRunningTeamsfxTasks();
-      throw error;
+      await debug.stopDebugging();
+      VS_CODE_UI.showMessage(
+        "error",
+        message,
+        false,
+        StringResources.vsc.localDebug.learnMore
+      ).then(async (result) => {
+        if (result.isOk() && result.value === StringResources.vsc.localDebug.learnMore) {
+          await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
+        }
+      });
+      // return non-zero value to let task "exit ${command:xxx}" to exit
+      return "1";
     }
   }
 }

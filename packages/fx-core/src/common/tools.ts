@@ -433,10 +433,16 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   }
 }
 
+/**
+ * @deprecated This method will be removed in 12/20/2021, please help do the code clean before the date.
+ */
 export function isMultiEnvEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
 }
 
+/**
+ * @deprecated This method will be removed in 12/20/2021, please help do the code clean before the date.
+ */
 export function isArmSupportEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
 }
@@ -445,6 +451,9 @@ export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
 
+/**
+ * @deprecated This method will be removed in 12/20/2021, please help do the code clean before the date.
+ */
 export function isRemoteCollaborateEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
 }

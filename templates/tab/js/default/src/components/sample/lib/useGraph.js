@@ -21,6 +21,7 @@ export function useGraph(asyncFunc, options) {
     async () => {
       const credential = new TeamsUserCredential();
       await credential.login(scope);
+      // Important: tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
       const graph = createMicrosoftGraphClient(credential, scope);
       return await asyncFunc(graph);
     },

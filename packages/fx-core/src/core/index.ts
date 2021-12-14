@@ -718,7 +718,6 @@ export class FxCore implements Core {
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
-    LocalSettingsWriterMW,
   ])
   async executeUserTask(
     func: Func,

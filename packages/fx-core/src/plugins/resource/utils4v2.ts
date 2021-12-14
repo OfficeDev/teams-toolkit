@@ -42,6 +42,7 @@ import {
 import { newEnvInfo } from "../../core/tools";
 import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
 import _ from "lodash";
+import { LocalSettingsProvider } from "../..";
 
 export function convert2PluginContext(
   pluginName: string,
@@ -79,6 +80,8 @@ export async function scaffoldSourceCodeAdapter(
     return err(NoProjectOpenedError());
   }
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
+  const localSettingsProvider = new LocalSettingsProvider(pluginContext.root);
+  pluginContext.localSettings = await localSettingsProvider.load(pluginContext.cryptoProvider);
 
   if (plugin.preScaffold) {
     const preRes = await plugin.preScaffold(pluginContext);

@@ -9,6 +9,8 @@ import {
   FuncQuestion,
   Inputs,
   LocalEnvironmentName,
+  StaticOptions,
+  MultiSelectQuestion,
 } from "@microsoft/teamsfx-api";
 import * as jsonschema from "jsonschema";
 import * as path from "path";
@@ -22,6 +24,8 @@ export enum CoreQuestionNames {
   AppName = "app-name",
   DefaultAppNameFunc = "default-app-name-func",
   Folder = "folder",
+  ProgrammingLanguage = "programming-language",
+  Capabilities = "capabilities",
   Solution = "solution",
   CreateFromScratch = "scratch",
   Samples = "samples",
@@ -102,6 +106,109 @@ export const QuestionRootFolder: FolderQuestion = {
   name: CoreQuestionNames.Folder,
   title: "Workspace folder",
 };
+
+export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
+  name: CoreQuestionNames.ProgrammingLanguage,
+  title: "Programming Language",
+  type: "singleSelect",
+  staticOptions: [
+    { id: "javascript", label: "JavaScript" },
+    { id: "typescript", label: "TypeScript" },
+  ],
+  dynamicOptions: (inputs: Inputs): StaticOptions => {
+    const cpas = inputs[CoreQuestionNames.Capabilities] as string[];
+    if (cpas.includes(TabSPFxItem.id)) return [{ id: "typescript", label: "TypeScript" }];
+    return [
+      { id: "javascript", label: "JavaScript" },
+      { id: "typescript", label: "TypeScript" },
+    ];
+  },
+  skipSingleOption: true,
+  default: (inputs: Inputs) => {
+    const cpas = inputs[CoreQuestionNames.Capabilities] as string[];
+    if (cpas.includes(TabSPFxItem.id)) return "typescript";
+    return "javascript";
+  },
+  placeholder: (inputs: Inputs): string => {
+    const cpas = inputs[CoreQuestionNames.Capabilities] as string[];
+    if (cpas.includes(TabSPFxItem.id)) return "SPFx is currently supporting TypeScript only.";
+    return "Select a programming language.";
+  },
+};
+
+export const TabOptionItem: OptionItem = {
+  id: "Tab",
+  label: "Tab",
+  cliName: "tab",
+  description: "UI-based app",
+  detail: "Teams-aware webpages embedded in Microsoft Teams",
+};
+
+export const BotOptionItem: OptionItem = {
+  id: "Bot",
+  label: "Bot",
+  cliName: "bot",
+  description: "Conversational Agent",
+  detail: "Running simple and repetitive automated tasks through conversations",
+};
+
+export const MessageExtensionItem: OptionItem = {
+  id: "MessagingExtension",
+  label: "Messaging Extension",
+  cliName: "messaging-extension",
+  description: "Custom UI when users compose messages in Teams",
+  detail: "Inserting app content or acting on a message without leaving the conversation",
+};
+
+export const TabSPFxItem: OptionItem = {
+  id: "TabSPFx",
+  label: "Tab(SPFx)",
+  cliName: "tab-spfx",
+  description: "UI-base app with SPFx framework",
+  detail: "Teams-aware webpages with SPFx framework embedded in Microsoft Teams",
+};
+
+export function createCapabilityQuestion(): MultiSelectQuestion {
+  return {
+    name: CoreQuestionNames.Capabilities,
+    title: "Select capabilities",
+    type: "multiSelect",
+    staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem, TabSPFxItem],
+    default: [TabOptionItem.id],
+    placeholder: "Select at least 1 capability",
+    validation: {
+      validFunc: async (input: string[]): Promise<string | undefined> => {
+        const name = input as string[];
+        if (name.length === 0) {
+          return "Select at least 1 capability";
+        }
+        if (
+          name.length > 1 &&
+          (name.includes(TabSPFxItem.id) || name.includes(TabSPFxItem.label))
+        ) {
+          return "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Messaging extension capabilities are not available";
+        }
+
+        return undefined;
+      },
+    },
+    onDidChangeSelection: async function (
+      currentSelectedIds: Set<string>,
+      previousSelectedIds: Set<string>
+    ): Promise<Set<string>> {
+      if (currentSelectedIds.size > 1 && currentSelectedIds.has(TabSPFxItem.id)) {
+        if (previousSelectedIds.has(TabSPFxItem.id)) {
+          currentSelectedIds.delete(TabSPFxItem.id);
+        } else {
+          currentSelectedIds.clear();
+          currentSelectedIds.add(TabSPFxItem.id);
+        }
+      }
+
+      return currentSelectedIds;
+    },
+  };
+}
 
 export const QuestionSelectTargetEnvironment: SingleSelectQuestion = {
   type: "singleSelect",

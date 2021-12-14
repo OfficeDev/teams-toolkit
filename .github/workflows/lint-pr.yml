@@ -18,7 +18,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   check-format:
-    if: ${{ github.event_name == 'pull_request' && github.event.action != 'edited' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -66,3 +65,15 @@ jobs:
             echo 'please replace the ${your-PR-target-branch} as the target branch of your PR, such as origin/dev or upstream/dev'
             exit 1
           fi
+
+  scan-sensitive-pattern:
+    needs: check-format
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v2
+        with:
+          fetch-depth: 4
+      - name: trufflehog-actions-scan
+      uses: edplato/trufflehog-actions-scan@master
+      with:
+        scanArguments: "--regex --entropy=False --max_depth=10  --rules .github/detect-pattern/regexes.json -i .github/detect/include-patterns.txt -x .github/detect-pattern/exclude-patterns.txt" # Add custom options here*

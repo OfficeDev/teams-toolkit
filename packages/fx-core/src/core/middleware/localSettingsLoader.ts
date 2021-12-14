@@ -42,7 +42,14 @@ export const LocalSettingsLoaderMW: Middleware = async (
     const hasBot = selectedPlugins?.some((plugin) => plugin.name === PluginNames.BOT);
 
     const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath);
-    const exists = await fs.pathExists(localSettingsProvider.localSettingsFilePath);
+    let exists = await fs.pathExists(localSettingsProvider.localSettingsFilePath);
+    if (exists) {
+      const localSettings = await fs.readJson(localSettingsProvider.localSettingsFilePath);
+      if (!localSettings || Object.keys(localSettings).length === 0) {
+        // for empty localSettings.json file, we still need to re-init it!
+        exists = false;
+      }
+    }
     if (isV2()) {
       if (exists) {
         ctx.localSettings = await localSettingsProvider.loadV2(ctx.contextV2?.cryptoProvider);

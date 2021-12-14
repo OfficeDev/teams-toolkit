@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 import * as dotenv from "dotenv";
 import fs from "fs-extra";
+import * as os from "os";
 
 export class EnvironmentUtils {
   static async writeEnvironments(
@@ -21,7 +22,7 @@ export class EnvironmentUtils {
 
     let envs = "";
     for (const key in newConfigs) {
-      envs += `${key}=${newConfigs[key]}\r\n`;
+      envs += `${key}=${newConfigs[key]}${os.EOL}`;
     }
     await fs.writeFile(envFile, envs);
   }

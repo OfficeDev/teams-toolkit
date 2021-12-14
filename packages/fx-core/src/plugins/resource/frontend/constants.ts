@@ -115,6 +115,7 @@ export class TelemetryEvent {
   static readonly GenerateArmTemplates = "generate-arm-templates";
   static readonly UpdateArmTemplates = "update-arm-templates";
   static readonly ExecuteUserTask = "execute-user-task";
+  static readonly SaveEnvFile = "frontend-save-env-file";
 }
 
 export class TelemetryKey {

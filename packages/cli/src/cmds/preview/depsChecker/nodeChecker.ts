@@ -15,13 +15,13 @@ class NodeVersion {
 }
 
 export abstract class NodeChecker implements IDepsChecker {
-  protected abstract readonly _supportedVersions: string[];
-  protected abstract readonly _nodeNotSupportedHelpLink: string;
   protected abstract readonly _nodeNotFoundHelpLink: string;
   protected abstract readonly _nodeNotSupportedEvent: DepsCheckerEvent;
+  protected abstract getSupportedVersions(): Promise<string[]>;
+  protected abstract getNodeNotSupportedHelpLink(): Promise<string>;
 
   private readonly _telemetry: IDepsTelemetry;
-  private readonly _adapter: IDepsAdapter;
+  protected readonly _adapter: IDepsAdapter;
   private readonly _logger: IDepsLogger;
 
   constructor(adapter: IDepsAdapter, logger: IDepsLogger, telemetry: IDepsTelemetry) {
@@ -35,8 +35,10 @@ export abstract class NodeChecker implements IDepsChecker {
   }
 
   public async isInstalled(): Promise<boolean> {
+    const supportedVersions = await this.getSupportedVersions();
+
     this._logger.debug(
-      `NodeChecker checking for supported versions: '${JSON.stringify(this._supportedVersions)}'`
+      `NodeChecker checking for supported versions: '${JSON.stringify(supportedVersions)}'`
     );
 
     const currentVersion = await getInstalledNodeVersion();
@@ -45,8 +47,8 @@ export abstract class NodeChecker implements IDepsChecker {
       throw new NodeNotFoundError(Messages.NodeNotFound, this._nodeNotFoundHelpLink);
     }
 
-    if (!NodeChecker.isVersionSupported(this._supportedVersions, currentVersion)) {
-      const supportedVersions = this._supportedVersions.map((v) => "v" + v).join(" ,");
+    if (!NodeChecker.isVersionSupported(supportedVersions, currentVersion)) {
+      const supportedVersionsString = supportedVersions.map((v) => "v" + v).join(" ,");
       this._telemetry.sendUserErrorEvent(
         this._nodeNotSupportedEvent,
         `Node.js ${currentVersion.version} is not supported.`
@@ -55,8 +57,8 @@ export abstract class NodeChecker implements IDepsChecker {
         Messages.NodeNotSupported.split("@CurrentVersion")
           .join(currentVersion.version)
           .split("@SupportedVersions")
-          .join(supportedVersions),
-        this._nodeNotSupportedHelpLink
+          .join(supportedVersionsString),
+        await this.getNodeNotSupportedHelpLink()
       );
     }
 
@@ -70,7 +72,7 @@ export abstract class NodeChecker implements IDepsChecker {
   public async getDepsInfo(): Promise<DepsInfo> {
     return {
       name: NodeName,
-      supportedVersions: this._supportedVersions,
+      supportedVersions: await this.getSupportedVersions(),
       details: new Map<string, string>(),
     };
   }

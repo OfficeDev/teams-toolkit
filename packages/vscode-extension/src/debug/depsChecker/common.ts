@@ -40,7 +40,6 @@ export const ngrokInstallHelpLink = `${defaultHelpLink}#failtoinstallngrok`;
 
 export const Messages = {
   learnMoreButtonText: "Learn more",
-  continueButtonText: "Continue anyway",
 
   defaultErrorMessage: "Install the required dependencies manually.",
 
@@ -74,7 +73,6 @@ Click "Learn more" to learn how to install the Node.js.
   NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).
 
 Click "Learn more" to learn more about the supported Node.js versions.
-Click "Continue anyway" to continue local debugging.
 
 (If you just installed Node.js (@SupportedVersions), restart Visual Studio Code for the change to take effect.)`,
 
@@ -88,8 +86,6 @@ Click "Install" to install @InstallPackages.`,
   linuxDepsNotFound: `Cannot find @SupportedPackages.
 
 Teams Toolkit requires these dependencies. 
-
-Click "Continue anyway" to continue.
 
 (If you just installed @SupportedPackages, restart Visual Studio Code for the change to take effect.)`,
 
@@ -119,7 +115,6 @@ export enum DepsCheckerEvent {
   dotnetSearchDotnetSdks = "dotnet-search-dotnet-sdks",
 
   clickLearnMore = "env-checker-click-learn-more",
-  clickContinue = "env-checker-click-continue",
   clickCancel = "env-checker-click-cancel",
 
   ngrokInstallCompleted = "ngrok-install-completed",

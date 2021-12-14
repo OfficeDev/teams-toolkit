@@ -61,9 +61,9 @@ import {
   MockUserInteraction,
   randomAppName,
 } from "./utils";
+import { ConstantString } from "../../src/common/constants";
 import * as dotenv from "dotenv";
 let mockedEnvRestore: () => void;
-const fileEncoding = "UTF8";
 describe("Middleware - others", () => {
   const sandbox = sinon.createSandbox();
   const mockSolution = new MockSolution();
@@ -613,14 +613,14 @@ describe("Middleware - others", () => {
       assert.strictEqual(
         await fs.readFile(
           path.join(projectPath, "templates", "azure", "provision", "identity.bicep"),
-          fileEncoding
+          ConstantString.UTF8Encoding
         ),
         await fs.readFile(
           path.join(identityBicepFilePath, "identityProvision.result.bicep"),
-          fileEncoding
+          ConstantString.UTF8Encoding
         )
       );
-      const botBicepFilePath = path.join(
+      const frontendBicepFilePath = path.join(
         __dirname,
         "../plugins/resource/frontend/unit/expectedBicepFiles"
       );
@@ -632,15 +632,15 @@ describe("Middleware - others", () => {
       assert.strictEqual(
         await fs.readFile(
           path.join(projectPath, "templates", "azure", "provision", "frontendHosting.bicep"),
-          fileEncoding
+          ConstantString.UTF8Encoding
         ),
         await fs.readFile(
-          path.join(botBicepFilePath, "frontendProvision.result.bicep"),
-          fileEncoding
+          path.join(frontendBicepFilePath, "frontendProvision.result.bicep"),
+          ConstantString.UTF8Encoding
         )
       );
     });
-    it("successfully migration arm templates only tab", async () => {
+    it("successfully migration arm templates only bot", async () => {
       await fs.copy(
         path.join(__dirname, "../samples/migrationV1Bot/.fx/env.default.json"),
         path.join(projectPath, ".fx", "env.default.json")
@@ -685,11 +685,11 @@ describe("Middleware - others", () => {
       assert.strictEqual(
         await fs.readFile(
           path.join(projectPath, "templates", "azure", "provision", "identity.bicep"),
-          fileEncoding
+          ConstantString.UTF8Encoding
         ),
         await fs.readFile(
           path.join(identityBicepFilePath, "identityProvision.result.bicep"),
-          fileEncoding
+          ConstantString.UTF8Encoding
         )
       );
       const botBicepFilePath = path.join(
@@ -702,9 +702,12 @@ describe("Middleware - others", () => {
       assert.strictEqual(
         await fs.readFile(
           path.join(projectPath, "templates", "azure", "provision", "bot.bicep"),
-          fileEncoding
+          ConstantString.UTF8Encoding
         ),
-        await fs.readFile(path.join(botBicepFilePath, "botProvision.result.bicep"), fileEncoding)
+        await fs.readFile(
+          path.join(botBicepFilePath, "botProvision.result.bicep"),
+          ConstantString.UTF8Encoding
+        )
       );
       assert.isTrue(
         await fs.pathExists(path.join(projectPath, "templates", "azure", "teamsFx", "bot.bicep"))
@@ -712,9 +715,12 @@ describe("Middleware - others", () => {
       assert.strictEqual(
         await fs.readFile(
           path.join(projectPath, "templates", "azure", "teamsFx", "bot.bicep"),
-          fileEncoding
+          ConstantString.UTF8Encoding
         ),
-        await fs.readFile(path.join(botBicepFilePath, "botConfig.result.bicep"), fileEncoding)
+        await fs.readFile(
+          path.join(botBicepFilePath, "botConfig.result.bicep"),
+          ConstantString.UTF8Encoding
+        )
       );
     });
     it("successfully migration arm templates", async () => {

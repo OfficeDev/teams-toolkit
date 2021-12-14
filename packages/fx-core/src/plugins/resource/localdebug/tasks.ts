@@ -73,7 +73,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
     {
       label: "dependency check",
       type: "shell",
-      command: "echo ${command:fx-extension.validate-spfx-dependencies}",
+      command: "exit ${command:fx-extension.validate-spfx-dependencies}",
     },
     {
       label: "spfx npm install",
@@ -125,7 +125,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
     {
       label: "prepare local environment",
       type: "shell",
-      command: "echo ${command:fx-extension.pre-debug-check}",
+      command: "exit ${command:fx-extension.pre-debug-check}",
     },
     {
       label: "prepare dev env",
@@ -159,7 +159,7 @@ function dependencyCheck(): Record<string, unknown> {
   return {
     label: "dependency check",
     type: "shell",
-    command: "echo ${command:fx-extension.validate-dependencies}",
+    command: "exit ${command:fx-extension.validate-dependencies}",
   };
 }
 
@@ -182,7 +182,7 @@ function prepareLocalEnvironment(): Record<string, unknown> {
   return {
     label: "prepare local environment",
     type: "shell",
-    command: "echo ${command:fx-extension.pre-debug-check}",
+    command: "exit ${command:fx-extension.pre-debug-check}",
   };
 }
 
@@ -255,7 +255,7 @@ function backendExtensionsInstall(): Record<string, unknown> {
   return {
     label: "backend extensions install",
     type: "shell",
-    command: "echo ${command:fx-extension.backend-extensions-install}",
+    command: "exit ${command:fx-extension.backend-extensions-install}",
   };
 }
 

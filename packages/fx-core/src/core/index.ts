@@ -38,6 +38,8 @@ import {
   v2,
   Void,
   BuildFolderName,
+  v3,
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -83,6 +85,9 @@ import {
   ProjectFolderNotExistError,
   TaskNotSupportError,
   WriteFileError,
+  ProjectFolderInvalidError,
+  FetchSampleError,
+  NotImplementedError,
 } from "./error";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
@@ -131,6 +136,10 @@ import { flattenConfigJson, newEnvInfo } from "./tools";
 import { LocalCrypto } from "./crypto";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
 import { merge } from "lodash";
+import { QuestionModelMW_V3 } from "./v3/mw/questionModel";
+import { init } from "./v3/init";
+import { SolutionLoaderMW_V3 } from "./v3/mw/solutionLoader";
+import { ProjectSettingsLoaderMW_V3 } from "./v3/mw/projectSettingsLoader";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -145,6 +154,10 @@ export interface CoreHookContext extends HookContext {
   solutionV2?: v2.SolutionPlugin;
   envInfoV2?: v2.EnvInfoV2;
   localSettings?: Json;
+
+  //for v3
+  envInfoV3?: v3.EnvInfoV3;
+  solutionV3?: v3.ISolution;
 }
 
 function featureFlagEnabled(flagName: string): boolean {
@@ -170,7 +183,7 @@ export let Logger: LogProvider;
 export let telemetryReporter: TelemetryReporter | undefined;
 export let currentStage: Stage;
 export let TOOLS: Tools;
-export class FxCore implements Core {
+export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
   settingsVersion?: string;
@@ -207,7 +220,11 @@ export class FxCore implements Core {
     let folder = inputs[QuestionRootFolder.name] as string;
     if (inputs.platform === Platform.VSCode) {
       folder = getRootDirectory();
-      await fs.ensureDir(folder);
+      try {
+        await fs.ensureDir(folder);
+      } catch (e) {
+        throw ProjectFolderInvalidError(folder);
+      }
     }
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
@@ -281,7 +298,7 @@ export class FxCore implements Core {
         }
         ctx.solutionV2 = solution;
         projectSettings.solutionSettings.name = solution.name;
-        const contextV2 = createV2Context(this, projectSettings);
+        const contextV2 = createV2Context(projectSettings);
         ctx.contextV2 = contextV2;
         const scaffoldSourceCodeRes = await solution.scaffoldSourceCode(contextV2, inputs);
         if (scaffoldSourceCodeRes.isErr()) {
@@ -738,7 +755,7 @@ export class FxCore implements Core {
           );
           return err(new ObjectIsUndefinedError(`executeUserTask input stuff: ${name}`));
         }
-        if (!ctx.contextV2) ctx.contextV2 = createV2Context(this, newProjectSettings());
+        if (!ctx.contextV2) ctx.contextV2 = createV2Context(newProjectSettings());
         if (ctx.solutionV2.executeUserTask) {
           if (!ctx.localSettings) ctx.localSettings = {};
           const res = await ctx.solutionV2.executeUserTask(
@@ -787,9 +804,7 @@ export class FxCore implements Core {
       return await this._getQuestionsForCreateProject(inputs);
     } else {
       if (isV2()) {
-        const contextV2 = ctx.contextV2
-          ? ctx.contextV2
-          : createV2Context(this, newProjectSettings());
+        const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
         const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
         const envInfoV2 = ctx.envInfoV2
           ? ctx.envInfoV2
@@ -825,7 +840,7 @@ export class FxCore implements Core {
     inputs.stage = Stage.getQuestions;
     currentStage = Stage.getQuestions;
     if (isV2()) {
-      const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(this, newProjectSettings());
+      const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
       const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
       const envInfoV2 = ctx.envInfoV2
         ? ctx.envInfoV2
@@ -857,19 +872,11 @@ export class FxCore implements Core {
     if (!ctx) return err(new ObjectIsUndefinedError("getProjectConfig input stuff"));
     inputs.stage = Stage.getProjectConfig;
     currentStage = Stage.getProjectConfig;
-    if (isV2()) {
-      return ok({
-        settings: ctx!.projectSettings,
-        config: ctx!.envInfoV2?.state,
-        localSettings: ctx!.localSettings,
-      });
-    } else {
-      return ok({
-        settings: ctx!.projectSettings,
-        config: ctx!.solutionContext?.envInfo.state,
-        localSettings: ctx!.solutionContext?.localSettings,
-      });
-    }
+    return ok({
+      settings: ctx!.projectSettings,
+      config: ctx!.solutionContext?.envInfo.state,
+      localSettings: ctx!.solutionContext?.localSettings,
+    });
   }
 
   @hooks([
@@ -1348,7 +1355,7 @@ export class FxCore implements Core {
     const solutionSelectNode = new QTreeNode(selectSolution);
     createNew.addChild(solutionSelectNode);
     const context = isV2()
-      ? createV2Context(this, newProjectSettings())
+      ? createV2Context(newProjectSettings())
       : await newSolutionContext(this.tools, inputs);
     for (const solutionPlugin of globalSolutions) {
       let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
@@ -1383,6 +1390,71 @@ export class FxCore implements Core {
       sampleNode.addChild(new QTreeNode(QuestionRootFolder));
     }
     return ok(node.trim());
+  }
+
+  @hooks([ErrorHandlerMW, QuestionModelMW_V3, ContextInjectorMW, ProjectSettingsWriterMW])
+  async init(
+    inputs: v2.InputsWithProjectPath & { solution?: string },
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    return init(inputs, ctx);
+  }
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW_V3,
+    SolutionLoaderMW_V3,
+    QuestionModelMW_V3,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+  ])
+  async addModule(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    if (ctx && ctx.solutionV3 && ctx.contextV2) {
+      return await ctx.solutionV3.addModule(
+        ctx.contextV2,
+        {},
+        inputs as v2.InputsWithProjectPath & { capabilities?: string[] }
+      );
+    }
+    return ok(Void);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW_V3,
+    SolutionLoaderMW_V3,
+    QuestionModelMW_V3,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+  ])
+  async scaffold(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    if (ctx && ctx.solutionV3 && ctx.contextV2) {
+      return await ctx.solutionV3.scaffold(ctx.contextV2, inputs);
+    }
+    return ok(Void);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW_V3,
+    SolutionLoaderMW_V3,
+    QuestionModelMW_V3,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+  ])
+  async addResource(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    if (ctx && ctx.solutionV3 && ctx.contextV2) {
+      return await ctx.solutionV3.addResource(ctx.contextV2, inputs);
+    }
+    return ok(Void);
   }
 }
 
@@ -1472,16 +1544,14 @@ export async function downloadSample(
       }
     }
     progress.next(`Downloading from ${url}`);
-    const fetchRes = await fetchCodeZip(url);
-    if (fetchRes === undefined) {
-      throw new SystemError(
-        "FetchSampleError",
-        "Fetch sample app error: empty zip file",
-        CoreSource
-      );
+    const fetchRes = await fetchCodeZip(url, sample.id);
+    if (fetchRes.isErr()) {
+      throw fetchRes.error;
+    } else if (!fetchRes.value) {
+      throw FetchSampleError(sample.id);
     }
     progress.next("Unzipping the sample package");
-    await saveFilesRecursively(new AdmZip(fetchRes.data), sampleId, sampleAppPath);
+    await saveFilesRecursively(new AdmZip(fetchRes.value.data), sampleId, sampleAppPath);
     await downloadSampleHook(sampleId, sampleAppPath);
     progress.next("Update project settings");
     const loadInputs: Inputs = {
@@ -1526,13 +1596,13 @@ export function newProjectSettings(): ProjectSettings {
   return projectSettings;
 }
 
-export function createV2Context(core: FxCore, projectSettings: ProjectSettings): v2.Context {
+export function createV2Context(projectSettings: ProjectSettings): v2.Context {
   const context: v2.Context = {
-    userInteraction: core.tools.ui,
-    logProvider: core.tools.logProvider,
-    telemetryReporter: core.tools.telemetryReporter!,
+    userInteraction: TOOLS.ui,
+    logProvider: TOOLS.logProvider,
+    telemetryReporter: TOOLS.telemetryReporter!,
     cryptoProvider: new LocalCrypto(projectSettings.projectId),
-    permissionRequestProvider: core.tools.permissionRequest,
+    permissionRequestProvider: TOOLS.permissionRequest,
     projectSetting: projectSettings,
   };
   return context;

@@ -21,6 +21,7 @@ import {
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import * as uuid from "uuid";
+import os from "os";
 import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
@@ -53,7 +54,6 @@ import {
 } from "./util";
 import * as tools from "../../../src/common/tools";
 import * as cpUtils from "../../../src/common/cpUtils";
-import * as os from "os";
 
 import "../../../src/plugins/resource/frontend";
 import "../../../src/plugins/resource/simpleauth";
@@ -74,8 +74,6 @@ const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as Plugin;
 const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin) as Plugin;
 
 const baseFolder = "./templates/azure";
-const templatesFolder = "./templates";
-const parameterFolderName = "parameters";
 const templateFolderName = "modules";
 const configFolderName = "./.fx/configs";
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
@@ -212,6 +210,22 @@ module teamsFxConfig './config.bicep' = {
 output provisionOutput object = provision
 output teamsFxConfigurationOutput object = contains(reference(resourceId('Microsoft.Resources/deployments', teamsFxConfig.name), '2020-06-01'), 'outputs') ? teamsFxConfig : {}
 `
+    );
+    expect(
+      await fs.readFile(path.join(projectArmTemplateFolder, "../config.bicep"), fileEncoding)
+    ).equals(
+      `@secure()
+param provisionParameters object
+param provisionOutputs object` + os.EOL
+    );
+    expect(
+      await fs.readFile(path.join(projectArmTemplateFolder, "../provision.bicep"), fileEncoding)
+    ).equals(
+      `@secure()
+param provisionParameters object` +
+        os.EOL +
+        `Mocked frontend hosting module content. Module path: ./provision/frontendHostingProvision.bicep. Variable: Mocked simple auth endpoint
+Mocked simple auth module content. Module path: ./provision/simpleAuthProvision.bicep. Variable: Mocked front end host endpoint`
     );
     expect(
       await fs.readFile(
@@ -362,15 +376,32 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
 }`
     );
     expect(
+      await fs.readFile(path.join(projectArmTemplateFolder, "../provision.bicep"), fileEncoding)
+    ).equals(
+      `@secure()
+param provisionParameters object` +
+        os.EOL +
+        `Mocked frontend hosting module content. Module path: ./provision/frontendHostingProvision.bicep. Variable: Mocked simple auth endpoint
+Mocked simple auth module content. Module path: ./provision/simpleAuthProvision.bicep. Variable: Mocked front end host endpoint` +
+        os.EOL +
+        `Bot Provision module content content and outputs, Module path: ./provision/bot.bicep.`
+    );
+    expect(
+      await fs.readFile(path.join(projectArmTemplateFolder, "../config.bicep"), fileEncoding)
+    ).equals(
+      `@secure()
+param provisionParameters object
+param provisionOutputs object` +
+        os.EOL +
+        os.EOL +
+        `Mocked bot Orchestration content, Module path: ./teamsFx/bot.bicep`
+    );
+    expect(
       await fs.readFile(
         path.join(projectArmTemplateFolder, "../provision/frontendHostingProvision.bicep"),
         fileEncoding
       )
     ).equals("Mocked frontend hosting provision module content");
-    expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../provision/bot.bicep"))).to.be
-      .true;
-    expect(await fs.pathExists(path.join(projectArmTemplateFolder, "../teamsFx/bot.bicep"))).to.be
-      .true;
     expect(
       await fs.readFile(path.join(projectArmTemplateFolder, "../provision/bot.bicep"), fileEncoding)
     ).equals("Mocked bot Provision content. simple auth endpoint: Mocked simple auth endpoint");

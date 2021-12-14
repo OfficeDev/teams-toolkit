@@ -4,7 +4,7 @@
 import { Result } from "neverthrow";
 import { FxError } from "../error";
 import { Func, QTreeNode } from "../qm/question";
-import { Inputs, Json, Void } from "../types";
+import { Inputs, Json, OptionItem, Void } from "../types";
 import { AppStudioTokenProvider, TokenProvider } from "../utils/login";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
 import { EnvInfoV3 } from "./types";
@@ -19,20 +19,28 @@ export interface ISolution {
    */
   getQuestionsForInit?: (
     ctx: Context,
-    inputs: InputsWithProjectPath
+    inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   init: (ctx: Context, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
 
   /**
    * scaffold
    */
-  getQuestionsForScaffolding?: (
+  getQuestionsForScaffold?: (
     ctx: Context,
     inputs: InputsWithProjectPath
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  /**
+   * scaffold is a repeatable lifecycle stage
+   *
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {Inputs} inputs - module: module index(0,1,2), template: template name
+   *
+   * @returns Void
+   */
   scaffold: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { moduleIndex?: number }
+    inputs: InputsWithProjectPath & { module?: number; template?: OptionItem }
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -42,9 +50,17 @@ export interface ISolution {
     ctx: Context,
     inputs: InputsWithProjectPath
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  /**
+   * addResource
+   *
+   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
+   * @param {Inputs} inputs - module: module index(0,1,2), template: template name
+   *
+   * @returns Void
+   */
   addResource: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { moduleIndex?: number }
+    inputs: InputsWithProjectPath & { module?: number; resource?: string }
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -54,8 +70,15 @@ export interface ISolution {
     ctx: Context,
     inputs: InputsWithProjectPath
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
+
+  /**
+   * addModule means adding a sub-project
+   *
+   * @param {string[]} capabilities - capabilities for the module
+   */
   addModule: (
     ctx: Context,
+    localSettings: Json,
     inputs: InputsWithProjectPath & { capabilities?: string[] }
   ) => Promise<Result<Void, FxError>>;
 

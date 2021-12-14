@@ -14,6 +14,8 @@ Use the library to:
 
 ## Getting started
 
+> Important: Please be advised that access tokens are stored in sessionStorage for you by default. This can make it possible for malicious code in your app (or code pasted into a console on your page) to access APIs at the same privilege level as your client application. Please ensure you only request the minimum necessary scopes from your client application, and perform any sensitive operations from server side code that your client has to authenticate with.
+
 TeamsFx SDK is pre-configured in scaffolded project using Teams Toolkit extension for Visual Studio and vscode, or the `teamsfx` cli from the `teamsfx-cli` npm package.
 Please check the [README](https://github.com/OfficeDev/TeamsFx/blob/main/packages/vscode-extension/README.md) to see how to create a Teams App project.
 

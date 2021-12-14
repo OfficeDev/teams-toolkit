@@ -73,9 +73,15 @@ export async function provisionLocalResource(
     return new v2.FxFailure(m365TenantMatches.error);
   }
 
+  const localDebugPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+    ResourcePluginsV2.LocalDebugPlugin
+  );
   const plugins: v2.ResourcePlugin[] = getSelectedPlugins(azureSolutionSettings);
   const provisionLocalResourceThunks = plugins
-    .filter((plugin) => !isUndefined(plugin.provisionLocalResource))
+    .filter(
+      (plugin) =>
+        plugin.name != localDebugPlugin.name && !isUndefined(plugin.provisionLocalResource)
+    )
     .map((plugin) => {
       return {
         pluginName: `${plugin.name}`,
@@ -88,6 +94,17 @@ export async function provisionLocalResource(
   const provisionResult = await executeConcurrently(provisionLocalResourceThunks, ctx.logProvider);
   if (provisionResult.kind !== "success") {
     return provisionResult;
+  }
+  if (localDebugPlugin.provisionLocalResource) {
+    const localDebugResult = await localDebugPlugin.provisionLocalResource(
+      ctx,
+      inputs,
+      localSettings,
+      tokenProvider
+    );
+    if (localDebugResult.isErr()) {
+      return new v2.FxFailure(localDebugResult.error);
+    }
   }
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
@@ -128,7 +145,10 @@ export async function provisionLocalResource(
   }
 
   const configureLocalResourceThunks = plugins
-    .filter((plugin) => !isUndefined(plugin.configureLocalResource))
+    .filter(
+      (plugin) =>
+        plugin.name != localDebugPlugin.name && !isUndefined(plugin.configureLocalResource)
+    )
     .map((plugin) => {
       return {
         pluginName: `${plugin.name}`,
@@ -142,11 +162,24 @@ export async function provisionLocalResource(
     configureLocalResourceThunks,
     ctx.logProvider
   );
+
   if (configureResourceResult.kind !== "success") {
     if (configureResourceResult.kind === "partialSuccess") {
       return new v2.FxPartialSuccess(localSettings, configureResourceResult.error);
     }
     return new v2.FxFailure(configureResourceResult.error);
+  }
+
+  if (localDebugPlugin.configureLocalResource) {
+    const localDebugResult = await localDebugPlugin.configureLocalResource(
+      ctx,
+      inputs,
+      localSettings,
+      tokenProvider
+    );
+    if (localDebugResult.isErr()) {
+      return new v2.FxFailure(localDebugResult.error);
+    }
   }
 
   return new v2.FxSuccess(localSettings);

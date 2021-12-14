@@ -420,20 +420,11 @@ export function setEnvInfoV1ByStateV2(
 }
 
 export function setLocalSettingsV2(localSettingsJson: Json, localSettings?: LocalSettings): void {
-  localSettingsJson.teamsApp = assignJsonInc(
-    localSettingsJson.teamsApp,
-    mapToJson(localSettings?.teamsApp)
-  );
-  localSettingsJson.auth = assignJsonInc(localSettingsJson.auth, mapToJson(localSettings?.auth));
-  localSettingsJson.backend = assignJsonInc(
-    localSettingsJson.backend,
-    mapToJson(localSettings?.backend)
-  );
-  localSettingsJson.frontend = assignJsonInc(
-    localSettingsJson.frontend,
-    mapToJson(localSettings?.frontend)
-  );
-  localSettingsJson.bot = assignJsonInc(localSettingsJson.bot, mapToJson(localSettings?.bot));
+  _.assign(localSettingsJson.teamsApp, mapToJson(localSettings?.teamsApp));
+  _.assign(localSettingsJson.auth, mapToJson(localSettings?.auth));
+  _.assign(localSettingsJson.backend, mapToJson(localSettings?.backend));
+  _.assign(localSettingsJson.frontend, mapToJson(localSettings?.frontend));
+  _.assign(localSettingsJson.bot, mapToJson(localSettings?.bot));
 }
 
 export function assignJsonInc(target?: Json, source?: Json): Json | undefined {

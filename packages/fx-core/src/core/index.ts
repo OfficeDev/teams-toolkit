@@ -130,7 +130,7 @@ import {
 import { flattenConfigJson, newEnvInfo } from "./tools";
 import { LocalCrypto } from "./crypto";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
-import { merge } from "lodash";
+import { assign, merge } from "lodash";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -510,10 +510,10 @@ export class FxCore implements Core {
         this.tools.tokenProvider
       );
       if (result.kind === "success") {
-        ctx.envInfoV2.state = merge(ctx.envInfoV2.state, result.output);
+        ctx.envInfoV2.state = assign(ctx.envInfoV2.state, result.output);
         return ok(Void);
       } else if (result.kind === "partialSuccess") {
-        ctx.envInfoV2.state = merge(ctx.envInfoV2.state, result.output);
+        ctx.envInfoV2.state = assign(ctx.envInfoV2.state, result.output);
         return err(result.error);
       } else {
         return err(result.error);

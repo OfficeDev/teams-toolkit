@@ -189,16 +189,26 @@ suite("All checkers E2E test", async () => {
       this.skip();
     }
 
-    const [checker, _, dotnetChecker, backendExtensionsInstaller, ,] = createTestChecker(true);
-
-    const shouldContinue = await checker.resolve();
-    chai.assert.isTrue(shouldContinue);
-    const dotnetExecPath = await dotnetUtils.getDotnetExecPathFromConfig(
-      dotnetUtils.dotnetConfigPath
-    );
     if (isLinux()) {
+      const [checker, _, dotnetChecker, backendExtensionsInstaller, ,] = createTestChecker(
+        true,
+        true
+      );
+
+      const shouldContinue = await checker.resolve();
+      chai.assert.isFalse(shouldContinue);
+      const dotnetExecPath = await dotnetUtils.getDotnetExecPathFromConfig(
+        dotnetUtils.dotnetConfigPath
+      );
       chai.assert.isNull(dotnetExecPath);
     } else {
+      const [checker, _, dotnetChecker, backendExtensionsInstaller, ,] = createTestChecker(true);
+
+      const shouldContinue = await checker.resolve();
+      chai.assert.isTrue(shouldContinue);
+      const dotnetExecPath = await dotnetUtils.getDotnetExecPathFromConfig(
+        dotnetUtils.dotnetConfigPath
+      );
       chai.assert.isNotNull(dotnetExecPath);
       chai.assert.isTrue(
         await dotnetUtils.hasAnyDotnetVersions(dotnetExecPath!, dotnetUtils.dotnetSupportedVersions)

@@ -58,19 +58,25 @@ suite("DotnetChecker E2E Test - first run", async () => {
       this.skip();
     }
 
-    const [checker, _] = createTestChecker(true);
-
-    const shouldContinue = await checker.resolve();
-    const dotnetExecPath = await dotnetUtils.getDotnetExecPathFromConfig(
-      dotnetUtils.dotnetConfigPath
-    );
-
-    // should continue because this is the case where the user clicks continue
-    chai.assert.isTrue(shouldContinue);
-
     if (isLinux()) {
+      const [checker, _] = createTestChecker(true, true);
+
+      const shouldContinue = await checker.resolve();
+      chai.assert.isFalse(shouldContinue);
+
+      const dotnetExecPath = await dotnetUtils.getDotnetExecPathFromConfig(
+        dotnetUtils.dotnetConfigPath
+      );
       chai.assert.isNull(dotnetExecPath);
     } else {
+      const [checker, _] = createTestChecker(true);
+
+      const shouldContinue = await checker.resolve();
+      chai.assert.isTrue(shouldContinue);
+
+      const dotnetExecPath = await dotnetUtils.getDotnetExecPathFromConfig(
+        dotnetUtils.dotnetConfigPath
+      );
       chai.assert.isNotNull(dotnetExecPath);
       chai.assert.isTrue(
         await dotnetUtils.hasDotnetVersion(dotnetExecPath!, dotnetUtils.dotnetInstallVersion)
@@ -201,18 +207,25 @@ suite("DotnetChecker E2E Test - first run", async () => {
       this.skip();
     }
 
-    const [checker, _] = createTestChecker(false);
-
-    const shouldContinue = await checker.resolve();
-    const dotnetExecPath = await dotnetUtils.getDotnetExecPathFromConfig(
-      dotnetUtils.dotnetConfigPath
-    );
-
-    chai.assert.isTrue(shouldContinue);
-
     if (isLinux()) {
+      const [checker, _] = createTestChecker(false, true);
+
+      const shouldContinue = await checker.resolve();
+      chai.assert.isFalse(shouldContinue);
+
+      const dotnetExecPath = await dotnetUtils.getDotnetExecPathFromConfig(
+        dotnetUtils.dotnetConfigPath
+      );
       chai.assert.isNull(dotnetExecPath);
     } else {
+      const [checker, _] = createTestChecker(false);
+
+      const shouldContinue = await checker.resolve();
+      chai.assert.isTrue(shouldContinue);
+
+      const dotnetExecPath = await dotnetUtils.getDotnetExecPathFromConfig(
+        dotnetUtils.dotnetConfigPath
+      );
       chai.assert.isNotNull(dotnetExecPath);
       chai.assert.isTrue(
         await dotnetUtils.hasDotnetVersion(dotnetExecPath!, dotnetUtils.dotnetInstallVersion)
@@ -405,15 +418,22 @@ suite("DotnetChecker E2E Test - second run", () => {
       }
     );
 
-    const [checker, dotnetChecker] = createTestChecker(true);
-    const shouldContinue = await checker.resolve();
-    const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
-
-    chai.assert.isTrue(shouldContinue);
     if (isLinux()) {
+      const [checker, dotnetChecker] = createTestChecker(true, true);
+
+      const shouldContinue = await checker.resolve();
+      chai.assert.isFalse(shouldContinue);
+
+      const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
       // Don't use assertPathEqual because this path does not exist
       chai.assert.equal(dotnetExecPath, invalidPath);
     } else {
+      const [checker, dotnetChecker] = createTestChecker(true);
+
+      const shouldContinue = await checker.resolve();
+      chai.assert.isTrue(shouldContinue);
+
+      const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
       chai.assert.isNotNull(dotnetExecPath);
       chai.assert.isTrue(
         await dotnetUtils.hasDotnetVersion(dotnetExecPath, dotnetUtils.dotnetInstallVersion)

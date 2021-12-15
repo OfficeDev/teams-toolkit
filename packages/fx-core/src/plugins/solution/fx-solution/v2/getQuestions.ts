@@ -40,7 +40,6 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
-  ProgrammingLanguageQuestion,
   TabOptionItem,
   TabSPFxItem,
 } from "../question";
@@ -50,29 +49,27 @@ import {
   ResourcePluginsV2,
 } from "../ResourcePluginContainer";
 import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
+import { isV3 } from "../../../..";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
   inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const node = new QTreeNode({ type: "group" });
+): Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>> {
+  const node: QTreeNode[] = [];
 
-  // 1. capabilities
-  const capQuestion = createCapabilityQuestion();
-  const capNode = new QTreeNode(capQuestion);
-  node.addChild(capNode);
-
-  // 1.1.1 SPFX Tab
-  const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-    ResourcePluginsV2.SpfxPlugin
-  );
-  if (spfxPlugin.getQuestionsForScaffolding) {
-    const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
-    if (res.isErr()) return res;
-    if (res.value) {
-      const spfxNode = res.value as QTreeNode;
-      spfxNode.condition = { contains: TabSPFxItem.id };
-      if (spfxNode.data) capNode.addChild(spfxNode);
+  if (!isV3()) {
+    // 1.1.1 SPFX Tab
+    const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+      ResourcePluginsV2.SpfxPlugin
+    );
+    if (spfxPlugin.getQuestionsForScaffolding) {
+      const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const spfxNode = res.value as QTreeNode;
+        spfxNode.condition = { contains: TabSPFxItem.id };
+        if (spfxNode.data) node.push(spfxNode);
+      }
     }
   }
 
@@ -86,7 +83,7 @@ export async function getQuestionsForScaffolding(
   if (tabRes.value) {
     const tabNode = tabRes.value;
     tabNode.condition = { equals: HostTypeOptionAzure.id };
-    capNode.addChild(tabNode);
+    node.push(tabNode);
   }
 
   // 1.2 Bot
@@ -99,14 +96,9 @@ export async function getQuestionsForScaffolding(
     if (res.value) {
       const botGroup = res.value as QTreeNode;
       botGroup.condition = { containsAny: [BotOptionItem.id, MessageExtensionItem.id] };
-      capNode.addChild(botGroup);
+      node.push(botGroup);
     }
   }
-
-  // 1.3 Language
-  const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-  programmingLanguage.condition = { minItems: 1 };
-  capNode.addChild(programmingLanguage);
 
   return ok(node);
 }

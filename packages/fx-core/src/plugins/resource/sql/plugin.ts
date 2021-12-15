@@ -187,7 +187,6 @@ export class SqlPluginImpl {
     }
 
     ctx.config.delete(Constants.adminPassword);
-    this.config.prepareQuestions = false;
 
     const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
 

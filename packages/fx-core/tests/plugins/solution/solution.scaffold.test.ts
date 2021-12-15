@@ -33,6 +33,7 @@ import {
   aadPlugin,
   identityPlugin,
 } from "../../constants";
+import mockedEnv from "mocked-env";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -41,8 +42,12 @@ describe("Solution scaffold() reading valid manifest file", () => {
   const mocker = sinon.createSandbox();
   let solution: TeamsAppSolution;
   let mockedCtx: SolutionContext;
+  let mockedEnvRestore: () => void;
 
   beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({
+      __TEAMSFX_INSIDER_PREVIEW: "true",
+    });
     await fs.ensureDir(TestHelper.rootDir);
     solution = new TeamsAppSolution();
     mockedCtx = TestHelper.mockSolutionContext();
@@ -74,6 +79,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
   });
 
   afterEach(async () => {
+    mockedEnvRestore();
     await fs.remove(TestHelper.rootDir);
     mocker.restore();
   });

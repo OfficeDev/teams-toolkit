@@ -2,12 +2,8 @@ import {
   v2,
   Inputs,
   FxError,
-  Result,
-  ok,
-  err,
   TokenProvider,
   returnSystemError,
-  Void,
   Json,
 } from "@microsoft/teamsfx-api";
 import { executeConcurrently } from "./executor";
@@ -25,7 +21,6 @@ import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
-import { isMultiEnvEnabled } from "../../../../common/tools";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 
 export async function provisionLocalResource(
@@ -73,15 +68,9 @@ export async function provisionLocalResource(
     return new v2.FxFailure(m365TenantMatches.error);
   }
 
-  const localDebugPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-    ResourcePluginsV2.LocalDebugPlugin
-  );
   const plugins: v2.ResourcePlugin[] = getSelectedPlugins(azureSolutionSettings);
   const provisionLocalResourceThunks = plugins
-    .filter(
-      (plugin) =>
-        plugin.name != localDebugPlugin.name && !isUndefined(plugin.provisionLocalResource)
-    )
+    .filter((plugin) => !isUndefined(plugin.provisionLocalResource))
     .map((plugin) => {
       return {
         pluginName: `${plugin.name}`,
@@ -94,17 +83,6 @@ export async function provisionLocalResource(
   const provisionResult = await executeConcurrently(provisionLocalResourceThunks, ctx.logProvider);
   if (provisionResult.kind !== "success") {
     return provisionResult;
-  }
-  if (localDebugPlugin.provisionLocalResource) {
-    const localDebugResult = await localDebugPlugin.provisionLocalResource(
-      ctx,
-      inputs,
-      localSettings,
-      tokenProvider
-    );
-    if (localDebugResult.isErr()) {
-      return new v2.FxFailure(localDebugResult.error);
-    }
   }
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
@@ -145,10 +123,7 @@ export async function provisionLocalResource(
   }
 
   const configureLocalResourceThunks = plugins
-    .filter(
-      (plugin) =>
-        plugin.name != localDebugPlugin.name && !isUndefined(plugin.configureLocalResource)
-    )
+    .filter((plugin) => !isUndefined(plugin.configureLocalResource))
     .map((plugin) => {
       return {
         pluginName: `${plugin.name}`,
@@ -168,18 +143,6 @@ export async function provisionLocalResource(
       return new v2.FxPartialSuccess(localSettings, configureResourceResult.error);
     }
     return new v2.FxFailure(configureResourceResult.error);
-  }
-
-  if (localDebugPlugin.configureLocalResource) {
-    const localDebugResult = await localDebugPlugin.configureLocalResource(
-      ctx,
-      inputs,
-      localSettings,
-      tokenProvider
-    );
-    if (localDebugResult.isErr()) {
-      return new v2.FxFailure(localDebugResult.error);
-    }
   }
 
   return new v2.FxSuccess(localSettings);

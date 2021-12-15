@@ -470,6 +470,9 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
     });
+    mocker.stub(fs, "chmod").callsFake((path: PathLike, mode: fs.Mode) => {
+      return new Promise((resolve) => resolve());
+    });
     mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
       fileContent.set(file, JSON.stringify(obj));
     });

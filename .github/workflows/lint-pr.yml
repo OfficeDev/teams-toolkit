@@ -67,6 +67,7 @@ jobs:
           fi
 
   scan-sensitive-pattern:
+    needs: check-format
     runs-on: ubuntu-latest
     steps:
       - name: diff files in PR on Fork

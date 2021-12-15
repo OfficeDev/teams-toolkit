@@ -715,11 +715,11 @@ export class LocalDebugPlugin implements Plugin {
         includeBot,
         includeFrontend
       );
-      await localSettingsProvider.save(ctx.localSettings);
+      await localSettingsProvider.save(ctx.localSettings, ctx.cryptoProvider);
     } else {
       // Initialize a local settings on scaffolding
       ctx.localSettings = localSettingsProvider.init(includeFrontend, includeBackend, includeBot);
-      await localSettingsProvider.save(ctx.localSettings);
+      await localSettingsProvider.save(ctx.localSettings, ctx.cryptoProvider);
     }
   }
 

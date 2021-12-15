@@ -72,16 +72,14 @@ jobs:
       - name: diff files in PR on Fork
         if: ${{ github.event.pull_request.head.repo.full_name != 'OfficeDev/TeamsFx' }}
         run: |
-          touch .github/detect-pattern/include-patterns.txt
-          git diff upstream/${{ github.event.pull_request.base.ref }}...HEAD --name-only >> .github/detect-pattern/include-patterns.txt
+          git diff upstream/${{ github.event.pull_request.base.ref }}...HEAD --name-only >> include-patterns.txt
 
       - name: diff files in PR on Local
         if: ${{ github.event.pull_request.head.repo.full_name == 'OfficeDev/TeamsFx' }}
         run: |
-          touch .github/detect-pattern/include-patterns.txt
-          git diff origin/${{ github.event.pull_request.base.ref }}...HEAD --name-only >> .github/detect-pattern/include-patterns.txt
+          git diff origin/${{ github.event.pull_request.base.ref }}...HEAD --name-only >> include-patterns.txt
 
       - name: trufflehog-actions-scan
         uses: edplato/trufflehog-actions-scan@master
         with:
-          scanArguments: "--regex --entropy=False --max_depth=10  --rules .github/detect-pattern/regexes.json -i .github/detect/include-patterns.txt -x .github/detect-pattern/exclude-patterns.txt" # Add custom options here*
+          scanArguments: "--regex --entropy=False --max_depth=10  --rules .github/detect-pattern/regexes.json -i include-patterns.txt -x .github/detect-pattern/exclude-patterns.txt" # Add custom options here*

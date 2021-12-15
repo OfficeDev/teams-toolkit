@@ -48,6 +48,21 @@ export interface PluginScaffoldInputs extends InputsWithProjectPath {
   buildPath?: string;
 }
 
+export interface PluginDeployInputs extends InputsWithProjectPath {
+  /**
+   * root directory name
+   */
+  dir?: string;
+  /**
+   * relative path for the built artifact, it can be a folder path or a file path, depends the deployment type
+   */
+  buildPath?: string;
+  /**
+   * deployment type for bits
+   */
+  deployType?: string;
+}
+
 export interface Plugin {
   /**
    * unique identifier for plugin
@@ -173,7 +188,7 @@ export interface ResourcePlugin extends Plugin {
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   deploy?: (
     ctx: Context,
-    inputs: InputsWithProjectPath,
+    inputs: PluginDeployInputs,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;

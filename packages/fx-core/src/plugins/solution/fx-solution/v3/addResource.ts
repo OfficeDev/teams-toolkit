@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  AzureAccountProvider,
   err,
   FxError,
   Inputs,
@@ -9,6 +10,7 @@ import {
   OptionItem,
   QTreeNode,
   Result,
+  TokenProvider,
   v2,
   v3,
   Void,
@@ -25,9 +27,6 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
   resourceType = "Azure Storage";
   description = "Azure Storage";
   name = "fx-resource-azure-storage";
-  async pluginDependencies(ctx: v2.Context, inputs: Inputs): Promise<Result<string[], FxError>> {
-    return ok(["fx-resource-azure-web-app"]);
-  }
   async generateResourceTemplate(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
@@ -41,8 +40,81 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     }
     return ok({ kind: "bicep", template: {} });
   }
-}
 
+  async provisionResource(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<v3.CloudResource, FxError>> {
+    const config: v3.AzureStorage = {
+      domain: "huajie1214dev35e42dtab.z19.web.core.windows.net",
+      endpoint: "https://huajie1214dev35e42dtab.z19.web.core.windows.net",
+      storageResourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Storage/storageAccounts/huajie1214dev35e42dtab",
+    };
+    return ok(config);
+  }
+
+  async deploy(
+    ctx: v2.Context,
+    inputs: v3.PluginDeployInputs,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
+  }
+}
+@Service("fx-resource-azure-bot")
+export class AzureBotPlugin implements v3.ResourcePlugin {
+  resourceType = "Azure Bot";
+  description = "Azure Bot";
+  name = "fx-resource-azure-bot";
+  async pluginDependencies(ctx: v2.Context, inputs: Inputs): Promise<Result<string[], FxError>> {
+    return ok(["fx-resource-azure-web-app"]);
+  }
+  async generateResourceTemplate(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    if (!inputs.test) {
+      await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
+      await fs.writeFile(path.join(inputs.projectPath, "templates", "azure", "AzureBot.bicep"), "");
+    }
+    return ok({ kind: "bicep", template: {} });
+  }
+
+  async provisionResource(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<v3.CloudResource, FxError>> {
+    const config: v3.AzureBot = {
+      botId: "e01c3709-3700-45dd-9f23-bdbedc78392e",
+      objectId: "ea553a03-0322-4c9a-8bd5-8d56d1d2b534",
+      skuName: "F1",
+      siteName: "huajie1214dev35e42dbot",
+      validDomain: "huajie1214dev35e42dbot.azurewebsites.net",
+      appServicePlanName: "huajie1214dev35e42dbot",
+      botWebAppResourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/huajie1214dev35e42dbot",
+      siteEndpoint: "https://huajie1214dev35e42dbot.azurewebsites.net",
+      botPassword: "{{fx-resource-bot.botPassword}}",
+      secretFields: ["botPassword"],
+    };
+    return ok(config);
+  }
+
+  async deploy(
+    ctx: v2.Context,
+    inputs: v3.PluginDeployInputs,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
+  }
+}
 @Service("fx-resource-azure-web-app")
 export class AzureWebAppPlugin implements v3.ResourcePlugin {
   resourceType = "Azure Web App";
@@ -61,11 +133,26 @@ export class AzureWebAppPlugin implements v3.ResourcePlugin {
     }
     return ok({ kind: "bicep", template: {} });
   }
+
+  async provisionResource(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<v3.CloudResource, FxError>> {
+    const config: v3.CloudResource = {
+      resourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/huajie1214dev35e42dbot",
+      endpoint: "https://huajie1214dev35e42dbot.azurewebsites.net",
+    };
+    return ok(config);
+  }
 }
 
 function getAllResourcePlugins(): v3.ResourcePlugin[] {
   return [
     Container.get<v3.ResourcePlugin>("fx-resource-azure-storage"),
+    Container.get<v3.ResourcePlugin>("fx-resource-azure-bot"),
     Container.get<v3.ResourcePlugin>("fx-resource-azure-web-app"),
   ];
 }

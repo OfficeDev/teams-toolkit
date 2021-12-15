@@ -119,7 +119,7 @@ export interface ISolution {
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   deploy?: (
     ctx: Context,
-    inputs: InputsWithProjectPath,
+    inputs: InputsWithProjectPath & { modules: string[] },
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;

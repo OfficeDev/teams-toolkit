@@ -25,10 +25,10 @@ describe("SolutionV3 - addResource", () => {
       solutionSettings: {
         name: TeamsFxAzureSolutionNameV3,
         version: "3.0.0",
-        capabilities: ["Tab"],
+        capabilities: ["Bot"],
         hostType: "",
         azureResources: [],
-        modules: [{ capabilities: ["Tab"] }],
+        modules: [{ capabilities: ["Bot"] }],
         activeResourcePlugins: [],
       },
     };
@@ -37,7 +37,7 @@ describe("SolutionV3 - addResource", () => {
       platform: Platform.VSCode,
       projectPath: ".",
       module: 0,
-      resource: "fx-resource-azure-storage",
+      resource: "fx-resource-azure-bot",
       test: true,
     };
     const res = await addResource(ctx, inputs);
@@ -45,11 +45,11 @@ describe("SolutionV3 - addResource", () => {
     assert.deepEqual(projectSettings.solutionSettings, {
       name: TeamsFxAzureSolutionNameV3,
       version: "3.0.0",
-      capabilities: ["Tab"],
+      capabilities: ["Bot"],
       hostType: "",
       azureResources: [],
-      modules: [{ capabilities: ["Tab"], hostingPlugin: "fx-resource-azure-storage" }],
-      activeResourcePlugins: ["fx-resource-azure-storage", "fx-resource-azure-web-app"],
+      modules: [{ capabilities: ["Bot"], hostingPlugin: "fx-resource-azure-bot" }],
+      activeResourcePlugins: ["fx-resource-azure-bot", "fx-resource-azure-web-app"],
     });
   });
 

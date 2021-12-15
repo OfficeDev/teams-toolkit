@@ -28,9 +28,14 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
   ): Promise<Result<v3.ScaffoldTemplate[], FxError>> {
     return ok([
       {
-        name: "ReactTab",
+        name: "ReactTab_JS",
         language: "javascript",
-        description: "ReactTab",
+        description: "ReactTab Javascript",
+      },
+      {
+        name: "ReactTab_TS",
+        language: "typescript",
+        description: "ReactTab Typescript",
       },
     ]);
   }
@@ -63,7 +68,7 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
   name = "fx-scaffold-react-tab";
 }
 
-@Service("fx-scaffold-blazor-tab")
+@Service("fx-scaffold-bot")
 export class BlazorTabScaffoldPlugin implements v3.ScaffoldPlugin {
   async getTemplates(
     ctx: v2.Context,
@@ -71,9 +76,14 @@ export class BlazorTabScaffoldPlugin implements v3.ScaffoldPlugin {
   ): Promise<Result<v3.ScaffoldTemplate[], FxError>> {
     return ok([
       {
-        name: "BlazorTab",
-        language: "csharp",
-        description: "BlazorTab",
+        name: "NodejsBot_JS",
+        language: "javascript",
+        description: "NodejsBot JS",
+      },
+      {
+        name: "NodejsBot_TS",
+        language: "typescript",
+        description: "NodejsBot TS",
       },
     ]);
   }
@@ -82,22 +92,22 @@ export class BlazorTabScaffoldPlugin implements v3.ScaffoldPlugin {
     ctx: v2.Context,
     inputs: v3.PluginScaffoldInputs
   ): Promise<Result<Json | undefined, FxError>> {
-    ctx.logProvider.info("fx-scaffold-blazor-tab:scaffold");
-    if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "aspdnet"));
+    ctx.logProvider.info("fx-scaffold-bot:scaffold");
+    if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "bot"));
     const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
     const module = getModule(solutionSettings, inputs.module);
     if (module) {
-      module.dir = "aspdnet";
+      module.dir = "bot";
       module.deployType = "zip";
     }
     return ok(undefined);
   }
-  name = "fx-scaffold-blazor-tab";
+  name = "fx-scaffold-bot";
 }
 
 function getAllScaffoldPlugins(): v3.ScaffoldPlugin[] {
   return [
-    Container.get<v3.ScaffoldPlugin>("fx-scaffold-blazor-tab"),
+    Container.get<v3.ScaffoldPlugin>("fx-scaffold-bot"),
     Container.get<v3.ScaffoldPlugin>("fx-scaffold-react-tab"),
   ];
 }

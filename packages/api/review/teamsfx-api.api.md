@@ -864,7 +864,9 @@ interface ISolution {
         resource?: string;
     }) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath & {
+        modules: string[];
+    }, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
     getQuestionsForAddModule?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -1181,6 +1183,13 @@ export interface PluginContext extends Context {
 }
 
 // @public (undocumented)
+interface PluginDeployInputs extends InputsWithProjectPath {
+    buildPath?: string;
+    deployType?: string;
+    dir?: string;
+}
+
+// @public (undocumented)
 export type PluginIdentity = string;
 
 // @public (undocumented)
@@ -1326,7 +1335,7 @@ interface ResourcePlugin_2 extends Plugin_3 {
     // (undocumented)
     configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: PluginDeployInputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     description?: string;
     // (undocumented)
     executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
@@ -1999,6 +2008,7 @@ declare namespace v3 {
         TeamsFxAzureResourceStates,
         ScaffoldTemplate,
         PluginScaffoldInputs,
+        PluginDeployInputs,
         Plugin_3 as Plugin,
         ScaffoldPlugin,
         ResourcePlugin_2 as ResourcePlugin,

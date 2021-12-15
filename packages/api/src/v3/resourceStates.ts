@@ -22,13 +22,6 @@ export interface CloudResource extends Json {
   secretFields?: string[];
 }
 
-export interface AppResource extends Json {
-  /**
-   * App identifier
-   */
-  appId: string;
-}
-
 /**
  * ResourceStates contains all provision outputs of all resource plugins
  */
@@ -42,7 +35,7 @@ export interface ResourceStates {
    * key is resource plugin name
    * value is cloud resource state object
    */
-  [key: string]: CloudResource | CloudResource[];
+  [key: string]: CloudResource;
 }
 
 ////////////Azure Solution/////////////////////
@@ -61,11 +54,15 @@ export interface AzureSolutionConfig extends Json {
   provisionSucceeded: boolean;
 }
 
-export interface TeamsAppResource extends AppResource {
+export interface TeamsAppResource extends AzureResource {
   /**
    * M365 tenant id
    */
   tenantId: string;
+  /**
+   * teams app id
+   */
+  teamsAppId: string;
 }
 
 export interface TeamsFxAzureResourceStates extends ResourceStates {
@@ -73,5 +70,5 @@ export interface TeamsFxAzureResourceStates extends ResourceStates {
    * Azure solution configs contains common configs shared by all resources
    */
   solution: AzureSolutionConfig;
-  [key: string]: AzureResource | AzureResource[];
+  [key: string]: AzureResource;
 }

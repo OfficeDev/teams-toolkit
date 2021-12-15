@@ -49,11 +49,16 @@ export const QuestionAppName: TextInputQuestion = {
     validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
       const schema = {
         pattern: ProjectNamePattern,
+        maxLength: 30,
       };
       const appName = input as string;
       const validateResult = jsonschema.validate(appName, schema);
       if (validateResult.errors && validateResult.errors.length > 0) {
-        return "Application name must start with a letter and can only contain letters and digits.";
+        if (validateResult.errors[0].name === "pattern") {
+          return "Application name must start with a letter and can only contain letters and digits.";
+        } else {
+          return "Application name length must be shorter than 30.";
+        }
       }
       const projectPath = path.resolve(getRootDirectory(), appName);
       const exists = await fs.pathExists(projectPath);
@@ -72,11 +77,16 @@ export const QuestionV1AppName: TextInputQuestion = {
     validFunc: async (input: string, previousInputs?: Inputs): Promise<string | undefined> => {
       const schema = {
         pattern: ProjectNamePattern,
+        maxLength: 30,
       };
       const appName = input as string;
       const validateResult = jsonschema.validate(appName, schema);
       if (validateResult.errors && validateResult.errors.length > 0) {
-        return "Application name must start with a letter and can only contain letters and digits.";
+        if (validateResult.errors[0].name === "pattern") {
+          return "Application name must start with a letter and can only contain letters and digits.";
+        } else {
+          return "Application name length must be shorter than 30.";
+        }
       }
       return undefined;
     },
@@ -91,6 +101,7 @@ export const DefaultAppNameFunc: FuncQuestion = {
     const appName = path.basename(inputs.projectPath ?? "");
     const schema = {
       pattern: ProjectNamePattern,
+      maxLength: 30,
     };
     const validateResult = jsonschema.validate(appName, schema);
     if (validateResult.errors && validateResult.errors.length > 0) {

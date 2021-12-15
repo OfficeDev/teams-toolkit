@@ -126,6 +126,12 @@ export class TestHelper {
       });
   }
 
+  static mockedFeHostUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
+    return mocker.stub(fehostPlugin, "updateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      return ok({});
+    });
+  }
+
   static mockedSimpleAuthGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
     return mocker
       .stub(simpleAuthPlugin, "generateArmTemplates")
@@ -204,10 +210,18 @@ export class TestHelper {
     });
   }
 
+  static mockedAadUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
+    return mocker.stub(aadPlugin, "updateArmTemplates").callsFake(async (ctx: PluginContext) => {
+      return ok({});
+    });
+  }
+
   static mockedIdentityGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
     return mocker
       .stub(identityPlugin, "generateArmTemplates")
       .callsFake(async (ctx: PluginContext) => {
+        console.log(`mocked identity generate arm templates`);
+
         const res: ArmTemplateResult = {
           Provision: {
             Orchestration:
@@ -231,6 +245,14 @@ export class TestHelper {
           },
         };
         return ok(res);
+      });
+  }
+
+  static mockedIdentityUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
+    return mocker
+      .stub(identityPlugin, "updateArmTemplates")
+      .callsFake(async (ctx: PluginContext) => {
+        return ok({});
       });
   }
 

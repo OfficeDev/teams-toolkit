@@ -52,12 +52,16 @@ import chaiAsPromised from "chai-as-promised";
 import { TestHelper } from "./helper";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
+let mockedEnvRestore: () => void;
 
 describe("Generate ARM Template for project", () => {
   const mocker = sinon.createSandbox();
   let mockedCtx: SolutionContext;
 
   beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({
+      __TEAMSFX_INSIDER_PREVIEW: "true",
+    });
     mockedCtx = TestHelper.mockSolutionContext();
     mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["default"]));
     mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
@@ -65,6 +69,7 @@ describe("Generate ARM Template for project", () => {
   });
 
   afterEach(async () => {
+    mockedEnvRestore();
     await fs.remove(TestHelper.rootDir);
     mocker.restore();
   });
@@ -315,6 +320,9 @@ Mocked simple auth configuration orchestration content. Module path: './teamsFx/
 
     const simpleAuthUpdateArmTemplatesStub = TestHelper.mockedSimpleAuthUpdateArmTemplates(mocker);
     const botUpdateArmTemplatesStub = TestHelper.mockedBotUpdateArmTemplates(mocker);
+    TestHelper.mockedFeHostUpdateArmTemplates(mocker);
+    TestHelper.mockedAadUpdateArmTemplates(mocker);
+    TestHelper.mockedIdentityUpdateArmTemplates(mocker);
 
     // Scaffold tab project
     let result = await generateArmTemplate(mockedCtx, [
@@ -531,6 +539,9 @@ describe("Deploy ARM Template to Azure", () => {
   };
 
   beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({
+      __TEAMSFX_INSIDER_PREVIEW: "true",
+    });
     mockedCtx = TestHelper.mockSolutionContext();
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
@@ -579,6 +590,7 @@ describe("Deploy ARM Template to Azure", () => {
   });
 
   afterEach(async () => {
+    mockedEnvRestore();
     mocker.restore();
     await fs.remove(TestHelper.rootDir);
   });
@@ -762,12 +774,16 @@ describe("Poll Deployment Status", () => {
   let mockedDeployCtx: any;
 
   beforeEach(async () => {
+    mockedEnvRestore = mockedEnv({
+      __TEAMSFX_INSIDER_PREVIEW: "true",
+    });
     mockedCtx = TestHelper.mockSolutionContext();
     mockedDeployCtx = TestHelper.getMockedDeployCtx(mockedCtx);
     mocker.stub(tools, "waitSeconds").resolves();
   });
 
   afterEach(async () => {
+    mockedEnvRestore();
     mocker.restore();
   });
 

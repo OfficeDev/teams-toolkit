@@ -830,6 +830,52 @@
         "scopeName": "teamsfx-toolkit.output",
         "path": "./syntaxes/teamsfx-toolkit-output.tmLanguage"
       }
+    ],
+    "walkthroughs": [
+      {
+        "id": "teamsToolkitQuickStart",
+        "title": "Get started with Teams toolkit  ",
+        "description": "Jumpstart your Teams app development experience   ",
+        "steps": [
+          {
+            "id": "teamsToolkitCapailities",
+            "title": "What are Teams app \"Capabilities\"",
+            "description": "[Capabilities](https://docs.microsoft.com/en-us/microsoftteams/platform/concepts/capabilities-overview) are the extension points for building apps on the Microsoft Teams platform.\n[Watch video (<1 min)](https://aka.ms/teamsfx-video)",
+            "media": {
+              "svg": "media/learn.svg",
+              "altText": "Watch"
+            }
+          },
+          {
+            "id": "teamsToolkitCommands",
+            "title": "Explore Teams toolkit commands",
+            "description": "Open Command Palette (Ctrl+Shift+P) and type 'Teams' to find Teams toolkit commands. You can also discover [Teams toolkit icon](https://www.bing.com) on the activity bar to easily see the commands after a project creation. \n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3Eteams%22%5D)",
+            "media": {
+              "svg": "media/step_commands.svg",
+              "altText": "Display Teams Commands"
+            }
+          },
+          {
+            "id": "installNodeJs",
+            "title": "Install Node.js",
+            "description": "Teams toolkit cannot detect the right version of Node.js on your machine.\nAs a fundamental runtime context for Teams app, Node.js v10.x, v12.x or v14.x is required (v.14.x is recommended ). Please install the appropriate version to run the Microsoft Teams Toolkit.Read more about managing Node.js versions.\n[Download Node.js (v.14.x)](Command:)",
+            "media": {
+              "svg": "media/step_nodejs.svg",
+              "altText": "Install NodeJs"
+            },
+            "when": "fx-extension.isNotValidNode"
+          },
+          {
+            "id": "teamsToolkitCreate",
+            "title": "Build your first Teams app",
+            "description": "Build a Teams app from the scratch or explore our samples to help you quickly get started with the basic Teams app concepts and code structures.\n[Create New Project](command:fx-extension.create)",
+            "media": {
+              "image": "media/todolist-sample.gif",
+              "altText": "Create New Project"
+            }
+          }
+        ]
+      }
     ]
   },
   "scripts": {

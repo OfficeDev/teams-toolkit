@@ -63,7 +63,7 @@ describe("Migrate", () => {
     plugin = new AppStudioPlugin();
 
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources",
+      root: path.resolve(__dirname, "../resources"),
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
@@ -136,6 +136,13 @@ describe("Migrate", () => {
       }
       throw new Error("Cannot find file");
     });
+
+    sandbox.stub(fs, "pathExists").callsFake(async (filePath: PathLike) => {
+      if (fileContent.has(path.normalize(filePath.toString()))) {
+        return true;
+      }
+      return false;
+    });
   });
 
   afterEach(() => {
@@ -180,6 +187,7 @@ describe("Migrate", () => {
     };
 
     const result = await plugin.migrateV1Project(ctx);
+    console.log(result);
     chai.expect(result.isOk()).equals(true);
 
     const manifest: TeamsAppManifest = JSON.parse(

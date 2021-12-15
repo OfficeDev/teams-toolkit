@@ -44,6 +44,8 @@ describe("Provision Teams app with Azure", () => {
       answers: { platform: Platform.VSCode },
       cryptoProvider: new LocalCrypto(""),
     };
+
+    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
   });
 
   afterEach(async () => {
@@ -87,14 +89,15 @@ describe("Provision Teams app with Azure", () => {
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
       tabEndpoint: undefined,
       tabDomain: undefined,
-      aadId: "aadId",
+      aadId: uuid(),
       botDomain: "botDomain",
-      botId: "botId",
+      botId: uuid(),
       webApplicationInfoResource: "webApplicationInfoResource",
       teamsAppId: uuid(),
     });
 
     const teamsAppId = await plugin.postProvision(ctx);
+    console.log(teamsAppId);
     chai.assert.isTrue(teamsAppId.isOk());
   });
 });

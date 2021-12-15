@@ -29,14 +29,52 @@ describe("FunctionGenerateArmTemplates", () => {
     pluginContext = MockContext();
   });
 
-  it("generate bicep arm templates", async () => {
-    // Act
+  it("generate bicep arm templates: without key vault plugin", async () => {
     const activeResourcePlugins = [
       ResourcePlugins.Aad,
       ResourcePlugins.SimpleAuth,
       ResourcePlugins.FrontendHosting,
       ResourcePlugins.Function,
     ];
+
+    await testGenerateArmTemplates(
+      activeResourcePlugins,
+      "functionConfig.result.bicep",
+      "config.result.bicep"
+    );
+  });
+
+  it("generate bicep arm templates: with key vault plugin", async () => {
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.SimpleAuth,
+      ResourcePlugins.FrontendHosting,
+      ResourcePlugins.Function,
+      ResourcePlugins.KeyVault,
+    ];
+
+    await testGenerateArmTemplates(
+      activeResourcePlugins,
+      "functionConfigWithKeyVaultPlugin.result.bicep",
+      "configWithKeyVaultPlugin.result.bicep",
+      {
+        "fx-resource-key-vault": {
+          References: {
+            m365ClientSecretReference:
+              "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference",
+          },
+        },
+      }
+    );
+  });
+
+  async function testGenerateArmTemplates(
+    activeResourcePlugins: string[],
+    testConfigurationModuleFileName: string,
+    testConfigurationFileName: string,
+    addtionalPluginOutput: any = {}
+  ) {
+    // Act
     pluginContext.projectSettings!.solutionSettings = {
       name: "test_solution",
       version: "1.0.0",
@@ -46,45 +84,45 @@ describe("FunctionGenerateArmTemplates", () => {
 
     // Assert
     const testProvisionModuleFileName = "functionProvision.result.bicep";
-    const testConfigurationModuleFileName = "functionConfig.result.bicep";
-    const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
-        "fx-resource-function": {
-          Provision: {
-            function: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
-            },
-          },
-          Configuration: {
-            function: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
-            },
-          },
-          References: {
-            functionAppResourceId: FunctionBicep.functionAppResourceId,
-            functionEndpoint: FunctionBicep.functionEndpoint,
+    const pluginOutput = {
+      "fx-resource-function": {
+        Provision: {
+          function: {
+            ProvisionPath: `./${testProvisionModuleFileName}`,
           },
         },
-        "fx-resource-frontend-hosting": {
-          Outputs: {
-            endpoint: "frontend_hosting_test_endpoint",
-          },
-          References: {
-            domain: "provisionOutputs.frontendHostingOutput.value.domain",
-            endpoint: "provisionOutputs.frontendHostingOutput.value.endpoint",
+        Configuration: {
+          function: {
+            ConfigPath: `./${testConfigurationModuleFileName}`,
           },
         },
-        "fx-resource-identity": {
-          Outputs: {
-            endpoint: "frontend_hosting_test_endpoint",
-          },
-          References: {
-            identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
-            identityResourceId: "userAssignedIdentityProvision.outputs.identityResourceId",
-          },
+        References: {
+          functionAppResourceId: "provisionOutputs.functionOutput.value.functionAppResourceId",
+          functionEndpoint: "provisionOutputs.functionOutput.value.functionEndpoint",
         },
       },
+      "fx-resource-frontend-hosting": {
+        Outputs: {
+          endpoint: "frontend_hosting_test_endpoint",
+        },
+        References: {
+          domain: "provisionOutputs.frontendHostingOutput.value.domain",
+          endpoint: "provisionOutputs.frontendHostingOutput.value.endpoint",
+        },
+      },
+      "fx-resource-identity": {
+        Outputs: {
+          endpoint: "frontend_hosting_test_endpoint",
+        },
+        References: {
+          identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
+          identityResourceId: "userAssignedIdentityProvision.outputs.identityResourceId",
+        },
+      },
+    };
+    const mockedSolutionDataContext = {
+      Plugins: activeResourcePlugins,
+      PluginOutput: { ...pluginOutput, ...addtionalPluginOutput },
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
@@ -123,12 +161,12 @@ describe("FunctionGenerateArmTemplates", () => {
       chai.assert.strictEqual(
         expectedResult.Configuration!.Orchestration,
         fs.readFileSync(
-          path.join(expectedBicepFileDirectory, "config.result.bicep"),
+          path.join(expectedBicepFileDirectory, testConfigurationFileName),
           ConstantString.UTF8Encoding
         )
       );
     }
-  });
+  }
 
   it("Update bicep arm templates", async () => {
     // Act

@@ -21,10 +21,7 @@ import {
   FrontendHostTypeQuestion,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
-  MessageExtensionItem,
-  ProgrammingLanguageQuestion,
   TabOptionItem,
-  TabSPFxItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { Container } from "typedi";
 
@@ -73,76 +70,4 @@ describe("Resource plugin container", () => {
       assert.deepEqual(options, [HostTypeOptionAzure, HostTypeOptionSPFx]);
     }
   });
-
-  it("solution ProgrammingLanguageQuestion", async () => {
-    const inputs: Inputs = {
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Capabilities]: [TabSPFxItem.id],
-    };
-    if (
-      ProgrammingLanguageQuestion.dynamicOptions &&
-      ProgrammingLanguageQuestion.placeholder &&
-      typeof ProgrammingLanguageQuestion.placeholder === "function"
-    ) {
-      const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
-      assert.deepEqual([{ id: "typescript", label: "TypeScript" }], options);
-      const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
-      assert.equal("SPFx is currently supporting TypeScript only.", placeholder);
-    }
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Capabilities]: [TabOptionItem.id],
-    });
-    languageAssert({
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Capabilities]: [BotOptionItem.id],
-    });
-    languageAssert({
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Capabilities]: [MessageExtensionItem.id],
-    });
-    languageAssert({
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
-    });
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Capabilities]: [TabOptionItem.id, MessageExtensionItem.id],
-    });
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Capabilities]: [BotOptionItem.id, MessageExtensionItem.id],
-    });
-
-    languageAssert({
-      platform: Platform.VSCode,
-      [AzureSolutionQuestionNames.Capabilities]: [
-        TabOptionItem.id,
-        BotOptionItem.id,
-        MessageExtensionItem.id,
-      ],
-    });
-  });
-
-  function languageAssert(inputs: Inputs) {
-    if (
-      ProgrammingLanguageQuestion.dynamicOptions &&
-      ProgrammingLanguageQuestion.placeholder &&
-      typeof ProgrammingLanguageQuestion.placeholder === "function"
-    ) {
-      const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
-      assert.deepEqual(
-        [
-          { id: "javascript", label: "JavaScript" },
-          { id: "typescript", label: "TypeScript" },
-        ],
-        options
-      );
-      const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
-      assert.equal("Select a programming language.", placeholder);
-    }
-  }
 });

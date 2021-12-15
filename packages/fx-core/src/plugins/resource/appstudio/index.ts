@@ -144,7 +144,7 @@ export class AppStudioPlugin implements Plugin {
   public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.validateManifest);
-    const validationpluginResult = await this.appStudioPluginImpl.validateManifest(ctx);
+    const validationpluginResult = await this.appStudioPluginImpl.validateManifest(ctx, false);
     if (validationpluginResult.isErr()) {
       return err(validationpluginResult.error);
     }

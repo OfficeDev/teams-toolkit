@@ -15,6 +15,7 @@ import HelloWorldBot from "../../media/helloWorld-bot.gif";
 import Watch from "../../media/watch.svg";
 import Settings from "../../media/settings.svg";
 import GraphToolkitContactExporter from "../../media/graph-toolkit-contact-exporter.gif";
+import BOTSSO from "../../media/bot-sso.gif";
 import { EventMessages } from "./messages";
 
 interface SampleInfo {
@@ -45,6 +46,7 @@ const imageMapping: { [p: string]: any } = {
   "hello-world-tab-with-backend": HelloWorldTabWithBackend,
   "graph-toolkit-contact-exporter": GraphToolkitContactExporter,
   "hello-world-bot": HelloWorldBot,
+  "bot-sso": BOTSSO,
 };
 
 export default class SampleGallery extends React.Component<any, any> {

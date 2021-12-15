@@ -12,12 +12,10 @@ jobs:
     if: ${{ github.event.workflow_run.conclusion == 'success' }}
     steps:
       - name: Trigger TeamsFx-CICD-Test
-        env:
-            BRANCH: ${{ github.event.workflow_run.head_branch }}
         run: |
             curl \
                 -u :${{ secrets.GITHUB_TOKEN }} \
                 -X POST \
                 -H "Accept: application/vnd.github.v3+json" \
-                https://api.github.com/repos/OfficeDev/TeamsFx-CICD-Test/actions/workflows/trigger_cicd_by_${BRANCH}.yml/dispatches \
+                https://api.github.com/repos/OfficeDev/TeamsFx-CICD-Test/actions/workflows/trigger_cicd_by_${{ github.event.workflow_run.head_branch }}.yml/dispatches \
                 -d "{\"ref\":\"main\"}" 

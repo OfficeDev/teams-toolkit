@@ -38,6 +38,8 @@ import {
   v2,
   Void,
   BuildFolderName,
+  v3,
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -85,6 +87,7 @@ import {
   WriteFileError,
   ProjectFolderInvalidError,
   FetchSampleError,
+  NotImplementedError,
 } from "./error";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
@@ -112,8 +115,10 @@ import { QuestionModelMW } from "./middleware/questionModel";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import {
   CoreQuestionNames,
+  createCapabilityQuestion,
   DefaultAppNameFunc,
   getCreateNewOrFromSampleQuestion,
+  ProgrammingLanguageQuestion,
   ProjectNamePattern,
   QuestionAppName,
   QuestionRootFolder,
@@ -126,13 +131,19 @@ import {
 import {
   getAllSolutionPlugins,
   getAllSolutionPluginsV2,
+  getSolutionPluginByCap,
+  getSolutionPluginByCapV1,
   getSolutionPluginByName,
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
 import { flattenConfigJson, newEnvInfo } from "./tools";
 import { LocalCrypto } from "./crypto";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
-import { merge } from "lodash";
+import { assign, merge } from "lodash";
+import { QuestionModelMW_V3 } from "./v3/mw/questionModel";
+import { init } from "./v3/init";
+import { SolutionLoaderMW_V3 } from "./v3/mw/solutionLoader";
+import { ProjectSettingsLoaderMW_V3 } from "./v3/mw/projectSettingsLoader";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -147,6 +158,10 @@ export interface CoreHookContext extends HookContext {
   solutionV2?: v2.SolutionPlugin;
   envInfoV2?: v2.EnvInfoV2;
   localSettings?: Json;
+
+  //for v3
+  envInfoV3?: v3.EnvInfoV3;
+  solutionV3?: v3.ISolution;
 }
 
 function featureFlagEnabled(flagName: string): boolean {
@@ -156,6 +171,10 @@ function featureFlagEnabled(flagName: string): boolean {
   } else {
     return false;
   }
+}
+
+export function isV3() {
+  return featureFlagEnabled(FeatureFlagName.APIV3);
 }
 
 // API V2 feature flag
@@ -172,7 +191,7 @@ export let Logger: LogProvider;
 export let telemetryReporter: TelemetryReporter | undefined;
 export let currentStage: Stage;
 export let TOOLS: Tools;
-export class FxCore implements Core {
+export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
   settingsVersion?: string;
@@ -281,13 +300,13 @@ export class FxCore implements Core {
       }
 
       if (isV2()) {
-        const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
+        const solution = await getSolutionPluginByCap(inputs[CoreQuestionNames.Capabilities]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
         ctx.solutionV2 = solution;
         projectSettings.solutionSettings.name = solution.name;
-        const contextV2 = createV2Context(this, projectSettings);
+        const contextV2 = createV2Context(projectSettings);
         ctx.contextV2 = contextV2;
         const scaffoldSourceCodeRes = await solution.scaffoldSourceCode(contextV2, inputs);
         if (scaffoldSourceCodeRes.isErr()) {
@@ -323,7 +342,7 @@ export class FxCore implements Core {
           };
         }
       } else {
-        const solution = await getSolutionPluginByName(inputs[CoreQuestionNames.Solution]);
+        const solution = await getSolutionPluginByCapV1(inputs[CoreQuestionNames.Capabilities]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -516,10 +535,10 @@ export class FxCore implements Core {
         this.tools.tokenProvider
       );
       if (result.kind === "success") {
-        ctx.envInfoV2.state = merge(ctx.envInfoV2.state, result.output);
+        ctx.envInfoV2.state = assign(ctx.envInfoV2.state, result.output);
         return ok(Void);
       } else if (result.kind === "partialSuccess") {
-        ctx.envInfoV2.state = merge(ctx.envInfoV2.state, result.output);
+        ctx.envInfoV2.state = assign(ctx.envInfoV2.state, result.output);
         return err(result.error);
       } else {
         return err(result.error);
@@ -744,7 +763,7 @@ export class FxCore implements Core {
           );
           return err(new ObjectIsUndefinedError(`executeUserTask input stuff: ${name}`));
         }
-        if (!ctx.contextV2) ctx.contextV2 = createV2Context(this, newProjectSettings());
+        if (!ctx.contextV2) ctx.contextV2 = createV2Context(newProjectSettings());
         if (ctx.solutionV2.executeUserTask) {
           if (!ctx.localSettings) ctx.localSettings = {};
           const res = await ctx.solutionV2.executeUserTask(
@@ -793,9 +812,7 @@ export class FxCore implements Core {
       return await this._getQuestionsForCreateProject(inputs);
     } else {
       if (isV2()) {
-        const contextV2 = ctx.contextV2
-          ? ctx.contextV2
-          : createV2Context(this, newProjectSettings());
+        const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
         const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
         const envInfoV2 = ctx.envInfoV2
           ? ctx.envInfoV2
@@ -831,7 +848,7 @@ export class FxCore implements Core {
     inputs.stage = Stage.getQuestions;
     currentStage = Stage.getQuestions;
     if (isV2()) {
-      const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(this, newProjectSettings());
+      const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
       const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
       const envInfoV2 = ctx.envInfoV2
         ? ctx.envInfoV2
@@ -1337,19 +1354,20 @@ export class FxCore implements Core {
     const createNew = new QTreeNode({ type: "group" });
     node.addChild(createNew);
     createNew.condition = { equals: ScratchOptionYes.id };
+
+    // capabilities
+    const capQuestion = createCapabilityQuestion();
+    const capNode = new QTreeNode(capQuestion);
+    createNew.addChild(capNode);
+
     const globalSolutions: Solution[] | v2.SolutionPlugin[] = isV2()
       ? await getAllSolutionPluginsV2()
       : await getAllSolutionPlugins();
-    const solutionNames: string[] = globalSolutions.map((s) => s.name);
-    const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
-    selectSolution.staticOptions = solutionNames;
-    const solutionSelectNode = new QTreeNode(selectSolution);
-    createNew.addChild(solutionSelectNode);
     const context = isV2()
-      ? createV2Context(this, newProjectSettings())
+      ? createV2Context(newProjectSettings())
       : await newSolutionContext(this.tools, inputs);
     for (const solutionPlugin of globalSolutions) {
-      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
+      let res: Result<QTreeNode | QTreeNode[] | undefined, FxError> = ok(undefined);
       if (isV2()) {
         const v2plugin = solutionPlugin as v2.SolutionPlugin;
         res = v2plugin.getQuestionsForScaffolding
@@ -1361,13 +1379,22 @@ export class FxCore implements Core {
           ? await v1plugin.getQuestions(Stage.create, context as SolutionContext)
           : ok(undefined);
       }
-      if (res.isErr()) return res;
+      if (res.isErr()) return err(new SystemError(res.error, CoreSource, "QuestionModelFail"));
       if (res.value) {
-        const solutionNode = res.value as QTreeNode;
-        solutionNode.condition = { equals: solutionPlugin.name };
-        if (solutionNode.data) solutionSelectNode.addChild(solutionNode);
+        const solutionNode = Array.isArray(res.value)
+          ? (res.value as QTreeNode[])
+          : [res.value as QTreeNode];
+        for (const node of solutionNode) {
+          if (node.data) capNode.addChild(node);
+        }
       }
     }
+
+    // Language
+    const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+    programmingLanguage.condition = { minItems: 1 };
+    createNew.addChild(programmingLanguage);
+
     if (inputs.platform !== Platform.VSCode) {
       createNew.addChild(new QTreeNode(QuestionRootFolder));
     }
@@ -1381,6 +1408,71 @@ export class FxCore implements Core {
       sampleNode.addChild(new QTreeNode(QuestionRootFolder));
     }
     return ok(node.trim());
+  }
+
+  @hooks([ErrorHandlerMW, QuestionModelMW_V3, ContextInjectorMW, ProjectSettingsWriterMW])
+  async init(
+    inputs: v2.InputsWithProjectPath & { solution?: string },
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    return init(inputs, ctx);
+  }
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW_V3,
+    SolutionLoaderMW_V3,
+    QuestionModelMW_V3,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+  ])
+  async addModule(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    if (ctx && ctx.solutionV3 && ctx.contextV2) {
+      return await ctx.solutionV3.addModule(
+        ctx.contextV2,
+        {},
+        inputs as v2.InputsWithProjectPath & { capabilities?: string[] }
+      );
+    }
+    return ok(Void);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW_V3,
+    SolutionLoaderMW_V3,
+    QuestionModelMW_V3,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+  ])
+  async scaffold(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    if (ctx && ctx.solutionV3 && ctx.contextV2) {
+      return await ctx.solutionV3.scaffold(ctx.contextV2, inputs);
+    }
+    return ok(Void);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ProjectSettingsLoaderMW_V3,
+    SolutionLoaderMW_V3,
+    QuestionModelMW_V3,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+  ])
+  async addResource(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    if (ctx && ctx.solutionV3 && ctx.contextV2) {
+      return await ctx.solutionV3.addResource(ctx.contextV2, inputs);
+    }
+    return ok(Void);
   }
 }
 
@@ -1488,10 +1580,14 @@ export async function downloadSample(
     if (projectSettingsRes.isOk()) {
       const projectSettings = projectSettingsRes.value;
       projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
+      projectSettings.isFromSample = true;
       inputs.projectId = projectSettings.projectId;
       telemetryProperties[TelemetryProperty.ProjectId] = projectSettings.projectId;
       ctx.projectSettings = projectSettings;
       inputs.projectPath = sampleAppPath;
+    } else {
+      telemetryProperties[TelemetryProperty.ProjectId] =
+        "unknown, failed to set projectId in projectSettings.json";
     }
     progress.end(true);
     sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, telemetryProperties);
@@ -1522,13 +1618,13 @@ export function newProjectSettings(): ProjectSettings {
   return projectSettings;
 }
 
-export function createV2Context(core: FxCore, projectSettings: ProjectSettings): v2.Context {
+export function createV2Context(projectSettings: ProjectSettings): v2.Context {
   const context: v2.Context = {
-    userInteraction: core.tools.ui,
-    logProvider: core.tools.logProvider,
-    telemetryReporter: core.tools.telemetryReporter!,
+    userInteraction: TOOLS.ui,
+    logProvider: TOOLS.logProvider,
+    telemetryReporter: TOOLS.telemetryReporter!,
     cryptoProvider: new LocalCrypto(projectSettings.projectId),
-    permissionRequestProvider: core.tools.permissionRequest,
+    permissionRequestProvider: TOOLS.permissionRequest,
     projectSetting: projectSettings,
   };
   return context;

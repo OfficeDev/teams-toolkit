@@ -9,15 +9,50 @@ import { TokenCredential } from '@azure/core-http';
 import { TokenCredentialsBase } from '@azure/ms-rest-nodeauth';
 
 // @public (undocumented)
+interface AADApp extends AzureResource {
+    // (undocumented)
+    applicationIdUris: string;
+    // (undocumented)
+    clientId: string;
+    // (undocumented)
+    clientSecret: string;
+    // (undocumented)
+    oauth2PermissionScopeId: string;
+    // (undocumented)
+    oauthAuthority: string;
+    // (undocumented)
+    oauthHost: string;
+    // (undocumented)
+    objectId: string;
+    // (undocumented)
+    secretFields: "clientSecret"[];
+    // (undocumented)
+    tenantId: string;
+}
+
+// @public (undocumented)
 export const AdaptiveCardsFolderName = "adaptiveCards";
 
 // @public (undocumented)
-export const AppPackageFolderName = "appPackage";
+interface APIM extends AzureResource {
+    // (undocumented)
+    apimClientAADClientId: string;
+    // (undocumented)
+    apimClientAADClientSecret: string;
+    // (undocumented)
+    apimClientAADObjectId: string;
+    // (undocumented)
+    authServerResourceId: string;
+    // (undocumented)
+    productResourceId: string;
+    // (undocumented)
+    secretFields: "apimClientAADClientSecret"[];
+    // (undocumented)
+    serviceResourceId: string;
+}
 
 // @public (undocumented)
-interface AppResource extends Json {
-    appId: string;
-}
+export const AppPackageFolderName = "appPackage";
 
 // @public
 export interface AppStudioTokenProvider {
@@ -55,6 +90,48 @@ export interface AzureAccountProvider {
 }
 
 // @public (undocumented)
+interface AzureBot extends AzureResource {
+    // (undocumented)
+    appServicePlanName: string;
+    // (undocumented)
+    botId: string;
+    // (undocumented)
+    botPassword: string;
+    // (undocumented)
+    botWebAppResourceId: string;
+    // (undocumented)
+    objectId: string;
+    // (undocumented)
+    secretFields: "botPassword"[];
+    // (undocumented)
+    siteEndpoint: string;
+    // (undocumented)
+    siteName: string;
+    // (undocumented)
+    skuName: string;
+    // (undocumented)
+    validDomain: string;
+}
+
+// @public (undocumented)
+interface AzureFunction extends AzureResource {
+    // (undocumented)
+    functionAppResourceId: string;
+    // (undocumented)
+    functionEndpoint: string;
+}
+
+// @public (undocumented)
+interface AzureIdentity extends AzureResource {
+    // (undocumented)
+    identityClientId: string;
+    // (undocumented)
+    identityName: string;
+    // (undocumented)
+    identityResourceId: string;
+}
+
+// @public (undocumented)
 type AzureResource = CloudResource;
 
 // @public
@@ -87,6 +164,28 @@ export interface AzureSolutionSettings extends SolutionSettings {
     hostType: string;
     // (undocumented)
     migrateFromV1?: boolean;
+}
+
+// @public (undocumented)
+interface AzureSQL extends AzureResource {
+    // (undocumented)
+    admin: string;
+    // (undocumented)
+    databaseName: string;
+    // (undocumented)
+    sqlEndpoint: string;
+    // (undocumented)
+    sqlResourceId: string;
+}
+
+// @public (undocumented)
+interface AzureStorage extends AzureResource {
+    // (undocumented)
+    domain: string;
+    // (undocumented)
+    endpoint: string;
+    // (undocumented)
+    storageResourceId: string;
 }
 
 // @public
@@ -1256,7 +1355,7 @@ type ResourceProvisionOutput = {
 
 // @public
 interface ResourceStates {
-    [key: string]: CloudResource | CloudResource[];
+    [key: string]: CloudResource;
     solution: Json;
 }
 
@@ -1326,6 +1425,14 @@ export interface SharepointTokenProvider {
     getJsonObject(showDialog?: boolean): Promise<Record<string, unknown> | undefined>;
     removeStatusChangeMap(name: string): Promise<boolean>;
     setStatusChangeMap(name: string, statusChange: (status: string, token?: string, accountInfo?: Record<string, unknown>) => Promise<void>, immediateCall?: boolean): Promise<boolean>;
+}
+
+// @public (undocumented)
+interface SimpleAuth extends AzureResource {
+    // (undocumented)
+    endpoint: string;
+    // (undocumented)
+    webAppResourceId: string;
 }
 
 // @public
@@ -1624,14 +1731,15 @@ export class TeamsAppManifest {
 }
 
 // @public (undocumented)
-interface TeamsAppResource extends AppResource {
+interface TeamsAppResource extends AzureResource {
+    teamsAppId: string;
     tenantId: string;
 }
 
 // @public (undocumented)
 interface TeamsFxAzureResourceStates extends ResourceStates {
     // (undocumented)
-    [key: string]: AzureResource | AzureResource[];
+    [key: string]: AzureResource;
     solution: AzureSolutionConfig;
 }
 
@@ -1884,7 +1992,6 @@ declare namespace v3 {
     export {
         EnvInfoV3,
         CloudResource,
-        AppResource,
         ResourceStates,
         AzureResource,
         AzureSolutionConfig,
@@ -1898,7 +2005,15 @@ declare namespace v3 {
         Module,
         TeamsFxSolutionSettings,
         ISolution,
-        ICore
+        ICore,
+        AzureIdentity,
+        AzureStorage,
+        AzureSQL,
+        AzureBot,
+        AADApp,
+        AzureFunction,
+        APIM,
+        SimpleAuth
     }
 }
 export { v3 }

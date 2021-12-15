@@ -15,7 +15,7 @@ import lodash from "lodash";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { SPFXQuestionNames } from ".";
-import { Utils, sleep } from "./utils/utils";
+import { Utils } from "./utils/utils";
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
 import {
   BuildSPPackageError,
@@ -297,7 +297,7 @@ export class SPFxPluginImpl {
             let retry = 0;
             appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
             while (appCatalogSite == null && retry < Constants.APP_CATALOG_MAX_TIMES) {
-              await sleep(Constants.APP_CATALOG_REFRESH_TIME);
+              await Utils.sleep(Constants.APP_CATALOG_REFRESH_TIME);
               appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
               retry += 1;
             }

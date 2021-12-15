@@ -377,4 +377,4 @@ templates/*/*/package-lock.json
 .eslintcache
 
 # truggleHog
-include-pattern.txt
+include-patterns.txt

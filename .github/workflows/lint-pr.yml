@@ -72,12 +72,12 @@ jobs:
       - name: diff files in PR on Fork
         if: ${{ github.event.pull_request.head.repo.full_name != 'OfficeDev/TeamsFx' }}
         run: |
-          git diff --diff-fileter=MARC upstream/${{ github.event.pull_request.base.ref }}...HEAD --name-only >> .github/detect-pattern/include-patterns.txt
+          git diff upstream/${{ github.event.pull_request.base.ref }}...HEAD --name-only >> .github/detect-pattern/include-patterns.txt
 
       - name: diff files in PR on Local
         if: ${{ github.event.pull_request.head.repo.full_name == 'OfficeDev/TeamsFx' }}
         run: |
-          git diff --diff-fileter=MARC origin/${{ github.event.pull_request.base.ref }}...HEAD --name-only >> .github/detect-pattern/include-patterns.txt
+          git diff origin/${{ github.event.pull_request.base.ref }}...HEAD --name-only >> .github/detect-pattern/include-patterns.txt
 
       - name: trufflehog-actions-scan
         uses: edplato/trufflehog-actions-scan@master

@@ -139,7 +139,7 @@ import {
 import { flattenConfigJson, newEnvInfo } from "./tools";
 import { LocalCrypto } from "./crypto";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
-import { merge } from "lodash";
+import { assign, merge } from "lodash";
 import { QuestionModelMW_V3 } from "./v3/mw/questionModel";
 import { init } from "./v3/init";
 import { SolutionLoaderMW_V3 } from "./v3/mw/solutionLoader";
@@ -535,10 +535,10 @@ export class FxCore implements v3.ICore {
         this.tools.tokenProvider
       );
       if (result.kind === "success") {
-        ctx.envInfoV2.state = merge(ctx.envInfoV2.state, result.output);
+        ctx.envInfoV2.state = assign(ctx.envInfoV2.state, result.output);
         return ok(Void);
       } else if (result.kind === "partialSuccess") {
-        ctx.envInfoV2.state = merge(ctx.envInfoV2.state, result.output);
+        ctx.envInfoV2.state = assign(ctx.envInfoV2.state, result.output);
         return err(result.error);
       } else {
         return err(result.error);
@@ -1580,10 +1580,14 @@ export async function downloadSample(
     if (projectSettingsRes.isOk()) {
       const projectSettings = projectSettingsRes.value;
       projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
+      projectSettings.isFromSample = true;
       inputs.projectId = projectSettings.projectId;
       telemetryProperties[TelemetryProperty.ProjectId] = projectSettings.projectId;
       ctx.projectSettings = projectSettings;
       inputs.projectPath = sampleAppPath;
+    } else {
+      telemetryProperties[TelemetryProperty.ProjectId] =
+        "unknown, failed to set projectId in projectSettings.json";
     }
     progress.end(true);
     sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, telemetryProperties);

@@ -5,14 +5,11 @@ import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
 import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
-  AppStudioTokenProvider,
   ConfigFolderName,
-  ConfigMap,
   FxError,
   ok,
   PluginContext,
   Result,
-  SolutionConfig,
   SolutionContext,
   Void,
   Plugin,
@@ -71,7 +68,6 @@ import {
   MockedAppStudioTokenProvider,
   MockedGraphTokenProvider,
   MockedSharepointProvider,
-  MockedUserInteraction,
   MockedV2Context,
   validManifest,
 } from "./util";
@@ -462,6 +458,9 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
     });
+    mocker.stub(fs, "chmod").callsFake((path: PathLike, mode: fs.Mode) => {
+      return new Promise((resolve) => resolve());
+    });
     mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
       fileContent.set(file, JSON.stringify(obj));
     });
@@ -471,8 +470,9 @@ describe("provision() happy path for SPFx projects", () => {
       .resolves(mockedManifest);
     mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "validateManifest").resolves([]);
     mocker
-      .stub(AppStudioPluginImpl.prototype, "reloadManifestAndCheckRequiredFields" as any)
+      .stub(AppStudioPluginImpl.prototype, "reloadManifest" as any)
       .returns(ok(new TeamsAppManifest()));
   });
 

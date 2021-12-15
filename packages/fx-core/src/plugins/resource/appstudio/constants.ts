@@ -8,9 +8,11 @@ export class Constants {
   public static readonly PUBLISH_PATH_QUESTION = "manifest-folder";
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
   public static readonly READ_MORE = "Read more";
+  public static readonly LEARN_MORE = "Learn more";
+  public static readonly ADMIN_PORTAL = "Admin portal";
   public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";
-  public static readonly TEAMS_ADMIN_PORTAL =
-    "https://admin.teams.microsoft.com/policies/manage-apps";
+  public static readonly TEAMS_ADMIN_PORTAL = "https://aka.ms/teamsfx-mtac";
+  public static readonly TEAMS_MANAGE_APP_DOC = "https://aka.ms/teamsfx-mtac-doc";
   public static readonly TEAMS_APP_ID = "teamsAppId";
 
   public static readonly PERMISSIONS = {

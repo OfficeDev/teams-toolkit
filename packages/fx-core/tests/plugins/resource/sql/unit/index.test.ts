@@ -19,6 +19,7 @@ import { UserType } from "../../../../../src/plugins/resource/sql/utils/commonUt
 import { ManagementClient } from "../../../../../src/plugins/resource/sql/managementClient";
 import { SqlPluginImpl } from "../../../../../src/plugins/resource/sql/plugin";
 import { isArmSupportEnabled } from "../../../../../src";
+import { sqlUserNameValidator } from "../../../../../src/plugins/resource/sql/utils/checkInput";
 
 chai.use(chaiAsPromised);
 
@@ -188,5 +189,13 @@ describe("sqlPlugin", () => {
 
     // Assert
     chai.assert.isTrue(postProvisionResult.isOk());
+  });
+
+  it("check invalid username", async function () {
+    const invalidNames = ["admin", "Admin", "root", "Root", "dbmanager", "DbManager"];
+    invalidNames.forEach((name) => {
+      const res = sqlUserNameValidator(name);
+      chai.assert.isNotEmpty(res);
+    });
   });
 });

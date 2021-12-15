@@ -24,7 +24,7 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
   const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1];
   const method = ctx.method;
 
-  let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
+  let getQuestionRes: Result<QTreeNode | QTreeNode[] | undefined, FxError> = ok(undefined);
   if (method === "init") {
     getQuestionRes = await getQuestionsForInit(inputs);
   } else {
@@ -63,8 +63,9 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
 
   TOOLS.logProvider.debug(`[core] success to get questions for ${method}`);
 
-  const node = getQuestionRes.value;
-  if (node) {
+  const nodes = getQuestionRes.value;
+  if (nodes) {
+    const node = Array.isArray(nodes) ? nodes[0] : nodes;
     const res = await traverse(node, inputs, TOOLS.ui, TOOLS.telemetryReporter);
     if (res.isErr()) {
       TOOLS.logProvider.debug(`[core] failed to run question model for ${method}`);
@@ -83,7 +84,7 @@ export async function getQuestionsForScaffold(
   inputs: v2.InputsWithProjectPath,
   solution: v3.ISolution,
   context: v2.Context
-): Promise<Result<QTreeNode | undefined, FxError>> {
+): Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>> {
   if (solution.getQuestionsForScaffold) {
     const res = await solution.getQuestionsForScaffold(context, inputs);
     return res;

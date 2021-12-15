@@ -115,8 +115,10 @@ import { QuestionModelMW } from "./middleware/questionModel";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import {
   CoreQuestionNames,
+  createCapabilityQuestion,
   DefaultAppNameFunc,
   getCreateNewOrFromSampleQuestion,
+  ProgrammingLanguageQuestion,
   ProjectNamePattern,
   QuestionAppName,
   QuestionRootFolder,
@@ -129,6 +131,8 @@ import {
 import {
   getAllSolutionPlugins,
   getAllSolutionPluginsV2,
+  getSolutionPluginByCap,
+  getSolutionPluginByCapV1,
   getSolutionPluginByName,
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
@@ -167,6 +171,10 @@ function featureFlagEnabled(flagName: string): boolean {
   } else {
     return false;
   }
+}
+
+export function isV3() {
+  return featureFlagEnabled(FeatureFlagName.APIV3);
 }
 
 // API V2 feature flag
@@ -292,7 +300,7 @@ export class FxCore implements v3.ICore {
       }
 
       if (isV2()) {
-        const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
+        const solution = await getSolutionPluginByCap(inputs[CoreQuestionNames.Capabilities]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -334,7 +342,7 @@ export class FxCore implements v3.ICore {
           };
         }
       } else {
-        const solution = await getSolutionPluginByName(inputs[CoreQuestionNames.Solution]);
+        const solution = await getSolutionPluginByCapV1(inputs[CoreQuestionNames.Capabilities]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -1346,19 +1354,20 @@ export class FxCore implements v3.ICore {
     const createNew = new QTreeNode({ type: "group" });
     node.addChild(createNew);
     createNew.condition = { equals: ScratchOptionYes.id };
+
+    // capabilities
+    const capQuestion = createCapabilityQuestion();
+    const capNode = new QTreeNode(capQuestion);
+    createNew.addChild(capNode);
+
     const globalSolutions: Solution[] | v2.SolutionPlugin[] = isV2()
       ? await getAllSolutionPluginsV2()
       : await getAllSolutionPlugins();
-    const solutionNames: string[] = globalSolutions.map((s) => s.name);
-    const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
-    selectSolution.staticOptions = solutionNames;
-    const solutionSelectNode = new QTreeNode(selectSolution);
-    createNew.addChild(solutionSelectNode);
     const context = isV2()
       ? createV2Context(newProjectSettings())
       : await newSolutionContext(this.tools, inputs);
     for (const solutionPlugin of globalSolutions) {
-      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
+      let res: Result<QTreeNode | QTreeNode[] | undefined, FxError> = ok(undefined);
       if (isV2()) {
         const v2plugin = solutionPlugin as v2.SolutionPlugin;
         res = v2plugin.getQuestionsForScaffolding
@@ -1370,13 +1379,22 @@ export class FxCore implements v3.ICore {
           ? await v1plugin.getQuestions(Stage.create, context as SolutionContext)
           : ok(undefined);
       }
-      if (res.isErr()) return res;
+      if (res.isErr()) return err(new SystemError(res.error, CoreSource, "QuestionModelFail"));
       if (res.value) {
-        const solutionNode = res.value as QTreeNode;
-        solutionNode.condition = { equals: solutionPlugin.name };
-        if (solutionNode.data) solutionSelectNode.addChild(solutionNode);
+        const solutionNode = Array.isArray(res.value)
+          ? (res.value as QTreeNode[])
+          : [res.value as QTreeNode];
+        for (const node of solutionNode) {
+          if (node.data) capNode.addChild(node);
+        }
       }
     }
+
+    // Language
+    const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+    programmingLanguage.condition = { minItems: 1 };
+    createNew.addChild(programmingLanguage);
+
     if (inputs.platform !== Platform.VSCode) {
       createNew.addChild(new QTreeNode(QuestionRootFolder));
     }

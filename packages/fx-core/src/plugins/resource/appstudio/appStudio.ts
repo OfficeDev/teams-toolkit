@@ -47,31 +47,31 @@ export namespace AppStudioClient {
    */
   export async function createApp(
     file: Buffer,
-    appStudioToken?: string,
+    appStudioToken: string,
     logProvider?: LogProvider
   ): Promise<IAppDefinition> {
-    if (appStudioToken) {
-      try {
-        const requester = createRequesterWithToken(appStudioToken);
-        const response = await requester.post(`/api/appdefinitions/v2/import`, file, {
-          headers: { "Content-Type": "application/zip" },
-        });
-        if (response && response.data) {
-          const app = <IAppDefinition>response.data;
-          await logProvider?.debug(`recieved data from app studio ${JSON.stringify(app)}`);
-          return app;
-        } else {
-          throw new Error(`Cannot create teams app`);
-        }
-      } catch (e) {
-        const error = new Error(`Cannot create teams app due to ${e.name}: ${e.message}`);
-        if (e.response?.status) {
-          error.name = e.response?.status;
-        }
-        throw error;
+    try {
+      const requester = createRequesterWithToken(appStudioToken);
+      const response = await requester.post(`/api/appdefinitions/v2/import`, file, {
+        headers: { "Content-Type": "application/zip" },
+      });
+      if (response && response.data) {
+        const app = <IAppDefinition>response.data;
+        await logProvider?.debug(`recieved data from app studio ${JSON.stringify(app)}`);
+        return app;
+      } else {
+        throw new Error(`Cannot create teams app`);
       }
-    } else {
-      throw new Error("Teams app create failed, invalid app studio token");
+    } catch (e: any) {
+      const correlationId = e.response?.headers[Constants.CORRELATION_ID];
+      const message =
+        `Cannot create teams app due to ${e.name}: ${e.message}` +
+        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
+      const error = new Error(message);
+      if (e.response?.status) {
+        error.name = e.response?.status;
+      }
+      throw error;
     }
   }
 
@@ -80,41 +80,41 @@ export namespace AppStudioClient {
     appStudioToken: string,
     colorIconContent: string,
     outlineIconContent: string,
-    requester: AxiosInstance,
     logProvider?: LogProvider
   ): Promise<{ colorIconUrl: string; outlineIconUrl: string }> {
-    await logProvider?.info(`uploading icon for teams ${teamsAppId}`);
-    if (teamsAppId && appStudioToken) {
-      try {
-        const colorIcon: Icon = {
-          name: "color",
-          type: "color",
-          base64String: colorIconContent,
-        };
-        const outlineIcon: Icon = {
-          name: "outline",
-          type: "outline",
-          base64String: outlineIconContent,
-        };
-        const colorIconResult = requester.post(
-          `/api/appdefinitions/${teamsAppId}/image`,
-          colorIcon
-        );
-        const outlineIconResult = requester.post(
-          `/api/appdefinitions/${teamsAppId}/image`,
-          outlineIcon
-        );
-        const results = await Promise.all([colorIconResult, outlineIconResult]);
-        await logProvider?.info(`successfully uploaded two icons`);
-        return { colorIconUrl: results[0].data, outlineIconUrl: results[1].data };
-      } catch (e) {
-        if (e instanceof Error) {
-          await logProvider?.warning(`failed to upload icon due to ${e.name}: ${e.message}`);
-        }
-        throw e;
+    await logProvider?.info(`Uploading icon for teams ${teamsAppId}`);
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
+      const colorIcon: Icon = {
+        name: "color",
+        type: "color",
+        base64String: colorIconContent,
+      };
+      const outlineIcon: Icon = {
+        name: "outline",
+        type: "outline",
+        base64String: outlineIconContent,
+      };
+      const colorIconResult = requester.post(`/api/appdefinitions/${teamsAppId}/image`, colorIcon);
+      const outlineIconResult = requester.post(
+        `/api/appdefinitions/${teamsAppId}/image`,
+        outlineIcon
+      );
+      const results = await Promise.all([colorIconResult, outlineIconResult]);
+      await logProvider?.info(`successfully uploaded two icons`);
+      return { colorIconUrl: results[0].data, outlineIconUrl: results[1].data };
+    } catch (e: any) {
+      const correlationId = e.response?.headers[Constants.CORRELATION_ID];
+      const message =
+        `Failed to upload icon due to ${e.name}: ${e.message}` +
+        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
+      await logProvider?.warning(message);
+      const error = new Error(message);
+      if (e.response?.status) {
+        error.name = e.response?.status;
       }
+      throw error;
     }
-    throw new Error(`teamsAppId or appStudioToken is invalid`);
   }
 
   export async function getApp(
@@ -136,9 +136,12 @@ export namespace AppStudioClient {
         }
       }
     } catch (e) {
-      const errorMessage = `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}`;
-      await logProvider?.warning(errorMessage);
-      const err = new Error(errorMessage);
+      const correlationId = e.response?.headers[Constants.CORRELATION_ID];
+      const message =
+        `Cannot get the app definition with app ID ${teamsAppId}, due to ${e.name}: ${e.message}` +
+        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
+      await logProvider?.warning(message);
+      const err = new Error(message);
       if (e.response?.status) {
         err.name = e.response?.status;
       }
@@ -165,48 +168,52 @@ export namespace AppStudioClient {
     colorIconContent?: string,
     outlineIconContent?: string
   ): Promise<IAppDefinition> {
-    if (appDefinition && appStudioToken) {
-      const requester = createRequesterWithToken(appStudioToken);
-      // Get userlist from existing app
-      const existingAppDefinition = await getApp(teamsAppId, appStudioToken, logProvider);
-      const userlist = existingAppDefinition.userList;
-      appDefinition.userList = userlist;
+    // Get userlist from existing app
+    const existingAppDefinition = await getApp(teamsAppId, appStudioToken, logProvider);
+    const userlist = existingAppDefinition.userList;
+    appDefinition.userList = userlist;
 
-      let result: { colorIconUrl: string; outlineIconUrl: string } | undefined;
-      if (colorIconContent && outlineIconContent) {
-        result = await uploadIcon(
-          teamsAppId,
-          appStudioToken,
-          colorIconContent,
-          outlineIconContent,
-          requester,
-          logProvider
-        );
-        if (!result) {
-          await logProvider?.error(`failed to upload color icon for: ${teamsAppId}`);
-          throw new Error(`failed to upload icons for ${teamsAppId}`);
-        }
-        appDefinition.colorIcon = result.colorIconUrl;
-        appDefinition.outlineIcon = result.outlineIconUrl;
+    let result: { colorIconUrl: string; outlineIconUrl: string } | undefined;
+    if (colorIconContent && outlineIconContent) {
+      result = await uploadIcon(
+        teamsAppId,
+        appStudioToken,
+        colorIconContent,
+        outlineIconContent,
+        logProvider
+      );
+      if (!result) {
+        await logProvider?.error(`failed to upload color icon for: ${teamsAppId}`);
+        throw new Error(`failed to upload icons for ${teamsAppId}`);
       }
+      appDefinition.colorIcon = result.colorIconUrl;
+      appDefinition.outlineIcon = result.outlineIconUrl;
+    }
+    const requester = createRequesterWithToken(appStudioToken);
+    try {
       const response = await requester.post(
         `/api/appdefinitions/${teamsAppId}/override`,
         appDefinition
       );
       if (response && response.data) {
         const app = <IAppDefinition>response.data;
-
-        if (app && app.teamsAppId && app.teamsAppId === teamsAppId) {
-          return app;
-        } else {
-          await logProvider?.error(
-            `teamsAppId mismatch. Input: ${teamsAppId}. Got: ${app.teamsAppId}`
-          );
-        }
+        return app;
+      } else {
+        throw new Error(
+          `Cannot update teams app ${teamsAppId}, response: ${JSON.stringify(response)}`
+        );
       }
+    } catch (e: any) {
+      const correlationId = e.response?.headers[Constants.CORRELATION_ID];
+      const message =
+        `Cannot create teams app due to ${e.name}: ${e.message}` +
+        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
+      const error = new Error(message);
+      if (e.response?.status) {
+        error.name = e.response?.status;
+      }
+      throw error;
     }
-
-    throw new Error(`invalid appDefinition[${appDefinition}] or appStudioToken[${appStudioToken}]`);
   }
 
   export async function validateManifest(
@@ -228,13 +235,19 @@ export namespace AppStudioClient {
       } else {
         throw AppStudioResultFactory.SystemError(
           AppStudioError.ValidationFailedError.name,
-          AppStudioError.ValidationFailedError.message(["Unknown reason"])
+          AppStudioError.ValidationFailedError.message([
+            `Validation failed, response: ${JSON.stringify(response)}`,
+          ])
         );
       }
-    } catch (e) {
+    } catch (e: any) {
+      const correlationId = e.response?.headers[Constants.CORRELATION_ID];
+      const message =
+        `Cannot create teams app due to ${e.name}: ${e.message}` +
+        (correlationId ? `X-Correlation-ID: ${correlationId}` : "");
       throw AppStudioResultFactory.SystemError(
         AppStudioError.ValidationFailedError.name,
-        AppStudioError.ValidationFailedError.message(["Unknown reason"]),
+        AppStudioError.ValidationFailedError.message([message]),
         e
       );
     }
@@ -282,14 +295,15 @@ export namespace AppStudioClient {
           AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
         );
       }
-    } catch (error) {
-      if (error instanceof SystemError) {
-        throw error;
+    } catch (e: any) {
+      if (e instanceof SystemError) {
+        throw e;
       } else {
+        const correlationId = e.response?.headers[Constants.CORRELATION_ID];
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
-          error
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, correlationId),
+          e
         );
       }
     }
@@ -343,13 +357,14 @@ export namespace AppStudioClient {
           AppStudioError.TeamsAppPublishFailedError.message(teamsAppId)
         );
       }
-    } catch (error) {
+    } catch (error: any) {
       if (error instanceof SystemError) {
         throw error;
       } else {
+        const correlationId = error.response?.headers[Constants.CORRELATION_ID];
         throw AppStudioResultFactory.SystemError(
           AppStudioError.TeamsAppPublishFailedError.name,
-          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId),
+          AppStudioError.TeamsAppPublishFailedError.message(teamsAppId, correlationId),
           error
         );
       }

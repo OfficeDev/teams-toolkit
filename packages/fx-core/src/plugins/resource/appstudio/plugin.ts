@@ -1638,7 +1638,7 @@ export class AppStudioPluginImpl {
     try {
       const appDefinition = await AppStudioClient.createApp(
         archivedFile,
-        appStudioToken,
+        appStudioToken!,
         ctx.logProvider
       );
       return ok(appDefinition);

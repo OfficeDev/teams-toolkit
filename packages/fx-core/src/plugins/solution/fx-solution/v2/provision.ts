@@ -92,7 +92,7 @@ export async function provisionResource(
   if (!newEnvInfo.state[GLOBAL_CONFIG]) {
     newEnvInfo.state[GLOBAL_CONFIG] = { output: {}, secrets: {} };
   }
-  newEnvInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = "false";
+  newEnvInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = false;
   if (isAzureProject(azureSolutionSettings)) {
     //fill in common questions for solution
     const appName = ctx.projectSetting.appName;
@@ -263,7 +263,7 @@ export async function provisionResource(
     }
     const update = combineRecords(configureResourceResult.output);
     _.assign(newEnvInfo.state, update);
-    newEnvInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = "true";
+    newEnvInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = true;
     return new v2.FxSuccess(newEnvInfo.state);
   }
 }

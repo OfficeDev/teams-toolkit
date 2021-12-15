@@ -42,7 +42,7 @@ export class TestFilePath {
   static readonly identityProvisionFileName = "identityProvision.bicep";
   static readonly botProvisionFileName = "botProvision.bicep";
 
-  static readonly configurationFolder = "teamsfx";
+  static readonly configurationFolder = "teamsFx";
   static readonly fehostConfigFileName = "frontendHostingConfig.bicep";
   static readonly simpleAuthConfigFileName = "simpleAuthConfig.bicep";
   static readonly aadConfigFileName = "aadConfig.bicep";

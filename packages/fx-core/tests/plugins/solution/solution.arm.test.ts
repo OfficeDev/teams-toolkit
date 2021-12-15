@@ -321,7 +321,6 @@ Mocked simple auth configuration orchestration content. Module path: './teamsFx/
     const simpleAuthUpdateArmTemplatesStub = TestHelper.mockedSimpleAuthUpdateArmTemplates(mocker);
     const botUpdateArmTemplatesStub = TestHelper.mockedBotUpdateArmTemplates(mocker);
     TestHelper.mockedFeHostUpdateArmTemplates(mocker);
-    TestHelper.mockedAadUpdateArmTemplates(mocker);
     TestHelper.mockedIdentityUpdateArmTemplates(mocker);
 
     // Scaffold tab project

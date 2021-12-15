@@ -210,12 +210,6 @@ export class TestHelper {
     });
   }
 
-  static mockedAadUpdateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    return mocker.stub(aadPlugin, "updateArmTemplates").callsFake(async (ctx: PluginContext) => {
-      return ok({});
-    });
-  }
-
   static mockedIdentityGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
     return mocker
       .stub(identityPlugin, "generateArmTemplates")

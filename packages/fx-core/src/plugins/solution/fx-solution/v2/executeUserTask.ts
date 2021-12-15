@@ -27,6 +27,8 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
   SolutionSource,
+  GLOBAL_CONFIG,
+  SOLUTION_PROVISION_SUCCEEDED,
 } from "../constants";
 import * as util from "util";
 import {
@@ -514,17 +516,15 @@ export async function addResource(
       false
     );
   }
-
+  if (addNewResourceToProvision) {
+    envInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = false;
+  }
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddResource, {
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
     [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
     [SolutionTelemetryProperty.Resources]: addResourcesAnswer.join(";"),
   });
-  return ok(
-    addNewResourceToProvision
-      ? { solutionSettings: settings, solutionConfig: { provisionSucceeded: false } }
-      : Void
-  );
+  return ok(Void);
 }
 
 export function extractParamForRegisterTeamsAppAndAad(

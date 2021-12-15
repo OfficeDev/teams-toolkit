@@ -136,6 +136,11 @@ export class LocalDebugPlugin implements Plugin {
             EOL: os.EOL,
           }
         );
+
+        await fs.writeJSON(`${ctx.root}/.vscode/settings.json`, Settings.generateSettings(false), {
+          spaces: 4,
+          EOL: os.EOL,
+        });
       } else {
         const launchConfigurations = Launch.generateConfigurations(
           includeFrontend,
@@ -242,12 +247,14 @@ export class LocalDebugPlugin implements Plugin {
           }
         }
 
-        if (includeBackend) {
-          await fs.writeJSON(`${ctx.root}/.vscode/settings.json`, Settings.generateSettings(), {
+        await fs.writeJSON(
+          `${ctx.root}/.vscode/settings.json`,
+          Settings.generateSettings(includeBackend),
+          {
             spaces: 4,
             EOL: os.EOL,
-          });
-        }
+          }
+        );
       }
     }
 

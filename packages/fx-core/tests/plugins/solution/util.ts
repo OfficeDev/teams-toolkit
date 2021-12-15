@@ -110,9 +110,12 @@ export function mockedFehostScaffoldArmResult(): ArmTemplateResult {
   const res: ArmTemplateResult = {
     Provision: {
       Orchestration:
-        "Mocked frontend hosting module content. Module path: {{PluginOutput.fx-resource-frontend-hosting.Modules.frontendHostingProvision.Path}}. Variable: {{PluginOutput.fx-resource-simple-auth.Outputs.endpoint}}",
+        "Mocked frontend hosting module content. Module path: {{PluginOutput.fx-resource-frontend-hosting.Provision.frontendHostingProvision.ProvisionPath}}. Variable: {{PluginOutput.fx-resource-simple-auth.References.endpoint}}",
       Modules: {
         frontendHostingProvision: "Mocked frontend hosting provision module content",
+      },
+      Reference: {
+        endpoint: "Mocked front end host endpoint",
       },
     },
     Configuration: {
@@ -129,7 +132,7 @@ export function mockedSimpleAuthScaffoldArmResult(): ArmTemplateResult {
   const res: ArmTemplateResult = {
     Provision: {
       Orchestration:
-        "Mocked simple auth module content. Module path: {{PluginOutput.fx-resource-simple-auth.Modules.simpleAuthProvision.Path}}. Variable: {{PluginOutput.fx-resource-frontend-hosting.Outputs.endpoint}}",
+        "Mocked simple auth module content. Module path: {{PluginOutput.fx-resource-simple-auth.Provision.simpleAuthProvision.ProvisionPath}}. Variable: {{PluginOutput.fx-resource-frontend-hosting.References.endpoint}}",
       Modules: {
         simpleAuthProvision: "Mocked simple auth provision module content",
       },
@@ -173,7 +176,8 @@ export function mockedAadScaffoldArmResult(): ArmTemplateResult {
 export function mockedBotArmTemplateResultFunc(): ArmTemplateResult {
   const res: ArmTemplateResult = {
     Provision: {
-      Orchestration: "Bot Provision module content content and outputs",
+      Orchestration:
+        "Bot Provision module content content and outputs, Module path: {{PluginOutput.fx-resource-bot.Provision.bot.ProvisionPath}}.",
       Modules: {
         bot: "Mocked bot Provision content. simple auth endpoint: {{PluginOutput.fx-resource-simple-auth.References.endpoint}}",
       },

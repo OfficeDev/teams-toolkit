@@ -208,6 +208,7 @@ export enum TelemetryTiggerFrom {
   Webview = "Webview",
   CodeLens = "CodeLens",
   EditorTitle = "EditorTitle",
+  SideBar = "SideBar",
   Other = "Other",
   Unknow = "Unknow",
 }

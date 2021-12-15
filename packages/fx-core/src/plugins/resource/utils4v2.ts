@@ -19,6 +19,8 @@ import {
   TokenProvider,
   Void,
   v2,
+  ConfigValue,
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 import {
   BicepTemplate,
@@ -280,6 +282,125 @@ export async function deployAdapter(
   return ok(Void);
 }
 
+/**
+ * An adaptor that behaves like a ConfigMap for plugin local settings,
+ * but modifies plugin settings json in-place when setting values.
+ */
+class ConfigMapAdaptor implements ConfigMap {
+  private _pluginSettings: Json;
+  private _map: ConfigMap;
+
+  constructor(pluginName: string, json: Json) {
+    this._pluginSettings = json;
+    const map = ConfigMap.fromJSON(json);
+    if (!map) {
+      throw InvalidStateError(pluginName, json);
+    }
+    this._map = map;
+    this.size = this._map.size;
+  }
+  getString(k: string, defaultValue?: string): string | undefined {
+    return this._map.getString(k, defaultValue);
+  }
+  getBoolean(k: string, defaultValue?: boolean): boolean | undefined {
+    return this._map.getBoolean(k, defaultValue);
+  }
+  getNumber(k: string, defaultValue?: number): number | undefined {
+    return this._map.getNumber(k, defaultValue);
+  }
+  getStringArray(k: string, defaultValue?: string[]): string[] | undefined {
+    return this._map.getStringArray(k, defaultValue);
+  }
+  getNumberArray(k: string, defaultValue?: number[]): number[] | undefined {
+    return this._map.getNumberArray(k, defaultValue);
+  }
+  getBooleanArray(k: string, defaultValue?: boolean[]): boolean[] | undefined {
+    return this._map.getBooleanArray(k, defaultValue);
+  }
+  getOptionItem(k: string, defaultValue?: OptionItem): OptionItem | undefined {
+    return this._map.getOptionItem(k, defaultValue);
+  }
+  getOptionItemArray(k: string, defaultValue?: OptionItem[]): OptionItem[] | undefined {
+    return this._map.getOptionItemArray(k, defaultValue);
+  }
+  toJSON(): Json {
+    return this._pluginSettings;
+  }
+  clear(): void {
+    Object.keys(this._pluginSettings).forEach((key) => delete this._pluginSettings[key]);
+    return this._map.clear();
+  }
+  delete(key: string): boolean {
+    const deleted = this._map.delete(key);
+    if (deleted) {
+      delete this._pluginSettings[key];
+    }
+    return deleted;
+  }
+  forEach(
+    callbackfn: (value: any, key: string, map: Map<string, any>) => void,
+    thisArg?: any
+  ): void {
+    return this._map.forEach(callbackfn, thisArg);
+  }
+  get(key: string) {
+    return this._map.get(key);
+  }
+  has(key: string): boolean {
+    return this._map.has(key);
+  }
+  size: number;
+  entries(): IterableIterator<[string, any]> {
+    return this._map.entries();
+  }
+  keys(): IterableIterator<string> {
+    return this._map.keys();
+  }
+  values(): IterableIterator<any> {
+    return this._map.values();
+  }
+  [Symbol.iterator](): IterableIterator<[string, any]> {
+    return this._map.entries();
+  }
+  [Symbol.toStringTag]: string;
+
+  set(key: string, value: ConfigValue): this {
+    this._map.set(key, value);
+    this._pluginSettings[key] = value;
+    this.size = this._map.size;
+    return this;
+  }
+}
+
+/**
+ * a Json backed LocalSettings which keeps localSettings Json and ConfigMap in sync
+ */
+class LocalSettingsAdaptor implements LocalSettings {
+  teamsApp?: ConfigMap;
+  auth?: ConfigMap;
+  frontend?: ConfigMap;
+  backend?: ConfigMap;
+  bot?: ConfigMap;
+
+  constructor(localSettings: Json, pluginName: string) {
+    if (localSettings && localSettings["teamsApp"]) {
+      this.teamsApp = new ConfigMapAdaptor(pluginName, localSettings["teamsApp"]);
+    }
+    if (localSettings && localSettings["auth"]) {
+      this.auth = new ConfigMapAdaptor(pluginName, localSettings["auth"]);
+    }
+    if (localSettings && localSettings["frontend"]) {
+      this.frontend = new ConfigMapAdaptor(pluginName, localSettings["frontend"]);
+    }
+    if (localSettings && localSettings["backend"]) {
+      this.backend = new ConfigMapAdaptor(pluginName, localSettings["backend"]);
+    }
+    if (localSettings && localSettings["bot"]) {
+      this.bot = new ConfigMapAdaptor(pluginName, localSettings["bot"]);
+    }
+  }
+}
+
 export async function provisionLocalResourceAdapter(
   ctx: Context,
   inputs: Inputs,
@@ -290,7 +411,8 @@ export async function provisionLocalResourceAdapter(
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
-  setLocalSettingsV1(pluginContext, localSettings);
+  const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
+  pluginContext.localSettings = localSettingsAdaptor;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
@@ -298,7 +420,6 @@ export async function provisionLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
-  setLocalSettingsV2(localSettings, pluginContext.localSettings);
   return ok(Void);
 }
 
@@ -312,7 +433,8 @@ export async function configureLocalResourceAdapter(
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
-  setLocalSettingsV1(pluginContext, localSettings);
+  const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
+  pluginContext.localSettings = localSettingsAdaptor;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
@@ -320,7 +442,6 @@ export async function configureLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
-  setLocalSettingsV2(localSettings, pluginContext.localSettings);
   return ok(Void);
 }
 
@@ -340,11 +461,11 @@ export async function executeUserTaskAdapter(
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   setEnvInfoV1ByStateV2(plugin.name, pluginContext, envInfo);
-  setLocalSettingsV1(pluginContext, localSettings);
+  const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
+  pluginContext.localSettings = localSettingsAdaptor;
   const res = await plugin.executeUserTask(func, pluginContext);
   if (res.isErr()) return err(res.error);
   setStateV2ByConfigMapInc(plugin.name, envInfo.state, pluginContext.config);
-  setLocalSettingsV2(localSettings, pluginContext.localSettings);
   return ok(res.value);
 }
 
@@ -419,14 +540,6 @@ export function setEnvInfoV1ByStateV2(
   pluginContext.envInfo = envInfo;
 }
 
-export function setLocalSettingsV2(localSettingsJson: Json, localSettings?: LocalSettings): void {
-  _.assign(localSettingsJson.teamsApp, mapToJson(localSettings?.teamsApp));
-  _.assign(localSettingsJson.auth, mapToJson(localSettings?.auth));
-  _.assign(localSettingsJson.backend, mapToJson(localSettings?.backend));
-  _.assign(localSettingsJson.frontend, mapToJson(localSettings?.frontend));
-  _.assign(localSettingsJson.bot, mapToJson(localSettings?.bot));
-}
-
 export function assignJsonInc(target?: Json, source?: Json): Json | undefined {
   if (!target) return source;
   if (!source) return target;
@@ -444,16 +557,6 @@ export function assignJsonInc(target?: Json, source?: Json): Json | undefined {
     }
   }
   return target;
-}
-
-export function setLocalSettingsV1(pluginContext: PluginContext, localSettings: Json): void {
-  pluginContext.localSettings = {
-    teamsApp: ConfigMap.fromJSON(localSettings.teamsApp) || new ConfigMap(),
-    auth: ConfigMap.fromJSON(localSettings.auth),
-    backend: ConfigMap.fromJSON(localSettings.backend),
-    bot: ConfigMap.fromJSON(localSettings.bot),
-    frontend: ConfigMap.fromJSON(localSettings.frontend),
-  };
 }
 
 export async function collaborationApiAdaptor(

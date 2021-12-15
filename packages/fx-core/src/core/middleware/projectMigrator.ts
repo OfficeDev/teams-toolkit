@@ -99,7 +99,6 @@ const ChangeLogsFlag = "openUpgradeChangelogs";
 const AADClientSecretFlag = "NeedToSetAADClientSecretEnv";
 
 const gitignoreFileName = ".gitignore";
-let updateNotificationFlag = false;
 let fromReloadFlag = false;
 
 class EnvConfigName {
@@ -193,17 +192,6 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       );
       throw error;
     }
-  } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
-    // TODO: delete before Arm && Multi-env version released
-    // only for arm && multi-env project with unreleased teams toolkit version
-    updateNotificationFlag = true;
-    const core = ctx.self as FxCore;
-    core.tools.ui.showMessage(
-      "info",
-      getStrings().solution.NeedToUpdateTeamsToolkitVersionMessage,
-      false,
-      "OK"
-    );
   } else {
     // continue next step only when:
     // 1. no need to upgrade the project;
@@ -942,28 +930,6 @@ async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolea
     return true;
   }
   return false;
-}
-
-async function needUpdateTeamsToolkitVersion(ctx: CoreHookContext): Promise<boolean> {
-  if (preCheckEnvEnabled()) {
-    return false;
-  }
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  if (!inputs.projectPath) {
-    return false;
-  }
-  const fx = path.join(inputs.projectPath as string, ".fx");
-  if (!(await fs.pathExists(fx))) {
-    return false;
-  }
-  // only for arm && multi-env project
-  const armParameter = path.join(
-    fx,
-    "configs",
-    parameterFileNameTemplate.replace("@envName", "dev")
-  );
-  const defaultEnv = path.join(fx, "env.default.json");
-  return (await fs.pathExists(armParameter)) && !(await fs.pathExists(defaultEnv));
 }
 
 function preCheckEnvEnabled() {

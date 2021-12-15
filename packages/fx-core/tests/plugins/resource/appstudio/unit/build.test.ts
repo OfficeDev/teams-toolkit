@@ -15,6 +15,7 @@ import {
   LocalSettings,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
+import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio/appStudio";
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import AdmZip from "adm-zip";
@@ -79,6 +80,8 @@ describe("Build Teams Package", () => {
     BotPlugin.name = "fx-resource-bot";
     BotPlugin.displayName = "Bot";
     selectedPlugins = [BotPlugin];
+
+    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
   });
 
   afterEach(() => {

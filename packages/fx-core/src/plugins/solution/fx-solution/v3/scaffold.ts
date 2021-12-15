@@ -19,6 +19,7 @@ import * as path from "path";
 import { Container, Service } from "typedi";
 import { InvalidInputError } from "./error";
 import { createSelectModuleQuestionNode, selectScaffoldTemplateQuestion } from "./questions";
+import { getModule } from "./utils";
 @Service("fx-scaffold-react-tab")
 export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
   async getTemplates(
@@ -33,7 +34,18 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
       },
     ]);
   }
-
+  async getQuestionsForScaffold(
+    ctx: v2.Context,
+    inputs: Inputs
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return ok(
+      new QTreeNode({
+        type: "text",
+        name: "test_question",
+        title: "test question from ReactTabScaffoldPlugin",
+      })
+    );
+  }
   async scaffold(
     ctx: v2.Context,
     inputs: v3.PluginScaffoldInputs
@@ -41,9 +53,10 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
     ctx.logProvider.info("fx-scaffold-react-tab:scaffold");
     if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "tabs"));
     const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-    if (inputs.module !== undefined) {
-      solutionSettings.modules[Number(inputs.module)].dir = "tabs";
-      solutionSettings.modules[Number(inputs.module)].deployType = "folder";
+    const module = getModule(solutionSettings, inputs.module);
+    if (module) {
+      module.dir = "tabs";
+      module.deployType = "folder";
     }
     return ok(undefined);
   }
@@ -72,9 +85,10 @@ export class BlazorTabScaffoldPlugin implements v3.ScaffoldPlugin {
     ctx.logProvider.info("fx-scaffold-blazor-tab:scaffold");
     if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "aspdnet"));
     const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-    if (inputs.module !== undefined) {
-      solutionSettings.modules[Number(inputs.module)].dir = "aspdnet";
-      solutionSettings.modules[Number(inputs.module)].deployType = "zip";
+    const module = getModule(solutionSettings, inputs.module);
+    if (module) {
+      module.dir = "aspdnet";
+      module.deployType = "zip";
     }
     return ok(undefined);
   }
@@ -117,6 +131,23 @@ export async function getQuestionsForScaffold(
         },
       });
     }
+    if (plugin.getQuestionsForScaffold) {
+      const pluginQuestionsRes = await plugin.getQuestionsForScaffold(ctx, inputs);
+      if (pluginQuestionsRes.isOk()) {
+        const pluginNode = pluginQuestionsRes.value;
+        if (pluginNode) {
+          pluginNode.condition = {
+            validFunc: async (input: OptionItem, inputs?: Inputs): Promise<string | undefined> => {
+              if (input.data) {
+                if ((input.data as any).pluginName === plugin.name) return undefined;
+              }
+              return "";
+            },
+          };
+          templateNode.addChild(pluginNode);
+        }
+      }
+    }
   }
   selectScaffoldTemplateQuestion.staticOptions = staticOptions;
   node.addChild(templateNode);
@@ -124,7 +155,7 @@ export async function getQuestionsForScaffold(
 }
 export async function scaffold(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: number; template?: OptionItem }
+  inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem }
 ): Promise<Result<Void, FxError>> {
   if (!inputs.template) {
     return err(new InvalidInputError(inputs));

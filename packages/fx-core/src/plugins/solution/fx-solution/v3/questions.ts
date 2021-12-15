@@ -46,6 +46,7 @@ export const selectCapabilitiesQuestion: MultiSelectQuestion = {
   type: "multiSelect",
   staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
   default: [TabOptionItem.id],
+  skipSingleOption: true,
 };
 
 export const selectScaffoldTemplateQuestion: SingleSelectQuestion = {

@@ -530,7 +530,7 @@ export interface FunctionRouter {
 }
 
 // @public
-export interface FuncValidation<T extends string | string[] | undefined> {
+export interface FuncValidation<T extends string | string[] | OptionItem | OptionItem[] | undefined> {
     validFunc: ValidateFunc<T>;
 }
 
@@ -860,7 +860,7 @@ interface ISolution {
         capabilities?: string[];
     }) => Promise<Result<Void, FxError>>;
     addResource: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        module?: number;
+        module?: string;
         resource?: string;
     }) => Promise<Result<Void, FxError>>;
     // (undocumented)
@@ -892,7 +892,7 @@ interface ISolution {
     // (undocumented)
     publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffold: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        module?: number;
+        module?: string;
         template?: OptionItem;
     }) => Promise<Result<Void, FxError>>;
 }
@@ -1190,7 +1190,7 @@ type PluginName = string;
 interface PluginScaffoldInputs extends InputsWithProjectPath {
     buildPath?: string;
     dir?: string;
-    module?: number;
+    module?: string;
     template: string;
 }
 
@@ -1389,7 +1389,7 @@ export interface RunnableTask<T> {
 
 // @public (undocumented)
 interface ScaffoldPlugin extends Plugin_3 {
-    getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForScaffold?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     getTemplates: (ctx: Context_2, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
     scaffold: (ctx: Context_2, inputs: PluginScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
 }
@@ -2019,7 +2019,7 @@ declare namespace v3 {
 export { v3 }
 
 // @public
-export function validate<T extends string | string[] | undefined>(validSchema: ValidationSchema, value: T, inputs?: Inputs): Promise<string | undefined>;
+export function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(validSchema: ValidationSchema, value: T, inputs?: Inputs): Promise<string | undefined>;
 
 // @public (undocumented)
 export type ValidateFunc<T> = (input: T, inputs?: Inputs) => string | undefined | Promise<string | undefined>;

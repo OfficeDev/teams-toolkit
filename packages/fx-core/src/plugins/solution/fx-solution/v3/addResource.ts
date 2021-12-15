@@ -18,6 +18,7 @@ import { InvalidInputError, ResourceAlreadyAddedError } from "./error";
 import { createSelectModuleQuestionNode, selectResourceQuestion } from "./questions";
 import fs from "fs-extra";
 import * as path from "path";
+import { getModule } from "./utils";
 
 @Service("fx-resource-azure-storage")
 export class AzureStoragePlugin implements v3.ResourcePlugin {
@@ -93,14 +94,14 @@ export async function getQuestionsForAddResource(
 }
 export async function addResource(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: number; resource?: string }
+  inputs: v2.InputsWithProjectPath & { module?: string; resource?: string }
 ): Promise<Result<Void, FxError>> {
   if (!inputs.resource) {
     return err(new InvalidInputError(inputs, "inputs.resource undefined"));
   }
   const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
   if (inputs.module !== undefined) {
-    const module = solutionSettings.modules[inputs.module];
+    const module = getModule(solutionSettings, inputs.module);
     if (module) {
       if (module.hostingPlugin === inputs.resource) {
         return err(new ResourceAlreadyAddedError(inputs.resource));
@@ -148,7 +149,7 @@ export async function addResource(
 
 async function resolveResourceDependencies(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: number; resource?: string },
+  inputs: v2.InputsWithProjectPath & { module?: string; resource?: string },
   addedResourceNames: Set<string>
 ): Promise<Result<undefined, FxError>> {
   while (true) {

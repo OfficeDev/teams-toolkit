@@ -37,7 +37,7 @@ export interface PluginScaffoldInputs extends InputsWithProjectPath {
   /**
    * module index
    */
-  module?: number;
+  module?: string;
   /**
    * customized source root dir name
    */
@@ -67,7 +67,7 @@ export interface ScaffoldPlugin extends Plugin {
   /**
    * get questions before scaffolding
    */
-  getQuestionsForScaffolding?: (
+  getQuestionsForScaffold?: (
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;

@@ -27,7 +27,7 @@ export const QuestionModelMW_V3: Middleware = async (ctx: CoreHookContext, next:
   let getQuestionRes: Result<QTreeNode | QTreeNode[] | undefined, FxError> = ok(undefined);
   if (method === "init") {
     getQuestionRes = await getQuestionsForInit(inputs);
-  } else {
+  } else if (["addModule", "scaffold", "addResource"].includes(method || "")) {
     const solutionV3 = ctx.solutionV3;
     const contextV2 = ctx.contextV2;
     if (solutionV3 && contextV2) {

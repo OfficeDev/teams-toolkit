@@ -925,7 +925,10 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean>
 }
 export async function openWelcomeHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(PanelType.QuickStart);
+  vscode.commands.executeCommand(
+    "workbench.action.openWalkthrough",
+    "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitQuickStart"
+  );
 }
 
 export async function checkUpgrade(args?: any[]) {

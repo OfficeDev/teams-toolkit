@@ -106,7 +106,6 @@ import { SolutionPluginsV2 } from "../../../src/core/SolutionPluginContainer";
 import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
 import { EnvInfoV2, ResourceProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
 import frontend from "../../../src/plugins/resource/frontend";
-import { UnknownObject } from "@azure/core-http/types/latest/src/util/utils";
 import { LocalCrypto } from "../../../src/core/crypto";
 import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import * as armResources from "@azure/arm-resources";
@@ -471,6 +470,9 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
     });
+    mocker.stub(fs, "chmod").callsFake((path: PathLike, mode: fs.Mode) => {
+      return new Promise((resolve) => resolve());
+    });
     mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
       fileContent.set(file, JSON.stringify(obj));
     });
@@ -480,8 +482,9 @@ describe("provision() happy path for SPFx projects", () => {
       .resolves(mockedManifest);
     mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "validateManifest").resolves([]);
     mocker
-      .stub(AppStudioPluginImpl.prototype, "reloadManifestAndCheckRequiredFields" as any)
+      .stub(AppStudioPluginImpl.prototype, "reloadManifest" as any)
       .returns(ok(new TeamsAppManifest()));
   });
 

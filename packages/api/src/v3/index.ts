@@ -7,3 +7,4 @@ export * from "./plugins";
 export * from "./solutionSettings";
 export * from "./solution";
 export * from "./core";
+export * from "./AzureResourceStates";

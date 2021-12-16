@@ -22,12 +22,34 @@ describe("SolutionV3 - deploy", () => {
       projectId: uuid.v4(),
       solutionSettings: {
         name: TeamsFxAzureSolutionNameV3,
+        version: "3.0.0",
+        capabilities: ["Tab", "Bot"],
+        hostType: "Azure",
+        azureResources: [],
+        modules: [
+          {
+            capabilities: ["Tab"],
+            hostingPlugin: "fx-resource-azure-storage",
+            dir: "tabs",
+            buildPath: "build",
+            deolpyType: "folder",
+          },
+          {
+            capabilities: ["Bot"],
+            hostingPlugin: "fx-resource-azure-bot",
+            dir: "bot",
+            buildPath: "build",
+            deployType: "folder",
+          },
+        ],
+        activeResourcePlugins: ["fx-resource-azure-storage", "fx-resource-azure-bot"],
       },
     };
     const ctx = new MockedV2Context(projectSettings);
-    const inputs: v2.InputsWithProjectPath = {
+    const inputs: v2.InputsWithProjectPath & { modules: string[] } = {
       platform: Platform.VSCode,
       projectPath: ".",
+      modules: ["0", "1"],
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -41,7 +63,7 @@ describe("SolutionV3 - deploy", () => {
       config: {},
     };
     const res = await deploy(ctx, inputs, envInfov3, mockedTokenProvider);
-    assert.isTrue(res.isErr());
+    assert.isTrue(res.isOk());
   });
 
   it("getQuestionsForDeploy", async () => {
@@ -50,6 +72,27 @@ describe("SolutionV3 - deploy", () => {
       projectId: uuid.v4(),
       solutionSettings: {
         name: TeamsFxAzureSolutionNameV3,
+        version: "3.0.0",
+        capabilities: ["Tab", "Bot"],
+        hostType: "Azure",
+        azureResources: [],
+        modules: [
+          {
+            capabilities: ["Tab"],
+            hostingPlugin: "fx-resource-azure-storage",
+            dir: "tabs",
+            buildPath: "build",
+            deolpyType: "folder",
+          },
+          {
+            capabilities: ["Bot"],
+            hostingPlugin: "fx-resource-azure-bot",
+            dir: "bot",
+            buildPath: "build",
+            deployType: "folder",
+          },
+        ],
+        activeResourcePlugins: ["fx-resource-azure-storage", "fx-resource-azure-bot"],
       },
     };
     const ctx = new MockedV2Context(projectSettings);

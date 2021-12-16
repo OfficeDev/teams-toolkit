@@ -17,7 +17,7 @@ export async function init(
 ): Promise<Result<Void, FxError>> {
   const solutionSettings: v3.TeamsFxSolutionSettings = {
     version: "3.0.0",
-    name: TeamsFxAzureSolutionNameV3,
+    name: ctx.projectSetting.solutionSettings.name,
     capabilities: [],
     hostType: "Azure",
     azureResources: [],

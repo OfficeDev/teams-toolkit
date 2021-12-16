@@ -139,8 +139,7 @@ import {
 import { flattenConfigJson, newEnvInfo } from "./tools";
 import { LocalCrypto } from "./crypto";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
-import { merge } from "lodash";
-import { QuestionModelMW_V3 } from "./v3/mw/questionModel";
+import { assign, merge } from "lodash";
 import { init } from "./v3/init";
 import { SolutionLoaderMW_V3 } from "./v3/mw/solutionLoader";
 import { ProjectSettingsLoaderMW_V3 } from "./v3/mw/projectSettingsLoader";
@@ -535,10 +534,10 @@ export class FxCore implements v3.ICore {
         this.tools.tokenProvider
       );
       if (result.kind === "success") {
-        ctx.envInfoV2.state = merge(ctx.envInfoV2.state, result.output);
+        ctx.envInfoV2.state = assign(ctx.envInfoV2.state, result.output);
         return ok(Void);
       } else if (result.kind === "partialSuccess") {
-        ctx.envInfoV2.state = merge(ctx.envInfoV2.state, result.output);
+        ctx.envInfoV2.state = assign(ctx.envInfoV2.state, result.output);
         return err(result.error);
       } else {
         return err(result.error);
@@ -1410,7 +1409,7 @@ export class FxCore implements v3.ICore {
     return ok(node.trim());
   }
 
-  @hooks([ErrorHandlerMW, QuestionModelMW_V3, ContextInjectorMW, ProjectSettingsWriterMW])
+  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async init(
     inputs: v2.InputsWithProjectPath & { solution?: string },
     ctx?: CoreHookContext
@@ -1421,7 +1420,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,
     SolutionLoaderMW_V3,
-    QuestionModelMW_V3,
+    QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
   ])
@@ -1443,7 +1442,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,
     SolutionLoaderMW_V3,
-    QuestionModelMW_V3,
+    QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
   ])
@@ -1461,7 +1460,7 @@ export class FxCore implements v3.ICore {
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,
     SolutionLoaderMW_V3,
-    QuestionModelMW_V3,
+    QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
   ])
@@ -1580,10 +1579,14 @@ export async function downloadSample(
     if (projectSettingsRes.isOk()) {
       const projectSettings = projectSettingsRes.value;
       projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
+      projectSettings.isFromSample = true;
       inputs.projectId = projectSettings.projectId;
       telemetryProperties[TelemetryProperty.ProjectId] = projectSettings.projectId;
       ctx.projectSettings = projectSettings;
       inputs.projectPath = sampleAppPath;
+    } else {
+      telemetryProperties[TelemetryProperty.ProjectId] =
+        "unknown, failed to set projectId in projectSettings.json";
     }
     progress.end(true);
     sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, telemetryProperties);

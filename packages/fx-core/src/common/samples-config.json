@@ -30,6 +30,20 @@
             "configuration": "Ready for local debug"
         },
         {
+            "id": "bot-sso",
+            "title": "Hello World Bot with SSO",
+            "shortDescription": "A Hello World app of Microsoft Teams Bot app with SSO",
+            "fullDescription": "This is an extended Hello World app of Microsoft Teams Bot app demonstrating how to integrate with Bot Framework SDK, TeamsFx SDK, and Graph SDK to implement SSO (Single Sign-On) feature that retrieves profile photos for currently signed-in users.",
+            "tags": [
+                "Bot",
+                "TS",
+                "Adaptive Cards",
+                "SSO"
+            ],
+            "time": "5min to run",
+            "configuration": "Ready for local debug"
+        },
+        {
             "id": "graph-toolkit-contact-exporter",
             "title": "Contact Exporter using Graph Toolkit",
             "shortDescription": "Contact Exporter app of Microsoft Teams Tab app.",

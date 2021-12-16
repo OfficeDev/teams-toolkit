@@ -108,7 +108,6 @@ import {
   DeployPluginSelectQuestion,
   HostTypeOptionAzure,
   MessageExtensionItem,
-  ProgrammingLanguageQuestion,
   TabOptionItem,
   GetUserEmailQuestion,
   TabSPFxItem,
@@ -1004,11 +1003,6 @@ export class TeamsAppSolution implements Solution {
           capNode.addChild(botGroup);
         }
       }
-
-      // 1.3 Language
-      const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-      programmingLanguage.condition = { minItems: 1 };
-      capNode.addChild(programmingLanguage);
     } else if (stage == Stage.migrateV1) {
       const capQuestion = createV1CapabilityQuestion();
       const capNode = new QTreeNode(capQuestion);

@@ -3,6 +3,8 @@
 import { Solution, v2 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container } from "typedi";
+import { isV3 } from ".";
+import { TabSPFxItem } from "../plugins/solution/fx-solution/question";
 
 export const SolutionPlugins: any = {
   AzureTeamsSolution: "AzureTeamsSolution",
@@ -38,6 +40,18 @@ export function getAllSolutionPlugins(): Solution[] {
     }
   }
   return plugins;
+}
+
+export function getSolutionPluginByCap(cap: string[]): v2.SolutionPlugin | undefined {
+  if (isV3() && cap.includes(TabSPFxItem.id)) {
+    return Container.get<v2.SolutionPlugin>(SolutionPluginsV2.TeamsSPFxSolution);
+  } else {
+    return Container.get<v2.SolutionPlugin>(SolutionPluginsV2.AzureTeamsSolutionV2);
+  }
+}
+
+export function getSolutionPluginByCapV1(cap: string[]): Solution | undefined {
+  return Container.get<Solution>(SolutionPlugins.AzureTeamsSolution);
 }
 
 export function getSolutionPluginV2ByName(name: string): v2.SolutionPlugin | undefined {

@@ -606,7 +606,10 @@ export default class Preview extends YargsCommand {
       undefined,
       {
         shell: true,
-        cwd: ngrokChecker.getNgrokBinFolder(),
+        cwd: botRoot,
+        env: commonUtils.mergeProcessEnv({
+          PATH: ngrokChecker.getNgrokBinFolder(),
+        }),
       }
     );
     this.backgroundTasks.push(ngrokStartTask);

@@ -139,6 +139,7 @@ export enum SolutionError {
   FailedToGenerateArmTemplates = "FailedToGenerateArmTemplates",
   FailedToUpdateArmParameters = "FailedToUpdateArmTemplates",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
+  FailedToValidateArmTemplates = "FailedToValidateArmTemplates",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
   M365TenantNotMatch = "M365TenantNotMatch",
   FeatureNotSupported = "FeatureNotSupported",
@@ -167,7 +168,7 @@ export const LOCAL_APPLICATION_ID_URIS = "local_applicationIdUris";
 export const REMOTE_APPLICATION_ID_URIS = "applicationIdUris";
 export const LOCAL_CLIENT_SECRET = "local_clientSecret";
 export const REMOTE_CLIENT_SECRET = "clientSecret";
-export const REMOTE_TENANT_ID = "tenantId";
+export const REMOTE_TEAMS_APP_TENANT_ID = "teamsAppTenantId";
 export const LOCAL_TENANT_ID = "local_tenantId";
 // Teams App Id for local debug
 export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";
@@ -182,10 +183,6 @@ export const DoProvisionFirstError = new UserError(
 export const CancelError = new UserError("UserCancel", "UserCancel", "Solution");
 // This is the max length specified in
 // https://developer.microsoft.com/en-us/json-schemas/teams/v1.7/MicrosoftTeams.schema.json
-
-export class HelpLinks {
-  static readonly WhyNeedProvision = "https://aka.ms/teamsfx/whyneedprovision";
-}
 
 export enum SolutionTelemetryEvent {
   CreateStart = "create-start",
@@ -227,6 +224,7 @@ export enum SolutionTelemetryProperty {
   CollaboratorCount = "collaborator-count",
   AadOwnerCount = "aad-owner-count",
   AadPermission = "aad-permission",
+  ArmDeploymentError = "arm-deployment-error",
   TeamsAppPermission = "teams-app-permission",
   ProgrammingLanguage = "programming-language",
   Env = "env",

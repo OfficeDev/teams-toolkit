@@ -55,7 +55,7 @@ export class AppStudioPlugin implements Plugin {
           name: Constants.BUILD_OR_PUBLISH_QUESTION,
           type: "singleSelect",
           staticOptions: [manuallySubmitOption, autoPublishOption],
-          title: "Teams Toolkit: Publish to Teams",
+          title: "Teams: Publish to Teams",
           default: autoPublishOption.id,
         });
         appStudioQuestions.addChild(buildOrPublish);
@@ -144,7 +144,7 @@ export class AppStudioPlugin implements Plugin {
   public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.validateManifest);
-    const validationpluginResult = await this.appStudioPluginImpl.validateManifest(ctx);
+    const validationpluginResult = await this.appStudioPluginImpl.validateManifest(ctx, false);
     if (validationpluginResult.isErr()) {
       return err(validationpluginResult.error);
     }
@@ -152,7 +152,6 @@ export class AppStudioPlugin implements Plugin {
     if (validationResult.length > 0) {
       const errMessage = AppStudioError.ValidationFailedError.message(validationResult);
       ctx.logProvider?.error("Manifest Validation failed!");
-      ctx.ui?.showMessage("error", errMessage, false);
       const properties: { [key: string]: string } = this.appStudioPluginImpl.commonProperties;
       properties[TelemetryPropertyKey.validationResult] = validationResult.join("\n");
       const validationFailed = AppStudioResultFactory.UserError(
@@ -227,7 +226,8 @@ export class AppStudioPlugin implements Plugin {
       return err(
         AppStudioResultFactory.UserError(
           AppStudioError.TeamsPackageBuildError.name,
-          AppStudioError.TeamsPackageBuildError.message(error)
+          AppStudioError.TeamsPackageBuildError.message(error),
+          error.helpLink
         )
       );
     }
@@ -326,7 +326,8 @@ export class AppStudioPlugin implements Plugin {
           return err(
             AppStudioResultFactory.UserError(
               AppStudioError.TeamsPackageBuildError.name,
-              AppStudioError.TeamsPackageBuildError.message(error)
+              AppStudioError.TeamsPackageBuildError.message(error),
+              error.helpLink
             )
           );
         }
@@ -420,8 +421,7 @@ export class AppStudioPlugin implements Plugin {
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.checkPermission);
       return ok(checkPermissionResult);
     } catch (error) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.checkPermission, error);
-      return err(
+      const fxError =
         error.name && error.name >= 400 && error.name < 500
           ? AppStudioResultFactory.UserError(
               AppStudioError.CheckPermissionFailedError.name,
@@ -430,8 +430,9 @@ export class AppStudioPlugin implements Plugin {
           : AppStudioResultFactory.SystemError(
               AppStudioError.CheckPermissionFailedError.name,
               AppStudioError.CheckPermissionFailedError.message(error)
-            )
-      );
+            );
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.checkPermission, fxError);
+      return err(fxError);
     }
   }
 
@@ -450,13 +451,18 @@ export class AppStudioPlugin implements Plugin {
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.grantPermission);
       return ok(grantPermissionResult);
     } catch (error) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.grantPermission, error);
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.GrantPermissionFailedError.name,
-          error.message
-        )
-      );
+      const fxError =
+        error.name && error.name >= 400 && error.name < 500
+          ? AppStudioResultFactory.UserError(
+              AppStudioError.GrantPermissionFailedError.name,
+              AppStudioError.GrantPermissionFailedError.message(error.message)
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.GrantPermissionFailedError.name,
+              AppStudioError.GrantPermissionFailedError.message(error.message)
+            );
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.grantPermission, fxError);
+      return err(fxError);
     }
   }
 
@@ -469,13 +475,18 @@ export class AppStudioPlugin implements Plugin {
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.listCollaborator);
       return ok(listCollaborator);
     } catch (error) {
-      TelemetryUtils.sendErrorEvent(TelemetryEventName.listCollaborator, error);
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.ListCollaboratorFailedError.name,
-          AppStudioError.ListCollaboratorFailedError.message(error)
-        )
-      );
+      const fxError =
+        error.name && error.name >= 400 && error.name < 500
+          ? AppStudioResultFactory.UserError(
+              AppStudioError.ListCollaboratorFailedError.name,
+              AppStudioError.ListCollaboratorFailedError.message(error)
+            )
+          : AppStudioResultFactory.SystemError(
+              AppStudioError.ListCollaboratorFailedError.name,
+              AppStudioError.ListCollaboratorFailedError.message(error)
+            );
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.listCollaborator, fxError);
+      return err(fxError);
     }
   }
 

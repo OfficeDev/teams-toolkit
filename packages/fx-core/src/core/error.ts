@@ -32,6 +32,14 @@ export function ProjectFolderNotExistError(path: string): UserError {
   );
 }
 
+export function ProjectFolderInvalidError(path: string): UserError {
+  return new UserError(
+    "ProjectFolderInvalidError",
+    `Path ${path} is invalid, please set valid root folder in user settings(Use absolute directory or relative directory start with \${homeDir} ).`,
+    CoreSource
+  );
+}
+
 export function ArchiveUserFileError(path: string, reason: string): UserError {
   return new UserError(
     "ArchiveUserFileError",
@@ -128,8 +136,12 @@ export class TaskNotSupportError extends SystemError {
   }
 }
 
-export function FetchSampleError(): UserError {
-  return new UserError("FetchSampleError", "Failed to download sample app", CoreSource);
+export function FetchSampleError(sampleId: string): UserError {
+  return new UserError(
+    "FetchSampleError",
+    `Failed to get data from remote repository for ${sampleId}`,
+    CoreSource
+  );
 }
 
 export function InvalidInputError(reason: string, inputs?: Inputs): UserError {

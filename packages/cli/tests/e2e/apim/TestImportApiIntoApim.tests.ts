@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
+ */
+
 import fs from "fs-extra";
 import path from "path";
 import { ApimValidator } from "../../commonlib";
@@ -39,7 +43,7 @@ describe("Import API into API Management", function () {
       console.log(`Create new project. Error message: ${result.stderr}`);
 
       result = await execAsyncWithRetry(
-        `teamsfx resource add azure-apim --subscription ${subscriptionId}`,
+        `teamsfx resource add azure-apim`,
         {
           cwd: projectPath,
           env: testProcessEnv,

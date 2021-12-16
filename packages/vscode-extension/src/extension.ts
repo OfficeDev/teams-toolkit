@@ -30,7 +30,12 @@ import {
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import { enableMigrateV1 } from "./utils/migrateV1";
-import { canUpgradeToArmAndMultiEnv, isTeamsfx, syncFeatureFlags } from "./utils/commonUtils";
+import {
+  canUpgradeToArmAndMultiEnv,
+  isSPFxProject,
+  isTeamsfx,
+  syncFeatureFlags,
+} from "./utils/commonUtils";
 import {
   ConfigFolderName,
   InputConfigsFolderName,
@@ -43,6 +48,7 @@ import { ExtensionUpgrade } from "./utils/upgrade";
 import { registerEnvTreeHandler } from "./envTree";
 import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
+import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -68,6 +74,13 @@ export async function activate(context: vscode.ExtensionContext) {
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
       TreatmentVariables.EmbeddedSurvey,
+      true
+    )) as boolean | undefined;
+  TreatmentVariableValue.removeCreateFromSample = (await exp
+    .getExpService()
+    .getTreatmentVariableAsync(
+      TreatmentVariables.VSCodeConfig,
+      TreatmentVariables.RemoveCreateFromSample,
       true
     )) as boolean | undefined;
 
@@ -122,28 +135,30 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(cicdGuideCmd);
 
   // 1.7 validate dependencies command (hide from UI)
+  // localdebug session starts from environment checker
   const validateDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-dependencies",
-    () => Correlator.run(handlers.validateDependenciesHandler)
+    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateDependenciesHandler)
   );
   context.subscriptions.push(validateDependenciesCmd);
 
+  // localdebug session starts from environment checker
   const validateSpfxDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-spfx-dependencies",
-    () => Correlator.run(handlers.validateSpfxDependenciesHandler)
+    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateSpfxDependenciesHandler)
   );
   context.subscriptions.push(validateSpfxDependenciesCmd);
 
   // 1.8 pre debug check command (hide from UI)
   const preDebugCheckCmd = vscode.commands.registerCommand("fx-extension.pre-debug-check", () =>
-    Correlator.run(handlers.preDebugCheckHandler)
+    Correlator.runWithId(getLocalDebugSessionId(), handlers.preDebugCheckHandler)
   );
   context.subscriptions.push(preDebugCheckCmd);
 
   // 1.9 Register backend extensions install command (hide from UI)
   const backendExtensionsInstallCmd = vscode.commands.registerCommand(
     "fx-extension.backend-extensions-install",
-    () => Correlator.run(handlers.backendExtensionsInstallHandler)
+    () => Correlator.runWithId(getLocalDebugSessionId(), handlers.backendExtensionsInstallHandler)
   );
   context.subscriptions.push(backendExtensionsInstallCmd);
 
@@ -274,11 +289,11 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(manifestTemplateCodeLensCmd);
 
-  const openConfigCmd = vscode.commands.registerCommand(
-    "fx-extension.openConfig",
-    (cipher, selection) => Correlator.run(handlers.openConfigFile)
+  const openConfigStateCmd = vscode.commands.registerCommand(
+    "fx-extension.openConfigState",
+    (...args) => Correlator.run(handlers.openConfigStateFile, args)
   );
-  context.subscriptions.push(openConfigCmd);
+  context.subscriptions.push(openConfigStateCmd);
 
   const updateManifestCmd = vscode.commands.registerCommand(
     "fx-extension.updatePreviewFile",
@@ -365,6 +380,12 @@ export async function activate(context: vscode.ExtensionContext) {
     "setContext",
     "fx-extension.isMultiEnvEnabled",
     isMultiEnvEnabled() && isValidProject(workspacePath)
+  );
+
+  vscode.commands.executeCommand(
+    "setContext",
+    "fx-extension.isSPFx",
+    workspacePath && (await isSPFxProject(workspacePath))
   );
 
   vscode.commands.executeCommand(

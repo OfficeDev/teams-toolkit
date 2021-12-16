@@ -76,8 +76,8 @@ import { FuncPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
-import { generateBicepFiles, getTemplatesFolder } from "../../..";
-import { ArmTemplateResult, ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { getTemplatesFolder } from "../../../folder";
+import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
 import {
   getResourceGroupNameFromResourceId,
@@ -658,6 +658,37 @@ export class FunctionPluginImpl {
     this.config.skipDeploy = false;
 
     return ResultFactory.Success();
+  }
+
+  public async updateArmTemplates(ctx: PluginContext): Promise<FxResult> {
+    const bicepTemplateDirectory = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "function",
+      "bicep"
+    );
+
+    const configFuncTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      FunctionBicepFile.configuraitonTemplateFileName
+    );
+
+    const result: ArmTemplateResult = {
+      Provision: {
+        Reference: {
+          functionAppResourceId: FunctionBicep.functionAppResourceId,
+          functionEndpoint: FunctionBicep.functionEndpoint,
+        },
+      },
+      Configuration: {
+        Modules: {
+          function: await fs.readFile(configFuncTemplateFilePath, ConstantString.UTF8Encoding),
+        },
+      },
+    };
+
+    return ResultFactory.Success(result);
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {

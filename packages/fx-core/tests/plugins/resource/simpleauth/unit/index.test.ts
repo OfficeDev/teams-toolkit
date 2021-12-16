@@ -18,7 +18,11 @@ import * as dotenv from "dotenv";
 import { Utils } from "../../../../../src/plugins/resource/simpleauth/utils/common";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
-import { ConstantString, mockSolutionUpdateArmTemplates } from "../../util";
+import {
+  ConstantString,
+  mockSolutionGenerateArmTemplates,
+  mockSolutionUpdateArmTemplates,
+} from "../../util";
 import { isMultiEnvEnabled } from "../../../../../src";
 import { LocalSettingsAuthKeys } from "../../../../../src/common/localSettingsConstants";
 import { getAllowedAppIds } from "../../../../../src/common/tools";
@@ -89,8 +93,42 @@ describe("simpleAuthPlugin", () => {
   });
 
   it("generate arm templates: only simple auth plugin", async function () {
-    // Act
     const activeResourcePlugins = [Constants.AadAppPlugin.id, Constants.SimpleAuthPlugin.id];
+    await testGenerateArmTemplates(
+      activeResourcePlugins,
+      "simpleAuthConfig.result.bicep",
+      "config.result.bicep"
+    );
+  });
+
+  it("generate arm templates: simple auth plugin + key vault plugin", async function () {
+    const activeResourcePlugins = [
+      Constants.AadAppPlugin.id,
+      "fx-resource-key-vault",
+      Constants.SimpleAuthPlugin.id,
+    ];
+    await testGenerateArmTemplates(
+      activeResourcePlugins,
+      "simpleAuthConfigWithKeyVaultPlugin.result.bicep",
+      "configWithKeyVaultPlugin.result.bicep",
+      {
+        "fx-resource-key-vault": {
+          References: {
+            m365ClientSecretReference:
+              "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference",
+          },
+        },
+      }
+    );
+  });
+
+  async function testGenerateArmTemplates(
+    activeResourcePlugins: string[],
+    testConfigurationModuleFileName: string,
+    testConfigurationFileName: string,
+    addtionalPluginOutput: any = {}
+  ): Promise<void> {
+    // Act
     pluginContext.projectSettings = {
       appName: "test_generate_arm_template_with_only_simple_auth_plugin_app",
       projectId: uuid.v4(),
@@ -104,28 +142,28 @@ describe("simpleAuthPlugin", () => {
 
     // Assert
     const testProvisionModuleFileName = "simpleAuthProvision.result.bicep";
-    const testConfigurationModuleFileName = "simpleAuthConfig.result.bicep";
-    const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
-        "fx-resource-simple-auth": {
-          Provision: {
-            simpleAuth: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
-            },
+    const simpleAuthOutput = {
+      "fx-resource-simple-auth": {
+        Provision: {
+          simpleAuth: {
+            ProvisionPath: `./${testProvisionModuleFileName}`,
           },
-          Configuration: {
-            simpleAuth: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
-            },
+        },
+        Configuration: {
+          simpleAuth: {
+            ConfigPath: `./${testConfigurationModuleFileName}`,
           },
         },
       },
     };
+    const mockedSolutionDataContext = {
+      Plugins: activeResourcePlugins,
+      PluginOutput: { ...simpleAuthOutput, ...addtionalPluginOutput },
+    };
 
     chai.assert.isTrue(generateArmTemplatesResult.isOk());
     if (generateArmTemplatesResult.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplates(
+      const expectedResult = mockSolutionGenerateArmTemplates(
         mockedSolutionDataContext,
         generateArmTemplatesResult.value
       );
@@ -160,111 +198,79 @@ describe("simpleAuthPlugin", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(expectedResult.Provision!.Orchestration, orchestrationProvisionFile);
-      const expectedConfigFilePath = path.join(expectedBicepFileDirectory, "config.result.bicep");
+      const expectedConfigFilePath = path.join(
+        expectedBicepFileDirectory,
+        testConfigurationFileName
+      );
 
       const OrchestrationConfigFile = await fs.readFile(
         expectedConfigFilePath,
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(expectedResult.Configuration!.Orchestration, OrchestrationConfigFile);
-      // const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
-      // chai.assert.strictEqual(
-      //   expectedResult.Orchestration.OutputTemplate!.Content,
-      //   fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
-      // );
       chai.assert.isUndefined(expectedResult.Parameters);
       chai.assert.isNotNull(expectedResult.Provision!.Reference);
     }
-  });
+  }
 
-  it("generate arm templates: simple auth plugin with all resource plugins enabled", async function () {
+  it("update arm templates: only simple auth plugin", async function () {
     // Act
-    return;
-    // const activeResourcePlugins = [
-    //   Constants.AadAppPlugin.id,
-    //   Constants.SimpleAuthPlugin.id,
-    //   Constants.FrontendPlugin.id,
-    // ];
-    // pluginContext.projectSettings = {
-    //   appName: "test_generate_arm_template_with_all_plugins_app",
-    //   projectId: uuid.v4(),
-    //   solutionSettings: {
-    //     name: "test_solution",
-    //     version: "1.0.0",
-    //     activeResourcePlugins: activeResourcePlugins,
-    //   },
-    // };
-    // const generateArmTemplatesResult = await simpleAuthPlugin.generateArmTemplates(pluginContext);
+    const activeResourcePlugins = [Constants.AadAppPlugin.id, Constants.SimpleAuthPlugin.id];
+    pluginContext.projectSettings = {
+      appName: "test_generate_arm_template_with_only_simple_auth_plugin_app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: "test_solution",
+        version: "1.0.0",
+        activeResourcePlugins: activeResourcePlugins,
+      },
+    };
+    const generateArmTemplatesResult = await simpleAuthPlugin.updateArmTemplates(pluginContext);
 
-    // // Assert
-    // const testProvisionModuleFileName = "simple_auth_provision.all.bicep";
-    // const testConfigurationModuleFileName = "simple_auth_configuration.all.bicep";
-    // const mockedSolutionDataContext = {
-    //   Plugins: activeResourcePlugins,
-    //   PluginOutput: {
-    //     "fx-resource-simple-auth": {
-    //       Modules: {
-    //         simpleAuthProvision: {
-    //           Path: `./${testProvisionModuleFileName}`,
-    //         },
-    //         simpleAuthConfiguration: {
-    //           Path: `./${testConfigurationModuleFileName}`,
-    //         },
-    //       },
-    //     },
-    //     "fx-resource-frontend-hosting": {
-    //       Outputs: {
-    //         endpoint: "frontend_hosting_test_endpoint",
-    //       },
-    //     },
-    //   },
-    // };
+    // Assert
+    const testProvisionModuleFileName = "simpleAuthProvision.result.bicep";
+    const testConfigurationModuleFileName = "simpleAuthConfig.result.bicep";
+    const mockedSolutionDataContext = {
+      Plugins: activeResourcePlugins,
+      PluginOutput: {
+        "fx-resource-simple-auth": {
+          Provision: {
+            simpleAuth: {
+              ProvisionPath: `./${testProvisionModuleFileName}`,
+            },
+          },
+          Configuration: {
+            simpleAuth: {
+              ConfigPath: `./${testConfigurationModuleFileName}`,
+            },
+          },
+        },
+      },
+    };
 
-    // chai.assert.isTrue(generateArmTemplatesResult.isOk());
-    // if (generateArmTemplatesResult.isOk()) {
-    //   const expectedResult = mockSolutionUpdateArmTemplates(
-    //     mockedSolutionDataContext,
-    //     generateArmTemplatesResult.value
-    //   );
-
-    //   const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
-    //   const expectedProvisionModuleFilePath = path.join(
-    //     expectedBicepFileDirectory,
-    //     testProvisionModuleFileName
-    //   );
-    //   chai.assert.strictEqual(
-    //     expectedResult.Modules!.simpleAuthProvision.Content,
-    //     fs.readFileSync(expectedProvisionModuleFilePath, ConstantString.UTF8Encoding)
-    //   );
-    //   const expectedConfigurationModuleFilePath = path.join(
-    //     expectedBicepFileDirectory,
-    //     testConfigurationModuleFileName
-    //   );
-    //   chai.assert.strictEqual(
-    //     expectedResult.Modules!.simpleAuthConfiguration.Content,
-    //     fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
-    //   );
-    //   const expectedModuleSnippetFilePath = path.join(
-    //     expectedBicepFileDirectory,
-    //     "module.all.bicep"
-    //   );
-    //   chai.assert.strictEqual(
-    //     expectedResult.Orchestration.ModuleTemplate!.Content,
-    //     fs.readFileSync(expectedModuleSnippetFilePath, ConstantString.UTF8Encoding)
-    //   );
-    //   const expectedParameterFilePath = path.join(expectedBicepFileDirectory, "param.bicep");
-    //   chai.assert.strictEqual(
-    //     expectedResult.Orchestration.ParameterTemplate!.Content,
-    //     fs.readFileSync(expectedParameterFilePath, ConstantString.UTF8Encoding)
-    //   );
-    //   const expectedOutputFilePath = path.join(expectedBicepFileDirectory, "output.bicep");
-    //   chai.assert.strictEqual(
-    //     expectedResult.Orchestration.OutputTemplate!.Content,
-    //     fs.readFileSync(expectedOutputFilePath, ConstantString.UTF8Encoding)
-    //   );
-    //   chai.assert.isUndefined(expectedResult.Orchestration.VariableTemplate);
-    //   chai.assert.isUndefined(expectedResult.Orchestration.ParameterTemplate!.ParameterJson);
-    // }
+    chai.assert.isTrue(generateArmTemplatesResult.isOk());
+    if (generateArmTemplatesResult.isOk()) {
+      const expectedResult = mockSolutionUpdateArmTemplates(
+        mockedSolutionDataContext,
+        generateArmTemplatesResult.value
+      );
+      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
+      const expectedConfigurationModuleFilePath = path.join(
+        expectedBicepFileDirectory,
+        testConfigurationModuleFileName
+      );
+      const configModuleFile = await fs.readFile(
+        expectedConfigurationModuleFilePath,
+        ConstantString.UTF8Encoding
+      );
+      chai.assert.strictEqual(expectedResult.Configuration!.Modules!.simpleAuth, configModuleFile);
+      chai.assert.notExists(expectedResult.Provision!.Orchestration);
+      chai.assert.notExists(expectedResult.Provision!.Modules);
+      chai.assert.notExists(expectedResult.Configuration!.Orchestration);
+      chai.assert.notExists(expectedResult.Parameters);
+      chai.assert.exists(expectedResult.Provision!.Reference!.skuName);
+      chai.assert.exists(expectedResult.Provision!.Reference!.endpoint);
+    }
   });
 
   it("provision", async function () {

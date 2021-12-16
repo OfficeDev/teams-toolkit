@@ -19,9 +19,10 @@ import {
   v2,
 } from "@microsoft/teamsfx-api";
 import Container from "typedi";
-import { getStrings } from "../../../../common";
+import { getStrings } from "../../../../common/tools";
+import { HelpLinks } from "../../../../common/constants";
 import { checkSubscription } from "../commonQuestions";
-import { SolutionError, SolutionSource, HelpLinks } from "../constants";
+import { SolutionError, SolutionSource } from "../constants";
 import {
   addCapabilityQuestion,
   AskSubscriptionQuestion,
@@ -39,8 +40,8 @@ import {
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
   MessageExtensionItem,
-  ProgrammingLanguageQuestion,
   TabOptionItem,
+  TabSPFxItem,
 } from "../question";
 import {
   getAllV2ResourcePluginMap,
@@ -48,34 +49,27 @@ import {
   ResourcePluginsV2,
 } from "../ResourcePluginContainer";
 import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
+import { isV3 } from "../../../..";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
   inputs: Inputs
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  const node = new QTreeNode({ type: "group" });
+): Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>> {
+  const node: QTreeNode[] = [];
 
-  // 1. capabilities
-  const capQuestion = createCapabilityQuestion();
-  const capNode = new QTreeNode(capQuestion);
-  node.addChild(capNode);
-
-  // 1.1 hostType
-  const hostTypeNode = new QTreeNode(FrontendHostTypeQuestion);
-  hostTypeNode.condition = { contains: TabOptionItem.id };
-  capNode.addChild(hostTypeNode);
-
-  // 1.1.1 SPFX Tab
-  const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-    ResourcePluginsV2.SpfxPlugin
-  );
-  if (spfxPlugin.getQuestionsForScaffolding) {
-    const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
-    if (res.isErr()) return res;
-    if (res.value) {
-      const spfxNode = res.value as QTreeNode;
-      spfxNode.condition = { equals: HostTypeOptionSPFx.id };
-      if (spfxNode.data) hostTypeNode.addChild(spfxNode);
+  if (!isV3()) {
+    // 1.1.1 SPFX Tab
+    const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+      ResourcePluginsV2.SpfxPlugin
+    );
+    if (spfxPlugin.getQuestionsForScaffolding) {
+      const res = await spfxPlugin.getQuestionsForScaffolding(ctx, inputs);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const spfxNode = res.value as QTreeNode;
+        spfxNode.condition = { contains: TabSPFxItem.id };
+        if (spfxNode.data) node.push(spfxNode);
+      }
     }
   }
 
@@ -89,7 +83,7 @@ export async function getQuestionsForScaffolding(
   if (tabRes.value) {
     const tabNode = tabRes.value;
     tabNode.condition = { equals: HostTypeOptionAzure.id };
-    hostTypeNode.addChild(tabNode);
+    node.push(tabNode);
   }
 
   // 1.2 Bot
@@ -102,14 +96,9 @@ export async function getQuestionsForScaffolding(
     if (res.value) {
       const botGroup = res.value as QTreeNode;
       botGroup.condition = { containsAny: [BotOptionItem.id, MessageExtensionItem.id] };
-      capNode.addChild(botGroup);
+      node.push(botGroup);
     }
   }
-
-  // 1.3 Language
-  const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-  programmingLanguage.condition = { minItems: 1 };
-  capNode.addChild(programmingLanguage);
 
   return ok(node);
 }
@@ -356,7 +345,8 @@ export async function getQuestionsForAddCapability(
     capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id);
 
   if (alreadyHaveBotOrMe && alreadyHaveTab) {
-    const cannotAddCapWarnMsg = "Your App already has both Tab and Bot/Me, can not Add Capability.";
+    const cannotAddCapWarnMsg =
+      "Your App already has both Tab and Bot/Messaging extension, can not Add Capability.";
     ctx.userInteraction?.showMessage("error", cannotAddCapWarnMsg, false);
     return ok(undefined);
   }
@@ -427,14 +417,18 @@ export async function getQuestionsForAddResource(
   const apimPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
     ResourcePluginsV2.ApimPlugin
   );
+  const keyVaultPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
+    ResourcePluginsV2.KeyVaultPlugin
+  );
   const alreadyHaveFunction = selectedPlugins.includes(functionPlugin.name);
   const alreadyHaveSQL = selectedPlugins.includes(sqlPlugin.name);
   const alreadyHaveAPIM = selectedPlugins.includes(apimPlugin.name);
-
+  const alreadyHavekeyVault = selectedPlugins.includes(keyVaultPlugin.name);
   const addQuestion = createAddAzureResourceQuestion(
     alreadyHaveFunction,
     alreadyHaveSQL,
-    alreadyHaveAPIM
+    alreadyHaveAPIM,
+    alreadyHavekeyVault
   );
 
   const addAzureResourceNode = new QTreeNode(addQuestion);
@@ -456,49 +450,51 @@ export async function getQuestionsForAddResource(
         azure_function.condition = { contains: AzureResourceFunction.id };
       } else {
         // if not function activated, select any option will trigger function question
-        azure_function.condition = { minItems: 1 };
+        azure_function.condition = {
+          containsAny: [AzureResourceApim.id, AzureResourceFunction.id, AzureResourceSQL.id],
+        };
       }
       if (azure_function.data) addAzureResourceNode.addChild(azure_function);
     }
   }
 
-  //Azure SQL
-  if (sqlPlugin.getQuestionsForUserTask && !alreadyHaveSQL) {
-    const res = await sqlPlugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
-    if (res.isErr()) return res;
-    if (res.value) {
-      const azure_sql = res.value as QTreeNode;
-      azure_sql.condition = { contains: AzureResourceSQL.id };
-      if (azure_sql.data) addAzureResourceNode.addChild(azure_sql);
-    }
-  }
+  // //Azure SQL
+  // if (sqlPlugin.getQuestionsForUserTask && !alreadyHaveSQL) {
+  //   const res = await sqlPlugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
+  //   if (res.isErr()) return res;
+  //   if (res.value) {
+  //     const azure_sql = res.value as QTreeNode;
+  //     azure_sql.condition = { contains: AzureResourceSQL.id };
+  //     if (azure_sql.data) addAzureResourceNode.addChild(azure_sql);
+  //   }
+  // }
 
-  //APIM
-  if (apimPlugin.getQuestionsForUserTask && (!alreadyHaveAPIM || !isDynamicQuestion)) {
-    const res = await apimPlugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
-    if (res.isErr()) return res;
-    if (res.value) {
-      const groupNode = new QTreeNode({ type: "group" });
-      groupNode.condition = { contains: AzureResourceApim.id };
-      addAzureResourceNode.addChild(groupNode);
-      const apim = res.value as QTreeNode;
-      if (apim.data) {
-        const funcNode = new QTreeNode(AskSubscriptionQuestion);
-        AskSubscriptionQuestion.func = async (
-          inputs: Inputs
-        ): Promise<Result<SubscriptionInfo, FxError>> => {
-          const res = await checkSubscription(envInfo, tokenProvider.azureAccountProvider);
-          if (res.isOk()) {
-            const sub = res.value;
-            inputs.subscriptionId = sub.subscriptionId;
-            inputs.tenantId = sub.tenantId;
-          }
-          return res;
-        };
-        groupNode.addChild(funcNode);
-        groupNode.addChild(apim);
-      }
-    }
-  }
+  // //APIM
+  // if (apimPlugin.getQuestionsForUserTask && (!alreadyHaveAPIM || !isDynamicQuestion)) {
+  //   const res = await apimPlugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
+  //   if (res.isErr()) return res;
+  //   if (res.value) {
+  //     const apim = res.value as QTreeNode;
+  //     if (apim.data.type !== "group" || (apim.children && apim.children.length > 0)) {
+  //       const groupNode = new QTreeNode({ type: "group" });
+  //       groupNode.condition = { contains: AzureResourceApim.id };
+  //       addAzureResourceNode.addChild(groupNode);
+  //       const funcNode = new QTreeNode(AskSubscriptionQuestion);
+  //       AskSubscriptionQuestion.func = async (
+  //         inputs: Inputs
+  //       ): Promise<Result<SubscriptionInfo, FxError>> => {
+  //         const res = await checkSubscription(envInfo, tokenProvider.azureAccountProvider);
+  //         if (res.isOk()) {
+  //           const sub = res.value;
+  //           inputs.subscriptionId = sub.subscriptionId;
+  //           inputs.tenantId = sub.tenantId;
+  //         }
+  //         return res;
+  //       };
+  //       groupNode.addChild(funcNode);
+  //       groupNode.addChild(apim);
+  //     }
+  //   }
+  // }
   return ok(addAzureResourceNode);
 }

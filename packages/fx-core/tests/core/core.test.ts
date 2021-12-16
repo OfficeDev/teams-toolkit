@@ -10,6 +10,8 @@ import {
   Inputs,
   InputTextConfig,
   InputTextResult,
+  MultiSelectConfig,
+  MultiSelectResult,
   ok,
   OptionItem,
   Platform,
@@ -49,6 +51,11 @@ import { loadSolutionContext } from "../../src/core/middleware/envInfoLoader";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import {
   CoreQuestionNames,
+  ProgrammingLanguageQuestion,
+  BotOptionItem,
+  MessageExtensionItem,
+  TabOptionItem,
+  TabSPFxItem,
   SampleSelect,
   ScratchOptionNoVSC,
   ScratchOptionYesVSC,
@@ -301,7 +308,8 @@ describe("Core basic APIs", () => {
     });
   });
 
-  async function case1() {
+  it("create project with correct version", async () => {
+    assert.isTrue(true);
     appName = randomAppName();
     projectPath = path.join(os.homedir(), "TeamsApps", appName);
     const expectedInputs: Inputs = {
@@ -309,9 +317,10 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
-      solution: mockSolution.name,
       stage: Stage.create,
     };
+    expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+    expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
     sandbox
       .stub<any, any>(ui, "inputText")
       .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
@@ -345,10 +354,110 @@ describe("Core basic APIs", () => {
               type: "success",
               result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
             });
+          } else if (config.name === CoreQuestionNames.ProgrammingLanguage) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
+            });
           }
           throw err(InvalidInputError("invalid question"));
         }
       );
+    sandbox
+      .stub<any, any>(ui, "selectOptions")
+      .callsFake(async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+        if (config.name == "capabilities") {
+          return ok({ type: "success", result: expectedInputs[CoreQuestionNames.Capabilities] });
+        }
+        throw err(InvalidInputError("invalid question"));
+      });
+    const core = new FxCore(tools);
+    {
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const res = await core.createProject(inputs);
+      assert.isTrue(res.isOk());
+      if (res.isErr()) {
+        console.log(res.error);
+      }
+      assert.deepEqual(expectedInputs, inputs);
+
+      const projectSettingsResult = await loadProjectSettings(
+        inputs,
+        commonTools.isMultiEnvEnabled()
+      );
+      if (projectSettingsResult.isErr()) {
+        assert.fail("failed to load project settings");
+      }
+
+      const projectSettings = projectSettingsResult.value;
+      const validSettingsResult = validateSettings(projectSettings);
+      assert.isTrue(validSettingsResult === undefined);
+      projectSettings.version == "2.0.0";
+    }
+  });
+
+  async function case1() {
+    appName = randomAppName();
+    projectPath = path.join(os.homedir(), "TeamsApps", appName);
+    const expectedInputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      projectPath: projectPath,
+      stage: Stage.create,
+    };
+    expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+    expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
+    sandbox
+      .stub<any, any>(ui, "inputText")
+      .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
+        if (config.name === CoreQuestionNames.AppName) {
+          return ok({
+            type: "success",
+            result: expectedInputs[CoreQuestionNames.AppName] as string,
+          });
+        }
+        throw InvalidInputError("invalid question");
+      });
+    sandbox
+      .stub<any, any>(ui, "selectFolder")
+      .callsFake(
+        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
+          if (config.name === CoreQuestionNames.Folder) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.Folder] as string,
+            });
+          }
+          throw InvalidInputError("invalid question");
+        }
+      );
+    sandbox
+      .stub<any, any>(ui, "selectOption")
+      .callsFake(
+        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
+          if (config.name === CoreQuestionNames.CreateFromScratch) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
+            });
+          } else if (config.name === CoreQuestionNames.ProgrammingLanguage) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
+            });
+          }
+          throw err(InvalidInputError("invalid question"));
+        }
+      );
+    sandbox
+      .stub<any, any>(ui, "selectOptions")
+      .callsFake(async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+        if (config.name == "capabilities") {
+          return ok({ type: "success", result: expectedInputs[CoreQuestionNames.Capabilities] });
+        }
+        throw err(InvalidInputError("invalid question"));
+      });
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.VSCode };
@@ -502,9 +611,10 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
-      solution: mockSolution.name,
       stage: Stage.getQuestions,
     };
+    expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+    expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
     sandbox
       .stub<any, any>(ui, "inputText")
       .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
@@ -538,11 +648,23 @@ describe("Core basic APIs", () => {
               type: "success",
               result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
             });
+          } else if (config.name === CoreQuestionNames.ProgrammingLanguage) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
+            });
           }
           throw err(InvalidInputError("invalid question"));
         }
       );
-
+    sandbox
+      .stub<any, any>(ui, "selectOptions")
+      .callsFake(async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+        if (config.name == "capabilities") {
+          return ok({ type: "success", result: expectedInputs[CoreQuestionNames.Capabilities] });
+        }
+        throw err(InvalidInputError("invalid question"));
+      });
     const core = new FxCore(tools);
     const inputs: Inputs = { platform: Platform.CLI };
     const res = await core.getQuestions(Stage.create, inputs);
@@ -697,8 +819,9 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
-      solution: mockSolution.name,
     };
+    expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
+    expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
     sandbox
       .stub<any, any>(ui, "inputText")
       .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
@@ -732,10 +855,23 @@ describe("Core basic APIs", () => {
               type: "success",
               result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
             });
+          } else if (config.name === CoreQuestionNames.ProgrammingLanguage) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
+            });
           }
           throw InvalidInputError("invalid question");
         }
       );
+    sandbox
+      .stub<any, any>(ui, "selectOptions")
+      .callsFake(async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+        if (config.name == "capabilities") {
+          return ok({ type: "success", result: expectedInputs[CoreQuestionNames.Capabilities] });
+        }
+        throw err(InvalidInputError("invalid question"));
+      });
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.CLI };
@@ -764,10 +900,11 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
-      solution: mockSolution.name,
       env: "dev",
       stage: Stage.create,
     };
+    expectedInputs[CoreQuestionNames.Capabilities] = TabOptionItem.id;
+    expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
 
     const newEnvName = "newEnv";
     sandbox
@@ -809,10 +946,23 @@ describe("Core basic APIs", () => {
               type: "success",
               result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
             });
+          } else if (config.name === CoreQuestionNames.ProgrammingLanguage) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
+            });
           }
           throw err(InvalidInputError("invalid question"));
         }
       );
+    sandbox
+      .stub<any, any>(ui, "selectOptions")
+      .callsFake(async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+        if (config.name == "capabilities") {
+          return ok({ type: "success", result: expectedInputs[CoreQuestionNames.Capabilities] });
+        }
+        throw err(InvalidInputError("invalid question"));
+      });
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
@@ -862,10 +1012,11 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
-      solution: mockSolution.name,
       env: "dev",
       stage: Stage.create,
     };
+    expectedInputs[CoreQuestionNames.Capabilities] = TabOptionItem.id;
+    expectedInputs[CoreQuestionNames.ProgrammingLanguage] = "javascript";
     sandbox
       .stub<any, any>(ui, "inputText")
       .callsFake(async (config: InputTextConfig): Promise<Result<InputTextResult, FxError>> => {
@@ -905,10 +1056,23 @@ describe("Core basic APIs", () => {
               type: "success",
               result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
             });
+          } else if (config.name === CoreQuestionNames.ProgrammingLanguage) {
+            return ok({
+              type: "success",
+              result: expectedInputs[CoreQuestionNames.ProgrammingLanguage] as string,
+            });
           }
           throw err(InvalidInputError("invalid question"));
         }
       );
+    sandbox
+      .stub<any, any>(ui, "selectOptions")
+      .callsFake(async (config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> => {
+        if (config.name == "capabilities") {
+          return ok({ type: "success", result: expectedInputs[CoreQuestionNames.Capabilities] });
+        }
+        throw err(InvalidInputError("invalid question"));
+      });
     const core = new FxCore(tools);
     {
       const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
@@ -935,4 +1099,76 @@ describe("Core basic APIs", () => {
       assert.isTrue(activateEnvRes.isOk());
     }
   }
+
+  it("ProgrammingLanguageQuestion", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
+    };
+    if (
+      ProgrammingLanguageQuestion.dynamicOptions &&
+      ProgrammingLanguageQuestion.placeholder &&
+      typeof ProgrammingLanguageQuestion.placeholder === "function"
+    ) {
+      const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
+      assert.deepEqual([{ id: "typescript", label: "TypeScript" }], options);
+      const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
+      assert.equal("SPFx is currently supporting TypeScript only.", placeholder);
+    }
+
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id],
+    });
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [BotOptionItem.id],
+    });
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [MessageExtensionItem.id],
+    });
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
+    });
+
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, MessageExtensionItem.id],
+    });
+
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [BotOptionItem.id, MessageExtensionItem.id],
+    });
+
+    languageAssert({
+      platform: Platform.VSCode,
+      [CoreQuestionNames.Capabilities]: [
+        TabOptionItem.id,
+        BotOptionItem.id,
+        MessageExtensionItem.id,
+      ],
+    });
+
+    function languageAssert(inputs: Inputs) {
+      if (
+        ProgrammingLanguageQuestion.dynamicOptions &&
+        ProgrammingLanguageQuestion.placeholder &&
+        typeof ProgrammingLanguageQuestion.placeholder === "function"
+      ) {
+        const options = ProgrammingLanguageQuestion.dynamicOptions(inputs);
+        assert.deepEqual(
+          [
+            { id: "javascript", label: "JavaScript" },
+            { id: "typescript", label: "TypeScript" },
+          ],
+          options
+        );
+        const placeholder = ProgrammingLanguageQuestion.placeholder(inputs);
+        assert.equal("Select a programming language.", placeholder);
+      }
+    }
+  });
 });

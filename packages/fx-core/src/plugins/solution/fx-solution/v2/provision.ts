@@ -11,7 +11,12 @@ import {
   SolutionContext,
   returnSystemError,
 } from "@microsoft/teamsfx-api";
-import { getStrings, isArmSupportEnabled, isMultiEnvEnabled } from "../../../../common/tools";
+import {
+  getResourceGroupInPortal,
+  getStrings,
+  isArmSupportEnabled,
+  isMultiEnvEnabled,
+} from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
 import {
   combineRecords,
@@ -30,9 +35,10 @@ import {
   SUBSCRIPTION_ID,
   SUBSCRIPTION_NAME,
   SolutionSource,
+  RESOURCE_GROUP_NAME,
 } from "../constants";
 import * as util from "util";
-import _, { isUndefined } from "lodash";
+import _, { assign, isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
 import { fillInCommonQuestions } from "../commonQuestions";
@@ -85,7 +91,9 @@ export async function provisionResource(
   if (!newEnvInfo.state[GLOBAL_CONFIG]) {
     newEnvInfo.state[GLOBAL_CONFIG] = { output: {}, secrets: {} };
   }
+  newEnvInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = "false";
   if (isAzureProject(azureSolutionSettings)) {
+    //fill in common questions for solution
     const appName = ctx.projectSetting.appName;
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
     const res = await fillInCommonQuestions(
@@ -99,15 +107,17 @@ export async function provisionResource(
       return new v2.FxFailure(res.error);
     }
     // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
-    newEnvInfo.state = contextAdaptor.getEnvStateJson();
+    const update = contextAdaptor.getEnvStateJson();
+    _.assign(newEnvInfo.state, update);
     const consentResult = await askForProvisionConsent(contextAdaptor);
     if (consentResult.isErr()) {
       return new v2.FxFailure(consentResult.error);
     }
   }
 
-  const plugins = getSelectedPlugins(azureSolutionSettings);
   const solutionInputs = extractSolutionInputs(newEnvInfo.state[GLOBAL_CONFIG]["output"]);
+
+  const plugins = getSelectedPlugins(azureSolutionSettings);
   const provisionThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionResource))
     .map((plugin) => {
@@ -128,39 +138,38 @@ export async function provisionResource(
         },
       };
     });
-
+  // call provisionResources
   ctx.logProvider?.info(
     util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
   );
   const provisionResult = await executeConcurrently(provisionThunks, ctx.logProvider);
   if (provisionResult.kind === "failure") {
     return provisionResult;
-  } else if (provisionResult.kind === "partialSuccess") {
-    return new v2.FxPartialSuccess(
-      { ...newEnvInfo.state, ...combineRecords(provisionResult.output) },
-      provisionResult.error
-    );
   } else {
-    newEnvInfo.state = { ...newEnvInfo.state, ...combineRecords(provisionResult.output) };
+    const update = combineRecords(provisionResult.output);
+    _.assign(newEnvInfo.state, update);
+    if (provisionResult.kind === "partialSuccess") {
+      return new v2.FxPartialSuccess(newEnvInfo.state, provisionResult.error);
+    }
   }
 
   ctx.logProvider?.info(
     util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
   );
 
+  // call deployArmTemplates
   if (isArmSupportEnabled() && isAzureProject(azureSolutionSettings)) {
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
     const armDeploymentResult = await deployArmTemplates(contextAdaptor);
     if (armDeploymentResult.isErr()) {
-      return new v2.FxPartialSuccess(
-        combineRecords(provisionResult.output),
-        armDeploymentResult.error
-      );
+      return new v2.FxPartialSuccess(newEnvInfo.state, armDeploymentResult.error);
     }
     // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
-    newEnvInfo.state = contextAdaptor.getEnvStateJson();
+    const update = contextAdaptor.getEnvStateJson();
+    _.assign(newEnvInfo.state, update);
   }
 
+  // call aad.setApplicationInContext
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
   if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
     const result = await aadPlugin.executeUserTask(
@@ -176,11 +185,11 @@ export async function provisionResource(
       tokenProvider
     );
     if (result.isErr()) {
-      return new v2.FxPartialSuccess(combineRecords(provisionResult.output), result.error);
+      return new v2.FxPartialSuccess(newEnvInfo.state, result.error);
     }
   }
 
-  if (isV2()) {
+  if (isV2() && isAzureProject(azureSolutionSettings)) {
     solutionInputs.remoteTeamsAppId =
       newEnvInfo.state[PluginNames.APPST]["output"][Constants.TEAMS_APP_ID];
   }
@@ -193,7 +202,7 @@ export async function provisionResource(
 
       return {
         pluginName: `${plugin.name}`,
-        taskName: "configureLocalResource",
+        taskName: "configureResource",
         thunk: () =>
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           plugin.configureResource!(
@@ -204,7 +213,7 @@ export async function provisionResource(
           ),
       };
     });
-
+  //call configResource
   const configureResourceResult = await executeConcurrently(
     configureResourceThunks,
     ctx.logProvider
@@ -223,39 +232,38 @@ export async function provisionResource(
     if (configureResourceResult.kind === "failure") {
       return configureResourceResult;
     } else {
-      const output = configureResourceResult.output;
-      output.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
-      return new v2.FxPartialSuccess(combineRecords(output), configureResourceResult.error);
+      return new v2.FxPartialSuccess(newEnvInfo.state, configureResourceResult.error);
     }
   } else {
     if (newEnvInfo.state[GLOBAL_CONFIG] && newEnvInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT]) {
       delete newEnvInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
     }
 
+    const url = getResourceGroupInPortal(
+      solutionInputs.subscriptionId,
+      solutionInputs.tenantId,
+      solutionInputs.resourceGroupName
+    );
     const msg = util.format(
       `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
       ctx.projectSetting.appName
     );
     ctx.logProvider?.info(msg);
-    ctx.userInteraction.showMessage("info", msg, false);
-    solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = true;
-    const configOutput = configureResourceResult.output;
-    configOutput.push({ name: GLOBAL_CONFIG, result: { output: solutionInputs, secrets: {} } });
-    const res1 = combineRecords(provisionResult.output);
-    const res2 = combineRecords(configOutput);
-    for (const key of Object.keys(res2)) {
-      if (!newEnvInfo.state[key]) {
-        newEnvInfo.state[key].output = res2[key].output;
-      } else {
-        const newOutput = assignJsonInc(newEnvInfo.state[key].output, res2[key].output);
-        if (newOutput) newEnvInfo.state[key].output = newOutput;
-      }
+    if (url) {
+      const title = "View Provisioned Resources";
+      ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
+        const userSelected = result.isOk() ? result.value : undefined;
+        if (userSelected === title) {
+          ctx.userInteraction.openUrl(url);
+        }
+      });
+    } else {
+      ctx.userInteraction.showMessage("info", msg, false);
     }
-    for (const key of Object.keys(newEnvInfo.state)) {
-      if (!res1[key]) res1[key] = { output: {}, secrets: {} };
-      res1[key].output = newEnvInfo.state[key].output;
-    }
-    return new v2.FxSuccess(res1);
+    const update = combineRecords(configureResourceResult.output);
+    _.assign(newEnvInfo.state, update);
+    newEnvInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = "true";
+    return new v2.FxSuccess(newEnvInfo.state);
   }
 }
 

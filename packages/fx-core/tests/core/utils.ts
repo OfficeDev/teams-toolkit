@@ -155,7 +155,7 @@ export class MockSolutionV2 implements v2.SolutionPlugin {
     ctx: v2.Context,
     inputs: Inputs,
     provisionOutputs: Json,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     return ok(Void);
   }

@@ -10,7 +10,12 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import fs from "fs-extra";
 import * as path from "path";
-import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
+import {
+  ConstantString,
+  mockSolutionGenerateArmTemplates,
+  mockSolutionUpdateArmTemplates,
+  ResourcePlugins,
+} from "../../util";
 chai.use(chaiAsPromised);
 
 dotenv.config();
@@ -62,7 +67,7 @@ describe("identityPlugin", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplates(
+      const expectedResult = mockSolutionGenerateArmTemplates(
         mockedSolutionDataContext,
         result.value
       );
@@ -81,6 +86,45 @@ describe("identityPlugin", () => {
       chai.assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationConfigFile);
       chai.assert.isNotNull(expectedResult.Provision!.Reference);
       chai.assert.isUndefined(expectedResult.Parameters);
+    }
+  });
+
+  it("Update arm templates", async function () {
+    const activeResourcePlugins = [ResourcePlugins.Identity];
+    pluginContext.projectSettings!.solutionSettings = {
+      name: "test_solution",
+      version: "1.0.0",
+      activeResourcePlugins: activeResourcePlugins,
+    } as AzureSolutionSettings;
+    const result = await identityPlugin.updateArmTemplates(pluginContext);
+
+    // Assert
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      chai.assert.notExists(result.value.Provision!.Modules);
+      chai.assert.notExists(result.value.Provision!.Orchestration);
+      chai.assert.exists(result.value.Provision!.Reference!.identityName);
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.identityName,
+        "provisionOutputs.identityOutput.value.identityName"
+      );
+      chai.assert.exists(result.value.Provision!.Reference!.identityClientId);
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.identityClientId,
+        "provisionOutputs.identityOutput.value.identityClientId"
+      );
+      chai.assert.exists(result.value.Provision!.Reference!.identityResourceId);
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.identityResourceId,
+        "userAssignedIdentityProvision.outputs.identityResourceId"
+      );
+      chai.assert.exists(result.value.Provision!.Reference!.identityPrincipalId);
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.identityPrincipalId,
+        "userAssignedIdentityProvision.outputs.identityPrincipalId"
+      );
+      chai.assert.notExists(result.value.Configuration);
+      chai.assert.notExists(result.value.Parameters);
     }
   });
 });

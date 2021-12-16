@@ -10,7 +10,12 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import fs from "fs-extra";
 import * as path from "path";
-import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
+import {
+  ConstantString,
+  mockSolutionGenerateArmTemplates,
+  mockSolutionUpdateArmTemplates,
+  ResourcePlugins,
+} from "../../util";
 chai.use(chaiAsPromised);
 
 dotenv.config();
@@ -62,7 +67,7 @@ describe("generateArmTemplates", () => {
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      const expectedResult = mockSolutionUpdateArmTemplates(
+      const expectedResult = mockSolutionGenerateArmTemplates(
         mockedSolutionDataContext,
         result.value
       );
@@ -89,6 +94,36 @@ describe("generateArmTemplates", () => {
           ConstantString.UTF8Encoding
         )
       );
+    }
+  });
+
+  it("Update arm templates", async function () {
+    const activeResourcePlugins = [ResourcePlugins.AzureSQL];
+    pluginContext.projectSettings!.solutionSettings = {
+      name: "test_solution",
+      version: "1.0.0",
+      activeResourcePlugins: activeResourcePlugins,
+    } as AzureSolutionSettings;
+    const result = await sqlPlugin.updateArmTemplates(pluginContext);
+
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.sqlResourceId,
+        "provisionOutputs.azureSqlOutput.value.sqlResourceId"
+      );
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.sqlEndpoint,
+        "provisionOutputs.azureSqlOutput.value.sqlEndpoint"
+      );
+      chai.assert.strictEqual(
+        result.value.Provision!.Reference!.databaseName,
+        "provisionOutputs.azureSqlOutput.value.databaseName"
+      );
+      chai.assert.notExists(result.value.Provision!.Orchestration);
+      chai.assert.notExists(result.value.Provision!.Modules);
+      chai.assert.notExists(result.value.Configuration);
+      chai.assert.notExists(result.value.Parameters);
     }
   });
 });

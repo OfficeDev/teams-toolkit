@@ -187,7 +187,6 @@ export class SqlPluginImpl {
     }
 
     ctx.config.delete(Constants.adminPassword);
-    this.config.prepareQuestions = false;
 
     const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
 
@@ -242,6 +241,19 @@ export class SqlPluginImpl {
     ctx.logProvider?.info(Message.endPostProvision);
     await DialogUtils.progressBar?.end(true);
     return ok(undefined);
+  }
+
+  public async updateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
+    const result: ArmTemplateResult = {
+      Provision: {
+        Reference: {
+          sqlResourceId: AzureSqlBicep.sqlResourceId,
+          sqlEndpoint: AzureSqlBicep.sqlEndpoint,
+          databaseName: AzureSqlBicep.databaseName,
+        },
+      },
+    };
+    return ok(result);
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -329,7 +341,7 @@ export class SqlPluginImpl {
   }
 
   private async loadSkipAddingUser(ctx: PluginContext) {
-    const skipAddingUser = ctx.config.get(Constants.skipAddingUser);
+    const skipAddingUser = ctx.envInfo.config?.[Constants.skipAddingSqlUser];
     if (skipAddingUser === undefined) {
       this.config.skipAddingUser = (await ctx.azureAccountProvider?.getIdentityCredentialAsync())
         ? false

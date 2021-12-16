@@ -110,9 +110,12 @@ export function mockedFehostScaffoldArmResult(): ArmTemplateResult {
   const res: ArmTemplateResult = {
     Provision: {
       Orchestration:
-        "Mocked frontend hosting module content. Module path: {{PluginOutput.fx-resource-frontend-hosting.Modules.frontendHostingProvision.Path}}. Variable: {{PluginOutput.fx-resource-simple-auth.Outputs.endpoint}}",
+        "Mocked frontend hosting module content. Module path: {{PluginOutput.fx-resource-frontend-hosting.Provision.frontendHostingProvision.ProvisionPath}}. Variable: {{PluginOutput.fx-resource-simple-auth.References.endpoint}}",
       Modules: {
         frontendHostingProvision: "Mocked frontend hosting provision module content",
+      },
+      Reference: {
+        endpoint: "Mocked front end host endpoint",
       },
     },
     Configuration: {
@@ -129,7 +132,7 @@ export function mockedSimpleAuthScaffoldArmResult(): ArmTemplateResult {
   const res: ArmTemplateResult = {
     Provision: {
       Orchestration:
-        "Mocked simple auth module content. Module path: {{PluginOutput.fx-resource-simple-auth.Modules.simpleAuthProvision.Path}}. Variable: {{PluginOutput.fx-resource-frontend-hosting.Outputs.endpoint}}",
+        "Mocked simple auth module content. Module path: {{PluginOutput.fx-resource-simple-auth.Provision.simpleAuthProvision.ProvisionPath}}. Variable: {{PluginOutput.fx-resource-frontend-hosting.References.endpoint}}",
       Modules: {
         simpleAuthProvision: "Mocked simple auth provision module content",
       },
@@ -142,6 +145,17 @@ export function mockedSimpleAuthScaffoldArmResult(): ArmTemplateResult {
     },
     Parameters: {
       SimpleAuthParameter: "SimpleAuthParameterValue",
+    },
+  };
+  return res;
+}
+
+export function mockedSimpleAuthUpdateArmResult(): ArmTemplateResult {
+  const res: ArmTemplateResult = {
+    Provision: {
+      Reference: {
+        endpoint: "Mocked simple auth endpoint",
+      },
     },
   };
   return res;
@@ -162,18 +176,21 @@ export function mockedAadScaffoldArmResult(): ArmTemplateResult {
 export function mockedBotArmTemplateResultFunc(): ArmTemplateResult {
   const res: ArmTemplateResult = {
     Provision: {
-      Orchestration: "Bot Provision module content content and outputs",
+      Orchestration:
+        "Bot Provision module content content and outputs, Module path: {{PluginOutput.fx-resource-bot.Provision.bot.ProvisionPath}}.",
       Modules: {
         bot: "Mocked bot Provision content. simple auth endpoint: {{PluginOutput.fx-resource-simple-auth.References.endpoint}}",
       },
       Reference: {
         URI: "Mocked bot URL",
+        webAppEndpoint: "Mock web app end point",
       },
     },
     Configuration: {
-      Orchestration: "Bot Configuration module content and outputs",
+      Orchestration:
+        "Mocked bot Orchestration content, Module path: {{PluginOutput.fx-resource-bot.Configuration.bot.ConfigPath}}",
       Modules: {
-        bot: "Mocked bot Configuration content, Module path: {{PluginOutput.fx-resource-simple-auth.Configuration.bot.ConfigPath}}",
+        bot: "Mocked bot Configuration content, bot webAppEndpoint: {{PluginOutput.fx-resource-bot.References.webAppEndpoint}}",
       },
     },
     Parameters: {
@@ -330,6 +347,43 @@ class MockedTokenCredentials extends TokenCredentialsBase {
       resource: "mock",
       accessToken: "mock",
     };
+  }
+}
+
+export class MockedAppStudioTokenProvider implements AppStudioTokenProvider {
+  async getAccessToken(showDialog?: boolean): Promise<string> {
+    return "someFakeToken";
+  }
+  async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
+    return {
+      tid: "222",
+    };
+  }
+  signout(): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeCallback(
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  setStatusChangeMap(
+    name: string,
+    statusChange: (
+      status: string,
+      token?: string,
+      accountInfo?: Record<string, unknown>
+    ) => Promise<void>,
+    immediateCall?: boolean
+  ): Promise<boolean> {
+    throw new Error("Method not implemented.");
+  }
+  removeStatusChangeMap(name: string): Promise<boolean> {
+    throw new Error("Method not implemented.");
   }
 }
 

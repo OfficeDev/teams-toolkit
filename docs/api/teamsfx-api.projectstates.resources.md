@@ -8,6 +8,6 @@
 
 ```typescript
 resources: {
-        [k: string]: Dict<ConfigValue>;
+        [k: string]: Record<string, ConfigValue>;
     };
 ```

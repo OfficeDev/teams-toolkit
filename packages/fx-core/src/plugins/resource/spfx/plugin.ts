@@ -1,12 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, FxError, Result, ok, Platform, Colors, err } from "@microsoft/teamsfx-api";
+import {
+  PluginContext,
+  FxError,
+  Result,
+  ok,
+  Platform,
+  Colors,
+  err,
+  UserCancelError,
+} from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import lodash from "lodash";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { SPFXQuestionNames } from ".";
-import { Utils } from "./utils/utils";
+import { Utils, sleep } from "./utils/utils";
 import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
 import {
   BuildSPPackageError,
@@ -275,7 +284,6 @@ export class SPFxPluginImpl {
           "warn",
           util.format(getStrings().plugins.SPFx.createAppCatalogNotice, tenant.value),
           true,
-          "OK",
           Constants.READ_MORE
         );
         const confirm = res?.isOk() ? res.value : undefined;
@@ -286,8 +294,16 @@ export class SPFxPluginImpl {
             } catch (e: any) {
               return err(CreateAppCatalogFailedError(e));
             }
+            let retry = 0;
             appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
-            if (!appCatalogSite) {
+            while (appCatalogSite == null && retry < Constants.APP_CATALOG_MAX_TIMES) {
+              await sleep(Constants.APP_CATALOG_REFRESH_TIME);
+              appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
+              retry += 1;
+            }
+            if (appCatalogSite) {
+              SPOClient.setBaseUrl(appCatalogSite);
+            } else {
               return err(
                 CreateAppCatalogFailedError(
                   new Error("Cannot get app catalog site url after creation.")
@@ -297,7 +313,7 @@ export class SPFxPluginImpl {
             break;
           case Constants.READ_MORE:
             ctx.ui?.openUrl(Constants.CREATE_APP_CATALOG_GUIDE);
-            break;
+            return ok(UserCancelError);
           default:
             return ok(undefined);
         }

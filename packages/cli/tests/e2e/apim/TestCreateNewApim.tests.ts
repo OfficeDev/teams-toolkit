@@ -1,5 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+
+/**
+ * @author Xiaofu Huang <xiaofu.huang@microsoft.com>
+ */
+
 import fs from "fs-extra";
 import path from "path";
 import { ApimValidator } from "../../commonlib";
@@ -40,7 +45,7 @@ describe("Create a new API Management Service", function () {
       await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
 
       result = await execAsyncWithRetry(
-        `teamsfx resource add azure-apim --subscription ${subscriptionId}`,
+        `teamsfx resource add azure-apim`,
         {
           cwd: projectPath,
           env: testProcessEnv,

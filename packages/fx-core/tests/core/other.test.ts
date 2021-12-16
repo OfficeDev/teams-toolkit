@@ -124,9 +124,9 @@ describe("Other test case", () => {
   });
 
   it("error: FetchSampleError", async () => {
-    const error = FetchSampleError();
+    const error = FetchSampleError("hello world app");
     assert.isTrue(error.name === "FetchSampleError");
-    assert.isTrue(error.message === "Failed to download sample app");
+    assert.isTrue(error.message.includes("hello world app"));
   });
 
   it("isFeatureFlagEnabled: return true when related environment variable is set to 1 or true", () => {
@@ -245,6 +245,13 @@ describe("Other test case", () => {
     });
 
     assert.equal(getRootDirectory(), os.tmpdir());
+    restore();
+
+    restore = mockedEnv({
+      [FeatureFlagName.rootDirectory]: "${homeDir}/TeamsApps",
+    });
+
+    assert.equal(getRootDirectory(), path.join(os.homedir(), "TeamsApps"));
     restore();
   });
 });

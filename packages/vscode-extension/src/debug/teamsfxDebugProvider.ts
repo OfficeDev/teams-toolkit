@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { Correlator } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 
 import AppStudioTokenInstance from "../commonlib/appStudioLogin";
@@ -9,10 +10,25 @@ import * as commonUtils from "./commonUtils";
 export interface TeamsfxDebugConfiguration extends vscode.DebugConfiguration {
   teamsfxEnv?: string;
   teamsfxAppId?: string;
+  teamsfxCorrelationId?: string;
 }
 
 export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
   public async resolveDebugConfiguration?(
+    folder: vscode.WorkspaceFolder | undefined,
+    debugConfiguration: TeamsfxDebugConfiguration,
+    token?: vscode.CancellationToken
+  ): Promise<vscode.DebugConfiguration | undefined> {
+    return Correlator.runWithId(
+      commonUtils.getLocalDebugSessionId(),
+      this._resolveDebugConfiguration,
+      folder,
+      debugConfiguration,
+      token
+    );
+  }
+
+  private async _resolveDebugConfiguration(
     folder: vscode.WorkspaceFolder | undefined,
     debugConfiguration: TeamsfxDebugConfiguration,
     token?: vscode.CancellationToken
@@ -22,6 +38,10 @@ export class TeamsfxDebugProvider implements vscode.DebugConfigurationProvider {
         if (!(await commonUtils.isFxProject(folder.uri.fsPath))) {
           return debugConfiguration;
         }
+
+        // Attach correlation-id to DebugConfiguration so concurrent debug sessions are correctly handled in this stage.
+        // For backend and bot debug sessions, debugConfiguration.url is undefined so we need to set correlation id early.
+        debugConfiguration.teamsfxCorrelationId = commonUtils.getLocalDebugSessionId();
 
         if (debugConfiguration.url === undefined) {
           return debugConfiguration;

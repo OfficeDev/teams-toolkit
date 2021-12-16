@@ -41,6 +41,8 @@ import {
   localSettingsFileName,
 } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
+import { FxCore } from "@microsoft/teamsfx-core";
+import { isSPFxProject } from "@microsoft/teamsfx-core";
 
 export type Json = { [_: string]: any };
 
@@ -362,6 +364,24 @@ export function getTeamsAppId(rootfolder: string | undefined): any {
   return undefined;
 }
 
+// Only used for telemetry
+export function getSettingsVersion(rootFolder: string | undefined): string | undefined {
+  if (!rootFolder) {
+    return undefined;
+  }
+  try {
+    if (isWorkspaceSupported(rootFolder)) {
+      const result = readSettingsFileSync(rootFolder);
+      if (result.isOk()) {
+        return result.value.version;
+      }
+    }
+  } catch (e) {
+    // ignore errors for telemetry
+  }
+  return undefined;
+}
+
 export function getLocalTeamsAppId(rootfolder: string | undefined): any {
   if (!rootfolder) {
     return undefined;
@@ -531,10 +551,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 }
 
 export function isRemoteCollaborationEnabled(): boolean {
-  return (
-    !isFeatureFlagEnabled(FeatureFlags.RollbackToTeamsToolkitV2, false) &&
-    isFeatureFlagEnabled(FeatureFlags.InsiderPreview, true)
-  );
+  return isFeatureFlagEnabled(FeatureFlags.InsiderPreview, true);
 }
 
 export function getAllFeatureFlags(): string[] | undefined {
@@ -547,4 +564,22 @@ export function getAllFeatureFlags(): string[] | undefined {
     });
 
   return result;
+}
+
+export async function isSpfxProject(
+  rootFolder: string,
+  core: FxCore
+): Promise<Result<boolean | undefined, FxError>> {
+  const inputs: Inputs = {
+    platform: Platform.CLI,
+    projectPath: rootFolder,
+  };
+
+  const configResult = await core.getProjectConfig(inputs);
+  if (configResult.isErr()) {
+    return err(configResult.error);
+  }
+  const config = configResult.value;
+  const projectSettings = config?.settings;
+  return ok(isSPFxProject(projectSettings));
 }

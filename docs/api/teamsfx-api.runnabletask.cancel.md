@@ -4,7 +4,7 @@
 
 ## RunnableTask.cancel() method
 
-a function that implements the cancalling of the task
+a function that implements the cancelling of the task
 
 <b>Signature:</b>
 

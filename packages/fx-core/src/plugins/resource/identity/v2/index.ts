@@ -4,6 +4,7 @@
 import {
   AzureSolutionSettings,
   FxError,
+  Inputs,
   Json,
   Result,
   TokenProvider,
@@ -21,7 +22,11 @@ import {
   ResourcePlugins,
   ResourcePluginsV2,
 } from "../../../solution/fx-solution/ResourcePluginContainer";
-import { provisionResourceAdapter } from "../../utils4v2";
+import {
+  generateResourceTemplateAdapter,
+  provisionResourceAdapter,
+  updateResourceTemplateAdapter,
+} from "../../utils4v2";
 
 @Service(ResourcePluginsV2.IdentityPlugin)
 export class IdentityPluginV2 implements ResourcePlugin {
@@ -40,5 +45,19 @@ export class IdentityPluginV2 implements ResourcePlugin {
     tokenProvider: TokenProvider
   ): Promise<Result<ResourceProvisionOutput, FxError>> {
     return await provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
+  }
+
+  async generateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return generateResourceTemplateAdapter(ctx, inputs, this.plugin);
+  }
+
+  async updateResourceTemplate(
+    ctx: Context,
+    inputs: Inputs
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return updateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 }

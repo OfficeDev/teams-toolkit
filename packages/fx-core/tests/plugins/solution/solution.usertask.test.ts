@@ -52,7 +52,9 @@ import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
-import { AppStudioPlugin, isArmSupportEnabled, newEnvInfo } from "../../../src";
+import { AppStudioPlugin } from "../../../src/plugins/resource/appstudio";
+import { isArmSupportEnabled } from "../../../src/common/tools";
+import { newEnvInfo } from "../../../src/core/tools";
 import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
 import { MockGraphTokenProvider } from "../../core/utils";
@@ -140,10 +142,13 @@ describe("executeUserTask VSpublish", async () => {
 
 describe("V2 implementation", () => {
   const mocker = sinon.createSandbox();
-  beforeEach(() => {
+  const testFolder = "./tests/plugins/solution/testproject/usertask";
+  beforeEach(async () => {
+    await fs.ensureDir(testFolder);
     mocker.stub<any, any>(fs, "copy").resolves();
   });
-  afterEach(() => {
+  afterEach(async () => {
+    await fs.remove(testFolder);
     mocker.restore();
   });
   it("should return err if given invalid router", async () => {
@@ -277,6 +282,7 @@ describe("V2 implementation", () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
+      projectPath: testFolder,
     };
     mockedInputs[AzureSolutionQuestionNames.Capabilities] = [TabOptionItem.id];
 
@@ -356,7 +362,7 @@ describe("V2 implementation", () => {
     );
     expect(result.isErr()).to.be.true;
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
-    expect(result._unsafeUnwrapErr().message).contains("SQL/APIM is already added");
+    expect(result._unsafeUnwrapErr().message).contains("SQL/APIM/KeyVault is already added");
   });
 
   it("should return ok when adding SQL resource to a project without SQL", async () => {
@@ -376,10 +382,10 @@ describe("V2 implementation", () => {
     mockedCtx.projectSetting.programmingLanguage = ProgrammingLanguage.JavaScript;
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
+      projectPath: testFolder,
     };
 
     mockedInputs[AzureSolutionQuestionNames.AddResources] = [AzureResourceSQL.id];
-    mockedInputs.projectPath = "./";
 
     mockScaffoldCodeThatAlwaysSucceeds(appStudioPluginV2);
     mockScaffoldCodeThatAlwaysSucceeds(localDebugPluginV2);
@@ -417,10 +423,10 @@ describe("V2 implementation", () => {
     mockedCtx.projectSetting.programmingLanguage = ProgrammingLanguage.JavaScript;
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
+      projectPath: testFolder,
     };
 
     mockedInputs[AzureSolutionQuestionNames.AddResources] = [AzureResourceApim.id];
-    mockedInputs.projectPath = "./";
 
     mockScaffoldCodeThatAlwaysSucceeds(appStudioPluginV2);
     mockScaffoldCodeThatAlwaysSucceeds(localDebugPluginV2);
@@ -538,6 +544,7 @@ describe("V2 implementation", () => {
       const mockedCtx = new MockedV2Context(projectSettings);
       const mockedInputs: Inputs = {
         platform: Platform.VSCode,
+        projectPath: testFolder,
       };
 
       const result = await new ScaffoldingContextAdapter([mockedCtx, mockedInputs]);

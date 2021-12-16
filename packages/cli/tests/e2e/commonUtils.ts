@@ -103,6 +103,7 @@ export function getConfigFileName(
 
 const aadPluginName = "fx-resource-aad-app-for-teams";
 const simpleAuthPluginName = "fx-resource-simple-auth";
+const sqlPluginName = "fx-resource-azure-sql";
 const botPluginName = "fx-resource-bot";
 const apimPluginName = "fx-resource-apim";
 
@@ -142,6 +143,25 @@ export async function setBotSkuNameToB1Bicep(projectPath: string, envName: strin
   const parameters = await fs.readJSON(parametersFilePath);
   parameters["parameters"]["provisionParameters"]["value"]["botWebAppSKU"] = "B1";
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
+}
+
+export async function setSkipAddingSqlUser(projectPath: string) {
+  const envFilePath = path.resolve(projectPath, envFilePathSuffix);
+  const context = await fs.readJSON(envFilePath);
+  context[sqlPluginName]["skipAddingUser"] = true;
+  return fs.writeJSON(envFilePath, context, { spaces: 4 });
+}
+
+export async function setSkipAddingSqlUserToConfig(projectPath: string, envName: string) {
+  const configFile = path.join(
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    `config.${envName}.json`
+  );
+  const configFilePath = path.resolve(projectPath, configFile);
+  const config = await fs.readJSON(configFilePath);
+  config["skipAddingSqlUser"] = true;
+  return fs.writeJSON(configFilePath, config, { spaces: 4 });
 }
 
 export async function cleanupSharePointPackage(appId: string) {

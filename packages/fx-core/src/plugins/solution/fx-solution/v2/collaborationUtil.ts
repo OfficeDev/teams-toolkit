@@ -10,14 +10,16 @@ import {
   returnSystemError,
   err,
   SolutionConfig,
+  SolutionSettings,
 } from "@microsoft/teamsfx-api";
+import { Context } from "@microsoft/teamsfx-api/build/v2/types";
 import axios from "axios";
 import { CollaborationState, CollaborationStateResult } from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
   GLOBAL_CONFIG,
   PluginNames,
-  REMOTE_TENANT_ID,
+  REMOTE_TEAMS_APP_TENANT_ID,
   SolutionError,
   SolutionSource,
   SOLUTION_PROVISION_SUCCEEDED,
@@ -123,7 +125,7 @@ export class CollaborationUtil {
       };
     }
 
-    const aadAppTenantId = envState.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+    const aadAppTenantId = envState.get(PluginNames.SOLUTION)?.get(REMOTE_TEAMS_APP_TENANT_ID);
     if (!aadAppTenantId || user.tenantId != (aadAppTenantId as string)) {
       const warningMsg =
         "Tenant id of your account and the provisioned Azure AD app does not match. Please check whether you logined with wrong account.";
@@ -136,5 +138,34 @@ export class CollaborationUtil {
     return {
       state: CollaborationState.OK,
     };
+  }
+
+  private static getProjectSettings(ctx: SolutionContext | Context): SolutionSettings | undefined {
+    let solutionSettings;
+    if ("projectSettings" in ctx) {
+      solutionSettings = (ctx as SolutionContext).projectSettings?.solutionSettings;
+    } else {
+      solutionSettings = (ctx as Context).projectSetting.solutionSettings;
+    }
+
+    return solutionSettings;
+  }
+
+  static isSpfxProject(ctx: SolutionContext | Context): boolean {
+    const solutionSettings = this.getProjectSettings(ctx);
+    if (solutionSettings) {
+      const selectedPlugins = solutionSettings.activeResourcePlugins;
+      return selectedPlugins && selectedPlugins.indexOf("fx-resource-spfx") !== -1;
+    }
+    return false;
+  }
+
+  static AadResourcePluginsActivated(ctx: SolutionContext | Context): boolean {
+    const solutionSettings = this.getProjectSettings(ctx);
+    if (solutionSettings) {
+      const selectedPlugins = solutionSettings.activeResourcePlugins;
+      return selectedPlugins && selectedPlugins.indexOf("fx-resource-aad-app-for-teams") !== -1;
+    }
+    return false;
   }
 }

@@ -20,11 +20,15 @@ import {
   ConfigMap,
   Json,
 } from "@microsoft/teamsfx-api";
-import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
+import {
+  CollaborationState,
+  isSPFxProject,
+  PermissionsResult,
+  ResourcePermission,
+} from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
   PluginNames,
-  REMOTE_TENANT_ID,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
@@ -43,6 +47,7 @@ import { flattenConfigMap } from "../../../resource/utils4v2";
 import { NamedThunk, executeConcurrently as executeNamedThunkConcurrently } from "./executor";
 import { CollaborationUtil, CollabApiParam } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
+import { REMOTE_TEAMS_APP_TENANT_ID } from "..";
 
 async function grantPermissionImpl(
   param: CollabApiParam,
@@ -122,7 +127,7 @@ async function grantPermissionImpl(
     progressBar?.next(`Grant permission for user ${email}`);
 
     if (platform === Platform.CLI) {
-      const aadAppTenantId = envState.get(PluginNames.AAD)?.get(REMOTE_TENANT_ID);
+      const aadAppTenantId = envState.get(PluginNames.SOLUTION)?.get(REMOTE_TEAMS_APP_TENANT_ID);
       if (!envName) {
         return err(
           sendErrorTelemetryThenReturnError(
@@ -184,11 +189,19 @@ async function grantPermissionImpl(
         ui?.showMessage("info", message, false);
       }
 
-      ui?.showMessage(
-        "info",
-        `\nSkip grant permission for Azure resources. You may want to handle that via Azure portal. `,
-        false
-      );
+      if (CollaborationUtil.isSpfxProject(param.ctx)) {
+        ui?.showMessage(
+          "info",
+          `\nIf added user is not a SharePoint App Catalog site admin, you need to handle that via SharePoint admin center, please refer to this link for more details: https://docs.microsoft.com/en-us/sharepoint/manage-site-collection-administrators`,
+          false
+        );
+      } else {
+        ui?.showMessage(
+          "info",
+          `\nIf added user cannot access Azure resources, you need to handle that via Azure portal,  please refer to this link for more details: https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current`,
+          false
+        );
+      }
 
       if (errorMsg) {
         ui?.showMessage("error", errorMsg, false);

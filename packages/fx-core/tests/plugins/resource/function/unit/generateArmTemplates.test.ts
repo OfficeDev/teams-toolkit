@@ -9,7 +9,12 @@ import * as path from "path";
 
 import { AzureSolutionSettings } from "@microsoft/teamsfx-api";
 import { FunctionPlugin } from "../../../../../src";
-import { ConstantString, mockSolutionUpdateArmTemplates, ResourcePlugins } from "../../util";
+import {
+  ConstantString,
+  mockSolutionGenerateArmTemplates,
+  mockSolutionUpdateArmTemplates,
+  ResourcePlugins,
+} from "../../util";
 import { MockContext } from "../helper";
 import { FunctionBicep } from "../../../../../src/plugins/resource/function/constants";
 
@@ -24,7 +29,146 @@ describe("FunctionGenerateArmTemplates", () => {
     pluginContext = MockContext();
   });
 
-  it("generate bicep arm templates", async () => {
+  it("generate bicep arm templates: without key vault plugin", async () => {
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.SimpleAuth,
+      ResourcePlugins.FrontendHosting,
+      ResourcePlugins.Function,
+    ];
+
+    await testGenerateArmTemplates(
+      activeResourcePlugins,
+      "functionConfig.result.bicep",
+      "config.result.bicep"
+    );
+  });
+
+  it("generate bicep arm templates: with key vault plugin", async () => {
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.SimpleAuth,
+      ResourcePlugins.FrontendHosting,
+      ResourcePlugins.Function,
+      ResourcePlugins.KeyVault,
+    ];
+
+    await testGenerateArmTemplates(
+      activeResourcePlugins,
+      "functionConfigWithKeyVaultPlugin.result.bicep",
+      "configWithKeyVaultPlugin.result.bicep",
+      {
+        "fx-resource-key-vault": {
+          References: {
+            m365ClientSecretReference:
+              "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference",
+          },
+        },
+      }
+    );
+  });
+
+  async function testGenerateArmTemplates(
+    activeResourcePlugins: string[],
+    testConfigurationModuleFileName: string,
+    testConfigurationFileName: string,
+    addtionalPluginOutput: any = {}
+  ) {
+    // Act
+    pluginContext.projectSettings!.solutionSettings = {
+      name: "test_solution",
+      version: "1.0.0",
+      activeResourcePlugins: activeResourcePlugins,
+    } as AzureSolutionSettings;
+    const result = await functionPlugin.generateArmTemplates(pluginContext);
+
+    // Assert
+    const testProvisionModuleFileName = "functionProvision.result.bicep";
+    const pluginOutput = {
+      "fx-resource-function": {
+        Provision: {
+          function: {
+            ProvisionPath: `./${testProvisionModuleFileName}`,
+          },
+        },
+        Configuration: {
+          function: {
+            ConfigPath: `./${testConfigurationModuleFileName}`,
+          },
+        },
+        References: {
+          functionAppResourceId: "provisionOutputs.functionOutput.value.functionAppResourceId",
+          functionEndpoint: "provisionOutputs.functionOutput.value.functionEndpoint",
+        },
+      },
+      "fx-resource-frontend-hosting": {
+        Outputs: {
+          endpoint: "frontend_hosting_test_endpoint",
+        },
+        References: {
+          domain: "provisionOutputs.frontendHostingOutput.value.domain",
+          endpoint: "provisionOutputs.frontendHostingOutput.value.endpoint",
+        },
+      },
+      "fx-resource-identity": {
+        Outputs: {
+          endpoint: "frontend_hosting_test_endpoint",
+        },
+        References: {
+          identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
+          identityResourceId: "userAssignedIdentityProvision.outputs.identityResourceId",
+        },
+      },
+    };
+    const mockedSolutionDataContext = {
+      Plugins: activeResourcePlugins,
+      PluginOutput: { ...pluginOutput, ...addtionalPluginOutput },
+    };
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      const expectedResult = mockSolutionGenerateArmTemplates(
+        mockedSolutionDataContext,
+        result.value
+      );
+
+      const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
+
+      const expectedProvisionModuleFilePath = path.join(
+        expectedBicepFileDirectory,
+        testProvisionModuleFileName
+      );
+      chai.assert.strictEqual(
+        expectedResult.Provision!.Modules!.function,
+        fs.readFileSync(expectedProvisionModuleFilePath, ConstantString.UTF8Encoding)
+      );
+
+      const expectedConfigurationModuleFilePath = path.join(
+        expectedBicepFileDirectory,
+        testConfigurationModuleFileName
+      );
+      chai.assert.strictEqual(
+        expectedResult.Configuration!.Modules!.function,
+        fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
+      );
+
+      const orchestrationProvisionFile = await fs.readFile(
+        path.join(expectedBicepFileDirectory, "provision.result.bicep"),
+        ConstantString.UTF8Encoding
+      );
+
+      chai.assert.strictEqual(expectedResult.Provision!.Orchestration, orchestrationProvisionFile);
+
+      chai.assert.strictEqual(
+        expectedResult.Configuration!.Orchestration,
+        fs.readFileSync(
+          path.join(expectedBicepFileDirectory, testConfigurationFileName),
+          ConstantString.UTF8Encoding
+        )
+      );
+    }
+  }
+
+  it("Update bicep arm templates", async () => {
     // Act
     const activeResourcePlugins = [
       ResourcePlugins.Aad,
@@ -37,7 +181,7 @@ describe("FunctionGenerateArmTemplates", () => {
       version: "1.0.0",
       activeResourcePlugins: activeResourcePlugins,
     } as AzureSolutionSettings;
-    const result = await functionPlugin.generateArmTemplates(pluginContext);
+    const result = await functionPlugin.updateArmTemplates(pluginContext);
 
     // Assert
     const testProvisionModuleFileName = "functionProvision.result.bicep";
@@ -87,18 +231,7 @@ describe("FunctionGenerateArmTemplates", () => {
         mockedSolutionDataContext,
         result.value
       );
-
       const expectedBicepFileDirectory = path.join(__dirname, "expectedBicepFiles");
-
-      const expectedProvisionModuleFilePath = path.join(
-        expectedBicepFileDirectory,
-        testProvisionModuleFileName
-      );
-      chai.assert.strictEqual(
-        expectedResult.Provision!.Modules!.function,
-        fs.readFileSync(expectedProvisionModuleFilePath, ConstantString.UTF8Encoding)
-      );
-
       const expectedConfigurationModuleFilePath = path.join(
         expectedBicepFileDirectory,
         testConfigurationModuleFileName
@@ -107,21 +240,12 @@ describe("FunctionGenerateArmTemplates", () => {
         expectedResult.Configuration!.Modules!.function,
         fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
       );
-
-      const orchestrationProvisionFile = await fs.readFile(
-        path.join(expectedBicepFileDirectory, "provision.result.bicep"),
-        ConstantString.UTF8Encoding
-      );
-
-      chai.assert.strictEqual(expectedResult.Provision!.Orchestration, orchestrationProvisionFile);
-
-      chai.assert.strictEqual(
-        expectedResult.Configuration!.Orchestration,
-        fs.readFileSync(
-          path.join(expectedBicepFileDirectory, "config.result.bicep"),
-          ConstantString.UTF8Encoding
-        )
-      );
+      chai.assert.exists(expectedResult.Provision!.Reference!.functionAppResourceId);
+      chai.assert.exists(expectedResult.Provision!.Reference!.functionEndpoint);
+      chai.assert.notExists(expectedResult.Provision!.Orchestration);
+      chai.assert.notExists(expectedResult.Provision!.Modules);
+      chai.assert.notExists(expectedResult.Configuration!.Orchestration);
+      chai.assert.notExists(expectedResult.Parameters);
     }
   });
 });

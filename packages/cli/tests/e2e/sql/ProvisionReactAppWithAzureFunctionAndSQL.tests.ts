@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Zhaofeng Xu <zhaofengxu@microsoft.com>
+ */
+
 import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import fs from "fs-extra";
 import path from "path";
@@ -24,7 +28,7 @@ describe("Provision to Azure with SQL", function () {
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
 
-  it(`Provision react app with Azure Function and SQL - Test Plan ID 9454227`, async function () {
+  it(`Provision react app with Azure Function and SQL`, async function () {
     // new a project ( tab + function + sql )
     await execAsync(
       `teamsfx new --interactive false --app-name ${appName} --capabilities tab --azure-resources function sql`,

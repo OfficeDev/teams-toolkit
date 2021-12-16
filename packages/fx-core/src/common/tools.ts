@@ -20,7 +20,7 @@ import {
   SolutionContext,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
 import { glob } from "glob";
@@ -46,6 +46,7 @@ import {
   SUBSCRIPTION_ID,
 } from "../plugins/solution/fx-solution/constants";
 import Mustache from "mustache";
+import { FetchSampleError } from "../core/error";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -138,25 +139,11 @@ export function objectToConfigMap(o?: Json): ConfigMap {
 }
 
 const SecretDataMatchers = [
-  "solution.localDebugTeamsAppId",
-  "solution.teamsAppTenantId",
   "fx-resource-aad-app-for-teams.clientSecret",
-  "fx-resource-aad-app-for-teams.local_clientSecret",
-  "fx-resource-aad-app-for-teams.local_clientId",
-  "fx-resource-aad-app-for-teams.local_objectId",
-  "fx-resource-aad-app-for-teams.local_oauth2PermissionScopeId",
-  "fx-resource-aad-app-for-teams.local_tenantId",
-  "fx-resource-aad-app-for-teams.local_applicationIdUris",
   "fx-resource-simple-auth.filePath",
   "fx-resource-simple-auth.environmentVariableParams",
   "fx-resource-local-debug.*",
   "fx-resource-bot.botPassword",
-  "fx-resource-bot.localBotPassword",
-  "fx-resource-bot.localBotId",
-  "fx-resource-bot.localObjectId",
-  "fx-resource-bot.local_redirectUri",
-  "fx-resource-bot.bots",
-  "fx-resource-bot.composeExtensions",
   "fx-resource-apim.apimClientAADClientSecret",
   "fx-resource-azure-sql.adminPassword",
 ];
@@ -256,9 +243,13 @@ export function serializeDict(dict: Record<string, string>): string {
   return array.join("\n");
 }
 
-export async function fetchCodeZip(url: string) {
+export async function fetchCodeZip(
+  url: string,
+  sampleId: string
+): Promise<Result<AxiosResponse<any> | undefined, FxError>> {
   let retries = 3;
   let result = undefined;
+  const error = FetchSampleError(sampleId);
   while (retries > 0) {
     retries--;
     try {
@@ -266,13 +257,18 @@ export async function fetchCodeZip(url: string) {
         responseType: "arraybuffer",
       });
       if (result.status === 200 || result.status === 201) {
-        return result;
+        return ok(result);
       }
     } catch (e) {
       await new Promise<void>((resolve: () => void): NodeJS.Timer => setTimeout(resolve, 10000));
+      if (e.response) {
+        error.message += `, status code: ${e.response.status}`;
+      } else if (e.request && e.code === "ENOTFOUND") {
+        error.message += ". Network issue, please check your network connectivity";
+      }
     }
   }
-  return result;
+  return err(error);
 }
 
 export async function saveFilesRecursively(
@@ -290,7 +286,9 @@ export async function saveFilesRecursively(
           entry.entryName.split("/").includes(appFolder)
       )
       .map(async (entry) => {
-        const entryPath = entry.entryName.substring(entry.entryName.indexOf("/") + 1);
+        const entryPath = entry.entryName.substring(
+          entry.entryName.indexOf(appFolder) + appFolder.length
+        );
         const filePath = path.join(dstPath, entryPath);
         await fs.ensureDir(path.dirname(filePath));
         await fs.writeFile(filePath, entry.getData());
@@ -413,10 +411,11 @@ export async function askSubscription(
   return ok(resultSub);
 }
 
-export function getResourceGroupInPortal(ctx: SolutionContext): string | undefined {
-  const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(SUBSCRIPTION_ID);
-  const tenantId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString("tenantId");
-  const resourceGroupName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME);
+export function getResourceGroupInPortal(
+  subscriptionId?: string,
+  tenantId?: string,
+  resourceGroupName?: string
+): string | undefined {
   if (subscriptionId && tenantId && resourceGroupName) {
     return `${AzurePortalUrl}/#@${tenantId}/resource/subscriptions/${subscriptionId}/resourceGroups/${resourceGroupName}`;
   } else {
@@ -434,29 +433,29 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   }
 }
 
+/**
+ * @deprecated This method will be removed in 12/20/2021, please help do the code clean before the date.
+ */
 export function isMultiEnvEnabled(): boolean {
-  return (
-    !isFeatureFlagEnabled(FeatureFlagName.RollbackToTeamsToolkitV2, false) &&
-    isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)
-  );
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
 }
 
+/**
+ * @deprecated This method will be removed in 12/20/2021, please help do the code clean before the date.
+ */
 export function isArmSupportEnabled(): boolean {
-  return (
-    !isFeatureFlagEnabled(FeatureFlagName.RollbackToTeamsToolkitV2, false) &&
-    isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)
-  );
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
 }
 
 export function isBicepEnvCheckerEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, false);
+  return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
 
+/**
+ * @deprecated This method will be removed in 12/20/2021, please help do the code clean before the date.
+ */
 export function isRemoteCollaborateEnabled(): boolean {
-  return (
-    !isFeatureFlagEnabled(FeatureFlagName.RollbackToTeamsToolkitV2, false) &&
-    isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)
-  );
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
 }
 
 export function getRootDirectory(): string {
@@ -464,7 +463,7 @@ export function getRootDirectory(): string {
   if (root === undefined || root === "") {
     return path.join(os.homedir(), ConstantString.rootFolder);
   } else {
-    return root;
+    return path.resolve(root.replace("${homeDir}", os.homedir()));
   }
 }
 

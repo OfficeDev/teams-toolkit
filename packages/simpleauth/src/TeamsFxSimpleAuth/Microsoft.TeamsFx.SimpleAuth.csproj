@@ -12,7 +12,7 @@
 	  <CodeAnalysisRuleSet>$(SolutionDir)\ruleset\AllInOne.ruleset</CodeAnalysisRuleSet>
 	  <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
 	  <LangVersion>8.0</LangVersion>
-	  <Version>0.1.1</Version>
+	  <Version>0.1.2</Version>
 	  <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
 	  <Authors>Microsoft</Authors>
 	  <PackageLicenseExpression>MIT</PackageLicenseExpression>
@@ -35,6 +35,7 @@
     </PackageReference>
     <PackageReference Include="Microsoft.Extensions.Logging.AzureAppServices" Version="3.1.7" />
     <PackageReference Include="Microsoft.Identity.Client" Version="4.37.0" />
+    <PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
     <PackageReference Include="NSwag.AspNetCore" Version="13.14.4" />
   </ItemGroup>
 

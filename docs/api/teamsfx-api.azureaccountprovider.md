@@ -16,7 +16,7 @@ export interface AzureAccountProvider
 
 |  Method | Description |
 |  --- | --- |
-|  [getAccountCredentialAsync(showDialog, tenantId)](./teamsfx-api.azureaccountprovider.getaccountcredentialasync.md) | Async get ms-rest-\* \[credential\](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts) |
+|  [getAccountCredentialAsync(showDialog, tenantId)](./teamsfx-api.azureaccountprovider.getaccountcredentialasync.md) | Async get ms-rest-\* \[credential\](https://github.com/Azure/ms-rest-nodeauth/blob/master/lib/credentials/tokenCredentialsBase.ts) On login failure or user cancellation, it will throw an exception instead of returning undefined. This method never returns undefined. |
 |  [getAccountInfo()](./teamsfx-api.azureaccountprovider.getaccountinfo.md) | Get account information |
 |  [getIdentityCredentialAsync(showDialog)](./teamsfx-api.azureaccountprovider.getidentitycredentialasync.md) | Async get identity \[crendential\](https://github.com/Azure/azure-sdk-for-js/blob/master/sdk/core/core-auth/src/tokenCredential.ts) |
 |  [getJsonObject(showDialog)](./teamsfx-api.azureaccountprovider.getjsonobject.md) | Get Azure token JSON object - tid : tenantId - unique\_name : user name - ... |

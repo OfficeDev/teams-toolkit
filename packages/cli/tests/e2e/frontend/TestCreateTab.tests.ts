@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Zhijie Huang <zhijie.huang@microsoft.com>
+ */
+
 import fs from "fs-extra";
 import path from "path";
 import { AadValidator, FrontendValidator, SimpleAuthValidator } from "../../commonlib";
@@ -22,6 +26,15 @@ describe("Create single tab", function () {
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+
+  after(async () => {
+    // clean up
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, false, false, true);
+    } else {
+      await cleanUp(appName, projectPath);
+    }
+  });
 
   it("Create react app without Azure Function", async () => {
     // new a project ( tab only )
@@ -122,15 +135,6 @@ describe("Create single tab", function () {
         const frontend = FrontendValidator.init(context);
         await FrontendValidator.validateDeploy(frontend);
       }
-    }
-  });
-
-  after(async () => {
-    // clean up
-    if (isMultiEnvEnabled()) {
-      await cleanUp(appName, projectPath, true, false, false, true);
-    } else {
-      await cleanUp(appName, projectPath);
     }
   });
 });

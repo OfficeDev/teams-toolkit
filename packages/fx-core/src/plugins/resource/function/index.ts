@@ -143,6 +143,14 @@ export class FunctionPlugin implements Plugin {
     return res;
   }
 
+  public async updateArmTemplates(ctx: PluginContext): Promise<FxResult> {
+    this.setContext(ctx);
+    const res = await this.runWithErrorWrapper(ctx, FunctionEvent.updateArmTemplates, () =>
+      this.functionPluginImpl.updateArmTemplates(ctx)
+    );
+    return res;
+  }
+
   public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
     this.setContext(ctx);
     const res = await this.runWithErrorWrapper(ctx, FunctionEvent.generateArmTemplates, () =>

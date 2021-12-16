@@ -35,7 +35,7 @@ import { AzureResourceApim } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
-import { ArmTemplateResult, ScaffoldArmTemplateResult } from "../../../common/armInterface";
+import { ArmTemplateResult } from "../../../common/armInterface";
 
 @Service(ResourcePlugins.ApimPlugin)
 export class ApimPlugin implements Plugin {
@@ -72,6 +72,14 @@ export class ApimPlugin implements Plugin {
 
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
     return await this.executeWithFxError(PluginLifeCycle.Scaffold, _scaffold, ctx);
+  }
+
+  public async updateArmTemplates(ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> {
+    return await this.executeWithFxError(
+      PluginLifeCycle.UpdateArmTemplates,
+      _updateArmTemplates,
+      ctx
+    );
   }
 
   public async generateArmTemplates(
@@ -220,6 +228,14 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
     ProgressMessages[ProgressStep.Provision].CreateAad
   );
   await aadManager.provision(apimConfig, appName);
+}
+
+async function _updateArmTemplates(
+  ctx: PluginContext,
+  progressBar: ProgressBar
+): Promise<ArmTemplateResult> {
+  const apimManager = await Factory.buildApimManager(ctx);
+  return await apimManager.updateArmTemplates();
 }
 
 async function _generateArmTemplates(

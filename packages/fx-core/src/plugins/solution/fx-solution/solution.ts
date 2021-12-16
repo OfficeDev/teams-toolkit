@@ -42,7 +42,7 @@ import Mustache from "mustache";
 import path from "path";
 import { Container, Service } from "typedi";
 import * as util from "util";
-import { PluginDisplayName } from "../../../common/constants";
+import { PluginDisplayName, HelpLinks } from "../../../common/constants";
 import { LocalSettingsTeamsAppKeys } from "../../../common/localSettingsConstants";
 import { ListCollaboratorResult, PermissionsResult } from "../../../common/permissionInterface";
 import {
@@ -89,6 +89,8 @@ import {
   SOLUTION_PROVISION_SUCCEEDED,
   Void,
   SolutionSource,
+  SUBSCRIPTION_ID,
+  RESOURCE_GROUP_NAME,
 } from "./constants";
 import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
 import {
@@ -106,10 +108,10 @@ import {
   DeployPluginSelectQuestion,
   HostTypeOptionAzure,
   MessageExtensionItem,
-  ProgrammingLanguageQuestion,
   TabOptionItem,
   GetUserEmailQuestion,
   TabSPFxItem,
+  AzureResourceKeyVault,
 } from "./question";
 import {
   getActivatedResourcePlugins,
@@ -131,6 +133,7 @@ import {
   parseTeamsAppTenantId,
   fillInSolutionSettings,
   parseUserName,
+  checkWhetherLocalDebugM365TenantMatches,
 } from "./v2/utils";
 import { askForProvisionConsent } from "./v2/provision";
 import { grantPermission } from "./v2/grantPermission";
@@ -139,8 +142,7 @@ import { listAllCollaborators } from "./v2/listAllCollaborators";
 import { listCollaborator } from "./v2/listCollaborator";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
-import { LOCAL_TENANT_ID } from ".";
-import { HelpLinks } from "./constants";
+import { LOCAL_TENANT_ID, REMOTE_TEAMS_APP_TENANT_ID } from ".";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -163,6 +165,7 @@ export class TeamsAppSolution implements Solution {
   FunctionPlugin: Plugin;
   SqlPlugin: Plugin;
   ApimPlugin: Plugin;
+  KeyVaultPlugin: Plugin;
   LocalDebugPlugin: Plugin;
 
   name = "fx-solution-azure";
@@ -178,6 +181,7 @@ export class TeamsAppSolution implements Solution {
     this.FunctionPlugin = Container.get<Plugin>(ResourcePlugins.FunctionPlugin);
     this.SqlPlugin = Container.get<Plugin>(ResourcePlugins.SqlPlugin);
     this.ApimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin);
+    this.KeyVaultPlugin = Container.get<Plugin>(ResourcePlugins.KeyVaultPlugin);
     this.LocalDebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
     this.runningState = SolutionRunningState.Idle;
   }
@@ -417,12 +421,13 @@ export class TeamsAppSolution implements Solution {
 
   async doScaffold(
     ctx: SolutionContext,
-    selectedPlugins: LoadedPlugin[],
-    generateResourceTemplate: boolean
+    pluginsToScaffold: LoadedPlugin[],
+    generateResourceTemplate: boolean,
+    pluginsToDoArm?: LoadedPlugin[]
   ): Promise<Result<any, FxError>> {
     const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
       ctx,
-      selectedPlugins
+      pluginsToScaffold
     );
     const preScaffoldWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
       return [plugin?.preScaffold?.bind(plugin), context, plugin.name];
@@ -446,7 +451,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     if (isArmSupportEnabled() && generateResourceTemplate && this.isAzureProject(ctx)) {
-      return await generateArmTemplate(ctx, selectedPlugins);
+      return await generateArmTemplate(ctx, pluginsToDoArm ? pluginsToDoArm : pluginsToScaffold);
     } else {
       return res;
     }
@@ -544,7 +549,11 @@ export class TeamsAppSolution implements Solution {
 
       const provisionResult = await this.doProvision(ctx);
       if (provisionResult.isOk()) {
-        const url = getResourceGroupInPortal(ctx);
+        const url = getResourceGroupInPortal(
+          ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(SUBSCRIPTION_ID),
+          ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString("tenantId"),
+          ctx.envInfo.state.get(GLOBAL_CONFIG)?.getString(RESOURCE_GROUP_NAME)
+        );
         const msg = util.format(
           `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
           ctx.projectSettings?.appName
@@ -562,6 +571,13 @@ export class TeamsAppSolution implements Solution {
           ctx.ui?.showMessage("info", msg, false);
         }
         ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, true);
+
+        if (!this.isAzureProject(ctx) && isMultiEnvEnabled()) {
+          const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+          ctx.envInfo.state
+            .get(GLOBAL_CONFIG)
+            ?.set(REMOTE_TEAMS_APP_TENANT_ID, (appStudioTokenJson as any).tid);
+        }
       } else {
         if (
           !isUserCancelError(provisionResult.error) &&
@@ -987,11 +1003,6 @@ export class TeamsAppSolution implements Solution {
           capNode.addChild(botGroup);
         }
       }
-
-      // 1.3 Language
-      const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-      programmingLanguage.condition = { minItems: 1 };
-      capNode.addChild(programmingLanguage);
     } else if (stage == Stage.migrateV1) {
       const capQuestion = createV1CapabilityQuestion();
       const capNode = new QTreeNode(capQuestion);
@@ -1179,33 +1190,12 @@ export class TeamsAppSolution implements Solution {
       const localDebugTenantId = isMultiEnvEnabled()
         ? ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TenantId)
         : ctx.envInfo.state.get(PluginNames.AAD)?.get(LOCAL_TENANT_ID);
-      if (localDebugTenantId) {
-        const m365TenantId = parseTeamsAppTenantId(await ctx.appStudioToken?.getJsonObject());
-        if (m365TenantId.isErr()) {
-          throw err(m365TenantId.error);
-        }
-
-        const m365UserAccount = parseUserName(await ctx.appStudioToken?.getJsonObject());
-        if (m365UserAccount.isErr()) {
-          throw err(m365UserAccount.error);
-        }
-
-        if (m365TenantId.value !== localDebugTenantId) {
-          const errorMessage: string = util.format(
-            getStrings().solution.LocalDebugTenantConfirmNotice,
-            localDebugTenantId,
-            m365UserAccount.value,
-            isMultiEnvEnabled() ? "localSettings.json" : "default.userdata"
-          );
-
-          return err(
-            returnUserError(
-              new Error(errorMessage),
-              "Solution",
-              SolutionError.CannotLocalDebugInDifferentTenant
-            )
-          );
-        }
+      const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
+        localDebugTenantId,
+        ctx.appStudioToken
+      );
+      if (m365TenantMatches.isErr()) {
+        return m365TenantMatches;
       }
 
       checkPoint = 3;
@@ -1388,14 +1378,17 @@ export class TeamsAppSolution implements Solution {
     const functionPlugin: Plugin = this.FunctionPlugin;
     const sqlPlugin: Plugin = this.SqlPlugin;
     const apimPlugin: Plugin = this.ApimPlugin;
+    const keyVaultPlugin: Plugin = this.KeyVaultPlugin;
     const alreadyHaveFunction = selectedPlugins.includes(functionPlugin.name);
     const alreadyHaveSQL = selectedPlugins.includes(sqlPlugin.name);
     const alreadyHaveAPIM = selectedPlugins.includes(apimPlugin.name);
+    const alreadyHavekeyVault = selectedPlugins.includes(keyVaultPlugin.name);
 
     const addQuestion = createAddAzureResourceQuestion(
       alreadyHaveFunction,
       alreadyHaveSQL,
-      alreadyHaveAPIM
+      alreadyHaveAPIM,
+      alreadyHavekeyVault
     );
 
     const addAzureResourceNode = new QTreeNode(addQuestion);
@@ -1412,7 +1405,9 @@ export class TeamsAppSolution implements Solution {
           azure_function.condition = { contains: AzureResourceFunction.id };
         } else {
           // if not function activated, select any option will trigger function question
-          azure_function.condition = { minItems: 1 };
+          azure_function.condition = {
+            containsAny: [AzureResourceApim.id, AzureResourceFunction.id, AzureResourceSQL.id],
+          };
         }
         if (azure_function.data) addAzureResourceNode.addChild(azure_function);
       }
@@ -1436,11 +1431,11 @@ export class TeamsAppSolution implements Solution {
       const res = await apimPlugin.getQuestionsForUserTask(func, pluginCtx);
       if (res.isErr()) return res;
       if (res.value) {
-        const groupNode = new QTreeNode({ type: "group" });
-        groupNode.condition = { contains: AzureResourceApim.id };
-        addAzureResourceNode.addChild(groupNode);
         const apim = res.value as QTreeNode;
-        if (apim.data) {
+        if (apim.data.type !== "group" || (apim.children && apim.children.length > 0)) {
+          const groupNode = new QTreeNode({ type: "group" });
+          groupNode.condition = { contains: AzureResourceApim.id };
+          addAzureResourceNode.addChild(groupNode);
           const funcNode = new QTreeNode(AskSubscriptionQuestion);
           AskSubscriptionQuestion.func = async (
             inputs: Inputs
@@ -1495,7 +1490,7 @@ export class TeamsAppSolution implements Solution {
 
     if (alreadyHaveBotOrMe && alreadyHaveTab) {
       const cannotAddCapWarnMsg =
-        "Your App already has both Tab and Bot/Me, can not Add Capability.";
+        "Your App already has both Tab and Bot/Messaging extension, can not Add Capability.";
       ctx.ui?.showMessage("error", cannotAddCapWarnMsg, false);
       return ok(undefined);
     }
@@ -1584,9 +1579,11 @@ export class TeamsAppSolution implements Solution {
     const functionPlugin: Plugin = this.FunctionPlugin;
     const sqlPlugin: Plugin = this.SqlPlugin;
     const apimPlugin: Plugin = this.ApimPlugin;
+    const keyVaultPlugin: Plugin = this.KeyVaultPlugin;
     const alreadyHaveFunction = selectedPlugins?.includes(functionPlugin.name);
     const alreadyHaveSql = selectedPlugins?.includes(sqlPlugin.name);
     const alreadyHaveApim = selectedPlugins?.includes(apimPlugin.name);
+    const alreadyHaveKeyVault = selectedPlugins?.includes(keyVaultPlugin.name);
 
     const addResourcesAnswer = ctx.answers[AzureSolutionQuestionNames.AddResources] as string[];
 
@@ -1603,10 +1600,15 @@ export class TeamsAppSolution implements Solution {
     const addSQL = addResourcesAnswer.includes(AzureResourceSQL.id);
     const addFunc = addResourcesAnswer.includes(AzureResourceFunction.id);
     const addApim = addResourcesAnswer.includes(AzureResourceApim.id);
+    const addKeyVault = addResourcesAnswer.includes(AzureResourceKeyVault.id);
 
-    if ((alreadyHaveSql && addSQL) || (alreadyHaveApim && addApim)) {
+    if (
+      (alreadyHaveSql && addSQL) ||
+      (alreadyHaveApim && addApim) ||
+      (alreadyHaveKeyVault && addKeyVault)
+    ) {
       const e = returnUserError(
-        new Error("SQL/APIM is already added."),
+        new Error("SQL/APIM/KeyVault is already added."),
         SolutionSource,
         SolutionError.AddResourceNotSupport
       );
@@ -1619,39 +1621,55 @@ export class TeamsAppSolution implements Solution {
       );
     }
 
-    let addNewResoruceToProvision = false;
+    let addNewResourceToProvision = false;
     const notifications: string[] = [];
     const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin];
+    const pluginsToDoArm: LoadedPlugin[] = [];
     const azureResource = Array.from(settings.azureResources || []);
     if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
       pluginsToScaffold.push(functionPlugin);
       if (!azureResource.includes(AzureResourceFunction.id)) {
         azureResource.push(AzureResourceFunction.id);
-        addNewResoruceToProvision = true;
+        addNewResourceToProvision = true;
+        pluginsToDoArm.push(functionPlugin);
       }
       notifications.push(AzureResourceFunction.label);
     }
     if (addSQL && !alreadyHaveSql) {
       pluginsToScaffold.push(sqlPlugin);
+      pluginsToDoArm.push(sqlPlugin);
       azureResource.push(AzureResourceSQL.id);
       notifications.push(AzureResourceSQL.label);
-      addNewResoruceToProvision = true;
+      addNewResourceToProvision = true;
     }
     if (addApim && !alreadyHaveApim) {
       pluginsToScaffold.push(apimPlugin);
+      pluginsToDoArm.push(apimPlugin);
       azureResource.push(AzureResourceApim.id);
       notifications.push(AzureResourceApim.label);
-      addNewResoruceToProvision = true;
+      addNewResourceToProvision = true;
+    }
+    if (addKeyVault && !alreadyHaveKeyVault) {
+      pluginsToScaffold.push(keyVaultPlugin);
+      pluginsToDoArm.push(keyVaultPlugin);
+      azureResource.push(AzureResourceKeyVault.id);
+      notifications.push(AzureResourceKeyVault.label);
+      addNewResourceToProvision = true;
     }
 
     if (notifications.length > 0) {
-      if (isArmSupportEnabled() && addNewResoruceToProvision) {
+      if (isArmSupportEnabled() && addNewResourceToProvision) {
         showUpdateArmTemplateNotice(ctx.ui);
       }
       settings.azureResources = azureResource;
       await this.reloadPlugins(settings);
       ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
-      const scaffoldRes = await this.doScaffold(ctx, pluginsToScaffold, addNewResoruceToProvision);
+      const scaffoldRes = await this.doScaffold(
+        ctx,
+        pluginsToScaffold,
+        addNewResourceToProvision,
+        pluginsToDoArm
+      );
       if (scaffoldRes.isErr()) {
         ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
         ctx.projectSettings!.solutionSettings = originalSettings;
@@ -1664,7 +1682,7 @@ export class TeamsAppSolution implements Solution {
         );
       }
       ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
-      if (addNewResoruceToProvision)
+      if (addNewResourceToProvision)
         ctx.envInfo.state.get(GLOBAL_CONFIG)?.set(SOLUTION_PROVISION_SUCCEEDED, false); //if selected plugin changed, we need to re-do provision
       ctx.ui?.showMessage(
         "info",

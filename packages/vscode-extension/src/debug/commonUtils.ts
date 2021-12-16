@@ -3,6 +3,7 @@
 
 import * as fs from "fs-extra";
 import * as path from "path";
+import * as uuid from "uuid";
 import * as dotenv from "dotenv";
 import * as vscode from "vscode";
 import * as constants from "./constants";
@@ -395,4 +396,19 @@ export async function loadTeamsFxDevScript(componentRoot: string): Promise<strin
   } else {
     return undefined;
   }
+}
+
+// Helper functions for local debug correlation-id, only used for telemetry
+let localDebugCorrelationId: string | undefined = undefined;
+export function startLocalDebugSession(): string {
+  localDebugCorrelationId = uuid.v4();
+  return getLocalDebugSessionId();
+}
+
+export function endLocalDebugSession() {
+  localDebugCorrelationId = undefined;
+}
+
+export function getLocalDebugSessionId(): string {
+  return localDebugCorrelationId || "no-session-id";
 }

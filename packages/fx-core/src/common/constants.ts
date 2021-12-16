@@ -5,7 +5,10 @@ export class ConstantString {
   static readonly rootFolder = "TeamsApps";
 }
 
-export const ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
+export class HelpLinks {
+  static readonly WhyNeedProvision = "https://aka.ms/teamsfx/whyneedprovision";
+  static readonly ArmHelpLink = "https://aka.ms/teamsfx-arm-help";
+}
 
 export class Bicep {
   static readonly ParameterOrchestrationFileName: string = "param.template.bicep";
@@ -45,14 +48,15 @@ export class ResourcePlugins {
 }
 export class PluginDisplayName {
   static readonly Solution = "Teams Toolkit";
+  static readonly SpfxSolution = "SPFx";
 }
 
 export class FeatureFlagName {
   static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
   static readonly APIV2 = "TEAMSFX_APIV2";
+  static readonly APIV3 = "TEAMSFX_APIV3";
   // This will default to true and this environment is only for tests. It does not expose to user.
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
-  static readonly RollbackToTeamsToolkitV2 = "TEAMSFX_ROLLBACK_TO_TEAMS_TOOLKIT_V2";
   static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
   static readonly VSCallingCLI = "VS_CALLING_CLI";
 }

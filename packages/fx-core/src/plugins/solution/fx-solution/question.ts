@@ -88,6 +88,12 @@ export const AzureResourceApim: OptionItem = {
   description: "Azure Function App will be also selected to be published as an API",
 };
 
+export const AzureResourceKeyVault: OptionItem = {
+  id: "keyvault",
+  label: "Azure Key Vault",
+  description: "Secure runtime application secrets with Azure Key Vault",
+};
+
 export function createCapabilityQuestion(): MultiSelectQuestion {
   return {
     name: AzureSolutionQuestionNames.Capabilities,
@@ -100,13 +106,13 @@ export function createCapabilityQuestion(): MultiSelectQuestion {
       validFunc: async (input: string[]): Promise<string | undefined> => {
         const name = input as string[];
         if (name.length === 0) {
-          return "Select at at least 1 capability";
+          return "Select at least 1 capability";
         }
         if (
           name.length > 1 &&
           (name.includes(TabSPFxItem.id) || name.includes(TabSPFxItem.label))
         ) {
-          return "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Message Extension capabilities are not available";
+          return "Teams Toolkit offers only the Tab capability in a Teams app with Visual Studio Code and SharePoint Framework. The Bot and Messaging extension capabilities are not available";
         }
 
         return undefined;
@@ -187,11 +193,13 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
 export function createAddAzureResourceQuestion(
   alreadyHaveFunction: boolean,
   alreadhHaveSQL: boolean,
-  alreadyHaveAPIM: boolean
+  alreadyHaveAPIM: boolean,
+  alreadyHavekeyVault: boolean
 ): MultiSelectQuestion {
   const options: OptionItem[] = [AzureResourceFunction];
   if (!alreadhHaveSQL) options.push(AzureResourceSQL);
   if (!alreadyHaveAPIM) options.push(AzureResourceApim);
+  if (!alreadyHavekeyVault) options.push(AzureResourceKeyVault);
   return {
     name: AzureSolutionQuestionNames.AddResources,
     title: "Cloud resources",
@@ -245,35 +253,6 @@ export const AskSubscriptionQuestion: FuncQuestion = {
   type: "func",
   func: async (inputs: Inputs): Promise<Void> => {
     return ok(Void);
-  },
-};
-
-export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
-  name: AzureSolutionQuestionNames.ProgrammingLanguage,
-  title: "Programming Language",
-  type: "singleSelect",
-  staticOptions: [
-    { id: "javascript", label: "JavaScript" },
-    { id: "typescript", label: "TypeScript" },
-  ],
-  dynamicOptions: (inputs: Inputs): StaticOptions => {
-    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return [{ id: "typescript", label: "TypeScript" }];
-    return [
-      { id: "javascript", label: "JavaScript" },
-      { id: "typescript", label: "TypeScript" },
-    ];
-  },
-  skipSingleOption: true,
-  default: (inputs: Inputs) => {
-    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return "typescript";
-    return "javascript";
-  },
-  placeholder: (inputs: Inputs): string => {
-    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return "SPFx is currently supporting TypeScript only.";
-    return "Select a programming language.";
   },
 };
 

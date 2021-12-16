@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "2.10.0",
+  "version": "3.0.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -437,11 +437,13 @@
       },
       {
         "command": "fx-extension.update",
-        "title": "Teams: Add cloud resources"
+        "title": "Teams: Add cloud resources",
+        "enablement": "!fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.addCapability",
-        "title": "Teams: Add capabilities"
+        "title": "Teams: Add capabilities",
+        "enablement": "!fx-extension.isSPFx"
       },
       {
         "command": "fx-extension.openManifest",
@@ -543,12 +545,12 @@
       },
       {
         "command": "fx-extension.preview",
-        "title": "Preview",
+        "title": "Preview App",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.previewWithIcon",
-        "title": "Preview",
+        "title": "Preview App",
         "icon": "$(run)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
@@ -781,11 +783,6 @@
       {
         "title": "Teams Toolkit",
         "properties": {
-          "fx-extension.rollbackToTeamsToolkitV2": {
-            "type": "boolean",
-            "description": "Rollback to Teams Toolkit v2. Notice the setting will be obsolete and removed soon. (requires reload of VS Code)",
-            "default": false
-          },
           "fx-extension.validateNode": {
             "type": "boolean",
             "description": "Ensure Node.js is installed.",
@@ -813,7 +810,8 @@
           },
           "fx-extension.defaultProjectRootDirectory": {
             "type": "string",
-            "description": "Set the default root directory for creating new teams app project. By default, the root directory is $HOME_DIR/TeamsApps. (requries reload of VS Code)"
+            "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requries reload of VS Code)",
+            "default": "${homeDir}/TeamsApps"
           }
         }
       }
@@ -945,8 +943,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.10.0",
-    "@microsoft/teamsfx-core": "^0.11.0",
+    "@microsoft/teamsfx-api": "^0.11.0",
+    "@microsoft/teamsfx-core": "^1.0.0",
     "@npmcli/arborist": "^4.0.4",
     "@npmcli/package-json": "^1.0.1",
     "async-mutex": "^0.3.1",

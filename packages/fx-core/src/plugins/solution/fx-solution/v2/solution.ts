@@ -50,7 +50,7 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     ctx: v2.Context,
     inputs: Inputs,
     provisionOutputs: Json,
-    tokenProvider: AzureAccountProvider
+    tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>> = deploy;
 
   publishApplication: (
@@ -69,7 +69,7 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
   getQuestionsForScaffolding?: (
     ctx: v2.Context,
     inputs: Inputs
-  ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestionsForScaffolding;
+  ) => Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>> = getQuestionsForScaffolding;
 
   executeUserTask?: (
     ctx: v2.Context,

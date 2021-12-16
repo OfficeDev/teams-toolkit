@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Zhijie Huang <zhijie.huang@microsoft.com>
+ */
+
 import fs from "fs-extra";
 import path from "path";
 
@@ -19,10 +23,30 @@ import {
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 
 describe("Test Add Function", function () {
-  const testFolder = getTestFolder();
-  const appName = getUniqueAppName();
-  const subscription = getSubscriptionId();
-  const projectPath = path.resolve(testFolder, appName);
+  let testFolder: string;
+  let appName: string;
+  let subscription: string;
+  let projectPath: string;
+
+  // Should succeed on the 3rd try
+  this.retries(2);
+
+  beforeEach(() => {
+    testFolder = getTestFolder();
+    appName = getUniqueAppName();
+    subscription = getSubscriptionId();
+    projectPath = path.resolve(testFolder, appName);
+  });
+
+  afterEach(async () => {
+    // clean up
+    console.log(`[Successfully] start to clean up for ${projectPath}`);
+    if (isMultiEnvEnabled()) {
+      await cleanUp(appName, projectPath, true, false, false, true);
+    } else {
+      await cleanUp(appName, projectPath);
+    }
+  });
 
   it(`Create Tab Then Add Function`, async function () {
     await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities tab`, {
@@ -172,15 +196,5 @@ describe("Test Add Function", function () {
     // {
     //   /// TODO: add check for publish
     // }
-  });
-
-  after(async () => {
-    // clean up
-    console.log(`[Successfully] start to clean up for ${projectPath}`);
-    if (isMultiEnvEnabled()) {
-      await cleanUp(appName, projectPath, true, false, false, true);
-    } else {
-      await cleanUp(appName, projectPath);
-    }
   });
 });

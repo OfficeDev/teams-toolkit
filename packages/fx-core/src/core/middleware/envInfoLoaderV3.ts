@@ -30,7 +30,12 @@ export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
     }
 
     // make sure inputs.env always has value so telemetry can use it.
-    inputs.env = await getTargetEnvName(skip, inputs, ctx);
+    const envRes = await getTargetEnvName(skip, inputs, ctx);
+    if (envRes.isErr()) {
+      ctx.result = err(envRes.error);
+      return;
+    }
+    inputs.env = envRes.value;
 
     const result = await loadEnvInfoV3(
       inputs as v2.InputsWithProjectPath,

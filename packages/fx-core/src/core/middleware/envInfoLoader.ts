@@ -75,7 +75,12 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     }
 
     // make sure inputs.env always has value so telemetry can use it.
-    inputs.env = await getTargetEnvName(skip, inputs, ctx);
+    const envRes = await getTargetEnvName(skip, inputs, ctx);
+    if (envRes.isErr()) {
+      ctx.result = err(envRes.error);
+      return;
+    }
+    inputs.env = envRes.value;
 
     const result = await loadSolutionContext(
       TOOLS,
@@ -104,7 +109,7 @@ export async function getTargetEnvName(
   skip: boolean,
   inputs: Inputs,
   ctx: CoreHookContext
-): Promise<string> {
+): Promise<Result<string, FxError>> {
   let targetEnvName: string;
   if (!skip && !inputs.ignoreEnvInfo && isMultiEnvEnabled()) {
     // TODO: This is a workaround for collabrator & manifest preview feature to programmatically load an env in extension.
@@ -112,14 +117,14 @@ export async function getTargetEnvName(
       const result = await useUserSetEnv(inputs.projectPath!, inputs.env);
       if (result.isErr()) {
         ctx.result = result;
-        return;
+        return err(result.error);
       }
       targetEnvName = result.value;
     } else {
       const result = await askTargetEnvironment(TOOLS, inputs);
       if (result.isErr()) {
         ctx.result = err(result.error);
-        return;
+        return err(result.error);
       }
       targetEnvName = result.value;
       TOOLS.logProvider.info(
@@ -131,7 +136,7 @@ export async function getTargetEnvName(
   } else {
     targetEnvName = environmentManager.getDefaultEnvName();
   }
-  return targetEnvName;
+  return ok(targetEnvName);
 }
 
 /**

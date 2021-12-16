@@ -24,8 +24,8 @@ function delay(ms: number) {
 }
 
 export async function getNgrokHttpUrl(port: string | number): Promise<string | undefined> {
-  for (let ngrokWebInterfacePort = 4040; ngrokWebInterfacePort < 4050; ++ngrokWebInterfacePort) {
-    let numRetries = 10;
+  for (let ngrokWebInterfacePort = 4040; ngrokWebInterfacePort < 4045; ++ngrokWebInterfacePort) {
+    let numRetries = 5;
     while (numRetries > 0) {
       try {
         const resp = await axios.get(`http://localhost:${ngrokWebInterfacePort}/api/tunnels`);

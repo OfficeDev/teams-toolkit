@@ -78,6 +78,15 @@ To use your own tunneling service, set the `skipNgrok`, `botDomain`, and `botEnd
 ```
 Please note that the `botEndpoint` should use https protocol.
 
+## localdebug-plugin.NgrokTunnelNotConnected
+### Error Message
+Ngrok tunnel is not connected. Check your network settings and try again.
+
+### Mitigation
+Please ensure that your network connection is stable and then try again.
+
+Or you can use your own tunneling service by following [the configuration](#what-to-do-if-i-want-to-use-my-own-tunneling-service-instead-of-the-built-in-one-for-bot-or-messaging-extension).
+
 ## What to do if Teams shows "App not found" when the Teams web client is opened?
 ### Error
 

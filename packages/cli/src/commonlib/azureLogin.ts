@@ -16,7 +16,7 @@ import {
 import { CodeFlowLogin, LoginFailureError, ConvertTokenToJson } from "./codeFlowLogin";
 import { MemoryCache } from "./memoryCache";
 import CLILogProvider from "./log";
-import { checkAzureSPFile, clearAzureSP, CryptoCachePlugin } from "./cacheAccess";
+import { AzureSpCrypto, CryptoCachePlugin } from "./cacheAccess";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { LogLevel } from "@azure/msal-node";
 import { NotFoundSubscriptionId, NotSupportedProjectType } from "../error";
@@ -324,7 +324,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     }
     await AzureAccountManager.codeFlowInstance.logout();
     await this.notifyStatus();
-    await clearAzureSP();
+    await AzureSpCrypto.clearAzureSP();
     return Promise.resolve(true);
   }
 
@@ -639,10 +639,10 @@ const ciEnabled = process.env.CI_ENABLED;
 // todo delete ciEnabled
 const azureLogin =
   ciEnabled && ciEnabled === "true"
-    ? checkAzureSPFile()
+    ? AzureSpCrypto.checkAzureSPFile()
       ? AzureLoginCI
       : AzureAccountProviderUserPassword
-    : checkAzureSPFile()
+    : AzureSpCrypto.checkAzureSPFile()
     ? AzureLoginCI
     : AzureAccountManager.getInstance();
 
@@ -651,10 +651,10 @@ export default azureLogin;
 // todo merge with default export, this function fix bug when user already logins with service principal, and he logins interactively, default azureLogin will return azureLoginCIProvider
 export function getAzureProvider() {
   return ciEnabled && ciEnabled === "true"
-    ? checkAzureSPFile()
+    ? AzureSpCrypto.checkAzureSPFile()
       ? AzureLoginCI
       : AzureAccountProviderUserPassword
-    : checkAzureSPFile()
+    : AzureSpCrypto.checkAzureSPFile()
     ? AzureLoginCI
     : AzureAccountManager.getInstance();
 }

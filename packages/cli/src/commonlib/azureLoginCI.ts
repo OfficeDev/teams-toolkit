@@ -14,12 +14,13 @@ import { AzureAccountProvider, ConfigFolderName, SubscriptionInfo } from "@micro
 
 import { NotSupportedProjectType, NotFoundSubscriptionId } from "../error";
 import { login, LoginStatus } from "./common/login";
-import { clearAzureSP, loadAzureSP, saveAzureSP } from "./cacheAccess";
+
 import { signedIn, signedOut, subscriptionInfoFile } from "./common/constant";
 import { isWorkspaceSupported } from "../utils";
 import CLILogProvider from "./log";
 import { LogLevel as LLevel } from "@microsoft/teamsfx-api";
 import * as os from "os";
+import { AzureSpCrypto } from "./cacheAccess";
 
 /**
  * Prepare for service principal login, not fully implemented
@@ -68,7 +69,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     AzureAccountManager.tenantId = tenantId;
     try {
       await this.getAccountCredentialAsync();
-      await saveAzureSP(clientId, AzureAccountManager.secret, tenantId);
+      await AzureSpCrypto.saveAzureSP(clientId, AzureAccountManager.secret, tenantId);
     } catch (error) {
       CLILogProvider.necessaryLog(LLevel.Info, JSON.stringify(error));
       throw error;
@@ -77,7 +78,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
   }
 
   public async load(): Promise<boolean> {
-    const data = await loadAzureSP();
+    const data = await AzureSpCrypto.loadAzureSP();
     if (data) {
       AzureAccountManager.clientId = data.clientId;
       AzureAccountManager.secret = data.secret;
@@ -134,7 +135,7 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
    */
   async signout(): Promise<boolean> {
     return new Promise(async (resolve) => {
-      await clearAzureSP();
+      await AzureSpCrypto.clearAzureSP();
       resolve(true);
     });
   }
@@ -178,41 +179,38 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     const credential = await this.getAccountCredentialAsync();
     if (credential) {
       const client = new SubscriptionClient(credential);
-      const tenants = await listAll(client.tenants, client.tenants.list());
       let answers: SubscriptionInfo[] = [];
-      for (const tenant of tenants) {
-        if (tenant.tenantId) {
-          let credential;
-          if (await fs.pathExists(AzureAccountManager.secret)) {
-            const authres = await msRestNodeAuth.loginWithServicePrincipalCertificate(
-              AzureAccountManager.clientId,
-              AzureAccountManager.secret,
-              AzureAccountManager.tenantId
-            );
-            credential = authres;
-          } else {
-            const authres = await msRestNodeAuth.loginWithServicePrincipalSecretWithAuthResponse(
-              AzureAccountManager.clientId,
-              AzureAccountManager.secret,
-              AzureAccountManager.tenantId
-            );
-            credential = authres.credentials;
-          }
-          const client = new SubscriptionClient(credential);
-          const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
-          const filteredsubs = subscriptions.filter(
-            (sub) => !!sub.displayName && !!sub.subscriptionId
+      if (AzureAccountManager.tenantId) {
+        let credential;
+        if (await fs.pathExists(AzureAccountManager.secret)) {
+          const authres = await msRestNodeAuth.loginWithServicePrincipalCertificate(
+            AzureAccountManager.clientId,
+            AzureAccountManager.secret,
+            AzureAccountManager.tenantId
           );
-          answers = answers.concat(
-            filteredsubs.map((sub) => {
-              return {
-                subscriptionName: sub.displayName!,
-                subscriptionId: sub.subscriptionId!,
-                tenantId: tenant.tenantId!,
-              };
-            })
+          credential = authres;
+        } else {
+          const authres = await msRestNodeAuth.loginWithServicePrincipalSecretWithAuthResponse(
+            AzureAccountManager.clientId,
+            AzureAccountManager.secret,
+            AzureAccountManager.tenantId
           );
+          credential = authres.credentials;
         }
+        const client = new SubscriptionClient(credential);
+        const subscriptions = await listAll(client.subscriptions, client.subscriptions.list());
+        const filteredsubs = subscriptions.filter(
+          (sub) => !!sub.displayName && !!sub.subscriptionId
+        );
+        answers = answers.concat(
+          filteredsubs.map((sub) => {
+            return {
+              subscriptionName: sub.displayName!,
+              subscriptionId: sub.subscriptionId!,
+              tenantId: AzureAccountManager.tenantId!,
+            };
+          })
+        );
       }
       return answers;
     }

@@ -203,48 +203,54 @@ export async function loadAccountId(accountName: string) {
   return undefined;
 }
 
-export async function saveAzureSP(
-  clientId: string,
-  secret: string,
-  tenantId: string
-): Promise<void> {
-  await fs.ensureDir(cacheDir);
-  const azureSPCrypto = new AccountCrypto("azure-sp");
-  const data: AzureSPConfig = {
-    clientId: clientId,
-    secret: secret,
-    tenantId: tenantId,
-  };
-  await fs.writeFile(azureSPPath, await azureSPCrypto.encrypt(JSON.stringify(data)), UTF8);
-}
+export class AzureSpCrypto {
+  private static readonly accountCrypto: AccountCrypto = new AccountCrypto("sp");
 
-export async function clearAzureSP(): Promise<void> {
-  await fs.ensureDir(cacheDir);
-  await fs.remove(azureSPPath);
-}
-
-export async function loadAzureSP(): Promise<AzureSPConfig | undefined> {
-  await fs.ensureDir(cacheDir);
-  const azureSPCrypto = new AccountCrypto("azure-sp");
-  if (await fs.pathExists(azureSPPath)) {
-    const data = await azureSPCrypto.decrypt(await fs.readFile(azureSPPath, UTF8));
-    return JSON.parse(data);
+  public static async saveAzureSP(
+    clientId: string,
+    secret: string,
+    tenantId: string
+  ): Promise<void> {
+    await fs.ensureDir(cacheDir);
+    const data: AzureSPConfig = {
+      clientId: clientId,
+      secret: secret,
+      tenantId: tenantId,
+    };
+    await fs.writeFile(
+      azureSPPath,
+      await AzureSpCrypto.accountCrypto.encrypt(JSON.stringify(data)),
+      UTF8
+    );
   }
 
-  return undefined;
-}
+  public static async clearAzureSP(): Promise<void> {
+    await fs.ensureDir(cacheDir);
+    await fs.remove(azureSPPath);
+  }
 
-export function checkAzureSPFile(): boolean {
-  if (fs.existsSync(azureSPPath)) {
-    const data = fs.readFileSync(azureSPPath, UTF8);
-    const dataJson = JSON.parse(data);
-    if (Object.keys(dataJson).length > 0) {
-      return true;
+  public static async loadAzureSP(): Promise<AzureSPConfig | undefined> {
+    await fs.ensureDir(cacheDir);
+    if (await fs.pathExists(azureSPPath)) {
+      const data = await AzureSpCrypto.accountCrypto.decrypt(await fs.readFile(azureSPPath, UTF8));
+      return JSON.parse(data);
+    }
+
+    return undefined;
+  }
+
+  public static checkAzureSPFile(): boolean {
+    if (fs.existsSync(azureSPPath)) {
+      const data = fs.readFileSync(azureSPPath, UTF8);
+      const dataJson = JSON.parse(data);
+      if (Object.keys(dataJson).length > 0) {
+        return true;
+      } else {
+        return false;
+      }
     } else {
       return false;
     }
-  } else {
-    return false;
   }
 }
 

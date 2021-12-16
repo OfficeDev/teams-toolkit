@@ -41,7 +41,7 @@ import * as util from "util";
 import _, { assign, isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
-import { fillInCommonQuestions } from "../commonQuestions";
+import { CommonQuestions, createNewResourceGroup, fillInCommonQuestions } from "../commonQuestions";
 import { deployArmTemplates } from "../arm";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
@@ -50,6 +50,7 @@ import { PermissionRequestFileProvider } from "../../../../core/permissionReques
 import { isV2, isVsCallingCli } from "../../../../core";
 import { Constants } from "../../../resource/appstudio/constants";
 import { assignJsonInc } from "../../../resource/utils4v2";
+import { ResourceManagementClient } from "@azure/arm-resources";
 
 export async function provisionResource(
   ctx: v2.Context,
@@ -92,6 +93,7 @@ export async function provisionResource(
     newEnvInfo.state[GLOBAL_CONFIG] = { output: {}, secrets: {} };
   }
   newEnvInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = "false";
+
   if (isAzureProject(azureSolutionSettings)) {
     //fill in common questions for solution
     const appName = ctx.projectSetting.appName;
@@ -103,15 +105,34 @@ export async function provisionResource(
       tokenProvider.azureAccountProvider,
       await tokenProvider.appStudioToken.getJsonObject()
     );
+
     if (res.isErr()) {
       return new v2.FxFailure(res.error);
     }
+
     // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
     const update = contextAdaptor.getEnvStateJson();
     _.assign(newEnvInfo.state, update);
     const consentResult = await askForProvisionConsent(contextAdaptor);
     if (consentResult.isErr()) {
       return new v2.FxFailure(consentResult.error);
+    }
+
+    // create resource group if needed
+    const commonQuestionResult = res.value as CommonQuestions;
+    if (commonQuestionResult.needCreateResourceGroup) {
+      const maybeRgName = await createNewResourceGroup(
+        tokenProvider.azureAccountProvider!,
+        commonQuestionResult.subscriptionId,
+        commonQuestionResult.subscriptionName,
+        commonQuestionResult.resourceGroupName,
+        commonQuestionResult.location,
+        ctx.logProvider
+      );
+
+      if (maybeRgName.isErr()) {
+        return new v2.FxFailure(maybeRgName.error);
+      }
     }
   }
 
@@ -297,6 +318,7 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
   } else {
     confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision", "Pricing calculator");
   }
+
   const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
 
   if (confirm !== "Provision") {
@@ -312,5 +334,6 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
       )
     );
   }
+
   return ok(Void);
 }

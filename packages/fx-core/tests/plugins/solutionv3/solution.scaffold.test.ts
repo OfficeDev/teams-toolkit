@@ -21,10 +21,10 @@ describe("SolutionV3 - scaffold", () => {
       solutionSettings: {
         name: TeamsFxAzureSolutionNameV3,
         version: "3.0.0",
-        capabilities: ["Tab"],
+        capabilities: ["Tab", "Bot"],
         hostType: "",
         azureResources: [],
-        modules: [{ capabilities: ["Tab"] }],
+        modules: [{ capabilities: ["Tab"] }, { capabilities: ["Bot"] }],
         activeResourcePlugins: [],
       },
     };
@@ -32,7 +32,7 @@ describe("SolutionV3 - scaffold", () => {
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
       projectPath: ".",
-      module: 0,
+      module: "0",
       template: {
         id: "1",
         label: "1",
@@ -48,23 +48,29 @@ describe("SolutionV3 - scaffold", () => {
     assert.deepEqual(projectSettings.solutionSettings, {
       name: TeamsFxAzureSolutionNameV3,
       version: "3.0.0",
-      capabilities: ["Tab"],
+      capabilities: ["Tab", "Bot"],
       hostType: "",
       azureResources: [],
-      modules: [{ capabilities: ["Tab"], dir: "tabs", deployType: "folder" }],
+      modules: [
+        { capabilities: ["Tab"], dir: "tabs", deployType: "folder" },
+        { capabilities: ["Bot"] },
+      ],
       activeResourcePlugins: [],
     });
-
-    inputs.template.data.pluginName = "fx-scaffold-blazor-tab";
+    inputs.module = "1";
+    inputs.template.data.pluginName = "fx-scaffold-bot";
     const res2 = await scaffold(ctx, inputs);
     assert.isTrue(res2.isOk());
     assert.deepEqual(projectSettings.solutionSettings, {
       name: TeamsFxAzureSolutionNameV3,
       version: "3.0.0",
-      capabilities: ["Tab"],
+      capabilities: ["Tab", "Bot"],
       hostType: "",
       azureResources: [],
-      modules: [{ capabilities: ["Tab"], dir: "aspdnet", deployType: "zip" }],
+      modules: [
+        { capabilities: ["Tab"], dir: "tabs", deployType: "folder" },
+        { capabilities: ["Bot"], dir: "bot", deployType: "zip" },
+      ],
       activeResourcePlugins: [],
     });
   });

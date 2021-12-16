@@ -11,7 +11,6 @@ import {
   Platform,
   GraphTokenProvider,
   ok,
-  Plugin,
   PluginContext,
   Result,
   FxError,
@@ -32,17 +31,14 @@ import {
 import * as uuid from "uuid";
 import sinon from "sinon";
 import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
-import Container from "typedi";
-import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { CollaborationState } from "../../../src/common/permissionInterface";
 import { newEnvInfo } from "../../../src/core/tools";
 import { LocalCrypto } from "../../../src/core/crypto";
 import { CollaborationUtil } from "../../../src/plugins/solution/fx-solution/v2/collaborationUtil";
+import { aadPlugin, appStudioPlugin } from "../../constants";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
-const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin);
 
 describe("listCollaborator() for Teamsfx projects", () => {
   const sandbox = sinon.createSandbox();

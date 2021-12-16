@@ -450,7 +450,10 @@ export async function copyParameterJson(
   }
 
   await fs.ensureDir(parameterFolderPath);
-  await fs.writeFile(targetParameterFilePath, JSON.stringify(targetParameterContent, undefined, 4));
+  await fs.writeFile(
+    targetParameterFilePath,
+    JSON.stringify(targetParameterContent, undefined, 4).replace(/\r?\n/g, os.EOL)
+  );
 }
 
 export async function getParameterJson(ctx: SolutionContext) {
@@ -619,7 +622,7 @@ async function doGenerateArmTemplate(
       } else {
         parameterFileContent = bicepOrchestrationTemplate.getParameterFileContent();
       }
-      await fs.writeFile(parameterEnvFilePath, parameterFileContent);
+      await fs.writeFile(parameterEnvFilePath, parameterFileContent.replace(/\r?\n/g, os.EOL));
     }
     // Generate main.bicep, config.bicep, provision.bicep
     const templateFolderPath = path.join(ctx.root, templatesFolder);
@@ -658,21 +661,21 @@ async function doGenerateArmTemplate(
 
     await fs.appendFile(
       path.join(templateFolderPath, bicepOrchestrationProvisionFileName),
-      bicepOrchestrationProvisionContent
+      bicepOrchestrationProvisionContent.replace(/\r?\n/g, os.EOL)
     );
     await fs.appendFile(
       path.join(templateFolderPath, bicepOrchestrationConfigFileName),
-      bicepOrchestrationConfigContent
+      bicepOrchestrationConfigContent.replace(/\r?\n/g, os.EOL)
     );
     // Generate module provision bicep files
     for (const module of moduleProvisionFiles) {
       const res = bicepOrchestrationTemplate.applyReference(module[1]);
-      await fs.appendFile(path.join(templateFolderPath, module[0]), res);
+      await fs.appendFile(path.join(templateFolderPath, module[0]), res.replace(/\r?\n/g, os.EOL));
     }
     // Generate module configuration bicep files
     for (const module of moduleConfigFiles) {
       const res = bicepOrchestrationTemplate.applyReference(module[1]);
-      await fs.writeFile(path.join(templateFolderPath, module[0]), res);
+      await fs.writeFile(path.join(templateFolderPath, module[0]), res.replace(/\r?\n/g, os.EOL));
     }
   }
 
@@ -811,12 +814,13 @@ class BicepOrchestrationContent {
 
   public getOrchestractionProvisionContent(): string {
     const orchestrationTemplate =
-      this.normalizeTemplateSnippet(this.ProvisionTemplate, false) + "\n";
+      this.normalizeTemplateSnippet(this.ProvisionTemplate, false) + os.EOL;
     return compileHandlebarsTemplateString(orchestrationTemplate, this.RenderContenxt).trim();
   }
 
   public getOrchestractionConfigContent(): string {
-    const orchestrationTemplate = this.normalizeTemplateSnippet(this.ConfigTemplate, false) + "\n";
+    const orchestrationTemplate =
+      this.normalizeTemplateSnippet(this.ConfigTemplate, false) + os.EOL;
     return compileHandlebarsTemplateString(orchestrationTemplate, this.RenderContenxt).trim();
   }
 
@@ -849,7 +853,7 @@ class BicepOrchestrationContent {
       if (updateTemplateChangeFlag) {
         this.TemplateAdded = true;
       }
-      return snippet.trim() + "\n";
+      return snippet.trim() + os.EOL;
     }
     return "";
   }

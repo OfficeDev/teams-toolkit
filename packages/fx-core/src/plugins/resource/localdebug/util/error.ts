@@ -34,7 +34,8 @@ export function NgrokTunnelNotConnected(): UserError {
   return returnUserError(
     new Error("Ngrok tunnel is not connected. Check your network settings and try again."),
     "localdebug-plugin",
-    "NgrokTunnelNotConnected"
+    "NgrokTunnelNotConnected",
+    "https://aka.ms/teamsfx-localdebug"
   );
 }
 

@@ -19,6 +19,7 @@ import * as path from "path";
 import { Container, Service } from "typedi";
 import { InvalidInputError } from "./error";
 import { createSelectModuleQuestionNode, selectScaffoldTemplateQuestion } from "./questions";
+import { getModule } from "./utils";
 @Service("fx-scaffold-react-tab")
 export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
   async getTemplates(
@@ -27,13 +28,29 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
   ): Promise<Result<v3.ScaffoldTemplate[], FxError>> {
     return ok([
       {
-        name: "ReactTab",
+        name: "ReactTab_JS",
         language: "javascript",
-        description: "ReactTab",
+        description: "ReactTab Javascript",
+      },
+      {
+        name: "ReactTab_TS",
+        language: "typescript",
+        description: "ReactTab Typescript",
       },
     ]);
   }
-
+  async getQuestionsForScaffold(
+    ctx: v2.Context,
+    inputs: Inputs
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    return ok(
+      new QTreeNode({
+        type: "text",
+        name: "test_question",
+        title: "test question from ReactTabScaffoldPlugin",
+      })
+    );
+  }
   async scaffold(
     ctx: v2.Context,
     inputs: v3.PluginScaffoldInputs
@@ -41,16 +58,17 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
     ctx.logProvider.info("fx-scaffold-react-tab:scaffold");
     if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "tabs"));
     const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-    if (inputs.module !== undefined) {
-      solutionSettings.modules[Number(inputs.module)].dir = "tabs";
-      solutionSettings.modules[Number(inputs.module)].deployType = "folder";
+    const module = getModule(solutionSettings, inputs.module);
+    if (module) {
+      module.dir = "tabs";
+      module.deployType = "folder";
     }
     return ok(undefined);
   }
   name = "fx-scaffold-react-tab";
 }
 
-@Service("fx-scaffold-blazor-tab")
+@Service("fx-scaffold-bot")
 export class BlazorTabScaffoldPlugin implements v3.ScaffoldPlugin {
   async getTemplates(
     ctx: v2.Context,
@@ -58,9 +76,14 @@ export class BlazorTabScaffoldPlugin implements v3.ScaffoldPlugin {
   ): Promise<Result<v3.ScaffoldTemplate[], FxError>> {
     return ok([
       {
-        name: "BlazorTab",
-        language: "csharp",
-        description: "BlazorTab",
+        name: "NodejsBot_JS",
+        language: "javascript",
+        description: "NodejsBot JS",
+      },
+      {
+        name: "NodejsBot_TS",
+        language: "typescript",
+        description: "NodejsBot TS",
       },
     ]);
   }
@@ -69,21 +92,22 @@ export class BlazorTabScaffoldPlugin implements v3.ScaffoldPlugin {
     ctx: v2.Context,
     inputs: v3.PluginScaffoldInputs
   ): Promise<Result<Json | undefined, FxError>> {
-    ctx.logProvider.info("fx-scaffold-blazor-tab:scaffold");
-    if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "aspdnet"));
+    ctx.logProvider.info("fx-scaffold-bot:scaffold");
+    if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "bot"));
     const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-    if (inputs.module !== undefined) {
-      solutionSettings.modules[Number(inputs.module)].dir = "aspdnet";
-      solutionSettings.modules[Number(inputs.module)].deployType = "zip";
+    const module = getModule(solutionSettings, inputs.module);
+    if (module) {
+      module.dir = "bot";
+      module.deployType = "zip";
     }
     return ok(undefined);
   }
-  name = "fx-scaffold-blazor-tab";
+  name = "fx-scaffold-bot";
 }
 
 function getAllScaffoldPlugins(): v3.ScaffoldPlugin[] {
   return [
-    Container.get<v3.ScaffoldPlugin>("fx-scaffold-blazor-tab"),
+    Container.get<v3.ScaffoldPlugin>("fx-scaffold-bot"),
     Container.get<v3.ScaffoldPlugin>("fx-scaffold-react-tab"),
   ];
 }
@@ -117,6 +141,23 @@ export async function getQuestionsForScaffold(
         },
       });
     }
+    if (plugin.getQuestionsForScaffold) {
+      const pluginQuestionsRes = await plugin.getQuestionsForScaffold(ctx, inputs);
+      if (pluginQuestionsRes.isOk()) {
+        const pluginNode = pluginQuestionsRes.value;
+        if (pluginNode) {
+          pluginNode.condition = {
+            validFunc: async (input: OptionItem, inputs?: Inputs): Promise<string | undefined> => {
+              if (input.data) {
+                if ((input.data as any).pluginName === plugin.name) return undefined;
+              }
+              return "";
+            },
+          };
+          templateNode.addChild(pluginNode);
+        }
+      }
+    }
   }
   selectScaffoldTemplateQuestion.staticOptions = staticOptions;
   node.addChild(templateNode);
@@ -124,7 +165,7 @@ export async function getQuestionsForScaffold(
 }
 export async function scaffold(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: number; template?: OptionItem }
+  inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem }
 ): Promise<Result<Void, FxError>> {
   if (!inputs.template) {
     return err(new InvalidInputError(inputs));

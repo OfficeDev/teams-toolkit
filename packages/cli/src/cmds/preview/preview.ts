@@ -608,7 +608,7 @@ export default class Preview extends YargsCommand {
         shell: true,
         cwd: botRoot,
         env: commonUtils.mergeProcessEnv({
-          PATH: ngrokChecker.getNgrokBinFolder(),
+          PATH: `${ngrokChecker.getNgrokBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`,
         }),
       }
     );

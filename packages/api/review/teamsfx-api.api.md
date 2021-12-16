@@ -530,7 +530,7 @@ export interface FunctionRouter {
 }
 
 // @public
-export interface FuncValidation<T extends string | string[] | undefined> {
+export interface FuncValidation<T extends string | string[] | OptionItem | OptionItem[] | undefined> {
     validFunc: ValidateFunc<T>;
 }
 
@@ -860,11 +860,13 @@ interface ISolution {
         capabilities?: string[];
     }) => Promise<Result<Void, FxError>>;
     addResource: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        module?: number;
+        module?: string;
         resource?: string;
     }) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath & {
+        modules: string[];
+    }, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
     getQuestionsForAddModule?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -892,7 +894,7 @@ interface ISolution {
     // (undocumented)
     publishApplication: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffold: (ctx: Context_2, inputs: InputsWithProjectPath & {
-        module?: number;
+        module?: string;
         template?: OptionItem;
     }) => Promise<Result<Void, FxError>>;
 }
@@ -1181,6 +1183,13 @@ export interface PluginContext extends Context {
 }
 
 // @public (undocumented)
+interface PluginDeployInputs extends InputsWithProjectPath {
+    buildPath?: string;
+    deployType?: string;
+    dir?: string;
+}
+
+// @public (undocumented)
 export type PluginIdentity = string;
 
 // @public (undocumented)
@@ -1190,7 +1199,7 @@ type PluginName = string;
 interface PluginScaffoldInputs extends InputsWithProjectPath {
     buildPath?: string;
     dir?: string;
-    module?: number;
+    module?: string;
     template: string;
 }
 
@@ -1326,7 +1335,7 @@ interface ResourcePlugin_2 extends Plugin_3 {
     // (undocumented)
     configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: PluginDeployInputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     description?: string;
     // (undocumented)
     executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
@@ -1389,7 +1398,7 @@ export interface RunnableTask<T> {
 
 // @public (undocumented)
 interface ScaffoldPlugin extends Plugin_3 {
-    getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForScaffold?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     getTemplates: (ctx: Context_2, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
     scaffold: (ctx: Context_2, inputs: PluginScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
 }
@@ -1999,6 +2008,7 @@ declare namespace v3 {
         TeamsFxAzureResourceStates,
         ScaffoldTemplate,
         PluginScaffoldInputs,
+        PluginDeployInputs,
         Plugin_3 as Plugin,
         ScaffoldPlugin,
         ResourcePlugin_2 as ResourcePlugin,
@@ -2019,7 +2029,7 @@ declare namespace v3 {
 export { v3 }
 
 // @public
-export function validate<T extends string | string[] | undefined>(validSchema: ValidationSchema, value: T, inputs?: Inputs): Promise<string | undefined>;
+export function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(validSchema: ValidationSchema, value: T, inputs?: Inputs): Promise<string | undefined>;
 
 // @public (undocumented)
 export type ValidateFunc<T> = (input: T, inputs?: Inputs) => string | undefined | Promise<string | undefined>;

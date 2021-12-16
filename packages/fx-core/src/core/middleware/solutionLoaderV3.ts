@@ -3,7 +3,7 @@
 
 import { NextFunction } from "@feathersjs/hooks/lib";
 import { Container } from "typedi";
-import { CoreHookContext } from "../../..";
+import { CoreHookContext } from "../..";
 import { v3 } from "@microsoft/teamsfx-api";
 
 export async function SolutionLoaderMW_V3(ctx: CoreHookContext, next: NextFunction) {

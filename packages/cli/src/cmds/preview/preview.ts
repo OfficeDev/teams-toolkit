@@ -47,6 +47,7 @@ import { cliEnvCheckerTelemetry } from "./depsChecker/cliTelemetry";
 import { isWindows } from "./depsChecker/common";
 import { URL } from "url";
 import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { NgrokChecker } from "./depsChecker/ngrokChecker";
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
@@ -244,7 +245,7 @@ export default class Preview extends YargsCommand {
     if (envCheckerResult.isErr()) {
       return err(envCheckerResult.error);
     }
-    const [funcToolChecker, dotnetChecker] = envCheckerResult.value;
+    const [funcToolChecker, dotnetChecker, ngrokChecker] = envCheckerResult.value;
 
     // clear background tasks
     this.backgroundTasks = [];
@@ -254,7 +255,7 @@ export default class Preview extends YargsCommand {
 
     /* === start ngrok === */
     if (includeBot && !skipNgrok) {
-      const result = await this.startNgrok(botRoot);
+      const result = await this.startNgrok(botRoot, ngrokChecker);
       if (result.isErr()) {
         return result;
       }
@@ -570,7 +571,10 @@ export default class Preview extends YargsCommand {
     return ok(null);
   }
 
-  private async startNgrok(botRoot: string): Promise<Result<null, FxError>> {
+  private async startNgrok(
+    botRoot: string,
+    ngrokChecker: NgrokChecker
+  ): Promise<Result<null, FxError>> {
     // bot npm install
     const botInstallTask = new Task(
       constants.botInstallTitle,
@@ -602,7 +606,7 @@ export default class Preview extends YargsCommand {
       undefined,
       {
         shell: true,
-        cwd: botRoot,
+        cwd: ngrokChecker.getNgrokBinFolder(),
       }
     );
     this.backgroundTasks.push(ngrokStartTask);
@@ -1054,7 +1058,7 @@ export default class Preview extends YargsCommand {
     hasBackend: boolean,
     hasBot: boolean,
     skipNgrok: boolean
-  ): Promise<Result<[FuncToolChecker, DotnetChecker], FxError>> {
+  ): Promise<Result<[FuncToolChecker, DotnetChecker, NgrokChecker], FxError>> {
     const cliAdapter = new CLIAdapter(hasBackend, hasBot, !skipNgrok, cliEnvCheckerTelemetry);
     const nodeChecker = new AzureNodeChecker(
       cliAdapter,
@@ -1077,11 +1081,14 @@ export default class Preview extends YargsCommand {
       funcChecker,
     ]);
 
-    const shouldContinue = await depsChecker.resolve();
+    // TODO: integrate into DepsChecker after all checkers support linux
+    const ngrokChecker = new NgrokChecker(cliAdapter, cliEnvCheckerLogger, cliEnvCheckerTelemetry);
+
+    const shouldContinue = (await depsChecker.resolve()) && ngrokChecker.resolve();
     if (!shouldContinue) {
       return err(errors.DependencyCheckerFailed());
     }
 
-    return ok([funcChecker, dotnetChecker]);
+    return ok([funcChecker, dotnetChecker, ngrokChecker]);
   }
 }

@@ -264,6 +264,12 @@ export async function provisionResource(
     const update = combineRecords(configureResourceResult.output);
     _.assign(newEnvInfo.state, update);
     newEnvInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = true;
+    if (!isAzureProject(azureSolutionSettings)) {
+      const appStudioTokenJson = await tokenProvider.appStudioToken.getJsonObject();
+      newEnvInfo.state[GLOBAL_CONFIG]["output"][REMOTE_TEAMS_APP_TENANT_ID] = (
+        appStudioTokenJson as any
+      ).tid;
+    }
     return new v2.FxSuccess(newEnvInfo.state);
   }
 }

@@ -15,6 +15,7 @@ import { TelemetryUtils } from "./telemetry";
 import { isMultiEnvEnabled } from "../../../../common/tools";
 import { getTemplatesFolder } from "../../../../folder";
 import got from "got";
+import os from "os";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsFrontendKeys,
@@ -56,7 +57,8 @@ export class Utils {
       );
     }
 
-    const version = await fs.readFile(versionFilePath, "utf-8");
+    const versionFile = await fs.readFile(versionFilePath, "utf-8");
+    const version = versionFile.split(os.EOL)[0];
     const tag = Constants.SimpleAuthTag(version);
     const fileName = Constants.SimpleAuthZipName(version);
     const distUrl = Constants.SimpleAuthReleaseUrl(tag, fileName);

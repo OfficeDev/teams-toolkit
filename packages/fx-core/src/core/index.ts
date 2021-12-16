@@ -139,10 +139,10 @@ import {
 import { flattenConfigJson, newEnvInfo } from "./tools";
 import { LocalCrypto } from "./crypto";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
-import { assign, merge } from "lodash";
-import { init } from "./v3/init";
-import { SolutionLoaderMW_V3 } from "./v3/mw/solutionLoader";
-import { ProjectSettingsLoaderMW_V3 } from "./v3/mw/projectSettingsLoader";
+import { assign } from "lodash";
+import { ProjectSettingsLoaderMW_V3 } from "./middleware/projectSettingsLoaderV3";
+import { Container } from "typedi";
+import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -1414,8 +1414,39 @@ export class FxCore implements v3.ICore {
     inputs: v2.InputsWithProjectPath & { solution?: string },
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
-    return init(inputs, ctx);
+    if (!ctx) {
+      return err(new ObjectIsUndefinedError("ctx for createProject"));
+    }
+    const appName = inputs[QuestionAppName.name] as string;
+    const validateResult = jsonschema.validate(appName, {
+      pattern: ProjectNamePattern,
+    });
+    if (validateResult.errors && validateResult.errors.length > 0) {
+      return err(InvalidInputError("invalid app-name", inputs));
+    }
+    const projectSettings = newProjectSettings();
+    projectSettings.appName = appName;
+    ctx.projectSettings = projectSettings;
+    if (!inputs.solution) {
+      return err(InvalidInputError("solution is undefined", inputs));
+    }
+    const createEnvResult = await this.createEnvWithName(
+      environmentManager.getDefaultEnvName(),
+      projectSettings,
+      inputs
+    );
+    if (createEnvResult.isErr()) {
+      return err(createEnvResult.error);
+    }
+    const solution = Container.get<v3.ISolution>(inputs.solution);
+    projectSettings.solutionSettings.name = inputs.solution;
+    const context = createV2Context(projectSettings);
+    return await solution.init(
+      context,
+      inputs as v2.InputsWithProjectPath & { capabilities: string[] }
+    );
   }
+
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,

@@ -20,6 +20,7 @@ import {
   LocalSettingsFrontendKeys,
 } from "../../../../common/localSettingsConstants";
 import { getAllowedAppIds } from "../../../../common/tools";
+import { pipeline } from "stream";
 export class Utils {
   public static generateResourceName(appName: string, resourceNameSuffix: string): string {
     const paddingLength =
@@ -65,10 +66,14 @@ export class Utils {
 
     try {
       console.log("==================================================, step 3");
-      await got.stream(distUrl).pipe(fs.createWriteStream(filePath));
+      // await got.stream(distUrl).pipe(fs.createWriteStream(filePath));
+      const dowloadStream = got.stream(distUrl);
       console.log("==================================================, step 4");
-    } catch (error) {
+      const fileWirteStream = fs.createWriteStream(filePath);
+      await pipeline(dowloadStream, fileWirteStream);
       console.log("==================================================, step 5");
+    } catch (error) {
+      console.log("==================================================, step 6");
       throw ResultFactory.SystemError(
         ZipDownloadError.name,
         ZipDownloadError.message(error?.message),

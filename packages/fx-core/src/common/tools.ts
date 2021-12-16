@@ -434,14 +434,14 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
 }
 
 /**
- * @deprecated This method will be removed in 12/20/2021, please help do the code clean before the date.
+ * @deprecated Please DO NOT use this method any more, it will be removed in near future.
  */
 export function isMultiEnvEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
 }
 
 /**
- * @deprecated This method will be removed in 12/20/2021, please help do the code clean before the date.
+ * @deprecated Please DO NOT use this method any more, it will be removed in near future.
  */
 export function isArmSupportEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
@@ -452,7 +452,7 @@ export function isBicepEnvCheckerEnabled(): boolean {
 }
 
 /**
- * @deprecated This method will be removed in 12/20/2021, please help do the code clean before the date.
+ * @deprecated Please DO NOT use this method any more, it will be removed in near future.
  */
 export function isRemoteCollaborateEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);

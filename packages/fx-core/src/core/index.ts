@@ -143,6 +143,8 @@ import { assign } from "lodash";
 import { ProjectSettingsLoaderMW_V3 } from "./middleware/projectSettingsLoaderV3";
 import { Container } from "typedi";
 import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
+import { EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
+import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -505,6 +507,17 @@ export class FxCore implements v3.ICore {
     }
   }
 
+  /**
+   * switch to different versions of provisionResources
+   */
+  async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    if (isV3()) {
+      return this.provisionResourcesV3(inputs, ctx);
+    } else {
+      return this.provisionResources(inputs, ctx);
+    }
+  }
+
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -518,7 +531,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
   ])
-  async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async _provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
     inputs.stage = Stage.provision;
     // provision is not ready yet, so use API v1
@@ -1501,6 +1514,45 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<Void, FxError>> {
     if (ctx && ctx.solutionV3 && ctx.contextV2) {
       return await ctx.solutionV3.addResource(ctx.contextV2, inputs);
+    }
+    return ok(Void);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW_V3,
+    EnvInfoLoaderMW_V3(false),
+    SolutionLoaderMW_V3,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW_V3(),
+  ])
+  async provisionResourcesV3(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    currentStage = Stage.provision;
+    inputs.stage = Stage.provision;
+    if (
+      ctx &&
+      ctx.solutionV3 &&
+      ctx.contextV2 &&
+      ctx.envInfoV3 &&
+      ctx.solutionV3.provisionResources
+    ) {
+      const res = await ctx.solutionV3.provisionResources(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      if (res.isOk()) {
+        ctx.envInfoV3 = res.value;
+      }
     }
     return ok(Void);
   }

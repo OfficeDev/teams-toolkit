@@ -19,6 +19,7 @@ import {
   EnvInfo,
   Json,
   ProjectSettingsFileName,
+  v3,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -91,7 +92,28 @@ class EnvironmentManager {
 
     return ok({ envName, config: configResult.value, state: stateResult.value });
   }
+  public async loadEnvInfoV3(
+    projectPath: string,
+    cryptoProvider: CryptoProvider,
+    envName?: string
+  ): Promise<Result<v3.EnvInfoV3, FxError>> {
+    if (!(await fs.pathExists(projectPath))) {
+      return err(PathNotExistError(projectPath));
+    }
 
+    envName = envName ?? this.getDefaultEnvName();
+    const configResult = await this.loadEnvConfig(projectPath, envName);
+    if (configResult.isErr()) {
+      return err(configResult.error);
+    }
+
+    const stateResult = await this.loadEnvStateV3(projectPath, envName, cryptoProvider);
+    if (stateResult.isErr()) {
+      return err(stateResult.error);
+    }
+
+    return ok({ envName, config: configResult.value, state: stateResult.value });
+  }
   public newEnvConfigData(appName: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
@@ -288,6 +310,31 @@ class EnvironmentManager {
     const data = objectToMap(resultJson);
 
     return ok(data);
+  }
+
+  private async loadEnvStateV3(
+    projectPath: string,
+    envName: string,
+    cryptoProvider: CryptoProvider
+  ): Promise<Result<v3.ResourceStates, FxError>> {
+    const envFiles = this.getEnvStateFilesPath(envName, projectPath);
+    const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
+    if (userDataResult.isErr()) {
+      return err(userDataResult.error);
+    }
+    const userData = userDataResult.value;
+
+    if (!(await fs.pathExists(envFiles.envState))) {
+      return ok({ solution: {} });
+    }
+
+    const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });
+
+    const result = replaceTemplateWithUserData(template, userData);
+
+    const resultJson: Json = JSON.parse(result);
+
+    return ok(resultJson as v3.ResourceStates);
   }
 
   private expandEnvironmentVariables(templateContent: string): string {

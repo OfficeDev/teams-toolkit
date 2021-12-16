@@ -81,7 +81,11 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
       const solution = isV2() ? ctx.solutionV2 : ctx.solution;
       const context = isV2() ? ctx.contextV2 : ctx.solutionContext;
       if (solution && context) {
-        if (method === "provisionResources") {
+        if (
+          method === "provisionResources" ||
+          method === "_provisionResources" ||
+          method === "provisionResourcesV3"
+        ) {
           getQuestionRes = await core._getQuestions(
             context,
             solution,

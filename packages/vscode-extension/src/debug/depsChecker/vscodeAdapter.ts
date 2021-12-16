@@ -56,29 +56,6 @@ export class VSCodeAdapter implements IDepsAdapter {
     }
   }
 
-  public async displayContinueWithLearnMore(message: string, link: string): Promise<boolean> {
-    const learnMoreButton: MessageItem = { title: Messages.learnMoreButtonText };
-    const continueButton: MessageItem = { title: Messages.continueButtonText };
-    const input = await window.showWarningMessage(
-      message,
-      { modal: true },
-      learnMoreButton,
-      continueButton
-    );
-
-    if (input === continueButton) {
-      this._telemetry.sendEvent(DepsCheckerEvent.clickContinue);
-      return true;
-    } else if (input == learnMoreButton) {
-      this._telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
-      await VSCodeAdapter.openUrl(link);
-      return await this.displayContinueWithLearnMore(message, link);
-    }
-
-    this._telemetry.sendEvent(DepsCheckerEvent.clickCancel);
-    return false;
-  }
-
   public async displayLearnMore(message: string, link: string): Promise<boolean> {
     return await this.displayWarningMessage(message, Messages.learnMoreButtonText, async () => {
       await VSCodeAdapter.openUrl(link);

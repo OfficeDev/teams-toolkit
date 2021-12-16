@@ -27,6 +27,9 @@ list common errors as follows. You can find the common deployment error from sea
 1. If the error wrapped by `botProvision` segment, add property `botWebAppSku` to `provisionParameters` and set the value to "B1" or other valid values.
 
     ![image](../../images/fx-core/arm/bot-sku-config.png)
+1. If the error wrapped by `frontendHostingProvision` segment, add property `frontendHostingSku` to `provisionParameters` and set the value to "B1" or other valid values.
+    
+    ![image](../../images/fx-core/arm/frontend-hosting-sku-config.png)
 1. Run `TeamsFx - Provision in the cloud` command again
 
 ## Resource Name Already Exists

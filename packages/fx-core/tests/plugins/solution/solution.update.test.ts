@@ -37,20 +37,19 @@ import {
 
 import _ from "lodash";
 import * as uuid from "uuid";
-import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import Container from "typedi";
 import { MockUserInteraction } from "../../core/utils";
 import mockedEnv from "mocked-env";
 import { newEnvInfo } from "../../../src/core/tools";
 import { LocalCrypto } from "../../../src/core/crypto";
+import {
+  fehostPlugin,
+  localdebugPlugin,
+  sqlPlugin,
+  functionPlugin,
+  apimPlugin,
+} from "../../constants";
 
-const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
-const localDebug = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
-const sqlPlugin = Container.get<Plugin>(ResourcePlugins.SqlPlugin);
-const functionPlugin = Container.get<Plugin>(ResourcePlugins.FunctionPlugin);
-const apimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin);
 function mockSolutionContext(): SolutionContext {
-  const config: SolutionConfig = new Map();
   return {
     root: ".",
     envInfo: newEnvInfo(),
@@ -141,7 +140,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name, sqlPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name, sqlPlugin.name],
       },
     };
     mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceSQL.id];
@@ -162,7 +161,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name, apimPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name, apimPlugin.name],
       },
     };
     mockedCtx.answers![AzureSolutionQuestionNames.AddResources] = [AzureResourceApim.id];
@@ -183,7 +182,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name],
         azureResources: [],
       },
     };
@@ -228,7 +227,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name],
         azureResources: [],
       },
     };
@@ -272,7 +271,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name],
         azureResources: [],
       },
     };
@@ -320,7 +319,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name],
         azureResources: [],
       },
     };
@@ -366,7 +365,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name, functionPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name, functionPlugin.name],
         azureResources: [AzureResourceFunction.id],
       },
     };
@@ -399,7 +398,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name, functionPlugin.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name, functionPlugin.name],
         azureResources: [AzureResourceFunction.id],
       },
     };
@@ -450,7 +449,7 @@ describe("update()", () => {
         name: "azure",
         version: "1.0",
         capabilities: [TabOptionItem.id],
-        activeResourcePlugins: [fehostPlugin.name, localDebug.name],
+        activeResourcePlugins: [fehostPlugin.name, localdebugPlugin.name],
         azureResources: [],
       },
     };

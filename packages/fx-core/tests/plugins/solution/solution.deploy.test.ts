@@ -6,12 +6,10 @@ import { it } from "mocha";
 import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
   ConfigFolderName,
-  ConfigMap,
   FxError,
   ok,
   PluginContext,
   Result,
-  SolutionConfig,
   SolutionContext,
   Void,
   Plugin,
@@ -46,17 +44,12 @@ import _ from "lodash";
 import * as uuid from "uuid";
 import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
 import { newEnvInfo } from "../../../src/core/tools";
-import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import Container from "typedi";
 import { deploy } from "../../../src/plugins/solution/fx-solution/v2/deploy";
-import { ResourceProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
 import { LocalCrypto } from "../../../src/core/crypto";
+import { aadPlugin, fehostPlugin, spfxPlugin } from "../../constants";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin);
-const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
-const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
 function mockSolutionContext(): SolutionContext {
   return {
     root: ".",

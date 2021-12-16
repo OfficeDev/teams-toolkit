@@ -10,16 +10,21 @@ import {
   ok,
   QTreeNode,
   Result,
+  SingleSelectQuestion,
   Stage,
   traverse,
+  UserCancelError,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import { isV2 } from "..";
+import { createV2Context, isV2, newProjectSettings, TOOLS } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
-import { getQuestionsForInit } from "../v3/init";
-
+import { getProjectSettingsPath } from "./projectSettingsLoaderV3";
+import fs from "fs-extra";
+import { Container } from "typedi";
+import { TeamsFxAzureSolutionNameV3 } from "../../plugins/solution/fx-solution/v3/constants";
+import { QuestionAppName, QuestionSelectSolution } from "../question";
 /**
  * This middleware will help to collect input from question flow
  */
@@ -221,4 +226,47 @@ async function getQuestionsForAddResource(
     return res;
   }
   return ok(undefined);
+}
+
+export async function getQuestionsForInit(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (inputs.projectPath) {
+    const projectSettingsPath = getProjectSettingsPath(inputs.projectPath);
+    if (await fs.pathExists(projectSettingsPath)) {
+      const res = await TOOLS.ui.showMessage(
+        "warn",
+        "projectSettings.json already exists, 'init' operation will replace it, please confirm!",
+        true,
+        "Confirm"
+      );
+      if (!(res.isOk() && res.value === "Confirm")) {
+        return err(UserCancelError);
+      }
+    }
+  }
+  const node = new QTreeNode({ type: "group" });
+  const globalSolutions: v3.ISolution[] = [
+    Container.get<v3.ISolution>(TeamsFxAzureSolutionNameV3),
+    Container.get<v3.ISolution>("fx-solution-spfx"),
+  ];
+  const solutionNames: string[] = globalSolutions.map((s) => s.name);
+  const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
+  selectSolution.staticOptions = solutionNames;
+  const solutionSelectNode = new QTreeNode(selectSolution);
+  node.addChild(solutionSelectNode);
+  const context = createV2Context(newProjectSettings());
+  for (const solution of globalSolutions) {
+    if (solution.getQuestionsForInit) {
+      const res = await solution.getQuestionsForInit(context, inputs);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const solutionNode = res.value as QTreeNode;
+        solutionNode.condition = { equals: solution.name };
+        if (solutionNode.data) solutionSelectNode.addChild(solutionNode);
+      }
+    }
+  }
+  node.addChild(new QTreeNode(QuestionAppName));
+  return ok(node.trim());
 }

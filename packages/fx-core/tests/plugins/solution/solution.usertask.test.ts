@@ -29,10 +29,7 @@ import {
   mockExecuteUserTaskThatAlwaysSucceeds,
 } from "./util";
 import _ from "lodash";
-import {
-  ResourcePlugins,
-  ResourcePluginsV2,
-} from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import * as uuid from "uuid";
 import {
@@ -52,7 +49,6 @@ import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
-import { AppStudioPlugin } from "../../../src/plugins/resource/appstudio";
 import { isArmSupportEnabled } from "../../../src/common/tools";
 import { newEnvInfo } from "../../../src/core/tools";
 import fs from "fs-extra";
@@ -61,15 +57,14 @@ import { MockGraphTokenProvider } from "../../core/utils";
 import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
 import { ScaffoldingContextAdapter } from "../../../src/plugins/solution/fx-solution/v2/adaptor";
 import { LocalCrypto } from "../../../src/core/crypto";
+import { appStudioPlugin, botPlugin } from "../../constants";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const appStudioPlugin = Container.get<AppStudioPlugin>(ResourcePlugins.AppStudioPlugin);
-const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
+
 const functionPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
 const sqlPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin);
 const apimPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.ApimPlugin);
-
 const localDebugPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.LocalDebugPlugin);
 const appStudioPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
 const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);

@@ -12,6 +12,7 @@ import {
   ProjectSettingsFileName,
   SolutionContext,
   V1ManifestFileName,
+  v3,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -136,6 +137,24 @@ export function newEnvInfo(
       },
     },
     state: state ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
+  };
+}
+
+export function newEnvInfoV3(
+  envName?: string,
+  config?: EnvConfig,
+  state?: v3.ResourceStates
+): v3.EnvInfoV3 {
+  return {
+    envName: envName ?? environmentManager.getDefaultEnvName(),
+    config: config ?? {
+      manifest: {
+        appName: {
+          short: "teamsfx_app",
+        },
+      },
+    },
+    state: state ?? { solution: {} },
   };
 }
 

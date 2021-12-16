@@ -14,6 +14,8 @@ import {
   returnUserError,
   EnvNamePlaceholder,
   LogProvider,
+  v2,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../common/armInterface";
 import {
@@ -79,6 +81,43 @@ export async function generateArmTemplate(
   });
   try {
     result = await doGenerateArmTemplate(ctx, selectedPlugins);
+    if (result.isOk()) {
+      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplate, {
+        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+      });
+    } else {
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.GenerateArmTemplate,
+        result.error,
+        ctx.telemetryReporter
+      );
+    }
+  } catch (error) {
+    result = err(
+      returnSystemError(error, SolutionSource, SolutionError.FailedToGenerateArmTemplates)
+    );
+    sendErrorTelemetryThenReturnError(
+      SolutionTelemetryEvent.GenerateArmTemplate,
+      result.error,
+      ctx.telemetryReporter
+    );
+  }
+  return result;
+}
+
+export async function generateArmTemplateV3(
+  ctx: v2.Context,
+  inputs: v2.InputsWithProjectPath,
+  activatedPlugins: v3.ResourcePlugin[],
+  addedPlugins: v3.ResourcePlugin[]
+): Promise<Result<any, FxError>> {
+  let result: Result<void, FxError>;
+  ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplateStart, {
+    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+  });
+  try {
+    result = await doGenerateArmTemplateV3(ctx, inputs, activatedPlugins, addedPlugins);
     if (result.isOk()) {
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplate, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -485,7 +524,7 @@ export async function getParameterJson(ctx: SolutionContext) {
 function generateArmFromResult(
   result: ArmTemplateResult,
   bicepOrchestrationTemplate: BicepOrchestrationContent,
-  pluginWithArm: NamedArmResourcePlugin,
+  pluginWithArm: NamedArmResourcePlugin | v3.ResourcePlugin,
   moduleProvisionFiles: Map<string, string>,
   moduleConfigFiles: Map<string, string>
 ) {
@@ -565,14 +604,87 @@ async function doGenerateArmTemplate(
     }
   }
 
+  await persistBicepTemplates(
+    bicepOrchestrationTemplate,
+    moduleProvisionFiles,
+    moduleConfigFiles,
+    ctx.root
+  );
+
+  return ok(undefined); // Nothing to return when success
+}
+
+async function doGenerateArmTemplateV3(
+  ctx: v2.Context,
+  inputs: v2.InputsWithProjectPath,
+  activatedPlugins: v3.ResourcePlugin[],
+  addedPlugins: v3.ResourcePlugin[]
+): Promise<Result<any, FxError>> {
+  const baseName = generateResourceBaseName(ctx.projectSetting.appName, "");
+  const bicepOrchestrationTemplate = new BicepOrchestrationContent(
+    activatedPlugins.map((p) => p.name),
+    baseName
+  );
+  const moduleProvisionFiles = new Map<string, string>();
+  const moduleConfigFiles = new Map<string, string>();
+  for (const plugin of activatedPlugins) {
+    let result: Result<v2.ResourceTemplate, FxError>;
+    let errMessage = "";
+    if (
+      plugin.updateResourceTemplate &&
+      !addedPlugins.find((pluginItem) => pluginItem.name === plugin.name)
+    ) {
+      result = await plugin.updateResourceTemplate(ctx, inputs);
+      errMessage = getStrings().solution.UpdateArmTemplateFailNotice;
+    } else if (
+      plugin.generateResourceTemplate &&
+      addedPlugins.find((pluginItem) => pluginItem.name === plugin.name)
+    ) {
+      result = await plugin.generateResourceTemplate(ctx, inputs);
+      errMessage = getStrings().solution.GenerateArmTemplateFailNotice;
+    } else {
+      continue;
+    }
+    if (result.isOk()) {
+      if (result.value.kind === "bicep") {
+        const armTemplate = result.value.template as ArmTemplateResult;
+        generateArmFromResult(
+          armTemplate,
+          bicepOrchestrationTemplate,
+          plugin,
+          moduleProvisionFiles,
+          moduleConfigFiles
+        );
+      }
+    } else {
+      const msg = format(errMessage, ctx.projectSetting.appName);
+      ctx.logProvider?.error(msg);
+      return result;
+    }
+  }
+  await persistBicepTemplates(
+    bicepOrchestrationTemplate,
+    moduleProvisionFiles,
+    moduleConfigFiles,
+    inputs.projectPath
+  );
+  return ok(undefined); // Nothing to return when success
+}
+
+async function persistBicepTemplates(
+  bicepOrchestrationTemplate: BicepOrchestrationContent,
+  moduleProvisionFiles: Map<string, string>,
+  moduleConfigFiles: Map<string, string>,
+  projectaPath: string
+) {
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
     // Output parameter file
-    const envListResult = await environmentManager.listEnvConfigs(ctx.root);
+    const envListResult = await environmentManager.listEnvConfigs(projectaPath);
     if (envListResult.isErr()) {
       return err(envListResult.error);
     }
-    const parameterEnvFolderPath = path.join(ctx.root, configsFolder);
+    const parameterEnvFolderPath = path.join(projectaPath, configsFolder);
     await fs.ensureDir(parameterEnvFolderPath);
     for (const env of envListResult.value) {
       const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, env);
@@ -625,7 +737,7 @@ async function doGenerateArmTemplate(
       await fs.writeFile(parameterEnvFilePath, parameterFileContent.replace(/\r?\n/g, os.EOL));
     }
     // Generate main.bicep, config.bicep, provision.bicep
-    const templateFolderPath = path.join(ctx.root, templatesFolder);
+    const templateFolderPath = path.join(projectaPath, templatesFolder);
     await fs.ensureDir(templateFolderPath);
     await fs.ensureDir(path.join(templateFolderPath, "teamsFx"));
     await fs.ensureDir(path.join(templateFolderPath, "provision"));
@@ -678,8 +790,6 @@ async function doGenerateArmTemplate(
       await fs.writeFile(path.join(templateFolderPath, module[0]), res.replace(/\r?\n/g, os.EOL));
     }
   }
-
-  return ok(undefined); // Nothing to return when success
 }
 
 async function getExpandedParameter(ctx: SolutionContext, filePath: string) {

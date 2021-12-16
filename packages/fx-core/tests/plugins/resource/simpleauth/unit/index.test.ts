@@ -59,6 +59,7 @@ describe("simpleAuthPlugin", () => {
   });
 
   it("local debug", async function () {
+    sinon.stub(Utils, "checkFileExist" as any).resolves(true);
     // Act
     await simpleAuthPlugin.localDebug(pluginContext);
     await simpleAuthPlugin.postLocalDebug(pluginContext);

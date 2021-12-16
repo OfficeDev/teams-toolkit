@@ -510,11 +510,11 @@ export class FxCore implements v3.ICore {
   /**
    * switch to different versions of provisionResources
    */
-  async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async provisionResources(inputs: Inputs): Promise<Result<Void, FxError>> {
     if (isV3()) {
-      return this.provisionResourcesV3(inputs, ctx);
+      return this.provisionResourcesV3(inputs);
     } else {
-      return this.provisionResources(inputs, ctx);
+      return this._provisionResources(inputs);
     }
   }
 

@@ -13,11 +13,11 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-import { CoreHookContext, createV2Context, TOOLS } from "../..";
-import { readJson } from "../../../common/fileUtils";
-import { LocalCrypto } from "../../crypto";
-import { InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../../error";
-import { validateSettings } from "../../tools";
+import { CoreHookContext, createV2Context, TOOLS } from "..";
+import { readJson } from "../../common/fileUtils";
+import { LocalCrypto } from "../crypto";
+import { InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";
+import { validateSettings } from "../tools";
 
 export const ProjectSettingsLoaderMW_V3: Middleware = async (
   ctx: CoreHookContext,

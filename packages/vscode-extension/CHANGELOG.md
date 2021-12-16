@@ -1,18 +1,24 @@
 # Changelog
-## 3.1.0 - Dec 13, 2021
+
+## 3.1.1 - Dec 13, 2021
+
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
 New Features:
+
 - Integrate with Azure Key Vault to secure your application secrets at runtime.
 - View state file and edit environment configurations from manifest with code lens.
 
 Enhancement:
+
 - Support Node.js 16 and NPM 7 except for SPFx based tab application or projects including Azure Functions.
 
 ## 3.0.0 - Nov 29, 2021
+
 Major version for Teams Toolkit with new features to support cloud resources customization, multiple cloud environments, collaborations and some bug fix.
 
 New Features:
+
 - Adopt ARM templates to provision Azure cloud resources, support customization of cloud resources. Refer to [Provision cloud resources](https://aka.ms/provision-doc) for more information.
 - Developers can create and manage multiple cloud environments with different customizations for each environment. Refer to [Manage multiple environment](https://aka.ms/multi-env-doc) for more information.
 - Developers can collaborate with others on the same project. Refer to [Collaborations in Teams Toolkit](https://aka.ms/collaboration-doc) for more information.
@@ -21,25 +27,28 @@ New Features:
 - Add more Teams Sample Apps which support local run with no need to manually set up environment.
 
 Enhancement:
+
 - Improve UI: In sample gallery, add time and effort estimation for each sample.
 - Improve UI: multiple enhancement to the Tree View. For example, provide documents links in Tree View, and enrich the tooltip descriptions.
 - Reduce the required user inputs in order to create new project.
 - Enhance the status and messages showed in Teams Toolkit.
 - Upgrade samples to adopt new features in Teams Toolkit.
 
-## 2.10.0 - Nov 15, 2021 
+## 2.10.0 - Nov 15, 2021
 
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
 New Features:
-- Enable developers with the capability to extend Teams apps to run across Microsoft 365, get instructions from our [documentation](https://aka.ms/teamsfx-extend-m365). 
+
+- Enable developers with the capability to extend Teams apps to run across Microsoft 365, get instructions from our [documentation](https://aka.ms/teamsfx-extend-m365).
 - Provide Teams sample apps "Todo List (Works in Teams, Outlook and Office)" and "NPM Search Connector" which can run across Microsoft 365. Users can get an initial experience of running Teams apps in Microsoft 365.
 
-## 2.9.0 - Nov 01, 2021 
+## 2.9.0 - Nov 01, 2021
 
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
 Preview Features:
+
 - Enable CI/CD for multiple environments scenario.
 - Insider Preview features in 2.8.0 release are still in preview. Refer to [Enable insider preview features](https://github.com/OfficeDev/TeamsFx/wiki/Enable-Preview-Features-in-Teams-Toolkit) for how to use.
 - Upgrade existing projects to support preview features, refer to [Upgrade existing project to use latest features](https://github.com/OfficeDev/TeamsFx/wiki/Upgrade-project-to-use-latest-Toolkit-features) for more information.
@@ -51,12 +60,12 @@ Enhancement:
 - Support one-click deployment of SharePoint framework based Teams app.
 - Integrate Adaptive Card Studio with previewing and debugging Adaptive Card in VS Code.
 
-
 ## 2.8.0 - Oct 18, 2021
 
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
 Preview Features:
+
 - Support management of multiple environments.
 - Support project collaborations among multiple developers.
 - Improve the experience to customize Azure resource provision using ARM(Azure Resource Manager).

@@ -957,6 +957,8 @@ function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CodeLens };
     case TelemetryTiggerFrom.EditorTitle:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.EditorTitle };
+    case TelemetryTiggerFrom.SideBar:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.SideBar };
     case TelemetryTiggerFrom.Other:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
     default:

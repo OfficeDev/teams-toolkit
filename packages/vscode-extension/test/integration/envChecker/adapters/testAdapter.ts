@@ -74,14 +74,6 @@ export class TestAdapter implements IDepsAdapter {
     this._customScript = customScript;
   }
 
-  displayContinueWithLearnMore(message: string, link: string): Promise<boolean> {
-    if (this._clickCancel) {
-      return Promise.resolve(false);
-    } else {
-      return Promise.resolve(true);
-    }
-  }
-
   displayLearnMore(message: string, link: string): Promise<boolean> {
     return Promise.resolve(false);
   }

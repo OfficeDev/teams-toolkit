@@ -40,7 +40,7 @@ export interface ISolution {
    */
   scaffold: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { module?: number; template?: OptionItem }
+    inputs: InputsWithProjectPath & { module?: string; template?: OptionItem }
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -60,7 +60,7 @@ export interface ISolution {
    */
   addResource: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { module?: number; resource?: string }
+    inputs: InputsWithProjectPath & { module?: string; resource?: string }
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -119,7 +119,7 @@ export interface ISolution {
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   deploy?: (
     ctx: Context,
-    inputs: InputsWithProjectPath,
+    inputs: InputsWithProjectPath & { modules: string[] },
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;

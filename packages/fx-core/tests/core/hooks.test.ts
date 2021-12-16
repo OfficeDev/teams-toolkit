@@ -615,10 +615,12 @@ describe("Middleware - others", () => {
           path.join(projectPath, "templates", "azure", "provision", "identity.bicep"),
           ConstantString.UTF8Encoding
         ),
-        await fs.readFile(
-          path.join(identityBicepFilePath, "identityProvision.result.bicep"),
-          ConstantString.UTF8Encoding
-        )
+        (
+          await fs.readFile(
+            path.join(identityBicepFilePath, "identityProvision.result.bicep"),
+            ConstantString.UTF8Encoding
+          )
+        ).replace(/\r?\n/g, os.EOL)
       );
       const frontendBicepFilePath = path.join(
         __dirname,
@@ -634,10 +636,12 @@ describe("Middleware - others", () => {
           path.join(projectPath, "templates", "azure", "provision", "frontendHosting.bicep"),
           ConstantString.UTF8Encoding
         ),
-        await fs.readFile(
-          path.join(frontendBicepFilePath, "frontendProvision.result.bicep"),
-          ConstantString.UTF8Encoding
-        )
+        (
+          await fs.readFile(
+            path.join(frontendBicepFilePath, "frontendProvision.result.bicep"),
+            ConstantString.UTF8Encoding
+          )
+        ).replace(/\r?\n/g, os.EOL)
       );
     });
     it("successfully migration arm templates only bot", async () => {
@@ -687,10 +691,12 @@ describe("Middleware - others", () => {
           path.join(projectPath, "templates", "azure", "provision", "identity.bicep"),
           ConstantString.UTF8Encoding
         ),
-        await fs.readFile(
-          path.join(identityBicepFilePath, "identityProvision.result.bicep"),
-          ConstantString.UTF8Encoding
-        )
+        (
+          await fs.readFile(
+            path.join(identityBicepFilePath, "identityProvision.result.bicep"),
+            ConstantString.UTF8Encoding
+          )
+        ).replace(/\r?\n/g, os.EOL)
       );
       const botBicepFilePath = path.join(
         __dirname,
@@ -704,10 +710,12 @@ describe("Middleware - others", () => {
           path.join(projectPath, "templates", "azure", "provision", "bot.bicep"),
           ConstantString.UTF8Encoding
         ),
-        await fs.readFile(
-          path.join(botBicepFilePath, "botProvision.result.bicep"),
-          ConstantString.UTF8Encoding
-        )
+        (
+          await fs.readFile(
+            path.join(botBicepFilePath, "botProvision.result.bicep"),
+            ConstantString.UTF8Encoding
+          )
+        ).replace(/\r?\n/g, os.EOL)
       );
       assert.isTrue(
         await fs.pathExists(path.join(projectPath, "templates", "azure", "teamsFx", "bot.bicep"))
@@ -717,10 +725,12 @@ describe("Middleware - others", () => {
           path.join(projectPath, "templates", "azure", "teamsFx", "bot.bicep"),
           ConstantString.UTF8Encoding
         ),
-        await fs.readFile(
-          path.join(botBicepFilePath, "botConfig.result.bicep"),
-          ConstantString.UTF8Encoding
-        )
+        (
+          await fs.readFile(
+            path.join(botBicepFilePath, "botConfig.result.bicep"),
+            ConstantString.UTF8Encoding
+          )
+        ).replace(/\r?\n/g, os.EOL)
       );
     });
     it("successfully migration arm templates", async () => {

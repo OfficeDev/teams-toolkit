@@ -12,10 +12,13 @@ import {
   Result,
   Stage,
   traverse,
+  v2,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { isV2 } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
+import { getQuestionsForInit } from "../v3/init";
 
 /**
  * This middleware will help to collect input from question flow
@@ -42,6 +45,32 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
       return;
     }
     getQuestionRes = await core._getQuestionsForMigrateV1Project(inputs);
+  } else if (method === "init") {
+    getQuestionRes = await getQuestionsForInit(inputs);
+  } else if (["addModule", "scaffold", "addResource"].includes(method || "")) {
+    const solutionV3 = ctx.solutionV3;
+    const contextV2 = ctx.contextV2;
+    if (solutionV3 && contextV2) {
+      if (method === "addModule") {
+        getQuestionRes = await getQuestionsForAddModule(
+          inputs as v2.InputsWithProjectPath,
+          solutionV3,
+          contextV2
+        );
+      } else if (method === "scaffold") {
+        getQuestionRes = await getQuestionsForScaffold(
+          inputs as v2.InputsWithProjectPath,
+          solutionV3,
+          contextV2
+        );
+      } else if (method === "addResource") {
+        getQuestionRes = await getQuestionsForAddResource(
+          inputs as v2.InputsWithProjectPath,
+          solutionV3,
+          contextV2
+        );
+      }
+    }
   } else {
     if ((isV2() && ctx.solutionV2 && ctx.contextV2) || (ctx.solution && ctx.solutionContext)) {
       const solution = isV2() ? ctx.solutionV2 : ctx.solution;
@@ -144,4 +173,52 @@ export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<strin
   for (const child of node.children || []) {
     traverseToCollectPasswordNodes(child, names);
   }
+}
+
+async function getQuestionsForScaffold(
+  inputs: v2.InputsWithProjectPath,
+  solution: v3.ISolution,
+  context: v2.Context
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (solution.getQuestionsForScaffold) {
+    const res = await solution.getQuestionsForScaffold(context, inputs);
+    if (res.isOk()) {
+      const solutionValue = res.value;
+      if (Array.isArray(solutionValue)) {
+        const node = new QTreeNode({ type: "group" });
+        for (const child of solutionValue) {
+          if (child.data) node.addChild(child);
+        }
+        return ok(node);
+      } else {
+        return ok(solutionValue);
+      }
+    }
+    return err(res.error);
+  }
+  return ok(undefined);
+}
+
+async function getQuestionsForAddModule(
+  inputs: v2.InputsWithProjectPath,
+  solution: v3.ISolution,
+  context: v2.Context
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (solution.getQuestionsForAddModule) {
+    const res = await solution.getQuestionsForAddModule(context, inputs);
+    return res;
+  }
+  return ok(undefined);
+}
+
+async function getQuestionsForAddResource(
+  inputs: v2.InputsWithProjectPath,
+  solution: v3.ISolution,
+  context: v2.Context
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (solution.getQuestionsForAddResource) {
+    const res = await solution.getQuestionsForAddResource(context, inputs);
+    return res;
+  }
+  return ok(undefined);
 }

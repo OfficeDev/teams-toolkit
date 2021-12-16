@@ -68,7 +68,13 @@ import {
   generateArmTemplate,
   getParameterJson,
 } from "./arm";
-import { checkM365Tenant, checkSubscription, fillInCommonQuestions } from "./commonQuestions";
+import {
+  checkM365Tenant,
+  checkSubscription,
+  CommonQuestions,
+  createNewResourceGroup,
+  fillInCommonQuestions,
+} from "./commonQuestions";
 import {
   DEFAULT_PERMISSION_REQUEST,
   GLOBAL_CONFIG,
@@ -143,6 +149,7 @@ import { listCollaborator } from "./v2/listCollaborator";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { LOCAL_TENANT_ID, REMOTE_TEAMS_APP_TENANT_ID } from ".";
+import { ResourceManagementClient } from "@azure/arm-resources";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -631,6 +638,23 @@ export class TeamsAppSolution implements Solution {
       const consentResult = await askForProvisionConsent(ctx);
       if (consentResult.isErr()) {
         return consentResult;
+      }
+
+      // create resource group if needed
+      const commonQuestionResult = res.value as CommonQuestions;
+      if (commonQuestionResult.needCreateResourceGroup) {
+        const maybeRgName = await createNewResourceGroup(
+          ctx.azureAccountProvider!,
+          commonQuestionResult.subscriptionId,
+          commonQuestionResult.subscriptionName,
+          commonQuestionResult.resourceGroupName,
+          commonQuestionResult.location,
+          ctx.logProvider
+        );
+
+        if (maybeRgName.isErr()) {
+          return err(maybeRgName.error);
+        }
       }
     }
 

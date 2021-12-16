@@ -204,7 +204,7 @@ export async function loadAccountId(accountName: string) {
 }
 
 export class AzureSpCrypto {
-  private static readonly accountCrypto: AccountCrypto = new AccountCrypto("sp");
+  private static readonly accountCrypto: AccountCrypto = new AccountCrypto("azure");
 
   public static async saveAzureSP(
     clientId: string,

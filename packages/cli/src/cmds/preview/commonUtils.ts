@@ -341,11 +341,11 @@ export function mergeProcessEnv(
   const result = Object.assign({}, process.env);
   for (const key of Object.keys(env)) {
     if (key === "PATH") {
-      for (const k of Object.keys(result)) {
-        if (k.toUpperCase() === "PATH") {
-          result[k] = `${env[key]}${path.delimiter}${result[k]}`;
-          break;
-        }
+      const pathKey = Object.keys(result).find((value) => value.toUpperCase() === "PATH");
+      if (pathKey !== undefined) {
+        result[pathKey] = `${env[key]}${path.delimiter}${result[pathKey]}`;
+      } else {
+        result[key] = env[key];
       }
     } else {
       result[key] = env[key];

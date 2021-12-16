@@ -57,13 +57,18 @@ export class Utils {
     }
 
     const version = await fs.readFile(versionFilePath, "utf-8");
+    console.log("==================================================, step 1");
     const tag = Constants.SimpleAuthTag(version);
     const fileName = Constants.SimpleAuthZipName(version);
+    console.log("==================================================, step 2");
     const distUrl = Constants.SimpleAuthReleaseUrl(tag, fileName);
 
     try {
+      console.log("==================================================, step 3");
       await got.stream(distUrl).pipe(fs.createWriteStream(filePath));
+      console.log("==================================================, step 4");
     } catch (error) {
+      console.log("==================================================, step 5");
       throw ResultFactory.SystemError(
         ZipDownloadError.name,
         ZipDownloadError.message(error?.message),

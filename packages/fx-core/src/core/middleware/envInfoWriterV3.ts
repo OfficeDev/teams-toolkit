@@ -4,7 +4,7 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { CoreHookContext, FxCore } from "..";
+import { CoreHookContext, FxCore, TOOLS } from "..";
 import { getStrings } from "../../common";
 import { environmentManager } from "../environment";
 import { shouldIgnored } from "./projectSettingsLoader";
@@ -60,8 +60,7 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
     );
 
     if (envStatePath.isOk()) {
-      const core = ctx.self as FxCore;
-      core.tools.logProvider.debug(`[core] persist env state: ${envStatePath.value}`);
+      TOOLS?.logProvider.debug(`[core] persist env state: ${envStatePath.value}`);
     }
   }
 }

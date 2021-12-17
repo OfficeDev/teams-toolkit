@@ -83,7 +83,6 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     inputs.env = envRes.value;
 
     const result = await loadSolutionContext(
-      TOOLS,
       inputs,
       ctx.projectSettings,
       inputs.env,
@@ -162,7 +161,6 @@ function legacySolutionConfig2EnvState(solutionConfig: SolutionConfig): Json {
 }
 
 export async function loadSolutionContext(
-  tools: Tools,
   inputs: Inputs,
   projectSettings: ProjectSettings,
   targetEnvName?: string,
@@ -203,8 +201,8 @@ export async function loadSolutionContext(
     projectSettings: projectSettings,
     envInfo,
     root: inputs.projectPath || "",
-    ...tools,
-    ...tools.tokenProvider,
+    ...TOOLS,
+    ...TOOLS.tokenProvider,
     answers: inputs,
     cryptoProvider: cryptoProvider,
     permissionRequestProvider: new PermissionRequestFileProvider(inputs.projectPath),
@@ -291,28 +289,26 @@ export async function askNewEnvironment(
   const getQuestionRes = await getQuestionsForNewEnv(inputs, lastUsedEnv);
   const core = ctx.self as FxCore;
   if (getQuestionRes.isErr()) {
-    core.tools.logProvider.error(
+    TOOLS.logProvider.error(
       `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
     );
     ctx.result = err(getQuestionRes.error);
     return undefined;
   }
 
-  core.tools.logProvider.debug(`[core:env] success to get questions for target environment.`);
+  TOOLS.logProvider.debug(`[core:env] success to get questions for target environment.`);
 
   const node = getQuestionRes.value;
   if (node) {
-    const res = await traverse(node, inputs, core.tools.ui);
+    const res = await traverse(node, inputs, TOOLS.ui);
     if (res.isErr()) {
-      core.tools.logProvider.debug(
-        `[core:env] failed to run question model for target environment.`
-      );
+      TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);
       ctx.result = err(res.error);
       return undefined;
     }
 
     const desensitized = desensitize(node, inputs);
-    core.tools.logProvider.info(
+    TOOLS.logProvider.info(
       `[core:env] success to run question model for target environment, answers:${JSON.stringify(
         desensitized
       )}`

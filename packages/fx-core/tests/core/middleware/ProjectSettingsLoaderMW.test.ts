@@ -20,7 +20,13 @@ import * as path from "path";
 import fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import { CoreHookContext, isV2, NoProjectOpenedError, PathNotExistError } from "../../../src";
+import {
+  CoreHookContext,
+  isV2,
+  NoProjectOpenedError,
+  PathNotExistError,
+  setTools,
+} from "../../../src";
 import { ContextInjectorMW, ProjectSettingsLoaderMW } from "../../../src/core/middleware";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 
@@ -103,13 +109,13 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
       let mockedEnvRestore: RestoreFn;
       beforeEach(() => {
         mockedEnvRestore = mockedEnv(param);
+        setTools(new MockTools());
       });
 
       afterEach(() => {
         mockedEnvRestore();
       });
       class MyClass {
-        tools = new MockTools();
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.isTrue(ctx !== undefined);
           if (ctx) {

@@ -4,7 +4,7 @@
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { CoreHookContext, FxCore, isV2 } from "..";
+import { CoreHookContext, isV2, TOOLS } from "..";
 import { isMultiEnvEnabled } from "../../common";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { shouldIgnored } from "./projectSettingsLoader";
@@ -43,8 +43,7 @@ export const LocalSettingsWriterMW: Middleware = async (
       );
     }
 
-    const core = ctx.self as FxCore;
-    core.tools.logProvider.debug(
+    TOOLS.logProvider.debug(
       `[core] persist local settings config file: ${localSettingsProvider.localSettingsFilePath}`
     );
   }

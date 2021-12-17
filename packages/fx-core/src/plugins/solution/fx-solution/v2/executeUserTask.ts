@@ -49,6 +49,7 @@ import {
   generateResourceTemplate,
   generateResourceTemplateForPlugins,
 } from "./generateResourceTemplate";
+import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 
 export async function executeUserTask(
   ctx: v2.Context,
@@ -340,6 +341,7 @@ async function scaffoldCodeAndResourceTemplate(
   generateTemplate: boolean,
   pluginsToDoArm?: v2.ResourcePlugin[]
 ): Promise<Result<unknown, FxError>> {
+  // TODO: add local debug scaffold logic
   const result = await scaffoldByPlugins(ctx, inputs, localSettings, pluginsToScaffold);
   if (result.isErr()) {
     return result;
@@ -347,6 +349,16 @@ async function scaffoldCodeAndResourceTemplate(
   if (!generateTemplate || !isArmSupportEnabled()) {
     return result;
   }
+
+  const scaffoldLocalDebugSettingsResult = await scaffoldLocalDebugSettings(
+    ctx,
+    inputs,
+    localSettings
+  );
+  if (scaffoldLocalDebugSettingsResult.isErr()) {
+    return scaffoldLocalDebugSettingsResult;
+  }
+
   return generateResourceTemplateForPlugins(
     ctx,
     inputs,

@@ -222,10 +222,10 @@ async function scaffoldLocalSettingsJson(
       includeBot,
       includeFrontend
     );
-    await localSettingsProvider.save(localSettings);
+    await localSettingsProvider.saveJson(localSettings);
   } else {
     // Initialize a local settings on scaffolding
     localSettings = localSettingsProvider.initV2(includeFrontend, includeBackend, includeBot);
-    await localSettingsProvider.save(localSettings);
+    await localSettingsProvider.saveJson(localSettings);
   }
 }

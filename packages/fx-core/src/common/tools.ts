@@ -199,21 +199,6 @@ export function separateSecretData(configJson: Json): Record<string, string> {
   return res;
 }
 
-export function separateSecretDataV3(envState: v3.ResourceStates): Record<string, string> {
-  const res: Record<string, string> = {};
-  for (const key of Object.keys(envState)) {
-    const config = envState[key] as CloudResource;
-    if (config.secretFields && config.secretFields.length > 0) {
-      config.secretFields.forEach((f) => {
-        const keyName = `${key}.${f}`;
-        res[keyName] = config[f];
-        config[f] = `{{${keyName}}}`;
-      });
-    }
-  }
-  return res;
-}
-
 export function convertDotenvToEmbeddedJson(dict: Record<string, string>): Json {
   const result: Json = {};
   for (const key of Object.keys(dict)) {

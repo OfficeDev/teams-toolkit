@@ -13,6 +13,7 @@ import {
   ProjectSettingsFileName,
   Result,
   v2,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import * as dotenv from "dotenv";
@@ -28,6 +29,7 @@ import {
   isV2,
   newEnvInfo,
   newEnvInfoV3,
+  separateSecretDataV3,
   setTools,
 } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
@@ -219,5 +221,35 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
 
   it("newEnvInfoV3()", async () => {
     newEnvInfoV3();
+  });
+
+  it("separateSecretDataV3()", async () => {
+    const data: v3.ResourceStates = {
+      solution: {},
+      r1: {
+        field1: "123456",
+        secretFields: ["field1"],
+      },
+      r2: {
+        field2: "789012",
+        secretFields: ["field2"],
+      },
+    };
+    const secret = separateSecretDataV3(data);
+    assert.deepEqual(secret, {
+      "r1.field1": "123456",
+      "r2.field2": "789012",
+    });
+    assert.deepEqual(data, {
+      solution: {},
+      r1: {
+        field1: "{{r1.field1}}",
+        secretFields: ["field1"],
+      },
+      r2: {
+        field2: "{{r2.field2}}",
+        secretFields: ["field2"],
+      },
+    });
   });
 });

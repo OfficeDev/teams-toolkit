@@ -18,7 +18,6 @@ import {
   EnvNamePlaceholder,
   EnvInfo,
   Json,
-  ProjectSettingsFileName,
   v3,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
@@ -39,11 +38,7 @@ import {
 } from "..";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
-import {
-  compileHandlebarsTemplateString,
-  isMultiEnvEnabled,
-  separateSecretDataV3,
-} from "../common";
+import { compileHandlebarsTemplateString, isMultiEnvEnabled } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
@@ -168,7 +163,9 @@ class EnvironmentManager {
     const envFiles = this.getEnvStateFilesPath(envName, projectPath);
 
     const data: Json = envData instanceof Map ? mapToJson(envData) : envData;
-    const secrets = isV3 ? separateSecretDataV3(data) : separateSecretData(data);
+    const secrets = isV3
+      ? separateSecretDataV3(data as v3.ResourceStates)
+      : separateSecretData(data);
     this.encrypt(secrets, cryptoProvider);
 
     try {
@@ -412,6 +409,21 @@ class EnvironmentManager {
       return this.defaultEnvName;
     }
   }
+}
+
+export function separateSecretDataV3(envState: v3.ResourceStates): Record<string, string> {
+  const res: Record<string, string> = {};
+  for (const key of Object.keys(envState)) {
+    const config = envState[key] as v3.CloudResource;
+    if (config.secretFields && config.secretFields.length > 0) {
+      config.secretFields.forEach((f: string) => {
+        const keyName = `${key}.${f}`;
+        res[keyName] = config[f];
+        config[f] = `{{${keyName}}}`;
+      });
+    }
+  }
+  return res;
 }
 
 export const environmentManager = new EnvironmentManager();

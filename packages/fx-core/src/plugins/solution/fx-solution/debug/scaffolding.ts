@@ -18,13 +18,13 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
-import { ProjectSettingLoader } from "../../../../core/common/local/projectSettingLoader";
 import * as Launch from "./util/launch";
 import * as Tasks from "./util/tasks";
 import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import { SolutionSource } from "../constants";
 import { DebugError } from "./error";
+import { ContextHelper } from "./util/contextHelper";
 
 const PackageJson = require("@npmcli/package-json");
 
@@ -33,12 +33,12 @@ export async function scaffoldLocalDebugSettings(
   inputs: Inputs,
   localSettings?: LocalSettings | Json
 ): Promise<Result<Void, FxError>> {
-  const isSpfx = ProjectSettingLoader.isSpfx(ctx);
-  const isMigrateFromV1 = ProjectSettingLoader.isMigrateFromV1(ctx);
-  const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
-  const includeBackend = ProjectSettingLoader.includeBackend(ctx);
-  const includeBot = ProjectSettingLoader.includeBot(ctx);
-  const includeAuth = ProjectSettingLoader.includeAuth(ctx);
+  const isSpfx = ContextHelper.isSpfx(ctx);
+  const isMigrateFromV1 = ContextHelper.isMigrateFromV1(ctx);
+  const includeFrontend = ContextHelper.includeFrontend(ctx);
+  const includeBackend = ContextHelper.includeBackend(ctx);
+  const includeBot = ContextHelper.includeBot(ctx);
+  const includeAuth = ContextHelper.includeAuth(ctx);
   const programmingLanguage = ctx.projectSetting?.programmingLanguage ?? "";
 
   const telemetryProperties = {
@@ -216,9 +216,9 @@ async function scaffoldLocalSettingsJson(
 ): Promise<void> {
   const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath!);
 
-  const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
-  const includeBackend = ProjectSettingLoader.includeBackend(ctx);
-  const includeBot = ProjectSettingLoader.includeBot(ctx);
+  const includeFrontend = ContextHelper.includeFrontend(ctx);
+  const includeBackend = ContextHelper.includeBackend(ctx);
+  const includeBot = ContextHelper.includeBot(ctx);
 
   if (localSettings !== undefined) {
     // Add local settings for the new added capability/resource

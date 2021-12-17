@@ -11,7 +11,12 @@ import {
   ProjectSettings,
   Result,
 } from "@microsoft/teamsfx-api";
-import { Context, DeploymentInputs, SolutionInputs } from "@microsoft/teamsfx-api/build/v2";
+import {
+  Context,
+  EnvInfoV2,
+  DeploymentInputs,
+  SolutionInputs,
+} from "@microsoft/teamsfx-api/build/v2";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -111,12 +116,12 @@ describe("SPFX V2", () => {
     };
     const deployInputs: DeploymentInputs = { ...inputs, ...solutionInputs, projectPath: "./" };
     mockDeployThatAlwaysSucceed(pluginV1);
-    const res = await pluginV2.deploy(
-      context,
-      deployInputs,
-      { output: {}, secrets: {}, states: {} },
-      tools.tokenProvider
-    );
+    const envInfo: EnvInfoV2 = {
+      envName: "default",
+      config: {},
+      state: {},
+    };
+    const res = await pluginV2.deploy(context, deployInputs, envInfo, tools.tokenProvider);
     assert.isTrue(res.isOk());
   });
 });

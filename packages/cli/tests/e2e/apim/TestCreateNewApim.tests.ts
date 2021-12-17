@@ -44,14 +44,11 @@ describe("Create a new API Management Service", function () {
 
       await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
 
-      result = await execAsyncWithRetry(
-        `teamsfx resource add azure-apim`,
-        {
-          cwd: projectPath,
-          env: testProcessEnv,
-          timeout: 0,
-        }
-      );
+      result = await execAsyncWithRetry(`teamsfx resource add azure-apim`, {
+        cwd: projectPath,
+        env: testProcessEnv,
+        timeout: 0,
+      });
       console.log(`Add APIM resource. Error message: ${result.stderr}`);
 
       if (isMultiEnvEnabled()) {

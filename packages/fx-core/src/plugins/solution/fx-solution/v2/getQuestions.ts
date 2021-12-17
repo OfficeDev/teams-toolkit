@@ -82,7 +82,7 @@ export async function getQuestionsForScaffolding(
   if (tabRes.isErr()) return tabRes;
   if (tabRes.value) {
     const tabNode = tabRes.value;
-    tabNode.condition = { equals: HostTypeOptionAzure.id };
+    tabNode.condition = { contains: TabOptionItem.id };
     node.push(tabNode);
   }
 

@@ -42,6 +42,7 @@ import {
   getQuestionsAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
+  setEnvInfoV1ByStateV2,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.AppStudioPlugin)
@@ -127,6 +128,7 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     tokenProvider: AppStudioTokenProvider
   ): Promise<Result<Void, FxError>> {
     const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
+    setEnvInfoV1ByStateV2(this.plugin.name, pluginContext, envInfo);
     pluginContext.appStudioToken = tokenProvider;
 
     // run question model for publish
@@ -140,13 +142,6 @@ export class AppStudioPluginV2 implements ResourcePlugin {
     //     }
     //   }
     // }
-    const configsOfOtherPlugins = new Map<string, ConfigMap>();
-    for (const key in envInfo.state) {
-      const output = envInfo.state[key];
-      const configMap = ConfigMap.fromJSON(output);
-      if (configMap) configsOfOtherPlugins.set(key, configMap);
-    }
-    pluginContext.envInfo = newEnvInfo(undefined, undefined, configsOfOtherPlugins);
     //TODO pass provisionInputConfig into config??
     const postRes = await this.plugin.publish(pluginContext);
     if (postRes.isErr()) {

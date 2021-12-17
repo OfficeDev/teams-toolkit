@@ -234,7 +234,7 @@ export class LocalSettingsProvider {
 
   public async saveJson(localSettingsJson: Json, cryptoProvider?: CryptoProvider): Promise<Json> {
     const localSettings = this.convertToLocalSettings(localSettingsJson);
-    await this.save(localSettings);
+    await this.save(localSettings, cryptoProvider);
     return this.convertToLocalSettingsJson(localSettings);
   }
 

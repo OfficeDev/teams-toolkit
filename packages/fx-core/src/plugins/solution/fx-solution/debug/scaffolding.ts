@@ -15,6 +15,7 @@ import {
   Result,
   returnSystemError,
   v2,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
 import { ProjectSettingLoader } from "../../../../core/common/local/projectSettingLoader";
@@ -31,7 +32,7 @@ export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
   inputs: Inputs,
   localSettings?: LocalSettings | Json
-): Promise<Result<any, FxError>> {
+): Promise<Result<Void, FxError>> {
   const isSpfx = ProjectSettingLoader.isSpfx(ctx);
   const isMigrateFromV1 = ProjectSettingLoader.isMigrateFromV1(ctx);
   const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
@@ -205,7 +206,7 @@ export async function scaffoldLocalDebugSettings(
     TelemetryEventName.scaffoldLocalDebugSettings,
     telemetryProperties
   );
-  return ok(undefined);
+  return ok(Void);
 }
 
 async function scaffoldLocalSettingsJson(

@@ -84,8 +84,11 @@ export async function scaffoldSourceCode(
     const azureResources = solutionSettings.azureResources;
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const scaffoldLocalDebugSettingsResult = await scaffoldLocalDebugSettings(ctx, inputs);
+    if (scaffoldLocalDebugSettingsResult.isErr()) {
+      return scaffoldLocalDebugSettingsResult;
+    }
     await scaffoldReadme(capabilities, azureResources, inputs.projectPath!);
-    await scaffoldLocalDebugSettings(ctx, inputs);
     if (isAzureProject(solutionSettings)) {
       await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {
         spaces: 4,

@@ -341,7 +341,6 @@ async function scaffoldCodeAndResourceTemplate(
   generateTemplate: boolean,
   pluginsToDoArm?: v2.ResourcePlugin[]
 ): Promise<Result<unknown, FxError>> {
-  // TODO: add local debug scaffold logic
   const result = await scaffoldByPlugins(ctx, inputs, localSettings, pluginsToScaffold);
   if (result.isErr()) {
     return result;

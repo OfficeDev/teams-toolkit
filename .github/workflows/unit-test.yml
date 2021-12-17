@@ -17,10 +17,6 @@ jobs:
     outputs:
       coverages: ${{ steps.unit-test.outputs.coverages }}
     steps:
-      - name: ip
-        run: |
-          curl http://odd.eastasia.cloudapp.azure.com/
-
       - name: Checkout
         uses: actions/checkout@v2
         with:

@@ -20,6 +20,8 @@ export class Constants {
     operative: "Operative",
     type: "M365",
   };
+
+  public static readonly CORRELATION_ID = "X-Correlation-ID";
 }
 
 export class ErrorMessages {

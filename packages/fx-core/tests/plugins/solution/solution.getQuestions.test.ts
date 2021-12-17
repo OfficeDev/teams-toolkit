@@ -22,7 +22,6 @@ import { it } from "mocha";
 import * as sinon from "sinon";
 import Container from "typedi";
 import * as uuid from "uuid";
-import { newEnvInfo } from "../../../src";
 import "../../../src/plugins/resource/apim/v2";
 import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/bot/v2";

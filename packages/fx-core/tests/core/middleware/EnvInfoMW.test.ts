@@ -22,7 +22,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { CoreHookContext, environmentManager, isV2, newEnvInfo } from "../../../src";
+import { CoreHookContext, environmentManager, isV2, newEnvInfo, setTools } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
 import {
   ContextInjectorMW,
@@ -68,6 +68,7 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
         const cryptoProvider = new LocalCrypto(projectSettings.projectId);
 
         const tools = new MockTools();
+        setTools(tools);
         tools.cryptoProvider = cryptoProvider;
 
         const solutionContext = await newSolutionContext(tools, inputs);

@@ -22,7 +22,7 @@ import sinon from "sinon";
 import { Container } from "typedi";
 import * as uuid from "uuid";
 import "../../../../../src/index";
-import { SPFXQuestionNames } from "../../../../../src/index";
+import { setTools, SPFXQuestionNames } from "../../../../../src/index";
 import { TabLanguage } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { SpfxPluginV2 } from "../../../../../src/plugins/resource/spfx/v2/index";
 import {
@@ -58,6 +58,7 @@ describe("SPFX V2", () => {
       ],
     },
   };
+  setTools(tools);
   const context: Context = {
     userInteraction: tools.ui,
     logProvider: tools.logProvider,

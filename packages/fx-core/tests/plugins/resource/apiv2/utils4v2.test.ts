@@ -19,7 +19,7 @@ import {
 import { Context, EnvInfoV2, ProvisionInputs } from "@microsoft/teamsfx-api/build/v2";
 import { assert } from "chai";
 import "mocha";
-import { newEnvInfo } from "../../../../src";
+import { newEnvInfo, setTools } from "../../../../src";
 import { TabLanguage } from "../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { LocalCrypto } from "../../../../src/core/crypto";
 import {
@@ -120,6 +120,7 @@ describe("API V2 adapter", () => {
 
   it("provisionResourceAdapter", async () => {
     const tools = new MockTools();
+    setTools(tools);
     const plugin: Plugin = {
       name: "test-plugin",
       displayName: "test plugin",

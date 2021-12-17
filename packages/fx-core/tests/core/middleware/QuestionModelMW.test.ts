@@ -23,7 +23,7 @@ import { assert } from "chai";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
-import { CoreHookContext, InvalidInputError, isV2 } from "../../../src";
+import { CoreHookContext, InvalidInputError, isV2, setTools } from "../../../src";
 import {
   newSolutionContext,
   QuestionModelMW,
@@ -53,6 +53,7 @@ describe("Middleware - QuestionModelMW", () => {
     }
     await next();
   };
+  setTools(tools);
   const ui = tools.ui;
   const questionName = "mockquestion";
   const node = new QTreeNode({
@@ -64,7 +65,6 @@ describe("Middleware - QuestionModelMW", () => {
   let questionValue = randomAppName();
   class MockCoreForQM {
     version = "1";
-    tools = tools;
     async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
       if (inputs[questionName] === questionValue) return ok("true");
       return err(InvalidInputError(questionName));

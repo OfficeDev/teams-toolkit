@@ -26,6 +26,7 @@ import {
   LocalSettingsProvider,
   NoProjectOpenedError,
   PathNotExistError,
+  setTools,
 } from "../../../src";
 import {
   ContextInjectorMW,
@@ -113,8 +114,8 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
       }
       return false;
     });
+
     class MyClass {
-      tools = new MockTools();
       async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
         assert.isTrue(ctx !== undefined);
         if (ctx) {
@@ -125,6 +126,7 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
         return ok("");
       }
     }
+    setTools(new MockTools());
     hooks(MyClass, {
       other: [ProjectSettingsLoaderMW, LocalSettingsLoaderMW, ContextInjectorMW],
     });
@@ -156,8 +158,8 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
       if (file === localSettingsFile) return false;
       return false;
     });
+    setTools(new MockTools());
     class MyClass {
-      tools = new MockTools();
       async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
         assert.isTrue(ctx !== undefined);
         if (ctx) {
@@ -194,6 +196,7 @@ describe("Middleware - LocalSettingsWriterMW", () => {
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = projectPath;
     const tools = new MockTools();
+    setTools(tools);
     const fileMap = new Map<string, any>();
     sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
       fileMap.set(file, data);
@@ -202,7 +205,6 @@ describe("Middleware - LocalSettingsWriterMW", () => {
     const localSettingsProvider = new LocalSettingsProvider(projectPath);
     const localSettingsFile = localSettingsProvider.localSettingsFilePath;
     class MyClass {
-      tools = tools;
       async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
         if (ctx) ctx.localSettings = mockLocalSettings;
         return ok("");

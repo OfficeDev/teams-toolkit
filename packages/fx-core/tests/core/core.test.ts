@@ -43,6 +43,7 @@ import {
   FxCore,
   InvalidInputError,
   isV2,
+  setTools,
   validateProject,
   validateSettings,
 } from "../../src";
@@ -73,6 +74,7 @@ describe("Core basic APIs", () => {
   let projectPath = path.resolve(os.tmpdir(), appName);
 
   beforeEach(() => {
+    setTools(tools);
     Container.set(SolutionPluginsV2.AzureTeamsSolutionV2, mockSolutionV2);
     Container.set(SolutionPlugins.AzureTeamsSolution, mockSolution);
   });

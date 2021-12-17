@@ -192,6 +192,9 @@ export let Logger: LogProvider;
 export let telemetryReporter: TelemetryReporter | undefined;
 export let currentStage: Stage;
 export let TOOLS: Tools;
+export function setTools(tools: Tools) {
+  TOOLS = tools;
+}
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;

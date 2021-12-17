@@ -11,7 +11,6 @@ import { fileEncoding, PluginId, TestFilePath } from "../../../../constants";
 import path from "path";
 import { ArmTemplateResult } from "../../../../../src/common/armInterface";
 import fs from "fs-extra";
-import exp from "constants";
 
 dotenv.config();
 
@@ -40,11 +39,10 @@ describe("AadGenerateArmTemplates", () => {
 
     // Assert
     chai.assert.isTrue(result.isOk());
-    console.log("result: ");
-    console.log(JSON.stringify(result));
     if (result.isOk()) {
+      const armTemplateResult = result.value as ArmTemplateResult;
       chai.assert.strictEqual(
-        JSON.stringify((result.value as ArmTemplateResult).Parameters, undefined, 2),
+        JSON.stringify(armTemplateResult.Parameters, undefined, 2),
         await fs.readFile(
           path.join(
             __dirname,
@@ -54,6 +52,8 @@ describe("AadGenerateArmTemplates", () => {
           fileEncoding
         )
       );
+      chai.assert.isUndefined(armTemplateResult.Configuration);
+      chai.assert.isUndefined(armTemplateResult.Provision);
     }
   });
 });

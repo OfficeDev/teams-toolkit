@@ -189,7 +189,7 @@ export async function loadSolutionContext(
     if (envDataResult.isErr()) {
       return err(envDataResult.error);
     }
-    envInfo = envDataResult.value;
+    envInfo = envDataResult.value as EnvInfo;
   }
 
   // migrate programmingLanguage and defaultFunctionName to project settings if exists in previous env config

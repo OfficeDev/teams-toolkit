@@ -103,28 +103,6 @@ class EnvironmentManager {
         state: stateResult.value as Map<string, any>,
       });
   }
-  public async loadEnvInfoV3(
-    projectPath: string,
-    cryptoProvider: CryptoProvider,
-    envName?: string
-  ): Promise<Result<v3.EnvInfoV3, FxError>> {
-    if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
-    }
-
-    envName = envName ?? this.getDefaultEnvName();
-    const configResult = await this.loadEnvConfig(projectPath, envName);
-    if (configResult.isErr()) {
-      return err(configResult.error);
-    }
-
-    const stateResult = await this.loadEnvStateV3(projectPath, envName, cryptoProvider);
-    if (stateResult.isErr()) {
-      return err(stateResult.error);
-    }
-
-    return ok({ envName, config: configResult.value, state: stateResult.value });
-  }
   public newEnvConfigData(appName: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,

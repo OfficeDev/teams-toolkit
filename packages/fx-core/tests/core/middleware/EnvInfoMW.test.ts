@@ -22,7 +22,14 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { CoreHookContext, environmentManager, isV2, newEnvInfo, setTools } from "../../../src";
+import {
+  CoreHookContext,
+  environmentManager,
+  isV2,
+  newEnvInfo,
+  newEnvInfoV3,
+  setTools,
+} from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
 import {
   ContextInjectorMW,
@@ -209,4 +216,8 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
       });
     });
   }
+
+  it("newEnvInfoV3()", async () => {
+    newEnvInfoV3();
+  });
 });

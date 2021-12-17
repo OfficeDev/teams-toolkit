@@ -11,7 +11,13 @@ import {
   Void,
   TokenProvider,
 } from "@microsoft/teamsfx-api";
-import { Context, DeploymentInputs, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
+import {
+  Context,
+  DeploymentInputs,
+  DeepReadonly,
+  ResourcePlugin,
+  EnvInfoV2,
+} from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { SpfxPlugin } from "../..";
 import {
@@ -49,9 +55,9 @@ export class SpfxPluginV2 implements ResourcePlugin {
   async deploy(
     ctx: Context,
     inputs: DeploymentInputs,
-    provisionOutput: Json,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    return await deployAdapter(ctx, inputs, provisionOutput, tokenProvider, this.plugin);
+    return await deployAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 }

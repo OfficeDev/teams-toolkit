@@ -849,11 +849,22 @@
           {
             "id": "teamsToolkitCommands",
             "title": "Explore Teams toolkit commands",
-            "description": "[Open Command Palette](command:workbench.action.quickOpen?%5B%22%3ETeams%22%5D) and type 'Teams' to find Teams toolkit commands. You can also discover [Teams toolkit icon](command:workbench.view.extension.teamsfx) on the activity bar to easily see the commands after a project creation. \n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3ETeams%22%5D)",
+            "description": "Open Command Palette (Ctrl+Shift+P) and type 'Teams' to find Teams toolkit commands. You can also discover [Teams toolkit icon](command:workbench.view.extension.teamsfx) on the activity bar to easily see the commands after a project creation. \n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3ETeams%22%5D)",
             "media": {
               "svg": "media/step_commands.svg",
               "altText": "Display Teams Commands"
-            }
+            },
+            "when": "!isMac"
+          },
+          {
+            "id": "teamsToolkitCommandsMac",
+            "title": "Explore Teams toolkit commands",
+            "description": "Open Command Palette (⇧⌘P) and type 'Teams' to find Teams toolkit commands. You can also discover [Teams toolkit icon](command:workbench.view.extension.teamsfx) on the activity bar to easily see the commands after a project creation. \n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3ETeams%22%5D)",
+            "media": {
+              "svg": "media/step_commands.svg",
+              "altText": "Display Teams Commands"
+            },
+            "when": "isMac"
           },
           {
             "id": "teamsToolkitInstallNodeJs",
@@ -876,7 +887,7 @@
           {
             "id": "teamsToolkitExploreMore",
             "title": "Explore more TeamsFx functionalities",
-            "description": "Manage multiple environments and collaborate with others\nCustomize resource provision with ARM\nCheck documentation for more tips",
+            "description": " • Manage multiple environments and collaborate with others\n • Customize resource provision with ARM\n • Check documentation for more tips",
             "media": {
               "svg": "media/goodToGo.svg",
               "altText": "Explore more"

@@ -154,13 +154,13 @@ export interface ResourcePlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {DeploymentInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {Json} provisionOutputs - state containing provision outputs modeled after state.${env}.json
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
    * @param {TokenProvider} tokenProvider - Token provider for Azure, AppStudio and m365
    */
   deploy?: (
     ctx: Context,
     inputs: DeploymentInputs,
-    provisionOutputs: Json,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 

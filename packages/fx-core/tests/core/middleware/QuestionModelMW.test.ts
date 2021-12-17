@@ -23,7 +23,7 @@ import { assert } from "chai";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
-import { CoreHookContext, InvalidInputError, isV2, setTools } from "../../../src";
+import { CoreHookContext, InvalidInputError, isV2, setTools, TOOLS } from "../../../src";
 import {
   newSolutionContext,
   QuestionModelMW,
@@ -37,6 +37,7 @@ describe("Middleware - QuestionModelMW", () => {
   });
   const inputs: Inputs = { platform: Platform.VSCode };
   const tools = new MockTools();
+  setTools(tools);
   const projectSettings = MockProjectSettings("mockappforqm");
   const MockContextLoaderMW = async (ctx: CoreHookContext, next: NextFunction) => {
     if (isV2()) {
@@ -53,8 +54,6 @@ describe("Middleware - QuestionModelMW", () => {
     }
     await next();
   };
-  setTools(tools);
-  const ui = tools.ui;
   const questionName = "mockquestion";
   const node = new QTreeNode({
     type: "text",
@@ -64,6 +63,7 @@ describe("Middleware - QuestionModelMW", () => {
   });
   let questionValue = randomAppName();
   class MockCoreForQM {
+    tools = tools;
     version = "1";
     async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
       if (inputs[questionName] === questionValue) return ok("true");
@@ -128,12 +128,12 @@ describe("Middleware - QuestionModelMW", () => {
   }
 
   hooks(MockCoreForQM, {
-    createProject: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
-    provisionResources: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
-    deployArtifacts: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
-    localDebug: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
-    publishApplication: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
-    executeUserTask: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+    createProject: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
+    provisionResources: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
+    deployArtifacts: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
+    localDebug: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
+    publishApplication: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
+    executeUserTask: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
   });
   const EnvParams = [{ TEAMSFX_APIV2: "false" }, { TEAMSFX_APIV2: "true" }];
 
@@ -150,7 +150,7 @@ describe("Middleware - QuestionModelMW", () => {
       });
 
       it("success to run question model for createProject, provisionResources, deployArtifacts, localDebug, publishApplication, executeUserTask", async () => {
-        sandbox.stub(ui, "inputText").callsFake(async (config: InputTextConfig) => {
+        sandbox.stub(TOOLS.ui, "inputText").callsFake(async (config: InputTextConfig) => {
           return ok({ type: "success", result: questionValue });
         });
         const my = new MockCoreForQM();
@@ -186,7 +186,7 @@ describe("Middleware - QuestionModelMW", () => {
       });
 
       it("get question or traverse question tree error", async () => {
-        sandbox.stub(ui, "inputText").callsFake(async (config: InputTextConfig) => {
+        sandbox.stub(TOOLS.ui, "inputText").callsFake(async (config: InputTextConfig) => {
           return ok({ type: "success", result: questionValue });
         });
         const my = new MockCoreForQM();

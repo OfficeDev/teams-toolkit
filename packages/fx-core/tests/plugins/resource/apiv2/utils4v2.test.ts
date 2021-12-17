@@ -26,8 +26,6 @@ import {
   assignJsonInc,
   provisionResourceAdapter,
   setEnvInfoV1ByStateV2,
-  setLocalSettingsV1,
-  setLocalSettingsV2,
   setStateV2ByConfigMapInc,
 } from "../../../../src/plugins/resource/utils4v2";
 import {
@@ -64,31 +62,6 @@ describe("API V2 adapter", () => {
     }
   });
 
-  it("setLocalSettings", async () => {
-    const pluginContext: PluginContext = {
-      root: "",
-      config: new ConfigMap(),
-      envInfo: newEnvInfo(),
-      localSettings: {
-        teamsApp: new ConfigMap([["k1", "v1"]]),
-        auth: new ConfigMap([["k2", "v2"]]),
-      },
-      cryptoProvider: new LocalCrypto(""),
-    };
-    const localSettings: Json = {};
-    setLocalSettingsV2(localSettings, pluginContext.localSettings);
-    const expected: Json = {
-      teamsApp: { k1: "v1" },
-      auth: { k2: "v2" },
-      backend: undefined,
-      bot: undefined,
-      frontend: undefined,
-    };
-    setLocalSettingsV1(pluginContext, expected);
-    assert.equal(pluginContext.localSettings?.teamsApp?.get("k1"), "v1");
-    assert.equal(pluginContext.localSettings?.auth?.get("k2"), "v2");
-  });
-
   it("setEnvInfoV1ByProfileV2", async () => {
     const pluginContext: PluginContext = {
       root: "",
@@ -100,7 +73,12 @@ describe("API V2 adapter", () => {
       plugin1: { k1: "v1" },
       plugin2: { k2: "v2" },
     };
-    setEnvInfoV1ByStateV2("plugin1", pluginContext, provisionOutputs);
+    const envInfo: EnvInfoV2 = {
+      envName: "default",
+      config: {},
+      state: provisionOutputs,
+    };
+    setEnvInfoV1ByStateV2("plugin1", pluginContext, envInfo);
     assert.equal(pluginContext.config.get("k1"), "v1");
     assert.equal((pluginContext.envInfo.state.get("plugin2") as ConfigMap).get("k2"), "v2");
   });
@@ -111,11 +89,11 @@ describe("API V2 adapter", () => {
       ["k2", "v2"],
     ]);
     const provisionOutputs: Json = {
-      plugin1: { k1: "", k2: "" },
-      plugin2: { k2: "v2" },
+      plugin1: { output: { k1: "", k2: "" }, secrets: {} },
+      plugin2: { output: { k2: "v2" }, secrets: {} },
     };
     setStateV2ByConfigMapInc("plugin1", provisionOutputs, config);
-    assert.deepEqual(provisionOutputs["plugin1"], { k1: "v1", k2: "v2" });
+    assert.deepEqual(provisionOutputs["plugin1"]["output"], { k1: "v1", k2: "v2" });
   });
 
   it("provisionResourceAdapter", async () => {

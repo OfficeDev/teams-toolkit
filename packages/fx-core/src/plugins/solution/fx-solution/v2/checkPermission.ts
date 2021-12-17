@@ -4,18 +4,14 @@ import {
   err,
   FxError,
   GraphTokenProvider,
-  Inputs,
   ok,
   Platform,
   PluginContext,
   Result,
   returnSystemError,
   returnUserError,
-  SolutionConfig,
   SolutionContext,
   v2,
-  Void,
-  Plugin,
   Err,
   TokenProvider,
   TelemetryReporter,
@@ -24,15 +20,9 @@ import {
   ConfigMap,
   Json,
 } from "@microsoft/teamsfx-api";
-import {
-  CollaborationState,
-  CollaborationStateResult,
-  PermissionsResult,
-  ResourcePermission,
-} from "../../../../common";
+import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
-  GLOBAL_CONFIG,
   PluginNames,
   REMOTE_TEAMS_APP_TENANT_ID,
   SolutionError,
@@ -41,10 +31,9 @@ import {
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
-  SOLUTION_PROVISION_SUCCEEDED,
 } from "../constants";
 import { PluginsWithContext } from "../solution";
-import { getPluginContext, sendErrorTelemetryThenReturnError } from "../utils/util";
+import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { executeConcurrently, LifecyclesWithContext } from "../executor";
 import {
   getActivatedResourcePlugins,
@@ -117,22 +106,9 @@ async function executeCheckPermissionV2(
       };
     });
 
-  const result = await executeNamedThunkConcurrently(thunks, ctx.logProvider);
+  const results = await executeNamedThunkConcurrently(thunks, ctx.logProvider);
 
-  let permissions: ResourcePermission[];
-  let errors: Err<any, FxError>[];
-  if (result.kind === "success") {
-    permissions = result.output.map((entry) => entry.result as ResourcePermission);
-    errors = [];
-  } else if (result.kind === "partialSuccess") {
-    permissions = result.output.map((entry) => entry.result as ResourcePermission);
-    errors = [err(result.error)];
-  } else {
-    permissions = [];
-    errors = [err(result.error)];
-  }
-
-  return [permissions, errors];
+  return CollaborationUtil.collectPermissionsAndErrors(results);
 }
 
 async function checkPermissionImpl(

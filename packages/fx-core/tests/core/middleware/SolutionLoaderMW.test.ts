@@ -49,7 +49,7 @@ describe("Middleware - SolutionLoaderMW, ContextInjectorMW", () => {
       }
       it("load solution from zero and inject", async () => {
         hooks(MyClass, {
-          isLoaded: [SolutionLoaderMW(), ContextInjectorMW],
+          isLoaded: [SolutionLoaderMW, ContextInjectorMW],
         });
         const my = new MyClass();
         const inputs: Inputs = { platform: Platform.VSCode };
@@ -59,7 +59,7 @@ describe("Middleware - SolutionLoaderMW, ContextInjectorMW", () => {
 
       it("load solution from existing project and inject", async () => {
         hooks(MyClass, {
-          isLoaded: [MockProjectSettingsMW, SolutionLoaderMW(), ContextInjectorMW],
+          isLoaded: [MockProjectSettingsMW, SolutionLoaderMW, ContextInjectorMW],
         });
         const my = new MyClass();
         const inputs: Inputs = { platform: Platform.VSCode };

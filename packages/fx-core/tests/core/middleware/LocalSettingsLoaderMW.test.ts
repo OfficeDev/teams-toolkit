@@ -114,8 +114,10 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
       }
       return false;
     });
-
+    const tools = new MockTools();
+    setTools(tools);
     class MyClass {
+      tools = tools;
       async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
         assert.isTrue(ctx !== undefined);
         if (ctx) {
@@ -126,7 +128,7 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
         return ok("");
       }
     }
-    setTools(new MockTools());
+
     hooks(MyClass, {
       other: [ProjectSettingsLoaderMW, LocalSettingsLoaderMW, ContextInjectorMW],
     });
@@ -158,8 +160,10 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
       if (file === localSettingsFile) return false;
       return false;
     });
-    setTools(new MockTools());
+    const tools = new MockTools();
+    setTools(tools);
     class MyClass {
+      tools = tools;
       async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
         assert.isTrue(ctx !== undefined);
         if (ctx) {

@@ -31,6 +31,7 @@ import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
 import { FxCore, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import { getSystemInputs, getColorizedString } from "../../utils";
+import { isWindows } from "./depsChecker/common";
 
 export async function openBrowser(
   browser: constants.Browser,
@@ -340,7 +341,15 @@ export function mergeProcessEnv(
   }
   const result = Object.assign({}, process.env);
   for (const key of Object.keys(env)) {
-    result[key] = env[key];
+    if (isWindows()) {
+      let targetKey = Object.keys(result).find(
+        (value) => value.toLowerCase() === key.toLowerCase()
+      );
+      targetKey = targetKey ?? key;
+      result[targetKey] = env[key];
+    } else {
+      result[key] = env[key];
+    }
   }
   return result;
 }

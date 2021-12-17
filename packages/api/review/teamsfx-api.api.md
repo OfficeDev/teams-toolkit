@@ -875,9 +875,9 @@ interface ISolution {
     getQuestionsForDeploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForInit?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
-    getQuestionsForLocalProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: DeepReadonly<Json>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForLocalProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, tokenProvider: TokenProvider, localSettings?: DeepReadonly<Json>) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
-    getQuestionsForProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, tokenProvider: TokenProvider, envInfo?: DeepReadonly<EnvInfoV3>) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForPublish?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForScaffold?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>>;
@@ -1303,7 +1303,7 @@ interface ResourcePlugin {
     checkPermission?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider, userInfo: Json) => Promise<Result<Json, FxError>>;
     configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     configureResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<ResourceProvisionOutput, FxError>>;
-    deploy?: (ctx: Context_2, inputs: DeploymentInputs, provisionOutputs: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: DeploymentInputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
     // (undocumented)
@@ -1343,8 +1343,8 @@ interface ResourcePlugin_2 extends Plugin_3 {
     generateResourceTemplate?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2, FxError>>;
     getQuestionsForAddResource?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForLocalProvision?: (ctx: Context_2, inputs: Inputs, localSettings: DeepReadonly<Json>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForLocalProvision?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider, localSettings?: DeepReadonly<Json>) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider, envInfo?: DeepReadonly<EnvInfoV3>) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     pluginDependencies?(ctx: Context_2, inputs: Inputs): Promise<Result<string[], FxError>>;
     // (undocumented)
@@ -1538,7 +1538,7 @@ interface SolutionPlugin {
     // (undocumented)
     checkPermission?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
     createEnv?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
-    deploy?: (ctx: Context_2, inputs: Inputs, provisionOutputs: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
     executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;

@@ -89,6 +89,7 @@ jobs:
           __TEAMSFX_INSIDER_PREVIEW=false xvfb-run -a npx lerna run test:unit --stream
 
           coverages="{}"
+          ulimit -s 65536
           for i in $(find . -name coverage-summary.json); do
             total=`jq -cr '.total' $i`
             coverages=$(echo $coverages | jq -rc --arg package $(basename $(dirname $(dirname $i))) --argjson t $total '.[$package]= $t')

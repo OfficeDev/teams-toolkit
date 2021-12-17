@@ -56,8 +56,6 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 1", () =
     await my.getQuestions(Stage.create, inputs);
     inputs.platform = Platform.CLI_HELP;
     await my.other(inputs);
-    inputs.platform = Platform.VS;
-    await my.other(inputs);
   });
 
   it("failed to load: NoProjectOpenedError, PathNotExistError", async () => {
@@ -109,13 +107,15 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
       let mockedEnvRestore: RestoreFn;
       beforeEach(() => {
         mockedEnvRestore = mockedEnv(param);
-        setTools(new MockTools());
       });
 
       afterEach(() => {
         mockedEnvRestore();
       });
+      const tools = new MockTools();
+      setTools(tools);
       class MyClass {
+        tools = tools;
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.isTrue(ctx !== undefined);
           if (ctx) {

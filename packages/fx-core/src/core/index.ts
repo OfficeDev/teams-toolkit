@@ -517,7 +517,7 @@ export class FxCore implements v3.ICore {
     if (isV3()) {
       return this.provisionResourcesV3(inputs);
     } else {
-      return this._provisionResources(inputs);
+      return this.provisionResourcesV2(inputs);
     }
   }
 
@@ -528,13 +528,16 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
   ])
-  async _provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async provisionResourcesV2(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
     inputs.stage = Stage.provision;
     // provision is not ready yet, so use API v1
@@ -580,15 +583,59 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     SupportV1ConditionMW(false),
     ProjectMigratorMW,
+    ProjectSettingsLoaderMW_V3,
+    EnvInfoLoaderMW_V3(false),
+    SolutionLoaderMW_V3,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW_V3(),
+  ])
+  async provisionResourcesV3(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    currentStage = Stage.provision;
+    inputs.stage = Stage.provision;
+    if (
+      ctx &&
+      ctx.solutionV3 &&
+      ctx.contextV2 &&
+      ctx.envInfoV3 &&
+      ctx.solutionV3.provisionResources
+    ) {
+      const res = await ctx.solutionV3.provisionResources(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      if (res.isOk()) {
+        ctx.envInfoV3 = res.value;
+      }
+      return res;
+    }
+    return ok(Void);
+  }
+  async deployArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (isV3()) return this.deployArtifactsV3(inputs);
+    else return this.deployArtifactsV2(inputs);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
   ])
-  async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async deployArtifactsV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.deploy;
     inputs.stage = Stage.deploy;
     if (isV2()) {
@@ -604,7 +651,7 @@ export class FxCore implements v3.ICore {
         return await ctx.solutionV2.deploy(
           ctx.contextV2,
           inputs,
-          ctx.envInfoV2.state,
+          ctx.envInfoV2,
           this.tools.tokenProvider
         );
       else return ok(Void);
@@ -623,20 +670,51 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW_V3,
+    EnvInfoLoaderMW_V3(false),
+    SolutionLoaderMW_V3,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW_V3(),
+  ])
+  async deployArtifactsV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    currentStage = Stage.deploy;
+    inputs.stage = Stage.deploy;
+    if (ctx && ctx.solutionV3 && ctx.contextV2 && ctx.envInfoV3 && ctx.solutionV3.deploy) {
+      const res = await ctx.solutionV3.deploy(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath & { modules: string[] },
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      return res;
+    }
+    return ok(Void);
+  }
+  async localDebug(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (isV3()) return this.localDebugV3(inputs);
+    else return this.localDebugV2(inputs);
+  }
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
     SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectUpgraderMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     LocalSettingsLoaderMW,
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(true),
     LocalSettingsWriterMW,
   ])
-  async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async localDebugV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.debug;
     inputs.stage = Stage.debug;
     if (isV2()) {
@@ -691,6 +769,44 @@ export class FxCore implements v3.ICore {
     return res;
   }
 
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
+    ProjectMigratorMW,
+    ProjectUpgraderMW,
+    ProjectSettingsLoaderMW_V3,
+    LocalSettingsLoaderMW,
+    SolutionLoaderMW_V3,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    LocalSettingsWriterMW,
+  ])
+  async localDebugV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    currentStage = Stage.debug;
+    inputs.stage = Stage.debug;
+    if (
+      ctx &&
+      ctx.solutionV3 &&
+      ctx.contextV2 &&
+      ctx.localSettings &&
+      ctx.solutionV3.provisionLocalResources
+    ) {
+      const res = await ctx.solutionV3.provisionLocalResources(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.localSettings,
+        TOOLS.tokenProvider
+      );
+      if (res.isOk()) {
+        ctx.localSettings = res.value;
+      }
+      return res;
+    }
+    return ok(Void);
+  }
+
   _setEnvInfoV2(ctx?: CoreHookContext) {
     if (isV2() && ctx && ctx.solutionContext) {
       //workaround, compatible to api v2
@@ -702,7 +818,10 @@ export class FxCore implements v3.ICore {
       ctx.envInfoV2.state = mapToJson(ctx.solutionContext.envInfo.state);
     }
   }
-
+  async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (isV3()) return this.publishApplicationV3(inputs);
+    else return this.publishApplicationV2(inputs);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -710,13 +829,16 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
   ])
-  async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async publishApplicationV2(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
     currentStage = Stage.publish;
     inputs.stage = Stage.publish;
     if (isV2()) {
@@ -744,7 +866,42 @@ export class FxCore implements v3.ICore {
       return await ctx.solution.publish(ctx.solutionContext);
     }
   }
-
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(false),
+    SolutionLoaderMW,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW(),
+  ])
+  async publishApplicationV3(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    currentStage = Stage.publish;
+    inputs.stage = Stage.publish;
+    if (
+      ctx &&
+      ctx.solutionV3 &&
+      ctx.contextV2 &&
+      ctx.envInfoV3 &&
+      ctx.solutionV3.publishApplication
+    ) {
+      const res = await ctx.solutionV3.publishApplication(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider.appStudioToken
+      );
+      return res;
+    }
+    return ok(Void);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -753,12 +910,11 @@ export class FxCore implements v3.ICore {
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
-    LocalSettingsWriterMW,
   ])
   async executeUserTask(
     func: Func,
@@ -810,7 +966,7 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     ContextInjectorMW,
     EnvInfoWriterMW(),
   ])
@@ -850,7 +1006,7 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     ContextInjectorMW,
     EnvInfoWriterMW(),
   ])
@@ -909,7 +1065,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
   ])
@@ -939,7 +1095,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
   ])
@@ -970,7 +1126,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
   ])
@@ -1000,7 +1156,7 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
   ])
@@ -1202,7 +1358,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     SupportV1ConditionMW(false),
     ProjectSettingsLoaderMW,
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     EnvInfoLoaderMW(true),
     ContextInjectorMW,
   ])
@@ -1315,7 +1471,7 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
   ])
@@ -1512,45 +1668,6 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<Void, FxError>> {
     if (ctx && ctx.solutionV3 && ctx.contextV2) {
       return await ctx.solutionV3.addResource(ctx.contextV2, inputs);
-    }
-    return ok(Void);
-  }
-
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
-    ProjectMigratorMW,
-    ProjectSettingsLoaderMW_V3,
-    EnvInfoLoaderMW_V3(false),
-    SolutionLoaderMW_V3,
-    QuestionModelMW,
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW_V3(),
-  ])
-  async provisionResourcesV3(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
-    currentStage = Stage.provision;
-    inputs.stage = Stage.provision;
-    if (
-      ctx &&
-      ctx.solutionV3 &&
-      ctx.contextV2 &&
-      ctx.envInfoV3 &&
-      ctx.solutionV3.provisionResources
-    ) {
-      const res = await ctx.solutionV3.provisionResources(
-        ctx.contextV2,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      if (res.isOk()) {
-        ctx.envInfoV3 = res.value;
-      }
     }
     return ok(Void);
   }

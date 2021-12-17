@@ -247,11 +247,10 @@ export async function addCapability(
     );
   }
   let change = false;
-  const localDebugPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.LocalDebugPlugin);
   const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
   const frontendPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
   const botPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
-  const pluginsToScaffold: v2.ResourcePlugin[] = [localDebugPlugin, appStudioPlugin];
+  const pluginsToScaffold: v2.ResourcePlugin[] = [appStudioPlugin];
   const capabilities = Array.from(settings.capabilities);
   for (const cap of capabilitiesAnswer) {
     if (!capabilities.includes(cap)) {
@@ -388,7 +387,6 @@ export async function addResource(
   const sqlPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin);
   const apimPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.ApimPlugin);
   const keyVaultPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.KeyVaultPlugin);
-  const localDebugPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.LocalDebugPlugin);
   const alreadyHaveFunction = selectedPlugins?.includes(functionPlugin.name);
   const alreadyHaveSql = selectedPlugins?.includes(sqlPlugin.name);
   const alreadyHaveApim = selectedPlugins?.includes(apimPlugin.name);
@@ -432,7 +430,7 @@ export async function addResource(
 
   let addNewResourceToProvision = false;
   const notifications: string[] = [];
-  const pluginsToScaffold: v2.ResourcePlugin[] = [localDebugPlugin];
+  const pluginsToScaffold: v2.ResourcePlugin[] = [];
   const pluginsToDoArm: v2.ResourcePlugin[] = [];
   const azureResource = Array.from(settings.azureResources || []);
   let scaffoldApim = false;

@@ -49,7 +49,10 @@ jobs:
           coverages="{}"
           for i in $(find . -name coverage-summary.json); do
             total=`jq -cr '.total' $i`
+            echo $total
             name=$(basename $(dirname $(dirname $i)))
+            echo $name
+            jq -rc --arg package $name --argjson t $total '.[$package]= $t' <<< "$coverages"
             coverages=$(jq -rc --arg package $name --argjson t $total '.[$package]= $t' <<< "$coverages")
           done  
           echo $coverages
@@ -92,7 +95,10 @@ jobs:
           coverages="{}"
           for i in $(find . -name coverage-summary.json); do
             total=`jq -cr '.total' $i`
+            echo $total
             name=$(basename $(dirname $(dirname $i)))
+            echo $name
+            jq -rc --arg package $name --argjson t $total '.[$package]= $t' <<< "$coverages"
             coverages=$(jq -rc --arg package $name --argjson t $total '.[$package]= $t' <<< "$coverages")
           done  
           echo $coverages

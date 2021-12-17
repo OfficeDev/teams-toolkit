@@ -70,16 +70,17 @@ async function loadEnvInfoV3(
     // ensure backwards compatibility:
     // project id will be generated for previous TeamsFx project.
     // Decrypting the secrets in *.userdata with generated project id works because secrets doesn't have prefix.
-    const envDataResult = await environmentManager.loadEnvInfoV3(
+    const envDataResult = await environmentManager.loadEnvInfo(
       inputs.projectPath,
       cryptoProvider,
-      targetEnvName
+      targetEnvName,
+      true
     );
 
     if (envDataResult.isErr()) {
       return err(envDataResult.error);
     }
-    envInfo = envDataResult.value;
+    envInfo = envDataResult.value as v3.EnvInfoV3;
   }
   return ok(envInfo);
 }

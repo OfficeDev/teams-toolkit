@@ -73,8 +73,9 @@ class EnvironmentManager {
   public async loadEnvInfo(
     projectPath: string,
     cryptoProvider: CryptoProvider,
-    envName?: string
-  ): Promise<Result<EnvInfo, FxError>> {
+    envName?: string,
+    isV3 = false
+  ): Promise<Result<EnvInfo | v3.EnvInfoV3, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
     }
@@ -85,12 +86,22 @@ class EnvironmentManager {
       return err(configResult.error);
     }
 
-    const stateResult = await this.loadEnvState(projectPath, envName, cryptoProvider);
+    const stateResult = await this.loadEnvState(projectPath, envName, cryptoProvider, isV3);
     if (stateResult.isErr()) {
       return err(stateResult.error);
     }
-
-    return ok({ envName, config: configResult.value, state: stateResult.value });
+    if (isV3)
+      return ok({
+        envName,
+        config: configResult.value as Json,
+        state: stateResult.value as v3.ResourceStates,
+      });
+    else
+      return ok({
+        envName,
+        config: configResult.value,
+        state: stateResult.value as Map<string, any>,
+      });
   }
   public async loadEnvInfoV3(
     projectPath: string,
@@ -286,8 +297,9 @@ class EnvironmentManager {
   private async loadEnvState(
     projectPath: string,
     envName: string,
-    cryptoProvider: CryptoProvider
-  ): Promise<Result<Map<string, any>, FxError>> {
+    cryptoProvider: CryptoProvider,
+    isV3 = false
+  ): Promise<Result<Map<string, any> | v3.ResourceStates, FxError>> {
     const envFiles = this.getEnvStateFilesPath(envName, projectPath);
     const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
     if (userDataResult.isErr()) {
@@ -307,34 +319,11 @@ class EnvironmentManager {
 
     const resultJson: Json = JSON.parse(result);
 
+    if (isV3) return ok(resultJson as v3.ResourceStates);
+
     const data = objectToMap(resultJson);
 
-    return ok(data);
-  }
-
-  private async loadEnvStateV3(
-    projectPath: string,
-    envName: string,
-    cryptoProvider: CryptoProvider
-  ): Promise<Result<v3.ResourceStates, FxError>> {
-    const envFiles = this.getEnvStateFilesPath(envName, projectPath);
-    const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
-    if (userDataResult.isErr()) {
-      return err(userDataResult.error);
-    }
-    const userData = userDataResult.value;
-
-    if (!(await fs.pathExists(envFiles.envState))) {
-      return ok({ solution: {} });
-    }
-
-    const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });
-
-    const result = replaceTemplateWithUserData(template, userData);
-
-    const resultJson: Json = JSON.parse(result);
-
-    return ok(resultJson as v3.ResourceStates);
+    return ok(data as Map<string, any>);
   }
 
   private expandEnvironmentVariables(templateContent: string): string {

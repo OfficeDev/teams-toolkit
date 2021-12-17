@@ -13,7 +13,6 @@ import {
   ok,
   Platform,
   Result,
-  returnSystemError,
   v2,
   Void,
 } from "@microsoft/teamsfx-api";
@@ -22,8 +21,7 @@ import * as Launch from "./util/launch";
 import * as Tasks from "./util/tasks";
 import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
-import { SolutionSource } from "../constants";
-import { DebugError } from "./error";
+import { ScaffoldLocalDebugSettingsError } from "./error";
 import { ContextHelper } from "./util/contextHelper";
 
 const PackageJson = require("@npmcli/package-json");
@@ -193,11 +191,7 @@ export async function scaffoldLocalDebugSettings(
       );
     }
   } catch (error: any) {
-    const systemError = returnSystemError(
-      error,
-      SolutionSource,
-      DebugError.ScaffoldLocalDebugSettingsError
-    );
+    const systemError = ScaffoldLocalDebugSettingsError(error);
     TelemetryUtils.sendErrorEvent(TelemetryEventName.scaffoldLocalDebugSettings, systemError);
     return err(systemError);
   }

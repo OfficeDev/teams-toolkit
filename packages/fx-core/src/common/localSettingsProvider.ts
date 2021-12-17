@@ -229,6 +229,7 @@ export class LocalSettingsProvider {
         }
       }
     }
+    console.log(`Write file: ${this.localSettingsFilePath}`);
     await fs.writeFile(this.localSettingsFilePath, JSON.stringify(localSettings, null, 4));
   }
 

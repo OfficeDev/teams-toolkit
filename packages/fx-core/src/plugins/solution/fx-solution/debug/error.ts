@@ -2,6 +2,9 @@
 // Licensed under the MIT license.
 "use strict";
 
-export enum DebugError {
-  ScaffoldLocalDebugSettingsError = "ScaffoldLocalDebugSettingsError",
+import { returnSystemError, SystemError } from "@microsoft/teamsfx-api";
+import { SolutionSource } from "../constants";
+
+export function ScaffoldLocalDebugSettingsError(error: any): SystemError {
+  return returnSystemError(error, SolutionSource, "ScaffoldLocalDebugSettingsError");
 }

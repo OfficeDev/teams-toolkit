@@ -13,15 +13,15 @@ import { combineRecords } from "../v2/utils";
 export async function getQuestionsForProvision(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
-  envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-  tokenProvider: TokenProvider
+  tokenProvider: TokenProvider,
+  envInfo?: v2.DeepReadonly<v3.EnvInfoV3>
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
   const root = new QTreeNode({ type: "group" });
   for (const pluginName of solutionSetting.activeResourcePlugins) {
     const plugin = Container.get<v3.ResourcePlugin>(pluginName);
     if (plugin.getQuestionsForProvision) {
-      const res = await plugin.getQuestionsForProvision(ctx, inputs, envInfo, tokenProvider);
+      const res = await plugin.getQuestionsForProvision(ctx, inputs, tokenProvider, envInfo);
       if (res.isErr()) {
         return res;
       }

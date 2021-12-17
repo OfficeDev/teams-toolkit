@@ -7,6 +7,7 @@ import {
   Func,
   FxError,
   Inputs,
+  Json,
   ok,
   QTreeNode,
   Result,
@@ -17,14 +18,14 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
+import fs from "fs-extra";
+import { Container } from "typedi";
 import { createV2Context, isV2, newProjectSettings, TOOLS } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
-import { getProjectSettingsPath } from "./projectSettingsLoaderV3";
-import fs from "fs-extra";
-import { Container } from "typedi";
 import { TeamsFxAzureSolutionNameV3 } from "../../plugins/solution/fx-solution/v3/constants";
 import { QuestionAppName, QuestionSelectSolution } from "../question";
+import { getProjectSettingsPath } from "./projectSettingsLoaderV3";
 /**
  * This middleware will help to collect input from question flow
  */
@@ -52,7 +53,17 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
     getQuestionRes = await core._getQuestionsForMigrateV1Project(inputs);
   } else if (method === "init") {
     getQuestionRes = await getQuestionsForInit(inputs);
-  } else if (["addModule", "scaffold", "addResource"].includes(method || "")) {
+  } else if (
+    [
+      "addModule",
+      "scaffold",
+      "addResource",
+      "provisionResourcesV3",
+      "localDebugV3",
+      "deployArtifactsV3",
+      "publishApplicationV3",
+    ].includes(method || "")
+  ) {
     const solutionV3 = ctx.solutionV3;
     const contextV2 = ctx.contextV2;
     if (solutionV3 && contextV2) {
@@ -74,6 +85,34 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
           solutionV3,
           contextV2
         );
+      } else if (method === "provisionResourcesV3") {
+        getQuestionRes = await getQuestionsForProvision(
+          inputs as v2.InputsWithProjectPath,
+          solutionV3,
+          contextV2,
+          ctx.envInfoV3
+        );
+      } else if (method === "localDebugV3") {
+        getQuestionRes = await getQuestionsForLocalProvision(
+          inputs as v2.InputsWithProjectPath,
+          solutionV3,
+          contextV2,
+          ctx.localSettings
+        );
+      } else if (method === "deployArtifactsV3") {
+        getQuestionRes = await getQuestionsForDeploy(
+          inputs as v2.InputsWithProjectPath,
+          solutionV3,
+          contextV2,
+          ctx.envInfoV3!
+        );
+      } else if (method === "publishApplicationV3") {
+        getQuestionRes = await getQuestionsForPublish(
+          inputs as v2.InputsWithProjectPath,
+          solutionV3,
+          contextV2,
+          ctx.envInfoV3!
+        );
       }
     }
   } else {
@@ -81,11 +120,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
       const solution = isV2() ? ctx.solutionV2 : ctx.solution;
       const context = isV2() ? ctx.contextV2 : ctx.solutionContext;
       if (solution && context) {
-        if (
-          method === "provisionResources" ||
-          method === "_provisionResources" ||
-          method === "provisionResourcesV3"
-        ) {
+        if (method === "provisionResourcesV2") {
           getQuestionRes = await core._getQuestions(
             context,
             solution,
@@ -93,7 +128,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             inputs,
             isV2() ? ctx.envInfoV2 : undefined
           );
-        } else if (method === "localDebug") {
+        } else if (method === "localDebugV2") {
           getQuestionRes = await core._getQuestions(
             context,
             solution,
@@ -101,7 +136,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             inputs,
             isV2() ? ctx.envInfoV2 : undefined
           );
-        } else if (method === "deployArtifacts") {
+        } else if (method === "deployArtifactsV2") {
           getQuestionRes = await core._getQuestions(
             context,
             solution,
@@ -109,7 +144,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             inputs,
             isV2() ? ctx.envInfoV2 : undefined
           );
-        } else if (method === "publishApplication") {
+        } else if (method === "publishApplicationV2") {
           getQuestionRes = await core._getQuestions(
             context,
             solution,
@@ -232,6 +267,73 @@ async function getQuestionsForAddResource(
   return ok(undefined);
 }
 
+async function getQuestionsForProvision(
+  inputs: v2.InputsWithProjectPath,
+  solution: v3.ISolution,
+  context: v2.Context,
+  envInfo?: v3.EnvInfoV3
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (solution.getQuestionsForProvision) {
+    const res = await solution.getQuestionsForProvision(
+      context,
+      inputs,
+      TOOLS.tokenProvider,
+      envInfo
+    );
+    return res;
+  }
+  return ok(undefined);
+}
+
+async function getQuestionsForDeploy(
+  inputs: v2.InputsWithProjectPath,
+  solution: v3.ISolution,
+  context: v2.Context,
+  envInfo: v3.EnvInfoV3
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (solution.getQuestionsForDeploy) {
+    const res = await solution.getQuestionsForDeploy(context, inputs, envInfo, TOOLS.tokenProvider);
+    return res;
+  }
+  return ok(undefined);
+}
+
+async function getQuestionsForLocalProvision(
+  inputs: v2.InputsWithProjectPath,
+  solution: v3.ISolution,
+  context: v2.Context,
+  localSettings?: Json
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (solution.getQuestionsForLocalProvision) {
+    const res = await solution.getQuestionsForLocalProvision(
+      context,
+      inputs,
+      TOOLS.tokenProvider,
+      localSettings
+    );
+    return res;
+  }
+  return ok(undefined);
+}
+
+async function getQuestionsForPublish(
+  inputs: v2.InputsWithProjectPath,
+  solution: v3.ISolution,
+  context: v2.Context,
+  envInfo: v3.EnvInfoV3
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (solution.getQuestionsForPublish) {
+    const res = await solution.getQuestionsForPublish(
+      context,
+      inputs,
+      envInfo,
+      TOOLS.tokenProvider.appStudioToken
+    );
+    return res;
+  }
+  return ok(undefined);
+}
+
 export async function getQuestionsForInit(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -250,6 +352,7 @@ export async function getQuestionsForInit(
     }
   }
   const node = new QTreeNode({ type: "group" });
+  //TODO remove hardcoded
   const globalSolutions: v3.ISolution[] = [
     Container.get<v3.ISolution>(TeamsFxAzureSolutionNameV3),
     Container.get<v3.ISolution>("fx-solution-spfx"),

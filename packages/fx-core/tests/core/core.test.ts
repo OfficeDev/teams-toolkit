@@ -293,7 +293,7 @@ describe("Core basic APIs", () => {
           assert.isTrue(validSettingsResult === undefined);
 
           if (!commonTools.isMultiEnvEnabled()) {
-            const envInfoResult = await loadSolutionContext(tools, inputs, projectSettings);
+            const envInfoResult = await loadSolutionContext(inputs, projectSettings);
             if (envInfoResult.isErr()) {
               assert.fail("failed to load env info");
             }

@@ -559,8 +559,10 @@ describe("Middleware - others", () => {
         path.join(__dirname, "../samples/migrationV1Tab/.fx/settings.json"),
         path.join(projectPath, ".fx", "settings.json")
       );
-      setTools(new MockTools());
+      const tools = new MockTools();
+      setTools(tools);
       class MyClass {
+        tools = tools;
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -791,8 +793,10 @@ describe("Middleware - others", () => {
 
     it("successfully migrate to version of arm and multi-env", async () => {
       await fs.copy(path.join(__dirname, "../samples/migration/"), path.join(projectPath));
-      setTools(new MockTools());
+      const tools = new MockTools();
+      setTools(tools);
       class MyClass {
+        tools = tools;
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -850,8 +854,10 @@ describe("Middleware - others", () => {
 
     it("successfully update the tab project migrated from v1", async () => {
       await fs.copy(path.join(__dirname, "../samples/migrationV1Tab/"), path.join(projectPath));
-      setTools(new MockTools());
+      const tools = new MockTools();
+      setTools(tools);
       class MyClass {
+        tools = tools;
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -906,8 +912,10 @@ describe("Middleware - others", () => {
     });
     it("successfully update the bot project migrated from v1", async () => {
       await fs.copy(path.join(__dirname, "../samples/migrationV1Bot/"), path.join(projectPath));
-      setTools(new MockTools());
+      const tools = new MockTools();
+      setTools(tools);
       class MyClass {
+        tools = tools;
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           return ok("");
         }
@@ -1380,9 +1388,10 @@ describe("Middleware - others", () => {
           platform: Platform.VSCode,
           projectPath: projectPath,
         };
-        setTools(new MockTools());
+        const tools = new MockTools();
+        setTools(tools);
         class MyClass {
-          tools: Tools = new MockTools();
+          tools = tools;
           async myMethod(inputs: Inputs): Promise<Result<string, FxError>> {
             return ok(expectedResult);
           }

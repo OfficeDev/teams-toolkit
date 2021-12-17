@@ -14,8 +14,7 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import { lock, unlock } from "proper-lockfile";
-import { promisify } from "util";
-import { FxCore } from "..";
+import { FxCore, TOOLS } from "..";
 import { waitSeconds } from "../..";
 import { CallbackRegistry } from "../callback";
 import { CoreSource, InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";
@@ -24,10 +23,6 @@ import { shouldIgnored } from "./projectSettingsLoader";
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
   const core = ctx.self as FxCore;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const logger =
-    core !== undefined && core.tools !== undefined && core.tools.logProvider !== undefined
-      ? core.tools.logProvider
-      : undefined;
   const ignoreLock = shouldIgnored(ctx);
   if (ignoreLock) {
     await next();
@@ -58,7 +53,9 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     try {
       await lock(configFolder, { lockfilePath: lockfilePath });
       acquired = true;
-      logger?.debug(`[core] success to acquire lock for task ${taskName} on: ${configFolder}`);
+      TOOLS?.logProvider.debug(
+        `[core] success to acquire lock for task ${taskName} on: ${configFolder}`
+      );
       for (const f of CallbackRegistry.get(CoreCallbackEvent.lock)) {
         f();
       }
@@ -69,7 +66,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
         for (const f of CallbackRegistry.get(CoreCallbackEvent.unlock)) {
           f();
         }
-        logger?.debug(`[core] lock released on ${configFolder}`);
+        TOOLS?.logProvider.debug(`[core] lock released on ${configFolder}`);
       }
       break;
     } catch (e) {
@@ -84,7 +81,9 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     }
   }
   if (!acquired) {
-    logger?.error(`[core] failed to acquire lock for task ${taskName} on: ${configFolder}`);
+    TOOLS?.logProvider.error(
+      `[core] failed to acquire lock for task ${taskName} on: ${configFolder}`
+    );
     ctx.result = err(new ConcurrentError(CoreSource));
   }
 };

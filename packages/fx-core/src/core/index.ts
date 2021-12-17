@@ -244,7 +244,7 @@ export class FxCore implements v3.ICore {
     const multiEnv = isMultiEnvEnabled();
     if (scratch === ScratchOptionNo.id) {
       // create from sample
-      const downloadRes = await downloadSample(this, inputs, ctx);
+      const downloadRes = await downloadSample(inputs, ctx);
       if (downloadRes.isErr()) {
         return err(downloadRes.error);
       }
@@ -1301,7 +1301,7 @@ export class FxCore implements v3.ICore {
       return err(CopyFileError(e as Error));
     }
 
-    core.tools.logProvider.debug(
+    TOOLS.logProvider.debug(
       `[core] copy env config file for ${targetEnvName} environment to path ${targetEnvConfigFilePath}`
     );
 
@@ -1339,12 +1339,7 @@ export class FxCore implements v3.ICore {
     }
 
     const core = ctx!.self as FxCore;
-    const solutionContext = await loadSolutionContext(
-      core.tools,
-      inputs,
-      ctx!.projectSettings,
-      env
-    );
+    const solutionContext = await loadSolutionContext(inputs, ctx!.projectSettings, env);
 
     if (!solutionContext.isErr()) {
       if (isV2()) {
@@ -1609,12 +1604,11 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
   return ok(null);
 }
 export async function downloadSample(
-  fxCore: FxCore,
   inputs: Inputs,
   ctx: CoreHookContext
 ): Promise<Result<string, FxError>> {
   let fxError;
-  const progress = fxCore.tools.ui.createProgressBar("Fetch sample app", 3);
+  const progress = TOOLS.ui.createProgressBar("Fetch sample app", 3);
   progress.start();
   const telemetryProperties: any = {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,

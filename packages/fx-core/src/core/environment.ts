@@ -39,7 +39,11 @@ import {
 } from "..";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
-import { compileHandlebarsTemplateString, isMultiEnvEnabled } from "../common";
+import {
+  compileHandlebarsTemplateString,
+  isMultiEnvEnabled,
+  separateSecretDataV3,
+} from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
@@ -148,7 +152,8 @@ class EnvironmentManager {
     envData: Map<string, any> | Json,
     projectPath: string,
     cryptoProvider: CryptoProvider,
-    envName?: string
+    envName?: string,
+    isV3?: boolean
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
@@ -162,8 +167,8 @@ class EnvironmentManager {
     envName = envName ?? this.getDefaultEnvName();
     const envFiles = this.getEnvStateFilesPath(envName, projectPath);
 
-    const data = envData instanceof Map ? mapToJson(envData) : envData;
-    const secrets = separateSecretData(data);
+    const data: Json = envData instanceof Map ? mapToJson(envData) : envData;
+    const secrets = isV3 ? separateSecretDataV3(data) : separateSecretData(data);
     this.encrypt(secrets, cryptoProvider);
 
     try {

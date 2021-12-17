@@ -18,6 +18,7 @@ import {
   ProjectSettings,
   AzureSolutionSettings,
   SolutionContext,
+  v3,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse } from "axios";
@@ -38,7 +39,7 @@ import {
 } from "./constants";
 import * as crypto from "crypto";
 import * as os from "os";
-import { FailedToParseResourceIdError } from "../core/error";
+import { FailedToParseResourceIdError, FetchSampleError } from "../core/error";
 import {
   GLOBAL_CONFIG,
   RESOURCE_GROUP_NAME,
@@ -46,7 +47,7 @@ import {
   SUBSCRIPTION_ID,
 } from "../plugins/solution/fx-solution/constants";
 import Mustache from "mustache";
-import { FetchSampleError } from "../core/error";
+import { CloudResource } from "@microsoft/teamsfx-api/build/v3";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -193,6 +194,21 @@ export function separateSecretData(configJson: Json): Record<string, string> {
           resourceConfig[itemName] = `{{${keyName}}}`;
         }
       }
+    }
+  }
+  return res;
+}
+
+export function separateSecretDataV3(envState: v3.ResourceStates): Record<string, string> {
+  const res: Record<string, string> = {};
+  for (const key of Object.keys(envState)) {
+    const config = envState[key] as CloudResource;
+    if (config.secretFields && config.secretFields.length > 0) {
+      config.secretFields.forEach((f) => {
+        const keyName = `${key}.${f}`;
+        res[keyName] = config[f];
+        config[f] = `{{${keyName}}}`;
+      });
     }
   }
   return res;

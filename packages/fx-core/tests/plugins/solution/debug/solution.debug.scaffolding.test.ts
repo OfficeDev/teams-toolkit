@@ -505,7 +505,6 @@ describe("solution.debug.scaffolding", () => {
     numLocalEnvs: number
   ): Promise<void> {
     // assert output: localSettings.json
-    console.log(`Read folder: ${expectedLocalSettingsFile}`);
     chai.assert.isTrue(await fs.pathExists(expectedLocalSettingsFile));
     // TODO: use LocalEnvManager.getLocalEnv instead
     const plugin = new LocalDebugPlugin();

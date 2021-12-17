@@ -357,20 +357,7 @@ async function executeGrantPermissionsV2(
       };
     });
 
-  const result = await executeNamedThunkConcurrently(thunks, ctx.logProvider);
+  const results = await executeNamedThunkConcurrently(thunks, ctx.logProvider);
 
-  let permissions: ResourcePermission[];
-  let errors: Err<any, FxError>[];
-  if (result.kind === "success") {
-    permissions = result.output.map((entry) => entry.result as ResourcePermission);
-    errors = [];
-  } else if (result.kind === "partialSuccess") {
-    permissions = result.output.map((entry) => entry.result as ResourcePermission);
-    errors = [err(result.error)];
-  } else {
-    permissions = [];
-    errors = [err(result.error)];
-  }
-
-  return [permissions, errors];
+  return CollaborationUtil.collectPermissionsAndErrors(results);
 }

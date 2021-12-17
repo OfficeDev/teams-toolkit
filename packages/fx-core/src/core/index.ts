@@ -588,7 +588,7 @@ export class FxCore implements v3.ICore {
         return await ctx.solutionV2.deploy(
           ctx.contextV2,
           inputs,
-          ctx.envInfoV2.state,
+          ctx.envInfoV2,
           this.tools.tokenProvider
         );
       else return ok(Void);
@@ -742,7 +742,6 @@ export class FxCore implements v3.ICore {
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
-    LocalSettingsWriterMW,
   ])
   async executeUserTask(
     func: Func,

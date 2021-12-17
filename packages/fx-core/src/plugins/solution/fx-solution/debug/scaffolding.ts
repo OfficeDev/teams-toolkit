@@ -225,7 +225,7 @@ async function scaffoldLocalSettingsJson(
     await localSettingsProvider.save(localSettings);
   } else {
     // Initialize a local settings on scaffolding
-    localSettings = localSettingsProvider.init(includeFrontend, includeBackend, includeBot);
+    localSettings = localSettingsProvider.initV2(includeFrontend, includeBackend, includeBot);
     await localSettingsProvider.save(localSettings);
   }
 }

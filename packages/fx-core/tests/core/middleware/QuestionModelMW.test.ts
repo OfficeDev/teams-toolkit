@@ -128,12 +128,12 @@ describe("Middleware - QuestionModelMW", () => {
   }
 
   hooks(MockCoreForQM, {
-    createProject: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
-    provisionResources: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
-    deployArtifacts: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
-    localDebug: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
-    publishApplication: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
-    executeUserTask: [SolutionLoaderMW(), MockContextLoaderMW, QuestionModelMW],
+    createProject: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
+    provisionResources: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
+    deployArtifacts: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
+    localDebug: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
+    publishApplication: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
+    executeUserTask: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
   });
   const EnvParams = [{ TEAMSFX_APIV2: "false" }, { TEAMSFX_APIV2: "true" }];
 

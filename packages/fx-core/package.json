@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-core",
-  "version": "1.0.0",
+  "version": "1.1.1",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
@@ -50,7 +50,7 @@
     "@azure/storage-blob": "^12.7.0",
     "@dbpiper/timer": "1.0.0-beta.2",
     "@feathersjs/hooks": "^0.6.5",
-    "@microsoft/teamsfx-api": "^0.11.0",
+    "@microsoft/teamsfx-api": "^0.12.0",
     "@npmcli/package-json": "^1.0.1",
     "@types/jwt-decode": "3.1.0",
     "@types/proper-lockfile": "^4.1.1",

@@ -64,6 +64,7 @@ describe("Middleware - QuestionModelMW", () => {
   });
   let questionValue = randomAppName();
   class MockCoreForQM {
+    tools = tools;
     version = "1";
     async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
       if (inputs[questionName] === questionValue) return ok("true");

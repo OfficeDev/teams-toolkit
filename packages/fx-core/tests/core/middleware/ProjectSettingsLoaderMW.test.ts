@@ -109,13 +109,15 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
       let mockedEnvRestore: RestoreFn;
       beforeEach(() => {
         mockedEnvRestore = mockedEnv(param);
-        setTools(new MockTools());
       });
 
       afterEach(() => {
         mockedEnvRestore();
       });
+      const tools = new MockTools();
+      setTools(tools);
       class MyClass {
+        tools = tools;
         async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           assert.isTrue(ctx !== undefined);
           if (ctx) {

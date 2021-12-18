@@ -18,14 +18,15 @@ import {
 import { Container, Service } from "typedi";
 import { Logger } from "../../../../core";
 import { generateArmTemplateV3 } from "../arm";
+import { BuiltInResourcePluginNames } from "./constants";
 import { InvalidInputError, ResourceAlreadyAddedError } from "./error";
 import { createSelectModuleQuestionNode, selectResourceQuestion } from "./questions";
 import { getModule } from "./utils";
-@Service("fx-resource-azure-storage")
+@Service(BuiltInResourcePluginNames.storage)
 export class AzureStoragePlugin implements v3.ResourcePlugin {
   resourceType = "Azure Storage";
   description = "Azure Storage";
-  name = "fx-resource-azure-storage";
+  name = BuiltInResourcePluginNames.storage;
   async generateResourceTemplate(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
@@ -74,14 +75,11 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     return ok(Void);
   }
 }
-@Service("fx-resource-azure-bot")
+@Service(BuiltInResourcePluginNames.bot)
 export class AzureBotPlugin implements v3.ResourcePlugin {
   resourceType = "Azure Bot";
   description = "Azure Bot";
-  name = "fx-resource-azure-bot";
-  async pluginDependencies(ctx: v2.Context, inputs: Inputs): Promise<Result<string[], FxError>> {
-    return ok(["fx-resource-azure-web-app"]);
-  }
+  name = BuiltInResourcePluginNames.bot;
   async generateResourceTemplate(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
@@ -138,11 +136,11 @@ export class AzureBotPlugin implements v3.ResourcePlugin {
     return ok(Void);
   }
 }
-@Service("fx-resource-azure-web-app")
+@Service(BuiltInResourcePluginNames.webApp)
 export class AzureWebAppPlugin implements v3.ResourcePlugin {
   resourceType = "Azure Web App";
   description = "Azure Web App";
-  name = "fx-resource-azure-web-app";
+  name = BuiltInResourcePluginNames.webApp;
   async generateResourceTemplate(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
@@ -180,13 +178,23 @@ export class AzureWebAppPlugin implements v3.ResourcePlugin {
     };
     return ok(config);
   }
+
+  async deploy(
+    ctx: v2.Context,
+    inputs: v3.PluginDeployInputs,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    Logger.info(`fx-resource-azure-web-app deploy success!`);
+    return ok(Void);
+  }
 }
 
 function getAllResourcePlugins(): v3.ResourcePlugin[] {
   return [
-    Container.get<v3.ResourcePlugin>("fx-resource-azure-storage"),
-    Container.get<v3.ResourcePlugin>("fx-resource-azure-bot"),
-    Container.get<v3.ResourcePlugin>("fx-resource-azure-web-app"),
+    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.webApp),
+    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.bot),
+    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.webApp),
   ];
 }
 

@@ -224,6 +224,13 @@ export class FxCore implements v3.ICore {
     return CallbackRegistry.set(event, callback);
   }
 
+  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
+    if (isV3()) {
+      return this.createProjectV3(inputs);
+    } else {
+      return this.createProjectV2(inputs);
+    }
+  }
   @hooks([
     ErrorHandlerMW,
     SupportV1ConditionMW(true),
@@ -232,7 +239,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(true),
   ])
-  async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+  async createProjectV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }

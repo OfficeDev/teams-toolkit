@@ -1340,7 +1340,7 @@ async function wrapGetDeploymentError(
     const deploymentError = await getDeploymentError(deployCtx, resourceGroupName, deploymentName);
     return ok(deploymentError);
   } catch (error: any) {
-    deployCtx.ctx.logProvider?.error(
+    deployCtx.logProvider?.error(
       `[${PluginDisplayName.Solution}] Failed to get deployment error for ${error.message}.`
     );
     const returnError = new Error(

@@ -16,12 +16,11 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import { Container, Service } from "typedi";
+import { Logger } from "../../../../core";
+import { generateArmTemplateV3 } from "../arm";
 import { InvalidInputError, ResourceAlreadyAddedError } from "./error";
 import { createSelectModuleQuestionNode, selectResourceQuestion } from "./questions";
-import fs from "fs-extra";
-import * as path from "path";
 import { getModule } from "./utils";
-import { generateArmTemplateV3 } from "../arm";
 @Service("fx-resource-azure-storage")
 export class AzureStoragePlugin implements v3.ResourcePlugin {
   resourceType = "Azure Storage";
@@ -31,13 +30,6 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    // if (!inputs.test) {
-    //   await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
-    //   await fs.writeFile(
-    //     path.join(inputs.projectPath, "templates", "azure", "AzureStorage.bicep"),
-    //     ""
-    //   );
-    // }
     return ok({
       kind: "bicep",
       template: {
@@ -57,7 +49,6 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
       },
     });
   }
-
   async provisionResource(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
@@ -79,6 +70,7 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
+    Logger.info(`fx-resource-azure-storage deploy success!`);
     return ok(Void);
   }
 }
@@ -94,11 +86,6 @@ export class AzureBotPlugin implements v3.ResourcePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    // if (!inputs.test) {
-    //   await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
-    //   await fs.writeFile(path.join(inputs.projectPath, "templates", "azure", "AzureBot.bicep"), "");
-    // }
-    // return ok({ kind: "bicep", template: {} });
     return ok({
       kind: "bicep",
       template: {
@@ -147,6 +134,7 @@ export class AzureBotPlugin implements v3.ResourcePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
+    Logger.info(`fx-resource-azure-bot deploy success!`);
     return ok(Void);
   }
 }
@@ -159,14 +147,6 @@ export class AzureWebAppPlugin implements v3.ResourcePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    // if (!inputs.test) {
-    //   await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
-    //   await fs.writeFile(
-    //     path.join(inputs.projectPath, "templates", "azure", "AzureWebApp.bicep"),
-    //     ""
-    //   );
-    // }
-    // return ok({ kind: "bicep", template: {} });
     return ok({
       kind: "bicep",
       template: {

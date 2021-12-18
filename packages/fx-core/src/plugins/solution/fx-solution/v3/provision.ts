@@ -6,7 +6,8 @@ import { assign, isUndefined } from "lodash";
 import { Container } from "typedi";
 import * as util from "util";
 import { PluginDisplayName } from "../../../../common/constants";
-import { getStrings } from "../../../../common/tools";
+import { getResourceGroupInPortal, getStrings } from "../../../../common/tools";
+import { deployArmTemplatesV3 } from "../arm";
 import { executeConcurrently } from "../v2/executor";
 import { combineRecords } from "../v2/utils";
 
@@ -73,7 +74,7 @@ export async function provisionResources(
     });
 
   // call provisionResources and collect outputs
-  ctx.logProvider?.info(
+  ctx.logProvider.info(
     util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
   );
   const provisionResult = await executeConcurrently(provisionThunks, ctx.logProvider);
@@ -84,21 +85,29 @@ export async function provisionResources(
     assign(envInfo.state, update);
   }
 
-  ctx.logProvider?.info(
+  ctx.logProvider.info(
     util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
   );
 
-  // call deployArmTemplates
-  ctx.logProvider?.info(
+  ctx.logProvider.info(
     util.format(getStrings().solution.DeployArmTemplates.StartNotice, PluginDisplayName.Solution)
   );
-
-  ctx.logProvider?.info(
+  // uncomment the following lines when resource plugin is ready.
+  // const armRes = await deployArmTemplatesV3(
+  //   ctx,
+  //   inputs,
+  //   envInfo,
+  //   tokenProvider.azureAccountProvider
+  // );
+  // if (armRes.isErr()) {
+  //   return err(armRes.error);
+  // }
+  ctx.logProvider.info(
     util.format(getStrings().solution.DeployArmTemplates.SuccessNotice, PluginDisplayName.Solution)
   );
 
   // call aad.setApplicationInContext
-  ctx.logProvider?.info(util.format("AAD.setApplicationInContext", PluginDisplayName.Solution));
+  ctx.logProvider.info(util.format("AAD.setApplicationInContext", PluginDisplayName.Solution));
 
   const configureResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureResource))
@@ -119,7 +128,7 @@ export async function provisionResources(
     configureResourceThunks,
     ctx.logProvider
   );
-  ctx.logProvider?.info(
+  ctx.logProvider.info(
     util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
   );
   const envStates = envInfo.state as v3.TeamsFxAzureResourceStates;
@@ -133,26 +142,26 @@ export async function provisionResources(
     return err(configureResourceResult.error);
   }
 
-  // const url = getResourceGroupInPortal(
-  //   envStates.solution.subscriptionId,
-  //   envStates.solution.tenantId,
-  //   envStates.solution.resourceGroupName
-  // );
+  const url = getResourceGroupInPortal(
+    envStates.solution.subscriptionId,
+    envStates.solution.tenantId,
+    envStates.solution.resourceGroupName
+  );
   const msg = util.format(
     `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
     ctx.projectSetting.appName
   );
-  ctx.logProvider?.info(msg);
-  // if (url) {
-  //   const title = "View Provisioned Resources";
-  //   ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
-  //     const userSelected = result.isOk() ? result.value : undefined;
-  //     if (userSelected === title) {
-  //       ctx.userInteraction.openUrl(url);
-  //     }
-  //   });
-  // } else {
-  //   ctx.userInteraction.showMessage("info", msg, false);
-  // }
+  ctx.logProvider.info(msg);
+  if (url) {
+    const title = "View Provisioned Resources";
+    ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
+      const userSelected = result.isOk() ? result.value : undefined;
+      if (userSelected === title) {
+        ctx.userInteraction.openUrl(url);
+      }
+    });
+  } else {
+    ctx.userInteraction.showMessage("info", msg, false);
+  }
   return ok(envInfo);
 }

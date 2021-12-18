@@ -127,6 +127,8 @@ import {
   SampleSelect,
   ScratchOptionNo,
   ScratchOptionYes,
+  TabOptionItem,
+  TabSPFxItem,
 } from "./question";
 import {
   getAllSolutionPlugins,
@@ -145,6 +147,13 @@ import { Container } from "typedi";
 import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
 import { EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
 import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
+import {
+  BuiltInResourcePluginNames,
+  BuiltInScaffoldPluginNames,
+  BuiltInSolutionNames,
+  TeamsFxAzureSolutionNameV3,
+} from "../plugins/solution/fx-solution/v3/constants";
+import { VSCodeAnswer } from "../plugins/resource/apim/answer";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -215,6 +224,13 @@ export class FxCore implements v3.ICore {
     return CallbackRegistry.set(event, callback);
   }
 
+  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
+    if (isV3()) {
+      return this.createProjectV3(inputs);
+    } else {
+      return this.createProjectV2(inputs);
+    }
+  }
   @hooks([
     ErrorHandlerMW,
     SupportV1ConditionMW(true),
@@ -223,7 +239,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(true),
   ])
-  async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+  async createProjectV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
@@ -387,7 +403,197 @@ export class FxCore implements v3.ICore {
     }
     return ok(projectPath);
   }
+  @hooks([
+    ErrorHandlerMW,
+    SupportV1ConditionMW(true),
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW_V3(true),
+  ])
+  async createProjectV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+    if (!ctx) {
+      return err(new ObjectIsUndefinedError("ctx for createProject"));
+    }
+    currentStage = Stage.create;
+    inputs.stage = Stage.create;
+    let folder = inputs[QuestionRootFolder.name] as string;
+    if (inputs.platform === Platform.VSCode) {
+      folder = getRootDirectory();
+      try {
+        await fs.ensureDir(folder);
+      } catch (e) {
+        throw ProjectFolderInvalidError(folder);
+      }
+    }
+    const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
+    let projectPath: string;
+    let globalStateDescription = "openReadme";
+    if (scratch === ScratchOptionNo.id) {
+      // create from sample
+      const downloadRes = await downloadSample(inputs, ctx);
+      if (downloadRes.isErr()) {
+        return err(downloadRes.error);
+      }
+      projectPath = downloadRes.value;
+      globalStateDescription = "openSampleReadme";
+    } else {
+      // create from new
+      const appName = inputs[QuestionAppName.name] as string;
+      if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
 
+      const validateResult = jsonschema.validate(appName, {
+        pattern: ProjectNamePattern,
+      });
+      if (validateResult.errors && validateResult.errors.length > 0) {
+        return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
+      }
+
+      projectPath = path.join(folder, appName);
+      inputs.projectPath = projectPath;
+      const folderExist = await fs.pathExists(projectPath);
+      if (folderExist) {
+        return err(ProjectFolderExistError(projectPath));
+      }
+      await fs.ensureDir(projectPath);
+      await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
+
+      let capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+      const programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage] as string;
+      const solution = capabilities.includes(TabSPFxItem.id)
+        ? BuiltInSolutionNames.spfx
+        : BuiltInSolutionNames.azure;
+
+      // init
+      const initInputs: v2.InputsWithProjectPath & { solution?: string } = {
+        ...inputs,
+        projectPath: projectPath,
+        solution: solution,
+      };
+      const initRes = await this._init(initInputs, ctx);
+      if (initRes.isErr()) {
+        return err(initRes.error);
+      }
+
+      // addModule, scaffold and addResource
+      if (inputs.platform === Platform.VS) {
+        // addModule
+        const addModuleInputs: v2.InputsWithProjectPath & { capabilities?: string[] } = {
+          ...inputs,
+          projectPath: projectPath,
+          capabilities: capabilities,
+        };
+        const addModuleRes = await this._addModule(addModuleInputs, ctx);
+        if (addModuleRes.isErr()) {
+          return err(addModuleRes.error);
+        }
+        // addResource
+        const addResourceInputs: v2.InputsWithProjectPath & { module?: string; resource?: string } =
+          {
+            ...inputs,
+            projectPath: projectPath,
+            module: "0",
+            resource: BuiltInResourcePluginNames.webApp, //TODO
+          };
+        const addResourceRes = await this._addResource(addResourceInputs, ctx);
+        if (addResourceRes.isErr()) {
+          return err(addResourceRes.error);
+        }
+        // scaffold
+        const scaffoldInputs: v2.InputsWithProjectPath & { module?: string; t?: string } = {
+          ...inputs,
+          projectPath: projectPath,
+          module: "0",
+          resource: BuiltInScaffoldPluginNames.blazor, //TODO
+          template: "Blazor",
+        };
+        const scaffoldRes = await this._scaffold(scaffoldInputs, ctx);
+        if (scaffoldRes.isErr()) {
+          return err(scaffoldRes.error);
+        }
+      } else {
+        if (capabilities.includes(TabOptionItem.id)) {
+          const addModuleInputs: v2.InputsWithProjectPath & { capabilities?: string[] } = {
+            ...inputs,
+            projectPath: projectPath,
+            capabilities: [TabOptionItem.id],
+          };
+          const addModuleRes = await this._addModule(addModuleInputs, ctx);
+          if (addModuleRes.isErr()) {
+            return err(addModuleRes.error);
+          }
+          // addResource
+          const addResourceInputs: v2.InputsWithProjectPath & {
+            module?: string;
+            resource?: string;
+          } = {
+            ...inputs,
+            projectPath: projectPath,
+            module: "0",
+            resource: BuiltInResourcePluginNames.storage, //TODO
+          };
+          const addResourceRes = await this._addResource(addResourceInputs, ctx);
+          if (addResourceRes.isErr()) {
+            return err(addResourceRes.error);
+          }
+          // scaffold
+          const scaffoldInputs: v2.InputsWithProjectPath & { module?: string; t?: string } = {
+            ...inputs,
+            projectPath: projectPath,
+            module: "0",
+            resource: BuiltInScaffoldPluginNames.tab, //TODO
+            template: programmingLanguage === "javascript" ? "ReactTab_JS" : "ReactTab_TS", //TODO
+          };
+          const scaffoldRes = await this._scaffold(scaffoldInputs, ctx);
+          if (scaffoldRes.isErr()) {
+            return err(scaffoldRes.error);
+          }
+        }
+        capabilities = capabilities.filter((c) => c !== TabOptionItem.id);
+        if (capabilities.length > 0) {
+          const addModuleInputs: v2.InputsWithProjectPath & { capabilities?: string[] } = {
+            ...inputs,
+            projectPath: projectPath,
+            capabilities: capabilities,
+          };
+          const addModuleRes = await this._addModule(addModuleInputs, ctx);
+          if (addModuleRes.isErr()) {
+            return err(addModuleRes.error);
+          }
+          // addResource
+          const addResourceInputs: v2.InputsWithProjectPath & {
+            module?: string;
+            resource?: string;
+          } = {
+            ...inputs,
+            projectPath: projectPath,
+            module: "1",
+            resource: BuiltInResourcePluginNames.bot, //TODO
+          };
+          const addResourceRes = await this._addResource(addResourceInputs, ctx);
+          if (addResourceRes.isErr()) {
+            return err(addResourceRes.error);
+          }
+          // scaffold
+          const scaffoldInputs: v2.InputsWithProjectPath & { module?: string; t?: string } = {
+            ...inputs,
+            projectPath: projectPath,
+            module: "1",
+            resource: BuiltInScaffoldPluginNames.bot, //TODO
+            template: programmingLanguage === "javascript" ? "NodejsBot_JS" : "NodejsBot_TS", //TODO
+          };
+          const scaffoldRes = await this._scaffold(scaffoldInputs, ctx);
+          if (scaffoldRes.isErr()) {
+            return err(scaffoldRes.error);
+          }
+        }
+      }
+    }
+    if (inputs.platform === Platform.VSCode) {
+      await globalStateUpdate(globalStateDescription, true);
+    }
+    return ok(projectPath);
+  }
   @hooks([
     ErrorHandlerMW,
     SupportV1ConditionMW(true),
@@ -1575,9 +1781,7 @@ export class FxCore implements v3.ICore {
     }
     return ok(node.trim());
   }
-
-  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
-  async init(
+  async _init(
     inputs: v2.InputsWithProjectPath & { solution?: string },
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
@@ -1605,6 +1809,12 @@ export class FxCore implements v3.ICore {
     if (createEnvResult.isErr()) {
       return err(createEnvResult.error);
     }
+    await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+    await fs.ensureDir(path.join(inputs.projectPath, "templates", `${AppPackageFolderName}`));
+    const basicFolderRes = await createBasicFolderStructure(inputs);
+    if (basicFolderRes.isErr()) {
+      return err(basicFolderRes.error);
+    }
     const solution = Container.get<v3.ISolution>(inputs.solution);
     projectSettings.solutionSettings.name = inputs.solution;
     const context = createV2Context(projectSettings);
@@ -1613,7 +1823,26 @@ export class FxCore implements v3.ICore {
       inputs as v2.InputsWithProjectPath & { capabilities: string[] }
     );
   }
-
+  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
+  async init(
+    inputs: v2.InputsWithProjectPath & { solution?: string },
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    return this._init(inputs, ctx);
+  }
+  async _addModule(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    if (ctx && ctx.solutionV3 && ctx.contextV2) {
+      return await ctx.solutionV3.addModule(
+        ctx.contextV2,
+        {},
+        inputs as v2.InputsWithProjectPath & { capabilities?: string[] }
+      );
+    }
+    return ok(Void);
+  }
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,
@@ -1626,14 +1855,7 @@ export class FxCore implements v3.ICore {
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
-    if (ctx && ctx.solutionV3 && ctx.contextV2) {
-      return await ctx.solutionV3.addModule(
-        ctx.contextV2,
-        {},
-        inputs as v2.InputsWithProjectPath & { capabilities?: string[] }
-      );
-    }
-    return ok(Void);
+    return this._addModule(inputs, ctx);
   }
 
   @hooks([
@@ -1648,12 +1870,17 @@ export class FxCore implements v3.ICore {
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
+    return this._scaffold(inputs, ctx);
+  }
+  async _scaffold(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
     if (ctx && ctx.solutionV3 && ctx.contextV2) {
       return await ctx.solutionV3.scaffold(ctx.contextV2, inputs);
     }
     return ok(Void);
   }
-
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,
@@ -1663,6 +1890,12 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
   ])
   async addResource(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    return this._addResource(inputs, ctx);
+  }
+  async _addResource(
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
@@ -1679,26 +1912,28 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
   }
   try {
     const appName = inputs[QuestionAppName.name] as string;
-    await fs.writeFile(
-      path.join(inputs.projectPath, `package.json`),
-      JSON.stringify(
-        {
-          name: appName,
-          version: "0.0.1",
-          description: "",
-          author: "",
-          scripts: {
-            test: 'echo "Error: no test specified" && exit 1',
+    if (inputs.platform !== Platform.VS) {
+      await fs.writeFile(
+        path.join(inputs.projectPath, `package.json`),
+        JSON.stringify(
+          {
+            name: appName,
+            version: "0.0.1",
+            description: "",
+            author: "",
+            scripts: {
+              test: 'echo "Error: no test specified" && exit 1',
+            },
+            devDependencies: {
+              "@microsoft/teamsfx-cli": "0.*",
+            },
+            license: "MIT",
           },
-          devDependencies: {
-            "@microsoft/teamsfx-cli": "0.*",
-          },
-          license: "MIT",
-        },
-        null,
-        4
-      )
-    );
+          null,
+          4
+        )
+      );
+    }
     await fs.writeFile(
       path.join(inputs.projectPath!, `.gitignore`),
       isMultiEnvEnabled()

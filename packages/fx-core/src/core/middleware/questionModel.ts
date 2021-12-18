@@ -35,7 +35,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   const core = ctx.self as FxCore;
 
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
-  if (method === "createProject") {
+  if (method === "createProjectV2" || method === "createProjectV3") {
     getQuestionRes = await core._getQuestionsForCreateProject(inputs);
   } else if (method === "migrateV1Project") {
     const res = await TOOLS?.ui.showMessage(

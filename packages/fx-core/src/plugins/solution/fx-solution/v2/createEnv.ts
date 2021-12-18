@@ -32,7 +32,12 @@ export async function createEnv(ctx: v2.Context, inputs: Inputs): Promise<Result
     };
     try {
       if (inputs.copy === true) {
-        await copyParameterJson(solutionContext, inputs.targetEnvName!, inputs.sourceEnvName!);
+        await copyParameterJson(
+          inputs.projectPath!,
+          ctx.projectSetting.appName,
+          inputs.targetEnvName!,
+          inputs.sourceEnvName!
+        );
       } else {
         await getParameterJson(solutionContext);
       }

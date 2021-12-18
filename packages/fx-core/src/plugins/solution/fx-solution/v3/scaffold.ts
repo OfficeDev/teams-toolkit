@@ -17,10 +17,11 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { Container, Service } from "typedi";
+import { BuiltInScaffoldPluginNames } from "./constants";
 import { InvalidInputError } from "./error";
 import { createSelectModuleQuestionNode, selectScaffoldTemplateQuestion } from "./questions";
 import { getModule } from "./utils";
-@Service("fx-scaffold-react-tab")
+@Service(BuiltInScaffoldPluginNames.tab)
 export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
   async getTemplates(
     ctx: v2.Context,
@@ -39,18 +40,6 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
       },
     ]);
   }
-  async getQuestionsForScaffold(
-    ctx: v2.Context,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return ok(
-      new QTreeNode({
-        type: "text",
-        name: "test_question",
-        title: "test question from ReactTabScaffoldPlugin",
-      })
-    );
-  }
   async scaffold(
     ctx: v2.Context,
     inputs: v3.PluginScaffoldInputs
@@ -65,11 +54,11 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
     }
     return ok(undefined);
   }
-  name = "fx-scaffold-react-tab";
+  name = BuiltInScaffoldPluginNames.tab;
 }
 
-@Service("fx-scaffold-bot")
-export class BlazorTabScaffoldPlugin implements v3.ScaffoldPlugin {
+@Service(BuiltInScaffoldPluginNames.bot)
+export class BotScaffoldPlugin implements v3.ScaffoldPlugin {
   async getTemplates(
     ctx: v2.Context,
     inputs: Inputs
@@ -102,13 +91,56 @@ export class BlazorTabScaffoldPlugin implements v3.ScaffoldPlugin {
     }
     return ok(undefined);
   }
-  name = "fx-scaffold-bot";
+  name = BuiltInScaffoldPluginNames.bot;
+}
+
+@Service(BuiltInScaffoldPluginNames.blazor)
+export class BlazorScaffoldPlugin implements v3.ScaffoldPlugin {
+  async getTemplates(
+    ctx: v2.Context,
+    inputs: Inputs
+  ): Promise<Result<v3.ScaffoldTemplate[], FxError>> {
+    return ok([
+      {
+        name: "BlazorTab",
+        language: "csharp",
+        description: "Blazor Tab",
+      },
+      {
+        name: "BlazorBot",
+        language: "csharp",
+        description: "Blazor Tab",
+      },
+      {
+        name: "BlazorTabBot",
+        language: "csharp",
+        description: "Blazor Tab+Bot",
+      },
+    ]);
+  }
+
+  async scaffold(
+    ctx: v2.Context,
+    inputs: v3.PluginScaffoldInputs
+  ): Promise<Result<Json | undefined, FxError>> {
+    ctx.logProvider.info("fx-scaffold-blazor:scaffold");
+    if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "blazor"));
+    const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
+    const module = getModule(solutionSettings, inputs.module);
+    if (module) {
+      module.dir = "blazor";
+      module.deployType = "zip";
+    }
+    return ok(undefined);
+  }
+  name = BuiltInScaffoldPluginNames.blazor;
 }
 
 function getAllScaffoldPlugins(): v3.ScaffoldPlugin[] {
   return [
-    Container.get<v3.ScaffoldPlugin>("fx-scaffold-bot"),
-    Container.get<v3.ScaffoldPlugin>("fx-scaffold-react-tab"),
+    Container.get<v3.ScaffoldPlugin>(BuiltInScaffoldPluginNames.blazor),
+    Container.get<v3.ScaffoldPlugin>(BuiltInScaffoldPluginNames.tab),
+    Container.get<v3.ScaffoldPlugin>(BuiltInScaffoldPluginNames.bot),
   ];
 }
 

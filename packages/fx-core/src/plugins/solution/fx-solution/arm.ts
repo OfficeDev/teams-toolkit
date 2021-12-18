@@ -659,7 +659,8 @@ export async function deployArmTemplatesV3(
 }
 
 export async function copyParameterJson(
-  ctx: SolutionContext,
+  projectPath: string,
+  appName: string,
   targetEnvName: string,
   sourceEnvName: string
 ) {
@@ -667,7 +668,7 @@ export async function copyParameterJson(
     return;
   }
 
-  const parameterFolderPath = path.join(ctx.root, configsFolder);
+  const parameterFolderPath = path.join(projectPath, configsFolder);
   const targetParameterFileName = parameterFileNameTemplate.replace(
     EnvNamePlaceholder,
     targetEnvName
@@ -680,7 +681,6 @@ export async function copyParameterJson(
   const sourceParameterFilePath = path.join(parameterFolderPath, sourceParameterFileName);
   const targetParameterContent = await fs.readJson(sourceParameterFilePath);
   if (targetParameterContent[parameterName]?.provisionParameters?.value?.resourceBaseName) {
-    const appName = ctx.projectSettings!.appName;
     targetParameterContent[parameterName].provisionParameters.value!.resourceBaseName =
       generateResourceBaseName(appName, targetEnvName);
   }

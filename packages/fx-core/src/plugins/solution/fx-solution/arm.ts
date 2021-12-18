@@ -1,60 +1,66 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
+import { DeploymentOperation } from "@azure/arm-resources/esm/models";
 import {
+  AzureAccountProvider,
   AzureSolutionSettings,
-  SolutionContext,
-  Plugin,
-  Result,
-  err,
-  ok,
-  FxError,
-  returnSystemError,
   ConfigFolderName,
-  returnUserError,
+  EnvInfo,
   EnvNamePlaceholder,
+  err,
+  FxError,
   LogProvider,
+  ok,
+  Result,
+  returnSystemError,
+  returnUserError,
+  SolutionContext,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../common/armInterface";
-import {
-  getActivatedResourcePlugins,
-  getActivatedV2ResourcePlugins,
-} from "./ResourcePluginContainer";
-import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
-import { format } from "util";
-import { compileHandlebarsTemplateString, getStrings } from "../../../common";
-import path from "path";
 import * as fs from "fs-extra";
-import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
-import {
-  getResourceGroupNameFromResourceId,
-  waitSeconds,
-  getUuid,
-  getSubscriptionIdFromResourceId,
-} from "../../../common/tools";
+import os from "os";
+import path from "path";
+import { Container } from "typedi";
+import { format } from "util";
+import { TEAMS_FX_RESOURCE_ID_KEY } from ".";
 import { environmentManager, isV2 } from "../../..";
 import {
+  AzureSolutionConfig,
+  TeamsFxAzureResourceStates,
+  TeamsFxSolutionSettings,
+} from "../../../../../api/build/v3";
+import { compileHandlebarsTemplateString, getStrings } from "../../../common";
+import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../common/armInterface";
+import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
+import { executeCommand } from "../../../common/cpUtils";
+import {
+  getResourceGroupNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+  getUuid,
+  waitSeconds,
+} from "../../../common/tools";
+import { getTemplatesFolder } from "../../../folder";
+import {
   GLOBAL_CONFIG,
-  PluginNames,
   RESOURCE_GROUP_NAME,
   SolutionError,
+  SolutionSource,
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
   SUBSCRIPTION_ID,
-  SolutionSource,
 } from "./constants";
-import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-resources";
-import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
-import { getTemplatesFolder } from "../../../folder";
+import {
+  getActivatedResourcePlugins,
+  getActivatedV2ResourcePlugins,
+} from "./ResourcePluginContainer";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
-import { executeCommand } from "../../../common/cpUtils";
-import { TEAMS_FX_RESOURCE_ID_KEY } from ".";
-import os from "os";
-import { DeploymentOperation } from "@azure/arm-resources/esm/models";
+import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
+import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
 
 const bicepOrchestrationFileName = "main.bicep";
@@ -144,7 +150,9 @@ export async function generateArmTemplateV3(
 }
 
 type DeployContext = {
-  ctx: SolutionContext;
+  azureAccountProvider?: AzureAccountProvider;
+  logProvider?: LogProvider;
+  // ctx: SolutionContext;
   finished: boolean;
   client: ResourceManagementClient;
   resourceGroupName: string;
@@ -196,7 +204,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
   let tryCount = 0;
   let previousStatus: { [key: string]: string } = {};
   let polledOperations: string[] = [];
-  deployCtx.ctx.logProvider?.info(
+  deployCtx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
       PluginDisplayName.Solution
@@ -225,7 +233,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
               let client = deployCtx.client;
               if (operation.subscriptionId !== deployCtx.client.subscriptionId) {
                 const azureToken =
-                  await deployCtx.ctx.azureAccountProvider?.getAccountCredentialAsync();
+                  await deployCtx.azureAccountProvider?.getAccountCredentialAsync();
                 client = new ResourceManagementClient(azureToken!, operation.subscriptionId);
               }
 
@@ -246,7 +254,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
 
       for (const key in currentStatus) {
         if (currentStatus[key] !== previousStatus[key]) {
-          deployCtx.ctx.logProvider?.info(
+          deployCtx.logProvider?.info(
             `[${PluginDisplayName.Solution}] ${key} -> ${currentStatus[key]}`
           );
         }
@@ -258,7 +266,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
       if (tryCount > failedCount) {
         throw error;
       }
-      deployCtx.ctx.logProvider?.warning(
+      deployCtx.logProvider?.warning(
         `[${PluginDisplayName.Solution}] ${deployCtx.deploymentName} -> waiting to get deplomyment status [${tryCount}]`
       );
     }
@@ -266,9 +274,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
 }
 
 export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
-  const progressHandler = await ProgressHelper.startDeployArmTemplatesProgressHandler(
-    getPluginContext(ctx, PluginNames.SOLUTION)
-  );
+  const progressHandler = await ProgressHelper.startDeployArmTemplatesProgressHandler(ctx.ui);
   await progressHandler?.next(DeployArmTemplatesSteps.ExecuteDeployment);
 
   // update parameters
@@ -284,7 +290,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
     );
   }
 
-  const bicepCommand = await ensureBicep(ctx);
+  const bicepCommand = await ensureBicep(ctx, ctx.answers);
 
   // Compile bicep file to json
   const templateDir = path.join(ctx.root, templatesFolder);
@@ -302,7 +308,11 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   );
 
   // deploy arm templates to azure
-  const client = await getResourceManagementClientForArmDeployment(ctx);
+  const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
+  const client = await getResourceManagementClientForArmDeployment(
+    ctx.azureAccountProvider!,
+    subscriptionId
+  );
   const deploymentName = `${PluginDisplayName.Solution}_deployment`.replace(" ", "_").toLowerCase();
   const deploymentParameters: ResourceManagementModels.Deployment = {
     properties: {
@@ -313,7 +323,8 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   };
 
   const deployCtx: DeployContext = {
-    ctx: ctx,
+    azureAccountProvider: ctx.azureAccountProvider,
+    logProvider: ctx.logProvider,
     finished: false,
     deploymentStartTime: Date.now(),
     client: client,
@@ -333,7 +344,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
             deploymentName
           )
         );
-        syncArmOutput(ctx, result.properties?.outputs);
+        syncArmOutput(ctx.envInfo, result.properties?.outputs);
         return result;
       })
       .finally(() => {
@@ -390,7 +401,142 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   }
 }
 
-function syncArmOutput(ctx: SolutionContext, armOutput: any) {
+export async function doDeployArmTemplatesV3(
+  ctx: v2.Context,
+  inputs: v2.InputsWithProjectPath,
+  envInfo: v3.EnvInfoV3,
+  azureAccountProvider: AzureAccountProvider
+): Promise<Result<void, FxError>> {
+  const progressHandler = await ProgressHelper.startDeployArmTemplatesProgressHandler(
+    ctx.userInteraction
+  );
+  await progressHandler?.next(DeployArmTemplatesSteps.ExecuteDeployment);
+
+  // update parameters
+  const parameterJson = await getParameterJsonV3(ctx, inputs.projectPath, envInfo);
+  const envState = envInfo.state as v3.TeamsFxAzureResourceStates;
+  const resourceGroupName = envState.solution.resourceGroupName;
+  if (!resourceGroupName) {
+    return err(
+      returnSystemError(
+        new Error("Failed to get resource group from project solution settings."),
+        SolutionSource,
+        "NoResourceGroupFound"
+      )
+    );
+  }
+
+  const bicepCommand = await ensureBicep(ctx, inputs);
+
+  // Compile bicep file to json
+  const templateDir = path.join(inputs.projectPath, templatesFolder);
+  const bicepOrchestrationFilePath = path.join(templateDir, bicepOrchestrationFileName);
+  const armTemplateJson = await compileBicepToJson(
+    bicepCommand,
+    bicepOrchestrationFilePath,
+    ctx.logProvider
+  );
+  ctx.logProvider?.info(
+    format(
+      getStrings().solution.DeployArmTemplates.CompileBicepSuccessNotice,
+      PluginDisplayName.Solution
+    )
+  );
+
+  // deploy arm templates to azure
+  const client = await getResourceManagementClientForArmDeployment(
+    azureAccountProvider,
+    envState.solution.subscriptionId
+  );
+  const deploymentName = `${PluginDisplayName.Solution}_deployment`.replace(" ", "_").toLowerCase();
+  const deploymentParameters: ResourceManagementModels.Deployment = {
+    properties: {
+      parameters: parameterJson.parameters,
+      template: armTemplateJson,
+      mode: "Incremental" as ResourceManagementModels.DeploymentMode,
+    },
+  };
+
+  const deployCtx: DeployContext = {
+    azureAccountProvider: azureAccountProvider,
+    logProvider: ctx.logProvider,
+    finished: false,
+    deploymentStartTime: Date.now(),
+    client: client,
+    resourceGroupName: resourceGroupName,
+    deploymentName: deploymentName,
+  };
+
+  try {
+    const result = client.deployments
+      .createOrUpdate(resourceGroupName, deploymentName, deploymentParameters)
+      .then((result) => {
+        ctx.logProvider?.info(
+          format(
+            getStrings().solution.DeployArmTemplates.SuccessNotice,
+            PluginDisplayName.Solution,
+            resourceGroupName,
+            deploymentName
+          )
+        );
+        syncArmOutput(envInfo, result.properties?.outputs);
+        return result;
+      })
+      .finally(() => {
+        deployCtx.finished = true;
+      });
+
+    await pollDeploymentStatus(deployCtx);
+    await result;
+    return ok(undefined);
+  } catch (error) {
+    // return the error if the template is invalid
+    if (error.code === InvalidTemplateErrorCode) {
+      return err(
+        returnUserError(error, SolutionSource, SolutionError.FailedToValidateArmTemplates)
+      );
+    }
+
+    // try to get deployment error
+    const result = await wrapGetDeploymentError(deployCtx, resourceGroupName, deploymentName);
+    if (result.isOk()) {
+      const deploymentError = result.value;
+
+      // return thrown error if deploymentError is empty
+      if (!deploymentError) {
+        return err(
+          returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+        );
+      }
+      const deploymentErrorObj = formattedDeploymentError(deploymentError);
+      const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
+      const errorMessage = format(
+        getStrings().solution.DeployArmTemplates.FailNotice,
+        PluginDisplayName.Solution,
+        resourceGroupName,
+        deploymentName
+      );
+      ctx.logProvider?.error(
+        errorMessage +
+          `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`
+      );
+
+      let failedDeployments: string[] = [];
+      if (deploymentError.subErrors) {
+        failedDeployments = Object.keys(deploymentError.subErrors);
+      } else {
+        failedDeployments.push(deploymentName);
+      }
+      const returnError = formattedDeploymentName(failedDeployments);
+      returnError.innerError = JSON.stringify(deploymentErrorObj);
+      return err(returnError);
+    } else {
+      return result;
+    }
+  }
+}
+
+function syncArmOutput(envInfo: EnvInfo | v3.EnvInfoV3, armOutput: any) {
   if (armOutput instanceof Object) {
     const armOutputKeys = Object.keys(armOutput);
     for (const armOutputKey of armOutputKeys) {
@@ -407,9 +553,14 @@ function syncArmOutput(ctx: SolutionContext, armOutput: any) {
               const pluginOutputKeys = Object.keys(pluginOutput);
               for (const pluginOutputKey of pluginOutputKeys) {
                 if (pluginOutputKey != TEAMS_FX_RESOURCE_ID_KEY) {
-                  ctx.envInfo.state
-                    .get(pluginId)
-                    ?.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
+                  if (envInfo.state instanceof Map) {
+                    (envInfo.state as Map<string, any>)
+                      .get(pluginId)
+                      ?.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
+                  } else {
+                    (envInfo.state as TeamsFxAzureResourceStates)[pluginId][pluginOutputKey] =
+                      pluginOutput[pluginOutputKey];
+                  }
                 }
               }
             }
@@ -430,6 +581,52 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
   });
   try {
     result = await doDeployArmTemplates(ctx);
+    if (result.isOk()) {
+      ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ArmDeployment, {
+        [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+        [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+      });
+    } else {
+      const errorProperties: { [key: string]: string } = {};
+      if (result.error.innerError) {
+        errorProperties[SolutionTelemetryProperty.ArmDeploymentError] = result.error.innerError;
+      }
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.ArmDeployment,
+        result.error,
+        ctx.telemetryReporter,
+        errorProperties
+      );
+    }
+  } catch (error) {
+    result = err(
+      returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+    );
+    sendErrorTelemetryThenReturnError(
+      SolutionTelemetryEvent.ArmDeployment,
+      result.error,
+      ctx.telemetryReporter
+    );
+  }
+  await ProgressHelper.endDeployArmTemplatesProgress(result.isOk());
+  return result;
+}
+
+export async function deployArmTemplatesV3(
+  ctx: v2.Context,
+  inputs: v2.InputsWithProjectPath,
+  envInfo: v3.EnvInfoV3,
+  azureAccountProvider: AzureAccountProvider
+): Promise<Result<void, FxError>> {
+  ctx.logProvider?.info(
+    format(getStrings().solution.DeployArmTemplates.StartNotice, PluginDisplayName.Solution)
+  );
+  let result: Result<void, FxError>;
+  ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ArmDeploymentStart, {
+    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+  });
+  try {
+    result = await doDeployArmTemplatesV3(ctx, inputs, envInfo, azureAccountProvider);
     if (result.isOk()) {
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.ArmDeployment, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -517,6 +714,33 @@ export async function getParameterJson(ctx: SolutionContext) {
   }
 
   const parameterJson = await getExpandedParameter(ctx, parameterFilePath); // only expand secrets in memory
+
+  return parameterJson;
+}
+
+export async function getParameterJsonV3(
+  ctx: v2.Context,
+  projectPath: string,
+  envInfo: v3.EnvInfoV3
+) {
+  if (!envInfo?.envName) {
+    throw new Error("Failed to get target environment name from solution context.");
+  }
+
+  const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, envInfo.envName);
+  const parameterFolderPath = path.join(projectPath, configsFolder);
+  const parameterFilePath = path.join(parameterFolderPath, parameterFileName);
+  try {
+    await fs.stat(parameterFilePath);
+  } catch (err) {
+    ctx.logProvider?.error(`[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist.`);
+    const returnError = new Error(
+      `[${PluginDisplayName.Solution}] ${parameterFilePath} does not exist.`
+    );
+    throw returnUserError(returnError, SolutionSource, "ParameterFileNotExist");
+  }
+
+  const parameterJson = await getExpandedParameterV3(ctx, envInfo, parameterFilePath); // only expand secrets in memory
 
   return parameterJson;
 }
@@ -804,11 +1028,23 @@ async function getExpandedParameter(ctx: SolutionContext, filePath: string) {
     throw err;
   }
 }
-
+async function getExpandedParameterV3(ctx: v2.Context, envInfo: v3.EnvInfoV3, filePath: string) {
+  try {
+    const parameterTemplate = await fs.readFile(filePath, ConstantString.UTF8Encoding);
+    const parameterJsonString = expandParameterPlaceholdersV3(ctx, envInfo, parameterTemplate);
+    return JSON.parse(parameterJsonString);
+  } catch (err) {
+    ctx.logProvider?.error(
+      `[${PluginDisplayName.Solution}] Failed to get expanded parameter from ${filePath}.`
+    );
+    throw err;
+  }
+}
 async function getResourceManagementClientForArmDeployment(
-  ctx: SolutionContext
+  azureAccountProvider: AzureAccountProvider,
+  subscriptionId: string
 ): Promise<ResourceManagementClient> {
-  const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
+  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
   if (!azureToken) {
     throw returnSystemError(
       new Error("Azure Credential is invalid."),
@@ -816,10 +1052,6 @@ async function getResourceManagementClientForArmDeployment(
       SolutionError.FailedToGetAzureCredential
     );
   }
-
-  const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as
-    | string
-    | undefined;
   if (!subscriptionId) {
     throw returnSystemError(
       new Error(`Failed to get subscription id.`),
@@ -1016,6 +1248,58 @@ function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: str
       if (typeof configItem[1] === "string") {
         // Currently we only config with string type
         solutionVariables[configItem[0]] = configItem[1];
+      }
+    }
+    stateVariables[solutionName] = solutionVariables;
+  }
+
+  // Add environment variable to available variables
+  const processVariables: Record<string, string> = Object.keys(process.env).reduce(
+    (obj: Record<string, string>, key: string) => {
+      obj[key] = process.env[key] as string;
+      return obj;
+    },
+    {}
+  );
+
+  availableVariables["$env"] = processVariables;
+
+  return compileHandlebarsTemplateString(parameterContent, availableVariables);
+}
+
+function expandParameterPlaceholdersV3(
+  ctx: v2.Context,
+  envInfo: v3.EnvInfoV3,
+  parameterContent: string
+): string {
+  const azureSolutionSettings = ctx.projectSetting.solutionSettings as TeamsFxSolutionSettings;
+  const plugins = azureSolutionSettings.activeResourcePlugins.map((p) =>
+    Container.get<v3.ResourcePlugin>(p)
+  );
+  const stateVariables: Record<string, Record<string, any>> = {};
+  const availableVariables: Record<string, Record<string, any>> = { state: stateVariables };
+  const envState = envInfo.state as TeamsFxAzureResourceStates;
+  // Add plugin contexts to available variables
+  for (const plugin of plugins) {
+    const resourceState = envState[plugin.name] || {};
+    // const pluginContext = getPluginContext(ctx, plugin.name);
+    const pluginVariables: Record<string, string> = {};
+    for (const key of Object.keys(resourceState)) {
+      if (typeof resourceState[key] === "string") {
+        // Currently we only config with string type
+        pluginVariables[key] = resourceState[key];
+      }
+    }
+    stateVariables[plugin.name] = pluginVariables;
+  }
+  // Add solution config to available variables
+  const solutionConfig = envState.solution as AzureSolutionConfig;
+  if (solutionConfig) {
+    const solutionVariables: Record<string, string> = {};
+    for (const key of Object.keys(solutionConfig)) {
+      if (typeof solutionConfig[key] === "string") {
+        // Currently we only config with string type
+        solutionVariables[key] = solutionConfig[key];
       }
     }
     stateVariables[solutionName] = solutionVariables;

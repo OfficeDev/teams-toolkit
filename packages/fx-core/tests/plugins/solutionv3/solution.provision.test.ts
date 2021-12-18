@@ -92,12 +92,7 @@ describe("SolutionV3 - provision", () => {
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
     };
-    const envInfov3: v3.EnvInfoV3 = {
-      envName: "dev",
-      state: { solution: {} },
-      config: {},
-    };
-    const res = await getQuestionsForProvision(ctx, inputs, envInfov3, mockedTokenProvider);
+    const res = await getQuestionsForProvision(ctx, inputs, mockedTokenProvider);
     assert.isTrue(res.isOk());
   });
 });

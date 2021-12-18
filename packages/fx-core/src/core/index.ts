@@ -114,6 +114,7 @@ import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import { QuestionModelMW } from "./middleware/questionModel";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import {
+  BotOptionItem,
   CoreQuestionNames,
   createCapabilityQuestion,
   DefaultAppNameFunc,
@@ -154,6 +155,7 @@ import {
   TeamsFxAzureSolutionNameV3,
 } from "../plugins/solution/fx-solution/v3/constants";
 import { VSCodeAnswer } from "../plugins/resource/apim/answer";
+import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -459,6 +461,24 @@ export class FxCore implements v3.ICore {
       await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
 
       let capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+
+      let projectType = "";
+      if (capabilities.includes(TabSPFxItem.id)) projectType = "spfx";
+      else if (capabilities.includes(TabOptionItem.id) && capabilities.length === 1)
+        projectType = "tab";
+      else if (
+        (capabilities.includes(BotOptionItem.id) ||
+          capabilities.includes(MessageExtensionItem.id)) &&
+        !capabilities.includes(TabOptionItem.id)
+      )
+        projectType = "bot";
+      else if (
+        (capabilities.includes(BotOptionItem.id) ||
+          capabilities.includes(MessageExtensionItem.id)) &&
+        capabilities.includes(TabOptionItem.id)
+      )
+        projectType = "tab+bot";
+
       const programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage] as string;
       const solution = capabilities.includes(TabSPFxItem.id)
         ? BuiltInSolutionNames.spfx
@@ -500,23 +520,38 @@ export class FxCore implements v3.ICore {
           return err(addResourceRes.error);
         }
         // scaffold
-        const scaffoldInputs: v2.InputsWithProjectPath & { module?: string; t?: string } = {
+        let templateName = "";
+        if (projectType === "tab") templateName = "BlazorTab";
+        else if (projectType === "bot") templateName = "BlazorBot";
+        else if (projectType === "tabbot") templateName = "BlazorTabBot";
+        const scaffoldInputs: v2.InputsWithProjectPath & {
+          module?: string;
+          template?: OptionItem;
+        } = {
           ...inputs,
           projectPath: projectPath,
           module: "0",
-          resource: BuiltInScaffoldPluginNames.blazor, //TODO
-          template: "Blazor",
+          template: {
+            id: `${BuiltInScaffoldPluginNames.blazor}/${templateName}`,
+            label: `${BuiltInScaffoldPluginNames.blazor}/${templateName}`,
+            data: {
+              pluginName: BuiltInScaffoldPluginNames.blazor,
+              templateName: templateName,
+            },
+          },
         };
         const scaffoldRes = await this._scaffold(scaffoldInputs, ctx);
         if (scaffoldRes.isErr()) {
           return err(scaffoldRes.error);
         }
       } else {
-        if (capabilities.includes(TabOptionItem.id)) {
+        if (capabilities.includes(TabOptionItem.id) || capabilities.includes(TabSPFxItem.id)) {
           const addModuleInputs: v2.InputsWithProjectPath & { capabilities?: string[] } = {
             ...inputs,
             projectPath: projectPath,
-            capabilities: [TabOptionItem.id],
+            capabilities: capabilities.includes(TabOptionItem.id)
+              ? [TabOptionItem.id]
+              : [TabSPFxItem.id],
           };
           const addModuleRes = await this._addModule(addModuleInputs, ctx);
           if (addModuleRes.isErr()) {
@@ -530,26 +565,45 @@ export class FxCore implements v3.ICore {
             ...inputs,
             projectPath: projectPath,
             module: "0",
-            resource: BuiltInResourcePluginNames.storage, //TODO
+            resource: capabilities.includes(TabOptionItem.id)
+              ? BuiltInResourcePluginNames.storage
+              : BuiltInResourcePluginNames.spfx, //TODO
           };
           const addResourceRes = await this._addResource(addResourceInputs, ctx);
           if (addResourceRes.isErr()) {
             return err(addResourceRes.error);
           }
           // scaffold
-          const scaffoldInputs: v2.InputsWithProjectPath & { module?: string; t?: string } = {
+          const pluginName = capabilities.includes(TabOptionItem.id)
+            ? BuiltInScaffoldPluginNames.tab
+            : BuiltInScaffoldPluginNames.spfx;
+          const templateName = capabilities.includes(TabOptionItem.id)
+            ? programmingLanguage === "javascript"
+              ? "ReactTab_JS"
+              : "ReactTab_TS"
+            : "SPFxTab";
+          const scaffoldInputs: v2.InputsWithProjectPath & {
+            module?: string;
+            template?: OptionItem;
+          } = {
             ...inputs,
             projectPath: projectPath,
             module: "0",
-            resource: BuiltInScaffoldPluginNames.tab, //TODO
-            template: programmingLanguage === "javascript" ? "ReactTab_JS" : "ReactTab_TS", //TODO
+            template: {
+              id: `${pluginName}/${templateName}`,
+              label: `${pluginName}/${templateName}`,
+              data: {
+                pluginName: pluginName,
+                templateName: templateName, //TODO
+              },
+            },
           };
           const scaffoldRes = await this._scaffold(scaffoldInputs, ctx);
           if (scaffoldRes.isErr()) {
             return err(scaffoldRes.error);
           }
         }
-        capabilities = capabilities.filter((c) => c !== TabOptionItem.id);
+        capabilities = capabilities.filter((c) => c !== TabOptionItem.id && c !== TabSPFxItem.id);
         if (capabilities.length > 0) {
           const addModuleInputs: v2.InputsWithProjectPath & { capabilities?: string[] } = {
             ...inputs,
@@ -575,12 +629,24 @@ export class FxCore implements v3.ICore {
             return err(addResourceRes.error);
           }
           // scaffold
-          const scaffoldInputs: v2.InputsWithProjectPath & { module?: string; t?: string } = {
+          const templateName =
+            programmingLanguage === "javascript" ? "NodejsBot_JS" : "NodejsBot_TS";
+          const scaffoldInputs: v2.InputsWithProjectPath & {
+            module?: string;
+            template?: OptionItem;
+          } = {
             ...inputs,
             projectPath: projectPath,
             module: "1",
             resource: BuiltInScaffoldPluginNames.bot, //TODO
-            template: programmingLanguage === "javascript" ? "NodejsBot_JS" : "NodejsBot_TS", //TODO
+            template: {
+              id: `${BuiltInScaffoldPluginNames.bot}/${templateName}`,
+              label: `${BuiltInScaffoldPluginNames.bot}/${templateName}`,
+              data: {
+                pluginName: BuiltInScaffoldPluginNames.bot,
+                templateName: templateName, //TODO
+              },
+            }, //TODO
           };
           const scaffoldRes = await this._scaffold(scaffoldInputs, ctx);
           if (scaffoldRes.isErr()) {
@@ -1818,6 +1884,8 @@ export class FxCore implements v3.ICore {
     const solution = Container.get<v3.ISolution>(inputs.solution);
     projectSettings.solutionSettings.name = inputs.solution;
     const context = createV2Context(projectSettings);
+    ctx.contextV2 = context;
+    ctx.solutionV3 = solution;
     return await solution.init(
       context,
       inputs as v2.InputsWithProjectPath & { capabilities: string[] }

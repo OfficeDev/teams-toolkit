@@ -136,6 +136,38 @@ export class BlazorScaffoldPlugin implements v3.ScaffoldPlugin {
   name = BuiltInScaffoldPluginNames.blazor;
 }
 
+@Service(BuiltInScaffoldPluginNames.spfx)
+export class SPFxScaffoldPlugin implements v3.ScaffoldPlugin {
+  async getTemplates(
+    ctx: v2.Context,
+    inputs: Inputs
+  ): Promise<Result<v3.ScaffoldTemplate[], FxError>> {
+    return ok([
+      {
+        name: "SPFxTab",
+        language: "typescript",
+        description: "SPFx Tab",
+      },
+    ]);
+  }
+
+  async scaffold(
+    ctx: v2.Context,
+    inputs: v3.PluginScaffoldInputs
+  ): Promise<Result<Json | undefined, FxError>> {
+    ctx.logProvider.info("fx-scaffold-spfx:scaffold");
+    if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "spfx"));
+    const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
+    const module = getModule(solutionSettings, inputs.module);
+    if (module) {
+      module.dir = "spfx";
+      module.deployType = "zip";
+    }
+    return ok(undefined);
+  }
+  name = BuiltInScaffoldPluginNames.spfx;
+}
+
 function getAllScaffoldPlugins(): v3.ScaffoldPlugin[] {
   return [
     Container.get<v3.ScaffoldPlugin>(BuiltInScaffoldPluginNames.blazor),
@@ -204,7 +236,7 @@ export async function scaffold(
   }
   const template = inputs.template;
   if (!template.data) {
-    return err(new InvalidInputError(inputs));
+    return err(new InvalidInputError(inputs, "template.data is undefined"));
   }
   const data = template.data as { pluginName: string; templateName: string };
   const pluginName = data.pluginName;

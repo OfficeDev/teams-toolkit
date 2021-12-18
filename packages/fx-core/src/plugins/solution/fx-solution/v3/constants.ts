@@ -12,9 +12,11 @@ export const BuiltInResourcePluginNames = {
   bot: "fx-resource-bot",
   webApp: "fx-resource-azure-web-app",
   storage: "fx-resource-azure-storage",
+  spfx: "fx-resource-spfx",
 };
 export const BuiltInScaffoldPluginNames = {
   blazor: "fx-scaffold-blazor",
   tab: "fx-scaffold-react-tab",
+  spfx: "fx-scaffold-spfx",
   bot: "fx-scaffold-bot",
 };

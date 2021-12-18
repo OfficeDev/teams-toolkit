@@ -69,7 +69,7 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
 }
 
 @Service("fx-scaffold-bot")
-export class BlazorTabScaffoldPlugin implements v3.ScaffoldPlugin {
+export class BotScaffoldPlugin implements v3.ScaffoldPlugin {
   async getTemplates(
     ctx: v2.Context,
     inputs: Inputs

@@ -147,7 +147,12 @@ import { Container } from "typedi";
 import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
 import { EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
 import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
-import { TeamsFxAzureSolutionNameV3 } from "../plugins/solution/fx-solution/v3/constants";
+import {
+  BuiltInResourcePluginNames,
+  BuiltInScaffoldPluginNames,
+  BuiltInSolutionNames,
+  TeamsFxAzureSolutionNameV3,
+} from "../plugins/solution/fx-solution/v3/constants";
 import { VSCodeAnswer } from "../plugins/resource/apim/answer";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
@@ -449,8 +454,8 @@ export class FxCore implements v3.ICore {
       let capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
       const programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage] as string;
       const solution = capabilities.includes(TabSPFxItem.id)
-        ? "fx-solution-spfx"
-        : TeamsFxAzureSolutionNameV3;
+        ? BuiltInSolutionNames.spfx
+        : BuiltInSolutionNames.azure;
 
       // init
       const initInputs: v2.InputsWithProjectPath & { solution?: string } = {
@@ -481,7 +486,7 @@ export class FxCore implements v3.ICore {
             ...inputs,
             projectPath: projectPath,
             module: "0",
-            resource: "fx-resource-web-app", //TODO
+            resource: BuiltInResourcePluginNames.webApp, //TODO
           };
         const addResourceRes = await this._addResource(addResourceInputs, ctx);
         if (addResourceRes.isErr()) {
@@ -492,7 +497,7 @@ export class FxCore implements v3.ICore {
           ...inputs,
           projectPath: projectPath,
           module: "0",
-          resource: "fx-scaffold-blazor", //TODO
+          resource: BuiltInScaffoldPluginNames.blazor, //TODO
           template: "Blazor",
         };
         const scaffoldRes = await this._scaffold(scaffoldInputs, ctx);
@@ -518,7 +523,7 @@ export class FxCore implements v3.ICore {
             ...inputs,
             projectPath: projectPath,
             module: "0",
-            resource: "fx-resource-azure-storge", //TODO
+            resource: BuiltInResourcePluginNames.storage, //TODO
           };
           const addResourceRes = await this._addResource(addResourceInputs, ctx);
           if (addResourceRes.isErr()) {
@@ -529,7 +534,7 @@ export class FxCore implements v3.ICore {
             ...inputs,
             projectPath: projectPath,
             module: "0",
-            resource: "fx-scaffold-react-tab", //TODO
+            resource: BuiltInScaffoldPluginNames.tab, //TODO
             template: programmingLanguage === "javascript" ? "ReactTab_JS" : "ReactTab_TS", //TODO
           };
           const scaffoldRes = await this._scaffold(scaffoldInputs, ctx);
@@ -556,7 +561,7 @@ export class FxCore implements v3.ICore {
             ...inputs,
             projectPath: projectPath,
             module: "1",
-            resource: "fx-resource-azure-bot", //TODO
+            resource: BuiltInResourcePluginNames.bot, //TODO
           };
           const addResourceRes = await this._addResource(addResourceInputs, ctx);
           if (addResourceRes.isErr()) {
@@ -567,7 +572,7 @@ export class FxCore implements v3.ICore {
             ...inputs,
             projectPath: projectPath,
             module: "1",
-            resource: "fx-scaffold-bot", //TODO
+            resource: BuiltInScaffoldPluginNames.bot, //TODO
             template: programmingLanguage === "javascript" ? "NodejsBot_JS" : "NodejsBot_TS", //TODO
           };
           const scaffoldRes = await this._scaffold(scaffoldInputs, ctx);

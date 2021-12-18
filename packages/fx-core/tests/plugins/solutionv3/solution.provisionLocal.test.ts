@@ -70,7 +70,7 @@ describe("SolutionV3 - provisionLocalResources", () => {
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
     };
-    const res = await getQuestionsForLocalProvision(ctx, inputs, {}, mockedTokenProvider);
+    const res = await getQuestionsForLocalProvision(ctx, inputs, mockedTokenProvider);
     assert.isTrue(res.isOk());
   });
 });

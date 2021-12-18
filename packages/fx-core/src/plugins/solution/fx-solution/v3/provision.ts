@@ -74,7 +74,7 @@ export async function provisionResources(
     });
 
   // call provisionResources and collect outputs
-  ctx.logProvider?.info(
+  ctx.logProvider.info(
     util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
   );
   const provisionResult = await executeConcurrently(provisionThunks, ctx.logProvider);
@@ -85,11 +85,11 @@ export async function provisionResources(
     assign(envInfo.state, update);
   }
 
-  ctx.logProvider?.info(
+  ctx.logProvider.info(
     util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
   );
 
-  ctx.logProvider?.info(
+  ctx.logProvider.info(
     util.format(getStrings().solution.DeployArmTemplates.StartNotice, PluginDisplayName.Solution)
   );
   // uncomment the following lines when resource plugin is ready.
@@ -102,12 +102,12 @@ export async function provisionResources(
   // if (armRes.isErr()) {
   //   return err(armRes.error);
   // }
-  ctx.logProvider?.info(
+  ctx.logProvider.info(
     util.format(getStrings().solution.DeployArmTemplates.SuccessNotice, PluginDisplayName.Solution)
   );
 
   // call aad.setApplicationInContext
-  ctx.logProvider?.info(util.format("AAD.setApplicationInContext", PluginDisplayName.Solution));
+  ctx.logProvider.info(util.format("AAD.setApplicationInContext", PluginDisplayName.Solution));
 
   const configureResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureResource))
@@ -128,7 +128,7 @@ export async function provisionResources(
     configureResourceThunks,
     ctx.logProvider
   );
-  ctx.logProvider?.info(
+  ctx.logProvider.info(
     util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
   );
   const envStates = envInfo.state as v3.TeamsFxAzureResourceStates;
@@ -151,7 +151,7 @@ export async function provisionResources(
     `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
     ctx.projectSetting.appName
   );
-  ctx.logProvider?.info(msg);
+  ctx.logProvider.info(msg);
   if (url) {
     const title = "View Provisioned Resources";
     ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {

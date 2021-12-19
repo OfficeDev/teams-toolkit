@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { v3 } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, FxError, ok, Result, v2, v3 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { addModule, getQuestionsForAddModule } from "./addModule";
 import { addResource, getQuestionsForAddResource } from "./addResource";
@@ -25,7 +25,7 @@ export class TeamsFxAzureSolution implements v3.ISolution {
   getQuestionsForAddModule = getQuestionsForAddModule;
   addModule = addModule;
   getQuestionsForProvision = getQuestionsForProvision;
-  provisionResources = provisionResources;
+  provisionResources = provisionResources.bind(this);
   getQuestionsForLocalProvision = getQuestionsForLocalProvision;
   provisionLocalResources = provisionLocalResources;
   getQuestionsForDeploy = getQuestionsForDeploy;

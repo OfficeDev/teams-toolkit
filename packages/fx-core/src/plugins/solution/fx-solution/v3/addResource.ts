@@ -16,8 +16,7 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import { Container, Service } from "typedi";
-import { Logger } from "../../../../core";
-import { generateArmTemplateV3 } from "../arm";
+import arm from "../arm";
 import { BuiltInResourcePluginNames } from "./constants";
 import { InvalidInputError, ResourceAlreadyAddedError } from "./error";
 import { createSelectModuleQuestionNode, selectResourceQuestion } from "./questions";
@@ -71,7 +70,7 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
-    Logger.info(`fx-resource-azure-storage deploy success!`);
+    ctx.logProvider.info(`fx-resource-azure-storage deploy success!`);
     return ok(Void);
   }
 }
@@ -132,7 +131,7 @@ export class AzureBotPlugin implements v3.ResourcePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
-    Logger.info(`fx-resource-azure-bot deploy success!`);
+    ctx.logProvider.info(`fx-resource-azure-bot deploy success!`);
     return ok(Void);
   }
 }
@@ -185,7 +184,7 @@ export class AzureWebAppPlugin implements v3.ResourcePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
-    Logger.info(`fx-resource-azure-web-app deploy success!`);
+    ctx.logProvider.info(`fx-resource-azure-web-app deploy success!`);
     return ok(Void);
   }
 }
@@ -256,7 +255,7 @@ export async function addResource(
   const addedPlugins = Array.from(addedResourceNames).map((n) =>
     Container.get<v3.ResourcePlugin>(n)
   );
-  const armRes = await generateArmTemplateV3(ctx, inputs, activatedPlugins, addedPlugins);
+  const armRes = await arm.generateArmTemplate(ctx, inputs, activatedPlugins, addedPlugins);
   if (armRes.isErr()) {
     return err(armRes.error);
   }

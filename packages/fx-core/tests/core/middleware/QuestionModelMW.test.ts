@@ -406,11 +406,6 @@ describe("Middleware - QuestionModelMW", () => {
   it("Core's getQuestion APIs", async () => {
     const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
     sandbox
-      .stub(solution, "getQuestionsForInit")
-      .callsFake(async (ctx: v2.Context, inputs: Inputs) => {
-        return ok(undefined);
-      });
-    sandbox
       .stub(solution, "getQuestionsForScaffold")
       .callsFake(async (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => {
         return ok(undefined);

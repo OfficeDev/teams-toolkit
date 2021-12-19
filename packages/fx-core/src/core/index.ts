@@ -7,8 +7,8 @@ import {
   ArchiveFolderName,
   ArchiveLogFileName,
   assembleError,
+  BuildFolderName,
   ConfigFolderName,
-  Core,
   CoreCallbackEvent,
   CoreCallbackFunc,
   err,
@@ -20,31 +20,30 @@ import {
   Json,
   LogProvider,
   ok,
+  OptionItem,
   Platform,
   ProjectConfig,
   ProjectSettings,
-  StatesFolderName,
   QTreeNode,
   Result,
-  SingleSelectQuestion,
   Solution,
   SolutionConfig,
   SolutionContext,
   Stage,
-  SystemError,
+  StatesFolderName,
   TelemetryReporter,
   Tools,
   UserCancelError,
   v2,
-  Void,
-  BuildFolderName,
   v3,
-  OptionItem,
+  Void,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
+import { assign } from "lodash";
 import * as path from "path";
+import { Container } from "typedi";
 import * as uuid from "uuid";
 import { environmentManager, sampleProvider } from "..";
 import { FeatureFlagName } from "../common/constants";
@@ -52,8 +51,8 @@ import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   Component,
-  sendTelemetryEvent,
   sendTelemetryErrorEvent,
+  sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
@@ -61,20 +60,26 @@ import {
 import {
   downloadSampleHook,
   fetchCodeZip,
-  isFeatureFlagEnabled,
+  getRootDirectory,
   isMultiEnvEnabled,
   mapToJson,
   saveFilesRecursively,
-  getRootDirectory,
 } from "../common/tools";
 import { PluginNames } from "../plugins";
+import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
 import { getAllV2ResourcePlugins } from "../plugins/solution/fx-solution/ResourcePluginContainer";
+import {
+  BuiltInResourcePluginNames,
+  BuiltInScaffoldPluginNames,
+  BuiltInSolutionNames,
+} from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
+import { LocalCrypto } from "./crypto";
 import {
   ArchiveProjectError,
   ArchiveUserFileError,
   CopyFileError,
-  CoreSource,
+  FetchSampleError,
   FunctionRouterError,
   InvalidInputError,
   LoadSolutionError,
@@ -82,12 +87,10 @@ import {
   NonExistEnvNameError,
   ObjectIsUndefinedError,
   ProjectFolderExistError,
+  ProjectFolderInvalidError,
   ProjectFolderNotExistError,
   TaskNotSupportError,
   WriteFileError,
-  ProjectFolderInvalidError,
-  FetchSampleError,
-  NotImplementedError,
 } from "./error";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
@@ -98,7 +101,9 @@ import {
   upgradeDefaultFunctionName,
   upgradeProgrammingLanguage,
 } from "./middleware/envInfoLoader";
+import { EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
+import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
@@ -109,25 +114,36 @@ import {
   newSolutionContext,
   ProjectSettingsLoaderMW,
 } from "./middleware/projectSettingsLoader";
+import { ProjectSettingsLoaderMW_V3 } from "./middleware/projectSettingsLoaderV3";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
-import { QuestionModelMW } from "./middleware/questionModel";
+import {
+  getQuestionsForAddModule,
+  getQuestionsForAddResource,
+  getQuestionsForCreateProjectV2,
+  getQuestionsForDeploy,
+  getQuestionsForInit,
+  getQuestionsForLocalProvision,
+  getQuestionsForMigrateV1Project,
+  getQuestionsForProvision,
+  getQuestionsForPublish,
+  getQuestionsForScaffold,
+  getQuestionsForUserTaskV2,
+  getQuestionsV2,
+  QuestionModelMW,
+} from "./middleware/questionModel";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
+import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
+import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
 import {
   BotOptionItem,
   CoreQuestionNames,
-  createCapabilityQuestion,
   DefaultAppNameFunc,
-  getCreateNewOrFromSampleQuestion,
-  ProgrammingLanguageQuestion,
   ProjectNamePattern,
   QuestionAppName,
   QuestionRootFolder,
-  QuestionSelectSolution,
   QuestionV1AppName,
-  SampleSelect,
   ScratchOptionNo,
-  ScratchOptionYes,
   TabOptionItem,
   TabSPFxItem,
 } from "./question";
@@ -136,26 +152,8 @@ import {
   getAllSolutionPluginsV2,
   getSolutionPluginByCap,
   getSolutionPluginByCapV1,
-  getSolutionPluginByName,
-  getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
-import { flattenConfigJson, newEnvInfo } from "./tools";
-import { LocalCrypto } from "./crypto";
-import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
-import { assign } from "lodash";
-import { ProjectSettingsLoaderMW_V3 } from "./middleware/projectSettingsLoaderV3";
-import { Container } from "typedi";
-import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
-import { EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
-import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
-import {
-  BuiltInResourcePluginNames,
-  BuiltInScaffoldPluginNames,
-  BuiltInSolutionNames,
-  TeamsFxAzureSolutionNameV3,
-} from "../plugins/solution/fx-solution/v3/constants";
-import { VSCodeAnswer } from "../plugins/resource/apim/answer";
-import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
+import { newEnvInfo } from "./tools";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -1472,109 +1470,6 @@ export class FxCore implements v3.ICore {
     }
   }
 
-  async _getQuestionsForUserTask(
-    ctx: SolutionContext | v2.Context,
-    solution: Solution | v2.SolutionPlugin,
-    func: FunctionRouter,
-    inputs: Inputs,
-    envInfo?: v2.EnvInfoV2
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const namespace = func.namespace;
-    const array = namespace ? namespace.split("/") : [];
-    if (namespace && "" !== namespace && array.length > 0) {
-      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
-      if (isV2()) {
-        const solutionV2 = solution as v2.SolutionPlugin;
-        if (solutionV2.getQuestionsForUserTask) {
-          res = await solutionV2.getQuestionsForUserTask(
-            ctx as v2.Context,
-            inputs,
-            func,
-            envInfo!,
-            this.tools.tokenProvider
-          );
-        }
-      } else {
-        const solutionv1 = solution as Solution;
-        if (solutionv1.getQuestionsForUserTask) {
-          res = await solutionv1.getQuestionsForUserTask(func, ctx as SolutionContext);
-        }
-      }
-      if (res.isOk()) {
-        if (res.value) {
-          const node = res.value.trim();
-          return ok(node);
-        }
-      }
-      return res;
-    }
-    return err(FunctionRouterError(func));
-  }
-
-  async _getQuestionsForMigrateV1Project(
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const node = new QTreeNode({ type: "group" });
-    const globalSolutions: Solution[] = await getAllSolutionPlugins();
-    const solutionContext = await newSolutionContext(this.tools, inputs);
-
-    for (const v of globalSolutions) {
-      if (v.getQuestions) {
-        const res = await v.getQuestions(Stage.migrateV1, solutionContext);
-        if (res.isErr()) return res;
-        if (res.value) {
-          const solutionNode = res.value as QTreeNode;
-          solutionNode.condition = { equals: v.name };
-          if (solutionNode.data) node.addChild(solutionNode);
-        }
-      }
-    }
-
-    const defaultAppNameFunc = new QTreeNode(DefaultAppNameFunc);
-    node.addChild(defaultAppNameFunc);
-
-    const appNameQuestion = new QTreeNode(QuestionV1AppName);
-    appNameQuestion.condition = {
-      validFunc: (input: any) => (!input ? undefined : "App name is auto generated."),
-    };
-    defaultAppNameFunc.addChild(appNameQuestion);
-    return ok(node.trim());
-  }
-
-  async _getQuestions(
-    ctx: SolutionContext | v2.Context,
-    solution: Solution | v2.SolutionPlugin,
-    stage: Stage,
-    inputs: Inputs,
-    envInfo?: v2.EnvInfoV2
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    if (stage !== Stage.create) {
-      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
-      if (isV2()) {
-        const solutionV2 = solution as v2.SolutionPlugin;
-        if (solutionV2.getQuestions) {
-          inputs.stage = stage;
-          res = await solutionV2.getQuestions(
-            ctx as v2.Context,
-            inputs,
-            envInfo!,
-            this.tools.tokenProvider
-          );
-        }
-      } else {
-        res = await (solution as Solution).getQuestions(stage, ctx as SolutionContext);
-      }
-      if (res.isErr()) return res;
-      if (res.value) {
-        const node = res.value as QTreeNode;
-        if (node.data) {
-          return ok(node.trim());
-        }
-      }
-    }
-    return ok(undefined);
-  }
-
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -1784,69 +1679,6 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
-  async _getQuestionsForCreateProject(
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
-    // create new
-    const createNew = new QTreeNode({ type: "group" });
-    node.addChild(createNew);
-    createNew.condition = { equals: ScratchOptionYes.id };
-
-    // capabilities
-    const capQuestion = createCapabilityQuestion();
-    const capNode = new QTreeNode(capQuestion);
-    createNew.addChild(capNode);
-
-    const globalSolutions: Solution[] | v2.SolutionPlugin[] = isV2()
-      ? await getAllSolutionPluginsV2()
-      : await getAllSolutionPlugins();
-    const context = isV2()
-      ? createV2Context(newProjectSettings())
-      : await newSolutionContext(this.tools, inputs);
-    for (const solutionPlugin of globalSolutions) {
-      let res: Result<QTreeNode | QTreeNode[] | undefined, FxError> = ok(undefined);
-      if (isV2()) {
-        const v2plugin = solutionPlugin as v2.SolutionPlugin;
-        res = v2plugin.getQuestionsForScaffolding
-          ? await v2plugin.getQuestionsForScaffolding(context as v2.Context, inputs)
-          : ok(undefined);
-      } else {
-        const v1plugin = solutionPlugin as Solution;
-        res = v1plugin.getQuestions
-          ? await v1plugin.getQuestions(Stage.create, context as SolutionContext)
-          : ok(undefined);
-      }
-      if (res.isErr()) return err(new SystemError(res.error, CoreSource, "QuestionModelFail"));
-      if (res.value) {
-        const solutionNode = Array.isArray(res.value)
-          ? (res.value as QTreeNode[])
-          : [res.value as QTreeNode];
-        for (const node of solutionNode) {
-          if (node.data) capNode.addChild(node);
-        }
-      }
-    }
-
-    // Language
-    const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-    programmingLanguage.condition = { minItems: 1 };
-    createNew.addChild(programmingLanguage);
-
-    if (inputs.platform !== Platform.VSCode) {
-      createNew.addChild(new QTreeNode(QuestionRootFolder));
-    }
-    createNew.addChild(new QTreeNode(QuestionAppName));
-
-    // create from sample
-    const sampleNode = new QTreeNode(SampleSelect);
-    node.addChild(sampleNode);
-    sampleNode.condition = { equals: ScratchOptionNo.id };
-    if (inputs.platform !== Platform.VSCode) {
-      sampleNode.addChild(new QTreeNode(QuestionRootFolder));
-    }
-    return ok(node.trim());
-  }
   async _init(
     inputs: v2.InputsWithProjectPath & { solution?: string },
     ctx?: CoreHookContext
@@ -1972,6 +1804,21 @@ export class FxCore implements v3.ICore {
     }
     return ok(Void);
   }
+
+  //V1,V2 questions
+  _getQuestionsForCreateProject = getQuestionsForCreateProjectV2;
+  _getQuestionsForUserTask = getQuestionsForUserTaskV2;
+  _getQuestions = getQuestionsV2;
+  _getQuestionsForMigrateV1Project = getQuestionsForMigrateV1Project;
+  //v3 questions
+  _getQuestionsForScaffold = getQuestionsForScaffold;
+  _getQuestionsForAddModule = getQuestionsForAddModule;
+  _getQuestionsForAddResource = getQuestionsForAddResource;
+  _getQuestionsForProvision = getQuestionsForProvision;
+  _getQuestionsForDeploy = getQuestionsForDeploy;
+  _getQuestionsForLocalProvision = getQuestionsForLocalProvision;
+  _getQuestionsForPublish = getQuestionsForPublish;
+  _getQuestionsForInit = getQuestionsForInit;
 }
 
 export async function createBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {

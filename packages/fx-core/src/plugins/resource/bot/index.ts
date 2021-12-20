@@ -191,6 +191,9 @@ export class TeamsBot implements Plugin {
       errorMsg += ` Detailed error: ${e.innerError.message}.`;
       if (e.innerError.response?.data?.errorMessage) {
         errorMsg += ` Reason: ${e.innerError.response?.data?.errorMessage}`;
+      } else if (e.innerError.response?.data?.error?.message) {
+        // For errors return from Graph API
+        errorMsg += ` Reason: ${e.innerError.response?.data?.error?.message}`;
       }
     }
     Logger.error(errorMsg);

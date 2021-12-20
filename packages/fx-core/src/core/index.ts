@@ -131,18 +131,18 @@ import {
 import {
   getAllSolutionPlugins,
   getAllSolutionPluginsV2,
-  getSolutionPluginByCap,
-  getSolutionPluginByCapV1,
   getSolutionPluginByName,
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
 import { flattenConfigJson, newEnvInfo } from "./tools";
 import { LocalCrypto } from "./crypto";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
-import { assign, merge } from "lodash";
-import { init } from "./v3/init";
-import { SolutionLoaderMW_V3 } from "./v3/mw/solutionLoader";
-import { ProjectSettingsLoaderMW_V3 } from "./v3/mw/projectSettingsLoader";
+import { assign } from "lodash";
+import { ProjectSettingsLoaderMW_V3 } from "./middleware/projectSettingsLoaderV3";
+import { Container } from "typedi";
+import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
+import { EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
+import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -190,6 +190,9 @@ export let Logger: LogProvider;
 export let telemetryReporter: TelemetryReporter | undefined;
 export let currentStage: Stage;
 export let TOOLS: Tools;
+export function setTools(tools: Tools) {
+  TOOLS = tools;
+}
 export class FxCore implements v3.ICore {
   tools: Tools;
   isFromSample?: boolean;
@@ -239,7 +242,7 @@ export class FxCore implements v3.ICore {
     const multiEnv = isMultiEnvEnabled();
     if (scratch === ScratchOptionNo.id) {
       // create from sample
-      const downloadRes = await downloadSample(this, inputs, ctx);
+      const downloadRes = await downloadSample(inputs, ctx);
       if (downloadRes.isErr()) {
         return err(downloadRes.error);
       }
@@ -299,7 +302,7 @@ export class FxCore implements v3.ICore {
       }
 
       if (isV2()) {
-        const solution = await getSolutionPluginByCap(inputs[CoreQuestionNames.Capabilities]);
+        const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -341,7 +344,7 @@ export class FxCore implements v3.ICore {
           };
         }
       } else {
-        const solution = await getSolutionPluginByCapV1(inputs[CoreQuestionNames.Capabilities]);
+        const solution = await getSolutionPluginByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -505,6 +508,17 @@ export class FxCore implements v3.ICore {
     }
   }
 
+  /**
+   * switch to different versions of provisionResources
+   */
+  async provisionResources(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (isV3()) {
+      return this.provisionResourcesV3(inputs);
+    } else {
+      return this._provisionResources(inputs);
+    }
+  }
+
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -512,13 +526,13 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
   ])
-  async provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async _provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
     inputs.stage = Stage.provision;
     // provision is not ready yet, so use API v1
@@ -566,7 +580,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -588,7 +602,7 @@ export class FxCore implements v3.ICore {
         return await ctx.solutionV2.deploy(
           ctx.contextV2,
           inputs,
-          ctx.envInfoV2.state,
+          ctx.envInfoV2,
           this.tools.tokenProvider
         );
       else return ok(Void);
@@ -613,7 +627,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     LocalSettingsLoaderMW,
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -694,7 +708,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
@@ -737,12 +751,11 @@ export class FxCore implements v3.ICore {
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     LocalSettingsLoaderMW,
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
-    LocalSettingsWriterMW,
   ])
   async executeUserTask(
     func: Func,
@@ -794,7 +807,7 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     ContextInjectorMW,
     EnvInfoWriterMW(),
   ])
@@ -834,7 +847,7 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     ContextInjectorMW,
     EnvInfoWriterMW(),
   ])
@@ -893,7 +906,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
   ])
@@ -923,7 +936,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
   ])
@@ -954,7 +967,7 @@ export class FxCore implements v3.ICore {
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
   ])
@@ -984,7 +997,7 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(true),
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     QuestionModelMW,
     ContextInjectorMW,
   ])
@@ -1186,7 +1199,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     SupportV1ConditionMW(false),
     ProjectSettingsLoaderMW,
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     EnvInfoLoaderMW(true),
     ContextInjectorMW,
   ])
@@ -1285,7 +1298,7 @@ export class FxCore implements v3.ICore {
       return err(CopyFileError(e as Error));
     }
 
-    core.tools.logProvider.debug(
+    TOOLS.logProvider.debug(
       `[core] copy env config file for ${targetEnvName} environment to path ${targetEnvConfigFilePath}`
     );
 
@@ -1299,7 +1312,7 @@ export class FxCore implements v3.ICore {
     SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectSettingsLoaderMW,
-    SolutionLoaderMW(),
+    SolutionLoaderMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
   ])
@@ -1323,12 +1336,7 @@ export class FxCore implements v3.ICore {
     }
 
     const core = ctx!.self as FxCore;
-    const solutionContext = await loadSolutionContext(
-      core.tools,
-      inputs,
-      ctx!.projectSettings,
-      env
-    );
+    const solutionContext = await loadSolutionContext(inputs, ctx!.projectSettings, env);
 
     if (!solutionContext.isErr()) {
       if (isV2()) {
@@ -1366,7 +1374,7 @@ export class FxCore implements v3.ICore {
       ? createV2Context(newProjectSettings())
       : await newSolutionContext(this.tools, inputs);
     for (const solutionPlugin of globalSolutions) {
-      let res: Result<QTreeNode | QTreeNode[] | undefined, FxError> = ok(undefined);
+      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
       if (isV2()) {
         const v2plugin = solutionPlugin as v2.SolutionPlugin;
         res = v2plugin.getQuestionsForScaffolding
@@ -1380,12 +1388,8 @@ export class FxCore implements v3.ICore {
       }
       if (res.isErr()) return err(new SystemError(res.error, CoreSource, "QuestionModelFail"));
       if (res.value) {
-        const solutionNode = Array.isArray(res.value)
-          ? (res.value as QTreeNode[])
-          : [res.value as QTreeNode];
-        for (const node of solutionNode) {
-          if (node.data) capNode.addChild(node);
-        }
+        const solutionNode = res.value as QTreeNode;
+        if (solutionNode.data) capNode.addChild(solutionNode);
       }
     }
 
@@ -1414,8 +1418,39 @@ export class FxCore implements v3.ICore {
     inputs: v2.InputsWithProjectPath & { solution?: string },
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
-    return init(inputs, ctx);
+    if (!ctx) {
+      return err(new ObjectIsUndefinedError("ctx for createProject"));
+    }
+    const appName = inputs[QuestionAppName.name] as string;
+    const validateResult = jsonschema.validate(appName, {
+      pattern: ProjectNamePattern,
+    });
+    if (validateResult.errors && validateResult.errors.length > 0) {
+      return err(InvalidInputError("invalid app-name", inputs));
+    }
+    const projectSettings = newProjectSettings();
+    projectSettings.appName = appName;
+    ctx.projectSettings = projectSettings;
+    if (!inputs.solution) {
+      return err(InvalidInputError("solution is undefined", inputs));
+    }
+    const createEnvResult = await this.createEnvWithName(
+      environmentManager.getDefaultEnvName(),
+      projectSettings,
+      inputs
+    );
+    if (createEnvResult.isErr()) {
+      return err(createEnvResult.error);
+    }
+    const solution = Container.get<v3.ISolution>(inputs.solution);
+    projectSettings.solutionSettings.name = inputs.solution;
+    const context = createV2Context(projectSettings);
+    return await solution.init(
+      context,
+      inputs as v2.InputsWithProjectPath & { capabilities: string[] }
+    );
   }
+
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,
@@ -1473,6 +1508,45 @@ export class FxCore implements v3.ICore {
     }
     return ok(Void);
   }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW_V3,
+    EnvInfoLoaderMW_V3(false),
+    SolutionLoaderMW_V3,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW_V3(),
+  ])
+  async provisionResourcesV3(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    currentStage = Stage.provision;
+    inputs.stage = Stage.provision;
+    if (
+      ctx &&
+      ctx.solutionV3 &&
+      ctx.contextV2 &&
+      ctx.envInfoV3 &&
+      ctx.solutionV3.provisionResources
+    ) {
+      const res = await ctx.solutionV3.provisionResources(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      if (res.isOk()) {
+        ctx.envInfoV3 = res.value;
+      }
+    }
+    return ok(Void);
+  }
 }
 
 export async function createBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {
@@ -1523,12 +1597,11 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
   return ok(null);
 }
 export async function downloadSample(
-  fxCore: FxCore,
   inputs: Inputs,
   ctx: CoreHookContext
 ): Promise<Result<string, FxError>> {
   let fxError;
-  const progress = fxCore.tools.ui.createProgressBar("Fetch sample app", 3);
+  const progress = TOOLS.ui.createProgressBar("Fetch sample app", 3);
   progress.start();
   const telemetryProperties: any = {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,

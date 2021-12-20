@@ -209,7 +209,7 @@ describe("simpleAuthPlugin", () => {
       );
       chai.assert.strictEqual(expectedResult.Configuration!.Orchestration, OrchestrationConfigFile);
       chai.assert.isUndefined(expectedResult.Parameters);
-      chai.assert.isNotNull(expectedResult.Provision!.Reference);
+      chai.assert.isNotNull(expectedResult.Reference);
     }
   }
 
@@ -264,12 +264,11 @@ describe("simpleAuthPlugin", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(expectedResult.Configuration!.Modules!.simpleAuth, configModuleFile);
-      chai.assert.notExists(expectedResult.Provision!.Orchestration);
-      chai.assert.notExists(expectedResult.Provision!.Modules);
+      chai.assert.notExists(expectedResult.Provision);
       chai.assert.notExists(expectedResult.Configuration!.Orchestration);
       chai.assert.notExists(expectedResult.Parameters);
-      chai.assert.exists(expectedResult.Provision!.Reference!.skuName);
-      chai.assert.exists(expectedResult.Provision!.Reference!.endpoint);
+      chai.assert.exists(expectedResult.Reference!.skuName);
+      chai.assert.exists(expectedResult.Reference!.endpoint);
     }
   });
 

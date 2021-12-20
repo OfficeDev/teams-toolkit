@@ -10,16 +10,22 @@ import {
   ok,
   QTreeNode,
   Result,
+  SingleSelectQuestion,
   Stage,
   traverse,
+  UserCancelError,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import { isV2 } from "..";
+import { createV2Context, isV2, newProjectSettings, TOOLS } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
-import { getQuestionsForInit } from "../v3/init";
-
+import { getProjectSettingsPath } from "./projectSettingsLoaderV3";
+import fs from "fs-extra";
+import { Container } from "typedi";
+import { TeamsFxAzureSolutionNameV3 } from "../../plugins/solution/fx-solution/v3/constants";
+import { createCapabilityQuestion, QuestionAppName, QuestionSelectSolution } from "../question";
+import { TeamsSPFxSolutionName } from "../../plugins/solution/spfx-solution/constants";
 /**
  * This middleware will help to collect input from question flow
  */
@@ -32,7 +38,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   if (method === "createProject") {
     getQuestionRes = await core._getQuestionsForCreateProject(inputs);
   } else if (method === "migrateV1Project") {
-    const res = await core.tools.ui.showMessage(
+    const res = await TOOLS?.ui.showMessage(
       "warn",
       "We will update your project to make it compatible with the latest Teams Toolkit. We recommend to use git for better tracking file changes before migration. Your original project files will be archived to the .archive folder. You can refer to .archive.log which provides detailed information about the archive process.",
       true,
@@ -40,7 +46,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
     );
     const answer = res?.isOk() ? res.value : undefined;
     if (!answer || answer != "OK") {
-      core.tools.logProvider.info(`[core] V1 project migration was canceled.`);
+      TOOLS?.logProvider.info(`[core] V1 project migration was canceled.`);
       ctx.result = ok(null);
       return;
     }
@@ -76,7 +82,11 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
       const solution = isV2() ? ctx.solutionV2 : ctx.solution;
       const context = isV2() ? ctx.contextV2 : ctx.solutionContext;
       if (solution && context) {
-        if (method === "provisionResources") {
+        if (
+          method === "provisionResources" ||
+          method === "_provisionResources" ||
+          method === "provisionResourcesV3"
+        ) {
           getQuestionRes = await core._getQuestions(
             context,
             solution,
@@ -131,25 +141,25 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   }
 
   if (getQuestionRes.isErr()) {
-    core.tools.logProvider.error(
+    TOOLS?.logProvider.error(
       `[core] failed to get questions for ${method}: ${getQuestionRes.error.message}`
     );
     ctx.result = err(getQuestionRes.error);
     return;
   }
 
-  core.tools.logProvider.debug(`[core] success to get questions for ${method}`);
+  TOOLS?.logProvider.debug(`[core] success to get questions for ${method}`);
 
   const node = getQuestionRes.value;
   if (node) {
-    const res = await traverse(node, inputs, core.tools.ui, core.tools.telemetryReporter);
+    const res = await traverse(node, inputs, TOOLS.ui, TOOLS.telemetryReporter);
     if (res.isErr()) {
-      core.tools.logProvider.debug(`[core] failed to run question model for ${method}`);
+      TOOLS?.logProvider.debug(`[core] failed to run question model for ${method}`);
       ctx.result = err(res.error);
       return;
     }
     const desensitized = desensitize(node, inputs);
-    core.tools.logProvider.info(
+    TOOLS?.logProvider.info(
       `[core] success to run question model for ${method}, answers:${JSON.stringify(desensitized)}`
     );
   }
@@ -184,15 +194,7 @@ async function getQuestionsForScaffold(
     const res = await solution.getQuestionsForScaffold(context, inputs);
     if (res.isOk()) {
       const solutionValue = res.value;
-      if (Array.isArray(solutionValue)) {
-        const node = new QTreeNode({ type: "group" });
-        for (const child of solutionValue) {
-          if (child.data) node.addChild(child);
-        }
-        return ok(node);
-      } else {
-        return ok(solutionValue);
-      }
+      return ok(solutionValue);
     }
     return err(res.error);
   }
@@ -221,4 +223,47 @@ async function getQuestionsForAddResource(
     return res;
   }
   return ok(undefined);
+}
+
+export async function getQuestionsForInit(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (inputs.projectPath) {
+    const projectSettingsPath = getProjectSettingsPath(inputs.projectPath);
+    if (await fs.pathExists(projectSettingsPath)) {
+      const res = await TOOLS.ui.showMessage(
+        "warn",
+        "projectSettings.json already exists, 'init' operation will replace it, please confirm!",
+        true,
+        "Confirm"
+      );
+      if (!(res.isOk() && res.value === "Confirm")) {
+        return err(UserCancelError);
+      }
+    }
+  }
+  const node = new QTreeNode({ type: "group" });
+  const globalSolutions: v3.ISolution[] = [
+    Container.get<v3.ISolution>(TeamsFxAzureSolutionNameV3),
+    Container.get<v3.ISolution>(TeamsSPFxSolutionName),
+  ];
+
+  const capQuestion = createCapabilityQuestion();
+  const capNode = new QTreeNode(capQuestion);
+  node.addChild(capNode);
+
+  const context = createV2Context(newProjectSettings());
+  for (const solution of globalSolutions) {
+    if (solution.getQuestionsForInit) {
+      const res = await solution.getQuestionsForInit(context, inputs);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const solutionNode = res.value as QTreeNode;
+        solutionNode.condition = { equals: solution.name };
+        if (solutionNode.data) capNode.addChild(solutionNode);
+      }
+    }
+  }
+  node.addChild(new QTreeNode(QuestionAppName));
+  return ok(node.trim());
 }

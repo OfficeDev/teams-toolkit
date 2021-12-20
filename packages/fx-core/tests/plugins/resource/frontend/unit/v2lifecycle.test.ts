@@ -14,6 +14,7 @@ import { Container } from "typedi";
 import * as uuid from "uuid";
 import { ArmTemplateResult } from "../../../../../src/common/armInterface";
 import "../../../../../src/index";
+import { setTools } from "../../../../../src/index";
 import { TabLanguage } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { FrontendPluginV2 } from "../../../../../src/plugins/resource/frontend/v2/index";
 import {
@@ -31,6 +32,7 @@ describe("Frontend hosting V2", () => {
   const sandbox = sinon.createSandbox();
 
   const tools = new MockTools();
+  setTools(tools);
   const pluginV2 = Container.get<FrontendPluginV2>(ResourcePluginsV2.FrontendPlugin);
   const appName = randomAppName();
   const projectPath = path.resolve(os.tmpdir(), appName);
@@ -133,7 +135,7 @@ describe("Frontend hosting V2", () => {
         ConstantString.UTF8Encoding
       );
       assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationConfigFile);
-      assert.isNotNull(expectedResult.Provision!.Reference);
+      assert.isNotNull(expectedResult.Reference);
       assert.isUndefined(expectedResult.Parameters);
     }
   });

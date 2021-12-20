@@ -181,13 +181,12 @@ describe("apimManager.generateArmTemplates", () => {
       )
     );
 
-    chai.assert.notExists(expectedResult.Provision!.Orchestration);
-    chai.assert.notExists(expectedResult.Provision!.Modules);
+    chai.assert.notExists(expectedResult.Provision);
     chai.assert.notExists(expectedResult.Configuration!.Orchestration);
     chai.assert.notExists(expectedResult.Parameters);
-    chai.assert.exists(expectedResult.Provision!.Reference!.serviceResourceId);
+    chai.assert.exists(expectedResult.Reference!.serviceResourceId);
     chai.assert.strictEqual(
-      expectedResult.Provision!.Reference!.serviceResourceId,
+      expectedResult.Reference!.serviceResourceId,
       "provisionOutputs.apimOutput.value.serviceResourceId"
     );
   });

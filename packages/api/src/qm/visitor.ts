@@ -305,8 +305,10 @@ export async function traverse(
         continue; //ignore the following steps
       } else {
         //success or skip
-        question.value = inputResult.result;
-        inputs[question.name] = question.value;
+        if (question.type != "func") {
+          question.value = inputResult.result;
+          inputs[question.name] = question.value;
+        }
 
         if (inputResult.type === "skip" || question.type === "func") {
           if (inputResult.type === "skip") autoSkipSet.add(curr);

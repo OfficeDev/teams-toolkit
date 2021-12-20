@@ -24,7 +24,8 @@ import { getProjectSettingsPath } from "./projectSettingsLoaderV3";
 import fs from "fs-extra";
 import { Container } from "typedi";
 import { TeamsFxAzureSolutionNameV3 } from "../../plugins/solution/fx-solution/v3/constants";
-import { QuestionAppName, QuestionSelectSolution } from "../question";
+import { createCapabilityQuestion, QuestionAppName, QuestionSelectSolution } from "../question";
+import { TeamsSPFxSolutionName } from "../../plugins/solution/spfx-solution/constants";
 /**
  * This middleware will help to collect input from question flow
  */
@@ -248,13 +249,13 @@ export async function getQuestionsForInit(
   const node = new QTreeNode({ type: "group" });
   const globalSolutions: v3.ISolution[] = [
     Container.get<v3.ISolution>(TeamsFxAzureSolutionNameV3),
-    Container.get<v3.ISolution>("fx-solution-spfx"),
+    Container.get<v3.ISolution>(TeamsSPFxSolutionName),
   ];
-  const solutionNames: string[] = globalSolutions.map((s) => s.name);
-  const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
-  selectSolution.staticOptions = solutionNames;
-  const solutionSelectNode = new QTreeNode(selectSolution);
-  node.addChild(solutionSelectNode);
+
+  const capQuestion = createCapabilityQuestion();
+  const capNode = new QTreeNode(capQuestion);
+  node.addChild(capNode);
+
   const context = createV2Context(newProjectSettings());
   for (const solution of globalSolutions) {
     if (solution.getQuestionsForInit) {
@@ -263,7 +264,7 @@ export async function getQuestionsForInit(
       if (res.value) {
         const solutionNode = res.value as QTreeNode;
         solutionNode.condition = { equals: solution.name };
-        if (solutionNode.data) solutionSelectNode.addChild(solutionNode);
+        if (solutionNode.data) capNode.addChild(solutionNode);
       }
     }
   }

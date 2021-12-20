@@ -20,17 +20,23 @@ import {
   addResource,
   addModule,
 } from "./scaffolding";
+import { getQuestionsForInit } from "./init";
 import { Service } from "typedi";
 import { SolutionPluginsV2 } from "../../../core/SolutionPluginContainer";
 import { getQuestionsForScaffolding } from "./questions";
+import { TeamsSPFxSolutionName } from "./constants";
 
 @Service(SolutionPluginsV2.TeamsSPFxSolution)
 export class TeamsSPFxSolution implements v3.ISolution {
-  name = "fx-solution-spfx";
+  name = TeamsSPFxSolutionName;
   displayName: string = PluginDisplayName.SpfxSolution;
 
   init: (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => Promise<Result<Void, FxError>> =
     init;
+  getQuestionsForInit?: (
+    ctx: v2.Context,
+    inputs: Inputs
+  ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestionsForInit;
 
   scaffold: (
     ctx: v2.Context,
@@ -61,5 +67,5 @@ export class TeamsSPFxSolution implements v3.ISolution {
   getQuestionsForScaffolding?: (
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
-  ) => Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>> = getQuestionsForScaffolding;
+  ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestionsForScaffolding;
 }

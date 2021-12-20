@@ -131,8 +131,6 @@ import {
 import {
   getAllSolutionPlugins,
   getAllSolutionPluginsV2,
-  getSolutionPluginByCap,
-  getSolutionPluginByCapV1,
   getSolutionPluginByName,
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
@@ -299,7 +297,7 @@ export class FxCore implements v3.ICore {
       }
 
       if (isV2()) {
-        const solution = await getSolutionPluginByCap(inputs[CoreQuestionNames.Capabilities]);
+        const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -341,7 +339,7 @@ export class FxCore implements v3.ICore {
           };
         }
       } else {
-        const solution = await getSolutionPluginByCapV1(inputs[CoreQuestionNames.Capabilities]);
+        const solution = await getSolutionPluginByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -1365,7 +1363,7 @@ export class FxCore implements v3.ICore {
       ? createV2Context(newProjectSettings())
       : await newSolutionContext(this.tools, inputs);
     for (const solutionPlugin of globalSolutions) {
-      let res: Result<QTreeNode | QTreeNode[] | undefined, FxError> = ok(undefined);
+      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
       if (isV2()) {
         const v2plugin = solutionPlugin as v2.SolutionPlugin;
         res = v2plugin.getQuestionsForScaffolding
@@ -1379,12 +1377,8 @@ export class FxCore implements v3.ICore {
       }
       if (res.isErr()) return err(new SystemError(res.error, CoreSource, "QuestionModelFail"));
       if (res.value) {
-        const solutionNode = Array.isArray(res.value)
-          ? (res.value as QTreeNode[])
-          : [res.value as QTreeNode];
-        for (const node of solutionNode) {
-          if (node.data) capNode.addChild(node);
-        }
+        const solutionNode = res.value as QTreeNode;
+        if (solutionNode.data) capNode.addChild(solutionNode);
       }
     }
 

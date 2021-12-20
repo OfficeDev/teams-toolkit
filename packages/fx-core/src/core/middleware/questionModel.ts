@@ -245,6 +245,7 @@ export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<strin
   }
 }
 
+//////V3 questions
 export async function getQuestionsForScaffold(
   inputs: v2.InputsWithProjectPath,
   solution: v3.ISolution,
@@ -392,6 +393,7 @@ export async function getQuestionsForInit(
   return ok(node.trim());
 }
 
+//////V2 questions
 export async function getQuestionsForCreateProjectV2(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {

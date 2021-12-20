@@ -1,17 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  Inputs,
-  Platform,
-  Stage,
-  v2,
-  v3,
-  ok,
-  TokenProvider,
-  Json,
-  AppStudioTokenProvider,
-} from "@microsoft/teamsfx-api";
+import { Inputs, OptionItem, Platform, Stage, v3 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
@@ -20,21 +10,19 @@ import * as path from "path";
 import sinon from "sinon";
 import Container from "typedi";
 import { FxCore, setTools } from "../../src";
-import { CoreQuestionNames, ScratchOptionYesVSC } from "../../src/core/question";
+import {
+  CoreQuestionNames,
+  SampleSelect,
+  ScratchOptionNoVSC,
+  ScratchOptionYesVSC,
+} from "../../src/core/question";
 import {
   BotOptionItem,
   TabOptionItem,
   TabSPFxItem,
 } from "../../src/plugins/solution/fx-solution/question";
 import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
-import {
-  deleteFolder,
-  MockSolution,
-  MockSolutionV2,
-  mockSolutionV3getQuestionsAPI,
-  MockTools,
-  randomAppName,
-} from "./utils";
+import { deleteFolder, mockSolutionV3getQuestionsAPI, MockTools, randomAppName } from "./utils";
 
 describe("Core basic APIs for v3", () => {
   const sandbox = sinon.createSandbox();
@@ -105,5 +93,18 @@ describe("Core basic APIs for v3", () => {
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
+  });
+
+  it("create from sample (VSC)", async () => {
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
+      [CoreQuestionNames.Samples]: (SampleSelect.staticOptions[0] as OptionItem).id,
+      stage: Stage.create,
+    };
+    const core = new FxCore(tools);
+    const res = await core.createProject(inputs);
+    assert.isTrue(res.isOk());
+    projectPath = inputs.projectPath!;
   });
 });

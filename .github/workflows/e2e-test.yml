@@ -58,7 +58,7 @@ jobs:
         if: ${{  github.event_name == 'schedule' }}
         working-directory: packages/cli
         run: |
-          cases=`find tests/e2e -name "*.tests.ts" -printf "%f\n" | sed 's/.tests.ts//' | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
+          cases=`find tests/e2e -name "*.test.ts" -printf "%f\n" | sed 's/.test.ts//' | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
           echo "::set-output name=cases::$cases"
 
       - name: List cases for dispatch
@@ -68,7 +68,7 @@ jobs:
         run: |
           inputCases='${{ github.event.inputs.cases }}'
           if [ -z "$inputCases" ]; then
-            allCases=`find tests/e2e -name "*.tests.ts" -printf "%f\n" | sed 's/.tests.ts//' | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
+            allCases=`find tests/e2e -name "*.test.ts" -printf "%f\n" | sed 's/.test.ts//' | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
             echo "::set-output name=cases::$allCases"
           else
             echo "::set-output name=cases::$inputCases"
@@ -137,7 +137,7 @@ jobs:
       - name: run test
         working-directory: packages/cli
         run: |
-          file=`find tests/e2e -name "${{ matrix.cases }}.tests.ts"`
+          file=`find tests/e2e -name "${{ matrix.cases }}.test.ts"`
           if [ ! -z "$file" ]; then
             npx mocha --reporter @mochajs/json-file-reporter $file
           fi
@@ -193,7 +193,7 @@ jobs:
           while IFS= read -r failure;
           do
             case=${failure:14:-1}
-            file=`find tests/e2e -name $case".tests.ts"`
+            file=`find tests/e2e -name $case".test.ts"`
             email=`cat $file | grep '@author' | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
 
             if [ -z "$email" ]; then

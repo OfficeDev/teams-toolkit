@@ -240,10 +240,9 @@ describe("FunctionGenerateArmTemplates", () => {
         expectedResult.Configuration!.Modules!.function,
         fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
       );
-      chai.assert.exists(expectedResult.Provision!.Reference!.functionAppResourceId);
-      chai.assert.exists(expectedResult.Provision!.Reference!.functionEndpoint);
-      chai.assert.notExists(expectedResult.Provision!.Orchestration);
-      chai.assert.notExists(expectedResult.Provision!.Modules);
+      chai.assert.exists(expectedResult.Reference!.functionAppResourceId);
+      chai.assert.exists(expectedResult.Reference!.functionEndpoint);
+      chai.assert.notExists(expectedResult.Provision);
       chai.assert.notExists(expectedResult.Configuration!.Orchestration);
       chai.assert.notExists(expectedResult.Parameters);
     }

@@ -17,6 +17,18 @@ import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 
 class LocalEnvManager {
+  public async getLaunchInput() {}
+
+  public async getLocalDebugEnvs() {}
+
+  public async getNpmInstallLogInfo() {}
+
+  public async getPortsInUse() {}
+
+  public async getProgrammingLanguage() {}
+
+  public async getSkipNgrokConfig() {}
+
   private async getLocalSettings(projectPath: string): Promise<Json | undefined> {
     const projectSettings = await this.getProjectSettings(projectPath);
     const localSettingsProvider = new LocalSettingsProvider(projectPath);

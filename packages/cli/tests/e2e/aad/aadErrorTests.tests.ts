@@ -79,15 +79,18 @@ describe("Aad Error Tests", function () {
         await fs.writeJSON(filePath, state, { spaces: 4 });
 
         setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-        const { stdout, stderr } = await execAsync(
-          `teamsfx provision --subscription ${subscription}`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0,
-          }
-        );
-        expect(stderr.toString()).to.contains("Failed to get AAD app with Object Id");
+        try {
+          const { stdout, stderr } = await execAsync(
+            `teamsfx provision --subscription ${subscription}`,
+            {
+              cwd: projectPath,
+              env: process.env,
+              timeout: 0,
+            }
+          );
+        } catch (error) {
+          expect(error.toString()).to.contains("Failed to get AAD app with Object Id");
+        }
       } else {
         const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
 

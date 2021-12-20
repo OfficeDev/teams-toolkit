@@ -48,7 +48,7 @@ jobs:
           echo "{}" > coverages.json
           for i in $(find . -name coverage-summary.json); do
             name=$(basename $(dirname $(dirname $i)))
-            jq -rc --arg package $name --slurpfile t $i '.[$package]=[$t[0].total | del(.linesCovered)]' coverages.json > coverages.json.tmp
+            jq -rc --arg package $name --slurpfile t $i '.[$package]=$t[0].total | del(.linesCovered)' coverages.json > coverages.json.tmp
             mv coverages.json.tmp coverages.json
           done  
           coverages=`cat coverages.json`

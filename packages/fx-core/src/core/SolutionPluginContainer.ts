@@ -42,18 +42,6 @@ export function getAllSolutionPlugins(): Solution[] {
   return plugins;
 }
 
-export function getSolutionPluginByCap(cap: string[]): v2.SolutionPlugin | undefined {
-  if (isV3() && cap.includes(TabSPFxItem.id)) {
-    return Container.get<v2.SolutionPlugin>(SolutionPluginsV2.TeamsSPFxSolution);
-  } else {
-    return Container.get<v2.SolutionPlugin>(SolutionPluginsV2.AzureTeamsSolutionV2);
-  }
-}
-
-export function getSolutionPluginByCapV1(cap: string[]): Solution | undefined {
-  return Container.get<Solution>(SolutionPlugins.AzureTeamsSolution);
-}
-
 export function getSolutionPluginV2ByName(name: string): v2.SolutionPlugin | undefined {
   const solutions = getAllSolutionPluginsV2().filter((s) => s.name === name);
   if (solutions.length > 0) return solutions[0];

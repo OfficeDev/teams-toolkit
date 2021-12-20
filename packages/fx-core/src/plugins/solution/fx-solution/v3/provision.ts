@@ -7,7 +7,7 @@ import { Container } from "typedi";
 import * as util from "util";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getResourceGroupInPortal, getStrings } from "../../../../common/tools";
-import { deployArmTemplatesV3 } from "../arm";
+import arm from "../arm";
 import { executeConcurrently } from "../v2/executor";
 import { combineRecords } from "../v2/utils";
 
@@ -92,16 +92,16 @@ export async function provisionResources(
   ctx.logProvider.info(
     util.format(getStrings().solution.DeployArmTemplates.StartNotice, PluginDisplayName.Solution)
   );
-  // uncomment the following lines when resource plugin is ready.
-  // const armRes = await deployArmTemplatesV3(
-  //   ctx,
-  //   inputs,
-  //   envInfo,
-  //   tokenProvider.azureAccountProvider
-  // );
-  // if (armRes.isErr()) {
-  //   return err(armRes.error);
-  // }
+  //uncomment the following lines when resource plugin is ready.
+  const armRes = await arm.deployArmTemplates(
+    ctx,
+    inputs,
+    envInfo,
+    tokenProvider.azureAccountProvider
+  );
+  if (armRes.isErr()) {
+    return err(armRes.error);
+  }
   ctx.logProvider.info(
     util.format(getStrings().solution.DeployArmTemplates.SuccessNotice, PluginDisplayName.Solution)
   );

@@ -1383,15 +1383,16 @@ export class AppStudioPluginImpl {
   }
 
   private async getTeamsAppId(ctx: PluginContext, isLocalDebug: boolean): Promise<string> {
-    let teamsAppId: string;
+    let teamsAppId = "";
 
     if (isMultiEnvEnabled() || !isLocalDebug) {
       // User may manually update id in manifest template file, rather than configuration file
       // The id in manifest template file should override configurations
-      const manifest: TeamsAppManifest = await fs.readJSON(
-        await this.getManifestTemplatePath(ctx.root, isLocalDebug)
-      );
-      teamsAppId = manifest.id;
+      const manifestFile = await this.getManifestTemplatePath(ctx.root, isLocalDebug);
+      if (await fs.pathExists(manifestFile)) {
+        const manifest: TeamsAppManifest = await fs.readJSON(manifestFile);
+        teamsAppId = manifest.id;
+      }
       if (!isUUID(teamsAppId)) {
         if (isMultiEnvEnabled()) {
           teamsAppId = isLocalDebug
@@ -1698,9 +1699,16 @@ export class AppStudioPluginImpl {
       }
     }
 
-    let manifest = (
-      await fs.readFile(await this.getManifestTemplatePath(ctx.root, isLocalDebug))
-    ).toString();
+    const manifestFile = await this.getManifestTemplatePath(ctx.root, isLocalDebug);
+    if (!(await fs.pathExists(manifestFile))) {
+      return err(
+        AppStudioResultFactory.SystemError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(manifestFile)
+        )
+      );
+    }
+    let manifest = (await fs.readFile(manifestFile)).toString();
 
     // Bot only project, without frontend hosting
     let endpoint = tabEndpoint;

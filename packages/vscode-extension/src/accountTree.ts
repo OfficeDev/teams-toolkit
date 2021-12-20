@@ -64,15 +64,33 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
       );
       let icon = "";
       let contextValue = "selectSubscription";
+      const valid = await isValid();
       if (activeSubscriptionId === undefined || activeSubscription === undefined) {
         selectSubLabel = util.format(
           StringResources.vsc.accountTree.totalSubscriptions,
           subscriptions.length
         );
         icon = "subscriptions";
-
         if (subscriptions.length === 0) {
           contextValue = "emptySubscription";
+          selectSubLabel = StringResources.vsc.accountTree.noSubscriptions;
+          return [
+            {
+              commandId: "fx-extension.selectSubscription",
+              label: selectSubLabel,
+              callback: () => {
+                return Promise.resolve(ok(null));
+              },
+              parent: "fx-extension.signinAzure",
+              contextValue: valid ? contextValue : "invalidFxProject",
+              icon: "warning",
+              tooltip: {
+                isMarkdown: false,
+                value: StringResources.vsc.accountTree.noSubscriptionsTooltip,
+              },
+            },
+            true,
+          ];
         }
 
         if (subscriptions.length === 1) {
@@ -84,7 +102,6 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
         selectSubLabel = activeSubscription.subscriptionName;
         icon = "subscriptionSelected";
       }
-      const valid = await isValid();
       return [
         {
           commandId: "fx-extension.selectSubscription",

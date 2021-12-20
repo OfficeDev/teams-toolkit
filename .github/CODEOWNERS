@@ -47,6 +47,7 @@
 /packages/fx-core/src/core/middleware/projectMigrator.ts @dooriya @qinezh @a1exwang @meifans @blackchoey @wenytang-ms
 /packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang @LongOddCode @nliu-ms
 /packages/fx-core/src/plugins/solution/fx-solution/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh
+/packages/fx-core/src/plugins/solution/fx-solution/debug @kimizhu @swatDong @kuojianlu @XiaofuHuang
 
 /packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen @SLdragon
@@ -85,6 +86,9 @@
 
 /packages/fx-core/src/plugins/resource/simpleauth @KennethBWSong @adashen @formulahendry
 /packages/fx-core/tests/plugins/resource/simpleauth @KennethBWSong @adashen @formulahendry
+
+/packages/fx-core/src/plugins/resource/keyvault @adashen @formulahendry @xzf0587
+/packages/fx-core/tests/plugins/resource/keyvault @adashen @formulahendry @xzf0587
 
 /packages/fx-core/src/plugins/solution/arm.ts @blackchoey @xzf0587 @dilin-MS @wenytang-ms @adashen
 /packages/fx-core/src/common/armInterface.ts @blackchoey @xzf0587 @dilin-MS @wenytang-ms @adashen

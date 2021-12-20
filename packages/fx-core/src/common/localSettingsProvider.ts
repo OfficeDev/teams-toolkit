@@ -96,12 +96,13 @@ export class LocalSettingsProvider {
     return localSettings;
   }
 
-  public incrementalInit(
-    localSettings: LocalSettings,
+  public incrementalInitV2(
+    localSettingsJson: Json,
     addBackaned: boolean,
     addBot: boolean,
     addFrontend: boolean
-  ): LocalSettings {
+  ): Json {
+    const localSettings: LocalSettings = this.convertToLocalSettings(localSettingsJson);
     if (!localSettings.backend && addBackaned) {
       localSettings.backend = this.initBackend();
     }
@@ -114,7 +115,7 @@ export class LocalSettingsProvider {
       localSettings.frontend = this.initFrontend();
     }
 
-    return localSettings;
+    return this.convertToLocalSettingsJson(localSettings);
   }
 
   public async load(cryptoProvider?: CryptoProvider): Promise<LocalSettings | undefined> {

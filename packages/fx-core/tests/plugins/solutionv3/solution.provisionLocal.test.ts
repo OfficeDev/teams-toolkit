@@ -7,10 +7,6 @@ import "mocha";
 import * as uuid from "uuid";
 import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import {
-  getQuestionsForProvision,
-  provisionResources,
-} from "../../../src/plugins/solution/fx-solution/v3/provision";
-import {
   getQuestionsForLocalProvision,
   provisionLocalResources,
 } from "../../../src/plugins/solution/fx-solution/v3/provisionLocal";

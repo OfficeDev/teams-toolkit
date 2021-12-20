@@ -25,8 +25,8 @@ import os from "os";
 import path from "path";
 import { Container } from "typedi";
 import { format } from "util";
-import { TEAMS_FX_RESOURCE_ID_KEY } from ".";
-import { environmentManager, isV2 } from "../../..";
+import { TEAMS_FX_RESOURCE_ID_KEY } from "./constants";
+import { environmentManager } from "../../../core/environment";
 import {
   AzureSolutionConfig,
   TeamsFxAzureResourceStates,
@@ -62,6 +62,7 @@ import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
+import { isV2 } from "../../../core";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionFileName = "provision.bicep";
@@ -1097,7 +1098,7 @@ export class ArmTemplateRenderContext {
       References: {},
     };
     const provision = armResult.Provision?.Modules;
-    const references = armResult.Provision?.Reference;
+    const references = armResult.Reference;
     const configs = armResult.Configuration?.Modules;
     if (provision) {
       for (const module of Object.entries(provision)) {
@@ -1445,3 +1446,26 @@ export function formattedDeploymentError(deploymentError: any): any {
     return deploymentError.error;
   }
 }
+
+class Arm {
+  async generateArmTemplate(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    activatedPlugins: v3.ResourcePlugin[],
+    addedPlugins: v3.ResourcePlugin[]
+  ): Promise<Result<any, FxError>> {
+    return generateArmTemplateV3(ctx, inputs, activatedPlugins, addedPlugins);
+  }
+  async deployArmTemplates(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3,
+    azureAccountProvider: AzureAccountProvider
+  ): Promise<Result<void, FxError>> {
+    return deployArmTemplatesV3(ctx, inputs, envInfo, azureAccountProvider);
+  }
+}
+
+const arm = new Arm();
+
+export default arm;

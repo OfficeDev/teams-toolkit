@@ -13,9 +13,9 @@ export function mockSolutionGenerateArmTemplates(
     },
     Provision: {
       Orchestration: "",
-      Reference: {},
       Modules: {},
     },
+    Reference: {},
     Parameters: {},
   };
   if (template.Configuration) {
@@ -41,7 +41,6 @@ export function mockSolutionGenerateArmTemplates(
         mockedData
       );
     }
-    result.Provision!.Reference = template.Provision?.Reference;
     if (template.Provision?.Modules) {
       for (const moduleItem of Object.entries(template.Provision!.Modules)) {
         result.Provision!.Modules![moduleItem[0]] = compileHandlebarsTemplateString(
@@ -51,6 +50,7 @@ export function mockSolutionGenerateArmTemplates(
       }
     }
   }
+  result.Reference = template.Reference;
   result.Parameters = template.Parameters;
   return result;
 }
@@ -63,9 +63,7 @@ export function mockSolutionUpdateArmTemplates(
     Configuration: {
       Modules: {},
     },
-    Provision: {
-      Reference: {},
-    },
+    Reference: {},
   };
   if (template.Configuration) {
     if (template.Configuration?.Modules) {
@@ -77,8 +75,8 @@ export function mockSolutionUpdateArmTemplates(
       }
     }
   }
-  if (template.Provision) {
-    result.Provision!.Reference = template.Provision?.Reference;
+  if (template.Reference) {
+    result.Reference = template.Reference;
   }
   return result;
 }

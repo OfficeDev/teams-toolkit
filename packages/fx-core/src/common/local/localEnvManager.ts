@@ -8,13 +8,15 @@ import {
   Json,
   ProjectSettings,
   ProjectSettingsFileName,
+  UserError,
 } from "@microsoft/teamsfx-api";
+import * as fs from "fs-extra";
 import * as path from "path";
 
-import { readJson } from "../fileUtils";
 import { LocalSettingsProvider } from "../localSettingsProvider";
 import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
+import { CoreSource, ReadFileError } from "../../core/error";
 
 class LocalEnvManager {
   public async getLaunchInput() {}
@@ -40,14 +42,26 @@ class LocalEnvManager {
 
   private async getProjectSettings(projectPath: string): Promise<ProjectSettings> {
     return await this.retry(async () => {
-      return await readJson(
-        path.resolve(
-          projectPath,
-          `.${ConfigFolderName}`,
-          InputConfigsFolderName,
-          ProjectSettingsFileName
-        )
+      const projectSettingsPath = path.resolve(
+        projectPath,
+        `.${ConfigFolderName}`,
+        InputConfigsFolderName,
+        ProjectSettingsFileName
       );
+
+      if (!(await fs.pathExists(projectSettingsPath))) {
+        throw new UserError(
+          "FileNotFoundError",
+          `Project settings file does not exist: ${projectSettingsPath}`,
+          CoreSource
+        );
+      }
+
+      try {
+        return await fs.readJson(projectSettingsPath);
+      } catch (error: any) {
+        throw ReadFileError(error);
+      }
     });
   }
 

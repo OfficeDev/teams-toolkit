@@ -848,7 +848,7 @@
           {
             "id": "teamsToolkitCommands",
             "title": "Explore Teams toolkit commands",
-            "description": "Open Command Palette (Ctrl+Shift+P) and type 'Teams' to find Teams toolkit commands. You can also discover [Teams toolkit icon](command:workbench.view.extension.teamsfx) on the activity bar to easily see the commands after a project creation. \n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3ETeams%22%5D)",
+            "description": "Open Command Palette (Ctrl+Shift+P) and type 'Teams' to find Teams toolkit commands.\n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3ETeams%22%5D)",
             "media": {
               "svg": "media/step_commands.svg",
               "altText": "Display Teams Commands"
@@ -858,7 +858,7 @@
           {
             "id": "teamsToolkitCommandsMac",
             "title": "Explore Teams toolkit commands",
-            "description": "Open Command Palette (⇧⌘P) and type 'Teams' to find Teams toolkit commands. You can also discover [Teams toolkit icon](command:workbench.view.extension.teamsfx) on the activity bar to easily see the commands after a project creation. \n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3ETeams%22%5D)",
+            "description": "Open Command Palette (⇧⌘P) and type 'Teams' to find Teams toolkit commands.\n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3ETeams%22%5D)",
             "media": {
               "svg": "media/step_commands.svg",
               "altText": "Display Teams Commands"
@@ -873,23 +873,23 @@
               "svg": "media/step_nodejs.svg",
               "altText": "Install NodeJs"
             },
-            "when": "!fx-extension.isNotValidNode"
+            "when": "fx-extension.isNotValidNode"
           },
           {
             "id": "teamsToolkitTenantAccount",
             "title": "Get your Teams developer tenant for free",
-            "description": "Create a free Teams developer tenant to preview your  apps in Teams.\nIf you already have an M365 organizational account with [sideloading option](https://aka.ms/teamsfx-sideloading-option), directly [create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D).\n[Create a developer tenant](https://aka.ms/teamsfx-prepare-365-tenant)",
+            "description": "Create a free Teams developer tenant to preview your  apps in Teams.\n[Create a developer tenant](https://aka.ms/teamsfx-prepare-365-tenant)",
             "media": {
               "markdown": "docs/itp/itp.md"
             }
           },
           {
-            "id": "teamsToolkitExploreMore",
-            "title": "Explore more TeamsFx functionalities",
-            "description": " • Manage multiple environments and collaborate with others\n • Customize resource provision with ARM\n • Check documentation for more tips",
+            "id": "teamsToolkitCreateProject",
+            "title": "Build your first Teams app",
+            "description": "Build a Teams app from the scratch or explore our samples to help you quickly get started with the basic Teams app concepts and code structures.\n[Create a new Teams app](command:fx-extension.create)",
             "media": {
-              "svg": "media/goodToGo.svg",
-              "altText": "Explore more"
+              "image": "media/todolist-sample.gif",
+              "altText": "Create Project"
             }
           }
         ]

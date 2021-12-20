@@ -32,13 +32,13 @@ export class KeyVaultPluginImpl {
           path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
           ConstantString.UTF8Encoding
         ),
-        Reference: {
-          m365ClientSecretReference: Constants.KeyVaultBicep.m365ClientSecretReference,
-          botClientSecretReference: Constants.KeyVaultBicep.botClientSecretReference,
-        },
         Modules: {
           keyVault: await fs.readFile(provisionModuleResult, ConstantString.UTF8Encoding),
         },
+      },
+      Reference: {
+        m365ClientSecretReference: Constants.KeyVaultBicep.m365ClientSecretReference,
+        botClientSecretReference: Constants.KeyVaultBicep.botClientSecretReference,
       },
     };
 
@@ -47,11 +47,9 @@ export class KeyVaultPluginImpl {
 
   public async updateArmTemplates(ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> {
     const result: ArmTemplateResult = {
-      Provision: {
-        Reference: {
-          m365ClientSecretReference: Constants.KeyVaultBicep.m365ClientSecretReference,
-          botClientSecretReference: Constants.KeyVaultBicep.botClientSecretReference,
-        },
+      Reference: {
+        m365ClientSecretReference: Constants.KeyVaultBicep.m365ClientSecretReference,
+        botClientSecretReference: Constants.KeyVaultBicep.botClientSecretReference,
       },
     };
 

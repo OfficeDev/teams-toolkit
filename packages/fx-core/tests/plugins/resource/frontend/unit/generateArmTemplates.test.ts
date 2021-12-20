@@ -10,12 +10,7 @@ import * as path from "path";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
 import { FrontendPlugin } from "../../../../../src";
-import {
-  ConstantString,
-  mockSolutionGenerateArmTemplates,
-  mockSolutionUpdateArmTemplates,
-  ResourcePlugins,
-} from "../../util";
+import { ConstantString, mockSolutionGenerateArmTemplates, ResourcePlugins } from "../../util";
 
 chai.use(chaiAsPromised);
 
@@ -75,7 +70,7 @@ describe("FrontendGenerateArmTemplates", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationConfigFile);
-      chai.assert.isNotNull(expectedResult.Provision!.Reference);
+      chai.assert.isNotNull(expectedResult.Reference);
       chai.assert.isUndefined(expectedResult.Parameters);
     }
   });
@@ -98,18 +93,17 @@ describe("FrontendGenerateArmTemplates", () => {
     // Assert
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      chai.assert.exists(result.value.Provision!.Reference!.endpoint);
-      chai.assert.exists(result.value.Provision!.Reference!.domain);
+      chai.assert.exists(result.value.Reference!.endpoint);
+      chai.assert.exists(result.value.Reference!.domain);
       chai.assert.strictEqual(
-        result.value.Provision!.Reference!.endpoint,
+        result.value.Reference!.endpoint,
         "provisionOutputs.frontendHostingOutput.value.endpoint"
       );
       chai.assert.strictEqual(
-        result.value.Provision!.Reference!.domain,
+        result.value.Reference!.domain,
         "provisionOutputs.frontendHostingOutput.value.domain"
       );
-      chai.assert.notExists(result.value.Provision!.Orchestration);
-      chai.assert.notExists(result.value.Provision!.Modules);
+      chai.assert.notExists(result.value.Provision);
       chai.assert.notExists(result.value.Parameters);
       chai.assert.notExists(result.value.Configuration);
     }

@@ -162,24 +162,23 @@ describe("Bot Generates Arm Templates", () => {
         path.join(expectedBicepFileDirectory, configurationModuleFileName),
         ConstantString.UTF8Encoding
       );
+      chai.assert.notExists(compiledResult.Provision);
       chai.assert.strictEqual(compiledResult.Configuration!.Modules!.bot, configModuleFile);
-      chai.assert.notExists(compiledResult.Provision!.Orchestration);
-      chai.assert.notExists(compiledResult.Provision!.Modules);
       chai.assert.notExists(compiledResult.Configuration!.Orchestration);
       chai.assert.notExists(compiledResult.Parameters);
-      chai.assert.exists(compiledResult.Provision!.Reference!.resourceId);
+      chai.assert.exists(compiledResult.Reference!.resourceId);
       chai.assert.strictEqual(
-        compiledResult.Provision!.Reference!.resourceId,
+        compiledResult.Reference!.resourceId,
         "provisionOutputs.botOutput.value.botWebAppResourceId"
       );
-      chai.assert.exists(compiledResult.Provision!.Reference!.hostName);
+      chai.assert.exists(compiledResult.Reference!.hostName);
       chai.assert.strictEqual(
-        compiledResult.Provision!.Reference!.hostName,
+        compiledResult.Reference!.hostName,
         "provisionOutputs.botOutput.value.validDomain"
       );
-      chai.assert.exists(compiledResult.Provision!.Reference!.webAppEndpoint);
+      chai.assert.exists(compiledResult.Reference!.webAppEndpoint);
       chai.assert.strictEqual(
-        compiledResult.Provision!.Reference!.webAppEndpoint,
+        compiledResult.Reference!.webAppEndpoint,
         "provisionOutputs.botOutputs.value.botWebAppEndpoint"
       );
     }

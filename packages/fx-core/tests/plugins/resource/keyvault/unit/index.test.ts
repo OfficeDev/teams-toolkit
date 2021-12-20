@@ -86,18 +86,17 @@ describe("keyVaultPlugin", () => {
     chai.assert.isTrue(generateArmTemplatesResult.isOk());
     if (generateArmTemplatesResult.isOk()) {
       const result = generateArmTemplatesResult.value;
-      chai.assert.exists(result.Provision!.Reference!.m365ClientSecretReference);
-      chai.assert.exists(result.Provision!.Reference!.botClientSecretReference);
+      chai.assert.exists(result.Reference!.m365ClientSecretReference);
+      chai.assert.exists(result.Reference!.botClientSecretReference);
       chai.assert.notExists(result.Parameters);
       chai.assert.notExists(result.Configuration);
-      chai.assert.notExists(result.Provision!.Modules);
-      chai.assert.notExists(result.Provision!.Orchestration);
+      chai.assert.notExists(result.Provision);
       chai.assert.strictEqual(
-        result.Provision!.Reference!.m365ClientSecretReference,
+        result.Reference!.m365ClientSecretReference,
         "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference"
       );
       chai.assert.strictEqual(
-        result.Provision!.Reference!.botClientSecretReference,
+        result.Reference!.botClientSecretReference,
         "provisionOutputs.keyVaultOutput.value.botClientSecretReference"
       );
     }

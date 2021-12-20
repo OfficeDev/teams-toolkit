@@ -211,10 +211,8 @@ export class ApimManager {
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
 
     const result: ArmTemplateResult = {
-      Provision: {
-        Reference: {
-          serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
-        },
+      Reference: {
+        serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
       },
       Configuration: {
         Modules: {
@@ -238,9 +236,6 @@ export class ApimManager {
           path.join(bicepTemplateDir, Bicep.ProvisionFileName),
           ConstantString.UTF8Encoding
         ),
-        Reference: {
-          serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
-        },
         Modules: {
           apim: await fs.readFile(
             path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleFileName),
@@ -259,6 +254,9 @@ export class ApimManager {
             ConstantString.UTF8Encoding
           ),
         },
+      },
+      Reference: {
+        serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
       },
       Parameters: JSON.parse(
         await fs.readFile(

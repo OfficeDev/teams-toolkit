@@ -15,7 +15,7 @@ export async function getQuestionsForInit(
   inputs: v2.InputsWithProjectPath
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const node = new QTreeNode({
-    name: AzureSolutionQuestionNames.Solution,
+    name: "azure-solution-group",
     type: "func",
     func: (inputs: Inputs) => {
       inputs[AzureSolutionQuestionNames.Solution] = TeamsFxAzureSolutionNameV3;

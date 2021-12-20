@@ -58,7 +58,7 @@ export async function getQuestionsForScaffolding(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const node = new QTreeNode({
-    name: AzureSolutionQuestionNames.Solution,
+    name: "azure-solution-group",
     type: "func",
     func: (inputs: Inputs) => {
       inputs[AzureSolutionQuestionNames.Solution] = TeamsAppSolutionNameV2;

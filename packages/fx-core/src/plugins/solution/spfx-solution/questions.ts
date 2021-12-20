@@ -15,7 +15,7 @@ export async function getQuestionsForScaffolding(
     ResourcePluginsV2.SpfxPlugin
   );
   const spfxSolutionNode = new QTreeNode({
-    name: TeamsSPFxSolutionQuestions.Solution,
+    name: "azure-solution-group",
     type: "func",
     func: (inputs: Inputs) => {
       inputs[TeamsSPFxSolutionQuestions.Solution] = "fx-solution-spfx";

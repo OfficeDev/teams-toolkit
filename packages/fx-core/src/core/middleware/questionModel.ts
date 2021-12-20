@@ -190,15 +190,7 @@ async function getQuestionsForScaffold(
     const res = await solution.getQuestionsForScaffold(context, inputs);
     if (res.isOk()) {
       const solutionValue = res.value;
-      if (Array.isArray(solutionValue)) {
-        const node = new QTreeNode({ type: "group" });
-        for (const child of solutionValue) {
-          if (child.data) node.addChild(child);
-        }
-        return ok(node);
-      } else {
-        return ok(solutionValue);
-      }
+      return ok(solutionValue);
     }
     return err(res.error);
   }

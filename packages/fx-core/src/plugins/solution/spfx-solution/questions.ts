@@ -2,6 +2,7 @@ import { FxError, Inputs, QTreeNode, Result, v2, ok } from "@microsoft/teamsfx-a
 import Container from "typedi";
 import { TabSPFxItem } from "../fx-solution/question";
 import { ResourcePluginsV2 } from "../fx-solution/ResourcePluginContainer";
+import { TeamsSPFxSolutionName } from "./constants";
 
 export enum TeamsSPFxSolutionQuestions {
   Solution = "solution",
@@ -18,7 +19,7 @@ export async function getQuestionsForScaffolding(
     name: "azure-solution-group",
     type: "func",
     func: (inputs: Inputs) => {
-      inputs[TeamsSPFxSolutionQuestions.Solution] = "fx-solution-spfx";
+      inputs[TeamsSPFxSolutionQuestions.Solution] = TeamsSPFxSolutionName;
     },
   });
   spfxSolutionNode.condition = { contains: TabSPFxItem.id };

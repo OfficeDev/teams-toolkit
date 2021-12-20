@@ -62,21 +62,18 @@ describe("Aad Error Tests", function () {
       // set fake object id in context
 
       if (isMultiEnvEnabled()) {
-        const state = await fs.readJSON(
-          environmentManager.getEnvStateFilesPath(
-            environmentManager.getDefaultEnvName(),
-            projectPath
-          ).envState
-        );
-        state["fx-resource-aad-app-for-teams"]["objectId"] = "fake";
-        await fs.writeJSON(
-          environmentManager.getEnvStateFilesPath(
-            environmentManager.getDefaultEnvName(),
-            projectPath
-          ).envState,
-          state,
-          { spaces: 4 }
-        );
+        const state = {
+          "fx-resource-aad-app-for-teams": {
+            objectId: "fake",
+          },
+        };
+        const folderPath = `${projectPath}/.fx/states`;
+        await fs.mkdir(folderPath);
+        const filePath = environmentManager.getEnvStateFilesPath(
+          environmentManager.getDefaultEnvName(),
+          projectPath
+        ).envState;
+        await fs.writeJSON(filePath, state, { spaces: 4 });
 
         setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
         const { stdout, stderr } = await execAsync(

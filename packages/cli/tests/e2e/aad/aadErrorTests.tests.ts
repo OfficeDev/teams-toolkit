@@ -66,6 +66,9 @@ describe("Aad Error Tests", function () {
           "fx-resource-aad-app-for-teams": {
             objectId: "fake",
           },
+          solution: {
+            remoteTeamsAppId: "fake",
+          },
         };
         const folderPath = `${projectPath}/.fx/states`;
         await fs.mkdir(folderPath);

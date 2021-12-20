@@ -101,7 +101,6 @@ import {
   upgradeDefaultFunctionName,
   upgradeProgrammingLanguage,
 } from "./middleware/envInfoLoader";
-import { EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
@@ -114,7 +113,6 @@ import {
   newSolutionContext,
   ProjectSettingsLoaderMW,
 } from "./middleware/projectSettingsLoader";
-import { ProjectSettingsLoaderMW_V3 } from "./middleware/projectSettingsLoaderV3";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import {
@@ -133,8 +131,6 @@ import {
   QuestionModelMW,
 } from "./middleware/questionModel";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
-import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
-import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
 import {
   BotOptionItem,
   CoreQuestionNames,
@@ -154,6 +150,10 @@ import {
   getSolutionPluginByCapV1,
 } from "./SolutionPluginContainer";
 import { newEnvInfo } from "./tools";
+import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
+import { ProjectSettingsLoaderMW_V3 } from "./middleware/projectSettingsLoaderV3";
+import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
+import { EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.

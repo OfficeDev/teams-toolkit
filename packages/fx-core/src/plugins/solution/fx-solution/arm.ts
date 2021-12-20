@@ -1098,7 +1098,7 @@ export class ArmTemplateRenderContext {
       References: {},
     };
     const provision = armResult.Provision?.Modules;
-    const references = armResult.Provision?.Reference;
+    const references = armResult.Reference;
     const configs = armResult.Configuration?.Modules;
     if (provision) {
       for (const module of Object.entries(provision)) {

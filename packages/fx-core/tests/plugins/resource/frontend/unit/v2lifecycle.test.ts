@@ -135,7 +135,7 @@ describe("Frontend hosting V2", () => {
         ConstantString.UTF8Encoding
       );
       assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationConfigFile);
-      assert.isNotNull(expectedResult.Provision!.Reference);
+      assert.isNotNull(expectedResult.Reference);
       assert.isUndefined(expectedResult.Parameters);
     }
   });

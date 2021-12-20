@@ -675,11 +675,9 @@ export class FunctionPluginImpl {
     );
 
     const result: ArmTemplateResult = {
-      Provision: {
-        Reference: {
-          functionAppResourceId: FunctionBicep.functionAppResourceId,
-          functionEndpoint: FunctionBicep.functionEndpoint,
-        },
+      Reference: {
+        functionAppResourceId: FunctionBicep.functionAppResourceId,
+        functionEndpoint: FunctionBicep.functionEndpoint,
       },
       Configuration: {
         Modules: {
@@ -720,16 +718,16 @@ export class FunctionPluginImpl {
         Modules: {
           function: await fs.readFile(provisionFuncTemplateFilePath, ConstantString.UTF8Encoding),
         },
-        Reference: {
-          functionAppResourceId: FunctionBicep.functionAppResourceId,
-          functionEndpoint: FunctionBicep.functionEndpoint,
-        },
       },
       Configuration: {
         Orchestration: await fs.readFile(configTemplateFilePath, ConstantString.UTF8Encoding),
         Modules: {
           function: await fs.readFile(configFuncTemplateFilePath, ConstantString.UTF8Encoding),
         },
+      },
+      Reference: {
+        functionAppResourceId: FunctionBicep.functionAppResourceId,
+        functionEndpoint: FunctionBicep.functionEndpoint,
       },
     };
 

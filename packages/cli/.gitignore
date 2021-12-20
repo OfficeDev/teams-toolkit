@@ -10,7 +10,7 @@ node_modules
 dist
 build
 lib
-solution
+# solution
 temp
 
 # Coverage directory used by tools like istanbul

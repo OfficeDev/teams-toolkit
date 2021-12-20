@@ -1,4 +1,3 @@
-import { Json, LocalSettings } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import { LocalSettingsProvider } from "../../src/common/localSettingsProvider";

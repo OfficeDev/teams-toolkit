@@ -97,6 +97,7 @@ describe("LocalSettings provider APIs", () => {
       const localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
       chai.assert.isDefined(localSettings.frontend);
       chai.assert.isDefined(localSettings.backend);
+      chai.assert.isDefined(localSettings.auth);
       chai.assert.isUndefined(localSettings.bot);
     });
 
@@ -105,9 +106,10 @@ describe("LocalSettings provider APIs", () => {
       hasBackend = false;
       hasBot = false;
 
-      const localSettings = localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
+      const localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
       chai.assert.isDefined(localSettings.frontend);
       chai.assert.isUndefined(localSettings.backend);
+      chai.assert.isDefined(localSettings.auth);
       chai.assert.isUndefined(localSettings.bot);
     });
 
@@ -116,9 +118,10 @@ describe("LocalSettings provider APIs", () => {
       hasBackend = false;
       hasBot = true;
 
-      const localSettings = localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
+      const localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
       chai.assert.isUndefined(localSettings.frontend);
       chai.assert.isUndefined(localSettings.backend);
+      chai.assert.isDefined(localSettings.auth);
       chai.assert.isDefined(localSettings.bot);
     });
   });

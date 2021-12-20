@@ -1,13 +1,23 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
-import { TeamsFxAzureSolutionNameV3 } from "./constants";
+import { FxError, Inputs, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
 
 export async function getQuestionsForInit(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath
+  inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  // const functionQuestion: FuncQuestion = {
+  //   type: "func",
+  //   name: "select-solution",
+  //   func: (inputs: Inputs) => {
+  //     const capabilities = inputs.capabilities as string[];
+  //     inputs.solution = !capabilities.includes(TabSPFxItem.id)
+  //       ? BuiltInSolutionNames.spfx
+  //       : BuiltInSolutionNames.azure;
+  //   },
+  // };
+  // return ok(new QTreeNode(functionQuestion));
   return ok(undefined);
 }
 

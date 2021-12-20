@@ -77,7 +77,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
       return;
     }
     getQuestionRes = await core._getQuestionsForMigrateV1Project(inputs);
-  } else if (method === "init") {
+  } else if (method === "init" || method === "_init") {
     getQuestionRes = await core._getQuestionsForInit(inputs);
   } else if (
     [

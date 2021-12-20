@@ -77,10 +77,11 @@ export class LocalSettingsProvider {
       },
     };
 
+    localSettings.auth = this.initSimpleAuth().toJSON();
+
     // initialize frontend and simple auth local settings.
     if (includeFrontend) {
       localSettings.frontend = this.initFrontend().toJSON();
-      localSettings.auth = this.initSimpleAuth().toJSON();
     }
 
     // initialize backend local settings.

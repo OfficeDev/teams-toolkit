@@ -62,18 +62,19 @@ describe("Aad Error Tests", function () {
       // set fake object id in context
 
       if (isMultiEnvEnabled()) {
-        const config = await fs.readJSON(
-          environmentManager.getEnvConfigPath(environmentManager.getDefaultEnvName(), projectPath)
+        const state = await fs.readJSON(
+          environmentManager.getEnvStateFilesPath(
+            environmentManager.getDefaultEnvName(),
+            projectPath
+          ).envState
         );
-        config["auth"] = {
-          objectId: "fakeObjectid",
-          clientId: "fakeClientId",
-          clientSecret: "fakeClientSecret",
-          accessAsUserScopeId: "fakeAccessAsUserScopeId",
-        };
+        state["fx-resource-aad-app-for-teams"]["objectId"] = "fake";
         await fs.writeJSON(
-          environmentManager.getEnvConfigPath(environmentManager.getDefaultEnvName(), projectPath),
-          config,
+          environmentManager.getEnvStateFilesPath(
+            environmentManager.getDefaultEnvName(),
+            projectPath
+          ).envState,
+          state,
           { spaces: 4 }
         );
 
@@ -86,9 +87,7 @@ describe("Aad Error Tests", function () {
             timeout: 0,
           }
         );
-        expect(stderr.toString()).to.contains(
-          "Failed in step: Update permission for Azure AD app. You need to go to Azure Protal and mannually update the permission"
-        );
+        expect(stderr.toString()).to.contains("AadGetAppError");
       } else {
         const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
 

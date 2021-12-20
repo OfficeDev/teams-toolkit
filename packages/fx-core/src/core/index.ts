@@ -146,8 +146,8 @@ import {
 import {
   getAllSolutionPlugins,
   getAllSolutionPluginsV2,
-  getSolutionPluginByCap,
-  getSolutionPluginByCapV1,
+  getSolutionPluginByName,
+  getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
 import { newEnvInfo } from "./tools";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
@@ -320,7 +320,7 @@ export class FxCore implements v3.ICore {
       }
 
       if (isV2()) {
-        const solution = await getSolutionPluginByCap(inputs[CoreQuestionNames.Capabilities]);
+        const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -362,7 +362,7 @@ export class FxCore implements v3.ICore {
           };
         }
       } else {
-        const solution = await getSolutionPluginByCapV1(inputs[CoreQuestionNames.Capabilities]);
+        const solution = await getSolutionPluginByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -478,15 +478,15 @@ export class FxCore implements v3.ICore {
         projectType = "tab+bot";
 
       const programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage] as string;
-      const solution = capabilities.includes(TabSPFxItem.id)
-        ? BuiltInSolutionNames.spfx
-        : BuiltInSolutionNames.azure;
+      // const solution = capabilities.includes(TabSPFxItem.id)
+      //   ? BuiltInSolutionNames.spfx
+      //   : BuiltInSolutionNames.azure;
 
       // init
       const initInputs: v2.InputsWithProjectPath & { solution?: string } = {
         ...inputs,
         projectPath: projectPath,
-        solution: solution,
+        // solution: solution,
       };
       const initRes = await this._init(initInputs, ctx);
       if (initRes.isErr()) {

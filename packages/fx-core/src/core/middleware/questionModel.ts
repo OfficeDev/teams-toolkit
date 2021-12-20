@@ -13,7 +13,6 @@ import {
   Platform,
   QTreeNode,
   Result,
-  SingleSelectQuestion,
   Solution,
   SolutionContext,
   Stage,
@@ -35,7 +34,7 @@ import {
 } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
-import { TeamsFxAzureSolutionNameV3 } from "../../plugins/solution/fx-solution/v3/constants";
+import { BuiltInSolutionNames } from "../../plugins/solution/fx-solution/v3/constants";
 import {
   createCapabilityQuestion,
   DefaultAppNameFunc,
@@ -43,7 +42,6 @@ import {
   ProgrammingLanguageQuestion,
   QuestionAppName,
   QuestionRootFolder,
-  QuestionSelectSolution,
   QuestionV1AppName,
   SampleSelect,
   ScratchOptionNo,
@@ -369,14 +367,14 @@ export async function getQuestionsForInit(
   const node = new QTreeNode({ type: "group" });
   //TODO remove hardcoded
   const globalSolutions: v3.ISolution[] = [
-    Container.get<v3.ISolution>(TeamsFxAzureSolutionNameV3),
-    Container.get<v3.ISolution>("fx-solution-spfx"),
+    Container.get<v3.ISolution>(BuiltInSolutionNames.azure),
+    Container.get<v3.ISolution>(BuiltInSolutionNames.spfx),
   ];
-  const solutionNames: string[] = globalSolutions.map((s) => s.name);
-  const selectSolution: SingleSelectQuestion = QuestionSelectSolution;
-  selectSolution.staticOptions = solutionNames;
-  const solutionSelectNode = new QTreeNode(selectSolution);
-  node.addChild(solutionSelectNode);
+
+  const capQuestion = createCapabilityQuestion();
+  const capNode = new QTreeNode(capQuestion);
+  node.addChild(capNode);
+
   const context = createV2Context(newProjectSettings());
   for (const solution of globalSolutions) {
     if (solution.getQuestionsForInit) {
@@ -384,8 +382,7 @@ export async function getQuestionsForInit(
       if (res.isErr()) return res;
       if (res.value) {
         const solutionNode = res.value as QTreeNode;
-        solutionNode.condition = { equals: solution.name };
-        if (solutionNode.data) solutionSelectNode.addChild(solutionNode);
+        if (solutionNode.data) capNode.addChild(solutionNode);
       }
     }
   }

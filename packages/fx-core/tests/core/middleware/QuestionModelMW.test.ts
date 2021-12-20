@@ -119,17 +119,16 @@ describe("Middleware - QuestionModelMW", () => {
     async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
       return this._return(inputs);
     }
-    async _getQuestionsForCreateProject(
+    async _getQuestionsForCreateProjectV2(
       inputs: Inputs
     ): Promise<Result<QTreeNode | undefined, FxError>> {
-      const node = new QTreeNode({
-        type: "text",
-        name: questionName,
-        title: "test",
-      });
       return ok(node);
     }
-
+    async _getQuestionsForCreateProjectV3(
+      inputs: Inputs
+    ): Promise<Result<QTreeNode | undefined, FxError>> {
+      return ok(node);
+    }
     async _getQuestions(
       ctx: SolutionContext | v2.Context,
       solution: Solution | v2.SolutionPlugin,

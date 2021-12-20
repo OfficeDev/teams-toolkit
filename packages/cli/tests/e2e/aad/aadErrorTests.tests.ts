@@ -87,7 +87,7 @@ describe("Aad Error Tests", function () {
             timeout: 0,
           }
         );
-        expect(stderr.toString()).to.contains("AadGetAppError");
+        expect(stderr.toString()).to.contains("Failed to get AAD app with Object Id");
       } else {
         const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
 

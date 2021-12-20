@@ -61,6 +61,7 @@ import {
   ScratchOptionYesVSC,
 } from "../../src/core/question";
 import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
+import { TeamsAppSolutionNameV2 } from "../../src/plugins/solution/fx-solution/v2/constants";
 import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
 
 describe("Core basic APIs", () => {
@@ -317,6 +318,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
+      [CoreQuestionNames.Solution]: TeamsAppSolutionNameV2,
       stage: Stage.create,
     };
     expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
@@ -373,7 +375,7 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.VSCode };
+      const inputs: Inputs = { platform: Platform.VSCode, solution: TeamsAppSolutionNameV2 };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk());
       if (res.isErr()) {
@@ -404,6 +406,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
+      [CoreQuestionNames.Solution]: TeamsAppSolutionNameV2,
       stage: Stage.create,
     };
     expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
@@ -460,7 +463,7 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.VSCode };
+      const inputs: Inputs = { platform: Platform.VSCode, solution: TeamsAppSolutionNameV2 };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk());
       assert.deepEqual(expectedInputs, inputs);
@@ -874,7 +877,7 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.CLI };
+      const inputs: Inputs = { platform: Platform.CLI, solution: TeamsAppSolutionNameV2 };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk() && res.value === projectPath);
 
@@ -900,6 +903,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
+      [CoreQuestionNames.Solution]: TeamsAppSolutionNameV2,
       env: "dev",
       stage: Stage.create,
     };
@@ -965,7 +969,11 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        env: "dev",
+        solution: TeamsAppSolutionNameV2,
+      };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);
@@ -1013,6 +1021,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
       env: "dev",
+      [CoreQuestionNames.Solution]: TeamsAppSolutionNameV2,
       stage: Stage.create,
     };
     expectedInputs[CoreQuestionNames.Capabilities] = TabOptionItem.id;
@@ -1075,7 +1084,11 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        env: "dev",
+        solution: TeamsAppSolutionNameV2,
+      };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);

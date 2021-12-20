@@ -77,7 +77,7 @@ export async function getQuestionsForScaffolding(
   const tabRes = await getTabScaffoldQuestionsV2(
     ctx,
     inputs,
-    inputs.platform === Platform.VSCode ? false : true
+    inputs.platform !== Platform.CLI ? false : true
   );
   if (tabRes.isErr()) return tabRes;
   if (tabRes.value) {

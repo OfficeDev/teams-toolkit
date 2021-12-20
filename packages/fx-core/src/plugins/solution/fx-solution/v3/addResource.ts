@@ -189,6 +189,22 @@ export class AzureWebAppPlugin implements v3.ResourcePlugin {
   }
 }
 
+@Service(BuiltInResourcePluginNames.spfx)
+export class SPFxResourcePlugin implements v3.ResourcePlugin {
+  resourceType = "SPFx resource";
+  description = "SPFx resource";
+  name = BuiltInResourcePluginNames.spfx;
+  async deploy(
+    ctx: v2.Context,
+    inputs: v3.PluginDeployInputs,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    ctx.logProvider.info(`fx-resource-spfx deploy success!`);
+    return ok(Void);
+  }
+}
+
 function getAllResourcePlugins(): v3.ResourcePlugin[] {
   return [
     Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.webApp),

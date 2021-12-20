@@ -418,7 +418,7 @@ export class FxCore implements v3.ICore {
     currentStage = Stage.create;
     inputs.stage = Stage.create;
     let folder = inputs[QuestionRootFolder.name] as string;
-    if (inputs.platform === Platform.VSCode) {
+    if (inputs.platform === Platform.VSCode || inputs.platform === Platform.VS) {
       folder = getRootDirectory();
       try {
         await fs.ensureDir(folder);

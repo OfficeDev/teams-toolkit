@@ -441,7 +441,8 @@ export async function getQuestionsForCreateProjectV2(
   programmingLanguage.condition = { minItems: 1 };
   createNew.addChild(programmingLanguage);
 
-  if (inputs.platform !== Platform.VSCode) {
+  // only CLI need folder input
+  if (inputs.platform === Platform.CLI) {
     createNew.addChild(new QTreeNode(QuestionRootFolder));
   }
   createNew.addChild(new QTreeNode(QuestionAppName));

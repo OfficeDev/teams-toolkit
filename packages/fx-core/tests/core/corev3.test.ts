@@ -21,7 +21,11 @@ import sinon from "sinon";
 import Container from "typedi";
 import { FxCore, setTools } from "../../src";
 import { CoreQuestionNames, ScratchOptionYesVSC } from "../../src/core/question";
-import { BotOptionItem, TabOptionItem } from "../../src/plugins/solution/fx-solution/question";
+import {
+  BotOptionItem,
+  TabOptionItem,
+  TabSPFxItem,
+} from "../../src/plugins/solution/fx-solution/question";
 import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 import {
   deleteFolder,
@@ -42,6 +46,8 @@ describe("Core basic APIs for v3", () => {
     sandbox.restore();
     const solutionAzure = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
     mockSolutionV3getQuestionsAPI(solutionAzure, sandbox);
+    const solutionSPFx = Container.get<v3.ISolution>(BuiltInSolutionNames.spfx);
+    mockSolutionV3getQuestionsAPI(solutionSPFx, sandbox);
     setTools(tools);
     mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
   });
@@ -52,7 +58,7 @@ describe("Core basic APIs for v3", () => {
     deleteFolder(projectPath);
   });
 
-  it("create from new", async () => {
+  it("create from new (VSC, Tab+Bot)", async () => {
     appName = randomAppName();
     projectPath = path.resolve(os.tmpdir(), appName);
     const inputs: Inputs = {
@@ -66,10 +72,38 @@ describe("Core basic APIs for v3", () => {
     };
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
-    assert.isTrue(res.isOk() && res.value === os.homedir() + appName);
+    assert.isTrue(res.isOk());
   });
-  it("create from new, provision, deploy, localDebug, publish, getQuestion, getQuestionsForUserTask, getProjectConfig", async () => {});
-  it("getQuestions for create", async () => {});
-  it("getQuestions, getQuestionsForUserTask for static question", async () => {});
-  it("crypto: encrypt, decrypt secrets", async () => {});
+  it("create from new (VS, Tab+Bot)", async () => {
+    appName = randomAppName();
+    projectPath = path.resolve(os.tmpdir(), appName);
+    const inputs: Inputs = {
+      platform: Platform.VS,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      projectPath: projectPath,
+      stage: Stage.create,
+      [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
+      [CoreQuestionNames.ProgrammingLanguage]: "javascript",
+    };
+    const core = new FxCore(tools);
+    const res = await core.createProject(inputs);
+    assert.isTrue(res.isOk());
+  });
+  it("create from new (VSC, SPFx)", async () => {
+    appName = randomAppName();
+    projectPath = path.resolve(os.tmpdir(), appName);
+    const inputs: Inputs = {
+      platform: Platform.VSCode,
+      [CoreQuestionNames.AppName]: appName,
+      [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
+      projectPath: projectPath,
+      stage: Stage.create,
+      [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
+      [CoreQuestionNames.ProgrammingLanguage]: "typescript",
+    };
+    const core = new FxCore(tools);
+    const res = await core.createProject(inputs);
+    assert.isTrue(res.isOk());
+  });
 });

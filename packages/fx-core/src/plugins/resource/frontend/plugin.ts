@@ -191,11 +191,9 @@ export class FrontendPluginImpl {
     Logger.info(Messages.StartUpdateArmTemplates(PluginInfo.DisplayName));
 
     const result: ArmTemplateResult = {
-      Provision: {
-        Reference: {
-          endpoint: FrontendOutputBicepSnippet.Endpoint,
-          domain: FrontendOutputBicepSnippet.Domain,
-        },
+      Reference: {
+        endpoint: FrontendOutputBicepSnippet.Endpoint,
+        domain: FrontendOutputBicepSnippet.Domain,
       },
     };
 
@@ -219,13 +217,13 @@ export class FrontendPluginImpl {
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: await fs.readFile(provisionFilePath, ConstantString.UTF8Encoding),
-        Reference: {
-          endpoint: FrontendOutputBicepSnippet.Endpoint,
-          domain: FrontendOutputBicepSnippet.Domain,
-        },
         Modules: {
           frontendHosting: await fs.readFile(moduleProvisionFilePath, ConstantString.UTF8Encoding),
         },
+      },
+      Reference: {
+        endpoint: FrontendOutputBicepSnippet.Endpoint,
+        domain: FrontendOutputBicepSnippet.Domain,
       },
     };
 

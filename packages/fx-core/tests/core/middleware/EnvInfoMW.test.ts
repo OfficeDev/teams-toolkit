@@ -13,6 +13,7 @@ import {
   ProjectSettingsFileName,
   Result,
   v2,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import * as dotenv from "dotenv";
@@ -22,7 +23,15 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { CoreHookContext, environmentManager, isV2, newEnvInfo } from "../../../src";
+import {
+  CoreHookContext,
+  environmentManager,
+  isV2,
+  newEnvInfo,
+  newEnvInfoV3,
+  separateSecretDataV3,
+  setTools,
+} from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
 import {
   ContextInjectorMW,
@@ -68,6 +77,7 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
         const cryptoProvider = new LocalCrypto(projectSettings.projectId);
 
         const tools = new MockTools();
+        setTools(tools);
         tools.cryptoProvider = cryptoProvider;
 
         const solutionContext = await newSolutionContext(tools, inputs);
@@ -208,4 +218,38 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
       });
     });
   }
+
+  it("newEnvInfoV3()", async () => {
+    newEnvInfoV3();
+  });
+
+  it("separateSecretDataV3()", async () => {
+    const data: v3.ResourceStates = {
+      solution: {},
+      r1: {
+        field1: "123456",
+        secretFields: ["field1"],
+      },
+      r2: {
+        field2: "789012",
+        secretFields: ["field2"],
+      },
+    };
+    const secret = separateSecretDataV3(data);
+    assert.deepEqual(secret, {
+      "r1.field1": "123456",
+      "r2.field2": "789012",
+    });
+    assert.deepEqual(data, {
+      solution: {},
+      r1: {
+        field1: "{{r1.field1}}",
+        secretFields: ["field1"],
+      },
+      r2: {
+        field2: "{{r2.field2}}",
+        secretFields: ["field2"],
+      },
+    });
+  });
 });

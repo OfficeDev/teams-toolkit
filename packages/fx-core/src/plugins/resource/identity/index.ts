@@ -116,13 +116,11 @@ export class IdentityPlugin implements Plugin {
 
   public async updateArmTemplates(ctx: PluginContext): Promise<Result> {
     const result: ArmTemplateResult = {
-      Provision: {
-        Reference: {
-          identityName: IdentityBicep.identityName,
-          identityClientId: IdentityBicep.identityClientId,
-          identityResourceId: IdentityBicep.identityResourceId,
-          identityPrincipalId: IdentityBicep.identityPrincipalId,
-        },
+      Reference: {
+        identityName: IdentityBicep.identityName,
+        identityClientId: IdentityBicep.identityClientId,
+        identityResourceId: IdentityBicep.identityResourceId,
+        identityPrincipalId: IdentityBicep.identityPrincipalId,
       },
     };
 
@@ -143,18 +141,18 @@ export class IdentityPlugin implements Plugin {
           path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
           ConstantString.UTF8Encoding
         ),
-        Reference: {
-          identityName: IdentityBicep.identityName,
-          identityClientId: IdentityBicep.identityClientId,
-          identityResourceId: IdentityBicep.identityResourceId,
-          identityPrincipalId: IdentityBicep.identityPrincipalId,
-        },
         Modules: {
           identity: await fs.readFile(
             path.join(bicepTemplateDirectory, IdentityBicepFile.moduleTempalteFilename),
             ConstantString.UTF8Encoding
           ),
         },
+      },
+      Reference: {
+        identityName: IdentityBicep.identityName,
+        identityClientId: IdentityBicep.identityClientId,
+        identityResourceId: IdentityBicep.identityResourceId,
+        identityPrincipalId: IdentityBicep.identityPrincipalId,
       },
     };
 

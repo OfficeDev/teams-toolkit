@@ -15,6 +15,8 @@ export interface RemoteEnvs {
 }
 
 export const envFileName = (envName: string): string => `env.teamsfx.${envName}`;
+export const envFilePath = (envName: string, folder: string): string =>
+  path.join(folder, envFileName(envName));
 
 export const EnvKeys = Object.freeze({
   FuncEndpoint: "REACT_APP_FUNC_ENDPOINT",
@@ -33,8 +35,7 @@ export function initEnvs(): RemoteEnvs {
   return result;
 }
 
-export async function loadEnvFile(envName: string, folder: string): Promise<RemoteEnvs> {
-  const envPath = path.join(folder, envFileName(envName));
+export async function loadEnvFile(envPath: string): Promise<RemoteEnvs> {
   if (!(await fs.pathExists(envPath))) {
     return initEnvs();
   }
@@ -51,13 +52,9 @@ export async function loadEnvFile(envName: string, folder: string): Promise<Remo
   return result;
 }
 
-export async function saveEnvFile(
-  envName: string,
-  folder: string,
-  envs: RemoteEnvs
-): Promise<void> {
+export async function saveEnvFile(envPath: string, envs: RemoteEnvs): Promise<void> {
   try {
-    const configs = await loadEnvFile(envName, folder);
+    const configs = await loadEnvFile(envPath);
     const newConfigs: RemoteEnvs = {
       teamsfxRemoteEnvs: { ...configs.teamsfxRemoteEnvs, ...envs.teamsfxRemoteEnvs },
       customizedRemoteEnvs: { ...configs.customizedRemoteEnvs, ...envs.customizedRemoteEnvs },
@@ -69,7 +66,6 @@ export async function saveEnvFile(
       return;
     }
 
-    const envPath = path.join(folder, envFileName(envName));
     await fs.ensureFile(envPath);
 
     const envString =
@@ -87,9 +83,7 @@ export async function saveEnvFile(
 }
 
 function concatEnvString(envs: { [key: string]: string }): string {
-  let result = "";
-  for (const [key, value] of Object.entries(envs)) {
-    result += `${key}=${value}${os.EOL}`;
-  }
-  return result;
+  return Object.entries(envs)
+    .map(([k, v]) => `${k}=${v}`)
+    .join(os.EOL);
 }

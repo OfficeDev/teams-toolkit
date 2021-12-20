@@ -59,7 +59,7 @@ import { Bicep, ConstantString } from "../../../common/constants";
 import { EnvironmentUtils } from "./utils/environment-utils";
 import { copyFiles, isArmSupportEnabled } from "../../../common";
 import { AzureResourceFunction } from "../../solution/fx-solution/question";
-import { EnvKeys, loadEnvFile, saveEnvFile } from "./env";
+import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
 
 export class FrontendPluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -182,7 +182,7 @@ export class FrontendPluginImpl {
 
     const componentPath: string = path.join(ctx.root, FrontendPathInfo.WorkingDir);
 
-    const envs = await loadEnvFile(ctx.envInfo.envName, componentPath);
+    const envs = await loadEnvFile(envFilePath(ctx.envInfo.envName, componentPath));
 
     await FrontendDeployment.doFrontendBuild(componentPath, envs);
     await FrontendDeployment.doFrontendDeployment(client, componentPath);
@@ -279,10 +279,13 @@ export class FrontendPluginImpl {
 
   private async updateMultiEnv(ctx: PluginContext): Promise<void> {
     const envs = this.collectEnvs(ctx);
-    await saveEnvFile(ctx.envInfo.envName, path.join(ctx.root, FrontendPathInfo.WorkingDir), {
-      teamsfxRemoteEnvs: envs,
-      customizedRemoteEnvs: {},
-    });
+    await saveEnvFile(
+      envFilePath(ctx.envInfo.envName, path.join(ctx.root, FrontendPathInfo.WorkingDir)),
+      {
+        teamsfxRemoteEnvs: envs,
+        customizedRemoteEnvs: {},
+      }
+    );
   }
 
   private async updateDotenv(ctx: PluginContext): Promise<void> {

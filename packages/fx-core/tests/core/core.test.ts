@@ -312,7 +312,7 @@ describe("Core basic APIs", () => {
   });
 
   it("create project with correct version", async () => {
-    assert.isTrue(true);
+    const mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
     appName = randomAppName();
     projectPath = path.join(os.homedir(), "TeamsApps", appName);
     const expectedInputs: Inputs = {
@@ -398,6 +398,7 @@ describe("Core basic APIs", () => {
       assert.isTrue(validSettingsResult === undefined);
       projectSettings.version == "2.0.0";
     }
+    mockedEnvRestore();
   });
 
   async function case1() {

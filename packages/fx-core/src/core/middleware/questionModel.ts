@@ -47,7 +47,11 @@ import {
   ScratchOptionNo,
   ScratchOptionYes,
 } from "../question";
-import { getAllSolutionPlugins, getAllSolutionPluginsV2 } from "../SolutionPluginContainer";
+import {
+  getAllSolutionPlugins,
+  getAllSolutionPluginsV2,
+  getGlobalSolutionsV3,
+} from "../SolutionPluginContainer";
 import { newSolutionContext } from "./projectSettingsLoader";
 import { getProjectSettingsPath } from "./projectSettingsLoaderV3";
 /**
@@ -59,8 +63,10 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   const core = ctx.self as FxCore;
 
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
-  if (method === "createProjectV2" || method === "createProjectV3") {
-    getQuestionRes = await core._getQuestionsForCreateProject(inputs);
+  if (method === "createProjectV2") {
+    getQuestionRes = await core._getQuestionsForCreateProjectV2(inputs);
+  } else if (method === "createProjectV3") {
+    getQuestionRes = await core._getQuestionsForCreateProjectV3(inputs);
   } else if (method === "migrateV1Project") {
     const res = await TOOLS?.ui.showMessage(
       "warn",
@@ -365,16 +371,10 @@ export async function getQuestionsForInit(
     }
   }
   const node = new QTreeNode({ type: "group" });
-  //TODO remove hardcoded
-  const globalSolutions: v3.ISolution[] = [
-    Container.get<v3.ISolution>(BuiltInSolutionNames.azure),
-    Container.get<v3.ISolution>(BuiltInSolutionNames.spfx),
-  ];
-
+  const globalSolutions = getGlobalSolutionsV3();
   const capQuestion = createCapabilityQuestion();
   const capNode = new QTreeNode(capQuestion);
   node.addChild(capNode);
-
   const context = createV2Context(newProjectSettings());
   for (const solution of globalSolutions) {
     if (solution.getQuestionsForInit) {
@@ -387,6 +387,52 @@ export async function getQuestionsForInit(
     }
   }
   node.addChild(new QTreeNode(QuestionAppName));
+  return ok(node.trim());
+}
+
+export async function getQuestionsForCreateProjectV3(
+  inputs: Inputs
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
+  // create new
+  const createNew = new QTreeNode({ type: "group" });
+  node.addChild(createNew);
+  createNew.condition = { equals: ScratchOptionYes.id };
+
+  // capabilities
+  const capQuestion = createCapabilityQuestion();
+  const capNode = new QTreeNode(capQuestion);
+  createNew.addChild(capNode);
+  const globalSolutions = getGlobalSolutionsV3();
+  const context = createV2Context(newProjectSettings());
+  for (const solution of globalSolutions) {
+    if (solution.getQuestionsForInit) {
+      const res = await solution.getQuestionsForInit(context, inputs);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const solutionNode = res.value as QTreeNode;
+        if (solutionNode.data) capNode.addChild(solutionNode);
+      }
+    }
+  }
+  // Language
+  const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
+  programmingLanguage.condition = { minItems: 1 };
+  createNew.addChild(programmingLanguage);
+
+  // only CLI need folder input
+  if (inputs.platform === Platform.CLI) {
+    createNew.addChild(new QTreeNode(QuestionRootFolder));
+  }
+  createNew.addChild(new QTreeNode(QuestionAppName));
+
+  // create from sample
+  const sampleNode = new QTreeNode(SampleSelect);
+  node.addChild(sampleNode);
+  sampleNode.condition = { equals: ScratchOptionNo.id };
+  if (inputs.platform !== Platform.VSCode) {
+    sampleNode.addChild(new QTreeNode(QuestionRootFolder));
+  }
   return ok(node.trim());
 }
 

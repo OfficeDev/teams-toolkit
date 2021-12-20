@@ -119,6 +119,7 @@ import {
   getQuestionsForAddModule,
   getQuestionsForAddResource,
   getQuestionsForCreateProjectV2,
+  getQuestionsForCreateProjectV3,
   getQuestionsForDeploy,
   getQuestionsForInit,
   getQuestionsForLocalProvision,
@@ -1250,7 +1251,7 @@ export class FxCore implements v3.ICore {
     currentStage = Stage.getQuestions;
     if (stage === Stage.create) {
       delete inputs.projectPath;
-      return await this._getQuestionsForCreateProject(inputs);
+      return await this._getQuestionsForCreateProjectV2(inputs);
     } else {
       if (isV2()) {
         const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
@@ -1806,7 +1807,8 @@ export class FxCore implements v3.ICore {
   }
 
   //V1,V2 questions
-  _getQuestionsForCreateProject = getQuestionsForCreateProjectV2;
+  _getQuestionsForCreateProjectV2 = getQuestionsForCreateProjectV2;
+  _getQuestionsForCreateProjectV3 = getQuestionsForCreateProjectV3;
   _getQuestionsForUserTask = getQuestionsForUserTaskV2;
   _getQuestions = getQuestionsV2;
   _getQuestionsForMigrateV1Project = getQuestionsForMigrateV1Project;

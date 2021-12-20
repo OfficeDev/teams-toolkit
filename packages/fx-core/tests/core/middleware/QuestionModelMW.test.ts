@@ -341,7 +341,7 @@ describe("Middleware - QuestionModelMW", () => {
           return ok({ type: "success", result: questionValue });
         });
         const my = new MockCoreForQM();
-        my._getQuestionsForCreateProject = async function (
+        my._getQuestionsForCreateProjectV2 = async function (
           inputs: Inputs
         ): Promise<Result<QTreeNode | undefined, FxError>> {
           return err(InvalidInputError("mock"));

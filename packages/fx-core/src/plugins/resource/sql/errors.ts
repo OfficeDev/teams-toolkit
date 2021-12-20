@@ -123,6 +123,9 @@ export class ErrorMessage {
   public static readonly GuestAdminMessage =
     "Server identity does not have Azure Active Directory Readers permission";
 
+  public static readonly FirewallErrorReg =
+    /Client with IP address .*? is not allowed to access the server./g;
+
   public static readonly GuestAdminError = `SQL admin does not have enough permission to add database user. ${ErrorMessage.GetDetail}`;
 
   public static readonly AccessMessage = "is not allowed to access the server";

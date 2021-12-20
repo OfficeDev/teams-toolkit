@@ -205,17 +205,9 @@ export class SqlPluginImpl {
       if (this.config.aadAdminType === UserType.User) {
         ctx.logProvider?.info(Message.connectDatabase);
         const sqlClient = await SqlClient.create(ctx, this.config);
-
-        let existUser = false;
-        ctx.logProvider?.info(Message.checkDatabaseUser);
-        existUser = await sqlClient.existUser();
-
-        if (!existUser) {
-          ctx.logProvider?.info(Message.addDatabaseUser(this.config.identity));
-          await sqlClient.addDatabaseUser();
-        } else {
-          ctx.logProvider?.info(Message.existUser(this.config.identity));
-        }
+        ctx.logProvider?.info(Message.addDatabaseUser(this.config.identity));
+        this.config.retryAddUser = 0;
+        await this.addDatabaseUser(ctx, sqlClient, managementClient);
       } else {
         const message = ErrorMessage.ServicePrincipalWarning(
           this.config.identity,
@@ -231,7 +223,7 @@ export class SqlPluginImpl {
       );
     }
 
-    await managementClient.deleteLocalFirewallRule();
+    await managementClient.deleteLocalFirewallRule(this.config.retryAddUser);
 
     TelemetryUtils.sendEvent(Telemetry.stage.postProvision, true, {
       [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser
@@ -254,6 +246,29 @@ export class SqlPluginImpl {
       },
     };
     return ok(result);
+  }
+
+  public async addDatabaseUser(
+    ctx: PluginContext,
+    sqlClient: SqlClient,
+    managementClient: ManagementClient
+  ): Promise<void> {
+    while (true) {
+      try {
+        await sqlClient.addDatabaseUser();
+        return;
+      } catch (error) {
+        if (!SqlClient.isFireWallError(error?.innerError) || this.config.retryAddUser >= 3) {
+          throw error;
+        } else {
+          this.config.retryAddUser++;
+          ctx.logProvider?.warning(
+            `[${Constants.pluginName}] retry adding firewall rule to add database user [${this.config.retryAddUser}]`
+          );
+          await managementClient.addLocalFirewallRule(this.config.retryAddUser);
+        }
+      }
+    }
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -309,7 +324,7 @@ export class SqlPluginImpl {
   }
 
   private async AddFireWallRules(client: ManagementClient) {
-    await client.addLocalFirewallRule();
+    await client.addLocalFirewallRule(0);
     if (!isArmSupportEnabled()) {
       await client.addAzureFirewallRule();
     }

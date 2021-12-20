@@ -24,7 +24,7 @@ export class ManagementClient {
     return new ManagementClient(ctx, config, client);
   }
 
-  async createAzureSQL() {
+  async createAzureSQL(): Promise<void> {
     const model: SqlManagementModels.Server = {
       location: this.config.location,
       administratorLogin: this.config.admin,
@@ -98,7 +98,7 @@ export class ManagementClient {
     }
   }
 
-  async createDatabase() {
+  async createDatabase(): Promise<void> {
     const sku: SqlManagementModels.Sku = {
       name: "Basic",
     };
@@ -150,7 +150,7 @@ export class ManagementClient {
     }
   }
 
-  async addAADadmin() {
+  async addAADadmin(): Promise<void> {
     let model: SqlManagementModels.ServerAzureADAdministrator = {
       tenantId: this.config.tenantId,
       sid: this.config.aadAdminObjectId,
@@ -177,7 +177,7 @@ export class ManagementClient {
     }
   }
 
-  async addAzureFirewallRule() {
+  async addAzureFirewallRule(): Promise<void> {
     const model: SqlManagementModels.FirewallRule = {
       startIpAddress: Constants.firewall.azureIp,
       endIpAddress: Constants.firewall.azureIp,
@@ -201,7 +201,7 @@ export class ManagementClient {
     }
   }
 
-  async addLocalFirewallRule(): Promise<void> {
+  async addLocalFirewallRule(index: number): Promise<void> {
     const response = await axios.get(Constants.echoIpAddress);
     const localIp: string = response.data;
     const partials: string[] = localIp.split(".");
@@ -217,11 +217,12 @@ export class ManagementClient {
       startIpAddress: startIp,
       endIpAddress: endIp,
     };
+    const ruleName = Constants.firewall.localRule + index;
     try {
       await this.client.firewallRules.createOrUpdate(
         this.config.resourceGroup,
         this.config.sqlServer,
-        Constants.firewall.localRule,
+        ruleName,
         model
       );
     } catch (error) {
@@ -236,13 +237,16 @@ export class ManagementClient {
     }
   }
 
-  async deleteLocalFirewallRule() {
+  async deleteLocalFirewallRule(count: number): Promise<void> {
     try {
-      await this.client.firewallRules.deleteMethod(
-        this.config.resourceGroup,
-        this.config.sqlServer,
-        Constants.firewall.localRule
-      );
+      for (let i = 0; i <= count; i++) {
+        const ruleName = Constants.firewall.localRule + count;
+        await this.client.firewallRules.deleteMethod(
+          this.config.resourceGroup,
+          this.config.sqlServer,
+          ruleName
+        );
+      }
     } catch (error) {
       this.ctx.logProvider?.error(
         ErrorMessage.SqlDeleteLocalFirwallError.message(this.config.sqlEndpoint, error.message)
@@ -255,7 +259,7 @@ export class ManagementClient {
     }
   }
 
-  async delay(s: number) {
+  async delay(s: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, s * 1000));
   }
 }

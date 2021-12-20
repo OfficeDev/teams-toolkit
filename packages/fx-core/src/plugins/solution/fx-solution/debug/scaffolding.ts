@@ -4,18 +4,7 @@
 
 import * as fs from "fs-extra";
 import * as os from "os";
-import {
-  err,
-  FxError,
-  Inputs,
-  Json,
-  LocalSettings,
-  ok,
-  Platform,
-  Result,
-  v2,
-  Void,
-} from "@microsoft/teamsfx-api";
+import { err, FxError, Inputs, Json, ok, Platform, Result, v2, Void } from "@microsoft/teamsfx-api";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
 import * as Launch from "./util/launch";
 import * as Tasks from "./util/tasks";
@@ -222,10 +211,10 @@ async function scaffoldLocalSettingsJson(
       includeBot,
       includeFrontend
     );
-    await localSettingsProvider.saveJson(localSettings);
+    await localSettingsProvider.saveJson(localSettings, ctx.cryptoProvider);
   } else {
     // Initialize a local settings on scaffolding
     localSettings = localSettingsProvider.initV2(includeFrontend, includeBackend, includeBot);
-    await localSettingsProvider.saveJson(localSettings);
+    await localSettingsProvider.saveJson(localSettings, ctx.cryptoProvider);
   }
 }

@@ -117,6 +117,17 @@ export class LocalSettingsProvider {
     return localSettings;
   }
 
+  public incrementalInitV2(
+    localSettingsJson: Json,
+    addBackaned: boolean,
+    addBot: boolean,
+    addFrontend: boolean
+  ): Json {
+    const localSettings: LocalSettings = this.convertToLocalSettings(localSettingsJson);
+    const result = this.incrementalInit(localSettings, addBackaned, addBot, addFrontend);
+    return this.convertToLocalSettingsJson(result);
+  }
+
   public async load(cryptoProvider?: CryptoProvider): Promise<LocalSettings | undefined> {
     if (await fs.pathExists(this.localSettingsFilePath)) {
       const localSettingsJson = await fs.readJson(this.localSettingsFilePath);

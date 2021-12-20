@@ -29,7 +29,7 @@ const PackageJson = require("@npmcli/package-json");
 export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
   inputs: Inputs,
-  localSettings?: LocalSettings | Json
+  localSettings?: Json
 ): Promise<Result<Void, FxError>> {
   const isSpfx = ContextHelper.isSpfx(ctx);
   const isMigrateFromV1 = ContextHelper.isMigrateFromV1(ctx);
@@ -216,7 +216,7 @@ async function scaffoldLocalSettingsJson(
 
   if (localSettings !== undefined) {
     // Add local settings for the new added capability/resource
-    localSettings = localSettingsProvider.incrementalInit(
+    localSettings = localSettingsProvider.incrementalInitV2(
       localSettings,
       includeBackend,
       includeBot,

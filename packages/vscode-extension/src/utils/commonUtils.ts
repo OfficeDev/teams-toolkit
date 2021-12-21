@@ -1,19 +1,12 @@
 // Copyright (c) Microsoft Corporation.
-
 // Licensed under the MIT license.
 
 import * as vscode from "vscode";
-
 import * as os from "os";
-
 import * as extensionPackage from "./../../package.json";
-
 import * as fs from "fs-extra";
-
 import { ext } from "../extensionVariables";
-
 import * as path from "path";
-
 import {
   ConfigFolderName,
   InputConfigsFolderName,
@@ -32,12 +25,10 @@ import {
   PluginNames,
 } from "@microsoft/teamsfx-core";
 import { workspace, WorkspaceConfiguration } from "vscode";
-
 import * as commonUtils from "../debug/commonUtils";
-
 import { ConfigurationKey, CONFIGURATION_PREFIX, UserState } from "../constants";
-
 import { envDefaultJsonFile } from "../commonlib/common/constant";
+import { execSync } from "child_process";
 
 export function getPackageVersion(versionStr: string): string {
   if (versionStr.includes("alpha")) {
@@ -424,4 +415,25 @@ export async function canUpgradeToArmAndMultiEnv(workspacePath?: string): Promis
   } catch (err) {
     return false;
   }
+}
+
+export function isValidNode(): boolean {
+  try {
+    const supportedVersions = ["10", "12", "14"];
+    const output = execSync("node --version");
+    const regex = /v(?<major_version>\d+)\.(?<minor_version>\d+)\.(?<patch_version>\d+)/gm;
+
+    const match = regex.exec(output.toString());
+    if (!match) {
+      return false;
+    }
+
+    const majorVersion = match.groups?.major_version;
+    if (!majorVersion) {
+      return false;
+    }
+
+    return supportedVersions.includes(majorVersion);
+  } catch (e) {}
+  return false;
 }

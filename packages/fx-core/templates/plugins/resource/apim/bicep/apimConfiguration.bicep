@@ -22,11 +22,11 @@ var tabAppDomain = {{References.domain}}
 {{#if Plugins.fx-resource-frontend-hosting }}
 {{#if Plugins.fx-resource-bot}}
 var m365ApplicationIdUri = 'api://${tabAppDomain}/botid-${botId}'
-{{#else}}
+{{else}}
 var m365ClientId = provisionParameters['m365ClientId']
 var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'
 {{/if}}
-{{#else}}
+{{else}}
 {{#if Plugins.fx-resource-bot }}
 var m365ApplicationIdUri = 'api://botid-${botId}'
 {{/if}}

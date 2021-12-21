@@ -8,12 +8,14 @@ param currentConfigs object
 @secure()
 param currentAppSettings object
 
-var functionAppName = split({{PluginOutput.fx-resource-function.References.functionAppResourceId}}, '/')[8]
+var functionAppName = split({{Plugins.fx-resource-function.References.functionAppResourceId}}, '/')[8]
 
 var m365ClientId = provisionParameters['m365ClientId']
-{{#with Plugins.fx-resource-key-vault}}
-var m365ClientSecret = {{References.m365ClientSecretReference}}
-{{/with}}
+{{#if Plugins.fx-resource-key-vault}}
+var m365ClientSecret = {{Plugins.fx-resource-key-vault.References.m365ClientSecretReference}}
+{{else}}
+var m365ClientSecret = provisionParameters['m365ClientSecret']
+{{/if}}
 
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
@@ -28,11 +30,10 @@ var botId = provisionParameters['botAadAppClientId']
 {{#if Plugins.fx-resource-frontend-hosting }}
 {{#if Plugins.fx-resource-bot }}
 var m365ApplicationIdUri = 'api://${tabAppDomain}/botid-${botId}'
-{{#else Plugins.fx-resource-bot }}
+{{else}}
 var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'
 {{/if}}
-{{/if}}
-{{#else Plugins.fx-resource-frontend-hosting }}
+{{else}}
 {{#if Plugins.fx-resource-bot }}
 var m365ApplicationIdUri = 'api://botid-${botId}'
 {{/if}}

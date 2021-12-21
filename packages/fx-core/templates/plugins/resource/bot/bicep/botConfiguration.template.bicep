@@ -10,7 +10,7 @@ var botWebAppName = split(provisionOutputs.botOutput.value.botWebAppResourceId, 
 var m365ClientId = provisionParameters['m365ClientId']
 {{#if Plugins.fx-resource-key-vault }}
 var m365ClientSecret = {{Plugins.fx-resource-key-vault.References.m365ClientSecretReference}}
-{{#else}}
+{{else}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']
 {{/if}}
 var m365TenantId = provisionParameters['m365TenantId']
@@ -18,7 +18,7 @@ var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var botAadAppClientId = provisionParameters['botAadAppClientId']
 {{#if Plugins.fx-resource-key-vault }}
 var botAadAppClientSecret = {{Plugins.fx-resource-key-vault.References.botClientSecretReference}}
-{{#else}}
+{{else}}
 var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
 {{/if}}
 
@@ -26,11 +26,11 @@ var botId = provisionParameters['botAadAppClientId']
 
 {{#if Plugins.fx-resource-frontend-hosting }}
 {{#if Plugins.fx-resource-bot }}
-var m365ApplicationIdUri = 'api://${ {{~../PluginOutput.fx-resource-frontend-hosting.References.domain~}} }/botid-${botId}'
-{{#else }}
-var m365ApplicationIdUri = 'api://${ {{~../PluginOutput.fx-resource-frontend-hosting.References.domain~}} }/${m365ClientId}'
+var m365ApplicationIdUri = 'api://${ {{Plugins.fx-resource-frontend-hosting.References.domain}} }/botid-${botId}'
+{{else }}
+var m365ApplicationIdUri = 'api://${ {{Plugins.fx-resource-frontend-hosting.References.domain}} }/${m365ClientId}'
 {{/if}}
-{{#else}}
+{{else}}
 {{#if Plugins.fx-resource-bot }}
 var m365ApplicationIdUri = 'api://botid-${botId}'
 {{/if}}

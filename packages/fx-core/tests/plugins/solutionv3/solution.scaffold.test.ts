@@ -12,7 +12,8 @@ import {
   scaffold,
 } from "../../../src/plugins/solution/fx-solution/v3/scaffold";
 import { MockedV2Context } from "../solution/util";
-
+import { MockScaffoldPluginNames } from "./mockPlugins";
+import "./mockPlugins";
 describe("SolutionV3 - scaffold", () => {
   it("scaffold", async () => {
     const projectSettings: ProjectSettings = {
@@ -37,8 +38,8 @@ describe("SolutionV3 - scaffold", () => {
         id: "1",
         label: "1",
         data: {
-          pluginName: "fx-scaffold-react-tab",
-          templateName: "ReactTab",
+          pluginName: MockScaffoldPluginNames.tab,
+          templateName: "ReactTab_JS",
         },
       },
       test: true,
@@ -58,7 +59,8 @@ describe("SolutionV3 - scaffold", () => {
       activeResourcePlugins: [],
     });
     inputs.module = "1";
-    inputs.template.data.pluginName = "fx-scaffold-bot";
+    inputs.template.data.pluginName = MockScaffoldPluginNames.bot;
+    inputs.template.data.templateName = "NodejsBot_JS";
     const res2 = await scaffold(ctx, inputs);
     assert.isTrue(res2.isOk());
     assert.deepEqual(projectSettings.solutionSettings, {

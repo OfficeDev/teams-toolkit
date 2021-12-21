@@ -1,0 +1,5 @@
+.github/detect/regexes.json
+*.jpg
+*.png
+*.gif
+*.svg

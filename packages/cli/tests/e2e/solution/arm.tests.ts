@@ -29,7 +29,7 @@ import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import "mocha";
 import { Capability } from "../../commonlib/utilities";
 
-describe("Add Capabilities", function () {
+describe("Add capabilities", function () {
   //  Only test when insider feature flag enabled
   if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
     return;
@@ -37,7 +37,7 @@ describe("Add Capabilities", function () {
 
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
-  let appName, projectPath;
+  let appName: string, projectPath: string;
 
   before(async () => {
     appName = getUniqueAppName();
@@ -45,7 +45,6 @@ describe("Add Capabilities", function () {
   });
 
   after(async () => {
-    // clean up
     await cleanUp(appName, projectPath, true, false, false, true);
   });
 

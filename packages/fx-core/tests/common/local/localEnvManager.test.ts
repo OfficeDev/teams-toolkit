@@ -53,7 +53,7 @@ describe("LocalEnvManager", () => {
         JSON.stringify(localSettings0)
       );
 
-      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
+      const localSettings = await localEnvManager.getLocalSettings(projectPath);
       const launchInput = localEnvManager.getLaunchInput(localSettings);
 
       chai.assert.isDefined(launchInput);
@@ -65,7 +65,7 @@ describe("LocalEnvManager", () => {
       await fs.emptyDir(configFolder);
       await fs.writeFile(path.resolve(configFolder, "localSettings.json"), "{}");
 
-      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
+      const localSettings = await localEnvManager.getLocalSettings(projectPath);
       const launchInput = localEnvManager.getLaunchInput(localSettings);
 
       chai.assert.isDefined(launchInput);
@@ -76,7 +76,7 @@ describe("LocalEnvManager", () => {
       await fs.ensureDir(configFolder);
       await fs.emptyDir(configFolder);
 
-      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
+      const localSettings = await localEnvManager.getLocalSettings(projectPath);
       const launchInput = localEnvManager.getLaunchInput(localSettings);
 
       chai.assert.isDefined(launchInput);
@@ -124,7 +124,7 @@ describe("LocalEnvManager", () => {
         JSON.stringify(localSettingsBot)
       );
 
-      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
+      const localSettings = await localEnvManager.getLocalSettings(projectPath);
       const skipNgrok = localEnvManager.getSkipNgrokConfig(localSettings);
 
       chai.assert.isTrue(skipNgrok);
@@ -138,7 +138,7 @@ describe("LocalEnvManager", () => {
         JSON.stringify(localSettings0)
       );
 
-      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
+      const localSettings = await localEnvManager.getLocalSettings(projectPath);
       const skipNgrok = localEnvManager.getSkipNgrokConfig(localSettings);
 
       chai.assert.isFalse(skipNgrok);
@@ -148,7 +148,7 @@ describe("LocalEnvManager", () => {
       await fs.ensureDir(configFolder);
       await fs.emptyDir(configFolder);
 
-      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
+      const localSettings = await localEnvManager.getLocalSettings(projectPath);
       const skipNgrok = localEnvManager.getSkipNgrokConfig(localSettings);
 
       chai.assert.isFalse(skipNgrok);
@@ -212,10 +212,9 @@ describe("LocalEnvManager", () => {
       );
 
       const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-      const localSettings = await localEnvManager.getLocalSettings(
-        projectPath,
-        projectSettings.projectId
-      );
+      const localSettings = await localEnvManager.getLocalSettings(projectPath, {
+        projectId: projectSettings.projectId,
+      });
 
       chai.assert.isDefined(localSettings);
       chai.assert.isDefined(localSettings!.teamsApp);
@@ -238,10 +237,9 @@ describe("LocalEnvManager", () => {
       await fs.writeFile(path.resolve(configFolder, "localSettings.json"), "{}");
 
       const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-      const localSettings = await localEnvManager.getLocalSettings(
-        projectPath,
-        projectSettings.projectId
-      );
+      const localSettings = await localEnvManager.getLocalSettings(projectPath, {
+        projectId: projectSettings.projectId,
+      });
 
       chai.assert.isDefined(localSettings);
       chai.assert.isUndefined(localSettings!.teamsApp);
@@ -256,36 +254,11 @@ describe("LocalEnvManager", () => {
       );
 
       const projectSettings = await localEnvManager.getProjectSettings(projectPath);
-      const localSettings = await localEnvManager.getLocalSettings(
-        projectPath,
-        projectSettings.projectId
-      );
+      const localSettings = await localEnvManager.getLocalSettings(projectPath, {
+        projectId: projectSettings.projectId,
+      });
 
       chai.assert.isUndefined(localSettings);
-    });
-  });
-
-  describe("getRawLocalSettings()", () => {
-    it("happy path", async () => {
-      await fs.ensureDir(configFolder);
-      await fs.emptyDir(configFolder);
-      await fs.writeFile(
-        path.resolve(configFolder, "localSettings.json"),
-        JSON.stringify(localSettings0)
-      );
-
-      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
-
-      chai.assert.isDefined(localSettings);
-      chai.assert.isDefined(localSettings!.teamsApp);
-      chai.assert.equal(localSettings!.teamsApp.tenantId, "22222222-2222-2222-2222-222222222222");
-      chai.assert.equal(localSettings!.teamsApp.teamsAppId, "33333333-3333-3333-3333-333333333333");
-      chai.assert.isDefined(localSettings!.auth);
-      chai.assert.equal(localSettings!.auth.clientId, "44444444-4444-4444-4444-444444444444");
-      chai.assert.isTrue((localSettings!.auth.clientSecret as string).startsWith("crypto_"));
-      chai.assert.isDefined(localSettings!.frontend);
-      chai.assert.equal(localSettings!.frontend.tabDomain, "localhost");
-      chai.assert.equal(localSettings!.frontend.tabEndpoint, "https://localhost:3000");
     });
   });
 });

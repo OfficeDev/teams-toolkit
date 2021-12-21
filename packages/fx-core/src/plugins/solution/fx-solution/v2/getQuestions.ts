@@ -1,5 +1,6 @@
 import {
   AzureSolutionSettings,
+  CLIPlatforms,
   DynamicPlatforms,
   err,
   Func,
@@ -101,7 +102,7 @@ export async function getQuestionsForScaffolding(
   const tabRes = await getTabScaffoldQuestionsV2(
     ctx,
     inputs,
-    inputs.platform !== Platform.CLI ? false : true
+    CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
   );
   if (tabRes.isErr()) return tabRes;
   if (tabRes.value) {

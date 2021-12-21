@@ -3,6 +3,7 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import {
+  CLIPlatforms,
   err,
   Func,
   FunctionRouter,
@@ -487,7 +488,7 @@ export async function getQuestionsForCreateProjectV2(
   createNew.addChild(programmingLanguage);
 
   // only CLI need folder input
-  if (inputs.platform === Platform.CLI) {
+  if (CLIPlatforms.includes(inputs.platform)) {
     createNew.addChild(new QTreeNode(QuestionRootFolder));
   }
   createNew.addChild(new QTreeNode(QuestionAppName));

@@ -370,6 +370,10 @@ async function displayLearnMore(
   ui?: UserInteraction,
   telemetryReporter?: TelemetryReporter
 ): Promise<boolean> {
+  if (!ui) {
+    // no dialog, always continue
+    return true;
+  }
   const res = await ui?.showMessage("info", message, true, Messages.learnMoreButtonText);
   const userSelected: string | undefined = res?.isOk() ? res.value : undefined;
 

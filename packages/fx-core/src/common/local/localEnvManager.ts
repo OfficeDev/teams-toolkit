@@ -19,7 +19,12 @@ import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
 
 class LocalEnvManager {
-  public async getLaunchInput() {}
+  public async getLaunchInput(projectPath: string): Promise<any> {
+    // return local teams app id
+    const localSettings = await this.getRawLocalSettings(projectPath);
+    const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
+    return { appId: localTeamsAppId };
+  }
 
   public async getLocalDebugEnvs() {}
 
@@ -27,9 +32,15 @@ class LocalEnvManager {
 
   public async getPortsInUse() {}
 
-  public async getProgrammingLanguage() {}
+  public async getProgrammingLanguage(projectPath: string): Promise<string | undefined> {
+    const projectSettings = await this.getProjectSettings(projectPath);
+    return projectSettings.programmingLanguage;
+  }
 
-  public async getSkipNgrokConfig() {}
+  public async getSkipNgrokConfig(projectPath: string): Promise<boolean> {
+    const localSettings = await this.getRawLocalSettings(projectPath);
+    return (localSettings?.bot?.skipNgrok as boolean) === true;
+  }
 
   private async getLocalSettings(projectPath: string): Promise<Json | undefined> {
     const projectSettings = await this.getProjectSettings(projectPath);
@@ -37,6 +48,14 @@ class LocalEnvManager {
     const crypto = new LocalCrypto(projectSettings.projectId);
     return await this.retry(async () => {
       return await localSettingsProvider.loadV2(crypto);
+    });
+  }
+
+  // Load local settings without encryption
+  private async getRawLocalSettings(projectPath: string): Promise<Json | undefined> {
+    const localSettingsProvider = new LocalSettingsProvider(projectPath);
+    return await this.retry(async () => {
+      return await localSettingsProvider.loadV2(undefined);
     });
   }
 

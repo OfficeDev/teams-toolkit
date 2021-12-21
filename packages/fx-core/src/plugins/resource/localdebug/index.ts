@@ -49,6 +49,7 @@ import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { isMultiEnvEnabled } from "../../../common";
+import { localEnvManager } from "../../../common/local/localEnvManager";
 import { legacyLocalDebugPlugin } from "./legacyPlugin";
 import {
   LocalSettingsAuthKeys,
@@ -490,18 +491,12 @@ export class LocalDebugPlugin implements Plugin {
           return err(MissingStep("launching remote", "Teams: Provision and Teams: Deploy"));
         }
       } else {
-        // return local teams app id
-        const localTeamsAppId = isMultiEnvEnabled()
-          ? (ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId) as string)
-          : (solutionConfigs?.get(SolutionPlugin.LocalTeamsAppId) as string);
-        return ok({ appId: localTeamsAppId });
+        return ok(await localEnvManager.getLaunchInput(ctx.root));
       }
     } else if (func.method === "getProgrammingLanguage") {
-      const programmingLanguage = ctx.projectSettings?.programmingLanguage;
-      return ok(programmingLanguage);
+      return ok(await localEnvManager.getProgrammingLanguage(ctx.root));
     } else if (func.method === "getSkipNgrokConfig") {
-      const skipNgrok = ctx.localSettings?.bot?.get(LocalSettingsBotKeys.SkipNgrok);
-      return ok(skipNgrok);
+      return ok(await localEnvManager.getSkipNgrokConfig(ctx.root));
     } else if (func.method === "getLocalDebugEnvs") {
       const localEnvs = await this.getLocalDebugEnvs(ctx);
       return ok(localEnvs);

@@ -31,19 +31,11 @@ import {
   EnvKeysBotV1,
   LocalEnvMultiProvider,
 } from "./localEnvMulti";
-import {
-  LocalBotEndpointNotConfigured,
-  NgrokTunnelNotConnected,
-  InvalidLocalBotEndpointFormat,
-} from "./util/error";
 import { getAuthServiceFolder, prepareLocalAuthService } from "./util/localService";
-import { getNgrokHttpUrl } from "./util/ngrok";
-import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { isMultiEnvEnabled } from "../../../common";
-import { legacyLocalDebugPlugin } from "./legacyPlugin";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBackendKeys,
@@ -69,122 +61,10 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async localDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
-    // fallback to original local debug logic if multi-env is not enabled
-    if (!isMultiEnvEnabled()) {
-      return await legacyLocalDebugPlugin.localDebug(ctx);
-    }
-
-    const vscEnv = ctx.answers?.vscodeEnv;
-    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
-    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
-    const includeBot = ProjectSettingLoader.includeBot(ctx);
-    const includeAuth = ProjectSettingLoader.includeAuth(ctx);
-    let skipNgrok = ctx.localSettings?.bot?.get(LocalSettingsBotKeys.SkipNgrok) as boolean;
-
-    const telemetryProperties = {
-      platform: ctx.answers?.platform as string,
-      vscenv: vscEnv as string,
-      frontend: includeFrontend ? "true" : "false",
-      function: includeBackend ? "true" : "false",
-      bot: includeBot ? "true" : "false",
-      auth: includeAuth ? "true" : "false",
-      "skip-ngrok": skipNgrok ? "true" : "false",
-    };
-    TelemetryUtils.init(ctx);
-    TelemetryUtils.sendStartEvent(TelemetryEventName.localDebug, telemetryProperties);
-
-    // setup configs used by other plugins
-    // TODO: dynamicly determine local ports
-    if (ctx.answers?.platform === Platform.VSCode || ctx.answers?.platform === Platform.CLI) {
-      let localTabEndpoint: string;
-      let localTabDomain: string;
-      let localAuthEndpoint: string;
-      let localFuncEndpoint: string;
-
-      if (vscEnv === VsCodeEnv.codespaceBrowser || vscEnv === VsCodeEnv.codespaceVsCode) {
-        const codespaceName = await getCodespaceName();
-
-        localTabEndpoint = getCodespaceUrl(codespaceName, 3000);
-        localTabDomain = new URL(localTabEndpoint).host;
-        localAuthEndpoint = getCodespaceUrl(codespaceName, 5000);
-        localFuncEndpoint = getCodespaceUrl(codespaceName, 7071);
-      } else {
-        localTabDomain = "localhost";
-        localTabEndpoint = "https://localhost:3000";
-        localAuthEndpoint = "http://localhost:5000";
-        localFuncEndpoint = "http://localhost:7071";
-      }
-
-      if (includeAuth) {
-        ctx.localSettings?.auth?.set(
-          LocalSettingsAuthKeys.SimpleAuthServiceEndpoint,
-          localAuthEndpoint
-        );
-      }
-
-      if (includeFrontend) {
-        ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.TabEndpoint, localTabEndpoint);
-        ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.TabDomain, localTabDomain);
-      }
-
-      if (includeBackend) {
-        ctx.localSettings?.backend?.set(
-          LocalSettingsBackendKeys.FunctionEndpoint,
-          localFuncEndpoint
-        );
-      }
-
-      if (includeBot) {
-        if (skipNgrok === undefined) {
-          skipNgrok = false;
-          ctx.localSettings?.bot?.set(LocalSettingsBotKeys.SkipNgrok, skipNgrok);
-        }
-
-        if (skipNgrok) {
-          const localBotEndpoint = ctx.localSettings?.bot?.get(
-            LocalSettingsBotKeys.BotEndpoint
-          ) as string;
-          if (localBotEndpoint === undefined) {
-            const error = LocalBotEndpointNotConfigured();
-            TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
-            return err(error);
-          }
-
-          const botEndpointRegex = /https:\/\/.*(:\d+)?/g;
-          if (!botEndpointRegex.test(localBotEndpoint)) {
-            const error = InvalidLocalBotEndpointFormat(localBotEndpoint);
-            TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
-            return err(error);
-          }
-
-          ctx.localSettings?.bot?.set(LocalSettingsBotKeys.BotEndpoint, localBotEndpoint);
-          ctx.localSettings?.bot?.set(LocalSettingsBotKeys.BotDomain, localBotEndpoint.slice(8));
-        } else {
-          const ngrokHttpUrl = await getNgrokHttpUrl(3978);
-          if (!ngrokHttpUrl) {
-            const error = NgrokTunnelNotConnected();
-            TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
-            return err(error);
-          } else {
-            ctx.localSettings?.bot?.set(LocalSettingsBotKeys.BotEndpoint, ngrokHttpUrl);
-            ctx.localSettings?.bot?.set(LocalSettingsBotKeys.BotDomain, ngrokHttpUrl.slice(8));
-          }
-        }
-      }
-    }
-
-    TelemetryUtils.sendSuccessEvent(TelemetryEventName.localDebug, telemetryProperties);
-    return ok(undefined);
+    return ok(Void);
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
-    // fallback to original post-localdebug logic if multi-env is not enabled
-    // And the post-localdebug lifecycle can be removed if we use localSettings.json
-    // and remove the local.env file for local debug,
-    if (!isMultiEnvEnabled()) {
-      return await legacyLocalDebugPlugin.postLocalDebug(ctx);
-    }
-
     const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
     const includeBackend = ProjectSettingLoader.includeBackend(ctx);
     const includeBot = ProjectSettingLoader.includeBot(ctx);

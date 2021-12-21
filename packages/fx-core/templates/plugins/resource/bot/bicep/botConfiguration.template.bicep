@@ -9,7 +9,7 @@ param currentAppSettings object
 var botWebAppName = split(provisionOutputs.botOutput.value.botWebAppResourceId, '/')[8]
 var m365ClientId = provisionParameters['m365ClientId']
 {{#contains 'fx-resource-key-vault' Plugins}}
-var m365ClientSecret = {{../PluginOutput.fx-resource-key-vault.References.m365ClientSecretReference}}
+var m365ClientSecret = {{../Plugins.fx-resource-key-vault.References.m365ClientSecretReference}}
 {{/contains}}
 {{#notContains 'fx-resource-key-vault' Plugins}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']
@@ -18,7 +18,7 @@ var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var botAadAppClientId = provisionParameters['botAadAppClientId']
 {{#contains 'fx-resource-key-vault' Plugins}}
-var botAadAppClientSecret = {{../PluginOutput.fx-resource-key-vault.References.botClientSecretReference}}
+var botAadAppClientSecret = {{../Plugins.fx-resource-key-vault.References.botClientSecretReference}}
 {{/contains}}
 {{#notContains 'fx-resource-key-vault' Plugins}}
 var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
@@ -55,9 +55,9 @@ resource botWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     API_ENDPOINT: provisionOutputs.functionOutput.value.functionEndpoint
     {{/contains}}
     {{#contains 'fx-resource-azure-sql' Plugins}}
-    SQL_DATABASE_NAME: {{../PluginOutput.fx-resource-azure-sql.References.databaseName}}
-    SQL_ENDPOINT: {{../PluginOutput.fx-resource-azure-sql.References.sqlEndpoint}}
+    SQL_DATABASE_NAME: {{../Plugins.fx-resource-azure-sql.References.databaseName}}
+    SQL_ENDPOINT: {{../Plugins.fx-resource-azure-sql.References.sqlEndpoint}}
     {{/contains}}
-    IDENTITY_ID: {{PluginOutput.fx-resource-identity.References.identityClientId}}
+    IDENTITY_ID: {{Plugins.fx-resource-identity.References.identityClientId}}
   }, currentAppSettings)
 }

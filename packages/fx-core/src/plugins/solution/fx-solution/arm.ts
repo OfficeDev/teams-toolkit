@@ -850,16 +850,16 @@ async function compileBicepToJson(
 
 // Context used by handlebars to render the main.bicep file
 export class ArmTemplateRenderContext {
-  public Plugins: string[];
-  public PluginOutput: { [PluginName: string]: PluginOutputContext };
+  public Plugins: Record<string, PluginContext> = {};
 
   constructor(pluginNames: string[]) {
-    this.Plugins = pluginNames;
-    this.PluginOutput = {};
+    for (const plugin of pluginNames) {
+      this.Plugins[plugin] = {};
+    }
   }
 
   public addPluginOutput(pluginName: string, armResult: ArmTemplateResult) {
-    const pluginOutputContext: PluginOutputContext = {
+    const PluginContext: PluginContext = {
       Provision: {},
       Configuration: {},
       References: {},
@@ -870,7 +870,7 @@ export class ArmTemplateRenderContext {
     if (provision) {
       for (const module of Object.entries(provision)) {
         const moduleFileName = module[0];
-        pluginOutputContext.Provision![moduleFileName] = {
+        PluginContext.Provision![moduleFileName] = {
           ProvisionPath: generateBicepModuleProvisionFilePath(moduleFileName),
         };
       }
@@ -879,7 +879,7 @@ export class ArmTemplateRenderContext {
     if (configs) {
       for (const module of Object.entries(configs)) {
         const moduleFileName = module[0];
-        pluginOutputContext.Configuration![moduleFileName] = {
+        PluginContext.Configuration![moduleFileName] = {
           ConfigPath: generateBicepModuleConfigFilePath(moduleFileName),
         };
       }
@@ -889,11 +889,11 @@ export class ArmTemplateRenderContext {
       for (const output of Object.entries(references)) {
         const outputKey = output[0];
         const outputValue = output[1] as string;
-        pluginOutputContext.References![outputKey] = outputValue;
+        PluginContext.References![outputKey] = outputValue;
       }
     }
 
-    this.PluginOutput[pluginName] = pluginOutputContext;
+    this.Plugins[pluginName] = PluginContext;
   }
 }
 
@@ -969,7 +969,7 @@ class BicepOrchestrationContent {
   }
 }
 
-interface PluginOutputContext {
+interface PluginContext {
   Provision?: { [ModuleName: string]: PluginModuleProperties };
   Configuration?: { [ModuleName: string]: PluginModuleProperties };
   References?: { [Key: string]: string };

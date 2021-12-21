@@ -1,5 +1,5 @@
 // Resources for Azure SQL
-module azureSqlProvision '{{PluginOutput.fx-resource-azure-sql.Provision.azureSql.ProvisionPath}}' = {
+module azureSqlProvision '{{Plugins.fx-resource-azure-sql.Provision.azureSql.ProvisionPath}}' = {
   name: 'azureSqlProvision'
   params: {
     provisionParameters: provisionParameters

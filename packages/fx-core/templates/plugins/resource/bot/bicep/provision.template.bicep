@@ -1,5 +1,5 @@
 // Resources for bot
-module botProvision '{{PluginOutput.fx-resource-bot.Provision.bot.ProvisionPath}}' = {
+module botProvision '{{Plugins.fx-resource-bot.Provision.bot.ProvisionPath}}' = {
   name: 'botProvision'
   params: {
     provisionParameters: provisionParameters

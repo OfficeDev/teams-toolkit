@@ -12,7 +12,7 @@ var functionAppName = split({{PluginOutput.fx-resource-function.References.funct
 
 var m365ClientId = provisionParameters['m365ClientId']
 {{#contains 'fx-resource-key-vault' Plugins}}
-var m365ClientSecret = {{../PluginOutput.fx-resource-key-vault.References.m365ClientSecretReference}}
+var m365ClientSecret = {{../Plugins.fx-resource-key-vault.References.m365ClientSecretReference}}
 {{/contains}}
 {{#notContains 'fx-resource-key-vault' Plugins}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']
@@ -21,8 +21,8 @@ var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
 {{#contains 'fx-resource-frontend-hosting' Plugins}}
-var tabAppDomain = {{../PluginOutput.fx-resource-frontend-hosting.References.domain}}
-var tabAppEndpoint = {{../PluginOutput.fx-resource-frontend-hosting.References.endpoint}} 
+var tabAppDomain = {{../Plugins.fx-resource-frontend-hosting.References.domain}}
+var tabAppEndpoint = {{../Plugins.fx-resource-frontend-hosting.References.endpoint}} 
 {{/contains}}
 {{#contains 'fx-resource-bot' Plugins}}
 var botId = provisionParameters['botAadAppClientId']
@@ -67,17 +67,17 @@ resource appConfig 'Microsoft.Web/sites/config@2021-02-01' = {
 resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionAppName}/appsettings'
   properties: union({
-    API_ENDPOINT: {{PluginOutput.fx-resource-function.References.functionEndpoint}}
+    API_ENDPOINT: {{Plugins.fx-resource-function.References.functionEndpoint}}
     ALLOWED_APP_IDS: authorizedClientApplicationIds
     M365_CLIENT_ID: m365ClientId
     M365_CLIENT_SECRET: m365ClientSecret
     M365_TENANT_ID: m365TenantId
     M365_AUTHORITY_HOST: m365OauthAuthorityHost
     M365_APPLICATION_ID_URI: m365ApplicationIdUri
-    IDENTITY_ID: {{PluginOutput.fx-resource-identity.References.identityClientId}}
+    IDENTITY_ID: {{Plugins.fx-resource-identity.References.identityClientId}}
     {{#contains 'fx-resource-azure-sql' Plugins}}
-    SQL_DATABASE_NAME: {{../PluginOutput.fx-resource-azure-sql.References.databaseName}}
-    SQL_ENDPOINT: {{../PluginOutput.fx-resource-azure-sql.References.sqlEndpoint}}
+    SQL_DATABASE_NAME: {{../Plugins.fx-resource-azure-sql.References.databaseName}}
+    SQL_ENDPOINT: {{../Plugins.fx-resource-azure-sql.References.sqlEndpoint}}
     {{/contains}}
   }, currentAppSettings)
 }

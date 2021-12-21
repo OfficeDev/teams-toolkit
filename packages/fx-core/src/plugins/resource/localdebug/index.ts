@@ -17,12 +17,7 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import { LocalCertificateManager } from "./certificate";
-import {
-  SolutionPlugin,
-  LocalEnvBotKeys,
-  LocalEnvBotKeysMigratedFromV1,
-  AppStudioPlugin,
-} from "./constants";
+import { LocalEnvBotKeys, LocalEnvBotKeysMigratedFromV1 } from "./constants";
 import {
   LocalEnvFrontendKeys,
   LocalEnvBackendKeys,
@@ -36,7 +31,6 @@ import {
   EnvKeysBotV1,
   LocalEnvMultiProvider,
 } from "./localEnvMulti";
-import { MissingStep } from "./util/error";
 import { getAuthServiceFolder, prepareLocalAuthService } from "./util/localService";
 import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
 import { Service } from "typedi";
@@ -353,36 +347,7 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
-    if (func.method == "getLaunchInput") {
-      const env = func.params as string;
-      const solutionConfigs = ctx.envInfo.state.get(SolutionPlugin.Name);
-      if (env === "remote") {
-        // return remote teams app id
-        const remoteId = isMultiEnvEnabled()
-          ? (ctx.envInfo.state.get(AppStudioPlugin.Name)?.get(AppStudioPlugin.TeamsAppId) as string)
-          : (solutionConfigs?.get(SolutionPlugin.RemoteTeamsAppId) as string);
-        if (/^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(remoteId)) {
-          return ok({
-            appId: remoteId,
-            env: ctx.envInfo.envName,
-          });
-        } else {
-          return err(MissingStep("launching remote", "Teams: Provision and Teams: Deploy"));
-        }
-      } else {
-        // return local teams app id
-        const localTeamsAppId = isMultiEnvEnabled()
-          ? (ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId) as string)
-          : (solutionConfigs?.get(SolutionPlugin.LocalTeamsAppId) as string);
-        return ok({ appId: localTeamsAppId });
-      }
-    } else if (func.method === "getProgrammingLanguage") {
-      const programmingLanguage = ctx.projectSettings?.programmingLanguage;
-      return ok(programmingLanguage);
-    } else if (func.method === "getSkipNgrokConfig") {
-      const skipNgrok = ctx.localSettings?.bot?.get(LocalSettingsBotKeys.SkipNgrok);
-      return ok(skipNgrok);
-    } else if (func.method === "getLocalDebugEnvs") {
+    if (func.method === "getLocalDebugEnvs") {
       const localEnvs = await this.getLocalDebugEnvs(ctx);
       return ok(localEnvs);
     } else if (func.method === "migrateV1Project") {

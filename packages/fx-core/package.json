@@ -21,6 +21,7 @@
     "test:apim": "nyc mocha \"tests/plugins/resource/apim/**/*.test.ts\"",
     "test:keyvault": "nyc mocha \"tests/plugins/resource/keyvault/**/*.test.ts\"",
     "test:unit": "nyc --no-clean mocha \"tests/**/*.test.ts\"",
+    "test:common": "nyc --no-clean mocha \"tests/common/*.test.ts\"",
     "test:solution": "nyc mocha \"tests/plugins/solution/*.test.ts\"",
     "test:solution:debug": "nyc mocha \"tests/plugins/solution/debug/*.test.ts\"",
     "test:core": "nyc mocha \"tests/core/**/*.test.ts\"",

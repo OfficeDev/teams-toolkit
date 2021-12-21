@@ -69,7 +69,12 @@ export class LocalSettingsProvider {
     return localSettings;
   }
 
-  public initV2(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): Json {
+  public initV2(
+    includeFrontend: boolean,
+    includeBackend: boolean,
+    includeBotOrMessageExtension: boolean,
+    migrateFromV1 = false
+  ): Json {
     const localSettings: Json = {
       teamsApp: {
         [LocalSettingsTeamsAppKeys.TenantId]: "",
@@ -77,10 +82,13 @@ export class LocalSettingsProvider {
       },
     };
 
+    if (!migrateFromV1) {
+      localSettings.auth = this.initSimpleAuth().toJSON();
+    }
+
     // initialize frontend and simple auth local settings.
     if (includeFrontend) {
       localSettings.frontend = this.initFrontend().toJSON();
-      localSettings.auth = this.initSimpleAuth().toJSON();
     }
 
     // initialize backend local settings.
@@ -89,7 +97,7 @@ export class LocalSettingsProvider {
     }
 
     // initialize bot local settings.
-    if (includeBot) {
+    if (includeBotOrMessageExtension) {
       localSettings.bot = this.initBot().toJSON();
     }
 
@@ -250,11 +258,14 @@ export class LocalSettingsProvider {
     return localSettings;
   }
 
-  private convertToLocalSettingsJson(localSettings: LocalSettings): Json {
+  convertToLocalSettingsJson(localSettings: LocalSettings): Json {
     const localSettingsJson: Json = {
       teamsApp: localSettings.teamsApp?.toJSON(),
-      auth: localSettings.auth?.toJSON(),
     };
+
+    if (localSettings.auth) {
+      localSettingsJson["auth"] = localSettings.auth?.toJSON();
+    }
 
     if (localSettings.frontend) {
       localSettingsJson["frontend"] = localSettings.frontend.toJSON();

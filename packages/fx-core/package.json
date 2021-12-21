@@ -29,6 +29,7 @@
     "test:core-tools": "nyc mocha \"tests/core/tools.test.ts\"",
     "test:apiv2": "nyc mocha \"tests/plugins/resource/apiv2/*.test.ts\"",
     "test:solutionv3": "nyc mocha \"tests/plugins/solutionv3/*.test.ts\"",
+    "test:env-checker": "nyc mocha \"tests/common/deps-checker/*.test.ts\"",
     "clean": "rm -rf build",
     "build": "rimraf build && npx tsc -p ./",
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",

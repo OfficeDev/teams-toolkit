@@ -7,6 +7,7 @@ import chaiAsPromised from "chai-as-promised";
 
 import { UserError } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
+import { cloneDeep } from "lodash";
 import * as path from "path";
 
 import { localEnvManager } from "../../../src/common/local/localEnvManager";
@@ -36,22 +37,133 @@ describe("LocalEnvManager", () => {
       tabEndpoint: "https://localhost:3000",
     },
   };
+  const projectPath = path.resolve(__dirname, "data");
+  const configFolder = path.resolve(projectPath, ".fx/configs");
 
   beforeEach(() => {
     fs.ensureDirSync(path.resolve(__dirname, "data"));
   });
 
+  describe("getLaunchInput()", () => {
+    it("happy path", async () => {
+      await fs.ensureDir(configFolder);
+      await fs.emptyDir(configFolder);
+      await fs.writeFile(
+        path.resolve(configFolder, "localSettings.json"),
+        JSON.stringify(localSettings0)
+      );
+
+      const localSettings = await localEnvManager.getLocalSettings(projectPath);
+      const launchInput = localEnvManager.getLaunchInput(localSettings);
+
+      chai.assert.isDefined(launchInput);
+      chai.assert.deepEqual(launchInput, { appId: "33333333-3333-3333-3333-333333333333" });
+    });
+
+    it("missing field", async () => {
+      await fs.ensureDir(configFolder);
+      await fs.emptyDir(configFolder);
+      await fs.writeFile(path.resolve(configFolder, "localSettings.json"), "{}");
+
+      const localSettings = await localEnvManager.getLocalSettings(projectPath);
+      const launchInput = localEnvManager.getLaunchInput(localSettings);
+
+      chai.assert.isDefined(launchInput);
+      chai.assert.deepEqual(launchInput, { appId: undefined });
+    });
+
+    it("missing file", async () => {
+      await fs.ensureDir(configFolder);
+      await fs.emptyDir(configFolder);
+
+      const localSettings = await localEnvManager.getLocalSettings(projectPath);
+      const launchInput = localEnvManager.getLaunchInput(localSettings);
+
+      chai.assert.isDefined(launchInput);
+      chai.assert.deepEqual(launchInput, { appId: undefined });
+    });
+  });
+
+  describe("getProgrammingLanguage()", () => {
+    it("happy path", async () => {
+      await fs.ensureDir(configFolder);
+      await fs.emptyDir(configFolder);
+      await fs.writeFile(
+        path.resolve(configFolder, "projectSettings.json"),
+        JSON.stringify(projectSettings0)
+      );
+
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+      const language = localEnvManager.getProgrammingLanguage(projectSettings);
+
+      chai.assert.equal(language, "javascript");
+    });
+
+    it("missing field", async () => {
+      await fs.ensureDir(configFolder);
+      await fs.emptyDir(configFolder);
+      await fs.writeFile(path.resolve(configFolder, "projectSettings.json"), "{}");
+
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+      const language = localEnvManager.getProgrammingLanguage(projectSettings);
+
+      chai.assert.isUndefined(language);
+    });
+  });
+
+  describe("getSkipNgrokConfig()", () => {
+    it("happy path", async () => {
+      await fs.ensureDir(configFolder);
+      await fs.emptyDir(configFolder);
+      const localSettingsBot: any = cloneDeep(localSettings0);
+      localSettingsBot["bot"] = {
+        skipNgrok: true,
+      };
+      await fs.writeFile(
+        path.resolve(configFolder, "localSettings.json"),
+        JSON.stringify(localSettingsBot)
+      );
+
+      const localSettings = await localEnvManager.getLocalSettings(projectPath);
+      const skipNgrok = localEnvManager.getSkipNgrokConfig(localSettings);
+
+      chai.assert.isTrue(skipNgrok);
+    });
+
+    it("missing field", async () => {
+      await fs.ensureDir(configFolder);
+      await fs.emptyDir(configFolder);
+      await fs.writeFile(
+        path.resolve(configFolder, "localSettings.json"),
+        JSON.stringify(localSettings0)
+      );
+
+      const localSettings = await localEnvManager.getLocalSettings(projectPath);
+      const skipNgrok = localEnvManager.getSkipNgrokConfig(localSettings);
+
+      chai.assert.isFalse(skipNgrok);
+    });
+
+    it("missing file", async () => {
+      await fs.ensureDir(configFolder);
+      await fs.emptyDir(configFolder);
+
+      const localSettings = await localEnvManager.getLocalSettings(projectPath);
+      const skipNgrok = localEnvManager.getSkipNgrokConfig(localSettings);
+
+      chai.assert.isFalse(skipNgrok);
+    });
+  });
+
   describe("getProjectSettings()", () => {
     it("happy path", async () => {
-      const projectPath = path.resolve(__dirname, "data");
-      const configFolder = path.resolve(projectPath, ".fx/configs");
       await fs.ensureDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
         JSON.stringify(projectSettings0)
       );
 
-      const projectSettings = await (localEnvManager as any).getProjectSettings(projectPath);
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
 
       chai.assert.isDefined(projectSettings);
       chai.assert.equal(projectSettings.appName, "unit-test0");
@@ -61,12 +173,10 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing field", async () => {
-      const projectPath = path.resolve(__dirname, "data");
-      const configFolder = path.resolve(projectPath, ".fx/configs");
       await fs.ensureDir(configFolder);
       await fs.writeFile(path.resolve(configFolder, "projectSettings.json"), "{}");
 
-      const projectSettings = await (localEnvManager as any).getProjectSettings(projectPath);
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
 
       chai.assert.isDefined(projectSettings);
       chai.assert.isUndefined(projectSettings.appName);
@@ -74,14 +184,12 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing file", async () => {
-      const projectPath = path.resolve(__dirname, "data");
-      const configFolder = path.resolve(projectPath, ".fx/configs");
       await fs.ensureDir(configFolder);
       await fs.emptyDir(configFolder);
 
       let error: UserError | undefined = undefined;
       try {
-        await (localEnvManager as any).getProjectSettings(projectPath);
+        await localEnvManager.getProjectSettings(projectPath);
       } catch (e: any) {
         error = e as UserError;
       }
@@ -93,8 +201,6 @@ describe("LocalEnvManager", () => {
 
   describe("getLocalSettings()", () => {
     it("happy path", async () => {
-      const projectPath = path.resolve(__dirname, "data");
-      const configFolder = path.resolve(projectPath, ".fx/configs");
       await fs.ensureDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
@@ -105,7 +211,10 @@ describe("LocalEnvManager", () => {
         JSON.stringify(localSettings0)
       );
 
-      const localSettings = await (localEnvManager as any).getLocalSettings(projectPath);
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+      const localSettings = await localEnvManager.getLocalSettings(projectPath, {
+        projectId: projectSettings.projectId,
+      });
 
       chai.assert.isDefined(localSettings);
       chai.assert.isDefined(localSettings!.teamsApp);
@@ -120,8 +229,6 @@ describe("LocalEnvManager", () => {
     });
 
     it("missing field", async () => {
-      const projectPath = path.resolve(__dirname, "data");
-      const configFolder = path.resolve(projectPath, ".fx/configs");
       await fs.ensureDir(configFolder);
       await fs.writeFile(
         path.resolve(configFolder, "projectSettings.json"),
@@ -129,15 +236,16 @@ describe("LocalEnvManager", () => {
       );
       await fs.writeFile(path.resolve(configFolder, "localSettings.json"), "{}");
 
-      const localSettings = await (localEnvManager as any).getLocalSettings(projectPath);
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+      const localSettings = await localEnvManager.getLocalSettings(projectPath, {
+        projectId: projectSettings.projectId,
+      });
 
       chai.assert.isDefined(localSettings);
       chai.assert.isUndefined(localSettings!.teamsApp);
     });
 
     it("missing file", async () => {
-      const projectPath = path.resolve(__dirname, "data");
-      const configFolder = path.resolve(projectPath, ".fx/configs");
       await fs.ensureDir(configFolder);
       await fs.emptyDir(configFolder);
       await fs.writeFile(
@@ -145,7 +253,10 @@ describe("LocalEnvManager", () => {
         JSON.stringify(projectSettings0)
       );
 
-      const localSettings = await (localEnvManager as any).getLocalSettings(projectPath);
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+      const localSettings = await localEnvManager.getLocalSettings(projectPath, {
+        projectId: projectSettings.projectId,
+      });
 
       chai.assert.isUndefined(localSettings);
     });

@@ -5,6 +5,7 @@ import sys
 import os
 import re
 import json
+import fnmatch
 
 def read_pattern(r):
     if r.startswith("regex:"):
@@ -58,8 +59,12 @@ def main():
     excludeFilePath = os.path.join(rootDir, ".github", "detect", "excludes.txt")
     excludeFiles = read_files(excludeFilePath)
     diffFiles = read_files(includeFilePath)
-    compareFiles = set(diffFiles) - set(excludeFiles)
-    for diffFile in compareFiles:
+    targetDiffFiles = diffFiles
+    for item in diffFiles:
+        for exFile in excludeFiles:
+            if fnmatch.fnmatch(item, exFile):
+                targetDiffFiles.remove(item)
+    for diffFile in targetDiffFiles:
         content = read_content(diffFile, rootDir)
         find_string(patterns, content, diffFile)
     

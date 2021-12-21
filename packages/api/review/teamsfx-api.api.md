@@ -1224,6 +1224,7 @@ export interface ProjectSettings {
     defaultFunctionName?: string;
     // (undocumented)
     isFromSample?: boolean;
+    pluginSettings?: Json;
     // (undocumented)
     programmingLanguage?: string;
     // (undocumented)

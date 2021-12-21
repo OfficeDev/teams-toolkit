@@ -206,7 +206,6 @@ export class SqlPluginImpl {
         ctx.logProvider?.info(Message.connectDatabase);
         const sqlClient = await SqlClient.create(ctx, this.config);
         ctx.logProvider?.info(Message.addDatabaseUser(this.config.identity));
-        this.config.retryAddUser = 0;
         await this.addDatabaseUser(ctx, sqlClient, managementClient);
       } else {
         const message = ErrorMessage.ServicePrincipalWarning(
@@ -251,17 +250,18 @@ export class SqlPluginImpl {
     sqlClient: SqlClient,
     managementClient: ManagementClient
   ): Promise<void> {
+    let retryAddUser = 0;
     while (true) {
       try {
         await sqlClient.addDatabaseUser();
         return;
       } catch (error) {
-        if (!SqlClient.isFireWallError(error?.innerError) || this.config.retryAddUser >= 3) {
+        if (!SqlClient.isFireWallError(error?.innerError) || retryAddUser >= 3) {
           throw error;
         } else {
-          this.config.retryAddUser++;
+          retryAddUser++;
           ctx.logProvider?.warning(
-            `[${Constants.pluginName}] Retry adding new firewall rule to access azure sql, because the local IP address has changed after added firewall rule for it. [Retry time: ${this.config.retryAddUser}]`
+            `[${Constants.pluginName}] Retry adding new firewall rule to access azure sql, because the local IP address has changed after added firewall rule for it. [Retry time: ${retryAddUser}]`
           );
           await managementClient.addLocalFirewallRule();
         }

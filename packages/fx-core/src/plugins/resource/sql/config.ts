@@ -20,5 +20,4 @@ export class SqlConfig {
   identity = "";
   existSql = false;
   skipAddingUser = false;
-  retryAddUser = 0;
 }

@@ -62,29 +62,6 @@ export class CLIAdapter implements IDepsAdapter {
     }
   }
 
-  public async displayContinueWithLearnMore(message: string, link: string): Promise<boolean> {
-    const res = await CLIUIInstance.showMessage(
-      "info",
-      message,
-      true,
-      Messages.learnMoreButtonText,
-      Messages.continueButtonText
-    );
-    const userSelected: string | undefined = res?.isOk() ? res.value : undefined;
-
-    if (userSelected === Messages.learnMoreButtonText) {
-      this._telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
-      await CLIAdapter.openUrl(link);
-      return false;
-    } else if (userSelected === Messages.continueButtonText) {
-      this._telemetry.sendEvent(DepsCheckerEvent.clickContinue);
-      return true;
-    } else {
-      this._telemetry.sendEvent(DepsCheckerEvent.clickCancel);
-      return false;
-    }
-  }
-
   public async displayLearnMore(message: string, link: string): Promise<boolean> {
     return await this.displayWarningMessage(message, Messages.learnMoreButtonText, async () => {
       await CLIAdapter.openUrl(link);

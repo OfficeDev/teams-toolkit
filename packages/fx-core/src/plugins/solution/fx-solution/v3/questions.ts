@@ -8,6 +8,7 @@ import {
   SingleSelectQuestion,
   v3,
 } from "@microsoft/teamsfx-api";
+import { Container } from "typedi";
 import { BotOptionItem, MessageExtensionItem, TabOptionItem } from "../question";
 
 export enum SolutionV3QuestionNames {
@@ -15,17 +16,25 @@ export enum SolutionV3QuestionNames {
   capabilities = "capabilities",
   resource = "resource",
   module = "module",
+  modules = "modules",
 }
 
-export const selectModulesQuestion: SingleSelectQuestion = {
+export const selectSingleModuleQuestion: SingleSelectQuestion = {
   name: SolutionV3QuestionNames.module,
   title: "Select a module",
   type: "singleSelect",
   staticOptions: [],
 };
 
+export const selectMultiModulesQuestion: MultiSelectQuestion = {
+  name: SolutionV3QuestionNames.modules,
+  title: "Select modules to deploy",
+  type: "multiSelect",
+  staticOptions: [],
+};
+
 export function createSelectModuleQuestionNode(modules: v3.Module[]): QTreeNode {
-  const moduleNode = new QTreeNode(selectModulesQuestion);
+  const moduleNode = new QTreeNode(selectSingleModuleQuestion);
   const moduleOptions: OptionItem[] = [];
   let i = 0;
   for (const module of modules) {
@@ -36,7 +45,27 @@ export function createSelectModuleQuestionNode(modules: v3.Module[]): QTreeNode 
     moduleOptions.push(option);
   }
   moduleOptions.push({ id: "none", label: "none" });
-  selectModulesQuestion.staticOptions = moduleOptions;
+  selectSingleModuleQuestion.staticOptions = moduleOptions;
+  return moduleNode;
+}
+
+export function createSelectModulesToDeployQuestionNode(modules: v3.Module[]): QTreeNode {
+  const moduleNode = new QTreeNode(selectMultiModulesQuestion);
+  const moduleOptions: OptionItem[] = [];
+  let i = 0;
+  for (const module of modules) {
+    if (module.hostingPlugin) {
+      const plugin = Container.get<v3.ResourcePlugin>(module.hostingPlugin);
+      if (plugin.deploy) {
+        const option: OptionItem = {
+          id: `${i++}`,
+          label: JSON.stringify(module),
+        };
+        moduleOptions.push(option);
+      }
+    }
+  }
+  selectMultiModulesQuestion.staticOptions = moduleOptions;
   return moduleNode;
 }
 
@@ -46,6 +75,7 @@ export const selectCapabilitiesQuestion: MultiSelectQuestion = {
   type: "multiSelect",
   staticOptions: [TabOptionItem, BotOptionItem, MessageExtensionItem],
   default: [TabOptionItem.id],
+  skipSingleOption: true,
 };
 
 export const selectScaffoldTemplateQuestion: SingleSelectQuestion = {

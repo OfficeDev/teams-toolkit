@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as jsonschema from "jsonschema";
-import { Inputs } from "../types";
+import { Inputs, OptionItem } from "../types";
 
 export type ValidateFunc<T> = (
   input: T,
@@ -105,7 +105,9 @@ export interface StringArrayValidation extends StaticValidation {
 /**
  * The validation is checked by a validFunc provided by user
  */
-export interface FuncValidation<T extends string | string[] | undefined> {
+export interface FuncValidation<
+  T extends string | string[] | OptionItem | OptionItem[] | undefined
+> {
   /**
    * A function that will be called to validate input and to give a hint to the user.
    *
@@ -144,7 +146,7 @@ export function getValidationFunction<T extends string | string[] | undefined>(
  * @returns A human-readable string which is presented as diagnostic message.
  * Return `undefined` when 'value' is valid.
  */
-export async function validate<T extends string | string[] | undefined>(
+export async function validate<T extends string | string[] | OptionItem | OptionItem[] | undefined>(
   validSchema: ValidationSchema,
   value: T,
   inputs?: Inputs

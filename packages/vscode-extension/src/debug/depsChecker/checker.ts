@@ -8,13 +8,7 @@
 // and run the scripts (tools/depsChecker/copyfiles.sh or tools/depsChecker/copyfiles.ps1 according to your OS)
 // to copy you changes to function plugin.
 
-import {
-  isLinux,
-  Messages,
-  defaultHelpLink,
-  DepsCheckerEvent,
-  dotnetManualInstallHelpLink,
-} from "./common";
+import { isLinux, Messages, defaultHelpLink, DepsCheckerEvent } from "./common";
 import { DepsCheckerError, NodeNotFoundError, NodeNotSupportedError } from "./errors";
 
 export interface IDepsChecker {
@@ -25,7 +19,6 @@ export interface IDepsChecker {
 }
 
 export interface IDepsAdapter {
-  displayContinueWithLearnMore: (message: string, link: string) => Promise<boolean>;
   displayLearnMore: (message: string, link: string) => Promise<boolean>;
   displayWarningMessage: (
     message: string,
@@ -103,7 +96,7 @@ export class DepsChecker {
     if (isLinux()) {
       const confirmMessage = await this.generateMsg(validCheckers);
       this._logger.cleanup();
-      return await this._adapter.displayContinueWithLearnMore(confirmMessage, defaultHelpLink);
+      return await this._adapter.displayLearnMore(confirmMessage, defaultHelpLink);
     }
 
     this._adapter.showOutputChannel();
@@ -168,7 +161,7 @@ export class DepsChecker {
     adapter: IDepsAdapter
   ): Promise<boolean> {
     if (error instanceof NodeNotSupportedError) {
-      return await adapter.displayContinueWithLearnMore(
+      return await adapter.displayLearnMore(
         error.message,
         (error as NodeNotSupportedError).helpLink
       );

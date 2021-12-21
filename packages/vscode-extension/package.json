@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "3.0.0",
+  "version": "3.1.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -58,9 +58,8 @@
     "onCommand:fx-extension.openAppManagement",
     "onCommand:fx-extension.openBotManagement",
     "onCommand:fx-extension.openReportIssues",
-    "onCommand:fx-extension.validate-dependencies",
-    "onCommand:fx-extension.pre-debug-check",
     "onCommand:fx-extension.migrateV1Project",
+    "onCommand:workbench.action.tasks.runTask",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
     "onView:teamsfx-accounts",
@@ -82,11 +81,11 @@
     "viewsWelcome": [
       {
         "view": "teamsfx-empty-project",
-        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome) or [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
+        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
       },
       {
         "view": "teamsfx-empty-project-and-check-upgrade",
-        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome) or [documentation](https://docs.microsoft.com/en-us/microsoftteams/platform/get-started/first-app-react?tabs=vscode).\n[Create a new Teams app](command:fx-extension.create)\n[View samples](command:fx-extension.openSamples)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\n\nYou need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.\n[Upgrade project](command:fx-extension.checkProjectUpgrade)"
+        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\n\nYou need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.\n[Upgrade project](command:fx-extension.checkProjectUpgrade)"
       }
     ],
     "views": {
@@ -830,6 +829,71 @@
         "scopeName": "teamsfx-toolkit.output",
         "path": "./syntaxes/teamsfx-toolkit-output.tmLanguage"
       }
+    ],
+    "walkthroughs": [
+      {
+        "id": "teamsToolkitQuickStart",
+        "title": "Get started with Teams toolkit",
+        "description": "Jumpstart your Teams app development experience",
+        "steps": [
+          {
+            "id": "teamsToolkitCapailities",
+            "title": "What are Teams app \"Capabilities\"",
+            "description": "[Capabilities](https://aka.ms/teamsfx-capabilities-overview) are the extension points for building apps on the Microsoft Teams platform.\n[Watch video (<1 min)](https://aka.ms/teamsfx-video)",
+            "media": {
+              "svg": "media/learn.svg",
+              "altText": "Watch Teams Video"
+            }
+          },
+          {
+            "id": "teamsToolkitCommands",
+            "title": "Explore Teams toolkit commands",
+            "description": "Open Command Palette (Ctrl+Shift+P) and type 'Teams' to find Teams toolkit commands.\n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3ETeams%22%5D)",
+            "media": {
+              "svg": "media/step_commands.svg",
+              "altText": "Display Teams Commands"
+            },
+            "when": "!isMac"
+          },
+          {
+            "id": "teamsToolkitCommandsMac",
+            "title": "Explore Teams toolkit commands",
+            "description": "Open Command Palette (⇧⌘P) and type 'Teams' to find Teams toolkit commands.\n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3ETeams%22%5D)",
+            "media": {
+              "svg": "media/step_commands.svg",
+              "altText": "Display Teams Commands"
+            },
+            "when": "isMac"
+          },
+          {
+            "id": "teamsToolkitInstallNodeJs",
+            "title": "Install Node.js",
+            "description": "Teams toolkit cannot detect the right version of Node.js on your machine.\nAs a fundamental runtime context for Teams app, Node.js v10.x, v12.x or v14.x is required (v.14.x is recommended ). Please install the appropriate version to run the Microsoft Teams Toolkit.Read more about managing Node.js versions.\n[Download Node.js (v.14.x)](https://aka.ms/teamsfx-nodejs-download)",
+            "media": {
+              "svg": "media/step_nodejs.svg",
+              "altText": "Install NodeJs"
+            },
+            "when": "fx-extension.isNotValidNode"
+          },
+          {
+            "id": "teamsToolkitTenantAccount",
+            "title": "Get your Teams developer tenant for free",
+            "description": "Create a free Teams developer tenant to preview your apps in Teams.\n[Create a developer tenant](https://aka.ms/teamsfx-prepare-365-tenant)",
+            "media": {
+              "markdown": "docs/itp/itp.md"
+            }
+          },
+          {
+            "id": "teamsToolkitCreateProject",
+            "title": "Build your first Teams app",
+            "description": "Build a Teams app from the scratch or explore our samples to help you quickly get started with the basic Teams app concepts and code structures.\n[Create a new Teams app](command:fx-extension.create)",
+            "media": {
+              "image": "media/todolist-sample.gif",
+              "altText": "Create Project"
+            }
+          }
+        ]
+      }
     ]
   },
   "scripts": {
@@ -943,8 +1007,8 @@
     "@azure/identity": "^1.2.1",
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
-    "@microsoft/teamsfx-api": "^0.11.0",
-    "@microsoft/teamsfx-core": "^1.0.0",
+    "@microsoft/teamsfx-api": "^0.12.0",
+    "@microsoft/teamsfx-core": "^1.1.1",
     "@npmcli/arborist": "^4.0.4",
     "@npmcli/package-json": "^1.0.1",
     "async-mutex": "^0.3.1",

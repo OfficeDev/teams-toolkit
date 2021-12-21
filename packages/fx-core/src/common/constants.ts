@@ -45,14 +45,17 @@ export class ResourcePlugins {
   static readonly Function = "fx-resource-function";
   static readonly Identity = "fx-resource-identity";
   static readonly Apim = "fx-resource-apim";
+  static readonly SPFx = "fx-resource-spfx";
 }
 export class PluginDisplayName {
   static readonly Solution = "Teams Toolkit";
+  static readonly SpfxSolution = "SPFx";
 }
 
 export class FeatureFlagName {
   static readonly BicepEnvCheckerEnable = "TEAMSFX_BICEP_ENV_CHECKER_ENABLE";
   static readonly APIV2 = "TEAMSFX_APIV2";
+  static readonly APIV3 = "TEAMSFX_APIV3";
   // This will default to true and this environment is only for tests. It does not expose to user.
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";

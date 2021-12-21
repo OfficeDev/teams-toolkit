@@ -37,7 +37,7 @@ export interface PluginScaffoldInputs extends InputsWithProjectPath {
   /**
    * module index
    */
-  module?: number;
+  module?: string;
   /**
    * customized source root dir name
    */
@@ -46,6 +46,21 @@ export interface PluginScaffoldInputs extends InputsWithProjectPath {
    * customized build directory name
    */
   buildPath?: string;
+}
+
+export interface PluginDeployInputs extends InputsWithProjectPath {
+  /**
+   * root directory name
+   */
+  dir?: string;
+  /**
+   * relative path for the built artifact, it can be a folder path or a file path, depends the deployment type
+   */
+  buildPath?: string;
+  /**
+   * deployment type for bits
+   */
+  deployType?: string;
 }
 
 export interface Plugin {
@@ -67,7 +82,7 @@ export interface ScaffoldPlugin extends Plugin {
   /**
    * get questions before scaffolding
    */
-  getQuestionsForScaffolding?: (
+  getQuestionsForScaffold?: (
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -113,8 +128,8 @@ export interface ResourcePlugin extends Plugin {
   getQuestionsForLocalProvision?: (
     ctx: Context,
     inputs: Inputs,
-    localSettings: DeepReadonly<Json>,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    localSettings?: DeepReadonly<Json>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   provisionLocalResource?: (
@@ -136,8 +151,8 @@ export interface ResourcePlugin extends Plugin {
   getQuestionsForProvision?: (
     ctx: Context,
     inputs: Inputs,
-    envInfo: DeepReadonly<EnvInfoV3>,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: DeepReadonly<EnvInfoV3>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   provisionResource?: (
@@ -173,7 +188,7 @@ export interface ResourcePlugin extends Plugin {
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   deploy?: (
     ctx: Context,
-    inputs: InputsWithProjectPath,
+    inputs: PluginDeployInputs,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;

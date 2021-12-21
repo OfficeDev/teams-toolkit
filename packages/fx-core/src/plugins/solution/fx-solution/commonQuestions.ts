@@ -77,7 +77,8 @@ type ResourceGroupInfo = {
 // TODO: use the emoji plus sign like Azure Functions extension
 const newResourceGroupOption = "+ New resource group";
 
-class CommonQuestions {
+export class CommonQuestions {
+  needCreateResourceGroup = true;
   resourceNameSuffix = "";
   resourceGroupName = "";
   tenantId = "";
@@ -454,7 +455,7 @@ async function askCommonQuestions(
       return err(
         returnUserError(
           new Error(
-            `Resource group '${resourceGroupNameFromEnvConfig}' does not exist, please specify an existing resource group.`
+            `Resource group '${ctx.answers?.targetResourceGroupName}' does not exist, please specify an existing resource group.`
           ),
           SolutionSource,
           SolutionError.ResourceGroupNotFound
@@ -540,19 +541,7 @@ async function askCommonQuestions(
 
   ctx.telemetryReporter?.sendTelemetryEvent(TelemetryEvent.CheckResourceGroup, telemetryProperties);
 
-  if (resourceGroupInfo.createNewResourceGroup) {
-    const maybeRgName = await createNewResourceGroup(
-      rmClient,
-      resourceGroupInfo,
-      subscriptionResult.value.subscriptionId,
-      subscriptionResult.value.subscriptionName,
-      ctx.logProvider
-    );
-    if (maybeRgName.isErr()) {
-      return err(maybeRgName.error);
-    }
-    resourceGroupInfo.name = maybeRgName.value;
-  }
+  commonQuestions.needCreateResourceGroup = resourceGroupInfo.createNewResourceGroup;
   commonQuestions.resourceGroupName = resourceGroupInfo.name;
   commonQuestions.location = resourceGroupInfo.location;
   ctx.logProvider?.info(
@@ -608,7 +597,7 @@ export async function fillInCommonQuestions(
   azureAccountProvider?: AzureAccountProvider,
   // eslint-disable-next-line @typescript-eslint/ban-types
   appStudioJson?: object
-): Promise<Result<SolutionConfig, FxError>> {
+): Promise<Result<CommonQuestions, FxError>> {
   const result = await askCommonQuestions(
     ctx,
     appName,
@@ -616,6 +605,7 @@ export async function fillInCommonQuestions(
     azureAccountProvider,
     appStudioJson
   );
+
   if (result.isOk()) {
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const globalConfig = config.get(GLOBAL_CONFIG)!;
@@ -624,21 +614,25 @@ export async function fillInCommonQuestions(
         globalConfig.set(k, v);
       }
     });
-    return ok(config);
   }
-  return result.map((_) => config);
+
+  return result;
 }
 
-async function createNewResourceGroup(
-  rmClient: ResourceManagementClient,
-  rgInfo: ResourceGroupInfo,
+export async function createNewResourceGroup(
+  azureAccountProvider: AzureAccountProvider,
   subscriptionId: string,
   subscriptionName: string,
+  resourceGroupName: string,
+  location: string,
   logProvider?: LogProvider
 ): Promise<Result<string, FxError>> {
+  const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+  const rmClient = new ResourceManagementClient(azureToken!, subscriptionId);
+
   const maybeExist = await checkResourceGroupExistence(
     rmClient,
-    rgInfo.name,
+    resourceGroupName,
     subscriptionId,
     subscriptionName
   );
@@ -649,7 +643,9 @@ async function createNewResourceGroup(
   if (maybeExist.value) {
     return err(
       returnUserError(
-        new Error(`Failed to create resource group "${rgInfo.name}": the resource group exists`),
+        new Error(
+          `Failed to create resource group "${resourceGroupName}": the resource group exists`
+        ),
         SolutionSource,
         SolutionError.FailedToCreateResourceGroup
       )
@@ -658,18 +654,18 @@ async function createNewResourceGroup(
 
   let response: ResourceGroupsCreateOrUpdateResponse;
   try {
-    response = await rmClient.resourceGroups.createOrUpdate(rgInfo.name, {
-      location: rgInfo.location,
+    response = await rmClient.resourceGroups.createOrUpdate(resourceGroupName, {
+      location: location,
       tags: { "created-by": "teamsfx" },
     });
   } catch (e) {
     let errMsg: string;
     if (e instanceof Error) {
-      errMsg = `Failed to create resource group ${rgInfo.name} due to ${e.name}:${e.message}`;
+      errMsg = `Failed to create resource group ${resourceGroupName} due to ${e.name}:${e.message}`;
     } else {
-      errMsg = `Failed to create resource group ${
-        rgInfo.name
-      } due to unknown error ${JSON.stringify(e)}`;
+      errMsg = `Failed to create resource group ${resourceGroupName} due to unknown error ${JSON.stringify(
+        e
+      )}`;
     }
 
     return err(
@@ -680,7 +676,7 @@ async function createNewResourceGroup(
   if (response.name === undefined) {
     return err(
       returnSystemError(
-        new Error(`Failed to create resource group ${rgInfo.name}`),
+        new Error(`Failed to create resource group ${resourceGroupName}`),
         SolutionSource,
         SolutionError.FailedToCreateResourceGroup
       )

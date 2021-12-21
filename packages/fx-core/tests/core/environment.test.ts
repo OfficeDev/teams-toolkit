@@ -11,6 +11,7 @@ import {
   ConfigFolderName,
   CryptoProvider,
   EnvConfigFileNameTemplate,
+  EnvInfo,
   EnvNamePlaceholder,
   FxError,
   InputConfigsFolderName,
@@ -267,7 +268,7 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       assert.equal(envInfo.state.get("key"), envStateDataWithoutCredential.key);
     });
 
@@ -286,7 +287,7 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       assert.equal(envInfo.state.get("key"), envStateDataWithoutCredential.key);
     });
 
@@ -305,7 +306,7 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
       assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
@@ -326,7 +327,7 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
       assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
@@ -349,7 +350,7 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
       assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
@@ -370,7 +371,7 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
       assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);

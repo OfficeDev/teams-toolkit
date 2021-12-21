@@ -1,10 +1,22 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Platform, ProjectSettings, TokenProvider, v2, v3 } from "@microsoft/teamsfx-api";
+import {
+  AzureAccountProvider,
+  FxError,
+  ok,
+  Platform,
+  ProjectSettings,
+  Result,
+  TokenProvider,
+  v2,
+  v3,
+} from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
+import sinon from "sinon";
 import * as uuid from "uuid";
+import arm from "../../../src/plugins/solution/fx-solution/arm";
 import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import {
   getQuestionsForProvision,
@@ -17,14 +29,25 @@ import {
   MockedSharepointProvider,
   MockedV2Context,
 } from "../solution/util";
+import { MockResourcePluginNames } from "./mockPlugins";
 
 describe("SolutionV3 - provision", () => {
+  const sandbox = sinon.createSandbox();
+  afterEach(async () => {
+    sandbox.restore();
+  });
   it("provision", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
       solutionSettings: {
         name: TeamsFxAzureSolutionNameV3,
+        version: "3.0.0",
+        capabilities: ["Tab"],
+        hostType: "Azure",
+        azureResources: [],
+        modules: [{ capabilities: ["Tab"], hostingPlugin: MockResourcePluginNames.storage }],
+        activeResourcePlugins: [MockResourcePluginNames.storage],
       },
     };
     const ctx = new MockedV2Context(projectSettings);
@@ -43,8 +66,20 @@ describe("SolutionV3 - provision", () => {
       state: { solution: {} },
       config: {},
     };
+    sandbox
+      .stub<any, any>(arm, "deployArmTemplates")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          envInfo: v3.EnvInfoV3,
+          azureAccountProvider: AzureAccountProvider
+        ): Promise<Result<void, FxError>> => {
+          return ok(undefined);
+        }
+      );
     const res = await provisionResources(ctx, inputs, envInfov3, mockedTokenProvider);
-    assert.isTrue(res.isErr());
+    assert.isTrue(res.isOk());
   });
 
   it("getQuestionsForProvision", async () => {
@@ -53,6 +88,12 @@ describe("SolutionV3 - provision", () => {
       projectId: uuid.v4(),
       solutionSettings: {
         name: TeamsFxAzureSolutionNameV3,
+        version: "3.0.0",
+        capabilities: ["Tab"],
+        hostType: "Azure",
+        azureResources: [],
+        modules: [{ capabilities: ["Tab"], hostingPlugin: MockResourcePluginNames.storage }],
+        activeResourcePlugins: [MockResourcePluginNames.storage],
       },
     };
     const ctx = new MockedV2Context(projectSettings);
@@ -66,12 +107,7 @@ describe("SolutionV3 - provision", () => {
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
     };
-    const envInfov3: v3.EnvInfoV3 = {
-      envName: "dev",
-      state: { solution: {} },
-      config: {},
-    };
-    const res = await getQuestionsForProvision(ctx, inputs, envInfov3, mockedTokenProvider);
+    const res = await getQuestionsForProvision(ctx, inputs, mockedTokenProvider);
     assert.isTrue(res.isOk());
   });
 });

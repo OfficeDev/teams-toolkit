@@ -1,14 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
-import { TeamsFxAzureSolutionNameV3 } from "./constants";
+import { FxError, Inputs, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
+import { BuiltInSolutionNames } from "./constants";
+import {
+  AzureSolutionQuestionNames,
+  BotOptionItem,
+  MessageExtensionItem,
+  TabOptionItem,
+} from "../question";
 
 export async function getQuestionsForInit(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath
+  inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  return ok(undefined);
+  const node = new QTreeNode({
+    name: "set-azure-solution",
+    type: "func",
+    func: (inputs: Inputs) => {
+      inputs[AzureSolutionQuestionNames.Solution] = BuiltInSolutionNames.azure;
+    },
+  });
+  node.condition = { containsAny: [TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id] };
+  return ok(node);
 }
 
 export async function init(
@@ -17,7 +31,7 @@ export async function init(
 ): Promise<Result<Void, FxError>> {
   const solutionSettings: v3.TeamsFxSolutionSettings = {
     version: "3.0.0",
-    name: TeamsFxAzureSolutionNameV3,
+    name: ctx.projectSetting.solutionSettings.name,
     capabilities: [],
     hostType: "Azure",
     azureResources: [],

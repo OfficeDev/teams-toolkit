@@ -3,19 +3,15 @@
 import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
-import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
+import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
-  ConfigMap,
-  SolutionConfig,
   SolutionContext,
   Platform,
   GraphTokenProvider,
   ok,
-  Plugin,
   PluginContext,
   Result,
   FxError,
-  Void,
   err,
   returnUserError,
 } from "@microsoft/teamsfx-api";
@@ -30,16 +26,13 @@ import { HostTypeOptionAzure } from "../../../src/plugins/solution/fx-solution/q
 import * as uuid from "uuid";
 import sinon from "sinon";
 import { EnvConfig, MockGraphTokenProvider } from "../resource/apim/testUtil";
-import Container from "typedi";
-import { ResourcePlugins } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { CollaborationState } from "../../../src/common/permissionInterface";
 import { newEnvInfo } from "../../../src/core/tools";
 import { LocalCrypto } from "../../../src/core/crypto";
+import { aadPlugin, fehostPlugin, appStudioPlugin } from "../../constants";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
-const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin);
 
 describe("checkPermission() for Teamsfx projects", () => {
   const sandbox = sinon.createSandbox();

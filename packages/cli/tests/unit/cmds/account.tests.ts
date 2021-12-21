@@ -6,7 +6,7 @@ import yargs, { Options } from "yargs";
 
 import { err, LogLevel, ok, UserError } from "@microsoft/teamsfx-api";
 
-import Account from "../../../src/cmds/account";
+import Account, { AzureLogin, M365Login } from "../../../src/cmds/account";
 import * as Utils from "../../../src/utils";
 import LogProvider from "../../../src/commonlib/log";
 import { expect } from "../utils";
@@ -48,18 +48,6 @@ describe("Account Command Tests", function () {
       loglevels.push(level);
     });
 
-    sandbox
-      .stub(AzureTokenProvider, "getSubscriptionInfoFromEnv")
-      .onFirstCall()
-      .returns(
-        Promise.resolve({
-          subscriptionId: "subscriptionId",
-          subscriptionName: "subscriptionName",
-          tenantId: "tenantId",
-        })
-      )
-      .onSecondCall()
-      .returns(Promise.resolve(undefined));
     sandbox.stub(Utils, "setSubscriptionId").callsFake(async (id?: string, folder?: string) => {
       if (!id) return ok(null);
       else return err(NotFoundSubscriptionId());
@@ -116,6 +104,18 @@ describe("Account Command Tests", function () {
       .returns(Promise.resolve(undefined));
     sandbox.stub(AzureTokenProvider, "listSubscriptions").returns(Promise.resolve([]));
     sandbox
+      .stub(AzureTokenProvider, "readSubscription")
+      .onFirstCall()
+      .returns(
+        Promise.resolve({
+          subscriptionName: "",
+          subscriptionId: "",
+          tenantId: "",
+        })
+      )
+      .onSecondCall()
+      .returns(Promise.resolve(undefined));
+    sandbox
       .stub(AzureTokenProvider, "signout")
       .onFirstCall()
       .returns(Promise.resolve(true))
@@ -145,11 +145,21 @@ describe("Account Command Tests", function () {
       "account <action>",
       "show",
       "login <service>",
+      "m365",
+      "azure",
       "logout <service>",
       "set",
     ]);
-    expect(options).deep.equals(["action", "tenant", "folder", "subscription"]);
-    expect(positionals).deep.equals(["service", "service"]);
+    expect(options).deep.equals([
+      "action",
+      "tenant",
+      "service-principal",
+      "username",
+      "password",
+      "folder",
+      "subscription",
+    ]);
+    expect(positionals).deep.equals(["service"]);
   });
 
   it("Account Command Running Check", async () => {
@@ -179,30 +189,26 @@ describe("Account Command Tests", function () {
   });
 
   it("Account Login Azure Command Running Check - Success", async () => {
-    const cmd = new Account();
-    const login = cmd.subCommands.find((cmd) => cmd.commandHead === "login");
-    await login!.handler({ service: "azure" });
+    const cmd = new AzureLogin();
+    await cmd!.handler({});
     expect(loglevels).deep.equals([LogLevel.Info, LogLevel.Info, LogLevel.Info]);
   });
 
   it("Account Login Azure Command Running Check - Failed", async () => {
-    const cmd = new Account();
-    const login = cmd.subCommands.find((cmd) => cmd.commandHead === "login");
-    await login!.handler({ service: "azure" });
+    const cmd = new AzureLogin();
+    await cmd!.handler({});
     expect(loglevels).deep.equals([LogLevel.Error]);
   });
 
   it("Account Login M365 Command Running Check - Success", async () => {
-    const cmd = new Account();
-    const login = cmd.subCommands.find((cmd) => cmd.commandHead === "login");
-    await login!.handler({ service: "m365" });
+    const cmd = new M365Login();
+    await cmd!.handler({});
     expect(loglevels).deep.equals([LogLevel.Info]);
   });
 
   it("Account Login M365 Command Running Check - Failed", async () => {
-    const cmd = new Account();
-    const login = cmd.subCommands.find((cmd) => cmd.commandHead === "login");
-    await login!.handler({ service: "m365" });
+    const cmd = new M365Login();
+    await cmd!.handler({});
     expect(loglevels).deep.equals([LogLevel.Error]);
   });
 

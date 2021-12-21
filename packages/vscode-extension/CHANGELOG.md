@@ -1,4 +1,13 @@
 # Changelog
+## 3.1.0 - Dec 13, 2021
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- Integrate with Azure Key Vault to secure your application secrets at runtime.
+- View state file and edit environment configurations from manifest with code lens.
+
+Enhancement:
+- Support Node.js 16 and NPM 7 except for SPFx based tab application or projects including Azure Functions.
 
 ## 3.0.0 - Nov 29, 2021
 Major version for Teams Toolkit with new features to support cloud resources customization, multiple cloud environments, collaborations and some bug fix.

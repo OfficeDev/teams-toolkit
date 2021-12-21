@@ -19,6 +19,8 @@ import {
   TokenProvider,
   Void,
   v2,
+  ConfigValue,
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 import {
   BicepTemplate,
@@ -41,6 +43,8 @@ import {
 } from "../../core/error";
 import { newEnvInfo } from "../../core/tools";
 import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
+import _ from "lodash";
+import { LocalSettingsProvider } from "../..";
 
 export function convert2PluginContext(
   pluginName: string,
@@ -49,7 +53,7 @@ export function convert2PluginContext(
   ignoreEmptyProjectPath = false
 ): PluginContext {
   if (!ignoreEmptyProjectPath && !inputs.projectPath) throw NoProjectOpenedError();
-  const envInfo = newEnvInfo();
+  const envInfo = newEnvInfo(inputs.env);
   const config = new ConfigMap();
   envInfo.state.set(pluginName, config);
   const pluginContext: PluginContext = {
@@ -78,6 +82,8 @@ export async function scaffoldSourceCodeAdapter(
     return err(NoProjectOpenedError());
   }
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
+  const localSettingsProvider = new LocalSettingsProvider(pluginContext.root);
+  pluginContext.localSettings = await localSettingsProvider.load(pluginContext.cryptoProvider);
 
   if (plugin.preScaffold) {
     const preRes = await plugin.preScaffold(pluginContext);
@@ -154,7 +160,6 @@ export async function provisionResourceAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  pluginContext.envInfo = newEnvInfo();
   pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();
@@ -228,7 +233,6 @@ export async function configureResourceAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  pluginContext.envInfo = newEnvInfo();
   pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();
@@ -243,13 +247,13 @@ export async function configureResourceAdapter(
 export async function deployAdapter(
   ctx: Context,
   inputs: DeploymentInputs,
-  provisionOutput: Json,
+  envInfo: DeepReadonly<EnvInfoV2>,
   tokenProvider: TokenProvider,
   plugin: Plugin
 ): Promise<Result<Void, FxError>> {
   if (!plugin.deploy) return err(PluginHasNoTaskImpl(plugin.displayName, "deploy"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
-  setEnvInfoV1ByStateV2(plugin.name, pluginContext, provisionOutput);
+  setEnvInfoV1ByStateV2(plugin.name, pluginContext, envInfo);
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
@@ -271,8 +275,130 @@ export async function deployAdapter(
       return err(postRes.error);
     }
   }
-  setStateV2ByConfigMapInc(plugin.name, provisionOutput, pluginContext.config);
+  // We are making an exception for APIM plugin to modify envInfo, which should be immutable
+  // during deployment. Becasue it is the only plugin that needs to do so. Remove the following
+  // line after APIM is refactored not to change env state.
+  setStateV2ByConfigMapInc(plugin.name, envInfo.state, pluginContext.config);
   return ok(Void);
+}
+
+/**
+ * An adaptor that behaves like a ConfigMap for plugin local settings,
+ * but modifies plugin settings json in-place when setting values.
+ */
+class ConfigMapAdaptor implements ConfigMap {
+  private _pluginSettings: Json;
+  private _map: ConfigMap;
+
+  constructor(pluginName: string, json: Json) {
+    this._pluginSettings = json;
+    const map = ConfigMap.fromJSON(json);
+    if (!map) {
+      throw InvalidStateError(pluginName, json);
+    }
+    this._map = map;
+    this.size = this._map.size;
+  }
+  getString(k: string, defaultValue?: string): string | undefined {
+    return this._map.getString(k, defaultValue);
+  }
+  getBoolean(k: string, defaultValue?: boolean): boolean | undefined {
+    return this._map.getBoolean(k, defaultValue);
+  }
+  getNumber(k: string, defaultValue?: number): number | undefined {
+    return this._map.getNumber(k, defaultValue);
+  }
+  getStringArray(k: string, defaultValue?: string[]): string[] | undefined {
+    return this._map.getStringArray(k, defaultValue);
+  }
+  getNumberArray(k: string, defaultValue?: number[]): number[] | undefined {
+    return this._map.getNumberArray(k, defaultValue);
+  }
+  getBooleanArray(k: string, defaultValue?: boolean[]): boolean[] | undefined {
+    return this._map.getBooleanArray(k, defaultValue);
+  }
+  getOptionItem(k: string, defaultValue?: OptionItem): OptionItem | undefined {
+    return this._map.getOptionItem(k, defaultValue);
+  }
+  getOptionItemArray(k: string, defaultValue?: OptionItem[]): OptionItem[] | undefined {
+    return this._map.getOptionItemArray(k, defaultValue);
+  }
+  toJSON(): Json {
+    return this._pluginSettings;
+  }
+  clear(): void {
+    Object.keys(this._pluginSettings).forEach((key) => delete this._pluginSettings[key]);
+    return this._map.clear();
+  }
+  delete(key: string): boolean {
+    const deleted = this._map.delete(key);
+    if (deleted) {
+      delete this._pluginSettings[key];
+    }
+    return deleted;
+  }
+  forEach(
+    callbackfn: (value: any, key: string, map: Map<string, any>) => void,
+    thisArg?: any
+  ): void {
+    return this._map.forEach(callbackfn, thisArg);
+  }
+  get(key: string) {
+    return this._map.get(key);
+  }
+  has(key: string): boolean {
+    return this._map.has(key);
+  }
+  size: number;
+  entries(): IterableIterator<[string, any]> {
+    return this._map.entries();
+  }
+  keys(): IterableIterator<string> {
+    return this._map.keys();
+  }
+  values(): IterableIterator<any> {
+    return this._map.values();
+  }
+  [Symbol.iterator](): IterableIterator<[string, any]> {
+    return this._map.entries();
+  }
+  [Symbol.toStringTag]: string;
+
+  set(key: string, value: ConfigValue): this {
+    this._map.set(key, value);
+    this._pluginSettings[key] = value;
+    this.size = this._map.size;
+    return this;
+  }
+}
+
+/**
+ * a Json backed LocalSettings which keeps localSettings Json and ConfigMap in sync
+ */
+class LocalSettingsAdaptor implements LocalSettings {
+  teamsApp?: ConfigMap;
+  auth?: ConfigMap;
+  frontend?: ConfigMap;
+  backend?: ConfigMap;
+  bot?: ConfigMap;
+
+  constructor(localSettings: Json, pluginName: string) {
+    if (localSettings && localSettings["teamsApp"]) {
+      this.teamsApp = new ConfigMapAdaptor(pluginName, localSettings["teamsApp"]);
+    }
+    if (localSettings && localSettings["auth"]) {
+      this.auth = new ConfigMapAdaptor(pluginName, localSettings["auth"]);
+    }
+    if (localSettings && localSettings["frontend"]) {
+      this.frontend = new ConfigMapAdaptor(pluginName, localSettings["frontend"]);
+    }
+    if (localSettings && localSettings["backend"]) {
+      this.backend = new ConfigMapAdaptor(pluginName, localSettings["backend"]);
+    }
+    if (localSettings && localSettings["bot"]) {
+      this.bot = new ConfigMapAdaptor(pluginName, localSettings["bot"]);
+    }
+  }
 }
 
 export async function provisionLocalResourceAdapter(
@@ -285,7 +411,8 @@ export async function provisionLocalResourceAdapter(
   if (!plugin.localDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "localDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
-  setLocalSettingsV1(pluginContext, localSettings);
+  const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
+  pluginContext.localSettings = localSettingsAdaptor;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
@@ -293,7 +420,6 @@ export async function provisionLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
-  setLocalSettingsV2(localSettings, pluginContext.localSettings);
   return ok(Void);
 }
 
@@ -307,7 +433,8 @@ export async function configureLocalResourceAdapter(
   if (!plugin.postLocalDebug) return err(PluginHasNoTaskImpl(plugin.displayName, "postLocalDebug"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
   pluginContext.envInfo.state.set(plugin.name, pluginContext.config);
-  setLocalSettingsV1(pluginContext, localSettings);
+  const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
+  pluginContext.localSettings = localSettingsAdaptor;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
@@ -315,7 +442,6 @@ export async function configureLocalResourceAdapter(
   if (res.isErr()) {
     return err(res.error);
   }
-  setLocalSettingsV2(localSettings, pluginContext.localSettings);
   return ok(Void);
 }
 
@@ -334,12 +460,12 @@ export async function executeUserTaskAdapter(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  setEnvInfoV1ByStateV2(plugin.name, pluginContext, envInfo.state);
-  setLocalSettingsV1(pluginContext, localSettings);
+  setEnvInfoV1ByStateV2(plugin.name, pluginContext, envInfo);
+  const localSettingsAdaptor = new LocalSettingsAdaptor(localSettings, plugin.name);
+  pluginContext.localSettings = localSettingsAdaptor;
   const res = await plugin.executeUserTask(func, pluginContext);
   if (res.isErr()) return err(res.error);
   setStateV2ByConfigMapInc(plugin.name, envInfo.state, pluginContext.config);
-  setLocalSettingsV2(localSettings, pluginContext.localSettings);
   return ok(res.value);
 }
 
@@ -362,13 +488,13 @@ export async function getQuestionsAdapter(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestions) return ok(undefined);
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs, true);
-  const config = ConfigMap.fromJSON(envInfo.state[plugin.name]) || new ConfigMap();
-  pluginContext.config = config;
+  setEnvInfoV1ByStateV2(plugin.name, pluginContext, envInfo);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
   return await plugin.getQuestions(inputs.stage!, pluginContext);
 }
+
 export async function getQuestionsForUserTaskAdapter(
   ctx: Context,
   inputs: Inputs,
@@ -379,8 +505,7 @@ export async function getQuestionsForUserTaskAdapter(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (!plugin.getQuestionsForUserTask) return ok(undefined);
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs, true);
-  const config = ConfigMap.fromJSON(envInfo.state[plugin.name]) || new ConfigMap();
-  pluginContext.config = config;
+  setEnvInfoV1ByStateV2(plugin.name, pluginContext, envInfo);
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
@@ -388,21 +513,19 @@ export async function getQuestionsForUserTaskAdapter(
 }
 
 export function setStateV2ByConfigMapInc(pluginName: string, state: Json, config: ConfigMap): void {
-  const source = mapToJson(config);
-  const subTarget = state[pluginName] || {};
-  assignJsonInc(subTarget, source);
-  state[pluginName] = subTarget;
+  const pluginConfig = legacyConfig2EnvState(config, pluginName);
+  state[pluginName] = _.assign(state[pluginName], pluginConfig);
 }
 
 export function setEnvInfoV1ByStateV2(
   pluginName: string,
   pluginContext: PluginContext,
-  stateV2: Json
+  envInfoV2: EnvInfoV2
 ): void {
   const envInfo = newEnvInfo();
-  let stateV1: ConfigMap | undefined = ConfigMap.fromJSON(stateV2);
+  let stateV1: ConfigMap | undefined = ConfigMap.fromJSON(envInfoV2.state);
   if (!stateV1) {
-    throw InvalidStateError(pluginName, stateV2);
+    throw InvalidStateError(pluginName, envInfoV2.state);
   }
   stateV1 = flattenConfigMap(stateV1);
   let selfConfigMap: ConfigMap | undefined = stateV1.get(pluginName);
@@ -410,26 +533,11 @@ export function setEnvInfoV1ByStateV2(
     selfConfigMap = new ConfigMap();
     stateV1.set(pluginName, selfConfigMap);
   }
+  envInfo.envName = envInfoV2.envName;
+  envInfo.config = envInfoV2.config as EnvConfig;
   envInfo.state = stateV1;
   pluginContext.config = selfConfigMap;
   pluginContext.envInfo = envInfo;
-}
-
-export function setLocalSettingsV2(localSettingsJson: Json, localSettings?: LocalSettings): void {
-  localSettingsJson.teamsApp = assignJsonInc(
-    localSettingsJson.teamsApp,
-    mapToJson(localSettings?.teamsApp)
-  );
-  localSettingsJson.auth = assignJsonInc(localSettingsJson.auth, mapToJson(localSettings?.auth));
-  localSettingsJson.backend = assignJsonInc(
-    localSettingsJson.backend,
-    mapToJson(localSettings?.backend)
-  );
-  localSettingsJson.frontend = assignJsonInc(
-    localSettingsJson.frontend,
-    mapToJson(localSettings?.frontend)
-  );
-  localSettingsJson.bot = assignJsonInc(localSettingsJson.bot, mapToJson(localSettings?.bot));
 }
 
 export function assignJsonInc(target?: Json, source?: Json): Json | undefined {
@@ -449,16 +557,6 @@ export function assignJsonInc(target?: Json, source?: Json): Json | undefined {
     }
   }
   return target;
-}
-
-export function setLocalSettingsV1(pluginContext: PluginContext, localSettings: Json): void {
-  pluginContext.localSettings = {
-    teamsApp: ConfigMap.fromJSON(localSettings.teamsApp) || new ConfigMap(),
-    auth: ConfigMap.fromJSON(localSettings.auth),
-    backend: ConfigMap.fromJSON(localSettings.backend),
-    bot: ConfigMap.fromJSON(localSettings.bot),
-    frontend: ConfigMap.fromJSON(localSettings.frontend),
-  };
 }
 
 export async function collaborationApiAdaptor(
@@ -487,7 +585,6 @@ export async function collaborationApiAdaptor(
   pluginContext.azureAccountProvider = tokenProvider.azureAccountProvider;
   pluginContext.appStudioToken = tokenProvider.appStudioToken;
   pluginContext.graphTokenProvider = tokenProvider.graphTokenProvider;
-  pluginContext.envInfo = newEnvInfo();
   pluginContext.envInfo.state = flattenConfigMap(state);
   pluginContext.envInfo.config = envInfo.config as EnvConfig;
   pluginContext.config = pluginContext.envInfo.state.get(plugin.name) ?? new ConfigMap();

@@ -261,7 +261,7 @@ export class AppStudioPluginImpl {
       AppPackageFolderName,
       V1ManifestFileName
     );
-    const manifestSourceRes = await this.reloadManifestAndCheckRequiredFields(archiveManifestPath);
+    const manifestSourceRes = await this.reloadManifest(archiveManifestPath);
     if (manifestSourceRes.isErr()) {
       throw manifestSourceRes.error;
     }
@@ -299,27 +299,6 @@ export class AppStudioPluginImpl {
     return manifest;
   }
 
-  public async reloadManifestAndCheckRequiredFields(
-    manifestPath: string
-  ): Promise<Result<TeamsAppManifest, FxError>> {
-    const result = await this.reloadManifest(manifestPath);
-    return result.andThen((manifest) => {
-      if (
-        manifest === undefined ||
-        manifest.name.short === undefined ||
-        manifest.name.short.length === 0
-      ) {
-        return err(
-          AppStudioResultFactory.SystemError(
-            AppStudioError.ManifestLoadFailedError.name,
-            AppStudioError.ManifestLoadFailedError.message("Name is missing")
-          )
-        );
-      }
-      return ok(manifest);
-    });
-  }
-
   public async provision(ctx: PluginContext): Promise<Result<string, FxError>> {
     let remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
 
@@ -354,7 +333,7 @@ export class AppStudioPluginImpl {
     let manifestString: string;
     const appDirectory = await getAppDirectory(ctx.root);
     const manifestPath = await this.getManifestTemplatePath(ctx.root);
-    const manifestResult = await this.reloadManifestAndCheckRequiredFields(manifestPath);
+    const manifestResult = await this.reloadManifest(manifestPath);
     if (manifestResult.isErr()) {
       return err(manifestResult.error);
     } else {
@@ -363,17 +342,7 @@ export class AppStudioPluginImpl {
 
     let appDefinition: IAppDefinition;
     if (isSPFxProject(ctx.projectSettings)) {
-      if (isMultiEnvEnabled()) {
-        const view = {
-          config: ctx.envInfo.config,
-          state: {
-            "fx-resource-appstudio": {
-              teamsAppId: remoteTeamsAppId,
-            },
-          },
-        };
-        manifestString = Mustache.render(manifestString, view);
-      }
+      manifestString = await this.getSPFxManifest(ctx, false);
       const appDefinitionRes = await this.convertToAppDefinition(
         ctx,
         JSON.parse(manifestString),
@@ -410,21 +379,15 @@ export class AppStudioPluginImpl {
     return ok(remoteTeamsAppId);
   }
 
-  public async validateManifest(ctx: PluginContext): Promise<Result<string[], FxError>> {
+  public async validateManifest(
+    ctx: PluginContext,
+    isLocalDebug: boolean
+  ): Promise<Result<string[], FxError>> {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     let manifestString: string | undefined = undefined;
     if (isSPFxProject(ctx.projectSettings)) {
-      manifestString = (await fs.readFile(await this.getManifestTemplatePath(ctx.root))).toString();
+      manifestString = await this.getSPFxManifest(ctx, isLocalDebug);
       if (isMultiEnvEnabled()) {
-        const view = {
-          config: ctx.envInfo.config,
-          state: {
-            "fx-resource-appstudio": {
-              teamsAppId: this.getTeamsAppId(ctx, false),
-            },
-          },
-        };
-        manifestString = Mustache.render(manifestString, view);
         const manifest = JSON.parse(manifestString);
         if (!isUUID(manifest.id)) {
           manifest.id = v4();
@@ -432,26 +395,10 @@ export class AppStudioPluginImpl {
         manifestString = JSON.stringify(manifest, null, 4);
       }
     } else {
-      const appDefinitionAndManifest = await this.getAppDefinitionAndManifest(ctx, false);
+      const appDefinitionAndManifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
       if (appDefinitionAndManifest.isErr()) {
         ctx.logProvider?.error("[Teams Toolkit] Manifest Validation failed!");
-        const isProvisionSucceeded = !!(ctx.envInfo.state
-          .get("solution")
-          ?.get(SOLUTION_PROVISION_SUCCEEDED) as boolean);
-        if (
-          appDefinitionAndManifest.error.name === AppStudioError.GetRemoteConfigError.name &&
-          !isProvisionSucceeded
-        ) {
-          return err(
-            AppStudioResultFactory.UserError(
-              AppStudioError.GetRemoteConfigError.name,
-              AppStudioError.GetRemoteConfigError.message("Manifest validation failed"),
-              HelpLinks.WhyNeedProvision
-            )
-          );
-        } else {
-          return err(appDefinitionAndManifest.error);
-        }
+        return err(appDefinitionAndManifest.error);
       } else {
         manifestString = JSON.stringify(appDefinitionAndManifest.value[1]);
       }
@@ -501,7 +448,7 @@ export class AppStudioPluginImpl {
     let manifestString: string;
     const appDirectory = await getAppDirectory(ctx.root);
     const manifestPath = await this.getManifestTemplatePath(ctx.root, isLocalDebug);
-    const manifestResult = await this.reloadManifestAndCheckRequiredFields(manifestPath);
+    const manifestResult = await this.reloadManifest(manifestPath);
     if (manifestResult.isErr()) {
       throw manifestResult;
     } else {
@@ -510,27 +457,7 @@ export class AppStudioPluginImpl {
 
     let appDefinition: IAppDefinition;
     if (isSPFxProject(ctx.projectSettings)) {
-      let view: any;
-      if (isLocalDebug) {
-        view = {
-          localSettings: {
-            teamsApp: {
-              teamsAppId: teamsAppId,
-            },
-          },
-        };
-      } else {
-        view = {
-          config: ctx.envInfo.config,
-          state: {
-            "fx-resource-appstudio": {
-              teamsAppId: teamsAppId,
-            },
-          },
-        };
-      }
-
-      manifestString = Mustache.render(manifestString, view);
+      manifestString = await this.getSPFxManifest(ctx, isLocalDebug);
       manifest = JSON.parse(manifestString);
       const appDefinitionRes = await this.convertToAppDefinition(ctx, manifest, false);
       if (appDefinitionRes.isErr()) {
@@ -637,7 +564,7 @@ export class AppStudioPluginImpl {
       : `${ctx.root}/${AppPackageFolderName}`;
 
     await fs.ensureDir(newAppPackageFolder);
-    if (await this.checkFileExist(archiveManifestPath)) {
+    if (await fs.pathExists(archiveManifestPath)) {
       manifest = await this.createV1Manifest(ctx);
 
       const resourcesDir = isMultiEnvEnabled()
@@ -647,7 +574,7 @@ export class AppStudioPluginImpl {
 
       if (manifest?.icons?.color && !manifest.icons.color.startsWith("https://")) {
         const archiveColorFile = path.join(archiveAppPackageFolder, manifest.icons.color);
-        const existColorFile = await this.checkFileExist(archiveColorFile);
+        const existColorFile = await fs.pathExists(archiveColorFile);
         const newColorFileName = existColorFile
           ? path.basename(manifest.icons.color)
           : DEFAULT_COLOR_PNG_FILENAME;
@@ -662,7 +589,7 @@ export class AppStudioPluginImpl {
 
       if (manifest?.icons?.outline && !manifest.icons.outline.startsWith("https://")) {
         const archiveOutlineFile = path.join(archiveAppPackageFolder, manifest.icons.outline);
-        const existOutlineFile = await this.checkFileExist(archiveOutlineFile);
+        const existOutlineFile = await fs.pathExists(archiveOutlineFile);
         const newOutlineFileName = existOutlineFile
           ? path.basename(manifest.icons.outline)
           : DEFAULT_OUTLINE_PNG_FILENAME;
@@ -761,6 +688,16 @@ export class AppStudioPluginImpl {
   }
 
   public async buildTeamsAppPackage(ctx: PluginContext, isLocalDebug: boolean): Promise<string> {
+    // Validate manifest
+    const validationResult = await this.validateManifest(ctx, isLocalDebug);
+    if (validationResult.isOk() && validationResult.value.length > 0) {
+      const errMessage = AppStudioError.ValidationFailedError.message(validationResult.value);
+      const validationFailed = AppStudioResultFactory.UserError(
+        AppStudioError.ValidationFailedError.name,
+        errMessage
+      );
+      throw validationFailed;
+    }
     let manifestString: string | undefined = undefined;
 
     if (!ctx.envInfo?.envName) {
@@ -780,19 +717,8 @@ export class AppStudioPluginImpl {
     }
 
     if (isSPFxProject(ctx.projectSettings)) {
-      manifestString = (
-        await fs.readFile(await this.getManifestTemplatePath(ctx.root, isLocalDebug))
-      ).toString();
+      manifestString = await this.getSPFxManifest(ctx, isLocalDebug);
       if (isMultiEnvEnabled()) {
-        const view = {
-          config: ctx.envInfo.config,
-          state: {
-            "fx-resource-appstudio": {
-              teamsAppId: await this.getTeamsAppId(ctx, isLocalDebug),
-            },
-          },
-        };
-        manifestString = Mustache.render(manifestString, view);
         const manifest = JSON.parse(manifestString);
         if (!isUUID(manifest.id)) {
           manifest.id = v4();
@@ -837,7 +763,7 @@ export class AppStudioPluginImpl {
     // color icon
     if (manifest.icons.color && !manifest.icons.color.startsWith("https://")) {
       const colorFile = `${appDirectory}/${manifest.icons.color}`;
-      const fileExists = await this.checkFileExist(colorFile);
+      const fileExists = await fs.pathExists(colorFile);
       if (!fileExists) {
         throw AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
@@ -852,7 +778,7 @@ export class AppStudioPluginImpl {
     // outline icon
     if (manifest.icons.outline && !manifest.icons.outline.startsWith("https://")) {
       const outlineFile = `${appDirectory}/${manifest.icons.outline}`;
-      const fileExists = await this.checkFileExist(outlineFile);
+      const fileExists = await fs.pathExists(outlineFile);
       if (!fileExists) {
         throw AppStudioResultFactory.UserError(
           AppStudioError.FileNotFoundError.name,
@@ -871,7 +797,11 @@ export class AppStudioPluginImpl {
         `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/manifest.` +
         (isLocalDebug ? "local" : ctx.envInfo.envName) +
         `.json`;
+      if (await fs.pathExists(manifestFileName)) {
+        await fs.chmod(manifestFileName, 0o777);
+      }
       await fs.writeFile(manifestFileName, manifestString);
+      await fs.chmod(manifestFileName, 0o444);
     }
 
     // localization file
@@ -906,7 +836,7 @@ export class AppStudioPluginImpl {
       await fs.ensureDir(path.join(ctx.root, `${AppPackageFolderName}`));
 
       const formerZipFileName = `${appDirectory}/appPackage.zip`;
-      if (await this.checkFileExist(formerZipFileName)) {
+      if (await fs.pathExists(formerZipFileName)) {
         await fs.remove(formerZipFileName);
       }
 
@@ -941,17 +871,7 @@ export class AppStudioPluginImpl {
       await fs.readJSON(await this.getManifestTemplatePath(ctx.root))
     );
     if (isSPFxProject(ctx.projectSettings)) {
-      if (isMultiEnvEnabled()) {
-        const view = {
-          config: ctx.envInfo.config,
-          state: {
-            "fx-resource-appstudio": {
-              teamsAppId: await this.getTeamsAppId(ctx, false),
-            },
-          },
-        };
-        manifestString = Mustache.render(manifestString, view);
-      }
+      manifestString = await this.getSPFxManifest(ctx, false);
       manifest = JSON.parse(manifestString);
     } else {
       const fillinRes = await this.getAppDefinitionAndManifest(ctx, false);
@@ -1001,7 +921,7 @@ export class AppStudioPluginImpl {
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
     let teamsAppId;
     const manifestPath = await this.getManifestTemplatePath(ctx.root, true);
-    const manifest = await this.reloadManifestAndCheckRequiredFields(manifestPath);
+    const manifest = await this.reloadManifest(manifestPath);
     if (manifest.isErr()) {
       return err(manifest.error);
     }
@@ -1217,15 +1137,6 @@ export class AppStudioPluginImpl {
       }
     } finally {
       await publishProgress?.end(true);
-    }
-  }
-
-  private async checkFileExist(filePath: string): Promise<boolean> {
-    try {
-      await fs.stat(filePath);
-      return true;
-    } catch (error) {
-      return false;
     }
   }
 
@@ -1472,15 +1383,16 @@ export class AppStudioPluginImpl {
   }
 
   private async getTeamsAppId(ctx: PluginContext, isLocalDebug: boolean): Promise<string> {
-    let teamsAppId: string;
+    let teamsAppId = "";
 
     if (isMultiEnvEnabled() || !isLocalDebug) {
       // User may manually update id in manifest template file, rather than configuration file
       // The id in manifest template file should override configurations
-      const manifest: TeamsAppManifest = await fs.readJSON(
-        await this.getManifestTemplatePath(ctx.root, isLocalDebug)
-      );
-      teamsAppId = manifest.id;
+      const manifestFile = await this.getManifestTemplatePath(ctx.root, isLocalDebug);
+      if (await fs.pathExists(manifestFile)) {
+        const manifest: TeamsAppManifest = await fs.readJSON(manifestFile);
+        teamsAppId = manifest.id;
+      }
       if (!isUUID(teamsAppId)) {
         if (isMultiEnvEnabled()) {
           teamsAppId = isLocalDebug
@@ -1638,7 +1550,7 @@ export class AppStudioPluginImpl {
     try {
       const appDefinition = await AppStudioClient.createApp(
         archivedFile,
-        appStudioToken,
+        appStudioToken!,
         ctx.logProvider
       );
       return ok(appDefinition);
@@ -1787,9 +1699,16 @@ export class AppStudioPluginImpl {
       }
     }
 
-    let manifest = (
-      await fs.readFile(await this.getManifestTemplatePath(ctx.root, isLocalDebug))
-    ).toString();
+    const manifestFile = await this.getManifestTemplatePath(ctx.root, isLocalDebug);
+    if (!(await fs.pathExists(manifestFile))) {
+      return err(
+        AppStudioResultFactory.SystemError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(manifestFile)
+        )
+      );
+    }
+    let manifest = (await fs.readFile(manifestFile)).toString();
 
     // Bot only project, without frontend hosting
     let endpoint = tabEndpoint;
@@ -1968,6 +1887,29 @@ export class AppStudioPluginImpl {
     }
 
     return ok([appDefinition, updatedManifest]);
+  }
+
+  private async getSPFxManifest(ctx: PluginContext, isLocalDebug: boolean): Promise<string> {
+    let manifestString = JSON.stringify(
+      await fs.readJSON(await this.getManifestTemplatePath(ctx.root, isLocalDebug))
+    );
+    if (isMultiEnvEnabled()) {
+      const view = {
+        config: ctx.envInfo.config,
+        state: {
+          "fx-resource-appstudio": {
+            teamsAppId: await this.getTeamsAppId(ctx, isLocalDebug),
+          },
+        },
+        localSettings: {
+          teamsApp: {
+            teamsAppId: ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId),
+          },
+        },
+      };
+      manifestString = Mustache.render(manifestString, view);
+    }
+    return manifestString;
   }
 
   public async getManifestTemplatePath(projectRoot: string, isLocalDebug = false): Promise<string> {

@@ -4,7 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import { Platform } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import { MockedV2Context } from "../util";
-import { setupLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/provisionLocalResource";
+import { setupLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/provisionLocal";
 import * as path from "path";
 chai.use(chaiAsPromised);
 

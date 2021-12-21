@@ -22,7 +22,7 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { setupLocalDebugSettings } from "../debug/provisionLocalResource";
+import { setupLocalDebugSettings } from "../debug/provisionLocal";
 
 export async function provisionLocalResource(
   ctx: v2.Context,

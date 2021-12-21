@@ -256,7 +256,10 @@ export class SqlPluginImpl {
         await sqlClient.addDatabaseUser();
         return;
       } catch (error) {
-        if (!SqlClient.isFireWallError(error?.innerError) || retryAddUser >= 3) {
+        if (
+          !SqlClient.isFireWallError(error?.innerError) ||
+          retryAddUser >= Constants.maxRetryTimes
+        ) {
           throw error;
         } else {
           retryAddUser++;

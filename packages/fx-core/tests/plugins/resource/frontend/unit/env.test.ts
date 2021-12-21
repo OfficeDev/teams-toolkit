@@ -9,7 +9,7 @@ import * as os from "os";
 import * as faker from "faker";
 
 import sinon from "sinon";
-import { saveEnvFile } from "../../../../../src/plugins/resource/frontend/env";
+import { envFilePath, saveEnvFile } from "../../../../../src/plugins/resource/frontend/env";
 
 chai.use(chaiAsPromised);
 
@@ -46,7 +46,7 @@ describe("Frontend Hosting Customize Env", async () => {
         chai.assert.include(data, teamsfxEnvString);
       });
 
-      await saveEnvFile("dev", fakePath, {
+      await saveEnvFile(envFilePath("dev", fakePath), {
         teamsfxRemoteEnvs: teamsfxEnv,
         customizedRemoteEnvs: {},
       });
@@ -60,7 +60,7 @@ describe("Frontend Hosting Customize Env", async () => {
         chai.assert.include(data, customizeEnvString);
       });
 
-      await saveEnvFile("dev", fakePath, {
+      await saveEnvFile(envFilePath("dev", fakePath), {
         teamsfxRemoteEnvs: teamsfxEnv,
         customizedRemoteEnvs: {},
       });

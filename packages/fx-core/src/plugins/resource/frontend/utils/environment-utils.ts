@@ -3,6 +3,7 @@
 import * as dotenv from "dotenv";
 import fs from "fs-extra";
 import * as os from "os";
+import { Utils } from "../utils";
 
 export class EnvironmentUtils {
   static async writeEnvironments(
@@ -14,7 +15,7 @@ export class EnvironmentUtils {
 
     const configs = dotenv.parse(envBuffer);
     const newConfigs = { ...configs, ...variables };
-    if (JSON.stringify(newConfigs) === JSON.stringify(configs)) {
+    if (Utils.compareKvPair(newConfigs, configs)) {
       // Avoid updating dotenv file's modified time if nothing changes.
       // We decide whether to skip deployment by comparing the mtime of all project files and last deployment time.
       return;

@@ -8,6 +8,7 @@ import * as path from "path";
 import * as os from "os";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { TelemetryEvent } from "./constants";
+import { Utils } from "./utils";
 
 export interface RemoteEnvs {
   teamsfxRemoteEnvs: { [key: string]: string };
@@ -26,21 +27,19 @@ export const EnvKeys = Object.freeze({
   ClientID: "REACT_APP_CLIENT_ID",
 });
 
-export function initEnvs(): RemoteEnvs {
-  const result: RemoteEnvs = {
+export const getEmptyEnvs = (): RemoteEnvs => {
+  return {
     teamsfxRemoteEnvs: {},
     customizedRemoteEnvs: {},
   };
-
-  return result;
-}
+};
 
 export async function loadEnvFile(envPath: string): Promise<RemoteEnvs> {
   if (!(await fs.pathExists(envPath))) {
-    return initEnvs();
+    return getEmptyEnvs();
   }
   const envs = dotenv.parse(await fs.readFile(envPath));
-  const result = initEnvs();
+  const result = getEmptyEnvs();
   const entries = Object.entries(envs);
   for (const [key, value] of entries) {
     if (Object.values(EnvKeys).includes(key)) {
@@ -60,7 +59,10 @@ export async function saveEnvFile(envPath: string, envs: RemoteEnvs): Promise<vo
       customizedRemoteEnvs: { ...configs.customizedRemoteEnvs, ...envs.customizedRemoteEnvs },
     };
 
-    if (JSON.stringify(newConfigs) === JSON.stringify(configs)) {
+    if (
+      Utils.compareKvPair(newConfigs.customizedRemoteEnvs, configs.customizedRemoteEnvs) &&
+      Utils.compareKvPair(newConfigs.teamsfxRemoteEnvs, configs.teamsfxRemoteEnvs)
+    ) {
       // Avoid updating dotenv file's modified time if nothing changes.
       // We decide whether to skip deployment by comparing the mtime of all project files and last deployment time.
       return;
@@ -83,7 +85,9 @@ export async function saveEnvFile(envPath: string, envs: RemoteEnvs): Promise<vo
 }
 
 function concatEnvString(envs: { [key: string]: string }): string {
-  return Object.entries(envs)
-    .map(([k, v]) => `${k}=${v}`)
-    .join(os.EOL);
+  return (
+    Object.entries(envs)
+      .map(([k, v]) => `${k}=${v}`)
+      .join(os.EOL) + os.EOL
+  );
 }

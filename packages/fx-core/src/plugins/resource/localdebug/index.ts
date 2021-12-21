@@ -17,12 +17,7 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import { LocalCertificateManager } from "./certificate";
-import {
-  SolutionPlugin,
-  LocalEnvBotKeys,
-  LocalEnvBotKeysMigratedFromV1,
-  AppStudioPlugin,
-} from "./constants";
+import { LocalEnvBotKeys, LocalEnvBotKeysMigratedFromV1 } from "./constants";
 import {
   LocalEnvFrontendKeys,
   LocalEnvBackendKeys,
@@ -38,7 +33,6 @@ import {
 } from "./localEnvMulti";
 import {
   LocalBotEndpointNotConfigured,
-  MissingStep,
   NgrokTunnelNotConnected,
   InvalidLocalBotEndpointFormat,
 } from "./util/error";
@@ -49,7 +43,6 @@ import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { isMultiEnvEnabled } from "../../../common";
-import { localEnvManager } from "../../../common/local/localEnvManager";
 import { legacyLocalDebugPlugin } from "./legacyPlugin";
 import {
   LocalSettingsAuthKeys,
@@ -474,30 +467,7 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
-    if (func.method == "getLaunchInput") {
-      const env = func.params as string;
-      const solutionConfigs = ctx.envInfo.state.get(SolutionPlugin.Name);
-      if (env === "remote") {
-        // return remote teams app id
-        const remoteId = isMultiEnvEnabled()
-          ? (ctx.envInfo.state.get(AppStudioPlugin.Name)?.get(AppStudioPlugin.TeamsAppId) as string)
-          : (solutionConfigs?.get(SolutionPlugin.RemoteTeamsAppId) as string);
-        if (/^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(remoteId)) {
-          return ok({
-            appId: remoteId,
-            env: ctx.envInfo.envName,
-          });
-        } else {
-          return err(MissingStep("launching remote", "Teams: Provision and Teams: Deploy"));
-        }
-      } else {
-        return ok(await localEnvManager.getLaunchInput(ctx.root));
-      }
-    } else if (func.method === "getProgrammingLanguage") {
-      return ok(await localEnvManager.getProgrammingLanguage(ctx.root));
-    } else if (func.method === "getSkipNgrokConfig") {
-      return ok(await localEnvManager.getSkipNgrokConfig(ctx.root));
-    } else if (func.method === "getLocalDebugEnvs") {
+    if (func.method === "getLocalDebugEnvs") {
       const localEnvs = await this.getLocalDebugEnvs(ctx);
       return ok(localEnvs);
     } else if (func.method === "migrateV1Project") {

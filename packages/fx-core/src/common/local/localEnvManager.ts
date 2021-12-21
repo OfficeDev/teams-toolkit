@@ -19,10 +19,9 @@ import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
 
 class LocalEnvManager {
-  public async getLaunchInput(projectPath: string): Promise<any> {
+  public getLaunchInput(rawLocalSettings: Json | undefined): any {
     // return local teams app id
-    const localSettings = await this.getRawLocalSettings(projectPath);
-    const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
+    const localTeamsAppId = rawLocalSettings?.teamsApp?.teamsAppId as string;
     return { appId: localTeamsAppId };
   }
 
@@ -32,34 +31,31 @@ class LocalEnvManager {
 
   public async getPortsInUse() {}
 
-  public async getProgrammingLanguage(projectPath: string): Promise<string | undefined> {
-    const projectSettings = await this.getProjectSettings(projectPath);
+  public getProgrammingLanguage(projectSettings: ProjectSettings): string | undefined {
     return projectSettings.programmingLanguage;
   }
 
-  public async getSkipNgrokConfig(projectPath: string): Promise<boolean> {
-    const localSettings = await this.getRawLocalSettings(projectPath);
-    return (localSettings?.bot?.skipNgrok as boolean) === true;
+  public getSkipNgrokConfig(rawLocalSettings: Json | undefined): boolean {
+    return (rawLocalSettings?.bot?.skipNgrok as boolean) === true;
   }
 
-  private async getLocalSettings(projectPath: string): Promise<Json | undefined> {
-    const projectSettings = await this.getProjectSettings(projectPath);
+  public async getLocalSettings(projectPath: string, projectId: string): Promise<Json | undefined> {
     const localSettingsProvider = new LocalSettingsProvider(projectPath);
-    const crypto = new LocalCrypto(projectSettings.projectId);
+    const crypto = new LocalCrypto(projectId);
     return await this.retry(async () => {
       return await localSettingsProvider.loadV2(crypto);
     });
   }
 
   // Load local settings without encryption
-  private async getRawLocalSettings(projectPath: string): Promise<Json | undefined> {
+  public async getRawLocalSettings(projectPath: string): Promise<Json | undefined> {
     const localSettingsProvider = new LocalSettingsProvider(projectPath);
     return await this.retry(async () => {
       return await localSettingsProvider.loadV2(undefined);
     });
   }
 
-  private async getProjectSettings(projectPath: string): Promise<ProjectSettings> {
+  public async getProjectSettings(projectPath: string): Promise<ProjectSettings> {
     return await this.retry(async () => {
       const projectSettingsPath = path.resolve(
         projectPath,

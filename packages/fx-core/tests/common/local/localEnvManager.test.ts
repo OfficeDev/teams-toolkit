@@ -53,7 +53,8 @@ describe("LocalEnvManager", () => {
         JSON.stringify(localSettings0)
       );
 
-      const launchInput = await localEnvManager.getLaunchInput(projectPath);
+      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
+      const launchInput = localEnvManager.getLaunchInput(localSettings);
 
       chai.assert.isDefined(launchInput);
       chai.assert.deepEqual(launchInput, { appId: "33333333-3333-3333-3333-333333333333" });
@@ -64,7 +65,8 @@ describe("LocalEnvManager", () => {
       await fs.emptyDir(configFolder);
       await fs.writeFile(path.resolve(configFolder, "localSettings.json"), "{}");
 
-      const launchInput = await localEnvManager.getLaunchInput(projectPath);
+      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
+      const launchInput = localEnvManager.getLaunchInput(localSettings);
 
       chai.assert.isDefined(launchInput);
       chai.assert.deepEqual(launchInput, { appId: undefined });
@@ -74,7 +76,8 @@ describe("LocalEnvManager", () => {
       await fs.ensureDir(configFolder);
       await fs.emptyDir(configFolder);
 
-      const launchInput = await localEnvManager.getLaunchInput(projectPath);
+      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
+      const launchInput = localEnvManager.getLaunchInput(localSettings);
 
       chai.assert.isDefined(launchInput);
       chai.assert.deepEqual(launchInput, { appId: undefined });
@@ -90,7 +93,8 @@ describe("LocalEnvManager", () => {
         JSON.stringify(projectSettings0)
       );
 
-      const language = await localEnvManager.getProgrammingLanguage(projectPath);
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+      const language = localEnvManager.getProgrammingLanguage(projectSettings);
 
       chai.assert.equal(language, "javascript");
     });
@@ -100,7 +104,8 @@ describe("LocalEnvManager", () => {
       await fs.emptyDir(configFolder);
       await fs.writeFile(path.resolve(configFolder, "projectSettings.json"), "{}");
 
-      const language = await localEnvManager.getProgrammingLanguage(projectPath);
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+      const language = localEnvManager.getProgrammingLanguage(projectSettings);
 
       chai.assert.isUndefined(language);
     });
@@ -119,7 +124,8 @@ describe("LocalEnvManager", () => {
         JSON.stringify(localSettingsBot)
       );
 
-      const skipNgrok = await localEnvManager.getSkipNgrokConfig(projectPath);
+      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
+      const skipNgrok = localEnvManager.getSkipNgrokConfig(localSettings);
 
       chai.assert.isTrue(skipNgrok);
     });
@@ -132,7 +138,8 @@ describe("LocalEnvManager", () => {
         JSON.stringify(localSettings0)
       );
 
-      const skipNgrok = await localEnvManager.getSkipNgrokConfig(projectPath);
+      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
+      const skipNgrok = localEnvManager.getSkipNgrokConfig(localSettings);
 
       chai.assert.isFalse(skipNgrok);
     });
@@ -141,7 +148,8 @@ describe("LocalEnvManager", () => {
       await fs.ensureDir(configFolder);
       await fs.emptyDir(configFolder);
 
-      const skipNgrok = await localEnvManager.getSkipNgrokConfig(projectPath);
+      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
+      const skipNgrok = localEnvManager.getSkipNgrokConfig(localSettings);
 
       chai.assert.isFalse(skipNgrok);
     });
@@ -155,7 +163,7 @@ describe("LocalEnvManager", () => {
         JSON.stringify(projectSettings0)
       );
 
-      const projectSettings = await (localEnvManager as any).getProjectSettings(projectPath);
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
 
       chai.assert.isDefined(projectSettings);
       chai.assert.equal(projectSettings.appName, "unit-test0");
@@ -168,7 +176,7 @@ describe("LocalEnvManager", () => {
       await fs.ensureDir(configFolder);
       await fs.writeFile(path.resolve(configFolder, "projectSettings.json"), "{}");
 
-      const projectSettings = await (localEnvManager as any).getProjectSettings(projectPath);
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
 
       chai.assert.isDefined(projectSettings);
       chai.assert.isUndefined(projectSettings.appName);
@@ -181,7 +189,7 @@ describe("LocalEnvManager", () => {
 
       let error: UserError | undefined = undefined;
       try {
-        await (localEnvManager as any).getProjectSettings(projectPath);
+        await localEnvManager.getProjectSettings(projectPath);
       } catch (e: any) {
         error = e as UserError;
       }
@@ -203,7 +211,11 @@ describe("LocalEnvManager", () => {
         JSON.stringify(localSettings0)
       );
 
-      const localSettings = await (localEnvManager as any).getLocalSettings(projectPath);
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+      const localSettings = await localEnvManager.getLocalSettings(
+        projectPath,
+        projectSettings.projectId
+      );
 
       chai.assert.isDefined(localSettings);
       chai.assert.isDefined(localSettings!.teamsApp);
@@ -225,7 +237,11 @@ describe("LocalEnvManager", () => {
       );
       await fs.writeFile(path.resolve(configFolder, "localSettings.json"), "{}");
 
-      const localSettings = await (localEnvManager as any).getLocalSettings(projectPath);
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+      const localSettings = await localEnvManager.getLocalSettings(
+        projectPath,
+        projectSettings.projectId
+      );
 
       chai.assert.isDefined(localSettings);
       chai.assert.isUndefined(localSettings!.teamsApp);
@@ -239,7 +255,11 @@ describe("LocalEnvManager", () => {
         JSON.stringify(projectSettings0)
       );
 
-      const localSettings = await (localEnvManager as any).getLocalSettings(projectPath);
+      const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+      const localSettings = await localEnvManager.getLocalSettings(
+        projectPath,
+        projectSettings.projectId
+      );
 
       chai.assert.isUndefined(localSettings);
     });
@@ -254,7 +274,7 @@ describe("LocalEnvManager", () => {
         JSON.stringify(localSettings0)
       );
 
-      const localSettings = await (localEnvManager as any).getRawLocalSettings(projectPath);
+      const localSettings = await localEnvManager.getRawLocalSettings(projectPath);
 
       chai.assert.isDefined(localSettings);
       chai.assert.isDefined(localSettings!.teamsApp);

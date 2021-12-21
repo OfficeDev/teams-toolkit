@@ -10,7 +10,7 @@ var webAppName = split(provisionOutputs.simpleAuthOutput.value.webAppResourceId,
 
 var m365ClientId = provisionParameters['m365ClientId']
 {{#if Plugins.fx-resource-key-vault}}
-var m365ClientSecret = {{../Plugins.fx-resource-key-vault.References.m365ClientSecretReference}}
+var m365ClientSecret = {{Plugins.fx-resource-key-vault.References.m365ClientSecretReference}}
 {{else}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']
 {{/if}}
@@ -26,8 +26,8 @@ var tabAppDomain = {{References.domain}}
 var tabAppEndpoint = {{References.endpoint}} 
 {{/with}}
 
-{{#if Plugins.fx-resource-frontend-hosting }}
-{{#if Plugins.fx-resource-bot }}
+{{#if Plugins.fx-resource-frontend-hosting}}
+{{#if Plugins.fx-resource-bot}}
 var m365ApplicationIdUri = 'api://${tabAppDomain}/botid-${botId}'
 {{else}}
 var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'

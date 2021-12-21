@@ -11,9 +11,10 @@ param currentAppSettings object
 var functionAppName = split({{PluginOutput.fx-resource-function.References.functionAppResourceId}}, '/')[8]
 
 var m365ClientId = provisionParameters['m365ClientId']
-{{#contains 'fx-resource-key-vault' Plugins}}
-var m365ClientSecret = {{../Plugins.fx-resource-key-vault.References.m365ClientSecretReference}}
-{{/contains}}
+{{#if Plugins.fx-resource-key-vault}}
+var m365ClientSecret = {{Plugins.fx-resource-key-vault.References.m365ClientSecretReference}}
+{{/if}}
+
 {{#notContains 'fx-resource-key-vault' Plugins}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']
 {{/notContains}}

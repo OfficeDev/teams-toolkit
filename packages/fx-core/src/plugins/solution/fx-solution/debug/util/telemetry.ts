@@ -23,6 +23,8 @@ enum TelemetryPropertyValue {
 
 export enum TelemetryEventName {
   scaffoldLocalDebugSettings = "scaffoldLocalDebugSettings",
+  provisionLocalResource = "provisionLocalResource",
+  configLocalResource = "configLocalResource",
 }
 
 export class TelemetryUtils {

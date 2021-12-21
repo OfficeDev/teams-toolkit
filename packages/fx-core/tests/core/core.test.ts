@@ -85,20 +85,20 @@ describe("Core basic APIs", () => {
     deleteFolder(projectPath);
   });
 
-  describe("Core's basic APIs", async () => {
+  describe("Core's basic APIs FOR V1 and V2", async () => {
     const AllEnvParams = [
-      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "true" },
-      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true" },
+      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "false", TEAMSFX_APIV3: "false" },
+      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "true", TEAMSFX_APIV3: "false" },
+      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "false", TEAMSFX_APIV3: "false" },
+      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true", TEAMSFX_APIV3: "false" },
     ];
     const EnableMultiEnvParams = [
-      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "true" },
-      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true" },
+      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "true", TEAMSFX_APIV3: "false" },
+      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true", TEAMSFX_APIV3: "false" },
     ];
     const DisableMultiEnvParams = [
-      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "false" },
+      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "false", TEAMSFX_APIV3: "false" },
+      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "false", TEAMSFX_APIV3: "false" },
     ];
     for (const param of AllEnvParams) {
       describe(`Multi-Env: ${param.__TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
@@ -312,7 +312,7 @@ describe("Core basic APIs", () => {
   });
 
   it("create project with correct version", async () => {
-    assert.isTrue(true);
+    const mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
     appName = randomAppName();
     projectPath = path.join(os.homedir(), "TeamsApps", appName);
     const expectedInputs: Inputs = {
@@ -398,6 +398,7 @@ describe("Core basic APIs", () => {
       assert.isTrue(validSettingsResult === undefined);
       projectSettings.version == "2.0.0";
     }
+    mockedEnvRestore();
   });
 
   async function case1() {

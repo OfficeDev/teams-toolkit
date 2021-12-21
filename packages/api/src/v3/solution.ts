@@ -86,8 +86,8 @@ export interface ISolution {
   getQuestionsForProvision?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV3>,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: DeepReadonly<EnvInfoV3>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   provisionResources?: (
     ctx: Context,
@@ -100,8 +100,8 @@ export interface ISolution {
   getQuestionsForLocalProvision?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
-    localSettings: DeepReadonly<Json>,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    localSettings?: DeepReadonly<Json>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   provisionLocalResources?: (
     ctx: Context,

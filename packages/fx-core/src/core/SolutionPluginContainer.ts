@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Solution, v2 } from "@microsoft/teamsfx-api";
+import { Solution, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container } from "typedi";
 import { isV3 } from ".";
 import { TabSPFxItem } from "../plugins/solution/fx-solution/question";
+import { BuiltInSolutionNames } from "../plugins/solution/fx-solution/v3/constants";
 
 export const SolutionPlugins: any = {
   AzureTeamsSolution: "AzureTeamsSolution",
@@ -52,4 +53,11 @@ export function getSolutionPluginByName(name: string): Solution | undefined {
   const solutions = getAllSolutionPlugins().filter((s) => s.name === name);
   if (solutions.length > 0) return solutions[0];
   return undefined;
+}
+
+export function getGlobalSolutionsV3(): v3.ISolution[] {
+  return [
+    Container.get<v3.ISolution>(BuiltInSolutionNames.azure),
+    Container.get<v3.ISolution>(BuiltInSolutionNames.spfx),
+  ];
 }

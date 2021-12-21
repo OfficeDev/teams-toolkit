@@ -86,7 +86,7 @@ export async function provisionLocalResource(
     return provisionResult;
   }
 
-  const debugProvisionResult = await debug.provisionLocalResource(ctx, inputs, localSettings);
+  const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, localSettings);
 
   if (debugProvisionResult.isErr()) {
     return new v2.FxPartialSuccess(localSettings, debugProvisionResult.error);

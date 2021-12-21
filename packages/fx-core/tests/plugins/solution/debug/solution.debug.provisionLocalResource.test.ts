@@ -4,7 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import { Platform } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import { MockedV2Context } from "../util";
-import { provisionLocalResource } from "../../../../src/plugins/solution/fx-solution/debug/provisionLocalResource";
+import { setupLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/provisionLocalResource";
 import * as path from "path";
 chai.use(chaiAsPromised);
 
@@ -31,7 +31,7 @@ describe("solution.debug.provisionLocalResource", () => {
         projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
       };
       const v2Context = new MockedV2Context(projectSetting);
-      const result = await provisionLocalResource(v2Context, inputs, {
+      const result = await setupLocalDebugSettings(v2Context, inputs, {
         auth: {},
         frontend: {},
         backend: {},

@@ -23,6 +23,7 @@ import {
   MultiSelectConfig,
   MultiSelectResult,
   ok,
+  OptionItem,
   PermissionRequestProvider,
   ProjectSettings,
   QTreeNode,
@@ -47,6 +48,7 @@ import {
   Tools,
   UserInteraction,
   v2,
+  v3,
   Void,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";

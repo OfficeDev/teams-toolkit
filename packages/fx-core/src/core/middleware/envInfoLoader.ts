@@ -49,7 +49,7 @@ import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
-let lastUsedEnv: string | undefined;
+export let lastUsedEnv: string | undefined;
 
 export type CreateEnvCopyInput = {
   targetEnvName: string;
@@ -74,43 +74,18 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
       return;
     }
 
-    const core = ctx.self as FxCore;
-
-    let targetEnvName: string;
-    if (!skip && !inputs.ignoreEnvInfo && isMultiEnvEnabled()) {
-      // TODO: This is a workaround for collabrator & manifest preview feature to programmatically load an env in extension.
-      if (inputs.env) {
-        const result = await useUserSetEnv(inputs.projectPath, inputs.env);
-        if (result.isErr()) {
-          ctx.result = result;
-          return;
-        }
-        targetEnvName = result.value;
-      } else {
-        const result = await askTargetEnvironment(core.tools, inputs);
-        if (result.isErr()) {
-          ctx.result = err(result.error);
-          return;
-        }
-        targetEnvName = result.value;
-        core.tools.logProvider.info(
-          `[${targetEnvName}] is selected as the target environment to ${ctx.method}`
-        );
-
-        lastUsedEnv = targetEnvName;
-      }
-    } else {
-      targetEnvName = environmentManager.getDefaultEnvName();
-    }
-
     // make sure inputs.env always has value so telemetry can use it.
-    inputs.env = targetEnvName;
+    const envRes = await getTargetEnvName(skip, inputs, ctx);
+    if (envRes.isErr()) {
+      ctx.result = err(envRes.error);
+      return;
+    }
+    inputs.env = envRes.value;
 
     const result = await loadSolutionContext(
-      core.tools,
       inputs,
       ctx.projectSettings,
-      targetEnvName,
+      inputs.env,
       skip || inputs.ignoreEnvInfo
     );
     if (result.isErr()) {
@@ -127,6 +102,40 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
     }
     await next();
   };
+}
+
+export async function getTargetEnvName(
+  skip: boolean,
+  inputs: Inputs,
+  ctx: CoreHookContext
+): Promise<Result<string, FxError>> {
+  let targetEnvName: string;
+  if (!skip && !inputs.ignoreEnvInfo && isMultiEnvEnabled()) {
+    // TODO: This is a workaround for collabrator & manifest preview feature to programmatically load an env in extension.
+    if (inputs.env) {
+      const result = await useUserSetEnv(inputs.projectPath!, inputs.env);
+      if (result.isErr()) {
+        ctx.result = result;
+        return err(result.error);
+      }
+      targetEnvName = result.value;
+    } else {
+      const result = await askTargetEnvironment(TOOLS, inputs);
+      if (result.isErr()) {
+        ctx.result = err(result.error);
+        return err(result.error);
+      }
+      targetEnvName = result.value;
+      TOOLS.logProvider.info(
+        `[${targetEnvName}] is selected as the target environment to ${ctx.method}`
+      );
+
+      lastUsedEnv = targetEnvName;
+    }
+  } else {
+    targetEnvName = environmentManager.getDefaultEnvName();
+  }
+  return ok(targetEnvName);
 }
 
 /**
@@ -152,7 +161,6 @@ function legacySolutionConfig2EnvState(solutionConfig: SolutionConfig): Json {
 }
 
 export async function loadSolutionContext(
-  tools: Tools,
   inputs: Inputs,
   projectSettings: ProjectSettings,
   targetEnvName?: string,
@@ -181,7 +189,7 @@ export async function loadSolutionContext(
     if (envDataResult.isErr()) {
       return err(envDataResult.error);
     }
-    envInfo = envDataResult.value;
+    envInfo = envDataResult.value as EnvInfo;
   }
 
   // migrate programmingLanguage and defaultFunctionName to project settings if exists in previous env config
@@ -193,8 +201,8 @@ export async function loadSolutionContext(
     projectSettings: projectSettings,
     envInfo,
     root: inputs.projectPath || "",
-    ...tools,
-    ...tools.tokenProvider,
+    ...TOOLS,
+    ...TOOLS.tokenProvider,
     answers: inputs,
     cryptoProvider: cryptoProvider,
     permissionRequestProvider: new PermissionRequestFileProvider(inputs.projectPath),
@@ -232,7 +240,7 @@ export function upgradeDefaultFunctionName(
   }
 }
 
-async function askTargetEnvironment(
+export async function askTargetEnvironment(
   tools: Tools,
   inputs: Inputs
 ): Promise<Result<string, FxError>> {
@@ -281,28 +289,26 @@ export async function askNewEnvironment(
   const getQuestionRes = await getQuestionsForNewEnv(inputs, lastUsedEnv);
   const core = ctx.self as FxCore;
   if (getQuestionRes.isErr()) {
-    core.tools.logProvider.error(
+    TOOLS.logProvider.error(
       `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
     );
     ctx.result = err(getQuestionRes.error);
     return undefined;
   }
 
-  core.tools.logProvider.debug(`[core:env] success to get questions for target environment.`);
+  TOOLS.logProvider.debug(`[core:env] success to get questions for target environment.`);
 
   const node = getQuestionRes.value;
   if (node) {
-    const res = await traverse(node, inputs, core.tools.ui);
+    const res = await traverse(node, inputs, TOOLS.ui);
     if (res.isErr()) {
-      core.tools.logProvider.debug(
-        `[core:env] failed to run question model for target environment.`
-      );
+      TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);
       ctx.result = err(res.error);
       return undefined;
     }
 
     const desensitized = desensitize(node, inputs);
-    core.tools.logProvider.info(
+    TOOLS.logProvider.info(
       `[core:env] success to run question model for target environment, answers:${JSON.stringify(
         desensitized
       )}`
@@ -323,7 +329,10 @@ export async function askNewEnvironment(
   };
 }
 
-async function useUserSetEnv(projectPath: string, env: string): Promise<Result<string, FxError>> {
+export async function useUserSetEnv(
+  projectPath: string,
+  env: string
+): Promise<Result<string, FxError>> {
   const checkEnv = await environmentManager.checkEnvExist(projectPath, env);
   if (checkEnv.isErr()) {
     return err(checkEnv.error);

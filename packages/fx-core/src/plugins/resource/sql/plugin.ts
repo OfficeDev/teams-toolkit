@@ -245,12 +245,10 @@ export class SqlPluginImpl {
 
   public async updateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
     const result: ArmTemplateResult = {
-      Provision: {
-        Reference: {
-          sqlResourceId: AzureSqlBicep.sqlResourceId,
-          sqlEndpoint: AzureSqlBicep.sqlEndpoint,
-          databaseName: AzureSqlBicep.databaseName,
-        },
+      Reference: {
+        sqlResourceId: AzureSqlBicep.sqlResourceId,
+        sqlEndpoint: AzureSqlBicep.sqlEndpoint,
+        databaseName: AzureSqlBicep.databaseName,
       },
     };
     return ok(result);
@@ -277,11 +275,6 @@ export class SqlPluginImpl {
             ConstantString.UTF8Encoding
           ),
         },
-        Reference: {
-          sqlResourceId: AzureSqlBicep.sqlResourceId,
-          sqlEndpoint: AzureSqlBicep.sqlEndpoint,
-          databaseName: AzureSqlBicep.databaseName,
-        },
       },
       Parameters: JSON.parse(
         await fs.readFile(
@@ -289,6 +282,11 @@ export class SqlPluginImpl {
           ConstantString.UTF8Encoding
         )
       ),
+      Reference: {
+        sqlResourceId: AzureSqlBicep.sqlResourceId,
+        sqlEndpoint: AzureSqlBicep.sqlEndpoint,
+        databaseName: AzureSqlBicep.databaseName,
+      },
     };
     return ok(result);
   }

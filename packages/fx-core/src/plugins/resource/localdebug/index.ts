@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 "use strict";
 
-import * as fs from "fs-extra";
 import {
   Func,
   FxError,
@@ -14,8 +13,8 @@ import {
   ok,
   VsCodeEnv,
   AzureSolutionSettings,
+  Void,
 } from "@microsoft/teamsfx-api";
-import * as os from "os";
 
 import { LocalCertificateManager } from "./certificate";
 import {
@@ -25,16 +24,11 @@ import {
   AppStudioPlugin,
 } from "./constants";
 import {
-  LocalDebugConfigKeys,
   LocalEnvFrontendKeys,
   LocalEnvBackendKeys,
   LocalEnvAuthKeys,
   LocalEnvCertKeys,
 } from "./constants";
-import * as Launch from "./launch";
-import * as Settings from "./settings";
-import * as Tasks from "./tasks";
-import { LocalEnvProvider } from "./localEnv";
 import {
   EnvKeysFrontend,
   EnvKeysBackend,
@@ -66,9 +60,6 @@ import {
 import { getAllowedAppIds } from "../../../common/tools";
 import { ProjectSettingLoader } from "./projectSettingLoader";
 import "./v2";
-import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
-
-const PackageJson = require("@npmcli/package-json");
 
 @Service(ResourcePlugins.LocalDebugPlugin)
 export class LocalDebugPlugin implements Plugin {
@@ -80,186 +71,7 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const isSpfx = ProjectSettingLoader.isSpfx(ctx);
-    const isMigrateFromV1 = ProjectSettingLoader.isMigrateFromV1(ctx);
-    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
-    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
-    const includeBot = ProjectSettingLoader.includeBot(ctx);
-    const includeAuth = ProjectSettingLoader.includeAuth(ctx);
-    const programmingLanguage = ctx.projectSettings?.programmingLanguage ?? "";
-
-    const telemetryProperties = {
-      platform: ctx.answers?.platform as string,
-      spfx: isSpfx ? "true" : "false",
-      frontend: includeFrontend ? "true" : "false",
-      function: includeBackend ? "true" : "false",
-      bot: includeBot ? "true" : "false",
-      auth: includeAuth ? "true" : "false",
-      "programming-language": programmingLanguage,
-    };
-    TelemetryUtils.init(ctx);
-    TelemetryUtils.sendStartEvent(TelemetryEventName.scaffold, telemetryProperties);
-
-    // scaffold for both vscode and cli
-    if (ctx.answers?.platform === Platform.VSCode || ctx.answers?.platform === Platform.CLI) {
-      if (isSpfx) {
-        // Only generate launch.json and tasks.json for SPFX
-        const launchConfigurations = Launch.generateSpfxConfigurations();
-        const launchCompounds = Launch.generateSpfxCompounds();
-        const tasks = Tasks.generateSpfxTasks();
-        const tasksInputs = Tasks.generateInputs();
-
-        //TODO: save files via context api
-        await fs.ensureDir(`${ctx.root}/.vscode/`);
-        await fs.writeJSON(
-          `${ctx.root}/.vscode/launch.json`,
-          {
-            version: "0.2.0",
-            configurations: launchConfigurations,
-            compounds: launchCompounds,
-          },
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
-        );
-
-        await fs.writeJSON(
-          `${ctx.root}/.vscode/tasks.json`,
-          {
-            version: "2.0.0",
-            tasks: tasks,
-            inputs: tasksInputs,
-          },
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
-        );
-
-        await fs.writeJSON(`${ctx.root}/.vscode/settings.json`, Settings.generateSettings(false), {
-          spaces: 4,
-          EOL: os.EOL,
-        });
-      } else {
-        const launchConfigurations = Launch.generateConfigurations(
-          includeFrontend,
-          includeBackend,
-          includeBot,
-          isMigrateFromV1
-        );
-        const launchCompounds = Launch.generateCompounds(
-          includeFrontend,
-          includeBackend,
-          includeBot
-        );
-
-        const tasks = Tasks.generateTasks(
-          includeFrontend,
-          includeBackend,
-          includeBot,
-          includeAuth,
-          isMigrateFromV1,
-          programmingLanguage
-        );
-
-        //TODO: save files via context api
-        await fs.ensureDir(`${ctx.root}/.vscode/`);
-        await fs.writeJSON(
-          `${ctx.root}/.vscode/launch.json`,
-          {
-            version: "0.2.0",
-            configurations: launchConfigurations,
-            compounds: launchCompounds,
-          },
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
-        );
-
-        await fs.writeJSON(
-          `${ctx.root}/.vscode/tasks.json`,
-          {
-            version: "2.0.0",
-            tasks: tasks,
-          },
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
-        );
-
-        if (!isMultiEnvEnabled()) {
-          const localEnvProvider = new LocalEnvProvider(ctx.root);
-          await localEnvProvider.saveLocalEnv(
-            localEnvProvider.initialLocalEnvs(
-              includeFrontend,
-              includeBackend,
-              includeBot,
-              includeAuth,
-              isMigrateFromV1
-            )
-          );
-
-          if (includeFrontend) {
-            ctx.config.set(LocalDebugConfigKeys.TrustDevelopmentCertificate, "true");
-          }
-
-          if (includeBot) {
-            ctx.config.set(LocalDebugConfigKeys.SkipNgrok, "false");
-            ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, "");
-          }
-        } else {
-          // generate localSettings.json
-          await this.scaffoldLocalSettingsJson(ctx);
-
-          // add 'npm install' scripts into root package.json
-          const packageJsonPath = ctx.root;
-          let packageJson: any = undefined;
-          try {
-            packageJson = await PackageJson.load(packageJsonPath);
-          } catch (error) {
-            ctx.logProvider?.error(`Cannot load package.json from ${ctx.root}. ${error}`);
-          }
-
-          if (packageJson !== undefined) {
-            const scripts = packageJson.content.scripts ?? {};
-            const installAll: string[] = [];
-
-            if (includeBackend) {
-              scripts["install:api"] = "cd api && npm install";
-              installAll.push("npm run install:api");
-            }
-            if (includeBot) {
-              scripts["install:bot"] = "cd bot && npm install";
-              installAll.push("npm run install:bot");
-            }
-            if (includeFrontend) {
-              scripts["install:tabs"] = "cd tabs && npm install";
-              installAll.push("npm run install:tabs");
-            }
-
-            scripts["installAll"] = installAll.join(" & ");
-
-            packageJson.update({ scripts: scripts });
-            await packageJson.save();
-          }
-        }
-
-        await fs.writeJSON(
-          `${ctx.root}/.vscode/settings.json`,
-          Settings.generateSettings(includeBackend),
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
-        );
-      }
-    }
-
-    TelemetryUtils.sendSuccessEvent(TelemetryEventName.scaffold, telemetryProperties);
-    return ok(undefined);
+    return ok(Void);
   }
 
   public async localDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
@@ -698,29 +510,6 @@ export class LocalDebugPlugin implements Plugin {
     }
 
     return ok(undefined);
-  }
-
-  async scaffoldLocalSettingsJson(ctx: PluginContext): Promise<void> {
-    const localSettingsProvider = new LocalSettingsProvider(ctx.root);
-
-    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
-    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
-    const includeBot = ProjectSettingLoader.includeBot(ctx);
-
-    if (ctx.localSettings !== undefined) {
-      // Add local settings for the new added capability/resource
-      ctx.localSettings = localSettingsProvider.incrementalInit(
-        ctx.localSettings,
-        includeBackend,
-        includeBot,
-        includeFrontend
-      );
-      await localSettingsProvider.save(ctx.localSettings);
-    } else {
-      // Initialize a local settings on scaffolding
-      ctx.localSettings = localSettingsProvider.init(includeFrontend, includeBackend, includeBot);
-      await localSettingsProvider.save(ctx.localSettings);
-    }
   }
 
   appendEnvWithPrefix(

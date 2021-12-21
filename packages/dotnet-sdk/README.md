@@ -27,6 +27,10 @@ Alternately, you can use the Package Manager.
 > Install-Package Microsoft.TeamsFx
 ```
 
+### How to choose version
+For .NET 5 projects (VS 2019): Choose version < 0.3.0-rc.
+For .NET 6 projects (VS 2022): Choose version >= 0.3.0-rc.
+
 ### Using Teams User Credential in Teams Tab app
 
 1. Add authentication options in appsettings.{Environment}.json file.
@@ -74,6 +78,60 @@ catch (ExceptionWithCode e)
     {
         throw;
     }
+}
+```
+
+#### Upgrade from 0.1.0-rc to 0.3.0-rc
+If there is an existing project created in VS2019, you can use the following steps to upgrade:
+1. Open project in VS2022 and change project target framework to ".NET 6".
+
+2. Upgrade dependencies:
+  `Microsoft.TeamsFx.SimpleAuth` to `0.1.2`,
+  `Newtonsoft.Json` to `13.0.1`,
+  `Microsoft.Graph` to `4.12.0`,
+  `Microsoft.Fast.Components.FluentUI` to `1.1.0`.
+
+3. Add following lines in appsettings.{Environment}.json file after "ALLOWED_APP_IDS".
+```json
+"ALLOWED_APP_IDS": "...",
+"TeamsFx": {
+    "Authentication": {
+        "ClientId": "value copied from CLIENT_ID",
+        "SimpleAuthEndpoint": "value copied from TAB_APP_ENDPOINT",
+        "InitiateLoginEndpoint": "{value copied from TAB_APP_ENDPOINT}/auth-start.html"
+    }
+}
+```
+
+4. Add following lines in `Startup.cs`.
+```csharp
+public void ConfigureServices(IServiceCollection services)
+{
+    ...
+    services.AddTeamsFx(Configuration.GetSection("TeamsFx"));
+}
+```
+and remove following 2 lines.
+```csharp
+services.AddScoped<TeamsFx>();
+services.AddScoped<TeamsUserCredential>();
+```
+
+5. Remove following codes in `Welcome.razor`.
+```csharp
+var clientId = Configuration.GetValue<string>("CLIENT_ID");
+var endpoint = MyNavigationManager.BaseUri;
+
+await teamsfx.SetLogLevelAsync(LogLevel.Verbose);
+await teamsfx.SetLogFunctionAsync(printLog);
+
+AuthenticationConfiguration authentication = new AuthenticationConfiguration(clientId: clientId, simpleAuthEndpoint: endpoint, initiateLoginEndpoint: endpoint + "auth-start.html");
+Configuration configuration = new Configuration(authentication);
+await teamsfx.LoadConfigurationAsync(configuration);
+...
+private void printLog(LogLevel level, string message)
+{
+    Console.WriteLine(message);
 }
 ```
 

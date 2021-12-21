@@ -1,14 +1,28 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
+import { FxError, Inputs, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionQuestionNames,
+  BotOptionItem,
+  MessageExtensionItem,
+  TabOptionItem,
+} from "../question";
 import { TeamsFxAzureSolutionNameV3 } from "./constants";
 
 export async function getQuestionsForInit(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  return ok(undefined);
+  const node = new QTreeNode({
+    name: "azure-solution-group",
+    type: "func",
+    func: (inputs: Inputs) => {
+      inputs[AzureSolutionQuestionNames.Solution] = TeamsFxAzureSolutionNameV3;
+    },
+  });
+  node.condition = { containsAny: [TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id] };
+  return ok(node);
 }
 
 export async function init(

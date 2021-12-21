@@ -134,7 +134,7 @@ export interface SolutionPlugin {
   getQuestionsForScaffolding?: (
     ctx: Context,
     inputs: Inputs
-  ) => Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>>;
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   /**
    * execute user customized task, for example `Add Resource`, `Add Capabilities`, etc

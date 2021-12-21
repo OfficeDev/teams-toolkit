@@ -133,11 +133,9 @@ export class SimpleAuthPluginImpl {
     );
 
     const result: ArmTemplateResult = {
-      Provision: {
-        Reference: {
-          skuName: Constants.SimpleAuthBicepOutputSkuName,
-          endpoint: Constants.SimpleAuthBicepOutputEndpoint,
-        },
+      Reference: {
+        skuName: Constants.SimpleAuthBicepOutputSkuName,
+        endpoint: Constants.SimpleAuthBicepOutputEndpoint,
       },
       Configuration: {
         Modules: {
@@ -179,10 +177,6 @@ export class SimpleAuthPluginImpl {
           path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
           ConstantString.UTF8Encoding
         ),
-        Reference: {
-          skuName: Constants.SimpleAuthBicepOutputSkuName,
-          endpoint: Constants.SimpleAuthBicepOutputEndpoint,
-        },
         Modules: {
           simpleAuth: await fs.readFile(provisionModuleResult, ConstantString.UTF8Encoding),
         },
@@ -195,6 +189,10 @@ export class SimpleAuthPluginImpl {
         Modules: {
           simpleAuth: await fs.readFile(configModuleFilePath, ConstantString.UTF8Encoding),
         },
+      },
+      Reference: {
+        skuName: Constants.SimpleAuthBicepOutputSkuName,
+        endpoint: Constants.SimpleAuthBicepOutputEndpoint,
       },
     };
 

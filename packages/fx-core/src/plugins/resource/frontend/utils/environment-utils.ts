@@ -15,7 +15,7 @@ export class EnvironmentUtils {
 
     const configs = dotenv.parse(envBuffer);
     const newConfigs = { ...configs, ...variables };
-    if (Utils.compareKvPair(newConfigs, configs)) {
+    if (Utils.isKvPairEqual(newConfigs, configs)) {
       // Avoid updating dotenv file's modified time if nothing changes.
       // We decide whether to skip deployment by comparing the mtime of all project files and last deployment time.
       return;

@@ -143,7 +143,7 @@ export class Utils {
     });
   }
 
-  public static compareKvPair<T>(kv1: { [key: string]: T }, kv2: { [key: string]: T }): boolean {
+  public static isKvPairEqual<T>(kv1: { [key: string]: T }, kv2: { [key: string]: T }): boolean {
     const _compare = (l: { [key: string]: T }, r: { [key: string]: T }) => {
       for (const key of Object.keys(l)) {
         if (r[key] != l[key]) {

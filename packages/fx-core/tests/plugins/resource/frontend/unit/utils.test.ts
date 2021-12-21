@@ -22,7 +22,7 @@ describe("FrontendUtils", async () => {
     });
   });
 
-  describe("compareKvPair", async () => {
+  describe("isKvPairEqual", async () => {
     const length = 10;
     const keys = Array.from(Array(length), () => faker.unique(faker.lorem.word));
     const values = Array.from(Array(length), () => faker.unique(faker.lorem.word));
@@ -37,7 +37,7 @@ describe("FrontendUtils", async () => {
       }
 
       // act
-      const res = Utils.compareKvPair(kv1, kv2);
+      const res = Utils.isKvPairEqual(kv1, kv2);
 
       // assert
       chai.assert.isTrue(res);
@@ -54,7 +54,7 @@ describe("FrontendUtils", async () => {
       }
 
       // act
-      const res = Utils.compareKvPair(kv1, kv2);
+      const res = Utils.isKvPairEqual(kv1, kv2);
 
       // assert
       chai.assert.isFalse(res);

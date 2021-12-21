@@ -32,3 +32,9 @@ export function parseFromResourceId(pattern: RegExp, resourceId: string): string
   const result = resourceId.match(pattern);
   return result ? result[1].trim() : "";
 }
+
+export enum Capability {
+  Tab = "tab",
+  Bot = "bot",
+  MessagingExtension = "messaging-extension",
+}

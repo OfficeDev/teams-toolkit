@@ -11,6 +11,7 @@ export class ManagementClient {
   client: SqlManagementClient;
   config: SqlConfig;
   ctx: PluginContext;
+  nextIndex = 0;
 
   private constructor(ctx: PluginContext, config: SqlConfig, client: SqlManagementClient) {
     this.ctx = ctx;
@@ -201,7 +202,7 @@ export class ManagementClient {
     }
   }
 
-  async addLocalFirewallRule(index: number): Promise<void> {
+  async addLocalFirewallRule(): Promise<void> {
     const response = await axios.get(Constants.echoIpAddress);
     const localIp: string = response.data;
     const partials: string[] = localIp.split(".");
@@ -217,7 +218,7 @@ export class ManagementClient {
       startIpAddress: startIp,
       endIpAddress: endIp,
     };
-    const ruleName = Constants.firewall.localRule + index;
+    const ruleName = Constants.firewall.localRule + this.nextIndex;
     try {
       await this.client.firewallRules.createOrUpdate(
         this.config.resourceGroup,
@@ -225,6 +226,7 @@ export class ManagementClient {
         ruleName,
         model
       );
+      this.nextIndex++;
     } catch (error) {
       this.ctx.logProvider?.error(
         ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, error.message)
@@ -237,10 +239,10 @@ export class ManagementClient {
     }
   }
 
-  async deleteLocalFirewallRule(count: number): Promise<void> {
+  async deleteLocalFirewallRule(): Promise<void> {
     try {
-      for (let i = 0; i <= count; i++) {
-        const ruleName = Constants.firewall.localRule + count;
+      for (let i = 0; i < this.nextIndex; i++) {
+        const ruleName = Constants.firewall.localRule + i;
         await this.client.firewallRules.deleteMethod(
           this.config.resourceGroup,
           this.config.sqlServer,

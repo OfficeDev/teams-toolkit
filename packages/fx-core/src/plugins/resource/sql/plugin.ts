@@ -223,7 +223,7 @@ export class SqlPluginImpl {
       );
     }
 
-    await managementClient.deleteLocalFirewallRule(this.config.retryAddUser);
+    await managementClient.deleteLocalFirewallRule();
 
     TelemetryUtils.sendEvent(Telemetry.stage.postProvision, true, {
       [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser
@@ -263,9 +263,9 @@ export class SqlPluginImpl {
         } else {
           this.config.retryAddUser++;
           ctx.logProvider?.warning(
-            `[${Constants.pluginName}] retry adding firewall rule to add database user [${this.config.retryAddUser}]`
+            `[${Constants.pluginName}] Retry adding new firewall rule to access azure sql, because the local IP address has changed after added firewall rule for it. [Retry time: ${this.config.retryAddUser}]`
           );
-          await managementClient.addLocalFirewallRule(this.config.retryAddUser);
+          await managementClient.addLocalFirewallRule();
         }
       }
     }
@@ -324,7 +324,7 @@ export class SqlPluginImpl {
   }
 
   private async AddFireWallRules(client: ManagementClient) {
-    await client.addLocalFirewallRule(0);
+    await client.addLocalFirewallRule();
     if (!isArmSupportEnabled()) {
       await client.addAzureFirewallRule();
     }

@@ -842,7 +842,7 @@
             "description": "[Capabilities](https://aka.ms/teamsfx-capabilities-overview) are the extension points for building apps on the Microsoft Teams platform.\n[Watch video (<1 min)](https://aka.ms/teamsfx-video)",
             "media": {
               "svg": "media/learn.svg",
-              "altText": "Watch"
+              "altText": "Watch Teams Video"
             }
           },
           {

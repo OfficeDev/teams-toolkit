@@ -7,10 +7,6 @@ import "mocha";
 import * as uuid from "uuid";
 import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import {
-  getQuestionsForProvision,
-  provisionResources,
-} from "../../../src/plugins/solution/fx-solution/v3/provision";
-import {
   getQuestionsForLocalProvision,
   provisionLocalResources,
 } from "../../../src/plugins/solution/fx-solution/v3/provisionLocal";
@@ -70,7 +66,7 @@ describe("SolutionV3 - provisionLocalResources", () => {
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
     };
-    const res = await getQuestionsForLocalProvision(ctx, inputs, {}, mockedTokenProvider);
+    const res = await getQuestionsForLocalProvision(ctx, inputs, mockedTokenProvider);
     assert.isTrue(res.isOk());
   });
 });

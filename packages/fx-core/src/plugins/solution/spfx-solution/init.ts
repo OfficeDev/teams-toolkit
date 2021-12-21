@@ -1,17 +1,17 @@
-import { FxError, Inputs, QTreeNode, Result, v2, ok } from "@microsoft/teamsfx-api";
-import { TeamsSPFxSolutionQuestions } from "./questions";
-import { TeamsSPFxSolutionName } from "./constants";
+import { FxError, Inputs, ok, QTreeNode, Result, v2 } from "@microsoft/teamsfx-api";
 import { TabSPFxItem } from "../fx-solution/question";
+import { BuiltInSolutionNames } from "../fx-solution/v3/constants";
+import { TeamsSPFxSolutionQuestions } from "./questions";
 
 export async function getQuestionsForInit(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const node = new QTreeNode({
-    name: "spfx-solution-group",
+    name: "set-spfx-solution",
     type: "func",
     func: (inputs: Inputs) => {
-      inputs[TeamsSPFxSolutionQuestions.Solution] = TeamsSPFxSolutionName;
+      inputs[TeamsSPFxSolutionQuestions.Solution] = BuiltInSolutionNames.spfx;
     },
   });
   node.condition = { contains: TabSPFxItem.id };

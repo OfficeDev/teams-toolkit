@@ -81,6 +81,8 @@ jobs:
       - name: prettier check files in PR on Fork
         if: ${{ github.event.pull_request.head.repo.full_name != 'OfficeDev/TeamsFx' }}
         run: |
+          git remote add upstream https://github.com/OfficeDev/TeamsFx.git
+          git fetch upstream ${{ github.event.pull_request.base.ref }}
           git diff --diff-filter=MARC upstream/${{ github.event.pull_request.base.ref }}...HEAD --name-only >> diffFiles.txt
 
       - name: prettier check files in PR on local

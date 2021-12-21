@@ -71,10 +71,6 @@ export async function provisionLocalResource(
     }
 
     if (includeAuth) {
-      // TODO(xiaofhua)
-      // if (!localSettings.auth) {
-      //   localSettings.auth = {};
-      // }
       localSettings.auth.AuthServiceEndpoint = localAuthEndpoint;
     }
 

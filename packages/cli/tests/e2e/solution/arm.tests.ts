@@ -27,7 +27,9 @@ import {
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import "mocha";
-import { Capability } from "../../commonlib/utilities";
+import { Capability, getWebappServicePlan, Resource } from "../../commonlib/utilities";
+import * as fs from "fs-extra";
+import MockAzureAccountProvider from "../../../src/commonlib/azureLoginUserPassword";
 
 describe("Add capabilities", function () {
   //  Only test when insider feature flag enabled
@@ -108,50 +110,6 @@ describe("Add capabilities", function () {
     await validateTabAndBotProjectProvision(projectPath);
   });
 
-  async function createProjectWithCapability(appName: string, testFolder: string, capability) {
-    await execAsync(
-      `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} `,
-      {
-        cwd: testFolder,
-        env: process.env,
-        timeout: 0,
-      }
-    );
-    console.log(
-      `[Successfully] scaffold project to ${path.resolve(
-        testFolder,
-        appName
-      )} with capability ${capability}`
-    );
-  }
-
-  async function addCapabilityToProject(projectPath: string, capabilityToAdd = Capability.Tab) {
-    await execAsync(`teamsfx capability add ${capabilityToAdd}`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] add capability ${capabilityToAdd} to ${projectPath}`);
-  }
-
-  async function SetSubAndProvisionProject(subscription: string, projectPath: string) {
-    // set subscription
-    await execAsync(`teamsfx account set --subscription ${subscription}`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] set subscription for ${projectPath}`);
-
-    // provision
-    await execAsyncWithRetry(`teamsfx provision`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] provision for ${projectPath}`);
-  }
-
   async function validateTabAndBotProjectProvision(projectPath: string) {
     const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
 
@@ -172,3 +130,203 @@ describe("Add capabilities", function () {
     await BotValidator.validateProvision(bot, true);
   }
 });
+
+describe("User can customize Bicep files", function () {
+  //  Only test when insider feature flag enabled
+  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
+    return;
+  }
+
+  const testFolder = getTestFolder();
+  const subscription = getSubscriptionId();
+  let appName: string, projectPath: string;
+
+  before(async () => {
+    appName = getUniqueAppName();
+    projectPath = path.resolve(testFolder, appName);
+  });
+
+  after(async () => {
+    await cleanUp(appName, projectPath, true, false, false, true);
+  });
+
+  it("user customized Bicep file is used when provision", async () => {
+    // Arrange
+    await createProjectWithCapability(appName, testFolder, Capability.Tab);
+
+    // Act
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    const customizedServicePlans: string[] = await customizeBicepFile(projectPath);
+    await SetSubAndProvisionProject(subscription, projectPath);
+
+    // Assert
+    customizedServicePlans.forEach(async (servicePlanName) => {
+      await validateServicePlan(servicePlanName);
+    });
+  });
+
+  it("Regenerate Bicep will not affect user's customized Bicep code", async () => {
+    // Arrange
+    await createProjectWithCapability(appName, testFolder, Capability.Tab);
+
+    // Act
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    const customizedServicePlans: string[] = await customizeBicepFile(projectPath);
+
+    // Add capability and cloud resource
+    await addCapabilityToProject(projectPath, Capability.Bot);
+    await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await addResourceToProject(projectPath, Resource.AzureFunction);
+
+    await SetSubAndProvisionProject(subscription, projectPath);
+
+    // Assert
+    customizedServicePlans.forEach(async (servicePlanName) => {
+      await validateServicePlan(servicePlanName);
+    });
+  });
+
+  async function customizeBicepFile(projectPath: string): Promise<string[]> {
+    const newServerFarms: string[] = [];
+    const bicepFileFolder = path.join(projectPath, "templates", "azure");
+
+    const simpleAuthTestServerFarm = "simpleAuth_testResource";
+    await fs.appendFile(
+      path.join(bicepFileFolder, "provision", "simpleAuth.bicep"),
+      `
+resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
+  name: '${simpleAuthTestServerFarm}'
+  location: resourceGroup().location
+  sku: {
+    name: 'B1'
+  }
+  kind: 'app'
+}
+`
+    );
+    newServerFarms.push(simpleAuthTestServerFarm);
+
+    const provisionTestServerFarm = "provision_testResource";
+    await fs.appendFile(
+      path.join(bicepFileFolder, "provision.bicep"),
+      `
+resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
+  name: '${provisionTestServerFarm}'
+  location: resourceGroup().location
+  sku: {
+    name: 'B1'
+  }
+  kind: 'app'
+}
+`
+    );
+    newServerFarms.push(provisionTestServerFarm);
+
+    const configTestServerFarm = "config_testResource";
+    await fs.appendFile(
+      path.join(bicepFileFolder, "config.bicep"),
+      `
+resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
+  name: '${configTestServerFarm}'
+  location: resourceGroup().location
+  sku: {
+    name: 'B1'
+  }
+  kind: 'app'
+}
+`
+    );
+    newServerFarms.push(configTestServerFarm);
+
+    const mainTestServerFarm = "main_testResource";
+    await fs.appendFile(
+      path.join(bicepFileFolder, "main.bicep"),
+      `
+resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
+  name: '${mainTestServerFarm}'
+  location: resourceGroup().location
+  sku: {
+    name: 'B1'
+  }
+  kind: 'app'
+}
+`
+    );
+    newServerFarms.push(mainTestServerFarm);
+
+    return newServerFarms;
+  }
+
+  async function validateServicePlan(servicePlanName: string) {
+    console.log(`Start to validate server farm ${servicePlanName}.`);
+
+    const tokenProvider = MockAzureAccountProvider;
+    const tokenCredential = await tokenProvider.getAccountCredentialAsync();
+    const token = (await tokenCredential?.getToken())?.accessToken;
+
+    const serivcePlanResponse = await getWebappServicePlan(
+      this.subscriptionId,
+      this.rg,
+      servicePlanName,
+      token as string
+    );
+    chai.assert(serivcePlanResponse, "B1");
+  }
+});
+
+async function createProjectWithCapability(
+  appName: string,
+  testFolder: string,
+  capability: string
+) {
+  await execAsync(
+    `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} `,
+    {
+      cwd: testFolder,
+      env: process.env,
+      timeout: 0,
+    }
+  );
+  console.log(
+    `[Successfully] scaffold project to ${path.resolve(
+      testFolder,
+      appName
+    )} with capability ${capability}`
+  );
+}
+
+async function addCapabilityToProject(projectPath: string, capabilityToAdd: string) {
+  await execAsync(`teamsfx capability add ${capabilityToAdd}`, {
+    cwd: projectPath,
+    env: process.env,
+    timeout: 0,
+  });
+  console.log(`[Successfully] add capability ${capabilityToAdd} to ${projectPath}`);
+}
+
+async function addResourceToProject(projectPath: string, resourceToAdd: string) {
+  await execAsync(`teamsfx resource add ${resourceToAdd}`, {
+    cwd: projectPath,
+    env: process.env,
+    timeout: 0,
+  });
+  console.log(`[Successfully] add resource ${resourceToAdd} to ${projectPath}`);
+}
+
+async function SetSubAndProvisionProject(subscription: string, projectPath: string) {
+  // set subscription
+  await execAsync(`teamsfx account set --subscription ${subscription}`, {
+    cwd: projectPath,
+    env: process.env,
+    timeout: 0,
+  });
+  console.log(`[Successfully] set subscription for ${projectPath}`);
+
+  // provision
+  await execAsyncWithRetry(`teamsfx provision`, {
+    cwd: projectPath,
+    env: process.env,
+    timeout: 0,
+  });
+  console.log(`[Successfully] provision for ${projectPath}`);
+}

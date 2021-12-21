@@ -10,12 +10,10 @@ import {
   getSubscriptionIdFromResourceId,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
+  getWebappConfigs,
+  getWebappServicePlan,
 } from "./utilities";
 
-const baseUrlAppSettings = (subscriptionId: string, rg: string, name: string) =>
-  `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/appsettings/list?api-version=2019-08-01`;
-const baseUrlPlan = (subscriptionId: string, rg: string, name: string) =>
-  `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/serverfarms/${name}?api-version=2019-08-01`;
 const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
   `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/deployments?api-version=2019-08-01`;
 const baseUrlListDeploymentLogs = (subscriptionId: string, rg: string, name: string, id: string) =>
@@ -183,12 +181,7 @@ export class FunctionValidator {
     console.log("Validating app settings.");
 
     const appName = functionObject.functionAppName;
-    const response = await this.getWebappConfigs(
-      this.subscriptionId,
-      this.rg,
-      appName,
-      token as string
-    );
+    const response = await getWebappConfigs(this.subscriptionId, this.rg, appName, token as string);
 
     chai.assert.exists(response);
 
@@ -210,7 +203,7 @@ export class FunctionValidator {
 
     if (!isMultiEnvEnabled) {
       console.log("Validating app service plan.");
-      const servicePlanResponse = await this.getWebappServicePlan(
+      const servicePlanResponse = await getWebappServicePlan(
         this.subscriptionId,
         this.rg,
         functionObject.appServicePlanName!,
@@ -321,59 +314,6 @@ export class FunctionValidator {
       );
 
       return functionGetResponse?.data?.value;
-    } catch (error) {
-      console.log(error);
-      return undefined;
-    }
-  }
-
-  private static async getWebappConfigs(
-    subscriptionId: string,
-    rg: string,
-    name: string,
-    token: string
-  ) {
-    try {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const functionGetResponse = await this.runWithRetry(() =>
-        axios.post(baseUrlAppSettings(subscriptionId, rg, name))
-      );
-      if (
-        !functionGetResponse ||
-        !functionGetResponse.data ||
-        !functionGetResponse.data.properties
-      ) {
-        return undefined;
-      }
-
-      return functionGetResponse.data.properties;
-    } catch (error) {
-      console.log(error);
-      return undefined;
-    }
-  }
-
-  private static async getWebappServicePlan(
-    subscriptionId: string,
-    rg: string,
-    name: string,
-    token: string
-  ) {
-    try {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const functionPlanResponse = await this.runWithRetry(() =>
-        axios.get(baseUrlPlan(subscriptionId, rg, name))
-      );
-      if (
-        !functionPlanResponse ||
-        !functionPlanResponse.data ||
-        !functionPlanResponse.data.sku ||
-        !functionPlanResponse.data.sku.name
-      ) {
-        return undefined;
-      }
-
-      return functionPlanResponse.data.sku.name;
     } catch (error) {
       console.log(error);
       return undefined;

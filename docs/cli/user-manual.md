@@ -51,8 +51,8 @@ Let's start by installing `teamsfx-cli` from `npm` and run `teamsfx -h` to check
 |`--programming-language`| No| Programming Language for the project. Options are `javascrip` or `typescript` and default value is: `javascript`.|
 |`--folder`| No | Project directory. A sub folder with the your app name will be created under this directory. The default value is: `./`.|
 |`--spfx-framework-type`| No| Applicable if `Tab(SPfx)` capability is selected. Frontend Framework. Options are `none` and `react`, the default value is: `none`.|
-|`--spfx-web part-name`| No | Applicable if `Tab(SPfx)` capability is selected. Web part Name. The default value is: "helloworld". |
-|`--spfx-web part-desp`| No | Applicable if `Tab(SPfx)` capability is selected. Web part Description. The default value is: "helloworld description". |
+|`--spfx-webpart-name`| No | Applicable if `Tab(SPfx)` capability is selected. Web part Name. The default value is: "helloworld". |
+|`--spfx-webpart-desp`| No | Applicable if `Tab(SPfx)` capability is selected. Web part Description. The default value is: "helloworld description". |
 |`--azure-resources`| No| Applicable if contains `tab` capability. Add Azure resources to your project. Options(Multiple) are `sql` (Azure SQL Database) and `function` (Azure Functions). |
 
 ### Scenarios for `teamsfx new`
@@ -83,6 +83,7 @@ Manage cloud service accounts. The supported cloud services are `Azure` and `Mic
 
 | `teamsFx account` Commands  | Descriptions |
 |:----------------  |:-------------|
+| `teamsfx account show`       | Display all connected cloud accounts information. |
 | `teamsfx account login <service>`      | Log in to the selected cloud service. |
 | `teamsfx account logout <service>`      | log out of selected cloud service. |
 | `teamsfx account set --subscription`      | Update account settings to set a subscription ID. |

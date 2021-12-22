@@ -250,7 +250,7 @@ export class SqlPluginImpl {
     sqlClient: SqlClient,
     managementClient: ManagementClient
   ): Promise<void> {
-    let retryAddUser = 0;
+    let retryCount = 0;
     while (true) {
       try {
         await sqlClient.addDatabaseUser();
@@ -258,13 +258,13 @@ export class SqlPluginImpl {
       } catch (error) {
         if (
           !SqlClient.isFireWallError(error?.innerError) ||
-          retryAddUser >= Constants.maxRetryTimes
+          retryCount >= Constants.maxRetryTimes
         ) {
           throw error;
         } else {
-          retryAddUser++;
+          retryCount++;
           ctx.logProvider?.warning(
-            `[${Constants.pluginName}] Retry adding new firewall rule to access azure sql, because the local IP address has changed after added firewall rule for it. [Retry time: ${retryAddUser}]`
+            `[${Constants.pluginName}] Retry adding new firewall rule to access azure sql, because the local IP address has changed after added firewall rule for it. [Retry time: ${retryCount}]`
           );
           await managementClient.addLocalFirewallRule();
         }

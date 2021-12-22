@@ -521,7 +521,7 @@ export class AppStudioPluginImpl {
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     try {
       const localUpdateTime = isLocalDebug
-        ? ctx.localSettings?.teamsApp?.get(Constants.TEAMS_APP_UPDATED_AT)
+        ? undefined
         : (ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_UPDATED_AT) as number);
       if (localUpdateTime) {
         const app = await AppStudioClient.getApp(teamsAppId, appStudioToken!, ctx.logProvider);
@@ -1661,13 +1661,9 @@ export class AppStudioPluginImpl {
         outlineIconContent
       );
 
-      if (app.updatedAt) {
+      if (app.updatedAt && !isLocalDebug) {
         const time = new Date(app.updatedAt).getTime();
-        if (isLocalDebug) {
-          ctx.localSettings?.teamsApp?.set(Constants.TEAMS_APP_UPDATED_AT, time);
-        } else {
-          ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_UPDATED_AT, time);
-        }
+        ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_UPDATED_AT, time);
       }
 
       return ok(teamsAppId!);

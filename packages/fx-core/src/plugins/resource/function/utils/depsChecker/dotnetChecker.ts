@@ -18,7 +18,9 @@ import { DepsInfo, IDepsAdapter, IDepsChecker, IDepsLogger, IDepsTelemetry } fro
 import {
   DepsCheckerEvent,
   dotnetFailToInstallHelpLink,
+  isArm64,
   isLinux,
+  isMacOS,
   isWindows,
   Messages,
   TelemtryMessages,
@@ -39,7 +41,7 @@ export enum DotnetVersion {
 export const DotnetCoreSDKName = ".NET Core SDK";
 export type DotnetSDK = { version: string; path: string };
 
-export const installVersion = DotnetVersion.v31;
+export const installVersion = isMacOS() && isArm64() ? DotnetVersion.v60 : DotnetVersion.v31;
 export const supportedVersions = [DotnetVersion.v31, DotnetVersion.v50, DotnetVersion.v60];
 const installedNameWithVersion = `${DotnetCoreSDKName} (v${DotnetVersion.v31})`;
 

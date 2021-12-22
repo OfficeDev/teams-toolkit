@@ -2,7 +2,13 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ConfigFolderName, Json, LogProvider, ProjectSettings } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  ConfigMap,
+  Json,
+  LogProvider,
+  ProjectSettings,
+} from "@microsoft/teamsfx-api";
 import * as os from "os";
 import { getAllowedAppIds } from "../tools";
 import {
@@ -52,32 +58,33 @@ export async function convertToLocalEnvs(
   const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
   const includeAuth = ProjectSettingsHelper.includeAuth(projectSettings);
 
-  // get config for local debug
-  const clientId = localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string;
-  const clientSecret = localSettings?.auth?.get(LocalSettingsAuthKeys.ClientSecret) as string;
-  const applicationIdUri = localSettings?.auth?.get(
-    LocalSettingsAuthKeys.ApplicationIdUris
-  ) as string;
-  const teamsAppTenantId = localSettings?.teamsApp?.get(
-    LocalSettingsTeamsAppKeys.TenantId
-  ) as string;
+  // prepare config maps
+  const authConfigs = ConfigMap.fromJSON(localSettings?.auth);
+  const backendConfigs = ConfigMap.fromJSON(localSettings?.backend);
+  const botConfigs = ConfigMap.fromJSON(localSettings?.bot);
+  const frontendConfigs = ConfigMap.fromJSON(localSettings?.frontend);
+  const teamsAppConfigs = ConfigMap.fromJSON(localSettings?.teamsApp);
 
-  const localAuthEndpoint = localSettings?.auth?.get(
+  // get config for local debug
+  const clientId = authConfigs?.get(LocalSettingsAuthKeys.ClientId) as string;
+  const clientSecret = authConfigs?.get(LocalSettingsAuthKeys.ClientSecret) as string;
+  const applicationIdUri = authConfigs?.get(LocalSettingsAuthKeys.ApplicationIdUris) as string;
+  const teamsAppTenantId = teamsAppConfigs?.get(LocalSettingsTeamsAppKeys.TenantId) as string;
+
+  const localAuthEndpoint = authConfigs?.get(
     LocalSettingsAuthKeys.SimpleAuthServiceEndpoint
   ) as string;
-  const localTabEndpoint = localSettings?.frontend?.get(
-    LocalSettingsFrontendKeys.TabEndpoint
-  ) as string;
-  const localFuncEndpoint = localSettings?.backend?.get(
+  const localTabEndpoint = frontendConfigs?.get(LocalSettingsFrontendKeys.TabEndpoint) as string;
+  const localFuncEndpoint = backendConfigs?.get(
     LocalSettingsBackendKeys.FunctionEndpoint
   ) as string;
 
   const localEnvs: { [key: string]: string } = {};
   if (includeFrontend) {
-    localEnvs[LocalEnvFrontendKeys.Browser] = localSettings?.frontend?.get(
+    localEnvs[LocalEnvFrontendKeys.Browser] = frontendConfigs?.get(
       LocalSettingsFrontendKeys.Browser
     ) as string;
-    localEnvs[LocalEnvFrontendKeys.Https] = localSettings?.frontend?.get(
+    localEnvs[LocalEnvFrontendKeys.Https] = frontendConfigs?.get(
       LocalSettingsFrontendKeys.Https
     ) as string;
 
@@ -118,10 +125,10 @@ export async function convertToLocalEnvs(
       localEnvs[LocalEnvBackendKeys.AllowedAppIds] = getAllowedAppIds().join(";");
     }
 
-    localEnvs[LocalEnvCertKeys.SslCrtFile] = localSettings?.frontend?.get(
+    localEnvs[LocalEnvCertKeys.SslCrtFile] = frontendConfigs?.get(
       LocalSettingsFrontendKeys.SslCertFile
     );
-    localEnvs[LocalEnvCertKeys.SslKeyFile] = localSettings?.frontend?.get(
+    localEnvs[LocalEnvCertKeys.SslKeyFile] = frontendConfigs?.get(
       LocalSettingsFrontendKeys.SslKeyFile
     );
   }
@@ -129,17 +136,15 @@ export async function convertToLocalEnvs(
   if (includeBot) {
     // bot local env
     if (ProjectSettingsHelper.isMigrateFromV1(projectSettings)) {
-      localEnvs[LocalEnvBotKeysMigratedFromV1.BotId] = localSettings?.bot?.get(
+      localEnvs[LocalEnvBotKeysMigratedFromV1.BotId] = botConfigs?.get(
         LocalSettingsBotKeys.BotId
       ) as string;
-      localEnvs[LocalEnvBotKeysMigratedFromV1.BotPassword] = localSettings?.bot?.get(
+      localEnvs[LocalEnvBotKeysMigratedFromV1.BotPassword] = botConfigs?.get(
         LocalSettingsBotKeys.BotPassword
       ) as string;
     } else {
-      localEnvs[LocalEnvBotKeys.BotId] = localSettings?.bot?.get(
-        LocalSettingsBotKeys.BotId
-      ) as string;
-      localEnvs[LocalEnvBotKeys.BotPassword] = localSettings?.bot?.get(
+      localEnvs[LocalEnvBotKeys.BotId] = botConfigs?.get(LocalSettingsBotKeys.BotId) as string;
+      localEnvs[LocalEnvBotKeys.BotPassword] = botConfigs?.get(
         LocalSettingsBotKeys.BotPassword
       ) as string;
       localEnvs[LocalEnvBotKeys.ClientId] = clientId;
@@ -147,7 +152,7 @@ export async function convertToLocalEnvs(
       localEnvs[LocalEnvBotKeys.TenantID] = teamsAppTenantId;
       localEnvs[LocalEnvBotKeys.OauthAuthority] = "https://login.microsoftonline.com";
       localEnvs[LocalEnvBotKeys.LoginEndpoint] = `${
-        localSettings?.bot?.get(LocalSettingsBotKeys.BotEndpoint) as string
+        botConfigs?.get(LocalSettingsBotKeys.BotEndpoint) as string
       }/auth-start.html`;
       localEnvs[LocalEnvBotKeys.ApplicationIdUri] = applicationIdUri;
     }

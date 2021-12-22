@@ -112,6 +112,13 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
       return ok(localEnvManager.getProgrammingLanguage(ctx.projectSetting));
     } else if (func.method === "getSkipNgrokConfig") {
       return ok(localEnvManager.getSkipNgrokConfig(localSettings));
+    } else if (func.method === "getLocalDebugEnvs") {
+      const localEnvs = await localEnvManager.getLocalDebugEnvs(
+        inputs.projectPath as string,
+        ctx.projectSetting,
+        localSettings
+      );
+      return ok(localEnvs);
     } else {
       return await executeUserTaskAdapter(
         ctx,

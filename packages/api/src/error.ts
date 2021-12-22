@@ -56,6 +56,10 @@ export class UserError extends Error implements FxError {
    * data that only be reported to github issue  manually by user and will not be reported as telemetry data
    */
   userData?: string;
+  /**
+   * customized message instead of error message which will be shown in notification box
+   */
+  notificationMessage?: string;
 
   constructor(error: Error, source?: string, name?: string, helpLink?: string);
   constructor(opt: UserErrorOptions);
@@ -162,6 +166,10 @@ export class SystemError extends Error implements FxError {
    * data that only be reported to github issue  manually by user and will not be reported as telemetry data
    */
   userData?: string;
+  /**
+   * customized message instead of error message which will be shown in notification box
+   */
+  notificationMessage?: string;
 
   constructor(error: Error, source?: string, name?: string, issueLink?: string);
   constructor(opt: SystemErrorOptions);

@@ -1681,6 +1681,7 @@ export class SystemError extends Error implements FxError {
     constructor(name: string, message: string, source: string, stack?: string, issueLink?: string, innerError?: any);
     innerError?: any;
     issueLink?: string;
+    notificationMessage?: string;
     source: string;
     timestamp: Date;
     userData?: string;
@@ -1927,6 +1928,7 @@ export class UserError extends Error implements FxError {
     constructor(name: string, message: string, source: string, stack?: string, helpLink?: string, innerError?: any);
     helpLink?: string;
     innerError?: any;
+    notificationMessage?: string;
     source: string;
     timestamp: Date;
     userData?: string;

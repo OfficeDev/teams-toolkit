@@ -50,7 +50,7 @@ import Mustache from "mustache";
 import { CloudResource } from "@microsoft/teamsfx-api/build/v3";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
-  array = array instanceof Map ? array : [array];
+  array = array instanceof Array ? array : [array];
   return array.indexOf(value) > -1 ? options.fn(this) : "";
 });
 Handlebars.registerHelper("notContains", (value, array, options) => {

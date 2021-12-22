@@ -104,8 +104,7 @@ describe("Frontend hosting V2", () => {
     // Assert
     const testModuleFileName = "frontendProvision.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: [pluginV2.name, "fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
-      PluginOutput: {
+      Plugins: {
         "fx-resource-frontend-hosting": {
           Provision: {
             frontendHosting: {

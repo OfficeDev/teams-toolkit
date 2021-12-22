@@ -54,8 +54,7 @@ describe("identityPlugin", () => {
     // Assert
     const testModuleFileName = "identityProvision.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-identity": {
           Provision: {
             identity: {

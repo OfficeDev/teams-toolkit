@@ -16,7 +16,6 @@ var m365ClientSecret = {{Plugins.fx-resource-key-vault.References.m365ClientSecr
 {{else}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']
 {{/if}}
-
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)

@@ -35,7 +35,6 @@ var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'
 {{else if Plugins.fx-resource-bot}}
 var m365ApplicationIdUri = 'api://botid-${botId}'
 {{/if}}
-
 var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
 var teamsWebAppClientId = '5e3ce6c0-2b1f-4285-8d4b-75ee78787346'
 var officeWebAppClientId1 = '4345a7b9-9a63-4910-a426-35363201d503'

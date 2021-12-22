@@ -157,8 +157,7 @@ describe("simpleAuthPlugin", () => {
       },
     };
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: { ...simpleAuthOutput, ...addtionalPluginOutput },
+      Plugins: { ...simpleAuthOutput, ...addtionalPluginOutput },
     };
 
     chai.assert.isTrue(generateArmTemplatesResult.isOk());
@@ -231,8 +230,7 @@ describe("simpleAuthPlugin", () => {
     const testProvisionModuleFileName = "simpleAuthProvision.result.bicep";
     const testConfigurationModuleFileName = "simpleAuthConfig.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-simple-auth": {
           Provision: {
             simpleAuth: {

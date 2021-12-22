@@ -108,7 +108,7 @@ describe("Frontend hosting V2", () => {
         "fx-resource-frontend-hosting": {
           Provision: {
             frontendHosting: {
-              ProvisionPath: `./${testModuleFileName}`,
+              path: `./${testModuleFileName}`,
             },
           },
         },

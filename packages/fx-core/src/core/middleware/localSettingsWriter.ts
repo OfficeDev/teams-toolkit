@@ -3,7 +3,6 @@
 "use strict";
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
-import { Func } from "@microsoft/teamsfx-api";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { CoreHookContext, isV2, TOOLS } from "..";
 import { isMultiEnvEnabled } from "../../common";

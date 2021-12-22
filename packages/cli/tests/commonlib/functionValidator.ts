@@ -12,6 +12,7 @@ import {
   getSiteNameFromResourceId,
   getWebappConfigs,
   getWebappServicePlan,
+  runWithRetry,
 } from "./utilities";
 
 const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
@@ -215,41 +216,6 @@ export class FunctionValidator {
     console.log("Successfully validate Function Provision.");
   }
 
-  private static async runWithRetry<T>(fn: () => Promise<T>) {
-    const maxTryCount = 3;
-    const defaultRetryAfterInSecond = 2;
-    const maxRetryAfterInSecond = 3 * 60;
-    const secondInMilliseconds = 1000;
-
-    for (let i = 0; i < maxTryCount - 1; i++) {
-      try {
-        const ret = await fn();
-        return ret;
-      } catch (e) {
-        let retryAfterInSecond = defaultRetryAfterInSecond;
-        if (e.response?.status === 429) {
-          // See https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling#error-code.
-          const suggestedRetryAfter = e.response?.headers?.["retry-after"];
-          // Explicit check, _retryAfter can be 0.
-          if (suggestedRetryAfter !== undefined) {
-            if (suggestedRetryAfter > maxRetryAfterInSecond) {
-              // Don't wait too long.
-              throw e;
-            } else {
-              // Take one more second for time error.
-              retryAfterInSecond = suggestedRetryAfter + 1;
-            }
-          }
-        }
-        await new Promise((resolve) =>
-          setTimeout(resolve, retryAfterInSecond * secondInMilliseconds)
-        );
-      }
-    }
-
-    return fn();
-  }
-
   public static async validateDeploy(functionObject: IFunctionObject): Promise<void> {
     console.log("Start to validate Function Deployment.");
 
@@ -289,7 +255,7 @@ export class FunctionValidator {
   ) {
     try {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const functionGetResponse = await this.runWithRetry(() =>
+      const functionGetResponse = await runWithRetry(() =>
         axios.get(baseUrlListDeployments(subscriptionId, rg, name))
       );
 
@@ -309,7 +275,7 @@ export class FunctionValidator {
   ) {
     try {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const functionGetResponse = await this.runWithRetry(() =>
+      const functionGetResponse = await runWithRetry(() =>
         axios.get(baseUrlListDeploymentLogs(subscriptionId, rg, name, id))
       );
 

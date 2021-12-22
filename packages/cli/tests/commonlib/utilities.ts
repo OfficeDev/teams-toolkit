@@ -80,9 +80,7 @@ export async function getWebappServicePlan(
 
   try {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-    const planResponse = await this.runWithRetry(() =>
-      axios.get(baseUrlPlan(subscriptionId, rg, name))
-    );
+    const planResponse = await runWithRetry(() => axios.get(baseUrlPlan(subscriptionId, rg, name)));
     if (
       !planResponse ||
       !planResponse.data ||
@@ -97,4 +95,39 @@ export async function getWebappServicePlan(
     console.log(error);
     return undefined;
   }
+}
+
+export async function runWithRetry<T>(fn: () => Promise<T>) {
+  const maxTryCount = 3;
+  const defaultRetryAfterInSecond = 2;
+  const maxRetryAfterInSecond = 3 * 60;
+  const secondInMilliseconds = 1000;
+
+  for (let i = 0; i < maxTryCount - 1; i++) {
+    try {
+      const ret = await fn();
+      return ret;
+    } catch (e) {
+      let retryAfterInSecond = defaultRetryAfterInSecond;
+      if (e.response?.status === 429) {
+        // See https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling#error-code.
+        const suggestedRetryAfter = e.response?.headers?.["retry-after"];
+        // Explicit check, _retryAfter can be 0.
+        if (suggestedRetryAfter !== undefined) {
+          if (suggestedRetryAfter > maxRetryAfterInSecond) {
+            // Don't wait too long.
+            throw e;
+          } else {
+            // Take one more second for time error.
+            retryAfterInSecond = suggestedRetryAfter + 1;
+          }
+        }
+      }
+      await new Promise((resolve) =>
+        setTimeout(resolve, retryAfterInSecond * secondInMilliseconds)
+      );
+    }
+  }
+
+  return fn();
 }

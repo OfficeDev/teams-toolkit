@@ -1,9 +1,9 @@
 // Resources for bot
-module botProvision '{{Plugins.fx-resource-bot.Provision.bot.ProvisionPath}}' = {
+module botProvision '{{fx-resource-bot.Provision.bot.path}}' = {
   name: 'botProvision'
   params: {
     provisionParameters: provisionParameters
-    userAssignedIdentityId: {{Plugins.fx-resource-identity.References.identityResourceId}}
+    userAssignedIdentityId: {{fx-resource-identity.References.identityResourceId}}
   }
 }
 

@@ -1,5 +1,5 @@
 // Resources for frontend hosting
-module frontendHostingProvision '{{Plugins.fx-resource-frontend-hosting.Provision.frontendHosting.ProvisionPath}}' = {
+module frontendHostingProvision '{{fx-resource-frontend-hosting.Provision.frontendHosting.path}}' = {
   name: 'frontendHostingProvision'
   params: {
     provisionParameters: provisionParameters

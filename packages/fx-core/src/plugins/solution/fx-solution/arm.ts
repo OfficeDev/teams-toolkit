@@ -1104,7 +1104,7 @@ export class ArmTemplateRenderContext {
       for (const module of Object.entries(provision)) {
         const moduleFileName = module[0];
         PluginContext.Provision![moduleFileName] = {
-          ProvisionPath: generateBicepModuleProvisionFilePath(moduleFileName),
+          path: generateBicepModuleProvisionFilePath(moduleFileName),
         };
       }
     }
@@ -1113,7 +1113,7 @@ export class ArmTemplateRenderContext {
       for (const module of Object.entries(configs)) {
         const moduleFileName = module[0];
         PluginContext.Configuration![moduleFileName] = {
-          ConfigPath: generateBicepModuleConfigFilePath(moduleFileName),
+          path: generateBicepModuleConfigFilePath(moduleFileName),
         };
       }
     }
@@ -1133,7 +1133,7 @@ export class ArmTemplateRenderContext {
 // Stores the bicep orchestration information for all resource plugins
 class BicepOrchestrationContent {
   private ParameterJsonTemplate: Record<string, string> = {};
-  private RenderContenxt: ArmTemplateRenderContext;
+  private RenderContext: ArmTemplateRenderContext;
   private TemplateAdded = false;
 
   private ProvisionTemplate = "";
@@ -1141,30 +1141,36 @@ class BicepOrchestrationContent {
 
   constructor(pluginNames: string[], baseName: string) {
     this.ParameterJsonTemplate[resourceBaseName] = baseName;
-    this.RenderContenxt = new ArmTemplateRenderContext(pluginNames);
+    this.RenderContext = new ArmTemplateRenderContext(pluginNames);
   }
 
   public applyTemplate(pluginName: string, armResult: ArmTemplateResult): void {
     this.ProvisionTemplate += this.normalizeTemplateSnippet(armResult.Provision?.Orchestration);
     this.ConfigTemplate += this.normalizeTemplateSnippet(armResult.Configuration?.Orchestration);
-    this.RenderContenxt.addPluginOutput(pluginName, armResult);
+    this.RenderContext.addPluginOutput(pluginName, armResult);
     Object.assign(this.ParameterJsonTemplate, armResult.Parameters);
   }
 
   public applyReference(configContent: string): string {
-    return compileHandlebarsTemplateString(configContent, this.RenderContenxt);
+    return compileHandlebarsTemplateString(configContent, this.RenderContext.Plugins);
   }
 
   public getOrchestractionProvisionContent(): string {
     const orchestrationTemplate =
       this.normalizeTemplateSnippet(this.ProvisionTemplate, false) + os.EOL;
-    return compileHandlebarsTemplateString(orchestrationTemplate, this.RenderContenxt).trim();
+    return compileHandlebarsTemplateString(
+      orchestrationTemplate,
+      this.RenderContext.Plugins
+    ).trim();
   }
 
   public getOrchestractionConfigContent(): string {
     const orchestrationTemplate =
       this.normalizeTemplateSnippet(this.ConfigTemplate, false) + os.EOL;
-    return compileHandlebarsTemplateString(orchestrationTemplate, this.RenderContenxt).trim();
+    return compileHandlebarsTemplateString(
+      orchestrationTemplate,
+      this.RenderContext.Plugins
+    ).trim();
   }
 
   public getParameterFileContent(): string {
@@ -1209,7 +1215,7 @@ interface PluginContext {
 }
 
 interface PluginModuleProperties {
-  [pathName: string]: string;
+  path: string;
 }
 
 function generateBicepModuleProvisionFilePath(moduleFileName: string) {

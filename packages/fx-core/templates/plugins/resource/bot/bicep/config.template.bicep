@@ -1,6 +1,6 @@
 var botCurrentAppSettings = list('${provisionOutputs.botOutput.value.botWebAppResourceId}/config/appsettings', '2021-02-01').properties
 
-module teamsFxBotConfig '{{Plugins.fx-resource-bot.Configuration.bot.ConfigPath}}' = {
+module teamsFxBotConfig '{{fx-resource-bot.Configuration.bot.path}}' = {
   name: 'addTeamsFxBotConfiguration'
   params: {
     provisionParameters: provisionParameters

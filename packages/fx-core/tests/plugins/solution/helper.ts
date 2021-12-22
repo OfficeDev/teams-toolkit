@@ -107,9 +107,6 @@ export class TestHelper {
             Modules: {
               frontendHostingProvision: TestFileContent.feHostProvisionModule,
             },
-            Reference: {
-              frontendHostingOutputKey: TestFileContent.feHostReferenceValue,
-            },
           },
           Configuration: {
             Orchestration:
@@ -117,6 +114,9 @@ export class TestHelper {
             Modules: {
               frontendHostingConfig: TestFileContent.feHostConfigurationModule,
             },
+          },
+          Reference: {
+            frontendHostingOutputKey: TestFileContent.feHostReferenceValue,
           },
           Parameters: {
             FrontendParameter: TestFileContent.feHostParameterValue,
@@ -143,9 +143,6 @@ export class TestHelper {
             Modules: {
               simpleAuthProvision: TestFileContent.simpleAuthProvisionModule,
             },
-            Reference: {
-              simpleAuthOutputKey: TestFileContent.simpleAuthReferenceValue,
-            },
           },
           Configuration: {
             Orchestration:
@@ -153,6 +150,9 @@ export class TestHelper {
             Modules: {
               simpleAuthConfig: TestFileContent.simpleAuthConfigurationModule,
             },
+          },
+          Reference: {
+            simpleAuthOutputKey: TestFileContent.simpleAuthReferenceValue,
           },
           Parameters: {
             SimpleAuthParameter: TestFileContent.simpleAuthParameterValue,
@@ -167,10 +167,8 @@ export class TestHelper {
       .stub(simpleAuthPlugin, "updateArmTemplates")
       .callsFake(async (ctx: PluginContext) => {
         const res: ArmTemplateResult = {
-          Provision: {
-            Reference: {
-              simpleAuthOutputKey2: TestFileContent.simpleAuthReferenceValue2,
-            },
+          Reference: {
+            simpleAuthOutputKey2: TestFileContent.simpleAuthReferenceValue2,
           },
           Configuration: {
             Modules: {
@@ -191,9 +189,6 @@ export class TestHelper {
           Modules: {
             aadProvision: TestFileContent.aadProvisionModule,
           },
-          Reference: {
-            aadOutputKey: TestFileContent.aadReferenceValue,
-          },
         },
         Configuration: {
           Orchestration:
@@ -201,6 +196,9 @@ export class TestHelper {
           Modules: {
             aadConfig: TestFileContent.aadConfigurationModule,
           },
+        },
+        Reference: {
+          aadOutputKey: TestFileContent.aadReferenceValue,
         },
         Parameters: {
           AadParameter: TestFileContent.aadParameterValue,
@@ -223,9 +221,6 @@ export class TestHelper {
             Modules: {
               identityProvision: TestFileContent.identityProvisionModule,
             },
-            Reference: {
-              identityOutputKey: TestFileContent.identityReferenceValue,
-            },
           },
           Configuration: {
             Orchestration:
@@ -233,6 +228,9 @@ export class TestHelper {
             Modules: {
               identityConfig: TestFileContent.identityConfigurationModule,
             },
+          },
+          Reference: {
+            identityOutputKey: TestFileContent.identityReferenceValue,
           },
           Parameters: {
             IdentityParameter: TestFileContent.identityParameterValue,
@@ -259,9 +257,6 @@ export class TestHelper {
           Modules: {
             botProvision: TestFileContent.botProvisionModule,
           },
-          Reference: {
-            botOutputKey: TestFileContent.botReferenceValue,
-          },
         },
         Configuration: {
           Orchestration:
@@ -269,6 +264,9 @@ export class TestHelper {
           Modules: {
             botConfig: TestFileContent.botConfigurationModule,
           },
+        },
+        Reference: {
+          botOutputKey: TestFileContent.botReferenceValue,
         },
         Parameters: {
           BotParameter: TestFileContent.botParameterValue,

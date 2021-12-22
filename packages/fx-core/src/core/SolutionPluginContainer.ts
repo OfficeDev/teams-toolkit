@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Solution, v2 } from "@microsoft/teamsfx-api";
+import { Solution, v2, v3 } from "@microsoft/teamsfx-api";
 import "reflect-metadata";
 import { Container } from "typedi";
 import { isV3 } from ".";
 import { TabSPFxItem } from "../plugins/solution/fx-solution/question";
+import { BuiltInSolutionNames } from "../plugins/solution/fx-solution/v3/constants";
 
 export const SolutionPlugins: any = {
   AzureTeamsSolution: "AzureTeamsSolution",
@@ -42,18 +43,6 @@ export function getAllSolutionPlugins(): Solution[] {
   return plugins;
 }
 
-export function getSolutionPluginByCap(cap: string[]): v2.SolutionPlugin | undefined {
-  if (isV3() && cap.includes(TabSPFxItem.id)) {
-    return Container.get<v2.SolutionPlugin>(SolutionPluginsV2.TeamsSPFxSolution);
-  } else {
-    return Container.get<v2.SolutionPlugin>(SolutionPluginsV2.AzureTeamsSolutionV2);
-  }
-}
-
-export function getSolutionPluginByCapV1(cap: string[]): Solution | undefined {
-  return Container.get<Solution>(SolutionPlugins.AzureTeamsSolution);
-}
-
 export function getSolutionPluginV2ByName(name: string): v2.SolutionPlugin | undefined {
   const solutions = getAllSolutionPluginsV2().filter((s) => s.name === name);
   if (solutions.length > 0) return solutions[0];
@@ -64,4 +53,11 @@ export function getSolutionPluginByName(name: string): Solution | undefined {
   const solutions = getAllSolutionPlugins().filter((s) => s.name === name);
   if (solutions.length > 0) return solutions[0];
   return undefined;
+}
+
+export function getGlobalSolutionsV3(): v3.ISolution[] {
+  return [
+    Container.get<v3.ISolution>(BuiltInSolutionNames.azure),
+    Container.get<v3.ISolution>(BuiltInSolutionNames.spfx),
+  ];
 }

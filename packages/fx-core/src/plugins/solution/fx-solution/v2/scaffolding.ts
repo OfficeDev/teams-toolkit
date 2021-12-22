@@ -38,6 +38,7 @@ import {
 } from "../../../..";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { Container } from "typedi";
+import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 
 export async function scaffoldSourceCode(
   ctx: v2.Context,
@@ -83,6 +84,10 @@ export async function scaffoldSourceCode(
     const azureResources = solutionSettings.azureResources;
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+    const scaffoldLocalDebugSettingsResult = await scaffoldLocalDebugSettings(ctx, inputs);
+    if (scaffoldLocalDebugSettingsResult.isErr()) {
+      return scaffoldLocalDebugSettingsResult;
+    }
     await scaffoldReadme(capabilities, azureResources, inputs.projectPath!);
     if (isAzureProject(solutionSettings)) {
       await fs.writeJSON(`${inputs.projectPath}/permissions.json`, DEFAULT_PERMISSION_REQUEST, {

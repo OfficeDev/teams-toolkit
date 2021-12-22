@@ -79,7 +79,7 @@ async function listAllCollaboratorsImpl(
       }
 
       const stateResult = CollaborationUtil.getCurrentCollaborationState(
-        envInfo.value.state,
+        envInfo.value.state as Map<string, any>,
         result.value
       );
 

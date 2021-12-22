@@ -5,7 +5,10 @@ import { Platform, ProjectSettings, TokenProvider, v2, v3 } from "@microsoft/tea
 import { assert } from "chai";
 import "mocha";
 import * as uuid from "uuid";
-import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import {
+  BuiltInResourcePluginNames,
+  TeamsFxAzureSolutionNameV3,
+} from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { deploy, getQuestionsForDeploy } from "../../../src/plugins/solution/fx-solution/v3/deploy";
 import {
   MockedAppStudioTokenProvider,
@@ -14,6 +17,7 @@ import {
   MockedSharepointProvider,
   MockedV2Context,
 } from "../solution/util";
+import { MockResourcePluginNames } from "./mockPlugins";
 
 describe("SolutionV3 - deploy", () => {
   it("deploy", async () => {
@@ -23,26 +27,19 @@ describe("SolutionV3 - deploy", () => {
       solutionSettings: {
         name: TeamsFxAzureSolutionNameV3,
         version: "3.0.0",
-        capabilities: ["Tab", "Bot"],
+        capabilities: ["Tab"],
         hostType: "Azure",
         azureResources: [],
         modules: [
           {
             capabilities: ["Tab"],
-            hostingPlugin: "fx-resource-azure-storage",
+            hostingPlugin: MockResourcePluginNames.storage,
             dir: "tabs",
-            buildPath: "build",
-            deolpyType: "folder",
-          },
-          {
-            capabilities: ["Bot"],
-            hostingPlugin: "fx-resource-azure-bot",
-            dir: "bot",
             buildPath: "build",
             deployType: "folder",
           },
         ],
-        activeResourcePlugins: ["fx-resource-azure-storage", "fx-resource-azure-bot"],
+        activeResourcePlugins: [MockResourcePluginNames.storage],
       },
     };
     const ctx = new MockedV2Context(projectSettings);
@@ -79,20 +76,20 @@ describe("SolutionV3 - deploy", () => {
         modules: [
           {
             capabilities: ["Tab"],
-            hostingPlugin: "fx-resource-azure-storage",
+            hostingPlugin: BuiltInResourcePluginNames.storage,
             dir: "tabs",
             buildPath: "build",
             deolpyType: "folder",
           },
           {
             capabilities: ["Bot"],
-            hostingPlugin: "fx-resource-azure-bot",
+            hostingPlugin: BuiltInResourcePluginNames.bot,
             dir: "bot",
             buildPath: "build",
             deployType: "folder",
           },
         ],
-        activeResourcePlugins: ["fx-resource-azure-storage", "fx-resource-azure-bot"],
+        activeResourcePlugins: [BuiltInResourcePluginNames.storage, BuiltInResourcePluginNames.bot],
       },
     };
     const ctx = new MockedV2Context(projectSettings);

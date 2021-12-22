@@ -223,6 +223,12 @@ describe("FrontendPlugin", () => {
       pluginContext.config.set(FrontendConfigInfo.Endpoint, TestHelper.storageEndpoint);
 
       frontendPlugin = new FrontendPlugin();
+
+      sinon.stub(fs, "pathExists").resolves(false);
+      sinon.stub(fs, "readFile").resolves(Buffer.from(""));
+      sinon.stub(fs, "writeFile").resolves();
+      sinon.stub(fs, "ensureFile").resolves(Buffer.from(""));
+      sinon.stub(EnvironmentUtils, "writeEnvironments").resolves();
     });
 
     afterEach(() => {
@@ -322,6 +328,7 @@ describe("FrontendPlugin", () => {
       sinon.stub(fs, "readJSON").resolves({});
       sinon.stub(fs, "writeJSON").resolves();
       fsPathExistsStub = sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readFile").resolves(Buffer.from(""));
     });
 
     afterEach(() => {

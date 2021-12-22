@@ -67,28 +67,25 @@ describe("LocalSettings provider APIs", () => {
     });
 
     it("should incremental init if localSettings exists", async () => {
-      let localSettings: LocalSettings | undefined;
-      localSettings = localSettingsProvider.init(true, false, false);
+      let localSettings: Json | undefined;
+      localSettings = localSettingsProvider.initV2(true, false, false);
       const updateValue = "http://localhost:5000";
-      localSettings.auth?.set(LocalSettingsAuthKeys.SimpleAuthServiceEndpoint, updateValue);
+      localSettings.auth.AuthServiceEndpoint = updateValue;
 
-      await localSettingsProvider.save(localSettings);
-      localSettings = await localSettingsProvider.load();
+      await localSettingsProvider.saveJson(localSettings);
+      localSettings = await localSettingsProvider.loadV2();
 
       const addBackaned = true;
       const addBot = true;
-      const updatedLocalSettings = localSettingsProvider.incrementalInit(
+      const updatedLocalSettings = localSettingsProvider.incrementalInitV2(
         localSettings!,
         addBackaned,
         addBot,
         false
       );
 
-      assertLocalSettings(updatedLocalSettings, true, true, true);
-      chai.assert.equal(
-        updatedLocalSettings!.auth?.get(LocalSettingsAuthKeys.SimpleAuthServiceEndpoint),
-        updateValue
-      );
+      assertLocalSettingsV2(updatedLocalSettings, true, true, true);
+      chai.assert.equal(updatedLocalSettings.auth.AuthServiceEndpoint, updateValue);
     });
   });
   describe("initV2 localSettings", () => {
@@ -100,6 +97,7 @@ describe("LocalSettings provider APIs", () => {
       const localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
       chai.assert.isDefined(localSettings.frontend);
       chai.assert.isDefined(localSettings.backend);
+      chai.assert.isDefined(localSettings.auth);
       chai.assert.isUndefined(localSettings.bot);
     });
 
@@ -108,9 +106,10 @@ describe("LocalSettings provider APIs", () => {
       hasBackend = false;
       hasBot = false;
 
-      const localSettings = localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
+      const localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
       chai.assert.isDefined(localSettings.frontend);
       chai.assert.isUndefined(localSettings.backend);
+      chai.assert.isDefined(localSettings.auth);
       chai.assert.isUndefined(localSettings.bot);
     });
 
@@ -119,9 +118,10 @@ describe("LocalSettings provider APIs", () => {
       hasBackend = false;
       hasBot = true;
 
-      const localSettings = localSettingsProvider.init(hasFrontend, hasBackend, hasBot);
+      const localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
       chai.assert.isUndefined(localSettings.frontend);
       chai.assert.isUndefined(localSettings.backend);
+      chai.assert.isDefined(localSettings.auth);
       chai.assert.isDefined(localSettings.bot);
     });
   });
@@ -226,6 +226,65 @@ describe("LocalSettings provider APIs", () => {
       const expectedBotKeys = Object.values(LocalSettingsBotKeys);
       for (const key of expectedBotKeys) {
         chai.assert.isTrue(localSettings!.bot?.has(key));
+      }
+    }
+  }
+
+  function assertLocalSettingsV2(
+    localSettings: Json,
+    hasFrontend: boolean,
+    hasBackend: boolean,
+    hasBot: boolean
+  ) {
+    chai.assert.isDefined(localSettings);
+
+    // Teams app settings is always required.
+    chai.assert.isDefined(localSettings.teamsApp);
+
+    const expectedTeamsAppKeys = Object.values(LocalSettingsTeamsAppKeys);
+    for (const key of expectedTeamsAppKeys) {
+      chai.assert.isTrue(Object.keys(localSettings.teamsApp).includes(key));
+    }
+
+    // Verify frontend related settings.
+    if (hasFrontend) {
+      chai.assert.isDefined(localSettings!.frontend);
+      chai.assert.isDefined(localSettings!.auth);
+
+      const expectedTeamsAppKeys = Object.values(LocalSettingsTeamsAppKeys);
+      const expectedFrontendKeys = Object.values(LocalSettingsFrontendKeys);
+      const expectedAuthKeys = Object.values(LocalSettingsAuthKeys);
+
+      for (const key of expectedTeamsAppKeys) {
+        chai.assert.isTrue(Object.keys(localSettings.teamsApp).includes(key));
+      }
+
+      for (const key of expectedAuthKeys) {
+        chai.assert.isTrue(Object.keys(localSettings.auth).includes(key));
+      }
+
+      for (const key of expectedFrontendKeys) {
+        chai.assert.isTrue(Object.keys(localSettings.frontend).includes(key));
+      }
+    }
+
+    // Verify backend related settings.
+    if (hasBackend) {
+      chai.assert.isDefined(localSettings!.backend);
+
+      const expectedBackendKeys = Object.values(LocalSettingsBackendKeys);
+      for (const key of expectedBackendKeys) {
+        chai.assert.isTrue(Object.keys(localSettings.backend).includes(key));
+      }
+    }
+
+    // Verify bot related settings.
+    if (hasBot) {
+      chai.assert.isDefined(localSettings!.bot);
+
+      const expectedBotKeys = Object.values(LocalSettingsBotKeys);
+      for (const key of expectedBotKeys) {
+        chai.assert.isTrue(Object.keys(localSettings.bot).includes(key));
       }
     }
   }

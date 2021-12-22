@@ -13,8 +13,8 @@ import {
 export async function getQuestionsForLocalProvision(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
-  localSettings: v2.DeepReadonly<Json>,
-  tokenProvider: TokenProvider
+  tokenProvider: TokenProvider,
+  localSettings?: v2.DeepReadonly<Json>
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   return ok(undefined);
 }

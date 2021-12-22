@@ -480,13 +480,7 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.restore();
   });
 
-  it("should succeed if app studio returns successfully", () =>
-    provisionSpfxProjectShouldSucceed(false));
-
-  it("should succeed if insider feature flag enabled", () =>
-    provisionSpfxProjectShouldSucceed(true));
-
-  async function provisionSpfxProjectShouldSucceed(insiderEnabled = false): Promise<void> {
+  it("should succeed if insider feature flag enabled", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
     mockedCtx.root = "./tests/plugins/resource/appstudio/spfx-resources/";
@@ -500,9 +494,6 @@ describe("provision() happy path for SPFx projects", () => {
         activeResourcePlugins: [spfxPlugin.name, appStudioPlugin.name],
       },
     };
-    mocker.stub(process, "env").get(() => {
-      return { __TEAMSFX_INSIDER_PREVIEW: insiderEnabled.toString() };
-    });
 
     expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .undefined;
@@ -512,17 +503,11 @@ describe("provision() happy path for SPFx projects", () => {
     expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .true;
 
-    if (insiderEnabled) {
-      expect(mockedCtx.envInfo.state.get("fx-resource-appstudio")?.get("teamsAppId")).equals(
-        mockedAppDef.teamsAppId
-      );
-    } else {
-      expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
-        mockedAppDef.teamsAppId
-      );
-    }
+    expect(mockedCtx.envInfo.state.get("fx-resource-appstudio")?.get("teamsAppId")).equals(
+      mockedAppDef.teamsAppId
+    );
     expect(solution.runningState).equals(SolutionRunningState.Idle);
-  }
+  });
 });
 
 function mockAzureProjectDeps(

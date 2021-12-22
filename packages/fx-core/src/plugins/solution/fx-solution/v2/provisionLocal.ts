@@ -2,12 +2,8 @@ import {
   v2,
   Inputs,
   FxError,
-  Result,
-  ok,
-  err,
   TokenProvider,
   returnSystemError,
-  Void,
   Json,
 } from "@microsoft/teamsfx-api";
 import { executeConcurrently } from "./executor";
@@ -25,8 +21,8 @@ import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
-import { isMultiEnvEnabled } from "../../../../common/tools";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
+import { setupLocalDebugSettings } from "../debug/provisionLocal";
 
 export async function provisionLocalResource(
   ctx: v2.Context,
@@ -90,6 +86,12 @@ export async function provisionLocalResource(
     return provisionResult;
   }
 
+  const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, localSettings);
+
+  if (debugProvisionResult.isErr()) {
+    return new v2.FxPartialSuccess(localSettings, debugProvisionResult.error);
+  }
+
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
   if (isAzureProject(azureSolutionSettings)) {
     if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
@@ -142,6 +144,7 @@ export async function provisionLocalResource(
     configureLocalResourceThunks,
     ctx.logProvider
   );
+
   if (configureResourceResult.kind !== "success") {
     if (configureResourceResult.kind === "partialSuccess") {
       return new v2.FxPartialSuccess(localSettings, configureResourceResult.error);

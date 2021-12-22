@@ -27,11 +27,14 @@ Please refer to [the official site](https://nodejs.org/en/about/releases/) to do
 
 ## How to install .NET SDK?
 
-Please refer to [the official website](https://dotnet.microsoft.com/download) to download and install the supported versions: `.NET 5.0 SDK` or `.NET Core 3.1 SDK`.
+Please refer to [the official website](https://dotnet.microsoft.com/download) to download and install the supported versions:
+
+| Platform | .NET versions |
+| -- | -- |
+| Windows, macOS (x64), Linux | **.NET Core 3.1 SDK (recommended)**, .NET 5.0 SDK, .NET 6.0 SDK  |
+| macOS (arm64) | .NET 6.0 SDK |
 
 **NOTE**: Please restart all your Visual Studio Code instances after the installation is finished.
-
-**NOTE for M1 Mac Users**: Currently neither `.NET 5.0 SDK` or `.NET Core 3.1 SDK` supports M1 Mac (see [this GitHub issue](https://github.com/dotnet/core/issues/4879)).
 
 ## How to install Azure Functions Core Tools?
 

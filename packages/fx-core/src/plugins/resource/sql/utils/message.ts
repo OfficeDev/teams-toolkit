@@ -36,9 +36,6 @@ export class Message {
   public static readonly registerResourceProviderFailed = (message: string) =>
     `[${Constants.pluginName}] Failed to register SQL resource provider. Reason: ${message}.`;
 
-  public static readonly existUser = (name: string) =>
-    `[${Constants.pluginName}] database user ${name} already exists in database`;
-
   public static readonly addDatabaseUser = (name: string) =>
     `[${Constants.pluginName}] add database user ${name}`;
 

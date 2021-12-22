@@ -16,31 +16,39 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import { Container, Service } from "typedi";
+import arm from "../arm";
+import { BuiltInResourcePluginNames } from "./constants";
 import { InvalidInputError, ResourceAlreadyAddedError } from "./error";
 import { createSelectModuleQuestionNode, selectResourceQuestion } from "./questions";
-import fs from "fs-extra";
-import * as path from "path";
 import { getModule } from "./utils";
-
-@Service("fx-resource-azure-storage")
+@Service(BuiltInResourcePluginNames.storage)
 export class AzureStoragePlugin implements v3.ResourcePlugin {
   resourceType = "Azure Storage";
   description = "Azure Storage";
-  name = "fx-resource-azure-storage";
+  name = BuiltInResourcePluginNames.storage;
   async generateResourceTemplate(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    if (!inputs.test) {
-      await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
-      await fs.writeFile(
-        path.join(inputs.projectPath, "templates", "azure", "AzureStorage.bicep"),
-        ""
-      );
-    }
-    return ok({ kind: "bicep", template: {} });
+    return ok({
+      kind: "bicep",
+      template: {
+        Provision: {
+          Orchestration: "Orchestration",
+          Reference: {
+            endpoint: "provisionOutputs.azureStorageOutput.value.endpoint",
+            domain: "provisionOutputs.azureStorageOutput.value.domain",
+          },
+          Modules: {
+            azureStorage: "",
+          },
+        },
+        Parameters: {
+          azureStorageK1: "v1",
+        },
+      },
+    });
   }
-
   async provisionResource(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
@@ -62,26 +70,37 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
+    ctx.logProvider.info(`fx-resource-azure-storage deploy success!`);
     return ok(Void);
   }
 }
-@Service("fx-resource-azure-bot")
+@Service(BuiltInResourcePluginNames.bot)
 export class AzureBotPlugin implements v3.ResourcePlugin {
   resourceType = "Azure Bot";
   description = "Azure Bot";
-  name = "fx-resource-azure-bot";
-  async pluginDependencies(ctx: v2.Context, inputs: Inputs): Promise<Result<string[], FxError>> {
-    return ok(["fx-resource-azure-web-app"]);
-  }
+  name = BuiltInResourcePluginNames.bot;
   async generateResourceTemplate(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    if (!inputs.test) {
-      await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
-      await fs.writeFile(path.join(inputs.projectPath, "templates", "azure", "AzureBot.bicep"), "");
-    }
-    return ok({ kind: "bicep", template: {} });
+    return ok({
+      kind: "bicep",
+      template: {
+        Provision: {
+          Orchestration: "Orchestration",
+          Reference: {
+            endpoint: "provisionOutputs.azureBotOutput.value.endpoint",
+            domain: "provisionOutputs.azureBotOutput.value.domain",
+          },
+          Modules: {
+            azureBot: "",
+          },
+        },
+        Parameters: {
+          azureBotK2: "v2",
+        },
+      },
+    });
   }
 
   async provisionResource(
@@ -112,26 +131,37 @@ export class AzureBotPlugin implements v3.ResourcePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
+    ctx.logProvider.info(`fx-resource-azure-bot deploy success!`);
     return ok(Void);
   }
 }
-@Service("fx-resource-azure-web-app")
+@Service(BuiltInResourcePluginNames.webApp)
 export class AzureWebAppPlugin implements v3.ResourcePlugin {
   resourceType = "Azure Web App";
   description = "Azure Web App";
-  name = "fx-resource-azure-web-app";
+  name = BuiltInResourcePluginNames.webApp;
   async generateResourceTemplate(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    if (!inputs.test) {
-      await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
-      await fs.writeFile(
-        path.join(inputs.projectPath, "templates", "azure", "AzureWebApp.bicep"),
-        ""
-      );
-    }
-    return ok({ kind: "bicep", template: {} });
+    return ok({
+      kind: "bicep",
+      template: {
+        Provision: {
+          Orchestration: "Orchestration",
+          Reference: {
+            endpoint: "provisionOutputs.azureWebAppOutput.value.endpoint",
+            domain: "provisionOutputs.azureWebAppOutput.value.domain",
+          },
+          Modules: {
+            azureWebApp: "",
+          },
+        },
+        Parameters: {
+          azureWebAppK3: "v3",
+        },
+      },
+    });
   }
 
   async provisionResource(
@@ -147,13 +177,39 @@ export class AzureWebAppPlugin implements v3.ResourcePlugin {
     };
     return ok(config);
   }
+
+  async deploy(
+    ctx: v2.Context,
+    inputs: v3.PluginDeployInputs,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    ctx.logProvider.info(`fx-resource-azure-web-app deploy success!`);
+    return ok(Void);
+  }
+}
+
+@Service(BuiltInResourcePluginNames.spfx)
+export class SPFxResourcePlugin implements v3.ResourcePlugin {
+  resourceType = "SPFx resource";
+  description = "SPFx resource";
+  name = BuiltInResourcePluginNames.spfx;
+  async deploy(
+    ctx: v2.Context,
+    inputs: v3.PluginDeployInputs,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    ctx.logProvider.info(`fx-resource-spfx deploy success!`);
+    return ok(Void);
+  }
 }
 
 function getAllResourcePlugins(): v3.ResourcePlugin[] {
   return [
-    Container.get<v3.ResourcePlugin>("fx-resource-azure-storage"),
-    Container.get<v3.ResourcePlugin>("fx-resource-azure-bot"),
-    Container.get<v3.ResourcePlugin>("fx-resource-azure-web-app"),
+    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.webApp),
+    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.bot),
+    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.webApp),
   ];
 }
 
@@ -207,7 +263,20 @@ export async function addResource(
   addedResourceNames.forEach((s) => allResourceNames.add(s));
   existingResourceNames.forEach((s) => allResourceNames.add(s));
   solutionSettings.activeResourcePlugins = Array.from(allResourceNames);
-  //TODO collect resource templates
+
+  //call arm module to generate arm templates
+  const activatedPlugins = solutionSettings.activeResourcePlugins.map((n) =>
+    Container.get<v3.ResourcePlugin>(n)
+  );
+  const addedPlugins = Array.from(addedResourceNames).map((n) =>
+    Container.get<v3.ResourcePlugin>(n)
+  );
+  const armRes = await arm.generateArmTemplate(ctx, inputs, activatedPlugins, addedPlugins);
+  if (armRes.isErr()) {
+    return err(armRes.error);
+  }
+
+  //call addResource API
   for (const pluginName of allResourceNames.values()) {
     const plugin = Container.get<v3.ResourcePlugin>(pluginName);
     if (addedResourceNames.has(pluginName) && !existingResourceNames.has(pluginName)) {
@@ -216,18 +285,6 @@ export async function addResource(
         if (res.isErr()) {
           return err(res.error);
         }
-      }
-      if (plugin.generateResourceTemplate) {
-        const res = await plugin.generateResourceTemplate(ctx, inputs);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-      }
-    }
-    if (plugin.updateResourceTemplate) {
-      const res = await plugin.updateResourceTemplate(ctx, inputs);
-      if (res.isErr()) {
-        return err(res.error);
       }
     }
   }

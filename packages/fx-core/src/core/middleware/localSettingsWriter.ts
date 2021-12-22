@@ -3,6 +3,7 @@
 "use strict";
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
+import { Func } from "@microsoft/teamsfx-api";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { CoreHookContext, isV2, TOOLS } from "..";
 import { isMultiEnvEnabled } from "../../common";
@@ -16,6 +17,9 @@ export const LocalSettingsWriterMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
 ) => {
+  if (ctx.method === "executeUserTask" && (ctx.arguments[0] as Func).method != "updateManifest") {
+    return;
+  }
   await next();
   if (!shouldIgnored(ctx) && isMultiEnvEnabled()) {
     const lastArg = ctx.arguments[ctx.arguments.length - 1];

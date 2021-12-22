@@ -520,6 +520,30 @@ export class AppStudioPluginImpl {
 
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     try {
+      const localUpdateTime = isLocalDebug
+        ? ctx.localSettings?.teamsApp?.get(Constants.TEAMS_APP_UPDATED_AT)
+        : (ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_UPDATED_AT) as number);
+      if (localUpdateTime) {
+        const app = await AppStudioClient.getApp(teamsAppId, appStudioToken!, ctx.logProvider);
+        const devPortalUpdateTime = new Date(app.updatedAt!)?.getTime() ?? -1;
+        if (localUpdateTime < devPortalUpdateTime) {
+          const res = await ctx.ui?.showMessage(
+            "warn",
+            "The manifest file on Teams platform has been changed since your last update. Do you want to continue to update and overwrite the manifest file on Teams platform?",
+            true,
+            "Overwrite and update"
+          );
+
+          if (!(res?.isOk() && res.value === "Overwrite and update")) {
+            const error = AppStudioResultFactory.UserError(
+              AppStudioError.UpdateManifestCancelError.name,
+              AppStudioError.UpdateManifestCancelError.message(manifest.name.short)
+            );
+            return err(error);
+          }
+        }
+      }
+
       const result = await this.updateApp(
         ctx,
         appDefinition,
@@ -1099,7 +1123,7 @@ export class AppStudioPluginImpl {
         ? (await fs.readFile(`${appDirectory}/${manifest.icons.outline}`)).toString("base64")
         : undefined;
       try {
-        await AppStudioClient.updateApp(
+        const app = await AppStudioClient.updateApp(
           remoteTeamsAppId,
           appDefinitionRes.value,
           appStudioToken!,
@@ -1107,6 +1131,12 @@ export class AppStudioPluginImpl {
           colorIconContent,
           outlineIconContent
         );
+
+        if (app.updatedAt) {
+          ctx.envInfo.state
+            .get(PluginNames.APPST)
+            ?.set(Constants.TEAMS_APP_UPDATED_AT, new Date(app.updatedAt).getTime());
+        }
       } catch (e) {
         if (e.name === 404) {
           throw AppStudioResultFactory.UserError(
@@ -1622,7 +1652,7 @@ export class AppStudioPluginImpl {
     appDefinition.appId = teamsAppId;
 
     try {
-      await AppStudioClient.updateApp(
+      const app = await AppStudioClient.updateApp(
         teamsAppId!,
         appDefinition,
         appStudioToken,
@@ -1630,6 +1660,16 @@ export class AppStudioPluginImpl {
         colorIconContent,
         outlineIconContent
       );
+
+      if (app.updatedAt) {
+        const time = new Date(app.updatedAt).getTime();
+        if (isLocalDebug) {
+          ctx.localSettings?.teamsApp?.set(Constants.TEAMS_APP_UPDATED_AT, time);
+        } else {
+          ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_UPDATED_AT, time);
+        }
+      }
+
       return ok(teamsAppId!);
     } catch (e) {
       if (e instanceof Error) {

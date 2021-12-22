@@ -5,6 +5,7 @@
 export const LocalSettingsTeamsAppKeys = Object.freeze({
   TenantId: "tenantId",
   TeamsAppId: "teamsAppId",
+  TeamsAppUpdatedAt: "teamsAppUpdatedAt",
 });
 
 export const LocalSettingsAuthKeys = Object.freeze({

@@ -6,7 +6,13 @@ import * as dotenv from "dotenv";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
-import { FrontendHostingPlugin, FunctionPlugin, BotPlugin } from "./constants";
+
+// TODO(xiaofhua): only post provision
+export class FolderName {
+  static readonly Frontend = "tabs";
+  static readonly Bot = "bot";
+  static readonly Function = "api";
+}
 
 export interface LocalEnvs {
   teamsfxLocalEnvs: { [key: string]: string };
@@ -83,11 +89,7 @@ export class LocalEnvMultiProvider {
     includeAuth: boolean
   ): Promise<LocalEnvs> {
     const envs = await this.loadLocalEnvFile(
-      path.join(
-        this.projectRoot,
-        FrontendHostingPlugin.FolderName,
-        LocalEnvMultiProvider.LocalEnvFileName
-      ),
+      path.join(this.projectRoot, FolderName.Frontend, LocalEnvMultiProvider.LocalEnvFileName),
       Object.values(EnvKeysFrontend)
     );
 
@@ -96,11 +98,7 @@ export class LocalEnvMultiProvider {
 
   public async loadBackendLocalEnvs(): Promise<LocalEnvs> {
     const envs = await this.loadLocalEnvFile(
-      path.join(
-        this.projectRoot,
-        FunctionPlugin.FolderName,
-        LocalEnvMultiProvider.LocalEnvFileName
-      ),
+      path.join(this.projectRoot, FolderName.Function, LocalEnvMultiProvider.LocalEnvFileName),
       Object.values(EnvKeysBackend)
     );
 
@@ -109,7 +107,7 @@ export class LocalEnvMultiProvider {
 
   public async loadBotLocalEnvs(isMigrateFromV1: boolean): Promise<LocalEnvs> {
     const envs = await this.loadLocalEnvFile(
-      path.join(this.projectRoot, BotPlugin.FolderName, LocalEnvMultiProvider.LocalEnvFileName),
+      path.join(this.projectRoot, FolderName.Bot, LocalEnvMultiProvider.LocalEnvFileName),
       Object.values(EnvKeysBot)
     );
 
@@ -122,21 +120,15 @@ export class LocalEnvMultiProvider {
     botEnvs: LocalEnvs | undefined
   ): Promise<void> {
     if (frontendEnvs !== undefined) {
-      await this.saveLocalEnvFile(
-        path.join(this.projectRoot, FrontendHostingPlugin.FolderName),
-        frontendEnvs
-      );
+      await this.saveLocalEnvFile(path.join(this.projectRoot, FolderName.Frontend), frontendEnvs);
     }
 
     if (backendEnvs !== undefined) {
-      await this.saveLocalEnvFile(
-        path.join(this.projectRoot, FunctionPlugin.FolderName),
-        backendEnvs
-      );
+      await this.saveLocalEnvFile(path.join(this.projectRoot, FolderName.Function), backendEnvs);
     }
 
     if (botEnvs !== undefined) {
-      await this.saveLocalEnvFile(path.join(this.projectRoot, BotPlugin.FolderName), botEnvs);
+      await this.saveLocalEnvFile(path.join(this.projectRoot, FolderName.Bot), botEnvs);
     }
   }
 

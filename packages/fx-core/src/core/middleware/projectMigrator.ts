@@ -80,8 +80,8 @@ import * as dotenv from "dotenv";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 import util from "util";
-import { LocalEnvMultiProvider } from "../../plugins/resource/localdebug/localEnvMulti";
 import { NamedArmResourcePluginAdaptor } from "../../plugins/solution/fx-solution/v2/adaptor";
+import { LocalEnvMultiProvider } from "../../common/localEnvMultiProvider";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";

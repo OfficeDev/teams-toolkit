@@ -16,10 +16,10 @@ export enum SolutionV3QuestionNames {
   capabilities = "capabilities",
   resource = "resource",
   module = "module",
-  deployModules = "deploy-modules",
+  modules = "modules",
 }
 
-export const selectModulesQuestion: SingleSelectQuestion = {
+export const selectSingleModuleQuestion: SingleSelectQuestion = {
   name: SolutionV3QuestionNames.module,
   title: "Select a module",
   type: "singleSelect",
@@ -27,14 +27,14 @@ export const selectModulesQuestion: SingleSelectQuestion = {
 };
 
 export const selectMultiModulesQuestion: MultiSelectQuestion = {
-  name: SolutionV3QuestionNames.deployModules,
+  name: SolutionV3QuestionNames.modules,
   title: "Select modules to deploy",
   type: "multiSelect",
   staticOptions: [],
 };
 
 export function createSelectModuleQuestionNode(modules: v3.Module[]): QTreeNode {
-  const moduleNode = new QTreeNode(selectModulesQuestion);
+  const moduleNode = new QTreeNode(selectSingleModuleQuestion);
   const moduleOptions: OptionItem[] = [];
   let i = 0;
   for (const module of modules) {
@@ -45,7 +45,7 @@ export function createSelectModuleQuestionNode(modules: v3.Module[]): QTreeNode 
     moduleOptions.push(option);
   }
   moduleOptions.push({ id: "none", label: "none" });
-  selectModulesQuestion.staticOptions = moduleOptions;
+  selectSingleModuleQuestion.staticOptions = moduleOptions;
   return moduleNode;
 }
 
@@ -65,7 +65,7 @@ export function createSelectModulesToDeployQuestionNode(modules: v3.Module[]): Q
       }
     }
   }
-  selectModulesQuestion.staticOptions = moduleOptions;
+  selectMultiModulesQuestion.staticOptions = moduleOptions;
   return moduleNode;
 }
 

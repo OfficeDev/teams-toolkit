@@ -62,6 +62,7 @@ import {
   ScratchOptionYesVSC,
 } from "../../src/core/question";
 import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
+import { TeamsAppSolutionNameV2 } from "../../src/plugins/solution/fx-solution/v2/constants";
 import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
 
 describe("Core basic APIs", () => {
@@ -84,20 +85,20 @@ describe("Core basic APIs", () => {
     deleteFolder(projectPath);
   });
 
-  describe("Core's basic APIs", async () => {
+  describe("Core's basic APIs FOR V1 and V2", async () => {
     const AllEnvParams = [
-      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "true" },
-      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true" },
+      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "false", TEAMSFX_APIV3: "false" },
+      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "true", TEAMSFX_APIV3: "false" },
+      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "false", TEAMSFX_APIV3: "false" },
+      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true", TEAMSFX_APIV3: "false" },
     ];
     const EnableMultiEnvParams = [
-      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "true" },
-      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true" },
+      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "true", TEAMSFX_APIV3: "false" },
+      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true", TEAMSFX_APIV3: "false" },
     ];
     const DisableMultiEnvParams = [
-      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "false" },
+      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "false", TEAMSFX_APIV3: "false" },
+      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "false", TEAMSFX_APIV3: "false" },
     ];
     for (const param of AllEnvParams) {
       describe(`Multi-Env: ${param.__TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
@@ -311,7 +312,7 @@ describe("Core basic APIs", () => {
   });
 
   it("create project with correct version", async () => {
-    assert.isTrue(true);
+    const mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
     appName = randomAppName();
     projectPath = path.join(os.homedir(), "TeamsApps", appName);
     const expectedInputs: Inputs = {
@@ -319,6 +320,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
+      [CoreQuestionNames.Solution]: TeamsAppSolutionNameV2,
       stage: Stage.create,
     };
     expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
@@ -375,7 +377,7 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.VSCode };
+      const inputs: Inputs = { platform: Platform.VSCode, solution: TeamsAppSolutionNameV2 };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk());
       if (res.isErr()) {
@@ -396,6 +398,7 @@ describe("Core basic APIs", () => {
       assert.isTrue(validSettingsResult === undefined);
       projectSettings.version == "2.0.0";
     }
+    mockedEnvRestore();
   });
 
   async function case1() {
@@ -406,6 +409,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
+      [CoreQuestionNames.Solution]: TeamsAppSolutionNameV2,
       stage: Stage.create,
     };
     expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
@@ -462,7 +466,7 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.VSCode };
+      const inputs: Inputs = { platform: Platform.VSCode, solution: TeamsAppSolutionNameV2 };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk());
       assert.deepEqual(expectedInputs, inputs);
@@ -876,7 +880,7 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.CLI };
+      const inputs: Inputs = { platform: Platform.CLI, solution: TeamsAppSolutionNameV2 };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk() && res.value === projectPath);
 
@@ -902,6 +906,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
+      [CoreQuestionNames.Solution]: TeamsAppSolutionNameV2,
       env: "dev",
       stage: Stage.create,
     };
@@ -967,7 +972,11 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        env: "dev",
+        solution: TeamsAppSolutionNameV2,
+      };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);
@@ -1015,6 +1024,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
       env: "dev",
+      [CoreQuestionNames.Solution]: TeamsAppSolutionNameV2,
       stage: Stage.create,
     };
     expectedInputs[CoreQuestionNames.Capabilities] = TabOptionItem.id;
@@ -1077,7 +1087,11 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        env: "dev",
+        solution: TeamsAppSolutionNameV2,
+      };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);

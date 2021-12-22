@@ -7,8 +7,8 @@ import {
   ArchiveFolderName,
   ArchiveLogFileName,
   assembleError,
+  BuildFolderName,
   ConfigFolderName,
-  Core,
   CoreCallbackEvent,
   CoreCallbackFunc,
   err,
@@ -20,31 +20,30 @@ import {
   Json,
   LogProvider,
   ok,
+  OptionItem,
   Platform,
   ProjectConfig,
   ProjectSettings,
-  StatesFolderName,
   QTreeNode,
   Result,
-  SingleSelectQuestion,
   Solution,
   SolutionConfig,
   SolutionContext,
   Stage,
-  SystemError,
+  StatesFolderName,
   TelemetryReporter,
   Tools,
   UserCancelError,
   v2,
-  Void,
-  BuildFolderName,
   v3,
-  OptionItem,
+  Void,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
+import { assign } from "lodash";
 import * as path from "path";
+import { Container } from "typedi";
 import * as uuid from "uuid";
 import { environmentManager, sampleProvider } from "..";
 import { FeatureFlagName } from "../common/constants";
@@ -52,8 +51,8 @@ import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import {
   Component,
-  sendTelemetryEvent,
   sendTelemetryErrorEvent,
+  sendTelemetryEvent,
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
@@ -61,20 +60,26 @@ import {
 import {
   downloadSampleHook,
   fetchCodeZip,
-  isFeatureFlagEnabled,
+  getRootDirectory,
   isMultiEnvEnabled,
   mapToJson,
   saveFilesRecursively,
-  getRootDirectory,
 } from "../common/tools";
 import { PluginNames } from "../plugins";
+import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
 import { getAllV2ResourcePlugins } from "../plugins/solution/fx-solution/ResourcePluginContainer";
+import {
+  BuiltInResourcePluginNames,
+  BuiltInScaffoldPluginNames,
+  BuiltInSolutionNames,
+} from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
+import { LocalCrypto } from "./crypto";
 import {
   ArchiveProjectError,
   ArchiveUserFileError,
   CopyFileError,
-  CoreSource,
+  FetchSampleError,
   FunctionRouterError,
   InvalidInputError,
   LoadSolutionError,
@@ -82,12 +87,10 @@ import {
   NonExistEnvNameError,
   ObjectIsUndefinedError,
   ProjectFolderExistError,
+  ProjectFolderInvalidError,
   ProjectFolderNotExistError,
   TaskNotSupportError,
   WriteFileError,
-  ProjectFolderInvalidError,
-  FetchSampleError,
-  NotImplementedError,
 } from "./error";
 import { ConcurrentLockerMW } from "./middleware/concurrentLocker";
 import { ContextInjectorMW } from "./middleware/contextInjector";
@@ -99,6 +102,7 @@ import {
   upgradeProgrammingLanguage,
 } from "./middleware/envInfoLoader";
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
+import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
 import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
@@ -111,40 +115,46 @@ import {
 } from "./middleware/projectSettingsLoader";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
-import { QuestionModelMW } from "./middleware/questionModel";
+import {
+  getQuestionsForAddModule,
+  getQuestionsForAddResource,
+  getQuestionsForCreateProjectV2,
+  getQuestionsForCreateProjectV3,
+  getQuestionsForDeploy,
+  getQuestionsForInit,
+  getQuestionsForLocalProvision,
+  getQuestionsForMigrateV1Project,
+  getQuestionsForProvision,
+  getQuestionsForPublish,
+  getQuestionsForScaffold,
+  getQuestionsForUserTaskV2,
+  getQuestionsV2,
+  QuestionModelMW,
+} from "./middleware/questionModel";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import {
+  BotOptionItem,
   CoreQuestionNames,
-  createCapabilityQuestion,
   DefaultAppNameFunc,
-  getCreateNewOrFromSampleQuestion,
-  ProgrammingLanguageQuestion,
   ProjectNamePattern,
   QuestionAppName,
   QuestionRootFolder,
-  QuestionSelectSolution,
   QuestionV1AppName,
-  SampleSelect,
   ScratchOptionNo,
-  ScratchOptionYes,
+  TabOptionItem,
+  TabSPFxItem,
 } from "./question";
 import {
   getAllSolutionPlugins,
   getAllSolutionPluginsV2,
-  getSolutionPluginByCap,
-  getSolutionPluginByCapV1,
   getSolutionPluginByName,
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
-import { flattenConfigJson, newEnvInfo } from "./tools";
-import { LocalCrypto } from "./crypto";
+import { newEnvInfo } from "./tools";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
-import { assign } from "lodash";
 import { ProjectSettingsLoaderMW_V3 } from "./middleware/projectSettingsLoaderV3";
-import { Container } from "typedi";
 import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
 import { EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
-import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -215,6 +225,13 @@ export class FxCore implements v3.ICore {
     return CallbackRegistry.set(event, callback);
   }
 
+  async createProject(inputs: Inputs): Promise<Result<string, FxError>> {
+    if (isV3()) {
+      return this.createProjectV3(inputs);
+    } else {
+      return this.createProjectV2(inputs);
+    }
+  }
   @hooks([
     ErrorHandlerMW,
     SupportV1ConditionMW(true),
@@ -223,7 +240,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(true),
   ])
-  async createProject(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+  async createProjectV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
@@ -304,7 +321,7 @@ export class FxCore implements v3.ICore {
       }
 
       if (isV2()) {
-        const solution = await getSolutionPluginByCap(inputs[CoreQuestionNames.Capabilities]);
+        const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -346,7 +363,7 @@ export class FxCore implements v3.ICore {
           };
         }
       } else {
-        const solution = await getSolutionPluginByCapV1(inputs[CoreQuestionNames.Capabilities]);
+        const solution = await getSolutionPluginByName(inputs[CoreQuestionNames.Solution]);
         if (!solution) {
           return err(new LoadSolutionError());
         }
@@ -387,7 +404,261 @@ export class FxCore implements v3.ICore {
     }
     return ok(projectPath);
   }
+  @hooks([
+    ErrorHandlerMW,
+    SupportV1ConditionMW(true),
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW_V3(true),
+  ])
+  async createProjectV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
+    if (!ctx) {
+      return err(new ObjectIsUndefinedError("ctx for createProject"));
+    }
+    currentStage = Stage.create;
+    inputs.stage = Stage.create;
+    let folder = inputs[QuestionRootFolder.name] as string;
+    if (inputs.platform === Platform.VSCode || inputs.platform === Platform.VS) {
+      folder = getRootDirectory();
+      try {
+        await fs.ensureDir(folder);
+      } catch (e) {
+        throw ProjectFolderInvalidError(folder);
+      }
+    }
+    const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
+    let projectPath: string;
+    let globalStateDescription = "openReadme";
+    if (scratch === ScratchOptionNo.id) {
+      // create from sample
+      const downloadRes = await downloadSample(inputs, ctx);
+      if (downloadRes.isErr()) {
+        return err(downloadRes.error);
+      }
+      projectPath = downloadRes.value;
+      globalStateDescription = "openSampleReadme";
+    } else {
+      // create from new
+      const appName = inputs[QuestionAppName.name] as string;
+      if (undefined === appName) return err(InvalidInputError(`App Name is empty`, inputs));
 
+      const validateResult = jsonschema.validate(appName, {
+        pattern: ProjectNamePattern,
+      });
+      if (validateResult.errors && validateResult.errors.length > 0) {
+        return err(InvalidInputError(`${validateResult.errors[0].message}`, inputs));
+      }
+
+      projectPath = path.join(folder, appName);
+      inputs.projectPath = projectPath;
+      const folderExist = await fs.pathExists(projectPath);
+      if (folderExist) {
+        return err(ProjectFolderExistError(projectPath));
+      }
+      await fs.ensureDir(projectPath);
+      await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
+
+      let capabilities = inputs[CoreQuestionNames.Capabilities] as string[];
+
+      let projectType = "";
+      if (capabilities.includes(TabSPFxItem.id)) projectType = "spfx";
+      else if (capabilities.includes(TabOptionItem.id) && capabilities.length === 1)
+        projectType = "tab";
+      else if (
+        (capabilities.includes(BotOptionItem.id) ||
+          capabilities.includes(MessageExtensionItem.id)) &&
+        !capabilities.includes(TabOptionItem.id)
+      )
+        projectType = "bot";
+      else if (
+        (capabilities.includes(BotOptionItem.id) ||
+          capabilities.includes(MessageExtensionItem.id)) &&
+        capabilities.includes(TabOptionItem.id)
+      )
+        projectType = "tab+bot";
+
+      const programmingLanguage = inputs[CoreQuestionNames.ProgrammingLanguage] as string;
+      // const solution = capabilities.includes(TabSPFxItem.id)
+      //   ? BuiltInSolutionNames.spfx
+      //   : BuiltInSolutionNames.azure;
+
+      // init
+      const initInputs: v2.InputsWithProjectPath & { solution?: string } = {
+        ...inputs,
+        projectPath: projectPath,
+        // solution: solution,
+      };
+      const initRes = await this._init(initInputs, ctx);
+      if (initRes.isErr()) {
+        return err(initRes.error);
+      }
+
+      // addModule, scaffold and addResource
+      if (inputs.platform === Platform.VS) {
+        // addModule
+        const addModuleInputs: v2.InputsWithProjectPath & { capabilities?: string[] } = {
+          ...inputs,
+          projectPath: projectPath,
+          capabilities: capabilities,
+        };
+        const addModuleRes = await this._addModule(addModuleInputs, ctx);
+        if (addModuleRes.isErr()) {
+          return err(addModuleRes.error);
+        }
+        // addResource
+        const addResourceInputs: v2.InputsWithProjectPath & { module?: string; resource?: string } =
+          {
+            ...inputs,
+            projectPath: projectPath,
+            module: "0",
+            resource: BuiltInResourcePluginNames.webApp, //TODO
+          };
+        const addResourceRes = await this._addResource(addResourceInputs, ctx);
+        if (addResourceRes.isErr()) {
+          return err(addResourceRes.error);
+        }
+        // scaffold
+        let templateName = "";
+        if (projectType === "tab") templateName = "BlazorTab";
+        else if (projectType === "bot") templateName = "BlazorBot";
+        else if (projectType === "tabbot") templateName = "BlazorTabBot";
+        const scaffoldInputs: v2.InputsWithProjectPath & {
+          module?: string;
+          template?: OptionItem;
+        } = {
+          ...inputs,
+          projectPath: projectPath,
+          module: "0",
+          template: {
+            id: `${BuiltInScaffoldPluginNames.blazor}/${templateName}`,
+            label: `${BuiltInScaffoldPluginNames.blazor}/${templateName}`,
+            data: {
+              pluginName: BuiltInScaffoldPluginNames.blazor,
+              templateName: templateName,
+            },
+          },
+        };
+        const scaffoldRes = await this._scaffold(scaffoldInputs, ctx);
+        if (scaffoldRes.isErr()) {
+          return err(scaffoldRes.error);
+        }
+      } else {
+        if (capabilities.includes(TabOptionItem.id) || capabilities.includes(TabSPFxItem.id)) {
+          const addModuleInputs: v2.InputsWithProjectPath & { capabilities?: string[] } = {
+            ...inputs,
+            projectPath: projectPath,
+            capabilities: capabilities.includes(TabOptionItem.id)
+              ? [TabOptionItem.id]
+              : [TabSPFxItem.id],
+          };
+          const addModuleRes = await this._addModule(addModuleInputs, ctx);
+          if (addModuleRes.isErr()) {
+            return err(addModuleRes.error);
+          }
+          // addResource
+          const addResourceInputs: v2.InputsWithProjectPath & {
+            module?: string;
+            resource?: string;
+          } = {
+            ...inputs,
+            projectPath: projectPath,
+            module: "0",
+            resource: capabilities.includes(TabOptionItem.id)
+              ? BuiltInResourcePluginNames.storage
+              : BuiltInResourcePluginNames.spfx, //TODO
+          };
+          const addResourceRes = await this._addResource(addResourceInputs, ctx);
+          if (addResourceRes.isErr()) {
+            return err(addResourceRes.error);
+          }
+          // scaffold
+          const pluginName = capabilities.includes(TabOptionItem.id)
+            ? BuiltInScaffoldPluginNames.tab
+            : BuiltInScaffoldPluginNames.spfx;
+          const templateName = capabilities.includes(TabOptionItem.id)
+            ? programmingLanguage === "javascript"
+              ? "ReactTab_JS"
+              : "ReactTab_TS"
+            : "SPFxTab";
+          const scaffoldInputs: v2.InputsWithProjectPath & {
+            module?: string;
+            template?: OptionItem;
+          } = {
+            ...inputs,
+            projectPath: projectPath,
+            module: "0",
+            template: {
+              id: `${pluginName}/${templateName}`,
+              label: `${pluginName}/${templateName}`,
+              data: {
+                pluginName: pluginName,
+                templateName: templateName, //TODO
+              },
+            },
+          };
+          const scaffoldRes = await this._scaffold(scaffoldInputs, ctx);
+          if (scaffoldRes.isErr()) {
+            return err(scaffoldRes.error);
+          }
+        }
+        capabilities = capabilities.filter((c) => c !== TabOptionItem.id && c !== TabSPFxItem.id);
+        if (capabilities.length > 0) {
+          const addModuleInputs: v2.InputsWithProjectPath & { capabilities?: string[] } = {
+            ...inputs,
+            projectPath: projectPath,
+            capabilities: capabilities,
+          };
+          const addModuleRes = await this._addModule(addModuleInputs, ctx);
+          if (addModuleRes.isErr()) {
+            return err(addModuleRes.error);
+          }
+          // addResource
+          const addResourceInputs: v2.InputsWithProjectPath & {
+            module?: string;
+            resource?: string;
+          } = {
+            ...inputs,
+            projectPath: projectPath,
+            module: "1",
+            resource: BuiltInResourcePluginNames.bot, //TODO
+          };
+          const addResourceRes = await this._addResource(addResourceInputs, ctx);
+          if (addResourceRes.isErr()) {
+            return err(addResourceRes.error);
+          }
+          // scaffold
+          const templateName =
+            programmingLanguage === "javascript" ? "NodejsBot_JS" : "NodejsBot_TS";
+          const scaffoldInputs: v2.InputsWithProjectPath & {
+            module?: string;
+            template?: OptionItem;
+          } = {
+            ...inputs,
+            projectPath: projectPath,
+            module: "1",
+            resource: BuiltInScaffoldPluginNames.bot, //TODO
+            template: {
+              id: `${BuiltInScaffoldPluginNames.bot}/${templateName}`,
+              label: `${BuiltInScaffoldPluginNames.bot}/${templateName}`,
+              data: {
+                pluginName: BuiltInScaffoldPluginNames.bot,
+                templateName: templateName, //TODO
+              },
+            }, //TODO
+          };
+          const scaffoldRes = await this._scaffold(scaffoldInputs, ctx);
+          if (scaffoldRes.isErr()) {
+            return err(scaffoldRes.error);
+          }
+        }
+      }
+    }
+    if (inputs.platform === Platform.VSCode) {
+      await globalStateUpdate(globalStateDescription, true);
+    }
+    return ok(projectPath);
+  }
   @hooks([
     ErrorHandlerMW,
     SupportV1ConditionMW(true),
@@ -517,7 +788,7 @@ export class FxCore implements v3.ICore {
     if (isV3()) {
       return this.provisionResourcesV3(inputs);
     } else {
-      return this._provisionResources(inputs);
+      return this.provisionResourcesV2(inputs);
     }
   }
 
@@ -534,7 +805,10 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
   ])
-  async _provisionResources(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async provisionResourcesV2(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
     inputs.stage = Stage.provision;
     // provision is not ready yet, so use API v1
@@ -580,6 +854,50 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     SupportV1ConditionMW(false),
     ProjectMigratorMW,
+    ProjectSettingsLoaderMW_V3,
+    EnvInfoLoaderMW_V3(false),
+    SolutionLoaderMW_V3,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW_V3(),
+  ])
+  async provisionResourcesV3(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    currentStage = Stage.provision;
+    inputs.stage = Stage.provision;
+    if (
+      ctx &&
+      ctx.solutionV3 &&
+      ctx.contextV2 &&
+      ctx.envInfoV3 &&
+      ctx.solutionV3.provisionResources
+    ) {
+      const res = await ctx.solutionV3.provisionResources(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      if (res.isOk()) {
+        ctx.envInfoV3 = res.value;
+      }
+      return res;
+    }
+    return ok(Void);
+  }
+  async deployArtifacts(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (isV3()) return this.deployArtifactsV3(inputs);
+    else return this.deployArtifactsV2(inputs);
+  }
+
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     SolutionLoaderMW,
@@ -588,7 +906,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
   ])
-  async deployArtifacts(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async deployArtifactsV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.deploy;
     inputs.stage = Stage.deploy;
     if (isV2()) {
@@ -623,6 +941,37 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW_V3,
+    EnvInfoLoaderMW_V3(false),
+    SolutionLoaderMW_V3,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW_V3(),
+  ])
+  async deployArtifactsV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    currentStage = Stage.deploy;
+    inputs.stage = Stage.deploy;
+    if (ctx && ctx.solutionV3 && ctx.contextV2 && ctx.envInfoV3 && ctx.solutionV3.deploy) {
+      const res = await ctx.solutionV3.deploy(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath & { modules: string[] },
+        ctx.envInfoV3,
+        TOOLS.tokenProvider
+      );
+      return res;
+    }
+    return ok(Void);
+  }
+  async localDebug(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (isV3()) return this.localDebugV3(inputs);
+    else return this.localDebugV2(inputs);
+  }
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
     SupportV1ConditionMW(true),
     ProjectMigratorMW,
     ProjectUpgraderMW,
@@ -636,7 +985,7 @@ export class FxCore implements v3.ICore {
     EnvInfoWriterMW(true),
     LocalSettingsWriterMW,
   ])
-  async localDebug(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async localDebugV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.debug;
     inputs.stage = Stage.debug;
     if (isV2()) {
@@ -691,6 +1040,44 @@ export class FxCore implements v3.ICore {
     return res;
   }
 
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(true),
+    ProjectMigratorMW,
+    ProjectUpgraderMW,
+    ProjectSettingsLoaderMW_V3,
+    LocalSettingsLoaderMW,
+    SolutionLoaderMW_V3,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    LocalSettingsWriterMW,
+  ])
+  async localDebugV3(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+    currentStage = Stage.debug;
+    inputs.stage = Stage.debug;
+    if (
+      ctx &&
+      ctx.solutionV3 &&
+      ctx.contextV2 &&
+      ctx.localSettings &&
+      ctx.solutionV3.provisionLocalResources
+    ) {
+      const res = await ctx.solutionV3.provisionLocalResources(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.localSettings,
+        TOOLS.tokenProvider
+      );
+      if (res.isOk()) {
+        ctx.localSettings = res.value;
+      }
+      return res;
+    }
+    return ok(Void);
+  }
+
   _setEnvInfoV2(ctx?: CoreHookContext) {
     if (isV2() && ctx && ctx.solutionContext) {
       //workaround, compatible to api v2
@@ -702,7 +1089,10 @@ export class FxCore implements v3.ICore {
       ctx.envInfoV2.state = mapToJson(ctx.solutionContext.envInfo.state);
     }
   }
-
+  async publishApplication(inputs: Inputs): Promise<Result<Void, FxError>> {
+    if (isV3()) return this.publishApplicationV3(inputs);
+    else return this.publishApplicationV2(inputs);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -716,7 +1106,10 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
   ])
-  async publishApplication(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
+  async publishApplicationV2(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
     currentStage = Stage.publish;
     inputs.stage = Stage.publish;
     if (isV2()) {
@@ -744,7 +1137,42 @@ export class FxCore implements v3.ICore {
       return await ctx.solution.publish(ctx.solutionContext);
     }
   }
-
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(false),
+    SolutionLoaderMW,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW(),
+  ])
+  async publishApplicationV3(
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    currentStage = Stage.publish;
+    inputs.stage = Stage.publish;
+    if (
+      ctx &&
+      ctx.solutionV3 &&
+      ctx.contextV2 &&
+      ctx.envInfoV3 &&
+      ctx.solutionV3.publishApplication
+    ) {
+      const res = await ctx.solutionV3.publishApplication(
+        ctx.contextV2,
+        inputs as v2.InputsWithProjectPath,
+        ctx.envInfoV3,
+        TOOLS.tokenProvider.appStudioToken
+      );
+      return res;
+    }
+    return ok(Void);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -823,7 +1251,7 @@ export class FxCore implements v3.ICore {
     currentStage = Stage.getQuestions;
     if (stage === Stage.create) {
       delete inputs.projectPath;
-      return await this._getQuestionsForCreateProject(inputs);
+      return await this._getQuestionsForCreateProjectV2(inputs);
     } else {
       if (isV2()) {
         const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
@@ -1043,109 +1471,6 @@ export class FxCore implements v3.ICore {
     }
   }
 
-  async _getQuestionsForUserTask(
-    ctx: SolutionContext | v2.Context,
-    solution: Solution | v2.SolutionPlugin,
-    func: FunctionRouter,
-    inputs: Inputs,
-    envInfo?: v2.EnvInfoV2
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const namespace = func.namespace;
-    const array = namespace ? namespace.split("/") : [];
-    if (namespace && "" !== namespace && array.length > 0) {
-      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
-      if (isV2()) {
-        const solutionV2 = solution as v2.SolutionPlugin;
-        if (solutionV2.getQuestionsForUserTask) {
-          res = await solutionV2.getQuestionsForUserTask(
-            ctx as v2.Context,
-            inputs,
-            func,
-            envInfo!,
-            this.tools.tokenProvider
-          );
-        }
-      } else {
-        const solutionv1 = solution as Solution;
-        if (solutionv1.getQuestionsForUserTask) {
-          res = await solutionv1.getQuestionsForUserTask(func, ctx as SolutionContext);
-        }
-      }
-      if (res.isOk()) {
-        if (res.value) {
-          const node = res.value.trim();
-          return ok(node);
-        }
-      }
-      return res;
-    }
-    return err(FunctionRouterError(func));
-  }
-
-  async _getQuestionsForMigrateV1Project(
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const node = new QTreeNode({ type: "group" });
-    const globalSolutions: Solution[] = await getAllSolutionPlugins();
-    const solutionContext = await newSolutionContext(this.tools, inputs);
-
-    for (const v of globalSolutions) {
-      if (v.getQuestions) {
-        const res = await v.getQuestions(Stage.migrateV1, solutionContext);
-        if (res.isErr()) return res;
-        if (res.value) {
-          const solutionNode = res.value as QTreeNode;
-          solutionNode.condition = { equals: v.name };
-          if (solutionNode.data) node.addChild(solutionNode);
-        }
-      }
-    }
-
-    const defaultAppNameFunc = new QTreeNode(DefaultAppNameFunc);
-    node.addChild(defaultAppNameFunc);
-
-    const appNameQuestion = new QTreeNode(QuestionV1AppName);
-    appNameQuestion.condition = {
-      validFunc: (input: any) => (!input ? undefined : "App name is auto generated."),
-    };
-    defaultAppNameFunc.addChild(appNameQuestion);
-    return ok(node.trim());
-  }
-
-  async _getQuestions(
-    ctx: SolutionContext | v2.Context,
-    solution: Solution | v2.SolutionPlugin,
-    stage: Stage,
-    inputs: Inputs,
-    envInfo?: v2.EnvInfoV2
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    if (stage !== Stage.create) {
-      let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
-      if (isV2()) {
-        const solutionV2 = solution as v2.SolutionPlugin;
-        if (solutionV2.getQuestions) {
-          inputs.stage = stage;
-          res = await solutionV2.getQuestions(
-            ctx as v2.Context,
-            inputs,
-            envInfo!,
-            this.tools.tokenProvider
-          );
-        }
-      } else {
-        res = await (solution as Solution).getQuestions(stage, ctx as SolutionContext);
-      }
-      if (res.isErr()) return res;
-      if (res.value) {
-        const node = res.value as QTreeNode;
-        if (node.data) {
-          return ok(node.trim());
-        }
-      }
-    }
-    return ok(undefined);
-  }
-
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -1355,72 +1680,7 @@ export class FxCore implements v3.ICore {
     return ok(Void);
   }
 
-  async _getQuestionsForCreateProject(
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const node = new QTreeNode(getCreateNewOrFromSampleQuestion(inputs.platform));
-    // create new
-    const createNew = new QTreeNode({ type: "group" });
-    node.addChild(createNew);
-    createNew.condition = { equals: ScratchOptionYes.id };
-
-    // capabilities
-    const capQuestion = createCapabilityQuestion();
-    const capNode = new QTreeNode(capQuestion);
-    createNew.addChild(capNode);
-
-    const globalSolutions: Solution[] | v2.SolutionPlugin[] = isV2()
-      ? await getAllSolutionPluginsV2()
-      : await getAllSolutionPlugins();
-    const context = isV2()
-      ? createV2Context(newProjectSettings())
-      : await newSolutionContext(this.tools, inputs);
-    for (const solutionPlugin of globalSolutions) {
-      let res: Result<QTreeNode | QTreeNode[] | undefined, FxError> = ok(undefined);
-      if (isV2()) {
-        const v2plugin = solutionPlugin as v2.SolutionPlugin;
-        res = v2plugin.getQuestionsForScaffolding
-          ? await v2plugin.getQuestionsForScaffolding(context as v2.Context, inputs)
-          : ok(undefined);
-      } else {
-        const v1plugin = solutionPlugin as Solution;
-        res = v1plugin.getQuestions
-          ? await v1plugin.getQuestions(Stage.create, context as SolutionContext)
-          : ok(undefined);
-      }
-      if (res.isErr()) return err(new SystemError(res.error, CoreSource, "QuestionModelFail"));
-      if (res.value) {
-        const solutionNode = Array.isArray(res.value)
-          ? (res.value as QTreeNode[])
-          : [res.value as QTreeNode];
-        for (const node of solutionNode) {
-          if (node.data) capNode.addChild(node);
-        }
-      }
-    }
-
-    // Language
-    const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-    programmingLanguage.condition = { minItems: 1 };
-    createNew.addChild(programmingLanguage);
-
-    if (inputs.platform !== Platform.VSCode) {
-      createNew.addChild(new QTreeNode(QuestionRootFolder));
-    }
-    createNew.addChild(new QTreeNode(QuestionAppName));
-
-    // create from sample
-    const sampleNode = new QTreeNode(SampleSelect);
-    node.addChild(sampleNode);
-    sampleNode.condition = { equals: ScratchOptionNo.id };
-    if (inputs.platform !== Platform.VSCode) {
-      sampleNode.addChild(new QTreeNode(QuestionRootFolder));
-    }
-    return ok(node.trim());
-  }
-
-  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
-  async init(
+  async _init(
     inputs: v2.InputsWithProjectPath & { solution?: string },
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
@@ -1448,15 +1708,42 @@ export class FxCore implements v3.ICore {
     if (createEnvResult.isErr()) {
       return err(createEnvResult.error);
     }
+    await fs.ensureDir(path.join(inputs.projectPath, `.${ConfigFolderName}`));
+    await fs.ensureDir(path.join(inputs.projectPath, "templates", `${AppPackageFolderName}`));
+    const basicFolderRes = await createBasicFolderStructure(inputs);
+    if (basicFolderRes.isErr()) {
+      return err(basicFolderRes.error);
+    }
     const solution = Container.get<v3.ISolution>(inputs.solution);
     projectSettings.solutionSettings.name = inputs.solution;
     const context = createV2Context(projectSettings);
+    ctx.contextV2 = context;
+    ctx.solutionV3 = solution;
     return await solution.init(
       context,
       inputs as v2.InputsWithProjectPath & { capabilities: string[] }
     );
   }
-
+  @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
+  async init(
+    inputs: v2.InputsWithProjectPath & { solution?: string },
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    return this._init(inputs, ctx);
+  }
+  async _addModule(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
+    if (ctx && ctx.solutionV3 && ctx.contextV2) {
+      return await ctx.solutionV3.addModule(
+        ctx.contextV2,
+        {},
+        inputs as v2.InputsWithProjectPath & { capabilities?: string[] }
+      );
+    }
+    return ok(Void);
+  }
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,
@@ -1469,14 +1756,7 @@ export class FxCore implements v3.ICore {
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
-    if (ctx && ctx.solutionV3 && ctx.contextV2) {
-      return await ctx.solutionV3.addModule(
-        ctx.contextV2,
-        {},
-        inputs as v2.InputsWithProjectPath & { capabilities?: string[] }
-      );
-    }
-    return ok(Void);
+    return this._addModule(inputs, ctx);
   }
 
   @hooks([
@@ -1491,12 +1771,17 @@ export class FxCore implements v3.ICore {
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
+    return this._scaffold(inputs, ctx);
+  }
+  async _scaffold(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
     if (ctx && ctx.solutionV3 && ctx.contextV2) {
       return await ctx.solutionV3.scaffold(ctx.contextV2, inputs);
     }
     return ok(Void);
   }
-
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,
@@ -1509,50 +1794,33 @@ export class FxCore implements v3.ICore {
     inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
+    return this._addResource(inputs, ctx);
+  }
+  async _addResource(
+    inputs: v2.InputsWithProjectPath,
+    ctx?: CoreHookContext
+  ): Promise<Result<Void, FxError>> {
     if (ctx && ctx.solutionV3 && ctx.contextV2) {
       return await ctx.solutionV3.addResource(ctx.contextV2, inputs);
     }
     return ok(Void);
   }
 
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    SupportV1ConditionMW(false),
-    ProjectMigratorMW,
-    ProjectSettingsLoaderMW_V3,
-    EnvInfoLoaderMW_V3(false),
-    SolutionLoaderMW_V3,
-    QuestionModelMW,
-    ContextInjectorMW,
-    ProjectSettingsWriterMW,
-    EnvInfoWriterMW_V3(),
-  ])
-  async provisionResourcesV3(
-    inputs: Inputs,
-    ctx?: CoreHookContext
-  ): Promise<Result<Void, FxError>> {
-    currentStage = Stage.provision;
-    inputs.stage = Stage.provision;
-    if (
-      ctx &&
-      ctx.solutionV3 &&
-      ctx.contextV2 &&
-      ctx.envInfoV3 &&
-      ctx.solutionV3.provisionResources
-    ) {
-      const res = await ctx.solutionV3.provisionResources(
-        ctx.contextV2,
-        inputs as v2.InputsWithProjectPath,
-        ctx.envInfoV3,
-        TOOLS.tokenProvider
-      );
-      if (res.isOk()) {
-        ctx.envInfoV3 = res.value;
-      }
-    }
-    return ok(Void);
-  }
+  //V1,V2 questions
+  _getQuestionsForCreateProjectV2 = getQuestionsForCreateProjectV2;
+  _getQuestionsForCreateProjectV3 = getQuestionsForCreateProjectV3;
+  _getQuestionsForUserTask = getQuestionsForUserTaskV2;
+  _getQuestions = getQuestionsV2;
+  _getQuestionsForMigrateV1Project = getQuestionsForMigrateV1Project;
+  //v3 questions
+  _getQuestionsForScaffold = getQuestionsForScaffold;
+  _getQuestionsForAddModule = getQuestionsForAddModule;
+  _getQuestionsForAddResource = getQuestionsForAddResource;
+  _getQuestionsForProvision = getQuestionsForProvision;
+  _getQuestionsForDeploy = getQuestionsForDeploy;
+  _getQuestionsForLocalProvision = getQuestionsForLocalProvision;
+  _getQuestionsForPublish = getQuestionsForPublish;
+  _getQuestionsForInit = getQuestionsForInit;
 }
 
 export async function createBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {
@@ -1561,26 +1829,28 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
   }
   try {
     const appName = inputs[QuestionAppName.name] as string;
-    await fs.writeFile(
-      path.join(inputs.projectPath, `package.json`),
-      JSON.stringify(
-        {
-          name: appName,
-          version: "0.0.1",
-          description: "",
-          author: "",
-          scripts: {
-            test: 'echo "Error: no test specified" && exit 1',
+    if (inputs.platform !== Platform.VS) {
+      await fs.writeFile(
+        path.join(inputs.projectPath, `package.json`),
+        JSON.stringify(
+          {
+            name: appName,
+            version: "0.0.1",
+            description: "",
+            author: "",
+            scripts: {
+              test: 'echo "Error: no test specified" && exit 1',
+            },
+            devDependencies: {
+              "@microsoft/teamsfx-cli": "0.*",
+            },
+            license: "MIT",
           },
-          devDependencies: {
-            "@microsoft/teamsfx-cli": "0.*",
-          },
-          license: "MIT",
-        },
-        null,
-        4
-      )
-    );
+          null,
+          4
+        )
+      );
+    }
     await fs.writeFile(
       path.join(inputs.projectPath!, `.gitignore`),
       isMultiEnvEnabled()

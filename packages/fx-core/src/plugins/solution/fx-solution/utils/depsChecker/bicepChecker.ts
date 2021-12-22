@@ -8,6 +8,9 @@ import {
   SolutionContext,
   SystemError,
   TelemetryReporter,
+  v2,
+  UserInteraction,
+  Inputs,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as semver from "semver";
@@ -43,7 +46,10 @@ const timeout = 5 * 60 * 1000;
 const source = "bicep-envchecker";
 const bicepReleaseApiUrl = "https://api.github.com/repos/Azure/bicep/releases";
 
-export async function ensureBicep(ctx: SolutionContext): Promise<string> {
+export async function ensureBicep(
+  ctx: SolutionContext | v2.Context,
+  inputs?: Inputs
+): Promise<string> {
   const bicepChecker = new BicepChecker(ctx.logProvider, ctx.telemetryReporter);
   try {
     if ((await bicepChecker.isEnabled()) && !(await bicepChecker.isInstalled())) {
@@ -55,18 +61,19 @@ export async function ensureBicep(ctx: SolutionContext): Promise<string> {
       await displayLearnMore(
         Messages.failToInstallBicepDialog.split("@NameVersion").join(displayBicepName),
         bicepHelpLink,
-        ctx
+        (ctx as SolutionContext).ui || (ctx as v2.Context).userInteraction,
+        ctx.telemetryReporter
       );
-      outputErrorMessage(ctx);
+      outputErrorMessage(ctx, inputs);
       throw err;
     }
   }
   return bicepChecker.getBicepCommand();
 }
 
-function outputErrorMessage(ctx: SolutionContext) {
+function outputErrorMessage(ctx: SolutionContext | v2.Context, inputs?: Inputs) {
   const message =
-    ctx.answers?.platform === Platform.VSCode
+    inputs?.platform === Platform.VSCode
       ? Messages.failToInstallBicepOutputVSC
       : Messages.failToInstallBicepOutputCLI;
   ctx.logProvider?.warning(
@@ -360,20 +367,21 @@ function getCommonProps(): { [key: string]: string } {
 async function displayLearnMore(
   message: string,
   link: string,
-  ctx: SolutionContext
+  ui?: UserInteraction,
+  telemetryReporter?: TelemetryReporter
 ): Promise<boolean> {
-  if (!ctx.ui) {
+  if (!ui) {
     // no dialog, always continue
     return true;
   }
-  const res = await ctx.ui?.showMessage("info", message, true, Messages.learnMoreButtonText);
+  const res = await ui?.showMessage("info", message, true, Messages.learnMoreButtonText);
   const userSelected: string | undefined = res?.isOk() ? res.value : undefined;
 
   if (userSelected === Messages.learnMoreButtonText) {
-    ctx.telemetryReporter?.sendTelemetryEvent(DepsCheckerEvent.clickLearnMore, getCommonProps());
-    ctx.ui?.openUrl(link);
+    telemetryReporter?.sendTelemetryEvent(DepsCheckerEvent.clickLearnMore, getCommonProps());
+    ui?.openUrl(link);
     return true;
   }
-  ctx.telemetryReporter?.sendTelemetryEvent(DepsCheckerEvent.clickCancel);
+  telemetryReporter?.sendTelemetryEvent(DepsCheckerEvent.clickCancel);
   return false;
 }

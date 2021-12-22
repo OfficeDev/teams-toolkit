@@ -14,6 +14,7 @@ import {
   Void,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
+import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import {
   InvalidLocalBotEndpointFormat,
@@ -21,7 +22,6 @@ import {
   SetupLocalDebugSettingsError,
   NgrokTunnelNotConnected,
 } from "./error";
-import { ContextHelper } from "./util/contextHelper";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { getNgrokHttpUrl } from "./util/ngrok";
 
@@ -31,10 +31,10 @@ export async function setupLocalDebugSettings(
   localSettings: Json
 ): Promise<Result<Void, FxError>> {
   const vscEnv = inputs.vscodeEnv;
-  const includeFrontend = ContextHelper.includeFrontend(ctx);
-  const includeBackend = ContextHelper.includeBackend(ctx);
-  const includeBot = ContextHelper.includeBot(ctx);
-  const includeAuth = ContextHelper.includeAuth(ctx);
+  const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
+  const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
+  const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
+  const includeAuth = ProjectSettingsHelper.includeAuth(ctx.projectSetting);
   let skipNgrok = localSettings?.bot?.skipNgrok as boolean;
 
   const telemetryProperties = {

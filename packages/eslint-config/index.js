@@ -18,6 +18,7 @@ module.exports = {
     plugins: [
         "@typescript-eslint/eslint-plugin",
         "prettier",
+        "no-secrets"
     ],
     rules: {
         'prettier/prettier': 'error',
@@ -34,6 +35,9 @@ module.exports = {
         ],
         "import/no-unresolved": [
             "warn"
-        ]
+        ],
+        "no-secrets/no-secrets": ["error",
+        { "additionalRegexes": { "Basic Auth": "Authorization: Basic [A-Za-z0-9+/=]*" } }
+    ]
     },
 };

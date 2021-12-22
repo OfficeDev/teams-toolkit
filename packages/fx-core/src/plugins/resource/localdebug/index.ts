@@ -20,7 +20,7 @@ import {
   LocalEnvAuthKeys,
   LocalEnvCertKeys,
 } from "./constants";
-import { LocalEnvMultiProvider } from "../../../common/local/localEnvProvider";
+import { LocalEnvProvider } from "../../../common/local/localEnvProvider";
 import { getAuthServiceFolder } from "./util/localService";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
@@ -170,7 +170,7 @@ export class LocalDebugPlugin implements Plugin {
 
     // TODO: This is to load .env.teamsfx.local for each component. Remove this after fully supporting custom local debug.
     try {
-      const localEnvMultiProvider = new LocalEnvMultiProvider(ctx.root);
+      const localEnvMultiProvider = new LocalEnvProvider(ctx.root);
       if (includeFrontend) {
         const customEnvs = (
           await localEnvMultiProvider.loadFrontendLocalEnvs(includeBackend, includeAuth)

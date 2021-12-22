@@ -81,7 +81,7 @@ import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 import util from "util";
 import { NamedArmResourcePluginAdaptor } from "../../plugins/solution/fx-solution/v2/adaptor";
-import { LocalEnvMultiProvider } from "../../common/local/localEnvProvider";
+import { LocalEnvProvider } from "../../common/local/localEnvProvider";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -468,7 +468,7 @@ async function updateGitIgnore(
   await addPathToGitignore(projectPath, buildFolder, log);
 
   // add **/.env.teamsfx.local to .gitignore
-  const envLocal = "**/" + LocalEnvMultiProvider.LocalEnvFileName;
+  const envLocal = "**/" + LocalEnvProvider.LocalEnvFileName;
   await addItemToGitignore(projectPath, envLocal, log);
 
   // add .fx/states/*.userdata to .gitignore

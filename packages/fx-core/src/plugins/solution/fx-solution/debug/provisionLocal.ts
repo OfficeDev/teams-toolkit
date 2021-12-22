@@ -30,7 +30,7 @@ import {
   EnvKeysBot,
   EnvKeysBotV1,
   EnvKeysFrontend,
-  LocalEnvMultiProvider,
+  LocalEnvProvider,
 } from "../../../../common/local/localEnvProvider";
 import { prepareLocalAuthService } from "./util/localService";
 import { getAllowedAppIds } from "../../../../common/tools";
@@ -167,7 +167,7 @@ export async function configLocalDebugSettings(
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
       const isMigrateFromV1 = ContextHelper.isMigrateFromV1(ctx);
 
-      const localEnvMultiProvider = new LocalEnvMultiProvider(inputs.projectPath!);
+      const localEnvMultiProvider = new LocalEnvProvider(inputs.projectPath!);
       const frontendEnvs = includeFrontend
         ? await localEnvMultiProvider.loadFrontendLocalEnvs(includeBackend, includeAuth)
         : undefined;

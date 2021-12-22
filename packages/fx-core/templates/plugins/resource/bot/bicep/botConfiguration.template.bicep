@@ -57,6 +57,6 @@ resource botWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     SQL_DATABASE_NAME: {{fx-resource-azure-sql.References.databaseName}}
     SQL_ENDPOINT: {{fx-resource-azure-sql.References.sqlEndpoint}}
     {{/if}}
-    IDENTITY_ID: {{Plugins.fx-resource-identity.References.identityClientId}}
+    IDENTITY_ID: {{fx-resource-identity.References.identityClientId}}
   }, currentAppSettings)
 }

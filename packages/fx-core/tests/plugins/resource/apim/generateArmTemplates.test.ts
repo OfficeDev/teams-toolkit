@@ -49,12 +49,12 @@ describe("apimManager.generateArmTemplates", () => {
         "fx-resource-apim": {
           Provision: {
             apim: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
+              path: `./${testProvisionModuleFileName}`,
             },
           },
           Configuration: {
             apim: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
+              path: `./${testConfigurationModuleFileName}`,
             },
           },
           References: {

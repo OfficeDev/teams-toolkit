@@ -22,14 +22,14 @@ export function mockSolutionGenerateArmTemplates(
     if (template.Configuration.Orchestration) {
       result.Configuration!.Orchestration = compileHandlebarsTemplateString(
         template.Configuration.Orchestration,
-        mockedData
+        mockedData.Plugins
       );
     }
     if (template.Configuration?.Modules) {
       for (const moduleItem of Object.entries(template.Configuration.Modules)) {
         result.Configuration!.Modules![moduleItem[0]] = compileHandlebarsTemplateString(
           moduleItem[1],
-          mockedData
+          mockedData.Plugins
         );
       }
     }
@@ -38,14 +38,14 @@ export function mockSolutionGenerateArmTemplates(
     if (template.Provision?.Orchestration) {
       result.Provision!.Orchestration = compileHandlebarsTemplateString(
         template.Provision.Orchestration,
-        mockedData
+        mockedData.Plugins
       );
     }
     if (template.Provision?.Modules) {
       for (const moduleItem of Object.entries(template.Provision!.Modules)) {
         result.Provision!.Modules![moduleItem[0]] = compileHandlebarsTemplateString(
           moduleItem[1],
-          mockedData
+          mockedData.Plugins
         );
       }
     }
@@ -70,7 +70,7 @@ export function mockSolutionUpdateArmTemplates(
       for (const moduleItem of Object.entries(template.Configuration.Modules)) {
         result.Configuration!.Modules![moduleItem[0]] = compileHandlebarsTemplateString(
           moduleItem[1],
-          mockedData
+          mockedData.Plugins
         );
       }
     }

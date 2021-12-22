@@ -43,7 +43,7 @@ describe("FrontendGenerateArmTemplates", () => {
         "fx-resource-frontend-hosting": {
           Provision: {
             frontendHosting: {
-              ProvisionPath: `./${testModuleFileName}`,
+              path: `./${testModuleFileName}`,
             },
           },
         },

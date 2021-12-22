@@ -83,12 +83,12 @@ describe("Bot Generates Arm Templates", () => {
       "fx-resource-bot": {
         Provision: {
           bot: {
-            ProvisionPath: `./${provisionModuleFileName}`,
+            path: `./${provisionModuleFileName}`,
           },
         },
         Configuration: {
           bot: {
-            ConfigPath: `./${configurationModuleFileName}`,
+            path: `./${configurationModuleFileName}`,
           },
         },
       },
@@ -170,12 +170,12 @@ describe("Bot Generates Arm Templates", () => {
         "fx-resource-bot": {
           Provision: {
             bot: {
-              ProvisionPath: `./${provisionModuleFileName}`,
+              path: `./${provisionModuleFileName}`,
             },
           },
           Configuration: {
             bot: {
-              ConfigPath: `./${configurationModuleFileName}`,
+              path: `./${configurationModuleFileName}`,
             },
           },
         },

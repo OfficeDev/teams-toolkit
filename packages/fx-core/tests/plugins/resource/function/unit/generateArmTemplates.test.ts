@@ -88,12 +88,12 @@ describe("FunctionGenerateArmTemplates", () => {
       "fx-resource-function": {
         Provision: {
           function: {
-            ProvisionPath: `./${testProvisionModuleFileName}`,
+            path: `./${testProvisionModuleFileName}`,
           },
         },
         Configuration: {
           function: {
-            ConfigPath: `./${testConfigurationModuleFileName}`,
+            path: `./${testConfigurationModuleFileName}`,
           },
         },
         References: {
@@ -190,12 +190,12 @@ describe("FunctionGenerateArmTemplates", () => {
         "fx-resource-function": {
           Provision: {
             function: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
+              path: `./${testProvisionModuleFileName}`,
             },
           },
           Configuration: {
             function: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
+              path: `./${testConfigurationModuleFileName}`,
             },
           },
           References: {

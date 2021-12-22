@@ -24,7 +24,7 @@ var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
 
 {{#if fx-resource-frontend-hosting }}
 var tabAppDomain = {{fx-resource-frontend-hosting.References.domain}}
-var tabAppEndpoint = {{fx-resource-frontend-hosting.References.endpoint}} 
+var tabAppEndpoint = {{fx-resource-frontend-hosting.References.endpoint}}
 {{/if}}
 
 {{#if fx-resource-bot }}
@@ -69,14 +69,14 @@ resource appConfig 'Microsoft.Web/sites/config@2021-02-01' = {
 resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionAppName}/appsettings'
   properties: union({
-    API_ENDPOINT: {{Plugins.fx-resource-function.References.functionEndpoint}}
+    API_ENDPOINT: {{fx-resource-function.References.functionEndpoint}}
     ALLOWED_APP_IDS: authorizedClientApplicationIds
     M365_CLIENT_ID: m365ClientId
     M365_CLIENT_SECRET: m365ClientSecret
     M365_TENANT_ID: m365TenantId
     M365_AUTHORITY_HOST: m365OauthAuthorityHost
     M365_APPLICATION_ID_URI: m365ApplicationIdUri
-    IDENTITY_ID: {{Plugins.fx-resource-identity.References.identityClientId}}
+    IDENTITY_ID: {{fx-resource-identity.References.identityClientId}}
     {{#if fx-resource-azure-sql }}
     SQL_DATABASE_NAME: {{fx-resource-azure-sql.References.databaseName}}
     SQL_ENDPOINT: {{fx-resource-azure-sql.References.sqlEndpoint}}

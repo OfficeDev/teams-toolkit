@@ -31,7 +31,7 @@ import {
   EnvKeysBotV1,
   EnvKeysFrontend,
   LocalEnvMultiProvider,
-} from "../../../../common/localEnvMultiProvider";
+} from "../../../../common/local/localEnvProvider";
 import { prepareLocalAuthService } from "./util/localService";
 import { getAllowedAppIds } from "../../../../common/tools";
 import { LocalCertificateManager } from "./util/certificate";

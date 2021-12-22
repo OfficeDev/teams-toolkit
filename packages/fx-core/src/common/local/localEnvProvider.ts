@@ -6,7 +6,7 @@ import * as dotenv from "dotenv";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
-import { FolderName } from "./constants";
+import { FolderName } from "../constants";
 
 export interface LocalEnvs {
   teamsfxLocalEnvs: { [key: string]: string };

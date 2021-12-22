@@ -4,11 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
-
-import {
-  LocalEnvMultiProvider,
-  LocalEnvs,
-} from "../../../../../src/plugins/resource/localdebug/localEnvMulti";
+import { LocalEnvMultiProvider, LocalEnvs } from "../../../src/common/local/localEnvProvider";
 
 chai.use(chaiAsPromised);
 

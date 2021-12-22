@@ -20,7 +20,7 @@ import {
   LocalEnvAuthKeys,
   LocalEnvCertKeys,
 } from "./constants";
-import { LocalEnvMultiProvider } from "../../../common/localEnvMultiProvider";
+import { LocalEnvMultiProvider } from "../../../common/local/localEnvProvider";
 import { getAuthServiceFolder } from "./util/localService";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";

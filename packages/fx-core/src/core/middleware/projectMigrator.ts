@@ -81,7 +81,7 @@ import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 import util from "util";
 import { NamedArmResourcePluginAdaptor } from "../../plugins/solution/fx-solution/v2/adaptor";
-import { LocalEnvMultiProvider } from "../../common/localEnvMultiProvider";
+import { LocalEnvMultiProvider } from "../../common/local/localEnvProvider";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";

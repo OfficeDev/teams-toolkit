@@ -51,12 +51,7 @@ describe("solution.debug.provisionLocal", () => {
         solutionSettings: {
           name: "",
           version: "",
-          activeResourcePlugins: [
-            "fx-resource-aad-app-for-teams",
-            "fx-resource-simple-auth",
-            "fx-resource-frontend-hosting",
-            "fx-resource-function",
-          ],
+          activeResourcePlugins: [],
         },
         programmingLanguage: "typescript",
       };
@@ -66,6 +61,7 @@ describe("solution.debug.provisionLocal", () => {
       };
       const v2Context = new MockedV2Context(projectSetting);
       const result = await configLocalDebugSettings(v2Context, inputs, {
+        teamsApp: {},
         auth: {},
         frontend: {},
         backend: {},

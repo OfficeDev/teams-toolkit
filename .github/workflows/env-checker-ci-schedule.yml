@@ -22,7 +22,7 @@ jobs:
         os: [windows-latest, macos-latest, macos-11, ubuntu-latest]
         node-version: [12, 14, 16]
         func-version: [none, 2, 3]
-        dotnet-version: [none, 3.1.x, 5.0.x]
+        dotnet-version: [none, 3.1.x, 5.0.x, 6.0.x]
       max-parallel: 30
 
     runs-on: ${{ matrix.os }}

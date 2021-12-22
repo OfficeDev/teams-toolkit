@@ -146,12 +146,12 @@ describe("simpleAuthPlugin", () => {
       "fx-resource-simple-auth": {
         Provision: {
           simpleAuth: {
-            ProvisionPath: `./${testProvisionModuleFileName}`,
+            path: `./${testProvisionModuleFileName}`,
           },
         },
         Configuration: {
           simpleAuth: {
-            ConfigPath: `./${testConfigurationModuleFileName}`,
+            path: `./${testConfigurationModuleFileName}`,
           },
         },
       },
@@ -234,12 +234,12 @@ describe("simpleAuthPlugin", () => {
         "fx-resource-simple-auth": {
           Provision: {
             simpleAuth: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
+              path: `./${testProvisionModuleFileName}`,
             },
           },
           Configuration: {
             simpleAuth: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
+              path: `./${testConfigurationModuleFileName}`,
             },
           },
         },

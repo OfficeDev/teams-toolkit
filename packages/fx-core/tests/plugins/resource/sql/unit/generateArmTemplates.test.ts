@@ -58,7 +58,7 @@ describe("generateArmTemplates", () => {
         "fx-resource-azure-sql": {
           Provision: {
             azureSql: {
-              ProvisionPath: `./${testModuleFileName}`,
+              path: `./${testModuleFileName}`,
             },
           },
         },

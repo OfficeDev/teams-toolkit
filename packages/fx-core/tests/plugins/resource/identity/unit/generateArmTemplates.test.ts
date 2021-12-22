@@ -58,7 +58,7 @@ describe("identityPlugin", () => {
         "fx-resource-identity": {
           Provision: {
             identity: {
-              ProvisionPath: `./${testModuleFileName}`,
+              path: `./${testModuleFileName}`,
             },
           },
         },

@@ -42,7 +42,7 @@ describe("keyVaultPlugin", () => {
         "fx-resource-key-vault": {
           Provision: {
             keyVault: {
-              ProvisionPath: `./${testModuleFileName}`,
+              path: `./${testModuleFileName}`,
             },
           },
         },

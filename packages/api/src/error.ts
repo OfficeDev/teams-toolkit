@@ -23,6 +23,7 @@ export interface ErrorOptionBase {
   message?: string;
   error?: Error;
   userData?: any;
+  notificationMessage?: string;
 }
 
 export interface UserErrorOptions extends ErrorOptionBase {
@@ -61,7 +62,13 @@ export class UserError extends Error implements FxError {
    */
   notificationMessage?: string;
 
-  constructor(error: Error, source?: string, name?: string, helpLink?: string);
+  constructor(
+    error: Error,
+    source?: string,
+    name?: string,
+    helpLink?: string,
+    notificationMessage?: string
+  );
   constructor(opt: UserErrorOptions);
   constructor(
     name: string,
@@ -69,7 +76,8 @@ export class UserError extends Error implements FxError {
     source: string,
     stack?: string,
     helpLink?: string,
-    innerError?: any
+    innerError?: any,
+    notificationMessage?: string
   );
   constructor(
     param1: string | Error | UserErrorOptions,
@@ -77,7 +85,8 @@ export class UserError extends Error implements FxError {
     param3?: string,
     param4?: string,
     param5?: string,
-    innerError?: any
+    innerError?: any,
+    notificationMessage?: string
   ) {
     let option: UserErrorOptions;
     let stack: string | undefined;
@@ -87,6 +96,7 @@ export class UserError extends Error implements FxError {
         message: param2,
         source: param3,
         helpLink: param5,
+        notificationMessage: notificationMessage,
         error: innerError instanceof Error ? innerError : undefined,
       };
       if (innerError instanceof Error) {
@@ -98,6 +108,7 @@ export class UserError extends Error implements FxError {
         name: param3,
         source: param2,
         helpLink: param4,
+        notificationMessage: notificationMessage,
       };
       stack = param1.stack;
     } else {
@@ -137,6 +148,7 @@ export class UserError extends Error implements FxError {
     //other fields
     this.helpLink = option.helpLink;
     this.userData = option.userData;
+    this.notificationMessage = option.notificationMessage;
     this.timestamp = new Date();
   }
 }
@@ -171,7 +183,13 @@ export class SystemError extends Error implements FxError {
    */
   notificationMessage?: string;
 
-  constructor(error: Error, source?: string, name?: string, issueLink?: string);
+  constructor(
+    error: Error,
+    source?: string,
+    name?: string,
+    issueLink?: string,
+    notificationMessage?: string
+  );
   constructor(opt: SystemErrorOptions);
   constructor(
     name: string,
@@ -179,7 +197,8 @@ export class SystemError extends Error implements FxError {
     source: string,
     stack?: string,
     issueLink?: string,
-    innerError?: any
+    innerError?: any,
+    notificationMessage?: string
   );
   constructor(
     param1: string | Error | SystemErrorOptions,
@@ -187,7 +206,8 @@ export class SystemError extends Error implements FxError {
     param3?: string,
     param4?: string,
     param5?: string,
-    innerError?: any
+    innerError?: any,
+    notificationMessage?: string
   ) {
     let option: SystemErrorOptions;
     let stack: string | undefined;
@@ -197,6 +217,7 @@ export class SystemError extends Error implements FxError {
         message: param2,
         source: param3,
         issueLink: param5,
+        notificationMessage: notificationMessage,
         error: innerError instanceof Error ? innerError : undefined,
       };
       if (innerError instanceof Error) {
@@ -208,6 +229,7 @@ export class SystemError extends Error implements FxError {
         name: param3,
         source: param2,
         issueLink: param4,
+        notificationMessage: notificationMessage,
       };
       stack = param1.stack;
     } else {
@@ -247,6 +269,7 @@ export class SystemError extends Error implements FxError {
     //other fields
     this.issueLink = option.issueLink;
     this.userData = option.userData;
+    this.notificationMessage = option.notificationMessage;
     this.timestamp = new Date();
   }
 }

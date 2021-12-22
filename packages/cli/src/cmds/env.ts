@@ -50,7 +50,6 @@ class EnvAdd extends YargsCommand {
   public readonly commandHead = `add`;
   public readonly command = `${this.commandHead} <name>`;
   public readonly description = "Add a new environment by copying from the specified environment.";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     // TODO: support --details
@@ -127,7 +126,6 @@ class EnvList extends YargsCommand {
   public readonly commandHead = `list`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "List all environments.";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     // TODO: support --details

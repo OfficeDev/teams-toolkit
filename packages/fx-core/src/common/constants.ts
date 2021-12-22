@@ -61,9 +61,3 @@ export class FeatureFlagName {
   static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
   static readonly VSCallingCLI = "VS_CALLING_CLI";
 }
-
-export class FolderName {
-  static readonly Frontend = "tabs";
-  static readonly Bot = "bot";
-  static readonly Function = "api";
-}

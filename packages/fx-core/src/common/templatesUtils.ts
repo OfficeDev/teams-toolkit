@@ -13,6 +13,8 @@ import { selectTag, templateURL } from "./templates";
 export const tagListUrl = config.tagListURL;
 export const templateFileExt = ".tpl";
 
+export const timeoutErrorCode = "ECONNABORTED";
+
 export async function sendRequestWithRetry<T>(
   requestFn: () => Promise<AxiosResponse<T>>,
   tryLimits: number
@@ -35,6 +37,10 @@ export async function sendRequestWithRetry<T>(
     } catch (e: any) {
       error = e;
       status = e?.response?.status;
+      if (e?.code === timeoutErrorCode) {
+        // Stop retry if request timeout
+        break;
+      }
     }
   }
 

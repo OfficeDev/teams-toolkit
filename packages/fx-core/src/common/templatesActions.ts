@@ -44,7 +44,7 @@ export interface ScaffoldAction {
 }
 
 const defaultTryLimits = 3;
-const defaultTimeoutInMs = 10000;
+const defaultTimeoutInMs = 30000;
 
 const missKeyErrorInfo = (key: string) => `Missing ${key} in template action.`;
 

@@ -15,8 +15,8 @@ import { asn1, md, pki } from "node-forge";
 import * as os from "os";
 import { v4 as uuidv4 } from "uuid";
 
-import * as ps from "./process";
 import { LocalDebugCertificate } from "../constants";
+import * as ps from "./process";
 
 const installText = "Install";
 const learnMoreText = "Learn More";

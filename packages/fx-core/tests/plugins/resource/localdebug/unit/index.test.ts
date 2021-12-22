@@ -1,14 +1,8 @@
 import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import * as dotenv from "dotenv";
 import * as fs from "fs-extra";
-import {
-  ConfigFolderName,
-  InputConfigsFolderName,
-  Platform,
-  PluginContext,
-} from "@microsoft/teamsfx-api";
+import { Platform, PluginContext } from "@microsoft/teamsfx-api";
 import * as path from "path";
 
 import { LocalDebugPluginInfo } from "../../../../../src/plugins/resource/localdebug/constants";
@@ -19,29 +13,6 @@ import { isMultiEnvEnabled } from "../../../../../src";
 chai.use(chaiAsPromised);
 
 describe(LocalDebugPluginInfo.pluginName, () => {
-  const expectedLocalEnvFile = path.resolve(__dirname, `../data/.${ConfigFolderName}/local.env`);
-  const expectedLocalSettingsFile = path.resolve(
-    __dirname,
-    `../data/.${ConfigFolderName}/${InputConfigsFolderName}/localSettings.json`
-  );
-
-  describe("localDebug", () => {
-    let pluginContext: PluginContext;
-    let plugin: LocalDebugPlugin;
-
-    beforeEach(() => {
-      pluginContext = {
-        envInfo: newEnvInfo(),
-      } as PluginContext;
-      plugin = new LocalDebugPlugin();
-    });
-
-    it("happy path", async () => {
-      const result = await plugin.localDebug(pluginContext);
-      chai.assert.isTrue(result.isOk());
-    });
-  });
-
   describe("postLocalDebug", () => {
     let pluginContext: PluginContext;
     let plugin: LocalDebugPlugin;

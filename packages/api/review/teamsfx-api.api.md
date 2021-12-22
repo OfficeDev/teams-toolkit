@@ -488,6 +488,8 @@ export interface ErrorOptionBase {
     // (undocumented)
     name?: string;
     // (undocumented)
+    notificationMessage?: string;
+    // (undocumented)
     source?: string;
     // (undocumented)
     userData?: any;
@@ -1676,11 +1678,12 @@ export type SubscriptionInfo = {
 
 // @public
 export class SystemError extends Error implements FxError {
-    constructor(error: Error, source?: string, name?: string, issueLink?: string);
+    constructor(error: Error, source?: string, name?: string, issueLink?: string, notificationMessage?: string);
     constructor(opt: SystemErrorOptions);
-    constructor(name: string, message: string, source: string, stack?: string, issueLink?: string, innerError?: any);
+    constructor(name: string, message: string, source: string, stack?: string, issueLink?: string, innerError?: any, notificationMessage?: string);
     innerError?: any;
     issueLink?: string;
+    notificationMessage?: string;
     source: string;
     timestamp: Date;
     userData?: string;
@@ -1922,11 +1925,12 @@ export const UserCancelError: UserError;
 
 // @public
 export class UserError extends Error implements FxError {
-    constructor(error: Error, source?: string, name?: string, helpLink?: string);
+    constructor(error: Error, source?: string, name?: string, helpLink?: string, notificationMessage?: string);
     constructor(opt: UserErrorOptions);
-    constructor(name: string, message: string, source: string, stack?: string, helpLink?: string, innerError?: any);
+    constructor(name: string, message: string, source: string, stack?: string, helpLink?: string, innerError?: any, notificationMessage?: string);
     helpLink?: string;
     innerError?: any;
+    notificationMessage?: string;
     source: string;
     timestamp: Date;
     userData?: string;

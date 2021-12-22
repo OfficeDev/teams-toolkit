@@ -138,28 +138,7 @@ describe("sqlPlugin", () => {
     sinon
       .stub(ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
-    sinon.stub(SqlClient.prototype, "existUser").resolves(false);
     sinon.stub(SqlClient.prototype, "addDatabaseUser").resolves();
-    if (isArmSupportEnabled()) {
-      TestHelper.mockArmOutput(pluginContext);
-    }
-
-    // Act
-    const postProvisionResult = await sqlPlugin.postProvision(pluginContext);
-
-    // Assert
-    chai.assert.isTrue(postProvisionResult.isOk());
-  });
-
-  it("postProvision with skipAddingUser", async function () {
-    sqlPlugin.sqlImpl.config.skipAddingUser = true;
-    sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
-
-    // Arrange
-    sinon.stub(FirewallRules.prototype, "createOrUpdate").resolves();
-    sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
-    sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
-    sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
     if (isArmSupportEnabled()) {
       TestHelper.mockArmOutput(pluginContext);
     }

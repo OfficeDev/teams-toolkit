@@ -438,7 +438,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
  * @deprecated Please DO NOT use this method any more, it will be removed in near future.
  */
 export function isMultiEnvEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
+  return true;
 }
 
 /**

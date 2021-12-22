@@ -4,7 +4,7 @@ import chaiAsPromised from "chai-as-promised";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
-import { LocalEnvMultiProvider, LocalEnvs } from "../../../src/common/local/localEnvProvider";
+import { LocalEnvProvider, LocalEnvs } from "../../../src/common/local/localEnvProvider";
 
 chai.use(chaiAsPromised);
 
@@ -12,10 +12,10 @@ describe("LocalEnvProvider-MultiEnv", () => {
   const workspaceFolder = path.resolve(__dirname, "../data/.teamsfx/");
 
   describe("load", () => {
-    let localEnvMultiProvider: LocalEnvMultiProvider;
+    let localEnvMultiProvider: LocalEnvProvider;
 
     beforeEach(() => {
-      localEnvMultiProvider = new LocalEnvMultiProvider(workspaceFolder);
+      localEnvMultiProvider = new LocalEnvProvider(workspaceFolder);
       fs.emptyDirSync(workspaceFolder);
     });
 
@@ -147,10 +147,10 @@ describe("LocalEnvProvider-MultiEnv", () => {
   });
 
   describe("save", () => {
-    let localEnvMultiProvider: LocalEnvMultiProvider;
+    let localEnvMultiProvider: LocalEnvProvider;
 
     beforeEach(() => {
-      localEnvMultiProvider = new LocalEnvMultiProvider(workspaceFolder);
+      localEnvMultiProvider = new LocalEnvProvider(workspaceFolder);
       fs.emptyDirSync(workspaceFolder);
     });
 
@@ -280,10 +280,10 @@ describe("LocalEnvProvider-MultiEnv", () => {
   });
 
   describe("init", () => {
-    let localEnvMultiProvider: LocalEnvMultiProvider;
+    let localEnvMultiProvider: LocalEnvProvider;
 
     beforeEach(() => {
-      localEnvMultiProvider = new LocalEnvMultiProvider(workspaceFolder);
+      localEnvMultiProvider = new LocalEnvProvider(workspaceFolder);
       fs.emptyDirSync(workspaceFolder);
     });
 

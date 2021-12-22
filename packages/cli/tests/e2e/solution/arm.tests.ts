@@ -159,9 +159,12 @@ describe("User can customize Bicep files", function () {
     const customizedServicePlans: string[] = await customizeBicepFile(projectPath);
     await SetSubAndProvisionProject(subscription, projectPath);
 
+    const resourceGroup = await getRGAfterProvision(projectPath);
+    chai.assert.exists(resourceGroup);
+
     // Assert
     customizedServicePlans.forEach(async (servicePlanName) => {
-      await validateServicePlan(servicePlanName);
+      await validateServicePlan(servicePlanName, resourceGroup);
     });
   });
 
@@ -180,11 +183,22 @@ describe("User can customize Bicep files", function () {
 
     await SetSubAndProvisionProject(subscription, projectPath);
 
+    const resourceGroup = await getRGAfterProvision(projectPath);
+    chai.assert.exists(resourceGroup);
+
     // Assert
     customizedServicePlans.forEach(async (servicePlanName) => {
-      await validateServicePlan(servicePlanName);
+      await validateServicePlan(servicePlanName, resourceGroup);
     });
   });
+
+  async function getRGAfterProvision(projectPath: string): Promise<string | undefined> {
+    const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
+    if (context["solution"] && context["solution"]["resourceGroupName"]) {
+      return context["solution"]["resourceGroupName"];
+    }
+    return undefined;
+  }
 
   async function customizeBicepFile(projectPath: string): Promise<string[]> {
     const newServerFarms: string[] = [];
@@ -257,7 +271,7 @@ resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
     return newServerFarms;
   }
 
-  async function validateServicePlan(servicePlanName: string) {
+  async function validateServicePlan(servicePlanName: string, resourceGroup: string) {
     console.log(`Start to validate server farm ${servicePlanName}.`);
 
     const tokenProvider = MockAzureAccountProvider;
@@ -265,8 +279,8 @@ resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
     const token = (await tokenCredential?.getToken())?.accessToken;
 
     const serivcePlanResponse = await getWebappServicePlan(
-      this.subscriptionId,
-      this.rg,
+      subscription,
+      resourceGroup,
       servicePlanName,
       token as string
     );

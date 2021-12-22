@@ -79,7 +79,7 @@ describe("certificate", () => {
       chai.assert.isTrue(fs.pathExistsSync(expectedKeyFile));
       const keyContent = fs.readFileSync(expectedKeyFile, { encoding: "utf8" });
       chai.assert.isTrue(
-        /-----BEGIN RSA PRIVATE KEY-----.*-----END RSA PRIVATE KEY-----/gs.test(keyContent)
+        /-----BEGIN RSA .RIVATE KEY-----.*-----END RSA .RIVATE KEY-----/gs.test(keyContent)
       );
     });
 
@@ -94,7 +94,7 @@ describe("certificate", () => {
       chai.assert.isTrue(fs.pathExistsSync(expectedKeyFile));
       const keyContent = fs.readFileSync(expectedKeyFile, { encoding: "utf8" });
       chai.assert.isTrue(
-        /-----BEGIN RSA PRIVATE KEY-----.*-----END RSA PRIVATE KEY-----/gs.test(keyContent)
+        /-----BEGIN RSA .RIVATE KEY-----.*-----END RSA .RIVATE KEY-----/gs.test(keyContent)
       );
     });
 

@@ -56,7 +56,7 @@ pipeline {
               TENANT_ID = credentials('AZURE_TENANT_ID') 
             }
             steps {
-                sh 'teamsfx account login azure --service-principal --username ${SP_NAME} --password ${SP_PASSWORD} --tenant ${TENANT_ID}'
+                sh 'npx teamsfx account login azure --service-principal --username ${SP_NAME} --password ${SP_PASSWORD} --tenant ${TENANT_ID}'
             } 
         }
 

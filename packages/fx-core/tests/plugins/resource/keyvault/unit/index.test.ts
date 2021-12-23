@@ -38,12 +38,11 @@ describe("keyVaultPlugin", () => {
     // Assert
     const testModuleFileName = "keyVaultProvision.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: pluginContext!.projectSettings!.solutionSettings!.activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-key-vault": {
           Provision: {
             keyVault: {
-              ProvisionPath: `./${testModuleFileName}`,
+              path: `./${testModuleFileName}`,
             },
           },
         },

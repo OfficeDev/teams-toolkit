@@ -1,9 +1,9 @@
 // Resources for Simple Auth
-module simpleAuthProvision '{{PluginOutput.fx-resource-simple-auth.Provision.simpleAuth.ProvisionPath}}' = {
+module simpleAuthProvision '{{fx-resource-simple-auth.Provision.simpleAuth.path}}' = {
   name: 'simpleAuthProvision'
   params: {
     provisionParameters: provisionParameters
-    userAssignedIdentityId: {{PluginOutput.fx-resource-identity.References.identityResourceId}}
+    userAssignedIdentityId: {{fx-resource-identity.References.identityResourceId}}
   }
 }
 

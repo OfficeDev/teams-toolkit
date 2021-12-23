@@ -88,12 +88,12 @@ describe("FunctionGenerateArmTemplates", () => {
       "fx-resource-function": {
         Provision: {
           function: {
-            ProvisionPath: `./${testProvisionModuleFileName}`,
+            path: `./${testProvisionModuleFileName}`,
           },
         },
         Configuration: {
           function: {
-            ConfigPath: `./${testConfigurationModuleFileName}`,
+            path: `./${testConfigurationModuleFileName}`,
           },
         },
         References: {
@@ -121,8 +121,7 @@ describe("FunctionGenerateArmTemplates", () => {
       },
     };
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: { ...pluginOutput, ...addtionalPluginOutput },
+      Plugins: { ...pluginOutput, ...addtionalPluginOutput },
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
@@ -187,17 +186,16 @@ describe("FunctionGenerateArmTemplates", () => {
     const testProvisionModuleFileName = "functionProvision.result.bicep";
     const testConfigurationModuleFileName = "functionConfig.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-function": {
           Provision: {
             function: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
+              path: `./${testProvisionModuleFileName}`,
             },
           },
           Configuration: {
             function: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
+              path: `./${testConfigurationModuleFileName}`,
             },
           },
           References: {

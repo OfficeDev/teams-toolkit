@@ -103,14 +103,14 @@ export class TestHelper {
         const res: ArmTemplateResult = {
           Provision: {
             Orchestration:
-              "Mocked frontend hosting provision orchestration content. Module path: '{{PluginOutput.fx-resource-frontend-hosting.Provision.frontendHostingProvision.ProvisionPath}}'.",
+              "Mocked frontend hosting provision orchestration content. Module path: '{{fx-resource-frontend-hosting.Provision.frontendHostingProvision.path}}'.",
             Modules: {
               frontendHostingProvision: TestFileContent.feHostProvisionModule,
             },
           },
           Configuration: {
             Orchestration:
-              "Mocked frontend hosting configuration orchestration content. Module path: '{{PluginOutput.fx-resource-frontend-hosting.Configuration.frontendHostingConfig.ConfigPath}}'.",
+              "Mocked frontend hosting configuration orchestration content. Module path: '{{fx-resource-frontend-hosting.Configuration.frontendHostingConfig.path}}'.",
             Modules: {
               frontendHostingConfig: TestFileContent.feHostConfigurationModule,
             },
@@ -139,14 +139,14 @@ export class TestHelper {
         const res: ArmTemplateResult = {
           Provision: {
             Orchestration:
-              "Mocked simple auth provision orchestration content. Module path: '{{PluginOutput.fx-resource-simple-auth.Provision.simpleAuthProvision.ProvisionPath}}'.",
+              "Mocked simple auth provision orchestration content. Module path: '{{fx-resource-simple-auth.Provision.simpleAuthProvision.path}}'.",
             Modules: {
               simpleAuthProvision: TestFileContent.simpleAuthProvisionModule,
             },
           },
           Configuration: {
             Orchestration:
-              "Mocked simple auth configuration orchestration content. Module path: '{{PluginOutput.fx-resource-simple-auth.Configuration.simpleAuthConfig.ConfigPath}}'.",
+              "Mocked simple auth configuration orchestration content. Module path: '{{fx-resource-simple-auth.Configuration.simpleAuthConfig.path}}'.",
             Modules: {
               simpleAuthConfig: TestFileContent.simpleAuthConfigurationModule,
             },
@@ -185,14 +185,14 @@ export class TestHelper {
       const res: ArmTemplateResult = {
         Provision: {
           Orchestration:
-            "Mocked aad provision orchestration content. Module path: '{{PluginOutput.fx-resource-aad-app-for-teams.Provision.aadProvision.ProvisionPath}}'.",
+            "Mocked aad provision orchestration content. Module path: '{{fx-resource-aad-app-for-teams.Provision.aadProvision.path}}'.",
           Modules: {
             aadProvision: TestFileContent.aadProvisionModule,
           },
         },
         Configuration: {
           Orchestration:
-            "Mocked aad configuration orchestration content. Module path: '{{PluginOutput.fx-resource-aad-app-for-teams.Configuration.aadConfig.ConfigPath}}'.",
+            "Mocked aad configuration orchestration content. Module path: '{{fx-resource-aad-app-for-teams.Configuration.aadConfig.path}}'.",
           Modules: {
             aadConfig: TestFileContent.aadConfigurationModule,
           },
@@ -217,14 +217,14 @@ export class TestHelper {
         const res: ArmTemplateResult = {
           Provision: {
             Orchestration:
-              "Mocked identity provision orchestration content. Module path: '{{PluginOutput.fx-resource-identity.Provision.identityProvision.ProvisionPath}}'.",
+              "Mocked identity provision orchestration content. Module path: '{{fx-resource-identity.Provision.identityProvision.path}}'.",
             Modules: {
               identityProvision: TestFileContent.identityProvisionModule,
             },
           },
           Configuration: {
             Orchestration:
-              "Mocked identity configuration orchestration content. Module path: '{{PluginOutput.fx-resource-identity.Configuration.identityConfig.ConfigPath}}'.",
+              "Mocked identity configuration orchestration content. Module path: '{{fx-resource-identity.Configuration.identityConfig.path}}'.",
             Modules: {
               identityConfig: TestFileContent.identityConfigurationModule,
             },
@@ -253,14 +253,14 @@ export class TestHelper {
       const res: ArmTemplateResult = {
         Provision: {
           Orchestration:
-            "Mocked bot provision orchestration content. Module path: '{{PluginOutput.fx-resource-bot.Provision.botProvision.ProvisionPath}}'.",
+            "Mocked bot provision orchestration content. Module path: '{{fx-resource-bot.Provision.botProvision.path}}'.",
           Modules: {
             botProvision: TestFileContent.botProvisionModule,
           },
         },
         Configuration: {
           Orchestration:
-            "Mocked bot configuration orchestration content. Module path: '{{PluginOutput.fx-resource-bot.Configuration.botConfig.ConfigPath}}'.",
+            "Mocked bot configuration orchestration content. Module path: '{{fx-resource-bot.Configuration.botConfig.path}}'.",
           Modules: {
             botConfig: TestFileContent.botConfigurationModule,
           },

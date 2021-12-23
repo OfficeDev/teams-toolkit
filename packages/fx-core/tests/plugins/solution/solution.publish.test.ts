@@ -8,7 +8,6 @@ import {
   ConfigFolderName,
   ConfigMap,
   SolutionContext,
-  Plugin,
   Platform,
   v2,
   ProjectSettings,
@@ -46,23 +45,16 @@ import {
 } from "./util";
 import _ from "lodash";
 import * as uuid from "uuid";
-import {
-  ResourcePlugins,
-  ResourcePluginsV2,
-} from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import Container from "typedi";
 import { newEnvInfo } from "../../../src/core/tools";
 import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
 import { AppStudioTokenProvider } from "@microsoft/teamsfx-api";
 import { LocalCrypto } from "../../../src/core/crypto";
+import { aadPlugin, botPlugin, fehostPlugin, spfxPlugin, appStudioPlugin } from "../../constants";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin);
-const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
-const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
-const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
-const botPlugin = Container.get<Plugin>(ResourcePlugins.BotPlugin);
 
 const aadPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
 const spfxPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);

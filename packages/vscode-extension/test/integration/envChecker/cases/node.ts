@@ -70,18 +70,6 @@ suite("NodeChecker E2E Test", async () => {
     chai.assert.isFalse(shouldContinue);
   });
 
-  test("Node unsupported version is installed, and the user clicks continue", async function (this: Mocha.Context) {
-    const nodeVersion = await nodeUtils.getNodeVersion();
-    if (!(nodeVersion != null && !functionsSupportedNodeVersions.includes(nodeVersion))) {
-      this.skip();
-    }
-
-    const [checker, _] = createTestChecker(true);
-
-    const shouldContinue = await checker.resolve();
-    chai.assert.isTrue(shouldContinue);
-  });
-
   test("Node unsupported version is installed, and the user clicks cancel", async function (this: Mocha.Context) {
     const nodeVersion = await nodeUtils.getNodeVersion();
     if (!(nodeVersion != null && !functionsSupportedNodeVersions.includes(nodeVersion))) {

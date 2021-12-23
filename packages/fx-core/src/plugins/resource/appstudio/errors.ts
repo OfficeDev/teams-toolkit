@@ -116,7 +116,9 @@ export class AppStudioError {
 
   public static readonly TeamsAppPublishFailedError = {
     name: "TeamsAppPublishFailed",
-    message: (teamsAppId: string) => `Failed to publish Teams app with ID ${teamsAppId}.`,
+    message: (teamsAppId: string, correlationId?: string) =>
+      `Failed to publish Teams app with ID ${teamsAppId}.` +
+      (correlationId ? `X-Correlation-ID: ${correlationId}` : ""),
   };
 
   public static readonly TeamsAppPublishCancelError = {

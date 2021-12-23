@@ -1,5 +1,6 @@
 import {
   AzureSolutionSettings,
+  CLIPlatforms,
   DynamicPlatforms,
   err,
   Func,
@@ -30,6 +31,7 @@ import {
   AzureResourceFunction,
   AzureResourceSQL,
   AzureResourcesQuestion,
+  AzureSolutionQuestionNames,
   BotOptionItem,
   createAddAzureResourceQuestion,
   createCapabilityQuestion,
@@ -50,14 +52,24 @@ import {
 } from "../ResourcePluginContainer";
 import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
 import { isV3 } from "../../../..";
+import { TeamsAppSolutionNameV2 } from "./constants";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
   inputs: Inputs
-): Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>> {
-  const node: QTreeNode[] = [];
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  const node = new QTreeNode({
+    name: "azure-solution-group",
+    type: "func",
+    func: (inputs: Inputs) => {
+      inputs[AzureSolutionQuestionNames.Solution] = TeamsAppSolutionNameV2;
+    },
+  });
 
   if (!isV3()) {
+    node.condition = {
+      containsAny: [TabSPFxItem.id, TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id],
+    };
     // 1.1.1 SPFX Tab
     const spfxPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
       ResourcePluginsV2.SpfxPlugin
@@ -67,23 +79,47 @@ export async function getQuestionsForScaffolding(
       if (res.isErr()) return res;
       if (res.value) {
         const spfxNode = res.value as QTreeNode;
-        spfxNode.condition = { contains: TabSPFxItem.id };
-        if (spfxNode.data) node.push(spfxNode);
+        spfxNode.condition = {
+          validFunc: (input: any, inputs?: Inputs) => {
+            if (!inputs) {
+              return "Invalid inputs";
+            }
+            const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+            if (cap.includes(TabSPFxItem.id)) {
+              return undefined;
+            }
+            return "SPFx is not selected";
+          },
+        };
+        if (spfxNode.data) node.addChild(spfxNode);
       }
     }
+  } else {
+    node.condition = { containsAny: [TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id] };
   }
 
   // 1.1.2 Azure Tab
   const tabRes = await getTabScaffoldQuestionsV2(
     ctx,
     inputs,
-    inputs.platform === Platform.VSCode ? false : true
+    CLIPlatforms.includes(inputs.platform) // only CLI and CLI_HELP support azure-resources question
   );
   if (tabRes.isErr()) return tabRes;
   if (tabRes.value) {
     const tabNode = tabRes.value;
-    tabNode.condition = { equals: HostTypeOptionAzure.id };
-    node.push(tabNode);
+    tabNode.condition = {
+      validFunc: (input: any, inputs?: Inputs) => {
+        if (!inputs) {
+          return "Invalid inputs";
+        }
+        const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+        if (cap.includes(TabOptionItem.id)) {
+          return undefined;
+        }
+        return "Tab is not selected";
+      },
+    };
+    node.addChild(tabNode);
   }
 
   // 1.2 Bot
@@ -95,8 +131,19 @@ export async function getQuestionsForScaffolding(
     if (res.isErr()) return res;
     if (res.value) {
       const botGroup = res.value as QTreeNode;
-      botGroup.condition = { containsAny: [BotOptionItem.id, MessageExtensionItem.id] };
-      node.push(botGroup);
+      botGroup.condition = {
+        validFunc: (input: any, inputs?: Inputs) => {
+          if (!inputs) {
+            return "Invalid inputs";
+          }
+          const cap = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
+          if (cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id)) {
+            return undefined;
+          }
+          return "Bot/Message Extension is not selected";
+        },
+      };
+      node.addChild(botGroup);
     }
   }
 

@@ -4,7 +4,7 @@
 
 import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
 import { assembleError, err, Func, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { FxCore, isV2 } from "..";
+import { FxCore, isV3, TOOLS } from "..";
 
 /**
  * in case there're some uncatched exceptions, this middleware will act as a guard
@@ -13,20 +13,18 @@ import { FxCore, isV2 } from "..";
 export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
   const core = ctx.self as FxCore;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const logger =
-    core !== undefined && core.tools !== undefined && core.tools.logProvider !== undefined
-      ? core.tools.logProvider
-      : undefined;
   const taskName = `${ctx.method} ${
     ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
   }`;
   try {
-    logger?.info(
-      `[core] start task:${taskName}, inputs:${JSON.stringify(inputs)}, API v2: ${isV2()}`
+    TOOLS?.logProvider?.info(
+      `[core] start task:${taskName}, inputs:${JSON.stringify(inputs)}, API v3: ${isV3()}`
     );
     const time = new Date().getTime();
     await next();
-    logger?.info(`[core] finish task:${taskName}, time: ${new Date().getTime() - time} ms`);
+    TOOLS?.logProvider?.info(
+      `[core] finish task:${taskName}, time: ${new Date().getTime() - time} ms`
+    );
   } catch (e) {
     let fxError = assembleError(e);
     if (fxError instanceof SystemError) {

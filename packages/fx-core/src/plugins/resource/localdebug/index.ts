@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 "use strict";
 
-import * as fs from "fs-extra";
 import {
   Func,
   FxError,
@@ -14,27 +13,17 @@ import {
   ok,
   VsCodeEnv,
   AzureSolutionSettings,
+  Void,
 } from "@microsoft/teamsfx-api";
-import * as os from "os";
 
 import { LocalCertificateManager } from "./certificate";
+import { LocalEnvBotKeys, LocalEnvBotKeysMigratedFromV1 } from "./constants";
 import {
-  SolutionPlugin,
-  LocalEnvBotKeys,
-  LocalEnvBotKeysMigratedFromV1,
-  AppStudioPlugin,
-} from "./constants";
-import {
-  LocalDebugConfigKeys,
   LocalEnvFrontendKeys,
   LocalEnvBackendKeys,
   LocalEnvAuthKeys,
   LocalEnvCertKeys,
 } from "./constants";
-import * as Launch from "./launch";
-import * as Settings from "./settings";
-import * as Tasks from "./tasks";
-import { LocalEnvProvider } from "./localEnv";
 import {
   EnvKeysFrontend,
   EnvKeysBackend,
@@ -42,20 +31,11 @@ import {
   EnvKeysBotV1,
   LocalEnvMultiProvider,
 } from "./localEnvMulti";
-import {
-  LocalBotEndpointNotConfigured,
-  MissingStep,
-  NgrokTunnelNotConnected,
-  InvalidLocalBotEndpointFormat,
-} from "./util/error";
 import { getAuthServiceFolder, prepareLocalAuthService } from "./util/localService";
-import { getNgrokHttpUrl } from "./util/ngrok";
-import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { TelemetryUtils, TelemetryEventName } from "./util/telemetry";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { isMultiEnvEnabled } from "../../../common";
-import { legacyLocalDebugPlugin } from "./legacyPlugin";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBackendKeys,
@@ -66,9 +46,6 @@ import {
 import { getAllowedAppIds } from "../../../common/tools";
 import { ProjectSettingLoader } from "./projectSettingLoader";
 import "./v2";
-import { LocalSettingsProvider } from "../../../common/localSettingsProvider";
-
-const PackageJson = require("@npmcli/package-json");
 
 @Service(ResourcePlugins.LocalDebugPlugin)
 export class LocalDebugPlugin implements Plugin {
@@ -80,305 +57,14 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async scaffold(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const isSpfx = ProjectSettingLoader.isSpfx(ctx);
-    const isMigrateFromV1 = ProjectSettingLoader.isMigrateFromV1(ctx);
-    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
-    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
-    const includeBot = ProjectSettingLoader.includeBot(ctx);
-    const includeAuth = ProjectSettingLoader.includeAuth(ctx);
-    const programmingLanguage = ctx.projectSettings?.programmingLanguage ?? "";
-
-    const telemetryProperties = {
-      platform: ctx.answers?.platform as string,
-      spfx: isSpfx ? "true" : "false",
-      frontend: includeFrontend ? "true" : "false",
-      function: includeBackend ? "true" : "false",
-      bot: includeBot ? "true" : "false",
-      auth: includeAuth ? "true" : "false",
-      "programming-language": programmingLanguage,
-    };
-    TelemetryUtils.init(ctx);
-    TelemetryUtils.sendStartEvent(TelemetryEventName.scaffold, telemetryProperties);
-
-    // scaffold for both vscode and cli
-    if (ctx.answers?.platform === Platform.VSCode || ctx.answers?.platform === Platform.CLI) {
-      if (isSpfx) {
-        // Only generate launch.json and tasks.json for SPFX
-        const launchConfigurations = Launch.generateSpfxConfigurations();
-        const launchCompounds = Launch.generateSpfxCompounds();
-        const tasks = Tasks.generateSpfxTasks();
-        const tasksInputs = Tasks.generateInputs();
-
-        //TODO: save files via context api
-        await fs.ensureDir(`${ctx.root}/.vscode/`);
-        await fs.writeJSON(
-          `${ctx.root}/.vscode/launch.json`,
-          {
-            version: "0.2.0",
-            configurations: launchConfigurations,
-            compounds: launchCompounds,
-          },
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
-        );
-
-        await fs.writeJSON(
-          `${ctx.root}/.vscode/tasks.json`,
-          {
-            version: "2.0.0",
-            tasks: tasks,
-            inputs: tasksInputs,
-          },
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
-        );
-
-        await fs.writeJSON(`${ctx.root}/.vscode/settings.json`, Settings.generateSettings(false), {
-          spaces: 4,
-          EOL: os.EOL,
-        });
-      } else {
-        const launchConfigurations = Launch.generateConfigurations(
-          includeFrontend,
-          includeBackend,
-          includeBot,
-          isMigrateFromV1
-        );
-        const launchCompounds = Launch.generateCompounds(
-          includeFrontend,
-          includeBackend,
-          includeBot
-        );
-
-        const tasks = Tasks.generateTasks(
-          includeFrontend,
-          includeBackend,
-          includeBot,
-          includeAuth,
-          isMigrateFromV1,
-          programmingLanguage
-        );
-
-        //TODO: save files via context api
-        await fs.ensureDir(`${ctx.root}/.vscode/`);
-        await fs.writeJSON(
-          `${ctx.root}/.vscode/launch.json`,
-          {
-            version: "0.2.0",
-            configurations: launchConfigurations,
-            compounds: launchCompounds,
-          },
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
-        );
-
-        await fs.writeJSON(
-          `${ctx.root}/.vscode/tasks.json`,
-          {
-            version: "2.0.0",
-            tasks: tasks,
-          },
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
-        );
-
-        if (!isMultiEnvEnabled()) {
-          const localEnvProvider = new LocalEnvProvider(ctx.root);
-          await localEnvProvider.saveLocalEnv(
-            localEnvProvider.initialLocalEnvs(
-              includeFrontend,
-              includeBackend,
-              includeBot,
-              includeAuth,
-              isMigrateFromV1
-            )
-          );
-
-          if (includeFrontend) {
-            ctx.config.set(LocalDebugConfigKeys.TrustDevelopmentCertificate, "true");
-          }
-
-          if (includeBot) {
-            ctx.config.set(LocalDebugConfigKeys.SkipNgrok, "false");
-            ctx.config.set(LocalDebugConfigKeys.LocalBotEndpoint, "");
-          }
-        } else {
-          // generate localSettings.json
-          await this.scaffoldLocalSettingsJson(ctx);
-
-          // add 'npm install' scripts into root package.json
-          const packageJsonPath = ctx.root;
-          let packageJson: any = undefined;
-          try {
-            packageJson = await PackageJson.load(packageJsonPath);
-          } catch (error) {
-            ctx.logProvider?.error(`Cannot load package.json from ${ctx.root}. ${error}`);
-          }
-
-          if (packageJson !== undefined) {
-            const scripts = packageJson.content.scripts ?? {};
-            const installAll: string[] = [];
-
-            if (includeBackend) {
-              scripts["install:api"] = "cd api && npm install";
-              installAll.push("npm run install:api");
-            }
-            if (includeBot) {
-              scripts["install:bot"] = "cd bot && npm install";
-              installAll.push("npm run install:bot");
-            }
-            if (includeFrontend) {
-              scripts["install:tabs"] = "cd tabs && npm install";
-              installAll.push("npm run install:tabs");
-            }
-
-            scripts["installAll"] = installAll.join(" & ");
-
-            packageJson.update({ scripts: scripts });
-            await packageJson.save();
-          }
-        }
-
-        await fs.writeJSON(
-          `${ctx.root}/.vscode/settings.json`,
-          Settings.generateSettings(includeBackend),
-          {
-            spaces: 4,
-            EOL: os.EOL,
-          }
-        );
-      }
-    }
-
-    TelemetryUtils.sendSuccessEvent(TelemetryEventName.scaffold, telemetryProperties);
-    return ok(undefined);
+    return ok(Void);
   }
 
   public async localDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
-    // fallback to original local debug logic if multi-env is not enabled
-    if (!isMultiEnvEnabled()) {
-      return await legacyLocalDebugPlugin.localDebug(ctx);
-    }
-
-    const vscEnv = ctx.answers?.vscodeEnv;
-    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
-    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
-    const includeBot = ProjectSettingLoader.includeBot(ctx);
-    const includeAuth = ProjectSettingLoader.includeAuth(ctx);
-    let skipNgrok = ctx.localSettings?.bot?.get(LocalSettingsBotKeys.SkipNgrok) as boolean;
-
-    const telemetryProperties = {
-      platform: ctx.answers?.platform as string,
-      vscenv: vscEnv as string,
-      frontend: includeFrontend ? "true" : "false",
-      function: includeBackend ? "true" : "false",
-      bot: includeBot ? "true" : "false",
-      auth: includeAuth ? "true" : "false",
-      "skip-ngrok": skipNgrok ? "true" : "false",
-    };
-    TelemetryUtils.init(ctx);
-    TelemetryUtils.sendStartEvent(TelemetryEventName.localDebug, telemetryProperties);
-
-    // setup configs used by other plugins
-    // TODO: dynamicly determine local ports
-    if (ctx.answers?.platform === Platform.VSCode || ctx.answers?.platform === Platform.CLI) {
-      let localTabEndpoint: string;
-      let localTabDomain: string;
-      let localAuthEndpoint: string;
-      let localFuncEndpoint: string;
-
-      if (vscEnv === VsCodeEnv.codespaceBrowser || vscEnv === VsCodeEnv.codespaceVsCode) {
-        const codespaceName = await getCodespaceName();
-
-        localTabEndpoint = getCodespaceUrl(codespaceName, 3000);
-        localTabDomain = new URL(localTabEndpoint).host;
-        localAuthEndpoint = getCodespaceUrl(codespaceName, 5000);
-        localFuncEndpoint = getCodespaceUrl(codespaceName, 7071);
-      } else {
-        localTabDomain = "localhost";
-        localTabEndpoint = "https://localhost:3000";
-        localAuthEndpoint = "http://localhost:5000";
-        localFuncEndpoint = "http://localhost:7071";
-      }
-
-      if (includeAuth) {
-        ctx.localSettings?.auth?.set(
-          LocalSettingsAuthKeys.SimpleAuthServiceEndpoint,
-          localAuthEndpoint
-        );
-      }
-
-      if (includeFrontend) {
-        ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.TabEndpoint, localTabEndpoint);
-        ctx.localSettings?.frontend?.set(LocalSettingsFrontendKeys.TabDomain, localTabDomain);
-      }
-
-      if (includeBackend) {
-        ctx.localSettings?.backend?.set(
-          LocalSettingsBackendKeys.FunctionEndpoint,
-          localFuncEndpoint
-        );
-      }
-
-      if (includeBot) {
-        if (skipNgrok === undefined) {
-          skipNgrok = false;
-          ctx.localSettings?.bot?.set(LocalSettingsBotKeys.SkipNgrok, skipNgrok);
-        }
-
-        if (skipNgrok) {
-          const localBotEndpoint = ctx.localSettings?.bot?.get(
-            LocalSettingsBotKeys.BotEndpoint
-          ) as string;
-          if (localBotEndpoint === undefined) {
-            const error = LocalBotEndpointNotConfigured();
-            TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
-            return err(error);
-          }
-
-          const botEndpointRegex = /https:\/\/.*(:\d+)?/g;
-          if (!botEndpointRegex.test(localBotEndpoint)) {
-            const error = InvalidLocalBotEndpointFormat(localBotEndpoint);
-            TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
-            return err(error);
-          }
-
-          ctx.localSettings?.bot?.set(LocalSettingsBotKeys.BotEndpoint, localBotEndpoint);
-          ctx.localSettings?.bot?.set(LocalSettingsBotKeys.BotDomain, localBotEndpoint.slice(8));
-        } else {
-          const ngrokHttpUrl = await getNgrokHttpUrl(3978);
-          if (!ngrokHttpUrl) {
-            const error = NgrokTunnelNotConnected();
-            TelemetryUtils.sendErrorEvent(TelemetryEventName.localDebug, error);
-            return err(error);
-          } else {
-            ctx.localSettings?.bot?.set(LocalSettingsBotKeys.BotEndpoint, ngrokHttpUrl);
-            ctx.localSettings?.bot?.set(LocalSettingsBotKeys.BotDomain, ngrokHttpUrl.slice(8));
-          }
-        }
-      }
-    }
-
-    TelemetryUtils.sendSuccessEvent(TelemetryEventName.localDebug, telemetryProperties);
-    return ok(undefined);
+    return ok(Void);
   }
 
   public async postLocalDebug(ctx: PluginContext): Promise<Result<any, FxError>> {
-    // fallback to original post-localdebug logic if multi-env is not enabled
-    // And the post-localdebug lifecycle can be removed if we use localSettings.json
-    // and remove the local.env file for local debug,
-    if (!isMultiEnvEnabled()) {
-      return await legacyLocalDebugPlugin.postLocalDebug(ctx);
-    }
-
     const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
     const includeBackend = ProjectSettingLoader.includeBackend(ctx);
     const includeBot = ProjectSettingLoader.includeBot(ctx);
@@ -661,36 +347,7 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
-    if (func.method == "getLaunchInput") {
-      const env = func.params as string;
-      const solutionConfigs = ctx.envInfo.state.get(SolutionPlugin.Name);
-      if (env === "remote") {
-        // return remote teams app id
-        const remoteId = isMultiEnvEnabled()
-          ? (ctx.envInfo.state.get(AppStudioPlugin.Name)?.get(AppStudioPlugin.TeamsAppId) as string)
-          : (solutionConfigs?.get(SolutionPlugin.RemoteTeamsAppId) as string);
-        if (/^[0-9a-fA-F]{8}-([0-9a-fA-F]{4}-){3}[0-9a-fA-F]{12}$/.test(remoteId)) {
-          return ok({
-            appId: remoteId,
-            env: ctx.envInfo.envName,
-          });
-        } else {
-          return err(MissingStep("launching remote", "Teams: Provision and Teams: Deploy"));
-        }
-      } else {
-        // return local teams app id
-        const localTeamsAppId = isMultiEnvEnabled()
-          ? (ctx.localSettings?.teamsApp?.get(LocalSettingsTeamsAppKeys.TeamsAppId) as string)
-          : (solutionConfigs?.get(SolutionPlugin.LocalTeamsAppId) as string);
-        return ok({ appId: localTeamsAppId });
-      }
-    } else if (func.method === "getProgrammingLanguage") {
-      const programmingLanguage = ctx.projectSettings?.programmingLanguage;
-      return ok(programmingLanguage);
-    } else if (func.method === "getSkipNgrokConfig") {
-      const skipNgrok = ctx.localSettings?.bot?.get(LocalSettingsBotKeys.SkipNgrok);
-      return ok(skipNgrok);
-    } else if (func.method === "getLocalDebugEnvs") {
+    if (func.method === "getLocalDebugEnvs") {
       const localEnvs = await this.getLocalDebugEnvs(ctx);
       return ok(localEnvs);
     } else if (func.method === "migrateV1Project") {
@@ -698,29 +355,6 @@ export class LocalDebugPlugin implements Plugin {
     }
 
     return ok(undefined);
-  }
-
-  async scaffoldLocalSettingsJson(ctx: PluginContext): Promise<void> {
-    const localSettingsProvider = new LocalSettingsProvider(ctx.root);
-
-    const includeFrontend = ProjectSettingLoader.includeFrontend(ctx);
-    const includeBackend = ProjectSettingLoader.includeBackend(ctx);
-    const includeBot = ProjectSettingLoader.includeBot(ctx);
-
-    if (ctx.localSettings !== undefined) {
-      // Add local settings for the new added capability/resource
-      ctx.localSettings = localSettingsProvider.incrementalInit(
-        ctx.localSettings,
-        includeBackend,
-        includeBot,
-        includeFrontend
-      );
-      await localSettingsProvider.save(ctx.localSettings);
-    } else {
-      // Initialize a local settings on scaffolding
-      ctx.localSettings = localSettingsProvider.init(includeFrontend, includeBackend, includeBot);
-      await localSettingsProvider.save(ctx.localSettings);
-    }
   }
 
   appendEnvWithPrefix(

@@ -5,6 +5,7 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import fs, { PathLike } from "fs-extra";
 import * as faker from "faker";
+import * as os from "os";
 
 import sinon from "sinon";
 import { EnvironmentUtils } from "../../../../../src/plugins/resource/frontend/utils/environment-utils";
@@ -22,7 +23,7 @@ describe("EnvironmentUtils", async () => {
   const existingPropertyKeys = Array.from(Array(length), () => faker.unique(faker.lorem.word));
   const existingPropertyValues = Array.from(Array(length), () => faker.lorem.word());
   const fakeEnv = existingPropertyKeys
-    .map((v, i) => `${v}=${existingPropertyValues[i]}\r\n`)
+    .map((v, i) => `${v}=${existingPropertyValues[i]}${os.EOL}`)
     .join("");
 
   describe("write environments", async () => {
@@ -37,7 +38,7 @@ describe("EnvironmentUtils", async () => {
 
     it("happy path", async () => {
       sinon.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
-        chai.assert.equal(`${fakeEnv}${newPropertyKey}=${newPropertyValue}\r\n`, data);
+        chai.assert.equal(`${fakeEnv}${newPropertyKey}=${newPropertyValue}${os.EOL}`, data);
       });
 
       await EnvironmentUtils.writeEnvironments(fakePath, fakeVariables);

@@ -5,14 +5,11 @@ import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
 import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
 import {
-  AppStudioTokenProvider,
   ConfigFolderName,
-  ConfigMap,
   FxError,
   ok,
   PluginContext,
   Result,
-  SolutionConfig,
   SolutionContext,
   Void,
   Plugin,
@@ -71,7 +68,6 @@ import {
   MockedAppStudioTokenProvider,
   MockedGraphTokenProvider,
   MockedSharepointProvider,
-  MockedUserInteraction,
   MockedV2Context,
   validManifest,
 } from "./util";
@@ -84,11 +80,7 @@ import { AppStudioClient } from "../../../src/plugins/resource/appstudio/appStud
 import { AppStudioPluginImpl } from "../../../src/plugins/resource/appstudio/plugin";
 import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/util";
 import * as uuid from "uuid";
-import {
-  ResourcePlugins,
-  ResourcePluginsV2,
-} from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
-import { AadAppForTeamsPlugin } from "../../../src/plugins/resource/aad";
+import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { newEnvInfo } from "../../../src/core/tools";
 import { isArmSupportEnabled } from "../../../src/common/tools";
 import Container from "typedi";
@@ -102,21 +94,16 @@ import { Subscriptions } from "@azure/arm-subscriptions";
 import { SubscriptionsListLocationsResponse } from "@azure/arm-subscriptions/esm/models";
 import * as msRest from "@azure/ms-rest-js";
 import { ProvidersGetOptionalParams, ProvidersGetResponse } from "@azure/arm-resources/esm/models";
-import { SolutionPluginsV2 } from "../../../src/core/SolutionPluginContainer";
 import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
 import { EnvInfoV2, ResourceProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
-import frontend from "../../../src/plugins/resource/frontend";
-import { UnknownObject } from "@azure/core-http/types/latest/src/util/utils";
 import { LocalCrypto } from "../../../src/core/crypto";
 import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import * as armResources from "@azure/arm-resources";
+import { aadPlugin, appStudioPlugin, spfxPlugin, fehostPlugin } from "../../constants";
+import { AadAppForTeamsPlugin } from "../../../src";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-const aadPlugin = Container.get<Plugin>(ResourcePlugins.AadPlugin) as AadAppForTeamsPlugin;
-const spfxPlugin = Container.get<Plugin>(ResourcePlugins.SpfxPlugin);
-const fehostPlugin = Container.get<Plugin>(ResourcePlugins.FrontendPlugin);
-const appStudioPlugin = Container.get<Plugin>(ResourcePlugins.AppStudioPlugin);
 
 const aadPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
 const spfxPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
@@ -471,6 +458,9 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
     });
+    mocker.stub(fs, "chmod").callsFake((path: PathLike, mode: fs.Mode) => {
+      return new Promise((resolve) => resolve());
+    });
     mocker.stub(fs, "writeJSON").callsFake((file: string, obj: any) => {
       fileContent.set(file, JSON.stringify(obj));
     });
@@ -480,8 +470,9 @@ describe("provision() happy path for SPFx projects", () => {
       .resolves(mockedManifest);
     mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
+    mocker.stub(AppStudioClient, "validateManifest").resolves([]);
     mocker
-      .stub(AppStudioPluginImpl.prototype, "reloadManifestAndCheckRequiredFields" as any)
+      .stub(AppStudioPluginImpl.prototype, "reloadManifest" as any)
       .returns(ok(new TeamsAppManifest()));
   });
 
@@ -489,13 +480,7 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.restore();
   });
 
-  it("should succeed if app studio returns successfully", () =>
-    provisionSpfxProjectShouldSucceed(false));
-
-  it("should succeed if insider feature flag enabled", () =>
-    provisionSpfxProjectShouldSucceed(true));
-
-  async function provisionSpfxProjectShouldSucceed(insiderEnabled = false): Promise<void> {
+  it("should succeed if insider feature flag enabled", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
     mockedCtx.root = "./tests/plugins/resource/appstudio/spfx-resources/";
@@ -509,9 +494,6 @@ describe("provision() happy path for SPFx projects", () => {
         activeResourcePlugins: [spfxPlugin.name, appStudioPlugin.name],
       },
     };
-    mocker.stub(process, "env").get(() => {
-      return { __TEAMSFX_INSIDER_PREVIEW: insiderEnabled.toString() };
-    });
 
     expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .undefined;
@@ -521,17 +503,11 @@ describe("provision() happy path for SPFx projects", () => {
     expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .true;
 
-    if (insiderEnabled) {
-      expect(mockedCtx.envInfo.state.get("fx-resource-appstudio")?.get("teamsAppId")).equals(
-        mockedAppDef.teamsAppId
-      );
-    } else {
-      expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
-        mockedAppDef.teamsAppId
-      );
-    }
+    expect(mockedCtx.envInfo.state.get("fx-resource-appstudio")?.get("teamsAppId")).equals(
+      mockedAppDef.teamsAppId
+    );
     expect(solution.runningState).equals(SolutionRunningState.Idle);
-  }
+  });
 });
 
 function mockAzureProjectDeps(
@@ -679,14 +655,14 @@ describe("provision() happy path for Azure projects", () => {
       return ok(mockedAppDef.teamsAppId);
     };
 
-    aadPlugin.setApplicationInContext = function (
+    (aadPlugin as AadAppForTeamsPlugin).setApplicationInContext = function (
       ctx: PluginContext,
       _isLocalDebug?: boolean
     ): Result<any, FxError> {
       ctx.config.set(WEB_APPLICATION_INFO_SOURCE, "mockedWebApplicationInfoResouce");
       return ok(Void);
     };
-    const spy = mocker.spy(aadPlugin, "setApplicationInContext");
+    const spy = mocker.spy(aadPlugin as AadAppForTeamsPlugin, "setApplicationInContext");
     const stub = mocker.stub(arm, "deployArmTemplates");
 
     expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be

@@ -248,13 +248,17 @@ suite("handlers", () => {
   });
 
   test("openWelcomeHandler", async () => {
-    const createOrShow = sinon.stub(WebviewPanel, "createOrShow");
+    const executeCommands = sinon.stub(vscode.commands, "executeCommand");
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
 
     await handlers.openWelcomeHandler();
 
-    sinon.assert.calledOnceWithExactly(createOrShow, PanelType.QuickStart);
-    createOrShow.restore();
+    sinon.assert.calledOnceWithExactly(
+      executeCommands,
+      "workbench.action.openWalkthrough",
+      "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitQuickStart"
+    );
+    executeCommands.restore();
     sendTelemetryEvent.restore();
   });
 

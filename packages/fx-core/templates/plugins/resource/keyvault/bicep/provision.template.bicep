@@ -1,13 +1,14 @@
 // Resources for Azure Key Vault
-module keyVaultProvision '{{PluginOutput.fx-resource-key-vault.Provision.keyVault.ProvisionPath}}' = {
+module keyVaultProvision '{{fx-resource-key-vault.Provision.keyVault.path}}' = {
   name: 'keyVaultProvision'
   params: {
     provisionParameters: provisionParameters
-    userAssignedIdentityObjectId: {{PluginOutput.fx-resource-identity.References.identityPrincipalId}}
+    userAssignedIdentityObjectId: {{fx-resource-identity.References.identityPrincipalId}}
   }
 }
 
 output keyVaultOutput object = {
+  teamsFxPluginId: 'fx-resource-key-vault'
   m365ClientSecretReference: keyVaultProvision.outputs.m365ClientSecretReference
   botClientSecretReference: keyVaultProvision.outputs.botClientSecretReference
 }

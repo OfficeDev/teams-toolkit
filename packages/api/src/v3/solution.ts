@@ -29,7 +29,7 @@ export interface ISolution {
   getQuestionsForScaffold?: (
     ctx: Context,
     inputs: InputsWithProjectPath
-  ) => Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>>;
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
   /**
    * scaffold is a repeatable lifecycle stage
    *
@@ -40,7 +40,7 @@ export interface ISolution {
    */
   scaffold: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { module?: number; template?: OptionItem }
+    inputs: InputsWithProjectPath & { module?: string; template?: OptionItem }
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -60,7 +60,7 @@ export interface ISolution {
    */
   addResource: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { module?: number; resource?: string }
+    inputs: InputsWithProjectPath & { module?: string; resource?: string }
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -86,8 +86,8 @@ export interface ISolution {
   getQuestionsForProvision?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV3>,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: DeepReadonly<EnvInfoV3>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   provisionResources?: (
     ctx: Context,
@@ -100,8 +100,8 @@ export interface ISolution {
   getQuestionsForLocalProvision?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
-    localSettings: DeepReadonly<Json>,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    localSettings?: DeepReadonly<Json>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   provisionLocalResources?: (
     ctx: Context,
@@ -119,7 +119,7 @@ export interface ISolution {
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   deploy?: (
     ctx: Context,
-    inputs: InputsWithProjectPath,
+    inputs: InputsWithProjectPath & { modules: string[] },
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;

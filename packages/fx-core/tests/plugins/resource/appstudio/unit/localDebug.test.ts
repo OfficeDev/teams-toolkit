@@ -153,6 +153,8 @@ describe("Post Local Debug", () => {
     FE_ConfigMap = new ConfigMap();
     FE_ConfigMap.set(FRONTEND_ENDPOINT, "frontend endpoint");
     FE_ConfigMap.set(FRONTEND_DOMAIN, "frontend domain");
+
+    sandbox.stub(AppStudioClient, "validateManifest").resolves([]);
   });
 
   afterEach(() => {

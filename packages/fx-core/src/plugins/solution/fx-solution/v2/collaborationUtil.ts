@@ -11,10 +11,17 @@ import {
   err,
   SolutionConfig,
   SolutionSettings,
+  Err,
+  Json,
 } from "@microsoft/teamsfx-api";
 import { Context } from "@microsoft/teamsfx-api/build/v2/types";
 import axios from "axios";
-import { CollaborationState, CollaborationStateResult } from "../../../../common";
+import { isArray } from "lodash";
+import {
+  CollaborationState,
+  CollaborationStateResult,
+  ResourcePermission,
+} from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
   GLOBAL_CONFIG,
@@ -167,5 +174,28 @@ export class CollaborationUtil {
       return selectedPlugins && selectedPlugins.indexOf("fx-resource-aad-app-for-teams") !== -1;
     }
     return false;
+  }
+
+  static collectPermissionsAndErrors(
+    executionResult: v2.FxResult<{ name: string; result: Json }[], FxError>
+  ): [ResourcePermission[], Err<any, FxError>[]] {
+    const results = executionResult;
+    const permissions: ResourcePermission[] = [];
+    let errors: Err<any, FxError>[] = [];
+
+    if (results.kind === "success" || results.kind === "partialSuccess") {
+      for (const r of results.output) {
+        if (r && r.result && isArray(r.result)) {
+          for (const res of r.result) {
+            permissions.push(res as ResourcePermission);
+          }
+        }
+      }
+    }
+    if (results.kind === "partialSuccess" || results.kind === "failure") {
+      errors = [err(results.error)];
+    }
+
+    return [permissions, errors];
   }
 }

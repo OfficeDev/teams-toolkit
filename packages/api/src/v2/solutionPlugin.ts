@@ -83,14 +83,14 @@ export interface SolutionPlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {Inputs} inputs - system inputs
-   * @param {Json} provisionOutputs - provision outputs
+   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
    * @param {TokenProvider} tokenProvider - Token providers for Azure, AppStudio and m365.
    *
    */
   deploy?: (
     ctx: Context,
     inputs: Inputs,
-    provisionOutputs: Json,
+    envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
@@ -134,7 +134,7 @@ export interface SolutionPlugin {
   getQuestionsForScaffolding?: (
     ctx: Context,
     inputs: Inputs
-  ) => Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>>;
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   /**
    * execute user customized task, for example `Add Resource`, `Add Capabilities`, etc

@@ -17,7 +17,7 @@ import { v4 as uuidv4 } from "uuid";
 import { LocalDebugCertificate } from "./constants";
 import * as ps from "./util/process";
 
-const continueText = "Continue";
+const installText = "Install";
 const learnMoreText = "Learn More";
 const learnMoreUrl = "https://aka.ms/teamsfx-ca-certificate";
 const warningMessage =
@@ -345,14 +345,14 @@ export class LocalCertificateManager {
           confirmMessage,
           true,
           learnMoreText,
-          continueText
+          installText
         );
         userSelected = res.isOk() ? res.value : undefined;
         if (userSelected === learnMoreText) {
           this.ui.openUrl(learnMoreUrl);
         }
       } while (userSelected === learnMoreText);
-      return userSelected === continueText;
+      return userSelected === installText;
     }
 
     // No dialog, always return true;

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  AzureAccountProvider,
   err,
   FxError,
   Inputs,
@@ -9,63 +10,206 @@ import {
   OptionItem,
   QTreeNode,
   Result,
+  TokenProvider,
   v2,
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
 import { Container, Service } from "typedi";
+import arm from "../arm";
+import { BuiltInResourcePluginNames } from "./constants";
 import { InvalidInputError, ResourceAlreadyAddedError } from "./error";
 import { createSelectModuleQuestionNode, selectResourceQuestion } from "./questions";
-import fs from "fs-extra";
-import * as path from "path";
-
-@Service("fx-resource-azure-storage")
+import { getModule } from "./utils";
+@Service(BuiltInResourcePluginNames.storage)
 export class AzureStoragePlugin implements v3.ResourcePlugin {
   resourceType = "Azure Storage";
   description = "Azure Storage";
-  name = "fx-resource-azure-storage";
-  async pluginDependencies(ctx: v2.Context, inputs: Inputs): Promise<Result<string[], FxError>> {
-    return ok(["fx-resource-azure-web-app"]);
-  }
+  name = BuiltInResourcePluginNames.storage;
   async generateResourceTemplate(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    if (!inputs.test) {
-      await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
-      await fs.writeFile(
-        path.join(inputs.projectPath, "templates", "azure", "AzureStorage.bicep"),
-        ""
-      );
-    }
-    return ok({ kind: "bicep", template: {} });
+    return ok({
+      kind: "bicep",
+      template: {
+        Provision: {
+          Orchestration: "Orchestration",
+          Reference: {
+            endpoint: "provisionOutputs.azureStorageOutput.value.endpoint",
+            domain: "provisionOutputs.azureStorageOutput.value.domain",
+          },
+          Modules: {
+            azureStorage: "",
+          },
+        },
+        Parameters: {
+          azureStorageK1: "v1",
+        },
+      },
+    });
+  }
+  async provisionResource(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<v3.CloudResource, FxError>> {
+    const config: v3.AzureStorage = {
+      domain: "huajie1214dev35e42dtab.z19.web.core.windows.net",
+      endpoint: "https://huajie1214dev35e42dtab.z19.web.core.windows.net",
+      storageResourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Storage/storageAccounts/huajie1214dev35e42dtab",
+    };
+    return ok(config);
+  }
+
+  async deploy(
+    ctx: v2.Context,
+    inputs: v3.PluginDeployInputs,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    ctx.logProvider.info(`fx-resource-azure-storage deploy success!`);
+    return ok(Void);
   }
 }
+@Service(BuiltInResourcePluginNames.bot)
+export class AzureBotPlugin implements v3.ResourcePlugin {
+  resourceType = "Azure Bot";
+  description = "Azure Bot";
+  name = BuiltInResourcePluginNames.bot;
+  async generateResourceTemplate(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    return ok({
+      kind: "bicep",
+      template: {
+        Provision: {
+          Orchestration: "Orchestration",
+          Reference: {
+            endpoint: "provisionOutputs.azureBotOutput.value.endpoint",
+            domain: "provisionOutputs.azureBotOutput.value.domain",
+          },
+          Modules: {
+            azureBot: "",
+          },
+        },
+        Parameters: {
+          azureBotK2: "v2",
+        },
+      },
+    });
+  }
 
-@Service("fx-resource-azure-web-app")
+  async provisionResource(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<v3.CloudResource, FxError>> {
+    const config: v3.AzureBot = {
+      botId: "e01c3709-3700-45dd-9f23-bdbedc78392e",
+      objectId: "ea553a03-0322-4c9a-8bd5-8d56d1d2b534",
+      skuName: "F1",
+      siteName: "huajie1214dev35e42dbot",
+      validDomain: "huajie1214dev35e42dbot.azurewebsites.net",
+      appServicePlanName: "huajie1214dev35e42dbot",
+      botWebAppResourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/huajie1214dev35e42dbot",
+      siteEndpoint: "https://huajie1214dev35e42dbot.azurewebsites.net",
+      botPassword: "{{fx-resource-bot.botPassword}}",
+      secretFields: ["botPassword"],
+    };
+    return ok(config);
+  }
+
+  async deploy(
+    ctx: v2.Context,
+    inputs: v3.PluginDeployInputs,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    ctx.logProvider.info(`fx-resource-azure-bot deploy success!`);
+    return ok(Void);
+  }
+}
+@Service(BuiltInResourcePluginNames.webApp)
 export class AzureWebAppPlugin implements v3.ResourcePlugin {
   resourceType = "Azure Web App";
   description = "Azure Web App";
-  name = "fx-resource-azure-web-app";
+  name = BuiltInResourcePluginNames.webApp;
   async generateResourceTemplate(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    if (!inputs.test) {
-      await fs.ensureDir(path.join(inputs.projectPath, "templates", "azure"));
-      await fs.writeFile(
-        path.join(inputs.projectPath, "templates", "azure", "AzureWebApp.bicep"),
-        ""
-      );
-    }
-    return ok({ kind: "bicep", template: {} });
+    return ok({
+      kind: "bicep",
+      template: {
+        Provision: {
+          Orchestration: "Orchestration",
+          Reference: {
+            endpoint: "provisionOutputs.azureWebAppOutput.value.endpoint",
+            domain: "provisionOutputs.azureWebAppOutput.value.domain",
+          },
+          Modules: {
+            azureWebApp: "",
+          },
+        },
+        Parameters: {
+          azureWebAppK3: "v3",
+        },
+      },
+    });
+  }
+
+  async provisionResource(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<v3.CloudResource, FxError>> {
+    const config: v3.CloudResource = {
+      resourceId:
+        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/huajie1214dev35e42dbot",
+      endpoint: "https://huajie1214dev35e42dbot.azurewebsites.net",
+    };
+    return ok(config);
+  }
+
+  async deploy(
+    ctx: v2.Context,
+    inputs: v3.PluginDeployInputs,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    ctx.logProvider.info(`fx-resource-azure-web-app deploy success!`);
+    return ok(Void);
+  }
+}
+
+@Service(BuiltInResourcePluginNames.spfx)
+export class SPFxResourcePlugin implements v3.ResourcePlugin {
+  resourceType = "SPFx resource";
+  description = "SPFx resource";
+  name = BuiltInResourcePluginNames.spfx;
+  async deploy(
+    ctx: v2.Context,
+    inputs: v3.PluginDeployInputs,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    ctx.logProvider.info(`fx-resource-spfx deploy success!`);
+    return ok(Void);
   }
 }
 
 function getAllResourcePlugins(): v3.ResourcePlugin[] {
   return [
-    Container.get<v3.ResourcePlugin>("fx-resource-azure-storage"),
-    Container.get<v3.ResourcePlugin>("fx-resource-azure-web-app"),
+    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.webApp),
+    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.bot),
+    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.webApp),
   ];
 }
 
@@ -93,14 +237,14 @@ export async function getQuestionsForAddResource(
 }
 export async function addResource(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: number; resource?: string }
+  inputs: v2.InputsWithProjectPath & { module?: string; resource?: string }
 ): Promise<Result<Void, FxError>> {
   if (!inputs.resource) {
     return err(new InvalidInputError(inputs, "inputs.resource undefined"));
   }
   const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
   if (inputs.module !== undefined) {
-    const module = solutionSettings.modules[inputs.module];
+    const module = getModule(solutionSettings, inputs.module);
     if (module) {
       if (module.hostingPlugin === inputs.resource) {
         return err(new ResourceAlreadyAddedError(inputs.resource));
@@ -119,7 +263,20 @@ export async function addResource(
   addedResourceNames.forEach((s) => allResourceNames.add(s));
   existingResourceNames.forEach((s) => allResourceNames.add(s));
   solutionSettings.activeResourcePlugins = Array.from(allResourceNames);
-  //TODO collect resource templates
+
+  //call arm module to generate arm templates
+  const activatedPlugins = solutionSettings.activeResourcePlugins.map((n) =>
+    Container.get<v3.ResourcePlugin>(n)
+  );
+  const addedPlugins = Array.from(addedResourceNames).map((n) =>
+    Container.get<v3.ResourcePlugin>(n)
+  );
+  const armRes = await arm.generateArmTemplate(ctx, inputs, activatedPlugins, addedPlugins);
+  if (armRes.isErr()) {
+    return err(armRes.error);
+  }
+
+  //call addResource API
   for (const pluginName of allResourceNames.values()) {
     const plugin = Container.get<v3.ResourcePlugin>(pluginName);
     if (addedResourceNames.has(pluginName) && !existingResourceNames.has(pluginName)) {
@@ -129,18 +286,6 @@ export async function addResource(
           return err(res.error);
         }
       }
-      if (plugin.generateResourceTemplate) {
-        const res = await plugin.generateResourceTemplate(ctx, inputs);
-        if (res.isErr()) {
-          return err(res.error);
-        }
-      }
-    }
-    if (plugin.updateResourceTemplate) {
-      const res = await plugin.updateResourceTemplate(ctx, inputs);
-      if (res.isErr()) {
-        return err(res.error);
-      }
     }
   }
   return ok(Void);
@@ -148,7 +293,7 @@ export async function addResource(
 
 async function resolveResourceDependencies(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: number; resource?: string },
+  inputs: v2.InputsWithProjectPath & { module?: string; resource?: string },
   addedResourceNames: Set<string>
 ): Promise<Result<undefined, FxError>> {
   while (true) {

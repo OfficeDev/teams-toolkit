@@ -239,7 +239,7 @@ export async function traverse(
   let step = 1; // manual input step
   let totalStep = 1;
   const parentMap = new Map<QTreeNode, QTreeNode>();
-  const valueMap = new Map<QTreeNode, unknown>();
+  // const valueMap = new Map<QTreeNode, unknown>();
   const autoSkipSet = new Set<QTreeNode>();
   while (stack.length > 0) {
     const curr = stack.pop();
@@ -274,7 +274,7 @@ export async function traverse(
         // }
         stack.push(curr);
 
-        // find the previoud input that is neither group nor func nor single option select
+        // find the previous input that is neither group nor func nor single option select
         let found = false;
         while (history.length > 0) {
           const last = history.pop();
@@ -313,19 +313,19 @@ export async function traverse(
         } else {
           ++step;
         }
-        let valueInMap = question.value;
-        if (question.type === "singleSelect") {
-          const sq: SingleSelectQuestion = question as SingleSelectQuestion;
-          if (sq.value && typeof sq.value !== "string") {
-            valueInMap = (sq.value as OptionItem).id;
-          }
-        } else if (question.type === "multiSelect") {
-          const mq: MultiSelectQuestion = question as MultiSelectQuestion;
-          if (mq.value && typeof mq.value[0] !== "string") {
-            valueInMap = (mq.value as OptionItem[]).map((i) => i.id);
-          }
-        }
-        valueMap.set(curr, valueInMap);
+        // let valueInMap = question.value;
+        // if (question.type === "singleSelect") {
+        //   const sq: SingleSelectQuestion = question as SingleSelectQuestion;
+        //   if (sq.value && typeof sq.value !== "string") {
+        //     valueInMap = (sq.value as OptionItem).id;
+        //   }
+        // } else if (question.type === "multiSelect") {
+        //   const mq: MultiSelectQuestion = question as MultiSelectQuestion;
+        //   if (mq.value && typeof mq.value[0] !== "string") {
+        //     valueInMap = (mq.value as OptionItem[]).map((i) => i.id);
+        //   }
+        // }
+        // valueMap.set(curr, valueInMap);
       }
     }
 
@@ -333,11 +333,15 @@ export async function traverse(
 
     if (curr.children) {
       const matchChildren: QTreeNode[] = [];
-      const valueInMap = valueMap.get(curr);
+      const valueInMap = findValue(curr, parentMap); //curr.data.type !== "group" ? curr.data.value : undefined; //valueMap.get(curr);
       for (const child of curr.children) {
         if (!child) continue;
         if (child.condition) {
-          const validRes = await validate(child.condition, valueInMap as string | string[], inputs);
+          const validRes = await validate(
+            child.condition,
+            valueInMap as string | string[] | OptionItem | OptionItem[],
+            inputs
+          );
           if (validRes !== undefined) {
             continue;
           }
@@ -352,6 +356,15 @@ export async function traverse(
     }
   }
   return ok(Void);
+}
+
+function findValue(curr: QTreeNode, parentMap: Map<QTreeNode, QTreeNode>): any {
+  if (curr.data.type !== "group") return curr.data.value;
+  const parent = parentMap.get(curr);
+  if (parent) {
+    return findValue(parent, parentMap);
+  }
+  return undefined;
 }
 
 function sendTelemetryEvent(

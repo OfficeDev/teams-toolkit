@@ -54,12 +54,11 @@ describe("generateArmTemplates", () => {
     // Assert
     const testModuleFileName = "sqlProvision.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-azure-sql": {
           Provision: {
             azureSql: {
-              ProvisionPath: `./${testModuleFileName}`,
+              path: `./${testModuleFileName}`,
             },
           },
         },
@@ -86,7 +85,7 @@ describe("generateArmTemplates", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationConfigFile);
-      chai.assert.isNotNull(expectedResult.Provision!.Reference);
+      chai.assert.isNotNull(expectedResult.Reference);
       chai.assert.strictEqual(
         JSON.stringify(expectedResult.Parameters, undefined, 2),
         fs.readFileSync(
@@ -109,19 +108,18 @@ describe("generateArmTemplates", () => {
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
       chai.assert.strictEqual(
-        result.value.Provision!.Reference!.sqlResourceId,
+        result.value.Reference!.sqlResourceId,
         "provisionOutputs.azureSqlOutput.value.sqlResourceId"
       );
       chai.assert.strictEqual(
-        result.value.Provision!.Reference!.sqlEndpoint,
+        result.value.Reference!.sqlEndpoint,
         "provisionOutputs.azureSqlOutput.value.sqlEndpoint"
       );
       chai.assert.strictEqual(
-        result.value.Provision!.Reference!.databaseName,
+        result.value.Reference!.databaseName,
         "provisionOutputs.azureSqlOutput.value.databaseName"
       );
-      chai.assert.notExists(result.value.Provision!.Orchestration);
-      chai.assert.notExists(result.value.Provision!.Modules);
+      chai.assert.notExists(result.value.Provision);
       chai.assert.notExists(result.value.Configuration);
       chai.assert.notExists(result.value.Parameters);
     }

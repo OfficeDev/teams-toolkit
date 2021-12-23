@@ -4,12 +4,7 @@ import chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { it } from "mocha";
 import { SolutionRunningState, TeamsAppSolution } from " ../../../src/plugins/solution";
-import {
-  Platform,
-  SolutionConfig,
-  SolutionContext,
-  SolutionSettings,
-} from "@microsoft/teamsfx-api";
+import { Platform, SolutionContext, SolutionSettings } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import {
@@ -20,8 +15,6 @@ import {
 import {
   AzureSolutionQuestionNames,
   BotOptionItem,
-  HostTypeOptionAzure,
-  TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import * as uuid from "uuid";
 import { newEnvInfo } from "../../../src/core/tools";

@@ -57,6 +57,7 @@ export enum AzureSolutionQuestionNames {
   AppName = "app-name",
   AskSub = "subscription",
   ProgrammingLanguage = "programming-language",
+  Solution = "solution",
 }
 
 export const HostTypeOptionAzure: OptionItem = {

@@ -39,7 +39,7 @@ import path from "path";
 import os from "os";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
-import { CoreSource, FxCore, isV2 } from "..";
+import { CoreSource, FxCore, TOOLS } from "..";
 import {
   getStrings,
   isArmSupportEnabled,
@@ -99,7 +99,6 @@ const ChangeLogsFlag = "openUpgradeChangelogs";
 const AADClientSecretFlag = "NeedToSetAADClientSecretEnv";
 
 const gitignoreFileName = ".gitignore";
-let updateNotificationFlag = false;
 let fromReloadFlag = false;
 
 class EnvConfigName {
@@ -160,7 +159,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
     const core = ctx.self as FxCore;
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
-    const res = await core.tools.ui.showMessage(
+    const res = await TOOLS?.ui.showMessage(
       "warn",
       getStrings().solution.MigrationToArmAndMultiEnvMessage,
       true,
@@ -193,17 +192,6 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       );
       throw error;
     }
-  } else if ((await needUpdateTeamsToolkitVersion(ctx)) && !updateNotificationFlag) {
-    // TODO: delete before Arm && Multi-env version released
-    // only for arm && multi-env project with unreleased teams toolkit version
-    updateNotificationFlag = true;
-    const core = ctx.self as FxCore;
-    core.tools.ui.showMessage(
-      "info",
-      getStrings().solution.NeedToUpdateTeamsToolkitVersionMessage,
-      false,
-      "OK"
-    );
   } else {
     // continue next step only when:
     // 1. no need to upgrade the project;
@@ -214,21 +202,21 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
 
 function outputCancelMessage(ctx: CoreHookContext) {
   const core = ctx.self as FxCore;
-  core.tools.logProvider.warning(`[core] Upgrade cancelled.`);
+  TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
 
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (inputs.platform === Platform.VSCode) {
-    core.tools.logProvider.warning(
+    TOOLS?.logProvider.warning(
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit. If you want to upgrade, please run command (Teams: Upgrade project) or click the “Upgrade project” button on tree view to trigger the upgrade.`
     );
-    core.tools.logProvider.warning(
+    TOOLS?.logProvider.warning(
       `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <= 2.10.0`
     );
   } else {
-    core.tools.logProvider.warning(
+    TOOLS?.logProvider.warning(
       `[core] Notice upgrade to new configuration files is a must-have to continue to use current version Teams Toolkit CLI. If you want to upgrade, please trigger this command again.`
     );
-    core.tools.logProvider.warning(
+    TOOLS?.logProvider.warning(
       `[core]If you are not ready to upgrade and want to continue to use the old version Teams Toolkit CLI, please install the version <= 2.10.0`
     );
   }
@@ -320,7 +308,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
     await updateConfig(ctx);
 
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnvStart);
-    await migrateMultiEnv(projectPath, core.tools.logProvider);
+    await migrateMultiEnv(projectPath, TOOLS.logProvider);
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateMultiEnv);
 
     const loadRes = await loadProjectSettings(inputs);
@@ -334,7 +322,7 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
       sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrateArm);
     }
   } catch (err) {
-    core.tools.logProvider.error(`[core] Failed to upgrade project, error: '${err}'`);
+    TOOLS?.logProvider.error(`[core] Failed to upgrade project, error: '${err}'`);
     await handleError(projectPath, ctx, backupFolder);
     throw err;
   }
@@ -366,12 +354,12 @@ async function preReadJsonFile(path: string, core: FxCore): Promise<void> {
   try {
     await fs.readJson(path);
   } catch (err) {
-    core.tools.logProvider.error(
+    TOOLS?.logProvider.error(
       `'${path}' doesn't exist or is not in json format. Please fix it and try again by running command (Teams: Upgrade project).`
     );
-    core.tools.logProvider.warning(`Read this wiki(${learnMoreLink}) for the FAQ.`);
+    TOOLS?.logProvider.warning(`Read this wiki(${learnMoreLink}) for the FAQ.`);
 
-    core.tools.ui
+    TOOLS?.ui
       .showMessage(
         "info",
         util.format(getStrings().solution.MigrationToArmAndMultiEnvPreCheckErrorMessage, path),
@@ -381,7 +369,7 @@ async function preReadJsonFile(path: string, core: FxCore): Promise<void> {
       .then((result) => {
         const userSelected = result.isOk() ? result.value : undefined;
         if (userSelected === learnMoreText) {
-          core.tools.ui!.openUrl(manualUpgradeLink);
+          TOOLS?.ui!.openUrl(manualUpgradeLink);
         }
       });
     throw NotJsonError(err);
@@ -398,10 +386,9 @@ async function handleError(
   } catch (e) {
     // try my best to cleanup
     const core = ctx.self as FxCore;
-    core.tools.logProvider.error(`[core] Failed to cleanup the backup, error: '${e}'`);
+    TOOLS?.logProvider.error(`[core] Failed to cleanup the backup, error: '${e}'`);
   }
-  const core = ctx.self as FxCore;
-  core.tools.ui
+  TOOLS?.ui
     .showMessage(
       "info",
       getStrings().solution.MigrationToArmAndMultiEnvErrorMessage,
@@ -411,7 +398,7 @@ async function handleError(
     .then((result) => {
       const userSelected = result.isOk() ? result.value : undefined;
       if (userSelected === learnMoreText) {
-        core.tools.ui!.openUrl(manualUpgradeLink);
+        TOOLS?.ui!.openUrl(manualUpgradeLink);
       }
     });
 }
@@ -439,12 +426,12 @@ async function postMigration(
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
   await generateUpgradeReport(backupFolder);
   const core = ctx.self as FxCore;
-  await updateGitIgnore(projectPath, core.tools.logProvider, backupFolder);
+  await updateGitIgnore(projectPath, TOOLS.logProvider, backupFolder);
 
-  core.tools.logProvider.warning(
+  TOOLS?.logProvider.warning(
     `[core] Upgrade success! All old files in .fx and appPackage folder have been backed up to the .backup folder and you can delete it. Read this wiki(${learnMoreLink}) if you want to restore your configuration files or learn more about this upgrade.`
   );
-  core.tools.logProvider.warning(
+  TOOLS?.logProvider.warning(
     `[core] Read upgrade-change-logs.md to learn about details for this upgrade.`
   );
 
@@ -453,9 +440,9 @@ async function postMigration(
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuide, {
       [TelemetryProperty.Status]: ProjectMigratorGuideStatus.Reload,
     });
-    await core.tools.ui.reload?.();
+    await TOOLS?.ui.reload?.();
   } else {
-    core.tools.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessage);
+    TOOLS?.logProvider.info(getStrings().solution.MigrationToArmAndMultiEnvSuccessMessage);
   }
 }
 
@@ -944,28 +931,6 @@ async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolea
   return false;
 }
 
-async function needUpdateTeamsToolkitVersion(ctx: CoreHookContext): Promise<boolean> {
-  if (preCheckEnvEnabled()) {
-    return false;
-  }
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  if (!inputs.projectPath) {
-    return false;
-  }
-  const fx = path.join(inputs.projectPath as string, ".fx");
-  if (!(await fs.pathExists(fx))) {
-    return false;
-  }
-  // only for arm && multi-env project
-  const armParameter = path.join(
-    fx,
-    "configs",
-    parameterFileNameTemplate.replace("@envName", "dev")
-  );
-  const defaultEnv = path.join(fx, "env.default.json");
-  return (await fs.pathExists(armParameter)) && !(await fs.pathExists(defaultEnv));
-}
-
 function preCheckEnvEnabled() {
   if (isMultiEnvEnabled() && isArmSupportEnabled()) {
     return true;
@@ -1085,7 +1050,6 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
 
   const targetEnvName = "dev";
   const result = await loadSolutionContext(
-    core.tools,
     inputs,
     minorCtx.projectSettings,
     targetEnvName,
@@ -1096,9 +1060,9 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
   }
   minorCtx.solutionContext = result.value;
   const settings = minorCtx.projectSettings?.solutionSettings as AzureSolutionSettings;
-  const activePlugins = isV2()
-    ? getActivatedV2ResourcePlugins(settings).map((p) => new NamedArmResourcePluginAdaptor(p))
-    : getActivatedResourcePlugins(settings);
+  const activePlugins = getActivatedV2ResourcePlugins(settings).map(
+    (p) => new NamedArmResourcePluginAdaptor(p)
+  );
 
   // generate bicep files.
   try {

@@ -13,7 +13,7 @@ import { dotnetFailToInstallHelpLink, dotnetExplanationHelpLink } from "../const
 import { DepsCheckerError } from "../depsError";
 import { runWithProgressIndicator } from "../util/progressIndicator";
 import { cpUtils } from "../util/cpUtils";
-import { isLinux, isWindows } from "../util/system";
+import { isLinux, isWindows, isArm64, isMacOS } from "../util/system";
 import { DepsCheckerEvent, TelemtryMessages } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
@@ -26,11 +26,12 @@ export enum DotnetVersion {
   v21 = "2.1",
   v31 = "3.1",
   v50 = "5.0",
+  v60 = "6.0",
 }
 type DotnetSDK = { version: string; path: string };
 const DotnetCoreSDKName = ".NET Core SDK";
-const installVersion = DotnetVersion.v31;
-const supportedVersions = [DotnetVersion.v31, DotnetVersion.v50];
+const installVersion = isMacOS() && isArm64() ? DotnetVersion.v60 : DotnetVersion.v31;
+const supportedVersions = [DotnetVersion.v31, DotnetVersion.v50, DotnetVersion.v60];
 const installedNameWithVersion = `${DotnetCoreSDKName} (v${DotnetVersion.v31})`;
 
 export class DotnetChecker implements DepsChecker {

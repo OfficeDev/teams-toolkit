@@ -14,3 +14,7 @@ export function isMacOS(): boolean {
 export function isLinux(): boolean {
   return os.type() === "Linux";
 }
+
+export function isArm64(): boolean {
+  return os.arch() === "arm64";
+}

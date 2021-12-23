@@ -23,6 +23,7 @@ import {
   fehostPlugin,
   identityPlugin,
   simpleAuthPlugin,
+  SOLUTION_CONFIG_NAME,
   TestFileContent,
 } from "../../constants";
 import { MockedLogProvider, MockedTelemetryReporter, MockedUserInteraction } from "./util";
@@ -56,7 +57,7 @@ export class TestHelper {
         envName: TestHelper.envName,
         state: new Map<string, any>([
           [
-            "solution",
+            SOLUTION_CONFIG_NAME,
             new ConfigMap([
               ["resourceBaseName", TestHelper.resourceBaseName],
               ["resourceGroupName", TestHelper.resourceGroupName],

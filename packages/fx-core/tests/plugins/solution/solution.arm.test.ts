@@ -40,6 +40,7 @@ import {
   identityPlugin,
   PluginId,
   simpleAuthPlugin,
+  SOLUTION_CONFIG_NAME,
   spfxPlugin,
   TestFileContent,
   TestFilePath,
@@ -50,18 +51,21 @@ import "mocha";
 import chai, { assert } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { TestHelper } from "./helper";
+import { isFeatureFlagEnabled } from "../../../src/common/tools";
+import { FeatureFlagName } from "../../../src/common/constants";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
-let mockedEnvRestore: () => void;
 
 describe("Generate ARM Template for project", () => {
+  //  Only test when insider feature flag enabled
+  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
+    return;
+  }
+
   const mocker = sinon.createSandbox();
   let mockedCtx: SolutionContext;
 
   beforeEach(async () => {
-    mockedEnvRestore = mockedEnv({
-      __TEAMSFX_INSIDER_PREVIEW: "true",
-    });
     mockedCtx = TestHelper.mockSolutionContext();
     mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["default"]));
     mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
@@ -69,7 +73,6 @@ describe("Generate ARM Template for project", () => {
   });
 
   afterEach(async () => {
-    mockedEnvRestore();
     await fs.remove(TestHelper.rootDir);
     mocker.restore();
   });
@@ -506,6 +509,11 @@ Mocked bot configuration orchestration content. Module path: './teamsFx/botConfi
 });
 
 describe("Deploy ARM Template to Azure", () => {
+  //  Only test when insider feature flag enabled
+  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
+    return;
+  }
+
   const mocker = sinon.createSandbox();
   let mockedCtx: SolutionContext;
   const mockedArmTemplateOutput = {
@@ -538,9 +546,6 @@ describe("Deploy ARM Template to Azure", () => {
   };
 
   beforeEach(async () => {
-    mockedEnvRestore = mockedEnv({
-      __TEAMSFX_INSIDER_PREVIEW: "true",
-    });
     mockedCtx = TestHelper.mockSolutionContext();
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
@@ -589,7 +594,6 @@ describe("Deploy ARM Template to Azure", () => {
   });
 
   afterEach(async () => {
-    mockedEnvRestore();
     mocker.restore();
     await fs.remove(TestHelper.rootDir);
   });
@@ -608,28 +612,8 @@ describe("Deploy ARM Template to Azure", () => {
   });
 
   it("should successfully update parameter and deploy arm templates to azure", async () => {
-    mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
-      const azureToken = new UserTokenCredentials(
-        TestHelper.clientId,
-        TestHelper.domain,
-        TestHelper.username,
-        TestHelper.password
-      );
-      return azureToken;
-    };
-    mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
-      const subscriptionInfo = {
-        subscriptionId: TestHelper.subscriptionId,
-        subscriptionName: TestHelper.subscriptionName,
-      } as SubscriptionInfo;
-      return subscriptionInfo;
-    };
+    TestHelper.mockArmDeploymentDependencies(mockedCtx, mocker);
 
-    mocker.stub(cpUtils, "executeCommand").returns(
-      new Promise((resolve) => {
-        resolve(TestHelper.armTemplateJson);
-      })
-    );
     const envRestore = mockedEnv({
       MOCKED_EXPAND_VAR_TEST: TestHelper.envVariable,
     });
@@ -765,24 +749,38 @@ describe("Deploy ARM Template to Azure", () => {
     chai.assert.isTrue(result.isOk());
     chai.assert.strictEqual(usedExistingParameterDefaultFile, true);
   });
+
+  it("should return system error if resource group name not exists in project solution settings", async () => {
+    // Arrange
+    TestHelper.mockArmDeploymentDependencies(mockedCtx, mocker);
+    mockedCtx.envInfo.state.get(SOLUTION_CONFIG_NAME)?.delete("resourceGroupName");
+
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
+
+    // Assert
+    chai.assert.isTrue(result.isErr());
+    console.log(JSON.stringify(result));
+  });
 });
 
 describe("Poll Deployment Status", () => {
+  //  Only test when insider feature flag enabled
+  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
+    return;
+  }
+
   const mocker = sinon.createSandbox();
   let mockedCtx: SolutionContext;
   let mockedDeployCtx: any;
 
   beforeEach(async () => {
-    mockedEnvRestore = mockedEnv({
-      __TEAMSFX_INSIDER_PREVIEW: "true",
-    });
     mockedCtx = TestHelper.mockSolutionContext();
     mockedDeployCtx = TestHelper.getMockedDeployCtx(mockedCtx);
     mocker.stub(tools, "waitSeconds").resolves();
   });
 
   afterEach(async () => {
-    mockedEnvRestore();
     mocker.restore();
   });
 

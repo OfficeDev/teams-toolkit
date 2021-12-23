@@ -994,9 +994,7 @@ describe("Middleware - others", () => {
     // test variables
     let solutionContext: SolutionContext | undefined;
     let envLoaded: string | undefined = undefined;
-    // let mockedEnvRestore: RestoreFn;
     beforeEach(() => {
-      // mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });
       solutionContext = undefined;
       envLoaded = undefined;
 
@@ -1041,9 +1039,6 @@ describe("Middleware - others", () => {
           return originalPathExists(path);
         }
       });
-    });
-    afterEach(() => {
-      // mockedEnvRestore();
     });
     describe("skipping logic", async () => {
       it("skips on getQuestions of the create stage", async () => {

@@ -191,12 +191,7 @@ describe("Core basic APIs", () => {
   });
 
   describe("migrateV1", () => {
-    let mockedEnvRestore: RestoreFn;
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });
-    });
     afterEach(async () => {
-      mockedEnvRestore();
       await fs.remove(path.resolve(os.tmpdir(), "v1projectpath"));
     });
     const migrateV1Params = [

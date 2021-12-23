@@ -4,7 +4,7 @@
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { CoreHookContext, isV2, TOOLS } from "..";
+import { CoreHookContext, TOOLS } from "..";
 import { isMultiEnvEnabled } from "../../common";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { shouldIgnored } from "./projectSettingsLoader";
@@ -29,19 +29,9 @@ export const LocalSettingsWriterMW: Middleware = async (
 
     const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath);
 
-    if (isV2()) {
-      if (ctx.localSettings === undefined) return;
-      // persistent localSettings.json.
-      await localSettingsProvider.saveJson(ctx.localSettings, ctx.contextV2?.cryptoProvider);
-    } else {
-      const solutionContext = ctx.solutionContext;
-      if (solutionContext === undefined || solutionContext.localSettings === undefined) return;
-      // persistent localSettings.json.
-      await localSettingsProvider.save(
-        solutionContext.localSettings,
-        ctx.solutionContext?.cryptoProvider
-      );
-    }
+    if (ctx.localSettings === undefined) return;
+    // persistent localSettings.json.
+    await localSettingsProvider.saveJson(ctx.localSettings, ctx.contextV2?.cryptoProvider);
 
     TOOLS.logProvider.debug(
       `[core] persist local settings config file: ${localSettingsProvider.localSettingsFilePath}`

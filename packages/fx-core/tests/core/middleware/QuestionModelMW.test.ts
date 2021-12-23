@@ -27,14 +27,7 @@ import { assert } from "chai";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
-import {
-  CoreHookContext,
-  createV2Context,
-  InvalidInputError,
-  isV2,
-  setTools,
-  TOOLS,
-} from "../../../src";
+import { CoreHookContext, createV2Context, InvalidInputError, setTools, TOOLS } from "../../../src";
 import {
   getQuestionsForInit,
   newSolutionContext,

@@ -25,14 +25,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
 import { Container } from "typedi";
-import {
-  CoreSource,
-  createV2Context,
-  FunctionRouterError,
-  isV2,
-  newProjectSettings,
-  TOOLS,
-} from "..";
+import { CoreSource, createV2Context, FunctionRouterError, newProjectSettings, TOOLS } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
 import { BuiltInSolutionNames } from "../../plugins/solution/fx-solution/v3/constants";
@@ -147,9 +140,9 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
       }
     }
   } else {
-    if ((isV2() && ctx.solutionV2 && ctx.contextV2) || (ctx.solution && ctx.solutionContext)) {
-      const solution = isV2() ? ctx.solutionV2 : ctx.solution;
-      const context = isV2() ? ctx.contextV2 : ctx.solutionContext;
+    if (ctx.solutionV2 && ctx.contextV2) {
+      const solution = ctx.solutionV2;
+      const context = ctx.contextV2;
       if (solution && context) {
         if (method === "provisionResources" || method === "provisionResourcesV2") {
           getQuestionRes = await core._getQuestions(
@@ -157,7 +150,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             solution,
             Stage.provision,
             inputs,
-            isV2() ? ctx.envInfoV2 : undefined
+            ctx.envInfoV2
           );
         } else if (method === "localDebug" || method === "localDebugV2") {
           getQuestionRes = await core._getQuestions(
@@ -165,7 +158,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             solution,
             Stage.debug,
             inputs,
-            isV2() ? ctx.envInfoV2 : undefined
+            ctx.envInfoV2
           );
         } else if (method === "deployArtifacts" || method === "deployArtifactsV2") {
           getQuestionRes = await core._getQuestions(
@@ -173,7 +166,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             solution,
             Stage.deploy,
             inputs,
-            isV2() ? ctx.envInfoV2 : undefined
+            ctx.envInfoV2
           );
         } else if (method === "publishApplication" || method === "publishApplicationV2") {
           getQuestionRes = await core._getQuestions(
@@ -181,7 +174,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             solution,
             Stage.publish,
             inputs,
-            isV2() ? ctx.envInfoV2 : undefined
+            ctx.envInfoV2
           );
         } else if (method === "executeUserTask") {
           const func = ctx.arguments[0] as Func;
@@ -190,7 +183,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             solution,
             func,
             inputs,
-            isV2() ? ctx.envInfoV2 : undefined
+            ctx.envInfoV2
           );
         } else if (method === "grantPermission") {
           getQuestionRes = await core._getQuestions(
@@ -198,7 +191,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             solution,
             Stage.grantPermission,
             inputs,
-            isV2() ? ctx.envInfoV2 : undefined
+            ctx.envInfoV2
           );
         }
       }
@@ -452,25 +445,14 @@ export async function getQuestionsForCreateProjectV2(
   const capNode = new QTreeNode(capQuestion);
   createNew.addChild(capNode);
 
-  const globalSolutions: Solution[] | v2.SolutionPlugin[] = isV2()
-    ? await getAllSolutionPluginsV2()
-    : await getAllSolutionPlugins();
-  const context = isV2()
-    ? createV2Context(newProjectSettings())
-    : await newSolutionContext(TOOLS, inputs);
+  const globalSolutions: v2.SolutionPlugin[] = await getAllSolutionPluginsV2();
+  const context = createV2Context(newProjectSettings());
   for (const solutionPlugin of globalSolutions) {
     let res: Result<QTreeNode | QTreeNode[] | undefined, FxError> = ok(undefined);
-    if (isV2()) {
-      const v2plugin = solutionPlugin as v2.SolutionPlugin;
-      res = v2plugin.getQuestionsForScaffolding
-        ? await v2plugin.getQuestionsForScaffolding(context as v2.Context, inputs)
-        : ok(undefined);
-    } else {
-      const v1plugin = solutionPlugin as Solution;
-      res = v1plugin.getQuestions
-        ? await v1plugin.getQuestions(Stage.create, context as SolutionContext)
-        : ok(undefined);
-    }
+    const v2plugin = solutionPlugin as v2.SolutionPlugin;
+    res = v2plugin.getQuestionsForScaffolding
+      ? await v2plugin.getQuestionsForScaffolding(context as v2.Context, inputs)
+      : ok(undefined);
     if (res.isErr()) return err(new SystemError(res.error, CoreSource, "QuestionModelFail"));
     if (res.value) {
       const solutionNode = Array.isArray(res.value)
@@ -514,22 +496,15 @@ export async function getQuestionsForUserTaskV2(
   const array = namespace ? namespace.split("/") : [];
   if (namespace && "" !== namespace && array.length > 0) {
     let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
-    if (isV2()) {
-      const solutionV2 = solution as v2.SolutionPlugin;
-      if (solutionV2.getQuestionsForUserTask) {
-        res = await solutionV2.getQuestionsForUserTask(
-          ctx as v2.Context,
-          inputs,
-          func,
-          envInfo!,
-          TOOLS.tokenProvider
-        );
-      }
-    } else {
-      const solutionv1 = solution as Solution;
-      if (solutionv1.getQuestionsForUserTask) {
-        res = await solutionv1.getQuestionsForUserTask(func, ctx as SolutionContext);
-      }
+    const solutionV2 = solution as v2.SolutionPlugin;
+    if (solutionV2.getQuestionsForUserTask) {
+      res = await solutionV2.getQuestionsForUserTask(
+        ctx as v2.Context,
+        inputs,
+        func,
+        envInfo!,
+        TOOLS.tokenProvider
+      );
     }
     if (res.isOk()) {
       if (res.value) {
@@ -551,19 +526,10 @@ export async function getQuestionsV2(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (stage !== Stage.create) {
     let res: Result<QTreeNode | undefined, FxError> = ok(undefined);
-    if (isV2()) {
-      const solutionV2 = solution as v2.SolutionPlugin;
-      if (solutionV2.getQuestions) {
-        inputs.stage = stage;
-        res = await solutionV2.getQuestions(
-          ctx as v2.Context,
-          inputs,
-          envInfo!,
-          TOOLS.tokenProvider
-        );
-      }
-    } else {
-      res = await (solution as Solution).getQuestions(stage, ctx as SolutionContext);
+    const solutionV2 = solution as v2.SolutionPlugin;
+    if (solutionV2.getQuestions) {
+      inputs.stage = stage;
+      res = await solutionV2.getQuestions(ctx as v2.Context, inputs, envInfo!, TOOLS.tokenProvider);
     }
     if (res.isErr()) return res;
     if (res.value) {

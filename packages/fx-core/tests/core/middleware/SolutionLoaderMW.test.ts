@@ -7,7 +7,7 @@ import { assert } from "chai";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as uuid from "uuid";
-import { CoreHookContext, isV2 } from "../../../src";
+import { CoreHookContext } from "../../../src";
 import { ContextInjectorMW, SolutionLoaderMW } from "../../../src/core/middleware";
 
 describe("Middleware - SolutionLoaderMW, ContextInjectorMW", () => {
@@ -38,11 +38,7 @@ describe("Middleware - SolutionLoaderMW, ContextInjectorMW", () => {
       class MyClass {
         async isLoaded(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
           if (ctx) {
-            if (isV2()) {
-              return ok(ctx.solutionV2 !== undefined);
-            } else {
-              return ok(ctx.solution !== undefined);
-            }
+            return ok(ctx.solutionV2 !== undefined);
           }
           return ok(false);
         }

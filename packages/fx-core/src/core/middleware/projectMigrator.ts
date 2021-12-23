@@ -39,7 +39,7 @@ import path from "path";
 import os from "os";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
-import { CoreSource, FxCore, isV2, TOOLS } from "..";
+import { CoreSource, FxCore, TOOLS } from "..";
 import {
   getStrings,
   isArmSupportEnabled,
@@ -1060,9 +1060,9 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
   }
   minorCtx.solutionContext = result.value;
   const settings = minorCtx.projectSettings?.solutionSettings as AzureSolutionSettings;
-  const activePlugins = isV2()
-    ? getActivatedV2ResourcePlugins(settings).map((p) => new NamedArmResourcePluginAdaptor(p))
-    : getActivatedResourcePlugins(settings);
+  const activePlugins = getActivatedV2ResourcePlugins(settings).map(
+    (p) => new NamedArmResourcePluginAdaptor(p)
+  );
 
   // generate bicep files.
   try {

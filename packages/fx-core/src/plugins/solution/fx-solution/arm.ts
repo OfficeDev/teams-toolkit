@@ -25,7 +25,18 @@ import os from "os";
 import path from "path";
 import { Container } from "typedi";
 import { format } from "util";
-import { TEAMS_FX_RESOURCE_ID_KEY } from "./constants";
+import {
+  TEAMS_FX_RESOURCE_ID_KEY,
+  GLOBAL_CONFIG,
+  RESOURCE_GROUP_NAME,
+  SolutionError,
+  SolutionSource,
+  SolutionTelemetryComponentName,
+  SolutionTelemetryEvent,
+  SolutionTelemetryProperty,
+  SolutionTelemetrySuccess,
+  SUBSCRIPTION_ID,
+} from "./constants";
 import { environmentManager } from "../../../core/environment";
 import {
   AzureSolutionConfig,
@@ -44,17 +55,6 @@ import {
 } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
 import {
-  GLOBAL_CONFIG,
-  RESOURCE_GROUP_NAME,
-  SolutionError,
-  SolutionSource,
-  SolutionTelemetryComponentName,
-  SolutionTelemetryEvent,
-  SolutionTelemetryProperty,
-  SolutionTelemetrySuccess,
-  SUBSCRIPTION_ID,
-} from "./constants";
-import {
   getActivatedResourcePlugins,
   getActivatedV2ResourcePlugins,
 } from "./ResourcePluginContainer";
@@ -62,7 +62,6 @@ import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
 import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
-import { isV2 } from "../../../core";
 
 const bicepOrchestrationFileName = "main.bicep";
 const bicepOrchestrationProvisionFileName = "provision.bicep";
@@ -776,11 +775,9 @@ async function doGenerateArmTemplate(
 ): Promise<Result<any, FxError>> {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const baseName = generateResourceBaseName(ctx.projectSettings!.appName, ctx.envInfo!.envName);
-  const plugins = isV2()
-    ? getActivatedV2ResourcePlugins(azureSolutionSettings).map(
-        (p) => new NamedArmResourcePluginAdaptor(p)
-      )
-    : getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
+  const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    (p) => new NamedArmResourcePluginAdaptor(p)
+  ); // This function ensures return result won't be empty
   const bicepOrchestrationTemplate = new BicepOrchestrationContent(
     plugins.map((p) => p.name),
     baseName
@@ -1222,11 +1219,9 @@ function generateBicepModuleConfigFilePath(moduleFileName: string) {
 
 function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: string): string {
   const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-  const plugins = isV2()
-    ? getActivatedV2ResourcePlugins(azureSolutionSettings).map(
-        (p) => new NamedArmResourcePluginAdaptor(p)
-      )
-    : getActivatedResourcePlugins(azureSolutionSettings); // This function ensures return result won't be empty
+  const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    (p) => new NamedArmResourcePluginAdaptor(p)
+  ); // This function ensures return result won't be empty
   const stateVariables: Record<string, Record<string, any>> = {};
   const availableVariables: Record<string, Record<string, any>> = { state: stateVariables };
   // Add plugin contexts to available variables

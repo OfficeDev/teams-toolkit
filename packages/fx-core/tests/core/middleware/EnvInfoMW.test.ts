@@ -26,7 +26,6 @@ import sinon from "sinon";
 import {
   CoreHookContext,
   environmentManager,
-  isV2,
   newEnvInfo,
   newEnvInfoV3,
   separateSecretDataV3,
@@ -122,12 +121,8 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
           ): Promise<Result<any, FxError>> {
             if (ctx) {
               ctx.projectSettings = projectSettings;
-              if (isV2()) {
-                ctx.contextV2 = contextV2;
-                ctx.envInfoV2 = envInfoV2;
-              } else {
-                ctx.solutionContext = solutionContext;
-              }
+              ctx.contextV2 = contextV2;
+              ctx.envInfoV2 = envInfoV2;
             }
             return ok("");
           }
@@ -199,20 +194,11 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
           const ctx: CoreHookContext = getRes.value as CoreHookContext;
           assert.isTrue(ctx !== undefined);
           if (ctx) {
-            if (isV2()) {
-              assert.isTrue(
-                ctx.envInfoV2 &&
-                  ctx.envInfoV2.state &&
-                  ctx.envInfoV2.state[pluginName]["secrets"][secretName] === secretText
-              );
-            } else {
-              assert.isTrue(
-                ctx.solutionContext &&
-                  (ctx.solutionContext.envInfo.state.get(pluginName) as ConfigMap).get(
-                    secretName
-                  ) === secretText
-              );
-            }
+            assert.isTrue(
+              ctx.envInfoV2 &&
+                ctx.envInfoV2.state &&
+                ctx.envInfoV2.state[pluginName]["secrets"][secretName] === secretText
+            );
           }
         }
       });

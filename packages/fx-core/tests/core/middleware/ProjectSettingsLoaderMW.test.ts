@@ -20,13 +20,7 @@ import * as path from "path";
 import fs from "fs-extra";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
-import {
-  CoreHookContext,
-  isV2,
-  NoProjectOpenedError,
-  PathNotExistError,
-  setTools,
-} from "../../../src";
+import { CoreHookContext, NoProjectOpenedError, PathNotExistError, setTools } from "../../../src";
 import { ContextInjectorMW, ProjectSettingsLoaderMW } from "../../../src/core/middleware";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 
@@ -120,9 +114,7 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
           assert.isTrue(ctx !== undefined);
           if (ctx) {
             assert.deepEqual(projectSettings, ctx.projectSettings);
-            if (isV2()) {
-              assert.isTrue(ctx.contextV2 !== undefined);
-            }
+            assert.isTrue(ctx.contextV2 !== undefined);
           }
           return ok("");
         }

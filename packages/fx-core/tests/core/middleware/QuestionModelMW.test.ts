@@ -221,7 +221,7 @@ describe("Middleware - QuestionModelMW", () => {
     scaffold: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
     addResource: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
   });
-  const EnvParams = [{ TEAMSFX_APIV2: "false" }, { TEAMSFX_APIV2: "true" }];
+
   it("success to run question model for V3 API", async () => {
     sandbox.stub(TOOLS.ui, "inputText").callsFake(async (config: InputTextConfig) => {
       return ok({ type: "success", result: questionValue });
@@ -279,122 +279,108 @@ describe("Middleware - QuestionModelMW", () => {
       assert.isTrue(res.isOk() && res.value === true);
     }
   });
-  for (const param of EnvParams) {
-    describe(`API V2:${param.TEAMSFX_APIV2}`, () => {
-      let mockedEnvRestore: RestoreFn;
-      beforeEach(() => {
-        mockedEnvRestore = mockedEnv(param);
-      });
-
-      afterEach(() => {
-        mockedEnvRestore();
-        sandbox.restore();
-      });
-
-      it("success to run question model for createProject, provisionResources, deployArtifacts, localDebug, publishApplication, executeUserTask", async () => {
-        sandbox.stub(TOOLS.ui, "inputText").callsFake(async (config: InputTextConfig) => {
-          return ok({ type: "success", result: questionValue });
-        });
-        const my = new MockCoreForQM();
-
-        {
-          const inputs: Inputs = { platform: Platform.VSCode };
-          const res = await my.createProjectV2(inputs);
-          assert.isTrue(res.isOk() && res.value === true);
-        }
-        {
-          const inputs: Inputs = { platform: Platform.VSCode };
-          const res = await my.provisionResourcesV2(inputs);
-          assert.isTrue(res.isOk() && res.value === true);
-        }
-        {
-          const inputs: Inputs = { platform: Platform.VSCode };
-          const res = await my.deployArtifactsV2(inputs);
-          assert.isTrue(res.isOk() && res.value === true);
-        }
-        {
-          const inputs: Inputs = { platform: Platform.VSCode };
-          const res = await my.localDebugV2(inputs);
-          assert.isTrue(res.isOk() && res.value === true);
-        }
-        {
-          const inputs: Inputs = { platform: Platform.VSCode };
-          const res = await my.publishApplicationV2(inputs);
-          assert.isTrue(res.isOk() && res.value === true);
-        }
-        {
-          const func: Func = { method: "test", namespace: "" };
-          const userTaskRes = await my.executeUserTask(func, inputs);
-          assert.isTrue(userTaskRes.isOk() && userTaskRes.value);
-        }
-      });
-
-      it("get question or traverse question tree error", async () => {
-        sandbox.stub(TOOLS.ui, "inputText").callsFake(async (config: InputTextConfig) => {
-          return ok({ type: "success", result: questionValue });
-        });
-        const my = new MockCoreForQM();
-        my._getQuestionsForCreateProjectV2 = async function (
-          inputs: Inputs
-        ): Promise<Result<QTreeNode | undefined, FxError>> {
-          return err(InvalidInputError("mock"));
-        };
-        my._getQuestions = async function (
-          ctx: SolutionContext | v2.Context,
-          solution: Solution | v2.SolutionPlugin,
-          stage: Stage,
-          inputs: Inputs,
-          envInfo?: v2.EnvInfoV2
-        ): Promise<Result<QTreeNode | undefined, FxError>> {
-          return err(InvalidInputError("mock"));
-        };
-        my._getQuestionsForUserTask = async function (
-          ctx: SolutionContext | v2.Context,
-          solution: Solution | v2.SolutionPlugin,
-          func: FunctionRouter,
-          inputs: Inputs,
-          envInfo?: v2.EnvInfoV2
-        ): Promise<Result<QTreeNode | undefined, FxError>> {
-          const node = new QTreeNode({
-            type: "singleSelect",
-            name: questionName,
-            title: "",
-            staticOptions: [],
-          });
-          return ok(node);
-        };
-
-        let res = await my.createProjectV2(inputs);
-        assert(res.isErr() && res.error.name === InvalidInputError("").name);
-
-        delete inputs[questionName];
-        questionValue = randomAppName() + "provisionResources";
-        res = await my.provisionResourcesV2(inputs);
-        assert(res.isErr() && res.error.name === InvalidInputError("").name);
-
-        delete inputs[questionName];
-        questionValue = randomAppName() + "deployArtifacts";
-        res = await my.deployArtifactsV2(inputs);
-        assert(res.isErr() && res.error.name === InvalidInputError("").name);
-
-        delete inputs[questionName];
-        questionValue = randomAppName() + "localDebug";
-        res = await my.localDebugV2(inputs);
-        assert(res.isErr() && res.error.name === InvalidInputError("").name);
-
-        delete inputs[questionName];
-        questionValue = randomAppName() + "publishApplication";
-        res = await my.publishApplicationV2(inputs);
-        assert(res.isErr() && res.error.name === InvalidInputError("").name);
-
-        delete inputs[questionName];
-        questionValue = randomAppName() + "executeUserTask";
-        const func: Func = { method: "test", namespace: "" };
-        const res2 = await my.executeUserTask(func, inputs);
-        assert(res2.isErr() && res2.error.name === new EmptyOptionError().name);
-      });
+  it("success to run question model for createProject, provisionResources, deployArtifacts, localDebug, publishApplication, executeUserTask", async () => {
+    sandbox.stub(TOOLS.ui, "inputText").callsFake(async (config: InputTextConfig) => {
+      return ok({ type: "success", result: questionValue });
     });
-  }
+    const my = new MockCoreForQM();
+
+    {
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const res = await my.createProjectV2(inputs);
+      assert.isTrue(res.isOk() && res.value === true);
+    }
+    {
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const res = await my.provisionResourcesV2(inputs);
+      assert.isTrue(res.isOk() && res.value === true);
+    }
+    {
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const res = await my.deployArtifactsV2(inputs);
+      assert.isTrue(res.isOk() && res.value === true);
+    }
+    {
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const res = await my.localDebugV2(inputs);
+      assert.isTrue(res.isOk() && res.value === true);
+    }
+    {
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const res = await my.publishApplicationV2(inputs);
+      assert.isTrue(res.isOk() && res.value === true);
+    }
+    {
+      const func: Func = { method: "test", namespace: "" };
+      const userTaskRes = await my.executeUserTask(func, inputs);
+      assert.isTrue(userTaskRes.isOk() && userTaskRes.value);
+    }
+  });
+
+  it("get question or traverse question tree error", async () => {
+    sandbox.stub(TOOLS.ui, "inputText").callsFake(async (config: InputTextConfig) => {
+      return ok({ type: "success", result: questionValue });
+    });
+    const my = new MockCoreForQM();
+    my._getQuestionsForCreateProjectV2 = async function (
+      inputs: Inputs
+    ): Promise<Result<QTreeNode | undefined, FxError>> {
+      return err(InvalidInputError("mock"));
+    };
+    my._getQuestions = async function (
+      ctx: SolutionContext | v2.Context,
+      solution: Solution | v2.SolutionPlugin,
+      stage: Stage,
+      inputs: Inputs,
+      envInfo?: v2.EnvInfoV2
+    ): Promise<Result<QTreeNode | undefined, FxError>> {
+      return err(InvalidInputError("mock"));
+    };
+    my._getQuestionsForUserTask = async function (
+      ctx: SolutionContext | v2.Context,
+      solution: Solution | v2.SolutionPlugin,
+      func: FunctionRouter,
+      inputs: Inputs,
+      envInfo?: v2.EnvInfoV2
+    ): Promise<Result<QTreeNode | undefined, FxError>> {
+      const node = new QTreeNode({
+        type: "singleSelect",
+        name: questionName,
+        title: "",
+        staticOptions: [],
+      });
+      return ok(node);
+    };
+
+    let res = await my.createProjectV2(inputs);
+    assert(res.isErr() && res.error.name === InvalidInputError("").name);
+
+    delete inputs[questionName];
+    questionValue = randomAppName() + "provisionResources";
+    res = await my.provisionResourcesV2(inputs);
+    assert(res.isErr() && res.error.name === InvalidInputError("").name);
+
+    delete inputs[questionName];
+    questionValue = randomAppName() + "deployArtifacts";
+    res = await my.deployArtifactsV2(inputs);
+    assert(res.isErr() && res.error.name === InvalidInputError("").name);
+
+    delete inputs[questionName];
+    questionValue = randomAppName() + "localDebug";
+    res = await my.localDebugV2(inputs);
+    assert(res.isErr() && res.error.name === InvalidInputError("").name);
+
+    delete inputs[questionName];
+    questionValue = randomAppName() + "publishApplication";
+    res = await my.publishApplicationV2(inputs);
+    assert(res.isErr() && res.error.name === InvalidInputError("").name);
+
+    delete inputs[questionName];
+    questionValue = randomAppName() + "executeUserTask";
+    const func: Func = { method: "test", namespace: "" };
+    const res2 = await my.executeUserTask(func, inputs);
+    assert(res2.isErr() && res2.error.name === new EmptyOptionError().name);
+  });
   it("Core's getQuestion APIs", async () => {
     const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
     sandbox

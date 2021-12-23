@@ -19,7 +19,6 @@ import * as os from "os";
 import * as path from "path";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import { CoreHookContext, NoProjectOpenedError, PathNotExistError, setTools } from "../../../src";
 import { ContextInjectorMW, ProjectSettingsLoaderMW } from "../../../src/core/middleware";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
@@ -90,43 +89,25 @@ describe("Middleware - ProjectSettingsLoaderMW, ContextInjectorMW: part 2", () =
   afterEach(() => {
     sandbox.restore();
   });
-  const EnvParams = [
-    { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "false" },
-    { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "true" },
-    { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "false" },
-    { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true" },
-  ];
-  for (const param of EnvParams) {
-    describe(`Multi-Env: ${param.__TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
-      let mockedEnvRestore: RestoreFn;
-      beforeEach(() => {
-        mockedEnvRestore = mockedEnv(param);
-      });
-
-      afterEach(() => {
-        mockedEnvRestore();
-      });
-      const tools = new MockTools();
-      setTools(tools);
-      class MyClass {
-        tools = tools;
-        async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          assert.isTrue(ctx !== undefined);
-          if (ctx) {
-            assert.deepEqual(projectSettings, ctx.projectSettings);
-            assert.isTrue(ctx.contextV2 !== undefined);
-          }
-          return ok("");
-        }
+  const tools = new MockTools();
+  setTools(tools);
+  class MyClass {
+    tools = tools;
+    async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+      assert.isTrue(ctx !== undefined);
+      if (ctx) {
+        assert.deepEqual(projectSettings, ctx.projectSettings);
+        assert.isTrue(ctx.contextV2 !== undefined);
       }
-      hooks(MyClass, {
-        other: [ProjectSettingsLoaderMW, ContextInjectorMW],
-      });
-      it(`success to load project settings`, async () => {
-        const my = new MyClass();
-        const res = await my.other(inputs);
-        assert.isTrue(res.isOk() && res.value === "");
-      });
-    });
+      return ok("");
+    }
   }
+  hooks(MyClass, {
+    other: [ProjectSettingsLoaderMW, ContextInjectorMW],
+  });
+  it(`success to load project settings`, async () => {
+    const my = new MyClass();
+    const res = await my.other(inputs);
+    assert.isTrue(res.isOk() && res.value === "");
+  });
 });

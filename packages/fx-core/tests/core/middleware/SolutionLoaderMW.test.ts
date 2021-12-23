@@ -5,7 +5,6 @@ import { hooks, NextFunction } from "@feathersjs/hooks/lib";
 import { FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import * as uuid from "uuid";
 import { CoreHookContext } from "../../../src";
 import { ContextInjectorMW, SolutionLoaderMW } from "../../../src/core/middleware";
@@ -22,46 +21,31 @@ describe("Middleware - SolutionLoaderMW, ContextInjectorMW", () => {
     };
     await next();
   };
-  const EnvParams = [{ TEAMSFX_APIV2: "false" }, { TEAMSFX_APIV2: "true" }];
-
-  for (const param of EnvParams) {
-    describe(`API V2:${param.TEAMSFX_APIV2}`, () => {
-      let mockedEnvRestore: RestoreFn;
-      beforeEach(() => {
-        mockedEnvRestore = mockedEnv(param);
-      });
-
-      afterEach(() => {
-        mockedEnvRestore();
-      });
-
-      class MyClass {
-        async isLoaded(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-          if (ctx) {
-            return ok(ctx.solutionV2 !== undefined);
-          }
-          return ok(false);
-        }
+  class MyClass {
+    async isLoaded(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
+      if (ctx) {
+        return ok(ctx.solutionV2 !== undefined);
       }
-      it("load solution from zero and inject", async () => {
-        hooks(MyClass, {
-          isLoaded: [SolutionLoaderMW, ContextInjectorMW],
-        });
-        const my = new MyClass();
-        const inputs: Inputs = { platform: Platform.VSCode };
-        const res = await my.isLoaded(inputs);
-        assert.isTrue(res.isOk() && res.value === true);
-      });
-
-      it("load solution from existing project and inject", async () => {
-        hooks(MyClass, {
-          isLoaded: [MockProjectSettingsMW, SolutionLoaderMW, ContextInjectorMW],
-        });
-        const my = new MyClass();
-        const inputs: Inputs = { platform: Platform.VSCode };
-        const res = await my.isLoaded(inputs);
-        assert.isTrue(res.isOk() && res.value === true);
-      });
-    });
+      return ok(false);
+    }
   }
+  it("load solution from zero and inject", async () => {
+    hooks(MyClass, {
+      isLoaded: [SolutionLoaderMW, ContextInjectorMW],
+    });
+    const my = new MyClass();
+    const inputs: Inputs = { platform: Platform.VSCode };
+    const res = await my.isLoaded(inputs);
+    assert.isTrue(res.isOk() && res.value === true);
+  });
+
+  it("load solution from existing project and inject", async () => {
+    hooks(MyClass, {
+      isLoaded: [MockProjectSettingsMW, SolutionLoaderMW, ContextInjectorMW],
+    });
+    const my = new MyClass();
+    const inputs: Inputs = { platform: Platform.VSCode };
+    const res = await my.isLoaded(inputs);
+    assert.isTrue(res.isOk() && res.value === true);
+  });
 });

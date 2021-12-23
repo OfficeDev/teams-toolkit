@@ -17,6 +17,7 @@ import {
   returnSystemError,
   returnUserError,
   SolutionContext,
+  UserError,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -375,24 +376,21 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       }
       const deploymentErrorObj = formattedDeploymentError(deploymentError);
       const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
-      const errorMessage = format(
+      let errorMessage = format(
         getStrings().solution.DeployArmTemplates.FailNotice,
         PluginDisplayName.Solution,
         resourceGroupName,
         deploymentName
       );
-      ctx.logProvider?.error(
-        errorMessage +
-          `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`
+      errorMessage += `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`;
+      const notificationMessage = getNotificationMessage(deploymentError, deploymentName);
+      const returnError = new UserError(
+        new Error(errorMessage),
+        SolutionSource,
+        SolutionError.FailedToDeployArmTemplatesToAzure,
+        HelpLinks.ArmHelpLink,
+        notificationMessage
       );
-
-      let failedDeployments: string[] = [];
-      if (deploymentError.subErrors) {
-        failedDeployments = Object.keys(deploymentError.subErrors);
-      } else {
-        failedDeployments.push(deploymentName);
-      }
-      const returnError = formattedDeploymentName(failedDeployments);
       returnError.innerError = JSON.stringify(deploymentErrorObj);
       return err(returnError);
     } else {
@@ -510,24 +508,21 @@ export async function doDeployArmTemplatesV3(
       }
       const deploymentErrorObj = formattedDeploymentError(deploymentError);
       const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
-      const errorMessage = format(
+      let errorMessage = format(
         getStrings().solution.DeployArmTemplates.FailNotice,
         PluginDisplayName.Solution,
         resourceGroupName,
         deploymentName
       );
-      ctx.logProvider?.error(
-        errorMessage +
-          `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`
+      errorMessage += `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`;
+      const notificationMessage = getNotificationMessage(deploymentError, deploymentName);
+      const returnError = new UserError(
+        new Error(errorMessage),
+        SolutionSource,
+        SolutionError.FailedToDeployArmTemplatesToAzure,
+        HelpLinks.ArmHelpLink,
+        notificationMessage
       );
-
-      let failedDeployments: string[] = [];
-      if (deploymentError.subErrors) {
-        failedDeployments = Object.keys(deploymentError.subErrors);
-      } else {
-        failedDeployments.push(deploymentName);
-      }
-      const returnError = formattedDeploymentName(failedDeployments);
       returnError.innerError = JSON.stringify(deploymentErrorObj);
       return err(returnError);
     } else {
@@ -1080,16 +1075,16 @@ async function compileBicepToJson(
 
 // Context used by handlebars to render the main.bicep file
 export class ArmTemplateRenderContext {
-  public Plugins: string[];
-  public PluginOutput: { [PluginName: string]: PluginOutputContext };
+  public Plugins: Record<string, PluginContext> = {};
 
   constructor(pluginNames: string[]) {
-    this.Plugins = pluginNames;
-    this.PluginOutput = {};
+    for (const plugin of pluginNames) {
+      this.Plugins[plugin] = {};
+    }
   }
 
   public addPluginOutput(pluginName: string, armResult: ArmTemplateResult) {
-    const pluginOutputContext: PluginOutputContext = {
+    const PluginContext: PluginContext = {
       Provision: {},
       Configuration: {},
       References: {},
@@ -1100,8 +1095,8 @@ export class ArmTemplateRenderContext {
     if (provision) {
       for (const module of Object.entries(provision)) {
         const moduleFileName = module[0];
-        pluginOutputContext.Provision![moduleFileName] = {
-          ProvisionPath: generateBicepModuleProvisionFilePath(moduleFileName),
+        PluginContext.Provision![moduleFileName] = {
+          path: generateBicepModuleProvisionFilePath(moduleFileName),
         };
       }
     }
@@ -1109,8 +1104,8 @@ export class ArmTemplateRenderContext {
     if (configs) {
       for (const module of Object.entries(configs)) {
         const moduleFileName = module[0];
-        pluginOutputContext.Configuration![moduleFileName] = {
-          ConfigPath: generateBicepModuleConfigFilePath(moduleFileName),
+        PluginContext.Configuration![moduleFileName] = {
+          path: generateBicepModuleConfigFilePath(moduleFileName),
         };
       }
     }
@@ -1119,18 +1114,18 @@ export class ArmTemplateRenderContext {
       for (const output of Object.entries(references)) {
         const outputKey = output[0];
         const outputValue = output[1] as string;
-        pluginOutputContext.References![outputKey] = outputValue;
+        PluginContext.References![outputKey] = outputValue;
       }
     }
 
-    this.PluginOutput[pluginName] = pluginOutputContext;
+    this.Plugins[pluginName] = PluginContext;
   }
 }
 
 // Stores the bicep orchestration information for all resource plugins
 class BicepOrchestrationContent {
   private ParameterJsonTemplate: Record<string, string> = {};
-  private RenderContenxt: ArmTemplateRenderContext;
+  private RenderContext: ArmTemplateRenderContext;
   private TemplateAdded = false;
 
   private ProvisionTemplate = "";
@@ -1138,30 +1133,36 @@ class BicepOrchestrationContent {
 
   constructor(pluginNames: string[], baseName: string) {
     this.ParameterJsonTemplate[resourceBaseName] = baseName;
-    this.RenderContenxt = new ArmTemplateRenderContext(pluginNames);
+    this.RenderContext = new ArmTemplateRenderContext(pluginNames);
   }
 
   public applyTemplate(pluginName: string, armResult: ArmTemplateResult): void {
     this.ProvisionTemplate += this.normalizeTemplateSnippet(armResult.Provision?.Orchestration);
     this.ConfigTemplate += this.normalizeTemplateSnippet(armResult.Configuration?.Orchestration);
-    this.RenderContenxt.addPluginOutput(pluginName, armResult);
+    this.RenderContext.addPluginOutput(pluginName, armResult);
     Object.assign(this.ParameterJsonTemplate, armResult.Parameters);
   }
 
   public applyReference(configContent: string): string {
-    return compileHandlebarsTemplateString(configContent, this.RenderContenxt);
+    return compileHandlebarsTemplateString(configContent, this.RenderContext.Plugins);
   }
 
   public getOrchestractionProvisionContent(): string {
     const orchestrationTemplate =
       this.normalizeTemplateSnippet(this.ProvisionTemplate, false) + os.EOL;
-    return compileHandlebarsTemplateString(orchestrationTemplate, this.RenderContenxt).trim();
+    return compileHandlebarsTemplateString(
+      orchestrationTemplate,
+      this.RenderContext.Plugins
+    ).trim();
   }
 
   public getOrchestractionConfigContent(): string {
     const orchestrationTemplate =
       this.normalizeTemplateSnippet(this.ConfigTemplate, false) + os.EOL;
-    return compileHandlebarsTemplateString(orchestrationTemplate, this.RenderContenxt).trim();
+    return compileHandlebarsTemplateString(
+      orchestrationTemplate,
+      this.RenderContext.Plugins
+    ).trim();
   }
 
   public getParameterFileContent(): string {
@@ -1199,14 +1200,14 @@ class BicepOrchestrationContent {
   }
 }
 
-interface PluginOutputContext {
+interface PluginContext {
   Provision?: { [ModuleName: string]: PluginModuleProperties };
   Configuration?: { [ModuleName: string]: PluginModuleProperties };
   References?: { [Key: string]: string };
 }
 
 interface PluginModuleProperties {
-  [pathName: string]: string;
+  path: string;
 }
 
 function generateBicepModuleProvisionFilePath(moduleFileName: string) {
@@ -1405,19 +1406,17 @@ async function getDeploymentError(
   return deploymentError;
 }
 
-function formattedDeploymentName(failedDeployments: string[]): FxError {
+function getNotificationMessage(deploymentError: any, deploymentName: string): string {
+  let failedDeployments: string[] = [];
+  if (deploymentError.subErrors) {
+    failedDeployments = Object.keys(deploymentError.subErrors);
+  } else {
+    failedDeployments.push(deploymentName);
+  }
   const format = failedDeployments.map((deployment) => deployment + " module");
-  const returnError = new Error(
-    `resource deployments (${format.join(
-      ", "
-    )}) for your project failed. Please refer to output channel for more error details.`
-  );
-  return returnUserError(
-    returnError,
-    SolutionSource,
-    SolutionError.FailedToDeployArmTemplatesToAzure,
-    HelpLinks.ArmHelpLink
-  );
+  return `resource deployments (${format.join(
+    ", "
+  )}) for your project failed. Please refer to output channel for more error details.`;
 }
 
 export function formattedDeploymentError(deploymentError: any): any {

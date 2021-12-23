@@ -1,5 +1,5 @@
 // Resources for identity
-module userAssignedIdentityProvision '{{PluginOutput.fx-resource-identity.Provision.identity.ProvisionPath}}' = {
+module userAssignedIdentityProvision '{{fx-resource-identity.Provision.identity.path}}' = {
   name: 'userAssignedIdentityProvision'
   params: {
     provisionParameters: provisionParameters

@@ -89,7 +89,7 @@ import {
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
-import { getTemplatesFolder, isV2 } from "../../..";
+import { getTemplatesFolder } from "../../..";
 import path from "path";
 import { isMultiEnvEnabled, getAppDirectory, isSPFxProject } from "../../../common";
 import {
@@ -322,9 +322,7 @@ export class AppStudioPluginImpl {
       remoteTeamsAppId = result.value.teamsAppId!;
       ctx.logProvider?.info(`Teams app created ${remoteTeamsAppId}`);
     }
-    if (isMultiEnvEnabled() || isV2()) {
-      ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_ID, remoteTeamsAppId);
-    }
+    ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_ID, remoteTeamsAppId);
     return ok(remoteTeamsAppId);
   }
 

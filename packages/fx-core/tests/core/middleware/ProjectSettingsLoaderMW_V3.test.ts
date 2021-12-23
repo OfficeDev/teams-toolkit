@@ -2,31 +2,14 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import {
-  ConfigFolderName,
-  FxError,
-  InputConfigsFolderName,
-  Inputs,
-  ok,
-  Platform,
-  ProjectSettingsFileName,
-  Result,
-  Stage,
-} from "@microsoft/teamsfx-api";
+import { FxError, Inputs, ok, Platform, Result, Stage } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import sinon from "sinon";
 import * as os from "os";
 import * as path from "path";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import {
-  CoreHookContext,
-  isV2,
-  NoProjectOpenedError,
-  PathNotExistError,
-  setTools,
-} from "../../../src";
+import { CoreHookContext, NoProjectOpenedError, PathNotExistError, setTools } from "../../../src";
 import { ContextInjectorMW, ProjectSettingsLoaderMW } from "../../../src/core/middleware";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import {
@@ -105,9 +88,7 @@ describe("Middleware - ProjectSettingsLoaderMW_V3, ContextInjectorMW: part 2", (
       assert.isTrue(ctx !== undefined);
       if (ctx) {
         assert.deepEqual(projectSettings, ctx.projectSettings);
-        if (isV2()) {
-          assert.isTrue(ctx.contextV2 !== undefined);
-        }
+        assert.isTrue(ctx.contextV2 !== undefined);
       }
       return ok("");
     }

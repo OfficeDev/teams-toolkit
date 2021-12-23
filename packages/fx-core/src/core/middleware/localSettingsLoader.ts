@@ -4,7 +4,7 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { AzureSolutionSettings, err, Inputs, Plugin } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import { CoreHookContext, isV2, NoProjectOpenedError, PathNotExistError } from "..";
+import { CoreHookContext, NoProjectOpenedError, PathNotExistError } from "..";
 import { isMultiEnvEnabled } from "../../common";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";

@@ -108,7 +108,7 @@ export class UserError extends Error implements FxError {
         name: param3,
         source: param2,
         helpLink: param4,
-        notificationMessage: notificationMessage,
+        notificationMessage: param5,
       };
       stack = param1.stack;
     } else {

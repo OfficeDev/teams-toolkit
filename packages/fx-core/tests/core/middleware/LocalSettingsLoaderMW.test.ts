@@ -77,15 +77,9 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 1", () => 
 });
 
 describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => {
-  let mockedEnvRestore: RestoreFn;
   const sandbox = sinon.createSandbox();
-
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true" });
-  });
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   it(`success to load local settings -  load existing`, async () => {
@@ -180,13 +174,8 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
 
 describe("Middleware - LocalSettingsWriterMW", () => {
   const sandbox = sinon.createSandbox();
-  let mockedEnvRestore: RestoreFn;
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true" });
-  });
   afterEach(function () {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   it("write success", async () => {

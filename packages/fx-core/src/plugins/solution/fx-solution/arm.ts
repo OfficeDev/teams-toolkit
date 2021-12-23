@@ -17,6 +17,7 @@ import {
   returnSystemError,
   returnUserError,
   SolutionContext,
+  UserError,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -25,7 +26,18 @@ import os from "os";
 import path from "path";
 import { Container } from "typedi";
 import { format } from "util";
-import { TEAMS_FX_RESOURCE_ID_KEY } from "./constants";
+import {
+  TEAMS_FX_RESOURCE_ID_KEY,
+  GLOBAL_CONFIG,
+  RESOURCE_GROUP_NAME,
+  SolutionError,
+  SolutionSource,
+  SolutionTelemetryComponentName,
+  SolutionTelemetryEvent,
+  SolutionTelemetryProperty,
+  SolutionTelemetrySuccess,
+  SUBSCRIPTION_ID,
+} from "./constants";
 import { environmentManager } from "../../../core/environment";
 import {
   AzureSolutionConfig,
@@ -43,17 +55,6 @@ import {
   waitSeconds,
 } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
-import {
-  GLOBAL_CONFIG,
-  RESOURCE_GROUP_NAME,
-  SolutionError,
-  SolutionSource,
-  SolutionTelemetryComponentName,
-  SolutionTelemetryEvent,
-  SolutionTelemetryProperty,
-  SolutionTelemetrySuccess,
-  SUBSCRIPTION_ID,
-} from "./constants";
 import {
   getActivatedResourcePlugins,
   getActivatedV2ResourcePlugins,
@@ -376,24 +377,21 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
       }
       const deploymentErrorObj = formattedDeploymentError(deploymentError);
       const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
-      const errorMessage = format(
+      let errorMessage = format(
         getStrings().solution.DeployArmTemplates.FailNotice,
         PluginDisplayName.Solution,
         resourceGroupName,
         deploymentName
       );
-      ctx.logProvider?.error(
-        errorMessage +
-          `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`
+      errorMessage += `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`;
+      const notificationMessage = getNotificationMessage(deploymentError, deploymentName);
+      const returnError = new UserError(
+        new Error(errorMessage),
+        SolutionSource,
+        SolutionError.FailedToDeployArmTemplatesToAzure,
+        HelpLinks.ArmHelpLink,
+        notificationMessage
       );
-
-      let failedDeployments: string[] = [];
-      if (deploymentError.subErrors) {
-        failedDeployments = Object.keys(deploymentError.subErrors);
-      } else {
-        failedDeployments.push(deploymentName);
-      }
-      const returnError = formattedDeploymentName(failedDeployments);
       returnError.innerError = JSON.stringify(deploymentErrorObj);
       return err(returnError);
     } else {
@@ -511,24 +509,21 @@ export async function doDeployArmTemplatesV3(
       }
       const deploymentErrorObj = formattedDeploymentError(deploymentError);
       const deploymentErrorMessage = JSON.stringify(deploymentErrorObj, undefined, 2);
-      const errorMessage = format(
+      let errorMessage = format(
         getStrings().solution.DeployArmTemplates.FailNotice,
         PluginDisplayName.Solution,
         resourceGroupName,
         deploymentName
       );
-      ctx.logProvider?.error(
-        errorMessage +
-          `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`
+      errorMessage += `\nError message: ${error.message}\nDetailed message: \n${deploymentErrorMessage}\nGet toolkit help from ${HelpLinks.ArmHelpLink}.`;
+      const notificationMessage = getNotificationMessage(deploymentError, deploymentName);
+      const returnError = new UserError(
+        new Error(errorMessage),
+        SolutionSource,
+        SolutionError.FailedToDeployArmTemplatesToAzure,
+        HelpLinks.ArmHelpLink,
+        notificationMessage
       );
-
-      let failedDeployments: string[] = [];
-      if (deploymentError.subErrors) {
-        failedDeployments = Object.keys(deploymentError.subErrors);
-      } else {
-        failedDeployments.push(deploymentName);
-      }
-      const returnError = formattedDeploymentName(failedDeployments);
       returnError.innerError = JSON.stringify(deploymentErrorObj);
       return err(returnError);
     } else {
@@ -1410,19 +1405,17 @@ async function getDeploymentError(
   return deploymentError;
 }
 
-function formattedDeploymentName(failedDeployments: string[]): FxError {
+function getNotificationMessage(deploymentError: any, deploymentName: string): string {
+  let failedDeployments: string[] = [];
+  if (deploymentError.subErrors) {
+    failedDeployments = Object.keys(deploymentError.subErrors);
+  } else {
+    failedDeployments.push(deploymentName);
+  }
   const format = failedDeployments.map((deployment) => deployment + " module");
-  const returnError = new Error(
-    `resource deployments (${format.join(
-      ", "
-    )}) for your project failed. Please refer to output channel for more error details.`
-  );
-  return returnUserError(
-    returnError,
-    SolutionSource,
-    SolutionError.FailedToDeployArmTemplatesToAzure,
-    HelpLinks.ArmHelpLink
-  );
+  return `resource deployments (${format.join(
+    ", "
+  )}) for your project failed. Please refer to output channel for more error details.`;
 }
 
 export function formattedDeploymentError(deploymentError: any): any {

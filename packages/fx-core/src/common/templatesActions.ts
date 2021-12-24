@@ -73,8 +73,16 @@ export const fetchTemplateZipFromSourceCode: ScaffoldAction = {
       return;
     }
 
-    if (!context.group || !context.lang || !context.scenario) {
-      return;
+    if (!context.group) {
+      throw new Error(missKeyErrorInfo("group"));
+    }
+
+    if (!context.lang) {
+      throw new Error(missKeyErrorInfo("lang"));
+    }
+
+    if (!context.scenario) {
+      throw new Error(missKeyErrorInfo("scenario"));
     }
 
     //! This path only works in debug mode
@@ -88,11 +96,7 @@ export const fetchTemplateZipFromSourceCode: ScaffoldAction = {
     );
 
     const zip = new AdmZip();
-    try {
-      zip.addLocalFolder(templateSourceCodePath);
-    } catch {
-      return;
-    }
+    zip.addLocalFolder(templateSourceCodePath);
 
     context.zip = zip;
   },

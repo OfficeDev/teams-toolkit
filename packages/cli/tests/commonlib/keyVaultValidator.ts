@@ -16,7 +16,6 @@ const rgKey = "resourceGroupName";
 const baseUrlConfigReferenceAppSettings = (subscriptionId: string, rg: string, name: string) =>
   `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/configreferences/appsettings?api-version=2021-02-01`;
 
-
 export interface IKeyVaultObject {
   m365ClientSecretReference: string;
   functionAppName: string;
@@ -63,6 +62,7 @@ export class KeyVaultValidator {
       token as string
     );
 
+    console.log("App Settings Key Vault References:");
     console.log(response);
 
     // Validate Key Vault reference in Azure Fucntion

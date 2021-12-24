@@ -1226,9 +1226,7 @@ export class AppStudioPluginImpl {
   }
 
   private getTabEndpoint(ctx: PluginContext, isLocalDebug: boolean): string {
-    let tabEndpoint: string;
-
-    tabEndpoint = isLocalDebug
+    const tabEndpoint = isLocalDebug
         ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) as string)
         : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
 
@@ -1236,18 +1234,14 @@ export class AppStudioPluginImpl {
   }
 
   private getTabDomain(ctx: PluginContext, isLocalDebug: boolean): string {
-    let tabDomain: string;
-
-    tabDomain = isLocalDebug
+    const tabDomain = isLocalDebug
         ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain) as string)
         : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
     return tabDomain;
   }
 
   private getAadClientId(ctx: PluginContext, isLocalDebug: boolean): string {
-    let clientId: string;
-
-    clientId = isLocalDebug
+    const clientId = isLocalDebug
         ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string)
         : (ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string);
 
@@ -1255,9 +1249,7 @@ export class AppStudioPluginImpl {
   }
 
   private getBotId(ctx: PluginContext, isLocalDebug: boolean): string {
-    let botId: string;
-
-    botId = isLocalDebug
+    const botId = isLocalDebug
         ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) as string)
         : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string);
 
@@ -1265,9 +1257,7 @@ export class AppStudioPluginImpl {
   }
 
   private getBotDomain(ctx: PluginContext, isLocalDebug: boolean): string {
-    let botDomain: string;
-
-    botDomain = isLocalDebug
+    const botDomain = isLocalDebug
         ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotDomain) as string)
         : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
 
@@ -1275,9 +1265,7 @@ export class AppStudioPluginImpl {
   }
 
   private getApplicationIdUris(ctx: PluginContext, isLocalDebug: boolean): string {
-    let applicationIdUris: string;
-
-    applicationIdUris = isLocalDebug
+    const applicationIdUris = isLocalDebug
         ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris) as string)
         : (ctx.envInfo.state.get(PluginNames.AAD)?.get(WEB_APPLICATION_INFO_SOURCE) as string);
 

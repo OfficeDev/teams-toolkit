@@ -30,6 +30,7 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
+import "./v3";
 import { IUserList } from "./interfaces/IAppDefinition";
 import { isMultiEnvEnabled } from "../../../common";
 @Service(ResourcePlugins.AppStudioPlugin)

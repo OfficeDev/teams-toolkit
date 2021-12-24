@@ -8,7 +8,6 @@ import {
   REMOTE_TEAMS_APP_ID,
   PluginNames,
 } from "../../../solution/fx-solution/constants";
-import { isMultiEnvEnabled } from "../../../../common";
 
 export enum TelemetryPropertyKey {
   component = "component",
@@ -61,9 +60,7 @@ export class TelemetryUtils {
       properties = {};
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
-    const teamsAppId = isMultiEnvEnabled()
-      ? (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
-      : (this.ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string);
+    const teamsAppId = (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string);
     if (teamsAppId) {
       properties[TelemetryPropertyKey.appId] = teamsAppId;
     }
@@ -84,9 +81,7 @@ export class TelemetryUtils {
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
-    const teamsAppId = isMultiEnvEnabled()
-      ? (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
-      : (this.ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string);
+    const teamsAppId = (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string);
     if (teamsAppId) {
       properties[TelemetryPropertyKey.appId] = teamsAppId;
     }
@@ -112,9 +107,7 @@ export class TelemetryUtils {
     properties[TelemetryPropertyKey.errorMessage] = error.message;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.failure;
 
-    const teamsAppId = isMultiEnvEnabled()
-      ? (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string)
-      : (this.ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID) as string);
+    const teamsAppId = (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string);
     if (teamsAppId) {
       properties[TelemetryPropertyKey.appId] = teamsAppId;
     }

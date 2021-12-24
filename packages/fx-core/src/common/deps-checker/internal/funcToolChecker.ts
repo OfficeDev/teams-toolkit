@@ -8,14 +8,15 @@ import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 import { defaultHelpLink } from "../constant/helpLink";
 import { runWithProgressIndicator } from "../util/progressIndicator";
-import { DepsCheckerError } from "../depsError";
+import { DepsCheckerError, LinuxNotSupportedError } from "../depsError";
 import { cpUtils } from "../util/cpUtils";
-import { isWindows } from "../util/system";
+import { isLinux, isWindows } from "../util/system";
 import { DepsCheckerEvent, TelemtryMessages } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DepsInfo, DepsChecker } from "../depsChecker";
 import { Messages } from "../constant/message";
+import { err, Result, ok } from "neverthrow";
 
 export enum FuncVersion {
   v1 = "1",
@@ -51,7 +52,7 @@ export class FuncToolChecker implements DepsChecker {
     });
   }
 
-  public async resolve(): Promise<boolean> {
+  public async resolve(): Promise<Result<boolean, DepsCheckerError>> {
     try {
       if (!(await this.isInstalled())) {
         await this.install();
@@ -59,12 +60,15 @@ export class FuncToolChecker implements DepsChecker {
     } catch (error) {
       await this._logger.printDetailLog();
       await this._logger.error(`${error.message}, error = '${error}'`);
-      return false;
+      if (error instanceof DepsCheckerError) {
+        return err(error);
+      }
+      return err(new DepsCheckerError(error.message, defaultHelpLink));
     } finally {
       this._logger.cleanup();
     }
 
-    return true;
+    return ok(true);
   }
 
   public async isInstalled(): Promise<boolean> {
@@ -112,11 +116,11 @@ export class FuncToolChecker implements DepsChecker {
   }
 
   public async install(): Promise<void> {
+    if (isLinux()) {
+      throw new LinuxNotSupportedError(defaultHelpLink);
+    }
     if (!(await this.hasNPM())) {
       this.handleNpmNotFound();
-    }
-    if (await this.isInstalled()) {
-      return;
     }
 
     await this.cleanup();

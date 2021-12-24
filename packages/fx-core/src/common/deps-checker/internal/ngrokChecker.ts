@@ -6,16 +6,17 @@ import * as path from "path";
 import * as os from "os";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
-import { ngrokInstallHelpLink } from "../constant/helpLink";
-import { DepsCheckerError } from "../depsError";
+import { defaultHelpLink, ngrokInstallHelpLink } from "../constant/helpLink";
+import { DepsCheckerError, LinuxNotSupportedError } from "../depsError";
 import { runWithProgressIndicator } from "../util/progressIndicator";
 import { cpUtils } from "../util/cpUtils";
-import { isWindows } from "../util/system";
+import { isLinux, isWindows } from "../util/system";
 import { DepsCheckerEvent, TelemtryMessages } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DepsInfo, DepsChecker } from "../depsChecker";
 import { Messages } from "../constant/message";
+import { err, Result, ok } from "neverthrow";
 
 const ngrokName = "ngrok";
 
@@ -25,6 +26,7 @@ const supportedBinVersions = ["2.3"];
 const displayNgrokName = `${ngrokName}@${installPackageVersion}`;
 
 const timeout = 5 * 60 * 1000;
+const binFolderKey = "binFolder";
 
 export class NgrokChecker implements DepsChecker {
   private readonly _logger: DepsLogger;
@@ -40,12 +42,14 @@ export class NgrokChecker implements DepsChecker {
   }
 
   public getDepsInfo(): Promise<DepsInfo> {
+    const details = new Map<string, string>();
+    details.set(binFolderKey, this.getNgrokBinFolder());
     return Promise.resolve({
       name: ngrokName,
       isLinuxSupported: true,
       installVersion: installPackageVersion,
       supportedVersions: supportedPackageVersions,
-      details: new Map<string, string>(),
+      details: details,
     });
   }
 
@@ -84,7 +88,7 @@ export class NgrokChecker implements DepsChecker {
     return path.join(this.getDefaultInstallPath(), "node_modules", "ngrok", "bin");
   }
 
-  public async resolve(): Promise<boolean> {
+  public async resolve(): Promise<Result<boolean, DepsCheckerError>> {
     try {
       if (!(await this.isInstalled())) {
         // TODO: show output in extension
@@ -96,10 +100,13 @@ export class NgrokChecker implements DepsChecker {
       await this._logger.printDetailLog();
       this._logger.cleanup();
       await this._logger.error(`Failed to install 'ngrok', error = '${error}'`);
-      return false;
+      if (error instanceof DepsCheckerError) {
+        return err(error);
+      }
+      return err(new DepsCheckerError(error.message, ngrokInstallHelpLink));
     }
 
-    return true;
+    return ok(true);
   }
 
   private async handleInstallNgrokFailed(): Promise<void> {

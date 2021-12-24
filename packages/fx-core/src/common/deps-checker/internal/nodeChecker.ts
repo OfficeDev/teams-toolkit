@@ -1,13 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { NodeNotFoundError, NodeNotSupportedError } from "../depsError";
+import { DepsCheckerError, NodeNotFoundError, NodeNotSupportedError } from "../depsError";
 import { cpUtils } from "../util/cpUtils";
 import { DepsCheckerEvent } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DepsInfo, DepsChecker } from "../depsChecker";
 import { Messages } from "../constant/message";
+import { Result, ok, err } from "neverthrow";
 import {
   nodeNotFoundHelpLink,
   nodeNotSupportedForFunctionsHelpLink,
@@ -72,7 +73,7 @@ export abstract class NodeChecker implements DepsChecker {
     return true;
   }
 
-  public async resolve(): Promise<boolean> {
+  public async resolve(): Promise<Result<boolean, DepsCheckerError>> {
     try {
       if (!(await this.isInstalled())) {
         await this.install();
@@ -80,12 +81,15 @@ export abstract class NodeChecker implements DepsChecker {
     } catch (error) {
       await this._logger.printDetailLog();
       await this._logger.error(`${error.message}, error = '${error}'`);
-      return false;
+      if (error instanceof DepsCheckerError) {
+        return err(error);
+      }
+      return err(new DepsCheckerError(error.message, nodeNotFoundHelpLink));
     } finally {
       this._logger.cleanup();
     }
 
-    return true;
+    return ok(true);
   }
 
   public async install(): Promise<void> {

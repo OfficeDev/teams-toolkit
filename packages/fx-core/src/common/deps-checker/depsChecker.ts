@@ -1,10 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { Result } from "neverthrow";
+import { DepsCheckerError } from "./depsError";
 
 export interface DepsChecker {
   isInstalled(): Promise<boolean>;
 
-  resolve(): Promise<boolean>;
+  resolve(): Promise<Result<boolean, DepsCheckerError>>;
 
   command(): Promise<string>;
 

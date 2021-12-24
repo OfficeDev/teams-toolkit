@@ -6,7 +6,6 @@ import { UserInfo } from "../models/userinfo";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 import { Cache } from "../core/cache.browser";
 import * as microsoftTeams from "@microsoft/teams-js";
-import { getAuthenticationConfiguration } from "../core/configurationProvider";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { AuthCodeResult } from "../models/authCodeResult";
 import axios, { AxiosInstance } from "axios";
@@ -15,6 +14,7 @@ import { AccessTokenResult } from "../models/accessTokenResult";
 import { validateScopesType, getUserInfoFromSsoToken, parseJwt } from "../util/utils";
 import { formatString } from "../util/utils";
 import { internalLogger } from "../util/logger";
+import { Component, ComponentContainer } from "../container/types";
 
 const accessTokenCacheKeyPrefix = "accessToken";
 const separator = "-";
@@ -33,9 +33,14 @@ const retryTimeSpanInMillisecond = 3000;
  *
  * @beta
  */
-export class TeamsUserCredential implements TokenCredential {
+export class TeamsUserCredential implements TokenCredential, Component {
+  name = "TeamsUserCredential";
+  version = "0.1.0";
+
   private readonly config: AuthenticationConfiguration;
   private ssoToken: AccessToken | null;
+
+  initialize(container: ComponentContainer): void {}
 
   /**
    * Constructor of TeamsUserCredential.
@@ -59,9 +64,9 @@ export class TeamsUserCredential implements TokenCredential {
    * 
    * @beta
    */
-  constructor() {
+  constructor(authConfiguration: AuthenticationConfiguration) {
     internalLogger.info("Create teams user credential");
-    this.config = this.loadAndValidateConfig();
+    this.config = this.loadAndValidateConfig(authConfiguration);
     this.ssoToken = null;
   }
 
@@ -356,9 +361,8 @@ export class TeamsUserCredential implements TokenCredential {
    * Load and validate authentication configuration
    * @returns Authentication configuration
    */
-  private loadAndValidateConfig(): AuthenticationConfiguration {
+  private loadAndValidateConfig(config: AuthenticationConfiguration): AuthenticationConfiguration {
     internalLogger.verbose("Validate authentication configuration");
-    const config = getAuthenticationConfiguration();
 
     if (!config) {
       internalLogger.error(ErrorMessage.AuthenticationConfigurationNotExists);

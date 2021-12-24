@@ -122,15 +122,7 @@ export class HelpParamGenerator {
     }
     const systemInput = this.getSystemInputs();
     for (const stage in Stage) {
-      let result;
-      if (stage === Stage.publish) {
-        result = await this.core.getQuestions(
-          stage as Stage,
-          this.getSystemInputs("", Platform.VS)
-        );
-      } else {
-        result = await this.core.getQuestions(stage as Stage, systemInput);
-      }
+      const result = await this.core.getQuestions(stage as Stage, systemInput);
       if (result.isErr()) {
         return err(result.error);
       } else {

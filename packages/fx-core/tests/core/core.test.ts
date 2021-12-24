@@ -53,11 +53,12 @@ import {
   TabOptionItem,
   TabSPFxItem,
 } from "../../src/core/question";
-import { SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
-import { deleteFolder, MockSolutionV2, MockTools, randomAppName } from "./utils";
+import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
+import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
 import fs from "fs-extra";
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
+  const mockSolutionV1 = new MockSolution();
   const mockSolutionV2 = new MockSolutionV2();
   const tools = new MockTools();
   let appName = randomAppName();
@@ -67,6 +68,7 @@ describe("Core basic APIs", () => {
     setTools(tools);
     mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
     Container.set(SolutionPluginsV2.AzureTeamsSolutionV2, mockSolutionV2);
+    Container.set(SolutionPlugins.AzureTeamsSolution, mockSolutionV1);
   });
   afterEach(async () => {
     sandbox.restore();

@@ -7,6 +7,7 @@ import {
   FxError,
   Inputs,
   InvalidInputError,
+  MultiSelectQuestion,
   ok,
   OptionItem,
   Platform,
@@ -53,6 +54,10 @@ import {
 import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
 import { isV3 } from "../../../..";
 import { TeamsAppSolutionNameV2 } from "./constants";
+import { getResourceFolder } from "../../../../folder";
+import { BuiltInResourcePluginNames } from "../v3/constants";
+import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
+import { canAddCapability } from "./executeUserTask";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -372,48 +377,52 @@ export async function getQuestionsForAddCapability(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-
+  const addCapQuestion: MultiSelectQuestion = {
+    name: AzureSolutionQuestionNames.Capabilities,
+    title: "Choose capabilities",
+    type: "multiSelect",
+    staticOptions: [],
+    default: [],
+  };
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
-  if (!(settings.hostType === HostTypeOptionAzure.id) && isDynamicQuestion) {
-    return err(
-      returnUserError(
-        new Error("Add capability is not supported for SPFx project"),
-        SolutionSource,
-        SolutionError.AddResourceNotSupport
-      )
-    );
+  if (!isDynamicQuestion) {
+    // For CLI_HELP
+    addCapQuestion.staticOptions = [TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id];
+    return ok(new QTreeNode(addCapQuestion));
   }
-
-  const capabilities = settings.capabilities || [];
-
-  const alreadyHaveTab = capabilities.includes(TabOptionItem.id);
-
-  const alreadyHaveBotOrMe =
-    capabilities.includes(BotOptionItem.id) || capabilities.includes(MessageExtensionItem.id);
-
-  if (alreadyHaveBotOrMe && alreadyHaveTab) {
-    const cannotAddCapWarnMsg =
-      "Your App already has both Tab and Bot/Messaging extension, can not Add Capability.";
-    ctx.userInteraction?.showMessage("error", cannotAddCapWarnMsg, false);
+  const canProceed = canAddCapability(settings, ctx.telemetryReporter);
+  if (canProceed.isErr()) {
+    return err(canProceed.error);
+  }
+  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+  const isTabAddable = await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputs as v2.InputsWithProjectPath,
+    "staticTab"
+  );
+  const isBotAddable = await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputs as v2.InputsWithProjectPath,
+    "Bot"
+  );
+  const isMEAddable = await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputs as v2.InputsWithProjectPath,
+    "MessageExtension"
+  );
+  if (!(isTabAddable || isBotAddable || isMEAddable)) {
+    ctx.userInteraction?.showMessage(
+      "error",
+      getStrings().solution.CanNotAddCapabilityNotice,
+      false
+    );
     return ok(undefined);
   }
-
-  const addCapQuestion = addCapabilityQuestion(alreadyHaveTab, alreadyHaveBotOrMe);
-
-  const addCapNode = new QTreeNode(addCapQuestion);
-
-  //Tab sub tree
-  if (!alreadyHaveTab || !isDynamicQuestion) {
-    const tabRes = await getTabScaffoldQuestionsV2(ctx, inputs, false);
-    if (tabRes.isErr()) return tabRes;
-    if (tabRes.value) {
-      const tabNode = tabRes.value;
-      tabNode.condition = { contains: TabOptionItem.id };
-      addCapNode.addChild(tabNode);
-    }
-  }
-  // Bot has no question at all
-  return ok(addCapNode);
+  const options = [];
+  if (isTabAddable) options.push(TabOptionItem.id);
+  if (isBotAddable) options.push(BotOptionItem.id);
+  if (isMEAddable) options.push(MessageExtensionItem.id);
+  return ok(new QTreeNode(addCapQuestion));
 }
 
 export async function getQuestionsForAddResource(

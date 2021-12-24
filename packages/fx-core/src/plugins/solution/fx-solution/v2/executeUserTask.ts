@@ -17,6 +17,11 @@ import {
   TokenProvider,
   combine,
   Json,
+  UserError,
+  IStaticTab,
+  IConfigurableTab,
+  IBot,
+  IComposeExtension,
 } from "@microsoft/teamsfx-api";
 import { getStrings, isArmSupportEnabled } from "../../../../common/tools";
 import { getAzureSolutionSettings, reloadV2Plugins } from "./utils";
@@ -50,6 +55,8 @@ import {
   generateResourceTemplateForPlugins,
 } from "./generateResourceTemplate";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
+import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
+import { BuiltInResourcePluginNames } from "../v3/constants";
 
 export async function executeUserTask(
   ctx: v2.Context,
@@ -160,10 +167,10 @@ export function canAddCapability(
   telemetryReporter: TelemetryReporter
 ): Result<Void, FxError> {
   if (!(settings.hostType === HostTypeOptionAzure.id)) {
-    const e = returnUserError(
-      new Error("Add capability is not supported for SPFx project"),
-      SolutionSource,
-      SolutionError.FailedToAddCapability
+    const e = new UserError(
+      SolutionError.FailedToAddCapability,
+      getStrings().solution.AddCapabilityNotSupportForSPFxNotice,
+      SolutionSource
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddCapability, e, telemetryReporter)
@@ -207,9 +214,10 @@ export async function addCapability(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
 
-  const settings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
-  const originalSettings = cloneDeep(settings);
-  const canProceed = canAddCapability(settings, ctx.telemetryReporter);
+  // 1. checking
+  const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
+  const originalSettings = cloneDeep(solutionSettings);
+  const canProceed = canAddCapability(solutionSettings, ctx.telemetryReporter);
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }
@@ -224,66 +232,106 @@ export async function addCapability(
     return ok({});
   }
 
-  const alreadyHaveBotAndAddBot =
-    (settings.capabilities?.includes(BotOptionItem.id) ||
-      settings.capabilities?.includes(MessageExtensionItem.id)) &&
-    (capabilitiesAnswer.includes(BotOptionItem.id) ||
-      capabilitiesAnswer.includes(MessageExtensionItem.id));
-  const alreadyHaveTabAndAddTab =
-    settings.capabilities?.includes(TabOptionItem.id) &&
-    capabilitiesAnswer.includes(TabOptionItem.id);
-  if (alreadyHaveBotAndAddBot || alreadyHaveTabAndAddTab) {
-    const e = returnUserError(
-      new Error("There are no additional capabilities you can add to your project."),
-      SolutionSource,
-      SolutionError.FailedToAddCapability
+  solutionSettings.capabilities = solutionSettings.capabilities || [];
+  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+  const inputsWithProjectPath = inputs as v2.InputsWithProjectPath;
+  const isTabAddable = await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputsWithProjectPath,
+    "staticTab"
+  );
+  const isBotAddable = await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputsWithProjectPath,
+    "Bot"
+  );
+  const isMEAddable = await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputsWithProjectPath,
+    "MessageExtension"
+  );
+  if (
+    (capabilitiesAnswer.includes(TabOptionItem.id) && !isTabAddable) ||
+    (capabilitiesAnswer.includes(BotOptionItem.id) && !isBotAddable) ||
+    (capabilitiesAnswer.includes(MessageExtensionItem.id) && !isMEAddable)
+  ) {
+    const error = new UserError(
+      SolutionError.FailedToAddCapability,
+      getStrings().solution.CanNotAddCapabilityNotice,
+      SolutionSource
     );
     return err(
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.AddCapability,
-        e,
+        error,
         ctx.telemetryReporter
       )
     );
   }
-  let change = false;
-  const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
-  const frontendPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
-  const botPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
-  const pluginsToScaffold: v2.ResourcePlugin[] = [appStudioPlugin];
-  const capabilities = Array.from(settings.capabilities);
-  for (const cap of capabilitiesAnswer) {
-    if (!capabilities.includes(cap)) {
-      capabilities.push(cap);
-      change = true;
-      if (cap === TabOptionItem.id) {
-        pluginsToScaffold.push(frontendPlugin);
-        pluginsToScaffold.push(
-          Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SimpleAuthPlugin)
-        );
-      } else if (
-        (cap === BotOptionItem.id || cap === MessageExtensionItem.id) &&
-        !pluginsToScaffold.includes(botPlugin)
-      ) {
-        pluginsToScaffold.push(botPlugin);
-      }
+
+  const capabilitiesToAddManifest: (
+    | { name: "staticTab"; snippet?: IStaticTab }
+    | { name: "configurableTab"; snippet?: IConfigurableTab }
+    | { name: "Bot"; snippet?: IBot }
+    | { name: "MessageExtension"; snippet?: IComposeExtension }
+  )[] = [];
+  const pluginsToScaffoldAndGenerateArm: Set<string> = new Set<string>();
+  const newCapabilitySet = new Set<string>();
+  solutionSettings.capabilities.forEach((c) => newCapabilitySet.add(c));
+  //Tab
+  if (capabilitiesAnswer.includes(TabOptionItem.id)) {
+    const firstAdd = solutionSettings.capabilities.includes(TabOptionItem.id) ? false : true;
+    capabilitiesToAddManifest.push({ name: "staticTab" });
+    if (firstAdd) {
+      pluginsToScaffoldAndGenerateArm.add(ResourcePluginsV2.FrontendPlugin);
     }
+    newCapabilitySet.add(TabOptionItem.id);
+  }
+  //Bot
+  if (capabilitiesAnswer.includes(BotOptionItem.id)) {
+    const firstAdd =
+      solutionSettings.capabilities.includes(BotOptionItem.id) ||
+      solutionSettings.capabilities.includes(MessageExtensionItem.id)
+        ? false
+        : true;
+    capabilitiesToAddManifest.push({ name: "Bot" });
+    if (firstAdd) {
+      pluginsToScaffoldAndGenerateArm.add(ResourcePluginsV2.BotPlugin);
+    }
+    newCapabilitySet.add(BotOptionItem.id);
+  }
+  //MessageExtension
+  if (capabilitiesAnswer.includes(MessageExtensionItem.id)) {
+    const firstAdd =
+      solutionSettings.capabilities.includes(BotOptionItem.id) ||
+      solutionSettings.capabilities.includes(MessageExtensionItem.id)
+        ? false
+        : true;
+    capabilitiesToAddManifest.push({ name: "MessageExtension" });
+    if (firstAdd) {
+      pluginsToScaffoldAndGenerateArm.add(ResourcePluginsV2.BotPlugin);
+    }
+    newCapabilitySet.add(MessageExtensionItem.id);
   }
 
-  if (change) {
-    if (isArmSupportEnabled()) {
-      showUpdateArmTemplateNotice(ctx.userInteraction);
-    }
-    settings.capabilities = capabilities;
-    reloadV2Plugins(settings);
-    const pluginNames = pluginsToScaffold.map((p) => p.name).join(",");
+  // 2. update solution settings
+  solutionSettings.capabilities = Array.from(newCapabilitySet);
+  reloadV2Plugins(solutionSettings);
+
+  // 3. scaffold and update arm
+  const plugins = Array.from(pluginsToScaffoldAndGenerateArm).map((name) =>
+    Container.get<v2.ResourcePlugin>(name)
+  );
+  if (plugins.length > 0) {
+    const pluginNames = plugins.map((p) => p.name).join(",");
     ctx.logProvider?.info(`start scaffolding ${pluginNames}.....`);
     const scaffoldRes = await scaffoldCodeAndResourceTemplate(
       ctx,
       inputs,
       localSettings,
-      pluginsToScaffold,
-      true
+      plugins,
+      true,
+      plugins
     );
     if (scaffoldRes.isErr()) {
       ctx.logProvider?.info(`failed to scaffold ${pluginNames}!`);
@@ -315,15 +363,15 @@ export async function addCapability(
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
       [SolutionTelemetryProperty.Capabilities]: capabilitiesAnswer.join(";"),
     });
-    return ok({ solutionSettings: settings, solutionConfig: { provisionSucceeded: false } });
+    return ok({
+      solutionSettings: solutionSettings,
+      solutionConfig: { provisionSucceeded: false },
+    });
   }
-  const cannotAddCapWarnMsg = "Add nothing";
-  ctx.userInteraction.showMessage("warn", cannotAddCapWarnMsg, false);
-  ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
-    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-    [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-    [SolutionTelemetryProperty.Capabilities]: [].join(";"),
-  });
+  // 4. update manifest
+  if (capabilitiesToAddManifest.length > 0) {
+    await appStudioPlugin.addCapabilities(ctx, inputsWithProjectPath, capabilitiesToAddManifest);
+  }
   return ok({});
 }
 

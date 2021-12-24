@@ -27,6 +27,7 @@ import {
   PathInfo,
   BotBicep,
   Alias,
+  ArmTemplateVersion,
 } from "./constants";
 import { getZipDeployEndpoint } from "./utils/zipDeploy";
 
@@ -207,6 +208,8 @@ export class TeamsBotImpl {
           ),
         },
       },
+      BicepVersion: ArmTemplateVersion.BicepVersion,
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
     };
 
     Logger.info(Messages.SuccessfullyUpdateArmTemplatesBot);
@@ -254,6 +257,8 @@ export class TeamsBotImpl {
           ConstantString.UTF8Encoding
         )
       ),
+      BicepVersion: ArmTemplateVersion.BicepVersion,
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
     };
 
     Logger.info(Messages.SuccessfullyGenerateArmTemplatesBot);

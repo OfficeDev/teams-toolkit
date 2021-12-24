@@ -42,6 +42,7 @@ import {
   ProgressTitle,
   Telemetry,
   TemplatePathInfo,
+  ArmTemplateVersion,
 } from "./constants";
 import { IPermission } from "./interfaces/IPermission";
 import { RequiredResourceAccess, ResourceAccess } from "./interfaces/IAADDefinition";
@@ -305,6 +306,7 @@ export class AadAppForTeamsImpl {
           ConstantString.UTF8Encoding
         )
       ),
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
     };
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);

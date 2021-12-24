@@ -54,3 +54,8 @@ export class IdentityBicep {
 export class IdentityBicepFile {
   static readonly moduleTempalteFilename: string = "identityProvision.template.bicep";
 }
+
+export class ArmTemplateVersion {
+  static readonly BicepVersion = "0.4.1008";
+  static readonly SchemaVersion = "0.1.0";
+}

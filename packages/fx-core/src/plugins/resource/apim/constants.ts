@@ -436,3 +436,8 @@ export class UserTask {
 export class ApimOutputBicepSnippet {
   static readonly ServiceResourceId = "provisionOutputs.apimOutput.value.serviceResourceId";
 }
+
+export class ArmTemplateVersion {
+  static readonly BicepVersion = "0.4.1008";
+  static readonly SchemaVersion = "0.1.0";
+}

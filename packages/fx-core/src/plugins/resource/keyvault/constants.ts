@@ -40,3 +40,8 @@ export class Telemetry {
   static fail = "no";
   static appId = "appid";
 }
+
+export class ArmTemplateVersion {
+  static readonly BicepVersion = "0.4.1008";
+  static readonly SchemaVersion = "0.1.0";
+}

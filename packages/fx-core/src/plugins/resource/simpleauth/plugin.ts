@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { AzureSolutionSettings, FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
-import { Constants, Messages, Telemetry } from "./constants";
+import { Constants, Messages, Telemetry, ArmTemplateVersion } from "./constants";
 import { NoConfigError, UnauthenticatedError } from "./errors";
 import { ResultFactory } from "./result";
 import { Utils } from "./utils/common";
@@ -194,6 +194,8 @@ export class SimpleAuthPluginImpl {
         skuName: Constants.SimpleAuthBicepOutputSkuName,
         endpoint: Constants.SimpleAuthBicepOutputEndpoint,
       },
+      BicepVersion: ArmTemplateVersion.BicepVersion,
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
     };
 
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);

@@ -286,3 +286,7 @@ export class UILevels {
   static readonly Warn = "warn";
   static readonly Error = "error";
 }
+
+export class ArmTemplateVersion {
+  static readonly SchemaVersion = "0.1.0";
+}

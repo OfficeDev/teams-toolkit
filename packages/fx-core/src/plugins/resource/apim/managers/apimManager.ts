@@ -5,6 +5,7 @@ import {
   ApimOutputBicepSnippet,
   ApimPathInfo,
   ApimPluginConfigKeys,
+  ArmTemplateVersion,
 } from "../constants";
 import { AssertNotEmpty } from "../error";
 import {
@@ -222,6 +223,8 @@ export class ApimManager {
           ),
         },
       },
+      BicepVersion: ArmTemplateVersion.BicepVersion,
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
     };
 
     return result;
@@ -264,6 +267,8 @@ export class ApimManager {
           ConstantString.UTF8Encoding
         )
       ),
+      BicepVersion: ArmTemplateVersion.BicepVersion,
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
     };
 
     return result;

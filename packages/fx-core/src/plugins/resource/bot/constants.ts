@@ -276,3 +276,8 @@ export class BotBicep {
   static readonly hostName: string = "provisionOutputs.botOutput.value.validDomain";
   static readonly webAppEndpoint: string = "provisionOutputs.botOutputs.value.botWebAppEndpoint";
 }
+
+export class ArmTemplateVersion {
+  static readonly BicepVersion = "0.4.1008";
+  static readonly SchemaVersion = "0.1.0";
+}

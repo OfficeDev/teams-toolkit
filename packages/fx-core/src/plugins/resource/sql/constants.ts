@@ -109,3 +109,8 @@ export class AzureSqlBicepFile {
   static readonly moduleTemplateFileName: string = "sql.template.bicep";
   static readonly ProvisionModuleTemplateFileName = "sqlProvision.template.bicep";
 }
+
+export class ArmTemplateVersion {
+  static readonly BicepVersion = "0.4.1008";
+  static readonly SchemaVersion = "0.1.0";
+}

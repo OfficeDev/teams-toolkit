@@ -13,7 +13,13 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import { IdentityConfig } from "./config";
-import { Constants, IdentityBicep, IdentityBicepFile, Telemetry } from "./constants";
+import {
+  Constants,
+  IdentityBicep,
+  IdentityBicepFile,
+  Telemetry,
+  ArmTemplateVersion,
+} from "./constants";
 import { ContextUtils } from "./utils/contextUtils";
 import { ResultFactory, Result } from "./results";
 import { Message } from "./utils/messages";
@@ -122,6 +128,8 @@ export class IdentityPlugin implements Plugin {
         identityResourceId: IdentityBicep.identityResourceId,
         identityPrincipalId: IdentityBicep.identityPrincipalId,
       },
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
+      BicepVersion: ArmTemplateVersion.BicepVersion,
     };
 
     return ok(result);
@@ -154,6 +162,8 @@ export class IdentityPlugin implements Plugin {
         identityResourceId: IdentityBicep.identityResourceId,
         identityPrincipalId: IdentityBicep.identityPrincipalId,
       },
+      BicepVersion: ArmTemplateVersion.BicepVersion,
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
     };
 
     return ok(result);

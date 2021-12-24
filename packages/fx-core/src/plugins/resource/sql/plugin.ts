@@ -23,7 +23,14 @@ import { SqlConfig } from "./config";
 import { SqlClient } from "./sqlClient";
 import { ContextUtils } from "./utils/contextUtils";
 import { formatEndpoint, parseToken, UserType } from "./utils/commonUtils";
-import { AzureSqlBicep, AzureSqlBicepFile, Constants, HelpLinks, Telemetry } from "./constants";
+import {
+  AzureSqlBicep,
+  AzureSqlBicepFile,
+  Constants,
+  HelpLinks,
+  Telemetry,
+  ArmTemplateVersion,
+} from "./constants";
 import { Message } from "./utils/message";
 import { TelemetryUtils } from "./utils/telemetryUtils";
 import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "./questions";
@@ -305,6 +312,8 @@ export class SqlPluginImpl {
         sqlEndpoint: AzureSqlBicep.sqlEndpoint,
         databaseName: AzureSqlBicep.databaseName,
       },
+      BicepVersion: ArmTemplateVersion.BicepVersion,
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
     };
     return ok(result);
   }

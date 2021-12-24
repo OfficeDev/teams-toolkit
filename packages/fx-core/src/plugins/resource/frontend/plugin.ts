@@ -35,6 +35,7 @@ import {
   FrontendOutputBicepSnippet,
   FrontendPathInfo,
   FrontendPluginInfo as PluginInfo,
+  ArmTemplateVersion,
 } from "./constants";
 import { FrontendConfig } from "./configs";
 import { FrontendDeployment } from "./ops/deploy";
@@ -200,6 +201,8 @@ export class FrontendPluginImpl {
         endpoint: FrontendOutputBicepSnippet.Endpoint,
         domain: FrontendOutputBicepSnippet.Domain,
       },
+      BicepVersion: ArmTemplateVersion.BicepVersion,
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
     };
 
     return ok(result);
@@ -230,6 +233,8 @@ export class FrontendPluginImpl {
         endpoint: FrontendOutputBicepSnippet.Endpoint,
         domain: FrontendOutputBicepSnippet.Domain,
       },
+      BicepVersion: ArmTemplateVersion.BicepVersion,
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
     };
 
     return ok(result);

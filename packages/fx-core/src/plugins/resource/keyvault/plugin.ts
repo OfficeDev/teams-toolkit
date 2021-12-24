@@ -6,7 +6,7 @@ import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../..";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString } from "../../../common/constants";
-import { Constants } from "./constants";
+import { Constants, ArmTemplateVersion } from "./constants";
 import { ResultFactory } from "./result";
 
 export class KeyVaultPluginImpl {
@@ -51,6 +51,8 @@ export class KeyVaultPluginImpl {
         m365ClientSecretReference: Constants.KeyVaultBicep.m365ClientSecretReference,
         botClientSecretReference: Constants.KeyVaultBicep.botClientSecretReference,
       },
+      BicepVersion: ArmTemplateVersion.BicepVersion,
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
     };
 
     return ResultFactory.Success(result);

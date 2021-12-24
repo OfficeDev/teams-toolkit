@@ -45,6 +45,7 @@ import {
   QuestionValidationFunc,
   RegularExpr,
   FunctionBicepFile,
+  ArmTemplateVersion,
 } from "./constants";
 import { ErrorMessages, InfoMessages } from "./resources/message";
 import {
@@ -684,6 +685,8 @@ export class FunctionPluginImpl {
           function: await fs.readFile(configFuncTemplateFilePath, ConstantString.UTF8Encoding),
         },
       },
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
+      BicepVersion: ArmTemplateVersion.BicepVersion,
     };
 
     return ResultFactory.Success(result);
@@ -729,6 +732,8 @@ export class FunctionPluginImpl {
         functionAppResourceId: FunctionBicep.functionAppResourceId,
         functionEndpoint: FunctionBicep.functionEndpoint,
       },
+      BicepVersion: ArmTemplateVersion.BicepVersion,
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
     };
 
     return ResultFactory.Success(result);

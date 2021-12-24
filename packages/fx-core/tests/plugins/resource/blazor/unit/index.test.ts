@@ -78,7 +78,7 @@ describe("BlazorPlugin", () => {
       const appName: string = ctx.projectSettings!.appName;
       const expectedWebAppName = `${appName}${BlazorPluginInfo.alias}${resourceNameSuffix}`;
 
-      chai.assert.equal(plugin.blazorPluginImpl.config.webAppName, expectedWebAppName);
+      chai.assert.equal(plugin.dotnetPluginImpl.config.webAppName, expectedWebAppName);
       chai.assert.isTrue(result.isOk());
     });
 
@@ -87,7 +87,7 @@ describe("BlazorPlugin", () => {
 
       chai.assert.isTrue(result.isOk());
       chai.assert.equal(
-        plugin.blazorPluginImpl.config.endpoint,
+        plugin.dotnetPluginImpl.config.endpoint,
         `https://${TestHelper.webAppDomain}`
       );
     });

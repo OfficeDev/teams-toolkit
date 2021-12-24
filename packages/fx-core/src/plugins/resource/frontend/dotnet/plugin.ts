@@ -8,10 +8,10 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   AzureInfo,
-  BlazorPluginInfo as PluginInfo,
-  BlazorConfigInfo as ConfigInfo,
+  DotnetPluginInfo as PluginInfo,
+  DotnetConfigInfo as ConfigInfo,
   DependentPluginInfo,
-  BlazorPathInfo as PathInfo,
+  DotnetPathInfo as PathInfo,
 } from "./constants";
 import { Messages } from "./resources/messages";
 import { TeamsFxResult } from "./error-factory";
@@ -20,7 +20,7 @@ import { v4 as uuid } from "uuid";
 import * as Provision from "./ops/provision";
 import { AzureClientFactory } from "./utils/azure-client";
 import { NameValuePair } from "@azure/arm-appservice/esm/models";
-import { BlazorConfigKey as ConfigKey, AppSettingsKey } from "./enum";
+import { DotnetConfigKey as ConfigKey, AppSettingsKey } from "./enum";
 import {
   ConfigureWebAppError,
   FetchConfigError,
@@ -41,14 +41,14 @@ import {
 
 type Site = WebSiteManagementModels.Site;
 
-export interface BlazorPluginConfig {
+export interface DotnetPluginConfig {
   /* Config from solution */
   resourceGroupName?: string;
   subscriptionId?: string;
   resourceNameSuffix?: string;
   location?: string;
 
-  /* Config exported by Blazor plugin */
+  /* Config exported by Dotnet plugin */
   webAppName?: string;
   appServicePlanName?: string;
   endpoint?: string;
@@ -60,8 +60,8 @@ export interface BlazorPluginConfig {
   site?: Site;
 }
 
-export class BlazorPluginImpl {
-  config: BlazorPluginConfig = {};
+export class DotnetPluginImpl {
+  config: DotnetPluginConfig = {};
 
   private syncConfigFromContext(ctx: PluginContext): void {
     const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(

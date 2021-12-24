@@ -395,21 +395,21 @@ export async function getQuestionsForAddCapability(
     return err(canProceed.error);
   }
   const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
-  const isTabAddable = await appStudioPlugin.capabilityExceedLimit(
+  const isTabAddable = !(await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
     "staticTab"
-  );
-  const isBotAddable = await appStudioPlugin.capabilityExceedLimit(
+  ));
+  const isBotAddable = !(await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
     "Bot"
-  );
-  const isMEAddable = await appStudioPlugin.capabilityExceedLimit(
+  ));
+  const isMEAddable = !(await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
     "MessageExtension"
-  );
+  ));
   if (!(isTabAddable || isBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",

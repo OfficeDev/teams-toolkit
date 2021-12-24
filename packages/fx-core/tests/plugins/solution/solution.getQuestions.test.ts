@@ -80,7 +80,7 @@ const envInfo: EnvInfoV2 = {
 };
 
 describe("getQuestionsForScaffolding()", async () => {
-  const mocker = sinon.createSandbox();
+  const sandbox = sinon.createSandbox();
   const projectSettings: ProjectSettings = {
     appName: "my app",
     projectId: uuid.v4(),
@@ -112,7 +112,9 @@ describe("getQuestionsForScaffolding()", async () => {
     };
   });
 
-  afterEach(() => {});
+  afterEach(() => {
+    sandbox.restore();
+  });
 
   it("getQuestionsForScaffolding", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);
@@ -239,21 +241,8 @@ describe("getQuestionsForScaffolding()", async () => {
         inputs: v2.InputsWithProjectPath,
         capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
       ) => {
-        return true;
+        return false;
       };
-      // appStudioPlugin.addCapabilities = async (
-      //   ctx: v2.Context,
-      //   inputs: v2.InputsWithProjectPath,
-      //   capabilities: (
-      //     | { name: "staticTab"; snippet?: IStaticTab }
-      //     | { name: "configurableTab"; snippet?: IConfigurableTab }
-      //     | { name: "Bot"; snippet?: IBot }
-      //     | { name: "MessageExtension"; snippet?: IComposeExtension }
-      //   )[]
-      // ) => {
-      //   return ok(undefined);
-      // };
-
       (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
         HostTypeOptionAzure.id;
       const res = await getQuestionsForUserTask(
@@ -268,6 +257,28 @@ describe("getQuestionsForScaffolding()", async () => {
         const node = res.value;
         assert.isTrue(node !== undefined && node.data !== undefined);
       }
+    }
+    {
+      const appStudioPlugin = Container.get<AppStudioPluginV3>(
+        BuiltInResourcePluginNames.appStudio
+      );
+      appStudioPlugin.capabilityExceedLimit = async (
+        ctx: v2.Context,
+        inputs: v2.InputsWithProjectPath,
+        capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+      ) => {
+        return true;
+      };
+      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+        HostTypeOptionAzure.id;
+      const res = await getQuestionsForUserTask(
+        mockedCtx,
+        mockedInputs,
+        func,
+        envInfo,
+        mockedProvider
+      );
+      assert.isTrue(res.isOk());
     }
   });
 

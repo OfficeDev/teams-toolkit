@@ -231,21 +231,21 @@ export async function addCapability(
   solutionSettings.capabilities = solutionSettings.capabilities || [];
   const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
   const inputsWithProjectPath = inputs as v2.InputsWithProjectPath;
-  const isTabAddable = await appStudioPlugin.capabilityExceedLimit(
+  const isTabAddable = !(await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputsWithProjectPath,
     "staticTab"
-  );
-  const isBotAddable = await appStudioPlugin.capabilityExceedLimit(
+  ));
+  const isBotAddable = !(await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputsWithProjectPath,
     "Bot"
-  );
-  const isMEAddable = await appStudioPlugin.capabilityExceedLimit(
+  ));
+  const isMEAddable = !(await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputsWithProjectPath,
     "MessageExtension"
-  );
+  ));
   if (
     (capabilitiesAnswer.includes(TabOptionItem.id) && !isTabAddable) ||
     (capabilitiesAnswer.includes(BotOptionItem.id) && !isBotAddable) ||

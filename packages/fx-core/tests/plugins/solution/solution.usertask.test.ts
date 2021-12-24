@@ -13,8 +13,12 @@ import {
   ProjectSettings,
   Inputs,
   v2,
-  Plugin,
+  ok,
   TokenProvider,
+  IStaticTab,
+  IBot,
+  IConfigurableTab,
+  IComposeExtension,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import { GLOBAL_CONFIG, SolutionError } from "../../../src/plugins/solution/fx-solution/constants";
@@ -58,6 +62,8 @@ import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEn
 import { ScaffoldingContextAdapter } from "../../../src/plugins/solution/fx-solution/v2/adaptor";
 import { LocalCrypto } from "../../../src/core/crypto";
 import { appStudioPlugin, botPlugin } from "../../constants";
+import { BuiltInResourcePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -231,7 +237,7 @@ describe("V2 implementation", () => {
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
   });
 
-  it("should return err when trying to add bot capability repeatedly", async () => {
+  it("should return err when trying to capability if exceed limit", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -239,16 +245,33 @@ describe("V2 implementation", () => {
         hostType: HostTypeOptionAzure.id,
         name: "test",
         version: "1.0",
-        activeResourcePlugins: [appStudioPlugin.name, botPlugin.name],
+        activeResourcePlugins: [botPlugin.name],
         capabilities: [BotOptionItem.id],
       },
     };
     const mockedCtx = new MockedV2Context(projectSettings);
-    const mockedInputs: Inputs = {
-      platform: Platform.VSCode,
-    };
+    const mockedInputs: Inputs = { platform: Platform.VSCode };
     mockedInputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
-
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    appStudioPlugin.capabilityExceedLimit = async (
+      ctx: v2.Context,
+      inputs: v2.InputsWithProjectPath,
+      capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+    ) => {
+      return false;
+    };
+    appStudioPlugin.addCapabilities = async (
+      ctx: v2.Context,
+      inputs: v2.InputsWithProjectPath,
+      capabilities: (
+        | { name: "staticTab"; snippet?: IStaticTab }
+        | { name: "configurableTab"; snippet?: IConfigurableTab }
+        | { name: "Bot"; snippet?: IBot }
+        | { name: "MessageExtension"; snippet?: IComposeExtension }
+      )[]
+    ) => {
+      return ok(undefined);
+    };
     const result = await executeUserTask(
       mockedCtx,
       mockedInputs,
@@ -257,10 +280,53 @@ describe("V2 implementation", () => {
       { envName: "default", config: {}, state: {} },
       mockedProvider
     );
-    expect(result.isErr()).to.be.true;
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToAddCapability);
+    expect(result.isErr() && result.error.name === SolutionError.FailedToAddCapability).to.be.true;
   });
-
+  it("should return err when trying to add bot capability repeatedly", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        hostType: HostTypeOptionAzure.id,
+        name: "test",
+        version: "1.0",
+        activeResourcePlugins: [botPlugin.name],
+        capabilities: [BotOptionItem.id],
+      },
+    };
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = { platform: Platform.VSCode };
+    mockedInputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    appStudioPlugin.capabilityExceedLimit = async (
+      ctx: v2.Context,
+      inputs: v2.InputsWithProjectPath,
+      capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+    ) => {
+      return true;
+    };
+    appStudioPlugin.addCapabilities = async (
+      ctx: v2.Context,
+      inputs: v2.InputsWithProjectPath,
+      capabilities: (
+        | { name: "staticTab"; snippet?: IStaticTab }
+        | { name: "configurableTab"; snippet?: IConfigurableTab }
+        | { name: "Bot"; snippet?: IBot }
+        | { name: "MessageExtension"; snippet?: IComposeExtension }
+      )[]
+    ) => {
+      return ok(undefined);
+    };
+    const result = await executeUserTask(
+      mockedCtx,
+      mockedInputs,
+      { namespace: "solution", method: "addCapability" },
+      {},
+      { envName: "default", config: {}, state: {} },
+      mockedProvider
+    );
+    expect(result.isOk()).to.be.true;
+  });
   it("should return ok when adding tab to bot project", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",

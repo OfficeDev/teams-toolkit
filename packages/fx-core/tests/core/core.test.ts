@@ -682,7 +682,7 @@ describe("Core basic APIs", () => {
       const inputs: Inputs = { platform: Platform.VS };
       const func: Func = { namespace: "fx-solution-azure", method: "mock" };
       const res = await core.getQuestionsForUserTask(func, inputs);
-      assert.isTrue(res.isOk() && res.value === undefined);
+      assert.isTrue(res.isErr());
     }
     {
       const inputs: Inputs = { platform: Platform.CLI_HELP };
@@ -738,18 +738,12 @@ describe("Core basic APIs", () => {
     {
       const inputs: Inputs = { platform: Platform.VS };
       const res = await core.getQuestions(Stage.provision, inputs);
-      assert.isTrue(res.isOk() && res.value && res.value.data.name === "mock-question");
+      assert.isTrue(res.isErr());
     }
     {
       const inputs: Inputs = { platform: Platform.CLI_HELP };
       const res = await core.getQuestions(Stage.provision, inputs);
       assert.isTrue(res.isOk() && res.value && res.value.data.name === "mock-question");
-    }
-    {
-      const inputs: Inputs = { platform: Platform.VS };
-      const func: Func = { namespace: "fx-solution-azure", method: "mock" };
-      const res = await core.getQuestionsForUserTask(func, inputs);
-      assert.isTrue(res.isOk() && res.value && res.value.data.name === "mock-question-user-task");
     }
     {
       const inputs: Inputs = { platform: Platform.CLI_HELP };

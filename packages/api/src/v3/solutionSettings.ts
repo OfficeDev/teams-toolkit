@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { SolutionSettings } from "..";
 import { AzureSolutionSettings } from "../types";
 /**
  * Module is basic building block of the App
@@ -34,4 +35,13 @@ export interface TeamsFxSolutionSettings extends AzureSolutionSettings {
    */
   version: "3.0.0";
   modules: Module[];
+}
+
+export interface TeamsSPFxSolutionSettings extends SolutionSettings {
+  version: "3.0.0";
+  modules: Module[];
+  hostType: string;
+  capabilities: string[];
+  activeResourcePlugins: string[];
+  migrateFromV1?: boolean;
 }

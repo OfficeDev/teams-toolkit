@@ -20,7 +20,8 @@
         "${workspaceFolder}/lib/**/*.js",
         "${workspaceFolder}/../fx-core/build/**/*.js",
         "${workspaceFolder}/../api/build/**/*.js"
-      ]
+      ],
+      "console": "integratedTerminal"
     },
     {
       "type": "pwa-node",

@@ -194,12 +194,10 @@ export class TeamsBotImpl {
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
 
     const result: ArmTemplateResult = {
-      Provision: {
-        Reference: {
-          resourceId: BotBicep.resourceId,
-          hostName: BotBicep.hostName,
-          webAppEndpoint: BotBicep.webAppEndpoint,
-        },
+      Reference: {
+        resourceId: BotBicep.resourceId,
+        hostName: BotBicep.hostName,
+        webAppEndpoint: BotBicep.webAppEndpoint,
       },
       Configuration: {
         Modules: {
@@ -232,11 +230,6 @@ export class TeamsBotImpl {
             ConstantString.UTF8Encoding
           ),
         },
-        Reference: {
-          resourceId: BotBicep.resourceId,
-          hostName: BotBicep.hostName,
-          webAppEndpoint: BotBicep.webAppEndpoint,
-        },
       },
       Configuration: {
         Orchestration: await fs.readFile(
@@ -249,6 +242,11 @@ export class TeamsBotImpl {
             ConstantString.UTF8Encoding
           ),
         },
+      },
+      Reference: {
+        resourceId: BotBicep.resourceId,
+        hostName: BotBicep.hostName,
+        webAppEndpoint: BotBicep.webAppEndpoint,
       },
       Parameters: JSON.parse(
         await fs.readFile(

@@ -14,20 +14,17 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import { lock, unlock } from "proper-lockfile";
-import { promisify } from "util";
-import { FxCore } from "..";
+import { FxCore, TOOLS } from "..";
 import { waitSeconds } from "../..";
+import { sendTelemetryErrorEvent } from "../../common/telemetry";
 import { CallbackRegistry } from "../callback";
 import { CoreSource, InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";
 import { getLockFolder } from "../tools";
 import { shouldIgnored } from "./projectSettingsLoader";
+
+let doingTask: string | undefined = undefined;
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
-  const core = ctx.self as FxCore;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const logger =
-    core !== undefined && core.tools !== undefined && core.tools.logProvider !== undefined
-      ? core.tools.logProvider
-      : undefined;
   const ignoreLock = shouldIgnored(ctx);
   if (ignoreLock) {
     await next();
@@ -54,37 +51,58 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
   }`;
   let acquired = false;
+  let retryNum = 0;
   for (let i = 0; i < 10; ++i) {
     try {
       await lock(configFolder, { lockfilePath: lockfilePath });
       acquired = true;
-      logger?.debug(`[core] success to acquire lock for task ${taskName} on: ${configFolder}`);
+      TOOLS?.logProvider.debug(
+        `[core] success to acquire lock for task ${taskName} on: ${configFolder}`
+      );
       for (const f of CallbackRegistry.get(CoreCallbackEvent.lock)) {
         f();
       }
       try {
+        doingTask = taskName;
+        if (retryNum > 0) {
+          // failed for some try and finally success
+          sendTelemetryErrorEvent(
+            CoreSource,
+            "concurrent-operation",
+            new ConcurrentError(CoreSource),
+            { retry: retryNum + "", acquired: "true", doing: doingTask, todo: taskName }
+          );
+        }
         await next();
       } finally {
         await unlock(configFolder, { lockfilePath: lockfilePath });
         for (const f of CallbackRegistry.get(CoreCallbackEvent.unlock)) {
           f();
         }
-        logger?.debug(`[core] lock released on ${configFolder}`);
+        TOOLS?.logProvider.debug(`[core] lock released on ${configFolder}`);
+        doingTask = undefined;
       }
       break;
     } catch (e) {
       if (e["code"] === "ELOCKED") {
-        // logger?.warning(
-        //   `[core] failed to acquire lock for task ${taskName} on: ${configFolder}, error: ${e} try again ... `
-        // );
         await waitSeconds(1);
+        ++retryNum;
         continue;
       }
       throw e;
     }
   }
   if (!acquired) {
-    logger?.error(`[core] failed to acquire lock for task ${taskName} on: ${configFolder}`);
+    TOOLS?.logProvider.error(
+      `[core] failed to acquire lock for task ${taskName} on: ${configFolder}`
+    );
+    // failed for 10 times and finally failed
+    sendTelemetryErrorEvent(CoreSource, "concurrent-operation", new ConcurrentError(CoreSource), {
+      retry: retryNum + "",
+      acquired: "false",
+      doing: doingTask || "",
+      todo: taskName,
+    });
     ctx.result = err(new ConcurrentError(CoreSource));
   }
 };

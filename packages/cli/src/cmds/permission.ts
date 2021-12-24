@@ -36,8 +36,6 @@ export class PermissionStatus extends YargsCommand {
   public readonly description = "Check user's permission.";
   private readonly listAllCollaborators = "list-all-collaborators";
 
-  public params: { [_: string]: Options } = {};
-
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.checkPermission);
     return yargs.option(this.params).option(this.listAllCollaborators, {
@@ -97,8 +95,6 @@ export class PermissionGrant extends YargsCommand {
   public readonly commandHead = `grant`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Grant permission for another account.";
-
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.grantPermission);

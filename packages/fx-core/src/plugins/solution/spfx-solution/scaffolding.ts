@@ -1,3 +1,4 @@
+import { OptionItem } from "@microsoft/teamsfx-api";
 import {
   TokenProvider,
   FxError,
@@ -20,7 +21,7 @@ export async function init(
 
 export async function scaffold(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath
+  inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem }
 ): Promise<Result<Void, FxError>> {
   return ok(Void);
 }
@@ -43,7 +44,7 @@ export async function publishApplication(
 
 export async function addResource(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: keyof Module }
+  inputs: v2.InputsWithProjectPath & { module?: string; resource?: string }
 ): Promise<Result<Void, FxError>> {
   return ok(Void);
 }
@@ -51,7 +52,7 @@ export async function addResource(
 export async function addModule(
   ctx: v2.Context,
   localSettings: Json,
-  inputs: v2.InputsWithProjectPath & { module?: keyof Module }
+  inputs: v2.InputsWithProjectPath & { capabilities?: string[] }
 ): Promise<Result<Void, FxError>> {
   return ok(Void);
 }

@@ -19,6 +19,7 @@ import { Utils } from "../utils";
 import fs from "fs-extra";
 import path from "path";
 import { TelemetryHelper } from "../utils/telemetry-helper";
+import { RemoteEnvs } from "../env";
 
 interface DeploymentInfo {
   lastBuildTime?: string;
@@ -43,7 +44,7 @@ export class FrontendDeployment {
     return lastDeployTime < lastBuildTime;
   }
 
-  public static async doFrontendBuild(componentPath: string): Promise<void> {
+  public static async doFrontendBuild(componentPath: string, envs: RemoteEnvs): Promise<void> {
     if (!(await FrontendDeployment.needBuild(componentPath))) {
       return FrontendDeployment.skipBuild();
     }
@@ -57,7 +58,10 @@ export class FrontendDeployment {
 
     await progressHandler?.next(DeploySteps.Build);
     await runWithErrorCatchAndThrow(new BuildError(), async () => {
-      await Utils.execute(Commands.BuildFrontend, componentPath);
+      await Utils.execute(Commands.BuildFrontend, componentPath, {
+        ...envs.customizedRemoteEnvs,
+        ...envs.teamsfxRemoteEnvs,
+      });
     });
     await FrontendDeployment.saveDeploymentInfo(componentPath, {
       lastBuildTime: new Date().toISOString(),

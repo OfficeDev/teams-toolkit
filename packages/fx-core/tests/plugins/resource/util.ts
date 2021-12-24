@@ -13,23 +13,23 @@ export function mockSolutionGenerateArmTemplates(
     },
     Provision: {
       Orchestration: "",
-      Reference: {},
       Modules: {},
     },
+    Reference: {},
     Parameters: {},
   };
   if (template.Configuration) {
     if (template.Configuration.Orchestration) {
       result.Configuration!.Orchestration = compileHandlebarsTemplateString(
         template.Configuration.Orchestration,
-        mockedData
+        mockedData.Plugins
       );
     }
     if (template.Configuration?.Modules) {
       for (const moduleItem of Object.entries(template.Configuration.Modules)) {
         result.Configuration!.Modules![moduleItem[0]] = compileHandlebarsTemplateString(
           moduleItem[1],
-          mockedData
+          mockedData.Plugins
         );
       }
     }
@@ -38,19 +38,19 @@ export function mockSolutionGenerateArmTemplates(
     if (template.Provision?.Orchestration) {
       result.Provision!.Orchestration = compileHandlebarsTemplateString(
         template.Provision.Orchestration,
-        mockedData
+        mockedData.Plugins
       );
     }
-    result.Provision!.Reference = template.Provision?.Reference;
     if (template.Provision?.Modules) {
       for (const moduleItem of Object.entries(template.Provision!.Modules)) {
         result.Provision!.Modules![moduleItem[0]] = compileHandlebarsTemplateString(
           moduleItem[1],
-          mockedData
+          mockedData.Plugins
         );
       }
     }
   }
+  result.Reference = template.Reference;
   result.Parameters = template.Parameters;
   return result;
 }
@@ -63,22 +63,20 @@ export function mockSolutionUpdateArmTemplates(
     Configuration: {
       Modules: {},
     },
-    Provision: {
-      Reference: {},
-    },
+    Reference: {},
   };
   if (template.Configuration) {
     if (template.Configuration?.Modules) {
       for (const moduleItem of Object.entries(template.Configuration.Modules)) {
         result.Configuration!.Modules![moduleItem[0]] = compileHandlebarsTemplateString(
           moduleItem[1],
-          mockedData
+          mockedData.Plugins
         );
       }
     }
   }
-  if (template.Provision) {
-    result.Provision!.Reference = template.Provision?.Reference;
+  if (template.Reference) {
+    result.Reference = template.Reference;
   }
   return result;
 }

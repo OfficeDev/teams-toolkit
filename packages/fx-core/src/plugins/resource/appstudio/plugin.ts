@@ -89,7 +89,7 @@ import {
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
-import { getTemplatesFolder, isV2 } from "../../..";
+import { getTemplatesFolder } from "../../..";
 import path from "path";
 import { isMultiEnvEnabled, getAppDirectory, isSPFxProject } from "../../../common";
 import {
@@ -322,9 +322,7 @@ export class AppStudioPluginImpl {
       remoteTeamsAppId = result.value.teamsAppId!;
       ctx.logProvider?.info(`Teams app created ${remoteTeamsAppId}`);
     }
-    if (isMultiEnvEnabled() || isV2()) {
-      ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_ID, remoteTeamsAppId);
-    }
+    ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_ID, remoteTeamsAppId);
     return ok(remoteTeamsAppId);
   }
 
@@ -520,6 +518,30 @@ export class AppStudioPluginImpl {
 
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     try {
+      const localUpdateTime = isLocalDebug
+        ? undefined
+        : (ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_UPDATED_AT) as number);
+      if (localUpdateTime) {
+        const app = await AppStudioClient.getApp(teamsAppId, appStudioToken!, ctx.logProvider);
+        const devPortalUpdateTime = new Date(app.updatedAt!)?.getTime() ?? -1;
+        if (localUpdateTime < devPortalUpdateTime) {
+          const res = await ctx.ui?.showMessage(
+            "warn",
+            "The manifest file on Teams platform has been changed since your last update. Do you want to continue to update and overwrite the manifest file on Teams platform?",
+            true,
+            "Overwrite and update"
+          );
+
+          if (!(res?.isOk() && res.value === "Overwrite and update")) {
+            const error = AppStudioResultFactory.UserError(
+              AppStudioError.UpdateManifestCancelError.name,
+              AppStudioError.UpdateManifestCancelError.message(manifest.name.short)
+            );
+            return err(error);
+          }
+        }
+      }
+
       const result = await this.updateApp(
         ctx,
         appDefinition,
@@ -1099,7 +1121,7 @@ export class AppStudioPluginImpl {
         ? (await fs.readFile(`${appDirectory}/${manifest.icons.outline}`)).toString("base64")
         : undefined;
       try {
-        await AppStudioClient.updateApp(
+        const app = await AppStudioClient.updateApp(
           remoteTeamsAppId,
           appDefinitionRes.value,
           appStudioToken!,
@@ -1107,6 +1129,12 @@ export class AppStudioPluginImpl {
           colorIconContent,
           outlineIconContent
         );
+
+        if (app.updatedAt) {
+          ctx.envInfo.state
+            .get(PluginNames.APPST)
+            ?.set(Constants.TEAMS_APP_UPDATED_AT, new Date(app.updatedAt).getTime());
+        }
       } catch (e) {
         if (e.name === 404) {
           throw AppStudioResultFactory.UserError(
@@ -1383,15 +1411,16 @@ export class AppStudioPluginImpl {
   }
 
   private async getTeamsAppId(ctx: PluginContext, isLocalDebug: boolean): Promise<string> {
-    let teamsAppId: string;
+    let teamsAppId = "";
 
     if (isMultiEnvEnabled() || !isLocalDebug) {
       // User may manually update id in manifest template file, rather than configuration file
       // The id in manifest template file should override configurations
-      const manifest: TeamsAppManifest = await fs.readJSON(
-        await this.getManifestTemplatePath(ctx.root, isLocalDebug)
-      );
-      teamsAppId = manifest.id;
+      const manifestFile = await this.getManifestTemplatePath(ctx.root, isLocalDebug);
+      if (await fs.pathExists(manifestFile)) {
+        const manifest: TeamsAppManifest = await fs.readJSON(manifestFile);
+        teamsAppId = manifest.id;
+      }
       if (!isUUID(teamsAppId)) {
         if (isMultiEnvEnabled()) {
           teamsAppId = isLocalDebug
@@ -1621,7 +1650,7 @@ export class AppStudioPluginImpl {
     appDefinition.appId = teamsAppId;
 
     try {
-      await AppStudioClient.updateApp(
+      const app = await AppStudioClient.updateApp(
         teamsAppId!,
         appDefinition,
         appStudioToken,
@@ -1629,6 +1658,12 @@ export class AppStudioPluginImpl {
         colorIconContent,
         outlineIconContent
       );
+
+      if (app.updatedAt && !isLocalDebug) {
+        const time = new Date(app.updatedAt).getTime();
+        ctx.envInfo.state.get(PluginNames.APPST)?.set(Constants.TEAMS_APP_UPDATED_AT, time);
+      }
+
       return ok(teamsAppId!);
     } catch (e) {
       if (e instanceof Error) {
@@ -1698,9 +1733,16 @@ export class AppStudioPluginImpl {
       }
     }
 
-    let manifest = (
-      await fs.readFile(await this.getManifestTemplatePath(ctx.root, isLocalDebug))
-    ).toString();
+    const manifestFile = await this.getManifestTemplatePath(ctx.root, isLocalDebug);
+    if (!(await fs.pathExists(manifestFile))) {
+      return err(
+        AppStudioResultFactory.SystemError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(manifestFile)
+        )
+      );
+    }
+    let manifest = (await fs.readFile(manifestFile)).toString();
 
     // Bot only project, without frontend hosting
     let endpoint = tabEndpoint;

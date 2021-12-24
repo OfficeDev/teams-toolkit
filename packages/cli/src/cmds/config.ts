@@ -40,6 +40,7 @@ const GlobalOptions = new Set([
   CliConfigOptions.EnvCheckerValidateFuncCoreTools as string,
   CliConfigOptions.EnvCheckerValidateNode as string,
   CliConfigOptions.RunFrom as string,
+  CliConfigOptions.Interactive as string,
 ]);
 
 export class ConfigGet extends YargsCommand {
@@ -145,34 +146,11 @@ export class ConfigGet extends YargsCommand {
     }
 
     const config = result.value;
-    switch (option) {
-      case CliConfigOptions.Telemetry:
-        CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config.telemetry, null, 2), true);
-        return ok(null);
-      case CliConfigOptions.EnvCheckerValidateDotnetSdk:
-        CLILogProvider.necessaryLog(
-          LogLevel.Info,
-          JSON.stringify(config[CliConfigOptions.EnvCheckerValidateDotnetSdk], null, 2),
-          true
-        );
-        return ok(null);
-      case CliConfigOptions.EnvCheckerValidateFuncCoreTools:
-        CLILogProvider.necessaryLog(
-          LogLevel.Info,
-          JSON.stringify(config[CliConfigOptions.EnvCheckerValidateFuncCoreTools], null, 2),
-          true
-        );
-        return ok(null);
-      case CliConfigOptions.EnvCheckerValidateNode:
-        CLILogProvider.necessaryLog(
-          LogLevel.Info,
-          JSON.stringify(config[CliConfigOptions.EnvCheckerValidateNode], null, 2),
-          true
-        );
-        return ok(null);
+    if (option && GlobalOptions.has(option)) {
+      CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config[option], null, 2), true);
+    } else {
+      CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config, null, 2), true);
     }
-
-    CLILogProvider.necessaryLog(LogLevel.Info, JSON.stringify(config, null, 2), true);
     return ok(null);
   }
 
@@ -306,25 +284,17 @@ export class ConfigSet extends YargsCommand {
   }
 
   private async setGlobalConfig(option: string, value: string): Promise<Result<null, FxError>> {
-    switch (option) {
-      case CliConfigOptions.Telemetry:
-      case CliConfigOptions.EnvCheckerValidateDotnetSdk:
-      case CliConfigOptions.EnvCheckerValidateFuncCoreTools:
-      case CliConfigOptions.EnvCheckerValidateNode:
-      case CliConfigOptions.RunFrom:
-        const opt = { [option]: value };
-        const result = UserSettings.setConfigSync(opt);
-        if (result.isErr()) {
-          CLILogProvider.necessaryLog(LogLevel.Error, "Configure user settings failed");
-          return result;
-        }
-        CLILogProvider.necessaryLog(
-          LogLevel.Info,
-          `Successfully configured user setting ${option}.`
-        );
-        return ok(null);
+    if (GlobalOptions.has(option)) {
+      const opt = { [option]: value };
+      const result = UserSettings.setConfigSync(opt);
+      if (result.isErr()) {
+        CLILogProvider.necessaryLog(LogLevel.Error, "Configure user settings failed");
+        return result;
+      }
+      CLILogProvider.necessaryLog(LogLevel.Info, `Successfully configured user setting ${option}.`);
+    } else {
+      CLILogProvider.necessaryLog(LogLevel.Warning, `No user setting ${option}.`);
     }
-    CLILogProvider.necessaryLog(LogLevel.Warning, `No user setting ${option}.`);
     return ok(null);
   }
 

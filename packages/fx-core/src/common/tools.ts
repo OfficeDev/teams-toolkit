@@ -18,6 +18,7 @@ import {
   ProjectSettings,
   AzureSolutionSettings,
   SolutionContext,
+  v3,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse } from "axios";
@@ -38,7 +39,7 @@ import {
 } from "./constants";
 import * as crypto from "crypto";
 import * as os from "os";
-import { FailedToParseResourceIdError } from "../core/error";
+import { FailedToParseResourceIdError, FetchSampleError } from "../core/error";
 import {
   GLOBAL_CONFIG,
   RESOURCE_GROUP_NAME,
@@ -46,7 +47,7 @@ import {
   SUBSCRIPTION_ID,
 } from "../plugins/solution/fx-solution/constants";
 import Mustache from "mustache";
-import { FetchSampleError } from "../core/error";
+import { CloudResource } from "@microsoft/teamsfx-api/build/v3";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
@@ -437,7 +438,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
  * @deprecated Please DO NOT use this method any more, it will be removed in near future.
  */
 export function isMultiEnvEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
+  return true;
 }
 
 /**

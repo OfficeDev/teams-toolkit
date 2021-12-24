@@ -146,19 +146,18 @@ describe("simpleAuthPlugin", () => {
       "fx-resource-simple-auth": {
         Provision: {
           simpleAuth: {
-            ProvisionPath: `./${testProvisionModuleFileName}`,
+            path: `./${testProvisionModuleFileName}`,
           },
         },
         Configuration: {
           simpleAuth: {
-            ConfigPath: `./${testConfigurationModuleFileName}`,
+            path: `./${testConfigurationModuleFileName}`,
           },
         },
       },
     };
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: { ...simpleAuthOutput, ...addtionalPluginOutput },
+      Plugins: { ...simpleAuthOutput, ...addtionalPluginOutput },
     };
 
     chai.assert.isTrue(generateArmTemplatesResult.isOk());
@@ -209,7 +208,7 @@ describe("simpleAuthPlugin", () => {
       );
       chai.assert.strictEqual(expectedResult.Configuration!.Orchestration, OrchestrationConfigFile);
       chai.assert.isUndefined(expectedResult.Parameters);
-      chai.assert.isNotNull(expectedResult.Provision!.Reference);
+      chai.assert.isNotNull(expectedResult.Reference);
     }
   }
 
@@ -231,17 +230,16 @@ describe("simpleAuthPlugin", () => {
     const testProvisionModuleFileName = "simpleAuthProvision.result.bicep";
     const testConfigurationModuleFileName = "simpleAuthConfig.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-simple-auth": {
           Provision: {
             simpleAuth: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
+              path: `./${testProvisionModuleFileName}`,
             },
           },
           Configuration: {
             simpleAuth: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
+              path: `./${testConfigurationModuleFileName}`,
             },
           },
         },
@@ -264,12 +262,11 @@ describe("simpleAuthPlugin", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(expectedResult.Configuration!.Modules!.simpleAuth, configModuleFile);
-      chai.assert.notExists(expectedResult.Provision!.Orchestration);
-      chai.assert.notExists(expectedResult.Provision!.Modules);
+      chai.assert.notExists(expectedResult.Provision);
       chai.assert.notExists(expectedResult.Configuration!.Orchestration);
       chai.assert.notExists(expectedResult.Parameters);
-      chai.assert.exists(expectedResult.Provision!.Reference!.skuName);
-      chai.assert.exists(expectedResult.Provision!.Reference!.endpoint);
+      chai.assert.exists(expectedResult.Reference!.skuName);
+      chai.assert.exists(expectedResult.Reference!.endpoint);
     }
   });
 

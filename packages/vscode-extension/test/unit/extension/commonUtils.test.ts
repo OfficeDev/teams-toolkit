@@ -200,23 +200,23 @@ suite("CommonUtils", () => {
     });
 
     if (isMultiEnvEnabled()) {
-      it("Multi env enabled and both new files and old files exist", async () => {
+      test("Multi env enabled and both new files and old files exist", async () => {
         createOldProjectSettings();
         createNewProjectSettings();
         const result = commonUtils.getProjectId();
         chai.expect(result).equals("new");
       });
-      it("Multi env enabled and only new files exist", async () => {
+      test("Multi env enabled and only new files exist", async () => {
         createNewProjectSettings();
         const result = commonUtils.getProjectId();
         chai.expect(result).equals("new");
       });
-      it("Multi env enabled and only old files exist", async () => {
+      test("Multi env enabled and only old files exist", async () => {
         createOldProjectSettings();
         const result = commonUtils.getProjectId();
         chai.expect(result).equals("old");
       });
-      it("Multi env enabled and neither new nor old files exist", async () => {
+      test("Multi env enabled and neither new nor old files exist", async () => {
         const result = commonUtils.getProjectId();
         chai.expect(result).equals(undefined);
       });
@@ -228,19 +228,19 @@ suite("CommonUtils", () => {
         chai.expect(result).equals("old");
       });
 
-      it("Multi env disabled and only new files exist", async () => {
+      test("Multi env disabled and only new files exist", async () => {
         createNewProjectSettings();
         const result = commonUtils.getProjectId();
         chai.expect(result).equals(undefined);
       });
 
-      it("Multi env disabled and only old files exist", async () => {
+      test("Multi env disabled and only old files exist", async () => {
         createOldProjectSettings();
         const result = commonUtils.getProjectId();
         chai.expect(result).equals("old");
       });
 
-      it("Multi env disabled and neither new nor old files exist", async () => {
+      test("Multi env disabled and neither new nor old files exist", async () => {
         const result = commonUtils.getProjectId();
         chai.expect(result).equals(undefined);
       });

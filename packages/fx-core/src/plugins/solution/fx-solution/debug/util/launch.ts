@@ -3,7 +3,7 @@
 "use strict";
 
 import * as os from "os";
-import { LaunchBrowser } from "./constants";
+import { LaunchBrowser } from "../constants";
 
 export function generateConfigurations(
   includeFrontend: boolean,

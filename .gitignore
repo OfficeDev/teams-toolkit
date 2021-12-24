@@ -375,3 +375,4 @@ templates/*/*/package-lock.json
 
 # eslint
 .eslintcache
+diffFiles.txt

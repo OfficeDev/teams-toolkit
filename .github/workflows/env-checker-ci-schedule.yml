@@ -22,7 +22,7 @@ jobs:
         os: [windows-latest, macos-latest, macos-11, ubuntu-latest]
         node-version: [12, 14, 16]
         func-version: [none, 2, 3]
-        dotnet-version: [none, 3.1.x, 5.0.x]
+        dotnet-version: [none, 3.1.x, 5.0.x, 6.0.x]
       max-parallel: 30
 
     runs-on: ${{ matrix.os }}
@@ -80,13 +80,13 @@ jobs:
       ## In headless Linux CI machines xvfb is required to run VS Code
       ## https://code.visualstudio.com/api/working-with-extensions/continuous-integration#github-actions
       - name: Integration Test with xvfb
-        working-directory: ./packages/vscode-extension
+        working-directory: ./packages/fx-core
         if: runner.os == 'Linux'
         run: |
           xvfb-run -a npm run test:env-checker
 
       - name: Integration Test
-        working-directory: ./packages/vscode-extension
+        working-directory: ./packages/fx-core
         if: runner.os != 'Linux'
         run: |
           npm run test:env-checker

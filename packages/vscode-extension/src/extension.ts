@@ -35,6 +35,7 @@ import {
   isSPFxProject,
   isTeamsfx,
   syncFeatureFlags,
+  isValidNode,
 } from "./utils/commonUtils";
 import {
   ConfigFolderName,
@@ -57,6 +58,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // load the feature flags.
   syncFeatureFlags();
+
+  // Init VSC context key
+  initializeContextKey();
 
   VS_CODE_UI = new VsCodeUI(context);
   // Init context
@@ -525,4 +529,12 @@ export async function activate(context: vscode.ExtensionContext) {
 export function deactivate() {
   handlers.cmdHdlDisposeTreeView();
   disableRunIcon();
+}
+
+function initializeContextKey() {
+  if (isValidNode()) {
+    vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", false);
+  } else {
+    vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", true);
+  }
 }

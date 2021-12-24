@@ -128,8 +128,8 @@ export interface ResourcePlugin extends Plugin {
   getQuestionsForLocalProvision?: (
     ctx: Context,
     inputs: Inputs,
-    localSettings: DeepReadonly<Json>,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    localSettings?: DeepReadonly<Json>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   provisionLocalResource?: (
@@ -151,8 +151,8 @@ export interface ResourcePlugin extends Plugin {
   getQuestionsForProvision?: (
     ctx: Context,
     inputs: Inputs,
-    envInfo: DeepReadonly<EnvInfoV3>,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: DeepReadonly<EnvInfoV3>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   provisionResource?: (

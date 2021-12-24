@@ -11,12 +11,17 @@ param currentAppSettings object
 var functionAppName = split(provisionOutputs.functionOutput.value.functionAppResourceId, '/')[8]
 
 var m365ClientId = provisionParameters['m365ClientId']
+
 var m365ClientSecret = provisionParameters['m365ClientSecret']
+
 var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
+
 var tabAppDomain = provisionOutputs.frontendHostingOutput.value.domain
-var tabAppEndpoint = provisionOutputs.frontendHostingOutput.value.endpoint 
+var tabAppEndpoint = provisionOutputs.frontendHostingOutput.value.endpoint
+
+
 var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'
 
 var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'

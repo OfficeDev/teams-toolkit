@@ -22,6 +22,7 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
+import { setupLocalDebugSettings } from "../debug/provisionLocal";
 
 export async function provisionLocalResource(
   ctx: v2.Context,
@@ -83,6 +84,12 @@ export async function provisionLocalResource(
   const provisionResult = await executeConcurrently(provisionLocalResourceThunks, ctx.logProvider);
   if (provisionResult.kind !== "success") {
     return provisionResult;
+  }
+
+  const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, localSettings);
+
+  if (debugProvisionResult.isErr()) {
+    return new v2.FxPartialSuccess(localSettings, debugProvisionResult.error);
   }
 
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);

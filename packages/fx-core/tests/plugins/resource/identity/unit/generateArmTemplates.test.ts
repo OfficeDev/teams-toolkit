@@ -54,12 +54,11 @@ describe("identityPlugin", () => {
     // Assert
     const testModuleFileName = "identityProvision.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-identity": {
           Provision: {
             identity: {
-              ProvisionPath: `./${testModuleFileName}`,
+              path: `./${testModuleFileName}`,
             },
           },
         },
@@ -84,7 +83,7 @@ describe("identityPlugin", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationConfigFile);
-      chai.assert.isNotNull(expectedResult.Provision!.Reference);
+      chai.assert.isNotNull(expectedResult.Reference);
       chai.assert.isUndefined(expectedResult.Parameters);
     }
   });
@@ -101,26 +100,25 @@ describe("identityPlugin", () => {
     // Assert
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
-      chai.assert.notExists(result.value.Provision!.Modules);
-      chai.assert.notExists(result.value.Provision!.Orchestration);
-      chai.assert.exists(result.value.Provision!.Reference!.identityName);
+      chai.assert.notExists(result.value.Provision);
+      chai.assert.exists(result.value.Reference!.identityName);
       chai.assert.strictEqual(
-        result.value.Provision!.Reference!.identityName,
+        result.value.Reference!.identityName,
         "provisionOutputs.identityOutput.value.identityName"
       );
-      chai.assert.exists(result.value.Provision!.Reference!.identityClientId);
+      chai.assert.exists(result.value.Reference!.identityClientId);
       chai.assert.strictEqual(
-        result.value.Provision!.Reference!.identityClientId,
+        result.value.Reference!.identityClientId,
         "provisionOutputs.identityOutput.value.identityClientId"
       );
-      chai.assert.exists(result.value.Provision!.Reference!.identityResourceId);
+      chai.assert.exists(result.value.Reference!.identityResourceId);
       chai.assert.strictEqual(
-        result.value.Provision!.Reference!.identityResourceId,
+        result.value.Reference!.identityResourceId,
         "userAssignedIdentityProvision.outputs.identityResourceId"
       );
-      chai.assert.exists(result.value.Provision!.Reference!.identityPrincipalId);
+      chai.assert.exists(result.value.Reference!.identityPrincipalId);
       chai.assert.strictEqual(
-        result.value.Provision!.Reference!.identityPrincipalId,
+        result.value.Reference!.identityPrincipalId,
         "userAssignedIdentityProvision.outputs.identityPrincipalId"
       );
       chai.assert.notExists(result.value.Configuration);

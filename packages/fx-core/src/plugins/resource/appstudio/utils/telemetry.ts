@@ -60,7 +60,9 @@ export class TelemetryUtils {
       properties = {};
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
-    const teamsAppId = (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string);
+    const teamsAppId = this.ctx.envInfo.state
+      .get(PluginNames.APPST)
+      ?.get(Constants.TEAMS_APP_ID) as string;
     if (teamsAppId) {
       properties[TelemetryPropertyKey.appId] = teamsAppId;
     }
@@ -81,7 +83,9 @@ export class TelemetryUtils {
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
-    const teamsAppId = (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string);
+    const teamsAppId = this.ctx.envInfo.state
+      .get(PluginNames.APPST)
+      ?.get(Constants.TEAMS_APP_ID) as string;
     if (teamsAppId) {
       properties[TelemetryPropertyKey.appId] = teamsAppId;
     }
@@ -107,7 +111,9 @@ export class TelemetryUtils {
     properties[TelemetryPropertyKey.errorMessage] = error.message;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.failure;
 
-    const teamsAppId = (this.ctx.envInfo.state.get(PluginNames.APPST)?.get(Constants.TEAMS_APP_ID) as string);
+    const teamsAppId = this.ctx.envInfo.state
+      .get(PluginNames.APPST)
+      ?.get(Constants.TEAMS_APP_ID) as string;
     if (teamsAppId) {
       properties[TelemetryPropertyKey.appId] = teamsAppId;
     }

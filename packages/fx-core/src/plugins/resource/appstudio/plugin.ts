@@ -355,10 +355,10 @@ export class AppStudioPluginImpl {
     if (isSPFxProject(ctx.projectSettings)) {
       manifestString = await this.getSPFxManifest(ctx, isLocalDebug);
       const manifest = JSON.parse(manifestString);
-        if (!isUUID(manifest.id)) {
-          manifest.id = v4();
-        }
-        manifestString = JSON.stringify(manifest, null, 4);
+      if (!isUUID(manifest.id)) {
+        manifest.id = v4();
+      }
+      manifestString = JSON.stringify(manifest, null, 4);
     } else {
       const appDefinitionAndManifest = await this.getAppDefinitionAndManifest(ctx, isLocalDebug);
       if (appDefinitionAndManifest.isErr()) {
@@ -604,7 +604,10 @@ export class AppStudioPluginImpl {
 
     if (isSPFxProject(ctx.projectSettings)) {
       const templateManifestFolder = path.join(templatesFolder, "plugins", "resource", "spfx");
-      const manifestFile = path.resolve(templateManifestFolder, "./solution/manifest_multi_env.json");
+      const manifestFile = path.resolve(
+        templateManifestFolder,
+        "./solution/manifest_multi_env.json"
+      );
       const manifestString = (await fs.readFile(manifestFile)).toString();
       manifest = JSON.parse(manifestString);
       const localManifest = await createLocalManifest(
@@ -1227,47 +1230,47 @@ export class AppStudioPluginImpl {
 
   private getTabEndpoint(ctx: PluginContext, isLocalDebug: boolean): string {
     const tabEndpoint = isLocalDebug
-        ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) as string)
-        : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
+      ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) as string)
+      : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
 
     return tabEndpoint;
   }
 
   private getTabDomain(ctx: PluginContext, isLocalDebug: boolean): string {
     const tabDomain = isLocalDebug
-        ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain) as string)
-        : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
+      ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain) as string)
+      : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
     return tabDomain;
   }
 
   private getAadClientId(ctx: PluginContext, isLocalDebug: boolean): string {
     const clientId = isLocalDebug
-        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string)
-        : (ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string);
+      ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId) as string)
+      : (ctx.envInfo.state.get(PluginNames.AAD)?.get(REMOTE_AAD_ID) as string);
 
     return clientId;
   }
 
   private getBotId(ctx: PluginContext, isLocalDebug: boolean): string {
     const botId = isLocalDebug
-        ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) as string)
-        : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string);
+      ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) as string)
+      : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_ID) as string);
 
     return botId;
   }
 
   private getBotDomain(ctx: PluginContext, isLocalDebug: boolean): string {
     const botDomain = isLocalDebug
-        ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotDomain) as string)
-        : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
+      ? (ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotDomain) as string)
+      : (ctx.envInfo.state.get(PluginNames.BOT)?.get(BOT_DOMAIN) as string);
 
     return botDomain;
   }
 
   private getApplicationIdUris(ctx: PluginContext, isLocalDebug: boolean): string {
     const applicationIdUris = isLocalDebug
-        ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris) as string)
-        : (ctx.envInfo.state.get(PluginNames.AAD)?.get(WEB_APPLICATION_INFO_SOURCE) as string);
+      ? (ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ApplicationIdUris) as string)
+      : (ctx.envInfo.state.get(PluginNames.AAD)?.get(WEB_APPLICATION_INFO_SOURCE) as string);
 
     return applicationIdUris;
   }

@@ -256,8 +256,10 @@ describe("getQuestionsForScaffolding()", async () => {
     assert.isTrue(res.isOk() && res.value && res.value.data !== undefined);
     if (res.isOk()) {
       const node = res.value;
-      assert.isTrue(node.data.type === "multiSelect" && node.data.staticOptions.length === 3);
-      if (node.data.type === "multiSelect") {
+      assert.isTrue(
+        node.data && node.data.type === "multiSelect" && node.data.staticOptions.length === 3
+      );
+      if (node.data && node.data.type === "multiSelect") {
         assert.deepEqual((node.data as MultiSelectQuestion).staticOptions as string[], [
           TabOptionItem.id,
           BotOptionItem.id,

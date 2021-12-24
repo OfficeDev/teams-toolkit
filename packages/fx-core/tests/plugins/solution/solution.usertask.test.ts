@@ -253,25 +253,33 @@ describe("V2 implementation", () => {
     const mockedInputs: Inputs = { platform: Platform.VSCode };
     mockedInputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
     const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
-    appStudioPlugin.capabilityExceedLimit = async (
-      ctx: v2.Context,
-      inputs: v2.InputsWithProjectPath,
-      capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
-    ) => {
-      return false;
-    };
-    appStudioPlugin.addCapabilities = async (
-      ctx: v2.Context,
-      inputs: v2.InputsWithProjectPath,
-      capabilities: (
-        | { name: "staticTab"; snippet?: IStaticTab }
-        | { name: "configurableTab"; snippet?: IConfigurableTab }
-        | { name: "Bot"; snippet?: IBot }
-        | { name: "MessageExtension"; snippet?: IComposeExtension }
-      )[]
-    ) => {
-      return ok(undefined);
-    };
+    mocker
+      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+        ) => {
+          return true;
+        }
+      );
+    mocker
+      .stub<any, any>(appStudioPlugin, "addCapabilities")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capabilities: (
+            | { name: "staticTab"; snippet?: IStaticTab }
+            | { name: "configurableTab"; snippet?: IConfigurableTab }
+            | { name: "Bot"; snippet?: IBot }
+            | { name: "MessageExtension"; snippet?: IComposeExtension }
+          )[]
+        ) => {
+          return ok(undefined);
+        }
+      );
     const result = await executeUserTask(
       mockedCtx,
       mockedInputs,
@@ -298,25 +306,33 @@ describe("V2 implementation", () => {
     const mockedInputs: Inputs = { platform: Platform.VSCode };
     mockedInputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
     const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
-    appStudioPlugin.capabilityExceedLimit = async (
-      ctx: v2.Context,
-      inputs: v2.InputsWithProjectPath,
-      capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
-    ) => {
-      return true;
-    };
-    appStudioPlugin.addCapabilities = async (
-      ctx: v2.Context,
-      inputs: v2.InputsWithProjectPath,
-      capabilities: (
-        | { name: "staticTab"; snippet?: IStaticTab }
-        | { name: "configurableTab"; snippet?: IConfigurableTab }
-        | { name: "Bot"; snippet?: IBot }
-        | { name: "MessageExtension"; snippet?: IComposeExtension }
-      )[]
-    ) => {
-      return ok(undefined);
-    };
+    mocker
+      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+        ) => {
+          return false;
+        }
+      );
+    mocker
+      .stub<any, any>(appStudioPlugin, "addCapabilities")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capabilities: (
+            | { name: "staticTab"; snippet?: IStaticTab }
+            | { name: "configurableTab"; snippet?: IConfigurableTab }
+            | { name: "Bot"; snippet?: IBot }
+            | { name: "MessageExtension"; snippet?: IComposeExtension }
+          )[]
+        ) => {
+          return ok(undefined);
+        }
+      );
     const result = await executeUserTask(
       mockedCtx,
       mockedInputs,

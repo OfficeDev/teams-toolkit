@@ -4,11 +4,17 @@ import {
   AzureSolutionSettings,
   ConfigMap,
   Func,
+  FxError,
+  IBot,
+  IComposeExtension,
+  IConfigurableTab,
   Inputs,
+  IStaticTab,
   Json,
   ok,
   Platform,
   ProjectSettings,
+  Result,
   SolutionConfig,
   SolutionContext,
   Stage,
@@ -24,6 +30,7 @@ import Container from "typedi";
 import * as uuid from "uuid";
 import "../../../src/plugins/resource/apim/v2";
 import "../../../src/plugins/resource/appstudio/v2";
+import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
 import "../../../src/plugins/resource/bot/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/function/v2";
@@ -45,6 +52,7 @@ import {
   getQuestionsForScaffolding,
   getQuestionsForUserTask,
 } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
+import { BuiltInResourcePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { MockGraphTokenProvider, MockSharepointTokenProvider } from "../../core/utils";
 import { MockedAppStudioProvider, MockedAzureAccountProvider, MockedV2Context } from "./util";
 
@@ -223,6 +231,29 @@ describe("getQuestionsForScaffolding()", async () => {
       assert.isTrue(res.isErr());
     }
     {
+      const appStudioPlugin = Container.get<AppStudioPluginV3>(
+        BuiltInResourcePluginNames.appStudio
+      );
+      appStudioPlugin.capabilityExceedLimit = async (
+        ctx: v2.Context,
+        inputs: v2.InputsWithProjectPath,
+        capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+      ) => {
+        return true;
+      };
+      // appStudioPlugin.addCapabilities = async (
+      //   ctx: v2.Context,
+      //   inputs: v2.InputsWithProjectPath,
+      //   capabilities: (
+      //     | { name: "staticTab"; snippet?: IStaticTab }
+      //     | { name: "configurableTab"; snippet?: IConfigurableTab }
+      //     | { name: "Bot"; snippet?: IBot }
+      //     | { name: "MessageExtension"; snippet?: IComposeExtension }
+      //   )[]
+      // ) => {
+      //   return ok(undefined);
+      // };
+
       (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
         HostTypeOptionAzure.id;
       const res = await getQuestionsForUserTask(

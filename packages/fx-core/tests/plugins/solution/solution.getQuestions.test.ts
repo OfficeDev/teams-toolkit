@@ -257,11 +257,13 @@ describe("getQuestionsForScaffolding()", async () => {
     if (res.isOk()) {
       const node = res.value;
       assert.isTrue(node.data.type === "multiSelect" && node.data.staticOptions.length === 3);
-      assert.deepEqual((node.data as MultiSelectQuestion).staticOptions as string[], [
-        TabOptionItem.id,
-        BotOptionItem.id,
-        MessageExtensionItem.id,
-      ]);
+      if (node.data.type === "multiSelect") {
+        assert.deepEqual((node.data as MultiSelectQuestion).staticOptions as string[], [
+          TabOptionItem.id,
+          BotOptionItem.id,
+          MessageExtensionItem.id,
+        ]);
+      }
     }
   });
   it("getQuestionsForUserTask - addCapability failed because of capabilityExceedLimit", async () => {

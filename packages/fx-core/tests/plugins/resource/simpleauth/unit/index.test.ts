@@ -209,6 +209,8 @@ describe("simpleAuthPlugin", () => {
       chai.assert.strictEqual(expectedResult.Configuration!.Orchestration, OrchestrationConfigFile);
       chai.assert.isUndefined(expectedResult.Parameters);
       chai.assert.isNotNull(expectedResult.Reference);
+      chai.assert.strictEqual(expectedResult.BicepVersion, "0.4.1008");
+      chai.assert.strictEqual(expectedResult.SchemaVersion, "0.1.0");
     }
   }
 
@@ -267,6 +269,8 @@ describe("simpleAuthPlugin", () => {
       chai.assert.notExists(expectedResult.Parameters);
       chai.assert.exists(expectedResult.Reference!.skuName);
       chai.assert.exists(expectedResult.Reference!.endpoint);
+      chai.assert.strictEqual(expectedResult.BicepVersion, "0.4.1008");
+      chai.assert.strictEqual(expectedResult.SchemaVersion, "0.1.0");
     }
   });
 

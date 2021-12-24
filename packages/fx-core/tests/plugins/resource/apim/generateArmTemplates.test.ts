@@ -116,6 +116,8 @@ describe("apimManager.generateArmTemplates", () => {
         ConstantString.UTF8Encoding
       )
     );
+    chai.assert.strictEqual(expectedResult.BicepVersion, "0.4.1008");
+    chai.assert.strictEqual(expectedResult.SchemaVersion, "0.1.0");
   });
 
   it("should successfully update apim bicep files", async () => {

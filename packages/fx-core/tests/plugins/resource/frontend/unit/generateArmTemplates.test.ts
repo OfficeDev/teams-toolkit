@@ -71,6 +71,8 @@ describe("FrontendGenerateArmTemplates", () => {
       chai.assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationConfigFile);
       chai.assert.isNotNull(expectedResult.Reference);
       chai.assert.isUndefined(expectedResult.Parameters);
+      chai.assert.strictEqual(result.value.BicepVersion, "0.4.1008");
+      chai.assert.strictEqual(result.value.SchemaVersion, "0.1.0");
     }
   });
 
@@ -105,6 +107,8 @@ describe("FrontendGenerateArmTemplates", () => {
       chai.assert.notExists(result.value.Provision);
       chai.assert.notExists(result.value.Parameters);
       chai.assert.notExists(result.value.Configuration);
+      chai.assert.strictEqual(result.value.BicepVersion, "0.4.1008");
+      chai.assert.strictEqual(result.value.SchemaVersion, "0.1.0");
     }
   });
 });

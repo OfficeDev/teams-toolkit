@@ -164,6 +164,8 @@ describe("FunctionGenerateArmTemplates", () => {
           ConstantString.UTF8Encoding
         )
       );
+      chai.assert.strictEqual(expectedResult.BicepVersion, "0.4.1008");
+      chai.assert.strictEqual(expectedResult.SchemaVersion, "0.1.0");
     }
   }
 
@@ -243,6 +245,8 @@ describe("FunctionGenerateArmTemplates", () => {
       chai.assert.notExists(expectedResult.Provision);
       chai.assert.notExists(expectedResult.Configuration!.Orchestration);
       chai.assert.notExists(expectedResult.Parameters);
+      chai.assert.strictEqual(expectedResult.BicepVersion, "0.4.1008");
+      chai.assert.strictEqual(expectedResult.SchemaVersion, "0.1.0");
     }
   });
 });

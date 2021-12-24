@@ -54,6 +54,7 @@ describe("AadGenerateArmTemplates", () => {
       );
       chai.assert.isUndefined(armTemplateResult.Configuration);
       chai.assert.isUndefined(armTemplateResult.Provision);
+      chai.assert.strictEqual(armTemplateResult.SchemaVersion, "0.1.0");
     }
   });
 });

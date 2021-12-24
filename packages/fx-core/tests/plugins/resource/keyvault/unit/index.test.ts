@@ -75,6 +75,8 @@ describe("keyVaultPlugin", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(result.Provision!.Orchestration, orchestrationProvisionFile);
+      chai.assert.strictEqual(result.BicepVersion, "0.4.1008");
+      chai.assert.strictEqual(result.SchemaVersion, "0.1.0");
     }
   });
 
@@ -98,6 +100,8 @@ describe("keyVaultPlugin", () => {
         result.Reference!.botClientSecretReference,
         "provisionOutputs.keyVaultOutput.value.botClientSecretReference"
       );
+      chai.assert.strictEqual(result.BicepVersion, "0.4.1008");
+      chai.assert.strictEqual(result.SchemaVersion, "0.1.0");
     }
   });
 });

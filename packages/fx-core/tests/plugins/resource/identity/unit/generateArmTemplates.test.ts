@@ -85,6 +85,8 @@ describe("identityPlugin", () => {
       chai.assert.strictEqual(expectedResult.Provision!.Orchestration, OrchestrationConfigFile);
       chai.assert.isNotNull(expectedResult.Reference);
       chai.assert.isUndefined(expectedResult.Parameters);
+      chai.assert.strictEqual(expectedResult.BicepVersion, "0.4.1008");
+      chai.assert.strictEqual(expectedResult.SchemaVersion, "0.1.0");
     }
   });
 
@@ -123,6 +125,8 @@ describe("identityPlugin", () => {
       );
       chai.assert.notExists(result.value.Configuration);
       chai.assert.notExists(result.value.Parameters);
+      chai.assert.strictEqual(result.value.BicepVersion, "0.4.1008");
+      chai.assert.strictEqual(result.value.SchemaVersion, "0.1.0");
     }
   });
 });

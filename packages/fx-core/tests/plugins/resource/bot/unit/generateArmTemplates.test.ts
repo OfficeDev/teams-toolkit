@@ -218,6 +218,8 @@ describe("Bot Generates Arm Templates", () => {
         compiledResult.Reference!.webAppEndpoint,
         "provisionOutputs.botOutputs.value.botWebAppEndpoint"
       );
+      chai.assert.strictEqual(compiledResult.SchemaVersion, "0.1.0");
+      chai.assert.strictEqual(compiledResult.BicepVersion, "0.4.1008");
     }
   });
 });

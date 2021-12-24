@@ -82,7 +82,7 @@ export class LanguageStrategy {
 
     appSettings.push({
       name: "WEBSITE_NODE_DEFAULT_VERSION",
-      value: "12.13.0",
+      value: "~14",
     });
 
     appSettings.forEach((p: NameValuePair) => {

@@ -27,7 +27,7 @@ import { TelemetryHelper } from "./utils/telemetry-helper";
 import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { isArmSupportEnabled, isVsCallingCli } from "../../..";
+import { isVsCallingCli } from "../../..";
 import "./v2";
 import { DotnetPluginImpl } from "./dotnet/plugin";
 import { DotnetPluginInfo } from "./dotnet/constants";
@@ -62,29 +62,11 @@ export class FrontendPlugin implements Plugin {
   }
 
   public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (isArmSupportEnabled()) {
-      return ok(undefined);
-    }
-
-    FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
-      isVsCallingCli()
-        ? this.dotnetPluginImpl.preProvision(ctx)
-        : this.frontendPluginImpl.preProvision(ctx)
-    );
+    return ok(undefined);
   }
 
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (isArmSupportEnabled()) {
-      return ok(undefined);
-    }
-
-    FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.Provision, () =>
-      isVsCallingCli()
-        ? this.dotnetPluginImpl.provision(ctx)
-        : this.frontendPluginImpl.provision(ctx)
-    );
+    return ok(undefined);
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {

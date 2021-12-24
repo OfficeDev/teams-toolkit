@@ -4,6 +4,7 @@ import {
   AzureSolutionSettings,
   Func,
   Inputs,
+  MultiSelectQuestion,
   ok,
   Platform,
   ProjectSettings,
@@ -32,8 +33,10 @@ import {
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../../../src/plugins/solution/fx-solution/constants";
 import {
+  BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
+  MessageExtensionItem,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
@@ -251,6 +254,15 @@ describe("getQuestionsForScaffolding()", async () => {
       mockedProvider
     );
     assert.isTrue(res.isOk() && res.value && res.value.data !== undefined);
+    if (res.isOk()) {
+      const node = res.value;
+      assert.isTrue(node.data.type === "multiSelect" && node.data.staticOptions.length === 3);
+      assert.deepEqual((node.data as MultiSelectQuestion).staticOptions as string[], [
+        TabOptionItem.id,
+        BotOptionItem.id,
+        MessageExtensionItem.id,
+      ]);
+    }
   });
   it("getQuestionsForUserTask - addCapability failed because of capabilityExceedLimit", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);

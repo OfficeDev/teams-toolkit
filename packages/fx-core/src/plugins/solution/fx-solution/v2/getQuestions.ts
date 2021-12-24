@@ -422,6 +422,7 @@ export async function getQuestionsForAddCapability(
   if (isTabAddable) options.push(TabOptionItem.id);
   if (isBotAddable) options.push(BotOptionItem.id);
   if (isMEAddable) options.push(MessageExtensionItem.id);
+  addCapQuestion.staticOptions = options;
   return ok(new QTreeNode(addCapQuestion));
 }
 

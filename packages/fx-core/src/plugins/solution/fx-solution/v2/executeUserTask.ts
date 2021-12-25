@@ -164,8 +164,8 @@ export function canAddCapability(
 ): Result<Void, FxError> {
   if (!(settings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
-      SolutionError.FailedToAddCapability,
-      getStrings().solution.AddCapabilityNotSupportForSPFxNotice,
+      SolutionError.AddCapabilityNotSupport,
+      getStrings().solution.addCapability.OnlySupportAzure,
       SolutionSource
     );
     return err(
@@ -179,19 +179,12 @@ export function canAddResource(
   settings: AzureSolutionSettings,
   telemetryReporter: TelemetryReporter
 ): Result<Void, FxError> {
-  if (
-    !(
-      settings.hostType === HostTypeOptionAzure.id &&
-      settings.capabilities &&
-      settings.capabilities.includes(TabOptionItem.id)
-    )
-  ) {
-    const e = returnUserError(
-      new Error("Add resource is only supported for Tab app hosted in Azure."),
-      SolutionSource,
-      SolutionError.AddResourceNotSupport
+  if (!(settings.hostType === HostTypeOptionAzure.id)) {
+    const e = new UserError(
+      SolutionError.AddResourceNotSupport,
+      getStrings().solution.addResource.OnlySupportAzure,
+      SolutionSource
     );
-
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
     );
@@ -253,7 +246,7 @@ export async function addCapability(
   ) {
     const error = new UserError(
       SolutionError.FailedToAddCapability,
-      getStrings().solution.CanNotAddCapabilityNotice,
+      getStrings().solution.addCapability.ExceedMaxLimit,
       SolutionSource
     );
     return err(
@@ -359,16 +352,15 @@ export async function addCapability(
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
       [SolutionTelemetryProperty.Capabilities]: capabilitiesAnswer.join(";"),
     });
-    return ok({
-      solutionSettings: solutionSettings,
-      solutionConfig: { provisionSucceeded: false },
-    });
   }
   // 4. update manifest
   if (capabilitiesToAddManifest.length > 0) {
     await appStudioPlugin.addCapabilities(ctx, inputsWithProjectPath, capabilitiesToAddManifest);
   }
-  return ok({});
+  return ok({
+    solutionSettings: solutionSettings,
+    solutionConfig: { provisionSucceeded: false },
+  });
 }
 
 export function showUpdateArmTemplateNotice(ui?: UserInteraction) {
@@ -426,19 +418,8 @@ export async function addResource(
     return canProceed;
   }
 
-  const selectedPlugins = settings.activeResourcePlugins;
-  const functionPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
-  const sqlPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin);
-  const apimPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.ApimPlugin);
-  const keyVaultPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.KeyVaultPlugin);
-  const alreadyHaveFunction = selectedPlugins?.includes(functionPlugin.name);
-  const alreadyHaveSql = selectedPlugins?.includes(sqlPlugin.name);
-  const alreadyHaveApim = selectedPlugins?.includes(apimPlugin.name);
-  const alreadyHaveKeyVault = selectedPlugins?.includes(keyVaultPlugin.name);
-
   const addResourcesAnswer = inputs[AzureSolutionQuestionNames.AddResources] as string[];
-
-  if (!addResourcesAnswer) {
+  if (!addResourcesAnswer || addResourcesAnswer.length === 0) {
     return err(
       returnUserError(
         new Error(`answer of ${AzureSolutionQuestionNames.AddResources} is empty!`),
@@ -448,18 +429,24 @@ export async function addResource(
     );
   }
 
+  const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
+  const alreadyHaveSql = settings.azureResources.includes(AzureResourceSQL.id);
+  const alreadyHaveApim = settings.azureResources.includes(AzureResourceApim.id);
+  const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
   const addSQL = addResourcesAnswer.includes(AzureResourceSQL.id);
   const addFunc = addResourcesAnswer.includes(AzureResourceFunction.id);
   const addApim = addResourcesAnswer.includes(AzureResourceApim.id);
   const addKeyVault = addResourcesAnswer.includes(AzureResourceKeyVault.id);
 
-  if (
-    (alreadyHaveSql && addSQL) ||
-    (alreadyHaveApim && addApim) ||
-    (alreadyHaveKeyVault && addKeyVault)
-  ) {
+  const selectedPlugins = settings.activeResourcePlugins;
+  const functionPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
+  const sqlPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin);
+  const apimPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.ApimPlugin);
+  const keyVaultPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.KeyVaultPlugin);
+
+  if ((alreadyHaveApim && addApim) || (alreadyHaveKeyVault && addKeyVault)) {
     const e = returnUserError(
-      new Error("SQL/APIM/KeyVault is already added."),
+      new Error("APIM/KeyVault is already added."),
       SolutionSource,
       SolutionError.AddResourceNotSupport
     );
@@ -478,7 +465,7 @@ export async function addResource(
   const pluginsToDoArm: v2.ResourcePlugin[] = [];
   const azureResource = Array.from(settings.azureResources || []);
   let scaffoldApim = false;
-  if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
+  if (addFunc || (addApim && !alreadyHaveFunction)) {
     pluginsToScaffold.push(functionPlugin);
     if (!azureResource.includes(AzureResourceFunction.id)) {
       azureResource.push(AzureResourceFunction.id);

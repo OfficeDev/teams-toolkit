@@ -359,16 +359,15 @@ export async function addCapability(
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
       [SolutionTelemetryProperty.Capabilities]: capabilitiesAnswer.join(";"),
     });
-    return ok({
-      solutionSettings: solutionSettings,
-      solutionConfig: { provisionSucceeded: false },
-    });
   }
   // 4. update manifest
   if (capabilitiesToAddManifest.length > 0) {
     await appStudioPlugin.addCapabilities(ctx, inputsWithProjectPath, capabilitiesToAddManifest);
   }
-  return ok({});
+  return ok({
+    solutionSettings: solutionSettings,
+    solutionConfig: { provisionSucceeded: false },
+  });
 }
 
 export function showUpdateArmTemplateNotice(ui?: UserInteraction) {

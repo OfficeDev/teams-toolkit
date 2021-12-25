@@ -60,7 +60,7 @@ import { isArmSupportEnabled } from "../../../src/common/tools";
 import { newEnvInfo } from "../../../src/core/tools";
 import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
-import { MockGraphTokenProvider } from "../../core/utils";
+import { MockGraphTokenProvider, randomAppName } from "../../core/utils";
 import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEnv";
 import { ScaffoldingContextAdapter } from "../../../src/plugins/solution/fx-solution/v2/adaptor";
 import { LocalCrypto } from "../../../src/core/crypto";
@@ -70,6 +70,7 @@ import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
 import { armV2 } from "../../../src/plugins/solution/fx-solution/arm";
 import { NamedArmResourcePlugin } from "../../../src/common/armInterface";
 import * as os from "os";
+import * as path from "path";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -435,7 +436,7 @@ describe("V2 implementation", () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
 
     mockedInputs[AzureSolutionQuestionNames.AddResources] = [AzureResourceSQL.id];

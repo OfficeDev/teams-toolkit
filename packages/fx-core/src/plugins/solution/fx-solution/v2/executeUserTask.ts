@@ -266,16 +266,23 @@ export async function addCapability(
     | { name: "Bot"; snippet?: IBot }
     | { name: "MessageExtension"; snippet?: IComposeExtension }
   )[] = [];
-  const pluginsToScaffoldAndGenerateArm: Set<string> = new Set<string>();
+  const pluginNamesToScaffold: Set<string> = new Set<string>();
+  const pluginNamesToArm: Set<string> = new Set<string>();
   const newCapabilitySet = new Set<string>();
   solutionSettings.capabilities.forEach((c) => newCapabilitySet.add(c));
   // 4. check Tab
   if (capabilitiesAnswer.includes(TabOptionItem.id)) {
-    const firstAdd = solutionSettings.capabilities.includes(TabOptionItem.id) ? false : true;
-    capabilitiesToAddManifest.push({ name: "staticTab" });
-    if (firstAdd) {
-      pluginsToScaffoldAndGenerateArm.add(ResourcePluginsV2.FrontendPlugin);
+    if (inputs.platform === Platform.VS) {
+      pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+      pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
+    } else {
+      const firstAdd = solutionSettings.capabilities.includes(TabOptionItem.id) ? false : true;
+      if (firstAdd) {
+        pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+        pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
+      }
     }
+    capabilitiesToAddManifest.push({ name: "staticTab" });
     newCapabilitySet.add(TabOptionItem.id);
   }
   // 5. check Bot
@@ -285,10 +292,18 @@ export async function addCapability(
       solutionSettings.capabilities.includes(MessageExtensionItem.id)
         ? false
         : true;
-    capabilitiesToAddManifest.push({ name: "Bot" });
-    if (firstAdd) {
-      pluginsToScaffoldAndGenerateArm.add(ResourcePluginsV2.BotPlugin);
+    if (inputs.platform === Platform.VS) {
+      pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+      if (firstAdd) {
+        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+      }
+    } else {
+      if (firstAdd) {
+        pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
+        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+      }
     }
+    capabilitiesToAddManifest.push({ name: "Bot" });
     newCapabilitySet.add(BotOptionItem.id);
   }
   // 6. check MessageExtension
@@ -298,10 +313,18 @@ export async function addCapability(
       solutionSettings.capabilities.includes(MessageExtensionItem.id)
         ? false
         : true;
-    capabilitiesToAddManifest.push({ name: "MessageExtension" });
-    if (firstAdd) {
-      pluginsToScaffoldAndGenerateArm.add(ResourcePluginsV2.BotPlugin);
+    if (inputs.platform === Platform.VS) {
+      pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+      if (firstAdd) {
+        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+      }
+    } else {
+      if (firstAdd) {
+        pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
+        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+      }
     }
+    capabilitiesToAddManifest.push({ name: "MessageExtension" });
     newCapabilitySet.add(MessageExtensionItem.id);
   }
 
@@ -310,16 +333,19 @@ export async function addCapability(
   reloadV2Plugins(solutionSettings);
 
   // 8. scaffold and update arm
-  const plugins = Array.from(pluginsToScaffoldAndGenerateArm).map((name) =>
+  const pluginsToScaffold = Array.from(pluginNamesToScaffold).map((name) =>
     Container.get<v2.ResourcePlugin>(name)
   );
-  if (plugins.length > 0) {
+  const pluginsToArm = Array.from(pluginNamesToArm).map((name) =>
+    Container.get<v2.ResourcePlugin>(name)
+  );
+  if (pluginsToScaffold.length > 0) {
     const scaffoldRes = await scaffoldCodeAndResourceTemplate(
       ctx,
       inputs,
       localSettings,
-      plugins,
-      plugins
+      pluginsToScaffold,
+      pluginsToArm
     );
     if (scaffoldRes.isErr()) {
       ctx.projectSetting.solutionSettings = originalSettings;
@@ -459,13 +485,18 @@ export async function addResource(
     if (!alreadyHaveFunction) {
       pluginsToDoArm.push(functionPlugin);
     }
-    addedResources.push(AzureResourceFunction.label);
+    addedResources.push(AzureResourceFunction.id);
   }
   // 5. check SQL
   if (addSQL) {
     const sqlPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin);
+    const identityPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.IdentityPlugin);
     pluginsToDoArm.push(sqlPlugin);
-    addedResources.push(AzureResourceSQL.label);
+    if (!solutionSettings.activeResourcePlugins.includes(identityPlugin.name)) {
+      // add identity for first time
+      pluginsToDoArm.push(identityPlugin);
+    }
+    addedResources.push(AzureResourceSQL.id);
   }
   // 6. check APIM
   const apimPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.ApimPlugin);
@@ -474,14 +505,14 @@ export async function addResource(
     // apim plugin needs to modify config output during scaffolding,
     // which is not supported by the scaffoldSourceCode API.
     // The scaffolding will run later as a userTask as a work around.
-    addedResources.push(AzureResourceApim.label);
+    addedResources.push(AzureResourceApim.id);
     pluginsToDoArm.push(apimPlugin);
     scaffoldApim = true;
   }
   if (addKeyVault) {
     const keyVaultPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.KeyVaultPlugin);
     pluginsToDoArm.push(keyVaultPlugin);
-    addedResources.push(AzureResourceKeyVault.label);
+    addedResources.push(AzureResourceKeyVault.id);
   }
 
   // 7. update solution settings

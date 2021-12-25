@@ -785,10 +785,12 @@ async function doGenerateArmTemplate(
     const pluginContext = getPluginContext(ctx, pluginWithArm.name);
     let result: Result<ArmTemplateResult, FxError>;
     let errMessage = "";
+    let method = "";
     if (
       pluginWithArm.updateArmTemplates &&
       !selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
     ) {
+      method = "updateArmTemplates";
       result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,
         FxError
@@ -798,6 +800,7 @@ async function doGenerateArmTemplate(
       pluginWithArm.generateArmTemplates &&
       selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
     ) {
+      method = "generateArmTemplates";
       result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,
         FxError
@@ -807,6 +810,7 @@ async function doGenerateArmTemplate(
       continue;
     }
     if (result.isOk()) {
+      ctx.logProvider?.info(`[arm] ${plugin.name}.${method} success!`);
       generateArmFromResult(
         result.value,
         bicepOrchestrationTemplate,
@@ -847,22 +851,26 @@ async function doGenerateArmTemplateV3(
   for (const plugin of activatedPlugins) {
     let result: Result<v2.ResourceTemplate, FxError>;
     let errMessage = "";
+    let method = "";
     if (
       plugin.updateResourceTemplate &&
       !addedPlugins.find((pluginItem) => pluginItem.name === plugin.name)
     ) {
       result = await plugin.updateResourceTemplate(ctx, inputs);
       errMessage = getStrings().solution.UpdateArmTemplateFailNotice;
+      method = "updateResourceTemplate";
     } else if (
       plugin.generateResourceTemplate &&
       addedPlugins.find((pluginItem) => pluginItem.name === plugin.name)
     ) {
       result = await plugin.generateResourceTemplate(ctx, inputs);
       errMessage = getStrings().solution.GenerateArmTemplateFailNotice;
+      method = "generateResourceTemplate";
     } else {
       continue;
     }
     if (result.isOk()) {
+      ctx.logProvider.info(`[arm] ${plugin.name}.${method} success!`);
       if (result.value.kind === "bicep") {
         const armTemplate = result.value.template as ArmTemplateResult;
         generateArmFromResult(

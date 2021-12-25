@@ -378,10 +378,6 @@ export async function getQuestionsForAddCapability(
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-  const canProceed = canAddCapability(settings, ctx.telemetryReporter);
-  if (canProceed.isErr()) {
-    return err(canProceed.error);
-  }
   const addCapQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.Capabilities,
     title: "Choose capabilities",
@@ -394,6 +390,10 @@ export async function getQuestionsForAddCapability(
     // For CLI_HELP
     addCapQuestion.staticOptions = [TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id];
     return ok(new QTreeNode(addCapQuestion));
+  }
+  const canProceed = canAddCapability(settings, ctx.telemetryReporter);
+  if (canProceed.isErr()) {
+    return err(canProceed.error);
   }
   const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
   const isTabAddable = !(await appStudioPlugin.capabilityExceedLimit(
@@ -435,14 +435,14 @@ export async function getQuestionsForAddResource(
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-  const canProceed = canAddResource(settings, ctx.telemetryReporter);
-  if (canProceed.isErr()) {
-    return err(canProceed.error);
-  }
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   if (!isDynamicQuestion) {
     const question = createAddAzureResourceQuestion(false, false, false, false);
     return ok(new QTreeNode(question));
+  }
+  const canProceed = canAddResource(settings, ctx.telemetryReporter);
+  if (canProceed.isErr()) {
+    return err(canProceed.error);
   }
   const functionPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
     ResourcePluginsV2.FunctionPlugin

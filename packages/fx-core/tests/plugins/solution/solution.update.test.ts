@@ -90,44 +90,6 @@ describe("update()", () => {
     expect(result.isErr()).equals(true);
     expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
   });
-
-  it("should return AddResourceNotSupport if capabilities is empty", async () => {
-    const solution = new TeamsAppSolution();
-    const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = { platform: Platform.VSCode };
-    mockedCtx.projectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionAzure.id,
-        name: "azure",
-        version: "1.0",
-      },
-    };
-    const result = await solution.update(mockedCtx);
-    expect(result.isErr()).equals(true);
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
-  });
-
-  it("should return AddResourceNotSupport if capabilities doesn't contain Tab", async () => {
-    const solution = new TeamsAppSolution();
-    const mockedCtx = mockSolutionContext();
-    mockedCtx.answers = { platform: Platform.VSCode };
-    mockedCtx.projectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionAzure.id,
-        name: "azure",
-        version: "1.0",
-        capabilities: [],
-      },
-    };
-    const result = await solution.update(mockedCtx);
-    expect(result.isErr()).equals(true);
-    expect(result._unsafeUnwrapErr().name).equals(SolutionError.AddResourceNotSupport);
-  });
-
   it("should return AddResourceNotSupport if user tries to add SQL when SQL is already activated", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();

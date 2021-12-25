@@ -1,6 +1,6 @@
 import { v2, Inputs, FxError, Result, Json, ok } from "@microsoft/teamsfx-api";
 import { isArmSupportEnabled } from "../../../../common/tools";
-import { generateArmTemplate } from "../arm";
+import { armV2, generateArmTemplate } from "../arm";
 import { NamedArmResourcePluginAdaptor, ScaffoldingContextAdapter } from "./adaptor";
 import { showUpdateArmTemplateNotice } from "./executeUserTask";
 import { getAzureSolutionSettings, getSelectedPlugins } from "./utils";
@@ -17,7 +17,7 @@ export async function generateResourceTemplate(
   const plugins = getSelectedPlugins(azureSolutionSettings).map(
     (plugin) => new NamedArmResourcePluginAdaptor(plugin)
   );
-  const armResult = await generateArmTemplate(legacyContext, plugins);
+  const armResult = await armV2.generateArmTemplate(legacyContext, plugins);
   return armResult;
 }
 
@@ -32,6 +32,6 @@ export async function generateResourceTemplateForPlugins(
   const namedArmResourcePlugins = plugins.map(
     (plugin) => new NamedArmResourcePluginAdaptor(plugin)
   );
-  const armResult = await generateArmTemplate(legacyContext, namedArmResourcePlugins);
+  const armResult = await armV2.generateArmTemplate(legacyContext, namedArmResourcePlugins);
   return armResult;
 }

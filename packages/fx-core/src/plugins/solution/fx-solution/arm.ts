@@ -1441,6 +1441,18 @@ export function formattedDeploymentError(deploymentError: any): any {
   }
 }
 
+class ArmV2 {
+  async generateArmTemplate(
+    ctx: SolutionContext,
+    selectedPlugins: NamedArmResourcePlugin[] = []
+  ): Promise<Result<any, FxError>> {
+    return generateArmTemplate(ctx, selectedPlugins);
+  }
+  async deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
+    return deployArmTemplates(ctx);
+  }
+}
+
 class Arm {
   async generateArmTemplate(
     ctx: v2.Context,
@@ -1461,5 +1473,6 @@ class Arm {
 }
 
 const arm = new Arm();
+export const armV2 = new ArmV2();
 
 export default arm;

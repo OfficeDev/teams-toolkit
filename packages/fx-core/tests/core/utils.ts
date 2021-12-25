@@ -23,7 +23,6 @@ import {
   MultiSelectConfig,
   MultiSelectResult,
   ok,
-  OptionItem,
   PermissionRequestProvider,
   ProjectSettings,
   QTreeNode,
@@ -51,15 +50,12 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import * as uuid from "uuid";
 import fs from "fs-extra";
-import { environmentManager } from "../../src";
+import * as uuid from "uuid";
 import {
   DEFAULT_PERMISSION_REQUEST,
   PluginNames,
 } from "../../src/plugins/solution/fx-solution/constants";
-import Container from "typedi";
-import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 import { TeamsAppSolutionNameV2 } from "../../src/plugins/solution/fx-solution/v2/constants";
 
 function solutionSettings(): AzureSolutionSettings {

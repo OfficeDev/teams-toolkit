@@ -26,9 +26,6 @@ export async function generateResourceTemplateForPlugins(
   inputs: Inputs,
   plugins: v2.ResourcePlugin[]
 ): Promise<Result<Json, FxError>> {
-  if (!isArmSupportEnabled()) {
-    return ok({});
-  }
   showUpdateArmTemplateNotice(ctx.userInteraction);
   const legacyContext = new ScaffoldingContextAdapter([ctx, inputs]);
   // todo(yefuwang): replace generateArmTemplate when v2 implementation is ready.

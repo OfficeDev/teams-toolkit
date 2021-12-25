@@ -1826,11 +1826,11 @@ export class TeamsAppSolution implements Solution {
       const template =
         ctx.answers.platform === Platform.CLI
           ? single
-            ? getStrings().solution.AddCapabilityNoticeForCli
-            : getStrings().solution.AddCapabilitiesNoticeForCli
+            ? getStrings().solution.addCapability.AddCapabilityNoticeForCli
+            : getStrings().solution.addCapability.AddCapabilitiesNoticeForCli
           : single
-          ? getStrings().solution.AddCapabilityNotice
-          : getStrings().solution.AddCapabilitiesNotice;
+          ? getStrings().solution.addCapability.AddCapabilityNotice
+          : getStrings().solution.addCapability.AddCapabilitiesNotice;
       const msg = util.format(template, addNames);
       ctx.ui?.showMessage("info", msg, false);
 

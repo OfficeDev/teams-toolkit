@@ -36,7 +36,8 @@ import {
   MockTools,
   randomAppName,
 } from "../../../core/utils";
-
+import * as path from "path";
+import * as os from "os";
 describe("API V2 adapter", () => {
   beforeEach(() => {});
 

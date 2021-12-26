@@ -11,6 +11,8 @@ import {
   IBot,
   IConfigurableTab,
   IStaticTab,
+  TeamsAppManifest,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { Service } from "typedi";
@@ -50,5 +52,21 @@ export class AppStudioPluginV3 {
     capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
   ): Promise<boolean> {
     return false;
+  }
+
+  // load manifest templates
+  public async readManifest(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ): Promise<Result<{ remote: TeamsAppManifest; local: TeamsAppManifest }, FxError>> {
+    return ok({ remote: new TeamsAppManifest(), local: new TeamsAppManifest() });
+  }
+
+  public async writeManifest(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    manifest: { remote: TeamsAppManifest; local: TeamsAppManifest }
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
   }
 }

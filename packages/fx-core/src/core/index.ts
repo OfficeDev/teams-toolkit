@@ -1561,21 +1561,27 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
     if (ctx && ctx.solutionV3 && ctx.contextV2) {
-      return await ctx.solutionV3.addModule(
+      const addModuleRes = await ctx.solutionV3.addModule(
         ctx.contextV2,
-        {},
-        inputs as v2.InputsWithProjectPath & { capabilities?: string[] }
+        inputs as v2.InputsWithProjectPath & { capabilities: string[] },
+        ctx.localSettings
       );
+      if (addModuleRes.isErr()) {
+        return err(addModuleRes.error);
+      }
+      ctx.localSettings = addModuleRes.value; // return back local settings
     }
     return ok(Void);
   }
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,
+    LocalSettingsLoaderMW,
     SolutionLoaderMW_V3,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
+    LocalSettingsWriterMW,
   ])
   async addModule(
     inputs: v2.InputsWithProjectPath,

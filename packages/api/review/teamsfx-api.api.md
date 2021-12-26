@@ -52,6 +52,9 @@ interface APIM extends AzureResource {
 }
 
 // @public (undocumented)
+export type AppManifest = Json;
+
+// @public (undocumented)
 export const AppPackageFolderName = "appPackage";
 
 // @public
@@ -316,6 +319,15 @@ interface Context_2 {
     telemetryReporter: TelemetryReporter;
     // (undocumented)
     userInteraction: UserInteraction;
+}
+
+// @public (undocumented)
+interface ContextWithManifest extends Context_2 {
+    // (undocumented)
+    appManifest: {
+        local: AppManifest;
+        remote: AppManifest;
+    };
 }
 
 // @public (undocumented)
@@ -858,9 +870,9 @@ export function isAutoSkipSelect(q: Question): boolean;
 
 // @public (undocumented)
 interface ISolution {
-    addModule: (ctx: Context_2, localSettings: Json, inputs: InputsWithProjectPath & {
-        capabilities?: string[];
-    }) => Promise<Result<Void, FxError>>;
+    addModule: (ctx: Context_2, inputs: InputsWithProjectPath & {
+        capabilities: string[];
+    }, localSettings?: Json) => Promise<Result<Json, FxError>>;
     addResource: (ctx: Context_2, inputs: InputsWithProjectPath & {
         module?: string;
         resource?: string;
@@ -1401,9 +1413,19 @@ export interface RunnableTask<T> {
 
 // @public (undocumented)
 interface ScaffoldPlugin extends Plugin_3 {
-    getQuestionsForScaffold?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getTemplates: (ctx: Context_2, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
-    scaffold: (ctx: Context_2, inputs: PluginScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
+    getQuestionsForScaffold?: (ctx: Context_2 & {
+        appManifest?: {
+            local: AppManifest;
+            remote: AppManifest;
+        };
+    }, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getTemplates: (ctx: Context_2 & {
+        appManifest?: {
+            local: AppManifest;
+            remote: AppManifest;
+        };
+    }, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
+    scaffold: (ctx: ContextWithManifest, inputs: PluginScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
 }
 
 // @public
@@ -1708,7 +1730,7 @@ export interface TaskGroupConfig {
 }
 
 // @public
-export class TeamsAppManifest {
+export class TeamsAppManifest implements AppManifest {
     // (undocumented)
     $schema?: string;
     accentColor: string;
@@ -2015,6 +2037,7 @@ declare namespace v3 {
         PluginScaffoldInputs,
         PluginDeployInputs,
         Plugin_3 as Plugin,
+        ContextWithManifest,
         ScaffoldPlugin,
         ResourcePlugin_2 as ResourcePlugin,
         Module,

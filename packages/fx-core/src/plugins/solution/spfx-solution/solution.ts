@@ -60,8 +60,8 @@ export class TeamsSPFxSolution implements v3.ISolution {
 
   addModule: (
     ctx: v2.Context,
-    localSettings: Json,
-    inputs: v2.InputsWithProjectPath & { capabilities?: string[] }
+    inputs: v2.InputsWithProjectPath & { capabilities: string[] },
+    localSettings?: Json
   ) => Promise<Result<Void, FxError>> = addModule;
 
   getQuestionsForScaffold?: (

@@ -19,7 +19,7 @@ export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
   inputs: Inputs,
   localSettings?: Json
-): Promise<Result<Void, FxError>> {
+): Promise<Result<Json, FxError>> {
   const isSpfx = ContextHelper.isSpfx(ctx);
   const isMigrateFromV1 = ContextHelper.isMigrateFromV1(ctx);
   const includeFrontend = ContextHelper.includeFrontend(ctx);
@@ -135,7 +135,7 @@ export async function scaffoldLocalDebugSettings(
         );
 
         // generate localSettings.json
-        await scaffoldLocalSettingsJson(ctx, inputs, localSettings);
+        localSettings = await scaffoldLocalSettingsJson(ctx, inputs, localSettings);
 
         // add 'npm install' scripts into root package.json
         const packageJsonPath = inputs.projectPath;
@@ -189,14 +189,14 @@ export async function scaffoldLocalDebugSettings(
     TelemetryEventName.scaffoldLocalDebugSettings,
     telemetryProperties
   );
-  return ok(Void);
+  return ok(localSettings as Json);
 }
 
 async function scaffoldLocalSettingsJson(
   ctx: v2.Context,
   inputs: Inputs,
   localSettings?: Json
-): Promise<void> {
+): Promise<Json> {
   const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath!);
 
   const includeFrontend = ContextHelper.includeFrontend(ctx);
@@ -217,4 +217,5 @@ async function scaffoldLocalSettingsJson(
     localSettings = localSettingsProvider.initV2(includeFrontend, includeBackend, includeBot);
     await localSettingsProvider.saveJson(localSettings, ctx.cryptoProvider);
   }
+  return localSettings;
 }

@@ -72,7 +72,7 @@ describe("SolutionV3 - addResource", () => {
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const res = await getQuestionsForAddResource(ctx, inputs);
     assert.isTrue(res.isOk());

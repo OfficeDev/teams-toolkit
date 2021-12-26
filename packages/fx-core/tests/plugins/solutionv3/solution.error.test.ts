@@ -24,7 +24,7 @@ describe("SolutionV3 - errors", () => {
   it("InvalidInputError", async () => {
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const error = new InvalidInputError(inputs, "capabilities is undefined");
     assert.isTrue(error.name === "InvalidInputError");

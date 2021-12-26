@@ -14,6 +14,9 @@ import {
 import { MockedV2Context } from "../solution/util";
 import { MockScaffoldPluginNames } from "./mockPlugins";
 import "./mockPlugins";
+import * as path from "path";
+import * as os from "os";
+import { randomAppName } from "../../core/utils";
 describe("SolutionV3 - scaffold", () => {
   it("scaffold", async () => {
     const projectSettings: ProjectSettings = {
@@ -32,7 +35,7 @@ describe("SolutionV3 - scaffold", () => {
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
       module: "0",
       template: {
         id: "1",
@@ -94,7 +97,7 @@ describe("SolutionV3 - scaffold", () => {
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const res = await getQuestionsForScaffold(ctx, inputs);
     assert.isTrue(res.isOk());

@@ -116,7 +116,7 @@ describe("API V2 adapter", () => {
     const appName = randomAppName();
     const inputs: ProvisionInputs = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
       resourceNameSuffix: "pref",
       resourceGroupName: "rwer",
       location: "US",

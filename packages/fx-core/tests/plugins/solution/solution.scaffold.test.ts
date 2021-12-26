@@ -165,7 +165,10 @@ describe("Solution scaffold() reading valid manifest file", () => {
       permissionRequestProvider: tools.permissionRequestProvider!,
       projectSetting: newProjectSettings(),
     };
-    const inputs: Inputs = { platform: Platform.CLI, projectPath: "." };
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: path.join(os.tmpdir(), randomAppName()),
+    };
     const res = await getQuestionsForScaffolding(contextv2, inputs);
     assert(res.isOk());
   });

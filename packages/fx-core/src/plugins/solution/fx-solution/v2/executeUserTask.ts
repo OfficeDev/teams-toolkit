@@ -431,6 +431,7 @@ export async function addResource(
 
   // 1. checking addable
   const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
+  const originalSettings = cloneDeep(solutionSettings);
   const canProceed = canAddResource(solutionSettings, ctx.telemetryReporter);
   if (canProceed.isErr()) {
     return err(canProceed.error);
@@ -545,6 +546,7 @@ export async function addResource(
       }
     }
     if (scaffoldRes.isErr()) {
+      ctx.projectSetting.solutionSettings = originalSettings;
       return err(
         sendErrorTelemetryThenReturnError(
           SolutionTelemetryEvent.AddResource,

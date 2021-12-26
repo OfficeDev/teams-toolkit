@@ -9,6 +9,9 @@ import {
   InvalidInputError,
   ResourceAlreadyAddedError,
 } from "../../../src/plugins/solution/fx-solution/v3/error";
+import { randomAppName } from "../../core/utils";
+import * as os from "os";
+import * as path from "path";
 
 describe("SolutionV3 - errors", () => {
   it("CapabilityAlreadyAddedError", async () => {

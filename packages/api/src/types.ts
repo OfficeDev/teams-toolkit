@@ -230,6 +230,7 @@ export interface Inputs extends Json {
   ignoreEnvInfo?: boolean;
   env?: string;
   projectId?: string;
+  existingAzureResources?: string[];
 }
 
 export interface ProjectConfig {

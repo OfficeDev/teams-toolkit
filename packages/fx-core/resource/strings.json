@@ -23,6 +23,7 @@
     },
     "addResource": {
       "OnlySupportAzure": "Add resource is only supported for project hosted in Azure",
+      "NotSupportForVSProject": "Add resource is not supported for csharp project",
       "AddResourceNotice": "[Teams Toolkit] Resource \"%s\" has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.",
       "AddResourceNoticeForCli": "[Teams Toolkit] Resource \"%s\" has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.",
       "AddResourcesNotice": "[Teams Toolkit] Resources \"%s\" have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.",

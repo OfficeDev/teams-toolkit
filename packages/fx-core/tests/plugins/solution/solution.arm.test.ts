@@ -6,7 +6,6 @@ import {
   FxError,
   ok,
   SolutionContext,
-  SubscriptionInfo,
   AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
@@ -25,11 +24,9 @@ import {
 } from "../../../src/plugins/solution/fx-solution/arm";
 import path from "path";
 import mockedEnv from "mocked-env";
-import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { ResourceManagementModels, Deployments } from "@azure/arm-resources";
 import { WebResourceLike, HttpHeaders } from "@azure/ms-rest-js";
 import * as tools from "../../../src/common/tools";
-import * as cpUtils from "../../../src/common/cpUtils";
 import { environmentManager } from "../../../src/core/environment";
 import {
   aadPlugin,
@@ -752,7 +749,6 @@ describe("Deploy ARM Template to Azure", () => {
 
   it("should return system error if resource group name not exists in project solution settings", async () => {
     // Arrange
-    TestHelper.mockArmDeploymentDependencies(mockedCtx, mocker);
     mockedCtx.envInfo.state.get(SOLUTION_CONFIG_NAME)?.delete("resourceGroupName");
 
     // Act
@@ -760,7 +756,52 @@ describe("Deploy ARM Template to Azure", () => {
 
     // Assert
     chai.assert.isTrue(result.isErr());
-    console.log(JSON.stringify(result));
+    const error = (result as Err<void, Error>).error;
+    chai.assert.strictEqual(error.name, "NoResourceGroupFound");
+    chai.assert.strictEqual(
+      error.message,
+      "Failed to get resource group from project solution settings."
+    );
+  });
+
+  it("should return user error if target environment name not exists in project solution settings", async () => {
+    // Arrange
+    mockedCtx.envInfo.envName = "";
+
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
+
+    // Assert
+    chai.assert.isTrue(result.isErr());
+    const error = (result as Err<void, FxError>).error;
+    chai.assert.strictEqual(error.name, "FailedToDeployArmTemplatesToAzure");
+    chai.assert.strictEqual(
+      error.message,
+      "Failed to get target environment name from solution context."
+    );
+  });
+
+  it("should return user error if parameter file not exists", async () => {
+    // Arrange
+    await fs.unlink(
+      path.join(
+        TestHelper.rootDir,
+        TestFilePath.configFolder,
+        TestFilePath.defaultParameterFileName
+      )
+    );
+
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
+
+    // Assert
+    chai.assert.isTrue(result.isErr());
+    const error = (result as Err<void, FxError>).error;
+    chai.assert.strictEqual(error.name, "FailedToDeployArmTemplatesToAzure");
+    chai.assert.strictEqual(error.innerError.name, "ParameterFileNotExist");
+    expect(error.message)
+      .to.be.a("string")
+      .that.contains("\\azure.parameters.default.json does not exist.");
   });
 });
 

@@ -8,7 +8,7 @@ import { LocalEnvProvider, LocalEnvs } from "../../../src/common/local/localEnvP
 
 chai.use(chaiAsPromised);
 
-describe("LocalEnvProvider-MultiEnv", () => {
+describe("LocalEnvProvider", () => {
   const workspaceFolder = path.resolve(__dirname, "../data/.teamsfx/");
 
   describe("load", () => {

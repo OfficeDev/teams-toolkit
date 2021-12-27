@@ -14,6 +14,7 @@ import {
 import * as path from "path";
 import * as uuid from "uuid";
 import { MockedV2Context } from "../util";
+import { LocalEnvManager } from "../../../../src/common/local/localEnvManager";
 import { scaffoldLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
 import { LocalDebugPlugin, newEnvInfo } from "../../../../src";
 import { MockCryptoProvider } from "../../../core/utils";
@@ -506,16 +507,14 @@ describe("solution.debug.scaffolding", () => {
   ): Promise<void> {
     // assert output: localSettings.json
     chai.assert.isTrue(await fs.pathExists(expectedLocalSettingsFile));
-    // TODO: use LocalEnvManager.getLocalEnv instead
-    const plugin = new LocalDebugPlugin();
-    const pluginContext: PluginContext = {
-      envInfo: newEnvInfo(),
-      config: new ConfigMap(),
-      root: inputs.projectPath!,
-      cryptoProvider: new MockCryptoProvider(),
-      projectSettings: ctx.projectSetting,
-    };
-    const result = await plugin.getLocalDebugEnvs(pluginContext);
+
+    const localEnvManager = new LocalEnvManager();
+    const localSettings = await localEnvManager.getLocalSettings(inputs.projectPath!);
+    const result = await localEnvManager.getLocalDebugEnvs(
+      inputs.projectPath!,
+      ctx.projectSetting,
+      localSettings
+    );
     chai.assert.equal(Object.keys(result).length, numLocalEnvs);
   }
 });

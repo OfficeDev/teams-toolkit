@@ -14,6 +14,7 @@ import {
 import * as path from "path";
 import * as uuid from "uuid";
 import { MockedV2Context } from "../util";
+import { LocalEnvManager } from "../../../../src/common/local/localEnvManager";
 import { scaffoldLocalDebugSettings } from "../../../../src/plugins/solution/fx-solution/debug/scaffolding";
 import { LocalDebugPlugin, newEnvInfo } from "../../../../src";
 import { MockCryptoProvider } from "../../../core/utils";
@@ -55,14 +56,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: 30,
+        numLocalEnvs: 31,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: 30,
+        numLocalEnvs: 31,
       },
     ];
     parameters1.forEach((parameter: TestParameter) => {
@@ -116,14 +117,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 4,
         numCompounds: 2,
         numTasks: 6,
-        numLocalEnvs: 16,
+        numLocalEnvs: 17,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 4,
         numCompounds: 2,
         numTasks: 6,
-        numLocalEnvs: 16,
+        numLocalEnvs: 17,
       },
     ];
     parameters2.forEach((parameter) => {
@@ -224,14 +225,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 6,
         numCompounds: 2,
         numTasks: 12,
-        numLocalEnvs: 42,
+        numLocalEnvs: 43,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 6,
         numCompounds: 2,
         numTasks: 12,
-        numLocalEnvs: 42,
+        numLocalEnvs: 43,
       },
     ];
     parameters4.forEach((parameter) => {
@@ -286,14 +287,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: 28,
+        numLocalEnvs: 29,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: 28,
+        numLocalEnvs: 29,
       },
     ];
     parameters5.forEach((parameter) => {
@@ -424,14 +425,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 2,
         numCompounds: 2,
         numTasks: 5,
-        numLocalEnvs: 4,
+        numLocalEnvs: 5,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 2,
         numCompounds: 2,
         numTasks: 5,
-        numLocalEnvs: 4,
+        numLocalEnvs: 5,
       },
     ];
     parameters6.forEach((parameter: TestParameter) => {
@@ -506,16 +507,14 @@ describe("solution.debug.scaffolding", () => {
   ): Promise<void> {
     // assert output: localSettings.json
     chai.assert.isTrue(await fs.pathExists(expectedLocalSettingsFile));
-    // TODO: use LocalEnvManager.getLocalEnv instead
-    const plugin = new LocalDebugPlugin();
-    const pluginContext: PluginContext = {
-      envInfo: newEnvInfo(),
-      config: new ConfigMap(),
-      root: inputs.projectPath!,
-      cryptoProvider: new MockCryptoProvider(),
-      projectSettings: ctx.projectSetting,
-    };
-    const result = await plugin.getLocalDebugEnvs(pluginContext);
+
+    const localEnvManager = new LocalEnvManager();
+    const localSettings = await localEnvManager.getLocalSettings(inputs.projectPath!);
+    const result = await localEnvManager.getLocalDebugEnvs(
+      inputs.projectPath!,
+      ctx.projectSetting,
+      localSettings
+    );
     chai.assert.equal(Object.keys(result).length, numLocalEnvs);
   }
 });

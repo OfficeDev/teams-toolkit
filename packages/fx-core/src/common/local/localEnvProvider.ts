@@ -16,6 +16,7 @@ export interface LocalEnvs {
 export const EnvKeysFrontend = Object.freeze({
   Browser: "BROWSER",
   Https: "HTTPS",
+  Port: "Port",
   SslCrtFile: "SSL_CRT_FILE",
   SslKeyFile: "SSL_KEY_FILE",
   TeamsFxEndpoint: "REACT_APP_TEAMSFX_ENDPOINT",
@@ -134,6 +135,7 @@ export class LocalEnvProvider {
 
     result.teamsfxLocalEnvs[EnvKeysFrontend.Browser] = "none";
     result.teamsfxLocalEnvs[EnvKeysFrontend.Https] = "true";
+    result.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
 
     if (includeAuth) {
       result.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = "";

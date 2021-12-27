@@ -30,6 +30,7 @@ import "mocha";
 import { Capability, getWebappServicePlan, Resource } from "../../commonlib/utilities";
 import * as fs from "fs-extra";
 import MockAzureAccountProvider from "../../../src/commonlib/azureLoginUserPassword";
+import { expect } from "chai";
 
 describe("Add capabilities", function () {
   //  Only test when insider feature flag enabled
@@ -159,8 +160,9 @@ describe("User can customize Bicep files", function () {
     const customizedServicePlans: string[] = await customizeBicepFile(projectPath);
     await SetSubAndProvisionProject(subscription, projectPath);
 
-    const resourceGroup = await getRGAfterProvision(projectPath);
+    const resourceGroup: string = await getRGAfterProvision(projectPath);
     chai.assert.exists(resourceGroup);
+    expect(resourceGroup).to.be.a("string");
 
     // Assert
     customizedServicePlans.forEach(async (servicePlanName) => {
@@ -185,6 +187,7 @@ describe("User can customize Bicep files", function () {
 
     const resourceGroup = await getRGAfterProvision(projectPath);
     chai.assert.exists(resourceGroup);
+    expect(resourceGroup).to.be.a("string");
 
     // Assert
     customizedServicePlans.forEach(async (servicePlanName) => {

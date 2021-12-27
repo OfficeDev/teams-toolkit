@@ -5,7 +5,6 @@
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { CoreHookContext, TOOLS } from "..";
-import { isMultiEnvEnabled } from "../../common";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { shouldIgnored } from "./projectSettingsLoader";
 
@@ -17,7 +16,7 @@ export const LocalSettingsWriterMW: Middleware = async (
   next: NextFunction
 ) => {
   await next();
-  if (!shouldIgnored(ctx) && isMultiEnvEnabled()) {
+  if (!shouldIgnored(ctx)) {
     const lastArg = ctx.arguments[ctx.arguments.length - 1];
     const inputs: Inputs = lastArg === ctx ? ctx.arguments[ctx.arguments.length - 2] : lastArg;
     if (

@@ -83,10 +83,10 @@ describe("portChecker", () => {
       chai.assert.equal(ports.length, 0);
     });
 
-    it("3000 in use", async () => {
+    it("53000 in use", async () => {
       const mockServer = new MockServer([
         {
-          port: 3000,
+          port: 53000,
           host: "0.0.0.0",
         },
       ]);
@@ -95,13 +95,13 @@ describe("portChecker", () => {
       const ports = await getPortsInUse(projectPath, projectSettings0);
 
       chai.assert.isDefined(ports);
-      chai.assert.deepEqual(ports, [3000]);
+      chai.assert.deepEqual(ports, [53000]);
     });
 
-    it("3000 in another host", async () => {
+    it("53000 in another host", async () => {
       const mockServer = new MockServer([
         {
-          port: 3000,
+          port: 53000,
           host: "unknown",
         },
       ]);

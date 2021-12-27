@@ -802,7 +802,7 @@ describe("Deploy ARM Template to Azure", () => {
     chai.assert.strictEqual(error.innerError.name, "ParameterFileNotExist");
     expect(error.message)
       .to.be.a("string")
-      .that.contains("\\azure.parameters.default.json does not exist.");
+      .that.contains("azure.parameters.default.json does not exist.");
   });
 
   it("should return user error if fail to ensure bicep command", async () => {

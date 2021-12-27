@@ -161,7 +161,7 @@ describe("Test Add Function", function () {
     }
 
     // validate
-    await execAsyncWithRetry(`teamsfx validate`, {
+    await execAsyncWithRetry(`teamsfx manifest validate`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,

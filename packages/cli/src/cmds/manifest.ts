@@ -4,11 +4,8 @@
 "use strict";
 
 import * as path from "path";
-import { Argv, Options } from "yargs";
-
+import { Argv } from "yargs";
 import { FxError, err, ok, Result, Func, Inputs } from "@microsoft/teamsfx-api";
-import { getHashedEnv } from "@microsoft/teamsfx-core";
-
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
 import { getSystemInputs, toLocaleLowerCase } from "../utils";
@@ -18,9 +15,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import CLIUIInstance from "../userInteraction";
 import HelpParamGenerator from "../helpParamGenerator";
-import * as constants from "../constants";
 
 export default class Manifest extends YargsCommand {
   public readonly commandHead = "manifest";

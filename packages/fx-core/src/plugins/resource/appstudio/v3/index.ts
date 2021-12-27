@@ -73,7 +73,7 @@ export class AppStudioPluginV3 {
   // Read from manifest template, and check if it exceeds the limit.
   // The limit of staticTab if 16, others are 1
   // Should check both local & remote manifest template file
-  private async capabilityExceedLimit(
+  async capabilityExceedLimit(
     capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
   ): Promise<boolean> {
     return false;

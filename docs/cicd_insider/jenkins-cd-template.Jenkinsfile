@@ -11,6 +11,8 @@ pipeline {
 
     // To learn more about environment, please refer to https://www.jenkins.io/doc/book/pipeline/syntax/#environment.
     environment {
+        M365_ACCOUNT_NAME = credentials('M365_ACCOUNT_NAME')
+        M365_ACCOUNT_PASSWORD = credentials('M365_ACCOUNT_PASSWORD')
         // To enable @microsoft/teamsfx-cli running in CI mode, turn on CI_ENABLED like below.
         // In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
         CI_ENABLED = 'true'
@@ -112,6 +114,12 @@ pipeline {
         stage('Upload Teams App package as artifact') {
             steps {
                 archiveArtifacts artifacts: 'build/appPackage/appPackage.staging.zip'
+            }
+        }
+
+        stage('Publish Teams App') {
+            steps {
+                sh 'npx teamsfx publish --env ${TEAMSFX_ENV_NAME}'
             }
         }
     }

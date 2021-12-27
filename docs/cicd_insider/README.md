@@ -27,7 +27,7 @@ There are some changes you can make to adapt the workflow for your project:
 ### Customize CD Workflow
 You may want to change:
 1. How the CD flow is triggered. By default it happens when new commits are made to the `main` branch.
-1. Create GitHub [repository secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) by environment to hold Azure service principal credentials. The table below lists all the secrets you need to create on GitHub, and for detailed usage, please refer to the GitHub Actions [README.md](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md).
+1. Create GitHub [repository secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) by environment to hold Azure/M365 login credentials. The table below lists all the secrets you need to create on GitHub, and for detailed usage, please refer to the GitHub Actions [README.md](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md).
 1. Change the build scripts if necessary.
 1. Remove the test scripts if you don't have tests.
 
@@ -45,8 +45,11 @@ Steps to create secrets by environment in GitHub:
 |AZURE_SERVICE_PRINCIPAL_PASSWORD|The password of Azure service principal.|
 |AZURE_SUBSCRIPTION_ID|To identify the subscription in which the resources will be provisioned.|
 |AZURE_TENANT_ID|To identify the tenant in which the subscription resides.|
-
-To create Azure service principals for use, refer to [here](#how-to-create-azure-service-principals-for-use).
+|M365_ACCOUNT_NAME|The M365 account for creating and publishing the Teams App.|
+|M365_ACCOUNT_PASSWORD|The password of the M365 account.|
+|M365_TENANT_ID|To identify the tenant in which the Teams App will be created/published. This value is optional unless you have a multi-tenant account and you want to use another tenant. Read more on [how to find your M365 tenant ID](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-how-to-find-tenant).|
+> Note: Currently, a non-interactive authentication style for M365 is used in CI/CD workflows, so please ensure that your M365 account has sufficient privileges in your tenant and doesn't have multi-factor authentication or other advanced security features enabled. Please refer to the [Configure M365 Credentials](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md#configure-m365azure-credentials-as-github-secret) to make sure you have disabled Multi-factor Authentication and Security Defaults for the credentials used in the workflow.
+> Note: Currently, service principal for Azure is used in CI/CD workflows, and to create Azure service principals for use, refer to [here](#how-to-create-azure-service-principals-for-use).
 
 ## Setup CI/CD Pipelines with Azure DevOps
 
@@ -118,6 +121,8 @@ steps:
     SP_PASSWORD: $(AZURE_SERVICE_PRINCIPAL_PASSWORD)
     TENANT_ID: $(AZURE_TENANT_ID)
     AZURE_SUBSCRIPTION_ID: $(AZURE_SUBSCRIPTION_ID)
+    M365_ACCOUNT_NAME: $(M365_ACCOUNT_NAME)
+    M365_ACCOUNT_PASSWORD: $(M365_ACCOUNT_PASSWORD)
   inputs:
     filePath: './others-script-cd-template.sh'
 ```
@@ -144,8 +149,11 @@ Steps to create Pipeline variables in Azure DevOps:
 |AZURE_SERVICE_PRINCIPAL_PASSWORD|The password of Azure service principal.|
 |AZURE_SUBSCRIPTION_ID|To identify the subscription in which the resources will be provisioned.|
 |AZURE_TENANT_ID|To identify the tenant in which the subscription resides.|
-
-To create Azure service principals for use, refer to [here](#how-to-create-azure-service-principals-for-use).
+|M365_ACCOUNT_NAME|The M365 account for creating and publishing the Teams App.|
+|M365_ACCOUNT_PASSWORD|The password of the M365 account.|
+|M365_TENANT_ID|To identify the tenant in which the Teams App will be created/published. This value is optional unless you have a multi-tenant account and you want to use another tenant. Read more on [how to find your M365 tenant ID](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-how-to-find-tenant).|
+> Note: Currently, a non-interactive authentication style for M365 is used in CI/CD workflows, so please ensure that your M365 account has sufficient privileges in your tenant and doesn't have multi-factor authentication or other advanced security features enabled. Please refer to the [Configure M365 Credentials](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md#configure-m365azure-credentials-as-github-secret) to make sure you have disabled Multi-factor Authentication and Security Defaults for the credentials used in the workflow.
+> Note: Currently, service principal for Azure is used in CI/CD workflows, and to create Azure service principals for use, refer to [here](#how-to-create-azure-service-principals-for-use).
 
 ## CI/CD Pipeline Templates in Jenkins
 
@@ -186,8 +194,11 @@ Please follow [using-credentials](https://www.jenkins.io/doc/book/using/using-cr
 |AZURE_SERVICE_PRINCIPAL_PASSWORD|The password of Azure service principal.|
 |AZURE_SUBSCRIPTION_ID|To identify the subscription in which the resources will be provisioned.|
 |AZURE_TENANT_ID|To identify the tenant in which the subscription resides.|
-
-To create Azure service principals for use, refer to [here](#how-to-create-azure-service-principals-for-use).
+|M365_ACCOUNT_NAME|The M365 account for creating and publishing the Teams App.|
+|M365_ACCOUNT_PASSWORD|The password of the M365 account.|
+|M365_TENANT_ID|To identify the tenant in which the Teams App will be created/published. This value is optional unless you have a multi-tenant account and you want to use another tenant. Read more on [how to find your M365 tenant ID](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-how-to-find-tenant).|
+> Note: Currently, a non-interactive authentication style for M365 is used in CI/CD workflows, so please ensure that your M365 account has sufficient privileges in your tenant and doesn't have multi-factor authentication or other advanced security features enabled. Please refer to the [Configure M365 Credentials](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md#configure-m365azure-credentials-as-github-secret) to make sure you have disabled Multi-factor Authentication and Security Defaults for the credentials used in the workflow.
+> Note: Currently, service principal for Azure is used in CI/CD workflows, and to create Azure service principals for use, refer to [here](#how-to-create-azure-service-principals-for-use).
 
 ## Getting started guide for other platforms
 You can follow the pre-defined example bash scripts to build and customize CI/CD pipelines on other platforms:
@@ -199,7 +210,7 @@ The scripts are based on a cross-platform TeamsFx command line tool [TeamsFx-CLI
 
 > Note: To enable `@microsoft/teamsfx-cli` running in CI mode, turn on `CI_ENABLED` by `export CI_ENABLED=true`. In CI mode, `@microsoft/teamsfx-cli` is friendly for CI/CD.
 
-Please keep in mind that you must store Azure service principal credentials in your environment variables securely. For example if you are using Github as your source code repository, you can use the [Github Secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) to securely store your credentials.
+Please keep in mind that you must store Azure and M365 credentials in your environment variables securely. For example if you are using Github as your source code repository, you can use the [Github Secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) to securely store your credentials.
 
 The following table gives details about the required environment variables used in the script.
 
@@ -209,8 +220,11 @@ The following table gives details about the required environment variables used 
 |AZURE_SERVICE_PRINCIPAL_PASSWORD|The password of Azure service principal.|
 |AZURE_SUBSCRIPTION_ID|To identify the subscription in which the resources will be provisioned.|
 |AZURE_TENANT_ID|To identify the tenant in which the subscription resides.|
-
-To create Azure service principals for use, refer to [here](#how-to-create-azure-service-principals-for-use).
+|M365_ACCOUNT_NAME|The M365 account for creating and publishing the Teams App.|
+|M365_ACCOUNT_PASSWORD|The password of the M365 account.|
+|M365_TENANT_ID|To identify the tenant in which the Teams App will be created/published. This value is optional unless you have a multi-tenant account and you want to use another tenant. Read more on [how to find your M365 tenant ID](https://docs.microsoft.com/en-us/azure/active-directory/fundamentals/active-directory-how-to-find-tenant).|
+> Note: Currently, a non-interactive authentication style for M365 is used in CI/CD workflows, so please ensure that your M365 account has sufficient privileges in your tenant and doesn't have multi-factor authentication or other advanced security features enabled. Please refer to the [Configure M365 Credentials](https://github.com/OfficeDev/teamsfx-cli-action/blob/main/README.md#configure-m365azure-credentials-as-github-secret) to make sure you have disabled Multi-factor Authentication and Security Defaults for the credentials used in the workflow.
+> Note: Currently, service principal for Azure is used in CI/CD workflows, and to create Azure service principals for use, refer to [here](#how-to-create-azure-service-principals-for-use).
 
 # How to create Azure service principals for use?
 To provision and deploy resources targeting Azure inside CI/CD, you must create an Azure service principal for use.

@@ -272,11 +272,13 @@ export async function addCapability(
   solutionSettings.capabilities.forEach((c) => newCapabilitySet.add(c));
   // 4. check Tab
   if (capabilitiesAnswer.includes(TabOptionItem.id)) {
+    const firstAdd = solutionSettings.capabilities.includes(TabOptionItem.id) ? false : true;
     if (inputs.platform === Platform.VS) {
       pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
-      pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
+      if (firstAdd) {
+        pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
+      }
     } else {
-      const firstAdd = solutionSettings.capabilities.includes(TabOptionItem.id) ? false : true;
       if (firstAdd) {
         pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
         pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);

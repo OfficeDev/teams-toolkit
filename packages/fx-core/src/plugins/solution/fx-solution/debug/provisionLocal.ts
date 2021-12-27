@@ -167,15 +167,15 @@ export async function configLocalDebugSettings(
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
       const isMigrateFromV1 = ContextHelper.isMigrateFromV1(ctx);
 
-      const localEnvMultiProvider = new LocalEnvProvider(inputs.projectPath!);
+      const localEnvProvider = new LocalEnvProvider(inputs.projectPath!);
       const frontendEnvs = includeFrontend
-        ? await localEnvMultiProvider.loadFrontendLocalEnvs(includeBackend, includeAuth)
+        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAuth)
         : undefined;
       const backendEnvs = includeBackend
-        ? await localEnvMultiProvider.loadBackendLocalEnvs()
+        ? await localEnvProvider.loadBackendLocalEnvs()
         : undefined;
       const botEnvs = includeBot
-        ? await localEnvMultiProvider.loadBotLocalEnvs(isMigrateFromV1)
+        ? await localEnvProvider.loadBotLocalEnvs(isMigrateFromV1)
         : undefined;
 
       // get config for local debug
@@ -263,7 +263,7 @@ export async function configLocalDebugSettings(
       }
 
       // save .env.teamsfx.local
-      await localEnvMultiProvider.saveLocalEnvs(frontendEnvs, backendEnvs, botEnvs);
+      await localEnvProvider.saveLocalEnvs(frontendEnvs, backendEnvs, botEnvs);
     }
   } catch (error: any) {
     const systemError = ConfigLocalDebugSettingsError(error);

@@ -297,7 +297,8 @@ export class FuncToolChecker implements IDepsChecker {
         // not use -f, to avoid npm@6 bug: exit code = 0, even if install fail
         `${funcPackageName}@${version}`,
         "--prefix",
-        `${FuncToolChecker.getDefaultInstallPath()}`
+        `${FuncToolChecker.getDefaultInstallPath()}`,
+        "--no-audit"
       );
 
       await fs.ensureFile(FuncToolChecker.getSentinelPath());

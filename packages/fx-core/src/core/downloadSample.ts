@@ -22,7 +22,7 @@ import { FetchSampleError, InvalidInputError } from "./error";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
 import { CoreQuestionNames, QuestionRootFolder } from "./question";
 
-async function fetchCodeZip(
+export async function fetchCodeZip(
   url: string,
   sampleId: string
 ): Promise<Result<AxiosResponse<any> | undefined, FxError>> {
@@ -50,7 +50,7 @@ async function fetchCodeZip(
   return err(error);
 }
 
-async function saveFilesRecursively(
+export async function saveFilesRecursively(
   zip: AdmZip,
   appFolder: string,
   dstPath: string
@@ -75,7 +75,7 @@ async function saveFilesRecursively(
   );
 }
 
-async function downloadSampleHook(sampleId: string, sampleAppPath: string): Promise<void> {
+export async function downloadSampleHook(sampleId: string, sampleAppPath: string): Promise<void> {
   // A temporary solution to avoid duplicate componentId
   if (sampleId === "todo-list-SPFx") {
     const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";

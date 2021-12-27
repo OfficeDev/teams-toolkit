@@ -46,7 +46,7 @@ describe("localSettingsHelper", () => {
       },
       frontend: {
         tabDomain: "localhost",
-        tabEndpoint: "https://localhost:3000",
+        tabEndpoint: "https://localhost:53000",
       },
     };
     const projectPath = path.resolve(__dirname, "data");
@@ -58,10 +58,10 @@ describe("localSettingsHelper", () => {
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettings0, localSettings0);
 
       chai.assert.isDefined(localEnvs);
-      chai.assert.equal(Object.keys(localEnvs).length, 16);
+      chai.assert.equal(Object.keys(localEnvs).length, 17);
       chai.assert.equal(
         localEnvs["FRONTEND_REACT_APP_START_LOGIN_PAGE_URL"],
-        "https://localhost:3000/auth-start.html"
+        "https://localhost:53000/auth-start.html"
       );
       chai.assert.equal(
         localEnvs["FRONTEND_REACT_APP_CLIENT_ID"],
@@ -77,7 +77,7 @@ describe("localSettingsHelper", () => {
         localEnvs["AUTH_OAUTH_AUTHORITY"],
         "https://login.microsoftonline.com/22222222-2222-2222-2222-222222222222"
       );
-      chai.assert.equal(localEnvs["AUTH_TAB_APP_ENDPOINT"], "https://localhost:3000");
+      chai.assert.equal(localEnvs["AUTH_TAB_APP_ENDPOINT"], "https://localhost:53000");
     });
 
     it(".env.teamsfx.local", async () => {

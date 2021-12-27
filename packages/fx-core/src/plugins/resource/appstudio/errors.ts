@@ -65,11 +65,6 @@ export class AppStudioError {
     message: (errors: string[]) => `Validation error: \n ${errors.join("\n")}`,
   };
 
-  public static readonly UpdateManifestError = {
-    name: "UpdateManifestFailed",
-    message: (error: any) => (error.message ? error.message : "Update Teams App manifest failed!"),
-  };
-
   public static readonly GetLocalDebugConfigFailedError = {
     name: "GetLocalDebugConfigFailed",
     message: (error: any) =>

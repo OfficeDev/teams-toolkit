@@ -62,6 +62,7 @@ export const LocalEnvCertKeys = Object.freeze({
 export const LocalEnvFrontendKeys = Object.freeze({
   Browser: "FRONTEND_BROWSER",
   Https: "FRONTEND_HTTPS",
+  Port: "FRONTEND_PORT",
   TeamsFxEndpoint: "FRONTEND_REACT_APP_TEAMSFX_ENDPOINT",
   LoginUrl: "FRONTEND_REACT_APP_START_LOGIN_PAGE_URL",
   FuncEndpoint: "FRONTEND_REACT_APP_FUNC_ENDPOINT",

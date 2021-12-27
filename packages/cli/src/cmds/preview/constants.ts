@@ -50,7 +50,7 @@ export const frontendFolderName = "tabs";
 export const backendFolderName = "api";
 export const botFolderName = "bot";
 
-export const npmInstallCommand = "npm install";
+export const npmInstallCommand = "npm install --no-audit";
 export const nodeCommand = "node";
 export const frontendStartCommand = "npx react-scripts start";
 export const backendStartJsCommand = `@command start --javascript --port "7071" --cors "*"`;

@@ -19,7 +19,6 @@ import {
   LocalSettingsTeamsAppKeys,
   LocalSettingsEncryptKeys,
 } from "./localSettingsConstants";
-import { isMultiEnvEnabled } from "./tools";
 
 export const localSettingsFileName = "localSettings.json";
 const crypto = "crypto";
@@ -27,9 +26,7 @@ const crypto = "crypto";
 export class LocalSettingsProvider {
   public readonly localSettingsFilePath: string;
   constructor(workspaceFolder: string) {
-    this.localSettingsFilePath = isMultiEnvEnabled()
-      ? `${workspaceFolder}/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`
-      : `${workspaceFolder}/.${ConfigFolderName}/${localSettingsFileName}`;
+    this.localSettingsFilePath = `${workspaceFolder}/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`;
   }
 
   public init(

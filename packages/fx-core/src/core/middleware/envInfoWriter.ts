@@ -5,7 +5,7 @@
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
 import { CoreHookContext, flattenConfigJson, TOOLS } from "..";
-import { getStrings, isMultiEnvEnabled } from "../../common";
+import { getStrings } from "../../common";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
 import { shouldIgnored } from "./projectSettingsLoader";
@@ -34,7 +34,7 @@ export function EnvInfoWriterMW(skip = false): Middleware {
 }
 
 async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
-  if (shouldIgnored(ctx) || (skip && isMultiEnvEnabled())) {
+  if (shouldIgnored(ctx) || skip) {
     return;
   }
 
@@ -53,7 +53,7 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
   const provisionOutputs = envInfoV2.state;
   if (provisionOutputs === undefined) return;
   // DO NOT persist local debug plugin config.
-  if (isMultiEnvEnabled() && provisionOutputs[PluginNames.LDEBUG]) {
+  if (provisionOutputs[PluginNames.LDEBUG]) {
     delete provisionOutputs[PluginNames.LDEBUG];
   }
   const envState = flattenConfigJson(provisionOutputs);

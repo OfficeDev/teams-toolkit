@@ -120,8 +120,8 @@ const loopbackAddressIPv6 = "::1";
 const hosts = [allAddressIPv4, loopbackAddressIPv4, allAddressIPv6, loopbackAddressIPv6];
 
 export const frontendPorts: [number, string[]][] = [
-  [3000, hosts],
-  [5000, hosts],
+  [53000, hosts],
+  [55000, hosts],
 ];
 export const backendPorts: [number, string[]][] = [[7071, hosts]];
 export const botPorts: [number, string[]][] = [[3978, hosts]];

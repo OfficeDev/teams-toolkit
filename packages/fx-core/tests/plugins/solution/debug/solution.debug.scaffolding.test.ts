@@ -56,14 +56,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: 30,
+        numLocalEnvs: 31,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: 30,
+        numLocalEnvs: 31,
       },
     ];
     parameters1.forEach((parameter: TestParameter) => {
@@ -117,14 +117,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 4,
         numCompounds: 2,
         numTasks: 6,
-        numLocalEnvs: 16,
+        numLocalEnvs: 17,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 4,
         numCompounds: 2,
         numTasks: 6,
-        numLocalEnvs: 16,
+        numLocalEnvs: 17,
       },
     ];
     parameters2.forEach((parameter) => {
@@ -225,14 +225,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 6,
         numCompounds: 2,
         numTasks: 12,
-        numLocalEnvs: 42,
+        numLocalEnvs: 43,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 6,
         numCompounds: 2,
         numTasks: 12,
-        numLocalEnvs: 42,
+        numLocalEnvs: 43,
       },
     ];
     parameters4.forEach((parameter) => {
@@ -287,14 +287,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: 28,
+        numLocalEnvs: 29,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 9,
-        numLocalEnvs: 28,
+        numLocalEnvs: 29,
       },
     ];
     parameters5.forEach((parameter) => {
@@ -425,14 +425,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 2,
         numCompounds: 2,
         numTasks: 5,
-        numLocalEnvs: 4,
+        numLocalEnvs: 5,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 2,
         numCompounds: 2,
         numTasks: 5,
-        numLocalEnvs: 4,
+        numLocalEnvs: 5,
       },
     ];
     parameters6.forEach((parameter: TestParameter) => {

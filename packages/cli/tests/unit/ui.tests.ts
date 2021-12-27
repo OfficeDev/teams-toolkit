@@ -57,7 +57,6 @@ describe("User Interaction Tests", function () {
 
   it("Check process.env", () => {
     expect(UI.ciEnabled).equals(process.env.CI_EANBLED === "true");
-    expect(UI.calledFromVS).equals(process.env.VS_CALLING_CLI === "true");
   });
 
   it("Update/Remove Preset Answers", () => {

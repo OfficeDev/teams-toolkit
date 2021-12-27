@@ -20,9 +20,8 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-import { createV2Context, isV2 } from "..";
+import { createV2Context } from "..";
 import { CoreHookContext, FxCore } from "../..";
-import { isMultiEnvEnabled } from "../../common";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { LocalCrypto } from "../crypto";
@@ -50,7 +49,7 @@ export const ProjectSettingsLoaderMW: Middleware = async (
       ctx.result = err(PathNotExistError(inputs.projectPath));
       return;
     }
-    const loadRes = await loadProjectSettings(inputs, isMultiEnvEnabled());
+    const loadRes = await loadProjectSettings(inputs, true);
     if (loadRes.isErr()) {
       ctx.result = err(loadRes.error);
       return;
@@ -67,10 +66,8 @@ export const ProjectSettingsLoaderMW: Middleware = async (
     ctx.projectSettings = projectSettings;
     (ctx.self as FxCore).isFromSample = projectSettings.isFromSample === true;
     (ctx.self as FxCore).settingsVersion = projectSettings.version;
-    if (isV2()) {
-      (ctx.self as FxCore).tools.cryptoProvider = new LocalCrypto(projectSettings.projectId);
-      ctx.contextV2 = createV2Context(projectSettings);
-    }
+    (ctx.self as FxCore).tools.cryptoProvider = new LocalCrypto(projectSettings.projectId);
+    ctx.contextV2 = createV2Context(projectSettings);
   }
 
   await next();

@@ -10,7 +10,7 @@ import * as fs from "fs-extra";
 import { cloneDeep } from "lodash";
 import * as path from "path";
 
-import { localEnvManager } from "../../../src/common/local/localEnvManager";
+import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
 
 chai.use(chaiAsPromised);
 
@@ -39,6 +39,7 @@ describe("LocalEnvManager", () => {
   };
   const projectPath = path.resolve(__dirname, "data");
   const configFolder = path.resolve(projectPath, ".fx/configs");
+  const localEnvManager = new LocalEnvManager();
 
   beforeEach(() => {
     fs.ensureDirSync(path.resolve(__dirname, "data"));

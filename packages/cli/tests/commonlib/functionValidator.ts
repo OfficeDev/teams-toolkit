@@ -10,12 +10,11 @@ import {
   getSubscriptionIdFromResourceId,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
+  getWebappConfigs,
+  getWebappServicePlan,
+  runWithRetry,
 } from "./utilities";
 
-const baseUrlAppSettings = (subscriptionId: string, rg: string, name: string) =>
-  `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/appsettings/list?api-version=2019-08-01`;
-const baseUrlPlan = (subscriptionId: string, rg: string, name: string) =>
-  `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/serverfarms/${name}?api-version=2019-08-01`;
 const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
   `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/deployments?api-version=2019-08-01`;
 const baseUrlListDeploymentLogs = (subscriptionId: string, rg: string, name: string, id: string) =>
@@ -183,12 +182,7 @@ export class FunctionValidator {
     console.log("Validating app settings.");
 
     const appName = functionObject.functionAppName;
-    const response = await this.getWebappConfigs(
-      this.subscriptionId,
-      this.rg,
-      appName,
-      token as string
-    );
+    const response = await getWebappConfigs(this.subscriptionId, this.rg, appName, token as string);
 
     chai.assert.exists(response);
 
@@ -210,7 +204,7 @@ export class FunctionValidator {
 
     if (!isMultiEnvEnabled) {
       console.log("Validating app service plan.");
-      const servicePlanResponse = await this.getWebappServicePlan(
+      const servicePlanResponse = await getWebappServicePlan(
         this.subscriptionId,
         this.rg,
         functionObject.appServicePlanName!,
@@ -220,41 +214,6 @@ export class FunctionValidator {
     }
 
     console.log("Successfully validate Function Provision.");
-  }
-
-  private static async runWithRetry<T>(fn: () => Promise<T>) {
-    const maxTryCount = 3;
-    const defaultRetryAfterInSecond = 2;
-    const maxRetryAfterInSecond = 3 * 60;
-    const secondInMilliseconds = 1000;
-
-    for (let i = 0; i < maxTryCount - 1; i++) {
-      try {
-        const ret = await fn();
-        return ret;
-      } catch (e) {
-        let retryAfterInSecond = defaultRetryAfterInSecond;
-        if (e.response?.status === 429) {
-          // See https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/request-limits-and-throttling#error-code.
-          const suggestedRetryAfter = e.response?.headers?.["retry-after"];
-          // Explicit check, _retryAfter can be 0.
-          if (suggestedRetryAfter !== undefined) {
-            if (suggestedRetryAfter > maxRetryAfterInSecond) {
-              // Don't wait too long.
-              throw e;
-            } else {
-              // Take one more second for time error.
-              retryAfterInSecond = suggestedRetryAfter + 1;
-            }
-          }
-        }
-        await new Promise((resolve) =>
-          setTimeout(resolve, retryAfterInSecond * secondInMilliseconds)
-        );
-      }
-    }
-
-    return fn();
   }
 
   public static async validateDeploy(functionObject: IFunctionObject): Promise<void> {
@@ -296,7 +255,7 @@ export class FunctionValidator {
   ) {
     try {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const functionGetResponse = await this.runWithRetry(() =>
+      const functionGetResponse = await runWithRetry(() =>
         axios.get(baseUrlListDeployments(subscriptionId, rg, name))
       );
 
@@ -316,64 +275,11 @@ export class FunctionValidator {
   ) {
     try {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const functionGetResponse = await this.runWithRetry(() =>
+      const functionGetResponse = await runWithRetry(() =>
         axios.get(baseUrlListDeploymentLogs(subscriptionId, rg, name, id))
       );
 
       return functionGetResponse?.data?.value;
-    } catch (error) {
-      console.log(error);
-      return undefined;
-    }
-  }
-
-  private static async getWebappConfigs(
-    subscriptionId: string,
-    rg: string,
-    name: string,
-    token: string
-  ) {
-    try {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const functionGetResponse = await this.runWithRetry(() =>
-        axios.post(baseUrlAppSettings(subscriptionId, rg, name))
-      );
-      if (
-        !functionGetResponse ||
-        !functionGetResponse.data ||
-        !functionGetResponse.data.properties
-      ) {
-        return undefined;
-      }
-
-      return functionGetResponse.data.properties;
-    } catch (error) {
-      console.log(error);
-      return undefined;
-    }
-  }
-
-  private static async getWebappServicePlan(
-    subscriptionId: string,
-    rg: string,
-    name: string,
-    token: string
-  ) {
-    try {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const functionPlanResponse = await this.runWithRetry(() =>
-        axios.get(baseUrlPlan(subscriptionId, rg, name))
-      );
-      if (
-        !functionPlanResponse ||
-        !functionPlanResponse.data ||
-        !functionPlanResponse.data.sku ||
-        !functionPlanResponse.data.sku.name
-      ) {
-        return undefined;
-      }
-
-      return functionPlanResponse.data.sku.name;
     } catch (error) {
       console.log(error);
       return undefined;

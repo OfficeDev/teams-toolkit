@@ -14,16 +14,27 @@ import {
   Void,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
+import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import {
   InvalidLocalBotEndpointFormat,
   LocalBotEndpointNotConfigured,
   SetupLocalDebugSettingsError,
   NgrokTunnelNotConnected,
+  ConfigLocalDebugSettingsError,
 } from "./error";
-import { ContextHelper } from "./util/contextHelper";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { getNgrokHttpUrl } from "./util/ngrok";
+import {
+  EnvKeysBackend,
+  EnvKeysBot,
+  EnvKeysBotV1,
+  EnvKeysFrontend,
+  LocalEnvProvider,
+} from "../../../../common/local/localEnvProvider";
+import { prepareLocalAuthService } from "./util/localService";
+import { getAllowedAppIds } from "../../../../common/tools";
+import { LocalCertificateManager } from "./util/certificate";
 
 export async function setupLocalDebugSettings(
   ctx: v2.Context,
@@ -31,10 +42,10 @@ export async function setupLocalDebugSettings(
   localSettings: Json
 ): Promise<Result<Void, FxError>> {
   const vscEnv = inputs.vscodeEnv;
-  const includeFrontend = ContextHelper.includeFrontend(ctx);
-  const includeBackend = ContextHelper.includeBackend(ctx);
-  const includeBot = ContextHelper.includeBot(ctx);
-  const includeAuth = ContextHelper.includeAuth(ctx);
+  const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
+  const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
+  const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
+  const includeAuth = ProjectSettingsHelper.includeAuth(ctx.projectSetting);
   let skipNgrok = localSettings?.bot?.skipNgrok as boolean;
 
   const telemetryProperties = {
@@ -127,5 +138,138 @@ export async function setupLocalDebugSettings(
     return err(systemError);
   }
   TelemetryUtils.sendSuccessEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
+  return ok(Void);
+}
+
+export async function configLocalDebugSettings(
+  ctx: v2.Context,
+  inputs: Inputs,
+  localSettings: Json
+): Promise<Result<Void, FxError>> {
+  const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
+  const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
+  const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
+  const includeAuth = ProjectSettingsHelper.includeAuth(ctx.projectSetting);
+  let trustDevCert = localSettings?.frontend?.trustDevCert as boolean | undefined;
+
+  const telemetryProperties = {
+    platform: inputs.platform as string,
+    frontend: includeFrontend ? "true" : "false",
+    function: includeBackend ? "true" : "false",
+    bot: includeBot ? "true" : "false",
+    auth: includeAuth ? "true" : "false",
+    "trust-development-certificate": trustDevCert + "",
+  };
+  TelemetryUtils.init(ctx);
+  TelemetryUtils.sendStartEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
+
+  try {
+    if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
+      const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
+
+      const localEnvProvider = new LocalEnvProvider(inputs.projectPath!);
+      const frontendEnvs = includeFrontend
+        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAuth)
+        : undefined;
+      const backendEnvs = includeBackend
+        ? await localEnvProvider.loadBackendLocalEnvs()
+        : undefined;
+      const botEnvs = includeBot
+        ? await localEnvProvider.loadBotLocalEnvs(isMigrateFromV1)
+        : undefined;
+
+      // get config for local debug
+      const clientId = localSettings?.auth?.clientId as string;
+      const clientSecret = localSettings?.auth?.clientSecret as string;
+      const applicationIdUri = localSettings?.auth?.applicationIdUris as string;
+      const teamsAppTenantId = localSettings?.teamsApp?.tenantId as string;
+      const localAuthEndpoint = localSettings?.auth?.AuthServiceEndpoint as string;
+      const localTabEndpoint = localSettings?.frontend?.tabEndpoint as string;
+      const localFuncEndpoint = localSettings?.backend?.functionEndpoint as string;
+
+      const localAuthPackagePath = localSettings?.auth?.simpleAuthFilePath as string;
+
+      if (includeFrontend) {
+        if (includeAuth) {
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
+          frontendEnvs!.teamsfxLocalEnvs[
+            EnvKeysFrontend.LoginUrl
+          ] = `${localTabEndpoint}/auth-start.html`;
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.ClientId] = clientId;
+          await prepareLocalAuthService(localAuthPackagePath);
+        }
+
+        if (includeBackend) {
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.FuncEndpoint] = localFuncEndpoint;
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.FuncName] = ctx.projectSetting
+            .defaultFunctionName as string;
+
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.FuncWorkerRuntime] = "node";
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ClientId] = clientId;
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ClientSecret] = clientSecret;
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.AuthorityHost] =
+            "https://login.microsoftonline.com";
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.TenantId] = teamsAppTenantId;
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ApiEndpoint] = localFuncEndpoint;
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ApplicationIdUri] = applicationIdUri;
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.AllowedAppIds] =
+            getAllowedAppIds().join(";");
+        }
+
+        // setup local certificate
+        try {
+          if (trustDevCert === undefined) {
+            trustDevCert = true;
+            localSettings.frontend.trustDevCert = trustDevCert;
+          }
+
+          const certManager = new LocalCertificateManager(ctx, inputs);
+          const localCert = await certManager.setupCertificate(trustDevCert);
+          if (localCert) {
+            localSettings.frontend.sslCertFile = localCert.certPath;
+            localSettings.frontend.sslKeyFile = localCert.keyPath;
+            frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslCrtFile] = localCert.certPath;
+            frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.SslKeyFile] = localCert.keyPath;
+          }
+        } catch (error) {
+          // do not break if cert error
+        }
+      }
+
+      if (includeBot) {
+        const botId = localSettings?.bot?.botId as string;
+        const botPassword = localSettings?.bot?.botPassword as string;
+        if (isMigrateFromV1) {
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBotV1.BotId] = botId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBotV1.BotPassword] = botPassword;
+        } else {
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotId] = botId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.BotPassword] = botPassword;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientId] = clientId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ClientSecret] = clientSecret;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.TenantID] = teamsAppTenantId;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.OauthAuthority] =
+            "https://login.microsoftonline.com";
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.LoginEndpoint] = `${
+            localSettings?.bot?.botEndpoint as string
+          }/auth-start.html`;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApplicationIdUri] = applicationIdUri;
+        }
+
+        if (includeBackend) {
+          backendEnvs!.teamsfxLocalEnvs[EnvKeysBackend.ApiEndpoint] = localFuncEndpoint;
+          botEnvs!.teamsfxLocalEnvs[EnvKeysBot.ApiEndpoint] = localFuncEndpoint;
+        }
+      }
+
+      // save .env.teamsfx.local
+      await localEnvProvider.saveLocalEnvs(frontendEnvs, backendEnvs, botEnvs);
+    }
+  } catch (error: any) {
+    const systemError = ConfigLocalDebugSettingsError(error);
+    TelemetryUtils.sendErrorEvent(TelemetryEventName.configLocalDebugSettings, systemError);
+    return err(systemError);
+  }
+  TelemetryUtils.sendSuccessEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
   return ok(Void);
 }

@@ -13,7 +13,9 @@ var oauthServerName = contains(provisionParameters, 'apimOauthServerName') ? pro
 var clientId = provisionParameters['apimClientId']
 var clientSecret = provisionParameters['apimClientSecret']
 
+
 var tabAppDomain = provisionOutputs.frontendHostingOutput.value.domain
+
 var m365ClientId = provisionParameters['m365ClientId']
 var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'
 

@@ -39,7 +39,7 @@ import path from "path";
 import os from "os";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
-import { CoreSource, FxCore, isV2, TOOLS } from "..";
+import { CoreSource, FxCore, TOOLS } from "..";
 import {
   getStrings,
   isArmSupportEnabled,
@@ -80,8 +80,8 @@ import * as dotenv from "dotenv";
 import { PlaceHolders } from "../../plugins/resource/spfx/utils/constants";
 import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 import util from "util";
-import { LocalEnvMultiProvider } from "../../plugins/resource/localdebug/localEnvMulti";
 import { NamedArmResourcePluginAdaptor } from "../../plugins/solution/fx-solution/v2/adaptor";
+import { LocalEnvProvider } from "../../common/local/localEnvProvider";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -468,7 +468,7 @@ async function updateGitIgnore(
   await addPathToGitignore(projectPath, buildFolder, log);
 
   // add **/.env.teamsfx.local to .gitignore
-  const envLocal = "**/" + LocalEnvMultiProvider.LocalEnvFileName;
+  const envLocal = "**/" + LocalEnvProvider.LocalEnvFileName;
   await addItemToGitignore(projectPath, envLocal, log);
 
   // add .fx/states/*.userdata to .gitignore
@@ -1060,9 +1060,9 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
   }
   minorCtx.solutionContext = result.value;
   const settings = minorCtx.projectSettings?.solutionSettings as AzureSolutionSettings;
-  const activePlugins = isV2()
-    ? getActivatedV2ResourcePlugins(settings).map((p) => new NamedArmResourcePluginAdaptor(p))
-    : getActivatedResourcePlugins(settings);
+  const activePlugins = getActivatedV2ResourcePlugins(settings).map(
+    (p) => new NamedArmResourcePluginAdaptor(p)
+  );
 
   // generate bicep files.
   try {

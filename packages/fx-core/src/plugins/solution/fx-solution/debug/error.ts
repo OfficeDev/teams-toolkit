@@ -12,6 +12,11 @@ export function ScaffoldLocalDebugSettingsError(error: any): SystemError {
 export function SetupLocalDebugSettingsError(error: any): SystemError {
   return returnSystemError(error, SolutionSource, "SetupLocalDebugSettingsError");
 }
+
+export function ConfigLocalDebugSettingsError(error: any): SystemError {
+  return returnSystemError(error, SolutionSource, "ConfigLocalDebugSettingsError");
+}
+
 export function NgrokTunnelNotConnected(): UserError {
   return returnUserError(
     new Error("Ngrok tunnel is not connected. Check your network settings and try again."),

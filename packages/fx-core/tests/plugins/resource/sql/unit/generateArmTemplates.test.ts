@@ -54,12 +54,11 @@ describe("generateArmTemplates", () => {
     // Assert
     const testModuleFileName = "sqlProvision.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-azure-sql": {
           Provision: {
             azureSql: {
-              ProvisionPath: `./${testModuleFileName}`,
+              path: `./${testModuleFileName}`,
             },
           },
         },

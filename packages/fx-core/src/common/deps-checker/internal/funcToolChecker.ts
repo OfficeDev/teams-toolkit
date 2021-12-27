@@ -4,7 +4,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, Result, ok, err } from "@microsoft/teamsfx-api";
 
 import { defaultHelpLink } from "../constant/helpLink";
 import { runWithProgressIndicator } from "../util/progressIndicator";
@@ -16,7 +16,6 @@ import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DepsInfo, DepsChecker } from "../depsChecker";
 import { Messages } from "../constant/message";
-import { err, Result, ok } from "neverthrow";
 
 export enum FuncVersion {
   v1 = "1",

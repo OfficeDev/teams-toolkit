@@ -8,7 +8,7 @@ import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
 import { DepsInfo, DepsChecker } from "../depsChecker";
 import { Messages } from "../constant/message";
-import { Result, ok, err } from "neverthrow";
+import { Result, ok, err } from "@microsoft/teamsfx-api";
 import {
   nodeNotFoundHelpLink,
   nodeNotSupportedForFunctionsHelpLink,

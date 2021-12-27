@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Result } from "neverthrow";
 import { DepsCheckerError } from "./depsError";
+import { Result } from "@microsoft/teamsfx-api";
 
 export interface DepsChecker {
   isInstalled(): Promise<boolean>;

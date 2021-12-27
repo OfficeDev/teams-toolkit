@@ -1,8 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { SolutionSettings } from "..";
-import { AzureSolutionSettings } from "../types";
+import { SolutionSettings, AzureSolutionSettings } from "../types";
 /**
  * Module is basic building block of the App
  */

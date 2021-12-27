@@ -14,8 +14,10 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
+
 import { convertToLocalEnvs } from "./localSettingsHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
+import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
@@ -43,7 +45,9 @@ export class LocalEnvManager {
     return await convertToLocalEnvs(projectPath, projectSettings, localSettings, this.logger);
   }
 
-  public async getNpmInstallLogInfo() {}
+  public async getNpmInstallLogInfo(): Promise<NpmInstallLogInfo | undefined> {
+    return await getNpmInstallLogInfo();
+  }
 
   public async getPortsInUse() {}
 

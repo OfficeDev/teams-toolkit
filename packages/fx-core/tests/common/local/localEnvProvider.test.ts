@@ -1,13 +1,9 @@
-// Copyright (c) Microsoft Corporation.
-// Licensed under the MIT license.
-
 import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
-
 import { LocalEnvProvider, LocalEnvs } from "../../../src/common/local/localEnvProvider";
 
 chai.use(chaiAsPromised);

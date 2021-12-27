@@ -2,6 +2,12 @@
 // Licensed under the MIT license.
 "use strict";
 
+export class FolderName {
+  static readonly Frontend = "tabs";
+  static readonly Bot = "bot";
+  static readonly Function = "api";
+}
+
 export const LocalEnvAuthKeys = Object.freeze({
   ClientId: "AUTH_CLIENT_ID",
   ClientSecret: "AUTH_CLIENT_SECRET",
@@ -113,10 +119,4 @@ export const LocalSettingsBotKeys = Object.freeze({
   BotRedirectUri: "botRedirectUri",
   BotDomain: "botDomain",
   BotEndpoint: "botEndpoint",
-});
-
-export const ProjectFolderName = Object.freeze({
-  Bot: "bot",
-  Frontend: "tabs",
-  Function: "api",
 });

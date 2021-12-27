@@ -22,7 +22,7 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { setupLocalDebugSettings } from "../debug/provisionLocal";
+import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
 
 export async function provisionLocalResource(
   ctx: v2.Context,
@@ -150,6 +150,12 @@ export async function provisionLocalResource(
       return new v2.FxPartialSuccess(localSettings, configureResourceResult.error);
     }
     return new v2.FxFailure(configureResourceResult.error);
+  }
+
+  const debugConfigResult = await configLocalDebugSettings(ctx, inputs, localSettings);
+
+  if (debugConfigResult.isErr()) {
+    return new v2.FxPartialSuccess(localSettings, debugConfigResult.error);
   }
 
   return new v2.FxSuccess(localSettings);

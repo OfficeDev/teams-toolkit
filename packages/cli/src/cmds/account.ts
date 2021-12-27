@@ -121,7 +121,7 @@ async function outputAzureInfo(
           );
           CLILogProvider.necessaryLog(
             LogLevel.Warning,
-            "WARN：Azure subscription is set on project level. Run `teamsfx account show` command in a TeamsFx project folder to check active subscription information."
+            "WARN: Azure subscription is set on project level. Run `teamsfx account show` command in a TeamsFx project folder to check active subscription information."
           );
         } else {
           throw e;
@@ -194,7 +194,6 @@ export class M365Login extends YargsCommand {
   public readonly commandHead = `m365`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Log in to M365.";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.options(this.params);

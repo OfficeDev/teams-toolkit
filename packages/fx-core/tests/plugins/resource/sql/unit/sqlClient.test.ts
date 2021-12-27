@@ -43,41 +43,6 @@ describe("sqlClient", () => {
     sinon.restore();
   });
 
-  it("existUser false", async function () {
-    // Arrange
-    sinon.stub(SqlClient.prototype, "doQuery").resolves([[{ value: 0 }]]);
-
-    // Act
-    const res = await client.existUser();
-
-    // Assert
-    chai.assert.isFalse(res);
-  });
-
-  it("existUser true", async function () {
-    // Arrange
-    sinon.stub(SqlClient.prototype, "doQuery").resolves([[{ value: 1 }]]);
-
-    // Act
-    const res = await client.existUser();
-
-    // Assert
-    chai.assert.isTrue(res);
-  });
-
-  it("existUser error", async function () {
-    // Arrange
-    sinon.stub(SqlClient.prototype, "doQuery").rejects(new Error("test error"));
-
-    // Act
-    try {
-      await client.existUser();
-    } catch (error) {
-      // Assert
-      chai.assert.include(error.message, "test error");
-    }
-  });
-
   it("addDatabaseUser error", async function () {
     // Arrange
     sinon
@@ -92,6 +57,23 @@ describe("sqlClient", () => {
     } catch (error) {
       // Assert
       chai.assert.include(error.message, ErrorMessage.GetDetail);
+    }
+  });
+
+  it("addDatabaseUser firewall error", async function () {
+    // Arrange
+    const err: any = new Error(
+      "Client with IP address '1.1.1.1' is not allowed to access the server."
+    );
+    err.code = "ELOGIN";
+    sinon.stub(SqlClient.prototype, "doQuery").rejects(err);
+
+    // Act
+    try {
+      await client.addDatabaseUser();
+    } catch (error) {
+      // Assert
+      chai.assert.isTrue(SqlClient.isFireWallError(error?.innerError));
     }
   });
 

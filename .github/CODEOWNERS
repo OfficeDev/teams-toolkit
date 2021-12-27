@@ -45,7 +45,10 @@
 
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms
 /packages/fx-core/src/core/middleware/projectMigrator.ts @dooriya @qinezh @a1exwang @meifans @blackchoey @wenytang-ms
+
 /packages/fx-core/src/common/deps-checker @meifans @qinezh @a1exwang @kimizhu @swatDong
+/packages/fx-core/tests/common/deps-checker @meifans @qinezh @a1exwang @kimizhu @swatDong
+
 /packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang @LongOddCode @nliu-ms
 /packages/fx-core/src/plugins/solution/fx-solution/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh
 /packages/fx-core/src/plugins/solution/fx-solution/debug @kimizhu @swatDong @kuojianlu @XiaofuHuang
@@ -59,8 +62,8 @@
 /packages/fx-core/src/plugins/resource/appstudio @nliu-ms @jayzhang
 /packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang
 
-/packages/fx-core/src/plugins/resource/spfx  @nliu-ms @jayzhang
-/packages/fx-core/tests/plugins/resource/spfx  @nliu-ms @jayzhang
+/packages/fx-core/src/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 
 /packages/fx-core/src/plugins/resource/bot @IvanJobs @eriolchan @YitongFeng-git
 /packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan @YitongFeng-git

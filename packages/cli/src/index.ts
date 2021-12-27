@@ -42,6 +42,10 @@ export async function start() {
       boolean: true,
       default: false,
     })
+    .options("interactive", {
+      description: "Run the command interactively.",
+      boolean: true,
+    })
     .demandCommand()
     .scriptName(constants.cliName)
     .help()

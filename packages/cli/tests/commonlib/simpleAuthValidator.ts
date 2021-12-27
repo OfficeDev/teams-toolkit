@@ -1,19 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import axios from "axios";
 import * as chai from "chai";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { IAadObject } from "./interfaces/IAADDefinition";
+import { getWebappConfigs, getWebappServicePlan } from "./utilities";
 
 const simpleAuthPluginName = "fx-resource-simple-auth";
 const solutionPluginName = "solution";
 const subscriptionKey = "subscriptionId";
 const rgKey = "resourceGroupName";
-const baseUrlAppSettings = (subscriptionId: string, rg: string, name: string) =>
-  `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/appsettings/list?api-version=2019-08-01`;
-const baseUrlPlan = (subscriptionId: string, rg: string, name: string) =>
-  `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/serverfarms/${name}?api-version=2019-08-01`;
 
 export class PropertiesKeys {
   static clientId = "CLIENT_ID";
@@ -70,7 +66,7 @@ export class SimpleAuthValidator {
     const token = (await tokenCredential?.getToken())?.accessToken;
 
     console.log("Validating app settings.");
-    const response = await this.getWebappConfigs(
+    const response = await getWebappConfigs(
       this.subscriptionId,
       this.rg,
       resourceName,
@@ -90,7 +86,7 @@ export class SimpleAuthValidator {
     const servicePlanName = isMultiEnvEnabled
       ? resourceName.replace("-webapp", "-serverfarms")
       : resourceName;
-    const serivcePlanResponse = await this.getWebappServicePlan(
+    const serivcePlanResponse = await getWebappServicePlan(
       this.subscriptionId,
       this.rg,
       servicePlanName,
@@ -99,54 +95,5 @@ export class SimpleAuthValidator {
     chai.assert(serivcePlanResponse, servicePlan);
 
     console.log("Successfully validate Simple Auth.");
-  }
-
-  private static async getWebappConfigs(
-    subscriptionId: string,
-    rg: string,
-    name: string,
-    token: string
-  ) {
-    try {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const simpleAuthGetResponse = await axios.post(baseUrlAppSettings(subscriptionId, rg, name));
-      if (
-        !simpleAuthGetResponse ||
-        !simpleAuthGetResponse.data ||
-        !simpleAuthGetResponse.data.properties
-      ) {
-        return undefined;
-      }
-
-      return simpleAuthGetResponse.data.properties;
-    } catch (error) {
-      console.log(error);
-      return undefined;
-    }
-  }
-
-  private static async getWebappServicePlan(
-    subscriptionId: string,
-    rg: string,
-    name: string,
-    token: string
-  ) {
-    try {
-      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const simpleAuthPlanResponse = await axios.get(baseUrlPlan(subscriptionId, rg, name));
-      if (
-        !simpleAuthPlanResponse ||
-        !simpleAuthPlanResponse.data ||
-        !simpleAuthPlanResponse.data.sku ||
-        !simpleAuthPlanResponse.data.sku.name
-      ) {
-        return undefined;
-      }
-
-      return simpleAuthPlanResponse.data.sku.name;
-    } catch (error) {
-      console.log(error);
-      return undefined;
-    }
   }
 }

@@ -45,17 +45,16 @@ describe("apimManager.generateArmTemplates", () => {
     const testProvisionModuleFileName = "apimProvision.result.bicep";
     const testConfigurationModuleFileName = "apimConfiguration.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-apim": {
           Provision: {
             apim: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
+              path: `./${testProvisionModuleFileName}`,
             },
           },
           Configuration: {
             apim: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
+              path: `./${testConfigurationModuleFileName}`,
             },
           },
           References: {
@@ -136,8 +135,7 @@ describe("apimManager.generateArmTemplates", () => {
     const testProvisionModuleFileName = "apimProvision.result.bicep";
     const testConfigurationModuleFileName = "apimConfiguration.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-apim": {
           Configuration: {
             apim: {

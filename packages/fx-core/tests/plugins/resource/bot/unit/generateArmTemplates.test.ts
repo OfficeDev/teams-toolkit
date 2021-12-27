@@ -83,12 +83,12 @@ describe("Bot Generates Arm Templates", () => {
       "fx-resource-bot": {
         Provision: {
           bot: {
-            ProvisionPath: `./${provisionModuleFileName}`,
+            path: `./${provisionModuleFileName}`,
           },
         },
         Configuration: {
           bot: {
-            ConfigPath: `./${configurationModuleFileName}`,
+            path: `./${configurationModuleFileName}`,
           },
         },
       },
@@ -101,8 +101,7 @@ describe("Bot Generates Arm Templates", () => {
       },
     };
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: { ...pluginOutput, ...addtionalPluginOutput },
+      Plugins: { ...pluginOutput, ...addtionalPluginOutput },
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
@@ -167,17 +166,16 @@ describe("Bot Generates Arm Templates", () => {
     const provisionModuleFileName = "botProvision.result.bicep";
     const configurationModuleFileName = "botConfig.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-bot": {
           Provision: {
             bot: {
-              ProvisionPath: `./${provisionModuleFileName}`,
+              path: `./${provisionModuleFileName}`,
             },
           },
           Configuration: {
             bot: {
-              ConfigPath: `./${configurationModuleFileName}`,
+              path: `./${configurationModuleFileName}`,
             },
           },
         },

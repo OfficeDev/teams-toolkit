@@ -49,7 +49,6 @@ export default class New extends YargsCommand {
   public readonly commandHead = `new`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Create a new Teams application.";
-  public params: { [_: string]: Options } = {};
 
   public readonly subCommands: YargsCommand[] = [new NewTemplate()];
 
@@ -59,16 +58,7 @@ export default class New extends YargsCommand {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
     if (this.params) {
-      yargs
-        .options({
-          interactive: {
-            description: "Select the options interactively",
-            boolean: true,
-            default: true,
-            global: false,
-          },
-        })
-        .options(this.params);
+      yargs.options(this.params);
     }
     return yargs.version(false);
   }
@@ -77,10 +67,6 @@ export default class New extends YargsCommand {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart);
-
-    if (!args.interactive) {
-      CLIUIInstance.updatePresetAnswers(this.params, args);
-    }
 
     const result = await activate();
     if (result.isErr()) {

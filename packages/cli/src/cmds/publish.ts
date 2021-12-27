@@ -21,8 +21,6 @@ export default class Publish extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Publish the app to Teams.";
 
-  public params: { [_: string]: Options } = {};
-
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.publish);
     return yargs.version(false).options(this.params);

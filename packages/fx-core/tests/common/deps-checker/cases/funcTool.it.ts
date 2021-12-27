@@ -42,9 +42,9 @@ describe("FuncToolChecker E2E Test", async () => {
       path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "func", "Aarón García", "for test")
     );
 
-    const shouldContinue = await funcToolChecker.resolve();
+    const res = await funcToolChecker.resolve();
 
-    expect(shouldContinue).to.be.equal(true);
+    expect(res.isOk() && res.value).to.be.equal(true);
     expect(await funcToolChecker.isInstalled()).to.be.equal(true);
     assert.isTrue(
       /node "[^"]*"$/g.test(await funcToolChecker.command()),
@@ -68,15 +68,15 @@ describe("FuncToolChecker E2E Test", async () => {
       console.log("spy on doInstallPortableFunc")
     );
 
-    const shouldContinue = await funcToolChecker.resolve();
-    assert.isFalse(shouldContinue);
+    const res = await funcToolChecker.resolve();
+    assert.isFalse(res.isOk() && res.value);
     assert.isFalse(await funcToolChecker.isInstalled());
 
     // second: still works well
     sandbox.restore(funcToolChecker, "doInstallPortableFunc");
-    const shouldContinueRetry = await funcToolChecker.resolve();
+    const retryRes = await funcToolChecker.resolve();
 
-    assert.isTrue(shouldContinueRetry);
+    assert.isTrue(retryRes.isOk() && retryRes.value);
     assert.isTrue(await funcToolChecker.isInstalled(), "second run, should success");
     await assertFuncStart(funcToolChecker);
   });
@@ -126,9 +126,9 @@ describe("FuncToolChecker E2E Test", async () => {
       logger,
       new TestTelemetry()
     ) as FuncToolChecker;
-    const shouldContinue = await funcToolChecker.resolve();
+    const res = await funcToolChecker.resolve();
 
-    assert.isTrue(shouldContinue);
+    assert.isTrue(res.isOk() && res.value);
     expect(await funcToolChecker.isInstalled()).to.be.equal(true);
     assert.isTrue(
       /node "[^"]*"$/g.test(await funcToolChecker.command()),

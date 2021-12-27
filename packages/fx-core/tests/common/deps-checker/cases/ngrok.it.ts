@@ -37,9 +37,9 @@ describe("NgrokChecker E2E Test", async () => {
       path.join(os.homedir(), `.${ConfigFolderName}`, "bin", "ngrok", "Aarón García", "for test")
     );
 
-    const shouldContinue = await ngrokChecker.resolve();
+    const res = await ngrokChecker.resolve();
 
-    expect(shouldContinue).to.be.equal(true);
+    expect(res.isOk() && res.value).to.be.equal(true);
     assert.isTrue(await ngrokChecker.isInstalled());
     await assertNgrokVersion(ngrokChecker);
   });

@@ -31,7 +31,6 @@ import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
 import { IUserList } from "./interfaces/IAppDefinition";
-import { isMultiEnvEnabled } from "../../../common";
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -118,16 +117,14 @@ export class AppStudioPlugin implements Plugin {
       );
       return err(remoteTeamsAppId.error);
     }
-    if (isMultiEnvEnabled()) {
-      const result = await this.buildTeamsPackage(ctx, false);
-      if (result.isErr()) {
-        TelemetryUtils.sendErrorEvent(
-          TelemetryEventName.postProvision,
-          result.error,
-          this.appStudioPluginImpl.commonProperties
-        );
-        return err(result.error);
-      }
+    const result = await this.buildTeamsPackage(ctx, false);
+    if (result.isErr()) {
+      TelemetryUtils.sendErrorEvent(
+        TelemetryEventName.postProvision,
+        result.error,
+        this.appStudioPluginImpl.commonProperties
+      );
+      return err(result.error);
     }
     TelemetryUtils.sendSuccessEvent(
       TelemetryEventName.postProvision,
@@ -396,9 +393,7 @@ export class AppStudioPlugin implements Plugin {
     const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
     if (localTeamsAppId.isOk()) {
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.localDebug);
-      if (isMultiEnvEnabled()) {
-        await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, true);
-      }
+      await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, true);
       return localTeamsAppId;
     } else {
       const error = localTeamsAppId.error;

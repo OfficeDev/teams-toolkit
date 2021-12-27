@@ -7,8 +7,6 @@ export class FolderName {
   static readonly Bot = "bot";
   static readonly Function = "api";
 }
-<<<<<<< HEAD
-=======
 
 export const LocalEnvAuthKeys = Object.freeze({
   ClientId: "AUTH_CLIENT_ID",
@@ -122,4 +120,3 @@ export const LocalSettingsBotKeys = Object.freeze({
   BotDomain: "botDomain",
   BotEndpoint: "botEndpoint",
 });
->>>>>>> upstream/dev

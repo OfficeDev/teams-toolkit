@@ -18,7 +18,6 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   check-format:
-    if: ${{ github.event_name == 'pull_request' && github.event.action != 'edited' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -68,7 +67,6 @@ jobs:
           fi
 
   check-sensitive-content:
-    if: ${{ github.event_name == 'pull_request' && github.event.action != 'edited' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch

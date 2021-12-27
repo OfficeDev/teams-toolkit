@@ -289,19 +289,19 @@ describe("LocalEnvProvider", () => {
 
     it("frontend", () => {
       const envs = localEnvProvider.initFrontendLocalEnvs(false, false);
-      chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 2);
+      chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 3);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 0);
     });
 
     it("frontend + auth", () => {
       const envs = localEnvProvider.initFrontendLocalEnvs(false, true);
-      chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 5);
+      chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 6);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 0);
     });
 
     it("frontend + auth + backend", () => {
       const envs = localEnvProvider.initFrontendLocalEnvs(true, true);
-      chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 7);
+      chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 8);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 0);
     });
 

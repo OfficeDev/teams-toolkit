@@ -1682,3 +1682,4 @@ export function getProjectSettingsVersion() {
 
 export * from "./error";
 export * from "./tools";
+export * from "./downloadSample";

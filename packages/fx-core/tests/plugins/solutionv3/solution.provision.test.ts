@@ -30,7 +30,9 @@ import {
   MockedV2Context,
 } from "../solution/util";
 import { MockResourcePluginNames } from "./mockPlugins";
-
+import * as path from "path";
+import * as os from "os";
+import { randomAppName } from "../../core/utils";
 describe("SolutionV3 - provision", () => {
   const sandbox = sinon.createSandbox();
   afterEach(async () => {
@@ -53,7 +55,7 @@ describe("SolutionV3 - provision", () => {
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -99,7 +101,7 @@ describe("SolutionV3 - provision", () => {
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),

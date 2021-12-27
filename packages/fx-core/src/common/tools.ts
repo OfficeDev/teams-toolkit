@@ -438,7 +438,7 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
  * @deprecated Please DO NOT use this method any more, it will be removed in near future.
  */
 export function isMultiEnvEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
+  return true;
 }
 
 /**
@@ -500,23 +500,15 @@ export async function getAppDirectory(projectRoot: string): Promise<string> {
   const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
   const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;
 
-  if (isMultiEnvEnabled()) {
-    if (
-      (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) ||
-      (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_LOCAL}`))
-    ) {
-      return appDirNewLocForMultiEnv;
-    } else if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
-      return appDirNewLoc;
-    } else {
-      return appDirOldLoc;
-    }
+  if (
+    (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) ||
+    (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_LOCAL}`))
+  ) {
+    return appDirNewLocForMultiEnv;
+  } else if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
+    return appDirNewLoc;
   } else {
-    if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
-      return appDirNewLoc;
-    } else {
-      return appDirOldLoc;
-    }
+    return appDirOldLoc;
   }
 }
 

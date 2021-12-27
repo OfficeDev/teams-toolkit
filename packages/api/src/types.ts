@@ -172,6 +172,10 @@ export interface ProjectSettings {
   defaultFunctionName?: string;
   solutionSettings: SolutionSettings;
   isFromSample?: boolean;
+  /**
+   * pluginSettings is used for plugin settings irrelevant to environments
+   */
+  pluginSettings?: Json;
 }
 
 /**
@@ -226,6 +230,7 @@ export interface Inputs extends Json {
   ignoreEnvInfo?: boolean;
   env?: string;
   projectId?: string;
+  existingResources?: string[];
 }
 
 export interface ProjectConfig {

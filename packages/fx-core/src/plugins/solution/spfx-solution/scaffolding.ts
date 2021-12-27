@@ -51,8 +51,8 @@ export async function addResource(
 
 export async function addModule(
   ctx: v2.Context,
-  localSettings: Json,
-  inputs: v2.InputsWithProjectPath & { capabilities?: string[] }
+  inputs: v2.InputsWithProjectPath & { capabilities: string[] },
+  localSettings?: Json
 ): Promise<Result<Void, FxError>> {
   return ok(Void);
 }

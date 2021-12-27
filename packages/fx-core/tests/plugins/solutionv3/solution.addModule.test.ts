@@ -11,7 +11,9 @@ import {
 } from "../../../src/plugins/solution/fx-solution/v3/addModule";
 import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { MockedV2Context } from "../solution/util";
-
+import * as path from "path";
+import * as os from "os";
+import { randomAppName } from "../../core/utils";
 describe("SolutionV3 - addModule", () => {
   it("add tab success", async () => {
     const projectSettings: ProjectSettings = {
@@ -28,12 +30,12 @@ describe("SolutionV3 - addModule", () => {
       },
     };
     const ctx = new MockedV2Context(projectSettings);
-    const inputs: v2.InputsWithProjectPath & { capabilities?: string[] } = {
+    const inputs: v2.InputsWithProjectPath & { capabilities: string[] } = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
       capabilities: ["Tab"],
     };
-    const res = await addModule(ctx, {}, inputs);
+    const res = await addModule(ctx, inputs);
     assert.isTrue(res.isOk());
     assert.deepEqual(projectSettings.solutionSettings, {
       name: TeamsFxAzureSolutionNameV3,
@@ -44,6 +46,10 @@ describe("SolutionV3 - addModule", () => {
       modules: [{ capabilities: ["Tab"] }],
       activeResourcePlugins: [],
     });
+    if (res.isOk()) {
+      const localSettings = res.value;
+      assert.isTrue(localSettings !== undefined);
+    }
   });
 
   it("add tab failed", async () => {
@@ -61,12 +67,12 @@ describe("SolutionV3 - addModule", () => {
       },
     };
     const ctx = new MockedV2Context(projectSettings);
-    const inputs: v2.InputsWithProjectPath & { capabilities?: string[] } = {
+    const inputs: v2.InputsWithProjectPath & { capabilities: string[] } = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
       capabilities: ["Tab"],
     };
-    const res = await addModule(ctx, {}, inputs);
+    const res = await addModule(ctx, inputs);
     assert.isTrue(res.isErr());
   });
 
@@ -85,12 +91,12 @@ describe("SolutionV3 - addModule", () => {
       },
     };
     const ctx = new MockedV2Context(projectSettings);
-    const inputs: v2.InputsWithProjectPath & { capabilities?: string[] } = {
+    const inputs: v2.InputsWithProjectPath & { capabilities: string[] } = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
       capabilities: ["Bot"],
     };
-    const res = await addModule(ctx, {}, inputs);
+    const res = await addModule(ctx, inputs);
     assert.isTrue(res.isOk());
     assert.deepEqual(projectSettings.solutionSettings, {
       name: TeamsFxAzureSolutionNameV3,
@@ -120,7 +126,7 @@ describe("SolutionV3 - addModule", () => {
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const res = await getQuestionsForAddModule(ctx, inputs);
     assert.isTrue(res.isOk());

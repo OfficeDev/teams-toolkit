@@ -78,7 +78,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
     {
       label: "spfx npm install",
       type: "shell",
-      command: "npm install",
+      command: "npm install --no-audit",
       options: {
         cwd: "${workspaceFolder}/SPFx",
       },
@@ -130,7 +130,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
     {
       label: "prepare dev env",
       dependsOn: ["prepare local environment", "gulp serve"],
-      dependsOrder: "parallel",
+      dependsOrder: "sequence",
     },
     {
       label: "Terminate All Tasks",
@@ -232,7 +232,7 @@ function frontendNpmInstall(): Record<string, unknown> {
   return {
     label: "frontend npm install",
     type: "shell",
-    command: "npm install",
+    command: "npm install --no-audit",
     options: {
       cwd: "${workspaceFolder}/tabs",
     },
@@ -243,7 +243,7 @@ function backendNpmInstall(): Record<string, unknown> {
   return {
     label: "backend npm install",
     type: "shell",
-    command: "npm install",
+    command: "npm install --no-audit",
     options: {
       cwd: "${workspaceFolder}/api",
     },
@@ -263,7 +263,7 @@ function botNpmInstall(): Record<string, unknown> {
   return {
     label: "bot npm install",
     type: "shell",
-    command: "npm install",
+    command: "npm install --no-audit",
     options: {
       cwd: "${workspaceFolder}/bot",
     },

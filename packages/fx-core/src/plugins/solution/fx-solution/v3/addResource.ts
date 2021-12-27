@@ -15,6 +15,7 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
+import { cloneDeep } from "lodash";
 import { Container, Service } from "typedi";
 import arm from "../arm";
 import { BuiltInResourcePluginNames } from "./constants";
@@ -243,6 +244,11 @@ export async function addResource(
     return err(new InvalidInputError(inputs, "inputs.resource undefined"));
   }
   const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
+  const originalSettings = cloneDeep(solutionSettings);
+  const inputsNew: v2.InputsWithProjectPath & { existingResources: string[] } = {
+    ...inputs,
+    existingResources: originalSettings.activeResourcePlugins,
+  };
   if (inputs.module !== undefined) {
     const module = getModule(solutionSettings, inputs.module);
     if (module) {
@@ -271,7 +277,7 @@ export async function addResource(
   const addedPlugins = Array.from(addedResourceNames).map((n) =>
     Container.get<v3.ResourcePlugin>(n)
   );
-  const armRes = await arm.generateArmTemplate(ctx, inputs, activatedPlugins, addedPlugins);
+  const armRes = await arm.generateArmTemplate(ctx, inputsNew, activatedPlugins, addedPlugins);
   if (armRes.isErr()) {
     return err(armRes.error);
   }
@@ -281,7 +287,7 @@ export async function addResource(
     const plugin = Container.get<v3.ResourcePlugin>(pluginName);
     if (addedResourceNames.has(pluginName) && !existingResourceNames.has(pluginName)) {
       if (plugin.addResource) {
-        const res = await plugin.addResource(ctx, inputs);
+        const res = await plugin.addResource(ctx, inputsNew);
         if (res.isErr()) {
           return err(res.error);
         }

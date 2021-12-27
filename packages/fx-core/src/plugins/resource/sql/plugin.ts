@@ -205,17 +205,8 @@ export class SqlPluginImpl {
       if (this.config.aadAdminType === UserType.User) {
         ctx.logProvider?.info(Message.connectDatabase);
         const sqlClient = await SqlClient.create(ctx, this.config);
-
-        let existUser = false;
-        ctx.logProvider?.info(Message.checkDatabaseUser);
-        existUser = await sqlClient.existUser();
-
-        if (!existUser) {
-          ctx.logProvider?.info(Message.addDatabaseUser(this.config.identity));
-          await sqlClient.addDatabaseUser();
-        } else {
-          ctx.logProvider?.info(Message.existUser(this.config.identity));
-        }
+        ctx.logProvider?.info(Message.addDatabaseUser(this.config.identity));
+        await this.addDatabaseUser(ctx, sqlClient, managementClient);
       } else {
         const message = ErrorMessage.ServicePrincipalWarning(
           this.config.identity,
@@ -252,6 +243,33 @@ export class SqlPluginImpl {
       },
     };
     return ok(result);
+  }
+
+  public async addDatabaseUser(
+    ctx: PluginContext,
+    sqlClient: SqlClient,
+    managementClient: ManagementClient
+  ): Promise<void> {
+    let retryCount = 0;
+    while (true) {
+      try {
+        await sqlClient.addDatabaseUser();
+        return;
+      } catch (error) {
+        if (
+          !SqlClient.isFireWallError(error?.innerError) ||
+          retryCount >= Constants.maxRetryTimes
+        ) {
+          throw error;
+        } else {
+          retryCount++;
+          ctx.logProvider?.warning(
+            `[${Constants.pluginName}] Retry adding new firewall rule to access azure sql, because the local IP address has changed after added firewall rule for it. [Retry time: ${retryCount}]`
+          );
+          await managementClient.addLocalFirewallRule();
+        }
+      }
+    }
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {

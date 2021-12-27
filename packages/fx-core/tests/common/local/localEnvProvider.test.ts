@@ -4,22 +4,18 @@ import chaiAsPromised from "chai-as-promised";
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
-
-import {
-  LocalEnvMultiProvider,
-  LocalEnvs,
-} from "../../../../../src/plugins/resource/localdebug/localEnvMulti";
+import { LocalEnvProvider, LocalEnvs } from "../../../src/common/local/localEnvProvider";
 
 chai.use(chaiAsPromised);
 
-describe("LocalEnvProvider-MultiEnv", () => {
+describe("LocalEnvProvider", () => {
   const workspaceFolder = path.resolve(__dirname, "../data/.teamsfx/");
 
   describe("load", () => {
-    let localEnvMultiProvider: LocalEnvMultiProvider;
+    let localEnvProvider: LocalEnvProvider;
 
     beforeEach(() => {
-      localEnvMultiProvider = new LocalEnvMultiProvider(workspaceFolder);
+      localEnvProvider = new LocalEnvProvider(workspaceFolder);
       fs.emptyDirSync(workspaceFolder);
     });
 
@@ -61,7 +57,7 @@ describe("LocalEnvProvider-MultiEnv", () => {
       fs.createFileSync(envFile);
       fs.writeFileSync(envFile, raw);
 
-      const actual = await localEnvMultiProvider.loadFrontendLocalEnvs(true, true);
+      const actual = await localEnvProvider.loadFrontendLocalEnvs(true, true);
       chai.assert.deepEqual(actual, expected);
     });
 
@@ -103,7 +99,7 @@ describe("LocalEnvProvider-MultiEnv", () => {
       fs.createFileSync(envFile);
       fs.writeFileSync(envFile, raw);
 
-      const actual = await localEnvMultiProvider.loadBackendLocalEnvs();
+      const actual = await localEnvProvider.loadBackendLocalEnvs();
       chai.assert.deepEqual(actual, expected);
     });
 
@@ -145,16 +141,16 @@ describe("LocalEnvProvider-MultiEnv", () => {
       fs.createFileSync(envFile);
       fs.writeFileSync(envFile, raw);
 
-      const actual = await localEnvMultiProvider.loadBotLocalEnvs(false);
+      const actual = await localEnvProvider.loadBotLocalEnvs(false);
       chai.assert.deepEqual(actual, expected);
     });
   });
 
   describe("save", () => {
-    let localEnvMultiProvider: LocalEnvMultiProvider;
+    let localEnvProvider: LocalEnvProvider;
 
     beforeEach(() => {
-      localEnvMultiProvider = new LocalEnvMultiProvider(workspaceFolder);
+      localEnvProvider = new LocalEnvProvider(workspaceFolder);
       fs.emptyDirSync(workspaceFolder);
     });
 
@@ -219,7 +215,7 @@ describe("LocalEnvProvider-MultiEnv", () => {
         "C1=1" +
         os.EOL;
 
-      await localEnvMultiProvider.saveLocalEnvs(frontendEnvs, backendEnvs, botEnvs);
+      await localEnvProvider.saveLocalEnvs(frontendEnvs, backendEnvs, botEnvs);
 
       const actualFrontendRaw = fs.readFileSync(
         path.join(workspaceFolder, "tabs", ".env.teamsfx.local"),
@@ -267,7 +263,7 @@ describe("LocalEnvProvider-MultiEnv", () => {
         "C1=1" +
         os.EOL;
 
-      await localEnvMultiProvider.saveLocalEnvs(frontendEnvs, undefined, undefined);
+      await localEnvProvider.saveLocalEnvs(frontendEnvs, undefined, undefined);
 
       const actualFrontendRaw = fs.readFileSync(
         path.join(workspaceFolder, "tabs", ".env.teamsfx.local"),
@@ -284,45 +280,45 @@ describe("LocalEnvProvider-MultiEnv", () => {
   });
 
   describe("init", () => {
-    let localEnvMultiProvider: LocalEnvMultiProvider;
+    let localEnvProvider: LocalEnvProvider;
 
     beforeEach(() => {
-      localEnvMultiProvider = new LocalEnvMultiProvider(workspaceFolder);
+      localEnvProvider = new LocalEnvProvider(workspaceFolder);
       fs.emptyDirSync(workspaceFolder);
     });
 
     it("frontend", () => {
-      const envs = localEnvMultiProvider.initFrontendLocalEnvs(false, false);
+      const envs = localEnvProvider.initFrontendLocalEnvs(false, false);
       chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 2);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 0);
     });
 
     it("frontend + auth", () => {
-      const envs = localEnvMultiProvider.initFrontendLocalEnvs(false, true);
+      const envs = localEnvProvider.initFrontendLocalEnvs(false, true);
       chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 5);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 0);
     });
 
     it("frontend + auth + backend", () => {
-      const envs = localEnvMultiProvider.initFrontendLocalEnvs(true, true);
+      const envs = localEnvProvider.initFrontendLocalEnvs(true, true);
       chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 7);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 0);
     });
 
     it("backend", () => {
-      const envs = localEnvMultiProvider.initBackendLocalEnvs();
+      const envs = localEnvProvider.initBackendLocalEnvs();
       chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 9);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 4);
     });
 
     it("bot", () => {
-      const envs = localEnvMultiProvider.initBotLocalEnvs(false);
+      const envs = localEnvProvider.initBotLocalEnvs(false);
       chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 9);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 4);
     });
 
     it("bot v1", () => {
-      const envs = localEnvMultiProvider.initBotLocalEnvs(true);
+      const envs = localEnvProvider.initBotLocalEnvs(true);
       chai.assert.equal(Object.values(envs.teamsfxLocalEnvs).length, 2);
       chai.assert.equal(Object.values(envs.customizedLocalEnvs).length, 0);
     });

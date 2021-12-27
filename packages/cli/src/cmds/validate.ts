@@ -22,8 +22,6 @@ export default class Validate extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Validate the current application.";
 
-  public params: { [_: string]: Options } = {};
-
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("validate");
     return yargs.version(false).options(this.params);

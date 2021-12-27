@@ -37,7 +37,6 @@ import {
   Colors,
   IProgressHandler,
   Json,
-  OnSelectionChangeFunc,
 } from "@microsoft/teamsfx-api";
 
 import CLILogProvider from "./commonlib/log";
@@ -46,6 +45,7 @@ import { sleep, getColorizedString, toLocaleLowerCase } from "./utils";
 import { ChoiceOptions } from "./prompts";
 import Progress from "./console/progress";
 import ScreenManager from "./console/screen";
+import { UserSettings } from "./userSetttings";
 
 /// TODO: input can be undefined
 type ValidationType<T> = (input: T) => string | boolean | Promise<string | boolean>;
@@ -54,9 +54,34 @@ export class CLIUserInteraction implements UserInteraction {
   private static instance: CLIUserInteraction;
   private presetAnswers: Map<string, any> = new Map();
 
+  private _interactive = true;
+
+  get ciEnabled(): boolean {
+    return process.env.CI_ENABLED === "true";
+  }
+
+  get interactive(): boolean {
+    if (this.ciEnabled) {
+      return false;
+    } else {
+      return this._interactive;
+    }
+  }
+
+  set interactive(value: boolean) {
+    this._interactive = value;
+  }
+
   public static getInstance(): CLIUserInteraction {
     if (!CLIUserInteraction.instance) {
       CLIUserInteraction.instance = new CLIUserInteraction();
+
+      // get global setting `interactive`
+      const result = UserSettings.getInteractiveSetting();
+      if (result.isErr()) {
+        throw result;
+      }
+      CLIUserInteraction.instance._interactive = result.value;
     }
     return CLIUserInteraction.instance;
   }
@@ -127,14 +152,6 @@ export class CLIUserInteraction implements UserInteraction {
     this.presetAnswers = new Map();
   }
 
-  get ciEnabled(): boolean {
-    return process.env.CI_ENABLED === "true";
-  }
-
-  get calledFromVS(): boolean {
-    return process.env.VS_CALLING_CLI === "true";
-  }
-
   private async runInquirer<T>(question: DistinctQuestion): Promise<Result<T, FxError>> {
     if (this.presetAnswers.has(question.name!)) {
       const answer = this.presetAnswers.get(question.name!);
@@ -149,16 +166,17 @@ export class CLIUserInteraction implements UserInteraction {
       return ok(answer);
     }
 
-    /// TODO: CI ENABLED refine.
-    if (this.ciEnabled || this.calledFromVS) {
+    /// non-interactive.
+    if (!this.interactive) {
       if (question.default !== undefined) {
+        // if it has a defualt value, return it at first.
         return ok(question.default);
       } else if (
-        "choices" in question &&
-        question.choices &&
+        question.type === "list" &&
         Array.isArray(question.choices) &&
         question.choices.length > 0
       ) {
+        // if it is a single select, return the first choice.
         const firstChoice = question.choices[0];
         if (typeof firstChoice === "string") {
           // TODO: maybe prevent type casting with compile time type assertions or method overloading?
@@ -166,6 +184,11 @@ export class CLIUserInteraction implements UserInteraction {
         } else {
           return ok((firstChoice as ChoiceOptions).name as any);
         }
+      } else if (question.type === "checkbox") {
+        // if it is a multi select, return an empty array.
+        return ok([] as any);
+      } else {
+        return ok(question.default);
       }
     }
 

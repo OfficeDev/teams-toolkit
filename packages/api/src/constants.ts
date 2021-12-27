@@ -30,8 +30,8 @@ export enum Platform {
   CLI_HELP = "cli_help",
 }
 
-export const StaticPlatforms = [Platform.VS, Platform.CLI_HELP];
-export const DynamicPlatforms = [Platform.VSCode, Platform.CLI];
+export const StaticPlatforms = [Platform.CLI_HELP];
+export const DynamicPlatforms = [Platform.VSCode, Platform.CLI, Platform.VS];
 export const CLIPlatforms = [Platform.CLI, Platform.CLI_HELP];
 
 export enum VsCodeEnv {

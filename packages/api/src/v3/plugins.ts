@@ -3,6 +3,7 @@
 
 import { Result } from "neverthrow";
 import { FxError } from "../error";
+import { AppManifest } from "../manifest";
 import { Func, QTreeNode } from "../qm/question";
 import { Inputs, Json, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
@@ -74,23 +75,43 @@ export interface Plugin {
   displayName?: string;
 }
 
+export interface ContextWithManifest extends Context {
+  appManifest: {
+    local: AppManifest;
+    remote: AppManifest;
+  };
+}
+
 export interface ScaffoldPlugin extends Plugin {
   /**
    * Source code template descriptions
    */
-  getTemplates: (ctx: Context, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
+  getTemplates: (
+    ctx: Context & {
+      appManifest?: {
+        local: AppManifest;
+        remote: AppManifest;
+      };
+    },
+    inputs: Inputs
+  ) => Promise<Result<ScaffoldTemplate[], FxError>>;
   /**
    * get questions before scaffolding
    */
   getQuestionsForScaffold?: (
-    ctx: Context,
+    ctx: Context & {
+      appManifest?: {
+        local: AppManifest;
+        remote: AppManifest;
+      };
+    },
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   /**
    * scaffold source code
    */
   scaffold: (
-    ctx: Context,
+    ctx: ContextWithManifest,
     inputs: PluginScaffoldInputs
   ) => Promise<Result<Json | undefined, FxError>>;
 }
@@ -121,7 +142,10 @@ export interface ResourcePlugin extends Plugin {
    * add resource is a new lifecycle task for resource plugin, which will do some extra work after project settings is updated,
    * for example, APIM will scaffold the openapi folder with files
    */
-  addResource?: (ctx: Context, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+  addResource?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath & { existingResources: string[] }
+  ) => Promise<Result<Void, FxError>>;
   /**
    * customize questions needed for local debug
    */
@@ -170,11 +194,11 @@ export interface ResourcePlugin extends Plugin {
 
   generateResourceTemplate?: (
     ctx: Context,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath & { existingResources: string[] }
   ) => Promise<Result<ResourceTemplate, FxError>>;
   updateResourceTemplate?: (
     ctx: Context,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath & { existingResources: string[] }
   ) => Promise<Result<ResourceTemplate, FxError>>;
 
   /**

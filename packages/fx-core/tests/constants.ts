@@ -87,6 +87,7 @@ export class TestFileContent {
 }
 
 export const fileEncoding = "UTF8";
+export const SOLUTION_CONFIG_NAME = "solution";
 
 export class ErrorName {
   static readonly FailedToDeployArmTemplatesToAzureError = "FailedToDeployArmTemplatesToAzure";

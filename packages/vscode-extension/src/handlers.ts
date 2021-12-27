@@ -956,7 +956,10 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean>
 }
 export async function openWelcomeHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(PanelType.QuickStart);
+  vscode.commands.executeCommand(
+    "workbench.action.openWalkthrough",
+    "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitQuickStart"
+  );
 }
 
 export async function checkUpgrade(args?: any[]) {
@@ -1656,6 +1659,8 @@ export function cmdHdlDisposeTreeView() {
 }
 
 export async function showError(e: UserError | SystemError) {
+  const notificationMessage = e.notificationMessage ?? e.message;
+
   if (e.stack && e instanceof SystemError) {
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
   } else {
@@ -1673,7 +1678,7 @@ export async function showError(e: UserError | SystemError) {
       },
     };
 
-    const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, help);
+    const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, help);
     if (button) await button.run();
   } else if (e instanceof SystemError) {
     const sysError = e as SystemError;
@@ -1690,11 +1695,11 @@ export async function showError(e: UserError | SystemError) {
       },
     };
 
-    const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, issue);
+    const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, issue);
     if (button) await button.run();
   } else {
     if (!(e instanceof ConcurrentError))
-      await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
+      await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`);
   }
 }
 

@@ -11,7 +11,9 @@ import {
 } from "../../../src/plugins/solution/fx-solution/v3/publish";
 import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { MockedAppStudioTokenProvider, MockedV2Context } from "../solution/util";
-
+import * as path from "path";
+import * as os from "os";
+import { randomAppName } from "../../core/utils";
 describe("SolutionV3 - publish", () => {
   it("publish", async () => {
     const projectSettings: ProjectSettings = {
@@ -24,7 +26,7 @@ describe("SolutionV3 - publish", () => {
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const envInfov3: v3.EnvInfoV3 = {
       envName: "dev",
@@ -51,7 +53,7 @@ describe("SolutionV3 - publish", () => {
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const envInfov3: v3.EnvInfoV3 = {
       envName: "dev",

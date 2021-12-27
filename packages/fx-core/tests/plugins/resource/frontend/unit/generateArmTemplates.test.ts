@@ -39,12 +39,11 @@ describe("FrontendGenerateArmTemplates", () => {
     // Assert
     const testModuleFileName = "frontendProvision.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-frontend-hosting": {
           Provision: {
             frontendHosting: {
-              ProvisionPath: `./${testModuleFileName}`,
+              path: `./${testModuleFileName}`,
             },
           },
         },

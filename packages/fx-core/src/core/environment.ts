@@ -34,11 +34,10 @@ import {
   objectToMap,
   ProjectEnvNotExistError,
   InvalidEnvConfigError,
-  ModifiedSecretError,
 } from "..";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
-import { compileHandlebarsTemplateString, isMultiEnvEnabled } from "../common";
+import { compileHandlebarsTemplateString } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
@@ -56,8 +55,7 @@ class EnvironmentManager {
   public readonly envConfigNameRegex = /^config\.(?<envName>[\w\d-_]+)\.json$/i;
   public readonly envStateNameRegex = /^state\.(?<envName>[\w\d-_]+)\.json$/i;
 
-  private readonly defaultEnvName = "default";
-  private readonly defaultEnvNameNew = "dev";
+  private readonly defaultEnvName = "dev";
   private readonly ajv;
   private readonly schema = "https://aka.ms/teamsfx-env-config-schema";
   private readonly envConfigDescription =
@@ -102,6 +100,7 @@ class EnvironmentManager {
         state: stateResult.value as Map<string, any>,
       });
   }
+
   public newEnvConfigData(appName: string): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
@@ -231,9 +230,7 @@ class EnvironmentManager {
     const basePath = this.getEnvStatesFolder(projectPath);
     const envState = path.resolve(
       basePath,
-      isMultiEnvEnabled()
-        ? EnvStateFileNameTemplate.replace(EnvNamePlaceholder, envName)
-        : `env.${envName}.json`
+      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, envName)
     );
     const userDataFile = path.resolve(basePath, `${envName}.userdata`);
 
@@ -244,12 +241,6 @@ class EnvironmentManager {
     projectPath: string,
     envName: string
   ): Promise<Result<EnvConfig, FxError>> {
-    if (!isMultiEnvEnabled()) {
-      return ok({
-        manifest: { appName: { short: "" } },
-      });
-    }
-
     const envConfigPath = this.getEnvConfigPath(envName, projectPath);
     if (!(await fs.pathExists(envConfigPath))) {
       return err(ProjectEnvNotExistError(envName));
@@ -294,13 +285,9 @@ class EnvironmentManager {
     }
 
     const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });
-
     const result = replaceTemplateWithUserData(template, userData);
-
     const resultJson: Json = JSON.parse(result);
-
     if (isV3) return ok(resultJson as v3.ResourceStates);
-
     const data = objectToMap(resultJson);
 
     return ok(data as Map<string, any>);
@@ -332,9 +319,7 @@ class EnvironmentManager {
   }
 
   private getEnvStatesFolder(projectPath: string): string {
-    return isMultiEnvEnabled()
-      ? this.getStatesFolder(projectPath)
-      : this.getConfigFolder(projectPath);
+    return this.getStatesFolder(projectPath);
   }
 
   public getEnvConfigsFolder(projectPath: string): string {
@@ -403,11 +388,7 @@ class EnvironmentManager {
   }
 
   public getDefaultEnvName() {
-    if (isMultiEnvEnabled()) {
-      return this.defaultEnvNameNew;
-    } else {
-      return this.defaultEnvName;
-    }
+    return this.defaultEnvName;
   }
 }
 

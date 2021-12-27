@@ -17,6 +17,12 @@ import {
   TokenProvider,
   combine,
   Json,
+  UserError,
+  IStaticTab,
+  IConfigurableTab,
+  IBot,
+  IComposeExtension,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { getStrings, isArmSupportEnabled } from "../../../../common/tools";
 import { getAzureSolutionSettings, reloadV2Plugins } from "./utils";
@@ -45,12 +51,11 @@ import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { Container } from "typedi";
 import { scaffoldByPlugins } from "./scaffolding";
-import {
-  generateResourceTemplate,
-  generateResourceTemplateForPlugins,
-} from "./generateResourceTemplate";
+import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
-
+import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
+import { BuiltInResourcePluginNames } from "../v3/constants";
+import { isVSProject } from "../../../../core";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -160,10 +165,10 @@ export function canAddCapability(
   telemetryReporter: TelemetryReporter
 ): Result<Void, FxError> {
   if (!(settings.hostType === HostTypeOptionAzure.id)) {
-    const e = returnUserError(
-      new Error("Add capability is not supported for SPFx project"),
-      SolutionSource,
-      SolutionError.FailedToAddCapability
+    const e = new UserError(
+      SolutionError.AddCapabilityNotSupport,
+      getStrings().solution.addCapability.OnlySupportAzure,
+      SolutionSource
     );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddCapability, e, telemetryReporter)
@@ -173,22 +178,27 @@ export function canAddCapability(
 }
 
 export function canAddResource(
-  settings: AzureSolutionSettings,
+  projectSetting: ProjectSettings,
   telemetryReporter: TelemetryReporter
 ): Result<Void, FxError> {
-  if (
-    !(
-      settings.hostType === HostTypeOptionAzure.id &&
-      settings.capabilities &&
-      settings.capabilities.includes(TabOptionItem.id)
-    )
-  ) {
-    const e = returnUserError(
-      new Error("Add resource is only supported for Tab app hosted in Azure."),
-      SolutionSource,
-      SolutionError.AddResourceNotSupport
+  const isVS = isVSProject(projectSetting);
+  if (isVS) {
+    const e = new UserError(
+      SolutionError.AddResourceNotSupport,
+      getStrings().solution.addResource.NotSupportForVSProject,
+      SolutionSource
     );
-
+    return err(
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
+    );
+  }
+  const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings;
+  if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
+    const e = new UserError(
+      SolutionError.AddResourceNotSupport,
+      getStrings().solution.addResource.OnlySupportAzure,
+      SolutionSource
+    );
     return err(
       sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
     );
@@ -207,13 +217,20 @@ export async function addCapability(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
 
-  const settings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
-  const originalSettings = cloneDeep(settings);
-  const canProceed = canAddCapability(settings, ctx.telemetryReporter);
+  // 1. checking addable
+  const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
+  const originalSettings = cloneDeep(solutionSettings);
+  const inputsNew: v2.InputsWithProjectPath & { existingResources: string[] } = {
+    ...inputs,
+    projectPath: inputs.projectPath!,
+    existingResources: originalSettings.activeResourcePlugins,
+  };
+  const canProceed = canAddCapability(solutionSettings, ctx.telemetryReporter);
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }
 
+  // 2. check answer
   const capabilitiesAnswer = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
   if (!capabilitiesAnswer || capabilitiesAnswer.length === 0) {
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
@@ -224,69 +241,126 @@ export async function addCapability(
     return ok({});
   }
 
-  const alreadyHaveBotAndAddBot =
-    (settings.capabilities?.includes(BotOptionItem.id) ||
-      settings.capabilities?.includes(MessageExtensionItem.id)) &&
-    (capabilitiesAnswer.includes(BotOptionItem.id) ||
-      capabilitiesAnswer.includes(MessageExtensionItem.id));
-  const alreadyHaveTabAndAddTab =
-    settings.capabilities?.includes(TabOptionItem.id) &&
-    capabilitiesAnswer.includes(TabOptionItem.id);
-  if (alreadyHaveBotAndAddBot || alreadyHaveTabAndAddTab) {
-    const e = returnUserError(
-      new Error("There are no additional capabilities you can add to your project."),
-      SolutionSource,
-      SolutionError.FailedToAddCapability
+  // 3. check capability limit
+  const alreadyHasTab = solutionSettings.capabilities.includes(TabOptionItem.id);
+  const alreadyHasBot = solutionSettings.capabilities.includes(BotOptionItem.id);
+  const alreadyHasME = solutionSettings.capabilities.includes(MessageExtensionItem.id);
+  const toAddTab = capabilitiesAnswer.includes(TabOptionItem.id);
+  const toAddBot = capabilitiesAnswer.includes(BotOptionItem.id);
+  const toAddME = capabilitiesAnswer.includes(MessageExtensionItem.id);
+  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+  const inputsWithProjectPath = inputs as v2.InputsWithProjectPath;
+  const isTabAddable = !(await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputsWithProjectPath,
+    "staticTab"
+  ));
+  const isBotAddable = !(await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputsWithProjectPath,
+    "Bot"
+  ));
+  const isMEAddable = !(await appStudioPlugin.capabilityExceedLimit(
+    ctx,
+    inputsWithProjectPath,
+    "MessageExtension"
+  ));
+  if ((toAddTab && !isTabAddable) || (toAddBot && !isBotAddable) || (toAddME && !isMEAddable)) {
+    const error = new UserError(
+      SolutionError.FailedToAddCapability,
+      getStrings().solution.addCapability.ExceedMaxLimit,
+      SolutionSource
     );
     return err(
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.AddCapability,
-        e,
+        error,
         ctx.telemetryReporter
       )
     );
   }
-  let change = false;
-  const appStudioPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
-  const frontendPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
-  const botPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
-  const pluginsToScaffold: v2.ResourcePlugin[] = [appStudioPlugin];
-  const capabilities = Array.from(settings.capabilities);
-  for (const cap of capabilitiesAnswer) {
-    if (!capabilities.includes(cap)) {
-      capabilities.push(cap);
-      change = true;
-      if (cap === TabOptionItem.id) {
-        pluginsToScaffold.push(frontendPlugin);
-        pluginsToScaffold.push(
-          Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SimpleAuthPlugin)
-        );
-      } else if (
-        (cap === BotOptionItem.id || cap === MessageExtensionItem.id) &&
-        !pluginsToScaffold.includes(botPlugin)
-      ) {
-        pluginsToScaffold.push(botPlugin);
+
+  const capabilitiesToAddManifest: (
+    | { name: "staticTab"; snippet?: IStaticTab }
+    | { name: "configurableTab"; snippet?: IConfigurableTab }
+    | { name: "Bot"; snippet?: IBot }
+    | { name: "MessageExtension"; snippet?: IComposeExtension }
+  )[] = [];
+  const pluginNamesToScaffold: Set<string> = new Set<string>();
+  const pluginNamesToArm: Set<string> = new Set<string>();
+  const newCapabilitySet = new Set<string>();
+  solutionSettings.capabilities.forEach((c) => newCapabilitySet.add(c));
+  const vsProject = isVSProject(ctx.projectSetting);
+
+  // 4. check Tab
+  if (capabilitiesAnswer.includes(TabOptionItem.id)) {
+    if (vsProject) {
+      pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+      if (!alreadyHasTab) {
+        pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
+      }
+    } else {
+      if (!alreadyHasTab) {
+        pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+        pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
       }
     }
+    capabilitiesToAddManifest.push({ name: "staticTab" });
+    newCapabilitySet.add(TabOptionItem.id);
+  }
+  // 5. check Bot
+  if (capabilitiesAnswer.includes(BotOptionItem.id)) {
+    if (vsProject) {
+      pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+      if (!alreadyHasBot && !alreadyHasME) {
+        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+      }
+    } else {
+      if (!alreadyHasBot && !alreadyHasME) {
+        pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
+        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+      }
+    }
+    capabilitiesToAddManifest.push({ name: "Bot" });
+    newCapabilitySet.add(BotOptionItem.id);
+  }
+  // 6. check MessageExtension
+  if (capabilitiesAnswer.includes(MessageExtensionItem.id)) {
+    if (vsProject) {
+      pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
+      if (!alreadyHasBot && !alreadyHasME) {
+        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+      }
+    } else {
+      if (!alreadyHasBot && !alreadyHasME) {
+        pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
+        pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
+      }
+    }
+    capabilitiesToAddManifest.push({ name: "MessageExtension" });
+    newCapabilitySet.add(MessageExtensionItem.id);
   }
 
-  if (change) {
-    if (isArmSupportEnabled()) {
-      showUpdateArmTemplateNotice(ctx.userInteraction);
-    }
-    settings.capabilities = capabilities;
-    reloadV2Plugins(settings);
-    const pluginNames = pluginsToScaffold.map((p) => p.name).join(",");
-    ctx.logProvider?.info(`start scaffolding ${pluginNames}.....`);
+  // 7. update solution settings
+  solutionSettings.capabilities = Array.from(newCapabilitySet);
+  reloadV2Plugins(solutionSettings);
+
+  // 8. scaffold and update arm
+  const pluginsToScaffold = Array.from(pluginNamesToScaffold).map((name) =>
+    Container.get<v2.ResourcePlugin>(name)
+  );
+  const pluginsToArm = Array.from(pluginNamesToArm).map((name) =>
+    Container.get<v2.ResourcePlugin>(name)
+  );
+  if (pluginsToScaffold.length > 0) {
     const scaffoldRes = await scaffoldCodeAndResourceTemplate(
       ctx,
-      inputs,
+      inputsNew,
       localSettings,
       pluginsToScaffold,
-      true
+      pluginsToArm
     );
     if (scaffoldRes.isErr()) {
-      ctx.logProvider?.info(`failed to scaffold ${pluginNames}!`);
       ctx.projectSetting.solutionSettings = originalSettings;
       return err(
         sendErrorTelemetryThenReturnError(
@@ -296,17 +370,16 @@ export async function addCapability(
         )
       );
     }
-    ctx.logProvider?.info(`finish scaffolding ${pluginNames}!`);
     const addNames = capabilitiesAnswer.map((c) => `'${c}'`).join(" and ");
     const single = capabilitiesAnswer.length === 1;
     const template =
       inputs.platform === Platform.CLI
         ? single
-          ? getStrings().solution.AddCapabilityNoticeForCli
-          : getStrings().solution.AddCapabilitiesNoticeForCli
+          ? getStrings().solution.addCapability.AddCapabilityNoticeForCli
+          : getStrings().solution.addCapability.AddCapabilitiesNoticeForCli
         : single
-        ? getStrings().solution.AddCapabilityNotice
-        : getStrings().solution.AddCapabilitiesNotice;
+        ? getStrings().solution.addCapability.AddCapabilityNotice
+        : getStrings().solution.addCapability.AddCapabilitiesNotice;
     const msg = util.format(template, addNames);
     ctx.userInteraction.showMessage("info", msg, false);
 
@@ -315,16 +388,15 @@ export async function addCapability(
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
       [SolutionTelemetryProperty.Capabilities]: capabilitiesAnswer.join(";"),
     });
-    return ok({ solutionSettings: settings, solutionConfig: { provisionSucceeded: false } });
   }
-  const cannotAddCapWarnMsg = "Add nothing";
-  ctx.userInteraction.showMessage("warn", cannotAddCapWarnMsg, false);
-  ctx.telemetryReporter.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
-    [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
-    [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-    [SolutionTelemetryProperty.Capabilities]: [].join(";"),
+  // 4. update manifest
+  if (capabilitiesToAddManifest.length > 0) {
+    await appStudioPlugin.addCapabilities(ctx, inputsWithProjectPath, capabilitiesToAddManifest);
+  }
+  return ok({
+    solutionSettings: solutionSettings,
+    solutionConfig: { provisionSucceeded: false },
   });
-  return ok({});
 }
 
 export function showUpdateArmTemplateNotice(ui?: UserInteraction) {
@@ -334,20 +406,15 @@ export function showUpdateArmTemplateNotice(ui?: UserInteraction) {
 
 async function scaffoldCodeAndResourceTemplate(
   ctx: v2.Context,
-  inputs: Inputs,
+  inputs: v2.InputsWithProjectPath & { existingResources: string[] },
   localSettings: Json,
   pluginsToScaffold: v2.ResourcePlugin[],
-  generateTemplate: boolean,
   pluginsToDoArm?: v2.ResourcePlugin[]
 ): Promise<Result<unknown, FxError>> {
   const result = await scaffoldByPlugins(ctx, inputs, localSettings, pluginsToScaffold);
   if (result.isErr()) {
     return result;
   }
-  if (!generateTemplate || !isArmSupportEnabled()) {
-    return result;
-  }
-
   const scaffoldLocalDebugSettingsResult = await scaffoldLocalDebugSettings(
     ctx,
     inputs,
@@ -356,12 +423,11 @@ async function scaffoldCodeAndResourceTemplate(
   if (scaffoldLocalDebugSettingsResult.isErr()) {
     return scaffoldLocalDebugSettingsResult;
   }
-
-  return generateResourceTemplateForPlugins(
-    ctx,
-    inputs,
-    pluginsToDoArm ? pluginsToDoArm : pluginsToScaffold
-  );
+  const pluginsToUpdateArm = pluginsToDoArm ? pluginsToDoArm : pluginsToScaffold;
+  if (pluginsToUpdateArm.length > 0) {
+    return generateResourceTemplateForPlugins(ctx, inputs, pluginsToUpdateArm);
+  }
+  return ok(undefined);
 }
 
 export async function addResource(
@@ -376,46 +442,43 @@ export async function addResource(
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
 
-  const settings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
-  const canProceed = canAddResource(settings, ctx.telemetryReporter);
+  // 1. checking addable
+  const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
+  const originalSettings = cloneDeep(solutionSettings);
+  const inputsNew: v2.InputsWithProjectPath & { existingResources: string[] } = {
+    ...inputs,
+    projectPath: inputs.projectPath!,
+    existingResources: originalSettings.activeResourcePlugins,
+  };
+  const canProceed = canAddResource(ctx.projectSetting, ctx.telemetryReporter);
   if (canProceed.isErr()) {
-    return canProceed;
+    return err(canProceed.error);
   }
 
-  const selectedPlugins = settings.activeResourcePlugins;
-  const functionPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
-  const sqlPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin);
-  const apimPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.ApimPlugin);
-  const keyVaultPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.KeyVaultPlugin);
-  const alreadyHaveFunction = selectedPlugins?.includes(functionPlugin.name);
-  const alreadyHaveSql = selectedPlugins?.includes(sqlPlugin.name);
-  const alreadyHaveApim = selectedPlugins?.includes(apimPlugin.name);
-  const alreadyHaveKeyVault = selectedPlugins?.includes(keyVaultPlugin.name);
-
+  // 2. check answer
   const addResourcesAnswer = inputs[AzureSolutionQuestionNames.AddResources] as string[];
-
-  if (!addResourcesAnswer) {
-    return err(
-      returnUserError(
-        new Error(`answer of ${AzureSolutionQuestionNames.AddResources} is empty!`),
-        SolutionSource,
-        SolutionError.InvalidInput
-      )
-    );
+  if (!addResourcesAnswer || addResourcesAnswer.length === 0) {
+    ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddResource, {
+      [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+      [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+      [SolutionTelemetryProperty.Resources]: [].join(";"),
+    });
+    return ok({});
   }
 
+  const alreadyHaveFunction = solutionSettings.azureResources.includes(AzureResourceFunction.id);
+  const alreadyHaveApim = solutionSettings.azureResources.includes(AzureResourceApim.id);
+  const alreadyHaveKeyVault = solutionSettings.azureResources.includes(AzureResourceKeyVault.id);
   const addSQL = addResourcesAnswer.includes(AzureResourceSQL.id);
-  const addFunc = addResourcesAnswer.includes(AzureResourceFunction.id);
   const addApim = addResourcesAnswer.includes(AzureResourceApim.id);
   const addKeyVault = addResourcesAnswer.includes(AzureResourceKeyVault.id);
+  const addFunc =
+    addResourcesAnswer.includes(AzureResourceFunction.id) || (addApim && !alreadyHaveFunction);
 
-  if (
-    (alreadyHaveSql && addSQL) ||
-    (alreadyHaveApim && addApim) ||
-    (alreadyHaveKeyVault && addKeyVault)
-  ) {
-    const e = returnUserError(
-      new Error("SQL/APIM/KeyVault is already added."),
+  // 3. check APIM and KeyVault addable
+  if ((alreadyHaveApim && addApim) || (alreadyHaveKeyVault && addKeyVault)) {
+    const e = new UserError(
+      new Error("APIM/KeyVault is already added."),
       SolutionSource,
       SolutionError.AddResourceNotSupport
     );
@@ -428,62 +491,63 @@ export async function addResource(
     );
   }
 
-  let addNewResourceToProvision = false;
-  const notifications: string[] = [];
+  const newResourceSet = new Set<string>();
+  solutionSettings.azureResources.forEach((r) => newResourceSet.add(r));
+  const addedResources: string[] = [];
   const pluginsToScaffold: v2.ResourcePlugin[] = [];
   const pluginsToDoArm: v2.ResourcePlugin[] = [];
-  const azureResource = Array.from(settings.azureResources || []);
   let scaffoldApim = false;
-  if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
+  // 4. check Function
+  if (addFunc) {
+    const functionPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
     pluginsToScaffold.push(functionPlugin);
-    if (!azureResource.includes(AzureResourceFunction.id)) {
-      azureResource.push(AzureResourceFunction.id);
-      addNewResourceToProvision = true;
+    if (!alreadyHaveFunction) {
       pluginsToDoArm.push(functionPlugin);
     }
-    notifications.push(AzureResourceFunction.label);
+    addedResources.push(AzureResourceFunction.id);
   }
-  if (addSQL && !alreadyHaveSql) {
-    pluginsToScaffold.push(sqlPlugin);
+  // 5. check SQL
+  if (addSQL) {
+    const sqlPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin);
+    const identityPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.IdentityPlugin);
     pluginsToDoArm.push(sqlPlugin);
-    azureResource.push(AzureResourceSQL.id);
-    notifications.push(AzureResourceSQL.label);
-    addNewResourceToProvision = true;
+    if (!solutionSettings.activeResourcePlugins.includes(identityPlugin.name)) {
+      // add identity for first time
+      pluginsToDoArm.push(identityPlugin);
+    }
+    addedResources.push(AzureResourceSQL.id);
   }
-  if (addApim && !alreadyHaveApim) {
+  // 6. check APIM
+  const apimPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.ApimPlugin);
+  if (addApim) {
     // We don't add apimPlugin into pluginsToScaffold because
     // apim plugin needs to modify config output during scaffolding,
     // which is not supported by the scaffoldSourceCode API.
-    // The scaffolding will run later as a usertask as a work around.
-    azureResource.push(AzureResourceApim.id);
-    notifications.push(AzureResourceApim.label);
-    addNewResourceToProvision = true;
+    // The scaffolding will run later as a userTask as a work around.
+    addedResources.push(AzureResourceApim.id);
     pluginsToDoArm.push(apimPlugin);
     scaffoldApim = true;
   }
-  if (addKeyVault && !alreadyHaveKeyVault) {
-    pluginsToScaffold.push(keyVaultPlugin);
+  if (addKeyVault) {
+    const keyVaultPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.KeyVaultPlugin);
     pluginsToDoArm.push(keyVaultPlugin);
-    azureResource.push(AzureResourceKeyVault.id);
-    notifications.push(AzureResourceKeyVault.label);
-    addNewResourceToProvision = true;
+    addedResources.push(AzureResourceKeyVault.id);
   }
-  if (notifications.length > 0) {
-    if (isArmSupportEnabled() && addNewResourceToProvision) {
-      showUpdateArmTemplateNotice(ctx.userInteraction);
-    }
-    settings.azureResources = azureResource;
-    reloadV2Plugins(settings);
-    ctx.logProvider?.info(`start scaffolding ${notifications.join(",")}.....`);
+
+  // 7. update solution settings
+  addedResources.forEach((r) => newResourceSet.add(r));
+  solutionSettings.azureResources = Array.from(newResourceSet);
+  reloadV2Plugins(solutionSettings);
+
+  // 8. scaffold and update arm
+  if (pluginsToScaffold.length > 0 || pluginsToDoArm.length > 0) {
     let scaffoldRes = await scaffoldCodeAndResourceTemplate(
       ctx,
-      inputs,
+      inputsNew,
       localSettings,
       pluginsToScaffold,
-      addNewResourceToProvision,
       pluginsToDoArm
     );
-
     if (scaffoldApim) {
       if (apimPlugin && apimPlugin.executeUserTask) {
         const result = await apimPlugin.executeUserTask(
@@ -499,9 +563,8 @@ export async function addResource(
         }
       }
     }
-
     if (scaffoldRes.isErr()) {
-      ctx.logProvider?.info(`failed to scaffold ${notifications.join(",")}!`);
+      ctx.projectSetting.solutionSettings = originalSettings;
       return err(
         sendErrorTelemetryThenReturnError(
           SolutionTelemetryEvent.AddResource,
@@ -510,18 +573,17 @@ export async function addResource(
         )
       );
     }
-
-    ctx.logProvider?.info(`finish scaffolding ${notifications.join(",")}!`);
-    ctx.userInteraction.showMessage(
-      "info",
-      util.format(
-        inputs.platform === Platform.CLI
-          ? getStrings().solution.AddResourceNoticeForCli
-          : getStrings().solution.AddResourceNotice,
-        notifications.join(",")
-      ),
-      false
-    );
+    const addNames = addedResources.map((c) => `'${c}'`).join(" and ");
+    const single = addedResources.length === 1;
+    const template =
+      inputs.platform === Platform.CLI
+        ? single
+          ? getStrings().solution.addResource.AddResourceNoticeForCli
+          : getStrings().solution.addResource.AddResourcesNoticeForCli
+        : single
+        ? getStrings().solution.addResource.AddResourceNotice
+        : getStrings().solution.addResource.AddResourcesNotice;
+    ctx.userInteraction.showMessage("info", util.format(template, addNames), false);
   }
 
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddResource, {
@@ -530,8 +592,8 @@ export async function addResource(
     [SolutionTelemetryProperty.Resources]: addResourcesAnswer.join(";"),
   });
   return ok(
-    addNewResourceToProvision
-      ? { solutionSettings: settings, solutionConfig: { provisionSucceeded: false } }
+    pluginsToDoArm.length > 0
+      ? { solutionSettings: solutionSettings, solutionConfig: { provisionSucceeded: false } }
       : Void
   );
 }

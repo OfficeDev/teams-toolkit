@@ -65,7 +65,8 @@ export class AppStudioPluginV3 {
    */
   async SaveManifest(
     ctx: Context,
-    inputs: v2.InputsWithProjectPath
+    inputs: v2.InputsWithProjectPath,
+    manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
   ): Promise<Result<any, FxError>> {
     return ok(undefined);
   }

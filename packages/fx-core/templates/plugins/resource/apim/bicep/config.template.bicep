@@ -1,4 +1,4 @@
-module teamsFxApimConfig '{{PluginOutput.fx-resource-apim.Configuration.apim.ConfigPath}}' = {
+module teamsFxApimConfig '{{fx-resource-apim.Configuration.apim.path}}' = {
   name: 'addTeamsFxApimConfiguration'
   params: {
     provisionParameters: provisionParameters

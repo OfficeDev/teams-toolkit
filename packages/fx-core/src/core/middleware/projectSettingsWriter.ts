@@ -16,7 +16,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { CoreHookContext, FxCore, isV2, TOOLS } from "..";
+import { CoreHookContext, TOOLS } from "..";
 import { isMultiEnvEnabled } from "../../common";
 import { WriteFileError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";

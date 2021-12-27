@@ -13,6 +13,7 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 
+import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
 import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
@@ -27,7 +28,9 @@ class LocalEnvManager {
 
   public async getLocalDebugEnvs() {}
 
-  public async getNpmInstallLogInfo() {}
+  public async getNpmInstallLogInfo(): Promise<NpmInstallLogInfo | undefined> {
+    return await getNpmInstallLogInfo();
+  }
 
   public async getPortsInUse() {}
 

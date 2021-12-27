@@ -15,7 +15,7 @@ export interface RemoteEnvs {
   customizedRemoteEnvs: { [name: string]: string };
 }
 
-export const envFileName = (envName: string): string => `env.teamsfx.${envName}`;
+export const envFileName = (envName: string): string => `.env.teamsfx.${envName}`;
 export const envFilePath = (envName: string, folder: string): string =>
   path.join(folder, envFileName(envName));
 

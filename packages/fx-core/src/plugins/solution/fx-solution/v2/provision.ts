@@ -48,7 +48,7 @@ import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
-import { isV2, isVsCallingCli } from "../../../../core";
+import { isVsCallingCli } from "../../../../core";
 import { Constants } from "../../../resource/appstudio/constants";
 import { assignJsonInc } from "../../../resource/utils4v2";
 import { ResourceManagementClient } from "@azure/arm-resources";
@@ -210,7 +210,7 @@ export async function provisionResource(
     }
   }
 
-  if (isV2() && isAzureProject(azureSolutionSettings)) {
+  if (isAzureProject(azureSolutionSettings)) {
     solutionInputs.remoteTeamsAppId =
       newEnvInfo.state[PluginNames.APPST]["output"][Constants.TEAMS_APP_ID];
   }

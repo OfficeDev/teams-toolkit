@@ -20,7 +20,7 @@ import {
   traverse,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
-import { isV2, TOOLS } from "..";
+import { TOOLS } from "..";
 import { CoreHookContext, FxCore, isMultiEnvEnabled } from "../..";
 import {
   NoProjectOpenedError,
@@ -95,11 +95,9 @@ export function EnvInfoLoaderMW(skip: boolean): Middleware {
 
     ctx.solutionContext = result.value;
 
-    if (isV2()) {
-      const envInfo = result.value.envInfo;
-      const state: Json = legacySolutionConfig2EnvState(envInfo.state);
-      ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, state };
-    }
+    const envInfo = result.value.envInfo;
+    const state: Json = legacySolutionConfig2EnvState(envInfo.state);
+    ctx.envInfoV2 = { envName: envInfo.envName, config: envInfo.config, state };
     await next();
   };
 }

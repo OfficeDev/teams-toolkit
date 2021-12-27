@@ -50,6 +50,7 @@ import chaiAsPromised from "chai-as-promised";
 import { TestHelper } from "./helper";
 import { isFeatureFlagEnabled } from "../../../src/common/tools";
 import { FeatureFlagName } from "../../../src/common/constants";
+import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -802,6 +803,21 @@ describe("Deploy ARM Template to Azure", () => {
     expect(error.message)
       .to.be.a("string")
       .that.contains("\\azure.parameters.default.json does not exist.");
+  });
+
+  it("should return user error if fail to ensure bicep command", async () => {
+    // Arrange
+    const testErrorMsg = "mock ensuring bicep command fails";
+    mocker.stub(bicepChecker, "ensureBicep").throws(new Error(testErrorMsg));
+
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
+
+    // Assert
+    chai.assert.isTrue(result.isErr());
+    const error = (result as Err<void, FxError>).error;
+    chai.assert.strictEqual(error.name, "FailedToDeployArmTemplatesToAzure");
+    expect(error.message).to.be.a("string").that.contains(testErrorMsg);
   });
 });
 

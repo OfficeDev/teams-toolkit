@@ -8,6 +8,7 @@ import { TestTelemetry } from "../adapters/testTelemetry";
 import { DepsType } from "../../../../src/common/deps-checker/depsChecker";
 import { CheckerFactory } from "../../../../src/common/deps-checker/checkerFactory";
 import "mocha";
+import { func } from "ajv/dist/compile/util";
 
 const functionsSupportedNodeVersions = ["10", "12", "14"];
 const azureSupportedNodeVersions = ["10", "12", "14", "16"];
@@ -24,9 +25,9 @@ describe("NodeChecker E2E Test", async () => {
       new TestTelemetry()
     );
 
-    const shouldContinue = await nodeChecker.resolve();
+    const res = await nodeChecker.resolve();
 
-    chai.assert.isTrue(shouldContinue);
+    chai.assert.isTrue(res.isOk() && res.value);
   });
 
   it("Node supported version is installed for tab-only projects", async function () {
@@ -40,9 +41,9 @@ describe("NodeChecker E2E Test", async () => {
       new TestTelemetry()
     );
 
-    const shouldContinue = await nodeChecker.resolve();
+    const res = await nodeChecker.resolve();
 
-    chai.assert.isTrue(shouldContinue);
+    chai.assert.isTrue(res.isOk() && res.value);
   });
 
   it("Node is not installed", async function (this: Mocha.Context) {
@@ -61,7 +62,9 @@ describe("NodeChecker E2E Test", async () => {
       new TestTelemetry()
     );
 
-    chai.assert.isFalse(await functionNodeChecker.resolve());
-    chai.assert.isFalse(await azureNodeChecker.resolve());
+    const functionRes = await functionNodeChecker.resolve();
+    const azureRes = await azureNodeChecker.resolve();
+    chai.assert.isFalse(functionRes.isOk() && functionRes.value);
+    chai.assert.isFalse(azureRes.isOk() && azureRes.value);
   });
 });

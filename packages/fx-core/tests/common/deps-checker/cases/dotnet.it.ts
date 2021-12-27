@@ -53,8 +53,8 @@ describe("DotnetChecker E2E Test - first run", async () => {
     assert.isNotNull(depsInfo);
     assert.isFalse(depsInfo.isLinuxSupported, "Linux should not support .NET");
 
-    const shouldContinue = await dotnetChecker.resolve();
-    assert.isTrue(shouldContinue);
+    const res = await dotnetChecker.resolve();
+    assert.isTrue(res.isOk() && res.value);
     await verifyPrivateInstallation(dotnetChecker);
   });
 
@@ -75,8 +75,8 @@ describe("DotnetChecker E2E Test - first run", async () => {
       ) as DotnetChecker;
       sinon.stub(dotnetChecker, "getResourceDir").returns(resourceDir);
 
-      const shouldContinue = await dotnetChecker.resolve();
-      assert.isTrue(shouldContinue);
+      const res = await dotnetChecker.resolve();
+      assert.isTrue(res.isOk() && res.value);
       await verifyPrivateInstallation(dotnetChecker);
     } finally {
       cleanupCallback();
@@ -142,9 +142,9 @@ describe("DotnetChecker E2E Test - first run", async () => {
       logger,
       new TestTelemetry()
     );
-    const shouldContinue = await dotnetChecker.resolve();
+    const res = await dotnetChecker.resolve();
 
-    assert.isTrue(shouldContinue);
+    assert.isTrue(res.isOk() && res.value);
     await verifyPrivateInstallation(dotnetChecker);
   });
 
@@ -162,9 +162,9 @@ describe("DotnetChecker E2E Test - first run", async () => {
     const correctResourceDir = dotnetChecker.getResourceDir();
     sinon.stub(dotnetChecker, "getResourceDir").returns(getErrorResourceDir());
 
-    const shouldContinue = await dotnetChecker.resolve();
+    const res = await dotnetChecker.resolve();
 
-    assert.isFalse(shouldContinue);
+    assert.isFalse(res.isOk() && res.value);
     await verifyInstallationFailed(dotnetChecker);
 
     // DotnetChecker with correct dotnet-install script
@@ -219,9 +219,9 @@ describe("DotnetChecker E2E Test - first run", async () => {
         logger,
         new TestTelemetry()
       );
-      const shouldContinue = await dotnetChecker.resolve();
+      const res = await dotnetChecker.resolve();
 
-      assert.isTrue(shouldContinue);
+      assert.isTrue(res.isOk() && res.value);
       await verifyPrivateInstallation(dotnetChecker);
     });
   });
@@ -273,10 +273,10 @@ describe("DotnetChecker E2E Test - second run", () => {
           }
         );
 
-        const shouldContinue = await dotnetChecker.resolve();
+        const res = await dotnetChecker.resolve();
         const dotnetExecPath = await dotnetChecker.command();
 
-        assert.isTrue(shouldContinue);
+        assert.isTrue(res.isOk() && res.value);
         assertPathEqual(dotnetExecPath, installedDotnetExecPath);
         assert.isTrue(
           await dotnetUtils.hasDotnetVersion(dotnetExecPath, dotnetUtils.dotnetInstallVersion)
@@ -308,9 +308,9 @@ describe("DotnetChecker E2E Test - second run", () => {
       logger,
       new TestTelemetry()
     );
-    const shouldContinue = await dotnetChecker.resolve();
+    const res = await dotnetChecker.resolve();
 
-    assert.isTrue(shouldContinue);
+    assert.isTrue(res.isOk() && res.value);
     await verifyPrivateInstallation(dotnetChecker);
   });
 
@@ -343,13 +343,13 @@ describe("DotnetChecker E2E Test - second run", () => {
           }
         );
 
-        const shouldContinue = await dotnetChecker.resolve();
+        const res = await dotnetChecker.resolve();
         const dotnetExecPath = await dotnetChecker.command();
         const dotnetExecPathFromConfig = await dotnetUtils.getDotnetExecPathFromConfig(
           dotnetUtils.dotnetConfigPath
         );
 
-        assert.isTrue(shouldContinue);
+        assert.isTrue(res.isOk() && res.value);
         assertPathEqual(dotnetExecPath, installedDotnetExecPath);
         assert.isNotNull(dotnetExecPathFromConfig);
         assertPathEqual(dotnetExecPath, dotnetExecPathFromConfig!);

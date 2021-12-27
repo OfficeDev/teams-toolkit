@@ -52,7 +52,7 @@ import { isFeatureFlagEnabled } from "../../../src/common/tools";
 import { FeatureFlagName } from "../../../src/common/constants";
 import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 chai.use(chaiAsPromised);
-const expect = chai.expect;
+import { expect } from "chai";
 
 describe("Generate ARM Template for project", () => {
   //  Only test when insider feature flag enabled

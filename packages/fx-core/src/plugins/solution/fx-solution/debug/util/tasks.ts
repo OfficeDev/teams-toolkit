@@ -130,7 +130,7 @@ export function generateSpfxTasks(): Record<string, unknown>[] {
     {
       label: "prepare dev env",
       dependsOn: ["prepare local environment", "gulp serve"],
-      dependsOrder: "parallel",
+      dependsOrder: "sequence",
     },
     {
       label: "Terminate All Tasks",

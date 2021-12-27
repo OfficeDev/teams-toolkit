@@ -13,23 +13,6 @@ import { isMultiEnvEnabled } from "../../../../../src";
 chai.use(chaiAsPromised);
 
 describe(LocalDebugPluginInfo.pluginName, () => {
-  describe("postLocalDebug", () => {
-    let pluginContext: PluginContext;
-    let plugin: LocalDebugPlugin;
-
-    beforeEach(() => {
-      pluginContext = {
-        envInfo: newEnvInfo(),
-      } as PluginContext;
-      plugin = new LocalDebugPlugin();
-    });
-
-    it("happy path", async () => {
-      const result = await plugin.postLocalDebug(pluginContext);
-      chai.assert.isTrue(result.isOk());
-    });
-  });
-
   describe("getLocalDebugEnvs", () => {
     let pluginContext: PluginContext;
     let plugin: LocalDebugPlugin;

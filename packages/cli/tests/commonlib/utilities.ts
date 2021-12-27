@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import axios from "axios";
+import { execAsync } from "../e2e/commonUtils";
 
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);
@@ -32,18 +33,6 @@ export function getSiteNameFromResourceId(webAppResourceId: string): string {
 export function parseFromResourceId(pattern: RegExp, resourceId: string): string {
   const result = resourceId.match(pattern);
   return result ? result[1].trim() : "";
-}
-
-export enum Capability {
-  Tab = "tab",
-  Bot = "bot",
-  MessagingExtension = "messaging-extension",
-}
-
-export enum Resource {
-  AzureFunction = "azure-function",
-  AzureApim = "azure-apim",
-  AzureSql = "azure-sql",
 }
 
 export async function getWebappConfigs(
@@ -130,4 +119,30 @@ export async function runWithRetry<T>(fn: () => Promise<T>) {
   }
 
   return fn();
+}
+
+export async function createResourceGroup(
+  resourceGroupName: string,
+  location: string,
+  subscription: string
+) {
+  await execAsync(
+    `az group create --location ${location} --name ${resourceGroupName} --subscription ${subscription}`
+  );
+  console.log(
+    `Successfully create resource group ${resourceGroupName}. Location: ${location}, subscription: ${subscription}`
+  );
+}
+
+export async function deleteResourceGroup(
+  resourceGroupName: string,
+  location: string,
+  subscription: string
+) {
+  await execAsync(
+    `az group create --location ${location} --name ${resourceGroupName} --subscription ${subscription}`
+  );
+  console.log(
+    `Successfully create resource group ${resourceGroupName}. Location: ${location}, subscription: ${subscription}`
+  );
 }

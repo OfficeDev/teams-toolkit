@@ -15,7 +15,6 @@ import {
 import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
 import {
   execAsync,
-  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -27,10 +26,12 @@ import {
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import "mocha";
-import { Capability, getWebappServicePlan, Resource } from "../../commonlib/utilities";
+import { getWebappServicePlan } from "../../commonlib/utilities";
 import * as fs from "fs-extra";
 import MockAzureAccountProvider from "../../../src/commonlib/azureLoginUserPassword";
 import { expect } from "chai";
+import { CliHelper } from "../../commonlib/cliHelper";
+import { Capability, Resource } from "../../commonlib/constants";
 
 describe("Add capabilities", function () {
   //  Only test when insider feature flag enabled
@@ -60,7 +61,8 @@ describe("Add capabilities", function () {
 
     await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    await SetSubAndProvisionProject(subscription, projectPath);
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
 
     // Assert
     await validateTabAndBotProjectProvision(projectPath);
@@ -75,7 +77,8 @@ describe("Add capabilities", function () {
 
     await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    await SetSubAndProvisionProject(subscription, projectPath);
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
 
     // Assert
     await validateTabAndBotProjectProvision(projectPath);
@@ -90,7 +93,8 @@ describe("Add capabilities", function () {
 
     await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    await SetSubAndProvisionProject(subscription, projectPath);
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
 
     // Assert
     await validateTabAndBotProjectProvision(projectPath);
@@ -105,7 +109,8 @@ describe("Add capabilities", function () {
 
     await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    await SetSubAndProvisionProject(subscription, projectPath);
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
 
     // Assert
     await validateTabAndBotProjectProvision(projectPath);
@@ -158,7 +163,8 @@ describe("User can customize Bicep files", function () {
     // Act
     await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     const customizedServicePlans: string[] = await customizeBicepFile(projectPath);
-    await SetSubAndProvisionProject(subscription, projectPath);
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
 
     const resourceGroup: string = await getRGAfterProvision(projectPath);
     chai.assert.exists(resourceGroup);
@@ -182,8 +188,8 @@ describe("User can customize Bicep files", function () {
     await addCapabilityToProject(projectPath, Capability.Bot);
     await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await addResourceToProject(projectPath, Resource.AzureFunction);
-
-    await SetSubAndProvisionProject(subscription, projectPath);
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
 
     const resourceGroup = await getRGAfterProvision(projectPath);
     chai.assert.exists(resourceGroup);
@@ -328,22 +334,4 @@ async function addResourceToProject(projectPath: string, resourceToAdd: string) 
     timeout: 0,
   });
   console.log(`[Successfully] add resource ${resourceToAdd} to ${projectPath}`);
-}
-
-async function SetSubAndProvisionProject(subscription: string, projectPath: string) {
-  // set subscription
-  await execAsync(`teamsfx account set --subscription ${subscription}`, {
-    cwd: projectPath,
-    env: process.env,
-    timeout: 0,
-  });
-  console.log(`[Successfully] set subscription for ${projectPath}`);
-
-  // provision
-  await execAsyncWithRetry(`teamsfx provision`, {
-    cwd: projectPath,
-    env: process.env,
-    timeout: 0,
-  });
-  console.log(`[Successfully] provision for ${projectPath}`);
 }

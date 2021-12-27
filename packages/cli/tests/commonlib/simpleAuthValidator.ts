@@ -1,10 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { isArmSupportEnabled } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { IAadObject } from "./interfaces/IAADDefinition";
-import { getWebappConfigs, getWebappServicePlan } from "./utilities";
+import {
+  getResourceGroupNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+  getWebappConfigs,
+  getWebappServicePlan,
+} from "./utilities";
 
 const simpleAuthPluginName = "fx-resource-simple-auth";
 const solutionPluginName = "solution";
@@ -21,6 +27,7 @@ export class PropertiesKeys {
 
 export interface ISimpleAuthObject {
   endpoint: string;
+  storageResourceId?: string;
 }
 
 export class SimpleAuthValidator {
@@ -36,14 +43,20 @@ export class SimpleAuthValidator {
     } else {
       simpleAuthObject = {
         endpoint: ctx[simpleAuthPluginName]["endpoint"],
+        storageResourceId: ctx[simpleAuthPluginName]["storageResourceId"],
       } as ISimpleAuthObject;
     }
     chai.assert.exists(simpleAuthObject);
 
-    this.subscriptionId = ctx[solutionPluginName][subscriptionKey];
-    chai.assert.exists(this.subscriptionId);
+    if (isArmSupportEnabled()) {
+      this.subscriptionId = getSubscriptionIdFromResourceId(simpleAuthObject.storageResourceId);
+      this.rg = getResourceGroupNameFromResourceId(simpleAuthObject.storageResourceId);
+    } else {
+      this.subscriptionId = ctx[solutionPluginName][subscriptionKey];
+      this.rg = ctx[solutionPluginName][rgKey];
+    }
 
-    this.rg = ctx[solutionPluginName][rgKey];
+    chai.assert.exists(this.subscriptionId);
     chai.assert.exists(this.rg);
 
     console.log("Successfully init validator for Simple Auth.");

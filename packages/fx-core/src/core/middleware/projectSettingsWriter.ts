@@ -17,7 +17,6 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import { CoreHookContext, TOOLS } from "..";
-import { isMultiEnvEnabled } from "../../common";
 import { WriteFileError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
 
@@ -45,14 +44,9 @@ export const ProjectSettingsWriterMW: Middleware = async (
       const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
       if (!solutionSettings.activeResourcePlugins) solutionSettings.activeResourcePlugins = [];
       if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
-      let settingFile;
-      if (isMultiEnvEnabled()) {
-        const confFolderPathNew = path.resolve(confFolderPath, InputConfigsFolderName);
-        await fs.ensureDir(confFolderPathNew);
-        settingFile = path.resolve(confFolderPathNew, ProjectSettingsFileName);
-      } else {
-        settingFile = path.resolve(confFolderPath, "settings.json");
-      }
+      const confFolderPathNew = path.resolve(confFolderPath, InputConfigsFolderName);
+      await fs.ensureDir(confFolderPathNew);
+      const settingFile = path.resolve(confFolderPathNew, ProjectSettingsFileName);
       await fs.writeFile(settingFile, JSON.stringify(projectSettings, null, 4));
       TOOLS?.logProvider.debug(`[core] persist project setting file: ${settingFile}`);
     } catch (e) {

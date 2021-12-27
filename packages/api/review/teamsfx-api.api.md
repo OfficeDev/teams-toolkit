@@ -791,6 +791,8 @@ export interface Inputs extends Json {
     // (undocumented)
     env?: string;
     // (undocumented)
+    existingResources?: string[];
+    // (undocumented)
     ignoreConfigPersist?: boolean;
     // (undocumented)
     ignoreEnvInfo?: boolean;
@@ -1325,7 +1327,9 @@ interface ResourcePlugin {
     displayName: string;
     // (undocumented)
     executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
-    generateResourceTemplate?: (ctx: Context_2, inputs: Inputs) => Promise<Result<ResourceTemplate_2, FxError>>;
+    generateResourceTemplate?: (ctx: Context_2, inputs: Inputs & {
+        existingResources: string[];
+    }) => Promise<Result<ResourceTemplate_2, FxError>>;
     // (undocumented)
     getQuestions?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -1341,12 +1345,16 @@ interface ResourcePlugin {
     publishApplication?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
-    updateResourceTemplate?: (ctx: Context_2, inputs: Inputs) => Promise<Result<ResourceTemplate_2, FxError>>;
+    updateResourceTemplate?: (ctx: Context_2, inputs: Inputs & {
+        existingResources: string[];
+    }) => Promise<Result<ResourceTemplate_2, FxError>>;
 }
 
 // @public (undocumented)
 interface ResourcePlugin_2 extends Plugin_3 {
-    addResource?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+    addResource?: (ctx: Context_2, inputs: InputsWithProjectPath & {
+        existingResources: string[];
+    }) => Promise<Result<Void, FxError>>;
     // (undocumented)
     configureLocalResource?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
@@ -1357,7 +1365,9 @@ interface ResourcePlugin_2 extends Plugin_3 {
     // (undocumented)
     executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
     // (undocumented)
-    generateResourceTemplate?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2, FxError>>;
+    generateResourceTemplate?: (ctx: Context_2, inputs: InputsWithProjectPath & {
+        existingResources: string[];
+    }) => Promise<Result<ResourceTemplate_2, FxError>>;
     getQuestionsForAddResource?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForLocalProvision?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider, localSettings?: DeepReadonly<Json>) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -1370,7 +1380,9 @@ interface ResourcePlugin_2 extends Plugin_3 {
     provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<CloudResource, FxError>>;
     resourceType: string;
     // (undocumented)
-    updateResourceTemplate?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2, FxError>>;
+    updateResourceTemplate?: (ctx: Context_2, inputs: InputsWithProjectPath & {
+        existingResources: string[];
+    }) => Promise<Result<ResourceTemplate_2, FxError>>;
 }
 
 // @public (undocumented)

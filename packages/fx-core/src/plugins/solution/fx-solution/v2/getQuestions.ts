@@ -59,6 +59,7 @@ import { getResourceFolder } from "../../../../folder";
 import { BuiltInResourcePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
+import { isVSProject } from "../../../../core";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -440,7 +441,7 @@ export async function getQuestionsForAddResource(
     const question = createAddAzureResourceQuestion(false, false, false, false);
     return ok(new QTreeNode(question));
   }
-  const canProceed = canAddResource(settings, ctx.telemetryReporter);
+  const canProceed = canAddResource(ctx.projectSetting, ctx.telemetryReporter);
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }

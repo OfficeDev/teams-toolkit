@@ -6,11 +6,10 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import * as child_process from "child_process";
 import * as util from "util";
-import { ConfigFolderName } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, Result, ok, err } from "@microsoft/teamsfx-api";
 import { performance } from "perf_hooks";
-
 import { dotnetFailToInstallHelpLink, dotnetExplanationHelpLink } from "../constant/helpLink";
-import { DepsCheckerError } from "../depsError";
+import { DepsCheckerError, LinuxNotSupportedError } from "../depsError";
 import { runWithProgressIndicator } from "../util/progressIndicator";
 import { cpUtils } from "../util/cpUtils";
 import { isLinux, isWindows, isArm64, isMacOS } from "../util/system";
@@ -92,7 +91,7 @@ export class DotnetChecker implements DepsChecker {
     return false;
   }
 
-  public async resolve(): Promise<boolean> {
+  public async resolve(): Promise<Result<boolean, DepsCheckerError>> {
     try {
       if (!(await this.isInstalled())) {
         await this.install();
@@ -100,15 +99,22 @@ export class DotnetChecker implements DepsChecker {
     } catch (error) {
       await this._logger.printDetailLog();
       await this._logger.error(`${error.message}, error = '${error}'`);
-      return false;
+      if (error instanceof DepsCheckerError) {
+        return err(error);
+      }
+      return err(new DepsCheckerError(error.message, dotnetFailToInstallHelpLink));
     } finally {
       this._logger.cleanup();
     }
 
-    return true;
+    return ok(true);
   }
 
   public async install(): Promise<void> {
+    if (isLinux()) {
+      throw new LinuxNotSupportedError(dotnetExplanationHelpLink);
+    }
+
     await this._logger.debug(`[start] cleanup bin/dotnet and config`);
     await DotnetChecker.cleanup();
     await this._logger.debug(`[end] cleanup bin/dotnet and config`);

@@ -5,17 +5,18 @@
 import * as fs from "fs-extra";
 import {
   ConfigFolderName,
+  Inputs,
   LogProvider,
   Platform,
-  PluginContext,
   UserInteraction,
+  v2,
 } from "@microsoft/teamsfx-api";
 import { asn1, md, pki } from "node-forge";
 import * as os from "os";
 import { v4 as uuidv4 } from "uuid";
 
-import { LocalDebugCertificate } from "./constants";
-import * as ps from "./util/process";
+import { LocalDebugCertificate } from "../constants";
+import * as ps from "./process";
 
 const installText = "Install";
 const learnMoreText = "Learn More";
@@ -41,10 +42,10 @@ export class LocalCertificateManager {
   private readonly logger?: LogProvider;
   private readonly certFolder: string;
 
-  constructor(ctx: PluginContext | undefined) {
-    this.ui = ctx?.ui;
+  constructor(ctx: v2.Context | undefined, inputs: Inputs) {
+    this.ui = ctx?.userInteraction;
     this.logger = ctx?.logProvider;
-    this.platform = ctx?.answers?.platform;
+    this.platform = inputs.platform;
     this.certFolder = `${os.homedir()}/.${ConfigFolderName}/certificate`;
   }
 

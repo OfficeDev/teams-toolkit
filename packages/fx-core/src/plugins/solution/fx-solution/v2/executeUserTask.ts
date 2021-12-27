@@ -22,6 +22,7 @@ import {
   IConfigurableTab,
   IBot,
   IComposeExtension,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { getStrings, isArmSupportEnabled } from "../../../../common/tools";
 import { getAzureSolutionSettings, reloadV2Plugins } from "./utils";
@@ -54,6 +55,7 @@ import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { BuiltInResourcePluginNames } from "../v3/constants";
+import { isVSProject } from "../../../../core";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -176,10 +178,22 @@ export function canAddCapability(
 }
 
 export function canAddResource(
-  settings: AzureSolutionSettings,
+  projectSetting: ProjectSettings,
   telemetryReporter: TelemetryReporter
 ): Result<Void, FxError> {
-  if (!(settings.hostType === HostTypeOptionAzure.id)) {
+  const isVS = isVSProject(projectSetting);
+  if (isVS) {
+    const e = new UserError(
+      SolutionError.AddResourceNotSupport,
+      getStrings().solution.addResource.NotSupportForVSProject,
+      SolutionSource
+    );
+    return err(
+      sendErrorTelemetryThenReturnError(SolutionTelemetryEvent.AddResource, e, telemetryReporter)
+    );
+  }
+  const solutionSettings = projectSetting.solutionSettings as AzureSolutionSettings;
+  if (!(solutionSettings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
       SolutionError.AddResourceNotSupport,
       getStrings().solution.addResource.OnlySupportAzure,
@@ -206,6 +220,11 @@ export async function addCapability(
   // 1. checking addable
   const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
   const originalSettings = cloneDeep(solutionSettings);
+  const inputsNew: v2.InputsWithProjectPath & { existingResources: string[] } = {
+    ...inputs,
+    projectPath: inputs.projectPath!,
+    existingResources: originalSettings.activeResourcePlugins,
+  };
   const canProceed = canAddCapability(solutionSettings, ctx.telemetryReporter);
   if (canProceed.isErr()) {
     return err(canProceed.error);
@@ -223,7 +242,12 @@ export async function addCapability(
   }
 
   // 3. check capability limit
-  solutionSettings.capabilities = solutionSettings.capabilities || [];
+  const alreadyHasTab = solutionSettings.capabilities.includes(TabOptionItem.id);
+  const alreadyHasBot = solutionSettings.capabilities.includes(BotOptionItem.id);
+  const alreadyHasME = solutionSettings.capabilities.includes(MessageExtensionItem.id);
+  const toAddTab = capabilitiesAnswer.includes(TabOptionItem.id);
+  const toAddBot = capabilitiesAnswer.includes(BotOptionItem.id);
+  const toAddME = capabilitiesAnswer.includes(MessageExtensionItem.id);
   const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
   const inputsWithProjectPath = inputs as v2.InputsWithProjectPath;
   const isTabAddable = !(await appStudioPlugin.capabilityExceedLimit(
@@ -241,11 +265,7 @@ export async function addCapability(
     inputsWithProjectPath,
     "MessageExtension"
   ));
-  if (
-    (capabilitiesAnswer.includes(TabOptionItem.id) && !isTabAddable) ||
-    (capabilitiesAnswer.includes(BotOptionItem.id) && !isBotAddable) ||
-    (capabilitiesAnswer.includes(MessageExtensionItem.id) && !isMEAddable)
-  ) {
+  if ((toAddTab && !isTabAddable) || (toAddBot && !isBotAddable) || (toAddME && !isMEAddable)) {
     const error = new UserError(
       SolutionError.FailedToAddCapability,
       getStrings().solution.addCapability.ExceedMaxLimit,
@@ -270,14 +290,17 @@ export async function addCapability(
   const pluginNamesToArm: Set<string> = new Set<string>();
   const newCapabilitySet = new Set<string>();
   solutionSettings.capabilities.forEach((c) => newCapabilitySet.add(c));
+  const vsProject = isVSProject(ctx.projectSetting);
+
   // 4. check Tab
   if (capabilitiesAnswer.includes(TabOptionItem.id)) {
-    if (inputs.platform === Platform.VS) {
+    if (vsProject) {
       pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
-      pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
+      if (!alreadyHasTab) {
+        pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
+      }
     } else {
-      const firstAdd = solutionSettings.capabilities.includes(TabOptionItem.id) ? false : true;
-      if (firstAdd) {
+      if (!alreadyHasTab) {
         pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
         pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
       }
@@ -287,18 +310,13 @@ export async function addCapability(
   }
   // 5. check Bot
   if (capabilitiesAnswer.includes(BotOptionItem.id)) {
-    const firstAdd =
-      solutionSettings.capabilities.includes(BotOptionItem.id) ||
-      solutionSettings.capabilities.includes(MessageExtensionItem.id)
-        ? false
-        : true;
-    if (inputs.platform === Platform.VS) {
+    if (vsProject) {
       pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
-      if (firstAdd) {
+      if (!alreadyHasBot && !alreadyHasME) {
         pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
       }
     } else {
-      if (firstAdd) {
+      if (!alreadyHasBot && !alreadyHasME) {
         pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
         pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
       }
@@ -308,18 +326,13 @@ export async function addCapability(
   }
   // 6. check MessageExtension
   if (capabilitiesAnswer.includes(MessageExtensionItem.id)) {
-    const firstAdd =
-      solutionSettings.capabilities.includes(BotOptionItem.id) ||
-      solutionSettings.capabilities.includes(MessageExtensionItem.id)
-        ? false
-        : true;
-    if (inputs.platform === Platform.VS) {
+    if (vsProject) {
       pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
-      if (firstAdd) {
+      if (!alreadyHasBot && !alreadyHasME) {
         pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
       }
     } else {
-      if (firstAdd) {
+      if (!alreadyHasBot && !alreadyHasME) {
         pluginNamesToScaffold.add(ResourcePluginsV2.BotPlugin);
         pluginNamesToArm.add(ResourcePluginsV2.BotPlugin);
       }
@@ -342,7 +355,7 @@ export async function addCapability(
   if (pluginsToScaffold.length > 0) {
     const scaffoldRes = await scaffoldCodeAndResourceTemplate(
       ctx,
-      inputs,
+      inputsNew,
       localSettings,
       pluginsToScaffold,
       pluginsToArm
@@ -393,7 +406,7 @@ export function showUpdateArmTemplateNotice(ui?: UserInteraction) {
 
 async function scaffoldCodeAndResourceTemplate(
   ctx: v2.Context,
-  inputs: Inputs,
+  inputs: v2.InputsWithProjectPath & { existingResources: string[] },
   localSettings: Json,
   pluginsToScaffold: v2.ResourcePlugin[],
   pluginsToDoArm?: v2.ResourcePlugin[]
@@ -432,7 +445,12 @@ export async function addResource(
   // 1. checking addable
   const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
   const originalSettings = cloneDeep(solutionSettings);
-  const canProceed = canAddResource(solutionSettings, ctx.telemetryReporter);
+  const inputsNew: v2.InputsWithProjectPath & { existingResources: string[] } = {
+    ...inputs,
+    projectPath: inputs.projectPath!,
+    existingResources: originalSettings.activeResourcePlugins,
+  };
+  const canProceed = canAddResource(ctx.projectSetting, ctx.telemetryReporter);
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }
@@ -525,7 +543,7 @@ export async function addResource(
   if (pluginsToScaffold.length > 0 || pluginsToDoArm.length > 0) {
     let scaffoldRes = await scaffoldCodeAndResourceTemplate(
       ctx,
-      inputs,
+      inputsNew,
       localSettings,
       pluginsToScaffold,
       pluginsToDoArm

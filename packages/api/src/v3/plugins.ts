@@ -142,7 +142,10 @@ export interface ResourcePlugin extends Plugin {
    * add resource is a new lifecycle task for resource plugin, which will do some extra work after project settings is updated,
    * for example, APIM will scaffold the openapi folder with files
    */
-  addResource?: (ctx: Context, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+  addResource?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath & { existingResources: string[] }
+  ) => Promise<Result<Void, FxError>>;
   /**
    * customize questions needed for local debug
    */
@@ -191,11 +194,11 @@ export interface ResourcePlugin extends Plugin {
 
   generateResourceTemplate?: (
     ctx: Context,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath & { existingResources: string[] }
   ) => Promise<Result<ResourceTemplate, FxError>>;
   updateResourceTemplate?: (
     ctx: Context,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath & { existingResources: string[] }
   ) => Promise<Result<ResourceTemplate, FxError>>;
 
   /**

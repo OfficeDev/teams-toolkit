@@ -1599,7 +1599,7 @@ export class TeamsAppSolution implements Solution {
     }
     const settings = this.getAzureSolutionSettings(ctx);
     const originalSettings = deepCopy(settings);
-    const canProceed = canAddResource(settings, ctx.telemetryReporter!);
+    const canProceed = canAddResource(ctx.projectSettings!, ctx.telemetryReporter!);
     if (canProceed.isErr()) {
       return canProceed;
     }

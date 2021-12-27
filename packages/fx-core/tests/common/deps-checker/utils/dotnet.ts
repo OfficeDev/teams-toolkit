@@ -32,6 +32,9 @@ export const dotnetOldVersion = DotnetVersion.v21;
 export const dotnetInstallVersion = DotnetVersion.v31;
 export const dotnetSupportedVersions = [DotnetVersion.v31, DotnetVersion.v50];
 
+export const testCsprojFileName = "extensions.csproj";
+export const testOutputDirName = "bin";
+
 export async function getDotnetExecPathFromConfig(
   dotnetConfigPath: string
 ): Promise<string | null> {
@@ -124,6 +127,21 @@ export async function withDotnet(
     }
     cleanupCallback();
   }
+}
+
+export async function createTmpBackendProjectDir(
+  csprojFileName: string
+): Promise<[string, () => void]> {
+  const [dir, cleanupCallback] = await createTmpDir();
+
+  const csprojPath = path.resolve(
+    __dirname,
+    "../../../../../../../templates/function-base/ts/default/extensions.csproj"
+  );
+  const targetPath = path.join(dir, csprojFileName);
+  await fs.copyFile(csprojPath, targetPath, fs.constants.COPYFILE_EXCL);
+
+  return [dir, cleanupCallback];
 }
 
 export async function createMockResourceDir(dirName: string): Promise<[string, () => void]> {

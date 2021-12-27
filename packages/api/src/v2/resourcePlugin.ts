@@ -96,11 +96,11 @@ export interface ResourcePlugin {
    */
   generateResourceTemplate?: (
     ctx: Context,
-    inputs: Inputs
+    inputs: Inputs & { existingResources: string[] }
   ) => Promise<Result<ResourceTemplate, FxError>>;
   updateResourceTemplate?: (
     ctx: Context,
-    inputs: Inputs
+    inputs: Inputs & { existingResources: string[] }
   ) => Promise<Result<ResourceTemplate, FxError>>;
   /**
    * provisionResource() runs before ARM/Bicep provision when Provision command is called.

@@ -27,7 +27,6 @@ export default class Deploy extends YargsCommand {
   public readonly command = `${this.commandHead} [components...]`;
   public readonly description = "Deploy the current application.";
 
-  public params: { [_: string]: Options } = {};
   public readonly deployPluginNodeName = constants.deployPluginNodeName;
 
   public builder(yargs: Argv): Argv<any> {
@@ -47,9 +46,7 @@ export default class Deploy extends YargsCommand {
     return yargs.version(false);
   }
 
-  public async runCommand(args: {
-    [argName: string]: string | string[] | undefined;
-  }): Promise<Result<null, FxError>> {
+  public override modifyArguments(args: { [argName: string]: any }) {
     if (!("open-api-document" in args)) {
       args["open-api-document"] = undefined;
     }
@@ -59,10 +56,15 @@ export default class Deploy extends YargsCommand {
     if (!("api-version" in args)) {
       args["api-version"] = undefined;
     }
+    return args;
+  }
+
+  public async runCommand(args: {
+    [argName: string]: string | string[] | undefined;
+  }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve((args.folder as string) || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.DeployStart);
 
-    CLIUIInstance.updatePresetAnswers(this.params, args);
     CLIUIInstance.removePresetAnswers(["components"]);
 
     const result = await activate(rootFolder);

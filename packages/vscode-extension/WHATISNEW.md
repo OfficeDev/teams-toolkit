@@ -1,9 +1,15 @@
+- [3.1.1 - Dec 27 2021](#311---dec-27-2021)
 - [3.1.0 - Dec 13 2021](#310---dec-13-2021)
 - [3.0.0 - Nov 29 2021](#300---nov-29-2021)
 - [2.10.0 - Nov 15 2021](#2100---nov-15-2021)
 - [2.9.0 - Nov 01 2021](#290---nov-01-2021)
 - [2.8.0 - Oct 18 2021](#280---oct-18-2021)
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
+
+## 3.1.1 - Dec 27, 2021
+This is a hotfix version.
+
+The Azure Bot service is upgraded and does not support some old NodeJs version in some regions any more. This hotfix solve the problem that bot service is not working in those regions which does not support old NodeJs version.
 
 ## 3.1.0 - Dec 13, 2021
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:

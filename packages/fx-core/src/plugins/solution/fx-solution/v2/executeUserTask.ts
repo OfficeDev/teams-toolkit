@@ -220,6 +220,11 @@ export async function addCapability(
   // 1. checking addable
   const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
   const originalSettings = cloneDeep(solutionSettings);
+  const inputsNew: v2.InputsWithProjectPath & { existingResources: string[] } = {
+    ...inputs,
+    projectPath: inputs.projectPath!,
+    existingResources: originalSettings.activeResourcePlugins,
+  };
   const canProceed = canAddCapability(solutionSettings, ctx.telemetryReporter);
   if (canProceed.isErr()) {
     return err(canProceed.error);
@@ -350,7 +355,7 @@ export async function addCapability(
   if (pluginsToScaffold.length > 0) {
     const scaffoldRes = await scaffoldCodeAndResourceTemplate(
       ctx,
-      inputs,
+      inputsNew,
       localSettings,
       pluginsToScaffold,
       pluginsToArm
@@ -401,7 +406,7 @@ export function showUpdateArmTemplateNotice(ui?: UserInteraction) {
 
 async function scaffoldCodeAndResourceTemplate(
   ctx: v2.Context,
-  inputs: Inputs,
+  inputs: v2.InputsWithProjectPath & { existingResources: string[] },
   localSettings: Json,
   pluginsToScaffold: v2.ResourcePlugin[],
   pluginsToDoArm?: v2.ResourcePlugin[]
@@ -440,6 +445,11 @@ export async function addResource(
   // 1. checking addable
   const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
   const originalSettings = cloneDeep(solutionSettings);
+  const inputsNew: v2.InputsWithProjectPath & { existingResources: string[] } = {
+    ...inputs,
+    projectPath: inputs.projectPath!,
+    existingResources: originalSettings.activeResourcePlugins,
+  };
   const canProceed = canAddResource(ctx.projectSetting, ctx.telemetryReporter);
   if (canProceed.isErr()) {
     return err(canProceed.error);
@@ -533,7 +543,7 @@ export async function addResource(
   if (pluginsToScaffold.length > 0 || pluginsToDoArm.length > 0) {
     let scaffoldRes = await scaffoldCodeAndResourceTemplate(
       ctx,
-      inputs,
+      inputsNew,
       localSettings,
       pluginsToScaffold,
       pluginsToDoArm

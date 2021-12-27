@@ -22,7 +22,6 @@ import * as path from "path";
 import * as uuid from "uuid";
 import { createV2Context } from "..";
 import { CoreHookContext, FxCore } from "../..";
-import { isMultiEnvEnabled } from "../../common";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { LocalCrypto } from "../crypto";
@@ -50,7 +49,7 @@ export const ProjectSettingsLoaderMW: Middleware = async (
       ctx.result = err(PathNotExistError(inputs.projectPath));
       return;
     }
-    const loadRes = await loadProjectSettings(inputs, isMultiEnvEnabled());
+    const loadRes = await loadProjectSettings(inputs, true);
     if (loadRes.isErr()) {
       ctx.result = err(loadRes.error);
       return;

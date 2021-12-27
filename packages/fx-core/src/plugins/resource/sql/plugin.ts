@@ -248,6 +248,8 @@ export class SqlPluginImpl {
         sqlEndpoint: AzureSqlBicep.sqlEndpoint,
         databaseName: AzureSqlBicep.databaseName,
       },
+      BicepVersion: ArmTemplateVersion.BicepVersion,
+      SchemaVersion: ArmTemplateVersion.SchemaVersion,
     };
     return ok(result);
   }

@@ -52,6 +52,8 @@ export function mockSolutionGenerateArmTemplates(
   }
   result.Reference = template.Reference;
   result.Parameters = template.Parameters;
+  result.BicepVersion = "0.4.1008";
+  result.SchemaVersion = "0.1.0";
   return result;
 }
 
@@ -78,6 +80,8 @@ export function mockSolutionUpdateArmTemplates(
   if (template.Reference) {
     result.Reference = template.Reference;
   }
+  result.BicepVersion = "0.4.1008";
+  result.SchemaVersion = "0.1.0";
   return result;
 }
 

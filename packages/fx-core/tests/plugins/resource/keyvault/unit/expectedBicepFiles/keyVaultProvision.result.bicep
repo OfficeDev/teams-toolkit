@@ -50,5 +50,6 @@ resource botClientSecretKv 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = if (
   }
 }
 
+output keyVaultResourceId string = keyVault.id
 output m365ClientSecretReference string = '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${m365ClientSecretName})'
 output botClientSecretReference string = '@Microsoft.KeyVault(VaultName=${keyVaultName};SecretName=${botClientSecretName})'

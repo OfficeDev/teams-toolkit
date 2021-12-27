@@ -6,12 +6,12 @@ import * as fs from "fs-extra";
 import * as os from "os";
 import { err, FxError, Inputs, Json, ok, Platform, Result, v2, Void } from "@microsoft/teamsfx-api";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
+import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
 import * as Launch from "./util/launch";
 import * as Tasks from "./util/tasks";
 import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import { ScaffoldLocalDebugSettingsError } from "./error";
-import { ContextHelper } from "./util/contextHelper";
 
 const PackageJson = require("@npmcli/package-json");
 
@@ -20,12 +20,12 @@ export async function scaffoldLocalDebugSettings(
   inputs: Inputs,
   localSettings?: Json
 ): Promise<Result<Void, FxError>> {
-  const isSpfx = ContextHelper.isSpfx(ctx);
-  const isMigrateFromV1 = ContextHelper.isMigrateFromV1(ctx);
-  const includeFrontend = ContextHelper.includeFrontend(ctx);
-  const includeBackend = ContextHelper.includeBackend(ctx);
-  const includeBot = ContextHelper.includeBot(ctx);
-  const includeAuth = ContextHelper.includeAuth(ctx);
+  const isSpfx = ProjectSettingsHelper.isSpfx(ctx.projectSetting);
+  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
+  const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
+  const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
+  const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
+  const includeAuth = ProjectSettingsHelper.includeAuth(ctx.projectSetting);
   const programmingLanguage = ctx.projectSetting?.programmingLanguage ?? "";
 
   const telemetryProperties = {
@@ -199,9 +199,9 @@ async function scaffoldLocalSettingsJson(
 ): Promise<void> {
   const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath!);
 
-  const includeFrontend = ContextHelper.includeFrontend(ctx);
-  const includeBackend = ContextHelper.includeBackend(ctx);
-  const includeBot = ContextHelper.includeBot(ctx);
+  const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
+  const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
+  const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
 
   if (localSettings !== undefined) {
     // Add local settings for the new added capability/resource

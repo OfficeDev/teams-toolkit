@@ -3,7 +3,7 @@
 
 "use strict";
 
-import { Argv, exit } from "yargs";
+import { Argv, exit, Options } from "yargs";
 
 import { FxError, Result, SystemError, UserError, LogLevel, Colors } from "@microsoft/teamsfx-api";
 
@@ -17,6 +17,7 @@ import path from "path";
 import { Correlator } from "@microsoft/teamsfx-core";
 import Progress from "./console/progress";
 import { getColorizedString } from "./utils";
+import UI from "./userInteraction";
 
 export abstract class YargsCommand {
   /**
@@ -35,10 +36,24 @@ export abstract class YargsCommand {
   abstract readonly description: string;
 
   /**
+   * the parameters that may be used by fx-core
+   */
+  public params: { [_: string]: Options } = {};
+
+  /**
    * builds the command using supplied yargs handle.
    * @param yargs the yargs handle
    */
   abstract builder(yargs: Argv): Argv<any>;
+
+  /**
+   * before running command, some command may modify the arguments that users input.
+   * @param args originial arguments
+   * @returns the modified arguments
+   */
+  public modifyArguments(args: { [argName: string]: any }): { [argName: string]: any } {
+    return args;
+  }
 
   /**
    * runs the command, args from command line are provided.
@@ -56,11 +71,31 @@ export abstract class YargsCommand {
    * @param args the cli arguments supplied when running the command
    */
   public async handler(args: { [argName: string]: boolean | string | string[] }): Promise<void> {
+    args = this.modifyArguments(args);
     if ("verbose" in args && args.verbose) {
       CLILogProvider.setLogLevel(constants.CLILogLevel.verbose);
     }
     if ("debug" in args && args.debug) {
       CLILogProvider.setLogLevel(constants.CLILogLevel.debug);
+    }
+    if ("interactive" in args) {
+      UI.interactive = args.interactive as boolean;
+    }
+    if (!UI.interactive) {
+      UI.updatePresetAnswers(this.params, args);
+    } else {
+      const sameKeys = Object.keys(this.params).filter((k) => k in args);
+      if (sameKeys.length > 0) {
+        /// only if there are intersects between parameters and arguments, show the log,
+        /// because it means some parameters will be used by fx-core.
+        CLILogProvider.necessaryLog(
+          LogLevel.Info,
+          `Some arguments are useless because the interactive mode is opened.` +
+            ` If you want to run the command non-interactively, add '--interactive false' after your command` +
+            ` or set the global setting by 'teamsfx config set interactive false'.`,
+          true
+        );
+      }
     }
 
     const cliPackage = JSON.parse(readFileSync(path.join(__dirname, "/../package.json"), "utf8"));

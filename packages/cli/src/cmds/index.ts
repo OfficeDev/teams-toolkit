@@ -12,7 +12,6 @@ import Capability from "./capability";
 import Resource from "./resource";
 import Provision from "./provision";
 import Deploy from "./deploy";
-import Init from "./init";
 import Publish from "./publish";
 import Package from "./package";
 import Validate from "./validate";
@@ -30,7 +29,6 @@ export const commands: YargsCommand[] = [
   new Resource(),
   new Provision(),
   new Deploy(),
-  new Init(),
   new Package(),
   new Validate(),
   new Publish(),

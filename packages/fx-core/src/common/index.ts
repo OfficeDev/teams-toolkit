@@ -5,5 +5,6 @@
 export * from "./tools";
 export * from "./correlator";
 export * from "./globalState";
+export * from "./local/localEnvManager";
 export * from "./permissionInterface";
 export * from "./samples";

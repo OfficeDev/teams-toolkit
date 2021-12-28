@@ -49,6 +49,7 @@ export class SimpleAuthValidator {
     chai.assert.exists(simpleAuthObject);
 
     if (isArmSupportEnabled()) {
+      chai.assert.exists(simpleAuthObject.storageResourceId);
       this.subscriptionId = getSubscriptionIdFromResourceId(simpleAuthObject.storageResourceId);
       this.rg = getResourceGroupNameFromResourceId(simpleAuthObject.storageResourceId);
     } else {

@@ -466,9 +466,6 @@ export async function customizeBicepFilesToCustomizedRg(
     scopeToAdd +
     content.substring(insertionIndex);
   await fs.writeFile(provisionFilePath, content);
-  console.log(`[debug] ${provisionFilePath} `);
-  console.log(content);
-
   console.log(
     `[Successfully] customize ${provisionFilePath} content to deploy cloud resources to ${customizedRgName}.`
   );
@@ -487,9 +484,6 @@ export async function customizeBicepFilesToCustomizedRg(
       scopeToAdd +
       content.substring(insertionIndex);
     await fs.writeFile(configFilePath, content);
-    console.log(`[debug] ${configFilePath} `);
-    console.log(content);
-
     console.log(
       `[Successfully] customize ${configFilePath} content to deploy cloud resources to ${customizedRgName}.`
     );

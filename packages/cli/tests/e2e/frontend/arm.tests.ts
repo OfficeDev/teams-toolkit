@@ -49,7 +49,7 @@ describe("Deploy to customized resource group", function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     // Create empty resource group
-    const customizedRgName = "customizedRgName";
+    const customizedRgName = `${appName}-customized-rg`;
     await createResourceGroup(customizedRgName, "eastus");
 
     // Customize simple auth bicep files

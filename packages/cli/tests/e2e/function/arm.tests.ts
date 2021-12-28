@@ -7,7 +7,7 @@
 
 import path from "path";
 
-import { AadValidator, FrontendValidator, FunctionValidator } from "../../commonlib";
+import { AadValidator, FunctionValidator } from "../../commonlib";
 import {
   execAsync,
   getSubscriptionId,
@@ -57,7 +57,7 @@ describe("Deploy to customized resource group", function () {
     console.log(`[Successfully] add function to ${projectPath}`);
 
     // Create empty resource group
-    const customizedRgName = "customizedRgName";
+    const customizedRgName = `${appName}-customized-rg`;
     await createResourceGroup(customizedRgName, "eastus");
 
     // Customize simple auth bicep files

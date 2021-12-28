@@ -31,7 +31,7 @@ import * as fs from "fs-extra";
 import MockAzureAccountProvider from "../../../src/commonlib/azureLoginUserPassword";
 import { expect } from "chai";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, Resource } from "../../commonlib/constants";
+import { Capability, ConfigKey, Resource } from "../../commonlib/constants";
 
 describe("Add capabilities", function () {
   //  Only test when insider feature flag enabled
@@ -172,7 +172,7 @@ describe("User can customize Bicep files", function () {
 
     // Assert
     customizedServicePlans.forEach(async (servicePlanName) => {
-      await validateServicePlan(servicePlanName, resourceGroup);
+      await validateServicePlan(servicePlanName, resourceGroup!);
     });
   });
 
@@ -197,14 +197,17 @@ describe("User can customize Bicep files", function () {
 
     // Assert
     customizedServicePlans.forEach(async (servicePlanName) => {
-      await validateServicePlan(servicePlanName, resourceGroup);
+      await validateServicePlan(servicePlanName, resourceGroup!);
     });
   });
 
   async function getRGAfterProvision(projectPath: string): Promise<string | undefined> {
     const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
-    if (context["solution"] && context["solution"]["resourceGroupName"]) {
-      return context["solution"]["resourceGroupName"];
+    if (
+      context[ConfigKey.solutionPluginName] &&
+      context[ConfigKey.solutionPluginName][ConfigKey.resourceGroupName]
+    ) {
+      return context[ConfigKey.solutionPluginName][ConfigKey.resourceGroupName];
     }
     return undefined;
   }

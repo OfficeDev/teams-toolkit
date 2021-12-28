@@ -26,6 +26,7 @@ export class TestFilePath {
   // static readonly expectedBicepFileFolder = `expectedBicepFiles`;
   // static readonly resultParameterFileName = `parameters.result.json`;
 }
+
 export const fileEncoding = "UTF8";
 
 export enum Capability {
@@ -46,4 +47,9 @@ export enum ResourceToDeploy {
   Bot = "bot",
   Function = "function",
   Apim = "apim",
+}
+export class ConfigKey {
+  static readonly solutionPluginName = "solution";
+  static readonly subscriptionId = "subscriptionId";
+  static readonly resourceGroupName = "resourceGroupName";
 }

@@ -147,12 +147,12 @@ describe("User can customize Bicep files", function () {
   const subscription = getSubscriptionId();
   let appName: string, projectPath: string;
 
-  before(async () => {
+  beforeEach(async () => {
     appName = getUniqueAppName();
     projectPath = path.resolve(testFolder, appName);
   });
 
-  after(async () => {
+  afterEach(async () => {
     await cleanUp(appName, projectPath, true, false, false, true);
   });
 

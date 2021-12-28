@@ -25,6 +25,7 @@
     "test:solution": "nyc mocha \"tests/plugins/solution/*.test.ts\"",
     "test:solution:debug": "nyc mocha \"tests/plugins/solution/debug/**/*.test.ts\"",
     "test:core": "nyc mocha \"tests/core/**/*.test.ts\"",
+    "test:core:sample": "nyc mocha \"tests/core/sample.test.ts\"",
     "test:corev3": "nyc mocha \"tests/core/corev3.test.ts\"",
     "test:core-mw": "nyc mocha \"tests/core/middleware/*.test.ts\"",
     "test:core-tools": "nyc mocha \"tests/core/tools.test.ts\"",

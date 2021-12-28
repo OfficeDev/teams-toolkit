@@ -445,42 +445,37 @@ export async function getQuestionsForAddResource(
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }
-  const functionPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-    ResourcePluginsV2.FunctionPlugin
-  );
+
   const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
   const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);
   const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);
-  const alreadyHavekeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
+  const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
   const addQuestion = createAddAzureResourceQuestion(
     alreadyHaveFunction,
     alreadyHaveSQL,
     alreadyHaveAPIM,
-    alreadyHavekeyVault
+    alreadyHaveKeyVault
   );
   const addAzureResourceNode = new QTreeNode(addQuestion);
-  // there two cases to add function re-scaffold: 1. select add function   2. select add sql and function is not selected when creating
-  if (functionPlugin.getQuestionsForUserTask) {
-    const res = await functionPlugin.getQuestionsForUserTask(
-      ctx,
-      inputs,
-      func,
-      envInfo,
-      tokenProvider
-    );
-    if (res.isErr()) return res;
-    if (res.value) {
-      const azure_function = res.value as QTreeNode;
-      if (alreadyHaveFunction) {
-        // if already has function, the question will appear depends on whether user select function, otherwise, the question will always show
-        azure_function.condition = { contains: AzureResourceFunction.id };
-      } else {
-        // if not function activated, select Function or APIM option will trigger function question
-        azure_function.condition = {
-          containsAny: [AzureResourceApim.id, AzureResourceFunction.id],
-        };
+  //traverse plugins' getQuestionsForUserTask
+  const pluginsWithResources = [
+    [ResourcePluginsV2.FunctionPlugin, AzureResourceFunction.id],
+    [ResourcePluginsV2.SqlPlugin, AzureResourceSQL.id],
+    [ResourcePluginsV2.ApimPlugin, AzureResourceApim.id],
+    [ResourcePluginsV2.KeyVaultPlugin, AzureResourceKeyVault.id],
+  ];
+  for (const pair of pluginsWithResources) {
+    const pluginName = pair[0];
+    const resourceName = pair[1];
+    const plugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(pluginName);
+    if (plugin.getQuestionsForUserTask) {
+      const res = await plugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const node = res.value as QTreeNode;
+        node.condition = { contains: resourceName };
+        if (node.data) addAzureResourceNode.addChild(node);
       }
-      if (azure_function.data) addAzureResourceNode.addChild(azure_function);
     }
   }
   return ok(addAzureResourceNode);

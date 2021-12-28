@@ -1,41 +1,14 @@
-# TeamsFx Command Line Tool
+# TeamsFx Server
 
-TeamsFx CLI a text-based command line interface that can help scaffold, validate, and deploy applications for Microsoft Teams from the terminal or a CI/CD process.
-
-## Getting Started
-
-Let's start by installing `teamsfx-cli` from NPM and run `teamsfx -h` to check all available commands:
-
-```powershell
-$ npm install -g @microsoft/teamsfx-cli
-$ teamsfx -h
-```
-
-Please refer to [TeamsFx CLI User Manual](/docs/cli/user-manual.md) for in-depth instructions.
+TeamsFx Server is a server which depends on JSON-RPC protocol and will be used by VS extension.
 
 ## Extensibility Model
 
-TeamsFx CLI depends on [fx-core](/packages/fx-core) and [api](/packages/api) packages. [fx-core](/packages/fx-core) is designed to be extensible. See [EXTENSIBILITY.md](/packages/api/ETENSIBILITY.md) for more
-
-## Data Collection.
-
-The software may collect information about you and your use of the software and send it to Microsoft. Microsoft may use this information to provide services and improve our products and services. You may turn off the telemetry as described in the repository. There are also some features in the software that may enable you and Microsoft to collect data from users of your applications. If you use these features, you must comply with applicable law, including providing appropriate notices to users of your applications together with a copy of Microsoft's privacy statement. Our privacy statement is located at https://go.microsoft.com/fwlink/?LinkID=824704. You can learn more about data collection and use in the help documentation and our privacy statement. Your use of the software operates as your consent to these practices.
-
-### Telemetry Configuration
-Telemetry collection is on by default. To opt out, please run `teamsfx config set telemetry off` to turn it off.
+TeamsFx Server depends on [fx-core](/packages/fx-core) and [api](/packages/api) packages. [fx-core](/packages/fx-core) is designed to be extensible. See [EXTENSIBILITY.md](/packages/api/ETENSIBILITY.md) for more
 
 ## Code of Conduct
 
 This project has adopted the [Microsoft Open Source Code of Conduct](https://opensource.microsoft.com/codeofconduct/). For more information see the [Code of Conduct FAQ](https://opensource.microsoft.com/codeofconduct/faq/) or contact [opencode@microsoft.com](mailto:opencode@microsoft.com) with any additional questions or comments.
-
-## Contributing
-
-There are many ways in which you can participate in the project, for example:
-
-- [Submit bugs and feature requests](https://github.com/OfficeDev/TeamsFx/issues), and help us verify as they are checked in
-- Review [source code changes](https://github.com/OfficeDev/TeamsFx/pulls)
-
-If you are interested in fixing issues and contributing directly to the code base, please see the [Contributing Guide](./CONTRIBUTING.md).
 
 ## Reporting Security Issues
 

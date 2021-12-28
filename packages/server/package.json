@@ -16,7 +16,7 @@
     "teamsfx",
     "teamsfx-server"
   ],
-  "preferGlobal": true,
+  "private": "true",
   "scripts": {
     "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.sh src/**/*.ps1 lib/",
     "build": "rimraf lib && tsc -p ./ && npm run copy-files",
@@ -90,7 +90,7 @@
   },
   "dependencies": {
     "@microsoft/teamsfx-api": "^0.12.0",
-    "@microsoft/teamsfx-core": "^1.1.1",
+    "@microsoft/teamsfx-core": "^1.1.2",
     "@azure/arm-apimanagement": "^6.0.0",
     "@azure/arm-resources": "^4.0.0",
     "@azure/arm-sql": "^7.0.2",
@@ -129,10 +129,6 @@
     "resource",
     "templates"
   ],
-  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
-  "publishConfig": {
-    "access": "public"
-  },
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"

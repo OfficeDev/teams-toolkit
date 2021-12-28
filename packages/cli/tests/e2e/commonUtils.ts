@@ -25,6 +25,7 @@ import {
   ResourceGroupManager,
   SharepointValidator as SharepointManager,
 } from "../commonlib";
+import { fileEncoding, TestFilePath } from "../commonlib/constants";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
 export const execAsync = promisify(exec);
@@ -441,4 +442,56 @@ export async function loadContext(projectPath: string, env: string): Promise<Res
     }
   }
   return ok(context);
+}
+
+export async function customizeBicepFilesToCustomizedRg(
+  customizedRgName: string,
+  projectPath: string,
+  provisionInsertionSearchString: string,
+  configInsertionSearchString?: string
+): Promise<void> {
+  const provisionFilePath = path.join(
+    projectPath,
+    TestFilePath.armTemplateBaseFolder,
+    TestFilePath.provisionFileName
+  );
+  let content = await fs.readFile(provisionFilePath, fileEncoding);
+  let insertionIndex = content.indexOf(provisionInsertionSearchString);
+
+  const paramToAdd = `param customizedRg string = '${customizedRgName}'\r\n`;
+  const scopeToAdd = `scope: resourceGroup(customizedRg)\r\n`;
+  content =
+    paramToAdd +
+    content.substring(0, insertionIndex) +
+    scopeToAdd +
+    content.substring(insertionIndex);
+  await fs.writeFile(provisionFilePath, content);
+  console.log(`[debug] ${provisionFilePath} `);
+  console.log(content);
+
+  console.log(
+    `[Successfully] customize ${provisionFilePath} content to deploy cloud resources to ${customizedRgName}.`
+  );
+
+  if (configInsertionSearchString) {
+    const configFilePath = path.join(
+      projectPath,
+      TestFilePath.configFolder,
+      TestFilePath.configFileName
+    );
+    content = await fs.readFile(configFilePath, fileEncoding);
+    insertionIndex = content.indexOf(configInsertionSearchString);
+    content =
+      paramToAdd +
+      content.substring(0, insertionIndex) +
+      scopeToAdd +
+      content.substring(insertionIndex);
+    await fs.writeFile(configFilePath, content);
+    console.log(`[debug] ${configFilePath} `);
+    console.log(content);
+
+    console.log(
+      `[Successfully] customize ${configFilePath} content to deploy cloud resources to ${customizedRgName}.`
+    );
+  }
 }

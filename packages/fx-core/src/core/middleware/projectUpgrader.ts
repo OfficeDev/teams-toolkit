@@ -23,7 +23,6 @@ import {
   WriteFileError,
 } from "..";
 import { serializeDict } from "../..";
-import { isMultiEnvEnabled } from "../../common";
 import { readJson } from "../../common/fileUtils";
 import {
   Component,
@@ -82,9 +81,6 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
   if (!projectPathExist) {
     return err(PathNotExistError(inputs.projectPath));
   }
-  const confFolderPath = isMultiEnvEnabled()
-    ? path.resolve(inputs.projectPath, `.${ConfigFolderName}`, InputConfigsFolderName)
-    : path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
   const statesFolderPath = path.resolve(
     inputs.projectPath,
     `.${ConfigFolderName}`,
@@ -93,23 +89,19 @@ export async function upgradeContext(ctx: CoreHookContext): Promise<Result<undef
 
   const defaultEnvName = environmentManager.getDefaultEnvName();
 
-  const contextPath = isMultiEnvEnabled()
-    ? path.resolve(statesFolderPath, EnvStateFileNameTemplate.replace("@envName", defaultEnvName))
-    : path.resolve(confFolderPath, `env.${defaultEnvName}.json`);
-
-  const userDataPath = path.resolve(
-    isMultiEnvEnabled() ? statesFolderPath : confFolderPath,
-    `${defaultEnvName}.userdata`
+  const contextPath = path.resolve(
+    statesFolderPath,
+    EnvStateFileNameTemplate.replace("@envName", defaultEnvName)
   );
+
+  const userDataPath = path.resolve(statesFolderPath, `${defaultEnvName}.userdata`);
 
   // For the multi env scenario, state.{envName}.json and {envName}.userdata are not created when scaffolding
   // These projects must be the new projects, so skip upgrading.
-  if (isMultiEnvEnabled()) {
-    try {
-      await Promise.all([fs.stat(contextPath), fs.stat(userDataPath)]);
-    } catch (error) {
-      return ok(undefined);
-    }
+  try {
+    await Promise.all([fs.stat(contextPath), fs.stat(userDataPath)]);
+  } catch (error) {
+    return ok(undefined);
   }
 
   let context: Json | undefined = {};

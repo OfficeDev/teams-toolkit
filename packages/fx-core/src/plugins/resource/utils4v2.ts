@@ -33,7 +33,7 @@ import {
   ResourceTemplate,
   SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
-import { CryptoDataMatchers, isMultiEnvEnabled, mapToJson } from "../../common/tools";
+import { CryptoDataMatchers, mapToJson } from "../../common/tools";
 import { ArmTemplateResult } from "../../common/armInterface";
 import {
   InvalidStateError,
@@ -568,10 +568,6 @@ export async function collaborationApiAdaptor(
   plugin: Plugin,
   taskName: "grantPermission" | "listCollaborator" | "checkPermission"
 ): Promise<Result<Json, FxError>> {
-  // API v2 only works with multiple env enabled
-  if (!isMultiEnvEnabled()) {
-    return err(MultipleEnvNotEnabledError());
-  }
   const fn = plugin[taskName];
   if (!fn) {
     return err(PluginHasNoTaskImpl(plugin.displayName, taskName));

@@ -34,7 +34,7 @@ describe("LocalEnvManager", () => {
     },
     frontend: {
       tabDomain: "localhost",
-      tabEndpoint: "https://localhost:3000",
+      tabEndpoint: "https://localhost:53000",
     },
   };
   const projectPath = path.resolve(__dirname, "data");
@@ -226,7 +226,7 @@ describe("LocalEnvManager", () => {
       chai.assert.equal(localSettings!.auth.clientSecret, "password-placeholder");
       chai.assert.isDefined(localSettings!.frontend);
       chai.assert.equal(localSettings!.frontend.tabDomain, "localhost");
-      chai.assert.equal(localSettings!.frontend.tabEndpoint, "https://localhost:3000");
+      chai.assert.equal(localSettings!.frontend.tabEndpoint, "https://localhost:53000");
     });
 
     it("missing field", async () => {

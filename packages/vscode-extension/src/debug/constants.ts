@@ -46,8 +46,8 @@ const loopbackAddressIPv4 = "127.0.0.1";
 const loopbackAddressIPv6 = "::1";
 const hosts = [allAddressIPv4, loopbackAddressIPv4, allAddressIPv6, loopbackAddressIPv6];
 
-export const frontendPorts: [number, string[]][] = [[3000, hosts]];
-export const simpleAuthPorts: [number, string[]][] = [[5000, hosts]];
+export const frontendPorts: [number, string[]][] = [[53000, hosts]];
+export const simpleAuthPorts: [number, string[]][] = [[55000, hosts]];
 export const backendDebugPortRegex = /--inspect[\s]*=[\s"']*9229/im;
 export const backendDebugPorts: [number, string[]][] = [[9229, hosts]];
 export const backendServicePortRegex = /--port[\s"']*7071/im;

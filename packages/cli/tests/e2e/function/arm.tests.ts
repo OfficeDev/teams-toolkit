@@ -7,8 +7,9 @@
 
 import path from "path";
 
-import { AadValidator, FrontendValidator } from "../../commonlib";
+import { AadValidator, FrontendValidator, FunctionValidator } from "../../commonlib";
 import {
+  execAsync,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -22,7 +23,7 @@ import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
 import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, ResourceToDeploy } from "../../commonlib/constants";
+import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 
 describe("Deploy to customized resource group", function () {
@@ -44,9 +45,16 @@ describe("Deploy to customized resource group", function () {
     await cleanUp(appName, projectPath, true, false, false, true);
   });
 
-  it(`tab project can deploy frontend hosting resource to customized resource group and successfully provision / deploy`, async function () {
+  it(`tab project can deploy function resource to customized resource group and successfully provision / deploy`, async function () {
     // Create new tab project
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+
+    await execAsync(`teamsfx resource add ${Resource.AzureFunction} --function-name func1`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+    console.log(`[Successfully] add function to ${projectPath}`);
 
     // Create empty resource group
     const customizedRgName = "customizedRgName";
@@ -56,7 +64,8 @@ describe("Deploy to customized resource group", function () {
     await customizeBicepFilesToCustomizedRg(
       customizedRgName,
       projectPath,
-      `name: 'frontendHostingProvision'`
+      `name: 'functionProvision'`,
+      `name: 'addTeamsFxFunctionConfiguration'`
     );
 
     // Provision
@@ -65,7 +74,7 @@ describe("Deploy to customized resource group", function () {
     await CliHelper.provisionProject(projectPath);
 
     // deploy
-    await CliHelper.deployProject(ResourceToDeploy.FrontendHosting, projectPath);
+    await CliHelper.deployProject(ResourceToDeploy.Function, projectPath);
 
     // Assert
     {
@@ -78,10 +87,10 @@ describe("Deploy to customized resource group", function () {
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
 
-      // Validate Tab Frontend
-      const frontend = FrontendValidator.init(context, true);
-      await FrontendValidator.validateProvision(frontend);
-      await FrontendValidator.validateDeploy(frontend);
+      // Validate Function App
+      const func = FunctionValidator.init(context, true);
+      await FunctionValidator.validateProvision(func, false, true);
+      await FunctionValidator.validateDeploy(func);
     }
 
     await deleteResourceGroupByName(customizedRgName);

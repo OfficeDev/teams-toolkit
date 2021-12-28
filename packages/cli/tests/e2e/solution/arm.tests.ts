@@ -54,7 +54,7 @@ describe("Add capabilities", function () {
 
   it("tab project can add bot capability and provision", async () => {
     // Arrange
-    await createProjectWithCapability(appName, testFolder, Capability.Tab);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     // Act
     await addCapabilityToProject(projectPath, Capability.Bot);
@@ -70,7 +70,7 @@ describe("Add capabilities", function () {
 
   it("tab project can add messaging extension capability and provision", async () => {
     // Arrange
-    await createProjectWithCapability(appName, testFolder, Capability.Tab);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     // Act
     await addCapabilityToProject(projectPath, Capability.MessagingExtension);
@@ -86,7 +86,7 @@ describe("Add capabilities", function () {
 
   it("bot project can add tab capability and provision", async () => {
     // Arrange
-    await createProjectWithCapability(appName, testFolder, Capability.Bot);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 
     // Act
     await addCapabilityToProject(projectPath, Capability.Tab);
@@ -102,7 +102,7 @@ describe("Add capabilities", function () {
 
   it("messaging extnsion project can add tab capability and provision", async () => {
     // Arrange
-    await createProjectWithCapability(appName, testFolder, Capability.MessagingExtension);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.MessagingExtension);
 
     // Act
     await addCapabilityToProject(projectPath, Capability.Tab);
@@ -158,7 +158,7 @@ describe("User can customize Bicep files", function () {
 
   it("user customized Bicep file is used when provision", async () => {
     // Arrange
-    await createProjectWithCapability(appName, testFolder, Capability.Tab);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     // Act
     await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
@@ -178,7 +178,7 @@ describe("User can customize Bicep files", function () {
 
   it("Regenerate Bicep will not affect user's customized Bicep code", async () => {
     // Arrange
-    await createProjectWithCapability(appName, testFolder, Capability.Tab);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     // Act
     await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
@@ -299,27 +299,6 @@ resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
     chai.assert(serivcePlanResponse, "B1");
   }
 });
-
-async function createProjectWithCapability(
-  appName: string,
-  testFolder: string,
-  capability: string
-) {
-  await execAsync(
-    `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} `,
-    {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    }
-  );
-  console.log(
-    `[Successfully] scaffold project to ${path.resolve(
-      testFolder,
-      appName
-    )} with capability ${capability}`
-  );
-}
 
 async function addCapabilityToProject(projectPath: string, capabilityToAdd: string) {
   await execAsync(`teamsfx capability add ${capabilityToAdd}`, {

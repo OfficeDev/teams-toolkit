@@ -23,7 +23,7 @@ import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
 import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { ResourceToDeploy } from "../../commonlib/constants";
+import { Capability, ResourceToDeploy } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 
 describe("Deploy to customized resource group", function () {
@@ -47,12 +47,7 @@ describe("Deploy to customized resource group", function () {
 
   it(`tab project can deploy simple auth resource to customized resource group and successfully provision / deploy`, async function () {
     // Create new tab project
-    await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] scaffold to ${projectPath}`);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     // Create empty resource group
     const customizedRgName = "customizedRgName";

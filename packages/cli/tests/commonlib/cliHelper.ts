@@ -1,5 +1,6 @@
 import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
 import { ResourceToDeploy } from "./constants";
+import path from "path";
 
 export class CliHelper {
   static async setSubscription(subscription: string, projectPath: string) {
@@ -29,5 +30,26 @@ export class CliHelper {
       timeout: 0,
     });
     console.log(`[Successfully] deploy ${resourceToDeploy} for ${projectPath}`);
+  }
+
+  static async createProjectWithCapability(
+    appName: string,
+    testFolder: string,
+    capability: string
+  ) {
+    await execAsync(
+      `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} `,
+      {
+        cwd: testFolder,
+        env: process.env,
+        timeout: 0,
+      }
+    );
+    console.log(
+      `[Successfully] scaffold project to ${path.resolve(
+        testFolder,
+        appName
+      )} with capability ${capability}`
+    );
   }
 }

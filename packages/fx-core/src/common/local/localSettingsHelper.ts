@@ -87,6 +87,7 @@ export async function convertToLocalEnvs(
     localEnvs[LocalEnvFrontendKeys.Https] = frontendConfigs?.get(
       LocalSettingsFrontendKeys.Https
     ) as string;
+    localEnvs[LocalEnvFrontendKeys.Port] = "53000";
 
     if (includeAuth) {
       // frontend local envs

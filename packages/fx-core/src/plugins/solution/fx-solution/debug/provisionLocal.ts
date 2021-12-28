@@ -72,14 +72,14 @@ export async function setupLocalDebugSettings(
       if (vscEnv === VsCodeEnv.codespaceBrowser || vscEnv === VsCodeEnv.codespaceVsCode) {
         const codespaceName = await getCodespaceName();
 
-        localTabEndpoint = getCodespaceUrl(codespaceName, 3000);
+        localTabEndpoint = getCodespaceUrl(codespaceName, 53000);
         localTabDomain = new URL(localTabEndpoint).host;
-        localAuthEndpoint = getCodespaceUrl(codespaceName, 5000);
+        localAuthEndpoint = getCodespaceUrl(codespaceName, 55000);
         localFuncEndpoint = getCodespaceUrl(codespaceName, 7071);
       } else {
         localTabDomain = "localhost";
-        localTabEndpoint = "https://localhost:3000";
-        localAuthEndpoint = "http://localhost:5000";
+        localTabEndpoint = "https://localhost:53000";
+        localAuthEndpoint = "http://localhost:55000";
         localFuncEndpoint = "http://localhost:7071";
       }
 
@@ -190,6 +190,8 @@ export async function configLocalDebugSettings(
       const localAuthPackagePath = localSettings?.auth?.simpleAuthFilePath as string;
 
       if (includeFrontend) {
+        frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
+
         if (includeAuth) {
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
           frontendEnvs!.teamsfxLocalEnvs[

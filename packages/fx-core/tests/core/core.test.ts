@@ -365,24 +365,6 @@ describe("Core basic APIs", () => {
       }
     });
   });
-
-  it("create from sample", async () => {
-    const sampleOption = SampleSelect.staticOptions[0] as OptionItem;
-    appName = sampleOption.id;
-    projectPath = path.resolve(os.tmpdir(), appName);
-    deleteFolder(projectPath);
-    const inputs: Inputs = {
-      platform: Platform.CLI,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
-      [CoreQuestionNames.Samples]: sampleOption.id,
-      stage: Stage.create,
-    };
-    const core = new FxCore(tools);
-    const res = await core.createProject(inputs);
-    assert.isTrue(res.isOk() && res.value === projectPath);
-  });
-
   it("scaffold and createEnv, activateEnv", async () => {
     appName = randomAppName();
     const core = new FxCore(tools);

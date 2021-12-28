@@ -12,6 +12,7 @@ import {
   IBot,
   IConfigurableTab,
   IStaticTab,
+  TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { Service } from "typedi";
@@ -28,10 +29,13 @@ export class AppStudioPluginV3 {
     ctx: Context,
     inputs: v2.InputsWithProjectPath,
     capabilities: (
-      | { name: "staticTab"; snippet?: IStaticTab }
-      | { name: "configurableTab"; snippet?: IConfigurableTab }
-      | { name: "Bot"; snippet?: IBot }
-      | { name: "MessageExtension"; snippet?: IComposeExtension }
+      | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
+      | { name: "configurableTab"; snippet?: { local: IConfigurableTab; remote: IConfigurableTab } }
+      | { name: "Bot"; snippet?: { local: IBot; remote: IBot } }
+      | {
+          name: "MessageExtension";
+          snippet?: { local: IComposeExtension; remote: IComposeExtension };
+        }
     )[]
   ): Promise<Result<any, FxError>> {
     capabilities.map((capability) => {
@@ -42,10 +46,35 @@ export class AppStudioPluginV3 {
     return ok(undefined);
   }
 
+  /**
+   * Should conside both local and remote
+   * @returns
+   */
+  async loadManifest(
+    ctx: Context,
+    inputs: v2.InputsWithProjectPath
+  ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> {
+    return ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() });
+  }
+
+  /**
+   *
+   * @param ctx ctx.manifest
+   * @param inputs
+   * @returns
+   */
+  async SaveManifest(
+    ctx: Context,
+    inputs: v2.InputsWithProjectPath,
+    manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
+  ): Promise<Result<any, FxError>> {
+    return ok(undefined);
+  }
+
   // Read from manifest template, and check if it exceeds the limit.
   // The limit of staticTab if 16, others are 1
   // Should check both local & remote manifest template file
-  private async capabilityExceedLimit(
+  async capabilityExceedLimit(
     capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
   ): Promise<boolean> {
     return false;

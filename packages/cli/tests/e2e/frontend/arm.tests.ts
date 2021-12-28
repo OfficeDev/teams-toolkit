@@ -33,13 +33,10 @@ describe("Deploy to customized resource group", function () {
   }
 
   const testFolder = getTestFolder();
+  const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
-  let appName: string, projectPath: string;
+  const projectPath = path.resolve(testFolder, appName);
 
-  beforeEach(async () => {
-    appName = getUniqueAppName();
-    projectPath = path.resolve(testFolder, appName);
-  });
   it(`tab project can deploy simple auth resource to customized resource group and successfully provision / deploy`, async function () {
     // Create new tab project
     await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
@@ -83,7 +80,7 @@ describe("Deploy to customized resource group", function () {
     }
   });
 
-  afterEach(async () => {
+  after(async () => {
     await cleanUp(appName, projectPath, true, false, false, true);
   });
 
@@ -91,11 +88,7 @@ describe("Deploy to customized resource group", function () {
     customizedRgName: string,
     projectPath: string
   ): Promise<void> {
-    const provisionFilePath = path.join(
-      projectPath,
-      TestFilePath.armTemplateBaseFolder,
-      TestFilePath.provisionFileName
-    );
+    const provisionFilePath = path.join(projectPath, TestFilePath.provisionFileName);
     let content = await fs.readFile(provisionFilePath, fileEncoding);
     let insertionIndex = content.indexOf(`name: 'simpleAuthProvision'`);
 
@@ -110,11 +103,7 @@ describe("Deploy to customized resource group", function () {
     console.log(`[debug] ${provisionFilePath} `);
     console.log(content);
 
-    const configFilePath = path.join(
-      projectPath,
-      TestFilePath.configFolder,
-      TestFilePath.configFileName
-    );
+    const configFilePath = path.join(projectPath, TestFilePath.configFileName);
     content = await fs.readFile(configFilePath, fileEncoding);
     insertionIndex = content.indexOf(`name: 'addTeamsFxSimpleAuthConfiguration'`);
     content =

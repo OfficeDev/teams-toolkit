@@ -290,7 +290,7 @@ export async function cleanUp(
     // remove resouce group
     cleanUpResourceGroup(appName, isMultiEnvEnabled, envName),
     // remove project
-    //cleanUpLocalProject(projectPath, cleanUpAadAppPromise),
+    cleanUpLocalProject(projectPath, cleanUpAadAppPromise),
   ]);
 }
 

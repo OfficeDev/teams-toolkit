@@ -1,13 +1,13 @@
 export class TestFilePath {
-  // static readonly armTemplateBaseFolder = "./templates/azure";
-  // static readonly configFolder = "./.fx/configs";
+  static readonly armTemplateBaseFolder = "./templates/azure";
+  static readonly configFolder = "./.fx/configs";
 
   // static readonly mainFileName = "main.bicep";
   static readonly provisionFileName = "provision.bicep";
   static readonly configFileName = "config.bicep";
   // static readonly defaultParameterFileName = `azure.parameters.default.json`;
 
-  // static readonly provisionFolder = "provision";
+  static readonly provisionFolder = "provision";
   // static readonly fehostProvisionFileName = "frontendHostingProvision.bicep";
   // static readonly simpleAuthProvisionFileName = "simpleAuthProvision.bicep";
   // static readonly aadProvisionFileName = "aadProvision.bicep";
@@ -25,6 +25,18 @@ export class TestFilePath {
 
   // static readonly expectedBicepFileFolder = `expectedBicepFiles`;
   // static readonly resultParameterFileName = `parameters.result.json`;
+}
+
+export class PluginId {
+  static readonly Aad = "fx-resource-aad-app-for-teams";
+  static readonly FrontendHosting = "fx-resource-frontend-hosting";
+  static readonly SimpleAuth = "fx-resource-simple-auth";
+  static readonly Bot = "fx-resource-bot";
+  static readonly LocalDebug = "fx-resource-local-debug";
+  static readonly AzureSQL = "fx-resource-azure-sql";
+  static readonly Function = "fx-resource-function";
+  static readonly Identity = "fx-resource-identity";
+  static readonly Apim = "fx-resource-apim";
 }
 
 export const fileEncoding = "UTF8";
@@ -52,4 +64,8 @@ export class ConfigKey {
   static readonly solutionPluginName = "solution";
   static readonly subscriptionId = "subscriptionId";
   static readonly resourceGroupName = "resourceGroupName";
+
+  // simple auth
+  static readonly endpoint = "endpoint";
+  static readonly webAppResourceId = "webAppResourceId";
 }

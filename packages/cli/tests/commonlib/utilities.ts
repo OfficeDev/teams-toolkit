@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import axios from "axios";
-import { execAsync } from "../e2e/commonUtils";
 
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);

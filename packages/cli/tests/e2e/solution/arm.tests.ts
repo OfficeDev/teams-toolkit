@@ -31,7 +31,7 @@ import * as fs from "fs-extra";
 import MockAzureAccountProvider from "../../../src/commonlib/azureLoginUserPassword";
 import { expect } from "chai";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, ConfigKey, Resource } from "../../commonlib/constants";
+import { Capability, ConfigKey, Resource, TestFilePath } from "../../commonlib/constants";
 
 describe("Add capabilities", function () {
   //  Only test when insider feature flag enabled
@@ -43,12 +43,12 @@ describe("Add capabilities", function () {
   const subscription = getSubscriptionId();
   let appName: string, projectPath: string;
 
-  before(async () => {
+  beforeEach(async () => {
     appName = getUniqueAppName();
     projectPath = path.resolve(testFolder, appName);
   });
 
-  after(async () => {
+  afterEach(async () => {
     await cleanUp(appName, projectPath, true, false, false, true);
   });
 
@@ -214,11 +214,11 @@ describe("User can customize Bicep files", function () {
 
   async function customizeBicepFile(projectPath: string): Promise<string[]> {
     const newServerFarms: string[] = [];
-    const bicepFileFolder = path.join(projectPath, "templates", "azure");
+    const bicepFileFolder = path.join(projectPath, TestFilePath.armTemplateBaseFolder);
 
     const simpleAuthTestServerFarm = "simpleAuth_testResource";
     await fs.appendFile(
-      path.join(bicepFileFolder, "provision", "simpleAuth.bicep"),
+      path.join(bicepFileFolder, TestFilePath.provisionFolder, "simpleAuth.bicep"),
       `
 resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: '${simpleAuthTestServerFarm}'

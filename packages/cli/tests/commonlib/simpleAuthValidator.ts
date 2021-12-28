@@ -4,6 +4,7 @@
 import { isArmSupportEnabled } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
+import { ConfigKey, PluginId } from "./constants";
 import { IAadObject } from "./interfaces/IAADDefinition";
 import {
   getResourceGroupNameFromResourceId,
@@ -11,11 +12,6 @@ import {
   getWebappConfigs,
   getWebappServicePlan,
 } from "./utilities";
-
-const simpleAuthPluginName = "fx-resource-simple-auth";
-const solutionPluginName = "solution";
-const subscriptionKey = "subscriptionId";
-const rgKey = "resourceGroupName";
 
 export class PropertiesKeys {
   static clientId = "CLIENT_ID";
@@ -27,7 +23,7 @@ export class PropertiesKeys {
 
 export interface ISimpleAuthObject {
   endpoint: string;
-  storageResourceId?: string;
+  webAppResourceId?: string;
 }
 
 export class SimpleAuthValidator {
@@ -39,22 +35,22 @@ export class SimpleAuthValidator {
 
     let simpleAuthObject: ISimpleAuthObject;
     if (!isLocalDebug) {
-      simpleAuthObject = <ISimpleAuthObject>ctx[simpleAuthPluginName];
+      simpleAuthObject = <ISimpleAuthObject>ctx[PluginId.SimpleAuth];
     } else {
       simpleAuthObject = {
-        endpoint: ctx[simpleAuthPluginName]["endpoint"],
-        storageResourceId: ctx[simpleAuthPluginName]["storageResourceId"],
+        endpoint: ctx[PluginId.SimpleAuth][ConfigKey.endpoint],
+        webAppResourceId: ctx[PluginId.SimpleAuth][ConfigKey.webAppResourceId],
       } as ISimpleAuthObject;
     }
     chai.assert.exists(simpleAuthObject);
 
     if (isArmSupportEnabled()) {
-      chai.assert.exists(simpleAuthObject.storageResourceId);
-      this.subscriptionId = getSubscriptionIdFromResourceId(simpleAuthObject.storageResourceId!);
-      this.rg = getResourceGroupNameFromResourceId(simpleAuthObject.storageResourceId!);
+      chai.assert.exists(simpleAuthObject.webAppResourceId);
+      this.subscriptionId = getSubscriptionIdFromResourceId(simpleAuthObject.webAppResourceId!);
+      this.rg = getResourceGroupNameFromResourceId(simpleAuthObject.webAppResourceId!);
     } else {
-      this.subscriptionId = ctx[solutionPluginName][subscriptionKey];
-      this.rg = ctx[solutionPluginName][rgKey];
+      this.subscriptionId = ctx[ConfigKey.solutionPluginName][ConfigKey.subscriptionId];
+      this.rg = ctx[ConfigKey.solutionPluginName][ConfigKey.resourceGroupName];
     }
 
     chai.assert.exists(this.subscriptionId);

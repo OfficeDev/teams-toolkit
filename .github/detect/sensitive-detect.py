@@ -59,11 +59,12 @@ def main():
     excludeFilePath = os.path.join(rootDir, ".github", "detect", "excludes.txt")
     excludeFiles = read_files(excludeFilePath)
     diffFiles = read_files(includeFilePath)
-    targetDiffFiles = diffFiles
+    targetDiffFiles = diffFiles.copy()
     for item in diffFiles:
         for exFile in excludeFiles:
             if fnmatch.fnmatch(item, exFile):
                 targetDiffFiles.remove(item)
+                break
     for diffFile in targetDiffFiles:
         content = read_content(diffFile, rootDir)
         find_string(patterns, content, diffFile)

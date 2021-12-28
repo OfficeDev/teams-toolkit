@@ -177,6 +177,18 @@ describe("Multi Env Happy Path for Azure", function () {
         expect(result.stderr).to.be.empty;
       }
 
+      // update manifest
+      result = await execAsyncWithRetry(`teamsfx manifest update --env ${env}`, {
+        cwd: projectPath,
+        env: processEnv,
+        timeout: 0,
+      });
+
+      {
+        // Validate update manifest
+        expect(result.stderr).to.be.empty;
+      }
+
       // package
       await execAsyncWithRetry(`teamsfx package --env ${env}`, {
         cwd: projectPath,

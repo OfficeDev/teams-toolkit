@@ -57,7 +57,7 @@ export async function setupLocalDebugSettings(
     auth: includeAuth ? "true" : "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
   };
-  TelemetryUtils.init(ctx);
+  TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
 
   try {
@@ -160,7 +160,7 @@ export async function configLocalDebugSettings(
     auth: includeAuth ? "true" : "false",
     "trust-development-certificate": trustDevCert + "",
   };
-  TelemetryUtils.init(ctx);
+  TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
 
   try {

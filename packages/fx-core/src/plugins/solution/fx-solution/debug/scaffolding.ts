@@ -35,7 +35,7 @@ export async function scaffoldLocalDebugSettings(
   inputs: Inputs,
   localSettings?: Json
 ): Promise<Result<Void, FxError>> {
-  return _scaffoldLocalDebugSettings(
+  return await _scaffoldLocalDebugSettings(
     ctx.projectSetting,
     inputs,
     ctx.telemetryReporter,
@@ -51,7 +51,7 @@ export async function scaffoldLocalDebugSettingsV1(
   if (!ctx.projectSettings || !ctx.answers || !ctx.telemetryReporter || !ctx.logProvider) {
     return err(ScaffoldLocalDebugSettingsV1Error());
   }
-  return _scaffoldLocalDebugSettings(
+  return await _scaffoldLocalDebugSettings(
     ctx.projectSettings,
     ctx.answers,
     ctx.telemetryReporter,

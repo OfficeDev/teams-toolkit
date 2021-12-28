@@ -13,10 +13,10 @@ During debugging, a localhost development certificate will also be automatically
 Some frequently asked questions are listed bellow.
 
 ## Which ports will be used?
-| Port | Component |
+| Component | Port |
 | --- | --- |
-| 3000 | Tab |
-| 5000 | Auth |
+| Tab | 53000, or 3000 (for Teams Toolkit version < 3.2.0) |
+| Auth | 55000. or 5000 (for Teams Toolkit version < 3.2.0) |
 | 7071 | Function |
 | 9229 | Node inspector for Function |
 | 3978 | Bot / Messaging Extension |
@@ -145,7 +145,7 @@ If so, an error will show in the Tab page of your app, look like:
 
 ![Tab-Https-Not-Trusted](../images/fx-core/localdebug/tab-https-not-trusted.png)
 
-To resolve this issue, open a new tab in the same browser, go to https://localhost:3000/index.html#/tab, click the "Advanced" button and then select "Proceed to localhost (unsafe)". After doing this, refresh the Teams web client.
+To resolve this issue, open a new tab in the same browser, go to https://localhost:53000/index.html#/tab, click the "Advanced" button and then select "Proceed to localhost (unsafe)". After doing this, refresh the Teams web client.
 
 ![Continue-To-Localhost](../images/fx-core/localdebug/continue-to-localhost.png)
 

@@ -8,12 +8,12 @@ param currentConfigs object
 @secure()
 param currentAppSettings object
 
-var functionAppName = split({{fx-resource-function.References.functionAppResourceId}}, '/')[8]
+var functionAppName = split(\{{fx-resource-function.References.functionAppResourceId}}, '/')[8]
 
 var m365ClientId = provisionParameters['m365ClientId']
 
-{{#if fx-resource-key-vault}}
-var m365ClientSecret = {{fx-resource-key-vault.References.m365ClientSecretReference}}
+{{#if (contains "fx-resource-key-vault" plugins)}}
+var m365ClientSecret = \{{fx-resource-key-vault.References.m365ClientSecretReference}}
 {{else}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']
 {{/if}}
@@ -22,23 +22,23 @@ var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
 
-{{#if fx-resource-frontend-hosting }}
-var tabAppDomain = {{fx-resource-frontend-hosting.References.domain}}
-var tabAppEndpoint = {{fx-resource-frontend-hosting.References.endpoint}}
+{{#if (contains "fx-resource-frontend-hosting" plugins) }}
+var tabAppDomain = \{{fx-resource-frontend-hosting.References.domain}}
+var tabAppEndpoint = \{{fx-resource-frontend-hosting.References.endpoint}}
 {{/if}}
 
-{{#if fx-resource-bot }}
+{{#if (contains "fx-resource-bot" plugins) }}
 var botId = provisionParameters['botAadAppClientId']
 {{/if}}
 
-{{#if fx-resource-frontend-hosting }}
-  {{#if fx-resource-bot }}
+{{#if (contains "fx-resource-frontend-hosting" plugins) }}
+  {{#if (contains "fx-resource-bot" plugins) }}
 var m365ApplicationIdUri = 'api://${tabAppDomain}/botid-${botId}'
   {{else}}
 var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'
   {{/if}}
 {{else}}
-  {{#if fx-resource-bot }}
+  {{#if (contains "fx-resource-bot" plugins) }}
 var m365ApplicationIdUri = 'api://botid-${botId}'
   {{/if}}
 {{/if}}
@@ -53,7 +53,7 @@ var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teams
 
 var currentAllowedOrigins = empty(currentConfigs.cors) ? [] : currentConfigs.cors.allowedOrigins
 
-{{#if fx-resource-frontend-hosting }}
+{{#if (contains "fx-resource-frontend-hosting" plugins) }}
 resource appConfig 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionAppName}/web'
   kind: 'functionapp'
@@ -69,17 +69,17 @@ resource appConfig 'Microsoft.Web/sites/config@2021-02-01' = {
 resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionAppName}/appsettings'
   properties: union({
-    API_ENDPOINT: {{fx-resource-function.References.functionEndpoint}}
+    API_ENDPOINT: \{{fx-resource-function.References.functionEndpoint}}
     ALLOWED_APP_IDS: authorizedClientApplicationIds
     M365_CLIENT_ID: m365ClientId
     M365_CLIENT_SECRET: m365ClientSecret
     M365_TENANT_ID: m365TenantId
     M365_AUTHORITY_HOST: m365OauthAuthorityHost
     M365_APPLICATION_ID_URI: m365ApplicationIdUri
-    IDENTITY_ID: {{fx-resource-identity.References.identityClientId}}
-    {{#if fx-resource-azure-sql }}
-    SQL_DATABASE_NAME: {{fx-resource-azure-sql.References.databaseName}}
-    SQL_ENDPOINT: {{fx-resource-azure-sql.References.sqlEndpoint}}
+    IDENTITY_ID: \{{fx-resource-identity.References.identityClientId}}
+    {{#if (contains "fx-resource-azure-sql" plugins) }}
+    SQL_DATABASE_NAME: \{{fx-resource-azure-sql.References.databaseName}}
+    SQL_ENDPOINT: \{{fx-resource-azure-sql.References.sqlEndpoint}}
     {{/if}}
   }, currentAppSettings)
 }

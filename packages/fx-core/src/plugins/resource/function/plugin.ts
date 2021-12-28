@@ -86,6 +86,9 @@ import {
   isArmSupportEnabled,
 } from "../../../common";
 import { functionNameQuestion } from "./question";
+import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
+import { compileHandlebarsTemplateString } from "../../../common/tools";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -668,10 +671,18 @@ export class FunctionPluginImpl {
       "function",
       "bicep"
     );
+    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    ); // This function ensures return result won't be empty
 
     const configFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
       FunctionBicepFile.configuraitonTemplateFileName
+    );
+    const configModule = compileHandlebarsTemplateString(
+      await fs.readFile(configFuncTemplateFilePath, ConstantString.UTF8Encoding),
+      pluginCtx
     );
 
     const result: ArmTemplateResult = {
@@ -680,9 +691,7 @@ export class FunctionPluginImpl {
         functionEndpoint: FunctionBicep.functionEndpoint,
       },
       Configuration: {
-        Modules: {
-          function: await fs.readFile(configFuncTemplateFilePath, ConstantString.UTF8Encoding),
-        },
+        Modules: { configModule },
       },
     };
 
@@ -697,6 +706,10 @@ export class FunctionPluginImpl {
       "function",
       "bicep"
     );
+    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    ); // This function ensures return result won't be empty
 
     const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionFileName);
 
@@ -711,19 +724,31 @@ export class FunctionPluginImpl {
       bicepTemplateDirectory,
       FunctionBicepFile.configuraitonTemplateFileName
     );
-
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+    const provisionOrchestration = compileHandlebarsTemplateString(
+      await fs.readFile(provisionTemplateFilePath, ConstantString.UTF8Encoding),
+      pluginCtx
+    );
+    const provisionModule = compileHandlebarsTemplateString(
+      await fs.readFile(provisionFuncTemplateFilePath, ConstantString.UTF8Encoding),
+      pluginCtx
+    );
+    const configOrchestration = compileHandlebarsTemplateString(
+      await fs.readFile(configTemplateFilePath, ConstantString.UTF8Encoding),
+      pluginCtx
+    );
+    const configModule = compileHandlebarsTemplateString(
+      await fs.readFile(configFuncTemplateFilePath, ConstantString.UTF8Encoding),
+      pluginCtx
+    );
     const result: ArmTemplateResult = {
       Provision: {
-        Orchestration: await fs.readFile(provisionTemplateFilePath, ConstantString.UTF8Encoding),
-        Modules: {
-          function: await fs.readFile(provisionFuncTemplateFilePath, ConstantString.UTF8Encoding),
-        },
+        Orchestration: provisionOrchestration,
+        Modules: { provisionModule },
       },
       Configuration: {
-        Orchestration: await fs.readFile(configTemplateFilePath, ConstantString.UTF8Encoding),
-        Modules: {
-          function: await fs.readFile(configFuncTemplateFilePath, ConstantString.UTF8Encoding),
-        },
+        Orchestration: configOrchestration,
+        Modules: { configModule },
       },
       Reference: {
         functionAppResourceId: FunctionBicep.functionAppResourceId,

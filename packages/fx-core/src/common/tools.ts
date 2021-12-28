@@ -51,11 +51,11 @@ import { CloudResource } from "@microsoft/teamsfx-api/build/v3";
 
 Handlebars.registerHelper("contains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
-  return array.indexOf(value) > -1 ? options.fn(this) : "";
+  return array.indexOf(value) > -1 ? this : "";
 });
 Handlebars.registerHelper("notContains", (value, array, options) => {
   array = array instanceof Array ? array : [array];
-  return array.indexOf(value) == -1 ? options.fn(this) : "";
+  return array.indexOf(value) == -1 ? this : "";
 });
 
 export const Executor = {

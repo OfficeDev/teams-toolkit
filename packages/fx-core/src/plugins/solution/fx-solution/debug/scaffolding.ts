@@ -26,7 +26,7 @@ import * as Launch from "./util/launch";
 import * as Tasks from "./util/tasks";
 import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
-import { ScaffoldLocalDebugSettingsError } from "./error";
+import { ScaffoldLocalDebugSettingsError, ScaffoldLocalDebugSettingsV1Error } from "./error";
 
 const PackageJson = require("@npmcli/package-json");
 
@@ -48,11 +48,14 @@ export async function scaffoldLocalDebugSettings(
 export async function scaffoldLocalDebugSettingsV1(
   ctx: SolutionContext
 ): Promise<Result<Void, FxError>> {
+  if (!ctx.projectSettings || !ctx.answers || !ctx.telemetryReporter || !ctx.logProvider) {
+    return err(ScaffoldLocalDebugSettingsV1Error());
+  }
   return _scaffoldLocalDebugSettings(
-    ctx.projectSettings!,
-    ctx.answers!,
-    ctx.telemetryReporter!,
-    ctx.logProvider!,
+    ctx.projectSettings,
+    ctx.answers,
+    ctx.telemetryReporter,
+    ctx.logProvider,
     ctx.cryptoProvider
   );
 }
@@ -71,7 +74,7 @@ export async function _scaffoldLocalDebugSettings(
   const includeBackend = ProjectSettingsHelper.includeBackend(projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(projectSetting);
   const includeAuth = ProjectSettingsHelper.includeAuth(projectSetting);
-  const programmingLanguage = projectSetting?.programmingLanguage ?? "";
+  const programmingLanguage = projectSetting.programmingLanguage ?? "";
 
   const telemetryProperties = {
     platform: inputs.platform as string,
@@ -86,7 +89,7 @@ export async function _scaffoldLocalDebugSettings(
   TelemetryUtils.sendStartEvent(TelemetryEventName.scaffoldLocalDebugSettings, telemetryProperties);
   try {
     // scaffold for both vscode and cli
-    if (inputs?.platform === Platform.VSCode || inputs?.platform === Platform.CLI) {
+    if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
       if (isSpfx) {
         // Only generate launch.json and tasks.json for SPFX
         const launchConfigurations = Launch.generateSpfxConfigurations();
@@ -188,7 +191,7 @@ export async function _scaffoldLocalDebugSettings(
         try {
           packageJson = await PackageJson.load(packageJsonPath);
         } catch (error) {
-          logProvider?.error(`Cannot load package.json from ${inputs.projectPath}. ${error}`);
+          logProvider.error(`Cannot load package.json from ${inputs.projectPath}. ${error}`);
         }
 
         if (packageJson !== undefined) {

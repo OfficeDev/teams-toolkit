@@ -49,7 +49,7 @@ export class TelemetryUtils {
     if (TelemetryUtils.localAppId) {
       properties[TelemetryPropertyKey.appId] = TelemetryUtils.localAppId;
     }
-    TelemetryUtils.telemetryReporter?.sendTelemetryEvent(
+    TelemetryUtils.telemetryReporter.sendTelemetryEvent(
       `${eventName}-start`,
       properties,
       measurements
@@ -70,7 +70,7 @@ export class TelemetryUtils {
       properties[TelemetryPropertyKey.appId] = TelemetryUtils.localAppId;
     }
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
-    TelemetryUtils.telemetryReporter?.sendTelemetryErrorEvent(
+    TelemetryUtils.telemetryReporter.sendTelemetryErrorEvent(
       eventName,
       properties,
       measurements,
@@ -100,7 +100,7 @@ export class TelemetryUtils {
     }
     properties[TelemetryPropertyKey.errorCode] = `${err.source}.${err.name}`;
     properties[TelemetryPropertyKey.errorMessage] = err.message;
-    TelemetryUtils.telemetryReporter?.sendTelemetryErrorEvent(
+    TelemetryUtils.telemetryReporter.sendTelemetryErrorEvent(
       eventName,
       properties,
       measurements,

@@ -120,29 +120,3 @@ export async function runWithRetry<T>(fn: () => Promise<T>) {
 
   return fn();
 }
-
-export async function createResourceGroup(
-  resourceGroupName: string,
-  location: string,
-  subscription: string
-) {
-  await execAsync(
-    `az group create --location ${location} --name ${resourceGroupName} --subscription ${subscription}`
-  );
-  console.log(
-    `Successfully create resource group ${resourceGroupName}. Location: ${location}, subscription: ${subscription}`
-  );
-}
-
-export async function deleteResourceGroup(
-  resourceGroupName: string,
-  location: string,
-  subscription: string
-) {
-  await execAsync(
-    `az group create --location ${location} --name ${resourceGroupName} --subscription ${subscription}`
-  );
-  console.log(
-    `Successfully create resource group ${resourceGroupName}. Location: ${location}, subscription: ${subscription}`
-  );
-}

@@ -166,7 +166,7 @@ describe("User can customize Bicep files", function () {
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
-    const resourceGroup: string = await getRGAfterProvision(projectPath);
+    const resourceGroup = await getRGAfterProvision(projectPath);
     chai.assert.exists(resourceGroup);
     expect(resourceGroup).to.be.a("string");
 

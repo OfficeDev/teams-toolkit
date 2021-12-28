@@ -11,19 +11,19 @@ import path from "path";
 import { AadValidator, SimpleAuthValidator } from "../../commonlib";
 import {
   execAsync,
-  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   readContextMultiEnv,
+  createResourceGroup,
+  deleteResourceGroupByName,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
 import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { createResourceGroup } from "../../commonlib/utilities";
 import { fileEncoding, ResourceToDeploy, TestFilePath } from "../../commonlib/constants";
 
 describe("Deploy to customized resource group", function () {
@@ -48,7 +48,7 @@ describe("Deploy to customized resource group", function () {
 
     // Create empty resource group
     const customizedRgName = "customizedRgName";
-    await createResourceGroup(customizedRgName, "eastus", subscription);
+    await createResourceGroup(customizedRgName, "eastus");
 
     // Customize simple auth bicep files
     await customizeSimpleAuthBicepFilesToCustomizedRg(customizedRgName, projectPath);
@@ -75,6 +75,8 @@ describe("Deploy to customized resource group", function () {
       // Validate Simple Auth
       const simpleAuth = SimpleAuthValidator.init(context);
       await SimpleAuthValidator.validate(simpleAuth, aad);
+
+      await deleteResourceGroupByName(customizedRgName);
     }
   });
 

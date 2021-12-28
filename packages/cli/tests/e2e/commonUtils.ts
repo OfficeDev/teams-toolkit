@@ -231,26 +231,25 @@ export async function cleanUpResourceGroup(
   appName: string,
   isMultiEnvEnabled: boolean,
   envName?: string
-) {
-  return new Promise<boolean>(async (resolve) => {
-    const manager = await ResourceGroupManager.init();
-    if (appName) {
-      let name = `${appName}-rg`;
-      if (isMultiEnvEnabled) {
-        name = `${appName}-${envName}-rg`;
-      }
-      if (await manager.hasResourceGroup(name)) {
-        const result = await manager.deleteResourceGroup(name);
-        if (result) {
-          console.log(`[Successfully] clean up the Azure resource group with name: ${name}.`);
-        } else {
-          console.error(`[Faild] clean up the Azure resource group with name: ${name}.`);
-        }
-        return resolve(result);
-      }
+): Promise<boolean> {
+  if (!appName) {
+    return false;
+  }
+  const name = isMultiEnvEnabled ? `${appName}-${envName}-rg` : `${appName}-rg`;
+  return await deleteResourceGroupByName(name);
+}
+
+export async function deleteResourceGroupByName(name: string): Promise<boolean> {
+  const manager = await ResourceGroupManager.init();
+  if (await manager.hasResourceGroup(name)) {
+    const result = await manager.deleteResourceGroup(name);
+    if (result) {
+      console.log(`[Successfully] clean up the Azure resource group with name: ${name}.`);
+    } else {
+      console.error(`[Failed] clean up the Azure resource group with name: ${name}.`);
     }
-    return resolve(false);
-  });
+    return result;
+  }
 }
 
 export async function cleanUpLocalProject(projectPath: string, necessary?: Promise<any>) {
@@ -327,7 +326,7 @@ export async function cleanUpResourcesCreatedHoursAgo(
         );
       } else {
         console.error(
-          `[Faild] clean up the Azure resource group with name: ${filteredGroups[index].name}.`
+          `[Failed] clean up the Azure resource group with name: ${filteredGroups[index].name}.`
         );
       }
     });
@@ -335,9 +334,19 @@ export async function cleanUpResourcesCreatedHoursAgo(
   }
 }
 
+export async function createResourceGroup(name: string, location: string) {
+  const manager = await ResourceGroupManager.init();
+  const result = await manager.createOrUpdateResourceGroup(name, location);
+  if (result) {
+    console.log(`[Successfully] create resource group ${name}.`);
+  } else {
+    console.error(`[Failed] failed to create resource group ${name}.`);
+  }
+  return result;
+}
+
 // TODO: add encrypt
 export async function readContext(projectPath: string): Promise<any> {
-  const contextFilePath = `${projectPath}/.fx/env.default.json`;
   const userDataFilePath = `${projectPath}/.fx/default.userdata`;
 
   // Read Context and UserData

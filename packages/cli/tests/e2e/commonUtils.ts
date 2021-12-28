@@ -250,6 +250,7 @@ export async function deleteResourceGroupByName(name: string): Promise<boolean> 
     }
     return result;
   }
+  return false;
 }
 
 export async function cleanUpLocalProject(projectPath: string, necessary?: Promise<any>) {

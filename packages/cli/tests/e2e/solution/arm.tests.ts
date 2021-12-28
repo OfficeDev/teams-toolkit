@@ -234,7 +234,7 @@ resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
 
     const provisionTestServerFarm = "provision_testResource";
     await fs.appendFile(
-      path.join(bicepFileFolder, "provision.bicep"),
+      path.join(bicepFileFolder, TestFilePath.provisionFileName),
       `
 resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: '${provisionTestServerFarm}'
@@ -250,7 +250,7 @@ resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
 
     const configTestServerFarm = "config_testResource";
     await fs.appendFile(
-      path.join(bicepFileFolder, "config.bicep"),
+      path.join(bicepFileFolder, TestFilePath.configFileName),
       `
 resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: '${configTestServerFarm}'
@@ -266,7 +266,7 @@ resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
 
     const mainTestServerFarm = "main_testResource";
     await fs.appendFile(
-      path.join(bicepFileFolder, "main.bicep"),
+      path.join(bicepFileFolder, TestFilePath.mainFileName),
       `
 resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
   name: '${mainTestServerFarm}'

@@ -476,7 +476,7 @@ export async function customizeBicepFilesToCustomizedRg(
   if (configInsertionSearchString) {
     const configFilePath = path.join(
       projectPath,
-      TestFilePath.configFolder,
+      TestFilePath.armTemplateBaseFolder,
       TestFilePath.configFileName
     );
     content = await fs.readFile(configFilePath, fileEncoding);

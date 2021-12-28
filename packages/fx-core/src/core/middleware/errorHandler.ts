@@ -17,9 +17,7 @@ export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFun
     ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
   }`;
   try {
-    TOOLS?.logProvider?.info(
-      `[core] start task:${taskName}, inputs:${JSON.stringify(inputs)}, API v3: ${isV3()}`
-    );
+    TOOLS?.logProvider?.info(`[core] start task:${taskName}, API v3: ${isV3()}`);
     const time = new Date().getTime();
     await next();
     TOOLS?.logProvider?.info(

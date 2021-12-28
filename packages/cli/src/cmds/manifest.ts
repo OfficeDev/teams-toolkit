@@ -73,7 +73,7 @@ class ManifestValidate extends YargsCommand {
         method: "validateManifest",
       };
 
-      inputs = getSystemInputs(rootFolder);
+      inputs = getSystemInputs(rootFolder, args.env as any);
       const result = await core.executeUserTask!(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ValidateManifest, result.error);
@@ -118,7 +118,7 @@ class ManifestUpdate extends YargsCommand {
         method: "updateManifest",
       };
 
-      inputs = getSystemInputs(rootFolder);
+      inputs = getSystemInputs(rootFolder, args.env as any);
       const result = await core.executeUserTask!(func, inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateManifest, result.error);

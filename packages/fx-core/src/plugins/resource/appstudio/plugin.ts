@@ -447,6 +447,16 @@ export class AppStudioPluginImpl {
       `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/manifest.` +
       (isLocalDebug ? "local" : ctx.envInfo.envName) +
       `.json`;
+    if (!(await fs.pathExists(manifestFileName))) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(manifestFileName) +
+            " Run 'Provision in the cloud' first. Click Get Help to learn more about why you need to provision.",
+          HelpLinks.WhyNeedProvision
+        )
+      );
+    }
     const existingManifest = await fs.readJSON(manifestFileName);
     delete manifest.id;
     delete existingManifest.id;

@@ -37,7 +37,8 @@
     "lint:fix": "eslint --fix \"src/**/*.ts\" \"tests/**/*.ts\"",
     "prepare": "npm run build && node ./scripts/download-templates-zip.js $(git tag --list)",
     "prepublishOnly": "npm run test:unit && npm run build",
-    "package": "rimraf build && webpack --mode production --config ./webpack.config.js"
+    "package": "rimraf build && webpack --mode production --config ./webpack.config.js",
+    "precommit": "lint-staged"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.0.2",

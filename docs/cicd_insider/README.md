@@ -31,7 +31,7 @@ You may want to change:
 1. Change the build scripts if necessary.
 1. Remove the test scripts if you don't have tests.
 
-> Note: The provision step is not included in the CD template as it's usually executed only once. You can either execute provision Within Teams Toolkit, TeamsFx CLI, or using a seperated workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save the file content of `.fx/states/{YOUR_ENV_NAME}.userdata` into GitHub [repository secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) with name `USERDATA_CONTENT` for future usage.
+> Note: The provision step is not included in the CD template as it's usually executed only once. You can either execute provision Within Teams Toolkit, TeamsFx CLI, or using a seperated workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder). 
 
 ### GitHub Secrets 
 Steps to create secrets by environment in GitHub:
@@ -105,17 +105,6 @@ steps:
     versionSpec: '14.17.0'
     checkLatest: true
 
-- task: DownloadSecureFile@1
-  name: userdata
-  inputs:
-    secureFile: 'staging.userdata'
-- task: Bash@3
-  inputs:
-    targetType: 'inline'
-    script: |
-      mkdir -p .fx/states/
-      cp $(userdata.secureFilePath) .fx/states/staging.userdata
-  
 - task: Bash@3
   env:
     SP_NAME: $(AZURE_SERVICE_PRINCIPAL_NAME)
@@ -135,7 +124,7 @@ The potential changes you can make for the script or workflow definition:
 1. Ensure you have a npm build script, or customize the way you build in the automation code.
 1. Ensure you have a npm test script which returns zero for success, and/or change the test commands.
 
-> Note: The provision step is not included in the CD template as it's usually executed only once. You can either execute provision Within Teams Toolkit, TeamsFx CLI, or using a seperated workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and upload `.fx/states/{YOUR_ENV_NAME}.userdata` into Azure DevOps [secure files](https://docs.microsoft.com/en-us/azure/devops/pipelines/library/secure-files?view=azure-devops) for future usage.
+> Note: The provision step is not included in the CD template as it's usually executed only once. You can either execute provision Within Teams Toolkit, TeamsFx CLI, or using a seperated workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder).
 
 ### Azure DevOps Pipeline Variables 
 Steps to create Pipeline variables in Azure DevOps:
@@ -185,7 +174,7 @@ You may want to change:
 1. Change the build scripts if necessary.
 1. Remove the test scripts if you don't have tests.
 
-> Note: The provision step is not included in the CD template as it's usually executed only once. You can either execute provision Within Teams Toolkit, TeamsFx CLI, or using a seperated workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder) and save the file content of `.fx/states/{YOUR_ENV_NAME}.userdata` into Jenkins credentials for future usage.
+> Note: The provision step is not included in the CD template as it's usually executed only once. You can either execute provision Within Teams Toolkit, TeamsFx CLI, or using a seperated workflow. Please remember to commit after provisioning (results of provisioning will be deposited inside the `.fx` folder). 
 
 ### Jenkins Credentials 
 Please follow [using-credentials](https://www.jenkins.io/doc/book/using/using-credentials/) to create credentials on Jenkins.

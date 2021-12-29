@@ -48,7 +48,6 @@ npx teamsfx account login azure --service-principal --username ${SP_NAME} --pass
 
 # We suggest to do the provision steps by case manually or in a separated workflow, so just comment the following steps for references.
 # After provisioning, you should commit necessary files under .fx into the repository.
-# You should copy content of .fx/states/${TEAMSFX_ENV_NAME}.userdata, and export them in your environment which can be refered by the step with name 'Generate userdata'. 
 
 # Provision hosting environment.
 # npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID} --env ${TEAMSFX_ENV_NAME}
@@ -57,9 +56,6 @@ npx teamsfx account login azure --service-principal --username ${SP_NAME} --pass
 # git add .fx
 # git commit -m "chore: commit provision configs"
 # git push
-
-# Generate userdata
-[ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/states/${TEAMSFX_ENV_NAME}.userdata
 
 # Deploy to hosting environment.
 npx teamsfx deploy --env ${TEAMSFX_ENV_NAME}

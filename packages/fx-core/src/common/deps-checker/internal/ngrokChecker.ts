@@ -37,7 +37,7 @@ export class NgrokChecker implements DepsChecker {
   }
 
   public async command(): Promise<string> {
-    throw new Error("Method not implemented.");
+    return "ngrok";
   }
 
   public getDepsInfo(): Promise<DepsInfo> {

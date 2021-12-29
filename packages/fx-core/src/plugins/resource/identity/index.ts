@@ -27,6 +27,9 @@ import { Providers, ResourceManagementClientContext } from "@azure/arm-resources
 import { Bicep, ConstantString } from "../../../common/constants";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { isArmSupportEnabled } from "../../../common";
+import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
+import { compileHandlebarsTemplateString } from "../../../common/tools";
 import "./v2";
 @Service(ResourcePlugins.IdentityPlugin)
 export class IdentityPlugin implements Plugin {
@@ -128,6 +131,11 @@ export class IdentityPlugin implements Plugin {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result> {
+    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    ); // This function ensures return result won't be empty
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -135,18 +143,20 @@ export class IdentityPlugin implements Plugin {
       "identity",
       "bicep"
     );
+    let provisionOrchestration = await fs.readFile(
+      path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
+      ConstantString.UTF8Encoding
+    );
+    provisionOrchestration = compileHandlebarsTemplateString(provisionOrchestration, pluginCtx);
+    let provisionModules = await fs.readFile(
+      path.join(bicepTemplateDirectory, IdentityBicepFile.moduleTempalteFilename),
+      ConstantString.UTF8Encoding
+    );
+    provisionModules = compileHandlebarsTemplateString(provisionModules, pluginCtx);
     const result: ArmTemplateResult = {
       Provision: {
-        Orchestration: await fs.readFile(
-          path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
-          ConstantString.UTF8Encoding
-        ),
-        Modules: {
-          identity: await fs.readFile(
-            path.join(bicepTemplateDirectory, IdentityBicepFile.moduleTempalteFilename),
-            ConstantString.UTF8Encoding
-          ),
-        },
+        Orchestration: provisionOrchestration,
+        Modules: { identity: provisionModules },
       },
       Reference: {
         identityName: IdentityBicep.identityName,

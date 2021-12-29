@@ -24,7 +24,7 @@ import {
   IComposeExtension,
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
-import { getStrings, isArmSupportEnabled } from "../../../../common/tools";
+import { getStrings } from "../../../../common/tools";
 import { getAzureSolutionSettings, reloadV2Plugins } from "./utils";
 import {
   SolutionError,

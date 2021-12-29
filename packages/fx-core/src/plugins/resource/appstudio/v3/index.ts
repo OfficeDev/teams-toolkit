@@ -72,11 +72,12 @@ export class AppStudioPluginV3 {
    * @returns
    */
   async SaveManifest(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
   ): Promise<Result<any, FxError>> {
-    return ok(undefined);
+    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
+    return await this.plugin.saveManifest(pluginContext, manifest);
   }
 
   // Read from manifest template, and check if it exceeds the limit.

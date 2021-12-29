@@ -31,7 +31,7 @@ import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
 import { IUserList } from "./interfaces/IAppDefinition";
-import { getManifestTemplatePath, loadManifest } from "./manifestTemplate";
+import { getManifestTemplatePath, loadManifest, saveManifest } from "./manifestTemplate";
 
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
@@ -511,6 +511,23 @@ export class AppStudioPlugin implements Plugin {
     }
 
     return ok({ local: localManifest.value, remote: remoteManifest.value });
+  }
+
+  public async saveManifest(
+    ctx: PluginContext,
+    manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
+  ): Promise<Result<any, FxError>> {
+    let res = await saveManifest(ctx.root, manifest.local, true);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+
+    res = await saveManifest(ctx.root, manifest.remote, false);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+
+    return ok(undefined);
   }
 
   async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {

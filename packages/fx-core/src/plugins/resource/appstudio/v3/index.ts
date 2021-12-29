@@ -13,12 +13,19 @@ import {
   IConfigurableTab,
   IStaticTab,
   TeamsAppManifest,
+  PluginContext,
 } from "@microsoft/teamsfx-api";
+import { Service, Inject } from "typedi";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
-import { Service } from "typedi";
+import { AppStudioPlugin } from "../";
+import { convert2PluginContext } from "../../utils4v2";
 
 @Service(BuiltInResourcePluginNames.appStudio)
 export class AppStudioPluginV3 {
+  name = "fx-resource-appstudio";
+  displayName = "App Studio";
+  @Inject("AppStudioPlugin")
+  plugin!: AppStudioPlugin;
   // Generate initial manifest template file, for both local debug & remote
   async init(ctx: Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
     return ok(undefined);
@@ -51,10 +58,11 @@ export class AppStudioPluginV3 {
    * @returns
    */
   async loadManifest(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> {
-    return ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() });
+    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
+    return await this.plugin.loadManifest(pluginContext);
   }
 
   /**

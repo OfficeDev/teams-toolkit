@@ -31,6 +31,8 @@ import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
 import { IUserList } from "./interfaces/IAppDefinition";
+import { getManifestTemplatePath, loadManifest } from "./manifestTemplate";
+
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -495,6 +497,22 @@ export class AppStudioPlugin implements Plugin {
     }
   }
 
+  public async loadManifest(
+    ctx: PluginContext
+  ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> {
+    const localManifest = await loadManifest(ctx.root, true);
+    if (localManifest.isErr()) {
+      return err(localManifest.error);
+    }
+
+    const remoteManifest = await loadManifest(ctx.root, false);
+    if (remoteManifest.isErr()) {
+      return err(remoteManifest.error);
+    }
+
+    return ok({ local: localManifest.value, remote: remoteManifest.value });
+  }
+
   async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     if (func.method === "validateManifest") {
       return await this.validateManifest(ctx);
@@ -526,10 +544,7 @@ export class AppStudioPlugin implements Plugin {
       return await this.migrateV1Project(ctx);
     } else if (func.method === "getManifestTemplatePath") {
       const isLocalDebug = (func.params.type as string) === "localDebug";
-      const filePath = await this.appStudioPluginImpl.getManifestTemplatePath(
-        ctx.root,
-        isLocalDebug
-      );
+      const filePath = await getManifestTemplatePath(ctx.root, isLocalDebug);
       return ok(filePath);
     } else if (func.method === "updateManifest") {
       return await this.updateManifest(ctx, func.params && func.params.envName === "local");

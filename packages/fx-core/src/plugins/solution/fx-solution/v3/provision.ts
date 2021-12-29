@@ -79,7 +79,7 @@ export async function provisionResources(
   const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
 
   // check M365 tenant
-  const checkM365Res = await appStudioPlugin.checkM365Tenant(envInfo, tokenProvider.appStudioToken);
+  const checkM365Res = await checkM365Tenant(envInfo, tokenProvider.appStudioToken);
   if (checkM365Res.isErr()) {
     return err(checkM365Res.error);
   }
@@ -476,5 +476,52 @@ export async function askForProvisionConsent(
       )
     );
   }
+  return ok(Void);
+}
+
+async function checkM365Tenant(
+  envInfo: v3.EnvInfoV3,
+  appStudioTokenProvider: AppStudioTokenProvider
+): Promise<Result<Void, FxError>> {
+  await appStudioTokenProvider.getAccessToken();
+  const appResource = envInfo.state[BuiltInResourcePluginNames.appStudio] as TeamsAppResource;
+  const m365TenantId = appResource.tenantId;
+  if (!m365TenantId) {
+    return ok(Void);
+  }
+  const appstudioTokenJson = await appStudioTokenProvider.getJsonObject();
+  if (appstudioTokenJson === undefined) {
+    return err(
+      new SystemError(
+        SolutionError.NoAppStudioToken,
+        "Graph token json is undefined",
+        SolutionSource
+      )
+    );
+  }
+  const teamsAppTenantId = (appstudioTokenJson as any).tid;
+  if (
+    teamsAppTenantId === undefined ||
+    !(typeof teamsAppTenantId === "string") ||
+    teamsAppTenantId.length === 0
+  ) {
+    return err(
+      new SystemError(
+        SolutionError.NoTeamsAppTenantId,
+        "Cannot find Teams app tenant id",
+        SolutionSource
+      )
+    );
+  }
+  if (teamsAppTenantId !== m365TenantId) {
+    return err(
+      new UserError(
+        SolutionError.TeamsAppTenantIdNotRight,
+        `The signed in M365 account does not match the M365 tenant used in previous provision for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
+        "Solution"
+      )
+    );
+  }
+  appResource.tenantId = teamsAppTenantId;
   return ok(Void);
 }

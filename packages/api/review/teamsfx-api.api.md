@@ -1846,6 +1846,9 @@ export interface TelemetryReporter {
     }): void;
 }
 
+// @public (undocumented)
+export const TemplateFolderName = "templates";
+
 // @public
 export interface TextInputQuestion extends UserInputQuestion {
     default?: string | LocalFunc<string | undefined>;

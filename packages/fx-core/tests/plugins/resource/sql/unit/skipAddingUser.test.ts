@@ -14,6 +14,7 @@ import { Constants } from "../../../../../src/plugins/resource/sql/constants";
 import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/commonUtils";
 import { FirewallRules, ServerAzureADAdministrators, Servers } from "@azure/arm-sql";
 import { isArmSupportEnabled, isMultiEnvEnabled } from "../../../../../src";
+import axios from "axios";
 
 chai.use(chaiAsPromised);
 
@@ -108,6 +109,8 @@ describe("skipAddingUser", () => {
     sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
     sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
     sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    sinon.stub(axios, "get").resolves({ data: "1.1.1.1" });
+
     if (isArmSupportEnabled()) {
       TestHelper.mockArmOutput(pluginContext);
     }

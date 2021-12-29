@@ -108,7 +108,7 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
   private computeTemplateCodeLenses(document: vscode.TextDocument) {
     const codeLenses: vscode.CodeLens[] = [];
     const command = {
-      title: "📝Preview",
+      title: "🖼️Preview",
       command: "fx-extension.openPreviewFile",
       arguments: [{ fsPath: document.fileName }],
     };
@@ -137,14 +137,14 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
 
     if (document.fileName.endsWith("manifest.remote.template.json")) {
       const configCodelenses = this.calculateCodeLens(document, this.manifestConfigDataRegex, {
-        title: "🖊️Edit the config file",
+        title: "✏️Edit the config file",
         command: "fx-extension.openConfigState",
         arguments: [{ type: "config" }],
       });
       codeLenses.push(...configCodelenses);
 
       const stateCodelenses = this.calculateCodeLens(document, this.manifestStateDataRegex, {
-        title: "👁️View the state file",
+        title: "👀View the state file",
         command: "fx-extension.openConfigState",
         arguments: [{ type: "state" }],
       });
@@ -173,12 +173,19 @@ export class ManifestTemplateCodeLensProvider implements vscode.CodeLensProvider
 
   private computePreviewCodeLenses(document: vscode.TextDocument) {
     const codeLenses: vscode.CodeLens[] = [];
-    const command = {
-      title: "Update to Teams platform",
+    const updateCmd = {
+      title: "🔄Update to Teams platform",
       command: "fx-extension.updatePreviewFile",
       arguments: [{ fsPath: document.fileName }, TelemetryTiggerFrom.CodeLens],
     };
-    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), command));
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), updateCmd));
+
+    const editTemplateCmd = {
+      title: "⚠️This file is auto-generated, click here to edit the manifest template file",
+      command: "fx-extension.editManifestTemplate",
+      arguments: [{ fsPath: document.fileName }, TelemetryTiggerFrom.CodeLens],
+    };
+    codeLenses.push(new vscode.CodeLens(new vscode.Range(0, 0, 0, 0), editTemplateCmd));
     return codeLenses;
   }
 }

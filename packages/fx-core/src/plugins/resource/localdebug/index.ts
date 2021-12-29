@@ -39,10 +39,6 @@ export class LocalDebugPlugin implements Plugin {
   }
 
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
-    if (func.method === "migrateV1Project") {
-      return await this.scaffold(ctx);
-    }
-
     return ok(undefined);
   }
 }

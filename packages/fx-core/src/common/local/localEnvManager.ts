@@ -18,6 +18,7 @@ import * as path from "path";
 import { convertToLocalEnvs } from "./localSettingsHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
 import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
+import { getPortsInUse } from "./portChecker";
 import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
@@ -49,7 +50,12 @@ export class LocalEnvManager {
     return await getNpmInstallLogInfo();
   }
 
-  public async getPortsInUse() {}
+  public async getPortsInUse(
+    projectPath: string,
+    projectSettings: ProjectSettings
+  ): Promise<number[]> {
+    return await getPortsInUse(projectPath, projectSettings);
+  }
 
   public getProgrammingLanguage(projectSettings: ProjectSettings): string | undefined {
     return projectSettings.programmingLanguage;

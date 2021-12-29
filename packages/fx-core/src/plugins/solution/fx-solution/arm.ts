@@ -55,10 +55,7 @@ import {
   waitSeconds,
 } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
-import {
-  getActivatedResourcePlugins,
-  getActivatedV2ResourcePlugins,
-} from "./ResourcePluginContainer";
+import { getActivatedV2ResourcePlugins } from "./ResourcePluginContainer";
 import { ensureBicep } from "./utils/depsChecker/bicepChecker";
 import { DeployArmTemplatesSteps, ProgressHelper } from "./utils/progressHelper";
 import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/util";
@@ -688,7 +685,7 @@ export async function copyParameterJson(
 }
 
 export async function getParameterJson(ctx: SolutionContext) {
-  if (!ctx.envInfo?.envName) {
+  if (!ctx.envInfo.envName) {
     throw new Error("Failed to get target environment name from solution context.");
   }
 

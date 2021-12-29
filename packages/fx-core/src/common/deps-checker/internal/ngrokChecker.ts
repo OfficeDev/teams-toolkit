@@ -238,7 +238,8 @@ export class NgrokChecker implements DepsChecker {
         // not use -f, to avoid npm@6 bug: exit code = 0, even if install fail
         `${ngrokName}@${installPackageVersion}`,
         "--prefix",
-        `${this.getDefaultInstallPath()}`
+        `${this.getDefaultInstallPath()}`,
+        "--no-audit"
       );
 
       await fs.ensureFile(this.getSentinelPath());

@@ -7,6 +7,8 @@ set -euxo pipefail
 # export SP_NAME={AZURE_SERVICE_PRINCIPAL_NAME}
 # export SP_PASSWORD={AZURE_SERVICE_PRINCIPAL_PASSWORD}
 # export TENANT_ID={AZURE_TENANT_ID}
+# export M365_ACCOUNT_NAME={M365_ACCOUNT_NAME}
+# export M365_ACCOUNT_PASSWORD={M365_ACCOUNT_PASSWORD}
 
 # To enable @microsoft/teamsfx-cli running in CI mode, turn on CI_ENABLED like below.
 # In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
@@ -70,3 +72,6 @@ npx teamsfx package --env ${TEAMSFX_ENV_NAME}
 # Upload Teams App's Package as artifacts.
 # Choose what your workflow/pipeline platform provided to
 # upload build/appPackage/appPackage.staging.zip as artifacts.
+
+# Publish Teams App.
+npx teamsfx publish --env ${TEAMSFX_ENV_NAME}

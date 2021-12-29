@@ -14,6 +14,7 @@ import {
   Void,
   VsCodeEnv,
 } from "@microsoft/teamsfx-api";
+import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
 import {
   InvalidLocalBotEndpointFormat,
@@ -22,7 +23,6 @@ import {
   NgrokTunnelNotConnected,
   ConfigLocalDebugSettingsError,
 } from "./error";
-import { ContextHelper } from "./util/contextHelper";
 import { getCodespaceName, getCodespaceUrl } from "./util/codespace";
 import { getNgrokHttpUrl } from "./util/ngrok";
 import {
@@ -42,10 +42,10 @@ export async function setupLocalDebugSettings(
   localSettings: Json
 ): Promise<Result<Void, FxError>> {
   const vscEnv = inputs.vscodeEnv;
-  const includeFrontend = ContextHelper.includeFrontend(ctx);
-  const includeBackend = ContextHelper.includeBackend(ctx);
-  const includeBot = ContextHelper.includeBot(ctx);
-  const includeAuth = ContextHelper.includeAuth(ctx);
+  const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
+  const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
+  const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
+  const includeAuth = ProjectSettingsHelper.includeAuth(ctx.projectSetting);
   let skipNgrok = localSettings?.bot?.skipNgrok as boolean;
 
   const telemetryProperties = {
@@ -57,13 +57,16 @@ export async function setupLocalDebugSettings(
     auth: includeAuth ? "true" : "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
   };
-  TelemetryUtils.init(ctx);
+  TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
 
   try {
     // setup configs used by other plugins
     // TODO: dynamicly determine local ports
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
+      const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
+      const frontendPort = isMigrateFromV1 ? 3000 : 53000;
+      const authPort = isMigrateFromV1 ? 5000 : 55000;
       let localTabEndpoint: string;
       let localTabDomain: string;
       let localAuthEndpoint: string;
@@ -72,14 +75,14 @@ export async function setupLocalDebugSettings(
       if (vscEnv === VsCodeEnv.codespaceBrowser || vscEnv === VsCodeEnv.codespaceVsCode) {
         const codespaceName = await getCodespaceName();
 
-        localTabEndpoint = getCodespaceUrl(codespaceName, 3000);
+        localTabEndpoint = getCodespaceUrl(codespaceName, frontendPort);
         localTabDomain = new URL(localTabEndpoint).host;
-        localAuthEndpoint = getCodespaceUrl(codespaceName, 5000);
+        localAuthEndpoint = getCodespaceUrl(codespaceName, authPort);
         localFuncEndpoint = getCodespaceUrl(codespaceName, 7071);
       } else {
         localTabDomain = "localhost";
-        localTabEndpoint = "https://localhost:3000";
-        localAuthEndpoint = "http://localhost:5000";
+        localTabEndpoint = `https://localhost:${frontendPort}`;
+        localAuthEndpoint = `http://localhost:${authPort}`;
         localFuncEndpoint = "http://localhost:7071";
       }
 
@@ -146,10 +149,10 @@ export async function configLocalDebugSettings(
   inputs: Inputs,
   localSettings: Json
 ): Promise<Result<Void, FxError>> {
-  const includeFrontend = ContextHelper.includeFrontend(ctx);
-  const includeBackend = ContextHelper.includeBackend(ctx);
-  const includeBot = ContextHelper.includeBot(ctx);
-  const includeAuth = ContextHelper.includeAuth(ctx);
+  const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
+  const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
+  const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
+  const includeAuth = ProjectSettingsHelper.includeAuth(ctx.projectSetting);
   let trustDevCert = localSettings?.frontend?.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
@@ -160,16 +163,16 @@ export async function configLocalDebugSettings(
     auth: includeAuth ? "true" : "false",
     "trust-development-certificate": trustDevCert + "",
   };
-  TelemetryUtils.init(ctx);
+  TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
 
   try {
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
-      const isMigrateFromV1 = ContextHelper.isMigrateFromV1(ctx);
+      const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
 
       const localEnvProvider = new LocalEnvProvider(inputs.projectPath!);
       const frontendEnvs = includeFrontend
-        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAuth)
+        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAuth, isMigrateFromV1)
         : undefined;
       const backendEnvs = includeBackend
         ? await localEnvProvider.loadBackendLocalEnvs()
@@ -190,6 +193,10 @@ export async function configLocalDebugSettings(
       const localAuthPackagePath = localSettings?.auth?.simpleAuthFilePath as string;
 
       if (includeFrontend) {
+        if (!isMigrateFromV1) {
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
+        }
+
         if (includeAuth) {
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
           frontendEnvs!.teamsfxLocalEnvs[

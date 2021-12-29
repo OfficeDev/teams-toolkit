@@ -6,7 +6,6 @@ import {
   AppPackageFolderName,
   ArchiveFolderName,
   ArchiveLogFileName,
-  assembleError,
   BuildFolderName,
   ConfigFolderName,
   CoreCallbackEvent,
@@ -27,7 +26,6 @@ import {
   QTreeNode,
   Result,
   Solution,
-  SolutionConfig,
   SolutionContext,
   Stage,
   StatesFolderName,
@@ -38,48 +36,29 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
 import { assign } from "lodash";
 import * as path from "path";
 import { Container } from "typedi";
 import * as uuid from "uuid";
-import { environmentManager, sampleProvider } from "..";
+import { environmentManager } from "..";
 import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
-import {
-  Component,
-  sendTelemetryErrorEvent,
-  sendTelemetryEvent,
-  TelemetryEvent,
-  TelemetryProperty,
-  TelemetrySuccess,
-} from "../common/telemetry";
-import {
-  downloadSampleHook,
-  fetchCodeZip,
-  getRootDirectory,
-  isMultiEnvEnabled,
-  mapToJson,
-  saveFilesRecursively,
-} from "../common/tools";
-import { PluginNames } from "../plugins";
+import { getRootDirectory, mapToJson } from "../common/tools";
 import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
-import { getAllV2ResourcePlugins } from "../plugins/solution/fx-solution/ResourcePluginContainer";
 import {
   BuiltInResourcePluginNames,
   BuiltInScaffoldPluginNames,
-  BuiltInSolutionNames,
 } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
 import { LocalCrypto } from "./crypto";
+import { downloadSample } from "./downloadSample";
 import {
   ArchiveProjectError,
   ArchiveUserFileError,
   CopyFileError,
-  FetchSampleError,
   FunctionRouterError,
   InvalidInputError,
   LoadSolutionError,
@@ -98,9 +77,8 @@ import {
   askNewEnvironment,
   EnvInfoLoaderMW,
   loadSolutionContext,
-  upgradeDefaultFunctionName,
-  upgradeProgrammingLanguage,
 } from "./middleware/envInfoLoader";
+import { EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
 import { EnvInfoWriterMW } from "./middleware/envInfoWriter";
 import { EnvInfoWriterMW_V3 } from "./middleware/envInfoWriterV3";
 import { ErrorHandlerMW } from "./middleware/errorHandler";
@@ -108,11 +86,8 @@ import { LocalSettingsLoaderMW } from "./middleware/localSettingsLoader";
 import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
 import { ProjectMigratorMW } from "./middleware/projectMigrator";
-import {
-  loadProjectSettings,
-  newSolutionContext,
-  ProjectSettingsLoaderMW,
-} from "./middleware/projectSettingsLoader";
+import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
+import { ProjectSettingsLoaderMW_V3 } from "./middleware/projectSettingsLoaderV3";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import {
@@ -132,6 +107,8 @@ import {
   QuestionModelMW,
 } from "./middleware/questionModel";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
+import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
+import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
 import {
   BotOptionItem,
   CoreQuestionNames,
@@ -147,14 +124,9 @@ import {
 import {
   getAllSolutionPlugins,
   getAllSolutionPluginsV2,
-  getSolutionPluginByName,
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
 import { newEnvInfo } from "./tools";
-import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
-import { ProjectSettingsLoaderMW_V3 } from "./middleware/projectSettingsLoaderV3";
-import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
-import { EnvInfoLoaderMW_V3 } from "./middleware/envInfoLoaderV3";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -253,7 +225,6 @@ export class FxCore implements v3.ICore {
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     let globalStateDescription = "openReadme";
-    const multiEnv = isMultiEnvEnabled();
     if (scratch === ScratchOptionNo.id) {
       // create from sample
       const downloadRes = await downloadSample(inputs, ctx);
@@ -282,12 +253,7 @@ export class FxCore implements v3.ICore {
       }
       await fs.ensureDir(projectPath);
       await fs.ensureDir(path.join(projectPath, `.${ConfigFolderName}`));
-      await fs.ensureDir(
-        path.join(
-          projectPath,
-          multiEnv ? path.join("templates", `${AppPackageFolderName}`) : `${AppPackageFolderName}`
-        )
-      );
+      await fs.ensureDir(path.join(projectPath, path.join("templates", `${AppPackageFolderName}`)));
       const basicFolderRes = await createBasicFolderStructure(inputs);
       if (basicFolderRes.isErr()) {
         return err(basicFolderRes.error);
@@ -304,15 +270,13 @@ export class FxCore implements v3.ICore {
         isFromSample: false,
       };
       ctx.projectSettings = projectSettings;
-      if (multiEnv) {
-        const createEnvResult = await this.createEnvWithName(
-          environmentManager.getDefaultEnvName(),
-          projectSettings,
-          inputs
-        );
-        if (createEnvResult.isErr()) {
-          return err(createEnvResult.error);
-        }
+      const createEnvResult = await this.createEnvWithName(
+        environmentManager.getDefaultEnvName(),
+        projectSettings,
+        inputs
+      );
+      if (createEnvResult.isErr()) {
+        return err(createEnvResult.error);
       }
 
       const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
@@ -335,26 +299,12 @@ export class FxCore implements v3.ICore {
         return err(generateResourceTemplateRes.error);
       }
       // ctx.provisionInputConfig = generateResourceTemplateRes.value;
-      if (multiEnv) {
-        if (solution.createEnv) {
-          inputs.copy = false;
-          const createEnvRes = await solution.createEnv(contextV2, inputs);
-          if (createEnvRes.isErr()) {
-            return err(createEnvRes.error);
-          }
+      if (solution.createEnv) {
+        inputs.copy = false;
+        const createEnvRes = await solution.createEnv(contextV2, inputs);
+        if (createEnvRes.isErr()) {
+          return err(createEnvRes.error);
         }
-      } else {
-        //TODO lagacy env.default.json
-        const state: Json = { solution: {} };
-        for (const plugin of getAllV2ResourcePlugins()) {
-          state[plugin.name] = {};
-        }
-        state[PluginNames.LDEBUG]["trustDevCert"] = "true";
-        ctx.envInfoV2 = {
-          envName: environmentManager.getDefaultEnvName(),
-          config: {},
-          state: state,
-        };
       }
     }
 
@@ -1314,9 +1264,6 @@ export class FxCore implements v3.ICore {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<string | undefined, FxError>> {
-    if (!isMultiEnvEnabled()) {
-      return err(new TaskNotSupportError("getSelectedEnv"));
-    }
     return ok(ctx?.envInfoV2?.envName);
   }
 
@@ -1372,7 +1319,7 @@ export class FxCore implements v3.ICore {
   async createEnv(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     if (!ctx) return err(new ObjectIsUndefinedError("createEnv input stuff"));
     const projectSettings = ctx.projectSettings;
-    if (!isMultiEnvEnabled() || !projectSettings) {
+    if (!projectSettings) {
       return ok(Void);
     }
 
@@ -1478,7 +1425,7 @@ export class FxCore implements v3.ICore {
     if (!env) {
       return err(new ObjectIsUndefinedError("env"));
     }
-    if (!isMultiEnvEnabled() || !ctx!.projectSettings) {
+    if (!ctx!.projectSettings) {
       return ok(Void);
     }
 
@@ -1678,105 +1625,22 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
     }
     await fs.writeFile(
       path.join(inputs.projectPath!, `.gitignore`),
-      isMultiEnvEnabled()
-        ? [
-            "node_modules",
-            `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
-            `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
-            ".DS_Store",
-            `${ArchiveFolderName}`,
-            `${ArchiveLogFileName}`,
-            ".env.teamsfx.local",
-            "subscriptionInfo.json",
-            BuildFolderName,
-          ].join("\n")
-        : `node_modules\n/.${ConfigFolderName}/*.env\n/.${ConfigFolderName}/*.userdata\n.DS_Store\n${ArchiveFolderName}\n${ArchiveLogFileName}`
+      [
+        "node_modules",
+        `.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`,
+        `.${ConfigFolderName}/${StatesFolderName}/*.userdata`,
+        ".DS_Store",
+        `${ArchiveFolderName}`,
+        `${ArchiveLogFileName}`,
+        ".env.teamsfx.local",
+        "subscriptionInfo.json",
+        BuildFolderName,
+      ].join("\n")
     );
   } catch (e) {
     return err(WriteFileError(e));
   }
   return ok(null);
-}
-export async function downloadSample(
-  inputs: Inputs,
-  ctx: CoreHookContext
-): Promise<Result<string, FxError>> {
-  let fxError;
-  const progress = TOOLS.ui.createProgressBar("Fetch sample app", 3);
-  progress.start();
-  const telemetryProperties: any = {
-    [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-    module: "fx-core",
-  };
-  try {
-    let folder = inputs[QuestionRootFolder.name] as string;
-    if (inputs.platform === Platform.VSCode) {
-      folder = getRootDirectory();
-      await fs.ensureDir(folder);
-    }
-    const sampleId = inputs[CoreQuestionNames.Samples] as string;
-    if (!(sampleId && folder)) {
-      throw InvalidInputError(`invalid answer for '${CoreQuestionNames.Samples}'`, inputs);
-    }
-    telemetryProperties[TelemetryProperty.SampleAppName] = sampleId;
-    const samples = sampleProvider.SampleCollection.samples.filter(
-      (sample) => sample.id.toLowerCase() === sampleId.toLowerCase()
-    );
-    if (samples.length === 0) {
-      throw InvalidInputError(`invalid sample id: '${sampleId}'`, inputs);
-    }
-    const sample = samples[0];
-    const url = sample.link as string;
-    let sampleAppPath = path.resolve(folder, sampleId);
-    if ((await fs.pathExists(sampleAppPath)) && (await fs.readdir(sampleAppPath)).length > 0) {
-      let suffix = 1;
-      while (await fs.pathExists(sampleAppPath)) {
-        sampleAppPath = `${folder}/${sampleId}_${suffix++}`;
-      }
-    }
-    progress.next(`Downloading from ${url}`);
-    const fetchRes = await fetchCodeZip(url, sample.id);
-    if (fetchRes.isErr()) {
-      throw fetchRes.error;
-    } else if (!fetchRes.value) {
-      throw FetchSampleError(sample.id);
-    }
-    progress.next("Unzipping the sample package");
-    await saveFilesRecursively(new AdmZip(fetchRes.value.data), sampleId, sampleAppPath);
-    await downloadSampleHook(sampleId, sampleAppPath);
-    progress.next("Update project settings");
-    const loadInputs: Inputs = {
-      ...inputs,
-      projectPath: sampleAppPath,
-    };
-    const projectSettingsRes = await loadProjectSettings(loadInputs, isMultiEnvEnabled());
-    if (projectSettingsRes.isOk()) {
-      const projectSettings = projectSettingsRes.value;
-      projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();
-      projectSettings.isFromSample = true;
-      inputs.projectId = projectSettings.projectId;
-      telemetryProperties[TelemetryProperty.ProjectId] = projectSettings.projectId;
-      ctx.projectSettings = projectSettings;
-      inputs.projectPath = sampleAppPath;
-    } else {
-      telemetryProperties[TelemetryProperty.ProjectId] =
-        "unknown, failed to set projectId in projectSettings.json";
-    }
-    progress.end(true);
-    sendTelemetryEvent(Component.core, TelemetryEvent.DownloadSample, telemetryProperties);
-    return ok(sampleAppPath);
-  } catch (e) {
-    fxError = assembleError(e);
-    progress.end(false);
-    telemetryProperties[TelemetryProperty.Success] = TelemetrySuccess.No;
-    sendTelemetryErrorEvent(
-      Component.core,
-      TelemetryEvent.DownloadSample,
-      fxError,
-      telemetryProperties
-    );
-    return err(fxError);
-  }
 }
 
 export function newProjectSettings(): ProjectSettings {
@@ -1813,9 +1677,9 @@ export function undefinedName(objs: any[], names: string[]) {
 }
 
 export function getProjectSettingsVersion() {
-  if (isMultiEnvEnabled()) return "2.0.0";
-  else return "1.0.0";
+  return "2.0.0";
 }
 
 export * from "./error";
 export * from "./tools";
+export * from "./downloadSample";

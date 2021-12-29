@@ -21,7 +21,7 @@ import {
   UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { TOOLS } from "..";
-import { CoreHookContext, FxCore, isMultiEnvEnabled } from "../..";
+import { CoreHookContext, FxCore } from "../..";
 import {
   NoProjectOpenedError,
   ProjectEnvNotExistError,
@@ -108,7 +108,7 @@ export async function getTargetEnvName(
   ctx: CoreHookContext
 ): Promise<Result<string, FxError>> {
   let targetEnvName: string;
-  if (!skip && !inputs.ignoreEnvInfo && isMultiEnvEnabled()) {
+  if (!skip && !inputs.ignoreEnvInfo) {
     // TODO: This is a workaround for collabrator & manifest preview feature to programmatically load an env in extension.
     if (inputs.env) {
       const result = await useUserSetEnv(inputs.projectPath!, inputs.env);
@@ -172,7 +172,7 @@ export async function loadSolutionContext(
 
   let envInfo: EnvInfo;
   // in pre-multi-env case, envInfo is always loaded.
-  if (ignoreEnvInfo && isMultiEnvEnabled()) {
+  if (ignoreEnvInfo) {
     envInfo = newEnvInfo();
   } else {
     // ensure backwards compatibility:

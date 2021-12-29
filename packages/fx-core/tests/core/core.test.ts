@@ -161,20 +161,6 @@ describe("Core basic APIs", () => {
         let mockedEnvRestore: RestoreFn;
         beforeEach(() => {
           mockedEnvRestore = mockedEnv(param);
-        });
-        afterEach(() => {
-          mockedEnvRestore();
-        });
-        it("create from sample", async () => {
-          await createFromSample();
-        });
-      });
-    }
-    for (const param of AllEnvParams) {
-      describe(`API V3:${param.TEAMSFX_APIV3}`, () => {
-        let mockedEnvRestore: RestoreFn;
-        beforeEach(() => {
-          mockedEnvRestore = mockedEnv(param);
           sandbox.restore();
         });
         afterEach(() => {
@@ -518,72 +504,6 @@ describe("Core basic APIs", () => {
           assert.isTrue(projectConfig.config !== undefined);
         }
       }
-    }
-  }
-
-  async function createFromSample() {
-    const sampleOption = SampleSelect.staticOptions[0] as OptionItem;
-    appName = sampleOption.id;
-    projectPath = path.resolve(os.tmpdir(), appName);
-    const expectedInputs: Inputs = {
-      platform: Platform.CLI,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
-      [CoreQuestionNames.Samples]: sampleOption.id,
-      stage: Stage.create,
-    };
-    sandbox
-      .stub<any, any>(ui, "selectFolder")
-      .callsFake(
-        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-          if (config.name === CoreQuestionNames.Folder) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.Folder] as string,
-            });
-          }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-    sandbox
-      .stub<any, any>(ui, "selectOption")
-      .callsFake(
-        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
-          if (config.name === CoreQuestionNames.CreateFromScratch) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
-            });
-          }
-          if (config.name === CoreQuestionNames.Samples) {
-            return ok({ type: "success", result: sampleOption.id });
-          }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-    const core = new FxCore(tools);
-    {
-      const inputs: Inputs = { platform: Platform.CLI };
-      const res = await core.createProject(inputs);
-      assert.isTrue(res.isOk() && res.value === projectPath);
-      assert.isTrue(inputs.projectId !== undefined);
-      assert.isTrue(inputs.projectPath === projectPath);
-      expectedInputs.projectId = inputs.projectId;
-      expectedInputs.projectPath = inputs.projectPath;
-      assert.deepEqual(expectedInputs, inputs);
-      inputs.projectPath = projectPath;
-      const projectSettingsResult = await loadProjectSettings(
-        inputs,
-        commonTools.isMultiEnvEnabled()
-      );
-      if (projectSettingsResult.isErr()) {
-        assert.fail("failed to load project settings");
-      }
-
-      const projectSettings = projectSettingsResult.value;
-      projectSettings.solutionSettings.name = mockSolution.name;
-      const validSettingsResult = validateSettings(projectSettings);
-      assert.isTrue(validSettingsResult === undefined);
     }
   }
 

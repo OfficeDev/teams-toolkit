@@ -16,6 +16,7 @@ export interface LocalEnvs {
 export const EnvKeysFrontend = Object.freeze({
   Browser: "BROWSER",
   Https: "HTTPS",
+  Port: "Port",
   SslCrtFile: "SSL_CRT_FILE",
   SslKeyFile: "SSL_KEY_FILE",
   TeamsFxEndpoint: "REACT_APP_TEAMSFX_ENDPOINT",
@@ -80,14 +81,15 @@ export class LocalEnvProvider {
 
   public async loadFrontendLocalEnvs(
     includeBackend: boolean,
-    includeAuth: boolean
+    includeAuth: boolean,
+    isMigrateFromV1: boolean
   ): Promise<LocalEnvs> {
     const envs = await this.loadLocalEnvFile(
       path.join(this.projectRoot, FolderName.Frontend, LocalEnvProvider.LocalEnvFileName),
       Object.values(EnvKeysFrontend)
     );
 
-    return envs ?? this.initFrontendLocalEnvs(includeBackend, includeAuth);
+    return envs ?? this.initFrontendLocalEnvs(includeBackend, includeAuth, isMigrateFromV1);
   }
 
   public async loadBackendLocalEnvs(): Promise<LocalEnvs> {
@@ -126,7 +128,11 @@ export class LocalEnvProvider {
     }
   }
 
-  public initFrontendLocalEnvs(includeBackend: boolean, includeAuth: boolean): LocalEnvs {
+  public initFrontendLocalEnvs(
+    includeBackend: boolean,
+    includeAuth: boolean,
+    isMigrateFromV1: boolean
+  ): LocalEnvs {
     const result: LocalEnvs = {
       teamsfxLocalEnvs: {},
       customizedLocalEnvs: {},
@@ -134,6 +140,10 @@ export class LocalEnvProvider {
 
     result.teamsfxLocalEnvs[EnvKeysFrontend.Browser] = "none";
     result.teamsfxLocalEnvs[EnvKeysFrontend.Https] = "true";
+
+    if (!isMigrateFromV1) {
+      result.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
+    }
 
     if (includeAuth) {
       result.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = "";

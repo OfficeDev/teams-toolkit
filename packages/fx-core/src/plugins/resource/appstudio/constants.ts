@@ -525,3 +525,4 @@ export const DEFAULT_DEVELOPER_TERM_OF_USE_URL = "https://www.example.com/termof
 export const DEFAULT_DEVELOPER_PRIVACY_URL = "https://www.example.com/privacy";
 
 export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
+export const STATIC_TABS_MAX_ITEMS = 16;

@@ -189,4 +189,9 @@ export class AppStudioError {
     message: (appId: string) =>
       `Cannot find teams app with id ${appId}. You must run local debug or provision first before updating manifest to Teams platform`,
   };
+
+  public static readonly InvalidCapabilityError = {
+    name: "InvalidCapabilityError",
+    message: (capability: string) => `Invalid capability: ${capability}`,
+  };
 }

@@ -33,7 +33,7 @@ export class AppStudioPluginV3 {
 
   // Append to manifest template file
   async addCapabilities(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     capabilities: (
       | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
@@ -45,8 +45,12 @@ export class AppStudioPluginV3 {
         }
     )[]
   ): Promise<Result<any, FxError>> {
-    capabilities.map((capability) => {
-      if (this.capabilityExceedLimit(capability.name)) {
+    capabilities.map(async (capability) => {
+      const exceedLimit = await this.capabilityExceedLimit(ctx, inputs, capability.name);
+      if (exceedLimit.isErr()) {
+        return err(exceedLimit.error);
+      }
+      if (exceedLimit.value) {
         return err(new Error("Exeed limit."));
       }
     });
@@ -80,12 +84,19 @@ export class AppStudioPluginV3 {
     return await this.plugin.saveManifest(pluginContext, manifest);
   }
 
-  // Read from manifest template, and check if it exceeds the limit.
-  // The limit of staticTab if 16, others are 1
-  // Should check both local & remote manifest template file
+  /**
+   * Load manifest template, and check if it exceeds the limit.
+   * The limit of staticTab if 16, others are 1
+   * Should check both local & remote manifest template file
+   * @param capability
+   * @returns
+   */
   async capabilityExceedLimit(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
     capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
-  ): Promise<boolean> {
-    return false;
+  ): Promise<Result<boolean, FxError>> {
+    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
+    return await this.plugin.capabilityExceedLimit(pluginContext, capability);
   }
 }

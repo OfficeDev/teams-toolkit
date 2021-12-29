@@ -326,6 +326,7 @@ export class AppStudioPluginImpl {
       [appDefinition] = remoteManifest.value;
     }
 
+    const appDirectory = await getAppDirectory(ctx.root);
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     const result = await this.updateApp(
       ctx,
@@ -506,6 +507,7 @@ export class AppStudioPluginImpl {
         }
       }
 
+      const appDirectory = await getAppDirectory(ctx.root);
       const result = await this.updateApp(
         ctx,
         appDefinition,

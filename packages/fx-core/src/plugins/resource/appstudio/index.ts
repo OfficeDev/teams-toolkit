@@ -31,7 +31,12 @@ import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
 import { IUserList } from "./interfaces/IAppDefinition";
-import { getManifestTemplatePath, loadManifest, saveManifest } from "./manifestTemplate";
+import {
+  getManifestTemplatePath,
+  loadManifest,
+  saveManifest,
+  capabilityExceedLimit,
+} from "./manifestTemplate";
 
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
@@ -528,6 +533,13 @@ export class AppStudioPlugin implements Plugin {
     }
 
     return ok(undefined);
+  }
+
+  public async capabilityExceedLimit(
+    ctx: PluginContext,
+    capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+  ): Promise<Result<boolean, FxError>> {
+    return await capabilityExceedLimit(ctx.root, capability);
   }
 
   async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {

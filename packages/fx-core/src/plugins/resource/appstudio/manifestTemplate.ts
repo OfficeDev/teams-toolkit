@@ -6,7 +6,7 @@ import { FxError, TeamsAppManifest, Result, err, ok } from "@microsoft/teamsfx-a
 import { getAppDirectory } from "../../../common";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
-import { MANIFEST_LOCAL, MANIFEST_TEMPLATE } from "./constants";
+import { STATIC_TABS_MAX_ITEMS, MANIFEST_LOCAL, MANIFEST_TEMPLATE } from "./constants";
 
 export async function getManifestTemplatePath(
   projectRoot: string,
@@ -63,4 +63,60 @@ export async function saveManifest(
   const manifestFilePath = await getManifestTemplatePath(projectRoot, isLocalDebug);
   await fs.writeFile(manifestFilePath, JSON.stringify(manifest, null, 4));
   return ok(manifestFilePath);
+}
+
+export async function capabilityExceedLimit(
+  projectRoot: string,
+  capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+): Promise<Result<boolean, FxError>> {
+  const localManifest = await loadManifest(projectRoot, true);
+  if (localManifest.isErr()) {
+    return err(localManifest.error);
+  }
+
+  const remoteManifest = await loadManifest(projectRoot, false);
+  if (remoteManifest.isErr()) {
+    return err(remoteManifest.error);
+  }
+
+  let localExceed,
+    remoteExceed = false;
+  switch (capability) {
+    case "staticTab":
+      localExceed =
+        localManifest.value.staticTabs !== undefined &&
+        localManifest.value.staticTabs!.length >= STATIC_TABS_MAX_ITEMS;
+      remoteExceed =
+        remoteManifest.value.staticTabs !== undefined &&
+        remoteManifest.value.staticTabs!.length >= STATIC_TABS_MAX_ITEMS;
+      return ok(localExceed || remoteExceed);
+    case "configurableTab":
+      localExceed =
+        localManifest.value.configurableTabs !== undefined &&
+        localManifest.value.configurableTabs!.length >= 1;
+      remoteExceed =
+        remoteManifest.value.configurableTabs !== undefined &&
+        remoteManifest.value.configurableTabs!.length >= 1;
+      return ok(localExceed || remoteExceed);
+    case "Bot":
+      localExceed = localManifest.value.bots !== undefined && localManifest.value.bots!.length >= 1;
+      remoteExceed =
+        remoteManifest.value.bots !== undefined && remoteManifest.value.bots!.length >= 1;
+      return ok(localExceed || remoteExceed);
+    case "MessageExtension":
+      localExceed =
+        localManifest.value.composeExtensions !== undefined &&
+        localManifest.value.composeExtensions!.length >= 1;
+      remoteExceed =
+        remoteManifest.value.composeExtensions !== undefined &&
+        remoteManifest.value.composeExtensions!.length >= 1;
+      return ok(localExceed || remoteExceed);
+    default:
+      return err(
+        AppStudioResultFactory.SystemError(
+          AppStudioError.InvalidCapabilityError.name,
+          AppStudioError.InvalidCapabilityError.message(capability)
+        )
+      );
+  }
 }

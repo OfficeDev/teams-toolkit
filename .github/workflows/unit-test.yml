@@ -44,13 +44,14 @@ jobs:
           # make sure the coverage data is cleaned
           rm -rf .nyc_output
           xvfb-run -a npx lerna run test:unit --stream
-          __TEAMSFX_INSIDER_PREVIEW=false xvfb-run -a npx lerna run test:unit --stream
 
-          coverages="{}"
+          echo "{}" > coverages.json
           for i in $(find . -name coverage-summary.json); do
-            total=`jq -cr '.total' $i`
-            coverages=$(echo $coverages | jq -rc --arg package $(basename $(dirname $(dirname $i))) --argjson t $total '.[$package]= $t')
+            name=$(basename $(dirname $(dirname $i)))
+            jq -rc --arg package $name --slurpfile t $i '.[$package]=($t[0].total | del(.linesCovered))' coverages.json > coverages.json.tmp
+            mv coverages.json.tmp coverages.json
           done  
+          coverages=`cat coverages.json`
           echo $coverages
           echo "::set-output name=coverages::$coverages"
 
@@ -86,14 +87,14 @@ jobs:
         run: |
           rm -rf .nyc_output
           xvfb-run -a npx lerna run test:unit --stream
-          __TEAMSFX_INSIDER_PREVIEW=false xvfb-run -a npx lerna run test:unit --stream
 
-          coverages="{}"
-          ulimit -s 65536
+          echo "{}" > coverages.json
           for i in $(find . -name coverage-summary.json); do
-            total=`jq -cr '.total' $i`
-            coverages=$(echo $coverages | jq -rc --arg package $(basename $(dirname $(dirname $i))) --argjson t $total '.[$package]= $t')
+            name=$(basename $(dirname $(dirname $i)))
+            jq -rc --arg package $name --slurpfile t $i '.[$package]=($t[0].total | del(.linesCovered))' coverages.json > coverages.json.tmp
+            mv coverages.json.tmp coverages.json
           done  
+          coverages=`cat coverages.json`
           echo $coverages
           echo "::set-output name=coverages::$coverages"
 
@@ -154,7 +155,6 @@ jobs:
         run: |
           rm -rf .nyc_output
           xvfb-run -a npx lerna run test:unit --stream
-          __TEAMSFX_INSIDER_PREVIEW=false xvfb-run -a npx lerna run test:unit --stream
           for i in $(find . -name coverage-summary.json); do
             package=$(basename $(dirname $(dirname $i)))
             az storage entity insert \

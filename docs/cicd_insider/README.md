@@ -202,7 +202,7 @@ The scripts are based on a cross-platform TeamsFx command line tool [TeamsFx-CLI
 
 > Note: To enable `@microsoft/teamsfx-cli` running in non-interactive mode, set a global config like below:
 ```
-teamsfx config set interactive false
+teamsfx config set -g interactive false
 ```
 In non-interactive mode, `@microsoft/teamsfx-cli` will not ask questions for inputs interactively. And, if you'd like to use non-interactive mode by command, please add an option `--interactive false` by command.
 

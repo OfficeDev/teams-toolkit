@@ -13,23 +13,23 @@ var oauthServerName = contains(provisionParameters, 'apimOauthServerName') ? pro
 var clientId = provisionParameters['apimClientId']
 var clientSecret = provisionParameters['apimClientSecret']
 
-{{#if fx-resource-bot }}
+{{#if (contains "fx-resource-bot" plugins) }}
 var botId = provisionParameters['botAadAppClientId']
 {{/if}}
 
-{{#if fx-resource-frontend-hosting }}
-var tabAppDomain = {{fx-resource-frontend-hosting.References.domain}}
+{{#if (contains "fx-resource-frontend-hosting" plugins) }}
+var tabAppDomain = \{{fx-resource-frontend-hosting.References.domain}}
 {{/if}}
 
-{{#if fx-resource-frontend-hosting }}
-  {{#if fx-resource-bot}}
+{{#if (contains "fx-resource-frontend-hosting" plugins) }}
+  {{#if (contains "fx-resource-bot" plugins)}}
 var m365ApplicationIdUri = 'api://${tabAppDomain}/botid-${botId}'
   {{else}}
 var m365ClientId = provisionParameters['m365ClientId']
 var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'
   {{/if}}
 {{else}}
-  {{#if fx-resource-bot }}
+  {{#if (contains "fx-resource-bot" plugins) }}
 var m365ApplicationIdUri = 'api://botid-${botId}'
   {{/if}}
 {{/if}}

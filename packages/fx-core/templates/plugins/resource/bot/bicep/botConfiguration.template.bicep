@@ -30,13 +30,9 @@ var botId = provisionParameters['botAadAppClientId']
 {{#if (contains "fx-resource-frontend-hosting" plugins) }}
   {{#if (contains "fx-resource-bot" plugins) }}
 var m365ApplicationIdUri = 'api://${ \{{fx-resource-frontend-hosting.References.domain}} }/botid-${botId}'
-  {{else }}
-var m365ApplicationIdUri = 'api://${ \{{fx-resource-frontend-hosting.References.domain}} }/${m365ClientId}'
   {{/if}}
 {{else}}
-  {{#if (contains "fx-resource-bot" plugins) }}
 var m365ApplicationIdUri = 'api://botid-${botId}'
-  {{/if}}
 {{/if}}
 
 resource botWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {

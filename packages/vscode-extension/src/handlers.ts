@@ -833,7 +833,7 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
   try {
-    const localAppId = commonUtils.getLocalTeamsAppId() as string;
+    const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
       [TelemetryProperty.DebugAppId]: localAppId,
     });
@@ -845,7 +845,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
   result = await runCommand(Stage.debug);
   if (result.isErr()) {
     try {
-      const localAppId = commonUtils.getLocalTeamsAppId() as string;
+      const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error, {
         [TelemetryProperty.DebugAppId]: localAppId,
       });
@@ -871,7 +871,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     }
     const error = new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource);
     try {
-      const localAppId = commonUtils.getLocalTeamsAppId() as string;
+      const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error, {
         [TelemetryProperty.DebugAppId]: localAppId,
       });

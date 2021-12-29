@@ -44,7 +44,7 @@ describe("Deploy to customized resource group", function () {
     await cleanUp(appName, projectPath, true, false, false, true);
   });
 
-  it(`tab project can deploy simple auth resource to customized resource group and successfully provision / deploy`, async function () {
+  it(`tab project can deploy simple auth resource to customized resource group and successfully provision`, async function () {
     // Create new tab project
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
@@ -64,9 +64,6 @@ describe("Deploy to customized resource group", function () {
     setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
-
-    // deploy
-    await CliHelper.deployProject(ResourceToDeploy.FrontendHosting, projectPath);
 
     // Assert
     {

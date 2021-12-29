@@ -66,7 +66,7 @@ describe("Deploy to customized resource group", function () {
     await CliHelper.provisionProject(projectPath);
 
     // deploy
-    await CliHelper.deployProject(ResourceToDeploy.FrontendHosting, projectPath);
+    await CliHelper.deployProject(ResourceToDeploy.Bot, projectPath);
 
     // Assert
     {

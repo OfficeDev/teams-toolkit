@@ -680,6 +680,7 @@ export class FunctionPluginImpl {
       bicepTemplateDirectory,
       FunctionBicepFile.configuraitonTemplateFileName
     );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const configModule = compileHandlebarsTemplateString(
       await fs.readFile(configFuncTemplateFilePath, ConstantString.UTF8Encoding),
       pluginCtx
@@ -691,7 +692,7 @@ export class FunctionPluginImpl {
         functionEndpoint: FunctionBicep.functionEndpoint,
       },
       Configuration: {
-        Modules: { configModule },
+        Modules: { function: configModule },
       },
     };
 
@@ -744,11 +745,11 @@ export class FunctionPluginImpl {
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: provisionOrchestration,
-        Modules: { provisionModule },
+        Modules: { function: provisionModule },
       },
       Configuration: {
         Orchestration: configOrchestration,
-        Modules: { configModule },
+        Modules: { function: configModule },
       },
       Reference: {
         functionAppResourceId: FunctionBicep.functionAppResourceId,

@@ -14,6 +14,11 @@ import { TeamsBot } from "../../../../../src";
 import * as testUtils from "./utils";
 import path from "path";
 import fs from "fs-extra";
+import {
+  HostTypeOptionAzure,
+  BotOptionItem,
+  AzureResourceKeyVault,
+} from "../../../../../src/plugins/solution/fx-solution/question";
 
 describe("Bot Generates Arm Templates", () => {
   let botPlugin: TeamsBot;
@@ -28,12 +33,14 @@ describe("Bot Generates Arm Templates", () => {
       ResourcePlugins.Bot,
       ResourcePlugins.Identity,
     ];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      capabilities: [BotOptionItem.id],
+    } as AzureSolutionSettings;
 
-    await testGenerateArmTemplates(
-      activeResourcePlugins,
-      "botConfig.result.bicep",
-      "config.result.bicep"
-    );
+    await testGenerateArmTemplates(settings, "botConfig.result.bicep", "config.result.bicep");
   });
 
   it("generate bicep arm templates: with key vault plugin", async () => {
@@ -43,9 +50,16 @@ describe("Bot Generates Arm Templates", () => {
       ResourcePlugins.Identity,
       ResourcePlugins.KeyVault,
     ];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      azureResources: [AzureResourceKeyVault.id],
+      capabilities: [BotOptionItem.id],
+    } as AzureSolutionSettings;
 
     await testGenerateArmTemplates(
-      activeResourcePlugins,
+      settings,
       "botConfigWithKeyVaultPlugin.result.bicep",
       "configWithKeyVaultPlugin.result.bicep",
       {
@@ -62,17 +76,17 @@ describe("Bot Generates Arm Templates", () => {
   });
 
   async function testGenerateArmTemplates(
-    activeResourcePlugins: string[],
+    settings: AzureSolutionSettings,
     configurationModuleFileName: string,
     configurationFileName: string,
     addtionalPluginOutput: any = {}
   ) {
     // Arrange
     const pluginContext: PluginContext = testUtils.newPluginContext();
-    const azureSolutionSettings = pluginContext.projectSettings!
-      .solutionSettings! as AzureSolutionSettings;
-    azureSolutionSettings.activeResourcePlugins = activeResourcePlugins;
-    pluginContext.projectSettings!.solutionSettings = azureSolutionSettings;
+    // const azureSolutionSettings = pluginContext.projectSettings!
+    //   .solutionSettings! as AzureSolutionSettings;
+    // azureSolutionSettings.activeResourcePlugins = settings;
+    pluginContext.projectSettings!.solutionSettings = settings;
 
     // Act
     const result = await botPlugin.generateArmTemplates(pluginContext);

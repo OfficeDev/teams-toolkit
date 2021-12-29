@@ -16,6 +16,7 @@ const loopbackAddressIPv4 = "127.0.0.1";
 const loopbackAddressIPv6 = "::1";
 const hosts = [allAddressIPv4, loopbackAddressIPv4, allAddressIPv6, loopbackAddressIPv6];
 
+const frontendPortsV1: [number, string[]][] = [[3000, hosts]];
 const frontendPorts: [number, string[]][] = [[53000, hosts]];
 const simpleAuthPorts: [number, string[]][] = [[55000, hosts]];
 const backendDebugPortRegex = /--inspect[\s]*=[\s"']*9229/im;
@@ -69,10 +70,12 @@ export async function getPortsInUse(
 
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
   if (includeFrontend) {
-    ports.push(...frontendPorts);
     const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
     if (!migrateFromV1) {
+      ports.push(...frontendPorts);
       ports.push(...simpleAuthPorts);
+    } else {
+      ports.push(...frontendPortsV1);
     }
   }
 

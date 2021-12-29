@@ -17,10 +17,10 @@ Some frequently asked questions are listed bellow.
 | --- | --- |
 | Tab | 53000, or 3000 (for Teams Toolkit version < 3.2.0) |
 | Auth | 55000. or 5000 (for Teams Toolkit version < 3.2.0) |
-| 7071 | Function |
-| 9229 | Node inspector for Function |
-| 3978 | Bot / Messaging Extension |
-| 9239 | Node inspector for Bot / Messaging Extension |
+| Function | 7071 |
+| Node inspector for Function | 9229 |
+| Bot / Messaging Extension | 3978 |
+| Node inspector for Bot / Messaging Extension | 9239 |
 
 ## What to do if some port is already in use?
 

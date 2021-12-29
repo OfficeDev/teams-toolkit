@@ -60,7 +60,9 @@ import { EnvironmentUtils } from "./utils/environment-utils";
 import { copyFiles, isArmSupportEnabled } from "../../../common";
 import { AzureResourceFunction } from "../../solution/fx-solution/question";
 import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
-
+import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
+import { compileHandlebarsTemplateString } from "../../../common/tools";
 export class FrontendPluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
@@ -207,7 +209,11 @@ export class FrontendPluginImpl {
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartGenerateArmTemplates(PluginInfo.DisplayName));
-
+    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    ); // This function ensures return result won't be empty
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
       FrontendPathInfo.BicepTemplateRelativeDir
@@ -218,13 +224,15 @@ export class FrontendPluginImpl {
       bicepTemplateDir,
       FrontendPathInfo.ModuleProvisionFileName
     );
+    let provisionOrchestration = await fs.readFile(provisionFilePath, ConstantString.UTF8Encoding);
+    provisionOrchestration = compileHandlebarsTemplateString(provisionOrchestration, pluginCtx);
+    let provisionModules = await fs.readFile(moduleProvisionFilePath, ConstantString.UTF8Encoding);
+    provisionModules = compileHandlebarsTemplateString(provisionModules, pluginCtx);
 
     const result: ArmTemplateResult = {
       Provision: {
-        Orchestration: await fs.readFile(provisionFilePath, ConstantString.UTF8Encoding),
-        Modules: {
-          frontendHosting: await fs.readFile(moduleProvisionFilePath, ConstantString.UTF8Encoding),
-        },
+        Orchestration: provisionOrchestration,
+        Modules: { frontendHosting: provisionModules },
       },
       Reference: {
         endpoint: FrontendOutputBicepSnippet.Endpoint,

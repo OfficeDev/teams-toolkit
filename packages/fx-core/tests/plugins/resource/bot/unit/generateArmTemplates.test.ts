@@ -83,9 +83,6 @@ describe("Bot Generates Arm Templates", () => {
   ) {
     // Arrange
     const pluginContext: PluginContext = testUtils.newPluginContext();
-    // const azureSolutionSettings = pluginContext.projectSettings!
-    //   .solutionSettings! as AzureSolutionSettings;
-    // azureSolutionSettings.activeResourcePlugins = settings;
     pluginContext.projectSettings!.solutionSettings = settings;
 
     // Act

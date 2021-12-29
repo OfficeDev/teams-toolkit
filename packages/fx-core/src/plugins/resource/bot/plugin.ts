@@ -66,7 +66,6 @@ import {
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { compileHandlebarsTemplateString } from "../../../common/tools";
-import { compileFunction } from "vm";
 export class TeamsBotImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
   public config: TeamsBotConfig = new TeamsBotConfig();

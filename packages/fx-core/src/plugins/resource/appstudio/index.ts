@@ -36,6 +36,7 @@ import {
   loadManifest,
   saveManifest,
   capabilityExceedLimit,
+  init,
 } from "./manifestTemplate";
 
 @Service(ResourcePlugins.AppStudioPlugin)
@@ -540,6 +541,10 @@ export class AppStudioPlugin implements Plugin {
     capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
   ): Promise<Result<boolean, FxError>> {
     return await capabilityExceedLimit(ctx.root, capability);
+  }
+
+  public async init(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return await init(ctx.root);
   }
 
   async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {

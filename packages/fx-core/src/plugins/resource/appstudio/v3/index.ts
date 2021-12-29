@@ -26,9 +26,16 @@ export class AppStudioPluginV3 {
   displayName = "App Studio";
   @Inject("AppStudioPlugin")
   plugin!: AppStudioPlugin;
-  // Generate initial manifest template file, for both local debug & remote
-  async init(ctx: Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
-    return ok(undefined);
+
+  /**
+   * Generate initial manifest template file, for both local debug & remote
+   * @param ctx
+   * @param inputs
+   * @returns
+   */
+  async init(ctx: v2.Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
+    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
+    return await this.plugin.init(pluginContext);
   }
 
   // Append to manifest template file
@@ -70,7 +77,7 @@ export class AppStudioPluginV3 {
   }
 
   /**
-   *
+   * Save manifest template file
    * @param ctx ctx.manifest
    * @param inputs
    * @returns

@@ -1775,7 +1775,6 @@ export async function createLocalManifest(
     let manifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG;
 
     manifestString = replaceConfigValue(manifestString, "appName", name);
-    manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
     if (hasFrontend) {
       manifest.staticTabs = STATIC_TABS_TPL_LOCAL_DEBUG;
@@ -1806,9 +1805,7 @@ export async function createManifest(
     throw new Error(`Invalid capability`);
   }
   if (!isSPFx || hasBot || hasMessageExtension) {
-    let manifestString = TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV;
-    manifestString = replaceConfigValue(manifestString, "appName", appName);
-    manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
+    const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV;
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
     if (hasFrontend) {
       manifest.staticTabs = STATIC_TABS_TPL_FOR_MULTI_ENV;

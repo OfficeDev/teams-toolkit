@@ -6,7 +6,13 @@ import { FxError, TeamsAppManifest, Result, err, ok } from "@microsoft/teamsfx-a
 import { getAppDirectory } from "../../../common";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
-import { STATIC_TABS_MAX_ITEMS, MANIFEST_LOCAL, MANIFEST_TEMPLATE } from "./constants";
+import {
+  STATIC_TABS_MAX_ITEMS,
+  MANIFEST_LOCAL,
+  MANIFEST_TEMPLATE,
+  TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV,
+  TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG,
+} from "./constants";
 
 export async function getManifestTemplatePath(
   projectRoot: string,
@@ -14,6 +20,16 @@ export async function getManifestTemplatePath(
 ): Promise<string> {
   const appDir = await getAppDirectory(projectRoot);
   return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;
+}
+
+export async function init(projectRoot: string): Promise<any> {
+  const localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG;
+  const localManifest = JSON.parse(localManifestString);
+  await saveManifest(projectRoot, localManifest, true);
+
+  const remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV;
+  const remoteManifest = JSON.parse(remoteManifestString);
+  await saveManifest(projectRoot, remoteManifest, false);
 }
 
 export async function loadManifest(

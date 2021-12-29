@@ -13,9 +13,6 @@ pipeline {
     environment {
         M365_ACCOUNT_NAME = credentials('M365_ACCOUNT_NAME')
         M365_ACCOUNT_PASSWORD = credentials('M365_ACCOUNT_PASSWORD')
-        // To enable @microsoft/teamsfx-cli running in CI mode, turn on CI_ENABLED like below.
-        // In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
-        CI_ENABLED = 'true'
 
         // To specify the env name for multi-env feature.
         TEAMSFX_ENV_NAME = 'staging'
@@ -48,6 +45,13 @@ pipeline {
         stage('Run unit test') {
             steps {
                 sh 'cd tabs && npm run test && cd -'
+            }
+        }
+
+        // Set for non-interactive mode.
+        stage() {
+            steps {
+                sh 'npx teamsfx config set interactive false'
             }
         }
 

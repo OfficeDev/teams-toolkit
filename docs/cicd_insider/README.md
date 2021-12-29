@@ -200,7 +200,11 @@ The scripts are pretty straightforward and most parts of them are cross-platform
 
 The scripts are based on a cross-platform TeamsFx command line tool [TeamsFx-CLI](https://www.npmjs.com/package/@microsoft/teamsfx-cli). You can install it with `npm install -g @microsoft/teamsfx-cli` and follow the [documentation](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/cli/user-manual.md) to customize the scripts.
 
-> Note: To enable `@microsoft/teamsfx-cli` running in CI mode, turn on `CI_ENABLED` by `export CI_ENABLED=true`. In CI mode, `@microsoft/teamsfx-cli` is friendly for CI/CD.
+> Note: To enable `@microsoft/teamsfx-cli` running in non-interactive mode, set a global config like below:
+```
+teamsfx config set interactive false
+```
+In non-interactive mode, `@microsoft/teamsfx-cli` will not ask questions for inputs interactively. And, if you'd like to use non-interactive mode by command, please add an option `--interactive false` by command.
 
 Please keep in mind that you must store Azure and M365 credentials in your environment variables securely. For example if you are using Github as your source code repository, you can use the [Github Secrets](https://docs.github.com/en/actions/reference/encrypted-secrets) to securely store your credentials.
 

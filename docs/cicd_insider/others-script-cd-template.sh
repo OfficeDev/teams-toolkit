@@ -10,10 +10,6 @@ set -euxo pipefail
 # export M365_ACCOUNT_NAME={M365_ACCOUNT_NAME}
 # export M365_ACCOUNT_PASSWORD={M365_ACCOUNT_PASSWORD}
 
-# To enable @microsoft/teamsfx-cli running in CI mode, turn on CI_ENABLED like below.
-# In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
-export CI_ENABLED=true
-
 # To specify the env name for multi-env feature.
 export TEAMSFX_ENV_NAME=staging
 
@@ -42,6 +38,9 @@ cd tabs && npm ci && npm run build && cd -
 # Currently, no opinioned solution for unit test provided during scaffolding, so,
 # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
 cd tabs && npm run test && cd -
+
+# Set for non-interactive mode.
+npx teamsfx config set interactive false
 
 # Login Azure by service principal
 npx teamsfx account login azure --service-principal --username ${SP_NAME} --password ${SP_PASSWORD} --tenant ${TENANT_ID}

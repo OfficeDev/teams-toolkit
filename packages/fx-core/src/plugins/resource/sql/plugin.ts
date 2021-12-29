@@ -96,12 +96,10 @@ export class SqlPluginImpl {
       this.config.adminPassword = ctx.answers![Constants.questionKey.adminPassword] as string;
 
       if (!this.config.admin || !this.config.adminPassword) {
-        const error = SqlResultFactory.SystemError(
+        throw SqlResultFactory.SystemError(
           ErrorMessage.SqlInputError.name,
           ErrorMessage.SqlInputError.message()
         );
-        ctx.logProvider?.error(ErrorMessage.SqlInputError.message());
-        throw error;
       }
       ctx.config.set(Constants.admin, this.config.admin);
       ctx.config.set(Constants.adminPassword, this.config.adminPassword);
@@ -361,7 +359,6 @@ export class SqlPluginImpl {
         ErrorMessage.SqlGetConfigError.name,
         ErrorMessage.SqlGetConfigError.message(Constants.identityPlugin, Constants.identityName)
       );
-      ctx.logProvider?.error(error.message);
       throw error;
     }
   }
@@ -415,7 +412,6 @@ export class SqlPluginImpl {
       this.config.aadAdminType = tokenInfo.userType;
       ctx.logProvider?.debug(Message.adminName(tokenInfo.name));
     } catch (error: any) {
-      ctx.logProvider?.error(ErrorMessage.SqlUserInfoError.message() + `:${error.message}`);
       throw SqlResultFactory.SystemError(
         ErrorMessage.SqlUserInfoError.name,
         ErrorMessage.SqlUserInfoError.message(),

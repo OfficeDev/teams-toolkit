@@ -163,7 +163,8 @@ export class AadAppForTeamsImpl {
       ctx.logProvider,
       Messages.EndProvision,
       Messages.EndLocalDebug,
-      isLocalDebug
+      isLocalDebug,
+      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
     return ResultFactory.Success();
   }
@@ -244,7 +245,8 @@ export class AadAppForTeamsImpl {
       ctx.logProvider,
       Messages.EndPostProvision,
       Messages.EndPostLocalDebug,
-      isLocalDebug
+      isLocalDebug,
+      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
     return ResultFactory.Success();
   }

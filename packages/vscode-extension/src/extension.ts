@@ -305,6 +305,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(updateManifestCmd);
 
+  const editManifestTemplateCmd = vscode.commands.registerCommand(
+    "fx-extension.editManifestTemplate",
+    (...args) => Correlator.run(handlers.editManifestTemplate, args)
+  );
+  context.subscriptions.push(editManifestTemplateCmd);
+
   const createNewEnvironment = vscode.commands.registerCommand(
     "fx-extension.addEnvironment",
     (...args) => Correlator.run(handlers.createNewEnvironment, args)

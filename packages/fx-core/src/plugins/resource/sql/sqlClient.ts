@@ -37,61 +37,37 @@ export class SqlClient {
     } catch (error) {
       const link = HelpLinks.default;
       if (error?.message?.includes(ErrorMessage.GuestAdminMessage)) {
-        const logMessage = ErrorMessage.DatabaseUserCreateError.message(
+        const errorMessage = ErrorMessage.DatabaseUserCreateError.message(
           this.config.sqlServer,
           this.config.databaseName,
-          this.config.identity,
-          error.message
+          this.config.identity
         );
-        this.ctx.logProvider?.error(logMessage + ` You can follow ${link} to handle it`);
-        const message = ErrorMessage.DatabaseUserCreateError.message(
-          this.config.sqlServer,
-          this.config.databaseName,
-          this.config.identity,
-          ErrorMessage.GuestAdminError
-        );
-        throw SqlResultFactory.UserError(
+        const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          message,
+          errorMessage,
           error,
           undefined,
-          link
+          link,
+          errorMessage + `. ${ErrorMessage.GuestAdminError}`
         );
-      } else if (SqlClient.isFireWallError(error)) {
-        const message = ErrorMessage.DatabaseUserCreateError.message(
-          this.config.sqlServer,
-          this.config.databaseName,
-          this.config.identity,
-          `add database user failed. ${ErrorMessage.GetDetail}`
-        );
-        throw SqlResultFactory.UserError(
-          ErrorMessage.DatabaseUserCreateError.name,
-          message,
-          error,
-          undefined,
-          link
-        );
+        e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
+        throw e;
       } else {
-        const logMessage = ErrorMessage.DatabaseUserCreateError.message(
+        const errorMessage = ErrorMessage.DatabaseUserCreateError.message(
           this.config.sqlServer,
           this.config.databaseName,
-          this.config.identity,
-          error.message
+          this.config.identity
         );
-        this.ctx.logProvider?.error(logMessage + ` You can follow ${link} to handle it`);
-        const message = ErrorMessage.DatabaseUserCreateError.message(
-          this.config.sqlServer,
-          this.config.databaseName,
-          this.config.identity,
-          `add database user failed. ${ErrorMessage.GetDetail}`
-        );
-        throw SqlResultFactory.UserError(
+        const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          message,
+          errorMessage,
           error,
           undefined,
-          link
+          link,
+          errorMessage + `. ${ErrorMessage.GetDetail}`
         );
+        e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
+        throw e;
       }
     }
   }
@@ -101,19 +77,19 @@ export class SqlClient {
     if (!credential) {
       const link = HelpLinks.default;
       const reason = ErrorMessage.IdentityCredentialUndefine(config.identity, config.databaseName);
-      const message = ErrorMessage.DatabaseUserCreateError.message(
+      let message = ErrorMessage.DatabaseUserCreateError.message(
         config.sqlServer,
         config.databaseName,
-        config.identity,
-        reason
+        config.identity
       );
-      ctx.logProvider?.error(message + ` You can follow ${link} to handle it`);
+      message += `. ${reason}`;
       throw SqlResultFactory.UserError(
         ErrorMessage.DatabaseUserCreateError.name,
-        message,
+        message + ` ${ErrorMessage.LinkHelpMessage(link)}`,
         undefined,
         undefined,
-        link
+        link,
+        message
       );
     }
     try {
@@ -122,47 +98,37 @@ export class SqlClient {
     } catch (error) {
       const link = HelpLinks.default;
       if (error?.message?.includes(ErrorMessage.DomainCode)) {
-        const logMessage = ErrorMessage.DatabaseUserCreateError.message(
+        const errorMessage = ErrorMessage.DatabaseUserCreateError.message(
           config.sqlServer,
           config.databaseName,
-          config.identity,
-          error.message
+          config.identity
         );
-        ctx.logProvider?.error(logMessage + ` You can follow ${link} to handle it`);
-        const message = ErrorMessage.DatabaseUserCreateError.message(
-          config.sqlServer,
-          config.databaseName,
-          config.identity,
-          ErrorMessage.DomainError
-        );
-        throw SqlResultFactory.UserError(
+        const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          message,
+          errorMessage,
           error,
           undefined,
-          link
+          link,
+          errorMessage + `. ${ErrorMessage.DomainError}`
         );
+        e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
+        throw e;
       } else {
-        const logMessage = ErrorMessage.DatabaseUserCreateError.message(
+        const errorMessage = ErrorMessage.DatabaseUserCreateError.message(
           config.sqlServer,
           config.databaseName,
-          config.identity,
-          error.message
+          config.identity
         );
-        ctx.logProvider?.error(logMessage + ` You can follow ${link} to handle it`);
-        const message = ErrorMessage.DatabaseUserCreateError.message(
-          config.sqlServer,
-          config.databaseName,
-          config.identity,
-          `access database failed. ${ErrorMessage.GetDetail}`
-        );
-        throw SqlResultFactory.UserError(
+        const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          message,
+          errorMessage,
           error,
           undefined,
-          link
+          link,
+          errorMessage + `. ${ErrorMessage.GetDetail}`
         );
+        e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
+        throw e;
       }
     }
   }

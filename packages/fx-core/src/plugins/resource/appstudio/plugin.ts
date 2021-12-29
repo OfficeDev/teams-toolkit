@@ -1591,7 +1591,7 @@ export class AppStudioPluginImpl {
       return err(manifestResult.error);
     }
 
-    let manifestString = manifestResult.value.toString();
+    let manifestString = JSON.stringify(manifestResult.value);
 
     // Bot only project, without frontend hosting
     let endpoint = tabEndpoint;

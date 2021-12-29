@@ -52,4 +52,22 @@ export class CliHelper {
       )} with capability ${capability}`
     );
   }
+
+  static async addCapabilityToProject(projectPath: string, capabilityToAdd: string) {
+    await execAsync(`teamsfx capability add ${capabilityToAdd}`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+    console.log(`[Successfully] add capability ${capabilityToAdd} to ${projectPath}`);
+  }
+
+  static async addResourceToProject(projectPath: string, resourceToAdd: string) {
+    await execAsync(`teamsfx resource add ${resourceToAdd}`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+    console.log(`[Successfully] add resource ${resourceToAdd} to ${projectPath}`);
+  }
 }

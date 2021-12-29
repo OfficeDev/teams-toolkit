@@ -50,4 +50,8 @@ export class ConfigKey {
   // simple auth
   static readonly endpoint = "endpoint";
   static readonly webAppResourceId = "webAppResourceId";
+  // sql
+  static readonly skipAddingUser = "skipAddingUser";
+
+  static readonly skuName = "skuName";
 }

@@ -25,7 +25,7 @@ import {
   ResourceGroupManager,
   SharepointValidator as SharepointManager,
 } from "../commonlib";
-import { fileEncoding, TestFilePath } from "../commonlib/constants";
+import { ConfigKey, fileEncoding, PluginId, TestFilePath } from "../commonlib/constants";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
 export const execAsync = promisify(exec);
@@ -102,16 +102,10 @@ export function getConfigFileName(
   return path.resolve(testFolder, appName, getEnvFilePathSuffix(isMultiEnvEnabled, envName));
 }
 
-const aadPluginName = "fx-resource-aad-app-for-teams";
-const simpleAuthPluginName = "fx-resource-simple-auth";
-const sqlPluginName = "fx-resource-azure-sql";
-const botPluginName = "fx-resource-bot";
-const apimPluginName = "fx-resource-apim";
-
 export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
-  context[simpleAuthPluginName]["skuName"] = "B1";
+  context[PluginId.SimpleAuth][ConfigKey.skuName] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
@@ -130,7 +124,7 @@ export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string, envName
 export async function setBotSkuNameToB1(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
-  context[botPluginName]["skuName"] = "B1";
+  context[PluginId.Bot][ConfigKey.skuName] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
@@ -149,7 +143,7 @@ export async function setBotSkuNameToB1Bicep(projectPath: string, envName: strin
 export async function setSkipAddingSqlUser(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
-  context[sqlPluginName]["skipAddingUser"] = true;
+  context[PluginId.AzureSQL][ConfigKey.skipAddingUser] = true;
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
@@ -211,17 +205,17 @@ export async function cleanUpAadApp(
   };
 
   if (hasAadPlugin) {
-    const objectId = context[aadPluginName].objectId;
+    const objectId = context[PluginId.Aad].objectId;
     promises.push(clean(objectId));
   }
 
   if (hasBotPlugin) {
-    const objectId = context[botPluginName].objectId;
+    const objectId = context[PluginId.Bot].objectId;
     promises.push(clean(objectId));
   }
 
   if (hasApimPlugin) {
-    const objectId = context[apimPluginName].apimClientAADObjectId;
+    const objectId = context[PluginId.Apim].apimClientAADObjectId;
     promises.push(clean(objectId));
   }
 

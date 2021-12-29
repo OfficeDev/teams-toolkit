@@ -257,7 +257,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
   }
 }
 
-function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
+async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promise<void> {
   if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
     const debugConfig = event.configuration as TeamsfxDebugConfiguration;
     if (
@@ -269,7 +269,7 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
       // and not a restart one
       // send f5 event telemetry
       try {
-        const localAppId = getLocalTeamsAppId() as string;
+        const localAppId = (await getLocalTeamsAppId()) as string;
         const isLocal =
           (debugConfig.url as string) &&
           localAppId &&

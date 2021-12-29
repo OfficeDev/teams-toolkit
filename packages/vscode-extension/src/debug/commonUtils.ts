@@ -9,10 +9,10 @@ import * as vscode from "vscode";
 import * as constants from "./constants";
 import { ConfigFolderName, Func, InputConfigsFolderName } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "../commonlib/log";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { core, getSystemInputs, showError } from "../handlers";
-import * as net from "net";
 import { ext } from "../extensionVariables";
-import { isMultiEnvEnabled, isValidProject, isMigrateFromV1Project } from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, isValidProject, LocalEnvManager } from "@microsoft/teamsfx-core";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -180,83 +180,21 @@ export async function getSkipNgrokConfig(): Promise<boolean> {
   }
 }
 
-async function detectPortListeningImpl(port: number, host: string): Promise<boolean> {
-  return new Promise<boolean>((resolve, reject) => {
-    try {
-      const server = net.createServer();
-      server
-        .once("error", (err) => {
-          if (err.message.includes("EADDRINUSE")) {
-            resolve(true);
-          } else {
-            resolve(false);
-          }
-        })
-        .once("listening", () => {
-          server.close();
-        })
-        .once("close", () => {
-          resolve(false);
-        })
-        .listen(port, host);
-    } catch (err) {
-      // ignore any error to not block debugging
-      resolve(false);
-    }
-  });
-}
-
-export async function detectPortListening(port: number, hosts: string[]): Promise<boolean> {
-  for (const host of hosts) {
-    if (await detectPortListeningImpl(port, host)) {
-      return true;
-    }
-  }
-  return false;
+export async function getNpmInstallLogInfo(): Promise<any> {
+  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+  return await localEnvManager.getNpmInstallLogInfo();
 }
 
 export async function getPortsInUse(): Promise<number[]> {
-  const ports: [number, string[]][] = [];
-  if (vscode.workspace.workspaceFolders) {
-    const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
-    const workspacePath: string = workspaceFolder.uri.fsPath;
-    const frontendRoot = await getProjectRoot(workspacePath, constants.frontendFolderName);
-    if (frontendRoot) {
-      ports.push(...constants.frontendPorts);
-      const migrateFromV1 = await isMigrateFromV1Project(workspacePath);
-      if (!migrateFromV1) {
-        ports.push(...constants.simpleAuthPorts);
-      }
-    }
-
-    const backendRoot = await getProjectRoot(workspacePath, constants.backendFolderName);
-    if (backendRoot) {
-      ports.push(...constants.backendServicePorts);
-      const backendDevScript = await loadTeamsFxDevScript(backendRoot);
-      if (
-        backendDevScript === undefined ||
-        constants.backendDebugPortRegex.test(backendDevScript)
-      ) {
-        ports.push(...constants.backendDebugPorts);
-      }
-    }
-    const botRoot = await getProjectRoot(workspacePath, constants.botFolderName);
-    if (botRoot) {
-      ports.push(...constants.botServicePorts);
-      const botDevScript = await loadTeamsFxDevScript(botRoot);
-      if (botDevScript === undefined || constants.botDebugPortRegex.test(botDevScript)) {
-        ports.push(...constants.botDebugPorts);
-      }
-    }
+  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+  try {
+    const projectPath = ext.workspaceUri.fsPath;
+    const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+    return await localEnvManager.getPortsInUse(projectPath, projectSettings);
+  } catch (error: any) {
+    VsCodeLogInstance.warning(`Failed to check used ports. Error: ${error}`);
+    return [];
   }
-
-  const portsInUse: number[] = [];
-  for (const port of ports) {
-    if (await detectPortListening(port[0], port[1])) {
-      portsInUse.push(port[0]);
-    }
-  }
-  return portsInUse;
 }
 
 // This function is not used with multi-env.
@@ -346,16 +284,6 @@ export async function loadPackageJson(path: string): Promise<any> {
     return await rpj(path);
   } catch (error) {
     VsCodeLogInstance.error(`Cannot load package.json from ${path}. Error: ${error}`);
-    return undefined;
-  }
-}
-
-export async function loadTeamsFxDevScript(componentRoot: string): Promise<string | undefined> {
-  const packageJson = await loadPackageJson(path.join(componentRoot, "package.json"));
-  if (packageJson && packageJson.scripts && packageJson.scripts["dev:teamsfx"]) {
-    const devTeamsfx: string = packageJson.scripts["dev:teamsfx"];
-    return constants.npmRunDevRegex.test(devTeamsfx) ? packageJson.scripts["dev"] : devTeamsfx;
-  } else {
     return undefined;
   }
 }

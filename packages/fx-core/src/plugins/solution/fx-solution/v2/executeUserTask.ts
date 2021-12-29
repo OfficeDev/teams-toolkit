@@ -281,10 +281,13 @@ export async function addCapability(
   }
 
   const capabilitiesToAddManifest: (
-    | { name: "staticTab"; snippet?: IStaticTab }
-    | { name: "configurableTab"; snippet?: IConfigurableTab }
-    | { name: "Bot"; snippet?: IBot }
-    | { name: "MessageExtension"; snippet?: IComposeExtension }
+    | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
+    | { name: "configurableTab"; snippet?: { local: IConfigurableTab; remote: IConfigurableTab } }
+    | { name: "Bot"; snippet?: { local: IBot; remote: IBot } }
+    | {
+        name: "MessageExtension";
+        snippet?: { local: IComposeExtension; remote: IComposeExtension };
+      }
   )[] = [];
   const pluginNamesToScaffold: Set<string> = new Set<string>();
   const pluginNamesToArm: Set<string> = new Set<string>();

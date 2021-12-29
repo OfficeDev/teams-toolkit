@@ -47,7 +47,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
           localSettings
         );
       } catch (error: any) {
-        await showError(error);
+        showError(error);
         return tasks;
       }
 

@@ -9,10 +9,10 @@ import * as vscode from "vscode";
 import * as constants from "./constants";
 import { ConfigFolderName, Func, InputConfigsFolderName } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "../commonlib/log";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { core, getSystemInputs, showError } from "../handlers";
-import * as net from "net";
 import { ext } from "../extensionVariables";
-import { isMultiEnvEnabled, isValidProject, isMigrateFromV1Project } from "@microsoft/teamsfx-core";
+import { isMultiEnvEnabled, isValidProject, LocalEnvManager } from "@microsoft/teamsfx-core";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -218,7 +218,22 @@ export async function getSkipNgrokConfig(): Promise<boolean> {
   }
 }
 
-export async function getPortsInUse(): Promise<number[]> {}
+export async function getNpmInstallLogInfo(): Promise<any> {
+  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+  return await localEnvManager.getNpmInstallLogInfo();
+}
+
+export async function getPortsInUse(): Promise<number[]> {
+  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+  try {
+    const projectPath = ext.workspaceUri.fsPath;
+    const projectSettings = await localEnvManager.getProjectSettings(projectPath);
+    return await localEnvManager.getPortsInUse(projectPath, projectSettings);
+  } catch (error: any) {
+    VsCodeLogInstance.warning(`Failed to check used ports. Error: ${error}`);
+    return [];
+  }
+}
 
 // This function is not used with multi-env.
 // In the multi-env case, it will use getLocalSettings().
@@ -307,16 +322,6 @@ export async function loadPackageJson(path: string): Promise<any> {
     return await rpj(path);
   } catch (error) {
     VsCodeLogInstance.error(`Cannot load package.json from ${path}. Error: ${error}`);
-    return undefined;
-  }
-}
-
-export async function loadTeamsFxDevScript(componentRoot: string): Promise<string | undefined> {
-  const packageJson = await loadPackageJson(path.join(componentRoot, "package.json"));
-  if (packageJson && packageJson.scripts && packageJson.scripts["dev:teamsfx"]) {
-    const devTeamsfx: string = packageJson.scripts["dev:teamsfx"];
-    return constants.npmRunDevRegex.test(devTeamsfx) ? packageJson.scripts["dev"] : devTeamsfx;
-  } else {
     return undefined;
   }
 }

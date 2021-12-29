@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  Context,
   FxError,
   Result,
   ok,
@@ -20,13 +19,13 @@ import { Service } from "typedi";
 @Service(BuiltInResourcePluginNames.appStudio)
 export class AppStudioPluginV3 {
   // Generate initial manifest template file, for both local debug & remote
-  async init(ctx: Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
+  async init(ctx: v2.Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
     return ok(undefined);
   }
 
   // Append to manifest template file
   async addCapabilities(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     capabilities: (
       | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
@@ -39,7 +38,7 @@ export class AppStudioPluginV3 {
     )[]
   ): Promise<Result<any, FxError>> {
     capabilities.map((capability) => {
-      if (this.capabilityExceedLimit(capability.name)) {
+      if (this.capabilityExceedLimit(ctx, inputs, capability.name)) {
         return err(new Error("Exeed limit."));
       }
     });
@@ -51,7 +50,7 @@ export class AppStudioPluginV3 {
    * @returns
    */
   async loadManifest(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> {
     return ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() });
@@ -63,8 +62,8 @@ export class AppStudioPluginV3 {
    * @param inputs
    * @returns
    */
-  async SaveManifest(
-    ctx: Context,
+  async saveManifest(
+    ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
   ): Promise<Result<any, FxError>> {
@@ -74,7 +73,9 @@ export class AppStudioPluginV3 {
   // Read from manifest template, and check if it exceeds the limit.
   // The limit of staticTab if 16, others are 1
   // Should check both local & remote manifest template file
-  async capabilityExceedLimit(
+  public async capabilityExceedLimit(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
     capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
   ): Promise<boolean> {
     return false;

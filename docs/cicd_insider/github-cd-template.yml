@@ -12,6 +12,8 @@ jobs:
     # You can uncomment the line below to use environments (refer to https://docs.github.com/en/actions/reference/environments). 
     #environment: test_environment
     env:
+      M365_ACCOUNT_NAME: ${{secrets.M365_ACCOUNT_NAME}}
+      M365_ACCOUNT_PASSWORD: ${{secrets.M365_ACCOUNT_PASSWORD}}
       # To specify the env name for multi-env feature.
       TEAMSFX_ENV_NAME: staging
 
@@ -94,3 +96,9 @@ jobs:
         with:
           name: appPackage
           path: build/appPackage/appPackage.${{env.TEAMSFX_ENV_NAME}}.zip
+
+      - name: Publish Teams App
+        uses: OfficeDev/teamsfx-cli-action@v1
+        with:
+          commands: publish
+          env: ${{env.TEAMSFX_ENV_NAME}}

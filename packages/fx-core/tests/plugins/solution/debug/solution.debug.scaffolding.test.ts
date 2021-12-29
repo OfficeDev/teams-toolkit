@@ -425,14 +425,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 2,
         numCompounds: 2,
         numTasks: 5,
-        numLocalEnvs: 5,
+        numLocalEnvs: 4,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 2,
         numCompounds: 2,
         numTasks: 5,
-        numLocalEnvs: 5,
+        numLocalEnvs: 4,
       },
     ];
     parameters6.forEach((parameter: TestParameter) => {

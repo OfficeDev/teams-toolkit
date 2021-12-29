@@ -64,6 +64,9 @@ export async function setupLocalDebugSettings(
     // setup configs used by other plugins
     // TODO: dynamicly determine local ports
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
+      const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
+      const frontendPort = isMigrateFromV1 ? 3000 : 53000;
+      const authPort = isMigrateFromV1 ? 5000 : 55000;
       let localTabEndpoint: string;
       let localTabDomain: string;
       let localAuthEndpoint: string;
@@ -72,14 +75,14 @@ export async function setupLocalDebugSettings(
       if (vscEnv === VsCodeEnv.codespaceBrowser || vscEnv === VsCodeEnv.codespaceVsCode) {
         const codespaceName = await getCodespaceName();
 
-        localTabEndpoint = getCodespaceUrl(codespaceName, 53000);
+        localTabEndpoint = getCodespaceUrl(codespaceName, frontendPort);
         localTabDomain = new URL(localTabEndpoint).host;
-        localAuthEndpoint = getCodespaceUrl(codespaceName, 55000);
+        localAuthEndpoint = getCodespaceUrl(codespaceName, authPort);
         localFuncEndpoint = getCodespaceUrl(codespaceName, 7071);
       } else {
         localTabDomain = "localhost";
-        localTabEndpoint = "https://localhost:53000";
-        localAuthEndpoint = "http://localhost:55000";
+        localTabEndpoint = `https://localhost:${frontendPort}`;
+        localAuthEndpoint = `http://localhost:${authPort}`;
         localFuncEndpoint = "http://localhost:7071";
       }
 
@@ -169,7 +172,7 @@ export async function configLocalDebugSettings(
 
       const localEnvProvider = new LocalEnvProvider(inputs.projectPath!);
       const frontendEnvs = includeFrontend
-        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAuth)
+        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAuth, isMigrateFromV1)
         : undefined;
       const backendEnvs = includeBackend
         ? await localEnvProvider.loadBackendLocalEnvs()
@@ -190,7 +193,9 @@ export async function configLocalDebugSettings(
       const localAuthPackagePath = localSettings?.auth?.simpleAuthFilePath as string;
 
       if (includeFrontend) {
-        frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
+        if (!isMigrateFromV1) {
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
+        }
 
         if (includeAuth) {
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;

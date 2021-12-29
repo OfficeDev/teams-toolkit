@@ -5,6 +5,7 @@
 export const ConfigFolderName = "fx";
 export const AppPackageFolderName = "appPackage";
 export const BuildFolderName = "build";
+export const TemplateFolderName = "templates";
 export const AdaptiveCardsFolderName = "adaptiveCards";
 export const InputConfigsFolderName = "configs";
 export const StatesFolderName = "states";

@@ -6,11 +6,14 @@ import * as vscode from "vscode";
 
 import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
-import { ProductName, VsCodeEnv } from "@microsoft/teamsfx-api";
+import { Json, ProductName, ProjectSettings, VsCodeEnv } from "@microsoft/teamsfx-api";
+import { LocalEnvManager } from "@microsoft/teamsfx-core";
 import { DotnetChecker } from "./depsChecker/dotnetChecker";
 import { FuncToolChecker } from "./depsChecker/funcToolChecker";
 import { NgrokChecker } from "./depsChecker/ngrokChecker";
-import { detectVsCodeEnv } from "../handlers";
+import VsCodeLogInstance from "../commonlib/log";
+import { detectVsCodeEnv, showError } from "../handlers";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { vscodeAdapter } from "./depsChecker/vscodeAdapter";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
@@ -28,8 +31,27 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         return tasks;
       }
 
-      const programmingLanguage = await commonUtils.getProgrammingLanguage();
-      const localEnv = await commonUtils.getLocalEnv();
+      const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+      let projectSettings: ProjectSettings;
+      let localSettings: Json | undefined;
+      let localEnv: { [key: string]: string } | undefined;
+
+      try {
+        projectSettings = await localEnvManager.getProjectSettings(workspacePath);
+        localSettings = await localEnvManager.getLocalSettings(workspacePath, {
+          projectId: projectSettings.projectId,
+        });
+        localEnv = await localEnvManager.getLocalDebugEnvs(
+          workspacePath,
+          projectSettings,
+          localSettings
+        );
+      } catch (error: any) {
+        showError(error);
+        return tasks;
+      }
+
+      const programmingLanguage = localEnvManager.getProgrammingLanguage(projectSettings!);
 
       // Always provide the following tasks no matter whether it is defined in tasks.json
       const frontendRoot = await commonUtils.getProjectRoot(
@@ -65,7 +87,8 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
       const botRoot = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
       if (botRoot) {
-        tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot));
+        const skipNgrok = localEnvManager.getSkipNgrokConfig(localSettings);
+        tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot, skipNgrok));
         const silent: boolean = frontendRoot !== undefined;
         tasks.push(
           await this.createBotStartTask(
@@ -82,7 +105,8 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const isCodeSpaceEnv =
         vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode;
       if (isCodeSpaceEnv) {
-        tasks.push(await this.createOpenTeamsWebClientTask(workspaceFolder));
+        const debugConfig = localEnvManager.getLaunchInput(localSettings);
+        tasks.push(await this.createOpenTeamsWebClientTask(workspaceFolder, debugConfig));
       }
     }
     return tasks;
@@ -97,7 +121,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
       const workspacePath: string = workspaceFolder.uri.fsPath;
       if (!(await commonUtils.isFxProject(workspacePath))) {
-        vscodeLogger.error(
+        VsCodeLogInstance.error(
           `No ${TeamsfxTaskProvider.type} project. Cannot resolve ${TeamsfxTaskProvider.type} task.`
         );
         return undefined;
@@ -105,7 +129,10 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
       const command: string | undefined = task.definition.command;
       if (!command || (command?.toLowerCase() !== "dev" && command?.toLowerCase() !== "watch")) {
-        vscodeLogger.error(`Missing or wrong 'command' field in ${TeamsfxTaskProvider.type} task.`);
+        VsCodeLogInstance.error(
+          `Missing or wrong 'command' field in ${TeamsfxTaskProvider.type} task.`
+        );
+
         return undefined;
       }
 
@@ -116,7 +143,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
           component?.toLowerCase() !== "backend" &&
           component?.toLowerCase() !== "bot")
       ) {
-        vscodeLogger.error(
+        VsCodeLogInstance.error(
           `Missing or wrong 'component' field in ${TeamsfxTaskProvider.type} task.`
         );
         return undefined;
@@ -160,7 +187,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
             ? constants.tscWatchProblemMatcher
             : constants.botProblemMatcher;
         } else {
-          vscodeLogger.error(
+          VsCodeLogInstance.error(
             `Missing or wrong 'component' field in ${TeamsfxTaskProvider.type} task.`
           );
           return undefined;
@@ -177,11 +204,13 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         resolvedTask.isBackground = true;
         return resolvedTask;
       } else {
-        vscodeLogger.error(`No task scope. Cannot resolve ${TeamsfxTaskProvider.type} task.`);
+        VsCodeLogInstance.error(`No task scope. Cannot resolve ${TeamsfxTaskProvider.type} task.`);
         return undefined;
       }
     } else {
-      vscodeLogger.error(`No workspace open. Cannot resolve ${TeamsfxTaskProvider.type} task.`);
+      VsCodeLogInstance.error(
+        `No workspace open. Cannot resolve ${TeamsfxTaskProvider.type} task.`
+      );
       return undefined;
     }
   }
@@ -288,13 +317,13 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
   private async createNgrokStartTask(
     workspaceFolder: vscode.WorkspaceFolder,
     projectRoot: string,
+    isSkipped: boolean,
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
     const command: string = constants.ngrokStartCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
     let commandLine = "npx ngrok http 3978 --log=stdout";
-    const skipNgrok = await commonUtils.getSkipNgrokConfig();
-    if (skipNgrok) {
+    if (isSkipped) {
       commandLine = "echo 'Do not start ngrok, but use predefined bot endpoint.'";
     }
     const options: vscode.ShellExecutionOptions = {
@@ -315,7 +344,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       new vscode.ShellExecution(commandLine, options),
       constants.ngrokProblemMatcher
     );
-    task.isBackground = !skipNgrok;
+    task.isBackground = !isSkipped;
     return task;
   }
 
@@ -356,12 +385,12 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
   private async createOpenTeamsWebClientTask(
     workspaceFolder: vscode.WorkspaceFolder,
+    debugConfig: any,
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
     const command: string = constants.openWenClientCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
 
-    const debugConfig = await commonUtils.getDebugConfig(true);
     const localTeamsAppId: string | undefined = debugConfig?.appId;
     const commandLine = `npx open-cli https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true`;
 

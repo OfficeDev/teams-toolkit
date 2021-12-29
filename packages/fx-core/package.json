@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-core",
-  "version": "1.1.1",
+  "version": "1.1.2",
   "main": "build/index.js",
   "types": "build/index.d.ts",
   "license": "MIT",
@@ -84,6 +84,7 @@
     "node-ts-uuid": "^1.0.8",
     "openapi-types": "^7.2.3",
     "proper-lockfile": "^4.1.2",
+    "read-package-json-fast": "^2.0.3",
     "reflect-metadata": "^0.1.13",
     "semver": "^7.3.4",
     "tedious": "^9.2.1",

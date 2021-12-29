@@ -57,6 +57,7 @@ export async function convertToLocalEnvs(
   const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
   const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
   const includeAuth = ProjectSettingsHelper.includeAuth(projectSettings);
+  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
 
   // prepare config maps
   const authConfigs = ConfigMap.fromJSON(localSettings?.auth);
@@ -87,7 +88,9 @@ export async function convertToLocalEnvs(
     localEnvs[LocalEnvFrontendKeys.Https] = frontendConfigs?.get(
       LocalSettingsFrontendKeys.Https
     ) as string;
-    localEnvs[LocalEnvFrontendKeys.Port] = "53000";
+    if (!isMigrateFromV1) {
+      localEnvs[LocalEnvFrontendKeys.Port] = "53000";
+    }
 
     if (includeAuth) {
       // frontend local envs
@@ -167,8 +170,9 @@ export async function convertToLocalEnvs(
   try {
     const localEnvProvider = new LocalEnvProvider(projectPath);
     if (includeFrontend) {
-      const customEnvs = (await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAuth))
-        .customizedLocalEnvs;
+      const customEnvs = (
+        await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAuth, isMigrateFromV1)
+      ).customizedLocalEnvs;
       appendEnvWithPrefix(customEnvs, localEnvs, "FRONTEND_");
     }
     if (includeBackend) {
@@ -176,7 +180,8 @@ export async function convertToLocalEnvs(
       appendEnvWithPrefix(customEnvs, localEnvs, "BACKEND_");
     }
     if (includeBot) {
-      const customEnvs = (await localEnvProvider.loadBotLocalEnvs(false)).customizedLocalEnvs;
+      const customEnvs = (await localEnvProvider.loadBotLocalEnvs(isMigrateFromV1))
+        .customizedLocalEnvs;
       appendEnvWithPrefix(customEnvs, localEnvs, "BOT_");
     }
   } catch (error) {

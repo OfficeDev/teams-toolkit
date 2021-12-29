@@ -23,34 +23,6 @@ export async function getProjectRoot(
   return projectExists ? projectRoot : undefined;
 }
 
-export async function getLocalEnv(): Promise<{ [key: string]: string } | undefined> {
-  if (!vscode.workspace.workspaceFolders) {
-    return undefined;
-  }
-
-  const workspacePath: string = vscode.workspace.workspaceFolders[0].uri.fsPath;
-  const localEnvFilePath: string = path.join(
-    workspacePath,
-    `.${ConfigFolderName}`,
-    constants.localEnvFileName
-  );
-
-  let env: { [name: string]: string };
-  if (isMultiEnvEnabled()) {
-    // use localSettings.json as input to generate the local debug envs
-    env = await getLocalDebugEnvs();
-  } else {
-    // use local.env file as input to generate the local debug envs
-    if (!(await fs.pathExists(localEnvFilePath))) {
-      return undefined;
-    }
-
-    const contents = await fs.readFile(localEnvFilePath);
-    env = dotenv.parse(contents);
-  }
-  return env;
-}
-
 function getLocalEnvWithPrefix(
   env: { [key: string]: string } | undefined,
   prefix: string
@@ -132,22 +104,12 @@ export async function hasTeamsfxBot(): Promise<boolean> {
   return botRoot !== undefined;
 }
 
-export async function getLocalDebugEnvs(): Promise<Record<string, string>> {
-  const localDebugEnvs = await executeLocalDebugUserTask("getLocalDebugEnvs");
-  return localDebugEnvs as Record<string, string>;
-}
-
 export async function getDebugConfig(
   isLocalSideloadingConfiguration: boolean,
   env?: string
 ): Promise<{ appId: string; env?: string } | undefined> {
   const params = isLocalSideloadingConfiguration ? "local" : "remote";
   return await executeLocalDebugUserTask("getLaunchInput", params, env);
-}
-
-export async function getProgrammingLanguage(): Promise<string | undefined> {
-  const programmingLanguage = await executeLocalDebugUserTask("getProgrammingLanguage");
-  return programmingLanguage as string;
 }
 
 async function executeLocalDebugUserTask(

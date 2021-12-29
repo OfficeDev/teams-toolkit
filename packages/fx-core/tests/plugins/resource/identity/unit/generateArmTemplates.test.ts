@@ -16,11 +16,7 @@ import {
   mockSolutionUpdateArmTemplates,
   ResourcePlugins,
 } from "../../util";
-import {
-  AzureResourceKeyVault,
-  HostTypeOptionAzure,
-  TabOptionItem,
-} from "../../../../../src/plugins/solution/fx-solution/question";
+import { HostTypeOptionAzure } from "../../../../../src/plugins/solution/fx-solution/question";
 chai.use(chaiAsPromised);
 
 dotenv.config();

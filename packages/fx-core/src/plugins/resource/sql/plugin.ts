@@ -41,7 +41,7 @@ import {
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFiles } from "../../../common/tools";
+import { generateBicepFromFile } from "../../../common/tools";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
@@ -275,7 +275,7 @@ export class SqlPluginImpl {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
@@ -287,18 +287,9 @@ export class SqlPluginImpl {
       "sql",
       "bicep"
     );
-    const provisionOrchestration = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
-        ConstantString.UTF8Encoding
-      ),
-      pluginCtx
-    );
-    const provisionModules = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDirectory, AzureSqlBicepFile.ProvisionModuleTemplateFileName),
-        ConstantString.UTF8Encoding
-      ),
+    const provisionOrchestration = await generateBicepFromFile(bicepTemplateDirectory, pluginCtx);
+    const provisionModules = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, AzureSqlBicepFile.ProvisionModuleTemplateFileName),
       pluginCtx
     );
     const result: ArmTemplateResult = {

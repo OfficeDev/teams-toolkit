@@ -38,7 +38,7 @@ import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../.
 import { getTemplatesFolder } from "../../../../folder";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
-import { generateBicepFiles } from "../../../../common/tools";
+import { generateBicepFromFile } from "../../../../common/tools";
 
 export class ApimManager {
   private readonly logger: LogProvider | undefined;
@@ -216,17 +216,14 @@ export class ApimManager {
   }
 
   public async updateArmTemplates(ctx: PluginContext): Promise<ArmTemplateResult> {
-    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
-    const configModules = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
-        ConstantString.UTF8Encoding
-      ),
+    const configModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
       pluginCtx
     );
 
@@ -243,38 +240,26 @@ export class ApimManager {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<ArmTemplateResult> {
-    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
-    const provisionOrchestration = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDir, Bicep.ProvisionFileName),
-        ConstantString.UTF8Encoding
-      ),
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDir, Bicep.ProvisionFileName),
       pluginCtx
     );
-    const provisionModules = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleFileName),
-        ConstantString.UTF8Encoding
-      ),
+    const provisionModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleFileName),
       pluginCtx
     );
-    const configOrchestration = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDir, Bicep.ConfigFileName),
-        ConstantString.UTF8Encoding
-      ),
+    const configOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDir, Bicep.ConfigFileName),
       pluginCtx
     );
-    const configModules = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
-        ConstantString.UTF8Encoding
-      ),
+    const configModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
       pluginCtx
     );
     const result: ArmTemplateResult = {

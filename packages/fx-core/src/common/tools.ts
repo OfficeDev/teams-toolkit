@@ -397,10 +397,21 @@ export function getRootDirectory(): string {
   }
 }
 
-export async function generateBicepFiles(templateFilePath: string, context: any): Promise<string> {
-  const templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
-  const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
-  return updatedBicepFile;
+export async function generateBicepFromFile(
+  templateFilePath: string,
+  context: any
+): Promise<string> {
+  try {
+    const templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
+    const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
+    return updatedBicepFile;
+  } catch (error) {
+    throw returnSystemError(
+      new Error(`Failed to generate bicep file ${templateFilePath}. Reason: ${error.message}`),
+      "Core",
+      "BicepGenerationError"
+    );
+  }
 }
 
 export function compileHandlebarsTemplateString(templateString: string, context: any): string {

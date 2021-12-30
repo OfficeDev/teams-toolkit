@@ -88,7 +88,7 @@ import {
 import { functionNameQuestion } from "./question";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFiles } from "../../../common/tools";
+import { generateBicepFromFile } from "../../../common/tools";
 
 type Site = WebSiteManagementModels.Site;
 type AppServicePlan = WebSiteManagementModels.AppServicePlan;
@@ -671,7 +671,7 @@ export class FunctionPluginImpl {
       "function",
       "bicep"
     );
-    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
@@ -680,10 +680,7 @@ export class FunctionPluginImpl {
       FunctionBicepFile.configuraitonTemplateFileName
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
-    const configModule = await generateBicepFiles(
-      await fs.readFile(configFuncTemplateFilePath, ConstantString.UTF8Encoding),
-      pluginCtx
-    );
+    const configModule = await generateBicepFromFile(configFuncTemplateFilePath, pluginCtx);
 
     const result: ArmTemplateResult = {
       Reference: {
@@ -706,7 +703,7 @@ export class FunctionPluginImpl {
       "function",
       "bicep"
     );
-    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
@@ -725,22 +722,13 @@ export class FunctionPluginImpl {
       FunctionBicepFile.configuraitonTemplateFileName
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
-    const provisionOrchestration = await generateBicepFiles(
-      await fs.readFile(provisionTemplateFilePath, ConstantString.UTF8Encoding),
+    const provisionOrchestration = await generateBicepFromFile(
+      provisionTemplateFilePath,
       pluginCtx
     );
-    const provisionModule = await generateBicepFiles(
-      await fs.readFile(provisionFuncTemplateFilePath, ConstantString.UTF8Encoding),
-      pluginCtx
-    );
-    const configOrchestration = await generateBicepFiles(
-      await fs.readFile(configTemplateFilePath, ConstantString.UTF8Encoding),
-      pluginCtx
-    );
-    const configModule = await generateBicepFiles(
-      await fs.readFile(configFuncTemplateFilePath, ConstantString.UTF8Encoding),
-      pluginCtx
-    );
+    const provisionModule = await generateBicepFromFile(provisionFuncTemplateFilePath, pluginCtx);
+    const configOrchestration = await generateBicepFromFile(configTemplateFilePath, pluginCtx);
+    const configModule = await generateBicepFromFile(configFuncTemplateFilePath, pluginCtx);
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: provisionOrchestration,

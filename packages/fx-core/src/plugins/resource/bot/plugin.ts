@@ -65,7 +65,7 @@ import {
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFiles } from "../../../common/tools";
+import { generateBicepFromFile } from "../../../common/tools";
 export class TeamsBotImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
   public config: TeamsBotConfig = new TeamsBotConfig();
@@ -193,17 +193,14 @@ export class TeamsBotImpl {
 
   public async updateArmTemplates(ctx: PluginContext): Promise<FxResult> {
     Logger.info(Messages.UpdatingArmTemplatesBot);
-    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
-    const configModule = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
-        ConstantString.UTF8Encoding
-      ),
+    const configModule = await generateBicepFromFile(
+      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
       pluginCtx
     );
     const result: ArmTemplateResult = {
@@ -223,38 +220,26 @@ export class TeamsBotImpl {
 
   public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
     Logger.info(Messages.GeneratingArmTemplatesBot);
-    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
-    const provisionOrchestration = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDir, Bicep.ProvisionFileName),
-        ConstantString.UTF8Encoding
-      ),
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDir, Bicep.ProvisionFileName),
       pluginCtx
     );
-    const provisionModules = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateFileName),
-        ConstantString.UTF8Encoding
-      ),
+    const provisionModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateFileName),
       pluginCtx
     );
-    const configOrchestration = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDir, Bicep.ConfigFileName),
-        ConstantString.UTF8Encoding
-      ),
+    const configOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDir, Bicep.ConfigFileName),
       pluginCtx
     );
-    const configModule = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
-        ConstantString.UTF8Encoding
-      ),
+    const configModule = await generateBicepFromFile(
+      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
       pluginCtx
     );
     const result: ArmTemplateResult = {

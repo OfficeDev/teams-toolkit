@@ -62,7 +62,7 @@ import { AzureResourceFunction } from "../../solution/fx-solution/question";
 import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFiles } from "../../../common/tools";
+import { generateBicepFromFile } from "../../../common/tools";
 export class FrontendPluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
@@ -209,7 +209,7 @@ export class FrontendPluginImpl {
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartGenerateArmTemplates(PluginInfo.DisplayName));
-    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
@@ -224,14 +224,8 @@ export class FrontendPluginImpl {
       bicepTemplateDir,
       FrontendPathInfo.ModuleProvisionFileName
     );
-    const provisionOrchestration = await generateBicepFiles(
-      await fs.readFile(provisionFilePath, ConstantString.UTF8Encoding),
-      pluginCtx
-    );
-    const provisionModules = await generateBicepFiles(
-      await fs.readFile(moduleProvisionFilePath, ConstantString.UTF8Encoding),
-      pluginCtx
-    );
+    const provisionOrchestration = await generateBicepFromFile(provisionFilePath, pluginCtx);
+    const provisionModules = await generateBicepFromFile(moduleProvisionFilePath, pluginCtx);
 
     const result: ArmTemplateResult = {
       Provision: {

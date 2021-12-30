@@ -17,7 +17,7 @@ import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFiles } from "../../../common/tools";
+import { generateBicepFromFile } from "../../../common/tools";
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
 
@@ -120,7 +120,7 @@ export class SimpleAuthPluginImpl {
   public async updateArmTemplates(ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartUpdateArmTemplates);
-    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
@@ -138,10 +138,7 @@ export class SimpleAuthPluginImpl {
       bicepTemplateDirectory,
       Constants.configModuleTemplateFileName
     );
-    const configModules = await generateBicepFiles(
-      await fs.readFile(configModuleFilePath, ConstantString.UTF8Encoding),
-      pluginCtx
-    );
+    const configModules = await generateBicepFromFile(configModuleFilePath, pluginCtx);
     const result: ArmTemplateResult = {
       Reference: {
         skuName: Constants.SimpleAuthBicepOutputSkuName,
@@ -161,7 +158,7 @@ export class SimpleAuthPluginImpl {
   ): Promise<Result<ArmTemplateResult, FxError>> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
-    const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
@@ -182,28 +179,16 @@ export class SimpleAuthPluginImpl {
       bicepTemplateDirectory,
       Constants.configModuleTemplateFileName
     );
-    const provisionOrchestration = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
-        ConstantString.UTF8Encoding
-      ),
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
       pluginCtx
     );
-    const provisionModules = await generateBicepFiles(
-      await fs.readFile(provisionModuleResult, ConstantString.UTF8Encoding),
+    const provisionModules = await generateBicepFromFile(provisionModuleResult, pluginCtx);
+    const configOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, Bicep.ConfigFileName),
       pluginCtx
     );
-    const configOrchestration = await generateBicepFiles(
-      await fs.readFile(
-        path.join(bicepTemplateDirectory, Bicep.ConfigFileName),
-        ConstantString.UTF8Encoding
-      ),
-      pluginCtx
-    );
-    const configModule = await generateBicepFiles(
-      await fs.readFile(configModuleFilePath, ConstantString.UTF8Encoding),
-      pluginCtx
-    );
+    const configModule = await generateBicepFromFile(configModuleFilePath, pluginCtx);
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: provisionOrchestration,

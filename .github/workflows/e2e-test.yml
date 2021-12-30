@@ -58,7 +58,7 @@ jobs:
         if: ${{  github.event_name == 'schedule' }}
         working-directory: packages/cli/tests/e2e
         run: |
-          cases=`find . -name "*.tests.ts" | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
+          cases=`find . -wholename "*.tests.ts" | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
           echo "::set-output name=cases::$cases"
 
       - name: List cases for dispatch
@@ -68,7 +68,7 @@ jobs:
         run: |
           inputCases='${{ github.event.inputs.cases }}'
           if [ -z "$inputCases" ]; then
-            allCases=`find . -name "*.tests.ts" | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
+            allCases=`find . -wholename "*.tests.ts" | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
             echo "::set-output name=cases::$allCases"
           else
             echo "::set-output name=cases::$inputCases"

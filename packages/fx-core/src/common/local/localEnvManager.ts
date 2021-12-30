@@ -32,12 +32,6 @@ export class LocalEnvManager {
     this.telemetry = telemetry;
   }
 
-  public getLaunchInput(localSettings: Json | undefined): any {
-    // return local teams app id
-    const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
-    return { appId: localTeamsAppId };
-  }
-
   public async getLocalDebugEnvs(
     projectPath: string,
     projectSettings: ProjectSettings,
@@ -55,14 +49,6 @@ export class LocalEnvManager {
     projectSettings: ProjectSettings
   ): Promise<number[]> {
     return await getPortsInUse(projectPath, projectSettings);
-  }
-
-  public getProgrammingLanguage(projectSettings: ProjectSettings): string | undefined {
-    return projectSettings.programmingLanguage;
-  }
-
-  public getSkipNgrokConfig(localSettings: Json | undefined): boolean {
-    return (localSettings?.bot?.skipNgrok as boolean) === true;
   }
 
   public async getLocalSettings(

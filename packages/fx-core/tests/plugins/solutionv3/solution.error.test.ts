@@ -6,9 +6,9 @@ import { assert } from "chai";
 import "mocha";
 import {
   CapabilityAlreadyAddedError,
-  InvalidInputError,
   ResourceAlreadyAddedError,
 } from "../../../src/plugins/solution/fx-solution/v3/error";
+import { InvalidInputError } from "../../../src/plugins/solution/utils/error";
 
 describe("SolutionV3 - errors", () => {
   it("CapabilityAlreadyAddedError", async () => {

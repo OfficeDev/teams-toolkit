@@ -1,5 +1,5 @@
 // Resources for identity
-module userAssignedIdentityProvision '{{fx-resource-identity.Provision.identity.path}}' = {
+module userAssignedIdentityProvision '\{{fx-resource-identity.Provision.identity.path}}' = {
   name: 'userAssignedIdentityProvision'
   params: {
     provisionParameters: provisionParameters

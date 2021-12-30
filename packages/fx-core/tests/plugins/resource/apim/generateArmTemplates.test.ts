@@ -20,12 +20,21 @@ import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { generateFakeServiceClientCredentials } from "../bot/unit/utils";
 import { ApimOutputBicepSnippet } from "../../../../src/plugins/resource/apim/constants";
 import { ArmTemplateResult } from "../../../../src/common/armInterface";
+import {
+  AzureResourceApim,
+  HostTypeOptionAzure,
+  TabOptionItem,
+} from "../../../../src/plugins/solution/fx-solution/question";
+import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
+import { mockContext } from "./mock";
 
 describe("apimManager.generateArmTemplates", () => {
   let apimManager: ApimManager;
+  let pluginContext: any;
 
   before(async () => {
     apimManager = await mockApimManager();
+    pluginContext = mockContext();
   });
 
   it("should successfully generate apim bicep files", async () => {
@@ -37,9 +46,15 @@ describe("apimManager.generateArmTemplates", () => {
       ResourcePlugins.SimpleAuth,
       ResourcePlugins.Apim,
     ];
-
+    pluginContext.projectSettings!.solutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      capabilities: [TabOptionItem.id],
+      azureResources: [AzureResourceApim.id],
+    } as AzureSolutionSettings;
     // Act
-    const result = await apimManager.generateArmTemplates();
+    const result = await apimManager.generateArmTemplates(pluginContext);
 
     // Assert
     const testProvisionModuleFileName = "apimProvision.result.bicep";
@@ -127,9 +142,15 @@ describe("apimManager.generateArmTemplates", () => {
       ResourcePlugins.SimpleAuth,
       ResourcePlugins.Apim,
     ];
-
+    pluginContext.projectSettings!.solutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      capabilities: [TabOptionItem.id],
+      azureResources: [AzureResourceApim.id],
+    } as AzureSolutionSettings;
     // Act
-    const result = await apimManager.updateArmTemplates();
+    const result = await apimManager.updateArmTemplates(pluginContext);
 
     // Assert
     const testProvisionModuleFileName = "apimProvision.result.bicep";

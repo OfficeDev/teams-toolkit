@@ -1,5 +1,5 @@
 // Resources for Azure SQL
-module azureSqlProvision '{{fx-resource-azure-sql.Provision.azureSql.path}}' = {
+module azureSqlProvision '\{{fx-resource-azure-sql.Provision.azureSql.path}}' = {
   name: 'azureSqlProvision'
   params: {
     provisionParameters: provisionParameters

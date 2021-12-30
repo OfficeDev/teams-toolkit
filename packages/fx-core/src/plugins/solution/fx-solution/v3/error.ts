@@ -11,9 +11,3 @@ export class ResourceAlreadyAddedError extends UserError {
     super(new.target.name, `Resource ${pluginName} is already added in the project`, "Solution");
   }
 }
-
-export class InvalidInputError extends UserError {
-  constructor(inputs: Inputs, reason?: string) {
-    super(new.target.name, `Invalid inputs: ${JSON.stringify(inputs)} ${reason}`, "Solution");
-  }
-}

@@ -1764,6 +1764,22 @@ interface TeamsFxSolutionSettings extends AzureSolutionSettings {
 }
 
 // @public (undocumented)
+interface TeamsSPFxSolutionSettings extends SolutionSettings {
+    // (undocumented)
+    activeResourcePlugins: string[];
+    // (undocumented)
+    capabilities: string[];
+    // (undocumented)
+    hostType: string;
+    // (undocumented)
+    migrateFromV1?: boolean;
+    // (undocumented)
+    modules: Module[];
+    // (undocumented)
+    version: "3.0.0";
+}
+
+// @public (undocumented)
 export enum TelemetryEvent {
     // (undocumented)
     askQuestion = "askQuestion"
@@ -2022,6 +2038,7 @@ declare namespace v3 {
         ResourcePlugin_2 as ResourcePlugin,
         Module,
         TeamsFxSolutionSettings,
+        TeamsSPFxSolutionSettings,
         ISolution,
         ICore,
         AzureIdentity,

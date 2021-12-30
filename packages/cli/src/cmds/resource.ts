@@ -513,9 +513,11 @@ export default class Resource extends YargsCommand {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    return yargs.version(false).positional("action", {
-      choices: this.subCommands.map((c) => c.commandHead),
-    });
+    return yargs
+      .positional("action", {
+        choices: this.subCommands.map((c) => c.commandHead),
+      })
+      .version(false);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

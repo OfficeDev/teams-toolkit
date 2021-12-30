@@ -141,7 +141,7 @@ jobs:
       - name: run test
         working-directory: packages/cli/tests/e2e
         run: |
-          file=`find . -name "${{ matrix.cases }}"`
+          file=`find . -wholename "${{ matrix.cases }}"`
           if [ ! -z "$file" ]; then
             npx mocha --reporter @mochajs/json-file-reporter $file --parallel
           fi

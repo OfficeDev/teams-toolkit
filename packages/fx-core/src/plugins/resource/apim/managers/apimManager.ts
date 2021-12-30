@@ -38,7 +38,7 @@ import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../.
 import { getTemplatesFolder } from "../../../../folder";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
-import { compileHandlebarsTemplateString } from "../../../../common/tools";
+import { generateBicepFiles } from "../../../../common/tools";
 
 export class ApimManager {
   private readonly logger: LogProvider | undefined;
@@ -219,14 +219,17 @@ export class ApimManager {
     const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
-    ); // This function ensures return result won't be empty
+    );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
-    let configModules = await fs.readFile(
-      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
-      ConstantString.UTF8Encoding
+    const configModules = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    configModules = compileHandlebarsTemplateString(configModules, pluginCtx);
+
     const result: ArmTemplateResult = {
       Reference: {
         serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
@@ -243,29 +246,37 @@ export class ApimManager {
     const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
-    ); // This function ensures return result won't be empty
+    );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
-    let provisionOrchestration = await fs.readFile(
-      path.join(bicepTemplateDir, Bicep.ProvisionFileName),
-      ConstantString.UTF8Encoding
+    const provisionOrchestration = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDir, Bicep.ProvisionFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    provisionOrchestration = compileHandlebarsTemplateString(provisionOrchestration, pluginCtx);
-    let provisionModules = await fs.readFile(
-      path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleFileName),
-      ConstantString.UTF8Encoding
+    const provisionModules = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    provisionModules = compileHandlebarsTemplateString(provisionModules, pluginCtx);
-    let configOrchestration = await fs.readFile(
-      path.join(bicepTemplateDir, Bicep.ConfigFileName),
-      ConstantString.UTF8Encoding
+    const configOrchestration = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDir, Bicep.ConfigFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    configOrchestration = compileHandlebarsTemplateString(configOrchestration, pluginCtx);
-    let configModules = await fs.readFile(
-      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
-      ConstantString.UTF8Encoding
+    const configModules = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    configModules = compileHandlebarsTemplateString(configModules, pluginCtx);
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: provisionOrchestration,

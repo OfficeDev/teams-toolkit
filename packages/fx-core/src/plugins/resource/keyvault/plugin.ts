@@ -10,7 +10,7 @@ import { Constants } from "./constants";
 import { ResultFactory } from "./result";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { compileHandlebarsTemplateString } from "../../../common/tools";
+import { generateBicepFiles } from "../../../common/tools";
 
 export class KeyVaultPluginImpl {
   public async generateArmTemplates(
@@ -19,7 +19,7 @@ export class KeyVaultPluginImpl {
     const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
-    ); // This function ensures return result won't be empty
+    );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
 
     const bicepTemplateDirectory = path.join(
@@ -34,13 +34,17 @@ export class KeyVaultPluginImpl {
       bicepTemplateDirectory,
       Constants.provisionModuleTemplateFileName
     );
-    let provisionOrchestration = await fs.readFile(
-      path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
-      ConstantString.UTF8Encoding
+    const provisionOrchestration = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    provisionOrchestration = compileHandlebarsTemplateString(provisionOrchestration, pluginCtx);
-    let provisionModules = await fs.readFile(provisionModuleResult, ConstantString.UTF8Encoding);
-    provisionModules = compileHandlebarsTemplateString(provisionModules, pluginCtx);
+    const provisionModules = await generateBicepFiles(
+      await fs.readFile(provisionModuleResult, ConstantString.UTF8Encoding),
+      pluginCtx
+    );
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: provisionOrchestration,

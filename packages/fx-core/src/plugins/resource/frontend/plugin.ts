@@ -62,7 +62,7 @@ import { AzureResourceFunction } from "../../solution/fx-solution/question";
 import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { compileHandlebarsTemplateString } from "../../../common/tools";
+import { generateBicepFiles } from "../../../common/tools";
 export class FrontendPluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
@@ -212,7 +212,7 @@ export class FrontendPluginImpl {
     const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
-    ); // This function ensures return result won't be empty
+    );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
@@ -224,10 +224,14 @@ export class FrontendPluginImpl {
       bicepTemplateDir,
       FrontendPathInfo.ModuleProvisionFileName
     );
-    let provisionOrchestration = await fs.readFile(provisionFilePath, ConstantString.UTF8Encoding);
-    provisionOrchestration = compileHandlebarsTemplateString(provisionOrchestration, pluginCtx);
-    let provisionModules = await fs.readFile(moduleProvisionFilePath, ConstantString.UTF8Encoding);
-    provisionModules = compileHandlebarsTemplateString(provisionModules, pluginCtx);
+    const provisionOrchestration = await generateBicepFiles(
+      await fs.readFile(provisionFilePath, ConstantString.UTF8Encoding),
+      pluginCtx
+    );
+    const provisionModules = await generateBicepFiles(
+      await fs.readFile(moduleProvisionFilePath, ConstantString.UTF8Encoding),
+      pluginCtx
+    );
 
     const result: ArmTemplateResult = {
       Provision: {

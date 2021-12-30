@@ -41,7 +41,7 @@ import {
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { compileHandlebarsTemplateString } from "../../../common/tools";
+import { generateBicepFiles } from "../../../common/tools";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
@@ -278,7 +278,7 @@ export class SqlPluginImpl {
     const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
-    ); // This function ensures return result won't be empty
+    );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
@@ -287,16 +287,20 @@ export class SqlPluginImpl {
       "sql",
       "bicep"
     );
-    let provisionOrchestration = await fs.readFile(
-      path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
-      ConstantString.UTF8Encoding
+    const provisionOrchestration = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    provisionOrchestration = compileHandlebarsTemplateString(provisionOrchestration, pluginCtx);
-    let provisionModules = await fs.readFile(
-      path.join(bicepTemplateDirectory, AzureSqlBicepFile.ProvisionModuleTemplateFileName),
-      ConstantString.UTF8Encoding
+    const provisionModules = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDirectory, AzureSqlBicepFile.ProvisionModuleTemplateFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    provisionModules = compileHandlebarsTemplateString(provisionModules, pluginCtx);
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: provisionOrchestration,

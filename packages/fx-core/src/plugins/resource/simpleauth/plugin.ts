@@ -17,7 +17,7 @@ import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { compileHandlebarsTemplateString } from "../../../common/tools";
+import { generateBicepFiles } from "../../../common/tools";
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
 
@@ -123,7 +123,7 @@ export class SimpleAuthPluginImpl {
     const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
-    ); // This function ensures return result won't be empty
+    );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
 
     const bicepTemplateDirectory = path.join(
@@ -138,8 +138,10 @@ export class SimpleAuthPluginImpl {
       bicepTemplateDirectory,
       Constants.configModuleTemplateFileName
     );
-    let configModules = await fs.readFile(configModuleFilePath, ConstantString.UTF8Encoding);
-    configModules = compileHandlebarsTemplateString(configModules, pluginCtx);
+    const configModules = await generateBicepFiles(
+      await fs.readFile(configModuleFilePath, ConstantString.UTF8Encoding),
+      pluginCtx
+    );
     const result: ArmTemplateResult = {
       Reference: {
         skuName: Constants.SimpleAuthBicepOutputSkuName,
@@ -162,7 +164,7 @@ export class SimpleAuthPluginImpl {
     const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
-    ); // This function ensures return result won't be empty
+    );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
@@ -180,20 +182,28 @@ export class SimpleAuthPluginImpl {
       bicepTemplateDirectory,
       Constants.configModuleTemplateFileName
     );
-    let provisionOrchestration = await fs.readFile(
-      path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
-      ConstantString.UTF8Encoding
+    const provisionOrchestration = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    provisionOrchestration = compileHandlebarsTemplateString(provisionOrchestration, pluginCtx);
-    let provisionModules = await fs.readFile(provisionModuleResult, ConstantString.UTF8Encoding);
-    provisionModules = compileHandlebarsTemplateString(provisionModules, pluginCtx);
-    let configOrchestration = await fs.readFile(
-      path.join(bicepTemplateDirectory, Bicep.ConfigFileName),
-      ConstantString.UTF8Encoding
+    const provisionModules = await generateBicepFiles(
+      await fs.readFile(provisionModuleResult, ConstantString.UTF8Encoding),
+      pluginCtx
     );
-    configOrchestration = compileHandlebarsTemplateString(configOrchestration, pluginCtx);
-    let configModule = await fs.readFile(configModuleFilePath, ConstantString.UTF8Encoding);
-    configModule = compileHandlebarsTemplateString(configModule, pluginCtx);
+    const configOrchestration = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDirectory, Bicep.ConfigFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
+    );
+    const configModule = await generateBicepFiles(
+      await fs.readFile(configModuleFilePath, ConstantString.UTF8Encoding),
+      pluginCtx
+    );
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: provisionOrchestration,

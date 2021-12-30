@@ -65,7 +65,7 @@ import {
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { compileHandlebarsTemplateString } from "../../../common/tools";
+import { generateBicepFiles } from "../../../common/tools";
 export class TeamsBotImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
   public config: TeamsBotConfig = new TeamsBotConfig();
@@ -196,14 +196,16 @@ export class TeamsBotImpl {
     const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
-    ); // This function ensures return result won't be empty
+    );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
-    let configModule = await fs.readFile(
-      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
-      ConstantString.UTF8Encoding
+    const configModule = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    configModule = compileHandlebarsTemplateString(configModule, pluginCtx);
     const result: ArmTemplateResult = {
       Reference: {
         resourceId: BotBicep.resourceId,
@@ -224,29 +226,37 @@ export class TeamsBotImpl {
     const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
-    ); // This function ensures return result won't be empty
+    );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
-    let provisionOrchestration = await fs.readFile(
-      path.join(bicepTemplateDir, Bicep.ProvisionFileName),
-      ConstantString.UTF8Encoding
+    const provisionOrchestration = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDir, Bicep.ProvisionFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    provisionOrchestration = compileHandlebarsTemplateString(provisionOrchestration, pluginCtx);
-    let provisionModules = await fs.readFile(
-      path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateFileName),
-      ConstantString.UTF8Encoding
+    const provisionModules = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    provisionModules = compileHandlebarsTemplateString(provisionModules, pluginCtx);
-    let configOrchestration = await fs.readFile(
-      path.join(bicepTemplateDir, Bicep.ConfigFileName),
-      ConstantString.UTF8Encoding
+    const configOrchestration = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDir, Bicep.ConfigFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    configOrchestration = compileHandlebarsTemplateString(configOrchestration, pluginCtx);
-    let configModule = await fs.readFile(
-      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
-      ConstantString.UTF8Encoding
+    const configModule = await generateBicepFiles(
+      await fs.readFile(
+        path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
+        ConstantString.UTF8Encoding
+      ),
+      pluginCtx
     );
-    configModule = compileHandlebarsTemplateString(configModule, pluginCtx);
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: provisionOrchestration,

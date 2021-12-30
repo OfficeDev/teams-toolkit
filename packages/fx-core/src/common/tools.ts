@@ -49,11 +49,11 @@ import {
 import Mustache from "mustache";
 import { CloudResource } from "@microsoft/teamsfx-api/build/v3";
 
-Handlebars.registerHelper("contains", (value, array, options) => {
+Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
   return array.indexOf(value) > -1 ? this : "";
 });
-Handlebars.registerHelper("notContains", (value, array, options) => {
+Handlebars.registerHelper("notContains", (value, array) => {
   array = array instanceof Array ? array : [array];
   return array.indexOf(value) == -1 ? this : "";
 });
@@ -397,23 +397,10 @@ export function getRootDirectory(): string {
   }
 }
 
-export async function generateBicepFiles(
-  templateFilePath: string,
-  context: any
-): Promise<Result<string, FxError>> {
-  try {
-    const templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
-    const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
-    return ok(updatedBicepFile);
-  } catch (error) {
-    return err(
-      returnSystemError(
-        new Error(`Failed to generate bicep file ${templateFilePath}. Reason: ${error.message}`),
-        "Core",
-        "BicepGenerationError"
-      )
-    );
-  }
+export async function generateBicepFiles(templateFilePath: string, context: any): Promise<string> {
+  const templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
+  const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
+  return updatedBicepFile;
 }
 
 export function compileHandlebarsTemplateString(templateString: string, context: any): string {

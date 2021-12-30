@@ -538,7 +538,7 @@ export default class Preview extends YargsCommand {
 
     // start ngrok
     const ngrokStartTask = this.prepareTask(
-      TaskDefinition.ngrok(workspaceFolder, false, ngrokChecker.getNgrokBinFolder()),
+      TaskDefinition.ngrokStart(workspaceFolder, false, ngrokChecker.getNgrokBinFolder()),
       constants.ngrokStartStartMessage
     );
     result = await ngrokStartTask.task.waitFor(
@@ -647,7 +647,7 @@ export default class Preview extends YargsCommand {
 
     const frontendStartTask = includeFrontend
       ? this.prepareTask(
-          TaskDefinition.frontend(workspaceFolder),
+          TaskDefinition.frontendStart(workspaceFolder),
           constants.frontendStartStartMessage,
           commonUtils.getFrontendLocalEnv(localEnv)
         )
@@ -656,7 +656,7 @@ export default class Preview extends YargsCommand {
     const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
     const authStartTask = includeFrontend
       ? this.prepareTask(
-          TaskDefinition.auth(dotnetExecPath, commonUtils.getAuthServicePath(localEnv)),
+          TaskDefinition.authStart(dotnetExecPath, commonUtils.getAuthServicePath(localEnv)),
           constants.authStartStartMessage,
           commonUtils.getAuthLocalEnv(localEnv)
         )
@@ -665,7 +665,7 @@ export default class Preview extends YargsCommand {
     const funcCommand = await funcToolChecker.getFuncCommand();
     const backendStartTask = includeBackend
       ? this.prepareTask(
-          TaskDefinition.backend(workspaceFolder, programmingLanguage, funcCommand, false),
+          TaskDefinition.backendStart(workspaceFolder, programmingLanguage, funcCommand, false),
           constants.backendStartStartMessage,
           commonUtils.getBackendLocalEnv(localEnv)
         )
@@ -681,7 +681,7 @@ export default class Preview extends YargsCommand {
 
     const botStartTask = includeBot
       ? this.prepareTask(
-          TaskDefinition.bot(workspaceFolder, programmingLanguage, false),
+          TaskDefinition.botStart(workspaceFolder, programmingLanguage, false),
           constants.botStartStartMessage,
           commonUtils.getBotLocalEnv(localEnv)
         )

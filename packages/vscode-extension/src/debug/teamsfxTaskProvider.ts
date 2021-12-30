@@ -208,7 +208,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     problemMatchers?: string | string[]
   ): Promise<vscode.Task> {
     return this.createTask(
-      TaskDefinition.frontend(workspaceFolder.uri.fsPath),
+      TaskDefinition.frontendStart(workspaceFolder.uri.fsPath),
       workspaceFolder,
       commonUtils.getFrontendLocalEnv(localEnv),
       definition,
@@ -227,7 +227,12 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const funcCommand = await funcChecker.getFuncCommand();
 
     return this.createTask(
-      TaskDefinition.backend(workspaceFolder.uri.fsPath, programmingLanguage, funcCommand, true),
+      TaskDefinition.backendStart(
+        workspaceFolder.uri.fsPath,
+        programmingLanguage,
+        funcCommand,
+        true
+      ),
       workspaceFolder,
       commonUtils.getBackendLocalEnv(localEnv),
       definition,
@@ -246,7 +251,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const dotnetPath = await dotnetChecker.getDotnetExecPath();
 
     return this.createTask(
-      TaskDefinition.auth(dotnetPath, authRoot),
+      TaskDefinition.authStart(dotnetPath, authRoot),
       workspaceFolder,
       commonUtils.getAuthLocalEnv(localEnv),
       definition,
@@ -265,7 +270,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const ngrokChecker = new NgrokChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
     const ngrokBinFolder = ngrokChecker.getNgrokBinFolder();
     return this.createTask(
-      TaskDefinition.ngrok(workspaceFolder.uri.fsPath, isSkipped, ngrokBinFolder),
+      TaskDefinition.ngrokStart(workspaceFolder.uri.fsPath, isSkipped, ngrokBinFolder),
       workspaceFolder,
       undefined,
       definition,
@@ -281,7 +286,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
     return this.createTask(
-      TaskDefinition.bot(workspaceFolder.uri.fsPath, programmingLanguage, true),
+      TaskDefinition.botStart(workspaceFolder.uri.fsPath, programmingLanguage, true),
       workspaceFolder,
       commonUtils.getBotLocalEnv(localEnv),
       definition,

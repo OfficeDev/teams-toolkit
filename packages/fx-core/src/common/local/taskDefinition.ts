@@ -18,11 +18,11 @@ export interface ITaskDefinition {
 }
 
 export class CustomTaskDefinition {
-  static command(isWatchTask: boolean): string {
+  private static command(isWatchTask: boolean): string {
     return isWatchTask ? "npm run watch:teamsfx" : "npm run dev:teamsfx";
   }
 
-  static nameSuffix(isWatchTask: boolean): string {
+  private static nameSuffix(isWatchTask: boolean): string {
     return isWatchTask ? "watch" : "dev";
   }
 
@@ -70,7 +70,7 @@ export class CustomTaskDefinition {
 }
 
 export class TaskDefinition {
-  static frontend(workspaceFolder: string): ITaskDefinition {
+  static frontendStart(workspaceFolder: string): ITaskDefinition {
     return {
       name: "frontend start",
       command: "npx react-scripts start",
@@ -80,7 +80,7 @@ export class TaskDefinition {
     };
   }
 
-  static backend(
+  static backendStart(
     workspaceFolder: string,
     programmingLanguage: string | undefined,
     funcCommand: string,
@@ -112,7 +112,7 @@ export class TaskDefinition {
     };
   }
 
-  static auth(dotnetExecPath: string, authServicePath: string | undefined): ITaskDefinition {
+  static authStart(dotnetExecPath: string, authServicePath: string | undefined): ITaskDefinition {
     return {
       name: "auth start",
       command: dotnetExecPath,
@@ -123,7 +123,7 @@ export class TaskDefinition {
     };
   }
 
-  static bot(
+  static botStart(
     workspaceFolder: string,
     programmingLanguage: string | undefined,
     enableInspect: boolean
@@ -143,7 +143,7 @@ export class TaskDefinition {
     };
   }
 
-  static ngrok(
+  static ngrokStart(
     workspaceFolder: string,
     skipNgrok: boolean,
     ngrokBinFolder: string

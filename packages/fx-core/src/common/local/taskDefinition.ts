@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { FolderName, ProgrammingLanguage } from "./constants";
+import { FolderName, ProgrammingLanguage, npmInstallCommand } from "./constants";
 import path from "path";
 import { isWindows } from "../deps-checker/util/system";
 
@@ -41,7 +41,6 @@ export class CustomTaskDefinition {
     isWatchTask: boolean,
     funcBinFolders: string[] | undefined
   ): ITaskDefinition {
-    // TODO: move get funcBinFolders to here
     return {
       name: `backend ${CustomTaskDefinition.nameSuffix(isWatchTask)}`,
       command: CustomTaskDefinition.command(isWatchTask),
@@ -241,5 +240,3 @@ export class TaskDefinition {
     };
   }
 }
-
-export const npmInstallCommand = "npm install --no-audit";

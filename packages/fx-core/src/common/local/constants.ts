@@ -14,6 +14,8 @@ export enum ProgrammingLanguage {
   typescript = "typescript",
 }
 
+export const npmInstallCommand = "npm install --no-audit";
+
 export const LocalEnvAuthKeys = Object.freeze({
   ClientId: "AUTH_CLIENT_ID",
   ClientSecret: "AUTH_CLIENT_SECRET",

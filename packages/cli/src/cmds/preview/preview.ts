@@ -18,7 +18,12 @@ import {
   ProjectConfig,
   Result,
 } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import {
+  FxCore,
+  ITaskDefinition,
+  TaskDefinition,
+  ProjectSettingsHelper,
+} from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
 import * as utils from "../../utils";
@@ -27,7 +32,7 @@ import * as constants from "./constants";
 import cliLogger from "../../commonlib/log";
 import * as errors from "./errors";
 import activate from "../../activate";
-import { Task } from "./task";
+import { Task, TaskResult } from "./task";
 import AppStudioTokenInstance from "../../commonlib/appStudioLogin";
 import cliTelemetry from "../../telemetry/cliTelemetry";
 import {
@@ -44,7 +49,6 @@ import { DepsChecker } from "./depsChecker/checker";
 import { cliEnvCheckerLogger } from "./depsChecker/cliLogger";
 import { CLIAdapter } from "./depsChecker/cliAdapter";
 import { cliEnvCheckerTelemetry } from "./depsChecker/cliTelemetry";
-import { isWindows } from "./depsChecker/common";
 import { URL } from "url";
 import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import { NgrokChecker } from "./depsChecker/ngrokChecker";
@@ -191,29 +195,15 @@ export default class Preview extends YargsCommand {
     }
     let config = configResult.value;
 
-    const activeResourcePlugins = (config?.settings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
-    const includeFrontend = activeResourcePlugins.some(
-      (pluginName) => pluginName === constants.frontendHostingPluginName
-    );
-    const includeBackend = activeResourcePlugins.some(
-      (pluginName) => pluginName === constants.functionPluginName
-    );
-    const includeBot = activeResourcePlugins.some(
-      (pluginName) => pluginName === constants.botPluginName
-    );
-    const includeSpfx = activeResourcePlugins.some(
-      (pluginName) => pluginName === constants.spfxPluginName
-    );
+    const includeFrontend = ProjectSettingsHelper.includeFrontend(config?.settings);
+    const includeBackend = ProjectSettingsHelper.includeBackend(config?.settings);
+    const includeBot = ProjectSettingsHelper.includeBot(config?.settings);
+    const includeSpfx = ProjectSettingsHelper.isSpfx(config?.settings);
 
-    if (includeSpfx) {
-      const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
-      return this.spfxPreview(
-        spfxRoot,
-        browser,
-        "https://localhost:5432/workbench",
-        browserArguments
-      );
+    // TODO: move path validation to core
+    const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
+    if (includeSpfx && !(await fs.pathExists(spfxRoot))) {
+      return err(errors.RequiredPathNotExists(spfxRoot));
     }
 
     const frontendRoot = path.join(workspaceFolder, constants.frontendFolderName);
@@ -229,6 +219,15 @@ export default class Preview extends YargsCommand {
     const botRoot = path.join(workspaceFolder, constants.botFolderName);
     if (includeBot && !(await fs.pathExists(botRoot))) {
       return err(errors.RequiredPathNotExists(botRoot));
+    }
+
+    if (includeSpfx) {
+      return this.spfxPreview(
+        workspaceFolder,
+        browser,
+        "https://localhost:5432/workbench",
+        browserArguments
+      );
     }
 
     let skipNgrok: boolean;
@@ -255,7 +254,7 @@ export default class Preview extends YargsCommand {
 
     /* === start ngrok === */
     if (includeBot && !skipNgrok) {
-      const result = await this.startNgrok(botRoot, ngrokChecker);
+      const result = await this.startNgrok(workspaceFolder, ngrokChecker);
       if (result.isErr()) {
         return result;
       }
@@ -265,9 +264,10 @@ export default class Preview extends YargsCommand {
     let result = await this.prepareDevEnv(
       core,
       inputs,
-      includeFrontend ? frontendRoot : undefined,
-      includeBackend ? backendRoot : undefined,
-      includeBot && skipNgrok ? botRoot : undefined,
+      workspaceFolder,
+      includeFrontend,
+      includeBackend,
+      includeBot,
       dotnetChecker
     );
     if (result.isErr()) {
@@ -294,9 +294,9 @@ export default class Preview extends YargsCommand {
       core,
       workspaceFolder,
       programmingLanguage,
-      includeFrontend ? frontendRoot : undefined,
-      includeBackend ? backendRoot : undefined,
-      includeBot ? botRoot : undefined,
+      includeFrontend,
+      includeBackend,
+      includeBot,
       dotnetChecker,
       funcToolChecker
     );
@@ -341,89 +341,43 @@ export default class Preview extends YargsCommand {
     return ok(null);
   }
 
-  private async spfxPreviewSetup(spfxRoot: string): Promise<Result<null, FxError>> {
+  private async spfxPreviewSetup(workspaceFolder: string): Promise<Result<null, FxError>> {
     // init service log writer
     this.serviceLogWriter = new ServiceLogWriter();
     await this.serviceLogWriter.init();
 
     // run npm install for spfx
-    const spfxInstallTask = new Task(
-      constants.spfxInstallTitle,
-      false,
-      constants.npmInstallCommand,
-      undefined,
-      {
-        shell: true,
-        cwd: spfxRoot,
-      }
+    const spfxInstallTask = this.prepareTask(
+      TaskDefinition.spfxInstall(workspaceFolder),
+      constants.spfxInstallStartMessage
     );
 
-    const spfxInstallBar = CLIUIInstance.createProgressBar(constants.spfxInstallTitle, 1);
-    const spfxInstallStartCb = commonUtils.createTaskStartCb(
-      spfxInstallBar,
-      constants.spfxInstallStartMessage,
-      this.telemetryProperties
-    );
-    const spfxInstallStopCb = commonUtils.createTaskStopCb(
-      spfxInstallBar,
-      this.telemetryProperties
-    );
-
-    let result = await spfxInstallTask?.wait(spfxInstallStartCb, spfxInstallStopCb);
+    let result = await spfxInstallTask.task.wait(spfxInstallTask.startCb, spfxInstallTask.stopCb);
     if (result.isErr()) {
       return err(result.error);
     }
 
     // run gulp trust-dev-cert
-    const gulpCertTask = new Task(
-      constants.gulpCertTitle,
-      false,
-      constants.nodeCommand,
-      [`${spfxRoot}/node_modules/gulp/bin/gulp.js`, "trust-dev-cert", "--no-color"],
-      {
-        shell: false,
-        cwd: spfxRoot,
-      }
+    const gulpCertTask = this.prepareTask(
+      TaskDefinition.gulpCert(workspaceFolder),
+      constants.gulpCertStartMessage
     );
 
-    const gulpCertBar = CLIUIInstance.createProgressBar(constants.gulpCertTitle, 1);
-    const gulpCertStartCb = commonUtils.createTaskStartCb(
-      gulpCertBar,
-      constants.gulpCertStartMessage,
-      this.telemetryProperties
-    );
-    const gulpCertStopCb = commonUtils.createTaskStopCb(gulpCertBar, this.telemetryProperties);
-
-    result = await gulpCertTask?.wait(gulpCertStartCb, gulpCertStopCb);
+    result = await gulpCertTask.task.wait(gulpCertTask.startCb, gulpCertTask.stopCb);
     if (result.isErr()) {
       return err(result.error);
     }
 
     // run gulp serve
-    const gulpServeTask = new Task(
-      constants.gulpServeTitle,
-      true,
-      constants.nodeCommand,
-      [`${spfxRoot}/node_modules/gulp/bin/gulp.js`, "serve", "--nobrowser", "--no-color"],
-      {
-        shell: false,
-        cwd: spfxRoot,
-      }
+    const gulpServeTask = this.prepareTask(
+      TaskDefinition.gulpServe(workspaceFolder),
+      constants.gulpServeStartMessage
     );
-    this.backgroundTasks.push(gulpServeTask);
 
-    const gulpServeBar = CLIUIInstance.createProgressBar(constants.gulpServeTitle, 1);
-    const gulpServeStartCb = commonUtils.createTaskStartCb(
-      gulpServeBar,
-      constants.gulpServeStartMessage,
-      this.telemetryProperties
-    );
-    const gulpServeStopCb = commonUtils.createTaskStopCb(gulpServeBar, this.telemetryProperties);
-
-    result = await gulpServeTask?.waitFor(
+    result = await gulpServeTask.task.waitFor(
       constants.gulpServePattern,
-      gulpServeStartCb,
-      gulpServeStopCb,
+      gulpServeTask.startCb,
+      gulpServeTask.stopCb,
       this.serviceLogWriter,
       cliLogger
     );
@@ -483,16 +437,13 @@ export default class Preview extends YargsCommand {
   }
 
   private async spfxPreview(
-    spfxRoot: string,
+    workspaceFolder: string,
     browser: constants.Browser,
     url: string,
     browserArguments: string[] = []
   ): Promise<Result<null, FxError>> {
-    if (!(await fs.pathExists(spfxRoot))) {
-      return err(errors.RequiredPathNotExists(spfxRoot));
-    }
     {
-      const result = await this.spfxPreviewSetup(spfxRoot);
+      const result = await this.spfxPreviewSetup(workspaceFolder);
       if (result.isErr()) {
         return err(result.error);
       }
@@ -572,58 +523,28 @@ export default class Preview extends YargsCommand {
   }
 
   private async startNgrok(
-    botRoot: string,
+    workspaceFolder: string,
     ngrokChecker: NgrokChecker
   ): Promise<Result<null, FxError>> {
     // bot npm install
-    const botInstallTask = new Task(
-      constants.botInstallTitle,
-      false,
-      constants.npmInstallCommand,
-      undefined,
-      {
-        shell: true,
-        cwd: botRoot,
-      }
+    const botInstallTask = this.prepareTask(
+      TaskDefinition.botInstall(workspaceFolder),
+      constants.botInstallStartMessage
     );
-    const botInstallBar = CLIUIInstance.createProgressBar(constants.botInstallTitle, 1);
-    const botInstallStartCb = commonUtils.createTaskStartCb(
-      botInstallBar,
-      constants.botInstallStartMessage,
-      this.telemetryProperties
-    );
-    const botInstallStopCb = commonUtils.createTaskStopCb(botInstallBar, this.telemetryProperties);
-    let result = await botInstallTask.wait(botInstallStartCb, botInstallStopCb);
+    let result = await botInstallTask?.task.wait(botInstallTask?.startCb, botInstallTask?.stopCb);
     if (result.isErr()) {
       return err(errors.PreviewCommandFailed([result.error]));
     }
 
     // start ngrok
-    const ngrokStartTask = new Task(
-      constants.ngrokStartTitle,
-      true,
-      constants.ngrokStartCommand,
-      undefined,
-      {
-        shell: true,
-        cwd: botRoot,
-        env: commonUtils.mergeProcessEnv({
-          PATH: `${ngrokChecker.getNgrokBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`,
-        }),
-      }
+    const ngrokStartTask = this.prepareTask(
+      TaskDefinition.ngrok(workspaceFolder, false, ngrokChecker.getNgrokBinFolder()),
+      constants.ngrokStartStartMessage
     );
-    this.backgroundTasks.push(ngrokStartTask);
-    const ngrokStartBar = CLIUIInstance.createProgressBar(constants.ngrokStartTitle, 1);
-    const ngrokStartStartCb = commonUtils.createTaskStartCb(
-      ngrokStartBar,
-      constants.ngrokStartStartMessage,
-      this.telemetryProperties
-    );
-    const ngrokStartStopCb = commonUtils.createTaskStopCb(ngrokStartBar, this.telemetryProperties);
-    result = await ngrokStartTask.waitFor(
+    result = await ngrokStartTask.task.waitFor(
       constants.ngrokStartPattern,
-      ngrokStartStartCb,
-      ngrokStartStopCb,
+      ngrokStartTask.startCb,
+      ngrokStartTask.stopCb,
       this.serviceLogWriter
     );
     if (result.isErr()) {
@@ -635,116 +556,50 @@ export default class Preview extends YargsCommand {
   private async prepareDevEnv(
     core: FxCore,
     inputs: Inputs,
-    frontendRoot: string | undefined,
-    backendRoot: string | undefined,
-    botRoot: string | undefined,
+    workspaceFolder: string,
+    includeFrontend: boolean,
+    includeBackend: boolean,
+    includeBot: boolean,
     dotnetChecker: DotnetChecker
   ): Promise<Result<null, FxError>> {
-    let frontendInstallTask: Task | undefined;
-    if (frontendRoot !== undefined) {
-      frontendInstallTask = new Task(
-        constants.frontendInstallTitle,
-        false,
-        constants.npmInstallCommand,
-        undefined,
-        {
-          shell: true,
-          cwd: frontendRoot,
-        }
-      );
-    }
+    const frontendInstallTask = includeFrontend
+      ? this.prepareTask(
+          TaskDefinition.frontendInstall(workspaceFolder),
+          constants.frontendInstallStartMessage
+        )
+      : undefined;
 
-    let backendInstallTask: Task | undefined;
-    let backendExtensionsInstallTask: Task | undefined;
-    if (backendRoot !== undefined) {
-      backendInstallTask = new Task(
-        constants.backendInstallTitle,
-        false,
-        constants.npmInstallCommand,
-        undefined,
-        {
-          shell: true,
-          cwd: backendRoot,
-        }
-      );
-      backendExtensionsInstallTask = new Task(
-        constants.backendExtensionsInstallTitle,
-        false,
-        // env checker: use dotnet execPath
-        await dotnetChecker.getDotnetExecPath(),
-        ["build", "extensions.csproj", "-o", "bin", "--ignore-failed-sources"],
-        {
-          shell: false,
-          cwd: backendRoot,
-        }
-      );
-    }
+    const backendInstallTask = includeBackend
+      ? this.prepareTask(
+          TaskDefinition.backendInstall(workspaceFolder),
+          constants.backendInstallStartMessage
+        )
+      : undefined;
 
-    let botInstallTask: Task | undefined;
-    if (botRoot !== undefined) {
-      botInstallTask = new Task(
-        constants.botInstallTitle,
-        false,
-        constants.npmInstallCommand,
-        undefined,
-        {
-          shell: true,
-          cwd: botRoot,
-        }
-      );
-    }
+    const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
+    const backendExtensionsInstallTask = includeBackend
+      ? this.prepareTask(
+          TaskDefinition.backendExtensionsInstall(workspaceFolder, dotnetExecPath),
+          constants.backendExtensionsInstallStartMessage
+        )
+      : undefined;
 
-    const frontendInstallBar = CLIUIInstance.createProgressBar(constants.frontendInstallTitle, 1);
-    const frontendInstallStartCb = commonUtils.createTaskStartCb(
-      frontendInstallBar,
-      constants.frontendInstallStartMessage,
-      this.telemetryProperties
-    );
-    const frontendInstallStopCb = commonUtils.createTaskStopCb(
-      frontendInstallBar,
-      this.telemetryProperties
-    );
-
-    const backendInstallBar = CLIUIInstance.createProgressBar(constants.backendInstallTitle, 1);
-    const backendInstallStartCb = commonUtils.createTaskStartCb(
-      backendInstallBar,
-      constants.backendInstallStartMessage,
-      this.telemetryProperties
-    );
-    const backendInstallStopCb = commonUtils.createTaskStopCb(
-      backendInstallBar,
-      this.telemetryProperties
-    );
-
-    const backendExtensionsInstallBar = CLIUIInstance.createProgressBar(
-      constants.backendExtensionsInstallTitle,
-      1
-    );
-    const backendExtensionsInstallStartCb = commonUtils.createTaskStartCb(
-      backendExtensionsInstallBar,
-      constants.backendExtensionsInstallStartMessage
-    );
-    const backendExtensionsInstallStopCb = commonUtils.createTaskStopCb(
-      backendExtensionsInstallBar
-    );
-
-    const botInstallBar = CLIUIInstance.createProgressBar(constants.botInstallTitle, 1);
-    const botInstallStartCb = commonUtils.createTaskStartCb(
-      botInstallBar,
-      constants.botInstallStartMessage,
-      this.telemetryProperties
-    );
-    const botInstallStopCb = commonUtils.createTaskStopCb(botInstallBar, this.telemetryProperties);
+    const botInstallTask = includeBot
+      ? this.prepareTask(
+          TaskDefinition.botInstall(workspaceFolder),
+          constants.botInstallStartMessage
+        )
+      : undefined;
 
     const results = await Promise.all([
       core.localDebug(inputs),
-      frontendInstallTask?.wait(frontendInstallStartCb, frontendInstallStopCb),
-      backendInstallTask?.wait(backendInstallStartCb, backendInstallStopCb),
-      backendExtensionsInstallTask?.wait(
-        backendExtensionsInstallStartCb,
-        backendExtensionsInstallStopCb
+      frontendInstallTask?.task.wait(frontendInstallTask.startCb, frontendInstallTask.stopCb),
+      backendInstallTask?.task.wait(backendInstallTask.startCb, backendInstallTask.stopCb),
+      backendExtensionsInstallTask?.task.wait(
+        backendExtensionsInstallTask.startCb,
+        backendExtensionsInstallTask.stopCb
       ),
-      botInstallTask?.wait(botInstallStartCb, botInstallStopCb),
+      botInstallTask?.task.wait(botInstallTask.startCb, botInstallTask.stopCb),
     ]);
     const fxErrors: FxError[] = [];
     for (const result of results) {
@@ -782,182 +637,85 @@ export default class Preview extends YargsCommand {
     core: FxCore,
     workspaceFolder: string,
     programmingLanguage: string,
-    frontendRoot: string | undefined,
-    backendRoot: string | undefined,
-    botRoot: string | undefined,
+    includeFrontend: boolean,
+    includeBackend: boolean,
+    includeBot: boolean,
     dotnetChecker: DotnetChecker,
     funcToolChecker: FuncToolChecker
   ): Promise<Result<null, FxError>> {
     const localEnv = await commonUtils.getLocalEnv(core, workspaceFolder);
 
-    let frontendStartTask: Task | undefined;
-    if (frontendRoot !== undefined) {
-      const env = commonUtils.getFrontendLocalEnv(localEnv);
-      frontendStartTask = new Task(
-        constants.frontendStartTitle,
-        true,
-        constants.frontendStartCommand,
-        undefined,
-        {
-          shell: true,
-          cwd: frontendRoot,
-          env: commonUtils.mergeProcessEnv(env),
-        }
-      );
-      this.backgroundTasks.push(frontendStartTask);
-    }
+    const frontendStartTask = includeFrontend
+      ? this.prepareTask(
+          TaskDefinition.frontend(workspaceFolder),
+          constants.frontendStartStartMessage,
+          commonUtils.getFrontendLocalEnv(localEnv)
+        )
+      : undefined;
 
-    let authStartTask: Task | undefined;
-    if (frontendRoot !== undefined) {
-      const cwd = commonUtils.getAuthServicePath(localEnv);
-      const env = commonUtils.getAuthLocalEnv(localEnv);
-      authStartTask = new Task(
-        constants.authStartTitle,
-        true,
-        // env checker: use dotnet execPath
-        await dotnetChecker.getDotnetExecPath(),
-        ["Microsoft.TeamsFx.SimpleAuth.dll"],
-        {
-          shell: false,
-          cwd,
-          env: commonUtils.mergeProcessEnv(env),
-        }
-      );
-      this.backgroundTasks.push(authStartTask);
-    }
+    const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
+    const authStartTask = includeFrontend
+      ? this.prepareTask(
+          TaskDefinition.auth(dotnetExecPath, commonUtils.getAuthServicePath(localEnv)),
+          constants.authStartStartMessage,
+          commonUtils.getAuthLocalEnv(localEnv)
+        )
+      : undefined;
 
-    let backendStartTask: Task | undefined;
-    let backendWatchTask: Task | undefined;
-    if (backendRoot !== undefined) {
-      const env = commonUtils.getBackendLocalEnv(localEnv);
-      const mergedEnv = commonUtils.mergeProcessEnv(env);
-      const command =
-        programmingLanguage === constants.ProgrammingLanguage.typescript
-          ? // env checker: use func command
-            constants.backendStartTsCommand.replace(
-              "@command",
-              await funcToolChecker.getFuncCommand()
-            )
-          : constants.backendStartJsCommand.replace(
-              "@command",
-              await funcToolChecker.getFuncCommand()
-            );
+    const funcCommand = await funcToolChecker.getFuncCommand();
+    const backendStartTask = includeBackend
+      ? this.prepareTask(
+          TaskDefinition.backend(workspaceFolder, programmingLanguage, funcCommand, false),
+          constants.backendStartStartMessage,
+          commonUtils.getBackendLocalEnv(localEnv)
+        )
+      : undefined;
+    const backendWatchTask =
+      includeBackend && programmingLanguage === constants.ProgrammingLanguage.typescript
+        ? this.prepareTask(
+            TaskDefinition.backendWatch(workspaceFolder),
+            constants.backendWatchStartMessage,
+            commonUtils.getBackendLocalEnv(localEnv)
+          )
+        : undefined;
 
-      backendStartTask = new Task(constants.backendStartTitle, true, command, undefined, {
-        shell: isWindows() ? "cmd.exe" : true,
-        cwd: backendRoot,
-        env: mergedEnv,
-      });
-      this.backgroundTasks.push(backendStartTask);
-      if (programmingLanguage === constants.ProgrammingLanguage.typescript) {
-        backendWatchTask = new Task(
-          constants.backendWatchTitle,
-          true,
-          constants.backendWatchCommand,
-          undefined,
-          {
-            shell: true,
-            cwd: backendRoot,
-            env: mergedEnv,
-          }
-        );
-        this.backgroundTasks.push(backendWatchTask);
-      }
-    }
-
-    let botStartTask: Task | undefined;
-    if (botRoot !== undefined) {
-      const command =
-        programmingLanguage === constants.ProgrammingLanguage.typescript
-          ? constants.botStartTsCommand
-          : constants.botStartJsCommand;
-      const env = commonUtils.getBotLocalEnv(localEnv);
-      botStartTask = new Task(constants.botStartTitle, true, command, undefined, {
-        shell: true,
-        cwd: botRoot,
-        env: commonUtils.mergeProcessEnv(env),
-      });
-      this.backgroundTasks.push(botStartTask);
-    }
-
-    const frontendStartBar = CLIUIInstance.createProgressBar(constants.frontendStartTitle, 1);
-    const frontendStartStartCb = commonUtils.createTaskStartCb(
-      frontendStartBar,
-      constants.frontendStartStartMessage,
-      this.telemetryProperties
-    );
-    const frontendStartStopCb = commonUtils.createTaskStopCb(
-      frontendStartBar,
-      this.telemetryProperties
-    );
-
-    const authStartBar = CLIUIInstance.createProgressBar(constants.authStartTitle, 1);
-    const authStartStartCb = commonUtils.createTaskStartCb(
-      authStartBar,
-      constants.authStartStartMessage,
-      this.telemetryProperties
-    );
-    const authStartStopCb = commonUtils.createTaskStopCb(authStartBar, this.telemetryProperties);
-
-    const backendStartBar = CLIUIInstance.createProgressBar(constants.backendStartTitle, 1);
-    const backendStartStartCb = commonUtils.createTaskStartCb(
-      backendStartBar,
-      constants.backendStartStartMessage,
-      this.telemetryProperties
-    );
-    const backendStartStopCb = commonUtils.createTaskStopCb(
-      backendStartBar,
-      this.telemetryProperties
-    );
-
-    const backendWatchBar = CLIUIInstance.createProgressBar(constants.backendWatchTitle, 1);
-    const backendWatchStartCb = commonUtils.createTaskStartCb(
-      backendWatchBar,
-      constants.backendWatchStartMessage,
-      this.telemetryProperties
-    );
-    const backendWatchStopCb = commonUtils.createTaskStopCb(
-      backendWatchBar,
-      this.telemetryProperties
-    );
-
-    const botStartBar = CLIUIInstance.createProgressBar(constants.botStartTitle, 1);
-    const botStartStartCb = commonUtils.createTaskStartCb(
-      botStartBar,
-      constants.botStartStartMessage,
-      this.telemetryProperties
-    );
-    const botStartStopCb = commonUtils.createTaskStopCb(botStartBar, this.telemetryProperties);
+    const botStartTask = includeBot
+      ? this.prepareTask(
+          TaskDefinition.bot(workspaceFolder, programmingLanguage, false),
+          constants.botStartStartMessage,
+          commonUtils.getBotLocalEnv(localEnv)
+        )
+      : undefined;
 
     const results = await Promise.all([
-      frontendStartTask?.waitFor(
+      frontendStartTask?.task.waitFor(
         constants.frontendStartPattern,
-        frontendStartStartCb,
-        frontendStartStopCb,
+        frontendStartTask.startCb,
+        frontendStartTask.stopCb,
         this.serviceLogWriter
       ),
-      authStartTask?.waitFor(
+      authStartTask?.task.waitFor(
         constants.authStartPattern,
-        authStartStartCb,
-        authStartStopCb,
+        authStartTask.startCb,
+        authStartTask.stopCb,
         this.serviceLogWriter
       ),
-      backendStartTask?.waitFor(
+      backendStartTask?.task.waitFor(
         constants.backendStartPattern,
-        backendStartStartCb,
-        backendStartStopCb,
+        backendStartTask.startCb,
+        backendStartTask.stopCb,
         this.serviceLogWriter
       ),
-      backendWatchTask?.waitFor(
+      backendWatchTask?.task.waitFor(
         constants.backendWatchPattern,
-        backendWatchStartCb,
-        backendWatchStopCb,
+        backendWatchTask.startCb,
+        backendWatchTask.stopCb,
         this.serviceLogWriter
       ),
-      await botStartTask?.waitFor(
+      await botStartTask?.task.waitFor(
         constants.botStartPattern,
-        botStartStartCb,
-        botStartStopCb,
+        botStartTask.startCb,
+        botStartTask.stopCb,
         this.serviceLogWriter
       ),
     ]);
@@ -1093,5 +851,40 @@ export default class Preview extends YargsCommand {
     }
 
     return ok([funcChecker, dotnetChecker, ngrokChecker]);
+  }
+
+  private prepareTask(
+    taskDefinition: ITaskDefinition,
+    startMessage: string,
+    env?: { [key: string]: string }
+  ): {
+    task: Task;
+    startCb: (taskTitle: string, background: boolean) => Promise<void>;
+    stopCb: (
+      taskTitle: string,
+      background: boolean,
+      result: TaskResult,
+      serviceLogWriter?: ServiceLogWriter
+    ) => Promise<FxError | null>;
+  } {
+    const taskEnv = env ?? taskDefinition.env;
+    const task = new Task(
+      taskDefinition.name,
+      taskDefinition.isBackground,
+      taskDefinition.command,
+      taskDefinition.args,
+      {
+        shell: taskDefinition.isCmd ? "cmd.exe" : taskDefinition.isShell,
+        cwd: taskDefinition.cwd,
+        env: taskEnv ? commonUtils.mergeProcessEnv(taskEnv) : undefined,
+      }
+    );
+    const bar = CLIUIInstance.createProgressBar(taskDefinition.name, 1);
+    const startCb = commonUtils.createTaskStartCb(bar, startMessage, this.telemetryProperties);
+    const stopCb = commonUtils.createTaskStopCb(bar, this.telemetryProperties);
+    if (taskDefinition.isBackground) {
+      this.backgroundTasks.push(task);
+    }
+    return { task: task, startCb: startCb, stopCb: stopCb };
   }
 }

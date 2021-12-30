@@ -8,3 +8,4 @@ export * from "./globalState";
 export * from "./local/localEnvManager";
 export * from "./permissionInterface";
 export * from "./samples";
+export * from "./deps-checker";

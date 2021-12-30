@@ -134,12 +134,17 @@ jobs:
           mv *.tgz teamsfx-cli.tgz
           npm install -g teamsfx-cli.tgz
 
+      - name: print system info
+        working-directory: packages/cli
+        run: |
+          lscpu
+
       - name: run test
         working-directory: packages/cli
         run: |
           file=`find tests/e2e -name "${{ matrix.cases }}.tests.ts"`
           if [ ! -z "$file" ]; then
-            npx mocha --reporter @mochajs/json-file-reporter $file
+            npx mocha --reporter @mochajs/json-file-reporter $file --parallel
           fi
 
       - name: Upload test report

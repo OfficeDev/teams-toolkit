@@ -62,18 +62,18 @@ describe("All checkers E2E test", async () => {
 
     // verify node (and order = 0)
     const node = depsStatus[0];
-    assert.equal(node.name, DepsType.AzureNode);
+    assert.equal(node.type, DepsType.AzureNode);
 
     // verify dotnet (and order = 1)
     const dotnet = depsStatus[1];
-    assert.equal(dotnet.name, DepsType.Dotnet);
+    assert.equal(dotnet.type, DepsType.Dotnet);
     chai.assert.isTrue(
       await dotnetUtils.hasAnyDotnetVersions(dotnet.command!, dotnetUtils.dotnetSupportedVersions)
     );
 
     // verify funcTools (and order = 2)
     const funcTool = depsStatus[2];
-    assert.equal(funcTool.name, DepsType.FuncCoreTools);
+    assert.equal(funcTool.type, DepsType.FuncCoreTools);
     assert.equal(funcTool.command, "func", `should use global func-core-tools`);
     const funcStartResult: cpUtils.ICommandResult = await cpUtils.tryExecuteCommand(
       undefined,
@@ -115,12 +115,12 @@ describe("All checkers E2E test", async () => {
 
     // verify node
     const node = depsStatus[0];
-    assert.equal(node.name, DepsType.AzureNode);
+    assert.equal(node.type, DepsType.AzureNode);
     assert.isFalse(node.isInstalled);
 
     // verify dotnet
     const dotnet = depsStatus[1];
-    assert.equal(dotnet.name, DepsType.Dotnet);
+    assert.equal(dotnet.type, DepsType.Dotnet);
     assert.isFalse(dotnet.isInstalled);
     assert.isFalse(
       await dotnetUtils.hasAnyDotnetVersions(dotnet.command!, dotnetUtils.dotnetSupportedVersions)
@@ -128,7 +128,7 @@ describe("All checkers E2E test", async () => {
 
     // verify funcTools
     const funcTool = depsStatus[2];
-    assert.equal(funcTool.name, DepsType.FuncCoreTools);
+    assert.equal(funcTool.type, DepsType.FuncCoreTools);
     assert.isFalse(funcTool.isInstalled);
     chai.assert.isTrue(
       "npx azure-functions-core-tools@3" == funcTool.command,
@@ -166,12 +166,12 @@ describe("All checkers E2E test", async () => {
 
     // verify node
     const node = depsStatus[0];
-    assert.equal(node.name, DepsType.AzureNode);
+    assert.equal(node.type, DepsType.AzureNode);
     assert.isFalse(node.isInstalled);
 
     // verify dotnet
     const dotnet = depsStatus[1];
-    assert.equal(dotnet.name, DepsType.Dotnet);
+    assert.equal(dotnet.type, DepsType.Dotnet);
     assert.isTrue(dotnet.isInstalled);
     assert.isTrue(
       await dotnetUtils.hasAnyDotnetVersions(dotnet.command!, dotnetUtils.dotnetSupportedVersions)
@@ -212,14 +212,14 @@ describe("All checkers E2E test", async () => {
 
     // verify node
     const node = depsStatus[0];
-    assert.equal(node.name, DepsType.AzureNode);
+    assert.equal(node.type, DepsType.AzureNode);
     assert.isTrue(node.isInstalled);
     assert.isNotNull(node.command);
     assert.isNull(node.error);
 
     // verify dotnet
     const dotnet = depsStatus[1];
-    assert.equal(dotnet.name, DepsType.Dotnet);
+    assert.equal(dotnet.type, DepsType.Dotnet);
     assert.isTrue(dotnet.isInstalled);
     assert.isTrue(
       await dotnetUtils.hasAnyDotnetVersions(dotnet.command!, dotnetUtils.dotnetSupportedVersions)
@@ -244,7 +244,7 @@ function verifyAllSuccess(depsStatus: DependencyStatus[]) {
 }
 
 async function verifyFuncInstall(funcTool: DependencyStatus) {
-  assert.equal(funcTool.name, DepsType.FuncCoreTools);
+  assert.equal(funcTool.type, DepsType.FuncCoreTools);
   const funcExecCommand = `${funcTool.command} start`;
   chai.assert.isTrue(
     /node "[^"]*" start/g.test(funcExecCommand),
@@ -264,7 +264,7 @@ async function verifyFuncInstall(funcTool: DependencyStatus) {
 }
 
 async function verifyNgrok(ngrok: DependencyStatus) {
-  assert.equal(ngrok.name, DepsType.Ngrok);
+  assert.equal(ngrok.type, DepsType.Ngrok);
   assert.isTrue(ngrok.isInstalled);
   assert.isNotNull(ngrok.details.binFolder);
   const ngrokVersionResult: cpUtils.ICommandResult = await cpUtils.tryExecuteCommand(

@@ -9,7 +9,7 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
-import { BotOptionItem, MessageExtensionItem, TabOptionItem } from "../question";
+import { BotOptionItem, MessageExtensionItem, TabOptionItem } from "../fx-solution/question";
 
 export enum SolutionV3QuestionNames {
   scaffoldTemplate = "template",

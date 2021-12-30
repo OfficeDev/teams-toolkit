@@ -12,7 +12,8 @@ export type DepsOptions = {
 };
 
 export type DependencyStatus = {
-  name: DepsType;
+  name: string;
+  type: DepsType;
   isInstalled: boolean;
   command: string;
   details: {
@@ -94,7 +95,8 @@ export class DepsManager {
       ? depsInfo.details.get("binFolder")
       : undefined;
     return {
-      name: type,
+      name: depsInfo.name,
+      type: type,
       isInstalled: isInstalled,
       command: await checker.command(),
       details: {

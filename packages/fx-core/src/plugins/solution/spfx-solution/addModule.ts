@@ -1,22 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, FxError, Json, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
-import { CapabilityAlreadyAddedError } from "./error";
-import { selectCapabilitiesQuestion } from "../../utils/questions";
+import { FxError, Json, ok, Result, v2, v3, Void, err } from "@microsoft/teamsfx-api";
+import { AddModuleNotSupportedError } from "./error";
 
-export async function getQuestionsForAddModule(
-  ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  return ok(new QTreeNode(selectCapabilitiesQuestion));
-}
 export async function addModule(
   ctx: v2.Context,
   localSettings: Json,
   inputs: v2.InputsWithProjectPath & { capabilities?: string[] }
 ): Promise<Result<Void, FxError>> {
-  const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
+  const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsSPFxSolutionSettings;
   const module: v3.Module = {
     capabilities: inputs.capabilities || [],
   };
@@ -24,14 +17,18 @@ export async function addModule(
   solutionSettings.modules.forEach((m) => m.capabilities.forEach((c) => capSet.add(c)));
   for (const cap of inputs.capabilities || []) {
     if (capSet.has(cap)) {
-      return err(new CapabilityAlreadyAddedError(cap));
+      ctx.userInteraction.showMessage(
+        "warn",
+        "Add module is not supported for SPFx project!",
+        false
+      );
+      return err(new AddModuleNotSupportedError());
     } else {
       capSet.add(cap);
     }
   }
   solutionSettings.capabilities = Array.from(capSet);
   solutionSettings.modules.push(module);
-  //TODO
-  //call localDebug plugin's scaffold API
+
   return ok(Void);
 }

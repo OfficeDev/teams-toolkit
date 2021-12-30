@@ -18,9 +18,12 @@ import fs from "fs-extra";
 import * as path from "path";
 import { Container, Service } from "typedi";
 import { BuiltInScaffoldPluginNames } from "./constants";
-import { InvalidInputError } from "./error";
-import { createSelectModuleQuestionNode, selectScaffoldTemplateQuestion } from "./questions";
+import {
+  createSelectModuleQuestionNode,
+  selectScaffoldTemplateQuestion,
+} from "../../utils/questions";
 import { getModule } from "./utils";
+import { InvalidInputError } from "../../utils/error";
 @Service(BuiltInScaffoldPluginNames.tab)
 export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
   async getTemplates(

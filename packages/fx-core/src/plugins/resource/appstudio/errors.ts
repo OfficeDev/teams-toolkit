@@ -194,4 +194,9 @@ export class AppStudioError {
     name: "InvalidCapabilityError",
     message: (capability: string) => `Invalid capability: ${capability}`,
   };
+
+  public static readonly CapabilityExceedLimitError = {
+    name: "CapabilityExceedLimitError",
+    message: (capability: string) => `Cannot add capability ${capability}, it reaches the limit.`,
+  };
 }

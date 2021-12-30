@@ -18,6 +18,10 @@ import {
   AzureSolutionSettings,
   Func,
   Void,
+  IStaticTab,
+  IConfigurableTab,
+  IComposeExtension,
+  IBot,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
@@ -37,6 +41,7 @@ import {
   saveManifest,
   capabilityExceedLimit,
   init,
+  addCapabilities,
 } from "./manifestTemplate";
 
 @Service(ResourcePlugins.AppStudioPlugin)
@@ -545,6 +550,21 @@ export class AppStudioPlugin implements Plugin {
 
   public async init(ctx: PluginContext): Promise<Result<any, FxError>> {
     return await init(ctx.root);
+  }
+
+  public async addCapabilities(
+    ctx: PluginContext,
+    capabilities: (
+      | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
+      | { name: "configurableTab"; snippet?: { local: IConfigurableTab; remote: IConfigurableTab } }
+      | { name: "Bot"; snippet?: { local: IBot; remote: IBot } }
+      | {
+          name: "MessageExtension";
+          snippet?: { local: IComposeExtension; remote: IComposeExtension };
+        }
+    )[]
+  ): Promise<Result<any, FxError>> {
+    return await addCapabilities(ctx.root, capabilities);
   }
 
   async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {

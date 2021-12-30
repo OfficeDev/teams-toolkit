@@ -2,7 +2,17 @@
 // Licensed under the MIT license.
 
 import * as fs from "fs-extra";
-import { FxError, TeamsAppManifest, Result, err, ok } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  TeamsAppManifest,
+  Result,
+  err,
+  ok,
+  IComposeExtension,
+  IBot,
+  IConfigurableTab,
+  IStaticTab,
+} from "@microsoft/teamsfx-api";
 import { getAppDirectory } from "../../../common";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
@@ -12,6 +22,14 @@ import {
   MANIFEST_TEMPLATE,
   TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV,
   TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG,
+  STATIC_TABS_TPL_FOR_MULTI_ENV,
+  STATIC_TABS_TPL_LOCAL_DEBUG,
+  CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
+  CONFIGURABLE_TABS_TPL_LOCAL_DEBUG,
+  BOTS_TPL_FOR_MULTI_ENV,
+  BOTS_TPL_LOCAL_DEBUG,
+  COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
+  COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG,
 } from "./constants";
 
 export async function getManifestTemplatePath(
@@ -135,4 +153,103 @@ export async function capabilityExceedLimit(
         )
       );
   }
+}
+
+export async function addCapabilities(
+  projectRoot: string,
+  capabilities: (
+    | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
+    | { name: "configurableTab"; snippet?: { local: IConfigurableTab; remote: IConfigurableTab } }
+    | { name: "Bot"; snippet?: { local: IBot; remote: IBot } }
+    | {
+        name: "MessageExtension";
+        snippet?: { local: IComposeExtension; remote: IComposeExtension };
+      }
+  )[]
+): Promise<Result<any, FxError>> {
+  const localManifestRes = await loadManifest(projectRoot, true);
+  if (localManifestRes.isErr()) {
+    return err(localManifestRes.error);
+  }
+  const localManifest = localManifestRes.value;
+
+  const remoteManifestRes = await loadManifest(projectRoot, false);
+  if (remoteManifestRes.isErr()) {
+    return err(remoteManifestRes.error);
+  }
+  const remoteManifest = remoteManifestRes.value;
+
+  capabilities.map(async (capability) => {
+    switch (capability.name) {
+      case "staticTab":
+        if (!localManifest.staticTabs) {
+          Object.assign(localManifest.staticTabs, []);
+        }
+        if (!remoteManifest.staticTabs) {
+          Object.assign(remoteManifest.staticTabs, []);
+        }
+        if (capability.snippet) {
+          localManifest.staticTabs!.push(capability.snippet.local);
+          remoteManifest.staticTabs!.push(capability.snippet.remote);
+        } else {
+          localManifest.staticTabs!.concat(STATIC_TABS_TPL_LOCAL_DEBUG);
+          remoteManifest.staticTabs!.concat(STATIC_TABS_TPL_FOR_MULTI_ENV);
+        }
+        break;
+      case "configurableTab":
+        if (!localManifest.configurableTabs) {
+          Object.assign(localManifest.configurableTabs, []);
+        }
+        if (!remoteManifest.configurableTabs) {
+          Object.assign(remoteManifest.configurableTabs, []);
+        }
+        if (capability.snippet) {
+          localManifest.configurableTabs!.push(capability.snippet.local);
+          remoteManifest.configurableTabs!.push(capability.snippet.remote);
+        } else {
+          localManifest.configurableTabs!.concat(CONFIGURABLE_TABS_TPL_LOCAL_DEBUG);
+          remoteManifest.configurableTabs!.concat(CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV);
+        }
+        break;
+      case "Bot":
+        if (!localManifest.bots) {
+          Object.assign(localManifest.bots, []);
+        }
+        if (!remoteManifest.bots) {
+          Object.assign(remoteManifest.bots, []);
+        }
+        if (capability.snippet) {
+          localManifest.bots!.push(capability.snippet.local);
+          remoteManifest.bots!.push(capability.snippet.remote);
+        } else {
+          localManifest.bots!.concat(BOTS_TPL_LOCAL_DEBUG);
+          remoteManifest.bots!.concat(BOTS_TPL_FOR_MULTI_ENV);
+        }
+        break;
+      case "MessageExtension":
+        if (!localManifest.composeExtensions) {
+          Object.assign(localManifest.composeExtensions, []);
+        }
+        if (!remoteManifest.composeExtensions) {
+          Object.assign(remoteManifest.composeExtensions, []);
+        }
+        if (capability.snippet) {
+          localManifest.composeExtensions!.push(capability.snippet.local);
+          remoteManifest.composeExtensions!.push(capability.snippet.remote);
+        } else {
+          localManifest.composeExtensions!.concat(COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG);
+          remoteManifest.composeExtensions!.concat(COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV);
+        }
+        break;
+    }
+  });
+  let res = await saveManifest(projectRoot, localManifest, true);
+  if (res.isErr()) {
+    return err(res.error);
+  }
+  res = await saveManifest(projectRoot, remoteManifest, false);
+  if (res.isErr()) {
+    return err(res.error);
+  }
+  return ok(undefined);
 }

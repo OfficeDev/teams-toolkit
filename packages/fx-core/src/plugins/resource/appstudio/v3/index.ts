@@ -2,10 +2,8 @@
 // Licensed under the MIT license.
 
 import {
-  Context,
   FxError,
   Result,
-  ok,
   err,
   v2,
   IComposeExtension,
@@ -19,6 +17,8 @@ import { Service, Inject } from "typedi";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { AppStudioPlugin } from "../";
 import { convert2PluginContext } from "../../utils4v2";
+import { AppStudioResultFactory } from "../results";
+import { AppStudioError } from "../errors";
 
 @Service(BuiltInResourcePluginNames.appStudio)
 export class AppStudioPluginV3 {
@@ -38,7 +38,13 @@ export class AppStudioPluginV3 {
     return await this.plugin.init(pluginContext);
   }
 
-  // Append to manifest template file
+  /**
+   * Append capabilities to manifest templates
+   * @param ctx
+   * @param inputs
+   * @param capabilities
+   * @returns
+   */
   async addCapabilities(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
@@ -52,16 +58,22 @@ export class AppStudioPluginV3 {
         }
     )[]
   ): Promise<Result<any, FxError>> {
+    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
     capabilities.map(async (capability) => {
       const exceedLimit = await this.capabilityExceedLimit(ctx, inputs, capability.name);
       if (exceedLimit.isErr()) {
         return err(exceedLimit.error);
       }
       if (exceedLimit.value) {
-        return err(new Error("Exeed limit."));
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.CapabilityExceedLimitError.name,
+            AppStudioError.CapabilityExceedLimitError.message(capability.name)
+          )
+        );
       }
     });
-    return ok(undefined);
+    return await this.plugin.addCapabilities(pluginContext, capabilities);
   }
 
   /**

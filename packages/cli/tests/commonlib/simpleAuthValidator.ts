@@ -1,15 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { isArmSupportEnabled } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
+import { ConfigKey, PluginId } from "./constants";
 import { IAadObject } from "./interfaces/IAADDefinition";
-import { getWebappConfigs, getWebappServicePlan } from "./utilities";
-
-const simpleAuthPluginName = "fx-resource-simple-auth";
-const solutionPluginName = "solution";
-const subscriptionKey = "subscriptionId";
-const rgKey = "resourceGroupName";
+import {
+  getResourceGroupNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+  getWebappConfigs,
+  getWebappServicePlan,
+} from "./utilities";
 
 export class PropertiesKeys {
   static clientId = "CLIENT_ID";
@@ -21,6 +23,7 @@ export class PropertiesKeys {
 
 export interface ISimpleAuthObject {
   endpoint: string;
+  webAppResourceId?: string;
 }
 
 export class SimpleAuthValidator {
@@ -32,18 +35,25 @@ export class SimpleAuthValidator {
 
     let simpleAuthObject: ISimpleAuthObject;
     if (!isLocalDebug) {
-      simpleAuthObject = <ISimpleAuthObject>ctx[simpleAuthPluginName];
+      simpleAuthObject = <ISimpleAuthObject>ctx[PluginId.SimpleAuth];
     } else {
       simpleAuthObject = {
-        endpoint: ctx[simpleAuthPluginName]["endpoint"],
+        endpoint: ctx[PluginId.SimpleAuth][ConfigKey.endpoint],
+        webAppResourceId: ctx[PluginId.SimpleAuth][ConfigKey.webAppResourceId],
       } as ISimpleAuthObject;
     }
     chai.assert.exists(simpleAuthObject);
 
-    this.subscriptionId = ctx[solutionPluginName][subscriptionKey];
-    chai.assert.exists(this.subscriptionId);
+    if (isArmSupportEnabled()) {
+      chai.assert.exists(simpleAuthObject.webAppResourceId);
+      this.subscriptionId = getSubscriptionIdFromResourceId(simpleAuthObject.webAppResourceId!);
+      this.rg = getResourceGroupNameFromResourceId(simpleAuthObject.webAppResourceId!);
+    } else {
+      this.subscriptionId = ctx[ConfigKey.solutionPluginName][ConfigKey.subscriptionId];
+      this.rg = ctx[ConfigKey.solutionPluginName][ConfigKey.resourceGroupName];
+    }
 
-    this.rg = ctx[solutionPluginName][rgKey];
+    chai.assert.exists(this.subscriptionId);
     chai.assert.exists(this.rg);
 
     console.log("Successfully init validator for Simple Auth.");

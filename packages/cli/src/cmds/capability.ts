@@ -185,7 +185,7 @@ export class CapabilityAddMessageExtension extends YargsCommand {
 
 export class CapabilityAdd extends YargsCommand {
   public readonly commandHead = `add`;
-  public readonly command = `${this.commandHead} <capability>`;
+  public readonly command = `${this.commandHead} [capability]`;
   public readonly description = "Add new capabilities to the current application";
 
   public readonly subCommands: YargsCommand[] = [
@@ -198,7 +198,9 @@ export class CapabilityAdd extends YargsCommand {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    return yargs;
+    return yargs.positional("capability", {
+      choices: this.subCommands.map((c) => c.commandHead),
+    });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -208,7 +210,7 @@ export class CapabilityAdd extends YargsCommand {
 
 export default class Capability extends YargsCommand {
   public readonly commandHead = `capability`;
-  public readonly command = `${this.commandHead} <action>`;
+  public readonly command = `${this.commandHead} [action]`;
   public readonly description = "Add new capabilities to the current application.";
 
   public readonly subCommands: YargsCommand[] = [new CapabilityAdd()];
@@ -217,7 +219,9 @@ export default class Capability extends YargsCommand {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    return yargs.version(false);
+    return yargs.version(false).positional("action", {
+      choices: this.subCommands.map((c) => c.commandHead),
+    });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

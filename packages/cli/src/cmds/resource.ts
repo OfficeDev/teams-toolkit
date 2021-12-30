@@ -66,7 +66,7 @@ async function checkAndReadEnvJson(
 
 export class ResourceAdd extends YargsCommand {
   public readonly commandHead = `add`;
-  public readonly command = `${this.commandHead} <resource-type>`;
+  public readonly command = `${this.commandHead} [resource-type]`;
   public readonly description = "Add a resource to the current application.";
 
   public readonly subCommands: YargsCommand[] = [
@@ -81,7 +81,9 @@ export class ResourceAdd extends YargsCommand {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
 
-    return yargs;
+    return yargs.positional("resource-type", {
+      choices: this.subCommands.map((c) => c.commandHead),
+    });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -335,7 +337,7 @@ export class ResourceAddKeyVault extends YargsCommand {
 
 export class ResourceShow extends YargsCommand {
   public readonly commandHead = `show`;
-  public readonly command = `${this.commandHead} <resource-type>`;
+  public readonly command = `${this.commandHead} [resource-type]`;
   public readonly description =
     "Show configuration details of resources in the current application.";
 
@@ -350,7 +352,9 @@ export class ResourceShow extends YargsCommand {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
 
-    return yargs;
+    return yargs.positional("resource-type", {
+      choices: this.subCommands.map((c) => c.commandHead),
+    });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -496,7 +500,7 @@ export class ResourceList extends YargsCommand {
 
 export default class Resource extends YargsCommand {
   public readonly commandHead = `resource`;
-  public readonly command = `${this.commandHead} <action>`;
+  public readonly command = `${this.commandHead} [action]`;
   public readonly description = "Manage the resources in the current application.";
 
   public readonly subCommands: YargsCommand[] = [
@@ -509,7 +513,9 @@ export default class Resource extends YargsCommand {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    return yargs.version(false);
+    return yargs.version(false).positional("action", {
+      choices: this.subCommands.map((c) => c.commandHead),
+    });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

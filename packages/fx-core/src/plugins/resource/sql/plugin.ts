@@ -287,7 +287,10 @@ export class SqlPluginImpl {
       "sql",
       "bicep"
     );
-    const provisionOrchestration = await generateBicepFromFile(bicepTemplateDirectory, pluginCtx);
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, AzureSqlBicepFile.moduleTemplateFileName),
+      pluginCtx
+    );
     const provisionModules = await generateBicepFromFile(
       path.join(bicepTemplateDirectory, AzureSqlBicepFile.ProvisionModuleTemplateFileName),
       pluginCtx

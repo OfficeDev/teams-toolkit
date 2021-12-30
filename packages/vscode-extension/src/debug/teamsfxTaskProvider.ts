@@ -51,7 +51,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         return tasks;
       }
 
-      const programmingLanguage = localEnvManager.getProgrammingLanguage(projectSettings!);
+      const programmingLanguage = projectSettings?.programmingLanguage;
 
       // Always provide the following tasks no matter whether it is defined in tasks.json
       const frontendRoot = await commonUtils.getProjectRoot(
@@ -87,7 +87,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
       const botRoot = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
       if (botRoot) {
-        const skipNgrok = localEnvManager.getSkipNgrokConfig(localSettings);
+        const skipNgrok = (localSettings?.bot?.skipNgrok as boolean) === true;
         tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot, skipNgrok));
         const silent: boolean = frontendRoot !== undefined;
         tasks.push(
@@ -105,7 +105,8 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const isCodeSpaceEnv =
         vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode;
       if (isCodeSpaceEnv) {
-        const debugConfig = localEnvManager.getLaunchInput(localSettings);
+        const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
+        const debugConfig = { appId: localTeamsAppId };
         tasks.push(await this.createOpenTeamsWebClientTask(workspaceFolder, debugConfig));
       }
     }

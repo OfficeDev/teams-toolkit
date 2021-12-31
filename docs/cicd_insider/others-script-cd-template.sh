@@ -10,6 +10,9 @@ set -euxo pipefail
 # export M365_ACCOUNT_NAME={M365_ACCOUNT_NAME}
 # export M365_ACCOUNT_PASSWORD={M365_ACCOUNT_PASSWORD}
 
+# To enable M365 account login by non-interactive mode, turn on `CI_ENABLED` by `export CI_ENABLED=true`.
+export CI_ENABLED=true
+
 # To specify the env name for multi-env feature.
 export TEAMSFX_ENV_NAME=staging
 

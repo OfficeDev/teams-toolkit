@@ -200,6 +200,8 @@ The scripts are pretty straightforward and most parts of them are cross-platform
 
 The scripts are based on a cross-platform TeamsFx command line tool [TeamsFx-CLI](https://www.npmjs.com/package/@microsoft/teamsfx-cli). You can install it with `npm install -g @microsoft/teamsfx-cli` and follow the [documentation](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/cli/user-manual.md) to customize the scripts.
 
+> Note: To enable M365 account login by non-interactive mode, turn on `CI_ENABLED` by `export CI_ENABLED=true`.
+
 > Note: To enable `@microsoft/teamsfx-cli` running in non-interactive mode, set a global config like below:
 ```
 teamsfx config set -g interactive false

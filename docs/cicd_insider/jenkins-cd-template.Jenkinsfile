@@ -14,7 +14,7 @@ pipeline {
         M365_ACCOUNT_NAME = credentials('M365_ACCOUNT_NAME')
         M365_ACCOUNT_PASSWORD = credentials('M365_ACCOUNT_PASSWORD')
 
-        // To enable M365 account login by non-interactive mode, turn on `CI_ENABLED` by `export CI_ENABLED=true`.
+        // To enable M365 account login by non-interactive mode. 
         CI_ENABLED = 'true'
 
         // To specify the env name for multi-env feature.

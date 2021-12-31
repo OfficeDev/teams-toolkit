@@ -6,12 +6,20 @@
 import * as path from "path";
 import { Argv, Options } from "yargs";
 
-import { FxError, err, ok, Result, Stage, Inputs } from "@microsoft/teamsfx-api";
-import { getHashedEnv } from "@microsoft/teamsfx-core";
+import {
+  FxError,
+  err,
+  ok,
+  Result,
+  Stage,
+  Inputs,
+  MultiSelectQuestion,
+  OptionItem,
+} from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
-import { getSystemInputs, toLocaleLowerCase } from "../utils";
+import { flattenNodes, getSystemInputs, toLocaleLowerCase } from "../utils";
 import CliTelemetry, { makeEnvProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
@@ -74,19 +82,30 @@ export default class Deploy extends YargsCommand {
     }
 
     const core = result.value;
-    {
-      const components = (args.components as string[]) || [];
-      const options = this.params[this.deployPluginNodeName].choices as string[];
-      if (components.length === 0) {
-        CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, options);
-      } else {
-        CLIUIInstance.updatePresetAnswer(this.deployPluginNodeName, components);
-      }
-    }
 
     let inputs: Inputs;
     {
       inputs = getSystemInputs(rootFolder, args.env as any);
+      {
+        const root = HelpParamGenerator.getQuestionRootNodeForHelp(Stage.deploy);
+        const questions = flattenNodes(root!);
+        const question = questions.find((q) => q.data.name === this.deployPluginNodeName);
+        const choices = (question?.data as MultiSelectQuestion).staticOptions;
+        let ids: string[];
+        if (typeof choices[0] === "string") {
+          ids = choices as string[];
+        } else {
+          ids = (choices as OptionItem[]).map((choice) => choice.id);
+        }
+        const components = (args.components as string[]) || [];
+        const options = this.params[this.deployPluginNodeName].choices as string[];
+        const indexes = components.map((c) => options.findIndex((op) => op === c));
+        if (components.length === 0) {
+          inputs[this.deployPluginNodeName] = ids;
+        } else {
+          inputs[this.deployPluginNodeName] = indexes.map((i) => ids[i]);
+        }
+      }
       const result = await core.deployArtifacts(inputs);
       if (result.isErr()) {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);

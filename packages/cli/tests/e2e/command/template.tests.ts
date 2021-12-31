@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Zhiyu You <zhiyou@microsoft.com>
+ */
+
 import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";

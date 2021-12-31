@@ -84,7 +84,9 @@ export abstract class YargsCommand {
     if (!UI.interactive) {
       UI.updatePresetAnswers(this.params, args);
     } else {
-      const sameKeys = Object.keys(this.params).filter((k) => k in args);
+      const sameKeys = Object.keys(this.params).filter(
+        (k) => k !== "folder" && k in args && args[k] !== undefined
+      );
       if (sameKeys.length > 0) {
         /// only if there are intersects between parameters and arguments, show the log,
         /// because it means some parameters will be used by fx-core.

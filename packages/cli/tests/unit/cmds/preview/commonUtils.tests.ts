@@ -14,6 +14,7 @@ describe("commonUtils", () => {
       const progressHandler = sinon.createStubInstance(MockProgressHandler);
       const taskStartCallback = createTaskStartCb(progressHandler, "start message");
       await taskStartCallback("start", true);
+      expect(progressHandler.start.calledOnce).to.be.true;
     });
   });
   describe("createTaskStopCb", () => {

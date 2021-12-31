@@ -10,10 +10,6 @@ set -euxo pipefail
 # export M365_ACCOUNT_NAME={M365_ACCOUNT_NAME}
 # export M365_ACCOUNT_PASSWORD={M365_ACCOUNT_PASSWORD}
 
-# To enable @microsoft/teamsfx-cli running in CI mode, turn on CI_ENABLED like below.
-# In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
-export CI_ENABLED=true
-
 # To specify the env name for multi-env feature.
 export TEAMSFX_ENV_NAME=staging
 
@@ -43,12 +39,14 @@ cd tabs && npm ci && npm run build && cd -
 # set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly in below.
 cd tabs && npm run test && cd -
 
+# Set for non-interactive mode.
+npx teamsfx config set -g interactive false
+
 # Login Azure by service principal
 npx teamsfx account login azure --service-principal --username ${SP_NAME} --password ${SP_PASSWORD} --tenant ${TENANT_ID}
 
 # We suggest to do the provision steps by case manually or in a separated workflow, so just comment the following steps for references.
 # After provisioning, you should commit necessary files under .fx into the repository.
-# You should copy content of .fx/states/${TEAMSFX_ENV_NAME}.userdata, and export them in your environment which can be refered by the step with name 'Generate userdata'. 
 
 # Provision hosting environment.
 # npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID} --env ${TEAMSFX_ENV_NAME}
@@ -57,9 +55,6 @@ npx teamsfx account login azure --service-principal --username ${SP_NAME} --pass
 # git add .fx
 # git commit -m "chore: commit provision configs"
 # git push
-
-# Generate userdata
-[ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/states/${TEAMSFX_ENV_NAME}.userdata
 
 # Deploy to hosting environment.
 npx teamsfx deploy --env ${TEAMSFX_ENV_NAME}

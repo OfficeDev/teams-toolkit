@@ -37,10 +37,10 @@ module.exports = {
             "warn"
         ],
         "no-secrets/no-secrets": [
-            "error",
+            "warn",
             { "additionalRegexes": { 
                 "Basic Auth": "Authorization: Basic [A-Za-z0-9+/=]*",
-                "Common Pattern": "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-]).{8,}$"
+                "Common Pattern": "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-~|]).{8,}$"
             } 
         }]
     },

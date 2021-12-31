@@ -17,7 +17,7 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { vscodeAdapter } from "./depsChecker/vscodeAdapter";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
-import { CustomTaskDefinition, TaskDefinition, ITaskDefinition } from "@microsoft/teamsfx-core";
+import { NpmTaskDefinition, TaskDefinition, ITaskDefinition } from "@microsoft/teamsfx-core";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -148,7 +148,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         const isWatchTask = command.toLowerCase() === "watch";
         let taskDefinition: ITaskDefinition | undefined = undefined;
         if (component?.toLowerCase() === "frontend") {
-          taskDefinition = CustomTaskDefinition.frontend(workspacePath, isWatchTask);
+          taskDefinition = NpmTaskDefinition.frontend(workspacePath, isWatchTask);
           problemMatcher = isWatchTask
             ? constants.tscWatchProblemMatcher
             : constants.frontendProblemMatcher;
@@ -163,12 +163,12 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
           if ((await funcChecker.isEnabled()) && (await funcChecker.isPortableFuncInstalled())) {
             funcBinFolders = funcChecker.getPortableFuncBinFolders();
           }
-          taskDefinition = CustomTaskDefinition.backend(workspacePath, isWatchTask, funcBinFolders);
+          taskDefinition = NpmTaskDefinition.backend(workspacePath, isWatchTask, funcBinFolders);
         } else if (component?.toLowerCase() === "bot") {
           problemMatcher = isWatchTask
             ? constants.tscWatchProblemMatcher
             : constants.botProblemMatcher;
-          taskDefinition = CustomTaskDefinition.bot(workspacePath, isWatchTask);
+          taskDefinition = NpmTaskDefinition.bot(workspacePath, isWatchTask);
         } else {
           VsCodeLogInstance.error(
             `Missing or wrong 'component' field in ${TeamsfxTaskProvider.type} task.`
@@ -348,11 +348,11 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       cwd: taskDefinition.cwd,
       env: env ?? taskDefinition.env,
       // avoid powershell execution policy issue
-      executable: taskDefinition.isCmd ? "cmd.exe" : undefined,
-      shellArgs: taskDefinition.isCmd ? ["/c"] : undefined,
+      executable: taskDefinition.execOptions.needCmd ? "cmd.exe" : undefined,
+      shellArgs: taskDefinition.execOptions.needCmd ? ["/c"] : undefined,
     };
 
-    const execution = taskDefinition.isShell
+    const execution = taskDefinition.execOptions.needShell
       ? new vscode.ShellExecution(taskDefinition.command, options)
       : new vscode.ProcessExecution(taskDefinition.command, taskDefinition.args ?? [], options);
 

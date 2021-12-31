@@ -8,7 +8,7 @@
   "exclude": [
     "src/cmds/preview/depsChecker/**/*",
     "src/cmds/preview/preview.ts",
-    "src/cmds/preview/commonUtils.ts",
+    "src/cmds/preview/error.ts",
     "src/index.ts",
     "cli.js",
     ".eslintrc.js",

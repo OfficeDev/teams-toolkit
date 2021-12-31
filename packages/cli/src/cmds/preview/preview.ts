@@ -874,7 +874,9 @@ export default class Preview extends YargsCommand {
       taskDefinition.command,
       taskDefinition.args,
       {
-        shell: taskDefinition.isCmd ? "cmd.exe" : taskDefinition.isShell,
+        shell: taskDefinition.execOptions.needCmd
+          ? "cmd.exe"
+          : taskDefinition.execOptions.needShell,
         cwd: taskDefinition.cwd,
         env: taskEnv ? commonUtils.mergeProcessEnv(taskEnv) : undefined,
       }

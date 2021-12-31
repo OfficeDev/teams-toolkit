@@ -11,13 +11,16 @@ export interface ITaskDefinition {
   command: string;
   cwd: string | undefined;
   isBackground: boolean;
-  isShell: boolean;
-  isCmd?: boolean;
+  execOptions: {
+    needShell: boolean;
+    needCmd?: boolean;
+  };
   args?: string[];
   env?: { [key: string]: string };
 }
 
-export class CustomTaskDefinition {
+// This type of task executes npm script of each component.
+export class NpmTaskDefinition {
   private static command(isWatchTask: boolean): string {
     return isWatchTask ? "npm run watch:teamsfx" : "npm run dev:teamsfx";
   }
@@ -28,10 +31,12 @@ export class CustomTaskDefinition {
 
   static frontend(workspaceFolder: string, isWatchTask: boolean): ITaskDefinition {
     return {
-      name: `frontend ${CustomTaskDefinition.nameSuffix(isWatchTask)}`,
-      command: CustomTaskDefinition.command(isWatchTask),
+      name: `frontend ${NpmTaskDefinition.nameSuffix(isWatchTask)}`,
+      command: NpmTaskDefinition.command(isWatchTask),
       cwd: path.join(workspaceFolder, FolderName.Frontend),
-      isShell: true,
+      execOptions: {
+        needShell: true,
+      },
       isBackground: true,
     };
   }
@@ -42,10 +47,12 @@ export class CustomTaskDefinition {
     funcBinFolders: string[] | undefined
   ): ITaskDefinition {
     return {
-      name: `backend ${CustomTaskDefinition.nameSuffix(isWatchTask)}`,
-      command: CustomTaskDefinition.command(isWatchTask),
+      name: `backend ${NpmTaskDefinition.nameSuffix(isWatchTask)}`,
+      command: NpmTaskDefinition.command(isWatchTask),
       cwd: path.join(workspaceFolder, FolderName.Function),
-      isShell: true,
+      execOptions: {
+        needShell: true,
+      },
       isBackground: true,
       env: funcBinFolders
         ? {
@@ -60,10 +67,12 @@ export class CustomTaskDefinition {
 
   static bot(workspaceFolder: string, isWatchTask: boolean): ITaskDefinition {
     return {
-      name: `bot ${CustomTaskDefinition.nameSuffix(isWatchTask)}`,
-      command: CustomTaskDefinition.command(isWatchTask),
+      name: `bot ${NpmTaskDefinition.nameSuffix(isWatchTask)}`,
+      command: NpmTaskDefinition.command(isWatchTask),
       cwd: path.join(workspaceFolder, FolderName.Bot),
-      isShell: true,
+      execOptions: {
+        needShell: true,
+      },
       isBackground: true,
     };
   }
@@ -75,7 +84,9 @@ export class TaskDefinition {
       name: "frontend start",
       command: "npx react-scripts start",
       cwd: path.join(workspaceFolder, FolderName.Frontend),
-      isShell: true,
+      execOptions: {
+        needShell: true,
+      },
       isBackground: true,
     };
   }
@@ -96,8 +107,10 @@ export class TaskDefinition {
       name: "backend start",
       command: `${funcCommand} ${args}`,
       cwd: path.join(workspaceFolder, FolderName.Function),
-      isShell: true,
-      isCmd: isWindows(),
+      execOptions: {
+        needShell: true,
+        needCmd: isWindows(),
+      },
       isBackground: true,
     };
   }
@@ -107,7 +120,9 @@ export class TaskDefinition {
       name: "backend watch",
       command: "npx tsc --watch",
       cwd: path.join(workspaceFolder, FolderName.Function),
-      isShell: true,
+      execOptions: {
+        needShell: true,
+      },
       isBackground: true,
     };
   }
@@ -118,7 +133,9 @@ export class TaskDefinition {
       command: dotnetExecPath,
       args: ["Microsoft.TeamsFx.SimpleAuth.dll"],
       cwd: authServicePath,
-      isShell: false,
+      execOptions: {
+        needShell: false,
+      },
       isBackground: true,
     };
   }
@@ -138,7 +155,9 @@ export class TaskDefinition {
       name: "bot start",
       command: command,
       cwd: path.join(workspaceFolder, FolderName.Bot),
-      isShell: true,
+      execOptions: {
+        needShell: true,
+      },
       isBackground: true,
     };
   }
@@ -157,7 +176,9 @@ export class TaskDefinition {
         PATH: `${ngrokBinFolder}${path.delimiter}${process.env.PATH ?? ""}`,
       },
       cwd: path.join(workspaceFolder, FolderName.Bot),
-      isShell: true,
+      execOptions: {
+        needShell: true,
+      },
       isBackground: !skipNgrok,
     };
   }
@@ -167,7 +188,9 @@ export class TaskDefinition {
       name: "frontend npm install",
       command: npmInstallCommand,
       cwd: path.join(workspaceFolder, FolderName.Frontend),
-      isShell: true,
+      execOptions: {
+        needShell: true,
+      },
       isBackground: false,
     };
   }
@@ -177,7 +200,9 @@ export class TaskDefinition {
       name: "backend npm install",
       command: npmInstallCommand,
       cwd: path.join(workspaceFolder, FolderName.Function),
-      isShell: true,
+      execOptions: {
+        needShell: true,
+      },
       isBackground: false,
     };
   }
@@ -191,7 +216,9 @@ export class TaskDefinition {
       command: dotnetExecPath,
       args: ["build", "extensions.csproj", "-o", "bin", "--ignore-failed-sources"],
       cwd: path.join(workspaceFolder, FolderName.Function),
-      isShell: false,
+      execOptions: {
+        needShell: false,
+      },
       isBackground: false,
     };
   }
@@ -201,7 +228,9 @@ export class TaskDefinition {
       name: "bot npm install",
       command: npmInstallCommand,
       cwd: path.join(workspaceFolder, FolderName.Bot),
-      isShell: true,
+      execOptions: {
+        needShell: true,
+      },
       isBackground: false,
     };
   }
@@ -211,7 +240,9 @@ export class TaskDefinition {
       name: "spfx npm install",
       command: npmInstallCommand,
       cwd: path.join(workspaceFolder, FolderName.SPFx),
-      isShell: true,
+      execOptions: {
+        needShell: true,
+      },
       isBackground: false,
     };
   }
@@ -223,7 +254,9 @@ export class TaskDefinition {
       command: "node",
       args: [`${spfxRoot}/node_modules/gulp/bin/gulp.js`, "trust-dev-cert", "--no-color"],
       cwd: spfxRoot,
-      isShell: false,
+      execOptions: {
+        needShell: false,
+      },
       isBackground: false,
     };
   }
@@ -235,7 +268,9 @@ export class TaskDefinition {
       command: "node",
       args: [`${spfxRoot}/node_modules/gulp/bin/gulp.js`, "serve", "--nobrowser", "--no-color"],
       cwd: spfxRoot,
-      isShell: false,
+      execOptions: {
+        needShell: false,
+      },
       isBackground: true,
     };
   }

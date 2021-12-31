@@ -4,33 +4,24 @@
 "use strict";
 
 import * as path from "path";
-import * as fs from "fs-extra";
-import {
-  Colors,
-  ConfigFolderName,
-  Func,
-  FxError,
-  IProgressHandler,
-  LogLevel,
-} from "@microsoft/teamsfx-api";
-import * as dotenv from "dotenv";
+import { Colors, FxError, IProgressHandler, LogLevel } from "@microsoft/teamsfx-api";
+
 import * as net from "net";
 
 import * as constants from "./constants";
 import { TaskResult } from "./task";
 import cliLogger from "../../commonlib/log";
 import { TaskFailed } from "./errors";
-import cliTelemetry from "../../telemetry/cliTelemetry";
+import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../telemetry/cliTelemetryEvents";
-import { getNpmInstallLogInfo } from "./npmLogHandler";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
-import { FxCore, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
-import { getSystemInputs, getColorizedString } from "../../utils";
+import { LocalEnvManager } from "@microsoft/teamsfx-core";
+import { getColorizedString } from "../../utils";
 import { isWindows } from "./depsChecker/common";
 
 export async function openBrowser(
@@ -151,7 +142,8 @@ export function createTaskStopCb(
     } else {
       const error = TaskFailed(taskTitle);
       if (!background && ifNpmInstall && telemetryProperties !== undefined) {
-        const npmInstallLogInfo = await getNpmInstallLogInfo();
+        const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
+        const npmInstallLogInfo = await localEnvManager.getNpmInstallLogInfo();
         let validNpmInstallLogInfo = false;
         if (
           npmInstallLogInfo?.cwd !== undefined &&
@@ -189,43 +181,14 @@ export function createTaskStopCb(
 }
 
 export async function getLocalEnv(
-  core: FxCore,
   workspaceFolder: string
 ): Promise<{ [key: string]: string } | undefined> {
-  const localEnvFilePath: string = path.join(
-    workspaceFolder,
-    `.${ConfigFolderName}`,
-    constants.localEnvFileName
-  );
-  let env: { [name: string]: string };
-
-  if (isMultiEnvEnabled()) {
-    // use localSettings.json as input to generate the local debug envs
-    const func: Func = {
-      namespace: "fx-solution-azure/fx-resource-local-debug",
-      method: "getLocalDebugEnvs",
-    };
-    const inputs = getSystemInputs(workspaceFolder, undefined);
-    inputs.ignoreLock = true;
-    inputs.ignoreConfigPersist = true;
-    inputs.ignoreEnvInfo = true;
-    const result = await core.executeUserTask(func, inputs);
-    if (result.isErr()) {
-      throw result.error;
-    }
-
-    env = result.value as Record<string, string>;
-  } else {
-    // use local.env file as input to generate the local debug envs
-    if (!(await fs.pathExists(localEnvFilePath))) {
-      return undefined;
-    }
-
-    const contents = await fs.readFile(localEnvFilePath);
-    env = dotenv.parse(contents);
-  }
-
-  return env;
+  const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
+  const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
+  const localSettings = await localEnvManager.getLocalSettings(workspaceFolder, {
+    projectId: projectSettings.projectId,
+  });
+  return await localEnvManager.getLocalDebugEnvs(workspaceFolder, projectSettings, localSettings);
 }
 
 function getLocalEnvWithPrefix(

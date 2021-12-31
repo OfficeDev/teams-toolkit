@@ -251,19 +251,17 @@ export class FunctionValidator {
     ctx: any,
     activeResourcePlugins: string[]
   ): string {
-    let expectedM365ApplicationIdUri: string;
+    let expectedM365ApplicationIdUri = "";
     if (activeResourcePlugins.includes(PluginId.FrontendHosting)) {
       const tabDomain = ctx[PluginId.Aad][StateConfigKey.domain];
       const m365ClientId = ctx[PluginId.Aad][StateConfigKey.clientId];
-      if (activeResourcePlugins.includes(PluginId.Bot)) {
-        expectedM365ApplicationIdUri = `api://${tabDomain}/botid-${
-          ctx[PluginId.Bot][StateConfigKey.botId]
-        }`;
-      } else {
-        expectedM365ApplicationIdUri = `api://${tabDomain}/${m365ClientId}`;
-      }
+      expectedM365ApplicationIdUri =
+        `api://${tabDomain}/` +
+        (activeResourcePlugins.includes(PluginId.Bot)
+          ? `botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`
+          : `${m365ClientId}`);
     } else if (activeResourcePlugins.includes(PluginId.Bot)) {
-      expectedM365ApplicationIdUri = `api://botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`;
+      expectedM365ApplicationIdUri += `api://botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`;
     }
     return expectedM365ApplicationIdUri;
   }

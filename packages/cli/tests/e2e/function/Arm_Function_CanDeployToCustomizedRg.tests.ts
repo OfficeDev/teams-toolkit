@@ -18,12 +18,20 @@ import {
   readContextMultiEnv,
   createResourceGroup,
   deleteResourceGroupByName,
+  getProvisionParameterValueByKey,
+  getActivePluginsFromProjectSetting,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
 import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, PluginId, Resource, ResourceToDeploy } from "../../commonlib/constants";
+import {
+  Capability,
+  PluginId,
+  provisionParametersKey,
+  Resource,
+  ResourceToDeploy,
+} from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 
 describe("Deploy to customized resource group", function () {
@@ -78,13 +86,25 @@ describe("Deploy to customized resource group", function () {
         projectPath,
         environmentManager.getDefaultEnvName()
       );
+      const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
+      chai.assert.isArray(activeResourcePlugins);
+      const resourceBaseName: string = await getProvisionParameterValueByKey(
+        projectPath,
+        environmentManager.getDefaultEnvName(),
+        provisionParametersKey.resourceBaseName
+      );
 
       // Validate Aad App
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
 
       // Validate Function App
-      const func = FunctionValidator.init(context, true);
+      const func = FunctionValidator.init(
+        context,
+        activeResourcePlugins as string[],
+        resourceBaseName,
+        true
+      );
       await FunctionValidator.validateProvision(func, false, true);
       await FunctionValidator.validateDeploy(func);
     }

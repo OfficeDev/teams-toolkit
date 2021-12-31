@@ -21,13 +21,7 @@ import {
 import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
 import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-import {
-  Capability,
-  StateConfigKey,
-  PluginId,
-  Resource,
-  provisionParametersKey,
-} from "../../commonlib/constants";
+import { Capability, Resource, provisionParametersKey } from "../../commonlib/constants";
 import { FunctionValidator } from "../../commonlib";
 
 describe("Configuration successfully changed when with different plugins", function () {

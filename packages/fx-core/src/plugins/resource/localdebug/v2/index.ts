@@ -29,7 +29,7 @@ import {
   provisionLocalResourceAdapter,
   scaffoldSourceCodeAdapter,
 } from "../../utils4v2";
-import { localEnvManager } from "../../../../common/local/localEnvManager";
+import { LocalEnvManager } from "../../../../common/local/localEnvManager";
 
 @Service(ResourcePluginsV2.LocalDebugPlugin)
 export class LocalDebugPluginV2 implements ResourcePlugin {
@@ -83,6 +83,7 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
     envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
   ): Promise<Result<unknown, FxError>> {
+    const localEnvManager = new LocalEnvManager(ctx.logProvider, ctx.telemetryReporter);
     if (func.method == "getLaunchInput") {
       const env = func.params as string;
       if (env === "remote") {
@@ -105,12 +106,20 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
 
         return err(MissingStep("launching remote", "Teams: Provision and Teams: Deploy"));
       } else {
-        return ok(localEnvManager.getLaunchInput(localSettings));
+        const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
+        return ok({ appId: localTeamsAppId });
       }
     } else if (func.method === "getProgrammingLanguage") {
-      return ok(localEnvManager.getProgrammingLanguage(ctx.projectSetting));
+      return ok(ctx.projectSetting.programmingLanguage);
     } else if (func.method === "getSkipNgrokConfig") {
-      return ok(localEnvManager.getSkipNgrokConfig(localSettings));
+      return ok((localSettings?.bot?.skipNgrok as boolean) === true);
+    } else if (func.method === "getLocalDebugEnvs") {
+      const localEnvs = await localEnvManager.getLocalDebugEnvs(
+        inputs.projectPath as string,
+        ctx.projectSetting,
+        localSettings
+      );
+      return ok(localEnvs);
     } else {
       return await executeUserTaskAdapter(
         ctx,

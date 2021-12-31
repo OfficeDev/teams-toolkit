@@ -12,10 +12,15 @@ export function ScaffoldLocalDebugSettingsError(error: any): SystemError {
 export function SetupLocalDebugSettingsError(error: any): SystemError {
   return returnSystemError(error, SolutionSource, "SetupLocalDebugSettingsError");
 }
+
+export function ConfigLocalDebugSettingsError(error: any): SystemError {
+  return returnSystemError(error, SolutionSource, "ConfigLocalDebugSettingsError");
+}
+
 export function NgrokTunnelNotConnected(): UserError {
   return returnUserError(
     new Error("Ngrok tunnel is not connected. Check your network settings and try again."),
-    "localdebug-plugin",
+    SolutionSource,
     "NgrokTunnelNotConnected",
     "https://aka.ms/teamsfx-localdebug"
   );
@@ -26,7 +31,7 @@ export function LocalBotEndpointNotConfigured(): UserError {
     new Error(
       'Local bot endpoint is not configured. Set "fx-resource-local-debug.localBotEndpoint" in ".fx/default.user.data" and try again.'
     ),
-    "localdebug-plugin",
+    SolutionSource,
     "LocalBotEndpointNotConfigured"
   );
 }
@@ -34,7 +39,15 @@ export function LocalBotEndpointNotConfigured(): UserError {
 export function InvalidLocalBotEndpointFormat(localBotEndpoint: string): UserError {
   return returnUserError(
     new Error(`Local bot endpoint format is invalid: ${localBotEndpoint}.`),
-    "localdebug-plugin",
+    SolutionSource,
     "InvalidLocalBotEndpointFormat"
+  );
+}
+
+export function ScaffoldLocalDebugSettingsV1Error(): SystemError {
+  return returnSystemError(
+    new Error("Failed to convert api v1 context to v2 context."),
+    SolutionSource,
+    "ScaffoldLocalDebugSettingsV1Error"
   );
 }

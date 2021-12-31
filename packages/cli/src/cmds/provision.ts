@@ -4,7 +4,7 @@
 "use strict";
 
 import path from "path";
-import { Argv, Options } from "yargs";
+import { Argv } from "yargs";
 
 import { FxError, err, ok, Result, Stage } from "@microsoft/teamsfx-api";
 
@@ -17,7 +17,6 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/cliTelemetryEvents";
-import CLIUIInstance from "../userInteraction";
 import HelpParamGenerator from "../helpParamGenerator";
 import { sqlPasswordConfirmQuestionName, sqlPasswordQustionName } from "../constants";
 import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
@@ -27,8 +26,6 @@ export default class Provision extends YargsCommand {
   public readonly command = `${this.commandHead}`;
   public readonly description = "Provision the cloud resources in the current application.";
   public readonly resourceGroupParam = "resource-group";
-
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.provision);
@@ -42,13 +39,16 @@ export default class Provision extends YargsCommand {
     return yargs.version(false).options(this.params);
   }
 
-  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
-    const rootFolder = path.resolve(args.folder || "./");
-    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ProvisionStart);
+  public override modifyArguments(args: { [argName: string]: any }): { [argName: string]: any } {
     if (sqlPasswordQustionName in args) {
       args[sqlPasswordConfirmQuestionName] = args[sqlPasswordQustionName];
     }
-    CLIUIInstance.updatePresetAnswers(this.params, args);
+    return args;
+  }
+
+  public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
+    const rootFolder = path.resolve(args.folder || "./");
+    CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.ProvisionStart);
 
     {
       const result = await setSubscriptionId(args.subscription, rootFolder);

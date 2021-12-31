@@ -34,18 +34,6 @@ export function parseFromResourceId(pattern: RegExp, resourceId: string): string
   return result ? result[1].trim() : "";
 }
 
-export enum Capability {
-  Tab = "tab",
-  Bot = "bot",
-  MessagingExtension = "messaging-extension",
-}
-
-export enum Resource {
-  AzureFunction = "azure-function",
-  AzureApim = "azure-apim",
-  AzureSql = "azure-sql",
-}
-
 export async function getWebappConfigs(
   subscriptionId: string,
   rg: string,

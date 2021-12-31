@@ -6,37 +6,49 @@ import {
   ConfigFolderName,
   InputConfigsFolderName,
   Json,
+  LogProvider,
   ProjectSettings,
   ProjectSettingsFileName,
+  TelemetryReporter,
   UserError,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
 
+import { convertToLocalEnvs } from "./localSettingsHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
+import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
+import { getPortsInUse } from "./portChecker";
 import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
 
-class LocalEnvManager {
-  public getLaunchInput(localSettings: Json | undefined): any {
-    // return local teams app id
-    const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
-    return { appId: localTeamsAppId };
+export class LocalEnvManager {
+  private readonly logger: LogProvider | undefined;
+  private readonly telemetry: TelemetryReporter | undefined;
+
+  constructor(logger?: LogProvider, telemetry?: TelemetryReporter) {
+    this.logger = logger;
+    this.telemetry = telemetry;
   }
 
-  public async getLocalDebugEnvs() {}
-
-  public async getNpmInstallLogInfo() {}
-
-  public async getPortsInUse() {}
-
-  public getProgrammingLanguage(projectSettings: ProjectSettings): string | undefined {
-    return projectSettings.programmingLanguage;
+  public async getLocalDebugEnvs(
+    projectPath: string,
+    projectSettings: ProjectSettings,
+    localSettings: Json | undefined
+  ): Promise<Record<string, string>> {
+    return await convertToLocalEnvs(projectPath, projectSettings, localSettings, this.logger);
   }
 
-  public getSkipNgrokConfig(localSettings: Json | undefined): boolean {
-    return (localSettings?.bot?.skipNgrok as boolean) === true;
+  public async getNpmInstallLogInfo(): Promise<NpmInstallLogInfo | undefined> {
+    return await getNpmInstallLogInfo();
+  }
+
+  public async getPortsInUse(
+    projectPath: string,
+    projectSettings: ProjectSettings
+  ): Promise<number[]> {
+    return await getPortsInUse(projectPath, projectSettings);
   }
 
   public async getLocalSettings(
@@ -94,5 +106,3 @@ class LocalEnvManager {
     throw error;
   }
 }
-
-export const localEnvManager = new LocalEnvManager();

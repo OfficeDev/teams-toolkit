@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "3.1.0",
+  "version": "3.1.1",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -523,7 +523,7 @@
       {
         "command": "fx-extension.updatePreviewFile",
         "title": "Teams: Update manifest to Teams platform",
-        "icon": "$(cloud-upload)",
+        "icon": "$(sync)",
         "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
@@ -846,29 +846,9 @@
             }
           },
           {
-            "id": "teamsToolkitCommands",
-            "title": "Explore Teams toolkit commands",
-            "description": "Open Command Palette (Ctrl+Shift+P) and type 'Teams' to find Teams toolkit commands.\n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3ETeams%22%5D)",
-            "media": {
-              "svg": "media/step_commands.svg",
-              "altText": "Display Teams Commands"
-            },
-            "when": "!isMac"
-          },
-          {
-            "id": "teamsToolkitCommandsMac",
-            "title": "Explore Teams toolkit commands",
-            "description": "Open Command Palette (⇧⌘P) and type 'Teams' to find Teams toolkit commands.\n[Display Teams commands](command:workbench.action.quickOpen?%5B%22%3ETeams%22%5D)",
-            "media": {
-              "svg": "media/step_commands.svg",
-              "altText": "Display Teams Commands"
-            },
-            "when": "isMac"
-          },
-          {
             "id": "teamsToolkitInstallNodeJs",
             "title": "Install Node.js",
-            "description": "Teams toolkit cannot detect the right version of Node.js on your machine.\nAs a fundamental runtime context for Teams app, Node.js v10.x, v12.x or v14.x is required (v.14.x is recommended ). Please install the appropriate version to run the Microsoft Teams Toolkit.Read more about managing Node.js versions.\n[Download Node.js (v.14.x)](https://aka.ms/teamsfx-nodejs-download)",
+            "description": "Teams toolkit cannot detect the right version of Node.js on your machine.\nAs a fundamental runtime context for Teams app, Node.js v10.x, v12.x, v14.x or v16.x is required (v.14.x is recommended ). Please install the appropriate version to run the Microsoft Teams Toolkit.Read more about managing Node.js versions.\n[Download Node.js (v.14.x)](https://aka.ms/teamsfx-nodejs-download)",
             "media": {
               "svg": "media/step_nodejs.svg",
               "altText": "Install NodeJs"
@@ -877,19 +857,19 @@
           },
           {
             "id": "teamsToolkitTenantAccount",
-            "title": "Get your Teams developer tenant for free",
-            "description": "Create a free Teams developer tenant to preview your apps in Teams.\n[Create a developer tenant](https://aka.ms/teamsfx-prepare-365-tenant)",
+            "title": "Get your M365 testing tenant for free",
+            "description": "Teams toolkit requires a Microsoft 365 (organizational account) with the [sideloading option](https://aka.ms/teamsfx-sideloading-option).\nIf your account is not ready, create a free M365 test tenant to start your Teams app development.\n[Create a developer tenant](https://aka.ms/teamsfx-prepare-365-tenant)",
             "media": {
               "markdown": "docs/itp/itp.md"
             }
           },
           {
-            "id": "teamsToolkitCreateProject",
-            "title": "Build your first Teams app",
-            "description": "Build a Teams app from the scratch or explore our samples to help you quickly get started with the basic Teams app concepts and code structures.\n[Create a new Teams app](command:fx-extension.create)",
+            "id": "teamsToolkitExploreMore",
+            "title": "Explore more TeamsFx functionalities",
+            "description": " • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)",
             "media": {
-              "image": "media/todolist-sample.gif",
-              "altText": "Create Project"
+              "svg": "media/goodToGo.svg",
+              "altText": "Explore more"
             }
           }
         ]
@@ -1009,7 +989,7 @@
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/teamsfx-api": "^0.12.0",
-    "@microsoft/teamsfx-core": "^1.1.1",
+    "@microsoft/teamsfx-core": "^1.1.2",
     "@npmcli/arborist": "^4.0.4",
     "@npmcli/package-json": "^1.0.1",
     "async-mutex": "^0.3.1",

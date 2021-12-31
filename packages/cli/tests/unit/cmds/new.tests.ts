@@ -92,7 +92,6 @@ describe("New Command Tests", function () {
       ["template <template-name>", "list"],
       JSON.stringify(registeredCommands)
     );
-    expect(options).includes("interactive", JSON.stringify(options));
     expect(options).includes(RootFolderNode.data.name, JSON.stringify(options));
     expect(positionals).deep.equals(["template-name"], JSON.stringify(positionals));
   });

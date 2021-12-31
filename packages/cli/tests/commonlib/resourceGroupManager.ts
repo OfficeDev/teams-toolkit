@@ -71,4 +71,22 @@ export class ResourceGroupManager {
       return resolve(false);
     });
   }
+
+  public async createOrUpdateResourceGroup(name: string, location: string): Promise<boolean> {
+    return new Promise<boolean>(async (resolve) => {
+      try {
+        const resourceGroup: arm.ResourceModels.ResourceGroup = {
+          location: location,
+          name: name,
+        };
+        await ResourceGroupManager.client!.resourceGroups.createOrUpdate(name, resourceGroup);
+        return resolve(true);
+      } catch (e) {
+        console.error(
+          `Failed to create or update resource group ${name}. Error message: ${e.message}`
+        );
+        return resolve(false);
+      }
+    });
+  }
 }

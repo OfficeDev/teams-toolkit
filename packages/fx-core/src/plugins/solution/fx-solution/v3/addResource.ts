@@ -18,9 +18,10 @@ import {
 import { Container, Service } from "typedi";
 import arm from "../arm";
 import { BuiltInResourcePluginNames } from "./constants";
-import { InvalidInputError, ResourceAlreadyAddedError } from "./error";
-import { createSelectModuleQuestionNode, selectResourceQuestion } from "./questions";
+import { ResourceAlreadyAddedError } from "./error";
+import { createSelectModuleQuestionNode, selectResourceQuestion } from "../../utils/questions";
 import { getModule } from "./utils";
+import { InvalidInputError } from "../../utils/error";
 @Service(BuiltInResourcePluginNames.storage)
 export class AzureStoragePlugin implements v3.ResourcePlugin {
   resourceType = "Azure Storage";

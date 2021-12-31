@@ -31,6 +31,7 @@ import {
   AzureSolutionQuestionNames,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
+  TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   MockedAppStudioTokenProvider,
@@ -315,6 +316,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
+        capabilities: [TabOptionItem.id],
         name: "azure",
         version: "1.0",
         activeResourcePlugins: [new AadAppForTeamsPlugin().name, fehostPlugin.name],
@@ -329,6 +331,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     };
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
+      projectPath: "mock",
     };
     mockedInputs[AzureSolutionQuestionNames.PluginSelectionDeploy] = [fehostPlugin.name];
     const envInfo: EnvInfoV2 = {

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
+import { TelemetryReporter } from "@microsoft/teamsfx-api";
 import { Json, LocalSettings, SystemError, UserError, v2 } from "@microsoft/teamsfx-api";
 import { SolutionTelemetryComponentName } from "../../constants";
 
@@ -22,17 +23,17 @@ enum TelemetryPropertyValue {
 }
 
 export enum TelemetryEventName {
-  scaffoldLocalDebugSettings = "scaffoldLocalDebugSettings",
-  setupLocalDebugSettings = "setupLocalDebugSettings",
-  configLocalDebugSettings = "configLocalDebugSettings",
+  scaffoldLocalDebugSettings = "scaffold-local-debug-settings",
+  setupLocalDebugSettings = "setup-local-debug-settings",
+  configLocalDebugSettings = "config-local-debug-settings",
 }
 
 export class TelemetryUtils {
-  static ctx: v2.Context;
+  static telemetryReporter: TelemetryReporter;
   static localAppId: string | undefined;
 
-  public static init(ctx: v2.Context, localSettings?: LocalSettings | Json) {
-    TelemetryUtils.ctx = ctx;
+  public static init(telemetryReporter: TelemetryReporter, localSettings?: Json) {
+    TelemetryUtils.telemetryReporter = telemetryReporter;
     TelemetryUtils.localAppId = localSettings?.teamsApp?.teamsAppId;
   }
 
@@ -48,7 +49,7 @@ export class TelemetryUtils {
     if (TelemetryUtils.localAppId) {
       properties[TelemetryPropertyKey.appId] = TelemetryUtils.localAppId;
     }
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(
+    TelemetryUtils.telemetryReporter.sendTelemetryEvent(
       `${eventName}-start`,
       properties,
       measurements
@@ -69,7 +70,7 @@ export class TelemetryUtils {
       properties[TelemetryPropertyKey.appId] = TelemetryUtils.localAppId;
     }
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
+    TelemetryUtils.telemetryReporter.sendTelemetryErrorEvent(
       eventName,
       properties,
       measurements,
@@ -99,7 +100,7 @@ export class TelemetryUtils {
     }
     properties[TelemetryPropertyKey.errorCode] = `${err.source}.${err.name}`;
     properties[TelemetryPropertyKey.errorMessage] = err.message;
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
+    TelemetryUtils.telemetryReporter.sendTelemetryErrorEvent(
       eventName,
       properties,
       measurements,

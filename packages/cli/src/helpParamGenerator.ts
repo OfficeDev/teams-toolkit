@@ -109,7 +109,7 @@ export class HelpParamGenerator {
     return ok(undefined);
   }
 
-  private getQuestionRootNodeForHelp(stage: string): QTreeNode | undefined {
+  public getQuestionRootNodeForHelp(stage: string): QTreeNode | undefined {
     if (this.questionsMap.has(stage)) {
       return this.questionsMap.get(stage);
     }

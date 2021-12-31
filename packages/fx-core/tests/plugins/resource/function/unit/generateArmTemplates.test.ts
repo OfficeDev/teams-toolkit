@@ -17,7 +17,11 @@ import {
 } from "../../util";
 import { MockContext } from "../helper";
 import { FunctionBicep } from "../../../../../src/plugins/resource/function/constants";
-
+import {
+  AzureResourceKeyVault,
+  HostTypeOptionAzure,
+  TabOptionItem,
+} from "../../../../../src/plugins/solution/fx-solution/question";
 chai.use(chaiAsPromised);
 
 describe("FunctionGenerateArmTemplates", () => {
@@ -36,12 +40,14 @@ describe("FunctionGenerateArmTemplates", () => {
       ResourcePlugins.FrontendHosting,
       ResourcePlugins.Function,
     ];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      capabilities: [TabOptionItem.id],
+    } as AzureSolutionSettings;
 
-    await testGenerateArmTemplates(
-      activeResourcePlugins,
-      "functionConfig.result.bicep",
-      "config.result.bicep"
-    );
+    await testGenerateArmTemplates(settings, "functionConfig.result.bicep", "config.result.bicep");
   });
 
   it("generate bicep arm templates: with key vault plugin", async () => {
@@ -52,9 +58,16 @@ describe("FunctionGenerateArmTemplates", () => {
       ResourcePlugins.Function,
       ResourcePlugins.KeyVault,
     ];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      azureResources: [AzureResourceKeyVault.id],
+      capabilities: [TabOptionItem.id],
+    } as AzureSolutionSettings;
 
     await testGenerateArmTemplates(
-      activeResourcePlugins,
+      settings,
       "functionConfigWithKeyVaultPlugin.result.bicep",
       "configWithKeyVaultPlugin.result.bicep",
       {
@@ -69,17 +82,13 @@ describe("FunctionGenerateArmTemplates", () => {
   });
 
   async function testGenerateArmTemplates(
-    activeResourcePlugins: string[],
+    solutionSettings: AzureSolutionSettings,
     testConfigurationModuleFileName: string,
     testConfigurationFileName: string,
     addtionalPluginOutput: any = {}
   ) {
     // Act
-    pluginContext.projectSettings!.solutionSettings = {
-      name: "test_solution",
-      version: "1.0.0",
-      activeResourcePlugins: activeResourcePlugins,
-    } as AzureSolutionSettings;
+    pluginContext.projectSettings!.solutionSettings = solutionSettings;
     const result = await functionPlugin.generateArmTemplates(pluginContext);
 
     // Assert
@@ -88,12 +97,12 @@ describe("FunctionGenerateArmTemplates", () => {
       "fx-resource-function": {
         Provision: {
           function: {
-            ProvisionPath: `./${testProvisionModuleFileName}`,
+            path: `./${testProvisionModuleFileName}`,
           },
         },
         Configuration: {
           function: {
-            ConfigPath: `./${testConfigurationModuleFileName}`,
+            path: `./${testConfigurationModuleFileName}`,
           },
         },
         References: {
@@ -121,8 +130,7 @@ describe("FunctionGenerateArmTemplates", () => {
       },
     };
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: { ...pluginOutput, ...addtionalPluginOutput },
+      Plugins: { ...pluginOutput, ...addtionalPluginOutput },
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
@@ -177,9 +185,10 @@ describe("FunctionGenerateArmTemplates", () => {
       ResourcePlugins.Function,
     ];
     pluginContext.projectSettings!.solutionSettings = {
-      name: "test_solution",
-      version: "1.0.0",
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
       activeResourcePlugins: activeResourcePlugins,
+      capabilities: [TabOptionItem.id],
     } as AzureSolutionSettings;
     const result = await functionPlugin.updateArmTemplates(pluginContext);
 
@@ -187,17 +196,16 @@ describe("FunctionGenerateArmTemplates", () => {
     const testProvisionModuleFileName = "functionProvision.result.bicep";
     const testConfigurationModuleFileName = "functionConfig.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-function": {
           Provision: {
             function: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
+              path: `./${testProvisionModuleFileName}`,
             },
           },
           Configuration: {
             function: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
+              path: `./${testConfigurationModuleFileName}`,
             },
           },
           References: {

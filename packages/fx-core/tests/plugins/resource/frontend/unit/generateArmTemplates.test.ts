@@ -11,6 +11,10 @@ import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { TestHelper } from "../helper";
 import { FrontendPlugin } from "../../../../../src";
 import { ConstantString, mockSolutionGenerateArmTemplates, ResourcePlugins } from "../../util";
+import {
+  HostTypeOptionAzure,
+  TabOptionItem,
+} from "../../../../../src/plugins/solution/fx-solution/question";
 
 chai.use(chaiAsPromised);
 
@@ -30,21 +34,21 @@ describe("FrontendGenerateArmTemplates", () => {
     ];
     const pluginContext: PluginContext = TestHelper.getFakePluginContext();
     pluginContext.projectSettings!.solutionSettings = {
-      name: "test_solution",
-      version: "1.0.0",
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
       activeResourcePlugins: activeResourcePlugins,
+      capabilities: [TabOptionItem.id],
     } as AzureSolutionSettings;
     const result = await frontendPlugin.generateArmTemplates(pluginContext);
 
     // Assert
     const testModuleFileName = "frontendProvision.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-frontend-hosting": {
           Provision: {
             frontendHosting: {
-              ProvisionPath: `./${testModuleFileName}`,
+              path: `./${testModuleFileName}`,
             },
           },
         },
@@ -84,9 +88,10 @@ describe("FrontendGenerateArmTemplates", () => {
     ];
     const pluginContext: PluginContext = TestHelper.getFakePluginContext();
     pluginContext.projectSettings!.solutionSettings = {
-      name: "test_solution",
-      version: "1.0.0",
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
       activeResourcePlugins: activeResourcePlugins,
+      capabilities: [TabOptionItem.id],
     } as AzureSolutionSettings;
     const result = await frontendPlugin.updateArmTemplates(pluginContext);
 

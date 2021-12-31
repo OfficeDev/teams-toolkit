@@ -108,7 +108,7 @@ export class UserError extends Error implements FxError {
         name: param3,
         source: param2,
         helpLink: param4,
-        notificationMessage: notificationMessage,
+        notificationMessage: param5,
       };
       stack = param1.stack;
     } else {
@@ -229,7 +229,7 @@ export class SystemError extends Error implements FxError {
         name: param3,
         source: param2,
         issueLink: param4,
-        notificationMessage: notificationMessage,
+        notificationMessage: param5,
       };
       stack = param1.stack;
     } else {

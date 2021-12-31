@@ -23,7 +23,7 @@ import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
 import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
+import { Capability, PluginId, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 
 describe("Deploy to customized resource group", function () {
@@ -34,14 +34,10 @@ describe("Deploy to customized resource group", function () {
 
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
-  let appName: string, projectPath: string;
+  const appName = getUniqueAppName();
+  const projectPath = path.resolve(testFolder, appName);
 
-  beforeEach(async () => {
-    appName = getUniqueAppName();
-    projectPath = path.resolve(testFolder, appName);
-  });
-
-  afterEach(async () => {
+  after(async () => {
     await cleanUp(appName, projectPath, true, false, false, true);
   });
 

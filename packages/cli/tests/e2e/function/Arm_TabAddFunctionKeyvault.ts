@@ -6,8 +6,8 @@
  */
 
 import path from "path";
+import "mocha";
 
-import { AadValidator, FrontendValidator } from "../../commonlib";
 import {
   getSubscriptionId,
   getTestFolder,
@@ -15,17 +15,22 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   readContextMultiEnv,
-  createResourceGroup,
-  deleteResourceGroupByName,
+  getActivePluginsFromProjectSetting,
+  getProvisionParameterValueByKey,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
 import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, ResourceToDeploy } from "../../commonlib/constants";
-import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
+import {
+  Capability,
+  StateConfigKey,
+  PluginId,
+  Resource,
+  provisionParametersKey,
+} from "../../commonlib/constants";
+import { FunctionValidator } from "../../commonlib";
 
-describe("Deploy to customized resource group", function () {
+describe("Configuration successfully changed when with different plugins", function () {
   //  Only test when insider feature flag enabled
   if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
     return;
@@ -40,28 +45,16 @@ describe("Deploy to customized resource group", function () {
     await cleanUp(appName, projectPath, true, false, false, true);
   });
 
-  it(`tab project can deploy frontend hosting resource to customized resource group and successfully provision / deploy`, async function () {
-    // Create new tab project
+  it(`tab project with function and key vault resources`, async function () {
+    // Create tab project with function and key vault
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
-
-    // Create empty resource group
-    const customizedRgName = `${appName}-customized-rg`;
-    await createResourceGroup(customizedRgName, "eastus");
-
-    // Customize simple auth bicep files
-    await customizeBicepFilesToCustomizedRg(
-      customizedRgName,
-      projectPath,
-      `name: 'frontendHostingProvision'`
-    );
+    await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
+    await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);
 
     // Provision
     setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
-
-    // deploy
-    await CliHelper.deployProject(ResourceToDeploy.FrontendHosting, projectPath);
 
     // Assert
     {
@@ -69,17 +62,22 @@ describe("Deploy to customized resource group", function () {
         projectPath,
         environmentManager.getDefaultEnvName()
       );
+      const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
+      chai.assert.isArray(activeResourcePlugins);
+      const resourceBaseName: string = await getProvisionParameterValueByKey(
+        projectPath,
+        environmentManager.getDefaultEnvName(),
+        provisionParametersKey.resourceBaseName
+      );
 
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
-      await AadValidator.validate(aad);
-
-      // Validate Tab Frontend
-      const frontend = FrontendValidator.init(context, true);
-      await FrontendValidator.validateProvision(frontend);
-      await FrontendValidator.validateDeploy(frontend);
+      // Validate Function App
+      const func = FunctionValidator.init(
+        context,
+        activeResourcePlugins as string[],
+        resourceBaseName,
+        true
+      );
+      await FunctionValidator.validateProvision(func, false, true);
     }
-
-    await deleteResourceGroupByName(customizedRgName);
   });
 });

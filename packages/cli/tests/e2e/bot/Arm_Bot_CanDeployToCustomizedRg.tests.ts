@@ -33,14 +33,10 @@ describe("Deploy to customized resource group", function () {
 
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
-  let appName: string, projectPath: string;
+  const appName = getUniqueAppName();
+  const projectPath = path.resolve(testFolder, appName);
 
-  beforeEach(async () => {
-    appName = getUniqueAppName();
-    projectPath = path.resolve(testFolder, appName);
-  });
-
-  afterEach(async () => {
+  after(async () => {
     await cleanUp(appName, projectPath, true, false, false, true);
   });
 

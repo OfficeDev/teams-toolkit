@@ -49,7 +49,7 @@ pipeline {
         }
 
         // Set for non-interactive mode.
-        stage() {
+        stage('Set for non-interactive mode') {
             steps {
                 sh 'npx teamsfx config set -g interactive false'
             }

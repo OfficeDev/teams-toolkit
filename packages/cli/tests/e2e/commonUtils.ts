@@ -24,8 +24,16 @@ import {
   AadManager,
   ResourceGroupManager,
   SharepointValidator as SharepointManager,
+  AadValidator,
+  BotValidator,
+  FrontendValidator,
+  SimpleAuthValidator,
 } from "../commonlib";
 import { ConfigKey, fileEncoding, PluginId, TestFilePath } from "../commonlib/constants";
+import { environmentManager } from "@microsoft/teamsfx-core";
+import appStudioLogin from "../../src/commonlib/appStudioLogin";
+import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
+import { getWebappServicePlan } from "../commonlib/utilities";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
 export const execAsync = promisify(exec);
@@ -482,4 +490,102 @@ export async function customizeBicepFilesToCustomizedRg(
       `[Successfully] customize ${configFilePath} content to deploy cloud resources to ${customizedRgName}.`
     );
   }
+}
+
+export async function validateTabAndBotProjectProvision(projectPath: string) {
+  const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
+
+  // Validate Aad App
+  const aad = AadValidator.init(context, false, appStudioLogin);
+  await AadValidator.validate(aad);
+
+  // Validate Simple Auth
+  const simpleAuth = SimpleAuthValidator.init(context);
+  await SimpleAuthValidator.validate(simpleAuth, aad);
+
+  // Validate Tab Frontend
+  const frontend = FrontendValidator.init(context, true);
+  await FrontendValidator.validateProvision(frontend);
+
+  // Validate Bot Provision
+  const bot = BotValidator.init(context, true);
+  await BotValidator.validateProvision(bot, true);
+}
+
+export async function getRGAfterProvision(projectPath: string): Promise<string | undefined> {
+  const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
+  if (
+    context[ConfigKey.solutionPluginName] &&
+    context[ConfigKey.solutionPluginName][ConfigKey.resourceGroupName]
+  ) {
+    return context[ConfigKey.solutionPluginName][ConfigKey.resourceGroupName];
+  }
+  return undefined;
+}
+
+export async function customizeBicepFile(projectPath: string): Promise<string[]> {
+  const newServerFarms: string[] = [];
+  const bicepFileFolder = path.join(projectPath, TestFilePath.armTemplateBaseFolder);
+
+  const pattern = "SERVER_FARM_NAME";
+  const customizedServerFarmsBicepTemplate = `
+resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
+name: '${pattern}'
+location: resourceGroup().location
+sku: {
+  name: 'B1'
+}
+kind: 'app'
+}
+`;
+  const simpleAuthTestServerFarm = "simpleAuth_testResource";
+  await fs.appendFile(
+    path.join(bicepFileFolder, TestFilePath.provisionFolder, "simpleAuth.bicep"),
+    customizedServerFarmsBicepTemplate.replace(pattern, simpleAuthTestServerFarm)
+  );
+  newServerFarms.push(simpleAuthTestServerFarm);
+
+  const provisionTestServerFarm = "provision_testResource";
+  await fs.appendFile(
+    path.join(bicepFileFolder, TestFilePath.provisionFileName),
+    customizedServerFarmsBicepTemplate.replace(pattern, provisionTestServerFarm)
+  );
+  newServerFarms.push(provisionTestServerFarm);
+
+  const configTestServerFarm = "config_testResource";
+  await fs.appendFile(
+    path.join(bicepFileFolder, TestFilePath.configFileName),
+    customizedServerFarmsBicepTemplate.replace(pattern, configTestServerFarm)
+  );
+  newServerFarms.push(configTestServerFarm);
+
+  // TODO: should uncomment this part of code when the bug is resolved:
+  // https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/12902499
+  // const mainTestServerFarm = "main_testResource";
+  // await fs.appendFile(
+  //   path.join(bicepFileFolder, TestFilePath.mainFileName),
+  //   customizedServerFarmsBicepTemplate.replace(pattern, mainTestServerFarm));
+  // newServerFarms.push(mainTestServerFarm);
+
+  return newServerFarms;
+}
+
+export async function validateServicePlan(
+  servicePlanName: string,
+  resourceGroup: string,
+  subscription: string
+) {
+  console.log(`Start to validate server farm ${servicePlanName}.`);
+
+  const tokenProvider = MockAzureAccountProvider;
+  const tokenCredential = await tokenProvider.getAccountCredentialAsync();
+  const token = (await tokenCredential?.getToken())?.accessToken;
+
+  const serivcePlanResponse = await getWebappServicePlan(
+    subscription,
+    resourceGroup,
+    servicePlanName,
+    token as string
+  );
+  chai.assert(serivcePlanResponse, "B1");
 }

@@ -13,7 +13,14 @@ import {
   defaultHelpLink,
 } from "@microsoft/teamsfx-core";
 import * as os from "os";
-import { openUrl, showWarningMessage, checkerEnabled, hasFunction, hasNgrok } from "./vscodeUtils";
+import {
+  openUrl,
+  showWarningMessage,
+  checkerEnabled,
+  hasFunction,
+  hasNgrok,
+  hasBot,
+} from "./vscodeUtils";
 
 export class VSCodeDepsChecker {
   private static learnMoreButtonText = "Learn more";
@@ -130,7 +137,7 @@ export class VSCodeDepsChecker {
       case DepsType.FuncCoreTools:
         return checkerEnabled(VSCodeDepsChecker.validateFuncCoreToolsKey) && (await hasFunction());
       case DepsType.Ngrok:
-        return await hasNgrok();
+        return (await hasBot()) && (await hasNgrok());
       default:
         return false;
     }

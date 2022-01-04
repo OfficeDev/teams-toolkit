@@ -1,15 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Component, ComponentContainer, Mapping } from "./types";
+import { satisfies } from "semver";
+import { Component, ComponentApiNames, ComponentContainer, Mapping, TeamsFx } from "./types";
+import { Logger, InternalLogger, LogLevel, LogFunction } from "../util/logger";
 
-export class TeamsFx<T extends Component> implements ComponentContainer {
+export class TeamsFxContainer<T extends Component> implements ComponentContainer, TeamsFx {
   private registry: Map<string, Component>;
   private initialized: Map<string, boolean>;
+  private loggers: Map<string, InternalLogger>;
+
+  private logLevel?: LogLevel;
 
   constructor(components: T[]) {
     this.registry = new Map<string, Component>();
     this.initialized = new Map<string, boolean>();
+    this.loggers = new Map<string, InternalLogger>();
 
     for (const component of components) {
       this.addComponent(component);
@@ -20,17 +26,9 @@ export class TeamsFx<T extends Component> implements ComponentContainer {
     this.registry.set(component.name, component);
 
     const functionKeys = Object.getOwnPropertyNames(Object.getPrototypeOf(component));
-    console.log("!!!" + functionKeys);
     functionKeys.forEach((key: string) => {
-      console.log(`found ${key} in component ${component.name}`);
       const method = component[key];
-      if (
-        method instanceof Function &&
-        key !== "constructor" &&
-        key !== "initialize" &&
-        !key.startsWith("_")
-      ) {
-        // const isAsync = method.constructor.name === "AsyncFunction";
+      if (method instanceof Function && !ComponentApiNames.includes(key) && !key.startsWith("_")) {
         (this as Mapping)[key] = (...args: any) => {
           const instance = this.resolve(component.name);
           return method.call(instance, ...args);
@@ -39,19 +37,47 @@ export class TeamsFx<T extends Component> implements ComponentContainer {
     });
   }
 
-  resolve(componentName: string): unknown {
+  public resolve(componentName: string, version?: string): unknown {
     const component = this.registry.get(componentName);
     if (!component) {
       throw new Error();
     }
+    if (version && !satisfies(component.version, version)) {
+      throw new Error();
+    }
     if (!this.initialized.get(componentName)) {
-      component.initialize(this);
+      const logger = new InternalLogger(componentName, this.logLevel);
+      this.loggers.set(componentName, logger);
+      component.initialize(this, logger);
       this.initialized.set(componentName, true);
     }
     return component;
   }
+
+  public setLogLevel(level: LogLevel): void {
+    this.logLevel = level;
+    for (const componentLogger of this.loggers.values()) {
+      componentLogger.level = level;
+    }
+  }
+
+  public getLogLevel(): LogLevel | undefined {
+    return this.logLevel;
+  }
+
+  public setLogger(logger?: Logger): void {
+    for (const componentLogger of this.loggers.values()) {
+      componentLogger.customLogger = logger;
+    }
+  }
+
+  public setLogFunction(logFunction?: LogFunction): void {
+    for (const componentLogger of this.loggers.values()) {
+      componentLogger.customLogFunction = logFunction;
+    }
+  }
 }
 
-export function createTeamsFx<T, P extends Component = Component>(components: P[]): T {
-  return new TeamsFx<P>(components) as unknown as T;
+export function createTeamsFx<T, P extends Component = Component>(components: P[]): T & TeamsFx {
+  return new TeamsFxContainer<P>(components) as unknown as T & TeamsFx;
 }

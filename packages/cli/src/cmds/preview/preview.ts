@@ -279,7 +279,7 @@ export default class Preview extends YargsCommand {
     ) as string;
 
     /* === check ports === */
-    const portsInUse = await commonUtils.getPortsInUse(includeFrontend, includeBackend, includeBot);
+    const portsInUse = await commonUtils.getPortsInUse(workspaceFolder);
     if (portsInUse.length > 0) {
       return err(errors.PortsAlreadyInUse(portsInUse));
     }
@@ -291,7 +291,6 @@ export default class Preview extends YargsCommand {
     }
 
     result = await this.startServices(
-      core,
       workspaceFolder,
       programmingLanguage,
       includeFrontend,
@@ -634,7 +633,6 @@ export default class Preview extends YargsCommand {
   }
 
   private async startServices(
-    core: FxCore,
     workspaceFolder: string,
     programmingLanguage: string,
     includeFrontend: boolean,
@@ -643,7 +641,7 @@ export default class Preview extends YargsCommand {
     dotnetChecker: DotnetChecker,
     funcToolChecker: FuncToolChecker
   ): Promise<Result<null, FxError>> {
-    const localEnv = await commonUtils.getLocalEnv(core, workspaceFolder);
+    const localEnv = await commonUtils.getLocalEnv(workspaceFolder);
 
     const frontendStartTask = includeFrontend
       ? this.prepareTask(

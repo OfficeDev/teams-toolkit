@@ -64,11 +64,14 @@ export class StateConfigKey {
   // sql
   static readonly skipAddingUser = "skipAddingUser";
   static readonly sqlEndpoint: string = "sqlEndpoint";
+  static readonly databaseName: string = "databaseName";
   // function
   static readonly functionEndpoint = "functionEndpoint";
   static readonly functionAppResourceId = "functionAppResourceId";
   // frontend hosting
   static readonly domain = "domain";
+  // identity
+  static readonly identityClientId = "identityClientId";
 
   static readonly skuName = "skuName";
 }

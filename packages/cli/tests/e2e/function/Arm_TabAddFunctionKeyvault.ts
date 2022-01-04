@@ -7,6 +7,7 @@
 
 import path from "path";
 import "mocha";
+import * as chai from "chai";
 
 import {
   getSubscriptionId,
@@ -18,18 +19,12 @@ import {
   getActivePluginsFromProjectSetting,
   getProvisionParameterValueByKey,
 } from "../commonUtils";
-import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
-import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, provisionParametersKey } from "../../commonlib/constants";
 import { FunctionValidator } from "../../commonlib";
 
 describe("Configuration successfully changed when with different plugins", function () {
-  //  Only test when insider feature flag enabled
-  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
-    return;
-  }
-
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
@@ -65,13 +60,12 @@ describe("Configuration successfully changed when with different plugins", funct
       );
 
       // Validate Function App
-      const func = FunctionValidator.init(
+      const functionValidator = new FunctionValidator(
         context,
         activeResourcePlugins as string[],
-        resourceBaseName,
-        true
+        resourceBaseName
       );
-      await FunctionValidator.validateProvision(func, false, true);
+      await functionValidator.validateProvision();
     }
   });
 });

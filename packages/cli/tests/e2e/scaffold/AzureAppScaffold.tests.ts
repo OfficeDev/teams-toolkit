@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { environmentManager } from "@microsoft/teamsfx-core";
 import path from "path";
 
 /**
@@ -8,8 +9,16 @@ import path from "path";
  */
 
 import { BotValidator, FrontendValidator, FunctionValidator } from "../../commonlib";
+import { provisionParametersKey } from "../../commonlib/constants";
 
-import { execAsync, getTestFolder, getUniqueAppName, cleanUpLocalProject } from "../commonUtils";
+import {
+  execAsync,
+  getTestFolder,
+  getUniqueAppName,
+  cleanUpLocalProject,
+  getActivePluginsFromProjectSetting,
+  getProvisionParameterValueByKey,
+} from "../commonUtils";
 
 describe("Azure App Scaffold", function () {
   let testFolder: string;
@@ -45,8 +54,21 @@ describe("Azure App Scaffold", function () {
 
     {
       FrontendValidator.validateScaffold(projectPath, lang);
-      FunctionValidator.validateScaffold(projectPath, lang);
       BotValidator.validateScaffold(projectPath, lang);
+
+      const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
+      chai.assert.isArray(activeResourcePlugins);
+      const resourceBaseName: string = await getProvisionParameterValueByKey(
+        projectPath,
+        environmentManager.getDefaultEnvName(),
+        provisionParametersKey.resourceBaseName
+      );
+      const functionValidator = new FunctionValidator(
+        context,
+        activeResourcePlugins as string[],
+        resourceBaseName
+      );
+      await functionValidator.validateScaffold(projectPath, lang);
     }
   });
 });

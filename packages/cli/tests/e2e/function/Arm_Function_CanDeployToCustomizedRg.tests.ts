@@ -6,10 +6,10 @@
  */
 
 import path from "path";
+import * as chai from "chai";
 
 import { AadValidator, FunctionValidator } from "../../commonlib";
 import {
-  execAsync,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -92,14 +92,13 @@ describe("Deploy to customized resource group", function () {
       await AadValidator.validate(aad);
 
       // Validate Function App
-      const func = FunctionValidator.init(
+      const functionValidator = new FunctionValidator(
         context,
         activeResourcePlugins as string[],
-        resourceBaseName,
-        true
+        resourceBaseName
       );
-      await FunctionValidator.validateProvision(func, false, true);
-      await FunctionValidator.validateDeploy(func);
+      await functionValidator.validateProvision();
+      await functionValidator.validateDeploy();
     }
 
     await deleteResourceGroupByName(customizedRgName);

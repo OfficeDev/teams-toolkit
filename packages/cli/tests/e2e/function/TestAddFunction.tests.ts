@@ -6,6 +6,7 @@
  */
 
 import path from "path";
+import * as chai from "chai";
 
 import { AadValidator, FunctionValidator, SimpleAuthValidator } from "../../commonlib";
 import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
@@ -95,18 +96,17 @@ describe("Test Add Function", function () {
     await SimpleAuthValidator.validate(simpleAuth, aad, "B1", true);
 
     // Validate Function App
-    const func = FunctionValidator.init(
+    const functionValidator = new FunctionValidator(
       context,
       activeResourcePlugins as string[],
-      resourceBaseName,
-      true
+      resourceBaseName
     );
-    await FunctionValidator.validateProvision(func, false, true);
+    await functionValidator.validateProvision();
 
     // deploy
     await CliHelper.deployProject(ResourceToDeploy.Function, projectPath);
     // Validate deployment
-    await FunctionValidator.validateDeploy(func);
+    await functionValidator.validateDeploy();
 
     // validate
     await execAsyncWithRetry(`teamsfx validate`, {

@@ -9,7 +9,7 @@ import { IAadObject } from "./interfaces/IAADDefinition";
 import {
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
-  getWebappConfigs,
+  getWebappSettings,
   getWebappServicePlan,
 } from "./utilities";
 
@@ -76,7 +76,7 @@ export class SimpleAuthValidator {
     const token = (await tokenCredential?.getToken())?.accessToken;
 
     console.log("Validating app settings.");
-    const response = await getWebappConfigs(
+    const response = await getWebappSettings(
       this.subscriptionId,
       this.rg,
       resourceName,

@@ -96,6 +96,7 @@ describe("Multi Env Happy Path for Azure", function () {
         `[Successfully] provision, stdout: '${result.stdout}', stderr: '${result.stderr}'`
       );
 
+      let functionValidator: FunctionValidator;
       {
         // Validate provision
         // Get context
@@ -125,13 +126,13 @@ describe("Multi Env Happy Path for Azure", function () {
           environmentManager.getDefaultEnvName(),
           provisionParametersKey.resourceBaseName
         );
-        const func = FunctionValidator.init(
+
+        functionValidator = new FunctionValidator(
           context,
           activeResourcePlugins as string[],
-          resourceBaseName,
-          true
+          resourceBaseName
         );
-        await FunctionValidator.validateProvision(func, false, true);
+        await functionValidator.validateProvision();
 
         // Validate SQL
         await SqlValidator.init(context);
@@ -163,20 +164,7 @@ describe("Multi Env Happy Path for Azure", function () {
         await FrontendValidator.validateDeploy(frontend);
 
         // Validate Function App
-        const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
-        chai.assert.isArray(activeResourcePlugins);
-        const resourceBaseName: string = await getProvisionParameterValueByKey(
-          projectPath,
-          environmentManager.getDefaultEnvName(),
-          provisionParametersKey.resourceBaseName
-        );
-        const func = FunctionValidator.init(
-          context,
-          activeResourcePlugins as string[],
-          resourceBaseName,
-          true
-        );
-        await FunctionValidator.validateDeploy(func);
+        await functionValidator.validateDeploy();
 
         // Validate Bot Deploy
         const bot = BotValidator.init(context, true);

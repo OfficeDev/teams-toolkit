@@ -11,8 +11,7 @@ import {
   getSubscriptionIdFromResourceId,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
-  getWebappConfigs,
-  getWebappServicePlan,
+  getWebappSettings,
   runWithRetry,
 } from "./utilities";
 
@@ -29,92 +28,33 @@ enum BaseConfig {
   ALLOWED_APP_IDS = "ALLOWED_APP_IDS",
   API_ENDPOINT = "API_ENDPOINT",
   M365_APPLICATION_ID_URI = "M365_APPLICATION_ID_URI",
+  IDENTITY_ID = "IDENTITY_ID",
 }
 
 enum SQLConfig {
-  IDENTITY_ID = "IDENTITY_ID",
   SQL_DATABASE_NAME = "SQL_DATABASE_NAME",
   SQL_ENDPOINT = "SQL_ENDPOINT",
 }
 
-interface IFunctionObject {
-  functionAppName: string;
-  appServicePlanName?: string;
-  expectValues: Map<string, string>;
-}
-
 export class FunctionValidator {
-  private static subscriptionId: string;
-  private static rg: string;
+  private subscriptionId: string;
+  private rg: string;
+  private activeResourcePlugins: string[];
+  private ctx: any;
+  private functionAppName: any;
+  private resourceBaseName: any;
 
-  public static init(
-    ctx: any,
-    activeResourcePlugins: string[],
-    resourceBaseName: string,
-    insiderPreview = false
-  ): IFunctionObject {
-    console.log("Start to init validator for Function.");
-
-    let functionObject: IFunctionObject;
-
-    if (insiderPreview) {
-      const resourceId = ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
-      this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
-      this.rg = getResourceGroupNameFromResourceId(resourceId);
-
-      const functionAppName = getSiteNameFromResourceId(resourceId);
-      const expectValues = new Map<string, string>([]);
-      expectValues.set(
-        BaseConfig.API_ENDPOINT,
-        ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
-      );
-      expectValues.set(
-        BaseConfig.M365_APPLICATION_ID_URI,
-        FunctionValidator.getExpectedM365ApplicationIdUri(ctx, activeResourcePlugins)
-      );
-      expectValues.set(
-        BaseConfig.M365_CLIENT_SECRET,
-        FunctionValidator.getM365ClientSecret(ctx, activeResourcePlugins, resourceBaseName)
-      );
-      expectValues.set(
-        SQLConfig.SQL_ENDPOINT,
-        ctx[PluginId.AzureSQL]?.[StateConfigKey.sqlEndpoint] as string
-      );
-
-      functionObject = {
-        functionAppName: functionAppName,
-        expectValues: expectValues,
-      };
-    } else {
-      functionObject = ctx[PluginId.Function] as IFunctionObject;
-      chai.assert.exists(functionObject);
-
-      this.subscriptionId = ctx[PluginId.Solution][StateConfigKey.subscriptionId];
-      chai.assert.exists(this.subscriptionId);
-
-      this.rg = ctx[PluginId.Solution][StateConfigKey.resourceGroupName];
-      chai.assert.exists(this.rg);
-
-      const expectValues = new Map<string, string>([]);
-      expectValues.set(
-        BaseConfig.API_ENDPOINT,
-        ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
-      );
-      expectValues.set(
-        SQLConfig.SQL_ENDPOINT,
-        ctx[PluginId.AzureSQL]?.[StateConfigKey.sqlEndpoint] as string
-      );
-      functionObject.expectValues = expectValues;
-    }
-
-    console.log("Successfully init validator for Function.");
-    return functionObject;
+  constructor(ctx: any, activeResourcePlugins: string[], resourceBaseName: string) {
+    const resourceId = ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
+    this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
+    this.rg = getResourceGroupNameFromResourceId(resourceId);
+    this.activeResourcePlugins = activeResourcePlugins;
+    this.ctx = ctx;
+    this.resourceBaseName = resourceBaseName;
+    this.functionAppName = getSiteNameFromResourceId(resourceId);
   }
 
-  public static async validateScaffold(
-    projectPath: string,
-    programmingLanguage: string
-  ): Promise<void> {
+  public async validateScaffold(projectPath: string, programmingLanguage: string): Promise<void> {
     const indexFile: { [key: string]: string } = {
       typescript: "index.ts",
       javascript: "index.js",
@@ -128,75 +68,86 @@ export class FunctionValidator {
     );
   }
 
-  public static async validateProvision(
-    functionObject: IFunctionObject,
-    sqlEnabled = true,
-    isMultiEnvEnabled = false
-  ): Promise<void> {
+  public async validateProvision(): Promise<void> {
     console.log("Start to validate Function Provision.");
 
     const tokenProvider = MockAzureAccountProvider;
     const tokenCredential = await tokenProvider.getAccountCredentialAsync();
     const token = (await tokenCredential?.getToken())?.accessToken;
 
-    console.log("Validating app settings.");
-
-    const appName = functionObject.functionAppName;
-    const response = await getWebappConfigs(this.subscriptionId, this.rg, appName, token as string);
-
-    // TODO: validate app config with allowedOrigins
-    chai.assert.exists(response);
-
-    Object.values(BaseConfig).forEach((v: string) => {
-      chai.assert.exists(response[v]);
-      if (functionObject.expectValues.get(v)) {
-        chai.assert.equal(functionObject.expectValues.get(v), response[v]);
-      }
-    });
-
-    if (sqlEnabled) {
-      Object.values(SQLConfig).forEach((v: string) => {
-        chai.assert.exists(response[v]);
-        if (functionObject.expectValues.get(v)) {
-          chai.assert.equal(functionObject.expectValues.get(v), response[v]);
-        }
-      });
+    // Validating app settings
+    console.log("validating app settings.");
+    const webappSettingsResponse = await getWebappSettings(
+      this.subscriptionId,
+      this.rg,
+      this.functionAppName,
+      token as string
+    );
+    chai.assert.exists(webappSettingsResponse);
+    chai.assert.equal(
+      webappSettingsResponse[BaseConfig.API_ENDPOINT],
+      this.ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
+    );
+    chai.assert.equal(
+      webappSettingsResponse[BaseConfig.M365_APPLICATION_ID_URI],
+      this.getExpectedM365ApplicationIdUri(this.ctx, this.activeResourcePlugins)
+    );
+    chai.assert.equal(
+      webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
+      this.getM365ClientSecret(this.ctx, this.activeResourcePlugins, this.resourceBaseName)
+    );
+    chai.assert.equal(
+      webappSettingsResponse[BaseConfig.IDENTITY_ID],
+      this.ctx[PluginId.Identity][StateConfigKey.identityClientId] as string
+    );
+    if (this.activeResourcePlugins.includes(PluginId.AzureSQL)) {
+      chai.assert.equal(
+        webappSettingsResponse[SQLConfig.SQL_ENDPOINT],
+        this.ctx[PluginId.AzureSQL][StateConfigKey.sqlEndpoint] as string
+      );
+      chai.assert.equal(
+        webappSettingsResponse[SQLConfig.SQL_DATABASE_NAME],
+        this.ctx[PluginId.AzureSQL][StateConfigKey.databaseName] as string
+      );
     }
 
-    if (!isMultiEnvEnabled) {
-      console.log("Validating app service plan.");
-      const servicePlanResponse = await getWebappServicePlan(
+    // validate app config with allowedOrigins
+    if (this.activeResourcePlugins.includes(PluginId.FrontendHosting)) {
+      console.log("validating app config.");
+      const webAppConfigResponse = await getWebappSettings(
         this.subscriptionId,
         this.rg,
-        functionObject.appServicePlanName!,
+        this.functionAppName,
         token as string
       );
-      chai.assert(servicePlanResponse, functionObject.appServicePlanName);
+      chai.assert.exists(webAppConfigResponse!.cors!.allowedOrigins);
+      chai.assert.isArray(webAppConfigResponse!.cors!.allowedOrigins);
+      chai
+        .expect(webAppConfigResponse!.cors!.allowedOrigins)
+        .to.includes(this.ctx[PluginId.FrontendHosting][StateConfigKey.endpoint]);
     }
 
     console.log("Successfully validate Function Provision.");
   }
 
-  public static async validateDeploy(functionObject: IFunctionObject): Promise<void> {
+  public async validateDeploy(): Promise<void> {
     console.log("Start to validate Function Deployment.");
 
     // Disable validate deployment since we have too many requests and the test is not stable.
     const tokenCredential = await MockAzureAccountProvider.getAccountCredentialAsync();
     const token = (await tokenCredential?.getToken())?.accessToken;
 
-    const appName = functionObject.functionAppName;
-
     const deployments = await this.getDeployments(
       this.subscriptionId,
       this.rg,
-      appName,
+      this.functionAppName,
       token as string
     );
     const deploymentId = deployments?.[0]?.properties?.id;
     const deploymentLog = await this.getDeploymentLog(
       this.subscriptionId,
       this.rg,
-      appName,
+      this.functionAppName,
       token as string,
       deploymentId!
     );
@@ -208,12 +159,7 @@ export class FunctionValidator {
     console.log("Successfully validate Function Deployment.");
   }
 
-  private static async getDeployments(
-    subscriptionId: string,
-    rg: string,
-    name: string,
-    token: string
-  ) {
+  private async getDeployments(subscriptionId: string, rg: string, name: string, token: string) {
     try {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
       const functionGetResponse = await runWithRetry(() =>
@@ -227,7 +173,7 @@ export class FunctionValidator {
     }
   }
 
-  private static async getDeploymentLog(
+  private async getDeploymentLog(
     subscriptionId: string,
     rg: string,
     name: string,
@@ -247,10 +193,7 @@ export class FunctionValidator {
     }
   }
 
-  private static getExpectedM365ApplicationIdUri(
-    ctx: any,
-    activeResourcePlugins: string[]
-  ): string {
+  private getExpectedM365ApplicationIdUri(ctx: any, activeResourcePlugins: string[]): string {
     let expectedM365ApplicationIdUri = "";
     if (activeResourcePlugins.includes(PluginId.FrontendHosting)) {
       const tabDomain = ctx[PluginId.Aad][StateConfigKey.domain];
@@ -266,7 +209,7 @@ export class FunctionValidator {
     return expectedM365ApplicationIdUri;
   }
 
-  private static getM365ClientSecret(
+  private getM365ClientSecret(
     ctx: any,
     activeResourcePlugins: string[],
     resourceBaseName: string

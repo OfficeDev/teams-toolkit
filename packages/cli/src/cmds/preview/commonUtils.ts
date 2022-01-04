@@ -4,16 +4,7 @@
 "use strict";
 
 import * as path from "path";
-import * as fs from "fs-extra";
-import {
-  Colors,
-  ConfigFolderName,
-  Func,
-  FxError,
-  IProgressHandler,
-  LogLevel,
-} from "@microsoft/teamsfx-api";
-import * as dotenv from "dotenv";
+import { Colors, FxError, IProgressHandler, LogLevel } from "@microsoft/teamsfx-api";
 
 import * as constants from "./constants";
 import { TaskResult } from "./task";
@@ -27,8 +18,8 @@ import {
 } from "../../telemetry/cliTelemetryEvents";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
-import { FxCore, isMultiEnvEnabled, LocalEnvManager } from "@microsoft/teamsfx-core";
-import { getSystemInputs, getColorizedString } from "../../utils";
+import { LocalEnvManager } from "@microsoft/teamsfx-core";
+import { getColorizedString } from "../../utils";
 import { isWindows } from "./depsChecker/common";
 
 export async function openBrowser(

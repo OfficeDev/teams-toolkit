@@ -1,6 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+/**
+ * @author Yefu Wang <yefuwang@microsoft.com>
+ */
+
 import path from "path";
 import fs from "fs-extra";
 import * as chai from "chai";

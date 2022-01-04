@@ -20,12 +20,9 @@ export const openBrowserHintMessage =
 export const waitCtrlPlusC =
   "WARN: Closing browser will not terminate the preview process, please press Ctrl+C to terminate.";
 
-export const localEnvFileName = "local.env";
-
 export const frontendHostingPluginName = "fx-resource-frontend-hosting";
 export const functionPluginName = "fx-resource-function";
 export const botPluginName = "fx-resource-bot";
-export const localDebugPluginName = "fx-resource-local-debug";
 export const solutionPluginName = "solution";
 export const appstudioPluginName = "fx-resource-appstudio";
 export const spfxPluginName = "fx-resource-spfx";
@@ -35,15 +32,8 @@ export enum ProgrammingLanguage {
   typescript = "typescript",
 }
 
-export const programmingLanguageConfigKey = "programmingLanguage";
-export const skipNgrokConfigKey = "skipNgrok";
 export const teamsAppTenantIdConfigKey = "teamsAppTenantId";
-export const remoteTeamsAppIdConfigKey = "remoteTeamsAppId";
-export const remoteTeamsAppIdConfigKeyNew = "teamsAppId";
-export const localTeamsAppIdConfigKey = "localDebugTeamsAppId";
-
-export const localSettingsTenantIdConfigKey = "tenantId";
-export const localSettingsTeamsAppIdConfigKey = "teamsAppId";
+export const remoteTeamsAppIdConfigKey = "teamsAppId";
 
 export const spfxFolderName = "SPFx";
 export const frontendFolderName = "tabs";
@@ -86,16 +76,3 @@ export const backendLocalEnvPrefix = "BACKEND_";
 export const authLocalEnvPrefix = "AUTH_";
 export const authServicePathEnvKey = "AUTH_SERVICE_PATH";
 export const botLocalEnvPrefix = "BOT_";
-
-const allAddressIPv4 = "0.0.0.0";
-const allAddressIPv6 = "::";
-const loopbackAddressIPv4 = "127.0.0.1";
-const loopbackAddressIPv6 = "::1";
-const hosts = [allAddressIPv4, loopbackAddressIPv4, allAddressIPv6, loopbackAddressIPv6];
-
-export const frontendPorts: [number, string[]][] = [
-  [53000, hosts],
-  [55000, hosts],
-];
-export const backendPorts: [number, string[]][] = [[7071, hosts]];
-export const botPorts: [number, string[]][] = [[3978, hosts]];

@@ -12,30 +12,21 @@ import {
   DepsCheckerEvent,
   defaultHelpLink,
 } from "@microsoft/teamsfx-core";
-import * as os from "os";
-import {
-  openUrl,
-  showWarningMessage,
-  checkerEnabled,
-  hasFunction,
-  hasNgrok,
-  hasBot,
-} from "./vscodeUtils";
+import { openUrl, showWarningMessage, checkerEnabled, isLinux } from "./cliUtils";
+import { CliConfigOptions } from "../../../userSetttings";
 
-export class VSCodeDepsChecker {
+export class CliDepsChecker {
   private static learnMoreButtonText = "Learn more";
-  private static validateDotnetSdkKey = "validateDotnetSdk";
-  private static validateFuncCoreToolsKey = "validateFuncCoreTools";
-  private static validateNodeVersionKey = "validateNode";
-
   private readonly depsManager: DepsManager;
 
-  constructor(private logger: DepsLogger, private telemetry: DepsTelemetry) {
+  constructor(
+    private logger: DepsLogger,
+    private telemetry: DepsTelemetry,
+    private hasBot: boolean,
+    private hasFunction: boolean,
+    private enableNgrok: boolean
+  ) {
     this.depsManager = new DepsManager(logger, telemetry);
-  }
-
-  private static isLinux(): boolean {
-    return os.type() === "Linux";
   }
 
   public async resolve(deps: DepsType[]): Promise<boolean> {
@@ -82,7 +73,7 @@ export class VSCodeDepsChecker {
   }
 
   private async handleLinux(depsStatus: DependencyStatus[]): Promise<boolean> {
-    if (!VSCodeDepsChecker.isLinux()) {
+    if (!isLinux()) {
       return true;
     }
     const manuallyInstallDeps = depsStatus
@@ -112,9 +103,7 @@ export class VSCodeDepsChecker {
   }
 
   private async display(message: string, link: string): Promise<void> {
-    const clickButton = await showWarningMessage(message, {
-      title: VSCodeDepsChecker.learnMoreButtonText,
-    });
+    const clickButton = await showWarningMessage(message, CliDepsChecker.learnMoreButtonText);
     if (clickButton) {
       this.telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
       await openUrl(link);
@@ -129,15 +118,18 @@ export class VSCodeDepsChecker {
     switch (dep) {
       case DepsType.AzureNode:
       case DepsType.SpfxNode:
-        return checkerEnabled(VSCodeDepsChecker.validateNodeVersionKey);
+        return await checkerEnabled(CliConfigOptions.EnvCheckerValidateNode);
       case DepsType.FunctionNode:
-        return checkerEnabled(VSCodeDepsChecker.validateNodeVersionKey) && (await hasFunction());
+        return (await checkerEnabled(CliConfigOptions.EnvCheckerValidateNode)) && this.hasFunction;
       case DepsType.Dotnet:
-        return checkerEnabled(VSCodeDepsChecker.validateDotnetSdkKey);
+        return await checkerEnabled(CliConfigOptions.EnvCheckerValidateDotnetSdk);
       case DepsType.FuncCoreTools:
-        return checkerEnabled(VSCodeDepsChecker.validateFuncCoreToolsKey) && (await hasFunction());
+        return (
+          (await checkerEnabled(CliConfigOptions.EnvCheckerValidateFuncCoreTools)) &&
+          this.hasFunction
+        );
       case DepsType.Ngrok:
-        return (await hasBot()) && (await hasNgrok());
+        return this.hasBot && this.enableNgrok;
       default:
         return false;
     }

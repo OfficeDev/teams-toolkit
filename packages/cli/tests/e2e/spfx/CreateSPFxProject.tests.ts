@@ -65,7 +65,7 @@ describe("Start a new project", function () {
     expect(result.stderr).to.eq("");
 
     // validation succeed without provision
-    command = "teamsfx validate";
+    command = "teamsfx manifest validate";
     result = await execAsync(command, {
       cwd: path.join(testFolder, appName),
       env: process.env,

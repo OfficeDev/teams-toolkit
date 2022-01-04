@@ -1,10 +1,10 @@
-# How to create a free Teams developer tenant via ITP?
+# How to create a free M365 test tenant?
 
-`ITP(Instant Tenant Procurement)` is to get you an instant sandbox of Microsoft 365 developer environment. Instead of making you provison all your Microsoft 365 apps and install your data packs one by one, it contains pre-installed sample data packs so you can quickly work on this tenant. E.g. The Teams App `sideloading permission` is pre-configured and you don' have to turn on the sideloading and wait for up to 24 hours util it takes effect.
+M365 test tenant is to get you an instant sandbox of Microsoft 365 developer environment. Instead of making you provison all your Microsoft 365 apps and install your data packs one by one, it contains pre-installed sample data packs so you can quickly work on this tenant.
 
 ## Prequisitives
 
-- A personal Microsoft account, or a work or school account
+- A personal Microsoft account, or a work or school account.
 
 ## Steps to create instant sandbox
 
@@ -44,6 +44,20 @@ If you don't have a personal Microsoft account, or a work or school account. You
 
 ![Phone verification](./phoneverification.png)
 
-- Now you have an instant sandbox. You can `sign in Teams Toolkit with admin or users account in this tenant`, and the sideloading permission is pre-configured.
+- Now you have an instant sandbox. You can `sign in Teams Toolkit with admin or users account in this tenant`.
 
 ![Instant sandbox](./m365-dev-program-instant-sandbox.png)
+
+## Turn on sideloading option
+
+- Sign in to [Teams Admin Center](https://admin.teams.microsoft.com) with your admin credentials.
+
+- Navigate to `Teams apps > Setup Policies > Global`.
+
+- Toggle `Upload custom apps` to the `On` position.
+
+![Instant sandbox](./turn-on-sideload.png)
+
+- Select `Save`.
+
+>Note: It can take up to 24 hours for the sideloading option to be active.

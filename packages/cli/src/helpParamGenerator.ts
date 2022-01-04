@@ -50,6 +50,7 @@ export class HelpParamGenerator {
     Stage.grantPermission,
     Stage.checkPermission,
     "validate",
+    "update",
     Stage.createEnv,
     "ResourceShowFunction",
     "ResourceShowSQL",

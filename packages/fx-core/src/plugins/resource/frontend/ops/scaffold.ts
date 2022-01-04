@@ -10,7 +10,6 @@ import {
 import { Constants, FrontendPathInfo as PathInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import { Messages } from "../resources/messages";
-import { TemplateInfo } from "../resources/templateInfo";
 import { TelemetryHelper } from "../utils/telemetry-helper";
 import {
   genTemplateRenderReplaceFn,
@@ -19,7 +18,8 @@ import {
   ScaffoldActionName,
   ScaffoldContext,
   scaffoldFromTemplates,
-} from "../../../../common/templatesActions";
+} from "../../../../common/template-utils";
+import { TemplateInfo } from "../resources/templateInfo";
 
 export type Manifest = {
   [key: string]: {

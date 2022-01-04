@@ -9,7 +9,7 @@ import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import chaiAsPromised from "chai-as-promised";
 import fs from "fs-extra";
-import * as fetch from "../../../../../src/common/templatesUtils";
+import * as fetch from "../../../../../src/common/template-utils";
 
 import { AzureStorageClient } from "../../../../../src/plugins/resource/frontend/clients";
 import {

@@ -262,7 +262,7 @@ export class FrontendPluginImpl {
       );
     }
 
-    if (IsSimpleAuthEnabled(ctx)) {
+    if (IsSimpleAuthEnabled(ctx.projectSettings)) {
       addToEnvs(
         EnvKeys.RuntimeEndpoint,
         ctx.envInfo.state

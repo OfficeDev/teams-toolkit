@@ -4,6 +4,7 @@
 
 import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
 import { ResourcePlugins } from "../constants";
+import { IsSimpleAuthEnabled } from "../tools";
 
 export class ProjectSettingsHelper {
   public static isSpfx = (projectSettings: ProjectSettings | undefined): boolean =>
@@ -30,9 +31,7 @@ export class ProjectSettingsHelper {
     const selectedPlugins = (projectSettings?.solutionSettings as AzureSolutionSettings)
       ?.activeResourcePlugins;
     const includeAad = selectedPlugins?.some((pluginName) => pluginName === ResourcePlugins.Aad);
-    const includeSimpleAuth = selectedPlugins?.some(
-      (pluginName) => pluginName === ResourcePlugins.SimpleAuth
-    );
+    const includeSimpleAuth = IsSimpleAuthEnabled(projectSettings);
 
     return includeAad && (!this.includeFrontend(projectSettings) || includeSimpleAuth);
   }

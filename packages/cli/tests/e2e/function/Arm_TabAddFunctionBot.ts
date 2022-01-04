@@ -18,6 +18,7 @@ import {
   readContextMultiEnv,
   getActivePluginsFromProjectSetting,
   getProvisionParameterValueByKey,
+  setBotSkuNameToB1Bicep,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -34,14 +35,15 @@ describe("Configuration successfully changed when with different plugins", funct
     await cleanUp(appName, projectPath, true, false, false, true);
   });
 
-  it(`tab + function + key vault`, async function () {
-    // Create tab project with function and key vault
+  it(`tab + function + bot`, async function () {
+    // Create tab project with function and bot
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+    await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
-    await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);
 
     // Provision
     setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 

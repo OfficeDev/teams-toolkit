@@ -17,7 +17,12 @@ import {
 import { ApimService } from "../services/apimService";
 import { OpenApiProcessor } from "../utils/openApiProcessor";
 import { IAnswer } from "../answer";
-import { LogProvider, PluginContext, TelemetryReporter } from "@microsoft/teamsfx-api";
+import {
+  LogProvider,
+  PluginContext,
+  TelemetryReporter,
+  AzureSolutionSettings,
+} from "@microsoft/teamsfx-api";
 import {
   getApimServiceNameFromResourceId,
   getAuthServiceNameFromResourceId,
@@ -31,6 +36,9 @@ import { ArmTemplateResult } from "../../../../common/armInterface";
 import * as fs from "fs-extra";
 import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../../../common/tools";
 import { getTemplatesFolder } from "../../../../folder";
+import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
+import { generateBicepFromFile } from "../../../../common/tools";
 
 export class ApimManager {
   private readonly logger: LogProvider | undefined;
@@ -207,53 +215,61 @@ export class ApimManager {
     await apimService.addApiToProduct(resourceGroupName, apimServiceName, productId, apiId);
   }
 
-  public async updateArmTemplates(): Promise<ArmTemplateResult> {
+  public async updateArmTemplates(ctx: PluginContext): Promise<ArmTemplateResult> {
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
+    const configModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
+      pluginCtx
+    );
 
     const result: ArmTemplateResult = {
       Reference: {
         serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
       },
       Configuration: {
-        Modules: {
-          apim: await fs.readFile(
-            path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
-            ConstantString.UTF8Encoding
-          ),
-        },
+        Modules: { apim: configModules },
       },
     };
 
     return result;
   }
 
-  public async generateArmTemplates(): Promise<ArmTemplateResult> {
+  public async generateArmTemplates(ctx: PluginContext): Promise<ArmTemplateResult> {
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
-
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDir, Bicep.ProvisionFileName),
+      pluginCtx
+    );
+    const provisionModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleFileName),
+      pluginCtx
+    );
+    const configOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDir, Bicep.ConfigFileName),
+      pluginCtx
+    );
+    const configModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
+      pluginCtx
+    );
     const result: ArmTemplateResult = {
       Provision: {
-        Orchestration: await fs.readFile(
-          path.join(bicepTemplateDir, Bicep.ProvisionFileName),
-          ConstantString.UTF8Encoding
-        ),
-        Modules: {
-          apim: await fs.readFile(
-            path.join(bicepTemplateDir, ApimPathInfo.ProvisionModuleFileName),
-            ConstantString.UTF8Encoding
-          ),
-        },
+        Orchestration: provisionOrchestration,
+        Modules: { apim: provisionModules },
       },
       Configuration: {
-        Orchestration: await fs.readFile(
-          path.join(bicepTemplateDir, Bicep.ConfigFileName),
-          ConstantString.UTF8Encoding
-        ),
-        Modules: {
-          apim: await fs.readFile(
-            path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
-            ConstantString.UTF8Encoding
-          ),
-        },
+        Orchestration: configOrchestration,
+        Modules: { apim: configModules },
       },
       Reference: {
         serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,

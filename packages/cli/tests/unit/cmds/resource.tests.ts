@@ -206,13 +206,13 @@ describe("Resource Command Tests", function () {
     const cmd = new Resource();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     expect(registeredCommands).deep.equals([
-      "resource <action>",
-      "add <resource-type>",
+      "resource [action]",
+      "add [resource-type]",
       "azure-sql",
       "azure-apim",
       "azure-function",
       "azure-keyvault",
-      "show <resource-type>",
+      "show [resource-type]",
       "azure-function",
       "azure-sql",
       "azure-apim",

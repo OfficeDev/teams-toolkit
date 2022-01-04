@@ -18,6 +18,10 @@ import {
   AzureSolutionSettings,
   Func,
   Void,
+  IStaticTab,
+  IConfigurableTab,
+  IComposeExtension,
+  IBot,
 } from "@microsoft/teamsfx-api";
 import { AppStudioPluginImpl } from "./plugin";
 import { Constants } from "./constants";
@@ -32,6 +36,15 @@ import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInt
 import "./v2";
 import "./v3";
 import { IUserList } from "./interfaces/IAppDefinition";
+import {
+  getManifestTemplatePath,
+  loadManifest,
+  saveManifest,
+  capabilityExceedLimit,
+  init,
+  addCapabilities,
+} from "./manifestTemplate";
+
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -496,6 +509,65 @@ export class AppStudioPlugin implements Plugin {
     }
   }
 
+  public async loadManifest(
+    ctx: PluginContext
+  ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> {
+    const localManifest = await loadManifest(ctx.root, true);
+    if (localManifest.isErr()) {
+      return err(localManifest.error);
+    }
+
+    const remoteManifest = await loadManifest(ctx.root, false);
+    if (remoteManifest.isErr()) {
+      return err(remoteManifest.error);
+    }
+
+    return ok({ local: localManifest.value, remote: remoteManifest.value });
+  }
+
+  public async saveManifest(
+    ctx: PluginContext,
+    manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
+  ): Promise<Result<any, FxError>> {
+    let res = await saveManifest(ctx.root, manifest.local, true);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+
+    res = await saveManifest(ctx.root, manifest.remote, false);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+
+    return ok(undefined);
+  }
+
+  public async capabilityExceedLimit(
+    ctx: PluginContext,
+    capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+  ): Promise<Result<boolean, FxError>> {
+    return await capabilityExceedLimit(ctx.root, capability);
+  }
+
+  public async init(ctx: PluginContext): Promise<Result<any, FxError>> {
+    return await init(ctx.root);
+  }
+
+  public async addCapabilities(
+    ctx: PluginContext,
+    capabilities: (
+      | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
+      | { name: "configurableTab"; snippet?: { local: IConfigurableTab; remote: IConfigurableTab } }
+      | { name: "Bot"; snippet?: { local: IBot; remote: IBot } }
+      | {
+          name: "MessageExtension";
+          snippet?: { local: IComposeExtension; remote: IComposeExtension };
+        }
+    )[]
+  ): Promise<Result<any, FxError>> {
+    return await addCapabilities(ctx.root, capabilities);
+  }
+
   async executeUserTask(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     if (func.method === "validateManifest") {
       return await this.validateManifest(ctx);
@@ -527,10 +599,7 @@ export class AppStudioPlugin implements Plugin {
       return await this.migrateV1Project(ctx);
     } else if (func.method === "getManifestTemplatePath") {
       const isLocalDebug = (func.params.type as string) === "localDebug";
-      const filePath = await this.appStudioPluginImpl.getManifestTemplatePath(
-        ctx.root,
-        isLocalDebug
-      );
+      const filePath = await getManifestTemplatePath(ctx.root, isLocalDebug);
       return ok(filePath);
     } else if (func.method === "updateManifest") {
       return await this.updateManifest(ctx, func.params && func.params.envName === "local");

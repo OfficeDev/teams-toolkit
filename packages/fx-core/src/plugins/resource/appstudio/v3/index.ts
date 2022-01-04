@@ -4,7 +4,6 @@
 import {
   FxError,
   Result,
-  ok,
   err,
   v2,
   IComposeExtension,
@@ -12,18 +11,40 @@ import {
   IConfigurableTab,
   IStaticTab,
   TeamsAppManifest,
+  PluginContext,
 } from "@microsoft/teamsfx-api";
+import { Service, Inject } from "typedi";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
-import { Service } from "typedi";
+import { AppStudioPlugin } from "../";
+import { convert2PluginContext } from "../../utils4v2";
+import { AppStudioResultFactory } from "../results";
+import { AppStudioError } from "../errors";
 
 @Service(BuiltInResourcePluginNames.appStudio)
 export class AppStudioPluginV3 {
-  // Generate initial manifest template file, for both local debug & remote
+  name = "fx-resource-appstudio";
+  displayName = "App Studio";
+  @Inject("AppStudioPlugin")
+  plugin!: AppStudioPlugin;
+
+  /**
+   * Generate initial manifest template file, for both local debug & remote
+   * @param ctx
+   * @param inputs
+   * @returns
+   */
   async init(ctx: v2.Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
-    return ok(undefined);
+    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
+    return await this.plugin.init(pluginContext);
   }
 
-  // Append to manifest template file
+  /**
+   * Append capabilities to manifest templates
+   * @param ctx
+   * @param inputs
+   * @param capabilities
+   * @returns
+   */
   async addCapabilities(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
@@ -37,12 +58,22 @@ export class AppStudioPluginV3 {
         }
     )[]
   ): Promise<Result<any, FxError>> {
-    capabilities.map((capability) => {
-      if (this.capabilityExceedLimit(ctx, inputs, capability.name)) {
-        return err(new Error("Exeed limit."));
+    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
+    capabilities.map(async (capability) => {
+      const exceedLimit = await this.capabilityExceedLimit(ctx, inputs, capability.name);
+      if (exceedLimit.isErr()) {
+        return err(exceedLimit.error);
+      }
+      if (exceedLimit.value) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.CapabilityExceedLimitError.name,
+            AppStudioError.CapabilityExceedLimitError.message(capability.name)
+          )
+        );
       }
     });
-    return ok(undefined);
+    return await this.plugin.addCapabilities(pluginContext, capabilities);
   }
 
   /**
@@ -53,31 +84,38 @@ export class AppStudioPluginV3 {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> {
-    return ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() });
+    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
+    return await this.plugin.loadManifest(pluginContext);
   }
 
   /**
-   *
+   * Save manifest template file
    * @param ctx ctx.manifest
    * @param inputs
    * @returns
    */
-  async saveManifest(
+  async SaveManifest(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
   ): Promise<Result<any, FxError>> {
-    return ok(undefined);
+    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
+    return await this.plugin.saveManifest(pluginContext, manifest);
   }
 
-  // Read from manifest template, and check if it exceeds the limit.
-  // The limit of staticTab if 16, others are 1
-  // Should check both local & remote manifest template file
-  public async capabilityExceedLimit(
+  /**
+   * Load manifest template, and check if it exceeds the limit.
+   * The limit of staticTab if 16, others are 1
+   * Should check both local & remote manifest template file
+   * @param capability
+   * @returns
+   */
+  async capabilityExceedLimit(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
-  ): Promise<boolean> {
-    return false;
+  ): Promise<Result<boolean, FxError>> {
+    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
+    return await this.plugin.capabilityExceedLimit(pluginContext, capability);
   }
 }

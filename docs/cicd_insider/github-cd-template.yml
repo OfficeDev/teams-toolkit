@@ -51,7 +51,6 @@ jobs:
 
       # We suggest to do the `teamsfx provision` step manually or in a separate workflow. The following steps are for your reference.
       # After provisioning, you should commit necessary files under .fx into the repository.
-      # You should copy content of .fx/states/${TEAMSFX_ENV_NAME}.userdata, and save it in the repository secrets (https://docs.github.com/en/actions/reference/encrypted-secrets) which can be refered by the step with name 'Generate userdata'. 
       #- name: Provision hosting environment
       #  uses: OfficeDev/teamsfx-cli-action@v1
       #  with:
@@ -65,18 +64,6 @@ jobs:
       #    commit_message: "chore: commit provision configs"
       #    file_pattern: .fx/*
       
-      #- name: Upload userdata as artifact
-      #  uses: actions/upload-artifact@v2
-      #  with:
-      #    name: defaultUserData
-      #    path: .fx/states/${{env.TEAMSFX_ENV_NAME}}.userdata
-      
-      - name: Generate userdata
-        env:
-          USERDATA_CONTENT: ${{ secrets.USERDATA_CONTENT }}
-        run: |
-          [ ! -z "${USERDATA_CONTENT}" ] && echo "${USERDATA_CONTENT}" > .fx/states/${TEAMSFX_ENV_NAME}.userdata
-        
       - name: Deploy to hosting environment
         uses: OfficeDev/teamsfx-cli-action@v1
         with:

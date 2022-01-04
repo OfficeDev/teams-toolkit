@@ -4,7 +4,7 @@ on:
   workflow_dispatch:
     inputs:
       cases:
-        description: 'specific cases to be excuted. Sample: ["TestCreateTab", "AzureAppScaffold"]'
+        description: 'specific cases to be excuted. Sample: ["./aad/a.tests.ts", "./bot/b.tests.ts"]'
         required: false
   schedule:
     - cron: "0 4,7,10 * * *"
@@ -56,19 +56,19 @@ jobs:
       - name: List cases for schedule
         id: schedule-cases
         if: ${{  github.event_name == 'schedule' }}
-        working-directory: packages/cli
+        working-directory: packages/cli/tests/e2e
         run: |
-          cases=`find tests/e2e -name "*.tests.ts" -printf "%f\n" | sed 's/.tests.ts//' | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
+          cases=`find . -wholename "*.tests.ts" | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
           echo "::set-output name=cases::$cases"
 
       - name: List cases for dispatch
         id: dispatch-cases
         if: ${{  github.event_name == 'workflow_dispatch' }}
-        working-directory: packages/cli
+        working-directory: packages/cli/tests/e2e
         run: |
           inputCases='${{ github.event.inputs.cases }}'
           if [ -z "$inputCases" ]; then
-            allCases=`find tests/e2e -name "*.tests.ts" -printf "%f\n" | sed 's/.tests.ts//' | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
+            allCases=`find . -wholename "*.tests.ts" | jq -Rsc '[split("\n") | .[]| select(.!="")]'`
             echo "::set-output name=cases::$allCases"
           else
             echo "::set-output name=cases::$inputCases"
@@ -134,12 +134,16 @@ jobs:
           mv *.tgz teamsfx-cli.tgz
           npm install -g teamsfx-cli.tgz
 
-      - name: run test
-        working-directory: packages/cli
+      - name: print system info
         run: |
-          file=`find tests/e2e -name "${{ matrix.cases }}.tests.ts"`
+          lscpu
+
+      - name: run test
+        working-directory: packages/cli/tests/e2e
+        run: |
+          file=`find . -wholename "${{ matrix.cases }}"`
           if [ ! -z "$file" ]; then
-            npx mocha --reporter @mochajs/json-file-reporter $file
+            npx mocha --reporter @mochajs/json-file-reporter $file --parallel
           fi
 
       - name: Upload test report

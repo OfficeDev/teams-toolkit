@@ -182,7 +182,8 @@ describe("Post Local Debug", () => {
         capabilities: ["Bot"],
       },
     };
-    const invalidManifestPath = "tests/plugins/resource/appstudio/resources/invalid.manifest.json";
+    const invalidManifestPath =
+      "tests/plugins/resource/appstudio/resources-multi-env/invalid.manifest.json";
     const invalidManifest = fs.readJson(invalidManifestPath);
 
     sandbox.stub<any, any>(fs, "readJson").resolves(invalidManifest);

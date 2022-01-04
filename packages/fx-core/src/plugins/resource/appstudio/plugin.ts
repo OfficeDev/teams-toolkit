@@ -111,6 +111,7 @@ import {
 import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks } from "../../../common/constants";
+import { loadManifest } from "./manifestTemplate";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -298,9 +299,7 @@ export class AppStudioPluginImpl {
   public async postProvision(ctx: PluginContext): Promise<Result<string, FxError>> {
     const remoteTeamsAppId = await this.getTeamsAppId(ctx, false);
     let manifestString: string;
-    const appDirectory = await getAppDirectory(ctx.root);
-    const manifestPath = await this.getManifestTemplatePath(ctx.root);
-    const manifestResult = await this.reloadManifest(manifestPath);
+    const manifestResult = await loadManifest(ctx.root, false);
     if (manifestResult.isErr()) {
       return err(manifestResult.error);
     } else {
@@ -327,6 +326,7 @@ export class AppStudioPluginImpl {
       [appDefinition] = remoteManifest.value;
     }
 
+    const appDirectory = await getAppDirectory(ctx.root);
     const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     const result = await this.updateApp(
       ctx,
@@ -411,9 +411,7 @@ export class AppStudioPluginImpl {
     const teamsAppId = await this.getTeamsAppId(ctx, isLocalDebug);
     let manifest: any;
     let manifestString: string;
-    const appDirectory = await getAppDirectory(ctx.root);
-    const manifestPath = await this.getManifestTemplatePath(ctx.root, isLocalDebug);
-    const manifestResult = await this.reloadManifest(manifestPath);
+    const manifestResult = await loadManifest(ctx.root, isLocalDebug);
     if (manifestResult.isErr()) {
       throw manifestResult;
     } else {
@@ -509,6 +507,7 @@ export class AppStudioPluginImpl {
         }
       }
 
+      const appDirectory = await getAppDirectory(ctx.root);
       const result = await this.updateApp(
         ctx,
         appDefinition,
@@ -827,11 +826,8 @@ export class AppStudioPluginImpl {
     let manifest: TeamsAppManifest | undefined;
 
     const appDirectory = await getAppDirectory(ctx.root);
-    let manifestString = JSON.stringify(
-      await fs.readJSON(await this.getManifestTemplatePath(ctx.root))
-    );
     if (isSPFxProject(ctx.projectSettings)) {
-      manifestString = await this.getSPFxManifest(ctx, false);
+      const manifestString = await this.getSPFxManifest(ctx, false);
       manifest = JSON.parse(manifestString);
     } else {
       const fillinRes = await this.getAppDefinitionAndManifest(ctx, false);
@@ -880,8 +876,7 @@ export class AppStudioPluginImpl {
 
   public async postLocalDebug(ctx: PluginContext): Promise<Result<string, FxError>> {
     let teamsAppId;
-    const manifestPath = await this.getManifestTemplatePath(ctx.root, true);
-    const manifest = await this.reloadManifest(manifestPath);
+    const manifest = await loadManifest(ctx.root, true);
     if (manifest.isErr()) {
       return err(manifest.error);
     }
@@ -1280,10 +1275,9 @@ export class AppStudioPluginImpl {
 
     // User may manually update id in manifest template file, rather than configuration file
     // The id in manifest template file should override configurations
-    const manifestFile = await this.getManifestTemplatePath(ctx.root, isLocalDebug);
-    if (await fs.pathExists(manifestFile)) {
-      const manifest: TeamsAppManifest = await fs.readJSON(manifestFile);
-      teamsAppId = manifest.id;
+    const manifestResult = await loadManifest(ctx.root, isLocalDebug);
+    if (manifestResult.isOk()) {
+      teamsAppId = manifestResult.value.id;
     }
     if (!isUUID(teamsAppId)) {
       teamsAppId = isLocalDebug
@@ -1399,9 +1393,11 @@ export class AppStudioPluginImpl {
         AppStudioError.NotADirectoryError.message(appDirectory)
       );
     }
-    const manifest: TeamsAppManifest = await fs.readJSON(
-      await this.getManifestTemplatePath(ctx.root, isLocalDebug)
-    );
+    const manifestResult = await loadManifest(ctx.root, isLocalDebug);
+    if (manifestResult.isErr()) {
+      return err(manifestResult.error);
+    }
+    const manifest: TeamsAppManifest = manifestResult.value;
     manifest.bots = undefined;
     manifest.composeExtensions = undefined;
     if (isLocalDebug || !isUUID(manifest.id)) {
@@ -1590,16 +1586,12 @@ export class AppStudioPluginImpl {
       }
     }
 
-    const manifestFile = await this.getManifestTemplatePath(ctx.root, isLocalDebug);
-    if (!(await fs.pathExists(manifestFile))) {
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.FileNotFoundError.name,
-          AppStudioError.FileNotFoundError.message(manifestFile)
-        )
-      );
+    const manifestResult = await loadManifest(ctx.root, isLocalDebug);
+    if (manifestResult.isErr()) {
+      return err(manifestResult.error);
     }
-    let manifest = (await fs.readFile(manifestFile)).toString();
+
+    let manifestString = JSON.stringify(manifestResult.value);
 
     // Bot only project, without frontend hosting
     let endpoint = tabEndpoint;
@@ -1610,7 +1602,7 @@ export class AppStudioPluginImpl {
       endpoint = DEFAULT_DEVELOPER_WEBSITE_URL;
     }
 
-    const customizedKeys = getCustomizedKeys("", JSON.parse(manifest));
+    const customizedKeys = getCustomizedKeys("", JSON.parse(manifestString));
     this.commonProperties = {
       [TelemetryPropertyKey.customizedKeys]: JSON.stringify(customizedKeys),
     };
@@ -1657,10 +1649,10 @@ export class AppStudioPluginImpl {
         },
       },
     };
-    manifest = Mustache.render(manifest, view);
+    manifestString = Mustache.render(manifestString, view);
     const tokens = [
       ...new Set(
-        Mustache.parse(manifest)
+        Mustache.parse(manifestString)
           .filter((x) => {
             return x[0] != "text" && x[1] != "localSettings.teamsApp.teamsAppId";
           })
@@ -1693,7 +1685,7 @@ export class AppStudioPluginImpl {
 
     let updatedManifest: TeamsAppManifest;
     try {
-      updatedManifest = JSON.parse(manifest) as TeamsAppManifest;
+      updatedManifest = JSON.parse(manifestString) as TeamsAppManifest;
     } catch (error) {
       if (error.stack && error.stack.startsWith("SyntaxError")) {
         // teams app id in userData may be updated by user, result to invalid manifest
@@ -1736,9 +1728,11 @@ export class AppStudioPluginImpl {
   }
 
   private async getSPFxManifest(ctx: PluginContext, isLocalDebug: boolean): Promise<string> {
-    let manifestString = JSON.stringify(
-      await fs.readJSON(await this.getManifestTemplatePath(ctx.root, isLocalDebug))
-    );
+    const manifestResult = await loadManifest(ctx.root, isLocalDebug);
+    if (manifestResult.isErr()) {
+      throw manifestResult.error;
+    }
+    let manifestString = JSON.stringify(manifestResult.value);
     const view = {
       config: ctx.envInfo.config,
       state: {
@@ -1754,11 +1748,6 @@ export class AppStudioPluginImpl {
     };
     manifestString = Mustache.render(manifestString, view);
     return manifestString;
-  }
-
-  public async getManifestTemplatePath(projectRoot: string, isLocalDebug = false): Promise<string> {
-    const appDir = await getAppDirectory(projectRoot);
-    return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;
   }
 }
 
@@ -1786,7 +1775,6 @@ export async function createLocalManifest(
     let manifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG;
 
     manifestString = replaceConfigValue(manifestString, "appName", name);
-    manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
     if (hasFrontend) {
       manifest.staticTabs = STATIC_TABS_TPL_LOCAL_DEBUG;
@@ -1817,9 +1805,7 @@ export async function createManifest(
     throw new Error(`Invalid capability`);
   }
   if (!isSPFx || hasBot || hasMessageExtension) {
-    let manifestString = TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV;
-    manifestString = replaceConfigValue(manifestString, "appName", appName);
-    manifestString = replaceConfigValue(manifestString, "version", "1.0.0");
+    const manifestString = TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV;
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
     if (hasFrontend) {
       manifest.staticTabs = STATIC_TABS_TPL_FOR_MULTI_ENV;

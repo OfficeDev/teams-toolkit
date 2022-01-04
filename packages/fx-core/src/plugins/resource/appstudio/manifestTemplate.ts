@@ -179,7 +179,7 @@ export async function addCapabilities(
   }
   const remoteManifest = remoteManifestRes.value;
 
-  capabilities.map(async (capability) => {
+  capabilities.map((capability) => {
     switch (capability.name) {
       case "staticTab":
         if (!localManifest.staticTabs) {
@@ -192,8 +192,10 @@ export async function addCapabilities(
           localManifest.staticTabs!.push(capability.snippet.local);
           remoteManifest.staticTabs!.push(capability.snippet.remote);
         } else {
-          localManifest.staticTabs!.concat(STATIC_TABS_TPL_LOCAL_DEBUG);
-          remoteManifest.staticTabs!.concat(STATIC_TABS_TPL_FOR_MULTI_ENV);
+          localManifest.staticTabs = localManifest.staticTabs!.concat(STATIC_TABS_TPL_LOCAL_DEBUG);
+          remoteManifest.staticTabs = remoteManifest.staticTabs!.concat(
+            STATIC_TABS_TPL_FOR_MULTI_ENV
+          );
         }
         break;
       case "configurableTab":
@@ -207,8 +209,12 @@ export async function addCapabilities(
           localManifest.configurableTabs!.push(capability.snippet.local);
           remoteManifest.configurableTabs!.push(capability.snippet.remote);
         } else {
-          localManifest.configurableTabs!.concat(CONFIGURABLE_TABS_TPL_LOCAL_DEBUG);
-          remoteManifest.configurableTabs!.concat(CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV);
+          localManifest.configurableTabs = localManifest.configurableTabs!.concat(
+            CONFIGURABLE_TABS_TPL_LOCAL_DEBUG
+          );
+          remoteManifest.configurableTabs = remoteManifest.configurableTabs!.concat(
+            CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV
+          );
         }
         break;
       case "Bot":
@@ -222,8 +228,8 @@ export async function addCapabilities(
           localManifest.bots!.push(capability.snippet.local);
           remoteManifest.bots!.push(capability.snippet.remote);
         } else {
-          localManifest.bots!.concat(BOTS_TPL_LOCAL_DEBUG);
-          remoteManifest.bots!.concat(BOTS_TPL_FOR_MULTI_ENV);
+          localManifest.bots = localManifest.bots!.concat(BOTS_TPL_LOCAL_DEBUG);
+          remoteManifest.bots = remoteManifest.bots!.concat(BOTS_TPL_FOR_MULTI_ENV);
         }
         break;
       case "MessageExtension":
@@ -237,8 +243,12 @@ export async function addCapabilities(
           localManifest.composeExtensions!.push(capability.snippet.local);
           remoteManifest.composeExtensions!.push(capability.snippet.remote);
         } else {
-          localManifest.composeExtensions!.concat(COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG);
-          remoteManifest.composeExtensions!.concat(COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV);
+          localManifest.composeExtensions = localManifest.composeExtensions!.concat(
+            COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG
+          );
+          remoteManifest.composeExtensions = remoteManifest.composeExtensions!.concat(
+            COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV
+          );
         }
         break;
     }

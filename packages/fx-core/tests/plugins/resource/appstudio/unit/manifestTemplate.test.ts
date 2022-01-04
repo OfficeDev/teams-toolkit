@@ -4,6 +4,8 @@
 import "mocha";
 import * as chai from "chai";
 import sinon from "sinon";
+import fs, { PathLike } from "fs-extra";
+import path from "path";
 import { ConfigMap, PluginContext } from "@microsoft/teamsfx-api";
 import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
 import { LocalCrypto } from "../../../../../src/core/crypto";
@@ -75,8 +77,21 @@ describe("Add capability", () => {
   });
 
   it("Add static tab capability", async () => {
-    const capabilities = [];
-    capabilities.push({ name: "staticTab" });
+    const fileContent: Map<string, any> = new Map();
+    sandbox.stub(fs, "writeFile").callsFake(async (filePath: number | PathLike, data: any) => {
+      fileContent.set(path.normalize(filePath.toString()), data);
+    });
+
+    sandbox.stub(fs, "readJson").callsFake(async (filePath: string) => {
+      const content = fileContent.get(path.normalize(filePath));
+      if (content) {
+        return JSON.parse(content);
+      } else {
+        return await fs.readJSON(path.normalize(filePath));
+      }
+    });
+
+    const capabilities = [{ name: "staticTab" as const }];
     const addCapabilityResult = await plugin.addCapabilities(ctx, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
 
@@ -84,8 +99,8 @@ describe("Add capability", () => {
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {
-      chai.assert.equal(loadedManifestTemplate.value.local.staticTabs.length, 2);
-      chai.assert.equal(loadedManifestTemplate.value.remote.staticTabs.length, 2);
+      chai.assert.equal(loadedManifestTemplate.value.local.staticTabs!.length, 2);
+      chai.assert.equal(loadedManifestTemplate.value.remote.staticTabs!.length, 2);
     }
   });
 });

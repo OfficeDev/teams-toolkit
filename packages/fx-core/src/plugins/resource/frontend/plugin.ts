@@ -62,7 +62,7 @@ import { AzureResourceFunction } from "../../solution/fx-solution/question";
 import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile } from "../../../common/tools";
+import { generateBicepFromFile, IsSimpleAuthEnabled } from "../../../common/tools";
 export class FrontendPluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
@@ -262,7 +262,7 @@ export class FrontendPluginImpl {
       );
     }
 
-    if (solutionSettings?.activeResourcePlugins?.includes(DependentPluginInfo.RuntimePluginName)) {
+    if (IsSimpleAuthEnabled(ctx)) {
       addToEnvs(
         EnvKeys.RuntimeEndpoint,
         ctx.envInfo.state

@@ -3,65 +3,52 @@
 
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as path from "path";
 import {
-  DepsTelemetry,
+  defaultHelpLink,
+  DepsCheckerError,
   DepsCheckerEvent,
   DepsLogger,
-  DepsManager,
+  DepsTelemetry,
   DepsType,
-  DependencyStatus,
-  DepsCheckerError,
-  defaultHelpLink,
 } from "@microsoft/teamsfx-core";
-import * as os from "os";
+import { ok } from "@microsoft/teamsfx-api";
+
+import { CliConfigOptions } from "../../../../src/userSetttings";
+import * as cliUtils from "../../../../src/cmds/preview/depsChecker/cliUtils";
+import { CliDepsChecker } from "../../../../src/cmds/preview/depsChecker/cliChecker";
+import UI from "../../../../src/userInteraction";
 
 const expect = chai.expect;
-const mock = require("mock-require");
 
-mock("../../../src/debug/depsChecker/vscodeUtils", {
-  showWarningMessage: async function (message: string, button: MessageItem) {},
-  openUrl: async function (url: string) {},
-  checkerEnabled: function (key: string) {},
-  hasFunction: async function () {},
-  hasNgrok: async function () {},
-  hasBot: async function () {},
-});
-
-import * as vscodeUtils from "../../../src/debug/depsChecker/vscodeUtils";
-import { VSCodeDepsChecker } from "../../../src/debug/depsChecker/vscodeChecker";
-import { MessageItem } from "vscode";
-import dot = Mocha.reporters.dot;
-
-suite("[Checker UT - Extension]", () => {
+describe("[Checker UT - Extension]", () => {
   const logger: DepsLogger = <DepsLogger>{};
   const telemetry: DepsTelemetry = <DepsTelemetry>{};
   const sandbox = sinon.createSandbox();
   const sendEventSpy = sandbox.stub();
-  suite("resolve", async () => {
-    setup(() => {
+  describe("resolve", async () => {
+    beforeEach(() => {
       logger.cleanup = sandbox.stub().resolves();
       logger.error = sandbox.stub().resolves();
       logger.debug = sandbox.stub().resolves();
       logger.printDetailLog = sandbox.stub().resolves();
       telemetry.sendEvent = sendEventSpy.resolves();
     });
-    teardown(() => {
+    afterEach(() => {
       sandbox.restore();
     });
 
-    test("azure + f5: installed [windows + linux]", async () => {
-      const checker = new VSCodeDepsChecker(logger, telemetry);
+    it("azure + f5: installed [windows + linux]", async () => {
+      const checker = new CliDepsChecker(logger, telemetry, true, true, true);
       const deps = [DepsType.AzureNode, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
       chai.util.addMethod(checker, "ensure", async function () {
         return getAzureF5DepsStatus();
       });
-      sandbox.stub(vscodeUtils, "checkerEnabled").returns(true);
-      sandbox.stub(vscodeUtils, "hasFunction").resolves(true);
-      sandbox.stub(vscodeUtils, "hasNgrok").resolves(true);
-      sandbox.stub(vscodeUtils, "hasBot").resolves(true);
-      sandbox.stub(os, "type").onFirstCall().returns("Windows_NT").onSecondCall().returns("Linux");
+      sandbox.stub(UI, "openUrl").callsFake(async (url: string) => {
+        return ok(true);
+      });
+      sandbox.stub(UI, "showMessage").resolves(ok("selected button"));
+      sandbox.stub(cliUtils, "isLinux").onFirstCall().returns(false).onSecondCall().returns(true);
 
       const shouldContinue = await checker.resolve(deps);
       expect(shouldContinue).to.be.true;
@@ -84,8 +71,8 @@ suite("[Checker UT - Extension]", () => {
       expect(dotnetStatus.command).to.be.eq("dotnet");
     });
 
-    test("azure + f5: failed [windows]", async () => {
-      const checker = new VSCodeDepsChecker(logger, telemetry);
+    it("azure + f5: failed [windows]", async () => {
+      const checker = new CliDepsChecker(logger, telemetry, true, true, true);
       const deps = [DepsType.AzureNode, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
       const dotnetMessage = "Failed install dotnet";
       const dotnetHelpLink = "help link";
@@ -94,21 +81,19 @@ suite("[Checker UT - Extension]", () => {
       chai.util.addMethod(checker, "ensure", async function () {
         return getFailedDepsStatus(error);
       });
-      sandbox.stub(os, "type").returns("Windows_NT");
-      sandbox.stub(vscodeUtils, "checkerEnabled").returns(true);
-      sandbox.stub(vscodeUtils, "hasFunction").resolves(true);
-      sandbox.stub(vscodeUtils, "hasNgrok").resolves(true);
-      sandbox.stub(vscodeUtils, "hasBot").resolves(true);
+      sandbox.stub(cliUtils, "isLinux").returns(false);
 
-      const openUrlSpy = sandbox.stub(vscodeUtils, "openUrl").callsFake(async (url: string) => {});
-      const showSpy = sandbox.stub(vscodeUtils, "showWarningMessage");
-      showSpy.onCall(0).resolves(true);
-      showSpy.onCall(1).resolves(false);
+      const openUrlSpy = sandbox.stub(UI, "openUrl").callsFake(async (url: string) => {
+        return ok(true);
+      });
+      const showSpy = sandbox.stub(UI, "showMessage");
+      showSpy.onCall(0).resolves(ok("Learn more"));
+      showSpy.onCall(1).resolves(ok(undefined));
 
       const shouldContinue = await checker.resolve(deps);
 
       sandbox.assert.calledTwice(showSpy);
-      sandbox.assert.calledWith(showSpy, dotnetMessage, sinon.match.any);
+      sandbox.assert.calledWith(showSpy, "info", dotnetMessage, sinon.match.any, sinon.match.any);
       sandbox.assert.calledWith(openUrlSpy, dotnetHelpLink);
       expect(shouldContinue).to.be.false;
 
@@ -117,23 +102,21 @@ suite("[Checker UT - Extension]", () => {
       sendEventSpy.secondCall.calledWith(DepsCheckerEvent.clickCancel);
     });
 
-    test("azure + f5: failed [linux]", async () => {
-      const checker = new VSCodeDepsChecker(logger, telemetry);
+    it("azure + f5: failed [linux]", async () => {
+      const checker = new CliDepsChecker(logger, telemetry, true, true, true);
       const deps = [DepsType.AzureNode, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
       chai.util.addMethod(checker, "ensure", async function () {
         return getFailedDepsStatus(undefined);
       });
-      sandbox.stub(os, "type").returns("Linux");
-      sandbox.stub(vscodeUtils, "checkerEnabled").returns(true);
-      sandbox.stub(vscodeUtils, "hasFunction").resolves(true);
-      sandbox.stub(vscodeUtils, "hasNgrok").resolves(true);
-      sandbox.stub(vscodeUtils, "hasBot").resolves(true);
+      sandbox.stub(cliUtils, "isLinux").returns(true);
 
-      const showSpy = sandbox.stub(vscodeUtils, "showWarningMessage");
-      const openUrlSpy = sandbox.stub(vscodeUtils, "openUrl").callsFake(async (url: string) => {});
-      showSpy.onCall(0).resolves(true);
-      showSpy.onCall(1).resolves(false);
+      const showSpy = sandbox.stub(UI, "showMessage");
+      const openUrlSpy = sandbox.stub(UI, "openUrl").callsFake(async (url: string) => {
+        return ok(true);
+      });
+      showSpy.onCall(0).resolves(ok("Learn more"));
+      showSpy.onCall(1).resolves(ok(undefined));
 
       const shouldContinue = await checker.resolve(deps);
 
@@ -141,13 +124,19 @@ suite("[Checker UT - Extension]", () => {
         return msg.includes("Teams Toolkit requires these dependencies");
       });
       sandbox.assert.calledTwice(showSpy);
-      sandbox.assert.calledWith(showSpy, depsNotFoundMatcher, sinon.match.any);
+      sandbox.assert.calledWith(
+        showSpy,
+        "info",
+        depsNotFoundMatcher,
+        sinon.match.any,
+        sinon.match.any
+      );
       sandbox.assert.calledWith(openUrlSpy, defaultHelpLink);
       expect(shouldContinue).to.be.false;
     });
 
-    test("azure + f5: all disabled", async () => {
-      const checker = new VSCodeDepsChecker(logger, telemetry);
+    it("azure + f5: all disabled", async () => {
+      const checker = new CliDepsChecker(logger, telemetry, true, false, false);
       const deps = [
         DepsType.SpfxNode,
         DepsType.FunctionNode,
@@ -157,30 +146,27 @@ suite("[Checker UT - Extension]", () => {
         DepsType.Ngrok,
       ];
 
-      sandbox.stub(os, "type").returns("Windows_NT");
-      sandbox.stub(vscodeUtils, "hasFunction").resolves(false);
-      sandbox
-        .stub(vscodeUtils, "checkerEnabled")
-        .withArgs("validateFuncCoreTools")
-        .returns(true)
-        .withArgs(
-          sinon.match((input: string) => ["validateNode", "validateDotnetSdk"].includes(input))
-        )
-        .returns(false);
-
-      sandbox.stub(vscodeUtils, "hasNgrok").onCall(0).resolves(false).onCall(1).resolves(true);
-      sandbox.stub(vscodeUtils, "hasBot").onCall(0).resolves(true).onCall(1).resolves(false);
-
       chai.util.addMethod(checker, "ensure", async function (deps: DepsType[]) {
         chai.assert.equal(deps.length, 0);
         return [];
       });
+      sandbox
+        .stub(cliUtils, "checkerEnabled")
+        .withArgs(CliConfigOptions.EnvCheckerValidateFuncCoreTools.toString())
+        .resolves(true)
+        .withArgs(
+          sinon.match((input: string) =>
+            [
+              CliConfigOptions.EnvCheckerValidateNode.toString(),
+              CliConfigOptions.EnvCheckerValidateDotnetSdk.toString(),
+            ].includes(input)
+          )
+        )
+        .resolves(false);
 
+      sandbox.stub(cliUtils, "isLinux").returns(false);
       const shouldContinue = await checker.resolve(deps);
       expect(shouldContinue).to.be.true;
-
-      const secondRes = await checker.resolve(deps);
-      expect(secondRes).to.be.true;
     });
   });
 });

@@ -15,7 +15,8 @@ export interface RemoteEnvs {
   customizedRemoteEnvs: { [name: string]: string };
 }
 
-export const envFileName = (envName: string): string => `.env.teamsfx.${envName}`;
+export const envFileNamePrefix = `.env.teamsfx.`;
+export const envFileName = (envName: string): string => envFileNamePrefix + envName;
 export const envFilePath = (envName: string, folder: string): string =>
   path.join(folder, envFileName(envName));
 
@@ -35,11 +36,12 @@ export const getEmptyEnvs = (): RemoteEnvs => {
 };
 
 export async function loadEnvFile(envPath: string): Promise<RemoteEnvs> {
-  if (!(await fs.pathExists(envPath))) {
-    return getEmptyEnvs();
-  }
-  const envs = dotenv.parse(await fs.readFile(envPath));
   const result = getEmptyEnvs();
+  if (!(await fs.pathExists(envPath))) {
+    return result;
+  }
+
+  const envs = dotenv.parse(await fs.readFile(envPath));
   const entries = Object.entries(envs);
   for (const [key, value] of entries) {
     if (Object.values(EnvKeys).includes(key)) {
@@ -60,8 +62,8 @@ export async function saveEnvFile(envPath: string, envs: RemoteEnvs): Promise<vo
     };
 
     if (
-      Utils.isKvPairEqual(newConfigs.customizedRemoteEnvs, configs.customizedRemoteEnvs) &&
-      Utils.isKvPairEqual(newConfigs.teamsfxRemoteEnvs, configs.teamsfxRemoteEnvs)
+      Utils.isKvPairEqual(newConfigs.teamsfxRemoteEnvs, configs.teamsfxRemoteEnvs) &&
+      Utils.isKvPairEqual(newConfigs.customizedRemoteEnvs, configs.customizedRemoteEnvs)
     ) {
       // Avoid updating dotenv file's modified time if nothing changes.
       // We decide whether to skip deployment by comparing the mtime of all project files and last deployment time.

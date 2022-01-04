@@ -50,17 +50,6 @@ export const frontendFolderName = "tabs";
 export const backendFolderName = "api";
 export const botFolderName = "bot";
 
-export const npmInstallCommand = "npm install --no-audit";
-export const nodeCommand = "node";
-export const frontendStartCommand = "npx react-scripts start";
-export const backendStartJsCommand = `@command start --javascript --port "7071" --cors "*"`;
-export const backendStartTsCommand = `@command start --typescript --port "7071" --cors "*"`;
-export const backendWatchCommand = "npx tsc --watch";
-export const ngrokStartCommand = "npx ngrok http 3978 --log=stdout";
-export const botStartJsCommand = "npx nodemon --signal SIGINT index.js";
-export const botStartTsCommand =
-  "npx nodemon --exec node --signal SIGINT -r ts-node/register index.ts";
-
 export const frontendStartPattern = /Compiled|Failed/g;
 export const backendStartPattern =
   /Worker process started and initialized|Host lock lease acquired by instance ID/g;
@@ -70,36 +59,21 @@ export const ngrokStartPattern = /started tunnel|failed to reconnect session/g;
 export const botStartPattern = /listening|[nodemon] app crashed/g;
 export const gulpServePattern = /^.*Finished subtask 'reload'.*/g;
 
-export const spfxInstallTitle = "spfx npm install";
 export const spfxInstallStartMessage = `executing 'npm install' under ${spfxFolderName} folder.`;
 export const gulpCertTitle = "gulp trust-dev-cert";
 export const gulpCertStartMessage = `executing 'gulp trust-dev-cert' under ${spfxFolderName} folder.`;
 export const gulpServeTitle = "gulp serve";
 export const gulpServeStartMessage = `executing 'gulp serve' under ${spfxFolderName} folder.`;
-export const frontendInstallTitle = "frontend npm install";
 export const frontendInstallStartMessage = `executing 'npm install' under ${frontendFolderName} folder.`;
-export const frontendStartTitle = "frontend start";
 export const frontendStartStartMessage = `executing 'react-scripts start' under ${frontendFolderName} folder.`;
-
-export const authStartTitle = "auth start";
 export const authStartStartMessage = "starting auth service.";
-
-export const backendInstallTitle = "backend npm install";
 export const backendInstallStartMessage = `executing 'npm install' under ${backendFolderName} folder.`;
-export const backendExtensionsInstallTitle = "backend extensions install";
 export const backendExtensionsInstallStartMessage =
   "installing Azure Functions binding extensions.";
-export const backendStartTitle = "backend start";
 export const backendStartStartMessage = `executing 'func start' under ${backendFolderName} folder.`;
-export const backendWatchTitle = "backend watch";
 export const backendWatchStartMessage = `executing 'tsc --watch' under ${backendFolderName} folder.`;
-
-export const botInstallTitle = "bot npm install";
 export const botInstallStartMessage = `executing 'npm install' under ${botFolderName} folder.`;
-export const botStartTitle = "bot start";
 export const botStartStartMessage = "starting bot.";
-
-export const ngrokStartTitle = "ngrok start";
 export const ngrokStartStartMessage = `executing 'ngrok http' under ${botFolderName} folder.`;
 
 export const previewTitle = "preview";

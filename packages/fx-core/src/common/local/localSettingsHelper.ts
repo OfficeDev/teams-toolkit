@@ -56,7 +56,8 @@ export async function convertToLocalEnvs(
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
   const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
   const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
-  const includeAuth = ProjectSettingsHelper.includeAuth(projectSettings);
+  const includeAAD = ProjectSettingsHelper.includeAAD(projectSettings);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
   const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
 
   // prepare config maps
@@ -92,12 +93,14 @@ export async function convertToLocalEnvs(
       localEnvs[LocalEnvFrontendKeys.Port] = "53000";
     }
 
-    if (includeAuth) {
+    if (includeAAD) {
       // frontend local envs
       localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localAuthEndpoint;
       localEnvs[LocalEnvFrontendKeys.LoginUrl] = `${localTabEndpoint}/auth-start.html`;
       localEnvs[LocalEnvFrontendKeys.ClientId] = clientId;
+    }
 
+    if (includeSimpleAuth) {
       // auth local envs (auth is only required by frontend)
       localEnvs[LocalEnvAuthKeys.Urls] = localAuthEndpoint;
       localEnvs[LocalEnvAuthKeys.ClientId] = clientId;
@@ -171,7 +174,7 @@ export async function convertToLocalEnvs(
     const localEnvProvider = new LocalEnvProvider(projectPath);
     if (includeFrontend) {
       const customEnvs = (
-        await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAuth, isMigrateFromV1)
+        await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAAD, isMigrateFromV1)
       ).customizedLocalEnvs;
       appendEnvWithPrefix(customEnvs, localEnvs, "FRONTEND_");
     }

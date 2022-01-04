@@ -27,13 +27,15 @@ export class ProjectSettingsHelper {
       (pluginName) => pluginName === ResourcePlugins.Bot
     );
 
-  public static includeAuth(projectSettings: ProjectSettings | undefined): boolean {
+  public static includeAAD(projectSettings: ProjectSettings | undefined): boolean {
     const selectedPlugins = (projectSettings?.solutionSettings as AzureSolutionSettings)
       ?.activeResourcePlugins;
-    const includeAad = selectedPlugins?.some((pluginName) => pluginName === ResourcePlugins.Aad);
-    const includeSimpleAuth = IsSimpleAuthEnabled(projectSettings);
+    return selectedPlugins?.some((pluginName) => pluginName === ResourcePlugins.Aad);
+  }
 
-    return includeAad && (!this.includeFrontend(projectSettings) || includeSimpleAuth);
+  public static includeSimpleAuth(projectSettings: ProjectSettings | undefined): boolean {
+    const includeSimpleAuth = IsSimpleAuthEnabled(projectSettings);
+    return !this.includeFrontend(projectSettings) || includeSimpleAuth;
   }
 
   public static isMigrateFromV1 = (projectSettings: ProjectSettings | undefined): boolean =>

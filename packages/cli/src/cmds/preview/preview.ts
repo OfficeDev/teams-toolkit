@@ -196,7 +196,7 @@ export default class Preview extends YargsCommand {
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
     const includeSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
-    const includeAuth = ProjectSettingsHelper.includeAuth(projectSettings);
+    const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
 
     // TODO: move path validation to core
     const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
@@ -287,7 +287,7 @@ export default class Preview extends YargsCommand {
       includeBot,
       dotnetChecker,
       funcToolChecker,
-      includeAuth
+      includeSimpleAuth
     );
     if (result.isErr()) {
       return result;

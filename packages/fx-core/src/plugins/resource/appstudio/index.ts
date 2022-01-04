@@ -277,33 +277,24 @@ export class AppStudioPlugin implements Plugin {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.updateManifest);
 
-    try {
-      const res = await this.appStudioPluginImpl.updateManifest(ctx, isLocalDebug);
-      if (res.isErr()) {
-        TelemetryUtils.sendErrorEvent(
-          TelemetryEventName.updateManifest,
-          res.error,
-          this.appStudioPluginImpl.commonProperties
-        );
+    const res = await this.appStudioPluginImpl.updateManifest(ctx, isLocalDebug);
+    if (res.isErr()) {
+      TelemetryUtils.sendErrorEvent(
+        TelemetryEventName.updateManifest,
+        res.error,
+        this.appStudioPluginImpl.commonProperties
+      );
+      if (res.error.name === AppStudioError.UpdateManifestCancelError.name) {
         return ok(Void);
+      } else {
+        return err(res.error);
       }
+    } else {
       TelemetryUtils.sendSuccessEvent(
         TelemetryEventName.updateManifest,
         this.appStudioPluginImpl.commonProperties
       );
       return ok(Void);
-    } catch (error) {
-      TelemetryUtils.sendErrorEvent(
-        TelemetryEventName.updateManifest,
-        error,
-        this.appStudioPluginImpl.commonProperties
-      );
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.UpdateManifestError.name,
-          AppStudioError.UpdateManifestError.message(error)
-        )
-      );
     }
   }
 

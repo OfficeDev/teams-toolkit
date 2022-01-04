@@ -6,6 +6,7 @@
  */
 
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { expect } from "chai";
 import fs from "fs-extra";
 import path from "path";
@@ -19,10 +20,14 @@ import {
   SimpleAuthValidator,
   SqlValidator,
 } from "../../commonlib";
+import { CliHelper } from "../../commonlib/cliHelper";
+import { provisionParametersKey } from "../../commonlib/constants";
 import {
   cleanUp,
   execAsync,
   execAsyncWithRetry,
+  getActivePluginsFromProjectSetting,
+  getProvisionParameterValueByKey,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -55,21 +60,10 @@ describe("Multi Env Happy Path for Azure", function () {
         `[Successfully] scaffold to ${projectPath}, stdout: '${result.stdout}', stderr: '${result.stderr}''`
       );
 
-      // set subscription
-      result = await execAsync(`teamsfx account set --subscription ${subscription}`, {
-        cwd: projectPath,
-        env: processEnv,
-        timeout: 0,
-      });
-      console.log(`[Successfully] set sub, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
+      await CliHelper.setSubscription(subscription, projectPath, processEnv);
 
       // add env
-      result = await execAsync(`teamsfx env add ${env} --env dev`, {
-        cwd: projectPath,
-        env: processEnv,
-        timeout: 0,
-      });
-      console.log(`[Successfully] env add, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
+      await CliHelper.addEnv(env, projectPath, processEnv);
 
       // update SKU from free to B1 to prevent free SKU limit error
       await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
@@ -124,7 +118,19 @@ describe("Multi Env Happy Path for Azure", function () {
         await FrontendValidator.validateProvision(frontend);
 
         // Validate Function App
-        const func = FunctionValidator.init(context, true);
+        const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
+        chai.assert.isArray(activeResourcePlugins);
+        const resourceBaseName: string = await getProvisionParameterValueByKey(
+          projectPath,
+          environmentManager.getDefaultEnvName(),
+          provisionParametersKey.resourceBaseName
+        );
+        const func = FunctionValidator.init(
+          context,
+          activeResourcePlugins as string[],
+          resourceBaseName,
+          true
+        );
         await FunctionValidator.validateProvision(func, false, true);
 
         // Validate SQL
@@ -157,7 +163,19 @@ describe("Multi Env Happy Path for Azure", function () {
         await FrontendValidator.validateDeploy(frontend);
 
         // Validate Function App
-        const func = FunctionValidator.init(context, true);
+        const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
+        chai.assert.isArray(activeResourcePlugins);
+        const resourceBaseName: string = await getProvisionParameterValueByKey(
+          projectPath,
+          environmentManager.getDefaultEnvName(),
+          provisionParametersKey.resourceBaseName
+        );
+        const func = FunctionValidator.init(
+          context,
+          activeResourcePlugins as string[],
+          resourceBaseName,
+          true
+        );
         await FunctionValidator.validateDeploy(func);
 
         // Validate Bot Deploy

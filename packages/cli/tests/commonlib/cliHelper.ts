@@ -3,10 +3,14 @@ import { ResourceToDeploy } from "./constants";
 import path from "path";
 
 export class CliHelper {
-  static async setSubscription(subscription: string, projectPath: string) {
+  static async setSubscription(
+    subscription: string,
+    projectPath: string,
+    processEnv?: NodeJS.ProcessEnv
+  ) {
     const result = await execAsync(`teamsfx account set --subscription ${subscription}`, {
       cwd: projectPath,
-      env: process.env,
+      env: processEnv ? processEnv : process.env,
       timeout: 0,
     });
     if (result.stderr) {
@@ -15,6 +19,19 @@ export class CliHelper {
       );
     } else {
       console.log(`[Successfully] set subscription for ${projectPath}`);
+    }
+  }
+
+  static async addEnv(env: string, projectPath: string, processEnv?: NodeJS.ProcessEnv) {
+    const result = await execAsync(`teamsfx env add ${env} --env dev`, {
+      cwd: projectPath,
+      env: processEnv ? processEnv : process.env,
+      timeout: 0,
+    });
+    if (result.stderr) {
+      console.error(`[Failed] add environment for ${projectPath}. Error message: ${result.stderr}`);
+    } else {
+      console.log(`[Successfully] add environment for ${projectPath}`);
     }
   }
 

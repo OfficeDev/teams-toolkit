@@ -27,7 +27,6 @@ import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import {
   Capability,
-  PluginId,
   provisionParametersKey,
   Resource,
   ResourceToDeploy,
@@ -50,15 +49,9 @@ describe("Deploy to customized resource group", function () {
   });
 
   it(`tab project can deploy function resource to customized resource group and successfully provision / deploy`, async function () {
-    // Create new tab project
+    // Create new tab + func project
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
-
-    await execAsync(`teamsfx resource add ${Resource.AzureFunction} --function-name func1`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] add function to ${projectPath}`);
+    await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
 
     // Create empty resource group
     const customizedRgName = `${appName}-customized-rg`;

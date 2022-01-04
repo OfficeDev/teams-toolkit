@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import axios from "axios";
-import * as chai from "chai";
+import "chai";
 import glob from "glob";
 import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
@@ -86,6 +86,7 @@ export class FunctionValidator {
     );
     chai.assert.exists(webappSettingsResponse);
     console.log("[dilin-debug] webappSettingsResponse: " + JSON.stringify(webappSettingsResponse));
+    console.log("[dilin-debug] ctx: " + JSON.stringify(this.ctx));
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.API_ENDPOINT],
       this.ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
@@ -208,8 +209,9 @@ export class FunctionValidator {
           ? `botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`
           : `${m365ClientId}`);
     } else if (activeResourcePlugins.includes(PluginId.Bot)) {
-      expectedM365ApplicationIdUri += `api://botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`;
+      expectedM365ApplicationIdUri = `api://botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`;
     }
+    console.log("[dilin-debug] expectedM365ApplicationIdUri: " + expectedM365ApplicationIdUri);
     return expectedM365ApplicationIdUri;
   }
 
@@ -218,10 +220,14 @@ export class FunctionValidator {
     activeResourcePlugins: string[],
     resourceBaseName: string
   ): string {
+    let m365ClientSecret = "";
     if (activeResourcePlugins.includes(PluginId.KeyVault)) {
-      return `@Microsoft.KeyVault(VaultName=${resourceBaseName};SecretName=m365ClientSecret`;
+      m365ClientSecret = `@Microsoft.KeyVault(VaultName=${resourceBaseName};SecretName=m365ClientSecret`;
     } else {
-      return ctx[PluginId.Aad][StateConfigKey.clientSecret];
+      m365ClientSecret = ctx[PluginId.Aad][StateConfigKey.clientSecret];
     }
+    console.log("[dilin-debug] m365ClientSecret: " + m365ClientSecret);
+
+    return m365ClientSecret;
   }
 }

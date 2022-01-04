@@ -7,7 +7,7 @@
 
 import path from "path";
 import "mocha";
-import * as chai from "chai";
+import "chai";
 
 import {
   getSubscriptionId,
@@ -21,7 +21,7 @@ import {
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, Resource, provisionParametersKey } from "../../commonlib/constants";
+import { Resource, provisionParametersKey } from "../../commonlib/constants";
 import { FunctionValidator } from "../../commonlib";
 
 describe("Configuration successfully changed when with different plugins", function () {

@@ -6,7 +6,7 @@
  */
 
 import path from "path";
-import * as chai from "chai";
+import "chai";
 
 import { AadValidator, FunctionValidator } from "../../commonlib";
 import {

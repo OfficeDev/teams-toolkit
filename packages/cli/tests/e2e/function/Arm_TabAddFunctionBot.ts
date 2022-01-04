@@ -7,7 +7,7 @@
 
 import path from "path";
 import "mocha";
-import * as chai from "chai";
+import "chai";
 
 import {
   getSubscriptionId,

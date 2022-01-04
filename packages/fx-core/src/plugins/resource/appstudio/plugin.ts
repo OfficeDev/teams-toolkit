@@ -37,10 +37,6 @@ import {
   TabOptionItem,
 } from "../../solution/fx-solution/question";
 import {
-  LOCAL_DEBUG_TAB_ENDPOINT,
-  LOCAL_DEBUG_TAB_DOMAIN,
-  LOCAL_DEBUG_AAD_ID,
-  LOCAL_DEBUG_TEAMS_APP_ID,
   REMOTE_AAD_ID,
   LOCAL_DEBUG_BOT_DOMAIN,
   BOT_DOMAIN,
@@ -48,26 +44,18 @@ import {
   WEB_APPLICATION_INFO_SOURCE,
   PluginNames,
   SOLUTION_PROVISION_SUCCEEDED,
-  REMOTE_TEAMS_APP_ID,
 } from "../../solution/fx-solution/constants";
 import { AppStudioError } from "./errors";
 import { AppStudioResultFactory } from "./results";
 import {
   Constants,
-  TEAMS_APP_MANIFEST_TEMPLATE,
-  CONFIGURABLE_TABS_TPL,
-  STATIC_TABS_TPL,
-  BOTS_TPL,
-  COMPOSE_EXTENSIONS_TPL,
   TEAMS_APP_SHORT_NAME_MAX_LENGTH,
   DEFAULT_DEVELOPER_WEBSITE_URL,
   FRONTEND_ENDPOINT,
   FRONTEND_DOMAIN,
-  LOCAL_BOT_ID,
   BOT_ID,
   REMOTE_MANIFEST,
   ErrorMessages,
-  SOLUTION,
   MANIFEST_TEMPLATE,
   TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
@@ -413,7 +401,7 @@ export class AppStudioPluginImpl {
     let manifestString: string;
     const manifestResult = await loadManifest(ctx.root, isLocalDebug);
     if (manifestResult.isErr()) {
-      throw manifestResult;
+      return err(manifestResult.error);
     } else {
       manifestString = JSON.stringify(manifestResult.value);
     }
@@ -424,7 +412,7 @@ export class AppStudioPluginImpl {
       manifest = JSON.parse(manifestString);
       const appDefinitionRes = await this.convertToAppDefinition(ctx, manifest, false);
       if (appDefinitionRes.isErr()) {
-        throw err(appDefinitionRes.error);
+        return err(appDefinitionRes.error);
       }
       appDefinition = appDefinitionRes.value;
     } else {
@@ -438,13 +426,15 @@ export class AppStudioPluginImpl {
           appManifest.error.name === AppStudioError.GetRemoteConfigFailedError.name &&
           !isProvisionSucceeded
         ) {
-          throw AppStudioResultFactory.UserError(
-            AppStudioError.GetRemoteConfigError.name,
-            AppStudioError.GetRemoteConfigError.message("Update manifest failed"),
-            HelpLinks.WhyNeedProvision
+          return err(
+            AppStudioResultFactory.UserError(
+              AppStudioError.GetRemoteConfigError.name,
+              AppStudioError.GetRemoteConfigError.message("Update manifest failed"),
+              HelpLinks.WhyNeedProvision
+            )
           );
         } else {
-          throw appManifest.error;
+          return err(appManifest.error);
         }
       }
       [appDefinition] = appManifest.value;
@@ -455,6 +445,16 @@ export class AppStudioPluginImpl {
       `${ctx.root}/${BuildFolderName}/${AppPackageFolderName}/manifest.` +
       (isLocalDebug ? "local" : ctx.envInfo.envName) +
       `.json`;
+    if (!(await fs.pathExists(manifestFileName))) {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.FileNotFoundError.name,
+          AppStudioError.FileNotFoundError.message(manifestFileName) +
+            " Run 'Provision in the cloud' first. Click Get Help to learn more about why you need to provision.",
+          HelpLinks.WhyNeedProvision
+        )
+      );
+    }
     const existingManifest = await fs.readJSON(manifestFileName);
     delete manifest.id;
     delete existingManifest.id;
@@ -519,7 +519,7 @@ export class AppStudioPluginImpl {
         ctx.logProvider
       );
       if (result.isErr()) {
-        throw result.error;
+        return err(result.error);
       }
 
       ctx.logProvider?.info(`Teams app updated: ${result.value}`);
@@ -531,12 +531,14 @@ export class AppStudioPluginImpl {
       return ok(teamsAppId);
     } catch (error) {
       if (error.message && error.message.includes("404")) {
-        throw AppStudioResultFactory.UserError(
-          AppStudioError.UpdateManifestWithInvalidAppError.name,
-          AppStudioError.UpdateManifestWithInvalidAppError.message(teamsAppId)
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.UpdateManifestWithInvalidAppError.name,
+            AppStudioError.UpdateManifestWithInvalidAppError.message(teamsAppId)
+          )
         );
       } else {
-        throw error;
+        return err(error);
       }
     }
   }

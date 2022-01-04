@@ -362,6 +362,7 @@ export default class Account extends YargsCommand {
       description: `${this.subCommands.map((cmd) => cmd.commandHead).join("|")}`,
       type: "string",
       choices: this.subCommands.map((cmd) => cmd.commandHead),
+      global: false,
     });
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));

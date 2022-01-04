@@ -41,8 +41,8 @@ export class FunctionValidator {
   private rg: string;
   private activeResourcePlugins: string[];
   private ctx: any;
-  private functionAppName: any;
-  private resourceBaseName: any;
+  private functionAppName: string;
+  private resourceBaseName: string;
 
   constructor(ctx: any, activeResourcePlugins: string[], resourceBaseName: string) {
     const resourceId = ctx[PluginId.Function][StateConfigKey.functionAppResourceId];

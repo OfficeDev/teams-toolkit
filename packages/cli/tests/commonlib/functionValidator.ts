@@ -13,6 +13,7 @@ import {
   getSiteNameFromResourceId,
   getWebappSettings,
   runWithRetry,
+  getWebappConfigs,
 } from "./utilities";
 
 const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
@@ -115,7 +116,7 @@ export class FunctionValidator {
     // validate app config with allowedOrigins
     if (this.activeResourcePlugins.includes(PluginId.FrontendHosting)) {
       console.log("validating app config.");
-      const webAppConfigResponse = await getWebappSettings(
+      const webAppConfigResponse = await getWebappConfigs(
         this.subscriptionId,
         this.rg,
         this.functionAppName,

@@ -6,7 +6,15 @@ export class FolderName {
   static readonly Frontend = "tabs";
   static readonly Bot = "bot";
   static readonly Function = "api";
+  static readonly SPFx = "SPFx";
 }
+
+export enum ProgrammingLanguage {
+  javascript = "javascript",
+  typescript = "typescript",
+}
+
+export const npmInstallCommand = "npm install --no-audit";
 
 export const LocalEnvAuthKeys = Object.freeze({
   ClientId: "AUTH_CLIENT_ID",

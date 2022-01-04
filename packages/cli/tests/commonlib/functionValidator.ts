@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import axios from "axios";
-import "chai";
+import * as chai from "chai";
 import glob from "glob";
 import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";

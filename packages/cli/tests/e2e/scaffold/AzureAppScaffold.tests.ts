@@ -7,7 +7,7 @@
 
 import { environmentManager } from "@microsoft/teamsfx-core";
 import path from "path";
-import "chai";
+import * as chai from "chai";
 import { BotValidator, FrontendValidator, FunctionValidator } from "../../commonlib";
 import { provisionParametersKey } from "../../commonlib/constants";
 

@@ -6,7 +6,7 @@
  */
 
 import path from "path";
-import "chai";
+import * as chai from "chai";
 
 import { AadValidator, FunctionValidator, SimpleAuthValidator } from "../../commonlib";
 import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";

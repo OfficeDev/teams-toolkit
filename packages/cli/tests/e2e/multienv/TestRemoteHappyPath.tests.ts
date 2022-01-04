@@ -7,7 +7,7 @@
 
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import "chai";
+import * as chai from "chai";
 import fs from "fs-extra";
 import path from "path";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";

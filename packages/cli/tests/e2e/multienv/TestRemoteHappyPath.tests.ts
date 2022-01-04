@@ -7,7 +7,7 @@
 
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import { expect } from "chai";
+import "chai";
 import fs from "fs-extra";
 import path from "path";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
@@ -77,8 +77,8 @@ describe("Multi Env Happy Path for Azure", function () {
         timeout: 0,
       });
       const envs = result.stdout.trim().split(/\r?\n/).sort();
-      expect(envs).to.deep.equal(["dev", "e2e"]);
-      expect(result.stderr).to.be.empty;
+      chai.expect(envs).to.deep.equal(["dev", "e2e"]);
+      chai.expect(result.stderr).to.be.empty;
       console.log(
         `[Successfully] env list, stdout: '${result.stdout}', stderr: '${result.stderr}'`
       );
@@ -180,7 +180,7 @@ describe("Multi Env Happy Path for Azure", function () {
 
       {
         // Validate validate manifest
-        expect(result.stderr).to.be.empty;
+        chai.expect(result.stderr).to.be.empty;
       }
 
       // package
@@ -193,7 +193,7 @@ describe("Multi Env Happy Path for Azure", function () {
       {
         // Validate package
         const file = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`;
-        expect(await fs.pathExists(file)).to.be.true;
+        chai.expect(await fs.pathExists(file)).to.be.true;
       }
 
       // publish

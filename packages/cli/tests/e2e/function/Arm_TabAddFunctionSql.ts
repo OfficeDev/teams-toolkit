@@ -36,7 +36,6 @@ describe("Configuration successfully changed when with different plugins", funct
   });
 
   it(`tab + function + azure sql`, async function () {
-    // Create tab project with function and bot
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);

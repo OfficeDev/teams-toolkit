@@ -84,6 +84,7 @@ export class FunctionValidator {
       token as string
     );
     chai.assert.exists(webappSettingsResponse);
+    console.log("[dilin-debug] webappSettingsResponse: " + JSON.stringify(webappSettingsResponse));
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.API_ENDPOINT],
       this.ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
@@ -120,6 +121,8 @@ export class FunctionValidator {
         this.functionAppName,
         token as string
       );
+      console.log("[dilin-debug] webAppConfigResponse: " + JSON.stringify(webAppConfigResponse));
+
       chai.assert.exists(webAppConfigResponse!.cors!.allowedOrigins);
       chai.assert.isArray(webAppConfigResponse!.cors!.allowedOrigins);
       chai

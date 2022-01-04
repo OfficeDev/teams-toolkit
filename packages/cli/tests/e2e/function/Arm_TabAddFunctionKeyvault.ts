@@ -35,7 +35,6 @@ describe("Configuration successfully changed when with different plugins", funct
   });
 
   it(`tab + function + key vault`, async function () {
-    // Create tab project with function and key vault
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);

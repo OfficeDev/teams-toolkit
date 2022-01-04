@@ -86,6 +86,16 @@ export async function deploy(
       };
     });
 
+  if (thunks.length === 0) {
+    return err(
+      returnUserError(
+        new Error(`invalid options: [${optionsToDeploy.join(", ")}]`),
+        SolutionSource,
+        SolutionError.NoResourcePluginSelected
+      )
+    );
+  }
+
   ctx.logProvider.info(
     util.format(
       getStrings().solution.SelectedPluginsToDeployNotice,

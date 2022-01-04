@@ -64,7 +64,8 @@ async function detectPortListening(port: number, host: string): Promise<boolean>
 
 export async function getPortsInUse(
   projectPath: string,
-  projectSettings: ProjectSettings
+  projectSettings: ProjectSettings,
+  ignoreDebugPort?: boolean
 ): Promise<number[]> {
   const ports: [number, string[]][] = [];
 
@@ -82,19 +83,23 @@ export async function getPortsInUse(
   const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
   if (includeBackend) {
     ports.push(...backendServicePorts);
-    const backendDevScript = await loadTeamsFxDevScript(
-      path.join(projectPath, FolderName.Function)
-    );
-    if (backendDevScript === undefined || backendDebugPortRegex.test(backendDevScript)) {
-      ports.push(...backendDebugPorts);
+    if (!(ignoreDebugPort === true)) {
+      const backendDevScript = await loadTeamsFxDevScript(
+        path.join(projectPath, FolderName.Function)
+      );
+      if (backendDevScript === undefined || backendDebugPortRegex.test(backendDevScript)) {
+        ports.push(...backendDebugPorts);
+      }
     }
   }
-  const includeBot = await ProjectSettingsHelper.includeBot(projectSettings);
+  const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
   if (includeBot) {
     ports.push(...botServicePorts);
-    const botDevScript = await loadTeamsFxDevScript(path.join(projectPath, FolderName.Bot));
-    if (botDevScript === undefined || botDebugPortRegex.test(botDevScript)) {
-      ports.push(...botDebugPorts);
+    if (!(ignoreDebugPort === true)) {
+      const botDevScript = await loadTeamsFxDevScript(path.join(projectPath, FolderName.Bot));
+      if (botDevScript === undefined || botDebugPortRegex.test(botDevScript)) {
+        ports.push(...botDebugPorts);
+      }
     }
   }
 

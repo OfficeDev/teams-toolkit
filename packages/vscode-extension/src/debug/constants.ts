@@ -1,13 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-export const frontendStartCommand = "frontend start";
-export const backendStartCommand = "backend start";
-export const authStartCommand = "auth start";
-export const ngrokStartCommand = "ngrok start";
-export const botStartCommand = "bot start";
 export const openWenClientCommand = "launch Teams web client";
-export const backendWatchCommand = "backend watch";
 export const npmRunDevRegex = /npm[\s]+run[\s]+dev/im;
 
 export const frontendProblemMatcher = "$teamsfx-frontend-watch";

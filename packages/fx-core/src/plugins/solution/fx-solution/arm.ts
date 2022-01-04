@@ -68,7 +68,7 @@ const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const pollWaitSeconds = 10;
-const maxRetryTimes = 4;
+const MaxLogTimes = 4;
 
 // constant string
 const resourceBaseName = "resourceBaseName";
@@ -150,9 +150,7 @@ export async function generateArmTemplateV3(
 }
 
 type DeployContext = {
-  azureAccountProvider?: AzureAccountProvider;
-  logProvider?: LogProvider;
-  // ctx: SolutionContext;
+  ctx: SolutionContext;
   finished: boolean;
   client: ResourceManagementClient;
   resourceGroupName: string;
@@ -205,7 +203,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
   let tryCount = 0;
   let previousStatus: { [key: string]: string } = {};
   let polledOperations: string[] = [];
-  deployCtx.logProvider?.info(
+  deployCtx.ctx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
       PluginDisplayName.Solution
@@ -236,7 +234,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
                 let client = deployCtx.client;
                 if (operation.subscriptionId !== deployCtx.client.subscriptionId) {
                   const azureToken =
-                    await deployCtx.azureAccountProvider?.getAccountCredentialAsync();
+                    await deployCtx.ctx.azureAccountProvider?.getAccountCredentialAsync();
                   client = new ResourceManagementClient(azureToken!, operation.subscriptionId);
                 }
 
@@ -258,7 +256,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
 
       for (const key in currentStatus) {
         if (currentStatus[key] !== previousStatus[key]) {
-          deployCtx.logProvider?.info(
+          deployCtx.ctx.logProvider?.info(
             `[${PluginDisplayName.Solution}] ${key} -> ${currentStatus[key]}`
           );
         }
@@ -267,11 +265,20 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
       polledOperations = [];
     } catch (error) {
       tryCount++;
-      if (tryCount > maxRetryTimes) {
-        throw error;
+      if (tryCount < MaxLogTimes) {
+        deployCtx.ctx.logProvider?.warning(
+          `[${PluginDisplayName.Solution}] ${deployCtx.deploymentName} -> waiting to get deplomyment status [Retry time: ${tryCount}]`
+        );
       }
-      deployCtx.logProvider?.warning(
-        `[${PluginDisplayName.Solution}] ${deployCtx.deploymentName} -> waiting to get deplomyment status [${tryCount}]`
+      const pollError = returnSystemError(
+        error,
+        SolutionSource,
+        SolutionError.FailedToPollArmDeploymentStatus
+      );
+      sendErrorTelemetryThenReturnError(
+        SolutionTelemetryEvent.ArmDeployment,
+        pollError,
+        deployCtx.ctx.telemetryReporter
       );
     }
   }
@@ -327,8 +334,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   };
 
   const deployCtx: DeployContext = {
-    azureAccountProvider: ctx.azureAccountProvider,
-    logProvider: ctx.logProvider,
+    ctx: ctx,
     finished: false,
     deploymentStartTime: Date.now(),
     client: client,
@@ -459,8 +465,7 @@ export async function doDeployArmTemplatesV3(
   };
 
   const deployCtx: DeployContext = {
-    azureAccountProvider: azureAccountProvider,
-    logProvider: ctx.logProvider,
+    ctx: ctx as any as SolutionContext,
     finished: false,
     deploymentStartTime: Date.now(),
     client: client,
@@ -1340,7 +1345,7 @@ async function wrapGetDeploymentError(
     const deploymentError = await getDeploymentError(deployCtx, resourceGroupName, deploymentName);
     return ok(deploymentError);
   } catch (error: any) {
-    deployCtx.logProvider?.error(
+    deployCtx.ctx.logProvider?.error(
       `[${PluginDisplayName.Solution}] Failed to get deployment error for ${error.message}.`
     );
     const returnError = new Error(

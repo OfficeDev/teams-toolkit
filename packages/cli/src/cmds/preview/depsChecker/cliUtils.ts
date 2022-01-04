@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import UI from "../../../userInteraction";
 import { CliConfigEnvChecker, UserSettings } from "../../../userSetttings";
 import * as os from "os";

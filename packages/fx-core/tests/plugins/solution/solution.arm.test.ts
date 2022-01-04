@@ -862,7 +862,19 @@ describe("Poll Deployment Status", () => {
         properties: {
           targetResource: {
             resourceName: "test resource",
+            resourceType: "Microsoft.Resources/deployments",
             id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Resources/deployments/addTeamsFxConfigurations",
+          },
+          provisioningState: "Running",
+          timestamp: Date.now(),
+        },
+      },
+      {
+        properties: {
+          targetResource: {
+            resourceName: "test resource",
+            resourceType: "Microsoft.Web/sites/config",
+            id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Web/sites/simpleAuth/config/appsettings",
           },
           provisioningState: "Running",
           timestamp: Date.now(),

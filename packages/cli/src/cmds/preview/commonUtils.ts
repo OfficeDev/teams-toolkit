@@ -14,13 +14,12 @@ import {
   LogLevel,
 } from "@microsoft/teamsfx-api";
 import * as dotenv from "dotenv";
-import * as net from "net";
 
 import * as constants from "./constants";
 import { TaskResult } from "./task";
 import cliLogger from "../../commonlib/log";
 import { TaskFailed } from "./errors";
-import cliTelemetry from "../../telemetry/cliTelemetry";
+import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -29,7 +28,7 @@ import {
 import { getNpmInstallLogInfo } from "./npmLogHandler";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
-import { FxCore, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { FxCore, isMultiEnvEnabled, LocalEnvManager } from "@microsoft/teamsfx-core";
 import { getSystemInputs, getColorizedString } from "../../utils";
 import { isWindows } from "./depsChecker/common";
 
@@ -273,64 +272,15 @@ export function getBotLocalEnv(
   return getLocalEnvWithPrefix(env, constants.botLocalEnvPrefix);
 }
 
-async function detectPortListeningImpl(port: number, host: string): Promise<boolean> {
-  return new Promise<boolean>((resolve) => {
-    try {
-      const server = net.createServer();
-      server
-        .once("error", (err) => {
-          if (err.message.includes("EADDRINUSE")) {
-            resolve(true);
-          } else {
-            resolve(false);
-          }
-        })
-        .once("listening", () => {
-          server.close();
-        })
-        .once("close", () => {
-          resolve(false);
-        })
-        .listen(port, host);
-    } catch (err) {
-      // ignore any error to not block preview
-      resolve(false);
-    }
-  });
-}
-
-export async function detectPortListening(port: number, hosts: string[]): Promise<boolean> {
-  for (const host of hosts) {
-    if (await detectPortListeningImpl(port, host)) {
-      return true;
-    }
+export async function getPortsInUse(workspaceFolder: string): Promise<number[]> {
+  const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
+  try {
+    const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
+    return await localEnvManager.getPortsInUse(workspaceFolder, projectSettings);
+  } catch (error: any) {
+    cliLogger.warning(`Failed to check used ports. Error: ${error}`);
+    return [];
   }
-  return false;
-}
-
-export async function getPortsInUse(
-  includeFrontend: boolean,
-  includeBackend: boolean,
-  includeBot: boolean
-): Promise<number[]> {
-  const ports: [number, string[]][] = [];
-  if (includeFrontend) {
-    ports.push(...constants.frontendPorts);
-  }
-  if (includeBackend) {
-    ports.push(...constants.backendPorts);
-  }
-  if (includeBot) {
-    ports.push(...constants.botPorts);
-  }
-
-  const portsInUse: number[] = [];
-  for (const port of ports) {
-    if (await detectPortListening(port[0], port[1])) {
-      portsInUse.push(port[0]);
-    }
-  }
-  return portsInUse;
 }
 
 export function mergeProcessEnv(

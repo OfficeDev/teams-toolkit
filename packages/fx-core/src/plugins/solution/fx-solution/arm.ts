@@ -68,7 +68,7 @@ const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const pollWaitSeconds = 10;
-const MaxLogTimes = 4;
+const maxLogTimes = 4;
 
 // constant string
 const resourceBaseName = "resourceBaseName";
@@ -265,21 +265,22 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
       polledOperations = [];
     } catch (error) {
       tryCount++;
-      if (tryCount < MaxLogTimes) {
+      if (tryCount < maxLogTimes) {
         deployCtx.ctx.logProvider?.warning(
           `[${PluginDisplayName.Solution}] ${deployCtx.deploymentName} -> waiting to get deplomyment status [Retry time: ${tryCount}]`
         );
+      } else if (tryCount === maxLogTimes) {
+        const pollError = returnSystemError(
+          error,
+          SolutionSource,
+          SolutionError.FailedToPollArmDeploymentStatus
+        );
+        sendErrorTelemetryThenReturnError(
+          SolutionTelemetryEvent.ArmDeployment,
+          pollError,
+          deployCtx.ctx.telemetryReporter
+        );
       }
-      const pollError = returnSystemError(
-        error,
-        SolutionSource,
-        SolutionError.FailedToPollArmDeploymentStatus
-      );
-      sendErrorTelemetryThenReturnError(
-        SolutionTelemetryEvent.ArmDeployment,
-        pollError,
-        deployCtx.ctx.telemetryReporter
-      );
     }
   }
 }

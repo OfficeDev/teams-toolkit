@@ -67,6 +67,8 @@ const bicepOrchestrationConfigFileName = "config.bicep";
 const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
+const pollWaitSeconds = 10;
+const maxRetryTimes = 4;
 
 // constant string
 const resourceBaseName = "resourceBaseName";
@@ -162,6 +164,7 @@ type OperationStatus = {
   resourceName: string;
   resourceGroupName: string;
   subscriptionId: string;
+  resourceType?: string;
   status: string;
 };
 
@@ -187,6 +190,7 @@ export function getRequiredOperation(
         resourceName: operation.properties?.targetResource?.resourceName,
         resourceGroupName: resourceGroupName,
         subscriptionId: subscriptionId,
+        resourceType: operation.properties.targetResource.resourceType,
         status: operation.properties.provisioningState,
       };
     } catch (error) {
@@ -198,7 +202,6 @@ export function getRequiredOperation(
 }
 
 export async function pollDeploymentStatus(deployCtx: DeployContext) {
-  const failedCount = 4;
   let tryCount = 0;
   let previousStatus: { [key: string]: string } = {};
   let polledOperations: string[] = [];
@@ -209,7 +212,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
     )
   );
   while (!deployCtx.finished) {
-    await waitSeconds(10);
+    await waitSeconds(pollWaitSeconds);
     try {
       const operations = await deployCtx.client.deploymentOperations.list(
         deployCtx.resourceGroupName,
@@ -228,23 +231,26 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
             currentStatus[operation.resourceName] = operation.status;
             if (!polledOperations.includes(operation.resourceName)) {
               polledOperations.push(operation.resourceName);
-              let client = deployCtx.client;
-              if (operation.subscriptionId !== deployCtx.client.subscriptionId) {
-                const azureToken =
-                  await deployCtx.azureAccountProvider?.getAccountCredentialAsync();
-                client = new ResourceManagementClient(azureToken!, operation.subscriptionId);
-              }
-
-              const subOperations = await client.deploymentOperations.list(
-                operation.resourceGroupName,
-                operation.resourceName
-              );
-              subOperations.forEach((sub) => {
-                const subOperation = getRequiredOperation(sub, deployCtx);
-                if (subOperation) {
-                  currentStatus[subOperation.resourceName] = subOperation.status;
+              // get sub operations when resource type is deployments.
+              if (operation.resourceType === ConstantString.DeploymentResourceType) {
+                let client = deployCtx.client;
+                if (operation.subscriptionId !== deployCtx.client.subscriptionId) {
+                  const azureToken =
+                    await deployCtx.azureAccountProvider?.getAccountCredentialAsync();
+                  client = new ResourceManagementClient(azureToken!, operation.subscriptionId);
                 }
-              });
+
+                const subOperations = await client.deploymentOperations.list(
+                  operation.resourceGroupName,
+                  operation.resourceName
+                );
+                subOperations.forEach((sub) => {
+                  const subOperation = getRequiredOperation(sub, deployCtx);
+                  if (subOperation) {
+                    currentStatus[subOperation.resourceName] = subOperation.status;
+                  }
+                });
+              }
             }
           }
         })
@@ -261,7 +267,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
       polledOperations = [];
     } catch (error) {
       tryCount++;
-      if (tryCount > failedCount) {
+      if (tryCount > maxRetryTimes) {
         throw error;
       }
       deployCtx.logProvider?.warning(

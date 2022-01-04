@@ -25,6 +25,7 @@ mock("../../../src/debug/depsChecker/vscodeUtils", {
   checkerEnabled: function (key: string) {},
   hasFunction: async function () {},
   hasNgrok: async function () {},
+  hasBot: async function () {},
 });
 
 import * as vscodeUtils from "../../../src/debug/depsChecker/vscodeUtils";
@@ -59,6 +60,7 @@ suite("[Checker UT - Extension]", () => {
       sandbox.stub(vscodeUtils, "checkerEnabled").returns(true);
       sandbox.stub(vscodeUtils, "hasFunction").resolves(true);
       sandbox.stub(vscodeUtils, "hasNgrok").resolves(true);
+      sandbox.stub(vscodeUtils, "hasBot").resolves(true);
       sandbox.stub(os, "type").onFirstCall().returns("Windows_NT").onSecondCall().returns("Linux");
 
       const shouldContinue = await checker.resolve(deps);
@@ -96,6 +98,7 @@ suite("[Checker UT - Extension]", () => {
       sandbox.stub(vscodeUtils, "checkerEnabled").returns(true);
       sandbox.stub(vscodeUtils, "hasFunction").resolves(true);
       sandbox.stub(vscodeUtils, "hasNgrok").resolves(true);
+      sandbox.stub(vscodeUtils, "hasBot").resolves(true);
 
       const openUrlSpy = sandbox.stub(vscodeUtils, "openUrl").callsFake(async (url: string) => {});
       const showSpy = sandbox.stub(vscodeUtils, "showWarningMessage");
@@ -125,6 +128,7 @@ suite("[Checker UT - Extension]", () => {
       sandbox.stub(vscodeUtils, "checkerEnabled").returns(true);
       sandbox.stub(vscodeUtils, "hasFunction").resolves(true);
       sandbox.stub(vscodeUtils, "hasNgrok").resolves(true);
+      sandbox.stub(vscodeUtils, "hasBot").resolves(true);
 
       const showSpy = sandbox.stub(vscodeUtils, "showWarningMessage");
       const openUrlSpy = sandbox.stub(vscodeUtils, "openUrl").callsFake(async (url: string) => {});
@@ -153,10 +157,8 @@ suite("[Checker UT - Extension]", () => {
         DepsType.Ngrok,
       ];
 
-      chai.util.addMethod(checker, "ensure", async function (deps: DepsType[]) {
-        chai.assert.equal(deps.length, 0);
-        return [];
-      });
+      sandbox.stub(os, "type").returns("Windows_NT");
+      sandbox.stub(vscodeUtils, "hasFunction").resolves(false);
       sandbox
         .stub(vscodeUtils, "checkerEnabled")
         .withArgs("validateFuncCoreTools")
@@ -166,11 +168,19 @@ suite("[Checker UT - Extension]", () => {
         )
         .returns(false);
 
-      sandbox.stub(vscodeUtils, "hasFunction").resolves(false);
-      sandbox.stub(vscodeUtils, "hasNgrok").resolves(false);
-      sandbox.stub(os, "type").returns("Windows_NT");
+      sandbox.stub(vscodeUtils, "hasNgrok").onCall(0).resolves(false).onCall(1).resolves(true);
+      sandbox.stub(vscodeUtils, "hasBot").onCall(0).resolves(true).onCall(1).resolves(false);
+
+      chai.util.addMethod(checker, "ensure", async function (deps: DepsType[]) {
+        chai.assert.equal(deps.length, 0);
+        return [];
+      });
+
       const shouldContinue = await checker.resolve(deps);
       expect(shouldContinue).to.be.true;
+
+      const secondRes = await checker.resolve(deps);
+      expect(secondRes).to.be.true;
     });
   });
 });

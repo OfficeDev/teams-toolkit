@@ -1,5 +1,5 @@
 import { commands, MessageItem, Uri, window, workspace, WorkspaceConfiguration } from "vscode";
-import { getSkipNgrokConfig, hasTeamsfxBackend } from "../commonUtils";
+import { getSkipNgrokConfig, hasTeamsfxBackend, hasTeamsfxBot } from "../commonUtils";
 
 const configurationPrefix = "fx-extension";
 
@@ -19,6 +19,10 @@ export function checkerEnabled(key: string): boolean {
 
 export async function hasFunction(): Promise<boolean> {
   return hasTeamsfxBackend();
+}
+
+export async function hasBot(): Promise<boolean> {
+  return await hasTeamsfxBot();
 }
 
 export async function hasNgrok(): Promise<boolean> {

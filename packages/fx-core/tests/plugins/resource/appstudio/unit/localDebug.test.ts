@@ -199,7 +199,7 @@ describe("Post Local Debug", () => {
 
   it("should return AppDefinition error", async () => {
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources/",
+      root: "./tests/plugins/resource/appstudio/resources-multi-env/",
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       appStudioToken: new MockedAppStudioTokenProvider(),

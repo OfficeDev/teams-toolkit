@@ -11,7 +11,7 @@ var serverfarmsName = contains(provisionParameters, 'botServerfarmsName') ? prov
 var webAppSKU = contains(provisionParameters, 'botWebAppSKU') ? provisionParameters['botWebAppSKU'] : 'F1' // Try to read SKU for Azure Web App from parameters
 var webAppName = contains(provisionParameters, 'botSitesName') ? provisionParameters['botSitesName'] : '${resourceBaseName}bot' // Try to read name for Azure Web App from parameters
 
-// Registers your web service as a bot with the Bot Framework
+// Register your web service as a bot with the Bot Framework
 resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
   kind: 'azurebot'
   location: 'global'
@@ -26,7 +26,7 @@ resource botService 'Microsoft.BotService/botServices@2021-03-01' = {
   }
 }
 
-// Connects the bot service to Microsoft Teams
+// Connect the bot service to Microsoft Teams
 resource botServiceMsTeamsChannel 'Microsoft.BotService/botServices/channels@2021-03-01' = {
   parent: botService
   location: 'global'
@@ -46,7 +46,7 @@ resource serverfarm 'Microsoft.Web/serverfarms@2021-02-01' = {
   }
 }
 
-// Web app that hosts your bot
+// Web App that hosts your bot
 resource webApp 'Microsoft.Web/sites@2021-02-01' = {
   kind: 'app'
   location: resourceGroup().location

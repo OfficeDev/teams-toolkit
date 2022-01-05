@@ -1,5 +1,5 @@
 import { execAsync, execAsyncWithRetry } from "../e2e/commonUtils";
-import { ResourceToDeploy } from "./constants";
+import { Capability, Resource, ResourceToDeploy } from "./constants";
 import path from "path";
 
 export class CliHelper {
@@ -65,7 +65,7 @@ export class CliHelper {
   static async createProjectWithCapability(
     appName: string,
     testFolder: string,
-    capability: string
+    capability: Capability
   ) {
     const result = await execAsync(
       `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} `,
@@ -86,7 +86,7 @@ export class CliHelper {
     }
   }
 
-  static async addCapabilityToProject(projectPath: string, capabilityToAdd: string) {
+  static async addCapabilityToProject(projectPath: string, capabilityToAdd: Capability) {
     const result = await execAsync(`teamsfx capability add ${capabilityToAdd}`, {
       cwd: projectPath,
       env: process.env,
@@ -100,7 +100,7 @@ export class CliHelper {
     }
   }
 
-  static async addResourceToProject(projectPath: string, resourceToAdd: string, options = "") {
+  static async addResourceToProject(projectPath: string, resourceToAdd: Resource, options = "") {
     const result = await execAsync(`teamsfx resource add ${resourceToAdd} ${options}`, {
       cwd: projectPath,
       env: process.env,

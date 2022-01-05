@@ -78,7 +78,7 @@ describe("Aad Error Tests", function () {
         ).envState;
         await fs.writeJSON(filePath, state, { spaces: 4 });
 
-        setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+        await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
         try {
           const { stdout, stderr } = await execAsync(
             `teamsfx provision --subscription ${subscription}`,
@@ -146,11 +146,7 @@ describe("Aad Error Tests", function () {
   });
 
   it(`AAD: UnknownPermissionScope`, async function () {
-    if (isMultiEnvEnabled()) {
-      setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    } else {
-      setSimpleAuthSkuNameToB1(projectPath);
-    }
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
 
     {
       // update permission
@@ -176,11 +172,7 @@ describe("Aad Error Tests", function () {
   });
 
   it(`AAD: UnknownPermissionRole`, async function () {
-    if (isMultiEnvEnabled()) {
-      setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    } else {
-      setSimpleAuthSkuNameToB1(projectPath);
-    }
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
 
     {
       // update permission
@@ -206,11 +198,7 @@ describe("Aad Error Tests", function () {
   });
 
   it(`AAD: ParsePermissionError`, async function () {
-    if (isMultiEnvEnabled()) {
-      setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    } else {
-      setSimpleAuthSkuNameToB1(projectPath);
-    }
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
 
     {
       // update permission

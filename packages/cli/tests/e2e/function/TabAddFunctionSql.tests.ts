@@ -37,7 +37,7 @@ describe("Configuration successfully changed when with different plugins", funct
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);
 
     // Provision
-    setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);

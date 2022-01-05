@@ -108,9 +108,6 @@ export class FunctionValidator {
       token as string
     );
     chai.assert.exists(webappSettingsResponse);
-    console.log("[dilin-debug] webappSettingsResponse: " + JSON.stringify(webappSettingsResponse));
-    console.log("[dilin-debug] ctx: " + JSON.stringify(this.ctx));
-    console.log("[dilin-debug] activeResourcePlugins: " + JSON.stringify(activeResourcePlugins));
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.API_ENDPOINT],
       this.ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
@@ -119,41 +116,16 @@ export class FunctionValidator {
       webappSettingsResponse[BaseConfig.M365_APPLICATION_ID_URI],
       this.getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
     );
-    const expectedM365ClientSecret = await this.getM365ClientSecret(
-      activeResourcePlugins,
-      resourceBaseName
-    );
-    console.log(`[dilin-debug] expectedM365ClientSecret: ${expectedM365ClientSecret}`);
-    console.log(
-      `[dilin-debug] webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET]: ${
-        webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET]
-      }`
-    );
-
-    console.log(
-      `[dilin-debug] type of expectedM365ClientSecret: ${typeof expectedM365ClientSecret}`
-    );
-    console.log(
-      `[dilin-debug] type of webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET]: ${typeof webappSettingsResponse[
-        BaseConfig.M365_CLIENT_SECRET
-      ]}`
-    );
-
     chai.assert.equal(
-      webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET] as string,
-      expectedM365ClientSecret as string
+      webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
+      await this.getM365ClientSecret(activeResourcePlugins, resourceBaseName)
     );
-    console.log("[dilin] successfully validate M365_CLIENT_SECRET.");
-
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.IDENTITY_ID],
       this.ctx[PluginId.Identity][StateConfigKey.identityClientId] as string
     );
-    console.log("[dilin] successfully validate IDENTITY_ID.");
 
     if (activeResourcePlugins.includes(PluginId.AzureSQL)) {
-      console.log("validating app setting [sql].");
-
       chai.assert.equal(
         webappSettingsResponse[SQLConfig.SQL_ENDPOINT],
         this.ctx[PluginId.AzureSQL][StateConfigKey.sqlEndpoint] as string
@@ -173,8 +145,6 @@ export class FunctionValidator {
         this.functionAppName,
         token as string
       );
-      console.log("[dilin-debug] webAppConfigResponse: " + JSON.stringify(webAppConfigResponse));
-
       chai.assert.exists(webAppConfigResponse!.cors!.allowedOrigins);
       chai.assert.isArray(webAppConfigResponse!.cors!.allowedOrigins);
       chai
@@ -261,7 +231,6 @@ export class FunctionValidator {
     } else if (activeResourcePlugins.includes(PluginId.Bot)) {
       expectedM365ApplicationIdUri = `api://botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`;
     }
-    console.log("[dilin-debug] expectedM365ApplicationIdUri: " + expectedM365ApplicationIdUri);
     return expectedM365ApplicationIdUri;
   }
 
@@ -279,8 +248,6 @@ export class FunctionValidator {
         this.env
       );
     }
-    console.log("[dilin-debug] m365ClientSecret: " + m365ClientSecret);
-
     return m365ClientSecret;
   }
 }

@@ -200,7 +200,6 @@ export async function configLocalDebugSettings(
         }
 
         if (includeAAD) {
-          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
           frontendEnvs!.teamsfxLocalEnvs[
             EnvKeysFrontend.LoginUrl
           ] = `${localTabEndpoint}/auth-start.html`;
@@ -208,6 +207,7 @@ export async function configLocalDebugSettings(
         }
 
         if (includeSimpleAuth) {
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
           await prepareLocalAuthService(localAuthPackagePath);
         }
 

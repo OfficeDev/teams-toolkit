@@ -95,12 +95,14 @@ export async function convertToLocalEnvs(
 
     if (includeAAD) {
       // frontend local envs
-      localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localAuthEndpoint;
       localEnvs[LocalEnvFrontendKeys.LoginUrl] = `${localTabEndpoint}/auth-start.html`;
       localEnvs[LocalEnvFrontendKeys.ClientId] = clientId;
     }
 
     if (includeSimpleAuth) {
+      // frontend local envs
+      localEnvs[LocalEnvFrontendKeys.TeamsFxEndpoint] = localAuthEndpoint;
+
       // auth local envs (auth is only required by frontend)
       localEnvs[LocalEnvAuthKeys.Urls] = localAuthEndpoint;
       localEnvs[LocalEnvAuthKeys.ClientId] = clientId;

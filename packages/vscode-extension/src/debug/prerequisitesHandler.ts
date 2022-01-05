@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import { assembleError, err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
@@ -31,13 +31,14 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       // ignore telemetry error
     }
   } catch (error: any) {
+    const fxError = assembleError(error);
     try {
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, error as FxError);
+      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, fxError);
     } catch {
       // ignore telemetry error
     }
 
-    return err(error as FxError);
+    return err(fxError);
   }
 
   return ok(null);

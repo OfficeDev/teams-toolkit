@@ -6,7 +6,12 @@ import * as chai from "chai";
 import glob from "glob";
 import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
-import { StateConfigKey, PluginId } from "./constants";
+import {
+  getActivePluginsFromProjectSetting,
+  getProvisionParameterValueByKey,
+} from "../e2e/commonUtils";
+import { CliHelper } from "./cliHelper";
+import { StateConfigKey, PluginId, provisionParametersKey } from "./constants";
 import {
   getSubscriptionIdFromResourceId,
   getResourceGroupNameFromResourceId,
@@ -40,19 +45,26 @@ enum SQLConfig {
 export class FunctionValidator {
   private subscriptionId: string;
   private rg: string;
-  private activeResourcePlugins: string[];
   private ctx: any;
   private functionAppName: string;
-  private resourceBaseName: string;
+  private projectPath: string;
+  private env: string;
 
-  constructor(ctx: any, activeResourcePlugins: string[], resourceBaseName: string) {
-    const resourceId = ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
-    this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
-    this.rg = getResourceGroupNameFromResourceId(resourceId);
-    this.activeResourcePlugins = activeResourcePlugins;
+  constructor(ctx: any, projectPath: string, env: string) {
     this.ctx = ctx;
-    this.resourceBaseName = resourceBaseName;
-    this.functionAppName = getSiteNameFromResourceId(resourceId);
+    this.projectPath = projectPath;
+    this.env = env;
+
+    if (
+      ctx &&
+      ctx[PluginId.Function] &&
+      ctx[PluginId.Function][StateConfigKey.functionAppResourceId]
+    ) {
+      const resourceId = ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
+      this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
+      this.rg = getResourceGroupNameFromResourceId(resourceId);
+      this.functionAppName = getSiteNameFromResourceId(resourceId);
+    }
   }
 
   public static async validateScaffold(
@@ -79,6 +91,13 @@ export class FunctionValidator {
     const tokenCredential = await tokenProvider.getAccountCredentialAsync();
     const token = (await tokenCredential?.getToken())?.accessToken;
 
+    const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
+    chai.assert.isArray(activeResourcePlugins);
+    const resourceBaseName = await getProvisionParameterValueByKey(
+      this.projectPath,
+      this.env,
+      provisionParametersKey.resourceBaseName
+    );
     // Validating app settings
     console.log("validating app settings.");
     const webappSettingsResponse = await getWebappSettings(
@@ -96,17 +115,17 @@ export class FunctionValidator {
     );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.M365_APPLICATION_ID_URI],
-      this.getExpectedM365ApplicationIdUri(this.ctx, this.activeResourcePlugins)
+      this.getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
     );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
-      this.getM365ClientSecret(this.ctx, this.activeResourcePlugins, this.resourceBaseName)
+      this.getM365ClientSecret(activeResourcePlugins, resourceBaseName)
     );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.IDENTITY_ID],
       this.ctx[PluginId.Identity][StateConfigKey.identityClientId] as string
     );
-    if (this.activeResourcePlugins.includes(PluginId.AzureSQL)) {
+    if (activeResourcePlugins.includes(PluginId.AzureSQL)) {
       chai.assert.equal(
         webappSettingsResponse[SQLConfig.SQL_ENDPOINT],
         this.ctx[PluginId.AzureSQL][StateConfigKey.sqlEndpoint] as string
@@ -118,7 +137,7 @@ export class FunctionValidator {
     }
 
     // validate app config with allowedOrigins
-    if (this.activeResourcePlugins.includes(PluginId.FrontendHosting)) {
+    if (activeResourcePlugins.includes(PluginId.FrontendHosting)) {
       console.log("validating app config.");
       const webAppConfigResponse = await getWebappConfigs(
         this.subscriptionId,
@@ -218,16 +237,18 @@ export class FunctionValidator {
     return expectedM365ApplicationIdUri;
   }
 
-  private getM365ClientSecret(
-    ctx: any,
+  private async getM365ClientSecret(
     activeResourcePlugins: string[],
     resourceBaseName: string
-  ): string {
+  ): Promise<string> {
     let m365ClientSecret = "";
     if (activeResourcePlugins.includes(PluginId.KeyVault)) {
       m365ClientSecret = `@Microsoft.KeyVault(VaultName=${resourceBaseName};SecretName=m365ClientSecret`;
     } else {
-      m365ClientSecret = ctx[PluginId.Aad][StateConfigKey.clientSecret];
+      m365ClientSecret = await CliHelper.getUserSettings(
+        `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
+        this.projectPath
+      );
     }
     console.log("[dilin-debug] m365ClientSecret: " + m365ClientSecret);
 

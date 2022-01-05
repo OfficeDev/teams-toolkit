@@ -113,4 +113,26 @@ export class CliHelper {
       console.log(`[Successfully] ${message}`);
     }
   }
+
+  static async getUserSettings(key: string, projectPath: string): Promise<string> {
+    const result = await execAsync(`teamsfx config get ${key}`, {
+      cwd: projectPath,
+      env: process.env,
+      timeout: 0,
+    });
+    const message = `get user settings in ${projectPath}. Key: ${key}`;
+    if (result.stderr) {
+      console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+    }
+
+    const arr = (result.stdout as string).split(":");
+    if (!arr || arr.length <= 1) {
+      console.error(
+        `[Failed] ${message}. Failed to get value from cli result. result: ${result.stdout}`
+      );
+    }
+    const value = arr[1] as string;
+    console.log(`[Successfully] ${message} Value: ${value}`);
+    return value;
+  }
 }

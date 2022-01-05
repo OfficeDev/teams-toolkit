@@ -20,13 +20,10 @@ import {
   SqlValidator,
 } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { provisionParametersKey } from "../../commonlib/constants";
 import {
   cleanUp,
   execAsync,
   execAsyncWithRetry,
-  getActivePluginsFromProjectSetting,
-  getProvisionParameterValueByKey,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -118,19 +115,7 @@ describe("Multi Env Happy Path for Azure", function () {
         await FrontendValidator.validateProvision(frontend);
 
         // Validate Function App
-        const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
-        chai.assert.isArray(activeResourcePlugins);
-        const resourceBaseName: string = await getProvisionParameterValueByKey(
-          projectPath,
-          env,
-          provisionParametersKey.resourceBaseName
-        );
-
-        functionValidator = new FunctionValidator(
-          context,
-          activeResourcePlugins as string[],
-          resourceBaseName
-        );
+        functionValidator = new FunctionValidator(context, projectPath, env);
         await functionValidator.validateProvision();
 
         // Validate SQL

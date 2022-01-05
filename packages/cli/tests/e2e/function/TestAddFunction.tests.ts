@@ -6,7 +6,6 @@
  */
 
 import path from "path";
-import * as chai from "chai";
 
 import { AadValidator, FunctionValidator, SimpleAuthValidator } from "../../commonlib";
 import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
@@ -17,18 +16,11 @@ import {
   getUniqueAppName,
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
-  getActivePluginsFromProjectSetting,
-  getProvisionParameterValueByKey,
   readContextMultiEnv,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { CliHelper } from "../../commonlib/cliHelper";
-import {
-  Capability,
-  provisionParametersKey,
-  Resource,
-  ResourceToDeploy,
-} from "../../commonlib/constants";
+import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 
 describe("Test Add Function", function () {
   let testFolder: string;
@@ -49,11 +41,7 @@ describe("Test Add Function", function () {
   afterEach(async () => {
     // clean up
     console.log(`[Successfully] start to clean up for ${projectPath}`);
-    if (isMultiEnvEnabled()) {
-      await cleanUp(appName, projectPath, true, false, false, true);
-    } else {
-      await cleanUp(appName, projectPath);
-    }
+    await cleanUp(appName, projectPath, true, false, false, true);
   });
 
   it(`Create Tab Then Add Function`, async function () {
@@ -78,13 +66,6 @@ describe("Test Add Function", function () {
     await CliHelper.provisionProject(projectPath);
 
     const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
-    const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
-    chai.assert.isArray(activeResourcePlugins);
-    const resourceBaseName: string = await getProvisionParameterValueByKey(
-      projectPath,
-      environmentManager.getDefaultEnvName(),
-      provisionParametersKey.resourceBaseName
-    );
 
     // Validate provision
     // Validate Aad App
@@ -98,8 +79,8 @@ describe("Test Add Function", function () {
     // Validate Function App
     const functionValidator = new FunctionValidator(
       context,
-      activeResourcePlugins as string[],
-      resourceBaseName
+      projectPath,
+      environmentManager.getDefaultEnvName()
     );
     await functionValidator.validateProvision();
 

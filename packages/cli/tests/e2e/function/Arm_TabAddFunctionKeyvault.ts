@@ -7,7 +7,6 @@
 
 import path from "path";
 import "mocha";
-import * as chai from "chai";
 
 import {
   getSubscriptionId,
@@ -16,12 +15,10 @@ import {
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
   readContextMultiEnv,
-  getActivePluginsFromProjectSetting,
-  getProvisionParameterValueByKey,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Resource, provisionParametersKey } from "../../commonlib/constants";
+import { Capability, Resource } from "../../commonlib/constants";
 import { FunctionValidator } from "../../commonlib";
 
 describe("Configuration successfully changed when with different plugins", function () {
@@ -50,19 +47,12 @@ describe("Configuration successfully changed when with different plugins", funct
         projectPath,
         environmentManager.getDefaultEnvName()
       );
-      const activeResourcePlugins = await getActivePluginsFromProjectSetting(projectPath);
-      chai.assert.isArray(activeResourcePlugins);
-      const resourceBaseName: string = await getProvisionParameterValueByKey(
-        projectPath,
-        environmentManager.getDefaultEnvName(),
-        provisionParametersKey.resourceBaseName
-      );
 
       // Validate Function App
       const functionValidator = new FunctionValidator(
         context,
-        activeResourcePlugins as string[],
-        resourceBaseName
+        projectPath,
+        environmentManager.getDefaultEnvName()
       );
       await functionValidator.validateProvision();
     }

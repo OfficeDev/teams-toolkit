@@ -106,7 +106,7 @@ export class CliHelper {
       env: process.env,
       timeout: 0,
     });
-    const message = ` add resource ${resourceToAdd} to ${projectPath}`;
+    const message = `add resource ${resourceToAdd} to ${projectPath}`;
     if (result.stderr) {
       console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
     } else {

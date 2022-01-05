@@ -201,7 +201,7 @@ export class FunctionValidator {
   private getExpectedM365ApplicationIdUri(ctx: any, activeResourcePlugins: string[]): string {
     let expectedM365ApplicationIdUri = "";
     if (activeResourcePlugins.includes(PluginId.FrontendHosting)) {
-      const tabDomain = ctx[PluginId.Aad][StateConfigKey.domain];
+      const tabDomain = ctx[PluginId.FrontendHosting][StateConfigKey.domain];
       const m365ClientId = ctx[PluginId.Aad][StateConfigKey.clientId];
       expectedM365ApplicationIdUri =
         `api://${tabDomain}/` +

@@ -53,6 +53,7 @@ import { FeatureFlagName } from "../../../src/common/constants";
 import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 chai.use(chaiAsPromised);
 import { expect } from "chai";
+import { MockedLogProvider } from "./util";
 
 describe("Generate ARM Template for project", () => {
   //  Only test when insider feature flag enabled
@@ -850,10 +851,11 @@ describe("Poll Deployment Status", () => {
         },
       },
     };
-
-    await expect(pollDeploymentStatus(mockedDeployCtx))
-      .to.eventually.be.rejectedWith(Error)
-      .and.property("message", mockedErrorMsg);
+    const logger = mocker.stub(MockedLogProvider.prototype, "warning");
+    const status = pollDeploymentStatus(mockedDeployCtx);
+    mockedDeployCtx.finished = true;
+    await expect(status).to.eventually.be.undefined;
+    assert(logger.called);
   });
 
   it("pollDeploymentStatus OK", async () => {
@@ -862,7 +864,19 @@ describe("Poll Deployment Status", () => {
         properties: {
           targetResource: {
             resourceName: "test resource",
+            resourceType: "Microsoft.Resources/deployments",
             id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Resources/deployments/addTeamsFxConfigurations",
+          },
+          provisioningState: "Running",
+          timestamp: Date.now(),
+        },
+      },
+      {
+        properties: {
+          targetResource: {
+            resourceName: "test resource",
+            resourceType: "Microsoft.Web/sites/config",
+            id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Web/sites/simpleAuth/config/appsettings",
           },
           provisioningState: "Running",
           timestamp: Date.now(),

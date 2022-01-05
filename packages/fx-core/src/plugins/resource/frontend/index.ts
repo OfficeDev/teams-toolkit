@@ -45,11 +45,11 @@ export class FrontendPlugin implements Plugin {
   dotnetPluginImpl = new DotnetPluginImpl();
 
   private static setContext(ctx: PluginContext): void {
-    Logger.setLogger(ctx.logProvider);
-    TelemetryHelper.setContext(
-      ctx,
-      isVsCallingCli() ? DotnetPluginInfo.pluginName : FrontendPluginInfo.PluginName
-    );
+    const component = isVsCallingCli()
+      ? DotnetPluginInfo.pluginName
+      : FrontendPluginInfo.PluginName;
+    Logger.setLogger(ctx.logProvider, component);
+    TelemetryHelper.setContext(ctx, component);
   }
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {

@@ -64,7 +64,7 @@ export class DepsManager {
     }
     const result: DependencyInstallStatus[] = [];
     for (const type of dependencies) {
-      const status: DependencyInstallStatus = await this.check(type);
+      const status: DependencyInstallStatus = await this.isInstalled(type);
       result.push(status);
     }
     return result;
@@ -129,7 +129,7 @@ export class DepsManager {
     };
   }
 
-  private async check(type: DepsType): Promise<DependencyInstallStatus> {
+  private async isInstalled(type: DepsType): Promise<DependencyInstallStatus> {
     const checker: DepsChecker = CheckerFactory.createChecker(type, this._logger, this._telemetry);
     return {
       type: type,

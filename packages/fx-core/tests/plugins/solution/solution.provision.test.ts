@@ -41,6 +41,7 @@ import {
   v2,
   Ok,
   Err,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -59,6 +60,7 @@ import {
   FRONTEND_DOMAIN,
   FRONTEND_ENDPOINT,
   REMOTE_MANIFEST,
+  MANIFEST_TEMPLATE,
 } from "../../../src/plugins/resource/appstudio/constants";
 import {
   HostTypeOptionAzure,
@@ -451,9 +453,7 @@ describe("provision() happy path for SPFx projects", () => {
     teamsAppId: "qwertasdf",
   };
   const mockedManifest = _.cloneDeep(validManifest);
-  // ignore icons for simplicity
-  mockedManifest.icons.color = "";
-  mockedManifest.icons.outline = "";
+
   beforeEach(() => {
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
@@ -466,7 +466,9 @@ describe("provision() happy path for SPFx projects", () => {
     });
     mocker
       .stub<any, any>(fs, "readJson")
-      .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+      .withArgs(
+        `./tests/plugins/resource/appstudio/spfx-resources/${AppPackageFolderName}/${MANIFEST_TEMPLATE}`
+      )
       .resolves(mockedManifest);
     mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
@@ -480,16 +482,10 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.restore();
   });
 
-  it("should succeed if app studio returns successfully", () =>
-    provisionSpfxProjectShouldSucceed(false));
-
-  it("should succeed if insider feature flag enabled", () =>
-    provisionSpfxProjectShouldSucceed(true));
-
-  async function provisionSpfxProjectShouldSucceed(insiderEnabled = false): Promise<void> {
+  it("should succeed if insider feature flag enabled", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.root = "./tests/plugins/resource/appstudio/spfx-resources/";
+    mockedCtx.root = "./tests/plugins/resource/appstudio/spfx-resources";
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -500,9 +496,6 @@ describe("provision() happy path for SPFx projects", () => {
         activeResourcePlugins: [spfxPlugin.name, appStudioPlugin.name],
       },
     };
-    mocker.stub(process, "env").get(() => {
-      return { __TEAMSFX_INSIDER_PREVIEW: insiderEnabled.toString() };
-    });
 
     expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .undefined;
@@ -512,17 +505,11 @@ describe("provision() happy path for SPFx projects", () => {
     expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
       .true;
 
-    if (insiderEnabled) {
-      expect(mockedCtx.envInfo.state.get("fx-resource-appstudio")?.get("teamsAppId")).equals(
-        mockedAppDef.teamsAppId
-      );
-    } else {
-      expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
-        mockedAppDef.teamsAppId
-      );
-    }
+    expect(mockedCtx.envInfo.state.get("fx-resource-appstudio")?.get("teamsAppId")).equals(
+      mockedAppDef.teamsAppId
+    );
     expect(solution.runningState).equals(SolutionRunningState.Idle);
-  }
+  });
 });
 
 function mockAzureProjectDeps(

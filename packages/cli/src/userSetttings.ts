@@ -5,9 +5,11 @@
 
 import os from "os";
 import fs from "fs-extra";
-import { ConfigFolderName, FxError, err, ok, Result } from "@microsoft/teamsfx-api";
 import path from "path";
-import { ReadFileError, ConfigNotFoundError, WriteFileError } from "./error";
+
+import { ConfigFolderName, FxError, err, ok, Result } from "@microsoft/teamsfx-api";
+
+import { ReadFileError, WriteFileError } from "./error";
 
 const UserSettingsFileName = "cliProfile.json";
 
@@ -17,6 +19,7 @@ export enum CliConfigOptions {
   EnvCheckerValidateFuncCoreTools = "validate-func-core-tools",
   EnvCheckerValidateNode = "validate-node",
   RunFrom = "run-from",
+  Interactive = "interactive",
 }
 
 export enum CliConfigTelemetry {
@@ -110,5 +113,19 @@ export class UserSettings {
     }
 
     return ok(config);
+  }
+
+  public static getInteractiveSetting(): Result<boolean, FxError> {
+    const result = this.getConfigSync();
+    if (result.isErr()) {
+      return err(result.error);
+    }
+
+    const config = result.value;
+    if (config[CliConfigOptions.Interactive] && config[CliConfigOptions.Interactive] === "false") {
+      return ok(false);
+    }
+
+    return ok(true);
   }
 }

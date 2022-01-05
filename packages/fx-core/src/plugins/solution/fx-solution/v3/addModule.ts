@@ -3,7 +3,7 @@
 
 import { err, FxError, Json, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
 import { CapabilityAlreadyAddedError } from "./error";
-import { selectCapabilitiesQuestion } from "./questions";
+import { selectCapabilitiesQuestion } from "../../utils/questions";
 
 export async function getQuestionsForAddModule(
   ctx: v2.Context,

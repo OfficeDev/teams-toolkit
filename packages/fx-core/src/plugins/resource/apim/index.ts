@@ -235,7 +235,7 @@ async function _updateArmTemplates(
   progressBar: ProgressBar
 ): Promise<ArmTemplateResult> {
   const apimManager = await Factory.buildApimManager(ctx);
-  return await apimManager.updateArmTemplates();
+  return await apimManager.updateArmTemplates(ctx);
 }
 
 async function _generateArmTemplates(
@@ -243,7 +243,7 @@ async function _generateArmTemplates(
   progressBar: ProgressBar
 ): Promise<ArmTemplateResult> {
   const apimManager = await Factory.buildApimManager(ctx);
-  return await apimManager.generateArmTemplates();
+  return await apimManager.generateArmTemplates(ctx);
 }
 
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {

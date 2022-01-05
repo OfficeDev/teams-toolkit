@@ -6,7 +6,6 @@ import {
   FxError,
   ok,
   SolutionContext,
-  SubscriptionInfo,
   AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
@@ -25,11 +24,9 @@ import {
 } from "../../../src/plugins/solution/fx-solution/arm";
 import path from "path";
 import mockedEnv from "mocked-env";
-import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
 import { ResourceManagementModels, Deployments } from "@azure/arm-resources";
 import { WebResourceLike, HttpHeaders } from "@azure/ms-rest-js";
 import * as tools from "../../../src/common/tools";
-import * as cpUtils from "../../../src/common/cpUtils";
 import { environmentManager } from "../../../src/core/environment";
 import {
   aadPlugin,
@@ -40,6 +37,7 @@ import {
   identityPlugin,
   PluginId,
   simpleAuthPlugin,
+  SOLUTION_CONFIG_NAME,
   spfxPlugin,
   TestFileContent,
   TestFilePath,
@@ -50,18 +48,23 @@ import "mocha";
 import chai, { assert } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { TestHelper } from "./helper";
+import { isFeatureFlagEnabled } from "../../../src/common/tools";
+import { FeatureFlagName } from "../../../src/common/constants";
+import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 chai.use(chaiAsPromised);
-const expect = chai.expect;
-let mockedEnvRestore: () => void;
+import { expect } from "chai";
+import { MockedLogProvider } from "./util";
 
 describe("Generate ARM Template for project", () => {
+  //  Only test when insider feature flag enabled
+  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
+    return;
+  }
+
   const mocker = sinon.createSandbox();
   let mockedCtx: SolutionContext;
 
   beforeEach(async () => {
-    mockedEnvRestore = mockedEnv({
-      __TEAMSFX_INSIDER_PREVIEW: "true",
-    });
     mockedCtx = TestHelper.mockSolutionContext();
     mocker.stub(environmentManager, "listEnvConfigs").resolves(ok(["default"]));
     mocker.stub(tools, "getUuid").returns("00000000-0000-0000-0000-000000000000");
@@ -69,7 +72,6 @@ describe("Generate ARM Template for project", () => {
   });
 
   afterEach(async () => {
-    mockedEnvRestore();
     await fs.remove(TestHelper.rootDir);
     mocker.restore();
   });
@@ -506,6 +508,11 @@ Mocked bot configuration orchestration content. Module path: './teamsFx/botConfi
 });
 
 describe("Deploy ARM Template to Azure", () => {
+  //  Only test when insider feature flag enabled
+  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
+    return;
+  }
+
   const mocker = sinon.createSandbox();
   let mockedCtx: SolutionContext;
   const mockedArmTemplateOutput = {
@@ -538,9 +545,6 @@ describe("Deploy ARM Template to Azure", () => {
   };
 
   beforeEach(async () => {
-    mockedEnvRestore = mockedEnv({
-      __TEAMSFX_INSIDER_PREVIEW: "true",
-    });
     mockedCtx = TestHelper.mockSolutionContext();
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
@@ -589,7 +593,6 @@ describe("Deploy ARM Template to Azure", () => {
   });
 
   afterEach(async () => {
-    mockedEnvRestore();
     mocker.restore();
     await fs.remove(TestHelper.rootDir);
   });
@@ -608,28 +611,8 @@ describe("Deploy ARM Template to Azure", () => {
   });
 
   it("should successfully update parameter and deploy arm templates to azure", async () => {
-    mockedCtx.azureAccountProvider!.getAccountCredentialAsync = async function () {
-      const azureToken = new UserTokenCredentials(
-        TestHelper.clientId,
-        TestHelper.domain,
-        TestHelper.username,
-        TestHelper.password
-      );
-      return azureToken;
-    };
-    mockedCtx.azureAccountProvider!.getSelectedSubscription = async function () {
-      const subscriptionInfo = {
-        subscriptionId: TestHelper.subscriptionId,
-        subscriptionName: TestHelper.subscriptionName,
-      } as SubscriptionInfo;
-      return subscriptionInfo;
-    };
+    TestHelper.mockArmDeploymentDependencies(mockedCtx, mocker);
 
-    mocker.stub(cpUtils, "executeCommand").returns(
-      new Promise((resolve) => {
-        resolve(TestHelper.armTemplateJson);
-      })
-    );
     const envRestore = mockedEnv({
       MOCKED_EXPAND_VAR_TEST: TestHelper.envVariable,
     });
@@ -765,24 +748,97 @@ describe("Deploy ARM Template to Azure", () => {
     chai.assert.isTrue(result.isOk());
     chai.assert.strictEqual(usedExistingParameterDefaultFile, true);
   });
+
+  it("should return system error if resource group name not exists in project solution settings", async () => {
+    // Arrange
+    mockedCtx.envInfo.state.get(SOLUTION_CONFIG_NAME)?.delete("resourceGroupName");
+
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
+
+    // Assert
+    chai.assert.isTrue(result.isErr());
+    const error = (result as Err<void, Error>).error;
+    chai.assert.strictEqual(error.name, "NoResourceGroupFound");
+    chai.assert.strictEqual(
+      error.message,
+      "Failed to get resource group from project solution settings."
+    );
+  });
+
+  it("should return user error if target environment name not exists in project solution settings", async () => {
+    // Arrange
+    mockedCtx.envInfo.envName = "";
+
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
+
+    // Assert
+    chai.assert.isTrue(result.isErr());
+    const error = (result as Err<void, FxError>).error;
+    chai.assert.strictEqual(error.name, "FailedToDeployArmTemplatesToAzure");
+    chai.assert.strictEqual(
+      error.message,
+      "Failed to get target environment name from solution context."
+    );
+  });
+
+  it("should return user error if parameter file not exists", async () => {
+    // Arrange
+    await fs.unlink(
+      path.join(
+        TestHelper.rootDir,
+        TestFilePath.configFolder,
+        TestFilePath.defaultParameterFileName
+      )
+    );
+
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
+
+    // Assert
+    chai.assert.isTrue(result.isErr());
+    const error = (result as Err<void, FxError>).error;
+    chai.assert.strictEqual(error.name, "FailedToDeployArmTemplatesToAzure");
+    chai.assert.strictEqual(error.innerError.name, "ParameterFileNotExist");
+    expect(error.message)
+      .to.be.a("string")
+      .that.contains("azure.parameters.default.json does not exist.");
+  });
+
+  it("should return user error if fail to ensure bicep command", async () => {
+    // Arrange
+    const testErrorMsg = "mock ensuring bicep command fails";
+    mocker.stub(bicepChecker, "ensureBicep").throws(new Error(testErrorMsg));
+
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
+
+    // Assert
+    chai.assert.isTrue(result.isErr());
+    const error = (result as Err<void, FxError>).error;
+    chai.assert.strictEqual(error.name, "FailedToDeployArmTemplatesToAzure");
+    expect(error.message).to.be.a("string").that.contains(testErrorMsg);
+  });
 });
 
 describe("Poll Deployment Status", () => {
+  //  Only test when insider feature flag enabled
+  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
+    return;
+  }
+
   const mocker = sinon.createSandbox();
   let mockedCtx: SolutionContext;
   let mockedDeployCtx: any;
 
   beforeEach(async () => {
-    mockedEnvRestore = mockedEnv({
-      __TEAMSFX_INSIDER_PREVIEW: "true",
-    });
     mockedCtx = TestHelper.mockSolutionContext();
     mockedDeployCtx = TestHelper.getMockedDeployCtx(mockedCtx);
     mocker.stub(tools, "waitSeconds").resolves();
   });
 
   afterEach(async () => {
-    mockedEnvRestore();
     mocker.restore();
   });
 
@@ -795,10 +851,11 @@ describe("Poll Deployment Status", () => {
         },
       },
     };
-
-    await expect(pollDeploymentStatus(mockedDeployCtx))
-      .to.eventually.be.rejectedWith(Error)
-      .and.property("message", mockedErrorMsg);
+    const logger = mocker.stub(MockedLogProvider.prototype, "warning");
+    const status = pollDeploymentStatus(mockedDeployCtx);
+    mockedDeployCtx.finished = true;
+    await expect(status).to.eventually.be.undefined;
+    assert(logger.called);
   });
 
   it("pollDeploymentStatus OK", async () => {
@@ -807,7 +864,19 @@ describe("Poll Deployment Status", () => {
         properties: {
           targetResource: {
             resourceName: "test resource",
+            resourceType: "Microsoft.Resources/deployments",
             id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Resources/deployments/addTeamsFxConfigurations",
+          },
+          provisioningState: "Running",
+          timestamp: Date.now(),
+        },
+      },
+      {
+        properties: {
+          targetResource: {
+            resourceName: "test resource",
+            resourceType: "Microsoft.Web/sites/config",
+            id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Web/sites/simpleAuth/config/appsettings",
           },
           provisioningState: "Running",
           timestamp: Date.now(),

@@ -66,7 +66,7 @@ async function checkAndReadEnvJson(
 
 export class ResourceAdd extends YargsCommand {
   public readonly commandHead = `add`;
-  public readonly command = `${this.commandHead} <resource-type>`;
+  public readonly command = `${this.commandHead} [resource-type]`;
   public readonly description = "Add a resource to the current application.";
 
   public readonly subCommands: YargsCommand[] = [
@@ -81,7 +81,9 @@ export class ResourceAdd extends YargsCommand {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
 
-    return yargs;
+    return yargs.positional("resource-type", {
+      choices: this.subCommands.map((c) => c.commandHead),
+    });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -93,11 +95,16 @@ export class ResourceAddSql extends YargsCommand {
   public readonly commandHead = `azure-sql`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add a new SQL database.";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addResource-sql");
     return yargs.options(this.params);
+  }
+
+  public override modifyArguments(args: { [argName: string]: any }) {
+    CLIUIInstance.updatePresetAnswer("add-azure-resources", args["add-azure-resources"]);
+    delete args["add-azure-resources"];
+    return args;
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -105,8 +112,6 @@ export class ResourceAddSql extends YargsCommand {
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead,
     });
-
-    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -147,28 +152,32 @@ export class ResourceAddApim extends YargsCommand {
   public readonly commandHead = `azure-apim`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add a new API Managment service instance.";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addResource-apim");
     return yargs.options(this.params);
   }
 
-  public async runCommand(args: {
-    [argName: string]: string | undefined;
-  }): Promise<Result<null, FxError>> {
+  public override modifyArguments(args: { [argName: string]: any }) {
     if (!("apim-resource-group" in args)) {
       args["apim-resource-group"] = undefined;
     }
     if (!("apim-service-name" in args)) {
       args["apim-service-name"] = undefined;
     }
+
+    CLIUIInstance.updatePresetAnswer("add-azure-resources", args["add-azure-resources"]);
+    delete args["add-azure-resources"];
+    return args;
+  }
+
+  public async runCommand(args: {
+    [argName: string]: string | undefined;
+  }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead,
     });
-
-    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     {
       const result = await setSubscriptionId(args.subscription, rootFolder);
@@ -218,11 +227,16 @@ export class ResourceAddFunction extends YargsCommand {
   public readonly commandHead = `azure-function`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add a new function app.";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addResource-function");
     return yargs.options(this.params);
+  }
+
+  public override modifyArguments(args: { [argName: string]: any }) {
+    CLIUIInstance.updatePresetAnswer("add-azure-resources", args["add-azure-resources"]);
+    delete args["add-azure-resources"];
+    return args;
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -230,8 +244,6 @@ export class ResourceAddFunction extends YargsCommand {
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead,
     });
-
-    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -271,11 +283,16 @@ export class ResourceAddKeyVault extends YargsCommand {
   public readonly commandHead = `azure-keyvault`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add a new Azure Key Vault service.";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addResource-keyvault");
     return yargs.options(this.params);
+  }
+
+  public override modifyArguments(args: { [argName: string]: any }) {
+    CLIUIInstance.updatePresetAnswer("add-azure-resources", args["add-azure-resources"]);
+    delete args["add-azure-resources"];
+    return args;
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -283,8 +300,6 @@ export class ResourceAddKeyVault extends YargsCommand {
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.UpdateProjectStart, {
       [TelemetryProperty.Resources]: this.commandHead,
     });
-
-    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -322,7 +337,7 @@ export class ResourceAddKeyVault extends YargsCommand {
 
 export class ResourceShow extends YargsCommand {
   public readonly commandHead = `show`;
-  public readonly command = `${this.commandHead} <resource-type>`;
+  public readonly command = `${this.commandHead} [resource-type]`;
   public readonly description =
     "Show configuration details of resources in the current application.";
 
@@ -337,7 +352,9 @@ export class ResourceShow extends YargsCommand {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
 
-    return yargs;
+    return yargs.positional("resource-type", {
+      choices: this.subCommands.map((c) => c.commandHead),
+    });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -349,7 +366,6 @@ export class ResourceShowFunction extends YargsCommand {
   public readonly commandHead = `azure-function`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Azure Functions details";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("ResourceShowFunction");
@@ -383,7 +399,6 @@ export class ResourceShowSQL extends YargsCommand {
   public readonly commandHead = `azure-sql`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Azure SQL details";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("ResourceShowSQL");
@@ -417,7 +432,6 @@ export class ResourceShowApim extends YargsCommand {
   public readonly commandHead = `azure-apim`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Azure APIM details";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("ResourceShowApim");
@@ -451,7 +465,6 @@ export class ResourceList extends YargsCommand {
   public readonly commandHead = `list`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "List all of the resources in the current application";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("ResourceList");
@@ -487,7 +500,7 @@ export class ResourceList extends YargsCommand {
 
 export default class Resource extends YargsCommand {
   public readonly commandHead = `resource`;
-  public readonly command = `${this.commandHead} <action>`;
+  public readonly command = `${this.commandHead} [action]`;
   public readonly description = "Manage the resources in the current application.";
 
   public readonly subCommands: YargsCommand[] = [
@@ -500,7 +513,11 @@ export default class Resource extends YargsCommand {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    return yargs.version(false);
+    return yargs
+      .positional("action", {
+        choices: this.subCommands.map((c) => c.commandHead),
+      })
+      .version(false);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

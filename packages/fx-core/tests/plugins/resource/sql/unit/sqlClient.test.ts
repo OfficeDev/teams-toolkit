@@ -56,7 +56,7 @@ describe("sqlClient", () => {
       await client.addDatabaseUser();
     } catch (error) {
       // Assert
-      chai.assert.include(error.message, ErrorMessage.GetDetail);
+      chai.assert.include(error.notificationMessage, ErrorMessage.GetDetail);
     }
   });
 
@@ -88,7 +88,7 @@ describe("sqlClient", () => {
       await client.addDatabaseUser();
     } catch (error) {
       // Assert
-      chai.assert.include(error.message, ErrorMessage.GuestAdminError);
+      chai.assert.include(error.notificationMessage, ErrorMessage.GuestAdminError);
     }
   });
 });
@@ -141,7 +141,7 @@ describe("sqlClient", () => {
       await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
-      chai.assert.include(error.message, ErrorMessage.GetDetail);
+      chai.assert.include(error.notificationMessage, ErrorMessage.GetDetail);
     }
   });
 
@@ -156,7 +156,7 @@ describe("sqlClient", () => {
       await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
-      chai.assert.include(error.message, ErrorMessage.DomainError);
+      chai.assert.include(error.notificationMessage, ErrorMessage.DomainError);
     }
   });
 });

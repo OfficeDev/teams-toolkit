@@ -4,14 +4,29 @@
 
 import * as fs from "fs-extra";
 import * as os from "os";
-import { err, FxError, Inputs, Json, ok, Platform, Result, v2, Void } from "@microsoft/teamsfx-api";
+import {
+  CryptoProvider,
+  err,
+  FxError,
+  Inputs,
+  Json,
+  LogProvider,
+  ok,
+  Platform,
+  Result,
+  SolutionContext,
+  TelemetryReporter,
+  v2,
+  Void,
+  ProjectSettings,
+} from "@microsoft/teamsfx-api";
 import { LocalSettingsProvider } from "../../../../common/localSettingsProvider";
+import { ProjectSettingsHelper } from "../../../../common/local/projectSettingsHelper";
 import * as Launch from "./util/launch";
 import * as Tasks from "./util/tasks";
 import * as Settings from "./util/settings";
 import { TelemetryEventName, TelemetryUtils } from "./util/telemetry";
-import { ScaffoldLocalDebugSettingsError } from "./error";
-import { ContextHelper } from "./util/contextHelper";
+import { ScaffoldLocalDebugSettingsError, ScaffoldLocalDebugSettingsV1Error } from "./error";
 
 const PackageJson = require("@npmcli/package-json");
 
@@ -20,13 +35,47 @@ export async function scaffoldLocalDebugSettings(
   inputs: Inputs,
   localSettings?: Json
 ): Promise<Result<Void, FxError>> {
-  const isSpfx = ContextHelper.isSpfx(ctx);
-  const isMigrateFromV1 = ContextHelper.isMigrateFromV1(ctx);
-  const includeFrontend = ContextHelper.includeFrontend(ctx);
-  const includeBackend = ContextHelper.includeBackend(ctx);
-  const includeBot = ContextHelper.includeBot(ctx);
-  const includeAuth = ContextHelper.includeAuth(ctx);
-  const programmingLanguage = ctx.projectSetting?.programmingLanguage ?? "";
+  return await _scaffoldLocalDebugSettings(
+    ctx.projectSetting,
+    inputs,
+    ctx.telemetryReporter,
+    ctx.logProvider,
+    ctx.cryptoProvider,
+    localSettings
+  );
+}
+
+export async function scaffoldLocalDebugSettingsV1(
+  ctx: SolutionContext
+): Promise<Result<Void, FxError>> {
+  if (!ctx.projectSettings || !ctx.answers || !ctx.telemetryReporter || !ctx.logProvider) {
+    return err(ScaffoldLocalDebugSettingsV1Error());
+  }
+  return await _scaffoldLocalDebugSettings(
+    ctx.projectSettings,
+    ctx.answers,
+    ctx.telemetryReporter,
+    ctx.logProvider,
+    ctx.cryptoProvider
+  );
+}
+
+export async function _scaffoldLocalDebugSettings(
+  projectSetting: ProjectSettings,
+  inputs: Inputs,
+  telemetryReporter: TelemetryReporter,
+  logProvider: LogProvider,
+  cryptoProvider: CryptoProvider,
+  localSettings?: Json
+): Promise<Result<Void, FxError>> {
+  const isSpfx = ProjectSettingsHelper.isSpfx(projectSetting);
+  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSetting);
+  const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSetting);
+  const includeBackend = ProjectSettingsHelper.includeBackend(projectSetting);
+  const includeBot = ProjectSettingsHelper.includeBot(projectSetting);
+  const includeAAD = ProjectSettingsHelper.includeAAD(projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSetting);
+  const programmingLanguage = projectSetting.programmingLanguage ?? "";
 
   const telemetryProperties = {
     platform: inputs.platform as string,
@@ -34,14 +83,14 @@ export async function scaffoldLocalDebugSettings(
     frontend: includeFrontend ? "true" : "false",
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
-    auth: includeAuth ? "true" : "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "programming-language": programmingLanguage,
   };
-  TelemetryUtils.init(ctx);
+  TelemetryUtils.init(telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.scaffoldLocalDebugSettings, telemetryProperties);
   try {
     // scaffold for both vscode and cli
-    if (inputs?.platform === Platform.VSCode || inputs?.platform === Platform.CLI) {
+    if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
       if (isSpfx) {
         // Only generate launch.json and tasks.json for SPFX
         const launchConfigurations = Launch.generateSpfxConfigurations();
@@ -102,7 +151,7 @@ export async function scaffoldLocalDebugSettings(
           includeFrontend,
           includeBackend,
           includeBot,
-          includeAuth,
+          includeSimpleAuth,
           isMigrateFromV1,
           programmingLanguage
         );
@@ -135,7 +184,7 @@ export async function scaffoldLocalDebugSettings(
         );
 
         // generate localSettings.json
-        await scaffoldLocalSettingsJson(ctx, inputs, localSettings);
+        await scaffoldLocalSettingsJson(projectSetting, inputs, cryptoProvider, localSettings);
 
         // add 'npm install' scripts into root package.json
         const packageJsonPath = inputs.projectPath;
@@ -143,7 +192,7 @@ export async function scaffoldLocalDebugSettings(
         try {
           packageJson = await PackageJson.load(packageJsonPath);
         } catch (error) {
-          ctx.logProvider?.error(`Cannot load package.json from ${inputs.projectPath}. ${error}`);
+          logProvider.error(`Cannot load package.json from ${inputs.projectPath}. ${error}`);
         }
 
         if (packageJson !== undefined) {
@@ -193,15 +242,16 @@ export async function scaffoldLocalDebugSettings(
 }
 
 async function scaffoldLocalSettingsJson(
-  ctx: v2.Context,
+  projectSetting: ProjectSettings,
   inputs: Inputs,
+  cryptoProvider: CryptoProvider,
   localSettings?: Json
 ): Promise<void> {
   const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath!);
 
-  const includeFrontend = ContextHelper.includeFrontend(ctx);
-  const includeBackend = ContextHelper.includeBackend(ctx);
-  const includeBot = ContextHelper.includeBot(ctx);
+  const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSetting);
+  const includeBackend = ProjectSettingsHelper.includeBackend(projectSetting);
+  const includeBot = ProjectSettingsHelper.includeBot(projectSetting);
 
   if (localSettings !== undefined) {
     // Add local settings for the new added capability/resource
@@ -211,10 +261,10 @@ async function scaffoldLocalSettingsJson(
       includeBot,
       includeFrontend
     );
-    await localSettingsProvider.saveJson(localSettings, ctx.cryptoProvider);
+    await localSettingsProvider.saveJson(localSettings, cryptoProvider);
   } else {
     // Initialize a local settings on scaffolding
     localSettings = localSettingsProvider.initV2(includeFrontend, includeBackend, includeBot);
-    await localSettingsProvider.saveJson(localSettings, ctx.cryptoProvider);
+    await localSettingsProvider.saveJson(localSettings, cryptoProvider);
   }
 }

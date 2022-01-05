@@ -148,7 +148,6 @@ describe("Publish Teams app with SPFx", () => {
     sandbox.stub(AppStudioClient, "publishTeamsAppUpdate").resolves(uuid());
     sandbox.stub(AppStudioClient, "updateApp").resolves();
     sandbox.stub(fs, "move").resolves();
-    sandbox.stub(core, "isMultiEnvEnabled").returns(true);
     sandbox.stub(AppStudioPluginImpl.prototype, <any>"beforePublish").returns(uuid());
   });
 

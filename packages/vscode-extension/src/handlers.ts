@@ -32,6 +32,7 @@ import {
   Tools,
   AzureSolutionSettings,
   AppPackageFolderName,
+  TemplateFolderName,
   BuildFolderName,
   TreeItem,
   TreeCategory,
@@ -832,7 +833,7 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
  */
 export async function preDebugCheckHandler(): Promise<string | undefined> {
   try {
-    const localAppId = commonUtils.getLocalTeamsAppId() as string;
+    const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
       [TelemetryProperty.DebugAppId]: localAppId,
     });
@@ -844,7 +845,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
   result = await runCommand(Stage.debug);
   if (result.isErr()) {
     try {
-      const localAppId = commonUtils.getLocalTeamsAppId() as string;
+      const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error, {
         [TelemetryProperty.DebugAppId]: localAppId,
       });
@@ -870,7 +871,7 @@ export async function preDebugCheckHandler(): Promise<string | undefined> {
     }
     const error = new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource);
     try {
-      const localAppId = commonUtils.getLocalTeamsAppId() as string;
+      const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error, {
         [TelemetryProperty.DebugAppId]: localAppId,
       });
@@ -1628,6 +1629,8 @@ export function cmdHdlDisposeTreeView() {
 }
 
 export async function showError(e: UserError | SystemError) {
+  const notificationMessage = e.notificationMessage ?? e.message;
+
   if (e.stack && e instanceof SystemError) {
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
   } else {
@@ -1645,7 +1648,7 @@ export async function showError(e: UserError | SystemError) {
       },
     };
 
-    const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, help);
+    const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, help);
     if (button) await button.run();
   } else if (e instanceof SystemError) {
     const sysError = e as SystemError;
@@ -1662,11 +1665,11 @@ export async function showError(e: UserError | SystemError) {
       },
     };
 
-    const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, issue);
+    const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, issue);
     if (button) await button.run();
   } else {
     if (!(e instanceof ConcurrentError))
-      await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
+      await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`);
   }
 }
 
@@ -1988,6 +1991,23 @@ export async function updatePreviewManifest(args: any[]) {
     });
   }
   return result;
+}
+
+export async function editManifestTemplate(args: any[]) {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.EditManifestTemplate,
+    getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
+  );
+
+  if (args && args.length > 0) {
+    const segments = args[0].fsPath.split(".");
+    const env = segments[segments.length - 2] === "local" ? "local" : "remote";
+    const workspacePath = getWorkspacePath();
+    const manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.${env}.template.json`;
+    workspace.openTextDocument(manifestPath).then((document) => {
+      window.showTextDocument(document);
+    });
+  }
 }
 
 export async function signOutAzure(isFromTreeView: boolean) {

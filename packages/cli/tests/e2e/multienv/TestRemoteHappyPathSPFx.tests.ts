@@ -119,7 +119,7 @@ describe("Multi Env Happy Path for SPFx", function () {
     }
 
     // validate manifest
-    result = await execAsyncWithRetry(`teamsfx validate --env ${env}`, {
+    result = await execAsyncWithRetry(`teamsfx manifest validate --env ${env}`, {
       cwd: projectPath,
       env: processEnv,
       timeout: 0,

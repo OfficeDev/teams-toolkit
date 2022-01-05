@@ -543,5 +543,45 @@ suite("handlers", () => {
       chai.assert.equal(result, false);
       sinon.restore();
     });
+
+    test("edit manifest template: local", async () => {
+      sinon.restore();
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const openTextDocument = sinon
+        .stub(vscode.workspace, "openTextDocument")
+        .returns(new Promise<vscode.TextDocument>((resolve) => {}));
+      sinon
+        .stub(vscode.workspace, "workspaceFolders")
+        .returns([{ uri: { fsPath: "c:\\manifestTestFolder" } }]);
+
+      const args = [{ fsPath: "c:\\testPath\\manifest.local.json" }, "CodeLens"];
+      await handlers.editManifestTemplate(args);
+      chai.assert.isTrue(
+        openTextDocument.calledOnceWith(
+          "undefined/templates/appPackage/manifest.local.template.json" as any
+        )
+      );
+      sinon.restore();
+    });
+
+    test("edit manifest template: remote", async () => {
+      sinon.restore();
+      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const openTextDocument = sinon
+        .stub(vscode.workspace, "openTextDocument")
+        .returns(new Promise<vscode.TextDocument>((resolve) => {}));
+      sinon
+        .stub(vscode.workspace, "workspaceFolders")
+        .returns([{ uri: { fsPath: "c:\\manifestTestFolder" } }]);
+
+      const args = [{ fsPath: "c:\\testPath\\manifest.dev.json" }, "CodeLens"];
+      await handlers.editManifestTemplate(args);
+      chai.assert.isTrue(
+        openTextDocument.calledOnceWith(
+          "undefined/templates/appPackage/manifest.remote.template.json" as any
+        )
+      );
+      sinon.restore();
+    });
   });
 });

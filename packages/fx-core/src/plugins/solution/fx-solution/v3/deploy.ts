@@ -17,7 +17,7 @@ import * as util from "util";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getStrings } from "../../../../common/tools";
 import { executeConcurrently } from "../v2/executor";
-import { createSelectModulesToDeployQuestionNode } from "./questions";
+import { createSelectModulesToDeployQuestionNode } from "../../utils/questions";
 import { getModule } from "./utils";
 
 export async function getQuestionsForDeploy(

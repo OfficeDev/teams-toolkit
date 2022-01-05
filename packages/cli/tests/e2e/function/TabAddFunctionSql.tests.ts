@@ -38,7 +38,7 @@ describe("Configuration successfully changed when with different plugins", funct
 
     // Provision
     await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 

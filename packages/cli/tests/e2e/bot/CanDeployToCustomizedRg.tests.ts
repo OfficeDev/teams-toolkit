@@ -57,7 +57,7 @@ describe("Deploy to customized resource group", function () {
     );
 
     // Provision
-    setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 

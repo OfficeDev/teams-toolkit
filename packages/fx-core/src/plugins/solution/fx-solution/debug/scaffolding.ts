@@ -73,7 +73,8 @@ export async function _scaffoldLocalDebugSettings(
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(projectSetting);
-  const includeAuth = ProjectSettingsHelper.includeAuth(projectSetting);
+  const includeAAD = ProjectSettingsHelper.includeAAD(projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSetting);
   const programmingLanguage = projectSetting.programmingLanguage ?? "";
 
   const telemetryProperties = {
@@ -82,7 +83,7 @@ export async function _scaffoldLocalDebugSettings(
     frontend: includeFrontend ? "true" : "false",
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
-    auth: includeAuth ? "true" : "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "programming-language": programmingLanguage,
   };
   TelemetryUtils.init(telemetryReporter);
@@ -150,7 +151,7 @@ export async function _scaffoldLocalDebugSettings(
           includeFrontend,
           includeBackend,
           includeBot,
-          includeAuth,
+          includeSimpleAuth,
           isMigrateFromV1,
           programmingLanguage
         );

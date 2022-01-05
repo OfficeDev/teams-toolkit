@@ -54,9 +54,7 @@ import { TemplateInfo } from "./resources/templateInfo";
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
-import * as fs from "fs-extra";
-import { Bicep, ConstantString } from "../../../common/constants";
-import { EnvironmentUtils } from "./utils/environment-utils";
+import { Bicep } from "../../../common/constants";
 import { copyFiles, isArmSupportEnabled } from "../../../common";
 import { AzureResourceFunction } from "../../solution/fx-solution/question";
 import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
@@ -156,7 +154,7 @@ export class FrontendPluginImpl {
       Logger.info(Messages.EndPostProvision(PluginInfo.DisplayName));
     }
 
-    await this.updateMultiEnv(ctx);
+    await this.updateDotEnv(ctx);
 
     return ok(undefined);
   }
@@ -165,7 +163,7 @@ export class FrontendPluginImpl {
     Logger.info(Messages.StartPreDeploy(PluginInfo.DisplayName));
     const progressHandler = await ProgressHelper.createPreDeployProgressHandler(ctx);
 
-    await this.updateDotenv(ctx);
+    await this.updateDotEnv(ctx);
 
     await progressHandler?.next(PreDeploySteps.CheckStorage);
     await this.checkStorageAvailability(ctx);
@@ -183,11 +181,12 @@ export class FrontendPluginImpl {
     const client = new AzureStorageClient(config);
 
     const componentPath: string = path.join(ctx.root, FrontendPathInfo.WorkingDir);
+    const envName = ctx.envInfo.envName;
 
-    const envs = await loadEnvFile(envFilePath(ctx.envInfo.envName, componentPath));
+    const envs = await loadEnvFile(envFilePath(envName, componentPath));
 
-    await FrontendDeployment.doFrontendBuild(componentPath, envs);
-    await FrontendDeployment.doFrontendDeployment(client, componentPath);
+    await FrontendDeployment.doFrontendBuild(componentPath, envs, envName);
+    await FrontendDeployment.doFrontendDeployment(client, componentPath, envName);
 
     await ProgressHelper.endDeployProgress(true);
     Logger.info(Messages.EndDeploy(PluginInfo.DisplayName));
@@ -262,7 +261,7 @@ export class FrontendPluginImpl {
       );
     }
 
-    if (IsSimpleAuthEnabled(ctx)) {
+    if (IsSimpleAuthEnabled(ctx.projectSettings)) {
       addToEnvs(
         EnvKeys.RuntimeEndpoint,
         ctx.envInfo.state
@@ -283,7 +282,7 @@ export class FrontendPluginImpl {
     return envs;
   }
 
-  private async updateMultiEnv(ctx: PluginContext): Promise<void> {
+  private async updateDotEnv(ctx: PluginContext): Promise<void> {
     const envs = this.collectEnvs(ctx);
     await saveEnvFile(
       envFilePath(ctx.envInfo.envName, path.join(ctx.root, FrontendPathInfo.WorkingDir)),
@@ -292,16 +291,6 @@ export class FrontendPluginImpl {
         customizedRemoteEnvs: {},
       }
     );
-  }
-
-  private async updateDotenv(ctx: PluginContext): Promise<void> {
-    const envs = this.collectEnvs(ctx);
-    const envFilePath = path.join(
-      ctx.root,
-      FrontendPathInfo.WorkingDir,
-      FrontendPathInfo.TabEnvironmentFilePath
-    );
-    await EnvironmentUtils.writeEnvironments(envFilePath, envs);
   }
 
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<TeamsFxResult> {

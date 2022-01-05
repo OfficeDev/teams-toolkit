@@ -45,15 +45,19 @@ export class FrontendPlugin implements Plugin {
   dotnetPluginImpl = new DotnetPluginImpl();
 
   private static setContext(ctx: PluginContext): void {
-    const component = isVsCallingCli()
+    const component = this.isVsPlatform(ctx)
       ? DotnetPluginInfo.pluginName
       : FrontendPluginInfo.PluginName;
     Logger.setLogger(ctx.logProvider, component);
     TelemetryHelper.setContext(ctx, component);
   }
 
+  private static isVsPlatform(ctx: PluginContext): boolean {
+    return isVsCallingCli();
+  }
+
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (isVsCallingCli()) {
+    if (FrontendPlugin.isVsPlatform(ctx)) {
       throw new NotImplemented();
     }
     FrontendPlugin.setContext(ctx);
@@ -73,14 +77,14 @@ export class FrontendPlugin implements Plugin {
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PostProvision, () =>
-      isVsCallingCli()
+      FrontendPlugin.isVsPlatform(ctx)
         ? this.dotnetPluginImpl.postProvision(ctx)
         : this.frontendPluginImpl.postProvision(ctx)
     );
   }
 
   public async preDeploy(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (isVsCallingCli()) {
+    if (FrontendPlugin.isVsPlatform(ctx)) {
       return ok(undefined);
     }
 
@@ -93,12 +97,14 @@ export class FrontendPlugin implements Plugin {
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
-      isVsCallingCli() ? this.dotnetPluginImpl.deploy(ctx) : this.frontendPluginImpl.deploy(ctx)
+      FrontendPlugin.isVsPlatform(ctx)
+        ? this.dotnetPluginImpl.deploy(ctx)
+        : this.frontendPluginImpl.deploy(ctx)
     );
   }
 
   public async updateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (isVsCallingCli()) {
+    if (FrontendPlugin.isVsPlatform(ctx)) {
       throw new NotImplemented();
     }
 
@@ -109,7 +115,7 @@ export class FrontendPlugin implements Plugin {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (isVsCallingCli()) {
+    if (FrontendPlugin.isVsPlatform(ctx)) {
       throw new NotImplemented();
     }
 
@@ -130,7 +136,7 @@ export class FrontendPlugin implements Plugin {
   }
 
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<TeamsFxResult> {
-    if (isVsCallingCli()) {
+    if (FrontendPlugin.isVsPlatform(ctx)) {
       return ok(undefined);
     }
 

@@ -118,9 +118,13 @@ export class FunctionValidator {
       webappSettingsResponse[BaseConfig.M365_APPLICATION_ID_URI],
       this.getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
     );
+    const expectedM365ClientSecret = await this.getM365ClientSecret(
+      activeResourcePlugins,
+      resourceBaseName
+    );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
-      await this.getM365ClientSecret(activeResourcePlugins, resourceBaseName)
+      expectedM365ClientSecret
     );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.IDENTITY_ID],
@@ -248,7 +252,8 @@ export class FunctionValidator {
     } else {
       m365ClientSecret = await CliHelper.getUserSettings(
         `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
-        this.projectPath
+        this.projectPath,
+        this.env
       );
     }
     console.log("[dilin-debug] m365ClientSecret: " + m365ClientSecret);

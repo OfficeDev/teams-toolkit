@@ -13,6 +13,7 @@ import {
   getAuthServiceNameFromResourceId,
   getproductNameFromResourceId,
 } from "../../../fx-core/src/plugins/resource/apim/utils/commonUtils";
+import { getResourceGroupNameFromResourceId } from "./utilities";
 
 export class ApimValidator {
   static apimClient?: ApiManagementClient;
@@ -55,43 +56,19 @@ export class ApimValidator {
     });
   }
 
-  public static async validateProvision(
-    ctx: any,
-    appName: string,
-    subscriptionId: string,
-    isArmSupportEnabled: boolean,
-    resourceGroupName?: string,
-    serviceName?: string,
-    productId?: string,
-    oAuthServerId?: string
-  ): Promise<void> {
+  public static async validateProvision(ctx: any, resourceGroupName?: string): Promise<void> {
     const config = new Config(ctx);
     chai.assert.isNotEmpty(config?.resourceNameSuffix);
     chai.assert.equal(config?.apimResourceGroupName, resourceGroupName);
-    if (isArmSupportEnabled) {
-      chai.assert.isNotEmpty(config?.serviceResourceId);
-      chai.assert.isNotEmpty(config?.productResourceId);
-      chai.assert.isNotEmpty(config?.authServerResourceId);
-    } else {
-      chai.assert.equal(
-        config?.apimServiceName,
-        serviceName ?? `${appName}am${config?.resourceNameSuffix}`
-      );
-      chai.assert.equal(
-        config?.productId,
-        productId ?? `${appName}-${config?.resourceNameSuffix}-product`
-      );
-      chai.assert.equal(
-        config?.oAuthServerId,
-        oAuthServerId ?? `${appName}-${config?.resourceNameSuffix}-server`
-      );
-    }
+    chai.assert.isNotEmpty(config?.serviceResourceId);
+    chai.assert.isNotEmpty(config?.productResourceId);
+    chai.assert.isNotEmpty(config?.authServerResourceId);
     chai.assert.isNotEmpty(config?.apimClientAADObjectId);
     chai.assert.isNotEmpty(config?.apimClientAADClientId);
     chai.assert.isNotEmpty(config?.apimClientAADClientSecret);
-    await this.validateApimService(config, isArmSupportEnabled);
-    await this.validateApimOAuthServer(config, isArmSupportEnabled);
-    await this.validateProduct(config, isArmSupportEnabled);
+    await this.validateApimService(config, true);
+    await this.validateApimOAuthServer(config, true);
+    await this.validateProduct(config, true);
     await this.validateAppAad(config);
     await this.validateClientAad(config);
   }
@@ -421,7 +398,7 @@ class Config {
   }
 
   get apimResourceGroupName() {
-    return this.config[this.apimPlugin]["resourceGroupName"];
+    return getResourceGroupNameFromResourceId(this.config[this.apimPlugin]["serviceResourceId"]);
   }
   get apimServiceName() {
     return this.config[this.apimPlugin]["serviceName"];

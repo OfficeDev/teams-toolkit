@@ -62,7 +62,7 @@ describe("Deploy to customized resource group", function () {
     // Validate Provision
     const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
     await ApimValidator.init(subscription, AzureLogin, GraphLogin);
-    await ApimValidator.validateProvision(context, appName, subscription, true);
+    await ApimValidator.validateProvision(context);
 
     // deploy
     const result = await execAsyncWithRetry(

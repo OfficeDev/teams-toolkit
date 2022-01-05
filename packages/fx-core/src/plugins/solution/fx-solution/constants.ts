@@ -140,6 +140,7 @@ export enum SolutionError {
   FailedToGenerateArmTemplates = "FailedToGenerateArmTemplates",
   FailedToUpdateArmParameters = "FailedToUpdateArmTemplates",
   FailedToDeployArmTemplatesToAzure = "FailedToDeployArmTemplatesToAzure",
+  FailedToPollArmDeploymentStatus = "FailedToPollArmDeploymentStatus",
   FailedToValidateArmTemplates = "FailedToValidateArmTemplates",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
   M365TenantNotMatch = "M365TenantNotMatch",

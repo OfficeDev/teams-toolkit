@@ -196,6 +196,7 @@ export default class Preview extends YargsCommand {
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
     const includeSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
+    const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
 
     // TODO: move path validation to core
     const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
@@ -285,7 +286,8 @@ export default class Preview extends YargsCommand {
       includeBackend,
       includeBot,
       dotnetChecker,
-      funcToolChecker
+      funcToolChecker,
+      includeSimpleAuth
     );
     if (result.isErr()) {
       return result;
@@ -595,7 +597,8 @@ export default class Preview extends YargsCommand {
     includeBackend: boolean,
     includeBot: boolean,
     dotnetChecker: DotnetChecker,
-    funcToolChecker: FuncToolChecker
+    funcToolChecker: FuncToolChecker,
+    includeAuth?: boolean
   ): Promise<Result<null, FxError>> {
     const localEnv = await commonUtils.getLocalEnv(workspaceFolder);
 
@@ -608,13 +611,14 @@ export default class Preview extends YargsCommand {
       : undefined;
 
     const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
-    const authStartTask = includeFrontend
-      ? this.prepareTask(
-          TaskDefinition.authStart(dotnetExecPath, commonUtils.getAuthServicePath(localEnv)),
-          constants.authStartStartMessage,
-          commonUtils.getAuthLocalEnv(localEnv)
-        )
-      : undefined;
+    const authStartTask =
+      includeFrontend && includeAuth
+        ? this.prepareTask(
+            TaskDefinition.authStart(dotnetExecPath, commonUtils.getAuthServicePath(localEnv)),
+            constants.authStartStartMessage,
+            commonUtils.getAuthLocalEnv(localEnv)
+          )
+        : undefined;
 
     const funcCommand = await funcToolChecker.getFuncCommand();
     const backendStartTask = includeBackend

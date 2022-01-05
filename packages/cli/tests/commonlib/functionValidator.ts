@@ -120,7 +120,7 @@ export class FunctionValidator {
     );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
-      this.getM365ClientSecret(activeResourcePlugins, resourceBaseName)
+      await this.getM365ClientSecret(activeResourcePlugins, resourceBaseName)
     );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.IDENTITY_ID],
@@ -242,17 +242,17 @@ export class FunctionValidator {
     activeResourcePlugins: string[],
     resourceBaseName: string
   ): Promise<string> {
+    let m365ClientSecret: string;
     if (activeResourcePlugins.includes(PluginId.KeyVault)) {
-      const clientSecret = `@Microsoft.KeyVault(VaultName=${resourceBaseName};SecretName=m365ClientSecret`;
-      console.log("[dilin-debug] m365ClientSecret: " + clientSecret);
-      return clientSecret;
+      m365ClientSecret = `@Microsoft.KeyVault(VaultName=${resourceBaseName};SecretName=m365ClientSecret`;
     } else {
-      const clientSecret = await CliHelper.getUserSettings(
+      m365ClientSecret = await CliHelper.getUserSettings(
         `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
         this.projectPath
       );
-      console.log("[dilin-debug] m365ClientSecret: " + clientSecret);
-      return clientSecret;
     }
+    console.log("[dilin-debug] m365ClientSecret: " + m365ClientSecret);
+
+    return m365ClientSecret;
   }
 }

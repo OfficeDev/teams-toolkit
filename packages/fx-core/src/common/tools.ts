@@ -539,8 +539,8 @@ export function getHashedEnv(envName: string): string {
   return crypto.createHash("sha256").update(envName).digest("hex");
 }
 
-export function IsSimpleAuthEnabled(context: PluginContext): boolean {
-  const solutionSettings = context.projectSettings?.solutionSettings as AzureSolutionSettings;
+export function IsSimpleAuthEnabled(projectSettings: ProjectSettings | undefined): boolean {
+  const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
   return solutionSettings?.activeResourcePlugins?.includes(ResourcePlugins.SimpleAuth);
 }
 

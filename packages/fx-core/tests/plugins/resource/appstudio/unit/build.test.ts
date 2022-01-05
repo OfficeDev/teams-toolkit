@@ -19,7 +19,7 @@ import { AppStudioClient } from "./../../../../../src/plugins/resource/appstudio
 import { AppStudioPluginImpl } from "./../../../../../src/plugins/resource/appstudio/plugin";
 import { TeamsBot } from "./../../../../../src/plugins/resource/bot";
 import AdmZip from "adm-zip";
-import { isMultiEnvEnabled, newEnvInfo } from "../../../../../src";
+import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "../helper";
 import { v4 as uuid } from "uuid";
@@ -44,19 +44,17 @@ describe("Build Teams Package", () => {
   const localDebugBotDomain = "local debug bot domain";
 
   beforeEach(async () => {
-    if (isMultiEnvEnabled()) {
-      localSettings = {
-        auth: new ConfigMap([
-          [LocalSettingsAuthKeys.ApplicationIdUris, localDebugApplicationIdUris],
-          [LocalSettingsAuthKeys.ClientId, localDebugClientId],
-        ]),
-        bot: new ConfigMap([
-          [LocalSettingsBotKeys.BotId, localDebugBotId],
-          [LocalSettingsBotKeys.BotDomain, localDebugBotDomain],
-        ]),
-        teamsApp: new ConfigMap([[LocalSettingsTeamsAppKeys.TeamsAppId, uuid()]]),
-      };
-    }
+    localSettings = {
+      auth: new ConfigMap([
+        [LocalSettingsAuthKeys.ApplicationIdUris, localDebugApplicationIdUris],
+        [LocalSettingsAuthKeys.ClientId, localDebugClientId],
+      ]),
+      bot: new ConfigMap([
+        [LocalSettingsBotKeys.BotId, localDebugBotId],
+        [LocalSettingsBotKeys.BotDomain, localDebugBotDomain],
+      ]),
+      teamsApp: new ConfigMap([[LocalSettingsTeamsAppKeys.TeamsAppId, uuid()]]),
+    };
     plugin = new AppStudioPlugin();
     ctx = {
       root: getAzureProjectRoot(),

@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
+import { FxError, UserError } from "@microsoft/teamsfx-api";
 import { telemetryReporter } from "../core";
 
 export enum TelemetryProperty {
@@ -94,25 +94,6 @@ export function sendTelemetryEvent(
   properties?: { [p: string]: string },
   measurements?: { [p: string]: number }
 ): void {
-  sendTelemetryEventWithReporter(telemetryReporter, component, eventName, properties, measurements);
-}
-
-export function sendTelemetryErrorEvent(
-  component: string,
-  eventName: string,
-  fxError: FxError,
-  properties?: { [p: string]: string }
-): void {
-  sendTelemetryErrorEventWithReporter(telemetryReporter, component, eventName, fxError, properties);
-}
-
-export function sendTelemetryEventWithReporter(
-  telemetryReporter: TelemetryReporter | undefined,
-  component: string,
-  eventName: string,
-  properties?: { [p: string]: string },
-  measurements?: { [p: string]: number }
-): void {
   if (!properties) {
     properties = {};
   }
@@ -120,8 +101,7 @@ export function sendTelemetryEventWithReporter(
   telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
 }
 
-export function sendTelemetryErrorEventWithReporter(
-  telemetryReporter: TelemetryReporter | undefined,
+export function sendTelemetryErrorEvent(
   component: string,
   eventName: string,
   fxError: FxError,

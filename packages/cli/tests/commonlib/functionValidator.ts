@@ -242,17 +242,17 @@ export class FunctionValidator {
     activeResourcePlugins: string[],
     resourceBaseName: string
   ): Promise<string> {
-    let m365ClientSecret = "";
     if (activeResourcePlugins.includes(PluginId.KeyVault)) {
-      m365ClientSecret = `@Microsoft.KeyVault(VaultName=${resourceBaseName};SecretName=m365ClientSecret`;
+      const clientSecret = `@Microsoft.KeyVault(VaultName=${resourceBaseName};SecretName=m365ClientSecret`;
+      console.log("[dilin-debug] m365ClientSecret: " + clientSecret);
+      return clientSecret;
     } else {
-      m365ClientSecret = await CliHelper.getUserSettings(
+      const clientSecret = await CliHelper.getUserSettings(
         `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
         this.projectPath
       );
+      console.log("[dilin-debug] m365ClientSecret: " + clientSecret);
+      return clientSecret;
     }
-    console.log("[dilin-debug] m365ClientSecret: " + m365ClientSecret);
-
-    return m365ClientSecret;
   }
 }

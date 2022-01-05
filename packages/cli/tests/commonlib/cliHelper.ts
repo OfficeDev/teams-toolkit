@@ -35,8 +35,8 @@ export class CliHelper {
     }
   }
 
-  static async provisionProject(projectPath: string) {
-    const result = await execAsyncWithRetry(`teamsfx provision`, {
+  static async provisionProject(projectPath: string, option = "") {
+    const result = await execAsyncWithRetry(`teamsfx provision ${option}`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
@@ -115,24 +115,27 @@ export class CliHelper {
   }
 
   static async getUserSettings(key: string, projectPath: string, env: string): Promise<string> {
+    let value = "";
     const result = await execAsync(`teamsfx config get ${key} --env ${env}`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,
     });
+
     const message = `get user settings in ${projectPath}. Key: ${key}`;
     if (result.stderr) {
       console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+    } else {
+      const arr = (result.stdout as string).split(":");
+      if (!arr || arr.length <= 1) {
+        console.error(
+          `[Failed] ${message}. Failed to get value from cli result. result: ${result.stdout}`
+        );
+      } else {
+        value = arr[1] as string;
+        console.log(`[Successfully] ${message} Value: ${value}`);
+      }
     }
-
-    const arr = (result.stdout as string).split(":");
-    if (!arr || arr.length <= 1) {
-      console.error(
-        `[Failed] ${message}. Failed to get value from cli result. result: ${result.stdout}`
-      );
-    }
-    const value = arr[1] as string;
-    console.log(`[Successfully] ${message} Value: ${value}`);
     return value;
   }
 }

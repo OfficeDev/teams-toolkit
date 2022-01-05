@@ -40,7 +40,10 @@ describe("Configuration successfully changed when with different plugins", funct
     await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
+    await CliHelper.provisionProject(
+      projectPath,
+      " --sql-admin-name Abc123321 --sql-password Cab232332"
+    );
 
     // Assert
     {

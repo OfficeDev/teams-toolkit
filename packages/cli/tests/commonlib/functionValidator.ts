@@ -123,6 +123,12 @@ export class FunctionValidator {
       activeResourcePlugins,
       resourceBaseName
     );
+    console.log("[dilin-debug] expectedM365ClientSecret: " + expectedM365ClientSecret);
+    console.log(
+      "[dilin-debug] webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET]: " +
+        webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET]
+    );
+
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
       expectedM365ClientSecret

@@ -17,7 +17,7 @@ import { TeamsBotConfig } from "../../../../../src/plugins/resource/bot/configs/
 import {
   fetchTemplateZipFromLocalAction,
   unzipAction,
-} from "../../../../../src/common/templatesActions";
+} from "../../../../../src/common/template-utils";
 
 describe("Language Strategy", () => {
   describe("getTemplateProject", () => {

@@ -18,9 +18,11 @@ import {
   ProjectSettings,
   AzureSolutionSettings,
   SolutionContext,
+  v3,
+  PluginContext,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
-import axios from "axios";
+import axios, { AxiosResponse } from "axios";
 import { exec, ExecOptions } from "child_process";
 import * as fs from "fs-extra";
 import { glob } from "glob";
@@ -35,10 +37,11 @@ import {
   TeamsClientId,
   OfficeClientId,
   OutlookClientId,
+  ResourcePlugins,
 } from "./constants";
 import * as crypto from "crypto";
 import * as os from "os";
-import { FailedToParseResourceIdError } from "../core/error";
+import { FailedToParseResourceIdError, FetchSampleError } from "../core/error";
 import {
   GLOBAL_CONFIG,
   RESOURCE_GROUP_NAME,
@@ -46,14 +49,15 @@ import {
   SUBSCRIPTION_ID,
 } from "../plugins/solution/fx-solution/constants";
 import Mustache from "mustache";
+import { CloudResource } from "@microsoft/teamsfx-api/build/v3";
 
-Handlebars.registerHelper("contains", (value, array, options) => {
+Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
-  return array.indexOf(value) > -1 ? options.fn(this) : "";
+  return array.indexOf(value) > -1 ? this : "";
 });
-Handlebars.registerHelper("notContains", (value, array, options) => {
+Handlebars.registerHelper("notContains", (value, array) => {
   array = array instanceof Array ? array : [array];
-  return array.indexOf(value) == -1 ? options.fn(this) : "";
+  return array.indexOf(value) == -1 ? this : "";
 });
 
 export const Executor = {
@@ -242,68 +246,6 @@ export function serializeDict(dict: Record<string, string>): string {
   return array.join("\n");
 }
 
-export async function fetchCodeZip(url: string) {
-  let retries = 3;
-  let result = undefined;
-  while (retries > 0) {
-    retries--;
-    try {
-      result = await axios.get(url, {
-        responseType: "arraybuffer",
-      });
-      if (result.status === 200 || result.status === 201) {
-        return result;
-      }
-    } catch (e) {
-      await new Promise<void>((resolve: () => void): NodeJS.Timer => setTimeout(resolve, 10000));
-    }
-  }
-  return result;
-}
-
-export async function saveFilesRecursively(
-  zip: AdmZip,
-  appFolder: string,
-  dstPath: string
-): Promise<void> {
-  await Promise.all(
-    zip
-      .getEntries()
-      .filter(
-        (entry) =>
-          !entry.isDirectory &&
-          entry.entryName.includes(appFolder) &&
-          entry.entryName.split("/").includes(appFolder)
-      )
-      .map(async (entry) => {
-        const entryPath = entry.entryName.substring(
-          entry.entryName.indexOf(appFolder) + appFolder.length
-        );
-        const filePath = path.join(dstPath, entryPath);
-        await fs.ensureDir(path.dirname(filePath));
-        await fs.writeFile(filePath, entry.getData());
-      })
-  );
-}
-
-export async function downloadSampleHook(sampleId: string, sampleAppPath: string) {
-  // A temporary solution to avoid duplicate componentId
-  if (sampleId === "todo-list-SPFx") {
-    const originalId = "c314487b-f51c-474d-823e-a2c3ec82b1ff";
-    const componentId = uuid.v4();
-    glob.glob(`${sampleAppPath}/**/*.json`, { nodir: true, dot: true }, async (err, files) => {
-      await Promise.all(
-        files.map(async (file) => {
-          let content = (await fs.readFile(file)).toString();
-          const reg = new RegExp(originalId, "g");
-          content = content.replace(reg, componentId);
-          await fs.writeFile(file, content);
-        })
-      );
-    });
-  }
-}
-
 export const deepCopy = <T>(target: T): T => {
   if (target === null) {
     return target;
@@ -423,29 +365,29 @@ export function isFeatureFlagEnabled(featureFlagName: string, defaultValue = fal
   }
 }
 
+/**
+ * @deprecated Please DO NOT use this method any more, it will be removed in near future.
+ */
 export function isMultiEnvEnabled(): boolean {
-  return (
-    !isFeatureFlagEnabled(FeatureFlagName.RollbackToTeamsToolkitV2, false) &&
-    isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)
-  );
+  return true;
 }
 
+/**
+ * @deprecated Please DO NOT use this method any more, it will be removed in near future.
+ */
 export function isArmSupportEnabled(): boolean {
-  return (
-    !isFeatureFlagEnabled(FeatureFlagName.RollbackToTeamsToolkitV2, false) &&
-    isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)
-  );
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
 }
 
 export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
 
+/**
+ * @deprecated Please DO NOT use this method any more, it will be removed in near future.
+ */
 export function isRemoteCollaborateEnabled(): boolean {
-  return (
-    !isFeatureFlagEnabled(FeatureFlagName.RollbackToTeamsToolkitV2, false) &&
-    isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)
-  );
+  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
 }
 
 export function getRootDirectory(): string {
@@ -453,25 +395,23 @@ export function getRootDirectory(): string {
   if (root === undefined || root === "") {
     return path.join(os.homedir(), ConstantString.rootFolder);
   } else {
-    return root;
+    return path.resolve(root.replace("${homeDir}", os.homedir()));
   }
 }
 
-export async function generateBicepFiles(
+export async function generateBicepFromFile(
   templateFilePath: string,
   context: any
-): Promise<Result<string, FxError>> {
+): Promise<string> {
   try {
     const templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
     const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
-    return ok(updatedBicepFile);
+    return updatedBicepFile;
   } catch (error) {
-    return err(
-      returnSystemError(
-        new Error(`Failed to generate bicep file ${templateFilePath}. Reason: ${error.message}`),
-        "Core",
-        "BicepGenerationError"
-      )
+    throw returnSystemError(
+      new Error(`Failed to generate bicep file ${templateFilePath}. Reason: ${error.message}`),
+      "Core",
+      "BicepGenerationError"
     );
   }
 }
@@ -489,23 +429,15 @@ export async function getAppDirectory(projectRoot: string): Promise<string> {
   const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
   const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;
 
-  if (isMultiEnvEnabled()) {
-    if (
-      (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) ||
-      (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_LOCAL}`))
-    ) {
-      return appDirNewLocForMultiEnv;
-    } else if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
-      return appDirNewLoc;
-    } else {
-      return appDirOldLoc;
-    }
+  if (
+    (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) ||
+    (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_LOCAL}`))
+  ) {
+    return appDirNewLocForMultiEnv;
+  } else if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
+    return appDirNewLoc;
   } else {
-    if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
-      return appDirNewLoc;
-    } else {
-      return appDirOldLoc;
-    }
+    return appDirOldLoc;
   }
 }
 
@@ -605,6 +537,11 @@ export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
 
 export function getHashedEnv(envName: string): string {
   return crypto.createHash("sha256").update(envName).digest("hex");
+}
+
+export function IsSimpleAuthEnabled(projectSettings: ProjectSettings | undefined): boolean {
+  const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
+  return solutionSettings?.activeResourcePlugins?.includes(ResourcePlugins.SimpleAuth);
 }
 
 interface BasicJsonSchema {

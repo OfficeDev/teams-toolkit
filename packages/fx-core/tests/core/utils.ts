@@ -23,6 +23,7 @@ import {
   MultiSelectConfig,
   MultiSelectResult,
   ok,
+  OptionItem,
   PermissionRequestProvider,
   ProjectSettings,
   QTreeNode,
@@ -47,6 +48,7 @@ import {
   Tools,
   UserInteraction,
   v2,
+  v3,
   Void,
 } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
@@ -56,6 +58,8 @@ import {
   DEFAULT_PERMISSION_REQUEST,
   PluginNames,
 } from "../../src/plugins/solution/fx-solution/constants";
+import Container from "typedi";
+import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 
 function solutionSettings(): AzureSolutionSettings {
   return {
@@ -429,31 +433,31 @@ class MockTelemetryReporter implements TelemetryReporter {
 
 export class MockUserInteraction implements UserInteraction {
   selectOption(config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method selectOption not implemented: ${JSON.stringify(config)}`);
   }
 
   selectOptions(config: MultiSelectConfig): Promise<Result<MultiSelectResult, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method selectOptions not implemented: ${JSON.stringify(config)}`);
   }
 
   inputText(config: InputTextConfig): Promise<Result<InputTextResult, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method inputText not implemented: ${JSON.stringify(config)}`);
   }
 
   selectFile(config: SelectFileConfig): Promise<Result<SelectFileResult, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method selectFile not implemented: ${JSON.stringify(config)}`);
   }
 
   selectFiles(config: SelectFilesConfig): Promise<Result<SelectFilesResult, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method selectFiles not implemented: ${JSON.stringify(config)}`);
   }
 
   selectFolder(config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method selectFolder not implemented: ${JSON.stringify(config)}`);
   }
 
   openUrl(link: string): Promise<Result<boolean, FxError>> {
-    throw new Error("Method not implemented.");
+    throw new Error(`Method openUrl not implemented: ${link}`);
   }
 
   async showMessage(
@@ -653,5 +657,85 @@ export function deleteFolder(filePath?: string): void {
       }
     });
     fs.rmdirSync(filePath);
+  }
+}
+
+export function mockSolutionV3getQuestionsAPI(solution: v3.ISolution, sandbox: sinon.SinonSandbox) {
+  if (solution.getQuestionsForScaffold) {
+    sandbox
+      .stub(solution, "getQuestionsForScaffold")
+      .callsFake(async (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => {
+        return ok(undefined);
+      });
+  }
+  if (solution.getQuestionsForAddResource) {
+    sandbox
+      .stub(solution, "getQuestionsForAddResource")
+      .callsFake(async (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => {
+        return ok(undefined);
+      });
+  }
+  if (solution.getQuestionsForAddModule) {
+    sandbox
+      .stub(solution, "getQuestionsForAddModule")
+      .callsFake(async (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => {
+        return ok(undefined);
+      });
+  }
+  if (solution.getQuestionsForProvision) {
+    sandbox
+      .stub(solution, "getQuestionsForProvision")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          tokenProvider: TokenProvider,
+          envInfo?: v2.DeepReadonly<v3.EnvInfoV3>
+        ) => {
+          return ok(undefined);
+        }
+      );
+  }
+  if (solution.getQuestionsForLocalProvision) {
+    sandbox
+      .stub(solution, "getQuestionsForLocalProvision")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          tokenProvider: TokenProvider,
+          localSettings?: v2.DeepReadonly<Json>
+        ) => {
+          return ok(undefined);
+        }
+      );
+  }
+  if (solution.getQuestionsForDeploy) {
+    sandbox
+      .stub(solution, "getQuestionsForDeploy")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+          tokenProvider: TokenProvider
+        ) => {
+          return ok(undefined);
+        }
+      );
+  }
+  if (solution.getQuestionsForPublish) {
+    sandbox
+      .stub(solution, "getQuestionsForPublish")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+          tokenProvider: AppStudioTokenProvider
+        ) => {
+          return ok(undefined);
+        }
+      );
   }
 }

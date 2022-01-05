@@ -15,6 +15,7 @@ var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
 var aadMetadataAddress = uri(m365OauthAuthorityHost, '${m365TenantId}/v2.0/.well-known/openid-configuration')
 
+
 var teamsMobileOrDesktopAppClientId = '1fec8e78-bce4-4aaf-ab1b-5451cc387264'
 var teamsWebAppClientId = '5e3ce6c0-2b1f-4285-8d4b-75ee78787346'
 var officeWebAppClientId1 = '4345a7b9-9a63-4910-a426-35363201d503'

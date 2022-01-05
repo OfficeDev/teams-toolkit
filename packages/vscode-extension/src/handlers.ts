@@ -32,6 +32,7 @@ import {
   Tools,
   AzureSolutionSettings,
   AppPackageFolderName,
+  TemplateFolderName,
   BuildFolderName,
   TreeItem,
   TreeCategory,
@@ -762,7 +763,7 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 /**
  * check & install required dependencies during local debug when selected hosting type is Azure.
  */
-export async function validateDependenciesHandler(): Promise<void> {
+export async function validateDependenciesHandler(): Promise<string | undefined> {
   const nodeChecker = new AzureNodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
   const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
   const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
@@ -771,19 +772,19 @@ export async function validateDependenciesHandler(): Promise<void> {
     dotnetChecker,
     funcChecker,
   ]);
-  await validateDependenciesCore(depsChecker);
+  return await validateDependenciesCore(depsChecker);
 }
 
 /**
  * check & install required dependencies during local debug when selected hosting type is SPFx.
  */
-export async function validateSpfxDependenciesHandler(): Promise<void> {
+export async function validateSpfxDependenciesHandler(): Promise<string | undefined> {
   const nodeChecker = new SPFxNodeChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
   const depsChecker = new DepsChecker(vscodeLogger, vscodeAdapter, [nodeChecker]);
-  await validateDependenciesCore(depsChecker);
+  return await validateDependenciesCore(depsChecker);
 }
 
-async function validateDependenciesCore(depsChecker: DepsChecker): Promise<void> {
+async function validateDependenciesCore(depsChecker: DepsChecker): Promise<string | undefined> {
   let shouldContinue = await depsChecker.resolve();
 
   // TODO: integrate into DepsChecker after all checkers support linux
@@ -792,15 +793,15 @@ async function validateDependenciesCore(depsChecker: DepsChecker): Promise<void>
 
   if (!shouldContinue) {
     await debug.stopDebugging();
-    // TODO: better mechanism to stop the tasks and debug session.
-    throw new Error("debug stopped.");
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
   }
 }
 
 /**
  * install functions binding before launch local debug
  */
-export async function backendExtensionsInstallHandler(): Promise<void> {
+export async function backendExtensionsInstallHandler(): Promise<string | undefined> {
   if (workspace.workspaceFolders && workspace.workspaceFolders.length > 0) {
     const workspaceFolder = workspace.workspaceFolders[0];
     const backendRoot = await commonUtils.getProjectRoot(
@@ -819,7 +820,9 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
         await backendExtensionsInstaller.install(backendRoot);
       } catch (error) {
         await DepsChecker.handleErrorWithDisplay(error, vscodeAdapter);
-        throw error;
+        await debug.stopDebugging();
+        // return non-zero value to let task "exit ${command:xxx}" to exit
+        return "1";
       }
     }
   }
@@ -828,9 +831,9 @@ export async function backendExtensionsInstallHandler(): Promise<void> {
 /**
  * call localDebug on core
  */
-export async function preDebugCheckHandler(): Promise<void> {
+export async function preDebugCheckHandler(): Promise<string | undefined> {
   try {
-    const localAppId = commonUtils.getLocalTeamsAppId() as string;
+    const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPreCheck, {
       [TelemetryProperty.DebugAppId]: localAppId,
     });
@@ -842,14 +845,16 @@ export async function preDebugCheckHandler(): Promise<void> {
   result = await runCommand(Stage.debug);
   if (result.isErr()) {
     try {
-      const localAppId = commonUtils.getLocalTeamsAppId() as string;
+      const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, result.error, {
         [TelemetryProperty.DebugAppId]: localAppId,
       });
     } finally {
       // ignore telemetry error
       terminateAllRunningTeamsfxTasks();
-      throw result.error;
+      await debug.stopDebugging();
+      // return non-zero value to let task "exit ${command:xxx}" to exit
+      return "1";
     }
   }
 
@@ -866,15 +871,26 @@ export async function preDebugCheckHandler(): Promise<void> {
     }
     const error = new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource);
     try {
-      const localAppId = commonUtils.getLocalTeamsAppId() as string;
+      const localAppId = (await commonUtils.getLocalTeamsAppId()) as string;
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPreCheck, error, {
         [TelemetryProperty.DebugAppId]: localAppId,
       });
     } finally {
       // ignore telemetry error
-      window.showErrorMessage(message);
       terminateAllRunningTeamsfxTasks();
-      throw error;
+      await debug.stopDebugging();
+      VS_CODE_UI.showMessage(
+        "error",
+        message,
+        false,
+        StringResources.vsc.localDebug.learnMore
+      ).then(async (result) => {
+        if (result.isOk() && result.value === StringResources.vsc.localDebug.learnMore) {
+          await VS_CODE_UI.openUrl(constants.portInUseHelpLink);
+        }
+      });
+      // return non-zero value to let task "exit ${command:xxx}" to exit
+      return "1";
     }
   }
 }
@@ -910,7 +926,10 @@ export async function openHelpFeedbackLinkHandler(args: any[]): Promise<boolean>
 }
 export async function openWelcomeHandler(args?: any[]) {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.QuickStart, getTriggerFromProperty(args));
-  WebviewPanel.createOrShow(PanelType.QuickStart);
+  vscode.commands.executeCommand(
+    "workbench.action.openWalkthrough",
+    "TeamsDevApp.ms-teams-vscode-extension#teamsToolkitQuickStart"
+  );
 }
 
 export async function checkUpgrade(args?: any[]) {
@@ -939,6 +958,8 @@ function getTriggerFromProperty(args?: any[]) {
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.CodeLens };
     case TelemetryTiggerFrom.EditorTitle:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.EditorTitle };
+    case TelemetryTiggerFrom.SideBar:
+      return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.SideBar };
     case TelemetryTiggerFrom.Other:
       return { [TelemetryProperty.TriggerFrom]: TelemetryTiggerFrom.Other };
     default:
@@ -1608,6 +1629,8 @@ export function cmdHdlDisposeTreeView() {
 }
 
 export async function showError(e: UserError | SystemError) {
+  const notificationMessage = e.notificationMessage ?? e.message;
+
   if (e.stack && e instanceof SystemError) {
     VsCodeLogInstance.error(`code:${e.source}.${e.name}, message: ${e.message}, stack: ${e.stack}`);
   } else {
@@ -1625,7 +1648,7 @@ export async function showError(e: UserError | SystemError) {
       },
     };
 
-    const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, help);
+    const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, help);
     if (button) await button.run();
   } else if (e instanceof SystemError) {
     const sysError = e as SystemError;
@@ -1642,11 +1665,11 @@ export async function showError(e: UserError | SystemError) {
       },
     };
 
-    const button = await window.showErrorMessage(`[${errorCode}]: ${e.message}`, issue);
+    const button = await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`, issue);
     if (button) await button.run();
   } else {
     if (!(e instanceof ConcurrentError))
-      await window.showErrorMessage(`[${errorCode}]: ${e.message}`);
+      await window.showErrorMessage(`[${errorCode}]: ${notificationMessage}`);
   }
 }
 
@@ -1968,6 +1991,23 @@ export async function updatePreviewManifest(args: any[]) {
     });
   }
   return result;
+}
+
+export async function editManifestTemplate(args: any[]) {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.EditManifestTemplate,
+    getTriggerFromProperty(args && args.length > 1 ? [args[1]] : undefined)
+  );
+
+  if (args && args.length > 0) {
+    const segments = args[0].fsPath.split(".");
+    const env = segments[segments.length - 2] === "local" ? "local" : "remote";
+    const workspacePath = getWorkspacePath();
+    const manifestPath = `${workspacePath}/${TemplateFolderName}/${AppPackageFolderName}/manifest.${env}.template.json`;
+    workspace.openTextDocument(manifestPath).then((document) => {
+      window.showTextDocument(document);
+    });
+  }
 }
 
 export async function signOutAzure(isFromTreeView: boolean) {

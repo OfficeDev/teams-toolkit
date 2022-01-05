@@ -57,6 +57,7 @@ export enum AzureSolutionQuestionNames {
   AppName = "app-name",
   AskSub = "subscription",
   ProgrammingLanguage = "programming-language",
+  Solution = "solution",
 }
 
 export const HostTypeOptionAzure: OptionItem = {
@@ -253,35 +254,6 @@ export const AskSubscriptionQuestion: FuncQuestion = {
   type: "func",
   func: async (inputs: Inputs): Promise<Void> => {
     return ok(Void);
-  },
-};
-
-export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
-  name: AzureSolutionQuestionNames.ProgrammingLanguage,
-  title: "Programming Language",
-  type: "singleSelect",
-  staticOptions: [
-    { id: "javascript", label: "JavaScript" },
-    { id: "typescript", label: "TypeScript" },
-  ],
-  dynamicOptions: (inputs: Inputs): StaticOptions => {
-    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return [{ id: "typescript", label: "TypeScript" }];
-    return [
-      { id: "javascript", label: "JavaScript" },
-      { id: "typescript", label: "TypeScript" },
-    ];
-  },
-  skipSingleOption: true,
-  default: (inputs: Inputs) => {
-    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return "typescript";
-    return "javascript";
-  },
-  placeholder: (inputs: Inputs): string => {
-    const cpas = inputs[AzureSolutionQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return "SPFx is currently supporting TypeScript only.";
-    return "Select a programming language.";
   },
 };
 

@@ -39,14 +39,6 @@ export class Commands {
   static BuildFrontend = "npm run build";
 }
 
-export class EnvironmentVariables {
-  static FuncEndpoint = "REACT_APP_FUNC_ENDPOINT";
-  static FuncName = "REACT_APP_FUNC_NAME";
-  static RuntimeEndpoint = "REACT_APP_TEAMSFX_ENDPOINT";
-  static StartLoginPage = "REACT_APP_START_LOGIN_PAGE_URL";
-  static ClientID = "REACT_APP_CLIENT_ID";
-}
-
 export class FrontendPathInfo {
   static WorkingDir = "tabs";
   static TemplateRelativeDir = path.join("plugins", "resource", "frontend");
@@ -123,6 +115,8 @@ export class TelemetryEvent {
   static readonly GenerateArmTemplates = "generate-arm-templates";
   static readonly UpdateArmTemplates = "update-arm-templates";
   static readonly ExecuteUserTask = "execute-user-task";
+  static readonly SaveEnvFile = "frontend-save-env-file";
+  static readonly LoadEnvFile = "frontend-load-env-file";
 }
 
 export class TelemetryKey {

@@ -20,7 +20,6 @@ import { HostTypeOptionAzure } from "../../../../../src/plugins/solution/fx-solu
 import {
   APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
   COLOR_TEMPLATE,
-  CONFIGURABLE_TABS_TPL,
   CONFIGURABLE_TABS_TPL_LOCAL_DEBUG,
   DEFAULT_COLOR_PNG_FILENAME,
   DEFAULT_OUTLINE_PNG_FILENAME,
@@ -28,7 +27,6 @@ import {
   MANIFEST_RESOURCES,
   OUTLINE_TEMPLATE,
   REMOTE_MANIFEST,
-  STATIC_TABS_TPL,
   STATIC_TABS_TPL_LOCAL_DEBUG,
 } from "../../../../../src/plugins/resource/appstudio/constants";
 import path from "path";
@@ -63,7 +61,7 @@ describe("Migrate", () => {
     plugin = new AppStudioPlugin();
 
     ctx = {
-      root: "./tests/plugins/resource/appstudio/resources",
+      root: path.resolve(__dirname, "../resources"),
       envInfo: newEnvInfo(),
       config: new ConfigMap(),
       answers: { platform: Platform.VSCode },
@@ -136,6 +134,13 @@ describe("Migrate", () => {
       }
       throw new Error("Cannot find file");
     });
+
+    sandbox.stub(fs, "pathExists").callsFake(async (filePath: PathLike) => {
+      if (fileContent.has(path.normalize(filePath.toString()))) {
+        return true;
+      }
+      return false;
+    });
   });
 
   afterEach(() => {
@@ -180,6 +185,7 @@ describe("Migrate", () => {
     };
 
     const result = await plugin.migrateV1Project(ctx);
+    console.log(result);
     chai.expect(result.isOk()).equals(true);
 
     const manifest: TeamsAppManifest = JSON.parse(
@@ -247,14 +253,8 @@ describe("Migrate", () => {
         )
       )
     );
-    chai
-      .expect(manifest.staticTabs)
-      .to.deep.equal(isMultiEnvEnabled() ? STATIC_TABS_TPL_LOCAL_DEBUG : STATIC_TABS_TPL);
-    chai
-      .expect(manifest.configurableTabs)
-      .to.deep.equal(
-        isMultiEnvEnabled() ? CONFIGURABLE_TABS_TPL_LOCAL_DEBUG : CONFIGURABLE_TABS_TPL
-      );
+    chai.expect(manifest.staticTabs).to.deep.equal(STATIC_TABS_TPL_LOCAL_DEBUG);
+    chai.expect(manifest.configurableTabs).to.deep.equal(CONFIGURABLE_TABS_TPL_LOCAL_DEBUG);
     chai
       .expect(manifest.bots, "Bots should be empty, because only tab is chosen")
       .to.deep.equal([]);

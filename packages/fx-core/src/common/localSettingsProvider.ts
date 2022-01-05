@@ -19,7 +19,6 @@ import {
   LocalSettingsTeamsAppKeys,
   LocalSettingsEncryptKeys,
 } from "./localSettingsConstants";
-import { isMultiEnvEnabled } from "./tools";
 
 export const localSettingsFileName = "localSettings.json";
 const crypto = "crypto";
@@ -27,9 +26,7 @@ const crypto = "crypto";
 export class LocalSettingsProvider {
   public readonly localSettingsFilePath: string;
   constructor(workspaceFolder: string) {
-    this.localSettingsFilePath = isMultiEnvEnabled()
-      ? `${workspaceFolder}/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`
-      : `${workspaceFolder}/.${ConfigFolderName}/${localSettingsFileName}`;
+    this.localSettingsFilePath = `${workspaceFolder}/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsFileName}`;
   }
 
   public init(
@@ -69,7 +66,12 @@ export class LocalSettingsProvider {
     return localSettings;
   }
 
-  public initV2(includeFrontend: boolean, includeBackend: boolean, includeBot: boolean): Json {
+  public initV2(
+    includeFrontend: boolean,
+    includeBackend: boolean,
+    includeBotOrMessageExtension: boolean,
+    migrateFromV1 = false
+  ): Json {
     const localSettings: Json = {
       teamsApp: {
         [LocalSettingsTeamsAppKeys.TenantId]: "",
@@ -77,10 +79,13 @@ export class LocalSettingsProvider {
       },
     };
 
+    if (!migrateFromV1) {
+      localSettings.auth = this.initSimpleAuth().toJSON();
+    }
+
     // initialize frontend and simple auth local settings.
     if (includeFrontend) {
       localSettings.frontend = this.initFrontend().toJSON();
-      localSettings.auth = this.initSimpleAuth().toJSON();
     }
 
     // initialize backend local settings.
@@ -89,19 +94,20 @@ export class LocalSettingsProvider {
     }
 
     // initialize bot local settings.
-    if (includeBot) {
+    if (includeBotOrMessageExtension) {
       localSettings.bot = this.initBot().toJSON();
     }
 
     return localSettings;
   }
 
-  public incrementalInit(
-    localSettings: LocalSettings,
+  public incrementalInitV2(
+    localSettingsJson: Json,
     addBackaned: boolean,
     addBot: boolean,
     addFrontend: boolean
-  ): LocalSettings {
+  ): Json {
+    const localSettings: LocalSettings = this.convertToLocalSettings(localSettingsJson);
     if (!localSettings.backend && addBackaned) {
       localSettings.backend = this.initBackend();
     }
@@ -114,7 +120,7 @@ export class LocalSettingsProvider {
       localSettings.frontend = this.initFrontend();
     }
 
-    return localSettings;
+    return this.convertToLocalSettingsJson(localSettings);
   }
 
   public async load(cryptoProvider?: CryptoProvider): Promise<LocalSettings | undefined> {
@@ -249,11 +255,14 @@ export class LocalSettingsProvider {
     return localSettings;
   }
 
-  private convertToLocalSettingsJson(localSettings: LocalSettings): Json {
+  convertToLocalSettingsJson(localSettings: LocalSettings): Json {
     const localSettingsJson: Json = {
       teamsApp: localSettings.teamsApp?.toJSON(),
-      auth: localSettings.auth?.toJSON(),
     };
+
+    if (localSettings.auth) {
+      localSettingsJson["auth"] = localSettings.auth?.toJSON();
+    }
 
     if (localSettings.frontend) {
       localSettingsJson["frontend"] = localSettings.frontend.toJSON();

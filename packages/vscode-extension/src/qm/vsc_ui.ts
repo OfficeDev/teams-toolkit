@@ -14,6 +14,7 @@ import {
   ProgressLocation,
   ExtensionContext,
   commands,
+  extensions,
 } from "vscode";
 import {
   UserCancelError,
@@ -50,6 +51,8 @@ import * as StringResources from "../resources/Strings.json";
 import { ProgressHandler } from "../progressHandler";
 import { exp } from "../exp";
 import { TreatmentVariables } from "../exp/treatmentVariables";
+import * as packageJson from "../../package.json";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
 
 export interface FxQuickPickItem extends QuickPickItem {
   id: string;
@@ -690,6 +693,17 @@ export class VsCodeUI implements UserInteraction {
 
   async reload(): Promise<Result<boolean, FxError>> {
     return new Promise(async (resolve) => {
+      // The following code only fixes the bug that cause telemetry event lost for projectMigrator().
+      // When this reload() function has more users, they may need to dispose() more resources that allocated in activate().
+      const extension = extensions.getExtension(`${packageJson.publisher}.${packageJson.name}`);
+      if (!extension?.isActive) {
+        // When our extension is not activated, we can determine this is in the vscode extension activate() context.
+        // Since we are not activated yet, vscode will not deactivate() and dispose() our resourses (which have been allocated in activate()).
+        // This may cause resource leaks.For example, buffered events in TelemetryReporter is not sent.
+        // So manually dispose them.
+        ExtTelemetry.reporter?.dispose();
+      }
+
       commands.executeCommand("workbench.action.reloadWindow").then((v) => {
         if (v) resolve(ok(v as boolean));
         else resolve(err(UserCancelError));

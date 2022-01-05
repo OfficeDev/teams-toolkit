@@ -1,4 +1,4 @@
-import { IProgressHandler, PluginContext } from "@microsoft/teamsfx-api";
+import { IProgressHandler, PluginContext, UserInteraction } from "@microsoft/teamsfx-api";
 import { getStrings } from "../../../../common";
 
 export enum DeployArmTemplatesSteps {
@@ -8,11 +8,11 @@ export class ProgressHelper {
   static deployArmTemplatesProgress: IProgressHandler | undefined;
 
   static async startDeployArmTemplatesProgressHandler(
-    ctx: PluginContext
+    ui?: UserInteraction
   ): Promise<IProgressHandler | undefined> {
     await this.deployArmTemplatesProgress?.end(true);
 
-    this.deployArmTemplatesProgress = ctx.ui?.createProgressBar(
+    this.deployArmTemplatesProgress = ui?.createProgressBar(
       getStrings().solution.DeployArmTemplates.Progress.Title,
       Object.entries(DeployArmTemplatesSteps).length
     );

@@ -4,7 +4,7 @@
 "use strict";
 
 import * as path from "path";
-import { Argv, Options } from "yargs";
+import { Argv } from "yargs";
 
 import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
 
@@ -24,18 +24,21 @@ export class CapabilityAddTab extends YargsCommand {
   public readonly commandHead = `tab`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add a tab.";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addCapability-Tab");
     return yargs.options(this.params);
   }
 
+  public override modifyArguments(args: { [argName: string]: any }) {
+    CLIUIInstance.updatePresetAnswer("capabilities", args["capabilities"]);
+    delete args["capabilities"];
+    return args;
+  }
+
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
-
-    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -76,17 +79,21 @@ export class CapabilityAddBot extends YargsCommand {
   public readonly commandHead = `bot`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add a bot.";
-  public params: { [_: string]: Options } = {};
+
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addCapability-Bot");
     return yargs.options(this.params);
   }
 
+  public override modifyArguments(args: { [argName: string]: any }) {
+    CLIUIInstance.updatePresetAnswer("capabilities", args["capabilities"]);
+    delete args["capabilities"];
+    return args;
+  }
+
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
-
-    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -126,18 +133,21 @@ export class CapabilityAddMessageExtension extends YargsCommand {
   public readonly commandHead = `messaging-extension`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Add Messaging Extensions.";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("addCapability-MessagingExtension");
     return yargs.options(this.params);
   }
 
+  public override modifyArguments(args: { [argName: string]: any }) {
+    CLIUIInstance.updatePresetAnswer("capabilities", args["capabilities"]);
+    delete args["capabilities"];
+    return args;
+  }
+
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
     const rootFolder = path.resolve(args.folder || "./");
     CliTelemetry.withRootFolder(rootFolder).sendTelemetryEvent(TelemetryEvent.AddCapStart);
-
-    CLIUIInstance.updatePresetAnswers(this.params, args);
 
     const result = await activate(rootFolder);
     if (result.isErr()) {
@@ -175,7 +185,7 @@ export class CapabilityAddMessageExtension extends YargsCommand {
 
 export class CapabilityAdd extends YargsCommand {
   public readonly commandHead = `add`;
-  public readonly command = `${this.commandHead} <capability>`;
+  public readonly command = `${this.commandHead} [capability]`;
   public readonly description = "Add new capabilities to the current application";
 
   public readonly subCommands: YargsCommand[] = [
@@ -188,7 +198,9 @@ export class CapabilityAdd extends YargsCommand {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    return yargs;
+    return yargs.positional("capability", {
+      choices: this.subCommands.map((c) => c.commandHead),
+    });
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -198,7 +210,7 @@ export class CapabilityAdd extends YargsCommand {
 
 export default class Capability extends YargsCommand {
   public readonly commandHead = `capability`;
-  public readonly command = `${this.commandHead} <action>`;
+  public readonly command = `${this.commandHead} [action]`;
   public readonly description = "Add new capabilities to the current application.";
 
   public readonly subCommands: YargsCommand[] = [new CapabilityAdd()];
@@ -207,7 +219,11 @@ export default class Capability extends YargsCommand {
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     });
-    return yargs.version(false);
+    return yargs
+      .positional("action", {
+        choices: this.subCommands.map((c) => c.commandHead),
+      })
+      .version(false);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

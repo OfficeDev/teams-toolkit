@@ -37,6 +37,8 @@ export enum TelemetryEvent {
   UpdatePreviewManifestStart = "update-preview-manifest-start",
   UpdatePreviewManifest = "update-preview-manifest",
 
+  EditManifestTemplate = "edit-manifest-template",
+
   getManifestTemplatePath = "get-manifest-path",
 
   BuildStart = "build-start",
@@ -204,6 +206,7 @@ export enum TelemetryTiggerFrom {
   Webview = "Webview",
   CodeLens = "CodeLens",
   EditorTitle = "EditorTitle",
+  SideBar = "SideBar",
   Other = "Other",
   Unknow = "Unknow",
 }

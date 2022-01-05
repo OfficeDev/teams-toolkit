@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { hooks } from "@feathersjs/hooks/lib";
+import { hooks, NextFunction } from "@feathersjs/hooks/lib";
 import {
   ConfigFolderName,
   FxError,
@@ -22,15 +22,17 @@ import * as path from "path";
 import sinon from "sinon";
 import {
   CoreHookContext,
-  isV2,
+  createV2Context,
   LocalSettingsProvider,
   NoProjectOpenedError,
   PathNotExistError,
+  setTools,
 } from "../../../src";
 import {
   ContextInjectorMW,
   LocalSettingsLoaderMW,
   LocalSettingsWriterMW,
+  newSolutionContext,
   ProjectSettingsLoaderMW,
 } from "../../../src/core/middleware";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
@@ -77,15 +79,9 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 1", () => 
 });
 
 describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => {
-  let mockedEnvRestore: RestoreFn;
   const sandbox = sinon.createSandbox();
-
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true" });
-  });
   afterEach(() => {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   it(`success to load local settings -  load existing`, async () => {
@@ -113,18 +109,19 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
       }
       return false;
     });
+    const tools = new MockTools();
+    setTools(tools);
     class MyClass {
-      tools = new MockTools();
+      tools = tools;
       async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
         assert.isTrue(ctx !== undefined);
         if (ctx) {
-          if (isV2()) {
-            assert.deepEqual(ctx.localSettings, mockLocalSettings);
-          }
+          assert.deepEqual(ctx.localSettings, mockLocalSettings);
         }
         return ok("");
       }
     }
+
     hooks(MyClass, {
       other: [ProjectSettingsLoaderMW, LocalSettingsLoaderMW, ContextInjectorMW],
     });
@@ -143,6 +140,11 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
       path.resolve(confFolderPath, "settings.json"),
       path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName),
     ];
+    const MockContextLoaderMW = async (ctx: CoreHookContext, next: NextFunction) => {
+      ctx.contextV2 = createV2Context(projectSettings);
+      ctx.solutionContext = await newSolutionContext(tools, inputs);
+      await next();
+    };
     const localSettingsProvider = new LocalSettingsProvider(projectPath);
     const localSettingsFile = localSettingsProvider.localSettingsFilePath;
     sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
@@ -156,20 +158,33 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
       if (file === localSettingsFile) return false;
       return false;
     });
+    const tools = new MockTools();
+    setTools(tools);
     class MyClass {
-      tools = new MockTools();
+      tools = tools;
       async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
         assert.isTrue(ctx !== undefined);
         if (ctx) {
-          if (isV2()) {
-            assert.deepEqual(ctx.localSettings, localSettingsProvider.initV2(true, false, false));
-          }
+          assert.deepEqual(ctx.localSettings, localSettingsProvider.initV2(true, false, false));
+        }
+        assert.isTrue(ctx?.solutionContext !== undefined);
+        assert.isTrue(ctx?.solutionContext?.localSettings !== undefined);
+        if (ctx && ctx.solutionContext?.localSettings) {
+          assert.deepEqual(
+            localSettingsProvider.convertToLocalSettingsJson(ctx.solutionContext.localSettings),
+            ctx.localSettings
+          );
         }
         return ok("");
       }
     }
     hooks(MyClass, {
-      other: [ProjectSettingsLoaderMW, LocalSettingsLoaderMW, ContextInjectorMW],
+      other: [
+        ProjectSettingsLoaderMW,
+        MockContextLoaderMW,
+        LocalSettingsLoaderMW,
+        ContextInjectorMW,
+      ],
     });
     const my = new MyClass();
     const res = await my.other(inputs);
@@ -179,13 +194,8 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
 
 describe("Middleware - LocalSettingsWriterMW", () => {
   const sandbox = sinon.createSandbox();
-  let mockedEnvRestore: RestoreFn;
-  beforeEach(() => {
-    mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true" });
-  });
   afterEach(function () {
     sandbox.restore();
-    mockedEnvRestore();
   });
 
   it("write success", async () => {
@@ -194,6 +204,7 @@ describe("Middleware - LocalSettingsWriterMW", () => {
     const inputs: Inputs = { platform: Platform.VSCode };
     inputs.projectPath = projectPath;
     const tools = new MockTools();
+    setTools(tools);
     const fileMap = new Map<string, any>();
     sandbox.stub<any, any>(fs, "writeFile").callsFake(async (file: string, data: any) => {
       fileMap.set(file, data);
@@ -202,7 +213,6 @@ describe("Middleware - LocalSettingsWriterMW", () => {
     const localSettingsProvider = new LocalSettingsProvider(projectPath);
     const localSettingsFile = localSettingsProvider.localSettingsFilePath;
     class MyClass {
-      tools = tools;
       async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
         if (ctx) ctx.localSettings = mockLocalSettings;
         return ok("");

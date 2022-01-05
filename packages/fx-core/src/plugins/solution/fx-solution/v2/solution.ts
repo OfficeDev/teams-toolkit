@@ -16,6 +16,7 @@ import { Service } from "typedi";
 import { PluginDisplayName } from "../../../../common/constants";
 import { SolutionPluginsV2 } from "../../../../core/SolutionPluginContainer";
 import { checkPermission } from "./checkPermission";
+import { TeamsAppSolutionNameV2 } from "./constants";
 import { createEnv } from "./createEnv";
 import { deploy } from "./deploy";
 import { executeUserTask } from "./executeUserTask";
@@ -31,7 +32,7 @@ import { scaffoldSourceCode } from "./scaffolding";
 
 @Service(SolutionPluginsV2.AzureTeamsSolutionV2)
 export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
-  name = "fx-solution-azure";
+  name = TeamsAppSolutionNameV2;
   displayName: string = PluginDisplayName.Solution;
 
   scaffoldSourceCode: (ctx: v2.Context, inputs: Inputs) => Promise<Result<Void, FxError>> =

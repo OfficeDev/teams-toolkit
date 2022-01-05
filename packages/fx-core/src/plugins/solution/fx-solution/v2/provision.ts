@@ -39,18 +39,19 @@ import {
   REMOTE_TEAMS_APP_TENANT_ID,
 } from "../constants";
 import * as util from "util";
-import _, { isUndefined } from "lodash";
+import _, { assign, isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
-import { fillInCommonQuestions } from "../commonQuestions";
+import { CommonQuestions, createNewResourceGroup, fillInCommonQuestions } from "../commonQuestions";
 import { deployArmTemplates } from "../arm";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
-import { isV2, isVsCallingCli } from "../../../../core";
+import { isVsCallingCli } from "../../../../core";
 import { Constants } from "../../../resource/appstudio/constants";
 import { assignJsonInc } from "../../../resource/utils4v2";
+import { ResourceManagementClient } from "@azure/arm-resources";
 
 export async function provisionResource(
   ctx: v2.Context,
@@ -97,22 +98,43 @@ export async function provisionResource(
     //fill in common questions for solution
     const appName = ctx.projectSetting.appName;
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
-    const res = await fillInCommonQuestions(
-      contextAdaptor,
-      appName,
-      contextAdaptor.envInfo.state,
-      tokenProvider.azureAccountProvider,
-      await tokenProvider.appStudioToken.getJsonObject()
-    );
+    const res = inputs.isForUT
+      ? ok({})
+      : await fillInCommonQuestions(
+          contextAdaptor,
+          appName,
+          contextAdaptor.envInfo.state,
+          tokenProvider.azureAccountProvider,
+          await tokenProvider.appStudioToken.getJsonObject()
+        );
+
     if (res.isErr()) {
       return new v2.FxFailure(res.error);
     }
+
     // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
     const update = contextAdaptor.getEnvStateJson();
     _.assign(newEnvInfo.state, update);
     const consentResult = await askForProvisionConsent(contextAdaptor);
     if (consentResult.isErr()) {
       return new v2.FxFailure(consentResult.error);
+    }
+
+    // create resource group if needed
+    const commonQuestionResult = res.value as CommonQuestions;
+    if (commonQuestionResult.needCreateResourceGroup) {
+      const maybeRgName = await createNewResourceGroup(
+        tokenProvider.azureAccountProvider!,
+        commonQuestionResult.subscriptionId,
+        commonQuestionResult.subscriptionName,
+        commonQuestionResult.resourceGroupName,
+        commonQuestionResult.location,
+        ctx.logProvider
+      );
+
+      if (maybeRgName.isErr()) {
+        return new v2.FxFailure(maybeRgName.error);
+      }
     }
   }
 
@@ -159,7 +181,7 @@ export async function provisionResource(
   );
 
   // call deployArmTemplates
-  if (isArmSupportEnabled() && isAzureProject(azureSolutionSettings)) {
+  if (isAzureProject(azureSolutionSettings) && !inputs.isForUT) {
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
     const armDeploymentResult = await deployArmTemplates(contextAdaptor);
     if (armDeploymentResult.isErr()) {
@@ -190,7 +212,7 @@ export async function provisionResource(
     }
   }
 
-  if (isV2() && isAzureProject(azureSolutionSettings)) {
+  if (isAzureProject(azureSolutionSettings)) {
     solutionInputs.remoteTeamsAppId =
       newEnvInfo.state[PluginNames.APPST]["output"][Constants.TEAMS_APP_ID];
   }
@@ -304,6 +326,7 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
   } else {
     confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision", "Pricing calculator");
   }
+
   const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
 
   if (confirm !== "Provision") {
@@ -319,5 +342,6 @@ export async function askForProvisionConsent(ctx: SolutionContext): Promise<Resu
       )
     );
   }
+
   return ok(Void);
 }

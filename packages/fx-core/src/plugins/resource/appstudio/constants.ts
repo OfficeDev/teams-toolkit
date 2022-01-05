@@ -8,10 +8,13 @@ export class Constants {
   public static readonly PUBLISH_PATH_QUESTION = "manifest-folder";
   public static readonly BUILD_OR_PUBLISH_QUESTION = "build-or-publish";
   public static readonly READ_MORE = "Read more";
+  public static readonly LEARN_MORE = "Learn more";
+  public static readonly ADMIN_PORTAL = "Admin portal";
   public static readonly PUBLISH_GUIDE = "https://aka.ms/teamsfx-publish";
-  public static readonly TEAMS_ADMIN_PORTAL =
-    "https://admin.teams.microsoft.com/policies/manage-apps";
+  public static readonly TEAMS_ADMIN_PORTAL = "https://aka.ms/teamsfx-mtac";
+  public static readonly TEAMS_MANAGE_APP_DOC = "https://aka.ms/teamsfx-mtac-doc";
   public static readonly TEAMS_APP_ID = "teamsAppId";
+  public static readonly TEAMS_APP_UPDATED_AT = "teamsAppUpdatedAt";
 
   public static readonly PERMISSIONS = {
     name: "Teams App",
@@ -20,6 +23,8 @@ export class Constants {
     operative: "Operative",
     type: "M365",
   };
+
+  public static readonly CORRELATION_ID = "X-Correlation-ID";
 }
 
 export class ErrorMessages {
@@ -52,46 +57,6 @@ export const APP_PACKAGE_FOLDER_FOR_MULTI_ENV = "templates/appPackage";
  */
 export const SOLUTION = "solution";
 export const SOLUTION_USERINFO = "userinfo";
-
-export const TEAMS_APP_MANIFEST_TEMPLATE = `{
-  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
-  "manifestVersion": "1.11",
-  "version": "{version}",
-  "id": "{appid}",
-  "packageName": "com.microsoft.teams.extension",
-  "developer": {
-      "name": "Teams App, Inc.",
-      "websiteUrl": "{baseUrl}",
-      "privacyUrl": "{baseUrl}/index.html#/privacy",
-      "termsOfUseUrl": "{baseUrl}/index.html#/termsofuse"
-  },
-  "icons": {
-      "color": "color.png",
-      "outline": "outline.png"
-  },
-  "name": {
-      "short": "{appName}",
-      "full": "This field is not used"
-  },
-  "description": {
-      "short": "Short description of {appName}.",
-      "full": "Full description of {appName}."
-  },
-  "accentColor": "#FFFFFF",
-  "bots": [],
-  "composeExtensions": [],
-  "configurableTabs": [],
-  "staticTabs": [],
-  "permissions": [
-      "identity",
-      "messageTeamMembers"
-  ],
-  "validDomains": [],
-  "webApplicationInfo": {
-      "id": "{appClientId}",
-      "resource": "{webApplicationInfoResource}"
-  }
-}`;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
@@ -172,119 +137,6 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG = `{
       "resource": "{{{localSettings.auth.applicationIdUris}}}"
   }
 }`;
-
-export const COMPOSE_EXTENSIONS_TPL: IComposeExtension[] = [
-  {
-    botId: "{botId}",
-    commands: [
-      {
-        id: "createCard",
-        context: ["compose"],
-        description: "Command to run action to create a Card from Compose Box",
-        title: "Create Card",
-        type: "action",
-        parameters: [
-          {
-            name: "title",
-            title: "Card title",
-            description: "Title for the card",
-            inputType: "text",
-          },
-          {
-            name: "subTitle",
-            title: "Subtitle",
-            description: "Subtitle for the card",
-            inputType: "text",
-          },
-          {
-            name: "text",
-            title: "Text",
-            description: "Text for the card",
-            inputType: "textarea",
-          },
-        ],
-      },
-      {
-        id: "shareMessage",
-        context: ["message"],
-        description: "Test command to run action on message context (message sharing)",
-        title: "Share Message",
-        type: "action",
-        parameters: [
-          {
-            name: "includeImage",
-            title: "Include Image",
-            description: "Include image in Hero Card",
-            inputType: "toggle",
-          },
-        ],
-      },
-      {
-        id: "searchQuery",
-        context: ["compose", "commandBox"],
-        description: "Test command to run query",
-        title: "Search",
-        type: "query",
-        parameters: [
-          {
-            name: "searchQuery",
-            title: "Search Query",
-            description: "Your search query",
-            inputType: "text",
-          },
-        ],
-      },
-    ],
-    messageHandlers: [
-      {
-        type: "link",
-        value: {
-          domains: ["*.botframework.com"],
-        },
-      },
-    ],
-  },
-];
-export const BOTS_TPL: IBot[] = [
-  {
-    botId: "{botId}",
-    scopes: ["personal", "team", "groupchat"],
-    supportsFiles: false,
-    isNotificationOnly: false,
-    commandLists: [
-      {
-        scopes: ["personal", "team", "groupchat"],
-        commands: [
-          {
-            title: "welcome",
-            description: "Resend welcome card of this Bot",
-          },
-          {
-            title: "learn",
-            description: "Learn about Adaptive Card and Bot Command",
-          },
-        ],
-      },
-    ],
-  },
-];
-export const CONFIGURABLE_TABS_TPL: IConfigurableTab[] = [
-  {
-    configurationUrl: "{baseUrl}/index.html#/config",
-    canUpdateConfiguration: true,
-    scopes: ["team", "groupchat"],
-  },
-];
-
-export const STATIC_TABS_TPL: IStaticTab[] = [
-  {
-    entityId: "index",
-    name: "Personal Tab",
-    contentUrl: "{baseUrl}/index.html#/tab",
-    websiteUrl: "{baseUrl}/index.html#/tab",
-    scopes: ["personal"],
-  },
-];
 
 export const STATIC_TABS_TPL_FOR_MULTI_ENV: IStaticTab[] = [
   {
@@ -520,3 +372,4 @@ export const DEFAULT_DEVELOPER_TERM_OF_USE_URL = "https://www.example.com/termof
 export const DEFAULT_DEVELOPER_PRIVACY_URL = "https://www.example.com/privacy";
 
 export const TEAMS_APP_SHORT_NAME_MAX_LENGTH = 30;
+export const STATIC_TABS_MAX_ITEMS = 16;

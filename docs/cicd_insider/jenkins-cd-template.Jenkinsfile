@@ -11,16 +11,11 @@ pipeline {
 
     // To learn more about environment, please refer to https://www.jenkins.io/doc/book/pipeline/syntax/#environment.
     environment {
-        AZURE_ACCOUNT_NAME = credentials('AZURE_ACCOUNT_NAME')
-        AZURE_ACCOUNT_PASSWORD = credentials('AZURE_ACCOUNT_PASSWORD')
         M365_ACCOUNT_NAME = credentials('M365_ACCOUNT_NAME')
         M365_ACCOUNT_PASSWORD = credentials('M365_ACCOUNT_PASSWORD')
-        AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
-        AZURE_TENANT_ID = credentials('AZURE_TENANT_ID')
-        // To enable @microsoft/teamsfx-cli running in CI mode, turn on CI_ENABLED like below.
-        // In CI mode, @microsoft/teamsfx-cli is friendly for CI/CD. 
+
+        // To enable M365 account login by non-interactive mode. 
         CI_ENABLED = 'true'
-        // insider preview features are enabled by default
 
         // To specify the env name for multi-env feature.
         TEAMSFX_ENV_NAME = 'staging'
@@ -56,12 +51,29 @@ pipeline {
             }
         }
 
+        // Set for non-interactive mode.
+        stage('Set for non-interactive mode') {
+            steps {
+                sh 'npx teamsfx config set -g interactive false'
+            }
+        }
+
+        stage('Login Azure by service principal') {
+            environment {
+              SP_NAME = credentials('AZURE_SERVICE_PRINCIPAL_NAME') 
+              SP_PASSWORD = credentials('AZURE_SERVICE_PRINCIPAL_PASSWORD') 
+              TENANT_ID = credentials('AZURE_TENANT_ID') 
+            }
+            steps {
+                sh 'npx teamsfx account login azure --service-principal --username ${SP_NAME} --password ${SP_PASSWORD} --tenant ${TENANT_ID}'
+            } 
+        }
+
         // We suggest to do the `npx teamsfx provision` step manually or in a separate pipeline. The following steps are for your reference.
         // After provisioning, you should commit necessary files under .fx into the repository.
-        // You should upload .fx/states/${TEAMSFX_ENV_NAME}.userdata into credentials (https://www.jenkins.io/doc/book/using/using-credentials/) in type of `Secret file` which can be refered by the stage with name 'Generate userdata'. 
         // stage('Provision hosting environment') {
         //     environment {
-        //         TEAMSFX_BICEP_ENV_CHECKER_ENABLE = 'true'
+        //         AZURE_SUBSCRIPTION_ID = credentials('AZURE_SUBSCRIPTION_ID')
         //     }
         //     steps {
         //         sh 'npx teamsfx provision --subscription ${AZURE_SUBSCRIPTION_ID} --env ${TEAMSFX_ENV_NAME}'
@@ -75,21 +87,6 @@ pipeline {
         //         sh 'git push'
         //     }
         // }
-
-        // stage('Upload userdata as artifact') {
-        //     steps {
-        //         archiveArtifacts artifacts: '.fx/states/staging.userdata'
-        //     }
-        // }
-
-        stage('Generate userdata') {
-            environment {
-                USERDATA_CONTENT = credentials('USERDATA_CONTENT')
-            }
-            steps {
-                sh '[ ! -z "${USERDATA_CONTENT}" ] && cp ${USERDATA_CONTENT} .fx/states/${TEAMSFX_ENV_NAME}.userdata'
-            }
-        }
 
         stage('Deploy to hosting environment') {
             steps {

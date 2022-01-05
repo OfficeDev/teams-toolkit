@@ -19,7 +19,7 @@ import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import { CoreHookContext } from "../../../src";
+import { CoreHookContext, setTools } from "../../../src";
 import { ContextInjectorMW, ProjectSettingsWriterMW } from "../../../src/core/middleware";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 
@@ -30,8 +30,8 @@ describe("Middleware - ProjectSettingsWriterMW", () => {
   });
   it("ignore write", async () => {
     const spy = sandbox.spy(fs, "writeFile");
+    setTools(new MockTools());
     class MyClass {
-      tools?: any = new MockTools();
       async myMethod(inputs: Inputs): Promise<Result<any, FxError>> {
         return ok("");
       }
@@ -81,31 +81,19 @@ describe("Middleware - ProjectSettingsWriterMW", () => {
       ProjectSettingsFileName
     );
     class MyClass {
-      tools = tools;
       async myMethod(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
         if (ctx) ctx.projectSettings = mockProjectSettings;
         return ok("");
       }
     }
+    setTools(tools);
     hooks(MyClass, {
       myMethod: [ContextInjectorMW, ProjectSettingsWriterMW],
     });
     const my = new MyClass();
-    let mockedEnvRestore = mockedEnv({ __TEAMSFX_INSIDER_PREVIEW: "false" });
-    {
-      await my.myMethod(inputs);
-      const content: string = fileMap.get(settingsFileV1);
-      const settingsInFile = JSON.parse(content);
-      assert.deepEqual(mockProjectSettings, settingsInFile);
-    }
-    mockedEnvRestore();
-    mockedEnvRestore = mockedEnv({ __TEAMSFX_INSIDER_PREVIEW: "true" });
-    {
-      await my.myMethod(inputs);
-      const content: string = fileMap.get(settingsFileV2);
-      const settingsInFile = JSON.parse(content);
-      assert.deepEqual(mockProjectSettings, settingsInFile);
-    }
-    mockedEnvRestore();
+    await my.myMethod(inputs);
+    const content: string = fileMap.get(settingsFileV2);
+    const settingsInFile = JSON.parse(content);
+    assert.deepEqual(mockProjectSettings, settingsInFile);
   });
 });

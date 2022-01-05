@@ -163,7 +163,8 @@ export class AadAppForTeamsImpl {
       ctx.logProvider,
       Messages.EndProvision,
       Messages.EndLocalDebug,
-      isLocalDebug
+      isLocalDebug,
+      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
     return ResultFactory.Success();
   }
@@ -244,7 +245,8 @@ export class AadAppForTeamsImpl {
       ctx.logProvider,
       Messages.EndPostProvision,
       Messages.EndPostLocalDebug,
-      isLocalDebug
+      isLocalDebug,
+      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
     return ResultFactory.Success();
   }
@@ -294,28 +296,19 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
 
-    const selectedPlugins = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
-      .activeResourcePlugins;
-    if (
-      !selectedPlugins.includes(ResourcePlugins.FrontendHosting) &&
-      !selectedPlugins.includes(ResourcePlugins.Bot)
-    ) {
-      throw ResultFactory.UserError(
-        InvalidSelectedPluginsError.name,
-        InvalidSelectedPluginsError.message(
-          `${ResourcePlugins.FrontendHosting} plugin and(or) ${ResourcePlugins.Bot} plugin must be selected.`
-        )
-      );
-    }
-    const bicepTemplateDir = path.join(
-      getTemplatesFolder(),
-      TemplatePathInfo.BicepTemplateRelativeDir
-    );
-    const parameterFilePath = path.join(bicepTemplateDir, Bicep.ParameterFileName);
-
     const result: ArmTemplateResult = {
-      Parameters: JSON.parse(await fs.readFile(parameterFilePath, ConstantString.UTF8Encoding)),
+      Parameters: JSON.parse(
+        await fs.readFile(
+          path.join(
+            getTemplatesFolder(),
+            TemplatePathInfo.BicepTemplateRelativeDir,
+            Bicep.ParameterFileName
+          ),
+          ConstantString.UTF8Encoding
+        )
+      ),
     };
+
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.EndGenerateArmTemplates);
     return ResultFactory.Success(result);
   }

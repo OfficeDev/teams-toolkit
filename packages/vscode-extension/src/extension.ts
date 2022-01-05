@@ -35,6 +35,7 @@ import {
   isSPFxProject,
   isTeamsfx,
   syncFeatureFlags,
+  isValidNode,
 } from "./utils/commonUtils";
 import {
   ConfigFolderName,
@@ -48,6 +49,7 @@ import { ExtensionUpgrade } from "./utils/upgrade";
 import { registerEnvTreeHandler } from "./envTree";
 import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
+import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -56,6 +58,9 @@ export async function activate(context: vscode.ExtensionContext) {
 
   // load the feature flags.
   syncFeatureFlags();
+
+  // Init VSC context key
+  initializeContextKey();
 
   VS_CODE_UI = new VsCodeUI(context);
   // Init context
@@ -134,28 +139,30 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(cicdGuideCmd);
 
   // 1.7 validate dependencies command (hide from UI)
+  // localdebug session starts from environment checker
   const validateDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-dependencies",
-    () => Correlator.run(handlers.validateDependenciesHandler)
+    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateDependenciesHandler)
   );
   context.subscriptions.push(validateDependenciesCmd);
 
+  // localdebug session starts from environment checker
   const validateSpfxDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-spfx-dependencies",
-    () => Correlator.run(handlers.validateSpfxDependenciesHandler)
+    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateSpfxDependenciesHandler)
   );
   context.subscriptions.push(validateSpfxDependenciesCmd);
 
   // 1.8 pre debug check command (hide from UI)
   const preDebugCheckCmd = vscode.commands.registerCommand("fx-extension.pre-debug-check", () =>
-    Correlator.run(handlers.preDebugCheckHandler)
+    Correlator.runWithId(getLocalDebugSessionId(), handlers.preDebugCheckHandler)
   );
   context.subscriptions.push(preDebugCheckCmd);
 
   // 1.9 Register backend extensions install command (hide from UI)
   const backendExtensionsInstallCmd = vscode.commands.registerCommand(
     "fx-extension.backend-extensions-install",
-    () => Correlator.run(handlers.backendExtensionsInstallHandler)
+    () => Correlator.runWithId(getLocalDebugSessionId(), handlers.backendExtensionsInstallHandler)
   );
   context.subscriptions.push(backendExtensionsInstallCmd);
 
@@ -297,6 +304,12 @@ export async function activate(context: vscode.ExtensionContext) {
     (...args) => Correlator.run(handlers.updatePreviewManifest, args)
   );
   context.subscriptions.push(updateManifestCmd);
+
+  const editManifestTemplateCmd = vscode.commands.registerCommand(
+    "fx-extension.editManifestTemplate",
+    (...args) => Correlator.run(handlers.editManifestTemplate, args)
+  );
+  context.subscriptions.push(editManifestTemplateCmd);
 
   const createNewEnvironment = vscode.commands.registerCommand(
     "fx-extension.addEnvironment",
@@ -522,4 +535,12 @@ export async function activate(context: vscode.ExtensionContext) {
 export function deactivate() {
   handlers.cmdHdlDisposeTreeView();
   disableRunIcon();
+}
+
+function initializeContextKey() {
+  if (isValidNode()) {
+    vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", false);
+  } else {
+    vscode.commands.executeCommand("setContext", "fx-extension.isNotValidNode", true);
+  }
 }

@@ -35,6 +35,7 @@
 /packages/cli/tests/e2e/bot @IvanJobs @eriolchan @YitongFeng-git
 /packages/cli/tests/e2e/scaffold @hund030 @eriolchan @YitongFeng-git @IvanJobs
 /packages/cli/tests/e2e/multienv @a1exwang @dooriya @qinezh @xiaolang124 @kimizhu
+/packages/cli/tests/e2e/keyvault @adashen @formulahendry @xzf0587
 /packages/cli/tests/unit/commonlib @kimizhu @swatDong @kuojianlu @a1exwang @qinezh @XiaofuHuang @xiaolang124 @meifans @dooriya
 /packages/cli/tests/unit/cmds/preview @swatDong @kuojianlu @qinezh @a1exwang @meifans
 
@@ -45,8 +46,13 @@
 
 /packages/fx-core/src/core @jayzhang @LongOddCode @1yefuwang1 @nliu-ms
 /packages/fx-core/src/core/middleware/projectMigrator.ts @dooriya @qinezh @a1exwang @meifans @blackchoey @wenytang-ms
+
+/packages/fx-core/src/common/deps-checker @meifans @qinezh @a1exwang @kimizhu @swatDong
+/packages/fx-core/tests/common/deps-checker @meifans @qinezh @a1exwang @kimizhu @swatDong
+
 /packages/fx-core/src/plugins/solution/fx-solution @1yefuwang1 @jayzhang @LongOddCode @nliu-ms
 /packages/fx-core/src/plugins/solution/fx-solution/utils/depsChecker @a1exwang @kimizhu @meifans @qinezh
+/packages/fx-core/src/plugins/solution/fx-solution/debug @kimizhu @swatDong @kuojianlu @XiaofuHuang
 
 /packages/fx-core/src/plugins/resource/aad @KennethBWSong @adashen @SLdragon
 /packages/fx-core/tests/plugins/resource/aad @KennethBWSong @adashen @SLdragon
@@ -57,8 +63,8 @@
 /packages/fx-core/src/plugins/resource/appstudio @nliu-ms @jayzhang
 /packages/fx-core/tests/plugins/resource/appstudio @nliu-ms @jayzhang
 
-/packages/fx-core/src/plugins/resource/spfx  @nliu-ms @jayzhang
-/packages/fx-core/tests/plugins/resource/spfx  @nliu-ms @jayzhang
+/packages/fx-core/src/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
+/packages/fx-core/tests/plugins/resource/spfx @HuihuiWu-Microsoft @nliu-ms @jayzhang
 
 /packages/fx-core/src/plugins/resource/bot @IvanJobs @eriolchan @YitongFeng-git
 /packages/fx-core/tests/plugins/resource/bot @IvanJobs @eriolchan @YitongFeng-git
@@ -86,8 +92,14 @@
 /packages/fx-core/src/plugins/resource/simpleauth @KennethBWSong @adashen @formulahendry
 /packages/fx-core/tests/plugins/resource/simpleauth @KennethBWSong @adashen @formulahendry
 
+/packages/fx-core/src/plugins/resource/keyvault @adashen @formulahendry @xzf0587
+/packages/fx-core/tests/plugins/resource/keyvault @adashen @formulahendry @xzf0587
+
 /packages/fx-core/src/plugins/solution/arm.ts @blackchoey @xzf0587 @dilin-MS @wenytang-ms @adashen
 /packages/fx-core/src/common/armInterface.ts @blackchoey @xzf0587 @dilin-MS @wenytang-ms @adashen
+
+/packages/fx-core/src/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
+/packages/fx-core/tests/common/local @kimizhu @swatDong @kuojianlu @XiaofuHuang
 
 /packages/simpleauth @adashen @blackchoey @wenytang-ms
 

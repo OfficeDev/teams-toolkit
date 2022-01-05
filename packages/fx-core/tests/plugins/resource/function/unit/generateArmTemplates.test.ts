@@ -17,7 +17,11 @@ import {
 } from "../../util";
 import { MockContext } from "../helper";
 import { FunctionBicep } from "../../../../../src/plugins/resource/function/constants";
-
+import {
+  AzureResourceKeyVault,
+  HostTypeOptionAzure,
+  TabOptionItem,
+} from "../../../../../src/plugins/solution/fx-solution/question";
 chai.use(chaiAsPromised);
 
 describe("FunctionGenerateArmTemplates", () => {
@@ -29,62 +33,104 @@ describe("FunctionGenerateArmTemplates", () => {
     pluginContext = MockContext();
   });
 
-  it("generate bicep arm templates", async () => {
-    // Act
+  it("generate bicep arm templates: without key vault plugin", async () => {
     const activeResourcePlugins = [
       ResourcePlugins.Aad,
       ResourcePlugins.SimpleAuth,
       ResourcePlugins.FrontendHosting,
       ResourcePlugins.Function,
     ];
-    pluginContext.projectSettings!.solutionSettings = {
-      name: "test_solution",
-      version: "1.0.0",
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
       activeResourcePlugins: activeResourcePlugins,
+      capabilities: [TabOptionItem.id],
     } as AzureSolutionSettings;
+
+    await testGenerateArmTemplates(settings, "functionConfig.result.bicep", "config.result.bicep");
+  });
+
+  it("generate bicep arm templates: with key vault plugin", async () => {
+    const activeResourcePlugins = [
+      ResourcePlugins.Aad,
+      ResourcePlugins.SimpleAuth,
+      ResourcePlugins.FrontendHosting,
+      ResourcePlugins.Function,
+      ResourcePlugins.KeyVault,
+    ];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      azureResources: [AzureResourceKeyVault.id],
+      capabilities: [TabOptionItem.id],
+    } as AzureSolutionSettings;
+
+    await testGenerateArmTemplates(
+      settings,
+      "functionConfigWithKeyVaultPlugin.result.bicep",
+      "configWithKeyVaultPlugin.result.bicep",
+      {
+        "fx-resource-key-vault": {
+          References: {
+            m365ClientSecretReference:
+              "provisionOutputs.keyVaultOutput.value.m365ClientSecretReference",
+          },
+        },
+      }
+    );
+  });
+
+  async function testGenerateArmTemplates(
+    solutionSettings: AzureSolutionSettings,
+    testConfigurationModuleFileName: string,
+    testConfigurationFileName: string,
+    addtionalPluginOutput: any = {}
+  ) {
+    // Act
+    pluginContext.projectSettings!.solutionSettings = solutionSettings;
     const result = await functionPlugin.generateArmTemplates(pluginContext);
 
     // Assert
     const testProvisionModuleFileName = "functionProvision.result.bicep";
-    const testConfigurationModuleFileName = "functionConfig.result.bicep";
-    const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
-        "fx-resource-function": {
-          Provision: {
-            function: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
-            },
-          },
-          Configuration: {
-            function: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
-            },
-          },
-          References: {
-            functionAppResourceId: FunctionBicep.functionAppResourceId,
-            functionEndpoint: FunctionBicep.functionEndpoint,
+    const pluginOutput = {
+      "fx-resource-function": {
+        Provision: {
+          function: {
+            path: `./${testProvisionModuleFileName}`,
           },
         },
-        "fx-resource-frontend-hosting": {
-          Outputs: {
-            endpoint: "frontend_hosting_test_endpoint",
-          },
-          References: {
-            domain: "provisionOutputs.frontendHostingOutput.value.domain",
-            endpoint: "provisionOutputs.frontendHostingOutput.value.endpoint",
+        Configuration: {
+          function: {
+            path: `./${testConfigurationModuleFileName}`,
           },
         },
-        "fx-resource-identity": {
-          Outputs: {
-            endpoint: "frontend_hosting_test_endpoint",
-          },
-          References: {
-            identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
-            identityResourceId: "userAssignedIdentityProvision.outputs.identityResourceId",
-          },
+        References: {
+          functionAppResourceId: "provisionOutputs.functionOutput.value.functionAppResourceId",
+          functionEndpoint: "provisionOutputs.functionOutput.value.functionEndpoint",
         },
       },
+      "fx-resource-frontend-hosting": {
+        Outputs: {
+          endpoint: "frontend_hosting_test_endpoint",
+        },
+        References: {
+          domain: "provisionOutputs.frontendHostingOutput.value.domain",
+          endpoint: "provisionOutputs.frontendHostingOutput.value.endpoint",
+        },
+      },
+      "fx-resource-identity": {
+        Outputs: {
+          endpoint: "frontend_hosting_test_endpoint",
+        },
+        References: {
+          identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
+          identityResourceId: "userAssignedIdentityProvision.outputs.identityResourceId",
+        },
+      },
+    };
+    const mockedSolutionDataContext = {
+      Plugins: { ...pluginOutput, ...addtionalPluginOutput },
     };
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
@@ -123,12 +169,12 @@ describe("FunctionGenerateArmTemplates", () => {
       chai.assert.strictEqual(
         expectedResult.Configuration!.Orchestration,
         fs.readFileSync(
-          path.join(expectedBicepFileDirectory, "config.result.bicep"),
+          path.join(expectedBicepFileDirectory, testConfigurationFileName),
           ConstantString.UTF8Encoding
         )
       );
     }
-  });
+  }
 
   it("Update bicep arm templates", async () => {
     // Act
@@ -139,9 +185,10 @@ describe("FunctionGenerateArmTemplates", () => {
       ResourcePlugins.Function,
     ];
     pluginContext.projectSettings!.solutionSettings = {
-      name: "test_solution",
-      version: "1.0.0",
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
       activeResourcePlugins: activeResourcePlugins,
+      capabilities: [TabOptionItem.id],
     } as AzureSolutionSettings;
     const result = await functionPlugin.updateArmTemplates(pluginContext);
 
@@ -149,17 +196,16 @@ describe("FunctionGenerateArmTemplates", () => {
     const testProvisionModuleFileName = "functionProvision.result.bicep";
     const testConfigurationModuleFileName = "functionConfig.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-function": {
           Provision: {
             function: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
+              path: `./${testProvisionModuleFileName}`,
             },
           },
           Configuration: {
             function: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
+              path: `./${testConfigurationModuleFileName}`,
             },
           },
           References: {
@@ -202,10 +248,9 @@ describe("FunctionGenerateArmTemplates", () => {
         expectedResult.Configuration!.Modules!.function,
         fs.readFileSync(expectedConfigurationModuleFilePath, ConstantString.UTF8Encoding)
       );
-      chai.assert.exists(expectedResult.Provision!.Reference!.functionAppResourceId);
-      chai.assert.exists(expectedResult.Provision!.Reference!.functionEndpoint);
-      chai.assert.notExists(expectedResult.Provision!.Orchestration);
-      chai.assert.notExists(expectedResult.Provision!.Modules);
+      chai.assert.exists(expectedResult.Reference!.functionAppResourceId);
+      chai.assert.exists(expectedResult.Reference!.functionEndpoint);
+      chai.assert.notExists(expectedResult.Provision);
       chai.assert.notExists(expectedResult.Configuration!.Orchestration);
       chai.assert.notExists(expectedResult.Parameters);
     }

@@ -35,6 +35,7 @@ import {
   SystemError,
   TeamsAppManifest,
   UserError,
+  v2,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import * as fs from "fs-extra";
@@ -68,7 +69,13 @@ import {
   generateArmTemplate,
   getParameterJson,
 } from "./arm";
-import { checkM365Tenant, checkSubscription, fillInCommonQuestions } from "./commonQuestions";
+import {
+  checkM365Tenant,
+  checkSubscription,
+  CommonQuestions,
+  createNewResourceGroup,
+  fillInCommonQuestions,
+} from "./commonQuestions";
 import {
   DEFAULT_PERMISSION_REQUEST,
   GLOBAL_CONFIG,
@@ -108,7 +115,6 @@ import {
   DeployPluginSelectQuestion,
   HostTypeOptionAzure,
   MessageExtensionItem,
-  ProgrammingLanguageQuestion,
   TabOptionItem,
   GetUserEmailQuestion,
   TabSPFxItem,
@@ -144,6 +150,7 @@ import { listCollaborator } from "./v2/listCollaborator";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { LOCAL_TENANT_ID, REMOTE_TEAMS_APP_TENANT_ID } from ".";
+import { scaffoldLocalDebugSettingsV1 } from "./debug/scaffolding";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -337,6 +344,11 @@ export class TeamsAppSolution implements Solution {
     const solutionSettings = settingsRes.value;
     const selectedPlugins = await this.reloadPlugins(solutionSettings);
 
+    const scaffoldLocalDebugSettingResult = await scaffoldLocalDebugSettingsV1(ctx);
+    if (scaffoldLocalDebugSettingResult.isErr()) {
+      return scaffoldLocalDebugSettingResult;
+    }
+
     const results: Result<any, FxError>[] = await Promise.all<Result<any, FxError>>(
       selectedPlugins.map<Promise<Result<any, FxError>>>((migratePlugin) => {
         return this.executeUserTask(
@@ -464,7 +476,12 @@ export class TeamsAppSolution implements Solution {
     ) {
       try {
         if (ctx.answers!.copy === true) {
-          await copyParameterJson(ctx, ctx.answers!.targetEnvName!, ctx.answers!.sourceEnvName!);
+          await copyParameterJson(
+            ctx.root,
+            ctx.projectSettings!.appName,
+            ctx.answers!.targetEnvName!,
+            ctx.answers!.sourceEnvName!
+          );
         } else {
           await getParameterJson(ctx);
         }
@@ -632,6 +649,23 @@ export class TeamsAppSolution implements Solution {
       const consentResult = await askForProvisionConsent(ctx);
       if (consentResult.isErr()) {
         return consentResult;
+      }
+
+      // create resource group if needed
+      const commonQuestionResult = res.value as CommonQuestions;
+      if (commonQuestionResult.needCreateResourceGroup) {
+        const maybeRgName = await createNewResourceGroup(
+          ctx.azureAccountProvider!,
+          commonQuestionResult.subscriptionId,
+          commonQuestionResult.subscriptionName,
+          commonQuestionResult.resourceGroupName,
+          commonQuestionResult.location,
+          ctx.logProvider
+        );
+
+        if (maybeRgName.isErr()) {
+          return err(maybeRgName.error);
+        }
       }
     }
 
@@ -1004,11 +1038,6 @@ export class TeamsAppSolution implements Solution {
           capNode.addChild(botGroup);
         }
       }
-
-      // 1.3 Language
-      const programmingLanguage = new QTreeNode(ProgrammingLanguageQuestion);
-      programmingLanguage.condition = { minItems: 1 };
-      capNode.addChild(programmingLanguage);
     } else if (stage == Stage.migrateV1) {
       const capQuestion = createV1CapabilityQuestion();
       const capNode = new QTreeNode(capQuestion);

@@ -11,6 +11,7 @@ import {
   ConfigFolderName,
   CryptoProvider,
   EnvConfigFileNameTemplate,
+  EnvInfo,
   EnvNamePlaceholder,
   FxError,
   InputConfigsFolderName,
@@ -20,8 +21,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { environmentManager, envPrefix } from "../../src/core/environment";
 import * as tools from "../../src/common/tools";
-import mockedEnv, { RestoreFn } from "mocked-env";
-import { isMultiEnvEnabled } from "../../src/common/tools";
+import mockedEnv from "mocked-env";
 import sinon from "sinon";
 
 class MockCrypto implements CryptoProvider {
@@ -95,10 +95,6 @@ describe("APIs of Environment Manager", () => {
   };
 
   describe("Load Environment Config File", () => {
-    // environment config exists only in multi-env
-    if (!isMultiEnvEnabled()) {
-      return;
-    }
     beforeEach(async () => {
       await fs.ensureDir(projectPath);
     });
@@ -253,9 +249,7 @@ describe("APIs of Environment Manager", () => {
 
     it("no userdata: load environment state without target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithoutCredential);
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -267,15 +261,13 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       assert.equal(envInfo.state.get("key"), envStateDataWithoutCredential.key);
     });
 
     it("no userdata: load environment state with target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithoutCredential, targetEnvName);
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -286,15 +278,13 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       assert.equal(envInfo.state.get("key"), envStateDataWithoutCredential.key);
     });
 
     it("with userdata: load environment state without target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithCredential, undefined, userData);
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -305,7 +295,7 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
       assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
@@ -313,9 +303,7 @@ describe("APIs of Environment Manager", () => {
 
     it("with userdata: load environment state with target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithCredential, targetEnvName, userData);
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -326,7 +314,7 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
       assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
@@ -336,9 +324,7 @@ describe("APIs of Environment Manager", () => {
       await mockEnvStates(projectPath, envStateDataWithCredential, undefined, {
         ...userData,
       });
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -349,7 +335,7 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
       assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
@@ -357,9 +343,7 @@ describe("APIs of Environment Manager", () => {
 
     it("with userdata (legacy project): load environment state with target env", async () => {
       await mockEnvStates(projectPath, envStateDataWithCredential, targetEnvName, userData);
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
 
       const actualEnvDataResult = await environmentManager.loadEnvInfo(
         projectPath,
@@ -370,16 +354,14 @@ describe("APIs of Environment Manager", () => {
         throw actualEnvDataResult.error;
       }
 
-      const envInfo = actualEnvDataResult.value;
+      const envInfo = actualEnvDataResult.value as EnvInfo;
       const expectedSolutionConfig = envStateDataWithCredential.solution as Record<string, string>;
       assert.equal(envInfo.state.get("solution").get("teamsAppTenantId"), decryptedValue);
       assert.equal(envInfo.state.get("solution").get("key"), expectedSolutionConfig.key);
     });
 
     it("Environment state doesn't exist", async () => {
-      if (isMultiEnvEnabled()) {
-        await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
-      }
+      await mockEnvConfigs(projectPath, validEnvConfigData, targetEnvName);
       const actualEnvDataResult = await environmentManager.loadEnvInfo(projectPath, cryptoProvider);
       if (actualEnvDataResult.isErr()) {
         throw actualEnvDataResult.error;

@@ -31,11 +31,8 @@ export interface BicepOrchestration {
 }
 
 export interface ArmTemplateResult extends Record<any, unknown> {
-  Provision?: {
-    Orchestration?: string;
-    Reference?: Record<string, unknown>;
-    Modules?: { [moduleFileName: string]: string };
-  };
+  Provision?: { Orchestration?: string; Modules?: { [moduleFileName: string]: string } };
   Configuration?: { Orchestration?: string; Modules?: { [moduleFileName: string]: string } };
+  Reference?: Record<string, unknown>;
   Parameters?: Record<string, string>;
 }

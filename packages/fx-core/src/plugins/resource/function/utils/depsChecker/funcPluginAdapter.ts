@@ -104,36 +104,7 @@ export class FuncPluginAdapter implements IDepsAdapter {
 
   public async handleDotnetForLinux(checker: IDepsChecker): Promise<boolean> {
     const confirmMessage = await this.generateMsg(Messages.linuxDepsNotFound, [checker]);
-    return this.displayContinueWithLearnMoreLink(confirmMessage, dotnetManualInstallHelpLink);
-  }
-
-  public async displayContinueWithLearnMoreLink(message: string, link: string): Promise<boolean> {
-    if (!this._ctx.ui) {
-      // no dialog, always continue
-      return true;
-    }
-    const res = await this._ctx.ui?.showMessage(
-      "info",
-      message,
-      true,
-      Messages.learnMoreButtonText,
-      Messages.continueButtonText
-    );
-    const userSelected: string | undefined = res?.isOk() ? res.value : undefined;
-
-    if (userSelected === Messages.learnMoreButtonText) {
-      this._telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
-      this._ctx.ui?.openUrl(link);
-      return false;
-    }
-
-    if (userSelected === Messages.continueButtonText) {
-      this._telemetry.sendEvent(DepsCheckerEvent.clickContinue);
-      return true;
-    } else {
-      this._telemetry.sendEvent(DepsCheckerEvent.clickCancel);
-      return false;
-    }
+    return this.displayLearnMore(confirmMessage, dotnetManualInstallHelpLink);
   }
 
   public async generateMsg(

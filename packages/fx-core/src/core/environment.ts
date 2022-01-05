@@ -18,7 +18,7 @@ import {
   EnvNamePlaceholder,
   EnvInfo,
   Json,
-  ProjectSettingsFileName,
+  v3,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -34,11 +34,10 @@ import {
   objectToMap,
   ProjectEnvNotExistError,
   InvalidEnvConfigError,
-  ModifiedSecretError,
 } from "..";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
-import { compileHandlebarsTemplateString, isMultiEnvEnabled } from "../common";
+import { compileHandlebarsTemplateString } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
@@ -56,8 +55,7 @@ class EnvironmentManager {
   public readonly envConfigNameRegex = /^config\.(?<envName>[\w\d-_]+)\.json$/i;
   public readonly envStateNameRegex = /^state\.(?<envName>[\w\d-_]+)\.json$/i;
 
-  private readonly defaultEnvName = "default";
-  private readonly defaultEnvNameNew = "dev";
+  private readonly defaultEnvName = "dev";
   private readonly ajv;
   private readonly schema = "https://aka.ms/teamsfx-env-config-schema";
   private readonly envConfigDescription =
@@ -72,8 +70,9 @@ class EnvironmentManager {
   public async loadEnvInfo(
     projectPath: string,
     cryptoProvider: CryptoProvider,
-    envName?: string
-  ): Promise<Result<EnvInfo, FxError>> {
+    envName?: string,
+    isV3 = false
+  ): Promise<Result<EnvInfo | v3.EnvInfoV3, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
     }
@@ -84,12 +83,22 @@ class EnvironmentManager {
       return err(configResult.error);
     }
 
-    const stateResult = await this.loadEnvState(projectPath, envName, cryptoProvider);
+    const stateResult = await this.loadEnvState(projectPath, envName, cryptoProvider, isV3);
     if (stateResult.isErr()) {
       return err(stateResult.error);
     }
-
-    return ok({ envName, config: configResult.value, state: stateResult.value });
+    if (isV3)
+      return ok({
+        envName,
+        config: configResult.value as Json,
+        state: stateResult.value as v3.ResourceStates,
+      });
+    else
+      return ok({
+        envName,
+        config: configResult.value,
+        state: stateResult.value as Map<string, any>,
+      });
   }
 
   public newEnvConfigData(appName: string): EnvConfig {
@@ -137,7 +146,8 @@ class EnvironmentManager {
     envData: Map<string, any> | Json,
     projectPath: string,
     cryptoProvider: CryptoProvider,
-    envName?: string
+    envName?: string,
+    isV3?: boolean
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
       return err(PathNotExistError(projectPath));
@@ -151,8 +161,10 @@ class EnvironmentManager {
     envName = envName ?? this.getDefaultEnvName();
     const envFiles = this.getEnvStateFilesPath(envName, projectPath);
 
-    const data = envData instanceof Map ? mapToJson(envData) : envData;
-    const secrets = separateSecretData(data);
+    const data: Json = envData instanceof Map ? mapToJson(envData) : envData;
+    const secrets = isV3
+      ? separateSecretDataV3(data as v3.ResourceStates)
+      : separateSecretData(data);
     this.encrypt(secrets, cryptoProvider);
 
     try {
@@ -218,9 +230,7 @@ class EnvironmentManager {
     const basePath = this.getEnvStatesFolder(projectPath);
     const envState = path.resolve(
       basePath,
-      isMultiEnvEnabled()
-        ? EnvStateFileNameTemplate.replace(EnvNamePlaceholder, envName)
-        : `env.${envName}.json`
+      EnvStateFileNameTemplate.replace(EnvNamePlaceholder, envName)
     );
     const userDataFile = path.resolve(basePath, `${envName}.userdata`);
 
@@ -231,12 +241,6 @@ class EnvironmentManager {
     projectPath: string,
     envName: string
   ): Promise<Result<EnvConfig, FxError>> {
-    if (!isMultiEnvEnabled()) {
-      return ok({
-        manifest: { appName: { short: "" } },
-      });
-    }
-
     const envConfigPath = this.getEnvConfigPath(envName, projectPath);
     if (!(await fs.pathExists(envConfigPath))) {
       return err(ProjectEnvNotExistError(envName));
@@ -264,8 +268,9 @@ class EnvironmentManager {
   private async loadEnvState(
     projectPath: string,
     envName: string,
-    cryptoProvider: CryptoProvider
-  ): Promise<Result<Map<string, any>, FxError>> {
+    cryptoProvider: CryptoProvider,
+    isV3 = false
+  ): Promise<Result<Map<string, any> | v3.ResourceStates, FxError>> {
     const envFiles = this.getEnvStateFilesPath(envName, projectPath);
     const userDataResult = await this.loadUserData(envFiles.userDataFile, cryptoProvider);
     if (userDataResult.isErr()) {
@@ -280,14 +285,12 @@ class EnvironmentManager {
     }
 
     const template = await fs.readFile(envFiles.envState, { encoding: "utf-8" });
-
     const result = replaceTemplateWithUserData(template, userData);
-
     const resultJson: Json = JSON.parse(result);
-
+    if (isV3) return ok(resultJson as v3.ResourceStates);
     const data = objectToMap(resultJson);
 
-    return ok(data);
+    return ok(data as Map<string, any>);
   }
 
   private expandEnvironmentVariables(templateContent: string): string {
@@ -316,9 +319,7 @@ class EnvironmentManager {
   }
 
   private getEnvStatesFolder(projectPath: string): string {
-    return isMultiEnvEnabled()
-      ? this.getStatesFolder(projectPath)
-      : this.getConfigFolder(projectPath);
+    return this.getStatesFolder(projectPath);
   }
 
   public getEnvConfigsFolder(projectPath: string): string {
@@ -387,12 +388,23 @@ class EnvironmentManager {
   }
 
   public getDefaultEnvName() {
-    if (isMultiEnvEnabled()) {
-      return this.defaultEnvNameNew;
-    } else {
-      return this.defaultEnvName;
+    return this.defaultEnvName;
+  }
+}
+
+export function separateSecretDataV3(envState: v3.ResourceStates): Record<string, string> {
+  const res: Record<string, string> = {};
+  for (const key of Object.keys(envState)) {
+    const config = envState[key] as v3.CloudResource;
+    if (config.secretFields && config.secretFields.length > 0) {
+      config.secretFields.forEach((f: string) => {
+        const keyName = `${key}.${f}`;
+        res[keyName] = config[f];
+        config[f] = `{{${keyName}}}`;
+      });
     }
   }
+  return res;
 }
 
 export const environmentManager = new EnvironmentManager();

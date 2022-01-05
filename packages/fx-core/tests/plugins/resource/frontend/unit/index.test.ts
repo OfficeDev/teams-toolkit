@@ -34,7 +34,6 @@ import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
 import { StorageAccounts } from "@azure/arm-storage";
 import { AzureLib } from "../../../../../src/plugins/resource/frontend/utils/azure-client";
 import * as core from "../../../../../src";
-import { EnvironmentUtils } from "../../../../../src/plugins/resource/frontend/utils/environment-utils";
 import { getTemplatesFolder, isArmSupportEnabled } from "../../../../../src";
 import mock from "mock-fs";
 import * as path from "path";
@@ -223,6 +222,11 @@ describe("FrontendPlugin", () => {
       pluginContext.config.set(FrontendConfigInfo.Endpoint, TestHelper.storageEndpoint);
 
       frontendPlugin = new FrontendPlugin();
+
+      sinon.stub(fs, "pathExists").resolves(false);
+      sinon.stub(fs, "readFile").resolves(Buffer.from(""));
+      sinon.stub(fs, "writeFile").resolves();
+      sinon.stub(fs, "ensureFile").resolves(Buffer.from(""));
     });
 
     afterEach(() => {
@@ -262,7 +266,6 @@ describe("FrontendPlugin", () => {
       sinon.stub(fs, "readFile").resolves(Buffer.from(""));
       sinon.stub(fs, "writeFile").resolves();
       sinon.stub(fs, "ensureFile").resolves(Buffer.from(""));
-      sinon.stub(EnvironmentUtils, "writeEnvironments").resolves();
 
       staticWebsiteEnabledStub = sinon
         .stub(AzureStorageClient.prototype, "isStorageStaticWebsiteEnabled")
@@ -322,6 +325,7 @@ describe("FrontendPlugin", () => {
       sinon.stub(fs, "readJSON").resolves({});
       sinon.stub(fs, "writeJSON").resolves();
       fsPathExistsStub = sinon.stub(fs, "pathExists").resolves(true);
+      sinon.stub(fs, "readFile").resolves(Buffer.from(""));
     });
 
     afterEach(() => {

@@ -3,14 +3,16 @@
 
 import { ProductName } from "@microsoft/teamsfx-api";
 import * as vscode from "vscode";
-
-import { getLocalTeamsAppId, loadTeamsFxDevScript } from "./commonUtils";
+import {
+  endLocalDebugSession,
+  getLocalDebugSessionId,
+  getLocalTeamsAppId,
+  getNpmInstallLogInfo,
+} from "./commonUtils";
 import { ext } from "../extensionVariables";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
-import { getTeamsAppId } from "../utils/commonUtils";
-import { getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
-import { getNpmInstallLogInfo } from "./npmLogHandler";
+import { Correlator, getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
 import * as path from "path";
 import { errorDetail, issueLink, issueTemplate } from "./constants";
 import * as StringResources from "../resources/Strings.json";
@@ -82,7 +84,9 @@ function displayTerminal(taskName: string): boolean {
   return false;
 }
 
+// TODO: move to local debug prerequisites checker
 async function checkCustomizedPort(component: string, componentRoot: string, checklist: RegExp[]) {
+  /*
   const devScript = await loadTeamsFxDevScript(componentRoot);
   if (devScript) {
     let showWarning = false;
@@ -128,6 +132,7 @@ async function checkCustomizedPort(component: string, componentRoot: string, che
       }
     }
   }
+  */
 }
 
 async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): Promise<void> {
@@ -138,25 +143,6 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
         { source: task.source, name: task.name, scope: task.scope },
         event.processId
       );
-
-      // check customized port
-      const command = task.definition.command as string;
-      if (command !== undefined && command.trim().toLowerCase() === "dev") {
-        const component = task.definition.component as string;
-        if (component.trim().toLowerCase() === "backend") {
-          await checkCustomizedPort(
-            "Function",
-            path.join(ext.workspaceUri.fsPath, constants.backendFolderName),
-            [constants.backendDebugPortRegex, constants.backendServicePortRegex]
-          );
-        } else if (component.trim().toLowerCase() === "bot") {
-          await checkCustomizedPort(
-            "Bot",
-            path.join(ext.workspaceUri.fsPath, constants.botFolderName),
-            [constants.backendDebugPortRegex, constants.backendServicePortRegex]
-          );
-        }
-      }
     } else if (isNpmInstallTask(task)) {
       try {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {
@@ -271,7 +257,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
   }
 }
 
-function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
+async function onDidStartDebugSessionHandler(event: vscode.DebugSession): Promise<void> {
   if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
     const debugConfig = event.configuration as TeamsfxDebugConfiguration;
     if (
@@ -283,7 +269,7 @@ function onDidStartDebugSessionHandler(event: vscode.DebugSession): void {
       // and not a restart one
       // send f5 event telemetry
       try {
-        const localAppId = getLocalTeamsAppId() as string;
+        const localAppId = (await getLocalTeamsAppId()) as string;
         const isLocal =
           (debugConfig.url as string) &&
           localAppId &&
@@ -376,17 +362,45 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
     }
 
     allRunningDebugSessions.delete(event.id);
+    if (allRunningDebugSessions.size == 0) {
+      endLocalDebugSession();
+    }
     allRunningTeamsfxTasks.clear();
   }
 }
 
 export function registerTeamsfxTaskAndDebugEvents(): void {
-  ext.context.subscriptions.push(vscode.tasks.onDidStartTaskProcess(onDidStartTaskProcessHandler));
-  ext.context.subscriptions.push(vscode.tasks.onDidEndTaskProcess(onDidEndTaskProcessHandler));
   ext.context.subscriptions.push(
-    vscode.debug.onDidStartDebugSession(onDidStartDebugSessionHandler)
+    vscode.tasks.onDidStartTaskProcess((event: vscode.TaskProcessStartEvent) =>
+      Correlator.runWithId(getLocalDebugSessionId(), onDidStartTaskProcessHandler, event)
+    )
+  );
+
+  ext.context.subscriptions.push(
+    vscode.tasks.onDidEndTaskProcess((event: vscode.TaskProcessEndEvent) =>
+      Correlator.runWithId(getLocalDebugSessionId(), onDidEndTaskProcessHandler, event)
+    )
+  );
+
+  // debug session handler use correlation-id from event.configuration.teamsfxCorrelationId
+  // to minimize concurrent debug session affecting correlation-id
+  ext.context.subscriptions.push(
+    vscode.debug.onDidStartDebugSession((event: vscode.DebugSession) =>
+      Correlator.runWithId(
+        // fallback to retrieve correlation id from the global variable.
+        event.configuration.teamsfxCorrelationId || getLocalDebugSessionId(),
+        onDidStartDebugSessionHandler,
+        event
+      )
+    )
   );
   ext.context.subscriptions.push(
-    vscode.debug.onDidTerminateDebugSession(onDidTerminateDebugSessionHandler)
+    vscode.debug.onDidTerminateDebugSession((event: vscode.DebugSession) =>
+      Correlator.runWithId(
+        event.configuration.teamsfxCorrelationId || getLocalDebugSessionId(),
+        onDidTerminateDebugSessionHandler,
+        event
+      )
+    )
   );
 }

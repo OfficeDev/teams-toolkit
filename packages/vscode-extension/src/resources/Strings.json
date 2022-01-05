@@ -170,7 +170,8 @@
       "sideloadingHintDoNotShowAgain": "Don't Show Again",
       "openFAQ": "Open FAQ",
       "sideloadingHintMessage": "If any error occurs during local debug, you can refer to the FAQ page by clicking 'Open FAQ' button.",
-      "npmInstallFailedHintMessage": "Task '%s' failed. Please refer to the '%s' terminal window for detailed error information or click 'Report Issue' button to report the issue."
+      "npmInstallFailedHintMessage": "Task '%s' failed. Please refer to the '%s' terminal window for detailed error information or click 'Report Issue' button to report the issue.",
+      "learnMore":"Learn More"
     },
     "survey": {
       "takeSurvey": {
@@ -192,6 +193,8 @@
       "cancelMessage": "userCancelled"
     },
     "accountTree": {
+      "noSubscriptions": "No subscriptions discovered",
+      "noSubscriptionsTooltip": "You have no subscriptions. You can't provision or deploy your resources to Azure!",
       "totalSubscriptions": "%d subscriptions discovered",
       "signingInM365": "M365: Signing in...",
       "signingInAzure": "Azure: Signing in...",

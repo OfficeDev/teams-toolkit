@@ -20,12 +20,21 @@ import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import { generateFakeServiceClientCredentials } from "../bot/unit/utils";
 import { ApimOutputBicepSnippet } from "../../../../src/plugins/resource/apim/constants";
 import { ArmTemplateResult } from "../../../../src/common/armInterface";
+import {
+  AzureResourceApim,
+  HostTypeOptionAzure,
+  TabOptionItem,
+} from "../../../../src/plugins/solution/fx-solution/question";
+import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
+import { mockContext } from "./mock";
 
 describe("apimManager.generateArmTemplates", () => {
   let apimManager: ApimManager;
+  let pluginContext: any;
 
   before(async () => {
     apimManager = await mockApimManager();
+    pluginContext = mockContext();
   });
 
   it("should successfully generate apim bicep files", async () => {
@@ -37,25 +46,30 @@ describe("apimManager.generateArmTemplates", () => {
       ResourcePlugins.SimpleAuth,
       ResourcePlugins.Apim,
     ];
-
+    pluginContext.projectSettings!.solutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      capabilities: [TabOptionItem.id],
+      azureResources: [AzureResourceApim.id],
+    } as AzureSolutionSettings;
     // Act
-    const result = await apimManager.generateArmTemplates();
+    const result = await apimManager.generateArmTemplates(pluginContext);
 
     // Assert
     const testProvisionModuleFileName = "apimProvision.result.bicep";
     const testConfigurationModuleFileName = "apimConfiguration.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-apim": {
           Provision: {
             apim: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
+              path: `./${testProvisionModuleFileName}`,
             },
           },
           Configuration: {
             apim: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
+              path: `./${testConfigurationModuleFileName}`,
             },
           },
           References: {
@@ -128,16 +142,21 @@ describe("apimManager.generateArmTemplates", () => {
       ResourcePlugins.SimpleAuth,
       ResourcePlugins.Apim,
     ];
-
+    pluginContext.projectSettings!.solutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      capabilities: [TabOptionItem.id],
+      azureResources: [AzureResourceApim.id],
+    } as AzureSolutionSettings;
     // Act
-    const result = await apimManager.updateArmTemplates();
+    const result = await apimManager.updateArmTemplates(pluginContext);
 
     // Assert
     const testProvisionModuleFileName = "apimProvision.result.bicep";
     const testConfigurationModuleFileName = "apimConfiguration.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-apim": {
           Configuration: {
             apim: {
@@ -181,13 +200,12 @@ describe("apimManager.generateArmTemplates", () => {
       )
     );
 
-    chai.assert.notExists(expectedResult.Provision!.Orchestration);
-    chai.assert.notExists(expectedResult.Provision!.Modules);
+    chai.assert.notExists(expectedResult.Provision);
     chai.assert.notExists(expectedResult.Configuration!.Orchestration);
     chai.assert.notExists(expectedResult.Parameters);
-    chai.assert.exists(expectedResult.Provision!.Reference!.serviceResourceId);
+    chai.assert.exists(expectedResult.Reference!.serviceResourceId);
     chai.assert.strictEqual(
-      expectedResult.Provision!.Reference!.serviceResourceId,
+      expectedResult.Reference!.serviceResourceId,
       "provisionOutputs.apimOutput.value.serviceResourceId"
     );
   });

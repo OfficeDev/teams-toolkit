@@ -14,6 +14,8 @@ export class Constants {
   public static readonly ipBeginToken = "0";
   public static readonly ipEndToken = "255";
 
+  public static readonly maxRetryTimes = 3;
+
   public static readonly jwtToken = {
     ver1: "1.0",
     ver2: "2.0",
@@ -104,6 +106,6 @@ export class AzureSqlBicep {
 }
 
 export class AzureSqlBicepFile {
-  static readonly moduleTemplateFileName: string = "sql.template.bicep";
+  static readonly moduleTemplateFileName: string = "provision.template.bicep";
   static readonly ProvisionModuleTemplateFileName = "sqlProvision.template.bicep";
 }

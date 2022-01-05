@@ -6,12 +6,12 @@ import * as sinon from "sinon";
 import AdmZip from "adm-zip";
 import axios from "axios";
 
-import * as templates from "../../src/common/templates";
+import * as templates from "../../src/common/template-utils/templates";
 import {
   fetchTemplateUrl,
   fetchZipFromUrl,
   sendRequestWithRetry,
-} from "../../src/common/templatesUtils";
+} from "../../src/common/template-utils/templatesUtils";
 
 const candidateTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "0");
 const targetTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "1");

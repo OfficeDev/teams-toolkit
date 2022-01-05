@@ -24,6 +24,8 @@ export class TeamsFxContainer<T extends Component> implements ComponentContainer
 
   private addComponent(component: T): void {
     this.registry.set(component.name, component);
+    const logger = new InternalLogger(component.name, this.logLevel);
+    this.loggers.set(component.name, logger);
 
     const functionKeys = Object.getOwnPropertyNames(Object.getPrototypeOf(component));
     functionKeys.forEach((key: string) => {
@@ -46,9 +48,8 @@ export class TeamsFxContainer<T extends Component> implements ComponentContainer
       throw new Error();
     }
     if (!this.initialized.get(componentName)) {
-      const logger = new InternalLogger(componentName, this.logLevel);
-      this.loggers.set(componentName, logger);
-      component.initialize(this, logger);
+      const componentLogger = this.loggers.get(componentName);
+      component.initialize(this, componentLogger!);
       this.initialized.set(componentName, true);
     }
     return component;

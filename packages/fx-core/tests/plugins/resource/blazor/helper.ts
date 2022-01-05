@@ -9,10 +9,10 @@ import {
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import { v4 as uuid } from "uuid";
-import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/blazor/constants";
+import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/dotnet/constants";
 import { newEnvInfo } from "../../../../src";
 import { LocalCrypto } from "../../../../src/core/crypto";
-import { BlazorPluginInfo } from "../../../../src/plugins/resource/frontend/blazor/constants";
+import { DotnetPluginInfo as PluginInfo } from "../../../../src/plugins/resource/frontend/dotnet/constants";
 
 export class TestHelper {
   static appName = "ut";
@@ -88,7 +88,7 @@ export class TestHelper {
           version: "",
           activeResourcePlugins: [
             DependentPluginInfo.aadPluginName,
-            BlazorPluginInfo.pluginName,
+            PluginInfo.pluginName,
             DependentPluginInfo.botPluginName,
           ],
         },

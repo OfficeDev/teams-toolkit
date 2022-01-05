@@ -13,14 +13,10 @@ import * as fetch from "../../../../../src/common/templatesUtils";
 
 import { AzureStorageClient } from "../../../../../src/plugins/resource/frontend/clients";
 import {
-  EnableStaticWebsiteError,
-  InvalidStorageNameError,
   NoBuildPathError,
-  NoResourceGroupError,
   NoStorageError,
   StaticWebsiteDisabledError,
 } from "../../../../../src/plugins/resource/frontend/resources/errors";
-import { FrontendConfig } from "../../../../../src/plugins/resource/frontend/configs";
 import {
   FrontendConfigInfo,
   FrontendPathInfo,
@@ -28,8 +24,6 @@ import {
 import { FrontendPlugin } from "../../../../../src/plugins/resource/frontend/";
 import { TestHelper } from "../helper";
 import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
-import { StorageAccounts } from "@azure/arm-storage";
-import * as core from "../../../../../src";
 import { getTemplatesFolder } from "../../../../../src";
 import mock from "mock-fs";
 import * as path from "path";

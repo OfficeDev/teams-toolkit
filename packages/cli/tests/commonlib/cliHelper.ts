@@ -115,7 +115,7 @@ export class CliHelper {
   }
 
   static async getUserSettings(key: string, projectPath: string, env: string): Promise<string> {
-    const result = await execAsync(`teamsfx config get ${key} --env: ${env}`, {
+    const result = await execAsync(`teamsfx config get ${key} --env ${env}`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,

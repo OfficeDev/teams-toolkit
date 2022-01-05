@@ -110,6 +110,7 @@ export class FunctionValidator {
     chai.assert.exists(webappSettingsResponse);
     console.log("[dilin-debug] webappSettingsResponse: " + JSON.stringify(webappSettingsResponse));
     console.log("[dilin-debug] ctx: " + JSON.stringify(this.ctx));
+    console.log("[dilin-debug] activeResourcePlugins: " + JSON.stringify(activeResourcePlugins));
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.API_ENDPOINT],
       this.ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
@@ -126,11 +127,17 @@ export class FunctionValidator {
       webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
       expectedM365ClientSecret
     );
+    console.log("[dilin] successfully validate M365_CLIENT_SECRET.");
+
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.IDENTITY_ID],
       this.ctx[PluginId.Identity][StateConfigKey.identityClientId] as string
     );
+    console.log("[dilin] successfully validate IDENTITY_ID.");
+
     if (activeResourcePlugins.includes(PluginId.AzureSQL)) {
+      console.log("validating app setting [sql].");
+
       chai.assert.equal(
         webappSettingsResponse[SQLConfig.SQL_ENDPOINT],
         this.ctx[PluginId.AzureSQL][StateConfigKey.sqlEndpoint] as string

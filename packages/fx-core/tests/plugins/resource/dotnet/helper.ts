@@ -51,22 +51,7 @@ export class TestHelper {
   static getFakePluginContext(): PluginContext {
     const solutionConfig = new Map([
       [DependentPluginInfo.subscriptionId, TestHelper.subscriptionId],
-      [DependentPluginInfo.resourceNameSuffix, TestHelper.resourceNameSuffix],
       [DependentPluginInfo.resourceGroupName, TestHelper.rgName],
-      [DependentPluginInfo.location, TestHelper.location],
-    ]);
-
-    const aadConfig = new Map<string, string>([
-      [DependentPluginInfo.clientID, faker.datatype.uuid()],
-      [DependentPluginInfo.aadClientSecret, faker.internet.password()],
-      [DependentPluginInfo.oauthHost, faker.internet.url()],
-      [DependentPluginInfo.tenantId, faker.datatype.uuid()],
-      [DependentPluginInfo.applicationIdUris, faker.internet.url()],
-    ]);
-
-    const botConfig = new Map<string, string>([
-      [DependentPluginInfo.botId, faker.datatype.uuid()],
-      [DependentPluginInfo.botPassword, faker.internet.password()],
     ]);
 
     const pluginContext = {
@@ -74,11 +59,7 @@ export class TestHelper {
       envInfo: newEnvInfo(
         undefined,
         undefined,
-        new Map([
-          [DependentPluginInfo.solutionPluginName, solutionConfig],
-          [DependentPluginInfo.aadPluginName, aadConfig],
-          [DependentPluginInfo.botPluginName, botConfig],
-        ])
+        new Map([[DependentPluginInfo.solutionPluginName, solutionConfig]])
       ),
       projectSettings: {
         appName: TestHelper.appName,
@@ -86,11 +67,7 @@ export class TestHelper {
         solutionSettings: {
           name: "",
           version: "",
-          activeResourcePlugins: [
-            DependentPluginInfo.aadPluginName,
-            PluginInfo.pluginName,
-            DependentPluginInfo.botPluginName,
-          ],
+          activeResourcePlugins: [PluginInfo.pluginName],
         },
       },
       config: new ConfigMap(),

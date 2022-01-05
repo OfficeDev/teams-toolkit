@@ -68,7 +68,7 @@ const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
 const pollWaitSeconds = 10;
-const maxLogTimes = 4;
+const maxRetryTimes = 4;
 
 // constant string
 const resourceBaseName = "resourceBaseName";
@@ -265,11 +265,11 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
       polledOperations = [];
     } catch (error) {
       tryCount++;
-      if (tryCount < maxLogTimes) {
+      if (tryCount < maxRetryTimes) {
         deployCtx.ctx.logProvider?.warning(
           `[${PluginDisplayName.Solution}] ${deployCtx.deploymentName} -> waiting to get deplomyment status [Retry time: ${tryCount}]`
         );
-      } else if (tryCount === maxLogTimes) {
+      } else if (tryCount === maxRetryTimes) {
         const pollError = returnSystemError(
           error,
           SolutionSource,

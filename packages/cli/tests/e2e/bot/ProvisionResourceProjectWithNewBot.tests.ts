@@ -125,7 +125,7 @@ describe("Provision", function () {
     }
 
     // test (validate)
-    await execAsyncWithRetry(`teamsfx validate`, {
+    await execAsyncWithRetry(`teamsfx manifest validate`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,

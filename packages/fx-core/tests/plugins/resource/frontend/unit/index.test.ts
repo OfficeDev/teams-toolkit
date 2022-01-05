@@ -34,7 +34,6 @@ import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
 import { StorageAccounts } from "@azure/arm-storage";
 import { AzureLib } from "../../../../../src/plugins/resource/frontend/utils/azure-client";
 import * as core from "../../../../../src";
-import { EnvironmentUtils } from "../../../../../src/plugins/resource/frontend/utils/environment-utils";
 import { getTemplatesFolder, isArmSupportEnabled } from "../../../../../src";
 import mock from "mock-fs";
 import * as path from "path";
@@ -228,7 +227,6 @@ describe("FrontendPlugin", () => {
       sinon.stub(fs, "readFile").resolves(Buffer.from(""));
       sinon.stub(fs, "writeFile").resolves();
       sinon.stub(fs, "ensureFile").resolves(Buffer.from(""));
-      sinon.stub(EnvironmentUtils, "writeEnvironments").resolves();
     });
 
     afterEach(() => {
@@ -268,7 +266,6 @@ describe("FrontendPlugin", () => {
       sinon.stub(fs, "readFile").resolves(Buffer.from(""));
       sinon.stub(fs, "writeFile").resolves();
       sinon.stub(fs, "ensureFile").resolves(Buffer.from(""));
-      sinon.stub(EnvironmentUtils, "writeEnvironments").resolves();
 
       staticWebsiteEnabledStub = sinon
         .stub(AzureStorageClient.prototype, "isStorageStaticWebsiteEnabled")

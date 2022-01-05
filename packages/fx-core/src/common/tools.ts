@@ -19,6 +19,7 @@ import {
   AzureSolutionSettings,
   SolutionContext,
   v3,
+  PluginContext,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse } from "axios";
@@ -36,6 +37,7 @@ import {
   TeamsClientId,
   OfficeClientId,
   OutlookClientId,
+  ResourcePlugins,
 } from "./constants";
 import * as crypto from "crypto";
 import * as os from "os";
@@ -49,13 +51,13 @@ import {
 import Mustache from "mustache";
 import { CloudResource } from "@microsoft/teamsfx-api/build/v3";
 
-Handlebars.registerHelper("contains", (value, array, options) => {
+Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
-  return array.indexOf(value) > -1 ? options.fn(this) : "";
+  return array.indexOf(value) > -1 ? this : "";
 });
-Handlebars.registerHelper("notContains", (value, array, options) => {
+Handlebars.registerHelper("notContains", (value, array) => {
   array = array instanceof Array ? array : [array];
-  return array.indexOf(value) == -1 ? options.fn(this) : "";
+  return array.indexOf(value) == -1 ? this : "";
 });
 
 export const Executor = {
@@ -397,21 +399,19 @@ export function getRootDirectory(): string {
   }
 }
 
-export async function generateBicepFiles(
+export async function generateBicepFromFile(
   templateFilePath: string,
   context: any
-): Promise<Result<string, FxError>> {
+): Promise<string> {
   try {
     const templateString = await fs.readFile(templateFilePath, ConstantString.UTF8Encoding);
     const updatedBicepFile = compileHandlebarsTemplateString(templateString, context);
-    return ok(updatedBicepFile);
+    return updatedBicepFile;
   } catch (error) {
-    return err(
-      returnSystemError(
-        new Error(`Failed to generate bicep file ${templateFilePath}. Reason: ${error.message}`),
-        "Core",
-        "BicepGenerationError"
-      )
+    throw returnSystemError(
+      new Error(`Failed to generate bicep file ${templateFilePath}. Reason: ${error.message}`),
+      "Core",
+      "BicepGenerationError"
     );
   }
 }
@@ -537,6 +537,11 @@ export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
 
 export function getHashedEnv(envName: string): string {
   return crypto.createHash("sha256").update(envName).digest("hex");
+}
+
+export function IsSimpleAuthEnabled(projectSettings: ProjectSettings | undefined): boolean {
+  const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
+  return solutionSettings?.activeResourcePlugins?.includes(ResourcePlugins.SimpleAuth);
 }
 
 interface BasicJsonSchema {

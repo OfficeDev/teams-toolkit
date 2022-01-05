@@ -41,6 +41,7 @@ import {
   v2,
   Ok,
   Err,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
@@ -59,6 +60,7 @@ import {
   FRONTEND_DOMAIN,
   FRONTEND_ENDPOINT,
   REMOTE_MANIFEST,
+  MANIFEST_TEMPLATE,
 } from "../../../src/plugins/resource/appstudio/constants";
 import {
   HostTypeOptionAzure,
@@ -101,6 +103,7 @@ import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import * as armResources from "@azure/arm-resources";
 import { aadPlugin, appStudioPlugin, spfxPlugin, fehostPlugin } from "../../constants";
 import { AadAppForTeamsPlugin } from "../../../src";
+import { assert } from "sinon";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -159,7 +162,12 @@ class MockUserInteraction implements UserInteraction {
     throw new Error("Method not implemented.");
   }
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
-    throw new Error("Method not implemented.");
+    const handler: IProgressHandler = {
+      start: async (detail?: string): Promise<void> => {},
+      next: async (detail?: string): Promise<void> => {},
+      end: async (): Promise<void> => {},
+    };
+    return handler;
   }
   runWithProgress<T>(
     task: RunnableTask<T>,
@@ -451,9 +459,7 @@ describe("provision() happy path for SPFx projects", () => {
     teamsAppId: "qwertasdf",
   };
   const mockedManifest = _.cloneDeep(validManifest);
-  // ignore icons for simplicity
-  mockedManifest.icons.color = "";
-  mockedManifest.icons.outline = "";
+
   beforeEach(() => {
     mocker.stub(fs, "writeFile").callsFake((path: number | PathLike, data: any) => {
       fileContent.set(path.toString(), data);
@@ -466,7 +472,9 @@ describe("provision() happy path for SPFx projects", () => {
     });
     mocker
       .stub<any, any>(fs, "readJson")
-      .withArgs(`./.${ConfigFolderName}/${REMOTE_MANIFEST}`)
+      .withArgs(
+        `./tests/plugins/resource/appstudio/spfx-resources/${AppPackageFolderName}/${MANIFEST_TEMPLATE}`
+      )
       .resolves(mockedManifest);
     mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
@@ -483,7 +491,7 @@ describe("provision() happy path for SPFx projects", () => {
   it("should succeed if insider feature flag enabled", async () => {
     const solution = new TeamsAppSolution();
     const mockedCtx = mockSolutionContext();
-    mockedCtx.root = "./tests/plugins/resource/appstudio/spfx-resources/";
+    mockedCtx.root = "./tests/plugins/resource/appstudio/spfx-resources";
     mockedCtx.projectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -1105,9 +1113,6 @@ describe("API v2 implementation", () => {
     });
 
     it("should work on happy path", async () => {
-      if (isArmSupportEnabled()) {
-        return;
-      }
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -1123,6 +1128,7 @@ describe("API v2 implementation", () => {
       const mockedInputs: Inputs = {
         platform: Platform.VSCode,
         projectPath: "./",
+        isForUT: true,
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureTokenProvider(),
@@ -1147,6 +1153,9 @@ describe("API v2 implementation", () => {
         mockedTokenProvider
       );
       expect(result.kind).equals("success");
+      if (result.kind === "success") {
+        expect(result.output["fx-resource-identity"] !== undefined).equals(true);
+      }
     });
   });
 });

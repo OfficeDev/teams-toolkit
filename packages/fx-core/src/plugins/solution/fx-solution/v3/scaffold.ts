@@ -18,9 +18,12 @@ import fs from "fs-extra";
 import * as path from "path";
 import { Container, Service } from "typedi";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
+import { InvalidInputError } from "../../utils/error";
+import {
+  createSelectModuleQuestionNode,
+  selectScaffoldTemplateQuestion,
+} from "../../utils/questions";
 import { BuiltInResourcePluginNames, BuiltInScaffoldPluginNames } from "./constants";
-import { InvalidInputError } from "./error";
-import { createSelectModuleQuestionNode, selectScaffoldTemplateQuestion } from "./questions";
 import { getModule } from "./utils";
 @Service(BuiltInScaffoldPluginNames.tab)
 export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
@@ -250,7 +253,7 @@ export async function scaffold(
 
   // read manifest
   const appStudio = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
-  const manifestRes = await appStudio.readManifest(ctx, inputs);
+  const manifestRes = await appStudio.loadManifest(ctx, inputs);
   if (manifestRes.isErr()) {
     return err(manifestRes.error);
   }
@@ -268,13 +271,9 @@ export async function scaffold(
   }
 
   // write manifest
-  const writeRes = await appStudio.writeManifest(ctx, inputs, manifest);
+  const writeRes = await appStudio.SaveManifest(ctx, inputs, manifest);
   if (writeRes.isErr()) {
     return err(writeRes.error);
   }
-
-  //TODO
-  // const appstudioPlugin = Container.get<v3.ScaffoldPlugin>(BuiltInResourcePluginNames.AppStudio);
-  // await appstudioPlugin.scaffold(ctx, pluginInputs);
   return ok(Void);
 }

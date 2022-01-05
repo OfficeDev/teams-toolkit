@@ -6,12 +6,12 @@ import { assert } from "chai";
 import "mocha";
 import {
   CapabilityAlreadyAddedError,
-  InvalidInputError,
   ResourceAlreadyAddedError,
 } from "../../../src/plugins/solution/fx-solution/v3/error";
 import { randomAppName } from "../../core/utils";
 import * as os from "os";
 import * as path from "path";
+import { InvalidInputError } from "../../../src/plugins/solution/utils/error";
 
 describe("SolutionV3 - errors", () => {
   it("CapabilityAlreadyAddedError", async () => {

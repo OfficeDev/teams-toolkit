@@ -106,12 +106,13 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
 
         return err(MissingStep("launching remote", "Teams: Provision and Teams: Deploy"));
       } else {
-        return ok(localEnvManager.getLaunchInput(localSettings));
+        const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
+        return ok({ appId: localTeamsAppId });
       }
     } else if (func.method === "getProgrammingLanguage") {
-      return ok(localEnvManager.getProgrammingLanguage(ctx.projectSetting));
+      return ok(ctx.projectSetting.programmingLanguage);
     } else if (func.method === "getSkipNgrokConfig") {
-      return ok(localEnvManager.getSkipNgrokConfig(localSettings));
+      return ok((localSettings?.bot?.skipNgrok as boolean) === true);
     } else if (func.method === "getLocalDebugEnvs") {
       const localEnvs = await localEnvManager.getLocalDebugEnvs(
         inputs.projectPath as string,

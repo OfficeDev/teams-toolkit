@@ -27,6 +27,8 @@ import {
 } from "@azure/arm-apimanagement/src/models";
 import axios, { AxiosInstance } from "axios";
 import { IAadInfo } from "../../../../src/plugins/resource/apim/interfaces/IAadResource";
+import { PluginContext } from "@microsoft/teamsfx-api";
+import { newEnvInfo } from "../../../../src/core/tools";
 
 export type StubbedClass<T> = SinonStubbedInstance<T> & T;
 
@@ -457,3 +459,31 @@ function buildError(obj: any): Error {
 }
 
 const UnexpectedInputError = new Error("Unexpected input");
+
+export function mockContext(): PluginContext {
+  const pluginContext = {
+    config: new Map(),
+    envInfo: newEnvInfo(
+      undefined,
+      undefined,
+      new Map([
+        [
+          "solution",
+          new Map([
+            ["resourceNameSuffix", Math.random().toString(36).substring(2, 8)],
+            ["subscriptionId", "1756abc0-3554-4341-8d6a-46674962ea19"],
+            ["resourceGroupName", "apimTest"],
+            ["location", "eastus"],
+          ]),
+        ],
+      ])
+    ),
+    app: {
+      name: {
+        short: "hello-app",
+      },
+    },
+    projectSettings: { appName: "hello-app" },
+  } as unknown as PluginContext;
+  return pluginContext;
+}

@@ -9,8 +9,8 @@ param currentAppSettings object
 var botWebAppName = split(provisionOutputs.botOutput.value.botWebAppResourceId, '/')[8]
 var m365ClientId = provisionParameters['m365ClientId']
 
-{{#if fx-resource-key-vault }}
-var m365ClientSecret = {{fx-resource-key-vault.References.m365ClientSecretReference}}
+{{#if (contains "fx-resource-key-vault" plugins) }}
+var m365ClientSecret = \{{fx-resource-key-vault.References.m365ClientSecretReference}}
 {{else}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']
 {{/if}}
@@ -19,24 +19,20 @@ var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var botAadAppClientId = provisionParameters['botAadAppClientId']
 
-{{#if fx-resource-key-vault }}
-var botAadAppClientSecret = {{fx-resource-key-vault.References.botClientSecretReference}}
+{{#if (contains "fx-resource-key-vault" plugins) }}
+var botAadAppClientSecret = \{{fx-resource-key-vault.References.botClientSecretReference}}
 {{else}}
 var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
 {{/if}}
 
 var botId = provisionParameters['botAadAppClientId']
 
-{{#if fx-resource-frontend-hosting }}
-  {{#if fx-resource-bot }}
-var m365ApplicationIdUri = 'api://${ {{fx-resource-frontend-hosting.References.domain}} }/botid-${botId}'
-  {{else }}
-var m365ApplicationIdUri = 'api://${ {{fx-resource-frontend-hosting.References.domain}} }/${m365ClientId}'
+{{#if (contains "fx-resource-frontend-hosting" plugins) }}
+  {{#if (contains "fx-resource-bot" plugins) }}
+var m365ApplicationIdUri = 'api://${ \{{fx-resource-frontend-hosting.References.domain}} }/botid-${botId}'
   {{/if}}
 {{else}}
-  {{#if fx-resource-bot }}
 var m365ApplicationIdUri = 'api://botid-${botId}'
-  {{/if}}
 {{/if}}
 
 resource botWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
@@ -50,13 +46,13 @@ resource botWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     M365_APPLICATION_ID_URI: m365ApplicationIdUri
     BOT_ID: botAadAppClientId
     BOT_PASSWORD: botAadAppClientSecret
-    {{#if fx-resource-function }}
+    {{#if (contains "fx-resource-function" plugins) }}
     API_ENDPOINT: provisionOutputs.functionOutput.value.functionEndpoint
     {{/if}}
-    {{#if fx-resource-azure-sql}}
-    SQL_DATABASE_NAME: {{fx-resource-azure-sql.References.databaseName}}
-    SQL_ENDPOINT: {{fx-resource-azure-sql.References.sqlEndpoint}}
+    {{#if (contains "fx-resource-azure-sql" plugins)}}
+    SQL_DATABASE_NAME: \{{fx-resource-azure-sql.References.databaseName}}
+    SQL_ENDPOINT: \{{fx-resource-azure-sql.References.sqlEndpoint}}
     {{/if}}
-    IDENTITY_ID: {{fx-resource-identity.References.identityClientId}}
+    IDENTITY_ID: \{{fx-resource-identity.References.identityClientId}}
   }, currentAppSettings)
 }

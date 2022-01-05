@@ -67,6 +67,8 @@ const bicepOrchestrationConfigFileName = "config.bicep";
 const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
+const pollWaitSeconds = 10;
+const maxRetryTimes = 4;
 
 // constant string
 const resourceBaseName = "resourceBaseName";
@@ -148,9 +150,7 @@ export async function generateArmTemplateV3(
 }
 
 type DeployContext = {
-  azureAccountProvider?: AzureAccountProvider;
-  logProvider?: LogProvider;
-  // ctx: SolutionContext;
+  ctx: SolutionContext;
   finished: boolean;
   client: ResourceManagementClient;
   resourceGroupName: string;
@@ -162,6 +162,7 @@ type OperationStatus = {
   resourceName: string;
   resourceGroupName: string;
   subscriptionId: string;
+  resourceType?: string;
   status: string;
 };
 
@@ -187,6 +188,7 @@ export function getRequiredOperation(
         resourceName: operation.properties?.targetResource?.resourceName,
         resourceGroupName: resourceGroupName,
         subscriptionId: subscriptionId,
+        resourceType: operation.properties.targetResource.resourceType,
         status: operation.properties.provisioningState,
       };
     } catch (error) {
@@ -198,18 +200,17 @@ export function getRequiredOperation(
 }
 
 export async function pollDeploymentStatus(deployCtx: DeployContext) {
-  const failedCount = 4;
   let tryCount = 0;
   let previousStatus: { [key: string]: string } = {};
   let polledOperations: string[] = [];
-  deployCtx.logProvider?.info(
+  deployCtx.ctx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
       PluginDisplayName.Solution
     )
   );
   while (!deployCtx.finished) {
-    await waitSeconds(10);
+    await waitSeconds(pollWaitSeconds);
     try {
       const operations = await deployCtx.client.deploymentOperations.list(
         deployCtx.resourceGroupName,
@@ -228,23 +229,26 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
             currentStatus[operation.resourceName] = operation.status;
             if (!polledOperations.includes(operation.resourceName)) {
               polledOperations.push(operation.resourceName);
-              let client = deployCtx.client;
-              if (operation.subscriptionId !== deployCtx.client.subscriptionId) {
-                const azureToken =
-                  await deployCtx.azureAccountProvider?.getAccountCredentialAsync();
-                client = new ResourceManagementClient(azureToken!, operation.subscriptionId);
-              }
-
-              const subOperations = await client.deploymentOperations.list(
-                operation.resourceGroupName,
-                operation.resourceName
-              );
-              subOperations.forEach((sub) => {
-                const subOperation = getRequiredOperation(sub, deployCtx);
-                if (subOperation) {
-                  currentStatus[subOperation.resourceName] = subOperation.status;
+              // get sub operations when resource type is deployments.
+              if (operation.resourceType === ConstantString.DeploymentResourceType) {
+                let client = deployCtx.client;
+                if (operation.subscriptionId !== deployCtx.client.subscriptionId) {
+                  const azureToken =
+                    await deployCtx.ctx.azureAccountProvider?.getAccountCredentialAsync();
+                  client = new ResourceManagementClient(azureToken!, operation.subscriptionId);
                 }
-              });
+
+                const subOperations = await client.deploymentOperations.list(
+                  operation.resourceGroupName,
+                  operation.resourceName
+                );
+                subOperations.forEach((sub) => {
+                  const subOperation = getRequiredOperation(sub, deployCtx);
+                  if (subOperation) {
+                    currentStatus[subOperation.resourceName] = subOperation.status;
+                  }
+                });
+              }
             }
           }
         })
@@ -252,7 +256,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
 
       for (const key in currentStatus) {
         if (currentStatus[key] !== previousStatus[key]) {
-          deployCtx.logProvider?.info(
+          deployCtx.ctx.logProvider?.info(
             `[${PluginDisplayName.Solution}] ${key} -> ${currentStatus[key]}`
           );
         }
@@ -261,12 +265,22 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
       polledOperations = [];
     } catch (error) {
       tryCount++;
-      if (tryCount > failedCount) {
-        throw error;
+      if (tryCount < maxRetryTimes) {
+        deployCtx.ctx.logProvider?.warning(
+          `[${PluginDisplayName.Solution}] ${deployCtx.deploymentName} -> waiting to get deplomyment status [Retry time: ${tryCount}]`
+        );
+      } else if (tryCount === maxRetryTimes) {
+        const pollError = returnSystemError(
+          error,
+          SolutionSource,
+          SolutionError.FailedToPollArmDeploymentStatus
+        );
+        sendErrorTelemetryThenReturnError(
+          SolutionTelemetryEvent.ArmDeployment,
+          pollError,
+          deployCtx.ctx.telemetryReporter
+        );
       }
-      deployCtx.logProvider?.warning(
-        `[${PluginDisplayName.Solution}] ${deployCtx.deploymentName} -> waiting to get deplomyment status [${tryCount}]`
-      );
     }
   }
 }
@@ -321,8 +335,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   };
 
   const deployCtx: DeployContext = {
-    azureAccountProvider: ctx.azureAccountProvider,
-    logProvider: ctx.logProvider,
+    ctx: ctx,
     finished: false,
     deploymentStartTime: Date.now(),
     client: client,
@@ -453,8 +466,7 @@ export async function doDeployArmTemplatesV3(
   };
 
   const deployCtx: DeployContext = {
-    azureAccountProvider: azureAccountProvider,
-    logProvider: ctx.logProvider,
+    ctx: ctx as any as SolutionContext,
     finished: false,
     deploymentStartTime: Date.now(),
     client: client,
@@ -1339,7 +1351,7 @@ async function wrapGetDeploymentError(
     const deploymentError = await getDeploymentError(deployCtx, resourceGroupName, deploymentName);
     return ok(deploymentError);
   } catch (error: any) {
-    deployCtx.logProvider?.error(
+    deployCtx.ctx.logProvider?.error(
       `[${PluginDisplayName.Solution}] Failed to get deployment error for ${error.message}.`
     );
     const returnError = new Error(

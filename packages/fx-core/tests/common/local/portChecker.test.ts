@@ -166,5 +166,20 @@ describe("portChecker", () => {
       chai.assert.isDefined(ports);
       chai.assert.equal(ports.length, 0);
     });
+
+    it("ignore debug port", async () => {
+      const mockServer = new MockServer([
+        {
+          port: 9229,
+          host: "0.0.0.0",
+        },
+      ]);
+      sinon.stub(net, "createServer").returns(mockServer as unknown as net.Server);
+
+      const ports = await getPortsInUse(projectPath, projectSettings0, true);
+
+      chai.assert.isDefined(ports);
+      chai.assert.equal(ports.length, 0);
+    });
   });
 });

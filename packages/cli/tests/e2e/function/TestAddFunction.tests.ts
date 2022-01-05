@@ -21,6 +21,8 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import { CliHelper } from "../../commonlib/cliHelper";
+import { Capability } from "../../commonlib/constants";
 
 describe("Test Add Function", function () {
   let testFolder: string;
@@ -49,12 +51,7 @@ describe("Test Add Function", function () {
   });
 
   it(`Create Tab Then Add Function`, async function () {
-    await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities tab`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] scaffold to ${projectPath}`);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     if (isMultiEnvEnabled()) {
       await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
@@ -77,22 +74,10 @@ describe("Test Add Function", function () {
     console.log(`[Successfully] add function to ${projectPath}`);
 
     // set subscription
-    await execAsync(`teamsfx account set --subscription ${subscription}`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-
-    console.log(`[Successfully] set subscription for ${projectPath}`);
+    await CliHelper.setSubscription(subscription, projectPath);
 
     // provision
-    await execAsyncWithRetry(`teamsfx provision`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-
-    console.log(`[Successfully] provision for ${projectPath}`);
+    await CliHelper.provisionProject(projectPath);
 
     {
       if (isMultiEnvEnabled()) {
@@ -161,7 +146,7 @@ describe("Test Add Function", function () {
     }
 
     // validate
-    await execAsyncWithRetry(`teamsfx validate`, {
+    await execAsyncWithRetry(`teamsfx manifest validate`, {
       cwd: projectPath,
       env: process.env,
       timeout: 0,

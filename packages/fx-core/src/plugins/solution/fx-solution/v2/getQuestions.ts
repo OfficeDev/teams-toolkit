@@ -10,12 +10,10 @@ import {
   MultiSelectQuestion,
   ok,
   OptionItem,
-  Platform,
   QTreeNode,
   Result,
   returnUserError,
   Stage,
-  SubscriptionInfo,
   TokenProvider,
   UserError,
   v2,
@@ -23,10 +21,8 @@ import {
 import Container from "typedi";
 import { getStrings } from "../../../../common/tools";
 import { HelpLinks } from "../../../../common/constants";
-import { checkSubscription } from "../commonQuestions";
 import { SolutionError, SolutionSource } from "../constants";
 import {
-  addCapabilityQuestion,
   AskSubscriptionQuestion,
   AzureResourceApim,
   AzureResourceFunction,
@@ -36,13 +32,9 @@ import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   createAddAzureResourceQuestion,
-  createCapabilityQuestion,
   createV1CapabilityQuestion,
   DeployPluginSelectQuestion,
-  FrontendHostTypeQuestion,
   GetUserEmailQuestion,
-  HostTypeOptionAzure,
-  HostTypeOptionSPFx,
   MessageExtensionItem,
   TabOptionItem,
   TabSPFxItem,
@@ -55,11 +47,9 @@ import {
 import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
 import { isV3 } from "../../../..";
 import { TeamsAppSolutionNameV2 } from "./constants";
-import { getResourceFolder } from "../../../../folder";
 import { BuiltInResourcePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
-import { isVSProject } from "../../../../core";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -397,21 +387,33 @@ export async function getQuestionsForAddCapability(
     return err(canProceed.error);
   }
   const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
-  const isTabAddable = !(await appStudioPlugin.capabilityExceedLimit(
+  const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
     "staticTab"
-  ));
-  const isBotAddable = !(await appStudioPlugin.capabilityExceedLimit(
+  );
+  if (tabExceedRes.isErr()) {
+    return err(tabExceedRes.error);
+  }
+  const isTabAddable = !tabExceedRes.value;
+  const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
     "Bot"
-  ));
-  const isMEAddable = !(await appStudioPlugin.capabilityExceedLimit(
+  );
+  if (botExceedRes.isErr()) {
+    return err(botExceedRes.error);
+  }
+  const isBotAddable = !botExceedRes.value;
+  const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
     "MessageExtension"
-  ));
+  );
+  if (meExceedRes.isErr()) {
+    return err(meExceedRes.error);
+  }
+  const isMEAddable = !meExceedRes.value;
   if (!(isTabAddable || isBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",

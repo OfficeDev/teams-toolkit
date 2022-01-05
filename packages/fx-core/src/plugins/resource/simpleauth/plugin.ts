@@ -15,7 +15,9 @@ import { ArmTemplateResult } from "../../../common/armInterface";
 import { isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
 import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
 import { Bicep, ConstantString } from "../../../common/constants";
-
+import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
+import { generateBicepFromFile } from "../../../common/tools";
 export class SimpleAuthPluginImpl {
   webAppClient!: WebAppClient;
 
@@ -118,6 +120,11 @@ export class SimpleAuthPluginImpl {
   public async updateArmTemplates(ctx: PluginContext): Promise<Result<ArmTemplateResult, FxError>> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartUpdateArmTemplates);
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
 
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
@@ -131,16 +138,14 @@ export class SimpleAuthPluginImpl {
       bicepTemplateDirectory,
       Constants.configModuleTemplateFileName
     );
-
+    const configModules = await generateBicepFromFile(configModuleFilePath, pluginCtx);
     const result: ArmTemplateResult = {
       Reference: {
         skuName: Constants.SimpleAuthBicepOutputSkuName,
         endpoint: Constants.SimpleAuthBicepOutputEndpoint,
       },
       Configuration: {
-        Modules: {
-          simpleAuth: await fs.readFile(configModuleFilePath, ConstantString.UTF8Encoding),
-        },
+        Modules: { simpleAuth: configModules },
       },
     };
 
@@ -153,7 +158,11 @@ export class SimpleAuthPluginImpl {
   ): Promise<Result<ArmTemplateResult, FxError>> {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGenerateArmTemplates);
-
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -170,25 +179,24 @@ export class SimpleAuthPluginImpl {
       bicepTemplateDirectory,
       Constants.configModuleTemplateFileName
     );
-
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
+      pluginCtx
+    );
+    const provisionModules = await generateBicepFromFile(provisionModuleResult, pluginCtx);
+    const configOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, Bicep.ConfigFileName),
+      pluginCtx
+    );
+    const configModule = await generateBicepFromFile(configModuleFilePath, pluginCtx);
     const result: ArmTemplateResult = {
       Provision: {
-        Orchestration: await fs.readFile(
-          path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
-          ConstantString.UTF8Encoding
-        ),
-        Modules: {
-          simpleAuth: await fs.readFile(provisionModuleResult, ConstantString.UTF8Encoding),
-        },
+        Orchestration: provisionOrchestration,
+        Modules: { simpleAuth: provisionModules },
       },
       Configuration: {
-        Orchestration: await fs.readFile(
-          path.join(bicepTemplateDirectory, Bicep.ConfigFileName),
-          ConstantString.UTF8Encoding
-        ),
-        Modules: {
-          simpleAuth: await fs.readFile(configModuleFilePath, ConstantString.UTF8Encoding),
-        },
+        Orchestration: configOrchestration,
+        Modules: { simpleAuth: configModule },
       },
       Reference: {
         skuName: Constants.SimpleAuthBicepOutputSkuName,

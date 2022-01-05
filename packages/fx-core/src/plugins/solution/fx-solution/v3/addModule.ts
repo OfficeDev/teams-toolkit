@@ -21,7 +21,7 @@ import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { BotOptionItem, MessageExtensionItem, TabOptionItem } from "../question";
 import { BuiltInResourcePluginNames } from "./constants";
 import { CapabilityAlreadyAddedError } from "./error";
-import { selectCapabilitiesQuestion } from "./questions";
+import { selectCapabilitiesQuestion } from "../../utils/questions";
 
 export async function getQuestionsForAddModule(
   ctx: v2.Context,
@@ -66,10 +66,13 @@ export async function addModule(
   if (inputCapabilities.length > 0) {
     const appStudio = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
     const manifestInputs: (
-      | { name: "staticTab"; snippet?: IStaticTab }
-      | { name: "configurableTab"; snippet?: IConfigurableTab }
-      | { name: "Bot"; snippet?: IBot }
-      | { name: "MessageExtension"; snippet?: IComposeExtension }
+      | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
+      | { name: "configurableTab"; snippet?: { local: IConfigurableTab; remote: IConfigurableTab } }
+      | { name: "Bot"; snippet?: { local: IBot; remote: IBot } }
+      | {
+          name: "MessageExtension";
+          snippet?: { local: IComposeExtension; remote: IComposeExtension };
+        }
     )[] = [];
     if (inputCapabilities.includes(TabOptionItem.id)) manifestInputs.push({ name: "staticTab" });
     if (inputCapabilities.includes(BotOptionItem.id)) manifestInputs.push({ name: "Bot" });

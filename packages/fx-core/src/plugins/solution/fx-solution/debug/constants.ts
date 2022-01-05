@@ -7,11 +7,6 @@ export class LaunchBrowser {
   public static readonly edge: string = "pwa-msedge";
 }
 
-export enum ProgrammingLanguage {
-  javascript = "javascript",
-  typescript = "typescript",
-}
-
 export class LocalDebugCertificate {
   public static readonly CertFileName: string = "localhost.crt";
   public static readonly KeyFileName: string = "localhost.key";

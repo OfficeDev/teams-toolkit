@@ -82,6 +82,10 @@ export class Messages {
     `Failed to retrieve zip package from '${url}'. Retrying...`;
   static readonly FailedFetchTemplate =
     "Failed to retrieve latest template from GitHub. Using local template instead.";
+  static readonly FailedSaveEnv = (envPath: string) =>
+    `Failed to save environment variables to ${envPath}. Your App may not work.`;
+  static readonly FailedLoadEnv = (envPath: string) =>
+    `Failed to load environment variables from ${envPath}. Your App may not work.`;
 
   static readonly FailedOperationWithErrorCode = (doOperation: string, errorCode?: string) =>
     `Failed to '${doOperation}' with error code '${errorCode}'.`;

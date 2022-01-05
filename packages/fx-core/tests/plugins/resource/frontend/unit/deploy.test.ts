@@ -12,6 +12,7 @@ import { FrontendDeployment } from "../../../../../src/plugins/resource/frontend
 chai.use(chaiAsPromised);
 
 describe("FrontendDeploy", async () => {
+  const envName = "test";
   const today = new Date();
   const yesterday = new Date();
   const tomorrow = new Date();
@@ -36,7 +37,7 @@ describe("FrontendDeploy", async () => {
               ctime: yesterday,
               items: {
                 "deployment.json": mockfs.file({
-                  content: `{"lastBuildTime":"${yesterday.toISOString()}"}`,
+                  content: `{"${envName}": {"lastBuildTime":"${yesterday.toISOString()}"}}`,
                   ctime: yesterday,
                   mtime: yesterday,
                 }),
@@ -68,7 +69,7 @@ describe("FrontendDeploy", async () => {
         }),
       });
 
-      const result = await FrontendDeployment.needBuild("tabs");
+      const result = await FrontendDeployment.needBuild("tabs", envName);
       chai.assert.isTrue(result);
     });
 
@@ -83,7 +84,7 @@ describe("FrontendDeploy", async () => {
               ctime: yesterday,
               items: {
                 "deployment.json": mockfs.file({
-                  content: `{"lastBuildTime":"${today.toISOString()}"}`,
+                  content: `{"${envName}":{"lastBuildTime":"${today.toISOString()}"}}`,
                   ctime: yesterday,
                   mtime: yesterday,
                 }),
@@ -115,7 +116,7 @@ describe("FrontendDeploy", async () => {
         }),
       });
 
-      const result = await FrontendDeployment.needBuild("tabs");
+      const result = await FrontendDeployment.needBuild("tabs", envName);
       chai.assert.isFalse(result);
     });
   });
@@ -136,7 +137,7 @@ describe("FrontendDeploy", async () => {
               ctime: yesterday,
               items: {
                 "deployment.json": mockfs.file({
-                  content: `{"lastBuildTime":"${today.toISOString()}","lastDeployTime":"${yesterday.toISOString()}"}`,
+                  content: `{"${envName}":{"lastBuildTime":"${today.toISOString()}","lastDeployTime":"${yesterday.toISOString()}"}}`,
                   ctime: yesterday,
                   mtime: yesterday,
                 }),
@@ -145,7 +146,7 @@ describe("FrontendDeploy", async () => {
           },
         }),
       });
-      const result = await FrontendDeployment.needDeploy("tabs");
+      const result = await FrontendDeployment.needDeploy("tabs", envName);
       chai.assert.isTrue(result);
     });
 
@@ -160,7 +161,7 @@ describe("FrontendDeploy", async () => {
               ctime: today,
               items: {
                 "deployment.json": mockfs.file({
-                  content: `{"lastBuildTime":"${yesterday.toISOString()}","lastDeployTime":"${today.toISOString()}"}`,
+                  content: `{"${envName}":{"lastBuildTime":"${yesterday.toISOString()}","lastDeployTime":"${today.toISOString()}"}}`,
                   ctime: today,
                   mtime: today,
                 }),
@@ -169,7 +170,7 @@ describe("FrontendDeploy", async () => {
           },
         }),
       });
-      const result = await FrontendDeployment.needDeploy("tabs");
+      const result = await FrontendDeployment.needDeploy("tabs", envName);
       chai.assert.isFalse(result);
     });
   });

@@ -13,6 +13,9 @@ import { cpUtils } from "../../../../src/common/deps-checker/util/cpUtils";
 import { logger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
 import "mocha";
+import { isNonEmptyDir } from "../utils/common";
+import { testCsprojFileName, testOutputDirName } from "../utils/backendExtensionsInstaller";
+import { installExtension } from "../../../../src/common/deps-checker/util/extensionInstaller";
 
 const expect = chai.expect;
 const assert = chai.assert;
@@ -86,6 +89,17 @@ describe("All checkers E2E test", async () => {
       funcStartResult.cmdOutputIncludingStderr.includes("Unable to find project root"),
       `func start should return error message that contains "Unable to find project root", but actual output: "${funcStartResult.cmdOutputIncludingStderr}"`
     );
+
+    // verify backendExtension installer
+    chai.assert.isFalse(await isNonEmptyDir(backendOutputPath));
+    await installExtension(
+      backendProjectDir,
+      dotnet.command,
+      logger,
+      testCsprojFileName,
+      testOutputDirName
+    );
+    chai.assert.isTrue(await isNonEmptyDir(backendOutputPath));
   });
 
   it("None installed - Linux", async function () {
@@ -182,6 +196,17 @@ describe("All checkers E2E test", async () => {
 
     // verify ngrok
     await verifyNgrok(depsStatus[3]);
+
+    // verify backendExtension installer
+    chai.assert.isFalse(await isNonEmptyDir(backendOutputPath));
+    await installExtension(
+      backendProjectDir,
+      dotnet.command,
+      logger,
+      testCsprojFileName,
+      testOutputDirName
+    );
+    chai.assert.isTrue(await isNonEmptyDir(backendOutputPath));
   });
 
   it("Only Node installed - Not Linux", async function () {

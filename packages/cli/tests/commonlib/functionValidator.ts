@@ -271,7 +271,7 @@ export class FunctionValidator {
   ): Promise<string> {
     let m365ClientSecret: string;
     if (activeResourcePlugins.includes(PluginId.KeyVault)) {
-      m365ClientSecret = `@Microsoft.KeyVault(VaultName=${resourceBaseName};SecretName=m365ClientSecret`;
+      m365ClientSecret = `@Microsoft.KeyVault(VaultName=${resourceBaseName};SecretName=m365ClientSecret)`;
     } else {
       m365ClientSecret = await CliHelper.getUserSettings(
         `${PluginId.Aad}.${StateConfigKey.clientSecret}`,

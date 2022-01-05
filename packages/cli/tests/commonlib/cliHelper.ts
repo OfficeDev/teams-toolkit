@@ -132,7 +132,7 @@ export class CliHelper {
           `[Failed] ${message}. Failed to get value from cli result. result: ${result.stdout}`
         );
       } else {
-        value = arr[1] as string;
+        value = arr[1].trim() as string;
         console.log(`[Successfully] ${message} Value: ${value}`);
       }
     }

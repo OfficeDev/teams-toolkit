@@ -250,21 +250,33 @@ export async function addCapability(
   const toAddME = capabilitiesAnswer.includes(MessageExtensionItem.id);
   const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
   const inputsWithProjectPath = inputs as v2.InputsWithProjectPath;
-  const isTabAddable = !(await appStudioPlugin.capabilityExceedLimit(
+  const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
-    inputsWithProjectPath,
+    inputs as v2.InputsWithProjectPath,
     "staticTab"
-  ));
-  const isBotAddable = !(await appStudioPlugin.capabilityExceedLimit(
+  );
+  if (tabExceedRes.isErr()) {
+    return err(tabExceedRes.error);
+  }
+  const isTabAddable = !tabExceedRes.value;
+  const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
-    inputsWithProjectPath,
+    inputs as v2.InputsWithProjectPath,
     "Bot"
-  ));
-  const isMEAddable = !(await appStudioPlugin.capabilityExceedLimit(
+  );
+  if (botExceedRes.isErr()) {
+    return err(botExceedRes.error);
+  }
+  const isBotAddable = !botExceedRes.value;
+  const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
-    inputsWithProjectPath,
+    inputs as v2.InputsWithProjectPath,
     "MessageExtension"
-  ));
+  );
+  if (meExceedRes.isErr()) {
+    return err(meExceedRes.error);
+  }
+  const isMEAddable = !meExceedRes.value;
   if ((toAddTab && !isTabAddable) || (toAddBot && !isBotAddable) || (toAddME && !isMEAddable)) {
     const error = new UserError(
       SolutionError.FailedToAddCapability,
@@ -373,6 +385,12 @@ export async function addCapability(
         )
       );
     }
+  }
+  // 4. update manifest
+  if (capabilitiesToAddManifest.length > 0 || pluginsToScaffold.length > 0) {
+    await appStudioPlugin.addCapabilities(ctx, inputsWithProjectPath, capabilitiesToAddManifest);
+  }
+  if (capabilitiesAnswer.length > 0) {
     const addNames = capabilitiesAnswer.map((c) => `'${c}'`).join(" and ");
     const single = capabilitiesAnswer.length === 1;
     const template =
@@ -385,16 +403,11 @@ export async function addCapability(
         : getStrings().solution.addCapability.AddCapabilitiesNotice;
     const msg = util.format(template, addNames);
     ctx.userInteraction.showMessage("info", msg, false);
-
     ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.AddCapability, {
       [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
       [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
       [SolutionTelemetryProperty.Capabilities]: capabilitiesAnswer.join(";"),
     });
-  }
-  // 4. update manifest
-  if (capabilitiesToAddManifest.length > 0) {
-    await appStudioPlugin.addCapabilities(ctx, inputsWithProjectPath, capabilitiesToAddManifest);
   }
   return ok({
     solutionSettings: solutionSettings,

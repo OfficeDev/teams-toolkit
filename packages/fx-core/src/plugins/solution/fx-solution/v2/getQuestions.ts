@@ -387,21 +387,33 @@ export async function getQuestionsForAddCapability(
     return err(canProceed.error);
   }
   const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
-  const isTabAddable = !(await appStudioPlugin.capabilityExceedLimit(
+  const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
     "staticTab"
-  ));
-  const isBotAddable = !(await appStudioPlugin.capabilityExceedLimit(
+  );
+  if (tabExceedRes.isErr()) {
+    return err(tabExceedRes.error);
+  }
+  const isTabAddable = !tabExceedRes.value;
+  const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
     "Bot"
-  ));
-  const isMEAddable = !(await appStudioPlugin.capabilityExceedLimit(
+  );
+  if (botExceedRes.isErr()) {
+    return err(botExceedRes.error);
+  }
+  const isBotAddable = !botExceedRes.value;
+  const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
     "MessageExtension"
-  ));
+  );
+  if (meExceedRes.isErr()) {
+    return err(meExceedRes.error);
+  }
+  const isMEAddable = !meExceedRes.value;
   if (!(isTabAddable || isBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",

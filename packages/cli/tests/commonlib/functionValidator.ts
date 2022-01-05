@@ -55,7 +55,10 @@ export class FunctionValidator {
     this.functionAppName = getSiteNameFromResourceId(resourceId);
   }
 
-  public async validateScaffold(projectPath: string, programmingLanguage: string): Promise<void> {
+  public static async validateScaffold(
+    projectPath: string,
+    programmingLanguage: string
+  ): Promise<void> {
     const indexFile: { [key: string]: string } = {
       typescript: "index.ts",
       javascript: "index.js",

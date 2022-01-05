@@ -6,7 +6,6 @@
  */
 
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
-import { environmentManager } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import fs from "fs-extra";
 import path from "path";
@@ -192,7 +191,7 @@ describe("Multi Env Happy Path for Azure", function () {
 
       {
         // Validate update manifest
-        expect(result.stderr).to.be.empty;
+        chai.expect(result.stderr).to.be.empty;
       }
 
       // package

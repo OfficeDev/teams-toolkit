@@ -55,10 +55,6 @@ export class DotnetPluginImpl {
       DependentPluginInfo.resourceGroupName
     ) as string;
     this.config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
-    this.config.resourceNameSuffix = solutionConfig?.get(
-      DependentPluginInfo.resourceNameSuffix
-    ) as string;
-    this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
 
     this.config.webAppName = ctx.config.get(ConfigInfo.webAppName) as string;
     this.config.appServicePlanName = ctx.config.get(ConfigInfo.appServicePlanName) as string;

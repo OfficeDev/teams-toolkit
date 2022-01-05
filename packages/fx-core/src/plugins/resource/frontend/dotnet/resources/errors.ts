@@ -56,32 +56,6 @@ export class FetchConfigError extends DotnetPluginError {
   }
 }
 
-export class ProvisionError extends DotnetPluginError {
-  constructor(resource: string, innerErrorCode?: string) {
-    super(
-      ErrorType.User,
-      "ProvisionError",
-      `Failed to check/create '${resource}' for dotnet app${
-        innerErrorCode ? `: ${innerErrorCode}` : ""
-      }.`,
-      [tips.reProvision]
-    );
-  }
-}
-
-export class ConfigureWebAppError extends DotnetPluginError {
-  constructor(innerErrorCode?: string) {
-    super(
-      ErrorType.User,
-      "ConfigureWebAppError",
-      `Failed to retrieve or update Azure Web App Settings${
-        innerErrorCode ? `: ${innerErrorCode}` : ""
-      }.`,
-      [tips.reProvision]
-    );
-  }
-}
-
 export class ProjectPathError extends DotnetPluginError {
   constructor(projectFilePath: string) {
     super(ErrorType.User, "ProjectPathError", `Failed to find target project ${projectFilePath}.`, [

@@ -12,9 +12,16 @@ export async function openUrl(url: string): Promise<void> {
   await commands.executeCommand("vscode.open", Uri.parse(url));
 }
 
-export function checkerEnabled(key: string): boolean {
-  const configuration: WorkspaceConfiguration = workspace.getConfiguration(configurationPrefix);
-  return configuration.get<boolean>(key, false);
+export function isDotnetCheckerEnabled(): boolean {
+  return checkerEnabled("validateDotnetSdk");
+}
+
+export function isFuncCoreToolsEnabled(): boolean {
+  return checkerEnabled("validateFuncCoreTools");
+}
+
+export function isNodeCheckerEnabled(): boolean {
+  return checkerEnabled("validateNode");
 }
 
 export async function hasFunction(): Promise<boolean> {
@@ -27,4 +34,9 @@ export async function hasBot(): Promise<boolean> {
 
 export async function hasNgrok(): Promise<boolean> {
   return !(await getSkipNgrokConfig());
+}
+
+export function checkerEnabled(key: string): boolean {
+  const configuration: WorkspaceConfiguration = workspace.getConfiguration(configurationPrefix);
+  return configuration.get<boolean>(key, false);
 }

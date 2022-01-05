@@ -3,14 +3,11 @@
 
 import * as chai from "chai";
 import * as sinon from "sinon";
-import * as path from "path";
 import {
   DepsTelemetry,
   DepsCheckerEvent,
   DepsLogger,
-  DepsManager,
   DepsType,
-  DependencyStatus,
   DepsCheckerError,
   defaultHelpLink,
 } from "@microsoft/teamsfx-core";
@@ -31,7 +28,6 @@ mock("../../../src/debug/depsChecker/vscodeUtils", {
 import * as vscodeUtils from "../../../src/debug/depsChecker/vscodeUtils";
 import { VSCodeDepsChecker } from "../../../src/debug/depsChecker/vscodeChecker";
 import { MessageItem } from "vscode";
-import dot = Mocha.reporters.dot;
 
 suite("[Checker UT - Extension]", () => {
   const logger: DepsLogger = <DepsLogger>{};

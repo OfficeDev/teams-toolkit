@@ -11,22 +11,22 @@ import {
   Messages,
   DepsCheckerEvent,
   defaultHelpLink,
+  installExtension,
 } from "@microsoft/teamsfx-core";
 import * as os from "os";
 import {
   openUrl,
   showWarningMessage,
-  checkerEnabled,
   hasFunction,
   hasNgrok,
   hasBot,
+  isDotnetCheckerEnabled,
+  isFuncCoreToolsEnabled,
+  isNodeCheckerEnabled,
 } from "./vscodeUtils";
 
 export class VSCodeDepsChecker {
   private static learnMoreButtonText = "Learn more";
-  private static validateDotnetSdkKey = "validateDotnetSdk";
-  private static validateFuncCoreToolsKey = "validateFuncCoreTools";
-  private static validateNodeVersionKey = "validateNode";
 
   private readonly depsManager: DepsManager;
 
@@ -111,7 +111,7 @@ export class VSCodeDepsChecker {
     return Messages.linuxDepsNotFound.split("@SupportedPackages").join(supportedMessage);
   }
 
-  private async display(message: string, link: string): Promise<void> {
+  public async display(message: string, link: string): Promise<void> {
     const clickButton = await showWarningMessage(message, {
       title: VSCodeDepsChecker.learnMoreButtonText,
     });
@@ -129,13 +129,13 @@ export class VSCodeDepsChecker {
     switch (dep) {
       case DepsType.AzureNode:
       case DepsType.SpfxNode:
-        return checkerEnabled(VSCodeDepsChecker.validateNodeVersionKey);
+        return isNodeCheckerEnabled();
       case DepsType.FunctionNode:
-        return checkerEnabled(VSCodeDepsChecker.validateNodeVersionKey) && (await hasFunction());
+        return isNodeCheckerEnabled() && (await hasFunction());
       case DepsType.Dotnet:
-        return checkerEnabled(VSCodeDepsChecker.validateDotnetSdkKey);
+        return isDotnetCheckerEnabled();
       case DepsType.FuncCoreTools:
-        return checkerEnabled(VSCodeDepsChecker.validateFuncCoreToolsKey) && (await hasFunction());
+        return isFuncCoreToolsEnabled() && (await hasFunction());
       case DepsType.Ngrok:
         return (await hasBot()) && (await hasNgrok());
       default:

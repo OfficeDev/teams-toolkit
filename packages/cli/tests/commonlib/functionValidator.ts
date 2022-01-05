@@ -43,12 +43,13 @@ enum SQLConfig {
 }
 
 export class FunctionValidator {
-  private subscriptionId: string;
-  private rg: string;
   private ctx: any;
-  private functionAppName: string;
   private projectPath: string;
   private env: string;
+
+  private subscriptionId = "";
+  private rg = "";
+  private functionAppName = "";
 
   constructor(ctx: any, projectPath: string, env: string) {
     this.ctx = ctx;

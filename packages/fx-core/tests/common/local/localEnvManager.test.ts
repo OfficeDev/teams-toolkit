@@ -170,7 +170,7 @@ describe("LocalEnvManager", () => {
         "fx-resource-aad-app-for-teams",
         "fx-resource-simple-auth",
       ],
-      depsTypes: [DepsType.AzureNode, DepsType.Dotnet],
+      depsTypes: [DepsType.Dotnet],
     },
     {
       message: "tab + function",
@@ -180,17 +180,12 @@ describe("LocalEnvManager", () => {
         "fx-resource-simple-auth",
         "fx-resource-function",
       ],
-      depsTypes: [
-        DepsType.AzureNode,
-        DepsType.Dotnet,
-        DepsType.FuncCoreTools,
-        DepsType.FunctionNode,
-      ],
+      depsTypes: [DepsType.Dotnet, DepsType.FuncCoreTools],
     },
     {
       message: "bot",
       activeResourcePlugins: ["fx-resource-bot", "fx-resource-aad-app-for-teams"],
-      depsTypes: [DepsType.AzureNode, DepsType.Ngrok],
+      depsTypes: [DepsType.Ngrok],
     },
     {
       message: "tab + bot",
@@ -200,12 +195,12 @@ describe("LocalEnvManager", () => {
         "fx-resource-simple-auth",
         "fx-resource-bot",
       ],
-      depsTypes: [DepsType.AzureNode, DepsType.Dotnet, DepsType.Ngrok],
+      depsTypes: [DepsType.Dotnet, DepsType.Ngrok],
     },
     {
       message: "spfx",
       activeResourcePlugins: ["fx-resource-spfx"],
-      depsTypes: [DepsType.AzureNode, DepsType.SpfxNode],
+      depsTypes: [],
     },
   ];
 
@@ -261,9 +256,6 @@ describe("LocalEnvManager", () => {
 });
 
 const checkerMapping = [
-  { checker: FunctionNodeChecker, type: DepsType.FunctionNode },
-  { checker: AzureNodeChecker, type: DepsType.AzureNode },
-  { checker: SPFxNodeChecker, type: DepsType.SpfxNode },
   { checker: DotnetChecker, type: DepsType.Dotnet },
   { checker: NgrokChecker, type: DepsType.Ngrok },
   { checker: FuncToolChecker, type: DepsType.FuncCoreTools },

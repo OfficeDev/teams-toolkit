@@ -137,22 +137,16 @@ export class LocalEnvManager {
   private getValidDeps(projectSettings: ProjectSettings): DepsType[] {
     const depsTypes: DepsType[] = [];
 
-    depsTypes.push(DepsType.AzureNode);
     if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
       depsTypes.push(DepsType.Dotnet);
     }
 
     if (ProjectSettingsHelper.includeBackend(projectSettings)) {
-      depsTypes.push(DepsType.FunctionNode);
       depsTypes.push(DepsType.FuncCoreTools);
     }
 
     if (ProjectSettingsHelper.includeBot(projectSettings)) {
       depsTypes.push(DepsType.Ngrok);
-    }
-
-    if (ProjectSettingsHelper.isSpfx(projectSettings)) {
-      depsTypes.push(DepsType.SpfxNode);
     }
 
     return depsTypes;

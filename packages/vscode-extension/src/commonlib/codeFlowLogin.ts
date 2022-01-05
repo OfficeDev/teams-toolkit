@@ -14,7 +14,7 @@ import { UserError, returnUserError } from "@microsoft/teamsfx-api";
 import VsCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
-import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
+import { clearCache, loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import * as stringUtil from "util";
 import * as StringResources from "../resources/Strings.json";
 import { loggedIn, loggedOut, loggingIn } from "./common/constant";
@@ -211,6 +211,7 @@ export class CodeFlowLogin {
       }
 
       await saveAccountId(this.accountName, undefined);
+      await clearCache(this.accountName);
       this.account = undefined;
       this.status = loggedOut;
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.SignOut, {

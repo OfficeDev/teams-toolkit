@@ -123,7 +123,7 @@ describe("Multi Env Happy Path for Azure", function () {
         chai.assert.isArray(activeResourcePlugins);
         const resourceBaseName: string = await getProvisionParameterValueByKey(
           projectPath,
-          environmentManager.getDefaultEnvName(),
+          env,
           provisionParametersKey.resourceBaseName
         );
 

@@ -22,6 +22,15 @@ import { getPortsInUse } from "./portChecker";
 import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
+import {
+  DependencyInstallStatus,
+  DependencyStatus,
+  DepsManager,
+} from "../deps-checker/depsManager";
+import { DepsLoggerAdapter } from "../deps-checker/depsLogger";
+import { DepsTelemetryAdapter } from "../deps-checker/depsTelemetry";
+import { DepsType } from "../deps-checker/depsChecker";
+import { ProjectSettingsHelper } from "./projectSettingsHelper";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
@@ -30,6 +39,25 @@ export class LocalEnvManager {
   constructor(logger?: LogProvider, telemetry?: TelemetryReporter) {
     this.logger = logger;
     this.telemetry = telemetry;
+  }
+
+  public async checkDependencies(
+    projectSettings: ProjectSettings
+  ): Promise<DependencyInstallStatus[]> {
+    const depsLogger = new DepsLoggerAdapter(this.logger);
+    const depsTelemetry = new DepsTelemetryAdapter(this.telemetry);
+    const depsManager = new DepsManager(depsLogger, depsTelemetry);
+    return await depsManager.checkDependencies(this.getValidDeps(projectSettings));
+  }
+
+  public async checkAndResolveDependencies(
+    projectSettings: ProjectSettings
+  ): Promise<DependencyStatus[]> {
+    const depsLogger = new DepsLoggerAdapter(this.logger);
+    const depsTelemetry = new DepsTelemetryAdapter(this.telemetry);
+    const depsManager = new DepsManager(depsLogger, depsTelemetry);
+
+    return await depsManager.ensureDependencies(this.getValidDeps(projectSettings), {});
   }
 
   public async getLocalDebugEnvs(
@@ -104,5 +132,29 @@ export class LocalEnvManager {
       }
     }
     throw error;
+  }
+
+  private getValidDeps(projectSettings: ProjectSettings): DepsType[] {
+    const depsTypes: DepsType[] = [];
+
+    depsTypes.push(DepsType.AzureNode);
+    if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
+      depsTypes.push(DepsType.Dotnet);
+    }
+
+    if (ProjectSettingsHelper.includeBackend(projectSettings)) {
+      depsTypes.push(DepsType.FunctionNode);
+      depsTypes.push(DepsType.FuncCoreTools);
+    }
+
+    if (ProjectSettingsHelper.includeBot(projectSettings)) {
+      depsTypes.push(DepsType.Ngrok);
+    }
+
+    if (ProjectSettingsHelper.isSpfx(projectSettings)) {
+      depsTypes.push(DepsType.SpfxNode);
+    }
+
+    return depsTypes;
   }
 }

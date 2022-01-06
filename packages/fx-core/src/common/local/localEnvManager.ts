@@ -22,15 +22,11 @@ import { getPortsInUse } from "./portChecker";
 import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
-import {
-  DependencyInstallStatus,
-  DependencyStatus,
-  DepsManager,
-} from "../deps-checker/depsManager";
-import { DepsLoggerAdapter } from "../deps-checker/depsLogger";
-import { DepsTelemetryAdapter } from "../deps-checker/depsTelemetry";
+import { DependencyStatus, DepsManager } from "../deps-checker/depsManager";
 import { DepsType } from "../deps-checker/depsChecker";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
+import { CheckerFactory } from "../deps-checker/checkerFactory";
+import { DepsLoggerAdapter, DepsTelemetryAdapter } from "./depsAdapter";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
@@ -41,13 +37,26 @@ export class LocalEnvManager {
     this.telemetry = telemetry;
   }
 
-  public async checkDependencies(
-    projectSettings: ProjectSettings
-  ): Promise<DependencyInstallStatus[]> {
+  public async checkDependencies(projectSettings: ProjectSettings): Promise<
+    {
+      type: DepsType;
+      isInstalled: boolean;
+    }[]
+  > {
     const depsLogger = new DepsLoggerAdapter(this.logger);
     const depsTelemetry = new DepsTelemetryAdapter(this.telemetry);
-    const depsManager = new DepsManager(depsLogger, depsTelemetry);
-    return await depsManager.checkDependencies(this.getValidDeps(projectSettings));
+
+    const dependencies = this.getValidDeps(projectSettings);
+    const result = [];
+    for (const type of dependencies) {
+      const checker = CheckerFactory.createChecker(type, depsLogger, depsTelemetry);
+      const status = {
+        type: type,
+        isInstalled: await checker.isInstalled(),
+      };
+      result.push(status);
+    }
+    return result;
   }
 
   public async checkAndResolveDependencies(

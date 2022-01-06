@@ -12,11 +12,6 @@ import * as path from "path";
 import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
 import { DepsInfo, DepsType } from "../../../src/common/deps-checker/depsChecker";
 import sinon from "sinon";
-import {
-  AzureNodeChecker,
-  FunctionNodeChecker,
-  SPFxNodeChecker,
-} from "../../../src/common/deps-checker/internal/nodeChecker";
 import { DotnetChecker } from "../../../src/common/deps-checker/internal/dotnetChecker";
 import { NgrokChecker } from "../../../src/common/deps-checker/internal/ngrokChecker";
 import { FuncToolChecker } from "../../../src/common/deps-checker/internal/funcToolChecker";

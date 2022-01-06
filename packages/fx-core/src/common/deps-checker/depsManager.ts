@@ -11,11 +11,6 @@ export type DepsOptions = {
   fastFail?: boolean;
 };
 
-export type DependencyInstallStatus = {
-  type: DepsType;
-  isInstalled: boolean;
-};
-
 export type DependencyStatus = {
   name: string;
   type: DepsType;
@@ -52,22 +47,6 @@ export class DepsManager {
 
     this._logger = logger;
     this._telemetry = telemetry;
-  }
-
-  /**
-   * Check dependencies are installed or not.
-   * @param dependencies Dependency types. If it is empty, do nothing.
-   */
-  public async checkDependencies(dependencies: DepsType[]): Promise<DependencyInstallStatus[]> {
-    if (!dependencies || dependencies.length == 0) {
-      return [];
-    }
-    const result: DependencyInstallStatus[] = [];
-    for (const type of dependencies) {
-      const status: DependencyInstallStatus = await this.isInstalled(type);
-      result.push(status);
-    }
-    return result;
   }
 
   /**
@@ -126,14 +105,6 @@ export class DepsManager {
         binFolder: binFolder,
       },
       error: error,
-    };
-  }
-
-  private async isInstalled(type: DepsType): Promise<DependencyInstallStatus> {
-    const checker: DepsChecker = CheckerFactory.createChecker(type, this._logger, this._telemetry);
-    return {
-      type: type,
-      isInstalled: await checker.isInstalled(),
     };
   }
 

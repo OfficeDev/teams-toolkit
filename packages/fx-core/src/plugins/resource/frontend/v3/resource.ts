@@ -45,7 +45,7 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
   name = BuiltInResourcePluginNames.storage;
   async generateResourceTemplate(
     ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
+    inputs: v2.InputsWithProjectPath & { existingResources: string[] }
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
     ctx.logProvider.info(Messages.StartGenerateArmTemplates(this.name));
     const solutionSettings = ctx.projectSetting.solutionSettings as TeamsFxSolutionSettings;
@@ -77,7 +77,7 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
 
   public async updateResourceTemplate(
     ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
+    inputs: v2.InputsWithProjectPath & { existingResources: string[] }
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
     ctx.logProvider.info(Messages.StartUpdateArmTemplates(this.name));
     const result: ArmTemplateResult = {

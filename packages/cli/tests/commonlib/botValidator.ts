@@ -13,7 +13,7 @@ import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getWebappServicePlan,
-  getWebappConfigs,
+  getWebappSettings,
 } from "./utilities";
 
 const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
@@ -159,7 +159,7 @@ export class BotValidator {
     const token = (await tokenCredential?.getToken())?.accessToken;
 
     console.log("Validating app settings.");
-    const response = await getWebappConfigs(
+    const response = await getWebappSettings(
       this.subscriptionId,
       this.rg,
       botObject.siteName,

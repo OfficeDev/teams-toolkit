@@ -39,10 +39,8 @@ describe("Provision", function () {
       timeout: 0,
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
 
-    if (isMultiEnvEnabled()) {
-      setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    }
     // provision
     await execAsyncWithRetry(`teamsfx provision --subscription ${subscription}`, {
       cwd: projectPath,

@@ -165,7 +165,7 @@ export class TaskDefinition {
   static ngrokStart(
     workspaceFolder: string,
     skipNgrok: boolean,
-    ngrokBinFolder: string[] | undefined
+    ngrokBinFolders: string[] | undefined
   ): ITaskDefinition {
     return {
       name: "ngrok start",

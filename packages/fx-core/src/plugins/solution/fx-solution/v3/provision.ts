@@ -95,7 +95,7 @@ export async function provisionResources(
   const solutionConfigRes = await fillInAzureSolutionConfigs(
     ctx,
     inputs,
-    envInfo as v3.TeamsFxAzureEnvInfo,
+    envInfo as v3.EnvInfoV3,
     tokenProvider
   );
   if (solutionConfigRes.isErr()) {
@@ -105,14 +105,14 @@ export async function provisionResources(
   const consentResult = await askForProvisionConsent(
     ctx,
     tokenProvider.azureAccountProvider,
-    envInfo as v3.TeamsFxAzureEnvInfo
+    envInfo as v3.EnvInfoV3
   );
   if (consentResult.isErr()) {
     return err(consentResult.error);
   }
 
   // create resource group if needed
-  const solutionConfig = (envInfo as v3.TeamsFxAzureEnvInfo).state.solution;
+  const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
   if (solutionConfig.needCreateResourceGroup) {
     const createRgRes = await createNewResourceGroup(
       tokenProvider.azureAccountProvider,
@@ -240,7 +240,7 @@ export async function provisionResources(
  */
 export async function checkAzureSubscription(
   ctx: v2.Context,
-  envInfo: v3.TeamsFxAzureEnvInfo,
+  envInfo: v3.EnvInfoV3,
   azureAccountProvider: AzureAccountProvider
 ): Promise<Result<Void, FxError>> {
   const state = envInfo.state;
@@ -295,7 +295,7 @@ export async function checkAzureSubscription(
 async function fillInAzureSolutionConfigs(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
-  envInfo: v3.TeamsFxAzureEnvInfo,
+  envInfo: v3.EnvInfoV3,
   tokenProvider: TokenProvider
 ): Promise<Result<Void, FxError>> {
   //1. check subscriptionId
@@ -449,7 +449,7 @@ async function fillInAzureSolutionConfigs(
 export async function askForProvisionConsent(
   ctx: v2.Context,
   azureAccountProvider: AzureAccountProvider,
-  envInfo: v3.TeamsFxAzureEnvInfo
+  envInfo: v3.EnvInfoV3
 ): Promise<Result<Void, FxError>> {
   const azureToken = await azureAccountProvider.getAccountCredentialAsync();
 

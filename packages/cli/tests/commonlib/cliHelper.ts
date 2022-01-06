@@ -65,10 +65,11 @@ export class CliHelper {
   static async createProjectWithCapability(
     appName: string,
     testFolder: string,
-    capability: Capability
+    capability: Capability,
+    options = ""
   ) {
     const result = await execAsync(
-      `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} `,
+      `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`,
       {
         cwd: testFolder,
         env: process.env,
@@ -133,7 +134,7 @@ export class CliHelper {
         );
       } else {
         value = arr[1].trim() as string;
-        console.log(`[Successfully] ${message} Value: ${value}`);
+        console.log(`[Successfully] ${message}.`);
       }
     }
     return value;

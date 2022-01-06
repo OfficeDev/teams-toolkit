@@ -101,6 +101,9 @@ describe("Add capability", () => {
     if (loadedManifestTemplate.isOk()) {
       chai.assert.equal(loadedManifestTemplate.value.local.staticTabs!.length, 2);
       chai.assert.equal(loadedManifestTemplate.value.remote.staticTabs!.length, 2);
+
+      chai.assert.equal(loadedManifestTemplate.value.local.staticTabs![1].entityId, "index1");
+      chai.assert.equal(loadedManifestTemplate.value.remote.staticTabs![1].entityId, "index1");
     }
   });
 });

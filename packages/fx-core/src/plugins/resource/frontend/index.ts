@@ -29,6 +29,7 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { isArmSupportEnabled, isVsCallingCli } from "../../..";
 import "./v2";
+import "./v3";
 import { BlazorPluginImpl } from "./blazor/plugin";
 import { BlazorPluginInfo } from "./blazor/constants";
 

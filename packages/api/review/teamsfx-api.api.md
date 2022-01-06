@@ -52,6 +52,9 @@ interface APIM extends AzureResource {
 }
 
 // @public (undocumented)
+export type AppManifest = Json;
+
+// @public (undocumented)
 export const AppPackageFolderName = "appPackage";
 
 // @public
@@ -1720,7 +1723,7 @@ export interface TaskGroupConfig {
 }
 
 // @public
-export class TeamsAppManifest {
+export class TeamsAppManifest implements AppManifest {
     // (undocumented)
     $schema?: string;
     accentColor: string;

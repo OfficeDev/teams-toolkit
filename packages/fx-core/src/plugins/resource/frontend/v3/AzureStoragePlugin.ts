@@ -14,12 +14,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import { Service } from "typedi";
-import {
-  AADApp,
-  AzureFunction,
-  SimpleAuth,
-  TeamsFxSolutionSettings,
-} from "../../../../../../api/build/v3";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import { Bicep } from "../../../../common/constants";
 import {
@@ -48,7 +42,7 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     inputs: v2.InputsWithProjectPath & { existingResources: string[] }
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
     ctx.logProvider.info(Messages.StartGenerateArmTemplates(this.name));
-    const solutionSettings = ctx.projectSetting.solutionSettings as TeamsFxSolutionSettings;
+    const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
     const pluginCtx = { plugins: solutionSettings.activeResourcePlugins };
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
@@ -97,12 +91,11 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     if (!credentials) {
       return err(new UnauthenticatedError());
     }
-    const envInfoV3 = envInfo as v3.TeamsFxAzureEnvInfo;
-    const storage = envInfoV3.state[this.name];
+    const storage = envInfo.state[this.name] as v3.AzureStorage;
     const frontendConfig = new FrontendConfig(
       getSubscriptionIdFromResourceId(storage.storageResourceId),
       getResourceGroupNameFromResourceId(storage.storageResourceId),
-      envInfoV3.state.solution.location,
+      (envInfo.state.solution as v3.AzureSolutionConfig).location,
       getStorageAccountNameFromResourceId(storage.storageResourceId),
       credentials
     );
@@ -202,21 +195,21 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
       }
     };
 
-    const solutionSettings = ctx.projectSetting.solutionSettings as TeamsFxSolutionSettings;
+    const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
     if (solutionSettings.activeResourcePlugins.includes(BuiltInResourcePluginNames.function)) {
-      const functionState = envInfo.state[BuiltInResourcePluginNames.function] as AzureFunction;
+      const functionState = envInfo.state[BuiltInResourcePluginNames.function] as v3.AzureFunction;
       addToEnvs(EnvKeys.FuncName, ctx.projectSetting.defaultFunctionName);
       addToEnvs(EnvKeys.FuncEndpoint, functionState.functionEndpoint);
     }
 
     if (solutionSettings.activeResourcePlugins.includes(BuiltInResourcePluginNames.simpleAuth)) {
-      const simpleAuthState = envInfo.state[BuiltInResourcePluginNames.simpleAuth] as SimpleAuth;
+      const simpleAuthState = envInfo.state[BuiltInResourcePluginNames.simpleAuth] as v3.SimpleAuth;
       addToEnvs(EnvKeys.RuntimeEndpoint, simpleAuthState.endpoint);
       addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
 
     if (solutionSettings.activeResourcePlugins.includes(BuiltInResourcePluginNames.aad)) {
-      const aadState = envInfo.state[BuiltInResourcePluginNames.aad] as AADApp;
+      const aadState = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
       addToEnvs(EnvKeys.ClientID, aadState.clientId);
     }
     return envs;

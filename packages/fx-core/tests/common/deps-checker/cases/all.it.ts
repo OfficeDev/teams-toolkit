@@ -297,7 +297,7 @@ async function verifyNgrok(ngrok: DependencyStatus) {
     logger,
     {
       shell: true,
-      env: { PATH: ngrok.details.binFolders[0] },
+      env: { PATH: ngrok.details.binFolders?.[0] },
     },
     "ngrok version"
   );

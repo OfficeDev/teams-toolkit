@@ -291,13 +291,13 @@ async function verifyFuncInstall(funcTool: DependencyStatus) {
 async function verifyNgrok(ngrok: DependencyStatus) {
   assert.equal(ngrok.type, DepsType.Ngrok);
   assert.isTrue(ngrok.isInstalled);
-  assert.isNotNull(ngrok.details.binFolder);
+  assert.isNotNull(ngrok.details.binFolders);
   const ngrokVersionResult: cpUtils.ICommandResult = await cpUtils.tryExecuteCommand(
     undefined,
     logger,
     {
       shell: true,
-      env: { PATH: ngrok.details.binFolder },
+      env: { PATH: ngrok.details.binFolders[0] },
     },
     "ngrok version"
   );

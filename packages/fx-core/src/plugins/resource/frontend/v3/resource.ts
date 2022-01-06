@@ -5,37 +5,22 @@ import {
   AzureAccountProvider,
   err,
   FxError,
-  Inputs,
   ok,
-  OptionItem,
-  QTreeNode,
   Result,
   TokenProvider,
-  UserError,
   v2,
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { cloneDeep } from "lodash";
-import { Container, Service } from "typedi";
+import * as path from "path";
+import { Service } from "typedi";
 import {
   AADApp,
   AzureFunction,
   SimpleAuth,
-  TeamsFxAzureEnvInfo,
   TeamsFxSolutionSettings,
 } from "../../../../../../api/build/v3";
-import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
-import { TeamsFxAzureSolution } from "../../../solution/fx-solution/v3/solution";
-import { Messages } from "../resources/messages";
-import * as path from "path";
-import { getTemplatesFolder } from "../../../../folder";
-import {
-  DependentPluginInfo,
-  FrontendOutputBicepSnippet,
-  FrontendPathInfo,
-  FrontendPluginInfo,
-} from "../constants";
+import { ArmTemplateResult } from "../../../../common/armInterface";
 import { Bicep } from "../../../../common/constants";
 import {
   generateBicepFromFile,
@@ -43,20 +28,16 @@ import {
   getStorageAccountNameFromResourceId,
   getSubscriptionIdFromResourceId,
 } from "../../../../common/tools";
-import { ArmTemplateResult } from "../../../../common/armInterface";
-import { DeploySteps, PostProvisionSteps } from "../utils/progress-helper";
+import { getTemplatesFolder } from "../../../../folder";
+import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { AzureStorageClient } from "../clients";
 import { FrontendConfig } from "../configs";
-import {
-  EnableStaticWebsiteError,
-  runWithErrorCatchAndThrow,
-  tips,
-  UnauthenticatedError,
-} from "../resources/errors";
-import { AzureStorageState } from "@azure/arm-appservice/esm/models";
+import { DependentPluginInfo, FrontendOutputBicepSnippet, FrontendPathInfo } from "../constants";
 import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "../env";
-import { AzureResourceFunction } from "../../../solution/fx-solution/question";
 import { FrontendDeployment } from "../ops/deploy";
+import { Messages } from "../resources/messages";
+import { DeploySteps, PostProvisionSteps } from "../utils/progress-helper";
+import { EnableStaticWebsiteError, UnauthenticatedError } from "./error";
 @Service(BuiltInResourcePluginNames.storage)
 export class AzureStoragePlugin implements v3.ResourcePlugin {
   resourceType = "Azure Storage";
@@ -114,13 +95,7 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
   ): Promise<Result<FrontendConfig, FxError>> {
     const credentials = await tokenProvider.getAccountCredentialAsync();
     if (!credentials) {
-      return err(
-        new UserError(
-          "UnauthenticatedError",
-          `Failed to get user login information. Suggestions: ${tips.doLogin}`,
-          FrontendPluginInfo.ShortName
-        )
-      );
+      return err(new UnauthenticatedError());
     }
     const envInfoV3 = envInfo as v3.TeamsFxAzureEnvInfo;
     const storage = envInfoV3.state[this.name];
@@ -157,21 +132,10 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     try {
       await client.enableStaticWebsite();
     } catch (e) {
-      return err(
-        new UserError(
-          "EnableStaticWebsiteError",
-          `Failed to enable static website feature for Azure Storage Account. Suggestions: ${[
-            tips.checkSystemTime,
-            tips.checkStoragePermissions,
-          ].join(" ")}`,
-          FrontendPluginInfo.ShortName,
-          undefined,
-          FrontendPluginInfo.HelpLink
-        )
-      );
+      return err(new EnableStaticWebsiteError());
     }
-    await progress.end(true);
     await this.updateDotEnv(ctx, inputs, envInfo);
+    await progress.end(true);
     ctx.logProvider.info(Messages.EndPostProvision(this.name));
     return ok(Void);
   }
@@ -202,8 +166,8 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
 
     const envs = await loadEnvFile(envFilePath(envName, componentPath));
 
-    await FrontendDeployment.doFrontendBuild(componentPath, envs, envName);
-    await FrontendDeployment.doFrontendDeployment(client, componentPath, envName);
+    await FrontendDeployment.doFrontendBuildV3(componentPath, envs, envName, progress);
+    await FrontendDeployment.doFrontendDeploymentV3(client, componentPath, envName);
 
     await progress.end(true);
     ctx.logProvider.info(Messages.EndDeploy(this.name));

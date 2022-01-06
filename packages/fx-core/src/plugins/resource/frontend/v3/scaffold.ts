@@ -12,7 +12,10 @@ import {
   ScaffoldContext,
   scaffoldFromTemplates,
 } from "../../../../common/templatesActions";
-import { BuiltInScaffoldPluginNames } from "../../../solution/fx-solution/v3/constants";
+import {
+  BuiltInResourcePluginNames,
+  BuiltInScaffoldPluginNames,
+} from "../../../solution/fx-solution/v3/constants";
 import { getModule } from "../../../solution/fx-solution/v3/utils";
 import { Constants, FrontendPathInfo } from "../constants";
 import {
@@ -47,6 +50,7 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
     ctx: v3.ContextWithManifest,
     inputs: v3.PluginScaffoldInputs
   ): Promise<Result<Json | undefined, FxError>> {
+    const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
     ctx.logProvider.info(Messages.StartScaffold(this.name));
     const progress = ctx.userInteraction.createProgressBar(
       Messages.ScaffoldProgressTitle,
@@ -57,7 +61,12 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
     const template = inputs.template;
     const language = template === "ReactTab_TS" ? "ts" : "js";
     const componentPath = path.join(inputs.projectPath, FrontendPathInfo.WorkingDir);
-    const variables = { showFunction: "false" };
+    const hasFunction = solutionSettings.activeResourcePlugins.includes(
+      BuiltInResourcePluginNames.function
+    );
+    const variables = {
+      showFunction: hasFunction.toString(),
+    };
     await scaffoldFromTemplates({
       group: TemplateInfo.TemplateGroupName,
       lang: language,
@@ -90,7 +99,6 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
     });
     await progress.end(true);
     ctx.logProvider.info(Messages.EndScaffold(this.name));
-    const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
     const module = getModule(solutionSettings, inputs.module);
     if (module) {
       module.dir = FrontendPathInfo.WorkingDir;

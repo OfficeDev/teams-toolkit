@@ -112,13 +112,13 @@ export class Utils {
   public static parseRedirectUriMessage(redirectUris: IAADDefinition): string {
     let message = "";
     if (redirectUris.web && redirectUris.web.redirectUris) {
-      message += `Platform: Web, RedirectUri: ${redirectUris.web.redirectUris.join(",")};`;
+      message += `Platform: Web, RedirectUri: ${redirectUris.web.redirectUris.join(",")}; `;
     }
 
     if (redirectUris.spa && redirectUris.spa.redirectUris) {
       message += `Platform: Single Page Application, RedirectUri: ${redirectUris.spa.redirectUris.join(
         ","
-      )};`;
+      )}; `;
     }
 
     return message;

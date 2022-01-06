@@ -29,7 +29,7 @@ describe("teamsfx deploy frontend-hosting", function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 
     // Provision
-    setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 

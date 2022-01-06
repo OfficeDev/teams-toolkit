@@ -18,45 +18,13 @@ import fs from "fs-extra";
 import * as path from "path";
 import { Container, Service } from "typedi";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
+import { InvalidInputError } from "../../utils/error";
+import {
+  createSelectModuleQuestionNode,
+  selectScaffoldTemplateQuestion,
+} from "../../utils/questions";
 import { BuiltInResourcePluginNames, BuiltInScaffoldPluginNames } from "./constants";
-import { InvalidInputError } from "./error";
-import { createSelectModuleQuestionNode, selectScaffoldTemplateQuestion } from "./questions";
 import { getModule } from "./utils";
-@Service(BuiltInScaffoldPluginNames.tab)
-export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
-  async getTemplates(
-    ctx: v2.Context,
-    inputs: Inputs
-  ): Promise<Result<v3.ScaffoldTemplate[], FxError>> {
-    return ok([
-      {
-        name: "ReactTab_JS",
-        language: "javascript",
-        description: "ReactTab Javascript",
-      },
-      {
-        name: "ReactTab_TS",
-        language: "typescript",
-        description: "ReactTab Typescript",
-      },
-    ]);
-  }
-  async scaffold(
-    ctx: v3.ContextWithManifest,
-    inputs: v3.PluginScaffoldInputs
-  ): Promise<Result<Json | undefined, FxError>> {
-    ctx.logProvider.info("fx-scaffold-react-tab:scaffold");
-    if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "tabs"));
-    const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-    const module = getModule(solutionSettings, inputs.module);
-    if (module) {
-      module.dir = "tabs";
-      module.deployType = "folder";
-    }
-    return ok(undefined);
-  }
-  name = BuiltInScaffoldPluginNames.tab;
-}
 
 @Service(BuiltInScaffoldPluginNames.bot)
 export class BotScaffoldPlugin implements v3.ScaffoldPlugin {
@@ -250,7 +218,7 @@ export async function scaffold(
 
   // read manifest
   const appStudio = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
-  const manifestRes = await appStudio.readManifest(ctx, inputs);
+  const manifestRes = await appStudio.loadManifest(ctx, inputs);
   if (manifestRes.isErr()) {
     return err(manifestRes.error);
   }
@@ -268,13 +236,9 @@ export async function scaffold(
   }
 
   // write manifest
-  const writeRes = await appStudio.writeManifest(ctx, inputs, manifest);
+  const writeRes = await appStudio.SaveManifest(ctx, inputs, manifest);
   if (writeRes.isErr()) {
     return err(writeRes.error);
   }
-
-  //TODO
-  // const appstudioPlugin = Container.get<v3.ScaffoldPlugin>(BuiltInResourcePluginNames.AppStudio);
-  // await appstudioPlugin.scaffold(ctx, pluginInputs);
   return ok(Void);
 }

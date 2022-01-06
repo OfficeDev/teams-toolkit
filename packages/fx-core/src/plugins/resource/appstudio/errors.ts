@@ -65,11 +65,6 @@ export class AppStudioError {
     message: (errors: string[]) => `Validation error: \n ${errors.join("\n")}`,
   };
 
-  public static readonly UpdateManifestError = {
-    name: "UpdateManifestFailed",
-    message: (error: any) => (error.message ? error.message : "Update Teams App manifest failed!"),
-  };
-
   public static readonly GetLocalDebugConfigFailedError = {
     name: "GetLocalDebugConfigFailed",
     message: (error: any) =>
@@ -188,5 +183,15 @@ export class AppStudioError {
     name: "UpdateManifestWithInvalidAppError",
     message: (appId: string) =>
       `Cannot find teams app with id ${appId}. You must run local debug or provision first before updating manifest to Teams platform`,
+  };
+
+  public static readonly InvalidCapabilityError = {
+    name: "InvalidCapabilityError",
+    message: (capability: string) => `Invalid capability: ${capability}`,
+  };
+
+  public static readonly CapabilityExceedLimitError = {
+    name: "CapabilityExceedLimitError",
+    message: (capability: string) => `Cannot add capability ${capability}, it reaches the limit.`,
   };
 }

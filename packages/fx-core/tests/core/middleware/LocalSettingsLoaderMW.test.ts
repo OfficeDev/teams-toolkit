@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { hooks } from "@feathersjs/hooks/lib";
+import { hooks, NextFunction } from "@feathersjs/hooks/lib";
 import {
   ConfigFolderName,
   FxError,
@@ -22,6 +22,7 @@ import * as path from "path";
 import sinon from "sinon";
 import {
   CoreHookContext,
+  createV2Context,
   LocalSettingsProvider,
   NoProjectOpenedError,
   PathNotExistError,
@@ -31,6 +32,7 @@ import {
   ContextInjectorMW,
   LocalSettingsLoaderMW,
   LocalSettingsWriterMW,
+  newSolutionContext,
   ProjectSettingsLoaderMW,
 } from "../../../src/core/middleware";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
@@ -138,6 +140,11 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
       path.resolve(confFolderPath, "settings.json"),
       path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName),
     ];
+    const MockContextLoaderMW = async (ctx: CoreHookContext, next: NextFunction) => {
+      ctx.contextV2 = createV2Context(projectSettings);
+      ctx.solutionContext = await newSolutionContext(tools, inputs);
+      await next();
+    };
     const localSettingsProvider = new LocalSettingsProvider(projectPath);
     const localSettingsFile = localSettingsProvider.localSettingsFilePath;
     sandbox.stub<any, any>(fs, "readJson").callsFake(async (file: string) => {
@@ -160,11 +167,24 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
         if (ctx) {
           assert.deepEqual(ctx.localSettings, localSettingsProvider.initV2(true, false, false));
         }
+        assert.isTrue(ctx?.solutionContext !== undefined);
+        assert.isTrue(ctx?.solutionContext?.localSettings !== undefined);
+        if (ctx && ctx.solutionContext?.localSettings) {
+          assert.deepEqual(
+            localSettingsProvider.convertToLocalSettingsJson(ctx.solutionContext.localSettings),
+            ctx.localSettings
+          );
+        }
         return ok("");
       }
     }
     hooks(MyClass, {
-      other: [ProjectSettingsLoaderMW, LocalSettingsLoaderMW, ContextInjectorMW],
+      other: [
+        ProjectSettingsLoaderMW,
+        MockContextLoaderMW,
+        LocalSettingsLoaderMW,
+        ContextInjectorMW,
+      ],
     });
     const my = new MyClass();
     const res = await my.other(inputs);

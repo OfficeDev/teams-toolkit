@@ -109,7 +109,7 @@ export async function generateAccountHint(): Promise<string> {
       loginHint = tokenObject.upn;
     } else {
       // no signed user
-      tenantId = commonUtils.getTeamsAppTenantId();
+      tenantId = await commonUtils.getTeamsAppTenantId();
       loginHint = "login_your_m365_account"; // a workaround that user has the chance to login
     }
   } catch {

@@ -18,6 +18,7 @@ import * as path from "path";
 import { convertToLocalEnvs } from "./localSettingsHelper";
 import { LocalSettingsProvider } from "../localSettingsProvider";
 import { getNpmInstallLogInfo, NpmInstallLogInfo } from "./npmLogHelper";
+import { getPortsInUse } from "./portChecker";
 import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
@@ -29,12 +30,6 @@ export class LocalEnvManager {
   constructor(logger?: LogProvider, telemetry?: TelemetryReporter) {
     this.logger = logger;
     this.telemetry = telemetry;
-  }
-
-  public getLaunchInput(localSettings: Json | undefined): any {
-    // return local teams app id
-    const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
-    return { appId: localTeamsAppId };
   }
 
   public async getLocalDebugEnvs(
@@ -49,14 +44,11 @@ export class LocalEnvManager {
     return await getNpmInstallLogInfo();
   }
 
-  public async getPortsInUse() {}
-
-  public getProgrammingLanguage(projectSettings: ProjectSettings): string | undefined {
-    return projectSettings.programmingLanguage;
-  }
-
-  public getSkipNgrokConfig(localSettings: Json | undefined): boolean {
-    return (localSettings?.bot?.skipNgrok as boolean) === true;
+  public async getPortsInUse(
+    projectPath: string,
+    projectSettings: ProjectSettings
+  ): Promise<number[]> {
+    return await getPortsInUse(projectPath, projectSettings);
   }
 
   public async getLocalSettings(

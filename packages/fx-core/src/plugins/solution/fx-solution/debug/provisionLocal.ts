@@ -45,7 +45,8 @@ export async function setupLocalDebugSettings(
   const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
-  const includeAuth = ProjectSettingsHelper.includeAuth(ctx.projectSetting);
+  const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
   let skipNgrok = localSettings?.bot?.skipNgrok as boolean;
 
   const telemetryProperties = {
@@ -54,16 +55,19 @@ export async function setupLocalDebugSettings(
     frontend: includeFrontend ? "true" : "false",
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
-    auth: includeAuth ? "true" : "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
   };
-  TelemetryUtils.init(ctx);
+  TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
 
   try {
     // setup configs used by other plugins
     // TODO: dynamicly determine local ports
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
+      const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
+      const frontendPort = isMigrateFromV1 ? 3000 : 53000;
+      const authPort = isMigrateFromV1 ? 5000 : 55000;
       let localTabEndpoint: string;
       let localTabDomain: string;
       let localAuthEndpoint: string;
@@ -72,18 +76,18 @@ export async function setupLocalDebugSettings(
       if (vscEnv === VsCodeEnv.codespaceBrowser || vscEnv === VsCodeEnv.codespaceVsCode) {
         const codespaceName = await getCodespaceName();
 
-        localTabEndpoint = getCodespaceUrl(codespaceName, 3000);
+        localTabEndpoint = getCodespaceUrl(codespaceName, frontendPort);
         localTabDomain = new URL(localTabEndpoint).host;
-        localAuthEndpoint = getCodespaceUrl(codespaceName, 5000);
+        localAuthEndpoint = getCodespaceUrl(codespaceName, authPort);
         localFuncEndpoint = getCodespaceUrl(codespaceName, 7071);
       } else {
         localTabDomain = "localhost";
-        localTabEndpoint = "https://localhost:3000";
-        localAuthEndpoint = "http://localhost:5000";
+        localTabEndpoint = `https://localhost:${frontendPort}`;
+        localAuthEndpoint = `http://localhost:${authPort}`;
         localFuncEndpoint = "http://localhost:7071";
       }
 
-      if (includeAuth) {
+      if (includeSimpleAuth) {
         localSettings.auth.AuthServiceEndpoint = localAuthEndpoint;
       }
 
@@ -149,7 +153,8 @@ export async function configLocalDebugSettings(
   const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
-  const includeAuth = ProjectSettingsHelper.includeAuth(ctx.projectSetting);
+  const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
   let trustDevCert = localSettings?.frontend?.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
@@ -157,10 +162,10 @@ export async function configLocalDebugSettings(
     frontend: includeFrontend ? "true" : "false",
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
-    auth: includeAuth ? "true" : "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "trust-development-certificate": trustDevCert + "",
   };
-  TelemetryUtils.init(ctx);
+  TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
 
   try {
@@ -169,7 +174,7 @@ export async function configLocalDebugSettings(
 
       const localEnvProvider = new LocalEnvProvider(inputs.projectPath!);
       const frontendEnvs = includeFrontend
-        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAuth)
+        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAAD, isMigrateFromV1)
         : undefined;
       const backendEnvs = includeBackend
         ? await localEnvProvider.loadBackendLocalEnvs()
@@ -190,12 +195,19 @@ export async function configLocalDebugSettings(
       const localAuthPackagePath = localSettings?.auth?.simpleAuthFilePath as string;
 
       if (includeFrontend) {
-        if (includeAuth) {
-          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
+        if (!isMigrateFromV1) {
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
+        }
+
+        if (includeAAD) {
           frontendEnvs!.teamsfxLocalEnvs[
             EnvKeysFrontend.LoginUrl
           ] = `${localTabEndpoint}/auth-start.html`;
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.ClientId] = clientId;
+        }
+
+        if (includeSimpleAuth) {
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
           await prepareLocalAuthService(localAuthPackagePath);
         }
 

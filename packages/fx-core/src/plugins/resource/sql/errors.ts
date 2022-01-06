@@ -5,6 +5,8 @@ import { Constants } from "./constants";
 export class ErrorMessage {
   public static readonly GetDetail = "Get the detailed error message in output.";
 
+  public static readonly LinkHelpMessage = (link: string) => `You can follow ${link} to handle it.`;
+
   public static readonly SqlInputError = {
     name: "SqlInputError",
     message: () => "SQL admin name or password is empty",
@@ -34,8 +36,8 @@ export class ErrorMessage {
 
   public static readonly DatabaseUserCreateError = {
     name: "DatabaseUserCreateError",
-    message: (sqlName: string, database: string, user: string, detail = "") =>
-      `Failed to create user '${user}' in database '${sqlName}.${database}'. ${detail}`,
+    message: (sqlName: string, database: string, user: string) =>
+      `Failed to create user '${user}' in database '${sqlName}.${database}'`,
   };
 
   public static readonly SqlAddAdminError = {

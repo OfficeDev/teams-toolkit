@@ -6,15 +6,18 @@ import * as vscode from "vscode";
 
 import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
-import { ProductName, VsCodeEnv } from "@microsoft/teamsfx-api";
+import { Json, ProductName, ProjectSettings, VsCodeEnv } from "@microsoft/teamsfx-api";
+import { LocalEnvManager } from "@microsoft/teamsfx-core";
 import { DotnetChecker } from "./depsChecker/dotnetChecker";
 import { FuncToolChecker } from "./depsChecker/funcToolChecker";
 import { NgrokChecker } from "./depsChecker/ngrokChecker";
-import { detectVsCodeEnv } from "../handlers";
+import VsCodeLogInstance from "../commonlib/log";
+import { detectVsCodeEnv, showError } from "../handlers";
+import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { vscodeAdapter } from "./depsChecker/vscodeAdapter";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
-import { isWindows } from "../utils/commonUtils";
+import { NpmTaskDefinition, TaskDefinition, ITaskDefinition } from "@microsoft/teamsfx-core";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -28,8 +31,27 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         return tasks;
       }
 
-      const programmingLanguage = await commonUtils.getProgrammingLanguage();
-      const localEnv = await commonUtils.getLocalEnv();
+      const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+      let projectSettings: ProjectSettings;
+      let localSettings: Json | undefined;
+      let localEnv: { [key: string]: string } | undefined;
+
+      try {
+        projectSettings = await localEnvManager.getProjectSettings(workspacePath);
+        localSettings = await localEnvManager.getLocalSettings(workspacePath, {
+          projectId: projectSettings.projectId,
+        });
+        localEnv = await localEnvManager.getLocalDebugEnvs(
+          workspacePath,
+          projectSettings,
+          localSettings
+        );
+      } catch (error: any) {
+        showError(error);
+        return tasks;
+      }
+
+      const programmingLanguage = projectSettings?.programmingLanguage;
 
       // Always provide the following tasks no matter whether it is defined in tasks.json
       const frontendRoot = await commonUtils.getProjectRoot(
@@ -37,7 +59,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         constants.frontendFolderName
       );
       if (frontendRoot) {
-        tasks.push(await this.createFrontendStartTask(workspaceFolder, frontendRoot, localEnv));
+        tasks.push(await this.createFrontendStartTask(workspaceFolder, localEnv));
       }
 
       const backendRoot = await commonUtils.getProjectRoot(
@@ -46,15 +68,10 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       );
       if (backendRoot) {
         tasks.push(
-          await this.createBackendStartTask(
-            workspaceFolder,
-            backendRoot,
-            programmingLanguage,
-            localEnv
-          )
+          await this.createBackendStartTask(workspaceFolder, programmingLanguage, localEnv)
         );
         if (programmingLanguage === constants.ProgrammingLanguage.typescript) {
-          tasks.push(await this.createBackendWatchTask(workspaceFolder, backendRoot));
+          tasks.push(await this.createBackendWatchTask(workspaceFolder));
         }
       }
 
@@ -65,16 +82,11 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
       const botRoot = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
       if (botRoot) {
-        tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot));
+        const skipNgrok = (localSettings?.bot?.skipNgrok as boolean) === true;
+        tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot, skipNgrok));
         const silent: boolean = frontendRoot !== undefined;
         tasks.push(
-          await this.createBotStartTask(
-            workspaceFolder,
-            botRoot,
-            programmingLanguage,
-            localEnv,
-            silent
-          )
+          await this.createBotStartTask(workspaceFolder, programmingLanguage, localEnv, silent)
         );
       }
 
@@ -82,7 +94,9 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const isCodeSpaceEnv =
         vscodeEnv === VsCodeEnv.codespaceBrowser || vscodeEnv === VsCodeEnv.codespaceVsCode;
       if (isCodeSpaceEnv) {
-        tasks.push(await this.createOpenTeamsWebClientTask(workspaceFolder));
+        const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
+        const debugConfig = { appId: localTeamsAppId };
+        tasks.push(await this.createOpenTeamsWebClientTask(workspaceFolder, debugConfig));
       }
     }
     return tasks;
@@ -97,7 +111,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
       const workspacePath: string = workspaceFolder.uri.fsPath;
       if (!(await commonUtils.isFxProject(workspacePath))) {
-        vscodeLogger.error(
+        VsCodeLogInstance.error(
           `No ${TeamsfxTaskProvider.type} project. Cannot resolve ${TeamsfxTaskProvider.type} task.`
         );
         return undefined;
@@ -105,7 +119,10 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
       const command: string | undefined = task.definition.command;
       if (!command || (command?.toLowerCase() !== "dev" && command?.toLowerCase() !== "watch")) {
-        vscodeLogger.error(`Missing or wrong 'command' field in ${TeamsfxTaskProvider.type} task.`);
+        VsCodeLogInstance.error(
+          `Missing or wrong 'command' field in ${TeamsfxTaskProvider.type} task.`
+        );
+
         return undefined;
       }
 
@@ -116,7 +133,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
           component?.toLowerCase() !== "backend" &&
           component?.toLowerCase() !== "bot")
       ) {
-        vscodeLogger.error(
+        VsCodeLogInstance.error(
           `Missing or wrong 'component' field in ${TeamsfxTaskProvider.type} task.`
         );
         return undefined;
@@ -127,40 +144,33 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         task.scope !== vscode.TaskScope.Global &&
         task.scope !== vscode.TaskScope.Workspace
       ) {
-        let env: { [key: string]: string } | undefined = undefined;
-        let cwd: string | undefined;
         let problemMatcher: string;
         const isWatchTask = command.toLowerCase() === "watch";
-        const shellCmd = isWatchTask ? "npm run watch:teamsfx" : "npm run dev:teamsfx";
+        let taskDefinition: ITaskDefinition | undefined = undefined;
         if (component?.toLowerCase() === "frontend") {
-          cwd = await commonUtils.getProjectRoot(workspacePath, constants.frontendFolderName);
+          taskDefinition = NpmTaskDefinition.frontend(workspacePath, isWatchTask);
           problemMatcher = isWatchTask
             ? constants.tscWatchProblemMatcher
             : constants.frontendProblemMatcher;
         } else if (component?.toLowerCase() === "backend") {
-          cwd = await commonUtils.getProjectRoot(workspacePath, constants.backendFolderName);
           problemMatcher = isWatchTask
             ? constants.tscWatchProblemMatcher
             : constants.backendProblemMatcher;
 
           // prepare PATH to execute `func`
+          let funcBinFolders: string[] | undefined = undefined;
           const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
           if ((await funcChecker.isEnabled()) && (await funcChecker.isPortableFuncInstalled())) {
-            const funcBinFolders = funcChecker.getPortableFuncBinFolders();
-            env = {
-              // put portable func at the end since func checker prefers global func
-              PATH: `${process.env.PATH ?? ""}${path.delimiter}${funcBinFolders.join(
-                path.delimiter
-              )}`,
-            };
+            funcBinFolders = funcChecker.getPortableFuncBinFolders();
           }
+          taskDefinition = NpmTaskDefinition.backend(workspacePath, isWatchTask, funcBinFolders);
         } else if (component?.toLowerCase() === "bot") {
-          cwd = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
           problemMatcher = isWatchTask
             ? constants.tscWatchProblemMatcher
             : constants.botProblemMatcher;
+          taskDefinition = NpmTaskDefinition.bot(workspacePath, isWatchTask);
         } else {
-          vscodeLogger.error(
+          VsCodeLogInstance.error(
             `Missing or wrong 'component' field in ${TeamsfxTaskProvider.type} task.`
           );
           return undefined;
@@ -171,197 +181,128 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
           task.scope,
           task.name,
           TeamsfxTaskProvider.type,
-          new vscode.ShellExecution(shellCmd, { cwd: cwd, env: env }),
+          new vscode.ShellExecution(taskDefinition.command, {
+            cwd: taskDefinition.cwd,
+            env: taskDefinition.env,
+          }),
           problemMatcher
         );
-        resolvedTask.isBackground = true;
+        resolvedTask.isBackground = taskDefinition?.isBackground;
         return resolvedTask;
       } else {
-        vscodeLogger.error(`No task scope. Cannot resolve ${TeamsfxTaskProvider.type} task.`);
+        VsCodeLogInstance.error(`No task scope. Cannot resolve ${TeamsfxTaskProvider.type} task.`);
         return undefined;
       }
     } else {
-      vscodeLogger.error(`No workspace open. Cannot resolve ${TeamsfxTaskProvider.type} task.`);
+      VsCodeLogInstance.error(
+        `No workspace open. Cannot resolve ${TeamsfxTaskProvider.type} task.`
+      );
       return undefined;
     }
   }
 
   private async createFrontendStartTask(
     workspaceFolder: vscode.WorkspaceFolder,
-    projectRoot: string,
     localEnv: { [key: string]: string } | undefined,
     definition?: vscode.TaskDefinition,
     problemMatchers?: string | string[]
   ): Promise<vscode.Task> {
-    const command: string = constants.frontendStartCommand;
-    definition = definition || { type: TeamsfxTaskProvider.type, command };
-    const commandLine = "npx react-scripts start";
-    const env = commonUtils.getFrontendLocalEnv(localEnv);
-    const options: vscode.ShellExecutionOptions = {
-      cwd: projectRoot,
-      env,
-    };
-    problemMatchers = problemMatchers || constants.frontendProblemMatcher;
-    const task = new vscode.Task(
-      definition,
+    return this.createTask(
+      TaskDefinition.frontendStart(workspaceFolder.uri.fsPath),
       workspaceFolder,
-      command,
-      TeamsfxTaskProvider.type,
-      new vscode.ShellExecution(commandLine, options),
-      problemMatchers
+      commonUtils.getFrontendLocalEnv(localEnv),
+      definition,
+      problemMatchers || constants.frontendProblemMatcher
     );
-    task.isBackground = true;
-    return task;
   }
 
   private async createBackendStartTask(
     workspaceFolder: vscode.WorkspaceFolder,
-    projectRoot: string,
     programmingLanguage: string | undefined,
     localEnv: { [key: string]: string } | undefined,
     definition?: vscode.TaskDefinition,
     problemMatchers?: string | string[]
   ): Promise<vscode.Task> {
-    const command: string = constants.backendStartCommand;
-    definition = definition || { type: TeamsfxTaskProvider.type, command };
-
-    // NOTE: properly handle quoting and escaping to work on windows (both powershell and cmd), linux and osx
-    const args =
-      programmingLanguage === constants.ProgrammingLanguage.typescript
-        ? `start --typescript --language-worker="--inspect=9229" --port "7071" --cors "*"`
-        : `start --javascript --language-worker="--inspect=9229" --port "7071" --cors "*"`;
     const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
-    const commandLine = `${await funcChecker.getFuncCommand()} ${args}`;
+    const funcCommand = await funcChecker.getFuncCommand();
 
-    const env = commonUtils.getBackendLocalEnv(localEnv);
-    const options: vscode.ShellExecutionOptions = {
-      cwd: projectRoot,
-      // avoid powershell execution policy issue
-      executable: isWindows() ? "cmd.exe" : undefined,
-      shellArgs: isWindows() ? ["/c"] : undefined,
-      env,
-    };
-    problemMatchers = problemMatchers || constants.backendProblemMatcher;
-    const task = new vscode.Task(
-      definition,
+    return this.createTask(
+      TaskDefinition.backendStart(
+        workspaceFolder.uri.fsPath,
+        programmingLanguage,
+        funcCommand,
+        true
+      ),
       workspaceFolder,
-      command,
-      TeamsfxTaskProvider.type,
-      new vscode.ShellExecution(commandLine, options),
-      problemMatchers
+      commonUtils.getBackendLocalEnv(localEnv),
+      definition,
+      problemMatchers || constants.frontendProblemMatcher,
+      true
     );
-    task.isBackground = true;
-    task.presentationOptions.reveal = vscode.TaskRevealKind.Silent;
-    return task;
   }
 
   private async createAuthStartTask(
     workspaceFolder: vscode.WorkspaceFolder,
-    projectRoot: string,
+    authRoot: string,
     localEnv: { [key: string]: string } | undefined,
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
-    const command: string = constants.authStartCommand;
-    definition = definition || { type: TeamsfxTaskProvider.type, command };
-
     const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
     const dotnetPath = await dotnetChecker.getDotnetExecPath();
 
-    const env = commonUtils.getAuthLocalEnv(localEnv);
-    const options: vscode.ShellExecutionOptions = {
-      cwd: projectRoot,
-      env,
-    };
-    const task = new vscode.Task(
-      definition,
+    return this.createTask(
+      TaskDefinition.authStart(dotnetPath, authRoot),
       workspaceFolder,
-      command,
-      TeamsfxTaskProvider.type,
-      new vscode.ProcessExecution(dotnetPath, ["Microsoft.TeamsFx.SimpleAuth.dll"], options),
-      constants.authProblemMatcher
+      commonUtils.getAuthLocalEnv(localEnv),
+      definition,
+      constants.authProblemMatcher,
+      true
     );
-    task.isBackground = true;
-    task.presentationOptions.reveal = vscode.TaskRevealKind.Silent;
-    return task;
   }
 
   private async createNgrokStartTask(
     workspaceFolder: vscode.WorkspaceFolder,
     projectRoot: string,
+    isSkipped: boolean,
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
-    const command: string = constants.ngrokStartCommand;
-    definition = definition || { type: TeamsfxTaskProvider.type, command };
-    let commandLine = "npx ngrok http 3978 --log=stdout";
-    const skipNgrok = await commonUtils.getSkipNgrokConfig();
-    if (skipNgrok) {
-      commandLine = "echo 'Do not start ngrok, but use predefined bot endpoint.'";
-    }
-    const options: vscode.ShellExecutionOptions = {
-      cwd: projectRoot,
-    };
-
     // prepare PATH to execute `ngrok`
     const ngrokChecker = new NgrokChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
-    options.env = {
-      PATH: `${ngrokChecker.getNgrokBinFolder()}${path.delimiter}${process.env.PATH ?? ""}`,
-    };
-
-    const task = new vscode.Task(
-      definition,
+    const ngrokBinFolder = ngrokChecker.getNgrokBinFolder();
+    return this.createTask(
+      TaskDefinition.ngrokStart(workspaceFolder.uri.fsPath, isSkipped, ngrokBinFolder),
       workspaceFolder,
-      command,
-      TeamsfxTaskProvider.type,
-      new vscode.ShellExecution(commandLine, options),
+      undefined,
+      definition,
       constants.ngrokProblemMatcher
     );
-    task.isBackground = !skipNgrok;
-    return task;
   }
 
   private async createBotStartTask(
     workspaceFolder: vscode.WorkspaceFolder,
-    projectRoot: string,
     programmingLanguage: string | undefined,
     localEnv: { [key: string]: string } | undefined,
     silent: boolean,
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
-    const command: string = constants.botStartCommand;
-    definition = definition || { type: TeamsfxTaskProvider.type, command };
-    // TODO: tell nodemon which files to watch (depends on bot's decision)
-    const commandLine =
-      programmingLanguage === constants.ProgrammingLanguage.typescript
-        ? "npx nodemon --exec node --inspect=9239 --signal SIGINT -r ts-node/register index.ts"
-        : "npx nodemon --inspect=9239 --signal SIGINT index.js";
-    const env = commonUtils.getBotLocalEnv(localEnv);
-    const options: vscode.ShellExecutionOptions = {
-      cwd: projectRoot,
-      env,
-    };
-    const task = new vscode.Task(
-      definition,
+    return this.createTask(
+      TaskDefinition.botStart(workspaceFolder.uri.fsPath, programmingLanguage, true),
       workspaceFolder,
-      command,
-      TeamsfxTaskProvider.type,
-      new vscode.ShellExecution(commandLine, options),
-      constants.botProblemMatcher
+      commonUtils.getBotLocalEnv(localEnv),
+      definition,
+      constants.botProblemMatcher,
+      silent
     );
-    task.isBackground = true;
-    if (silent) {
-      task.presentationOptions.reveal = vscode.TaskRevealKind.Silent;
-    }
-    return task;
   }
 
   private async createOpenTeamsWebClientTask(
     workspaceFolder: vscode.WorkspaceFolder,
+    debugConfig: any,
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
     const command: string = constants.openWenClientCommand;
     definition = definition || { type: TeamsfxTaskProvider.type, command };
 
-    const debugConfig = await commonUtils.getDebugConfig(true);
     const localTeamsAppId: string | undefined = debugConfig?.appId;
     const commandLine = `npx open-cli https://teams.microsoft.com/_#/l/app/${localTeamsAppId}?installAppPackage=true`;
 
@@ -378,25 +319,55 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
   private async createBackendWatchTask(
     workspaceFolder: vscode.WorkspaceFolder,
-    projectRoot: string,
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
-    const command: string = constants.backendWatchCommand;
-    definition = definition || { type: TeamsfxTaskProvider.type, command };
-    const commandLine = "npx tsc --watch"; // TODO: tell tsc which files to watch (depends on function's decision)
-    const options: vscode.ShellExecutionOptions = {
-      cwd: projectRoot,
+    return this.createTask(
+      TaskDefinition.backendWatch(workspaceFolder.uri.fsPath),
+      workspaceFolder,
+      undefined,
+      definition,
+      constants.tscWatchProblemMatcher,
+      true
+    );
+  }
+
+  private async createTask(
+    taskDefinition: ITaskDefinition,
+    workspaceFolder: vscode.WorkspaceFolder,
+    env: { [key: string]: string } | undefined,
+    definition?: vscode.TaskDefinition,
+    problemMatchers?: string | string[],
+    isSilent?: boolean
+  ): Promise<vscode.Task> {
+    definition = definition || {
+      type: TeamsfxTaskProvider.type,
+      command: taskDefinition.name,
     };
+
+    const options: vscode.ShellExecutionOptions = {
+      cwd: taskDefinition.cwd,
+      env: env ?? taskDefinition.env,
+      // avoid powershell execution policy issue
+      executable: taskDefinition.execOptions.needCmd ? "cmd.exe" : undefined,
+      shellArgs: taskDefinition.execOptions.needCmd ? ["/c"] : undefined,
+    };
+
+    const execution = taskDefinition.execOptions.needShell
+      ? new vscode.ShellExecution(taskDefinition.command, options)
+      : new vscode.ProcessExecution(taskDefinition.command, taskDefinition.args ?? [], options);
+
     const task = new vscode.Task(
       definition,
       workspaceFolder,
-      command,
+      taskDefinition.name,
       TeamsfxTaskProvider.type,
-      new vscode.ShellExecution(commandLine, options),
-      constants.tscWatchProblemMatcher
+      execution,
+      problemMatchers
     );
-    task.isBackground = true;
-    task.presentationOptions.reveal = vscode.TaskRevealKind.Silent;
+    task.isBackground = taskDefinition.isBackground;
+    if (isSilent) {
+      task.presentationOptions.reveal = vscode.TaskRevealKind.Silent;
+    }
     return task;
   }
 }

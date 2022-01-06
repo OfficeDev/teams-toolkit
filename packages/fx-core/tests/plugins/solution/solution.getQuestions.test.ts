@@ -241,7 +241,7 @@ describe("getQuestionsForScaffolding()", async () => {
           inputs: v2.InputsWithProjectPath,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
-          return false;
+          return ok(false);
         }
       );
     (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
@@ -290,7 +290,7 @@ describe("getQuestionsForScaffolding()", async () => {
           inputs: v2.InputsWithProjectPath,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
-          return true;
+          return ok(true);
         }
       );
     (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =

@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import {
   TokenProvider,
   FxError,
@@ -9,22 +12,21 @@ import {
   AppStudioTokenProvider,
   Void,
   QTreeNode,
+  OptionItem,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../../common/constants";
 import Module from "module";
 import {
-  init,
   scaffold,
+  getQuestionsForScaffold,
   generateResourceTemplate,
   publishApplication,
   addResource,
-  addModule,
-} from "./scaffolding";
-import { getQuestionsForInit } from "./init";
+} from "./scaffold";
+import { getQuestionsForInit, init } from "./init";
 import { Service } from "typedi";
-import { getQuestionsForScaffolding } from "./questions";
 import { BuiltInSolutionNames } from "../fx-solution/v3/constants";
-import { OptionItem } from "@microsoft/teamsfx-api";
+import { addModule } from "./addModule";
 
 @Service(BuiltInSolutionNames.spfx)
 export class TeamsSPFxSolution implements v3.ISolution {
@@ -42,6 +44,10 @@ export class TeamsSPFxSolution implements v3.ISolution {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem }
   ) => Promise<Result<Void, FxError>> = scaffold;
+  getQuestionsForScaffold?: (
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath
+  ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestionsForScaffold;
 
   generateResourceTemplate: (ctx: v2.Context, inputs: Inputs) => Promise<Result<Json, FxError>> =
     generateResourceTemplate;
@@ -63,9 +69,4 @@ export class TeamsSPFxSolution implements v3.ISolution {
     inputs: v2.InputsWithProjectPath & { capabilities: string[] },
     localSettings?: Json
   ) => Promise<Result<Void, FxError>> = addModule;
-
-  getQuestionsForScaffold?: (
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestionsForScaffolding;
 }

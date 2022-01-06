@@ -1,9 +1,9 @@
 // Resources for Azure Functions
-module functionProvision '{{fx-resource-function.Provision.function.path}}' = {
+module functionProvision '\{{fx-resource-function.Provision.function.path}}' = {
   name: 'functionProvision'
   params: {
     provisionParameters: provisionParameters
-    userAssignedIdentityId: {{fx-resource-identity.References.identityResourceId}}
+    userAssignedIdentityId: \{{fx-resource-identity.References.identityResourceId}}
   }
 }
 

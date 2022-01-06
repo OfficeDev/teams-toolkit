@@ -8,7 +8,7 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import Container from "typedi";
+import { Container } from "typedi";
 import { FxCore, setTools } from "../../src";
 import {
   CoreQuestionNames,
@@ -23,7 +23,8 @@ import {
 } from "../../src/plugins/solution/fx-solution/question";
 import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, mockSolutionV3getQuestionsAPI, MockTools, randomAppName } from "./utils";
-
+import axios, { AxiosRequestConfig, AxiosResponse } from "axios";
+import fs from "fs-extra";
 describe("Core basic APIs for v3", () => {
   const sandbox = sinon.createSandbox();
   const tools = new MockTools();
@@ -38,6 +39,19 @@ describe("Core basic APIs for v3", () => {
     mockSolutionV3getQuestionsAPI(solutionSPFx, sandbox);
     setTools(tools);
     mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "true" });
+    sandbox
+      .stub<any, any>(axios, "get")
+      .callsFake(async (url: string, config?: AxiosRequestConfig): Promise<AxiosResponse<any>> => {
+        const buffer = fs.readFileSync("./tests/core/samples_v2.zip");
+        return {
+          data: buffer,
+          status: 200,
+          statusText: "",
+          headers: {},
+          config: config!,
+          request: {},
+        };
+      });
   });
 
   afterEach(() => {
@@ -99,7 +113,7 @@ describe("Core basic APIs for v3", () => {
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
-      [CoreQuestionNames.Samples]: (SampleSelect.staticOptions[0] as OptionItem).id,
+      [CoreQuestionNames.Samples]: "hello-world-tab",
       stage: Stage.create,
     };
     const core = new FxCore(tools);

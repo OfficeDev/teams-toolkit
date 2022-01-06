@@ -10,12 +10,10 @@ import {
   MultiSelectQuestion,
   ok,
   OptionItem,
-  Platform,
   QTreeNode,
   Result,
   returnUserError,
   Stage,
-  SubscriptionInfo,
   TokenProvider,
   UserError,
   v2,
@@ -23,10 +21,8 @@ import {
 import Container from "typedi";
 import { getStrings } from "../../../../common/tools";
 import { HelpLinks } from "../../../../common/constants";
-import { checkSubscription } from "../commonQuestions";
 import { SolutionError, SolutionSource } from "../constants";
 import {
-  addCapabilityQuestion,
   AskSubscriptionQuestion,
   AzureResourceApim,
   AzureResourceFunction,
@@ -36,13 +32,9 @@ import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   createAddAzureResourceQuestion,
-  createCapabilityQuestion,
   createV1CapabilityQuestion,
   DeployPluginSelectQuestion,
-  FrontendHostTypeQuestion,
   GetUserEmailQuestion,
-  HostTypeOptionAzure,
-  HostTypeOptionSPFx,
   MessageExtensionItem,
   TabOptionItem,
   TabSPFxItem,
@@ -55,11 +47,9 @@ import {
 import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
 import { isV3 } from "../../../..";
 import { TeamsAppSolutionNameV2 } from "./constants";
-import { getResourceFolder } from "../../../../folder";
 import { BuiltInResourcePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
-import { isVSProject } from "../../../../core";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -397,21 +387,33 @@ export async function getQuestionsForAddCapability(
     return err(canProceed.error);
   }
   const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
-  const isTabAddable = !(await appStudioPlugin.capabilityExceedLimit(
+  const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
     "staticTab"
-  ));
-  const isBotAddable = !(await appStudioPlugin.capabilityExceedLimit(
+  );
+  if (tabExceedRes.isErr()) {
+    return err(tabExceedRes.error);
+  }
+  const isTabAddable = !tabExceedRes.value;
+  const botExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
     "Bot"
-  ));
-  const isMEAddable = !(await appStudioPlugin.capabilityExceedLimit(
+  );
+  if (botExceedRes.isErr()) {
+    return err(botExceedRes.error);
+  }
+  const isBotAddable = !botExceedRes.value;
+  const meExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
     inputs as v2.InputsWithProjectPath,
     "MessageExtension"
-  ));
+  );
+  if (meExceedRes.isErr()) {
+    return err(meExceedRes.error);
+  }
+  const isMEAddable = !meExceedRes.value;
   if (!(isTabAddable || isBotAddable || isMEAddable)) {
     ctx.userInteraction?.showMessage(
       "error",
@@ -445,42 +447,37 @@ export async function getQuestionsForAddResource(
   if (canProceed.isErr()) {
     return err(canProceed.error);
   }
-  const functionPlugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(
-    ResourcePluginsV2.FunctionPlugin
-  );
+
   const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
   const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);
   const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);
-  const alreadyHavekeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
+  const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
   const addQuestion = createAddAzureResourceQuestion(
     alreadyHaveFunction,
     alreadyHaveSQL,
     alreadyHaveAPIM,
-    alreadyHavekeyVault
+    alreadyHaveKeyVault
   );
   const addAzureResourceNode = new QTreeNode(addQuestion);
-  // there two cases to add function re-scaffold: 1. select add function   2. select add sql and function is not selected when creating
-  if (functionPlugin.getQuestionsForUserTask) {
-    const res = await functionPlugin.getQuestionsForUserTask(
-      ctx,
-      inputs,
-      func,
-      envInfo,
-      tokenProvider
-    );
-    if (res.isErr()) return res;
-    if (res.value) {
-      const azure_function = res.value as QTreeNode;
-      if (alreadyHaveFunction) {
-        // if already has function, the question will appear depends on whether user select function, otherwise, the question will always show
-        azure_function.condition = { contains: AzureResourceFunction.id };
-      } else {
-        // if not function activated, select Function or APIM option will trigger function question
-        azure_function.condition = {
-          containsAny: [AzureResourceApim.id, AzureResourceFunction.id],
-        };
+  //traverse plugins' getQuestionsForUserTask
+  const pluginsWithResources = [
+    [ResourcePluginsV2.FunctionPlugin, AzureResourceFunction.id],
+    [ResourcePluginsV2.SqlPlugin, AzureResourceSQL.id],
+    [ResourcePluginsV2.ApimPlugin, AzureResourceApim.id],
+    [ResourcePluginsV2.KeyVaultPlugin, AzureResourceKeyVault.id],
+  ];
+  for (const pair of pluginsWithResources) {
+    const pluginName = pair[0];
+    const resourceName = pair[1];
+    const plugin: v2.ResourcePlugin = Container.get<v2.ResourcePlugin>(pluginName);
+    if (plugin.getQuestionsForUserTask) {
+      const res = await plugin.getQuestionsForUserTask(ctx, inputs, func, envInfo, tokenProvider);
+      if (res.isErr()) return res;
+      if (res.value) {
+        const node = res.value as QTreeNode;
+        node.condition = { contains: resourceName };
+        if (node.data) addAzureResourceNode.addChild(node);
       }
-      if (azure_function.data) addAzureResourceNode.addChild(azure_function);
     }
   }
   return ok(addAzureResourceNode);

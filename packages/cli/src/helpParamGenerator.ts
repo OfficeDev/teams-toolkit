@@ -50,6 +50,7 @@ export class HelpParamGenerator {
     Stage.grantPermission,
     Stage.checkPermission,
     "validate",
+    "update",
     Stage.createEnv,
     "ResourceShowFunction",
     "ResourceShowSQL",
@@ -109,7 +110,7 @@ export class HelpParamGenerator {
     return ok(undefined);
   }
 
-  private getQuestionRootNodeForHelp(stage: string): QTreeNode | undefined {
+  public getQuestionRootNodeForHelp(stage: string): QTreeNode | undefined {
     if (this.questionsMap.has(stage)) {
       return this.questionsMap.get(stage);
     }

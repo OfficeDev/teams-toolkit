@@ -9,6 +9,7 @@ import {
   QTreeNode,
   Platform,
   traverse,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
@@ -38,6 +39,9 @@ import {
   getSubscriptionIdFromResourceId,
   isArmSupportEnabled,
 } from "../../../common";
+import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
+import { generateBicepFromFile } from "../../../common/tools";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
@@ -92,12 +96,10 @@ export class SqlPluginImpl {
       this.config.adminPassword = ctx.answers![Constants.questionKey.adminPassword] as string;
 
       if (!this.config.admin || !this.config.adminPassword) {
-        const error = SqlResultFactory.SystemError(
+        throw SqlResultFactory.SystemError(
           ErrorMessage.SqlInputError.name,
           ErrorMessage.SqlInputError.message()
         );
-        ctx.logProvider?.error(ErrorMessage.SqlInputError.message());
-        throw error;
       }
       ctx.config.set(Constants.admin, this.config.admin);
       ctx.config.set(Constants.adminPassword, this.config.adminPassword);
@@ -273,6 +275,11 @@ export class SqlPluginImpl {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -280,19 +287,18 @@ export class SqlPluginImpl {
       "sql",
       "bicep"
     );
-
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, AzureSqlBicepFile.moduleTemplateFileName),
+      pluginCtx
+    );
+    const provisionModules = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, AzureSqlBicepFile.ProvisionModuleTemplateFileName),
+      pluginCtx
+    );
     const result: ArmTemplateResult = {
       Provision: {
-        Orchestration: await fs.readFile(
-          path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
-          ConstantString.UTF8Encoding
-        ),
-        Modules: {
-          azureSql: await fs.readFile(
-            path.join(bicepTemplateDirectory, AzureSqlBicepFile.ProvisionModuleTemplateFileName),
-            ConstantString.UTF8Encoding
-          ),
-        },
+        Orchestration: provisionOrchestration,
+        Modules: { azureSql: provisionModules },
       },
       Parameters: JSON.parse(
         await fs.readFile(
@@ -351,7 +357,6 @@ export class SqlPluginImpl {
         ErrorMessage.SqlGetConfigError.name,
         ErrorMessage.SqlGetConfigError.message(Constants.identityPlugin, Constants.identityName)
       );
-      ctx.logProvider?.error(error.message);
       throw error;
     }
   }
@@ -405,7 +410,6 @@ export class SqlPluginImpl {
       this.config.aadAdminType = tokenInfo.userType;
       ctx.logProvider?.debug(Message.adminName(tokenInfo.name));
     } catch (error: any) {
-      ctx.logProvider?.error(ErrorMessage.SqlUserInfoError.message() + `:${error.message}`);
       throw SqlResultFactory.SystemError(
         ErrorMessage.SqlUserInfoError.name,
         ErrorMessage.SqlUserInfoError.message(),

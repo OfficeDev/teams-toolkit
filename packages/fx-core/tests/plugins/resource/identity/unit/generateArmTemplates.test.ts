@@ -16,6 +16,7 @@ import {
   mockSolutionUpdateArmTemplates,
   ResourcePlugins,
 } from "../../util";
+import { HostTypeOptionAzure } from "../../../../../src/plugins/solution/fx-solution/question";
 chai.use(chaiAsPromised);
 
 dotenv.config();
@@ -45,8 +46,8 @@ describe("identityPlugin", () => {
   it("generate arm templates", async function () {
     const activeResourcePlugins = [ResourcePlugins.Identity];
     pluginContext.projectSettings!.solutionSettings = {
-      name: "test_solution",
-      version: "1.0.0",
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
       activeResourcePlugins: activeResourcePlugins,
     } as AzureSolutionSettings;
     const result = await identityPlugin.generateArmTemplates(pluginContext);
@@ -91,8 +92,8 @@ describe("identityPlugin", () => {
   it("Update arm templates", async function () {
     const activeResourcePlugins = [ResourcePlugins.Identity];
     pluginContext.projectSettings!.solutionSettings = {
-      name: "test_solution",
-      version: "1.0.0",
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
       activeResourcePlugins: activeResourcePlugins,
     } as AzureSolutionSettings;
     const result = await identityPlugin.updateArmTemplates(pluginContext);

@@ -6,7 +6,15 @@ export class FolderName {
   static readonly Frontend = "tabs";
   static readonly Bot = "bot";
   static readonly Function = "api";
+  static readonly SPFx = "SPFx";
 }
+
+export enum ProgrammingLanguage {
+  javascript = "javascript",
+  typescript = "typescript",
+}
+
+export const npmInstallCommand = "npm install --no-audit";
 
 export const LocalEnvAuthKeys = Object.freeze({
   ClientId: "AUTH_CLIENT_ID",
@@ -62,6 +70,7 @@ export const LocalEnvCertKeys = Object.freeze({
 export const LocalEnvFrontendKeys = Object.freeze({
   Browser: "FRONTEND_BROWSER",
   Https: "FRONTEND_HTTPS",
+  Port: "FRONTEND_PORT",
   TeamsFxEndpoint: "FRONTEND_REACT_APP_TEAMSFX_ENDPOINT",
   LoginUrl: "FRONTEND_REACT_APP_START_LOGIN_PAGE_URL",
   FuncEndpoint: "FRONTEND_REACT_APP_FUNC_ENDPOINT",

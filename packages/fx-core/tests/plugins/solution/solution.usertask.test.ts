@@ -273,7 +273,7 @@ describe("V2 implementation", () => {
           inputs: v2.InputsWithProjectPath,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
-          return true;
+          return ok(true);
         }
       );
     mocker
@@ -326,7 +326,7 @@ describe("V2 implementation", () => {
           inputs: v2.InputsWithProjectPath,
           capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
         ) => {
-          return false;
+          return ok(false);
         }
       );
     mocker

@@ -9,8 +9,8 @@ param currentAppSettings object
 var webAppName = split(provisionOutputs.simpleAuthOutput.value.webAppResourceId, '/')[8]
 
 var m365ClientId = provisionParameters['m365ClientId']
-{{#if fx-resource-key-vault}}
-var m365ClientSecret = {{fx-resource-key-vault.References.m365ClientSecretReference}}
+{{#if (contains "fx-resource-key-vault" plugins)}}
+var m365ClientSecret = \{{fx-resource-key-vault.References.m365ClientSecretReference}}
 {{else}}
 var m365ClientSecret = provisionParameters['m365ClientSecret']
 {{/if}}
@@ -18,21 +18,21 @@ var m365TenantId = provisionParameters['m365TenantId']
 var m365OauthAuthorityHost = provisionParameters['m365OauthAuthorityHost']
 var oauthAuthority = uri(m365OauthAuthorityHost, m365TenantId)
 var aadMetadataAddress = uri(m365OauthAuthorityHost, '${m365TenantId}/v2.0/.well-known/openid-configuration')
-{{#if fx-resource-bot}}
+{{#if (contains "fx-resource-bot" plugins)}}
 var botId = provisionParameters['botAadAppClientId']
 {{/if}}
-{{#if fx-resource-frontend-hosting}}
-var tabAppDomain = {{fx-resource-frontend-hosting.References.domain}}
-var tabAppEndpoint = {{fx-resource-frontend-hosting.References.endpoint}} 
+{{#if (contains "fx-resource-frontend-hosting" plugins)}}
+var tabAppDomain = \{{fx-resource-frontend-hosting.References.domain}}
+var tabAppEndpoint = \{{fx-resource-frontend-hosting.References.endpoint}} 
 {{/if}}
 
-{{#if fx-resource-frontend-hosting}}
-  {{#if fx-resource-bot}}
+{{#if (contains "fx-resource-frontend-hosting" plugins)}}
+  {{#if (contains "fx-resource-bot" plugins)}}
 var m365ApplicationIdUri = 'api://${tabAppDomain}/botid-${botId}'
   {{else}}
 var m365ApplicationIdUri = 'api://${tabAppDomain}/${m365ClientId}'
   {{/if}}
-{{else if fx-resource-bot}}
+{{else if (contains "fx-resource-bot" plugins)}}
 var m365ApplicationIdUri = 'api://botid-${botId}'
 {{/if}}
 
@@ -53,7 +53,7 @@ resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
     CLIENT_ID: m365ClientId
     CLIENT_SECRET: m365ClientSecret
     OAUTH_AUTHORITY: oauthAuthority
-    {{#if fx-resource-frontend-hosting}}
+    {{#if (contains "fx-resource-frontend-hosting" plugins)}}
     TAB_APP_ENDPOINT: tabAppEndpoint
     {{/if}}
   }

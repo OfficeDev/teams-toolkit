@@ -38,9 +38,6 @@ export class ManagementClient {
         model
       );
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlCreateError.name,
         ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint, error.message),
@@ -65,9 +62,6 @@ export class ManagementClient {
         return true;
       }
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCheckError.message(this.config.sqlEndpoint, error.message)
-      );
       throw SqlResultFactory.SystemError(
         ErrorMessage.SqlCheckError.name,
         ErrorMessage.SqlCheckError.message(this.config.sqlEndpoint, error.message),
@@ -88,9 +82,6 @@ export class ManagementClient {
         return false;
       }
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCheckAdminError.message(this.config.identity, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlCheckAdminError.name,
         ErrorMessage.SqlCheckAdminError.message(this.config.identity, error.message),
@@ -117,9 +108,6 @@ export class ManagementClient {
       // when the request returned, the instance of database may not be ready. Let's wait a moment
       await this.delay(10);
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.DatabaseCreateError.message(this.config.databaseName, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.DatabaseCreateError.name,
         ErrorMessage.DatabaseCreateError.message(this.config.databaseName, error.message),
@@ -140,9 +128,6 @@ export class ManagementClient {
         return false;
       }
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCheckDBError.message(this.config.databaseName, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlCheckDBError.name,
         ErrorMessage.SqlCheckDBError.message(this.config.databaseName, error.message),
@@ -167,9 +152,6 @@ export class ManagementClient {
         model
       );
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlAddAdminError.name,
         ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin, error.message),
@@ -191,9 +173,6 @@ export class ManagementClient {
         model
       );
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlAzureFirwallError.name,
         ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint, error.message),
@@ -228,9 +207,6 @@ export class ManagementClient {
       );
       this.totalFirewallRuleCount++;
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlLocalFirwallError.name,
         ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, error.message),
@@ -250,9 +226,6 @@ export class ManagementClient {
         );
       }
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlDeleteLocalFirwallError.message(this.config.sqlEndpoint, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlDeleteLocalFirwallError.name,
         ErrorMessage.SqlDeleteLocalFirwallError.message(this.config.sqlEndpoint, error.message),

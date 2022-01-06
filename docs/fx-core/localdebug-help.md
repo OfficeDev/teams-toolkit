@@ -13,14 +13,14 @@ During debugging, a localhost development certificate will also be automatically
 Some frequently asked questions are listed bellow.
 
 ## Which ports will be used?
-| Port | Component |
+| Component | Port |
 | --- | --- |
-| 3000 | Tab |
-| 5000 | Auth |
-| 7071 | Function |
-| 9229 | Node inspector for Function |
-| 3978 | Bot / Messaging Extension |
-| 9239 | Node inspector for Bot / Messaging Extension |
+| Tab | 53000, or 3000 (for Teams Toolkit version < 3.2.0) |
+| Auth | 55000. or 5000 (for Teams Toolkit version < 3.2.0) |
+| Function | 7071 |
+| Node inspector for Function | 9229 |
+| Bot / Messaging Extension | 3978 |
+| Node inspector for Bot / Messaging Extension | 9239 |
 
 ## What to do if some port is already in use?
 
@@ -145,9 +145,58 @@ If so, an error will show in the Tab page of your app, look like:
 
 ![Tab-Https-Not-Trusted](../images/fx-core/localdebug/tab-https-not-trusted.png)
 
-To resolve this issue, open a new tab in the same browser, go to https://localhost:3000/index.html#/tab, click the "Advanced" button and then select "Proceed to localhost (unsafe)". After doing this, refresh the Teams web client.
+To resolve this issue, open a new tab in the same browser, go to https://localhost:53000/index.html#/tab, click the "Advanced" button and then select "Proceed to localhost (unsafe)". After doing this, refresh the Teams web client.
 
 ![Continue-To-Localhost](../images/fx-core/localdebug/continue-to-localhost.png)
+
+## How to manually install the development certificate for Windows Subsystem for Linux (WSL) users?
+### Reason
+Since Teams requires https Tab hosting endpoint, a localhost development certificate will be automatically generated when you launch local debug. Teams toolkit runs on WSL but the browser runs on Windows, so the dev certificate will not be automatically installed. If the development certificate is not installed, local debug will fail after adding app to Teams.
+
+![Tab-Https-Not-Trusted](../images/fx-core/localdebug/tab-https-not-trusted.png)
+
+### Mitigation
+#### Method 1: Trust the development certificate in browser
+This method is simpler but only takes effect for current browser. You need to repeat these steps for each browser you use to debug your app.
+
+1. Open a new tab in the same browser, go to https://localhost:53000/index.html#/tab.
+2. Click the "Advanced" button and then select "Proceed to localhost (unsafe)".
+3. Refresh the Teams web client.
+
+![Continue-To-Localhost](../images/fx-core/localdebug/continue-to-localhost.png)
+
+#### Method 2: Trust the development certificate in Windows
+This method is a little bit more complex but it takes effect globally. You only need to do once for all browsers.
+
+1. Open the certificate folder of your WSL distribution in Windows Explorer (example path: `\\wsl$\{DISTRO_NAME}\home\{USER_NAME}\.fx\certificate`).
+
+    ![WSL-Cert-Folder](../images/fx-core/localdebug/wsl-cert-1-folder.png)
+
+2. Open "localhost.crt" and click "Install Certificate...".
+
+    ![WSL-Cert-Localhost-Crt](../images/fx-core/localdebug/wsl-cert-2-localhostcrt.png)
+
+3. In the "Certificate Import Wizard", select "Next".
+
+    ![WSL-Cert-Import-Wizard](../images/fx-core/localdebug/wsl-cert-3-import-wizard.png)
+
+4. Select "Place all certificates in the following store" and click "Browse".
+
+    ![WSL-Cert-Browse](../images/fx-core/localdebug/wsl-cert-4-browse.png)
+
+5. Select "Trusted Root Certification Authorities", click "OK" and then click "Next".
+
+    ![WSL-Cert-Root-Cert](../images/fx-core/localdebug/wsl-cert-5-root-cert.png)
+
+6. Click "OK" to confirm importing the certificate.
+
+    ![WSL-Cert-Confirm](../images/fx-core/localdebug/wsl-cert-6-confirm.png)
+
+7. You will see a confirmation that the import process has succeeded.
+
+    ![WSL-Cert-Succeed](../images/fx-core/localdebug/wsl-cert-7-succeed.png)
+
+8. Restart your browser to take effect.
 
 ## SPFx known issue on Teams workbench debug on macOS/Linux
 ### Error

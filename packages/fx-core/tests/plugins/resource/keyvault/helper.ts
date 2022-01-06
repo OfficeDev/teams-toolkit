@@ -5,6 +5,10 @@ import faker from "faker";
 import * as uuid from "uuid";
 import { Constants } from "../../../../src/plugins/resource/keyvault/constants";
 import { newEnvInfo } from "../../../../src/core/tools";
+import {
+  HostTypeOptionAzure,
+  AzureResourceKeyVault,
+} from "../../../../src/plugins/solution/fx-solution/question";
 
 export class TestHelper {
   static async pluginContext(): Promise<PluginContext> {
@@ -73,9 +77,11 @@ export class TestHelper {
         appName: "hello-app",
         projectId: uuid.v4(),
         solutionSettings: {
+          hostType: HostTypeOptionAzure.id,
           name: "test_solution",
           version: "1.0.0",
           activeResourcePlugins: [Constants.KeyVaultPlugin.pluginName],
+          azureResources: [AzureResourceKeyVault.id],
         },
       },
     } as unknown as PluginContext;

@@ -69,7 +69,7 @@ describe("LocalSettings provider APIs", () => {
     it("should incremental init if localSettings exists", async () => {
       let localSettings: Json | undefined;
       localSettings = localSettingsProvider.initV2(true, false, false);
-      const updateValue = "http://localhost:5000";
+      const updateValue = "http://localhost:55000";
       localSettings.auth.AuthServiceEndpoint = updateValue;
 
       await localSettingsProvider.saveJson(localSettings);
@@ -148,7 +148,7 @@ describe("LocalSettings provider APIs", () => {
   describe("load localSettings", () => {
     it("should load after save", async () => {
       const localSettings = localSettingsProvider.init(true, true, true);
-      const updateValue = "http://localhost:5000";
+      const updateValue = "http://localhost:55000";
       localSettings.auth?.set(LocalSettingsAuthKeys.SimpleAuthServiceEndpoint, updateValue);
 
       await localSettingsProvider.save(localSettings);

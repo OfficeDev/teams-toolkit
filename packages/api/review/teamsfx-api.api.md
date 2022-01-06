@@ -142,6 +142,8 @@ interface AzureSolutionConfig extends Json {
     // (undocumented)
     location: string;
     // (undocumented)
+    needCreateResourceGroup: boolean;
+    // (undocumented)
     provisionSucceeded: boolean;
     // (undocumented)
     resourceGroupName: string;

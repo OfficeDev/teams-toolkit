@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import * as uuid from "uuid";
 import axios from "axios";
 
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
@@ -141,4 +142,8 @@ export async function runWithRetry<T>(fn: () => Promise<T>) {
   }
 
   return fn();
+}
+
+export function getUuid(): string {
+  return uuid.v4();
 }

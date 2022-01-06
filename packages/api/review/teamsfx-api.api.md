@@ -1786,14 +1786,6 @@ interface TeamsAppResource extends AzureResource {
 }
 
 // @public (undocumented)
-interface TeamsFxAzureEnvInfo extends EnvInfoV3 {
-    // (undocumented)
-    config: EnvConfig;
-    // (undocumented)
-    state: TeamsFxAzureResourceStates;
-}
-
-// @public (undocumented)
 interface TeamsFxAzureResourceStates extends ResourceStates {
     // (undocumented)
     [key: string]: AzureResource;
@@ -2068,7 +2060,6 @@ export { v2 }
 declare namespace v3 {
     export {
         EnvInfoV3,
-        TeamsFxAzureEnvInfo,
         CloudResource,
         ResourceStates,
         AzureResource,

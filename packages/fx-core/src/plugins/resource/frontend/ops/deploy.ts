@@ -20,7 +20,7 @@ import fs from "fs-extra";
 import path from "path";
 import { TelemetryHelper } from "../utils/telemetry-helper";
 import { envFileName, envFileNamePrefix, RemoteEnvs } from "../env";
-import { IProgressHandler } from "../../../../../../api/build";
+import { IProgressHandler } from "@microsoft/teamsfx-api";
 import * as v3error from "../v3/error";
 
 interface DeploymentInfo {

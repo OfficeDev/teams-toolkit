@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import * as path from "path";
-import * as chai from "chai";
+import chai from "chai";
 import * as dotnetUtils from "../utils/dotnet";
 import * as chaiAsPromised from "chai-as-promised";
 import { logger } from "../adapters/testLogger";

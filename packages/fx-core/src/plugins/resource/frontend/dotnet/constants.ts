@@ -43,7 +43,7 @@ export class DefaultProvisionConfigs {
 export class DotnetPluginInfo {
   static readonly pluginName = "fx-resource-dotnet";
   static readonly displayName = "Dotnet";
-  static readonly alias = "bz";
+  static readonly alias = "DN";
   static readonly issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new";
   static readonly helpLink = "https://aka.ms/teamsfx-bz-help";
 

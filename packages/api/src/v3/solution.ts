@@ -40,7 +40,8 @@ export interface ISolution {
    */
   scaffold: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { module?: string; template?: OptionItem }
+    inputs: InputsWithProjectPath & { module?: string; template?: OptionItem },
+    localSettings?: Json
   ) => Promise<Result<Void, FxError>>;
 
   /**

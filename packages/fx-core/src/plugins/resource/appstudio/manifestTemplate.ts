@@ -179,31 +179,36 @@ export async function addCapabilities(
   }
   const remoteManifest = remoteManifestRes.value;
 
+  let staticTabIndex = remoteManifest.staticTabs?.length ?? 0;
+
   capabilities.map((capability) => {
     switch (capability.name) {
       case "staticTab":
         if (!localManifest.staticTabs) {
-          Object.assign(localManifest.staticTabs, []);
+          Object.assign(localManifest, { staticTabs: [] });
         }
         if (!remoteManifest.staticTabs) {
-          Object.assign(remoteManifest.staticTabs, []);
+          Object.assign(remoteManifest, { staticTabs: [] });
         }
         if (capability.snippet) {
           localManifest.staticTabs!.push(capability.snippet.local);
           remoteManifest.staticTabs!.push(capability.snippet.remote);
         } else {
+          STATIC_TABS_TPL_LOCAL_DEBUG[0].entityId = "index" + staticTabIndex;
+          STATIC_TABS_TPL_FOR_MULTI_ENV[0].entityId = "index" + staticTabIndex;
           localManifest.staticTabs = localManifest.staticTabs!.concat(STATIC_TABS_TPL_LOCAL_DEBUG);
           remoteManifest.staticTabs = remoteManifest.staticTabs!.concat(
             STATIC_TABS_TPL_FOR_MULTI_ENV
           );
+          staticTabIndex++;
         }
         break;
       case "configurableTab":
         if (!localManifest.configurableTabs) {
-          Object.assign(localManifest.configurableTabs, []);
+          Object.assign(localManifest, { configurableTabs: [] });
         }
         if (!remoteManifest.configurableTabs) {
-          Object.assign(remoteManifest.configurableTabs, []);
+          Object.assign(remoteManifest, { configurableTabs: [] });
         }
         if (capability.snippet) {
           localManifest.configurableTabs!.push(capability.snippet.local);
@@ -219,10 +224,10 @@ export async function addCapabilities(
         break;
       case "Bot":
         if (!localManifest.bots) {
-          Object.assign(localManifest.bots, []);
+          Object.assign(localManifest, { bots: [] });
         }
         if (!remoteManifest.bots) {
-          Object.assign(remoteManifest.bots, []);
+          Object.assign(remoteManifest, { bots: [] });
         }
         if (capability.snippet) {
           localManifest.bots!.push(capability.snippet.local);
@@ -234,10 +239,10 @@ export async function addCapabilities(
         break;
       case "MessageExtension":
         if (!localManifest.composeExtensions) {
-          Object.assign(localManifest.composeExtensions, []);
+          Object.assign(localManifest, { composeExtensions: [] });
         }
         if (!remoteManifest.composeExtensions) {
-          Object.assign(remoteManifest.composeExtensions, []);
+          Object.assign(remoteManifest, { composeExtensions: [] });
         }
         if (capability.snippet) {
           localManifest.composeExtensions!.push(capability.snippet.local);

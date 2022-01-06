@@ -23,59 +23,6 @@ import { ResourceAlreadyAddedError } from "./error";
 import { createSelectModuleQuestionNode, selectResourceQuestion } from "../../utils/questions";
 import { getModule } from "./utils";
 import { InvalidInputError } from "../../utils/error";
-@Service(BuiltInResourcePluginNames.storage)
-export class AzureStoragePlugin implements v3.ResourcePlugin {
-  resourceType = "Azure Storage";
-  description = "Azure Storage";
-  name = BuiltInResourcePluginNames.storage;
-  async generateResourceTemplate(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    return ok({
-      kind: "bicep",
-      template: {
-        Provision: {
-          Orchestration: "Orchestration",
-          Reference: {
-            endpoint: "provisionOutputs.azureStorageOutput.value.endpoint",
-            domain: "provisionOutputs.azureStorageOutput.value.domain",
-          },
-          Modules: {
-            azureStorage: "",
-          },
-        },
-        Parameters: {
-          azureStorageK1: "v1",
-        },
-      },
-    });
-  }
-  async provisionResource(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: TokenProvider
-  ): Promise<Result<v3.CloudResource, FxError>> {
-    const config: v3.AzureStorage = {
-      domain: "huajie1214dev35e42dtab.z19.web.core.windows.net",
-      endpoint: "https://huajie1214dev35e42dtab.z19.web.core.windows.net",
-      storageResourceId:
-        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Storage/storageAccounts/huajie1214dev35e42dtab",
-    };
-    return ok(config);
-  }
-
-  async deploy(
-    ctx: v2.Context,
-    inputs: v3.PluginDeployInputs,
-    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
-  ): Promise<Result<Void, FxError>> {
-    ctx.logProvider.info(`fx-resource-azure-storage deploy success!`);
-    return ok(Void);
-  }
-}
 @Service(BuiltInResourcePluginNames.bot)
 export class AzureBotPlugin implements v3.ResourcePlugin {
   resourceType = "Azure Bot";

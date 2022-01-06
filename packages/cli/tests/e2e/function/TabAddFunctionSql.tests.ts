@@ -20,6 +20,7 @@ import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { FunctionValidator } from "../../commonlib";
+import { getUuid } from "../../commonlib/utilities";
 
 describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();
@@ -42,7 +43,7 @@ describe("Configuration successfully changed when with different plugins", funct
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(
       projectPath,
-      " --sql-admin-name Abc123321 --sql-password Cab232332"
+      `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`
     );
 
     // Assert

@@ -43,7 +43,7 @@ describe("Test Azure Key Vault", function () {
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
-    setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
 
     // add Azure Function
     await execAsync(`teamsfx resource add azure-function --function-name func1`, {

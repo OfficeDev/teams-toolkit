@@ -1,5 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import * as uuid from "uuid";
 import axios from "axios";
 
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
@@ -34,7 +35,7 @@ export function parseFromResourceId(pattern: RegExp, resourceId: string): string
   return result ? result[1].trim() : "";
 }
 
-export async function getWebappConfigs(
+export async function getWebappSettings(
   subscriptionId: string,
   rg: string,
   name: string,
@@ -46,6 +47,29 @@ export async function getWebappConfigs(
   try {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     const getResponse = await axios.post(baseUrlAppSettings(subscriptionId, rg, name));
+    if (!getResponse || !getResponse.data || !getResponse.data.properties) {
+      return undefined;
+    }
+
+    return getResponse.data.properties;
+  } catch (error) {
+    console.log(error);
+    return undefined;
+  }
+}
+
+export async function getWebappConfigs(
+  subscriptionId: string,
+  rg: string,
+  name: string,
+  token: string
+) {
+  const baseUrlAppConfigs = (subscriptionId: string, rg: string, name: string) =>
+    `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/web?api-version=2021-02-01`;
+
+  try {
+    axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+    const getResponse = await axios.get(baseUrlAppConfigs(subscriptionId, rg, name));
     if (!getResponse || !getResponse.data || !getResponse.data.properties) {
       return undefined;
     }
@@ -118,4 +142,8 @@ export async function runWithRetry<T>(fn: () => Promise<T>) {
   }
 
   return fn();
+}
+
+export function getUuid(): string {
+  return uuid.v4();
 }

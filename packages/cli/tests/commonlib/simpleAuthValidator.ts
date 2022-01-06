@@ -4,12 +4,12 @@
 import { isArmSupportEnabled } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
-import { ConfigKey, PluginId } from "./constants";
+import { StateConfigKey, PluginId } from "./constants";
 import { IAadObject } from "./interfaces/IAADDefinition";
 import {
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
-  getWebappConfigs,
+  getWebappSettings,
   getWebappServicePlan,
 } from "./utilities";
 
@@ -38,8 +38,8 @@ export class SimpleAuthValidator {
       simpleAuthObject = <ISimpleAuthObject>ctx[PluginId.SimpleAuth];
     } else {
       simpleAuthObject = {
-        endpoint: ctx[PluginId.SimpleAuth][ConfigKey.endpoint],
-        webAppResourceId: ctx[PluginId.SimpleAuth][ConfigKey.webAppResourceId],
+        endpoint: ctx[PluginId.SimpleAuth][StateConfigKey.endpoint],
+        webAppResourceId: ctx[PluginId.SimpleAuth][StateConfigKey.webAppResourceId],
       } as ISimpleAuthObject;
     }
     chai.assert.exists(simpleAuthObject);
@@ -49,8 +49,8 @@ export class SimpleAuthValidator {
       this.subscriptionId = getSubscriptionIdFromResourceId(simpleAuthObject.webAppResourceId!);
       this.rg = getResourceGroupNameFromResourceId(simpleAuthObject.webAppResourceId!);
     } else {
-      this.subscriptionId = ctx[ConfigKey.solutionPluginName][ConfigKey.subscriptionId];
-      this.rg = ctx[ConfigKey.solutionPluginName][ConfigKey.resourceGroupName];
+      this.subscriptionId = ctx[PluginId.Solution][StateConfigKey.subscriptionId];
+      this.rg = ctx[PluginId.Solution][StateConfigKey.resourceGroupName];
     }
 
     chai.assert.exists(this.subscriptionId);
@@ -76,7 +76,7 @@ export class SimpleAuthValidator {
     const token = (await tokenCredential?.getToken())?.accessToken;
 
     console.log("Validating app settings.");
-    const response = await getWebappConfigs(
+    const response = await getWebappSettings(
       this.subscriptionId,
       this.rg,
       resourceName,

@@ -491,6 +491,11 @@
         "enablement": "never"
       },
       {
+        "command": "fx-extension.validate-local-prerequisites",
+        "title": "Teams - Validate Local Prerequisites",
+        "enablement": "never"
+      },
+      {
         "command": "fx-extension.pre-debug-check",
         "title": "Teams - Pre Debug Check",
         "enablement": "never"

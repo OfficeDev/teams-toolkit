@@ -581,13 +581,12 @@ kind: 'app'
   );
   newServerFarms.push(configTestServerFarm);
 
-  // TODO: should uncomment this part of code when the bug is resolved:
-  // https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/12902499
-  // const mainTestServerFarm = "main_testResource";
-  // await fs.appendFile(
-  //   path.join(bicepFileFolder, TestFilePath.mainFileName),
-  //   customizedServerFarmsBicepTemplate.replace(pattern, mainTestServerFarm));
-  // newServerFarms.push(mainTestServerFarm);
+  const mainTestServerFarm = "main_testResource";
+  await fs.appendFile(
+    path.join(bicepFileFolder, TestFilePath.mainFileName),
+    customizedServerFarmsBicepTemplate.replace(pattern, mainTestServerFarm)
+  );
+  newServerFarms.push(mainTestServerFarm);
 
   return newServerFarms;
 }

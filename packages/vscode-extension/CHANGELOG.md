@@ -1,4 +1,17 @@
 # Changelog
+
+## 3.1.2 - Jan 10, 2022
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- Use Service Principle to login Azure account in CICD template.
+- Support build React Tab app for multiple environments.
+
+Enhancement:
+- Improve the debugging experience on WSL.
+- Support .NET SDK 6.0.
+- Speed up NPM installation.
+
 ## 3.1.1 - Dec 27, 2021
 This is a hotfix version.
 

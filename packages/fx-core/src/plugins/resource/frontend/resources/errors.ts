@@ -11,7 +11,7 @@ export enum ErrorType {
   System,
 }
 
-const tips = {
+export const tips = {
   checkLog: "Check log for more information.",
   reScaffold: `Run 'Start A New Project' again.`,
   doProvision: `Run 'Provision Resource' before this command.`,

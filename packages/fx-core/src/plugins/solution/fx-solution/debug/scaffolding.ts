@@ -184,7 +184,13 @@ export async function _scaffoldLocalDebugSettings(
         );
 
         // generate localSettings.json
-        await scaffoldLocalSettingsJson(projectSetting, inputs, cryptoProvider, localSettings);
+
+        localSettings = await scaffoldLocalSettingsJson(
+          projectSetting,
+          inputs,
+          cryptoProvider,
+          localSettings
+        );
 
         // add 'npm install' scripts into root package.json
         const packageJsonPath = inputs.projectPath;
@@ -238,7 +244,7 @@ export async function _scaffoldLocalDebugSettings(
     TelemetryEventName.scaffoldLocalDebugSettings,
     telemetryProperties
   );
-  return ok(Void);
+  return ok(localSettings as Json);
 }
 
 async function scaffoldLocalSettingsJson(
@@ -246,7 +252,7 @@ async function scaffoldLocalSettingsJson(
   inputs: Inputs,
   cryptoProvider: CryptoProvider,
   localSettings?: Json
-): Promise<void> {
+): Promise<Json> {
   const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath!);
 
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSetting);
@@ -267,4 +273,5 @@ async function scaffoldLocalSettingsJson(
     localSettings = localSettingsProvider.initV2(includeFrontend, includeBackend, includeBot);
     await localSettingsProvider.saveJson(localSettings, cryptoProvider);
   }
+  return localSettings;
 }

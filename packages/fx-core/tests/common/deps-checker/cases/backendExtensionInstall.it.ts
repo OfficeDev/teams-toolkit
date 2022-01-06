@@ -4,7 +4,7 @@
 import * as path from "path";
 import chai from "chai";
 import * as dotnetUtils from "../utils/dotnet";
-import * as chaiAsPromised from "chai-as-promised";
+import chaiAsPromised from "chai-as-promised";
 import { logger } from "../adapters/testLogger";
 import { TestTelemetry } from "../adapters/testTelemetry";
 import { isNonEmptyDir } from "../utils/common";

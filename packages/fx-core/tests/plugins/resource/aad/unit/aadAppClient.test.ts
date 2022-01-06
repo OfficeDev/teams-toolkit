@@ -15,7 +15,10 @@ import {
   TokenProvider,
 } from "../../../../../src/plugins/resource/aad/utils/tokenProvider";
 import { GraphClient } from "../../../../../src/plugins/resource/aad/graph";
-import { RequiredResourceAccess } from "../../../../../src/plugins/resource/aad/interfaces/IAADDefinition";
+import {
+  IAADDefinition,
+  RequiredResourceAccess,
+} from "../../../../../src/plugins/resource/aad/interfaces/IAADDefinition";
 import { AppStudio } from "../../../../../src/plugins/resource/aad/appStudio";
 import { UserError } from "@microsoft/teamsfx-api";
 import { SystemError } from "@microsoft/teamsfx-api";
@@ -179,7 +182,11 @@ describe("AAD App Client Test", () => {
     it("Happy Path: Graph", async () => {
       TokenProvider.init(ctx, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
-      const redirectUris = ["redirectUri"];
+      const redirectUris: IAADDefinition = {
+        web: {
+          redirectUris: ["redirectUri"],
+        },
+      };
 
       sinon.stub(GraphClient, "updateAADApp").resolves();
       await AadAppClient.updateAadAppRedirectUri(
@@ -193,7 +200,11 @@ describe("AAD App Client Test", () => {
     it("Happy Path: App Studio", async () => {
       TokenProvider.init(ctx, TokenAudience.AppStudio);
       const objectId = faker.datatype.uuid();
-      const redirectUris = ["redirectUri"];
+      const redirectUris: IAADDefinition = {
+        web: {
+          redirectUris: ["redirectUri"],
+        },
+      };
 
       sinon.stub(AppStudio, "updateAADApp").resolves();
       await AadAppClient.updateAadAppRedirectUri(
@@ -207,7 +218,11 @@ describe("AAD App Client Test", () => {
     it("System Error", async () => {
       TokenProvider.init(ctx, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
-      const redirectUris = ["redirectUri"];
+      const redirectUris: IAADDefinition = {
+        web: {
+          redirectUris: ["redirectUri"],
+        },
+      };
 
       const error = {
         response: {
@@ -232,7 +247,11 @@ describe("AAD App Client Test", () => {
     it("User Error", async () => {
       TokenProvider.init(ctx, TokenAudience.Graph);
       const objectId = faker.datatype.uuid();
-      const redirectUris = ["redirectUri"];
+      const redirectUris: IAADDefinition = {
+        web: {
+          redirectUris: ["redirectUri"],
+        },
+      };
 
       const error = {
         response: {

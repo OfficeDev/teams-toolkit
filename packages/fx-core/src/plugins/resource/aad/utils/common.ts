@@ -5,6 +5,7 @@ import { LogProvider, PluginContext } from "@microsoft/teamsfx-api";
 import { isMultiEnvEnabled } from "../../../..";
 import { ConfigFilePath, ConfigKeys, Constants, Messages } from "../constants";
 import { GetSkipAppConfigError } from "../errors";
+import { IAADDefinition } from "../interfaces/IAADDefinition";
 import { ResultFactory } from "../results";
 import { ConfigUtils } from "./configs";
 import { TelemetryUtils } from "./telemetry";
@@ -106,5 +107,20 @@ export class Utils {
     } else {
       return false;
     }
+  }
+
+  public static parseRedirectUriMessage(redirectUris: IAADDefinition): string {
+    let message = "";
+    if (redirectUris.web && redirectUris.web.redirectUris) {
+      message += `Platform: Web, RedirectUri: ${redirectUris.web.redirectUris.join(",")};`;
+    }
+
+    if (redirectUris.spa && redirectUris.spa.redirectUris) {
+      message += `Platform: Single Page Application, RedirectUri: ${redirectUris.spa.redirectUris.join(
+        ","
+      )};`;
+    }
+
+    return message;
   }
 }

@@ -44,7 +44,11 @@ import {
   TemplatePathInfo,
 } from "./constants";
 import { IPermission } from "./interfaces/IPermission";
-import { RequiredResourceAccess, ResourceAccess } from "./interfaces/IAADDefinition";
+import {
+  IAADDefinition,
+  RequiredResourceAccess,
+  ResourceAccess,
+} from "./interfaces/IAADDefinition";
 import { validate as uuidValidate } from "uuid";
 import { IPermissionList } from "./interfaces/IPermissionList";
 import * as jsonPermissionList from "./permissions/permissions.json";
@@ -217,9 +221,10 @@ export class AadAppForTeamsImpl {
     await DialogUtils.progress?.start(ProgressDetail.Starting);
     await DialogUtils.progress?.next(ProgressDetail.UpdateRedirectUri);
 
-    const redirectUris: string[] = AadAppForTeamsImpl.getRedirectUris(
+    const redirectUris: IAADDefinition = AadAppForTeamsImpl.getRedirectUris(
       config.frontendEndpoint,
-      config.botEndpoint
+      config.botEndpoint,
+      config.clientId!
     );
     await AadAppClient.updateAadAppRedirectUri(
       ctx,
@@ -402,15 +407,27 @@ export class AadAppForTeamsImpl {
 
   private static getRedirectUris(
     frontendEndpoint: string | undefined,
-    botEndpoint: string | undefined
+    botEndpoint: string | undefined,
+    clientId: string
   ) {
-    const redirectUris: string[] = [];
+    const redirectUris: IAADDefinition = {
+      web: {
+        redirectUris: [],
+      },
+      spa: {
+        redirectUris: [],
+      },
+    };
     if (frontendEndpoint) {
-      redirectUris.push(`${frontendEndpoint}/auth-end.html`);
+      redirectUris.web?.redirectUris?.push(`${frontendEndpoint}/auth-end.html`);
+      redirectUris.spa?.redirectUris?.push(`${frontendEndpoint}/auth-end.html/blank.html`);
+      redirectUris.spa?.redirectUris?.push(
+        `${frontendEndpoint}/auth-end.html?clientId=${clientId}`
+      );
     }
 
     if (botEndpoint) {
-      redirectUris.push(`${botEndpoint}/auth-end.html`);
+      redirectUris.web?.redirectUris?.push(`${botEndpoint}/auth-end.html`);
     }
 
     return redirectUris;

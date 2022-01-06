@@ -78,10 +78,11 @@ export class CliHelper {
     appName: string,
     testFolder: string,
     capability: Capability,
-    processEnv?: NodeJS.ProcessEnv
+    processEnv?: NodeJS.ProcessEnv,
+    options = ""
   ) {
     const result = await execAsync(
-      `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} `,
+      `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`,
       {
         cwd: testFolder,
         env: processEnv ? processEnv : process.env,
@@ -151,7 +152,7 @@ export class CliHelper {
         );
       } else {
         value = arr[1].trim() as string;
-        console.log(`[Successfully] ${message} Value: ${value}`);
+        console.log(`[Successfully] ${message}.`);
       }
     }
     return value;

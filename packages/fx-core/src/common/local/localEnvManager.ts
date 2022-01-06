@@ -57,7 +57,9 @@ export class LocalEnvManager {
     const depsTelemetry = new DepsTelemetryAdapter(this.telemetry);
     const depsManager = new DepsManager(depsLogger, depsTelemetry);
 
-    return await depsManager.ensureDependencies(this.getValidDeps(projectSettings), {});
+    return await depsManager.ensureDependencies(this.getValidDeps(projectSettings), {
+      fastFail: true,
+    });
   }
 
   public async getLocalDebugEnvs(

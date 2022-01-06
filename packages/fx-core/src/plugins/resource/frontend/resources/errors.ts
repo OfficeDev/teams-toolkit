@@ -272,6 +272,12 @@ export class UnzipTemplateError extends FrontendPluginError {
   }
 }
 
+export class FileSystemError extends FrontendPluginError {
+  constructor(message: string) {
+    super(ErrorType.System, "FileSystemError", message, [tips.checkLog]);
+  }
+}
+
 export class NoBuildPathError extends FrontendPluginError {
   constructor() {
     super(ErrorType.User, "NoBuildPathError", `Failed to find 'build' folder.`, [

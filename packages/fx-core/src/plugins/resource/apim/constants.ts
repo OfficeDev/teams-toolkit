@@ -204,6 +204,7 @@ export class SolutionConfigKeys {
   public static readonly resourceGroupName: string = "resourceGroupName";
   public static readonly location: string = "location";
   public static readonly remoteTeamsAppId: string = "remoteTeamsAppId";
+  public static readonly subscriptionId: string = "subscriptionId";
 }
 
 export enum TeamsToolkitComponent {

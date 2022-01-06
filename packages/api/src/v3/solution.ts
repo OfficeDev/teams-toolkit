@@ -40,7 +40,8 @@ export interface ISolution {
    */
   scaffold: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { module?: string; template?: OptionItem }
+    inputs: InputsWithProjectPath & { module?: string; template?: OptionItem },
+    localSettings?: Json
   ) => Promise<Result<Void, FxError>>;
 
   /**
@@ -73,14 +74,14 @@ export interface ISolution {
 
   /**
    * addModule means adding a sub-project
-   *
    * @param {string[]} capabilities - capabilities for the module
+   * @returns {Json} localSettings
    */
   addModule: (
     ctx: Context,
-    localSettings: Json,
-    inputs: InputsWithProjectPath & { capabilities?: string[] }
-  ) => Promise<Result<Void, FxError>>;
+    inputs: InputsWithProjectPath & { capabilities: string[] },
+    localSettings?: Json
+  ) => Promise<Result<Json, FxError>>;
 
   //provision
   getQuestionsForProvision?: (

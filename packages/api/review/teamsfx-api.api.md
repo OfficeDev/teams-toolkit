@@ -874,9 +874,9 @@ export function isAutoSkipSelect(q: Question): boolean;
 
 // @public (undocumented)
 interface ISolution {
-    addModule: (ctx: Context_2, localSettings: Json, inputs: InputsWithProjectPath & {
-        capabilities?: string[];
-    }) => Promise<Result<Void, FxError>>;
+    addModule: (ctx: Context_2, inputs: InputsWithProjectPath & {
+        capabilities: string[];
+    }, localSettings?: Json) => Promise<Result<Json, FxError>>;
     addResource: (ctx: Context_2, inputs: InputsWithProjectPath & {
         module?: string;
         resource?: string;
@@ -914,7 +914,7 @@ interface ISolution {
     scaffold: (ctx: Context_2, inputs: InputsWithProjectPath & {
         module?: string;
         template?: OptionItem;
-    }) => Promise<Result<Void, FxError>>;
+    }, localSettings?: Json) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)

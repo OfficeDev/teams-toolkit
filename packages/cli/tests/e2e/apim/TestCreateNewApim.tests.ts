@@ -49,8 +49,7 @@ describe("Create a new API Management Service", function () {
     });
     console.log(`Add APIM resource. Error message: ${result.stderr}`);
 
-    setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    await CliHelper.provisionProject(projectPath);
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     result = await execAsyncWithRetry(`teamsfx provision`, {
       cwd: projectPath,
       env: testProcessEnv,

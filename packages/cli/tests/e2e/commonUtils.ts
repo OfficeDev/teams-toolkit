@@ -29,7 +29,13 @@ import {
   FrontendValidator,
   SimpleAuthValidator,
 } from "../commonlib";
-import { ConfigKey, fileEncoding, PluginId, TestFilePath } from "../commonlib/constants";
+import {
+  StateConfigKey,
+  fileEncoding,
+  PluginId,
+  TestFilePath,
+  ProjectSettingKey,
+} from "../commonlib/constants";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import appStudioLogin from "../../src/commonlib/appStudioLogin";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
@@ -113,26 +119,36 @@ export function getConfigFileName(
 export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
-  context[PluginId.SimpleAuth][ConfigKey.skuName] = "B1";
+  context[PluginId.SimpleAuth][StateConfigKey.skuName] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
 export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string, envName: string) {
-  const bicepParameterFile = path.join(
-    `.${ConfigFolderName}`,
-    InputConfigsFolderName,
+  const parametersFilePath = path.join(
+    projectPath,
+    TestFilePath.configFolder,
     `azure.parameters.${envName}.json`
   );
-  const parametersFilePath = path.resolve(projectPath, bicepParameterFile);
   const parameters = await fs.readJSON(parametersFilePath);
   parameters["parameters"]["provisionParameters"]["value"]["simpleAuthSku"] = "B1";
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
 }
 
+export async function getProvisionParameterValueByKey(
+  projectPath: string,
+  envName: string,
+  key: string
+): Promise<string> {
+  const parameters = await fs.readJSON(
+    path.join(projectPath, TestFilePath.configFolder, `azure.parameters.${envName}.json`)
+  );
+  return parameters["parameters"]["provisionParameters"]["value"][key];
+}
+
 export async function setBotSkuNameToB1(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
-  context[PluginId.Bot][ConfigKey.skuName] = "B1";
+  context[PluginId.Bot][StateConfigKey.skuName] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
@@ -151,7 +167,7 @@ export async function setBotSkuNameToB1Bicep(projectPath: string, envName: strin
 export async function setSkipAddingSqlUser(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
-  context[PluginId.AzureSQL][ConfigKey.skipAddingUser] = true;
+  context[PluginId.AzureSQL][StateConfigKey.skipAddingUser] = true;
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
@@ -403,6 +419,15 @@ export async function readContextMultiEnv(projectPath: string, envName: string):
   return context;
 }
 
+export async function getActivePluginsFromProjectSetting(projectPath: string): Promise<any> {
+  const projectSettings = await fs.readJSON(
+    path.join(projectPath, TestFilePath.configFolder, TestFilePath.projectSettingsFileName)
+  );
+  return projectSettings[ProjectSettingKey.solutionSettings][
+    ProjectSettingKey.activeResourcePlugins
+  ];
+}
+
 export function mockTeamsfxMultiEnvFeatureFlag() {
   const env = Object.assign({}, process.env);
   env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = "true";
@@ -514,11 +539,8 @@ export async function validateTabAndBotProjectProvision(projectPath: string) {
 
 export async function getRGAfterProvision(projectPath: string): Promise<string | undefined> {
   const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
-  if (
-    context[ConfigKey.solutionPluginName] &&
-    context[ConfigKey.solutionPluginName][ConfigKey.resourceGroupName]
-  ) {
-    return context[ConfigKey.solutionPluginName][ConfigKey.resourceGroupName];
+  if (context[PluginId.Solution] && context[PluginId.Solution][StateConfigKey.resourceGroupName]) {
+    return context[PluginId.Solution][StateConfigKey.resourceGroupName];
   }
   return undefined;
 }

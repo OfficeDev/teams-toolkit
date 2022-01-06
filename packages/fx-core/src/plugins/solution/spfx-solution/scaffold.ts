@@ -80,7 +80,8 @@ export async function getQuestionsForScaffold(
 
 export async function scaffold(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem }
+  inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem },
+  localSettings?: Json
 ): Promise<Result<Void, FxError>> {
   if (!inputs.template) {
     return err(new InvalidInputError(inputs));
@@ -97,7 +98,11 @@ export async function scaffold(
     ...inputs,
     template: templateName,
   };
-  const res = await plugin.scaffold(ctx, pluginInputs);
+  const contextWithManifest: v3.ContextWithManifest = {
+    ...ctx,
+    appManifest: { local: {}, remote: {} },
+  };
+  const res = await plugin.scaffold(contextWithManifest, pluginInputs);
   if (res.isErr()) {
     return err(res.error);
   }

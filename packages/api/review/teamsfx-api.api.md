@@ -324,6 +324,15 @@ interface Context_2 {
 }
 
 // @public (undocumented)
+interface ContextWithManifest extends Context_2 {
+    // (undocumented)
+    appManifest: {
+        local: AppManifest;
+        remote: AppManifest;
+    };
+}
+
+// @public (undocumented)
 export interface Core {
     // (undocumented)
     activateEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
@@ -1418,9 +1427,19 @@ export interface RunnableTask<T> {
 
 // @public (undocumented)
 interface ScaffoldPlugin extends Plugin_3 {
-    getQuestionsForScaffold?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getTemplates: (ctx: Context_2, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
-    scaffold: (ctx: Context_2, inputs: PluginScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
+    getQuestionsForScaffold?: (ctx: Context_2 & {
+        appManifest?: {
+            local: AppManifest;
+            remote: AppManifest;
+        };
+    }, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getTemplates: (ctx: Context_2 & {
+        appManifest?: {
+            local: AppManifest;
+            remote: AppManifest;
+        };
+    }, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
+    scaffold: (ctx: ContextWithManifest, inputs: PluginScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
 }
 
 // @public
@@ -2051,6 +2070,7 @@ declare namespace v3 {
         PluginScaffoldInputs,
         PluginDeployInputs,
         Plugin_3 as Plugin,
+        ContextWithManifest,
         ScaffoldPlugin,
         ResourcePlugin_2 as ResourcePlugin,
         Module,

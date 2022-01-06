@@ -9,8 +9,6 @@ import fs from "fs-extra";
 import path from "path";
 import { ApimValidator } from "../../commonlib";
 import {
-  execAsync,
-  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -23,6 +21,7 @@ import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
+import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 
 describe("Create a new API Management Service", function () {
   const testProcessEnv = Object.assign({}, process.env);
@@ -31,33 +30,22 @@ describe("Create a new API Management Service", function () {
   const appName = getUniqueAppName();
   const subscriptionId = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
   it(`Import API into a new API Management Service`, async function () {
     // new a project
-    let result = await execAsync(`teamsfx new --app-name ${appName} --interactive false`, {
-      cwd: testFolder,
-      env: testProcessEnv,
-      timeout: 0,
-    });
-    console.log(`Create new project. Error message: ${result.stderr}`);
-
+    await CliHelper.createProjectWithCapability(
+      appName,
+      testFolder,
+      Capability.Tab,
+      testProcessEnv
+    );
     await ApimValidator.init(subscriptionId, AzureLogin, GraphLogin);
+    await CliHelper.addResourceToProject(projectPath, Resource.AzureApim, "", testProcessEnv);
 
-    result = await execAsyncWithRetry(`teamsfx resource add azure-apim`, {
-      cwd: projectPath,
-      env: testProcessEnv,
-      timeout: 0,
-    });
-    console.log(`Add APIM resource. Error message: ${result.stderr}`);
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+    await CliHelper.provisionProject(projectPath, "", testProcessEnv);
 
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    result = await execAsyncWithRetry(`teamsfx provision`, {
-      cwd: projectPath,
-      env: testProcessEnv,
-      timeout: 0,
-    });
-    console.log(`Provision. Error message: ${result.stderr}`);
-
-    const contextRes = await loadContext(projectPath, "dev");
+    const contextRes = await loadContext(projectPath, env);
     if (!contextRes.isOk()) {
       throw contextRes.error;
     }
@@ -65,17 +53,14 @@ describe("Create a new API Management Service", function () {
 
     await ApimValidator.validateProvision(provisionContext);
 
-    result = await execAsyncWithRetry(
-      `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
-      {
-        cwd: projectPath,
-        env: testProcessEnv,
-        timeout: 0,
-      },
+    await CliHelper.deployProject(
+      ResourceToDeploy.Apim,
+      projectPath,
+      ` --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
+      testProcessEnv,
       3,
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-version v1`
     );
-    console.log(`Deploy. Error message: ${result.stderr}`);
 
     const deployContext = await fs.readJSON(getConfigFileName(appName, true));
     await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1", true);

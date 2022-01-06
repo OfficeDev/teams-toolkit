@@ -18,11 +18,10 @@ import {
   readContextMultiEnv,
   createResourceGroup,
   deleteResourceGroupByName,
-  execAsyncWithRetry,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, Resource } from "../../commonlib/constants";
+import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 import AzureLogin from "../../../src/commonlib/azureLogin";
 import GraphLogin from "../../../src/commonlib/graphLogin";
@@ -32,6 +31,7 @@ describe("Deploy to customized resource group", function () {
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
     await cleanUp(appName, projectPath, true, false, false, true);
@@ -55,27 +55,24 @@ describe("Deploy to customized resource group", function () {
     );
 
     // Provision
-    setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
     // Validate Provision
-    const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
+    const context = await readContextMultiEnv(projectPath, env);
     await ApimValidator.init(subscription, AzureLogin, GraphLogin);
     await ApimValidator.validateProvision(context);
 
     // deploy
-    const result = await execAsyncWithRetry(
-      `teamsfx deploy apim --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
-      {
-        cwd: projectPath,
-        env: process.env,
-        timeout: 0,
-      },
+    await CliHelper.deployProject(
+      ResourceToDeploy.Apim,
+      projectPath,
+      ` --open-api-document openapi/openapi.json --api-prefix ${appName} --api-version v1`,
+      process.env,
       3,
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-version v1`
     );
-    console.log(`Deploy. Error message: ${result.stderr}`);
 
     await ApimValidator.validateDeploy(context, projectPath, appName, "v1", true);
 

@@ -7,23 +7,22 @@
 
 import path from "path";
 
-import { AadValidator, FunctionValidator } from "../../commonlib";
+import { AadValidator, BotValidator } from "../../commonlib";
 import {
-  execAsync,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   cleanUp,
-  setSimpleAuthSkuNameToB1Bicep,
   readContextMultiEnv,
   createResourceGroup,
   deleteResourceGroupByName,
+  setBotSkuNameToB1Bicep,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
 import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
+import { Capability, ResourceToDeploy } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 
 describe("Deploy to customized resource group", function () {
@@ -34,27 +33,16 @@ describe("Deploy to customized resource group", function () {
 
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
-  let appName: string, projectPath: string;
+  const appName = getUniqueAppName();
+  const projectPath = path.resolve(testFolder, appName);
 
-  beforeEach(async () => {
-    appName = getUniqueAppName();
-    projectPath = path.resolve(testFolder, appName);
-  });
-
-  afterEach(async () => {
+  after(async () => {
     await cleanUp(appName, projectPath, true, false, false, true);
   });
 
-  it(`tab project can deploy function resource to customized resource group and successfully provision / deploy`, async function () {
-    // Create new tab project
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
-
-    await execAsync(`teamsfx resource add ${Resource.AzureFunction} --function-name func1`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] add function to ${projectPath}`);
+  it(`bot project can deploy bot resource to customized resource group and successfully provision / deploy`, async function () {
+    // Create new bot project
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
 
     // Create empty resource group
     const customizedRgName = `${appName}-customized-rg`;
@@ -64,17 +52,17 @@ describe("Deploy to customized resource group", function () {
     await customizeBicepFilesToCustomizedRg(
       customizedRgName,
       projectPath,
-      `name: 'functionProvision'`,
-      `name: 'addTeamsFxFunctionConfiguration'`
+      `name: 'botProvision'`,
+      `name: 'addTeamsFxBotConfiguration'`
     );
 
     // Provision
-    setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
     // deploy
-    await CliHelper.deployProject(ResourceToDeploy.Function, projectPath);
+    await CliHelper.deployProject(ResourceToDeploy.Bot, projectPath);
 
     // Assert
     {
@@ -87,10 +75,10 @@ describe("Deploy to customized resource group", function () {
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
 
-      // Validate Function App
-      const func = FunctionValidator.init(context, true);
-      await FunctionValidator.validateProvision(func, false, true);
-      await FunctionValidator.validateDeploy(func);
+      // Validate Bot
+      const bot = BotValidator.init(context, true);
+      await BotValidator.validateProvision(bot, true);
+      await BotValidator.validateDeploy(bot);
     }
 
     await deleteResourceGroupByName(customizedRgName);

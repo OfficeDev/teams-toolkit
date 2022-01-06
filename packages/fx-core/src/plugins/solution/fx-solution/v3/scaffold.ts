@@ -23,6 +23,7 @@ import {
   createSelectModuleQuestionNode,
   selectScaffoldTemplateQuestion,
 } from "../../utils/questions";
+import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { BuiltInResourcePluginNames, BuiltInScaffoldPluginNames } from "./constants";
 import { getModule } from "./utils";
 
@@ -198,7 +199,8 @@ export async function getQuestionsForScaffold(
 }
 export async function scaffold(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem }
+  inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem },
+  localSettings?: Json
 ): Promise<Result<Void, FxError>> {
   if (!inputs.template) {
     return err(new InvalidInputError(inputs));
@@ -239,6 +241,15 @@ export async function scaffold(
   const writeRes = await appStudio.SaveManifest(ctx, inputs, manifest);
   if (writeRes.isErr()) {
     return err(writeRes.error);
+  }
+
+  const scaffoldLocalDebugSettingsResult = await scaffoldLocalDebugSettings(
+    ctx,
+    inputs,
+    localSettings
+  );
+  if (scaffoldLocalDebugSettingsResult.isErr()) {
+    return scaffoldLocalDebugSettingsResult;
   }
   return ok(Void);
 }

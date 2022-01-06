@@ -35,7 +35,7 @@ describe("Add capabilities", function () {
     await cleanUp(appName, projectPath, true, false, false, true);
   });
 
-  it("messaging extnsion project can add tab capability and provision", async () => {
+  it("messaging extension project can add tab capability and provision", async () => {
     // Arrange
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.MessagingExtension);
 

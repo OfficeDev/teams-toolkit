@@ -914,7 +914,7 @@ interface ISolution {
     scaffold: (ctx: Context_2, inputs: InputsWithProjectPath & {
         module?: string;
         template?: OptionItem;
-    }) => Promise<Result<Void, FxError>>;
+    }, localSettings?: Json) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)

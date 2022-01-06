@@ -114,6 +114,7 @@ import { PanelType } from "./controls/PanelType";
 import { signedIn, signedOut } from "./commonlib/common/constant";
 import { AzureNodeChecker } from "./debug/depsChecker/azureNodeChecker";
 import { SPFxNodeChecker } from "./debug/depsChecker/spfxNodeChecker";
+import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { isValid, registerAccountTreeHandler } from "./accountTree";
@@ -823,6 +824,18 @@ async function validateDependenciesCore(depsChecker: DepsChecker): Promise<strin
   shouldContinue = shouldContinue && (await ngrokChecker.resolve());
 
   if (!shouldContinue) {
+    await debug.stopDebugging();
+    // return non-zero value to let task "exit ${command:xxx}" to exit
+    return "1";
+  }
+}
+
+/**
+ * Check & install required local prerequisites before local debug.
+ */
+export async function validateLocalPrerequisitesHandler(): Promise<string | undefined> {
+  const result = await localPrerequisites.checkAndInstall();
+  if (result.isErr()) {
     await debug.stopDebugging();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";

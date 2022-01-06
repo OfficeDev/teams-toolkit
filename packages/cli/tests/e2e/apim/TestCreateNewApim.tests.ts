@@ -51,9 +51,7 @@ describe("Create a new API Management Service", function () {
       });
       console.log(`Add APIM resource. Error message: ${result.stderr}`);
 
-      if (isMultiEnvEnabled()) {
-        setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-      }
+      await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
       result = await execAsyncWithRetry(`teamsfx provision`, {
         cwd: projectPath,
         env: testProcessEnv,

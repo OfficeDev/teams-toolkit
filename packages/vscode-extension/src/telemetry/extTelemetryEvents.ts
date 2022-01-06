@@ -84,6 +84,8 @@ export enum TelemetryEvent {
   ClickQuickStartCard = "click-quick-start-card",
 
   DebugPreCheck = "debug-precheck",
+  DebugPrerequisitesStart = "debug-prerequisites-start",
+  DebugPrerequisites = "debug-prerequisites",
   DebugStart = "debug-start",
   DebugStop = "debug-stop",
   DebugFAQ = "debug-faq",

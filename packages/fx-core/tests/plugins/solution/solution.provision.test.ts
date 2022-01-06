@@ -819,6 +819,7 @@ describe("before provision() asking for resource group info", () => {
     // Act
     const resourceGroupInfoResult = await askResourceGroupInfo(
       mockedCtx,
+      mockedCtx.azureAccountProvider!,
       mockRmClient,
       mockedCtx.answers!,
       mockedCtx.ui!,
@@ -867,6 +868,7 @@ describe("before provision() asking for resource group info", () => {
     // Act
     const resourceGroupInfoResult = await askResourceGroupInfo(
       mockedCtx,
+      mockedCtx.azureAccountProvider!,
       mockRmClient,
       mockedCtx.answers!,
       mockedCtx.ui!,
@@ -918,6 +920,7 @@ describe("before provision() asking for resource group info", () => {
     // Act
     const resourceGroupInfoResult = await askResourceGroupInfo(
       mockedCtx,
+      mockedCtx.azureAccountProvider!,
       mockRmClient,
       mockedCtx.answers!,
       mockedCtx.ui!,

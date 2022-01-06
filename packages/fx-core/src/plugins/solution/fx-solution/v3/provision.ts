@@ -3,6 +3,7 @@
 
 import { ResourceManagementClient } from "@azure/arm-resources";
 import {
+  AppStudioTokenProvider,
   AzureAccountProvider,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
@@ -11,6 +12,7 @@ import {
   ok,
   QTreeNode,
   Result,
+  SystemError,
   TokenProvider,
   UserError,
   v2,
@@ -484,7 +486,7 @@ async function checkM365Tenant(
   appStudioTokenProvider: AppStudioTokenProvider
 ): Promise<Result<Void, FxError>> {
   await appStudioTokenProvider.getAccessToken();
-  const appResource = envInfo.state[BuiltInResourcePluginNames.appStudio] as TeamsAppResource;
+  const appResource = envInfo.state[BuiltInResourcePluginNames.appStudio] as v3.TeamsAppResource;
   const m365TenantId = appResource.tenantId;
   if (!m365TenantId) {
     return ok(Void);

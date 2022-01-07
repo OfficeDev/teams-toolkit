@@ -250,6 +250,7 @@ export class PostProvisionConfig {
   public frontendEndpoint?: string;
   public botEndpoint?: string;
   public objectId?: string;
+  public clientId?: string;
   public applicationIdUri?: string;
   private isLocalDebug: boolean;
 
@@ -314,6 +315,20 @@ export class PostProvisionConfig {
         GetConfigError.message(
           Errors.GetConfigError(ConfigKeys.applicationIdUri, Plugins.pluginName)
         )
+      );
+    }
+
+    const clientId: ConfigValue = ConfigUtils.getAadConfig(
+      ctx,
+      ConfigKeys.clientId,
+      this.isLocalDebug
+    );
+    if (clientId) {
+      this.clientId = clientId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
       );
     }
   }

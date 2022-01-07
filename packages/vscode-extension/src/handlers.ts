@@ -65,6 +65,7 @@ import {
   isUserCancelError,
   isValidProject,
 } from "@microsoft/teamsfx-core";
+import * as vscode from "vscode";
 import GraphManagerInstance from "./commonlib/graphLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenInstance from "./commonlib/appStudioLogin";

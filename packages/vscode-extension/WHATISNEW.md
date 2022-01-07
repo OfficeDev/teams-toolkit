@@ -12,12 +12,14 @@ Incremental version for Teams Toolkit with multiple bugs fixes and the following
 
 New Features:
 - Use Service Principle to login Azure account in CICD template.
-- Support build React Tab app for multiple environments.
+- Support building React Tab app by different environment variables for multiple environments.
 
 Enhancement:
 - Improve the debugging experience on WSL.
 - Support .NET SDK 6.0.
 - Speed up NPM installation.
+- Improve the experience to preview manifest file and update manifest file to Developer Portal.
+- Improve CICD template by reducing dependency on project metadata file.
 
 ## 3.1.1 - Dec 27, 2021
 This is a hotfix version.

@@ -7,6 +7,7 @@ import * as chai from "chai";
 import * as tedious from "tedious";
 
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
+import { getResourceGroupNameFromResourceId, getSubscriptionIdFromResourceId } from "./utilities";
 
 const echoIpAddress = "https://api.ipify.org";
 const localRule = "AllowLocal";
@@ -21,6 +22,7 @@ const rgKey = "resourceGroupName";
 const sqlKey = "sqlEndpoint";
 const databaseKey = "databaseName";
 const identityKey = "identityName";
+const sqlResourceIdKey = "sqlResourceId";
 
 export class SqlValidator {
   static client?: SqlManagementClient;
@@ -32,9 +34,9 @@ export class SqlValidator {
   static identity?: string;
   static accessToken?: string;
 
-  public static async init(ctx: any) {
+  public static async init(ctx: any, insiderPreview = false) {
     console.log("Start to init validator for sql.");
-    this.getConfig(ctx);
+    this.getConfig(ctx, insiderPreview);
     const tokenCredential = await MockAzureAccountProvider.getAccountCredentialAsync();
 
     const sqlCredential = await MockAzureAccountProvider.getIdentityCredentialAsync();
@@ -51,9 +53,19 @@ export class SqlValidator {
     chai.expect(res.length).to.equal(count);
   }
 
-  private static getConfig(ctx: any) {
-    this.subscriptionId = ctx[solutionPluginName][subscriptionKey];
-    this.rg = ctx[solutionPluginName][rgKey];
+  public static async validateResourceGroup(rg: string) {
+    chai.expect(this.rg).to.equal(rg);
+  }
+
+  private static getConfig(ctx: any, insiderPreview = false) {
+    if (insiderPreview) {
+      const sqlResourceId = ctx[sqlPluginName][sqlResourceIdKey];
+      this.subscriptionId = getSubscriptionIdFromResourceId(sqlResourceId);
+      this.rg = getResourceGroupNameFromResourceId(sqlResourceId);
+    } else {
+      this.subscriptionId = ctx[solutionPluginName][subscriptionKey];
+      this.rg = ctx[solutionPluginName][rgKey];
+    }
     this.sqlEndpoint = ctx[sqlPluginName][sqlKey];
     this.databaseName = ctx[sqlPluginName][databaseKey];
     this.identity = ctx[identityPluginName][identityKey];

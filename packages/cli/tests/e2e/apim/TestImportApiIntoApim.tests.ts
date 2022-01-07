@@ -64,7 +64,7 @@ describe("Import API into API Management", function () {
     );
 
     const deployContext = await fs.readJSON(getConfigFileName(appName, true));
-    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v2", true);
+    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v2");
   });
 
   it(`Update an existing API version in Azure API Management`, async function () {
@@ -77,7 +77,7 @@ describe("Import API into API Management", function () {
     );
 
     const deployContext = await fs.readJSON(getConfigFileName(appName, true));
-    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1", true);
+    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
   });
 
   after(async () => {

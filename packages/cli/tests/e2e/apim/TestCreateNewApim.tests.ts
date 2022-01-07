@@ -63,7 +63,7 @@ describe("Create a new API Management Service", function () {
     );
 
     const deployContext = await fs.readJSON(getConfigFileName(appName, true));
-    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1", true);
+    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
   });
 
   after(async () => {

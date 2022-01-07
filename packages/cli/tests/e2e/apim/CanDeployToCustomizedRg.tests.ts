@@ -74,7 +74,7 @@ describe("Deploy to customized resource group", function () {
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-version v1`
     );
 
-    await ApimValidator.validateDeploy(context, projectPath, appName, "v1", true);
+    await ApimValidator.validateDeploy(context, projectPath, appName, "v1");
 
     await deleteResourceGroupByName(customizedRgName);
   });

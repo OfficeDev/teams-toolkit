@@ -4,7 +4,6 @@ import { Stage, returnUserError } from "@microsoft/teamsfx-api";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { TelemetryEvent } from "../../../src/telemetry/extTelemetryEvents";
 import { NoneFxError } from "../../../../fx-core/build";
-import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import sinon = require("sinon");
 import * as commonUtils from "../../../src/utils/commonUtils";
 
@@ -107,7 +106,6 @@ suite("ExtTelemetry", () => {
           stringProp: "some string",
           component: "extension",
           "is-existing-user": "",
-          ...(isMultiEnvEnabled() ? {} : { appid: undefined }),
         },
         { numericMeasure: 123 }
       );
@@ -133,7 +131,6 @@ suite("ExtTelemetry", () => {
           "error-type": "user",
           "error-message": `${error.message}${error.stack ? "\nstack:\n" + error.stack : ""}`,
           "error-code": "test.UserTestError",
-          ...(isMultiEnvEnabled() ? {} : { appid: undefined }),
         },
         { numericMeasure: 123 },
         ["errorProps"]
@@ -154,7 +151,6 @@ suite("ExtTelemetry", () => {
           stringProp: "some string",
           component: "extension",
           "is-existing-user": "",
-          ...(isMultiEnvEnabled() ? {} : { appid: undefined }),
         },
         { numericMeasure: 123 }
       );

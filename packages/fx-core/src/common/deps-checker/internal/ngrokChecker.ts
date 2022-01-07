@@ -4,17 +4,17 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as os from "os";
-import { ConfigFolderName, Result, ok, err } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, err, ok, Result } from "@microsoft/teamsfx-api";
 
-import { defaultHelpLink, ngrokInstallHelpLink } from "../constant/helpLink";
-import { DepsCheckerError, LinuxNotSupportedError } from "../depsError";
+import { ngrokInstallHelpLink } from "../constant/helpLink";
+import { DepsCheckerError } from "../depsError";
 import { runWithProgressIndicator } from "../util/progressIndicator";
 import { cpUtils } from "../util/cpUtils";
-import { isLinux, isWindows } from "../util/system";
+import { isWindows } from "../util/system";
 import { DepsCheckerEvent, TelemtryMessages } from "../constant/telemetry";
 import { DepsLogger } from "../depsLogger";
 import { DepsTelemetry } from "../depsTelemetry";
-import { DepsInfo, DepsChecker } from "../depsChecker";
+import { DepsChecker, DepsInfo } from "../depsChecker";
 import { Messages } from "../constant/message";
 
 const ngrokName = "ngrok";
@@ -25,7 +25,6 @@ const supportedBinVersions = ["2.3"];
 const displayNgrokName = `${ngrokName}@${installPackageVersion}`;
 
 const timeout = 5 * 60 * 1000;
-const binFolderKey = "binFolder";
 
 export class NgrokChecker implements DepsChecker {
   private readonly _logger: DepsLogger;
@@ -41,14 +40,13 @@ export class NgrokChecker implements DepsChecker {
   }
 
   public getDepsInfo(): Promise<DepsInfo> {
-    const details = new Map<string, string>();
-    details.set(binFolderKey, this.getNgrokBinFolder());
     return Promise.resolve({
       name: ngrokName,
       isLinuxSupported: true,
       installVersion: installPackageVersion,
+      binFolders: [this.getNgrokBinFolder()],
       supportedVersions: supportedPackageVersions,
-      details: details,
+      details: new Map<string, string>(),
     });
   }
 

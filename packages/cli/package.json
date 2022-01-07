@@ -19,7 +19,6 @@
     "prepack": "npm run package",
     "test:e2e": "npm run test:e2e:clean && npm run test:e2e:parallel",
     "test:e2e:clean": "ts-node tests/e2e/clean.ts",
-    "test:e2e:huajie": "mocha --parallel --reporter @mochajs/json-file-reporter \"tests/e2e/solution/ScaffoldTabThenAddFunctionAndSQL.tests.ts\"",
     "test:e2e:parallel": "mocha --parallel --reporter @mochajs/json-file-reporter \"tests/e2e/**/*.tests.ts\"",
     "test:e2e:smoke": "mocha --reporter @mochajs/json-file-reporter \"tests/e2e/smoke/*.tests.ts\"",
     "test:e2e:others": "mocha --reporter @mochajs/json-file-reporter \"tests/e2e/{,!(smoke)}/*.tests.ts\"",

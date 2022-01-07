@@ -15,9 +15,8 @@ New Features:
 - Support building React Tab app by different environment variables for multiple environments.
 
 Enhancement:
-- Improve the debugging experience on WSL.
+- Provide guidance to install development certificate on WSL. See guidance [here](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/fx-core/localdebug-help.md#how-to-manually-install-the-development-certificate-for-windows-subsystem-for-linux-wsl-users)
 - Support .NET SDK 6.0.
-- Speed up NPM installation.
 - Improve the experience to preview manifest file and update manifest file to Developer Portal.
 - Improve CICD template by reducing dependency on project metadata file.
 

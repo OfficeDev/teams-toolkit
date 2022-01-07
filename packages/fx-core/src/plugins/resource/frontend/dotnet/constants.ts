@@ -65,6 +65,9 @@ export class DotnetPathInfo {
     framework = DotnetPluginInfo.defaultFramework,
     runtime = DotnetPluginInfo.defaultRuntime
   ): string => path.join(workingPath, "bin", "Release", framework, runtime, "publish");
+
+  static readonly bicepTemplateFolder = (templateFolder: string) =>
+    path.join(templateFolder, "plugins", "resource", "webapp", "bicep");
 }
 
 export class DotnetCommands {
@@ -84,4 +87,15 @@ export class DotnetConfigInfo {
   static readonly webAppEndpoint = "endpoint";
   static readonly webAppDomain = "domain";
   static readonly projectFilePath = "projectFilePath";
+}
+
+export class WebappBicepFile {
+  static readonly configurationTemplateFileName = "webappConfiguration.template.bicep";
+  static readonly provisionTemplateFileName = "webappProvision.template.bicep";
+}
+
+export class WebappBicep {
+  static readonly webappEndpoint = "provisionOutputs.webappOutput.value.endpoint";
+  static readonly webappResourceId = "provisionOutputs.webappOutput.value.resourceId";
+  static readonly webappDomain = "provisionOutputs.webappOutput.value.domain";
 }

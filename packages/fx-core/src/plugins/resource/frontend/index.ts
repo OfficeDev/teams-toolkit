@@ -57,12 +57,11 @@ export class FrontendPlugin implements Plugin {
   }
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (FrontendPlugin.isVsPlatform(ctx)) {
-      throw new NotImplemented();
-    }
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Scaffold, () =>
-      this.frontendPluginImpl.scaffold(ctx)
+      FrontendPlugin.isVsPlatform(ctx)
+        ? this.dotnetPluginImpl.scaffold(ctx)
+        : this.frontendPluginImpl.scaffold(ctx)
     );
   }
 
@@ -115,13 +114,11 @@ export class FrontendPlugin implements Plugin {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (FrontendPlugin.isVsPlatform(ctx)) {
-      throw new NotImplemented();
-    }
-
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.GenerateArmTemplates, () =>
-      this.frontendPluginImpl.generateArmTemplates(ctx)
+      FrontendPlugin.isVsPlatform(ctx)
+        ? this.dotnetPluginImpl.generateArmTemplates(ctx)
+        : this.frontendPluginImpl.generateArmTemplates(ctx)
     );
   }
 

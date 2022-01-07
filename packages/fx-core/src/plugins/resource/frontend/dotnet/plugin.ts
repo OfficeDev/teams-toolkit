@@ -1,11 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, ok, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
+import {
+  PluginContext,
+  ok,
+  ReadonlyPluginConfig,
+  AzureSolutionSettings,
+} from "@microsoft/teamsfx-api";
 import {
   DotnetPluginInfo as PluginInfo,
   DotnetConfigInfo as ConfigInfo,
   DependentPluginInfo,
   DotnetPathInfo as PathInfo,
+  WebappBicepFile,
+  WebappBicep,
 } from "./constants";
 import { Messages } from "./resources/messages";
 import { TeamsFxResult } from "./error-factory";
@@ -18,10 +25,16 @@ import { Logger } from "../utils/logger";
 import path from "path";
 import fs from "fs-extra";
 import {
+  generateBicepFromFile,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
+  getTemplatesFolder,
 } from "../../../..";
+import { Bicep } from "../../../../common/constants";
+import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
+import { ArmTemplateResult } from "../../../../common/armInterface";
 
 type Site = WebSiteManagementModels.Site;
 
@@ -75,6 +88,56 @@ export class DotnetPluginImpl {
       return v;
     }
     throw new FetchConfigError(key);
+  }
+
+  public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
+    return ok(undefined);
+  }
+
+  public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
+    const bicepTemplateDirectory = PathInfo.bicepTemplateFolder(getTemplatesFolder());
+
+    const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionFileName);
+    const provisionWebappTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      WebappBicepFile.provisionTemplateFileName
+    );
+
+    const configTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ConfigFileName);
+    const configWebappTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      WebappBicepFile.configurationTemplateFileName
+    );
+
+    const solutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(solutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+
+    const provisionOrchestration = await generateBicepFromFile(
+      provisionTemplateFilePath,
+      pluginCtx
+    );
+    const provisionModule = await generateBicepFromFile(provisionWebappTemplateFilePath, pluginCtx);
+    const configOrchestration = await generateBicepFromFile(configTemplateFilePath, pluginCtx);
+    const configModule = await generateBicepFromFile(configWebappTemplateFilePath, pluginCtx);
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: provisionOrchestration,
+        Modules: { webapp: provisionModule },
+      },
+      Configuration: {
+        Orchestration: configOrchestration,
+        Modules: { webapp: configModule },
+      },
+      Reference: {
+        webappResourceId: WebappBicep.webappResourceId,
+        endpoint: WebappBicep.webappEndpoint,
+        domain: WebappBicep.webappDomain,
+      },
+    };
+    return ok(result);
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {

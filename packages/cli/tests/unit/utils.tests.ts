@@ -20,13 +20,12 @@ import {
   flattenNodes,
   getChoicesFromQTNodeQuestion,
   getColorizedString,
-  getConfigPath,
-  getLocalTeamsAppId,
   getProjectId,
   getSingleOptionString,
   getSystemInputs,
   getTeamsAppId,
   getVersion,
+  getConfigPath,
   isWorkspaceSupported,
   readEnvJsonFile,
   readEnvJsonFileSync,
@@ -36,11 +35,10 @@ import {
   sleep,
   toLocaleLowerCase,
   toYargsOptions,
-  writeSecretToFile,
 } from "../../src/utils";
 import { expect } from "./utils";
 import AzureAccountManager from "../../src/commonlib/azureLogin";
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 const staticOptions1: apis.StaticOptions = ["a", "b", "c"];
 const staticOptions2: apis.StaticOptions = [
@@ -361,11 +359,7 @@ describe("Utils Tests", function () {
 
     it("Fake Path", async () => {
       const result = await readProjectSecrets("fake", environmentManager.getDefaultEnvName());
-      if (isMultiEnvEnabled()) {
-        expect(result.isOk() ? result.value : result.error.name).equals("UserdataNotFound");
-      } else {
-        expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
-      }
+      expect(result.isOk() ? result.value : result.error.name).equals("UserdataNotFound");
     });
   });
 
@@ -423,11 +417,7 @@ describe("Utils Tests", function () {
     it("Fake Path", async () => {
       const result = await setSubscriptionId("fake", "fake");
       expect(result.isOk() ? result.value : result.error).instanceOf(UserError);
-      if (isMultiEnvEnabled()) {
-        expect(result.isOk() ? result.value : result.error.name).equals("WorkspaceNotSupported");
-      } else {
-        expect(result.isOk() ? result.value : result.error.name).equals("ConfigNotFound");
-      }
+      expect(result.isOk() ? result.value : result.error.name).equals("WorkspaceNotSupported");
     });
   });
 
@@ -485,44 +475,6 @@ describe("Utils Tests", function () {
 
     it("Fake Path", async () => {
       const result = getTeamsAppId("fake");
-      expect(result).equals(undefined);
-    });
-  });
-
-  describe("getLocalTeamsAppId", async () => {
-    if (isMultiEnvEnabled()) {
-      // This function is deprecated in multi-env
-      return;
-    }
-    const sandbox = sinon.createSandbox();
-
-    before(() => {
-      sandbox.stub(fs, "existsSync").callsFake((path: fs.PathLike) => {
-        return path.toString().includes("real");
-      });
-      sandbox.stub(fs, "readJsonSync").returns({
-        solution: {
-          localDebugTeamsAppId: "real",
-        },
-      });
-    });
-
-    after(() => {
-      sandbox.restore();
-    });
-
-    it("No Root Folder", async () => {
-      const result = getLocalTeamsAppId(undefined);
-      expect(result).equals(undefined);
-    });
-
-    it("Real Path", async () => {
-      const result = getLocalTeamsAppId("real");
-      expect(result).equals("real");
-    });
-
-    it("Fake Path", async () => {
-      const result = getLocalTeamsAppId("fake");
       expect(result).equals(undefined);
     });
   });
@@ -622,63 +574,33 @@ describe("Utils Tests", function () {
       sandbox.restore();
     });
 
-    if (isMultiEnvEnabled()) {
-      it("Multi env enabled and both new files and old files exist", async () => {
-        oldExist = true;
-        newExist = true;
-        const result = getProjectId("real");
-        expect(result).equals("new");
-      });
+    it("Multi env enabled and both new files and old files exist", async () => {
+      oldExist = true;
+      newExist = true;
+      const result = getProjectId("real");
+      expect(result).equals("new");
+    });
 
-      it("Multi env enabled and only new files exist", async () => {
-        oldExist = false;
-        newExist = true;
-        const result = getProjectId("real");
-        expect(result).equals("new");
-      });
+    it("Multi env enabled and only new files exist", async () => {
+      oldExist = false;
+      newExist = true;
+      const result = getProjectId("real");
+      expect(result).equals("new");
+    });
 
-      it("Multi env enabled and only old files exist", async () => {
-        oldExist = true;
-        newExist = false;
-        const result = getProjectId("real");
-        expect(result).equals("old");
-      });
+    it("Multi env enabled and only old files exist", async () => {
+      oldExist = true;
+      newExist = false;
+      const result = getProjectId("real");
+      expect(result).equals("old");
+    });
 
-      it("Multi env enabled and neither new nor old files exist", async () => {
-        oldExist = false;
-        newExist = false;
-        const result = getProjectId("real");
-        expect(result).equals(undefined);
-      });
-    } else {
-      it("Multi env disabled and both new files and old files exist", async () => {
-        oldExist = true;
-        newExist = true;
-        const result = getProjectId("real");
-        expect(result).equals("old");
-      });
-
-      it("Multi env disabled and only new files exist", async () => {
-        oldExist = false;
-        newExist = true;
-        const result = getProjectId("real");
-        expect(result).equals(undefined);
-      });
-
-      it("Multi env disabled and only old files exist", async () => {
-        oldExist = true;
-        newExist = false;
-        const result = getProjectId("real");
-        expect(result).equals("old");
-      });
-
-      it("Multi env disabled and neither new nor old files exist", async () => {
-        oldExist = false;
-        newExist = false;
-        const result = getProjectId("real");
-        expect(result).equals(undefined);
-      });
-    }
+    it("Multi env enabled and neither new nor old files exist", async () => {
+      oldExist = false;
+      newExist = false;
+      const result = getProjectId("real");
+      expect(result).equals(undefined);
+    });
   });
 
   it("getSystemInputs", async () => {

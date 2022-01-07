@@ -448,9 +448,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const localDebugDataSelector = {
     language: "json",
     scheme: "file",
-    pattern: isMultiEnvEnabled()
-      ? `**/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsJsonName}`
-      : ``,
+    pattern: `**/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsJsonName}`,
   };
 
   const adaptiveCardCodeLensProvider = new AdaptiveCardCodeLensProvider();

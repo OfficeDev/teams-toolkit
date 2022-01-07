@@ -17,7 +17,7 @@ import {
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
-import { clearCache, loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
+import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import open from "open";
 import {
   azureLoginMessage,
@@ -246,7 +246,6 @@ export class CodeFlowLogin {
     }
 
     await saveAccountId(this.accountName, undefined);
-    await clearCache(this.accountName);
     return true;
   }
 
@@ -277,6 +276,7 @@ export class CodeFlowLogin {
               "[Login] silent acquire token : " + error.message
             );
             await this.logout();
+            (this.msalTokenCache as any).storage.setCache({});
             if (refresh) {
               const accessToken = await this.login();
               return accessToken;

@@ -191,15 +191,6 @@ export async function saveAccountId(accountName: string, accountId?: string) {
   }
 }
 
-export async function clearCache(accountName: string) {
-  await fs.ensureDir(cacheDir);
-  try {
-    await fs.writeFile(cachePath + accountName + cachePathEnd, "", UTF8);
-  } catch (err) {
-    VsCodeLogInstance.error("clear cache: " + err.message);
-  }
-}
-
 export async function loadAccountId(accountName: string) {
   if (await fs.pathExists(accountPath + accountName)) {
     try {

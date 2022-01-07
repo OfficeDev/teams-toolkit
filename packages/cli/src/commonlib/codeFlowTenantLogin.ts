@@ -11,7 +11,7 @@ import { LogLevel, returnSystemError, UserError, Colors } from "@microsoft/teams
 import CliCodeLogInstance from "./log";
 import * as crypto from "crypto";
 import { AddressInfo } from "net";
-import { clearCache, loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
+import { loadAccountId, saveAccountId, UTF8 } from "./cacheAccess";
 import open from "open";
 import {
   azureLoginMessage,
@@ -189,7 +189,6 @@ export class CodeFlowTenantLogin {
       }
 
       await saveAccountId(this.accountName, undefined);
-      await clearCache(this.accountName);
     }
     return true;
   }

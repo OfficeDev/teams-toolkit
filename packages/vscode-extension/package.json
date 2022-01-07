@@ -899,7 +899,6 @@
     "test:unit:migration": "nyc mocha --require ts-node/register \"test/unit/migration/*.test.ts\"",
     "test:integration": "echo 'to be implementd'",
     "test:e2e": "echo 'to be implementd'",
-    "test:env-checker": "npm run compile && npm run copy-test-files && node out/test/integration/envChecker/runEnvCheckerTest.js",
     "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",

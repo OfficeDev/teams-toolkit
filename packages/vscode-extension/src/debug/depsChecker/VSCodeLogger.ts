@@ -7,7 +7,7 @@ import { OutputChannel } from "vscode";
 import { LogLevel } from "@microsoft/teamsfx-api";
 import { DepsLogger } from "@microsoft/teamsfx-core";
 
-export class VscodeLogger implements DepsLogger {
+export class VSCodeLogger implements DepsLogger {
   public outputChannel: OutputChannel;
   private logger: VsCodeLogProvider;
   private detailLogLines: string[] = [];
@@ -61,4 +61,4 @@ export class VscodeLogger implements DepsLogger {
   }
 }
 
-export const vscodeLogger = new VscodeLogger(commonlibLogger);
+export const vscodeLogger = new VSCodeLogger(commonlibLogger);

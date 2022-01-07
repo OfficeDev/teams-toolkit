@@ -20,6 +20,9 @@ mock("../../../src/debug/depsChecker/vscodeUtils", {
   showWarningMessage: async function (message: string, button: MessageItem) {},
   openUrl: async function (url: string) {},
   checkerEnabled: function (key: string) {},
+  isNodeCheckerEnabled: function () {},
+  isFuncCoreToolsEnabled: function () {},
+  isDotnetCheckerEnabled: function () {},
   hasFunction: async function () {},
   hasNgrok: async function () {},
   hasBot: async function () {},
@@ -53,10 +56,7 @@ suite("[Checker UT - Extension]", () => {
       chai.util.addMethod(checker, "ensure", async function () {
         return getAzureF5DepsStatus();
       });
-      sandbox.stub(vscodeUtils, "checkerEnabled").returns(true);
-      sandbox.stub(vscodeUtils, "hasFunction").resolves(true);
-      sandbox.stub(vscodeUtils, "hasNgrok").resolves(true);
-      sandbox.stub(vscodeUtils, "hasBot").resolves(true);
+      stubEnabled(sandbox);
       sandbox.stub(os, "type").onFirstCall().returns("Windows_NT").onSecondCall().returns("Linux");
 
       const shouldContinue = await checker.resolve(deps);
@@ -91,10 +91,7 @@ suite("[Checker UT - Extension]", () => {
         return getFailedDepsStatus(error);
       });
       sandbox.stub(os, "type").returns("Windows_NT");
-      sandbox.stub(vscodeUtils, "checkerEnabled").returns(true);
-      sandbox.stub(vscodeUtils, "hasFunction").resolves(true);
-      sandbox.stub(vscodeUtils, "hasNgrok").resolves(true);
-      sandbox.stub(vscodeUtils, "hasBot").resolves(true);
+      stubEnabled(sandbox);
 
       const openUrlSpy = sandbox.stub(vscodeUtils, "openUrl").callsFake(async (url: string) => {});
       const showSpy = sandbox.stub(vscodeUtils, "showWarningMessage");
@@ -121,10 +118,7 @@ suite("[Checker UT - Extension]", () => {
         return getFailedDepsStatus(undefined);
       });
       sandbox.stub(os, "type").returns("Linux");
-      sandbox.stub(vscodeUtils, "checkerEnabled").returns(true);
-      sandbox.stub(vscodeUtils, "hasFunction").resolves(true);
-      sandbox.stub(vscodeUtils, "hasNgrok").resolves(true);
-      sandbox.stub(vscodeUtils, "hasBot").resolves(true);
+      stubEnabled(sandbox);
 
       const showSpy = sandbox.stub(vscodeUtils, "showWarningMessage");
       const openUrlSpy = sandbox.stub(vscodeUtils, "openUrl").callsFake(async (url: string) => {});
@@ -155,14 +149,9 @@ suite("[Checker UT - Extension]", () => {
 
       sandbox.stub(os, "type").returns("Windows_NT");
       sandbox.stub(vscodeUtils, "hasFunction").resolves(false);
-      sandbox
-        .stub(vscodeUtils, "checkerEnabled")
-        .withArgs("validateFuncCoreTools")
-        .returns(true)
-        .withArgs(
-          sinon.match((input: string) => ["validateNode", "validateDotnetSdk"].includes(input))
-        )
-        .returns(false);
+      sandbox.stub(vscodeUtils, "isFuncCoreToolsEnabled").resolves(true);
+      sandbox.stub(vscodeUtils, "isNodeCheckerEnabled").resolves(false);
+      sandbox.stub(vscodeUtils, "isDotnetCheckerEnabled").resolves(false);
 
       sandbox.stub(vscodeUtils, "hasNgrok").onCall(0).resolves(false).onCall(1).resolves(true);
       sandbox.stub(vscodeUtils, "hasBot").onCall(0).resolves(true).onCall(1).resolves(false);
@@ -239,4 +228,14 @@ function getFailedDepsStatus(error: DepsCheckerError | undefined) {
       details: { isLinuxSupported: true, supportedVersions: [] },
     },
   ];
+}
+
+function stubEnabled(sandbox: sinon.SinonSandbox) {
+  sandbox.stub(vscodeUtils, "checkerEnabled").returns(true);
+  sandbox.stub(vscodeUtils, "hasFunction").resolves(true);
+  sandbox.stub(vscodeUtils, "hasNgrok").resolves(true);
+  sandbox.stub(vscodeUtils, "hasBot").resolves(true);
+  sandbox.stub(vscodeUtils, "isNodeCheckerEnabled").resolves(true);
+  sandbox.stub(vscodeUtils, "isFuncCoreToolsEnabled").resolves(true);
+  sandbox.stub(vscodeUtils, "isDotnetCheckerEnabled").resolves(true);
 }

@@ -8,7 +8,7 @@ import { TelemetryProperty } from "../../telemetry/extTelemetryEvents";
 import { ExtTelemetry } from "../../telemetry/extTelemetry";
 import { DepsTelemetry, DepsCheckerEvent, TelemetryMessurement } from "@microsoft/teamsfx-core";
 
-export class VscodeTelemetry implements DepsTelemetry {
+export class VSCodeTelemetry implements DepsTelemetry {
   private readonly _telemetryComponentType = "extension:debug:envchecker";
 
   public sendEvent(
@@ -64,4 +64,4 @@ export class VscodeTelemetry implements DepsTelemetry {
   }
 }
 
-export const vscodeTelemetry = new VscodeTelemetry();
+export const vscodeTelemetry = new VSCodeTelemetry();

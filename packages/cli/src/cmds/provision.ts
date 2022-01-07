@@ -19,7 +19,6 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import HelpParamGenerator from "../helpParamGenerator";
 import { sqlPasswordConfirmQuestionName, sqlPasswordQustionName } from "../constants";
-import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
 export default class Provision extends YargsCommand {
   public readonly commandHead = `provision`;
@@ -29,13 +28,11 @@ export default class Provision extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp(Stage.provision);
-    if (isMultiEnvEnabled()) {
-      yargs.option(this.resourceGroupParam, {
-        require: false,
-        description: "The name of an existing resource group",
-        type: "string",
-      });
-    }
+    yargs.option(this.resourceGroupParam, {
+      require: false,
+      description: "The name of an existing resource group",
+      type: "string",
+    });
     return yargs.version(false).options(this.params);
   }
 
@@ -59,10 +56,8 @@ export default class Provision extends YargsCommand {
     }
     const inputs = getSystemInputs(rootFolder, args.env);
 
-    if (isMultiEnvEnabled()) {
-      if (this.resourceGroupParam in args) {
-        inputs.targetResourceGroupName = args[this.resourceGroupParam];
-      }
+    if (this.resourceGroupParam in args) {
+      inputs.targetResourceGroupName = args[this.resourceGroupParam];
     }
 
     const result = await activate(rootFolder);

@@ -19,7 +19,7 @@ export type DependencyStatus = {
   details: {
     isLinuxSupported: boolean;
     supportedVersions: string[];
-    binFolder?: string;
+    binFolders?: string[];
   };
   error?: DepsCheckerError;
 };
@@ -91,9 +91,6 @@ export class DepsManager {
     }
 
     const depsInfo: DepsInfo = await checker.getDepsInfo();
-    const binFolder = depsInfo.details.has("binFolder")
-      ? depsInfo.details.get("binFolder")
-      : undefined;
     return {
       name: depsInfo.name,
       type: type,
@@ -102,7 +99,7 @@ export class DepsManager {
       details: {
         isLinuxSupported: depsInfo.isLinuxSupported,
         supportedVersions: depsInfo.supportedVersions,
-        binFolder: binFolder,
+        binFolders: depsInfo.binFolders,
       },
       error: error,
     };

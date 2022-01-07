@@ -43,9 +43,11 @@ describe("FuncToolChecker E2E Test", async () => {
     );
 
     const res = await funcToolChecker.resolve();
+    const depsInfo = await funcToolChecker.getDepsInfo();
 
     expect(res.isOk() && res.value).to.be.equal(true);
     expect(await funcToolChecker.isInstalled()).to.be.equal(true);
+    expect(depsInfo.binFolders).to.be.equal(funcToolChecker.getPortableFuncBinFolders());
     assert.isTrue(
       /node "[^"]*"$/g.test(await funcToolChecker.command()),
       `should use portable func, and func command = ${await funcToolChecker.command()}`

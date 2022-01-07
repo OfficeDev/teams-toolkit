@@ -39,15 +39,10 @@ export class TeamsFxContainer<T extends Component> implements ComponentContainer
     });
   }
 
-  public resolve(componentName: string, version?: string): unknown {
+  public resolve(componentName: string): unknown {
     const component = this.registry.get(componentName);
     if (!component) {
       throw new Error(`Component ${componentName} doesn't exist`);
-    }
-    if (version && !satisfies(component.version, version)) {
-      throw new Error(
-        `Component ${componentName} version ${component.version} doesn't satisfy version ${version}`
-      );
     }
     if (!this.initialized.get(componentName)) {
       const componentLogger = this.loggers.get(componentName);

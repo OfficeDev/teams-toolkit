@@ -10,12 +10,11 @@ export interface Mapping {
 export type ComponentOption = Record<string, unknown>;
 
 export interface ComponentContainer {
-  resolve(componentName: string, version?: string): unknown;
+  resolve(componentName: string): unknown;
 }
 
 export interface Component extends Mapping {
   name: string;
-  version: string;
   initialize(container: ComponentContainer, logger: Logger): void;
 }
 

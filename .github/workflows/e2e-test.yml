@@ -197,7 +197,7 @@ jobs:
           while IFS= read -r failure;
           do
             case=${failure:14:-1}
-            file=`find tests/e2e -name $case".tests.ts"`
+            file="tests/e2e/$case"
             email=`cat $file | grep '@author' | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
 
             if [ -z "$email" ]; then

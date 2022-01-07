@@ -15,12 +15,12 @@ import {
   LogLevel,
   ok,
   Platform,
-  ProjectConfig,
   Result,
 } from "@microsoft/teamsfx-api";
 import {
   FxCore,
   ITaskDefinition,
+  LocalEnvManager,
   TaskDefinition,
   ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
@@ -34,7 +34,7 @@ import * as errors from "./errors";
 import activate from "../../activate";
 import { Task, TaskResult } from "./task";
 import AppStudioTokenInstance from "../../commonlib/appStudioLogin";
-import cliTelemetry from "../../telemetry/cliTelemetry";
+import cliTelemetry, { CliTelemetry } from "../../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -50,7 +50,6 @@ import { cliEnvCheckerLogger } from "./depsChecker/cliLogger";
 import { CLIAdapter } from "./depsChecker/cliAdapter";
 import { cliEnvCheckerTelemetry } from "./depsChecker/cliTelemetry";
 import { URL } from "url";
-import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import { NgrokChecker } from "./depsChecker/ngrokChecker";
 
 export default class Preview extends YargsCommand {
@@ -177,28 +176,27 @@ export default class Preview extends YargsCommand {
     browser: constants.Browser,
     browserArguments: string[] = []
   ): Promise<Result<null, FxError>> {
-    let coreResult = await activate();
+    const coreResult = await activate();
     if (coreResult.isErr()) {
       return err(coreResult.error);
     }
-    let core = coreResult.value;
+    const core = coreResult.value;
 
     const inputs: Inputs = {
       projectPath: workspaceFolder,
       platform: Platform.CLI,
-      ignoreEnvInfo: isMultiEnvEnabled(), // local debug does not require environments
+      ignoreEnvInfo: true, // local debug does not require environments
     };
 
-    let configResult = await core.getProjectConfig(inputs);
-    if (configResult.isErr()) {
-      return err(configResult.error);
-    }
-    let config = configResult.value;
+    const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
+    const projectSettings = await localEnvManager.getProjectSettings(workspaceFolder);
+    let localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
 
-    const includeFrontend = ProjectSettingsHelper.includeFrontend(config?.settings);
-    const includeBackend = ProjectSettingsHelper.includeBackend(config?.settings);
-    const includeBot = ProjectSettingsHelper.includeBot(config?.settings);
-    const includeSpfx = ProjectSettingsHelper.isSpfx(config?.settings);
+    const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+    const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
+    const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
+    const includeSpfx = ProjectSettingsHelper.isSpfx(projectSettings);
+    const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
 
     // TODO: move path validation to core
     const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
@@ -230,16 +228,7 @@ export default class Preview extends YargsCommand {
       );
     }
 
-    let skipNgrok: boolean;
-    if (isMultiEnvEnabled()) {
-      skipNgrok = config?.localSettings?.bot?.get(constants.skipNgrokConfigKey) as boolean;
-    } else {
-      const skipNgrokConfig = config?.config
-        ?.get(constants.localDebugPluginName)
-        ?.get(constants.skipNgrokConfigKey) as string;
-      skipNgrok = skipNgrokConfig !== undefined && skipNgrokConfig.trim() === "true";
-    }
-
+    const skipNgrok = (localSettings?.bot?.skipNgrok as boolean) === true;
     const envCheckerResult = await this.handleDependences(includeBackend, includeBot, skipNgrok);
     if (envCheckerResult.isErr()) {
       return err(envCheckerResult.error);
@@ -285,7 +274,7 @@ export default class Preview extends YargsCommand {
     }
 
     /* === start services === */
-    const programmingLanguage = config?.settings?.programmingLanguage as string;
+    const programmingLanguage = projectSettings.programmingLanguage as string;
     if (programmingLanguage === undefined || programmingLanguage.length === 0) {
       return err(errors.MissingProgrammingLanguageSetting());
     }
@@ -297,28 +286,19 @@ export default class Preview extends YargsCommand {
       includeBackend,
       includeBot,
       dotnetChecker,
-      funcToolChecker
+      funcToolChecker,
+      includeSimpleAuth
     );
     if (result.isErr()) {
       return result;
     }
 
     /* === get local teams app id === */
-    // re-activate to make core updated
-    coreResult = await activate();
-    if (coreResult.isErr()) {
-      return err(coreResult.error);
-    }
-    core = coreResult.value;
+    // re-load local settings
+    localSettings = await localEnvManager.getLocalSettings(workspaceFolder); // here does not need crypt data
 
-    configResult = await core.getProjectConfig(inputs);
-    if (configResult.isErr()) {
-      return err(configResult.error);
-    }
-    config = configResult.value;
-
-    const tenantId = this.getLocalDebugTenantId(config);
-    const localTeamsAppId = this.getLocalTeamsAppId(config);
+    const tenantId = localSettings?.teamsApp?.tenantId as string;
+    const localTeamsAppId = localSettings?.teamsApp?.teamsAppId as string;
 
     if (localTeamsAppId === undefined || localTeamsAppId.length === 0) {
       return err(errors.TeamsAppIdNotExists());
@@ -498,11 +478,9 @@ export default class Preview extends YargsCommand {
       ?.get(constants.solutionPluginName)
       ?.get(constants.teamsAppTenantIdConfigKey) as string;
 
-    const remoteTeamsAppId: string = isMultiEnvEnabled()
-      ? config?.config
-          ?.get(constants.appstudioPluginName)
-          ?.get(constants.remoteTeamsAppIdConfigKeyNew)
-      : config?.config?.get(constants.solutionPluginName)?.get(constants.remoteTeamsAppIdConfigKey);
+    const remoteTeamsAppId: string = config?.config
+      ?.get(constants.appstudioPluginName)
+      ?.get(constants.remoteTeamsAppIdConfigKey);
     if (remoteTeamsAppId === undefined || remoteTeamsAppId.length === 0) {
       return err(errors.PreviewWithoutProvision());
     }
@@ -537,7 +515,7 @@ export default class Preview extends YargsCommand {
 
     // start ngrok
     const ngrokStartTask = this.prepareTask(
-      TaskDefinition.ngrokStart(workspaceFolder, false, ngrokChecker.getNgrokBinFolder()),
+      TaskDefinition.ngrokStart(workspaceFolder, false, [ngrokChecker.getNgrokBinFolder()]),
       constants.ngrokStartStartMessage
     );
     result = await ngrokStartTask.task.waitFor(
@@ -612,26 +590,6 @@ export default class Preview extends YargsCommand {
     return ok(null);
   }
 
-  private getLocalDebugTenantId(config: ProjectConfig | undefined): string {
-    const tenantId = isMultiEnvEnabled()
-      ? (config?.localSettings?.teamsApp.get(constants.localSettingsTenantIdConfigKey) as string)
-      : (config?.config
-          ?.get(constants.solutionPluginName)
-          ?.get(constants.teamsAppTenantIdConfigKey) as string);
-
-    return tenantId;
-  }
-
-  private getLocalTeamsAppId(config: ProjectConfig | undefined): string {
-    const localTeamsAppId = isMultiEnvEnabled()
-      ? (config?.localSettings?.teamsApp.get(constants.localSettingsTeamsAppIdConfigKey) as string)
-      : (config?.config
-          ?.get(constants.solutionPluginName)
-          ?.get(constants.localTeamsAppIdConfigKey) as string);
-
-    return localTeamsAppId;
-  }
-
   private async startServices(
     workspaceFolder: string,
     programmingLanguage: string,
@@ -639,7 +597,8 @@ export default class Preview extends YargsCommand {
     includeBackend: boolean,
     includeBot: boolean,
     dotnetChecker: DotnetChecker,
-    funcToolChecker: FuncToolChecker
+    funcToolChecker: FuncToolChecker,
+    includeAuth?: boolean
   ): Promise<Result<null, FxError>> {
     const localEnv = await commonUtils.getLocalEnv(workspaceFolder);
 
@@ -652,13 +611,14 @@ export default class Preview extends YargsCommand {
       : undefined;
 
     const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
-    const authStartTask = includeFrontend
-      ? this.prepareTask(
-          TaskDefinition.authStart(dotnetExecPath, commonUtils.getAuthServicePath(localEnv)),
-          constants.authStartStartMessage,
-          commonUtils.getAuthLocalEnv(localEnv)
-        )
-      : undefined;
+    const authStartTask =
+      includeFrontend && includeAuth
+        ? this.prepareTask(
+            TaskDefinition.authStart(dotnetExecPath, commonUtils.getAuthServicePath(localEnv)),
+            constants.authStartStartMessage,
+            commonUtils.getAuthLocalEnv(localEnv)
+          )
+        : undefined;
 
     const funcCommand = await funcToolChecker.getFuncCommand();
     const backendStartTask = includeBackend

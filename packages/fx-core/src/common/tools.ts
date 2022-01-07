@@ -19,6 +19,7 @@ import {
   AzureSolutionSettings,
   SolutionContext,
   v3,
+  PluginContext,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse } from "axios";
@@ -36,6 +37,7 @@ import {
   TeamsClientId,
   OfficeClientId,
   OutlookClientId,
+  ResourcePlugins,
 } from "./constants";
 import * as crypto from "crypto";
 import * as os from "os";
@@ -535,6 +537,11 @@ export function isSPFxProject(projectSettings?: ProjectSettings): boolean {
 
 export function getHashedEnv(envName: string): string {
   return crypto.createHash("sha256").update(envName).digest("hex");
+}
+
+export function IsSimpleAuthEnabled(projectSettings: ProjectSettings | undefined): boolean {
+  const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
+  return solutionSettings?.activeResourcePlugins?.includes(ResourcePlugins.SimpleAuth);
 }
 
 interface BasicJsonSchema {

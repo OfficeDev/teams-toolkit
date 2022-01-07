@@ -1,15 +1,15 @@
 @secure()
 param provisionParameters object
-param userAssignedIdentityObjectId string
+param userAssignedIdentityObjectId string // User assigned identity that will be grant Key Vault access permission
 
 var resourceBaseName = provisionParameters.resourceBaseName
-var keyVaultName = contains(provisionParameters, 'keyVaultName') ? provisionParameters['keyVaultName'] : '${resourceBaseName}'
+var keyVaultName = contains(provisionParameters, 'keyVaultName') ? provisionParameters['keyVaultName'] : '${resourceBaseName}' // Try to read name for Key Vault from parameters
 var tenantId = subscription().tenantId
-var m365ClientSecretName = 'm365ClientSecret'
-var m365ClientSecret = provisionParameters['m365ClientSecret']
-var botClientSecretName = 'botClientSecret'
-var botClientSecret = contains(provisionParameters, 'botAadAppClientSecret') ? provisionParameters['botAadAppClientSecret'] : ''
-var keyVaultSkuName = contains(provisionParameters, 'keyVaultSkuName') ? provisionParameters['keyVaultSkuName'] : 'standard'
+var m365ClientSecretName = 'm365ClientSecret' // Secret name of AAD app client secret
+var m365ClientSecret = provisionParameters['m365ClientSecret'] // Read AAD app client secret from parameters
+var botClientSecretName = 'botClientSecret' // Secret name of bot's AAD app client secret
+var botClientSecret = contains(provisionParameters, 'botAadAppClientSecret') ? provisionParameters['botAadAppClientSecret'] : '' // Try to read bot's AAD app client secret from parameters
+var keyVaultSkuName = contains(provisionParameters, 'keyVaultSkuName') ? provisionParameters['keyVaultSkuName'] : 'standard' // Try to read SKU for Key Vault from parameters
 
 resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   name: keyVaultName
@@ -34,6 +34,7 @@ resource keyVault 'Microsoft.KeyVault/vaults@2019-09-01' = {
   }
 }
 
+// Set or update AAD app client secret if it's not empty in parameters
 resource clientSecretKv 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = if (length(m365ClientSecret) != 0) {
   parent: keyVault
   name: m365ClientSecretName
@@ -42,6 +43,7 @@ resource clientSecretKv 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = if (len
   }
 }
 
+// Set or update bot's AAD app client secret if it's not empty in parameters
 resource botClientSecretKv 'Microsoft.KeyVault/vaults/secrets@2019-09-01' = if (length(botClientSecret) != 0) {
   parent: keyVault
   name: botClientSecretName

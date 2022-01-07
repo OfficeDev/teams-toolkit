@@ -25,7 +25,7 @@ import * as commonUtils from "../../../src/utils/commonUtils";
 import * as extension from "../../../src/extension";
 import * as accountTree from "../../../src/accountTree";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
-import { CollaborationState, CoreHookContext, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
@@ -168,11 +168,7 @@ suite("handlers", () => {
       await handlers.runCommand(Stage.debug);
 
       sinon.restore();
-      if (isMultiEnvEnabled()) {
-        chai.expect(ignoreEnvInfo).to.equal(true);
-      } else {
-        chai.expect(ignoreEnvInfo).not.to.equal(true);
-      }
+      chai.expect(ignoreEnvInfo).to.equal(true);
       chai.expect(localDebugCalled).equals(1);
     });
 

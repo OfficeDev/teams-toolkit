@@ -4,12 +4,12 @@
 "use strict";
 
 import * as path from "path";
-import { Argv, Options } from "yargs";
+import { Argv } from "yargs";
 
 import { err, FxError, ok, Result, LogLevel } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
-import { getSystemInputs, Json, readEnvJsonFile, setSubscriptionId } from "../utils";
+import { getSystemInputs, Json, setSubscriptionId } from "../utils";
 import { YargsCommand } from "../yargsCommand";
 import CliTelemetry from "../telemetry/cliTelemetry";
 import {
@@ -20,7 +20,7 @@ import {
 import CLIUIInstance from "../userInteraction";
 import CLILogProvider from "../commonlib/log";
 import HelpParamGenerator from "../helpParamGenerator";
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { EnvNodeNoCreate } from "../constants";
 import {
   EnvNotFound,
@@ -35,9 +35,6 @@ async function checkAndReadEnvJson(
   rootFolder: string,
   args: { [argName: string]: unknown }
 ): Promise<Result<Json, FxError>> {
-  if (!isMultiEnvEnabled()) {
-    return readEnvJsonFile(rootFolder, environmentManager.getDefaultEnvName());
-  }
   const env: string | undefined = args.env as string | undefined;
   if (!env) {
     return err(new EnvNotSpecified());
@@ -369,12 +366,7 @@ export class ResourceShowFunction extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("ResourceShowFunction");
-    const result = yargs.options(this.params);
-    if (isMultiEnvEnabled()) {
-      return result.demandOption(EnvNodeNoCreate.data.name!);
-    } else {
-      return result;
-    }
+    return yargs.options(this.params).demandOption(EnvNodeNoCreate.data.name!);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -402,12 +394,7 @@ export class ResourceShowSQL extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("ResourceShowSQL");
-    const result = yargs.options(this.params);
-    if (isMultiEnvEnabled()) {
-      return result.demandOption(EnvNodeNoCreate.data.name!);
-    } else {
-      return result;
-    }
+    return yargs.options(this.params).demandOption(EnvNodeNoCreate.data.name!);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -435,12 +422,7 @@ export class ResourceShowApim extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("ResourceShowApim");
-    const result = yargs.options(this.params);
-    if (isMultiEnvEnabled()) {
-      return result.demandOption(EnvNodeNoCreate.data.name!);
-    } else {
-      return result;
-    }
+    return yargs.options(this.params).demandOption(EnvNodeNoCreate.data.name!);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {
@@ -468,12 +450,7 @@ export class ResourceList extends YargsCommand {
 
   public builder(yargs: Argv): Argv<any> {
     this.params = HelpParamGenerator.getYargsParamForHelp("ResourceList");
-    const result = yargs.options(this.params);
-    if (isMultiEnvEnabled()) {
-      return result.demandOption(EnvNodeNoCreate.data.name!);
-    } else {
-      return result;
-    }
+    return yargs.options(this.params).demandOption(EnvNodeNoCreate.data.name!);
   }
 
   public async runCommand(args: { [argName: string]: string }): Promise<Result<null, FxError>> {

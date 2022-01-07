@@ -60,7 +60,7 @@ resource appConfig 'Microsoft.Web/sites/config@2021-02-01' = {
   properties: {
     cors: {
       allowedOrigins: union(currentAllowedOrigins, [
-        tabAppEndpoint
+        tabAppEndpoint // allow requests from tab app
       ])
     }
   }
@@ -69,29 +69,29 @@ resource appConfig 'Microsoft.Web/sites/config@2021-02-01' = {
 resource appSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionAppName}/appsettings'
   properties: union({
-    API_ENDPOINT: \{{fx-resource-function.References.functionEndpoint}}
-    ALLOWED_APP_IDS: authorizedClientApplicationIds
-    M365_CLIENT_ID: m365ClientId
-    M365_CLIENT_SECRET: m365ClientSecret
-    M365_TENANT_ID: m365TenantId
-    M365_AUTHORITY_HOST: m365OauthAuthorityHost
-    M365_APPLICATION_ID_URI: m365ApplicationIdUri
-    IDENTITY_ID: \{{fx-resource-identity.References.identityClientId}}
+    API_ENDPOINT: \{{fx-resource-function.References.functionEndpoint}} // Azure Functions endpoint
+    ALLOWED_APP_IDS: authorizedClientApplicationIds // Only allow tokens issued by these AAD applications
+    M365_CLIENT_ID: m365ClientId // Client id of AAD application
+    M365_CLIENT_SECRET: m365ClientSecret // Client secret of AAD application
+    M365_TENANT_ID: m365TenantId // Tenant id of AAD application
+    M365_AUTHORITY_HOST: m365OauthAuthorityHost // AAD authority host
+    M365_APPLICATION_ID_URI: m365ApplicationIdUri // Application ID URI of AAD application
+    IDENTITY_ID: \{{fx-resource-identity.References.identityClientId}} // User assigned identity id, the identity is used to access other Azure resources
     {{#if (contains "fx-resource-azure-sql" plugins) }}
-    SQL_DATABASE_NAME: \{{fx-resource-azure-sql.References.databaseName}}
-    SQL_ENDPOINT: \{{fx-resource-azure-sql.References.sqlEndpoint}}
+    SQL_DATABASE_NAME: \{{fx-resource-azure-sql.References.databaseName}} // SQL database name
+    SQL_ENDPOINT: \{{fx-resource-azure-sql.References.sqlEndpoint}} // SQL server endpoint
     {{/if}}
-  }, currentAppSettings)
+  }, currentAppSettings) // Merge new settings with existing settings
 }
 
 resource authSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${functionAppName}/authsettings'
   properties: {
-    enabled: true
+    enabled: true // Validate access token in request authorization header
     defaultProvider: 'AzureActiveDirectory'
     clientId: m365ClientId
-    issuer: '${oauthAuthority}/v2.0'
-    allowedAudiences: [
+    issuer: '${oauthAuthority}/v2.0' // Issuer of access token
+    allowedAudiences: [ // Only allow tokens with following audiences
       m365ClientId
       m365ApplicationIdUri
     ]

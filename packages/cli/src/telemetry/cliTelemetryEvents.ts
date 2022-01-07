@@ -22,6 +22,9 @@ export enum TelemetryEvent {
   ValidateManifestStart = "validate-manifest-start",
   ValidateManifest = "validate-manifest",
 
+  UpdateManifestStart = "update-manifest-start",
+  UpdateManifest = "update-manifest",
+
   BuildStart = "build-start",
   Build = "build",
 

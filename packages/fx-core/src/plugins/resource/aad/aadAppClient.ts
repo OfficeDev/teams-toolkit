@@ -92,33 +92,24 @@ export class AadAppClient {
     ctx: PluginContext,
     stage: string,
     objectId: string,
-    redirectUris: string[],
+    redirectUris: IAADDefinition,
     skip = false
   ): Promise<void> {
     try {
-      const updateRedirectUriObject = AadAppClient.getAadUrlObject(redirectUris);
       if (TokenProvider.audience === TokenAudience.AppStudio) {
         await AadAppClient.retryHanlder(ctx, stage, () =>
-          AppStudio.updateAADApp(
-            TokenProvider.token as string,
-            objectId as string,
-            updateRedirectUriObject
-          )
+          AppStudio.updateAADApp(TokenProvider.token as string, objectId as string, redirectUris)
         );
       } else {
         await AadAppClient.retryHanlder(ctx, stage, () =>
-          GraphClient.updateAADApp(
-            TokenProvider.token as string,
-            objectId as string,
-            updateRedirectUriObject
-          )
+          GraphClient.updateAADApp(TokenProvider.token as string, objectId as string, redirectUris)
         );
       }
     } catch (error) {
       if (skip) {
         const message = Messages.StepFailedAndSkipped(
           ProgressDetail.UpdateRedirectUri,
-          Messages.UpdateRedirectUriHelpMessage(redirectUris.join(", "))
+          Messages.UpdateRedirectUriHelpMessage(Utils.parseRedirectUriMessage(redirectUris))
         );
         ctx.logProvider?.warning(Messages.getLog(message));
         DialogUtils.show(message, UILevels.Warn);

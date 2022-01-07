@@ -94,20 +94,20 @@ export class TeamsBotImpl {
 
     // 1. Copy the corresponding template project into target directory.
     // Get group name.
-    let group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
+    const group_name = TemplateProjectsConstants.GROUP_NAME_BOT_MSGEXT;
     if (!this.config.actRoles || this.config.actRoles.length === 0) {
       throw new SomethingMissingError("act roles");
     }
 
-    const hasBot = this.config.actRoles.includes(PluginActRoles.Bot);
-    const hasMsgExt = this.config.actRoles.includes(PluginActRoles.MessageExtension);
-    if (hasBot && hasMsgExt) {
-      group_name = TemplateProjectsConstants.GROUP_NAME_BOT_MSGEXT;
-    } else if (hasBot) {
-      group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
-    } else {
-      group_name = TemplateProjectsConstants.GROUP_NAME_MSGEXT;
-    }
+    // const hasBot = this.config.actRoles.includes(PluginActRoles.Bot);
+    // const hasMsgExt = this.config.actRoles.includes(PluginActRoles.MessageExtension);
+    // if (hasBot && hasMsgExt) {
+    // group_name = TemplateProjectsConstants.GROUP_NAME_BOT_MSGEXT;
+    // } else if (hasBot) {
+    //   group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
+    // } else {
+    //   group_name = TemplateProjectsConstants.GROUP_NAME_MSGEXT;
+    // }
 
     await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);
     await LanguageStrategy.getTemplateProject(group_name, this.config);

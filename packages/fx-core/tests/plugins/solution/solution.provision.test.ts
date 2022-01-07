@@ -103,6 +103,7 @@ import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import * as armResources from "@azure/arm-resources";
 import { aadPlugin, appStudioPlugin, spfxPlugin, fehostPlugin } from "../../constants";
 import { AadAppForTeamsPlugin } from "../../../src";
+import { assert } from "sinon";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -161,7 +162,12 @@ class MockUserInteraction implements UserInteraction {
     throw new Error("Method not implemented.");
   }
   createProgressBar(title: string, totalSteps: number): IProgressHandler {
-    throw new Error("Method not implemented.");
+    const handler: IProgressHandler = {
+      start: async (detail?: string): Promise<void> => {},
+      next: async (detail?: string): Promise<void> => {},
+      end: async (): Promise<void> => {},
+    };
+    return handler;
   }
   runWithProgress<T>(
     task: RunnableTask<T>,
@@ -1104,9 +1110,6 @@ describe("API v2 implementation", () => {
     });
 
     it("should work on happy path", async () => {
-      if (isArmSupportEnabled()) {
-        return;
-      }
       const projectSettings: ProjectSettings = {
         appName: "my app",
         projectId: uuid.v4(),
@@ -1122,6 +1125,7 @@ describe("API v2 implementation", () => {
       const mockedInputs: Inputs = {
         platform: Platform.VSCode,
         projectPath: "./",
+        isForUT: true,
       };
       const mockedTokenProvider: TokenProvider = {
         azureAccountProvider: new MockedAzureTokenProvider(),
@@ -1146,6 +1150,9 @@ describe("API v2 implementation", () => {
         mockedTokenProvider
       );
       expect(result.kind).equals("success");
+      if (result.kind === "success") {
+        expect(result.output["fx-resource-identity"] !== undefined).equals(true);
+      }
     });
   });
 });

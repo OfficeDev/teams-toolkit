@@ -7,7 +7,7 @@
 
 import path from "path";
 import "mocha";
-
+import fs from "fs-extra";
 import { ApimValidator } from "../../commonlib/apimValidator";
 import {
   getSubscriptionId,
@@ -18,6 +18,7 @@ import {
   readContextMultiEnv,
   createResourceGroup,
   deleteResourceGroupByName,
+  getConfigFileName,
 } from "../commonUtils";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -74,7 +75,8 @@ describe("Deploy to customized resource group", function () {
       `teamsfx deploy apim --open-api-document openapi/openapi.json --api-version v1`
     );
 
-    await ApimValidator.validateDeploy(context, projectPath, appName, "v1");
+    const deployContext = await fs.readJSON(getConfigFileName(appName, true));
+    await ApimValidator.validateDeploy(deployContext, projectPath, appName, "v1");
 
     await deleteResourceGroupByName(customizedRgName);
   });

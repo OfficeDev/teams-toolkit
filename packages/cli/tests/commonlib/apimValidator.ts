@@ -83,6 +83,8 @@ export class ApimValidator {
     versionSetId?: string,
     apiPath?: string
   ): Promise<void> {
+    console.log("Start validate apim deploy.");
+
     const config = new Config(ctx);
     chai.assert.isNotEmpty(config?.resourceNameSuffix);
     chai.assert.equal(config?.apiPrefix, apiPrefix);
@@ -97,6 +99,7 @@ export class ApimValidator {
     await this.validateVersionSet(config);
     await this.validateApi(config, projectPath, apiVersion);
     await this.validateProductApi(config, apiVersion);
+    console.log("[Successfully] validate apim deploy.");
   }
 
   private static getApimInfo(config: Config): { resourceGroup: string; serviceName: string } {
@@ -178,6 +181,7 @@ export class ApimValidator {
   }
 
   private static async validateVersionSet(config: Config): Promise<void> {
+    console.log("Validate version set");
     const apim = this.getApimInfo(config);
     chai.assert.isNotEmpty(config?.versionSetId);
     const versionSet = await this.apimClient?.apiVersionSet?.get(
@@ -193,6 +197,7 @@ export class ApimValidator {
     projectPath: string,
     apiVersion: string
   ): Promise<any> {
+    console.log("Validate api");
     const apim = this.getApimInfo(config);
     const spec = await this.loadOpenApiSpec(config, projectPath);
 
@@ -226,6 +231,7 @@ export class ApimValidator {
   }
 
   private static async validateProductApi(config: Config, apiVersion: string): Promise<any> {
+    console.log("Validate product api");
     const apim = this.getApimInfo(config);
     chai.assert.isNotEmpty(config?.apiPrefix);
     chai.assert.isNotEmpty(config?.resourceNameSuffix);

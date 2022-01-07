@@ -21,7 +21,7 @@ const assert = chai.assert;
 const sandbox = chai.spy.sandbox();
 
 describe("NgrokChecker E2E Test", async () => {
-  setup(async function (this: Mocha.Context) {
+  beforeEach(async function (this: Mocha.Context) {
     await ngrokUtils.cleanup();
     sandbox.restore();
     console.error("cleanup ngrok and sandbox");

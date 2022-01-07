@@ -12,12 +12,8 @@ import {
   SubscriptionInfo,
   LocalEnvironmentName,
 } from "@microsoft/teamsfx-api";
-import {
-  isMultiEnvEnabled,
-  environmentManager,
-  isRemoteCollaborateEnabled,
-  LocalSettingsProvider,
-} from "@microsoft/teamsfx-core";
+import { environmentManager, isRemoteCollaborateEnabled } from "@microsoft/teamsfx-core";
+
 import * as vscode from "vscode";
 import * as util from "util";
 import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
@@ -26,7 +22,6 @@ import * as StringResources from "./resources/Strings.json";
 import { checkPermission, listAllCollaborators, tools } from "./handlers";
 import { signedIn } from "./commonlib/common/constant";
 import { AppStudioLogin } from "./commonlib/appStudioLogin";
-import * as fs from "fs-extra";
 import {
   getProvisionSucceedFromEnv,
   getM365TenantFromEnv,
@@ -52,7 +47,7 @@ interface accountStatus {
 export async function registerEnvTreeHandler(
   forceUpdateCollaboratorList = true
 ): Promise<Result<Void, FxError>> {
-  if (isMultiEnvEnabled() && vscode.workspace.workspaceFolders) {
+  if (vscode.workspace.workspaceFolders) {
     await mutex.runExclusive(async () => {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders![0];
       const workspacePath: string = workspaceFolder.uri.fsPath;

@@ -270,7 +270,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     const ngrokChecker = new NgrokChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
     const ngrokBinFolder = ngrokChecker.getNgrokBinFolder();
     return this.createTask(
-      TaskDefinition.ngrokStart(workspaceFolder.uri.fsPath, isSkipped, ngrokBinFolder),
+      TaskDefinition.ngrokStart(workspaceFolder.uri.fsPath, isSkipped, [ngrokBinFolder]),
       workspaceFolder,
       undefined,
       definition,

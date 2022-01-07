@@ -515,7 +515,7 @@ export default class Preview extends YargsCommand {
 
     // start ngrok
     const ngrokStartTask = this.prepareTask(
-      TaskDefinition.ngrokStart(workspaceFolder, false, ngrokChecker.getNgrokBinFolder()),
+      TaskDefinition.ngrokStart(workspaceFolder, false, [ngrokChecker.getNgrokBinFolder()]),
       constants.ngrokStartStartMessage
     );
     result = await ngrokStartTask.task.waitFor(

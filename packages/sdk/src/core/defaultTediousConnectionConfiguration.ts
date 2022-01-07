@@ -26,6 +26,8 @@ export class DefaultTediousConnectionConfiguration {
   /**
    * Generate connection configuration consumed by tedious.
    *
+   * @param { string? } databaseName - specify database name to override default one if there are multiple databases.
+   *
    * @returns Connection configuration of tedious for the SQL.
    *
    * @throws {@link ErrorCode|InvalidConfiguration} when SQL config resource configuration is invalid.
@@ -34,7 +36,7 @@ export class DefaultTediousConnectionConfiguration {
    *
    * @beta
    */
-  public async getConfig(): Promise<ConnectionConfig> {
+  public async getConfig(databaseName?: string): Promise<ConnectionConfig> {
     internalLogger.info("Get SQL configuration");
     const configuration = <SqlConfiguration>getResourceConfiguration(ResourceType.SQL);
 
@@ -51,13 +53,13 @@ export class DefaultTediousConnectionConfiguration {
     }
 
     if (!this.isMsiAuthentication()) {
-      const configWithUPS = this.generateDefaultConfig(configuration);
+      const configWithUPS = this.generateDefaultConfig(configuration, databaseName);
       internalLogger.verbose("SQL configuration with username and password generated");
       return configWithUPS;
     }
 
     try {
-      const configWithToken = await this.generateTokenConfig(configuration);
+      const configWithToken = await this.generateTokenConfig(configuration, databaseName);
       internalLogger.verbose("SQL configuration with MSI token generated");
       return configWithToken;
     } catch (error) {
@@ -121,9 +123,13 @@ export class DefaultTediousConnectionConfiguration {
    * @returns Tedious connection configuration with username and password.
    * @internal
    */
-  private generateDefaultConfig(sqlConfig: SqlConfiguration): ConnectionConfig {
+  private generateDefaultConfig(
+    sqlConfig: SqlConfiguration,
+    databaseName?: string
+  ): ConnectionConfig {
+    const dbName = databaseName ?? sqlConfig.sqlDatabaseName;
     internalLogger.verbose(
-      `SQL server ${sqlConfig.sqlServerEndpoint}, user name ${sqlConfig.sqlUsername}, database name ${sqlConfig.sqlDatabaseName}`
+      `SQL server ${sqlConfig.sqlServerEndpoint}, user name ${sqlConfig.sqlUsername}, database name ${dbName}`
     );
 
     const config = {
@@ -136,7 +142,7 @@ export class DefaultTediousConnectionConfiguration {
         },
       },
       options: {
-        database: sqlConfig.sqlDatabaseName,
+        database: dbName,
         encrypt: true,
       },
     };
@@ -151,7 +157,10 @@ export class DefaultTediousConnectionConfiguration {
    * @returns Tedious connection configuration with access token.
    * @internal
    */
-  private async generateTokenConfig(sqlConfig: SqlConfiguration): Promise<ConnectionConfig> {
+  private async generateTokenConfig(
+    sqlConfig: SqlConfiguration,
+    databaseName?: string
+  ): Promise<ConnectionConfig> {
     internalLogger.verbose("Generate tedious config with MSI token");
 
     let token: AccessToken | null;
@@ -173,12 +182,14 @@ export class DefaultTediousConnectionConfiguration {
           },
         },
         options: {
-          database: sqlConfig.sqlDatabaseName,
+          database: databaseName ?? sqlConfig.sqlDatabaseName,
           encrypt: true,
         },
       };
       internalLogger.verbose(
-        `Generate token configuration success, server endpoint is ${sqlConfig.sqlServerEndpoint}, database name is ${sqlConfig.sqlDatabaseName}`
+        `Generate token configuration success, server endpoint is ${
+          sqlConfig.sqlServerEndpoint
+        }, database name is ${databaseName ?? sqlConfig.sqlDatabaseName}`
       );
       return config;
     }

@@ -45,13 +45,7 @@ describe("Deploy to customized resource group", function () {
   it(`tab project can deploy sql resource to customized resource group and successfully provision`, async function () {
     // Create new tab project
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
-
-    await execAsync(`teamsfx resource add ${Resource.AzureSql}`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] add sql to ${projectPath}`);
+    await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);
 
     // Create empty resource group
     const customizedRgName = `${appName}-customized-rg`;
@@ -71,6 +65,7 @@ describe("Deploy to customized resource group", function () {
       projectPath,
       `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`
     );
+
     // Assert
     {
       const context = await readContextMultiEnv(

@@ -152,7 +152,7 @@ jobs:
         with:
           name: ${{ matrix.cases }}.json
           path: |
-            ./packages/cli/report.json
+            ./packages/cli/tests/e2e/report.json
 
       - name: Sync to Azure DevOps Test Plan
         if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}

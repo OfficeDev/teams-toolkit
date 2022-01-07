@@ -95,7 +95,6 @@ describe("DefaultTediousConnection Tests - Node", () => {
   it("getConfig should success with specified database name", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
-      SQL_DATABASE: fakeSQLDataName,
       SQL_USER_NAME: fakeSQLUserName,
       SQL_PASSWORD: fakeSQLPassword,
     });

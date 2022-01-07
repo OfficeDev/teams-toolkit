@@ -165,6 +165,10 @@ export function isVsCallingCli() {
   return featureFlagEnabled(FeatureFlagName.VSCallingCLI);
 }
 
+export function isVSProject(projectSettings: ProjectSettings) {
+  return projectSettings.programmingLanguage === "csharp";
+}
+
 export let Logger: LogProvider;
 export let telemetryReporter: TelemetryReporter | undefined;
 export let currentStage: Stage;

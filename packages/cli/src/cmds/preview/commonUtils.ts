@@ -20,7 +20,7 @@ import { ServiceLogWriter } from "./serviceLogWriter";
 import open from "open";
 import { LocalEnvManager } from "@microsoft/teamsfx-core";
 import { getColorizedString } from "../../utils";
-import { isWindows } from "./depsChecker/common";
+import { isWindows } from "./depsChecker/cliUtils";
 
 export async function openBrowser(
   browser: constants.Browser,

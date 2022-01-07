@@ -420,7 +420,7 @@ export class AadAppForTeamsImpl {
     };
     if (frontendEndpoint) {
       redirectUris.web?.redirectUris?.push(`${frontendEndpoint}/auth-end.html`);
-      redirectUris.spa?.redirectUris?.push(`${frontendEndpoint}/auth-end.html/blank.html`);
+      redirectUris.spa?.redirectUris?.push(`${frontendEndpoint}/blank-auth-end.html`);
       redirectUris.spa?.redirectUris?.push(
         `${frontendEndpoint}/auth-end.html?clientId=${clientId}`
       );

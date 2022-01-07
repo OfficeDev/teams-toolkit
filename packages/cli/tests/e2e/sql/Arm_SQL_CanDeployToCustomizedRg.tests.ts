@@ -21,6 +21,7 @@ import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
+import { getUuid } from "../../commonlib/utilities";
 
 describe("Deploy to customized resource group", function () {
   //  Only test when insider feature flag enabled
@@ -66,8 +67,10 @@ describe("Deploy to customized resource group", function () {
     // Provision
     setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
     await CliHelper.setSubscription(subscription, projectPath);
-    await CliHelper.provisionProject(projectPath);
-
+    await CliHelper.provisionProject(
+      projectPath,
+      `--sql-admin-name Abc123321 --sql-password Cab232332${getUuid().substring(0, 6)}`
+    );
     // Assert
     {
       const context = await readContextMultiEnv(

@@ -15,7 +15,6 @@ import { Capability } from "../../commonlib/constants";
 import { getUuid } from "../../commonlib/utilities";
 
 import {
-  execAsync,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -35,6 +34,7 @@ describe("Provision to Azure with SQL", function () {
       appName,
       testFolder,
       Capability.Tab,
+      process.env,
       "--azure-resources function sql"
     );
 

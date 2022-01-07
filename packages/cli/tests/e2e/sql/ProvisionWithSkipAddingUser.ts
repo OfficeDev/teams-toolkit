@@ -34,6 +34,7 @@ describe("Provision to Azure with SQL", function () {
       appName,
       testFolder,
       Capability.Tab,
+      process.env,
       "--azure-resources function sql"
     );
 

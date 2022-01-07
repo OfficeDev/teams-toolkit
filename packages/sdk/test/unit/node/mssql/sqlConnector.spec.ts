@@ -44,7 +44,7 @@ describe("DefaultTediousConnection Tests - Node", () => {
   it("getConfig should success with username and password", async function () {
     restore = mockedEnv({
       SQL_ENDPOINT: fakeSQLServerEndpoint,
-      SQL_DATABASE: fakeSQLDataName,
+      SQL_DATABASE_NAME: fakeSQLDataName,
       SQL_USER_NAME: fakeSQLUserName,
       SQL_PASSWORD: fakeSQLPassword,
     });
@@ -59,6 +59,7 @@ describe("DefaultTediousConnection Tests - Node", () => {
     assert.strictEqual(tediousConnectConfig.server, fakeSQLServerEndpoint);
     assert.strictEqual(tediousConnectConfig.authentication!.options.userName, fakeSQLUserName);
     assert.strictEqual(tediousConnectConfig.authentication!.options.password, fakeSQLPassword);
+    assert.strictEqual(tediousConnectConfig.options?.database, fakeSQLDataName);
   });
 
   it("getConfig should success with access token", async function () {
@@ -89,6 +90,23 @@ describe("DefaultTediousConnection Tests - Node", () => {
     assert.strictEqual(tediousConnectConfig.authentication!.options.token, fakeToken);
 
     sinon.restore();
+  });
+
+  it("getConfig should success with specified database name", async function () {
+    restore = mockedEnv({
+      SQL_ENDPOINT: fakeSQLServerEndpoint,
+      SQL_DATABASE: fakeSQLDataName,
+      SQL_USER_NAME: fakeSQLUserName,
+      SQL_PASSWORD: fakeSQLPassword,
+    });
+    loadConfiguration();
+
+    const anotherSqlDatabaseName = "another database";
+    const sqlConnector = new DefaultTediousConnectionConfiguration();
+    const tediousConnectConfig = await sqlConnector.getConfig(anotherSqlDatabaseName);
+
+    assert.isNotNull(tediousConnectConfig);
+    assert.strictEqual(tediousConnectConfig.options?.database, anotherSqlDatabaseName);
   });
 
   it("getConfig should throw InvalidConfiguration error without host name", async function () {

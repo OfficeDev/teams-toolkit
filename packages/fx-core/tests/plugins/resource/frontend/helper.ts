@@ -133,9 +133,7 @@ export class TestHelper {
 
   static async getFakeAzureStorageClient(ctx?: PluginContext): Promise<AzureStorageClient> {
     ctx ??= TestHelper.getFakePluginContext();
-    if (isArmSupportEnabled()) {
-      ctx.config.set(FrontendConfigInfo.StorageResourceId, TestHelper.storageResourceId);
-    }
+    ctx.config.set(FrontendConfigInfo.StorageResourceId, TestHelper.storageResourceId);
     const config = await TestHelper.getFakeFrontendConfig(ctx);
     return new AzureStorageClient(config);
   }

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { FxError, Result, SystemError, UserError } from "@microsoft/teamsfx-api";
 
-import { BlazorPluginInfo as PluginInfo } from "./constants";
+import { DotnetPluginInfo as PluginInfo } from "./constants";
 
 export type TeamsFxResult = Result<any, FxError>;
 

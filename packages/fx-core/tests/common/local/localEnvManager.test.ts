@@ -168,6 +168,11 @@ describe("LocalEnvManager", () => {
       depsTypes: [DepsType.AzureNode, DepsType.Dotnet],
     },
     {
+      message: "tab without simple auth",
+      activeResourcePlugins: ["fx-resource-frontend-hosting", "fx-resource-aad-app-for-teams"],
+      depsTypes: [DepsType.AzureNode],
+    },
+    {
       message: "tab + function",
       activeResourcePlugins: [
         "fx-resource-frontend-hosting",

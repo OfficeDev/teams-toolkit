@@ -24,6 +24,7 @@ export const ResourcePlugins = {
   AppStudioPlugin: "AppStudioPlugin",
   SimpleAuthPlugin: "SimpleAuthPlugin",
   KeyVaultPlugin: "KeyVaultPlugin",
+  CICDPlugin: "CICDPlugin",
 };
 
 export const ResourcePluginsV2 = {

@@ -13,7 +13,7 @@ import {
 } from "@microsoft/teamsfx-core";
 import { ok } from "@microsoft/teamsfx-api";
 
-import { CliConfigEnvChecker, CliConfigOptions, UserSettings } from "../../../../src/userSetttings";
+import { UserSettings } from "../../../../src/userSetttings";
 import * as cliUtils from "../../../../src/cmds/preview/depsChecker/cliUtils";
 import { CliDepsChecker } from "../../../../src/cmds/preview/depsChecker/cliChecker";
 import UI from "../../../../src/userInteraction";

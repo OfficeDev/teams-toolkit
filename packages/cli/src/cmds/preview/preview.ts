@@ -510,8 +510,9 @@ export default class Preview extends YargsCommand {
 
     // start ngrok
     const ngrok = await depsChecker.getDepsStatus(DepsType.Ngrok);
+    const ngrokBinFolders = ngrok.details.binFolders;
     const ngrokStartTask = this.prepareTask(
-      TaskDefinition.ngrokStart(workspaceFolder, false, ngrok.details.binFolders),
+      TaskDefinition.ngrokStart(workspaceFolder, false, ngrokBinFolders),
       constants.ngrokStartStartMessage
     );
     result = await ngrokStartTask.task.waitFor(
@@ -617,9 +618,10 @@ export default class Preview extends YargsCommand {
         : undefined;
 
     const func = await depsChecker.getDepsStatus(DepsType.Dotnet);
+    const funcCommand = func.command;
     const backendStartTask = includeBackend
       ? this.prepareTask(
-          TaskDefinition.backendStart(workspaceFolder, programmingLanguage, func.command, false),
+          TaskDefinition.backendStart(workspaceFolder, programmingLanguage, funcCommand, false),
           constants.backendStartStartMessage,
           commonUtils.getBackendLocalEnv(localEnv)
         )
@@ -781,9 +783,18 @@ export default class Preview extends YargsCommand {
       hasBot,
       !skipNgrok
     );
-    const node = hasBackend ? DepsType.FunctionNode : DepsType.AzureNode;
-    const deps = [node, DepsType.Dotnet, DepsType.FunctionNode, DepsType.Ngrok];
-    const shouldContinue = await depsChecker.resolve(deps);
+    let node = DepsType.AzureNode;
+    if (hasBackend) {
+      node = DepsType.FunctionNode;
+    }
+
+    const shouldContinue = await depsChecker.resolve([
+      node,
+      DepsType.Dotnet,
+      DepsType.FunctionNode,
+      DepsType.Ngrok,
+    ]);
+
     if (!shouldContinue) {
       return err(errors.DependencyCheckerFailed());
     }

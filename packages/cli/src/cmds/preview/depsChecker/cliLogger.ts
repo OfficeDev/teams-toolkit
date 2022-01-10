@@ -3,17 +3,7 @@
 
 import * as os from "os";
 import cliLogger from "../../../commonlib/log";
-import {
-  DependencyStatus,
-  DepsLogger,
-  DepsManager,
-  DepsOptions,
-  DepsTelemetry,
-  DepsType,
-  Messages,
-  DepsCheckerEvent,
-  defaultHelpLink,
-} from "@microsoft/teamsfx-core";
+import { DepsLogger } from "@microsoft/teamsfx-core";
 import { LogLevel } from "@microsoft/teamsfx-api";
 
 export class CLILogger implements DepsLogger {

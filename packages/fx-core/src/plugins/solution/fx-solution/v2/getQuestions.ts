@@ -439,25 +439,25 @@ export async function getQuestionsForAddResource(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
+  let addQuestion: MultiSelectQuestion;
   if (!isDynamicQuestion) {
-    const question = createAddAzureResourceQuestion(false, false, false, false);
-    return ok(new QTreeNode(question));
+    addQuestion = createAddAzureResourceQuestion(false, false, false, false);
+  } else {
+    const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
+    const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);
+    const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);
+    const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
+    addQuestion = createAddAzureResourceQuestion(
+      alreadyHaveFunction,
+      alreadyHaveSQL,
+      alreadyHaveAPIM,
+      alreadyHaveKeyVault
+    );
+    const canProceed = canAddResource(ctx.projectSetting, ctx.telemetryReporter);
+    if (canProceed.isErr()) {
+      return err(canProceed.error);
+    }
   }
-  const canProceed = canAddResource(ctx.projectSetting, ctx.telemetryReporter);
-  if (canProceed.isErr()) {
-    return err(canProceed.error);
-  }
-
-  const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
-  const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);
-  const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);
-  const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
-  const addQuestion = createAddAzureResourceQuestion(
-    alreadyHaveFunction,
-    alreadyHaveSQL,
-    alreadyHaveAPIM,
-    alreadyHaveKeyVault
-  );
   const addAzureResourceNode = new QTreeNode(addQuestion);
   //traverse plugins' getQuestionsForUserTask
   const pluginsWithResources = [

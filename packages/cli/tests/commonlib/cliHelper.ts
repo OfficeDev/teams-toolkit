@@ -35,10 +35,10 @@ export class CliHelper {
     }
   }
 
-  static async provisionProject(projectPath: string, option = "") {
+  static async provisionProject(projectPath: string, option = "", processEnv?: NodeJS.ProcessEnv) {
     const result = await execAsyncWithRetry(`teamsfx provision ${option}`, {
       cwd: projectPath,
-      env: process.env,
+      env: processEnv ? processEnv : process.env,
       timeout: 0,
     });
     if (result.stderr) {
@@ -48,12 +48,24 @@ export class CliHelper {
     }
   }
 
-  static async deployProject(resourceToDeploy: ResourceToDeploy, projectPath: string) {
-    const result = await execAsyncWithRetry(`teamsfx deploy ${resourceToDeploy}`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
+  static async deployProject(
+    resourceToDeploy: ResourceToDeploy,
+    projectPath: string,
+    option = "",
+    processEnv?: NodeJS.ProcessEnv,
+    retries?: number,
+    newCommand?: string
+  ) {
+    const result = await execAsyncWithRetry(
+      `teamsfx deploy ${resourceToDeploy} ${option}`,
+      {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: 0,
+      },
+      retries,
+      newCommand
+    );
     const message = `deploy ${resourceToDeploy} for ${projectPath}`;
     if (result.stderr) {
       console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
@@ -65,13 +77,15 @@ export class CliHelper {
   static async createProjectWithCapability(
     appName: string,
     testFolder: string,
-    capability: Capability
+    capability: Capability,
+    processEnv?: NodeJS.ProcessEnv,
+    options = ""
   ) {
     const result = await execAsync(
-      `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} `,
+      `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`,
       {
         cwd: testFolder,
-        env: process.env,
+        env: processEnv ? processEnv : process.env,
         timeout: 0,
       }
     );
@@ -100,10 +114,15 @@ export class CliHelper {
     }
   }
 
-  static async addResourceToProject(projectPath: string, resourceToAdd: Resource, options = "") {
+  static async addResourceToProject(
+    projectPath: string,
+    resourceToAdd: Resource,
+    options = "",
+    processEnv?: NodeJS.ProcessEnv
+  ) {
     const result = await execAsync(`teamsfx resource add ${resourceToAdd} ${options}`, {
       cwd: projectPath,
-      env: process.env,
+      env: processEnv ? processEnv : process.env,
       timeout: 0,
     });
     const message = `add resource ${resourceToAdd} to ${projectPath}`;
@@ -133,7 +152,7 @@ export class CliHelper {
         );
       } else {
         value = arr[1].trim() as string;
-        console.log(`[Successfully] ${message} Value: ${value}`);
+        console.log(`[Successfully] ${message}.`);
       }
     }
     return value;

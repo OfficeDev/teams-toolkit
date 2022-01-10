@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { IProgressHandler, PluginContext } from "@microsoft/teamsfx-api";
-import { ProgressTitleMessage, PreDeployProgressMessage } from "./constants";
+import { ProgressTitleMessage, PreDeployProgressMessage, DeployProgressMessage } from "./constants";
 
 export class ProgressHelper {
   static preDeployProgress: IProgressHandler | undefined;
@@ -31,7 +31,10 @@ export class ProgressHelper {
   static async startDeployProgressHandler(
     ctx: PluginContext
   ): Promise<IProgressHandler | undefined> {
-    this.deployProgress = ctx.ui?.createProgressBar(ProgressTitleMessage.DeployProgressTitle, 1);
+    this.deployProgress = ctx.ui?.createProgressBar(
+      ProgressTitleMessage.DeployProgressTitle,
+      Object.entries(DeployProgressMessage).length
+    );
     await this.deployProgress?.start("");
     return this.deployProgress;
   }

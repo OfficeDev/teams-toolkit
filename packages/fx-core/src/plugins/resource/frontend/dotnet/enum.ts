@@ -1,4 +1,4 @@
-export enum BlazorConfigKey {
+export enum DotnetConfigKey {
   /* Config from solution */
   resourceGroupName = "resourceGroupName",
   subscriptionId = "subscriptionId",
@@ -7,7 +7,7 @@ export enum BlazorConfigKey {
   credential = "credential",
   teamsAppName = "teamsAppName",
 
-  /* Config exported by Blazor plugin */
+  /* Config exported by Dotnet plugin */
   webAppName = "webAppName",
   appServicePlanName = "appServicePlanName",
   webAppEndpoint = "webAppEndpoint",

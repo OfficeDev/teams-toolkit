@@ -47,14 +47,14 @@ var authorizedClientApplicationIds = '${teamsMobileOrDesktopAppClientId};${teams
 resource simpleAuthWebAppSettings 'Microsoft.Web/sites/config@2021-02-01' = {
   name: '${webAppName}/appsettings'
   properties: {
-    AAD_METADATA_ADDRESS: aadMetadataAddress
-    ALLOWED_APP_IDS: authorizedClientApplicationIds
-    IDENTIFIER_URI: m365ApplicationIdUri
-    CLIENT_ID: m365ClientId
-    CLIENT_SECRET: m365ClientSecret
-    OAUTH_AUTHORITY: oauthAuthority
+    AAD_METADATA_ADDRESS: aadMetadataAddress // AAD metadata address used to validate access tokens
+    ALLOWED_APP_IDS: authorizedClientApplicationIds // Only allow access tokens from these clients
+    IDENTIFIER_URI: m365ApplicationIdUri // Application ID URI of AAD app
+    CLIENT_ID: m365ClientId // Client id of AAD app
+    CLIENT_SECRET: m365ClientSecret // Client secret of AAD app
+    OAUTH_AUTHORITY: oauthAuthority // AAD authority
     {{#if (contains "fx-resource-frontend-hosting" plugins)}}
-    TAB_APP_ENDPOINT: tabAppEndpoint
+    TAB_APP_ENDPOINT: tabAppEndpoint // Enable CORS for tab app
     {{/if}}
   }
 }

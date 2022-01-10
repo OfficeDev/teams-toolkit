@@ -40,10 +40,10 @@ export class DefaultProvisionConfigs {
   });
 }
 
-export class BlazorPluginInfo {
-  static readonly pluginName = "fx-resource-blazor";
-  static readonly displayName = "Blazor";
-  static readonly alias = "bz";
+export class DotnetPluginInfo {
+  static readonly pluginName = "fx-resource-dotnet";
+  static readonly displayName = "Dotnet";
+  static readonly alias = "DN";
   static readonly issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new";
   static readonly helpLink = "https://aka.ms/teamsfx-bz-help";
 
@@ -59,15 +59,15 @@ export class BlazorPluginInfo {
   static readonly defaultRuntime = "win-x86";
 }
 
-export class BlazorPathInfo {
+export class DotnetPathInfo {
   static readonly publishFolderPath = (
     workingPath: string,
-    framework = BlazorPluginInfo.defaultFramework,
-    runtime = BlazorPluginInfo.defaultRuntime
+    framework = DotnetPluginInfo.defaultFramework,
+    runtime = DotnetPluginInfo.defaultRuntime
   ): string => path.join(workingPath, "bin", "Release", framework, runtime, "publish");
 }
 
-export class BlazorCommands {
+export class DotnetCommands {
   static readonly buildRelease = (runtime: string) =>
     `dotnet publish --configuration Release --runtime ${runtime} --self-contained`;
 }
@@ -76,30 +76,9 @@ export class DependentPluginInfo {
   static readonly solutionPluginName = "solution";
   static readonly subscriptionId = "subscriptionId";
   static readonly resourceGroupName = "resourceGroupName";
-  static readonly resourceNameSuffix = "resourceNameSuffix";
-  static readonly location = "location";
-  static readonly remoteTeamsAppId = "remoteTeamsAppId";
-
-  static readonly functionPluginName = "fx-resource-function";
-  static readonly functionEndpoint = "functionEndpoint";
-
-  static readonly runtimePluginName = "fx-resource-simple-auth";
-  static readonly runtimeEndpoint = "endpoint";
-  static readonly startLoginPageURL = "auth-start.html";
-
-  static readonly aadPluginName = "fx-resource-aad-app-for-teams";
-  static readonly clientID = "clientId";
-  static readonly tenantId = "tenantId";
-  static readonly aadClientSecret = "clientSecret";
-  static readonly oauthHost = "oauthHost";
-  static readonly applicationIdUris = "applicationIdUris";
-
-  static readonly botPluginName = "fx-resource-bot";
-  static readonly botId = "botId";
-  static readonly botPassword = "botPassword";
 }
 
-export class BlazorConfigInfo {
+export class DotnetConfigInfo {
   static readonly webAppName = "webAppName";
   static readonly appServicePlanName = "appServicePlanName";
   static readonly webAppEndpoint = "endpoint";

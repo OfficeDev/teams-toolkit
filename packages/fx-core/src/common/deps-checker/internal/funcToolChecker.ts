@@ -41,12 +41,13 @@ export class FuncToolChecker implements DepsChecker {
     this._telemetry = telemetry;
   }
 
-  public getDepsInfo(): Promise<DepsInfo> {
+  public async getDepsInfo(): Promise<DepsInfo> {
     return Promise.resolve({
       name: funcToolName,
       isLinuxSupported: false,
       installVersion: installVersion,
       supportedVersions: supportedVersions,
+      binFolders: this.getPortableFuncBinFolders(),
       details: new Map<string, string>(),
     });
   }

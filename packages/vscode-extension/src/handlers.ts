@@ -546,12 +546,12 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
   return await runCommand(Stage.publish);
 }
 
-export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CICDInsiderGuide, getTriggerFromProperty(args));
-
-  const cicdGuideLink = "https://aka.ms/teamsfx-cicd-insider-guide";
-
-  return await env.openExternal(Uri.parse(cicdGuideLink));
+export async function addCICDWorkflowsHandler(args?: any[]): Promise<boolean> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.AddCICDWorkflowsStart,
+    getTriggerFromProperty(args)
+  );
+  return true;
 }
 
 export async function runCommand(

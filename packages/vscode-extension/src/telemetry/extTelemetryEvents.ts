@@ -56,8 +56,7 @@ export enum TelemetryEvent {
   PublishStart = "publish-start",
   Publish = "publish",
 
-  CICDGuide = "cicd-guide",
-  CICDInsiderGuide = "cicd-insider-guide",
+  AddCICDWorkflowsStart = "add-cicd-workflows-start",
 
   ManageTeamsApp = "manage-teams-app",
 

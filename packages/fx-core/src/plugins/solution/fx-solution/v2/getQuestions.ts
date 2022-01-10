@@ -379,7 +379,7 @@ export async function getQuestionsForAddCapability(
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   if (!isDynamicQuestion) {
     // For CLI_HELP
-    addCapQuestion.staticOptions = [TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id];
+    addCapQuestion.staticOptions = [TabOptionItem, BotOptionItem, MessageExtensionItem];
     return ok(new QTreeNode(addCapQuestion));
   }
   const canProceed = canAddCapability(settings, ctx.telemetryReporter);

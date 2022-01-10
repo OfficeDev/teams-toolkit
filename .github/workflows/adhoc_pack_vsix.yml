@@ -1,0 +1,60 @@
+name: Adhoc Pack VSIX 
+
+on:
+  workflow_dispatch:
+
+jobs:
+  cd:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v2
+        with:
+          fetch-depth: 0
+          token: ${{ secrets.CD_PAT }}
+          ref: ${{ github.ref }}
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup .NET
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+
+      - name: Setup npm registry
+        run: |
+          echo "${{ secrets.NPMRC }}" > ~/.npmrc
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: update extension ai key
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}
+        uses: jossef/action-set-json-field@v1
+        with:
+          file: ./packages/vscode-extension/package.json
+          field: aiKey
+          value: ${{ secrets.EXT_PUBLIC_AIKEY }}
+      
+      - name: pack vsix
+        uses: nick-invision/retry@v2
+        with:
+          timeout_minutes: 10
+          max_attempts: 10
+          retry_on: error
+          command: |
+            sleep 20
+            cd ./packages/vscode-extension
+            npm install --only=production
+            npx vsce package
+
+      - name: upload vsix
+        uses: actions/upload-artifact@v2
+        with:
+          name: vsix
+          path: ./packages/**/*.vsix

@@ -487,7 +487,7 @@ async function checkM365Tenant(
 ): Promise<Result<Void, FxError>> {
   await appStudioTokenProvider.getAccessToken();
   const appResource = envInfo.state[BuiltInResourcePluginNames.appStudio] as v3.TeamsAppResource;
-  const m365TenantId = appResource.tenantId;
+  const m365TenantId = appResource?.tenantId;
   if (!m365TenantId) {
     return ok(Void);
   }

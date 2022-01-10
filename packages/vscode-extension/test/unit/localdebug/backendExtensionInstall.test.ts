@@ -6,20 +6,9 @@ import * as sinon from "sinon";
 import { DepsTelemetry, DepsLogger, DepsType } from "@microsoft/teamsfx-core";
 
 const expect = chai.expect;
-const mock = require("mock-require");
-
-mock("../../../src/debug/depsChecker/vscodeUtils", {
-  showWarningMessage: async function (message: string, button: MessageItem) {},
-  openUrl: async function (url: string) {},
-  checkerEnabled: function (key: string) {},
-  hasFunction: async function () {},
-  hasNgrok: async function () {},
-  hasBot: async function () {},
-});
 
 import { VSCodeDepsChecker } from "../../../src/debug/depsChecker/vscodeChecker";
 import * as installer from "../../../src/debug/depsChecker/backendExtensionsInstall";
-import { MessageItem } from "vscode";
 
 suite("[Checker UT - Backend Extension Install]", () => {
   const logger: DepsLogger = <DepsLogger>{};

@@ -96,7 +96,7 @@ import {
 } from "./utils/commonUtils";
 import * as fs from "fs-extra";
 import { VSCodeDepsChecker } from "./debug/depsChecker/vscodeChecker";
-import * as depsUtils from "./debug/depsChecker/vscodeUtils";
+import { vscodeHelper } from "./debug/depsChecker/vscodeHelper";
 import { vscodeLogger } from "./debug/depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./debug/depsChecker/vscodeTelemetry";
 import { installBackendExtension } from "./debug/depsChecker/backendExtensionsInstall";
@@ -341,7 +341,7 @@ export function getSystemInputs(): Inputs {
     projectPath: getWorkspacePath(),
     platform: Platform.VSCode,
     vscodeEnv: detectVsCodeEnv(),
-    "function-dotnet-checker-enabled": depsUtils.isDotnetCheckerEnabled(),
+    "function-dotnet-checker-enabled": vscodeHelper.isDotnetCheckerEnabled(),
   };
   return answers;
 }
@@ -728,7 +728,7 @@ function checkCoreNotEmpty(): Result<null, SystemError> {
 }
 
 export async function validateAzureDependenciesHandler(): Promise<string | undefined> {
-  const nodeType = (await depsUtils.hasFunction()) ? DepsType.FunctionNode : DepsType.AzureNode;
+  const nodeType = (await vscodeHelper.hasFunction()) ? DepsType.FunctionNode : DepsType.AzureNode;
   const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);

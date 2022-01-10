@@ -109,7 +109,7 @@ export class AppStudioPluginV3 {
    * @param inputs
    * @returns
    */
-  async SaveManifest(
+  async saveManifest(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }

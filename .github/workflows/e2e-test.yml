@@ -98,6 +98,8 @@ jobs:
       fail-fast: false
       matrix:
         cases: ${{ fromJson(needs.setup.outputs.cases) }}
+    name: ${{ github.run_id }} - ${{ matrix.cases }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2

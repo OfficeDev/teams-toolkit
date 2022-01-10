@@ -157,6 +157,7 @@ export class HelpParamGenerator {
     }
     const root = this.getQuestionRootNodeForHelp(stage);
     let nodes: QTreeNode[] = [];
+    if (root && !root.children) root.children = [];
     if (resourceName && root?.children) {
       const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
       // Do CLI map for resource add

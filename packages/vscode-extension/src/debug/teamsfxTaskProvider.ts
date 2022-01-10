@@ -10,7 +10,7 @@ import { Json, ProductName, ProjectSettings, VsCodeEnv } from "@microsoft/teamsf
 import { LocalEnvManager } from "@microsoft/teamsfx-core";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeLogger } from "./depsChecker/VSCodeLogger";
-import { vscodeTelemetry } from "./depsChecker/VSCodeTelemetry";
+import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import VsCodeLogInstance from "../commonlib/log";
 import { detectVsCodeEnv, showError } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";

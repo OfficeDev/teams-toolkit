@@ -7,7 +7,7 @@ import path from "path";
 import fs from "fs-extra";
 import Mustache from "mustache";
 
-import config from "./templates-config.json";
+import config from "../templates-config.json";
 import { selectTag, templateURL } from "./templates";
 
 export const tagListUrl = config.tagListURL;

@@ -3,6 +3,7 @@
 import "mocha";
 
 import * as chai from "chai";
+import * as sinon from "sinon";
 import chaiAsPromised from "chai-as-promised";
 
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
@@ -151,6 +152,7 @@ describe("WebappPlugin", () => {
 
   beforeEach(() => {
     plugin = new WebappPlugin();
+    sinon.stub(WebappPlugin, <any>"isVsPlatform").returns(true);
   });
 
   it("generate bicep arm templates", async () => {

@@ -1,6 +1,6 @@
 // Resources for web app
 module webappProvision '\{{fx-resource-frontend-hosting.Provision.webapp.path}}' = {
-  name: 'aspdotnetProvision'
+  name: 'webappProvision'
   params: {
     provisionParameters: provisionParameters
     userAssignedIdentityId: userAssignedIdentityProvision.outputs.identityResourceId

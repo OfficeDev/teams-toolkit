@@ -99,6 +99,8 @@ jobs:
       fail-fast: false
       matrix:
         cases: ${{ fromJson(needs.setup.outputs.cases) }}
+    name: ${{ github.job }} - ${{ matrix.cases }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -151,7 +153,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: failure()
         with:
-          name: ${{ matrix.cases }}.json
+          name: ${{ github.job }}.json
           path: |
             ./packages/cli/tests/e2e/report.json
 
@@ -159,7 +161,7 @@ jobs:
         if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
         run: |
           version=$(node -p -e "require('./packages/cli/package.json').version")
-          npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/report.json cli $version
+          npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/report.json cli $version
 
   teardown:
     if: ${{ always() }}

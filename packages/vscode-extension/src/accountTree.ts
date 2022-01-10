@@ -15,7 +15,7 @@ import {
 import AppStudioLogin from "./commonlib/appStudioLogin";
 import AzureAccountManager from "./commonlib/azureLogin";
 import { core, getSystemInputs, tools, getAzureSolutionSettings } from "./handlers";
-import { askSubscription, isValidProject } from "@microsoft/teamsfx-core";
+import { askSubscription, getSideloadingStatus, isValidProject } from "@microsoft/teamsfx-core";
 import { VS_CODE_UI } from "./extension";
 import { ExtTelemetry } from "./telemetry/extTelemetry";
 import {
@@ -513,55 +513,4 @@ function showSideloadingWarning() {
       }
     })
     .catch((error) => {});
-}
-
-async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
-  const instance = axios.create({
-    baseURL: "https://dev.teams.microsoft.com",
-    timeout: 30000,
-  });
-  instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-
-  let retry = 0;
-  const retryInterval = 2000;
-  do {
-    try {
-      const response = await instance.get("/api/usersettings/mtUserAppPolicy");
-      let result: boolean | undefined;
-      if (response.status >= 400) {
-        result = undefined;
-      } else {
-        result = response.data?.value?.isSideloadingAllowed as boolean;
-      }
-
-      if (result !== undefined) {
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CheckSideloading, {
-          [TelemetryProperty.IsSideloadingAllowed]: result + "",
-        });
-      } else {
-        ExtTelemetry.sendTelemetryErrorEvent(
-          TelemetryEvent.CheckSideloading,
-          new SystemError(
-            "UnknownValue",
-            `AppStudio response code: ${response.status}, body: ${response.data}`,
-            "M365Account"
-          )
-        );
-      }
-
-      return result;
-    } catch (error) {
-      ExtTelemetry.sendTelemetryErrorEvent(
-        TelemetryEvent.CheckSideloading,
-        new SystemError(error as Error, "M365Account")
-      );
-      await delay((retry + 1) * retryInterval);
-    }
-  } while (++retry < 3);
-
-  return undefined;
-}
-
-function delay(ms: number) {
-  return new Promise((resolve) => setTimeout(resolve, ms));
 }

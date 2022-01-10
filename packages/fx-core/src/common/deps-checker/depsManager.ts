@@ -3,7 +3,7 @@
 
 import { DepsLogger } from "./depsLogger";
 import { DepsTelemetry } from "./depsTelemetry";
-import { DepsType, DepsInfo, DepsChecker } from "./depsChecker";
+import { DepsChecker, DepsInfo, DepsType } from "./depsChecker";
 import { CheckerFactory } from "./checkerFactory";
 import { DepsCheckerError } from "./depsError";
 
@@ -78,15 +78,23 @@ export class DepsManager {
     return result;
   }
 
+  public async getStatus(depsTypes: DepsType[]): Promise<DependencyStatus[]> {
+    if (!depsTypes || depsTypes.length == 0) {
+      return [];
+    }
+    const result: DependencyStatus[] = [];
+    for (const type of depsTypes) {
+      result.push(await this.resolve(type, false));
+    }
+    return result;
+  }
+
   private async resolve(type: DepsType, shouldInstall: boolean): Promise<DependencyStatus> {
     const checker: DepsChecker = CheckerFactory.createChecker(type, this._logger, this._telemetry);
-    let isInstalled = false;
     let error = undefined;
 
     if (shouldInstall) {
       const result = await checker.resolve();
-
-      isInstalled = result.isOk() && result.value;
       error = result.isErr() ? result.error : undefined;
     }
 
@@ -94,7 +102,7 @@ export class DepsManager {
     return {
       name: depsInfo.name,
       type: type,
-      isInstalled: isInstalled,
+      isInstalled: await checker.isInstalled(),
       command: await checker.command(),
       details: {
         isLinuxSupported: depsInfo.isLinuxSupported,

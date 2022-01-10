@@ -77,17 +77,23 @@ export function getLogLevel(): LogLevel | undefined {
   return internalLogger.level;
 }
 
-class InternalLogger {
+export class InternalLogger implements Logger {
+  public name?: string;
   public level?: LogLevel = undefined;
-
   public customLogger: Logger | undefined;
   public customLogFunction: LogFunction | undefined;
+
   private defaultLogger: Logger = {
     verbose: console.debug,
     info: console.info,
     warn: console.warn,
     error: console.error,
   };
+
+  constructor(name?: string, logLevel?: LogLevel) {
+    this.name = name;
+    this.level = logLevel;
+  }
 
   public error(message: string): void {
     this.log(LogLevel.Error, (x: Logger) => x.error, message);
@@ -114,7 +120,12 @@ class InternalLogger {
       return;
     }
     const timestamp = new Date().toUTCString();
-    const logHeader = `[${timestamp}] : @microsoft/teamsfx : ${LogLevel[logLevel]} - `;
+    let logHeader: string;
+    if (this.name) {
+      logHeader = `[${timestamp}] : @microsoft/teamsfx - ${this.name} : ${LogLevel[logLevel]} - `;
+    } else {
+      logHeader = `[${timestamp}] : @microsoft/teamsfx : ${LogLevel[logLevel]} - `;
+    }
     const logMessage = `${logHeader}${message}`;
     if (this.level !== undefined && this.level <= logLevel) {
       if (this.customLogger) {

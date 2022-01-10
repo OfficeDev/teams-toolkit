@@ -26,7 +26,6 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { ArmTemplateResult } from "../../../common/armInterface";
-import { isArmSupportEnabled } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile } from "../../../common/tools";
@@ -36,12 +35,7 @@ export class IdentityPlugin implements Plugin {
   name = "fx-resource-identity";
   displayName = "Microsoft Identity";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    if (!isArmSupportEnabled()) {
-      const azureResources = solutionSettings.azureResources ? solutionSettings.azureResources : [];
-      return azureResources.includes(AzureResourceSQL.id);
-    } else {
-      return solutionSettings.hostType === HostTypeOptionAzure.id;
-    }
+    return solutionSettings.hostType === HostTypeOptionAzure.id;
   }
   template: any;
   parameters: any;
@@ -59,11 +53,7 @@ export class IdentityPlugin implements Plugin {
   config: IdentityConfig = new IdentityConfig();
 
   async provision(ctx: PluginContext): Promise<Result> {
-    if (!isArmSupportEnabled()) {
-      return this.provisionImplement(ctx);
-    } else {
-      return ok(undefined);
-    }
+    return ok(undefined);
   }
 
   async postProvision(ctx: PluginContext): Promise<Result> {
@@ -236,7 +226,6 @@ export class IdentityPlugin implements Plugin {
       Constants.solution,
       Constants.subscriptionId
     );
-    this.loadConfigResourceGroup(ctx);
     this.config.resourceNameSuffix = ContextUtils.getConfig<string>(
       ctx,
       Constants.solution,
@@ -247,16 +236,6 @@ export class IdentityPlugin implements Plugin {
       Constants.solution,
       Constants.location
     );
-  }
-
-  private loadConfigResourceGroup(ctx: PluginContext) {
-    if (!isArmSupportEnabled()) {
-      this.config.resourceGroup = ContextUtils.getConfig<string>(
-        ctx,
-        Constants.solution,
-        Constants.resourceGroupName
-      );
-    }
   }
 }
 

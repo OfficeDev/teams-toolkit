@@ -32,7 +32,7 @@ import { FuncPluginAdapter } from "../utils/depsChecker/funcPluginAdapter";
 import { funcPluginLogger } from "../utils/depsChecker/funcPluginLogger";
 import { FuncPluginTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "../utils/telemetry-helper";
-import { sendRequestWithRetry } from "../../../../common/templatesUtils";
+import { sendRequestWithRetry } from "../../../../common/template-utils/templatesUtils";
 
 export class FunctionDeploy {
   public static async getLastDeploymentTime(componentPath: string, envName: string): Promise<Date> {

@@ -31,7 +31,7 @@ describe("Deploy to customized resource group", function () {
   const projectPath = path.resolve(testFolder, appName);
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, true, false, true);
   });
 
   it(`bot project can deploy bot resource to customized resource group and successfully provision / deploy`, async function () {

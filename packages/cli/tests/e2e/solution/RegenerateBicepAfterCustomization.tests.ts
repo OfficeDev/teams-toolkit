@@ -30,7 +30,7 @@ describe("User can customize Bicep files", function () {
   const projectPath = path.resolve(testFolder, appName);
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, true, false, true);
   });
 
   it("Regenerate Bicep will not affect user's customized Bicep code", async () => {

@@ -28,7 +28,7 @@ describe("Configuration successfully changed when with different plugins", funct
   const projectPath = path.resolve(testFolder, appName);
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, true, false, true);
   });
 
   it(`tab + function + bot`, async function () {

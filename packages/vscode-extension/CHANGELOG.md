@@ -1,6 +1,6 @@
 # Changelog
 
-## 3.1.2 - Jan 10, 2022
+## 3.2.0 - Jan 10, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 
 New Features:

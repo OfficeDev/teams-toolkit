@@ -150,6 +150,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: failure()
         with:
+          name: ${{ github.run_id }}.json
           path: |
             ./packages/cli/tests/e2e/report.json
 

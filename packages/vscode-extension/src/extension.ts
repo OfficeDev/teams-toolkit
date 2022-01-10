@@ -80,13 +80,6 @@ export async function activate(context: vscode.ExtensionContext) {
       TreatmentVariables.EmbeddedSurvey,
       true
     )) as boolean | undefined;
-  TreatmentVariableValue.removeCreateFromSample = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.RemoveCreateFromSample,
-      true
-    )) as boolean | undefined;
 
   // 1.1 Register the creating command.
   const createCmd = vscode.commands.registerCommand("fx-extension.create", (...args) =>

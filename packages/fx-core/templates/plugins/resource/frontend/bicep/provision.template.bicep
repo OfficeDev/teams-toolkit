@@ -10,5 +10,6 @@ output frontendHostingOutput object = {
   teamsFxPluginId: 'fx-resource-frontend-hosting'
   domain: frontendHostingProvision.outputs.domain
   endpoint: frontendHostingProvision.outputs.endpoint
+  indexUrl: frontendHostingProvision.outputs.indexUrl
   storageResourceId: frontendHostingProvision.outputs.resourceId
 }

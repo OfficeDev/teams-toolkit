@@ -18,7 +18,9 @@ resource storage 'Microsoft.Storage/storageAccounts@2021-06-01' = {
 }
 
 var siteDomain = replace(replace(storage.properties.primaryEndpoints.web, 'https://', ''), '/', '')
+var endpoint = 'https://${siteDomain}'
 
 output resourceId string = storage.id
-output endpoint string = 'https://${siteDomain}'
+output endpoint string = endpoint
 output domain string = siteDomain
+output indexUrl string = '${endpoint}/index.html#'

@@ -74,6 +74,7 @@ import {
   DEFAULT_OUTLINE_PNG_FILENAME,
   MANIFEST_RESOURCES,
   APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
+  FRONTEND_INDEX_URL,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -1196,6 +1197,7 @@ export class AppStudioPluginImpl {
     localDebug: boolean
   ): Promise<{
     tabEndpoint?: string;
+    tabIndexUrl?: string;
     tabDomain?: string;
     aadId: string;
     botDomain?: string;
@@ -1204,6 +1206,7 @@ export class AppStudioPluginImpl {
     teamsAppId: string;
   }> {
     const tabEndpoint = this.getTabEndpoint(ctx, localDebug);
+    const tabIndexUrl = this.getTabIndexUrl(ctx, localDebug);
     const tabDomain = this.getTabDomain(ctx, localDebug);
     const aadId = this.getAadClientId(ctx, localDebug);
     const botId = this.getBotId(ctx, localDebug);
@@ -1216,6 +1219,7 @@ export class AppStudioPluginImpl {
 
     return {
       tabEndpoint,
+      tabIndexUrl,
       tabDomain,
       aadId,
       botDomain,
@@ -1231,6 +1235,13 @@ export class AppStudioPluginImpl {
       : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_ENDPOINT) as string);
 
     return tabEndpoint;
+  }
+
+  private getTabIndexUrl(ctx: PluginContext, isLocalDebug: boolean): string {
+    const tabIndexUrl = isLocalDebug
+      ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) as string)
+      : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_URL) as string);
+    return tabIndexUrl;
   }
 
   private getTabDomain(ctx: PluginContext, isLocalDebug: boolean): string {
@@ -1544,6 +1555,7 @@ export class AppStudioPluginImpl {
   ): Promise<Result<[IAppDefinition, TeamsAppManifest], FxError>> {
     const {
       tabEndpoint,
+      tabIndexUrl,
       tabDomain,
       aadId,
       botDomain,
@@ -1597,11 +1609,13 @@ export class AppStudioPluginImpl {
 
     // Bot only project, without frontend hosting
     let endpoint = tabEndpoint;
+    let indexUrl = tabIndexUrl;
     const solutionSettings: AzureSolutionSettings = ctx.projectSettings
       ?.solutionSettings as AzureSolutionSettings;
     const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
     if (!endpoint && !hasFrontend) {
       endpoint = DEFAULT_DEVELOPER_WEBSITE_URL;
+      indexUrl = DEFAULT_DEVELOPER_WEBSITE_URL;
     }
 
     const customizedKeys = getCustomizedKeys("", JSON.parse(manifestString));
@@ -1613,6 +1627,7 @@ export class AppStudioPluginImpl {
       state: {
         "fx-resource-frontend-hosting": {
           endpoint: endpoint ?? "{{{state.fx-resource-frontend-hosting.endpoint}}}",
+          indexUrl: indexUrl ?? "{{{state.fx-resource-frontend-hosting.indexUrl}}}",
         },
         "fx-resource-aad-app-for-teams": {
           clientId: aadId ?? "{{state.fx-resource-aad-app-for-teams.clientId}}",

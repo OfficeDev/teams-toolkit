@@ -43,6 +43,7 @@ export const REMOTE_MANIFEST = "manifest.source.json";
 export const MANIFEST_TEMPLATE = "manifest.remote.template.json";
 export const MANIFEST_LOCAL = "manifest.local.template.json";
 export const FRONTEND_ENDPOINT = "endpoint";
+export const FRONTEND_INDEX_URL = "indexUrl";
 export const FRONTEND_DOMAIN = "domain";
 export const BOT_ID = "botId";
 export const LOCAL_BOT_ID = "localBotId";
@@ -67,8 +68,8 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
   "developer": {
       "name": "Teams App, Inc.",
       "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}",
-      "privacyUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/privacy",
-      "termsOfUseUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/termsofuse"
+      "privacyUrl": "{{{state.fx-resource-frontend-hosting.indexUrl}}}/privacy",
+      "termsOfUseUrl": "{{{state.fx-resource-frontend-hosting.indexUrl}}}/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -142,15 +143,15 @@ export const STATIC_TABS_TPL_FOR_MULTI_ENV: IStaticTab[] = [
   {
     entityId: "index",
     name: "Personal Tab",
-    contentUrl: "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/tab",
-    websiteUrl: "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/tab",
+    contentUrl: "{{{state.fx-resource-frontend-hosting.indexUrl}}}/tab",
+    websiteUrl: "{{{state.fx-resource-frontend-hosting.indexUrl}}}/tab",
     scopes: ["personal"],
   },
 ];
 
 export const CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV: IConfigurableTab[] = [
   {
-    configurationUrl: "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/config",
+    configurationUrl: "{{{state.fx-resource-frontend-hosting.indexUrl}}}/config",
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },

@@ -307,26 +307,7 @@ describe("Teams Bot Resource Plugin", () => {
       await fs.remove(rootDir);
     });
 
-    it("Happy Path with Arm support disabled", async () => {
-      // Arrange
-      const pluginContext = testUtils.newPluginContext();
-      pluginContext.root = rootDir;
-      sinon
-        .stub(pluginContext.azureAccountProvider!, "getAccountCredentialAsync")
-        .resolves(testUtils.generateFakeTokenCredentialsBase());
-      botPluginImpl.config.provision.siteName = "test-site-name";
-      mockedEnvRestore = mockedEnv({
-        __TEAMSFX_INSIDER_PREVIEW: "0",
-      });
-
-      // Act
-      const result = await botPlugin.deploy(pluginContext);
-
-      // Assert
-      chai.assert.isTrue(result.isOk());
-    });
-
-    it("Happy Path with Arm support enabled", async () => {
+    it("Happy Path", async () => {
       // Arrange
       const pluginContext = testUtils.newPluginContext();
       pluginContext.root = rootDir;

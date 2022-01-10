@@ -12,7 +12,7 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
-import { isArmSupportEnabled, isMultiEnvEnabled } from "../../../common";
+import { isMultiEnvEnabled } from "../../../common";
 import { LocalSettingsAuthKeys } from "../../../common/localSettingsConstants";
 import { Bicep, ConstantString } from "../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
@@ -106,10 +106,6 @@ export class SimpleAuthPluginImpl {
     await DialogUtils.progressBar?.next(Constants.ProgressBar.postProvision.updateWebApp);
 
     const configs = Utils.getWebAppConfig(ctx, false);
-
-    if (!isArmSupportEnabled()) {
-      await this.webAppClient.configWebApp(configs);
-    }
 
     await DialogUtils.progressBar?.end(true);
 

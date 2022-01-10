@@ -197,7 +197,7 @@ export function createAddAzureResourceQuestion(
   alreadyHaveAPIM: boolean,
   alreadyHaveKeyVault: boolean
 ): MultiSelectQuestion {
-  const options: OptionItem[] = [AzureResourceFunction];
+  const options: OptionItem[] = [AzureResourceFunction, AzureResourceSQL];
   if (!alreadyHaveAPIM) options.push(AzureResourceApim);
   if (!alreadyHaveKeyVault) options.push(AzureResourceKeyVault);
   return {

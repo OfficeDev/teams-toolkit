@@ -120,7 +120,6 @@
     "rimraf": "^3.0.2",
     "rollup": "^2.59.0",
     "rollup-plugin-typescript2": "^0.30.0",
-    "semver": "^7.3.5",
     "sinon": "^12.0.1",
     "source-map-loader": "^3.0.0",
     "ts-loader": "^9.2.6",

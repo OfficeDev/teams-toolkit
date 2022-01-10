@@ -548,9 +548,7 @@ export async function runCommand(
 
     switch (stage) {
       case Stage.create: {
-        if (TreatmentVariableValue.removeCreateFromSample) {
-          inputs["scratch"] = "yes";
-        }
+        inputs["scratch"] = "yes";
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);

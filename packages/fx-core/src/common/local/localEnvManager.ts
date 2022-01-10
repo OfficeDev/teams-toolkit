@@ -37,7 +37,7 @@ export class LocalEnvManager {
   public getActiveDependencies(projectSettings: ProjectSettings): DepsType[] {
     const depsTypes: DepsType[] = [];
     const isSPFx = ProjectSettingsHelper.isSpfx(projectSettings);
-    const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+    const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
     const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
     const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
 
@@ -51,7 +51,7 @@ export class LocalEnvManager {
     }
 
     // Dotnet
-    if (includeFrontend) {
+    if (includeSimpleAuth || includeBackend) {
       depsTypes.push(DepsType.Dotnet);
     }
 

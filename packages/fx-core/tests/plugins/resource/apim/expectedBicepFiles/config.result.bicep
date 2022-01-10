@@ -1,3 +1,4 @@
+// Add TeamsFx configurations to APIM resources
 module teamsFxApimConfig './apimConfiguration.result.bicep' = {
   name: 'addTeamsFxApimConfiguration'
   params: {

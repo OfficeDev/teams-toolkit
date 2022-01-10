@@ -238,7 +238,7 @@ export async function scaffold(
   }
 
   // write manifest
-  const writeRes = await appStudio.SaveManifest(ctx, inputs, manifest);
+  const writeRes = await appStudio.saveManifest(ctx, inputs, manifest);
   if (writeRes.isErr()) {
     return err(writeRes.error);
   }

@@ -11,7 +11,7 @@ import {
   ScaffoldActionName,
   ScaffoldContext,
   scaffoldFromTemplates,
-} from "../../../../common/templatesActions";
+} from "../../../../common/template-utils/templatesActions";
 import {
   BuiltInResourcePluginNames,
   BuiltInScaffoldPluginNames,

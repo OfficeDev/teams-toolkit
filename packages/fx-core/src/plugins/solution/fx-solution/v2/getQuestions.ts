@@ -379,7 +379,7 @@ export async function getQuestionsForAddCapability(
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   if (!isDynamicQuestion) {
     // For CLI_HELP
-    addCapQuestion.staticOptions = [TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id];
+    addCapQuestion.staticOptions = [TabOptionItem, BotOptionItem, MessageExtensionItem];
     return ok(new QTreeNode(addCapQuestion));
   }
   const canProceed = canAddCapability(settings, ctx.telemetryReporter);
@@ -423,9 +423,9 @@ export async function getQuestionsForAddCapability(
     return ok(undefined);
   }
   const options = [];
-  if (isTabAddable) options.push(TabOptionItem.id);
-  if (isBotAddable) options.push(BotOptionItem.id);
-  if (isMEAddable) options.push(MessageExtensionItem.id);
+  if (isTabAddable) options.push(TabOptionItem);
+  if (isBotAddable) options.push(BotOptionItem);
+  if (isMEAddable) options.push(MessageExtensionItem);
   addCapQuestion.staticOptions = options;
   return ok(new QTreeNode(addCapQuestion));
 }
@@ -439,25 +439,25 @@ export async function getQuestionsForAddResource(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
+  let addQuestion: MultiSelectQuestion;
   if (!isDynamicQuestion) {
-    const question = createAddAzureResourceQuestion(false, false, false, false);
-    return ok(new QTreeNode(question));
+    addQuestion = createAddAzureResourceQuestion(false, false, false, false);
+  } else {
+    const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
+    const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);
+    const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);
+    const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
+    addQuestion = createAddAzureResourceQuestion(
+      alreadyHaveFunction,
+      alreadyHaveSQL,
+      alreadyHaveAPIM,
+      alreadyHaveKeyVault
+    );
+    const canProceed = canAddResource(ctx.projectSetting, ctx.telemetryReporter);
+    if (canProceed.isErr()) {
+      return err(canProceed.error);
+    }
   }
-  const canProceed = canAddResource(ctx.projectSetting, ctx.telemetryReporter);
-  if (canProceed.isErr()) {
-    return err(canProceed.error);
-  }
-
-  const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
-  const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);
-  const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);
-  const alreadyHaveKeyVault = settings.azureResources.includes(AzureResourceKeyVault.id);
-  const addQuestion = createAddAzureResourceQuestion(
-    alreadyHaveFunction,
-    alreadyHaveSQL,
-    alreadyHaveAPIM,
-    alreadyHaveKeyVault
-  );
   const addAzureResourceNode = new QTreeNode(addQuestion);
   //traverse plugins' getQuestionsForUserTask
   const pluginsWithResources = [

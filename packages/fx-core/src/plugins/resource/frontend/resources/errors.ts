@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureInfo, Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
+import { Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import path from "path";
 import { ConfigFolderName, ArchiveFolderName, FxError } from "@microsoft/teamsfx-api";
@@ -31,9 +31,6 @@ export const tips = {
   checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
   checkSystemTime: "You may get expired credentials, check if your system time is correct.",
   restoreEnvironment: `If you manually updated configuration files (under directory .${ConfigFolderName}), recover them.`,
-  registerRequiredRP: `Register required resource provider '${AzureInfo.RequiredResourceProviders.join(
-    `', '`
-  )}' for your subscription manually.`,
   migrateV1Project: `Rollback your project from '${ArchiveFolderName}' folder.`,
 };
 
@@ -78,12 +75,6 @@ export class UnauthenticatedError extends FrontendPluginError {
     super(ErrorType.User, "UnauthenticatedError", "Failed to get user login information.", [
       tips.doLogin,
     ]);
-  }
-}
-
-export class NoPreStepError extends FrontendPluginError {
-  constructor() {
-    super(ErrorType.System, "NoPreStepError", "The pre-step is not done.", [tips.checkLog]);
   }
 }
 
@@ -148,40 +139,6 @@ export class InvalidStorageNameError extends FrontendPluginError {
     super(ErrorType.User, "InvalidStorageNameError", "Azure Storage Name is invalid.", [
       tips.ensureAppNameValid,
     ]);
-  }
-}
-
-export class StorageAccountAlreadyTakenError extends FrontendPluginError {
-  constructor() {
-    super(
-      ErrorType.User,
-      "StorageAccountAlreadyTakenError",
-      "Azure Storage Name is already in use.",
-      [tips.deleteSameNameStorage]
-    );
-  }
-}
-
-// TODO: help link for this error
-export class RegisterResourceProviderError extends FrontendPluginError {
-  constructor() {
-    super(
-      ErrorType.User,
-      "RegisterResourceProviderError",
-      "Failed to register required resource provider for Tab frontend app.",
-      [tips.registerRequiredRP, tips.checkLog]
-    );
-  }
-}
-
-export class CreateStorageAccountError extends FrontendPluginError {
-  constructor(innerErrorCode?: string) {
-    super(
-      ErrorType.User,
-      "CreateStorageAccountError",
-      `Failed to create Azure Storage Account${innerErrorCode ? `: ${innerErrorCode}` : ""}.`,
-      [tips.checkLog]
-    );
   }
 }
 
@@ -309,28 +266,6 @@ export class InvalidTabLanguageError extends FrontendPluginError {
       "InvalidTabLanguageError",
       "The selected programming language yet is not supported by Tab.",
       [tips.restoreEnvironment, tips.reScaffold]
-    );
-  }
-}
-
-export class InvalidAuthPluginConfigError extends FrontendPluginError {
-  constructor() {
-    super(
-      ErrorType.User,
-      "InvalidAuthPluginConfigError",
-      "The auth plugin configuration is invalid.",
-      [tips.restoreEnvironment, tips.reProvision]
-    );
-  }
-}
-
-export class InvalidAadPluginConfigError extends FrontendPluginError {
-  constructor() {
-    super(
-      ErrorType.User,
-      "InvalidAadPluginConfigError",
-      "The aad plugin configuration is invalid.",
-      [tips.restoreEnvironment, tips.reProvision]
     );
   }
 }

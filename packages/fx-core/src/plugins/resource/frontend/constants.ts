@@ -135,18 +135,8 @@ export class TelemetryValue {
   static readonly SystemError = "system";
 }
 
-export class AzureErrorCode {
-  static readonly ReservedResourceName = "ReservedResourceName";
-  static readonly StorageAccountAlreadyTaken = "StorageAccountAlreadyTaken";
-  static readonly StorageAccountAlreadyExists = "StorageAccountAlreadyExists";
-}
-
 export class RegularExpr {
   static readonly AllCharToBeSkippedInName = /[^a-zA-Z0-9]/g;
   static readonly FrontendStorageNamePattern = /^[a-z0-9]{3,24}$/;
   static readonly ReplaceTemplateExt = /\.tpl$/;
-}
-
-export class AzureInfo {
-  static readonly RequiredResourceProviders = ["Microsoft.Storage"];
 }

@@ -11,6 +11,7 @@ import {
   LogLevel,
   Logger,
   setLogFunction,
+  InternalLogger,
 } from "../../src/util/logger";
 
 describe("Logger Tests", () => {
@@ -96,5 +97,21 @@ describe("Logger Tests", () => {
     assert.isFalse(infoStub.called);
     internalLogger.verbose("test");
     assert.isFalse(verboseStub.called);
+  });
+
+  it("shows name when set in constructor", () => {
+    const clock = sinon.useFakeTimers();
+    const namedLogger = new InternalLogger("name");
+    namedLogger.customLogger = logger;
+    namedLogger.level = LogLevel.Info;
+
+    namedLogger.info("test");
+    assert.isTrue(infoStub.called);
+    assert.isTrue(
+      infoStub.calledWith(
+        "[Thu, 01 Jan 1970 00:00:00 GMT] : @microsoft/teamsfx - name : Info - test"
+      )
+    );
+    clock.restore();
   });
 });

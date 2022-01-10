@@ -8,4 +8,4 @@
 1. The `FetchTemplateZipFromSourceCode` action will get template from the source code that you just changed.
 
 * `FetchTemplatesUrlWithTag`, `FetchTemplatesZipFromUrl`, `FetchTemplateZipFromLocal`, these actions are skipped.
-* Since bot's and message extension's templates are generated during CD pipeline, we can't debug those code with `FetchTemplateZipFromSourceCode` action.
+* Since bot's and messaging extension's templates are generated during CD pipeline, we can't debug those code with `FetchTemplateZipFromSourceCode` action.

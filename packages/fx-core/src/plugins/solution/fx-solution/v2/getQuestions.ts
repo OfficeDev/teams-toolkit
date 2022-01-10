@@ -379,7 +379,7 @@ export async function getQuestionsForAddCapability(
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   if (!isDynamicQuestion) {
     // For CLI_HELP
-    addCapQuestion.staticOptions = [TabOptionItem.id, BotOptionItem.id, MessageExtensionItem.id];
+    addCapQuestion.staticOptions = [TabOptionItem, BotOptionItem, MessageExtensionItem];
     return ok(new QTreeNode(addCapQuestion));
   }
   const canProceed = canAddCapability(settings, ctx.telemetryReporter);
@@ -423,9 +423,9 @@ export async function getQuestionsForAddCapability(
     return ok(undefined);
   }
   const options = [];
-  if (isTabAddable) options.push(TabOptionItem.id);
-  if (isBotAddable) options.push(BotOptionItem.id);
-  if (isMEAddable) options.push(MessageExtensionItem.id);
+  if (isTabAddable) options.push(TabOptionItem);
+  if (isBotAddable) options.push(BotOptionItem);
+  if (isMEAddable) options.push(MessageExtensionItem);
   addCapQuestion.staticOptions = options;
   return ok(new QTreeNode(addCapQuestion));
 }

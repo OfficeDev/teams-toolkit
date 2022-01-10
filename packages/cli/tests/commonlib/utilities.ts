@@ -30,6 +30,17 @@ export function getSiteNameFromResourceId(webAppResourceId: string): string {
   return result;
 }
 
+export function getKeyVaultNameFromResourceId(keyVaultResourceId: string): string {
+  const result = parseFromResourceId(
+    /providers\/Microsoft.KeyVault\/vaults\/([^\/]*)/i,
+    keyVaultResourceId
+  );
+  if (!result) {
+    throw new Error(`Cannot parse key vault name from resource id ${keyVaultResourceId}`);
+  }
+  return result;
+}
+
 export function parseFromResourceId(pattern: RegExp, resourceId: string): string {
   const result = resourceId.match(pattern);
   return result ? result[1].trim() : "";
@@ -47,15 +58,14 @@ export async function getWebappSettings(
   try {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     const getResponse = await axios.post(baseUrlAppSettings(subscriptionId, rg, name));
-    if (!getResponse || !getResponse.data || !getResponse.data.properties) {
-      return undefined;
+    if (getResponse && getResponse.data && getResponse.data.properties) {
+      return getResponse.data.properties;
     }
-
-    return getResponse.data.properties;
   } catch (error) {
     console.log(error);
-    return undefined;
   }
+
+  return undefined;
 }
 
 export async function getWebappConfigs(
@@ -70,15 +80,14 @@ export async function getWebappConfigs(
   try {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     const getResponse = await axios.get(baseUrlAppConfigs(subscriptionId, rg, name));
-    if (!getResponse || !getResponse.data || !getResponse.data.properties) {
-      return undefined;
+    if (getResponse && getResponse.data && getResponse.data.properties) {
+      return getResponse.data.properties;
     }
-
-    return getResponse.data.properties;
   } catch (error) {
     console.log(error);
-    return undefined;
   }
+
+  return undefined;
 }
 
 export async function getWebappServicePlan(
@@ -93,20 +102,14 @@ export async function getWebappServicePlan(
   try {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     const planResponse = await runWithRetry(() => axios.get(baseUrlPlan(subscriptionId, rg, name)));
-    if (
-      !planResponse ||
-      !planResponse.data ||
-      !planResponse.data.sku ||
-      !planResponse.data.sku.name
-    ) {
-      return undefined;
+    if (planResponse && planResponse.data && planResponse.data.sku && planResponse.data.sku.name) {
+      return planResponse.data.sku.name;
     }
-
-    return planResponse.data.sku.name;
   } catch (error) {
     console.log(error);
-    return undefined;
   }
+
+  return undefined;
 }
 
 export async function runWithRetry<T>(fn: () => Promise<T>) {

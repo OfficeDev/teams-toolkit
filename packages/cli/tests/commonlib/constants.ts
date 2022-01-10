@@ -72,6 +72,8 @@ export class StateConfigKey {
   static readonly domain = "domain";
   // identity
   static readonly identityClientId = "identityClientId";
+  // key vault
+  static readonly keyVaultResourceId = "keyVaultResourceId";
 
   static readonly skuName = "skuName";
 }
@@ -82,4 +84,6 @@ export class ProjectSettingKey {
 
 export class provisionParametersKey {
   static readonly resourceBaseName = "resourceBaseName";
+  static readonly m365ClientSecretName = "m365ClientSecretName";
+  static readonly botClientSecretName = "botClientSecretName";
 }

@@ -6,7 +6,7 @@
  */
 
 import path from "path";
-import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import {
   getSubscriptionId,
   getTestFolder,
@@ -17,18 +17,12 @@ import {
   customizeBicepFile,
   validateServicePlan,
 } from "../commonUtils";
-import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import "mocha";
 import * as chai from "chai";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability } from "../../commonlib/constants";
 
 describe("User can customize Bicep files", function () {
-  //  Only test when insider feature flag enabled
-  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
-    return;
-  }
-
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();

@@ -6,25 +6,23 @@
  */
 
 import path from "path";
-import { AadValidator, FunctionValidator } from "../../commonlib";
+import "mocha";
+import { AadValidator, BotValidator } from "../../commonlib";
 import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   cleanUp,
-  setSimpleAuthSkuNameToB1Bicep,
   readContextMultiEnv,
-  createResourceGroup,
-  deleteResourceGroupByName,
+  setBotSkuNameToB1Bicep,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
+import { KeyVaultValidator } from "../../commonlib/keyVaultValidator";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
-import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
-import { KeyVaultValidator } from "../../commonlib/keyVaultValidator";
 
-describe("Deploy to customized resource group", function () {
+describe("Test Azure Key Vault", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
@@ -35,25 +33,15 @@ describe("Deploy to customized resource group", function () {
     await cleanUp(appName, projectPath, true, false, false, true);
   });
 
-  it(`tab + key vault project can deploy keyvault resource to customized resource group and successfully provision`, async function () {
-    // Create new tab + keyvault project
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+  it(`bot + key vault project happy path`, async function () {
+    // Create bot + key vault project
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);
 
-    // Create empty resource group
-    const customizedRgName = `${appName}-customized-rg`;
-    await createResourceGroup(customizedRgName, "eastus");
-
-    // Customize simple auth bicep files
-    await customizeBicepFilesToCustomizedRg(
-      customizedRgName,
-      projectPath,
-      `name: 'keyVaultProvision'`
-    );
+    await setBotSkuNameToB1Bicep(projectPath, env);
+    await CliHelper.setSubscription(subscription, projectPath);
 
     // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
     // Validate Provision
@@ -64,15 +52,13 @@ describe("Deploy to customized resource group", function () {
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
 
-      // Validate Function App
-      const functionValidator = new FunctionValidator(context, projectPath, env);
-      await functionValidator.validateProvision();
+      // Validate Bot
+      const bot = BotValidator.init(context, true);
+      await BotValidator.validateProvision(bot, true);
 
       // Validate Key Vault
       const keyVault = new KeyVaultValidator(context, projectPath, env);
       await keyVault.validate();
     }
-
-    await deleteResourceGroupByName(customizedRgName);
   });
 });

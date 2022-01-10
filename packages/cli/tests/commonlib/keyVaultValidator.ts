@@ -4,92 +4,199 @@
 import axios from "axios";
 import * as chai from "chai";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
-import { getSiteNameFromResourceId } from "./utilities";
+import {
+  getActivePluginsFromProjectSetting,
+  getAzureAccountObjectId,
+  getAzureTenantId,
+  getProvisionParameterValueByKey,
+} from "../e2e/commonUtils";
+import { PluginId, provisionParametersKey, StateConfigKey } from "./constants";
+import {
+  getKeyVaultNameFromResourceId,
+  getResourceGroupNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+} from "./utilities";
 
-const keyVaultPluginName = "fx-resource-key-vault";
-const functionPluginName = "fx-resource-function";
-const functionAppResourceIdKeyName = "functionAppResourceId";
-const m365ClientSecretReferenceKeyName = "m365ClientSecretReference";
-const solutionPluginName = "solution";
-const subscriptionKey = "subscriptionId";
-const rgKey = "resourceGroupName";
-const baseUrlConfigReferenceAppSettings = (subscriptionId: string, rg: string, name: string) =>
-  `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.Web/sites/${name}/config/configreferences/appsettings?api-version=2021-02-01`;
+const baseUrlVaultSecrets = (vaultBaseUrl: string, secretName: string, secretVersion: string) =>
+  `${vaultBaseUrl}/secrets/${secretName}/${secretVersion}?api-version=7.2`;
+const baseUrlVaults = (subscriptionId: string, rg: string, vaultName: string) =>
+  `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.KeyVault/vaults/${vaultName}?api-version=2019-09-01`;
+const baseUrlVaultAddAccessPolicy = (subscriptionId: string, rg: string, vaultName: string) =>
+  `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.KeyVault/vaults/${vaultName}/accessPolicies/add?api-version=2019-09-01`;
 
 export interface IKeyVaultObject {
-  m365ClientSecretReference: string;
-  functionAppName: string;
+  name: string;
+  vaultUri: string;
 }
 
 export class KeyVaultValidator {
-  private static subscriptionId: string;
-  private static rg: string;
+  private projectPath: string;
+  private env: string;
 
-  public static init(ctx: any): IKeyVaultObject {
+  private subscriptionId = "";
+  private rg = "";
+  private keyVault: IKeyVaultObject;
+
+  constructor(ctx: any, projectPath: string, env: string) {
     console.log("Start to init validator for Key Vault.");
 
-    const resourceId = ctx[functionPluginName][functionAppResourceIdKeyName];
+    this.projectPath = projectPath;
+    this.env = env;
 
-    const keyVaultObject = {
-      m365ClientSecretReference: ctx[keyVaultPluginName][m365ClientSecretReferenceKeyName],
-      functionAppName: getSiteNameFromResourceId(resourceId),
-    } as IKeyVaultObject;
-    chai.assert.exists(keyVaultObject);
+    if (
+      ctx &&
+      ctx[PluginId.KeyVault] &&
+      ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
+    ) {
+      const resourceId = ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId];
+      chai.assert.exists(resourceId);
+      this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
+      chai.assert.exists(this.subscriptionId);
+      this.rg = getResourceGroupNameFromResourceId(resourceId);
+      chai.assert.exists(this.rg);
 
-    this.subscriptionId = ctx[solutionPluginName][subscriptionKey];
-    chai.assert.exists(this.subscriptionId);
-
-    this.rg = ctx[solutionPluginName][rgKey];
-    chai.assert.exists(this.rg);
+      const keyVaultName = getKeyVaultNameFromResourceId(resourceId);
+      chai.assert.exists(keyVaultName);
+      this.keyVault = {
+        name: keyVaultName,
+        vaultUri: `https://${keyVaultName}.vault.azure.net`,
+      };
+    }
 
     console.log("Successfully init validator for Key Vault.");
-    return keyVaultObject;
   }
 
-  public static async validate(keyVaultObject: IKeyVaultObject) {
+  public async validate() {
     console.log("Start to validate Key Vault.");
 
     const tokenProvider = MockAzureAccountProvider;
     const tokenCredential = await tokenProvider.getAccountCredentialAsync();
     const token = (await tokenCredential?.getToken())?.accessToken;
 
-    console.log("Validating app settings.");
-
-    const response = await this.getWebappConfigReferenceAppSettings(
+    console.log("Validating key vault instance.");
+    const keyVaultResponse = await this.getKeyVault(
       this.subscriptionId,
       this.rg,
-      keyVaultObject.functionAppName,
+      this.keyVault.name,
       token as string
     );
+    chai.assert.exists(keyVaultResponse);
 
-    console.log("App Settings Key Vault References:");
-    console.log(response);
+    // Update permission
+    await this.updateKeyVaultPermission(
+      this.subscriptionId,
+      this.rg,
+      this.keyVault.name,
+      token,
+      getAzureTenantId(),
+      getAzureAccountObjectId()
+    );
 
-    // Validate Key Vault reference in Azure Fucntion
-    chai.assert.exists(response);
-    chai.assert.equal(response.length, 1);
-    chai.assert.equal(response[0].name, "M365_CLIENT_SECRET");
-    chai.assert.equal(response[0].properties.secretName, "m365ClientSecret");
-    chai.assert.equal(response[0].properties.reference, keyVaultObject.m365ClientSecretReference);
-    chai.assert.equal(response[0].properties.status, "Resolved");
+    console.log("Validating key vault secrets.");
+    const m365ClientSecretName =
+      (await getProvisionParameterValueByKey(
+        this.projectPath,
+        this.env,
+        provisionParametersKey.m365ClientSecretName
+      )) ?? "m365ClientSecret";
+    const keyVaultSecretResponse = await this.getKeyVaultSecrets(
+      this.keyVault.vaultUri,
+      m365ClientSecretName,
+      token as string
+    );
+    chai.assert.exists(keyVaultSecretResponse);
+
+    const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
+    chai.assert.isArray(activeResourcePlugins);
+    if (activeResourcePlugins.includes(PluginId.Bot)) {
+      const botClientSecretName =
+        (await getProvisionParameterValueByKey(
+          this.projectPath,
+          this.env,
+          provisionParametersKey.botClientSecretName
+        )) ?? "botClientSecret";
+      const keyVaultSecretResponse = await this.getKeyVaultSecrets(
+        this.keyVault.vaultUri,
+        botClientSecretName,
+        token as string
+      );
+      chai.assert.exists(keyVaultSecretResponse);
+    }
 
     console.log("Successfully validate Key Vault.");
   }
 
-  private static async getWebappConfigReferenceAppSettings(
+  private async getKeyVaultSecrets(
+    vaultUri: string,
+    secretName: string,
+    token: string,
+    secretVersion = ""
+  ) {
+    try {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      const getResponse = await axios.get(baseUrlVaultSecrets(vaultUri, secretName, secretVersion));
+
+      if (getResponse && getResponse.data && getResponse.data.value) {
+        return getResponse.data.value;
+      }
+    } catch (error) {
+      console.log(error);
+    }
+
+    return undefined;
+  }
+
+  private async updateKeyVaultPermission(
     subscriptionId: string,
     rg: string,
-    name: string,
+    keyVaultName: string,
+    token: string,
+    tenantId: string,
+    objectId: string
+  ) {
+    console.log(
+      `Add key vault "get secret" permission for ${objectId} on key vault ${keyVaultName}, subscription id: ${subscriptionId}.`
+    );
+
+    try {
+      axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+      const body = {
+        properties: {
+          accessPolicies: [
+            {
+              tenantId: `${tenantId}`,
+              objectId: `${objectId}`,
+              permissions: {
+                secrets: ["get"],
+              },
+            },
+          ],
+        },
+      };
+      const getResponse = await axios.put(
+        baseUrlVaultAddAccessPolicy(subscriptionId, rg, keyVaultName),
+        body
+      );
+      chai.assert.equal(getResponse.status, 200);
+    } catch (error) {
+      console.log(error);
+    }
+
+    console.log("Successfully Update key vault permission");
+  }
+
+  private async getKeyVault(
+    subscriptionId: string,
+    rg: string,
+    keyVaultName: string,
     token: string
   ) {
     try {
       axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
-      const response = await axios.get(baseUrlConfigReferenceAppSettings(subscriptionId, rg, name));
-
-      if (!response || !response.data || !response.data.value) {
-        return undefined;
+      const getResponse = await axios.get(baseUrlVaults(subscriptionId, rg, keyVaultName));
+      if (getResponse && getResponse.data && getResponse.data.properties) {
+        return getResponse.data.properties;
       }
-      return response.data.value;
     } catch (error) {
       console.log(error);
       return undefined;

@@ -18,18 +18,12 @@ import {
   deleteResourceGroupByName,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
-import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
-import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 
 describe("Deploy to customized resource group", function () {
-  //  Only test when insider feature flag enabled
-  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
-    return;
-  }
-
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();

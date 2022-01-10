@@ -12,7 +12,7 @@ import {
   getApimServiceNameFromResourceId,
   getAuthServiceNameFromResourceId,
   getproductNameFromResourceId,
-} from "../../../fx-core/src/plugins/resource/apim/utils/commonUtils";
+} from "@microsoft/teamsfx-core/src/plugins/resource/apim/utils/commonUtils";
 import { getResourceGroupNameFromResourceId } from "./utilities";
 
 export class ApimValidator {

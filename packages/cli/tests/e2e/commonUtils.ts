@@ -94,6 +94,14 @@ export function getSubscriptionId() {
   return cfg.AZURE_SUBSCRIPTION_ID || "";
 }
 
+export function getAzureTenantId() {
+  return cfg.AZURE_TENANT_ID || "";
+}
+
+export function getAzureAccountObjectId() {
+  return cfg.AZURE_ACCOUNT_OBJECT_ID || "";
+}
+
 const envFilePathSuffix = path.join(".fx", "env.default.json");
 
 function getEnvFilePathSuffix(isMultiEnvEnabled: boolean, envName: string) {
@@ -138,11 +146,19 @@ export async function getProvisionParameterValueByKey(
   projectPath: string,
   envName: string,
   key: string
-): Promise<string> {
+): Promise<string | undefined> {
   const parameters = await fs.readJSON(
     path.join(projectPath, TestFilePath.configFolder, `azure.parameters.${envName}.json`)
   );
-  return parameters["parameters"]["provisionParameters"]["value"][key];
+  if (
+    parameters.parameters &&
+    parameters.parameters.provisionParameters &&
+    parameters.parameters.provisionParameters.value &&
+    parameters.parameters.provisionParameters.value[key]
+  ) {
+    return parameters.parameters.provisionParameters.value[key];
+  }
+  return undefined;
 }
 
 export async function setBotSkuNameToB1(projectPath: string) {
@@ -609,4 +625,8 @@ export async function validateServicePlan(
     token as string
   );
   chai.assert(serivcePlanResponse, "B1");
+}
+
+export function getKeyVaultSecretReference(vaultName: string, secretName: string): string {
+  return `@Microsoft.KeyVault(VaultName=${vaultName};SecretName=${secretName})`;
 }

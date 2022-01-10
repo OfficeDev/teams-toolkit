@@ -29,7 +29,6 @@ import {
   SolutionContext,
   Stage,
   StatesFolderName,
-  TelemetryReporter,
   Tools,
   UserCancelError,
   v2,
@@ -46,6 +45,7 @@ import { environmentManager } from "..";
 import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
+import { TelemetryReporterInstance } from "../common/telemetry";
 import { getRootDirectory, mapToJson } from "../common/tools";
 import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
 import {
@@ -170,7 +170,6 @@ export function isVSProject(projectSettings: ProjectSettings) {
 }
 
 export let Logger: LogProvider;
-export let telemetryReporter: TelemetryReporter | undefined;
 export let currentStage: Stage;
 export let TOOLS: Tools;
 export function setTools(tools: Tools) {
@@ -185,7 +184,7 @@ export class FxCore implements v3.ICore {
     this.tools = tools;
     TOOLS = tools;
     Logger = tools.logProvider;
-    telemetryReporter = tools.telemetryReporter;
+    TelemetryReporterInstance.telemetryReporter = tools.telemetryReporter;
   }
 
   /**

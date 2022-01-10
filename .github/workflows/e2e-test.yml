@@ -98,7 +98,7 @@ jobs:
       fail-fast: false
       matrix:
         cases: ${{ fromJson(needs.setup.outputs.cases) }}
-    name: ${{ github.run_id }} - ${{ matrix.cases }}
+    name: ${{ github.job }} - ${{ matrix.cases }}
 
     steps:
       - name: Checkout
@@ -152,7 +152,7 @@ jobs:
         uses: actions/upload-artifact@v2
         if: failure()
         with:
-          name: ${{ github.run_id }}.json
+          name: ${{ github.job }}.json
           path: |
             ./packages/cli/tests/e2e/report.json
 

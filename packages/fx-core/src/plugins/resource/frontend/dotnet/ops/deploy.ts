@@ -14,8 +14,8 @@ import {
 import { WebSiteManagementClient } from "@azure/arm-appservice";
 import {
   AzureInfo,
-  BlazorCommands as Commands,
-  BlazorPluginInfo as PluginInfo,
+  DotnetCommands as Commands,
+  DotnetPluginInfo as PluginInfo,
   RegularExpr,
 } from "../constants";
 import { execute } from "../../../function/utils/execute";

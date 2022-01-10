@@ -1,12 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Platform, ProjectSettings, v2 } from "@microsoft/teamsfx-api";
+import {
+  Platform,
+  ProjectSettings,
+  v2,
+  IConfigurableTab,
+  IStaticTab,
+  IBot,
+  IComposeExtension,
+  FxError,
+  Result,
+  ok,
+  TeamsAppManifest,
+} from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import "reflect-metadata";
 import * as uuid from "uuid";
-import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import {
+  BuiltInResourcePluginNames,
+  TeamsFxAzureSolutionNameV3,
+} from "../../../src/plugins/solution/fx-solution/v3/constants";
 import {
   getQuestionsForScaffold,
   scaffold,
@@ -17,7 +32,38 @@ import "./mockPlugins";
 import * as path from "path";
 import * as os from "os";
 import { randomAppName } from "../../core/utils";
+import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
+import sinon from "sinon";
+import { Container } from "typedi";
 describe("SolutionV3 - scaffold", () => {
+  const sandbox = sinon.createSandbox();
+  beforeEach(async () => {
+    const appStudio = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    sandbox
+      .stub<any, any>(appStudio, "loadManifest")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath
+        ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> => {
+          return ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() });
+        }
+      );
+    sandbox
+      .stub<any, any>(appStudio, "saveManifest")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
+        ): Promise<Result<any, FxError>> => {
+          return ok({ local: {}, remote: {} });
+        }
+      );
+  });
+  afterEach(async () => {
+    sandbox.restore();
+  });
   it("scaffold", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",

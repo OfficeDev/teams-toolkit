@@ -34,7 +34,7 @@ import path from "path";
 import { Bicep, ConstantString } from "../../../../common/constants";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import * as fs from "fs-extra";
-import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../../../common/tools";
+import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
 import { getTemplatesFolder } from "../../../../folder";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
@@ -66,41 +66,18 @@ export class ApimManager {
     const apimService: ApimService = await this.lazyApimService.getValue();
     const currentUserId = await apimService.getUserId();
 
-    if (isArmSupportEnabled()) {
-      const apimServiceResource = apimConfig.serviceResourceId
-        ? await apimService.getService(
-            getResourceGroupNameFromResourceId(apimConfig.serviceResourceId),
-            getApimServiceNameFromResourceId(apimConfig.serviceResourceId)
-          )
-        : undefined;
-      apimConfig.publisherEmail = apimServiceResource?.publisherEmail
-        ? apimServiceResource.publisherEmail
-        : currentUserId;
-      apimConfig.publisherName = apimServiceResource?.publisherName
-        ? apimServiceResource.publisherName
-        : currentUserId;
-    } else {
-      await apimService.ensureResourceProvider();
-
-      const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-      const apimServiceName =
-        apimConfig.serviceName ??
-        NamingRules.apimServiceName.sanitize(appName, solutionConfig.resourceNameSuffix);
-
-      await apimService.createService(
-        resourceGroupName,
-        apimServiceName,
-        solutionConfig.location,
-        currentUserId
-      );
-      apimConfig.serviceName = apimServiceName;
-
-      const productId =
-        apimConfig.productId ??
-        NamingRules.productId.sanitize(appName, solutionConfig.resourceNameSuffix);
-      await apimService.createProduct(resourceGroupName, apimServiceName, productId);
-      apimConfig.productId = productId;
-    }
+    const apimServiceResource = apimConfig.serviceResourceId
+      ? await apimService.getService(
+          getResourceGroupNameFromResourceId(apimConfig.serviceResourceId),
+          getApimServiceNameFromResourceId(apimConfig.serviceResourceId)
+        )
+      : undefined;
+    apimConfig.publisherEmail = apimServiceResource?.publisherEmail
+      ? apimServiceResource.publisherEmail
+      : currentUserId;
+    apimConfig.publisherName = apimServiceResource?.publisherName
+      ? apimServiceResource.publisherName
+      : currentUserId;
   }
 
   public async postProvision(
@@ -108,31 +85,7 @@ export class ApimManager {
     ctx: PluginContext,
     aadConfig: IAadPluginConfig,
     appName: string
-  ): Promise<void> {
-    if (!isArmSupportEnabled()) {
-      const solutionConfig = new SolutionConfig(ctx.envInfo);
-      const apimService: ApimService = await this.lazyApimService.getValue();
-      const resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-      const apimServiceName = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceName);
-      const clientId = apimConfig.checkAndGet(ApimPluginConfigKeys.apimClientAADClientId);
-      const clientSecret = apimConfig.checkAndGet(ApimPluginConfigKeys.apimClientAADClientSecret);
-
-      const oAuthServerId =
-        apimConfig.oAuthServerId ??
-        NamingRules.oAuthServerId.sanitize(appName, solutionConfig.resourceNameSuffix);
-      const scopeName = `${aadConfig.applicationIdUris}/${ApimDefaultValues.enableScopeName}`;
-      await apimService.createOrUpdateOAuthService(
-        resourceGroupName,
-        apimServiceName,
-        oAuthServerId,
-        solutionConfig.teamsAppTenantId,
-        clientId,
-        clientSecret,
-        scopeName
-      );
-      apimConfig.oAuthServerId = oAuthServerId;
-    }
-  }
+  ): Promise<void> {}
 
   public async deploy(
     apimConfig: IApimPluginConfig,
@@ -143,24 +96,13 @@ export class ApimManager {
   ): Promise<void> {
     const apimService: ApimService = await this.lazyApimService.getValue();
 
-    let resourceGroupName, apimServiceName, authServerId, productId;
-
-    if (isArmSupportEnabled()) {
-      const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);
-      const apimProductResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.productResourceId);
-      const authServerResourceId = apimConfig.checkAndGet(
-        ApimPluginConfigKeys.authServerResourceId
-      );
-      resourceGroupName = getResourceGroupNameFromResourceId(apimServiceResourceId);
-      apimServiceName = getApimServiceNameFromResourceId(apimServiceResourceId);
-      authServerId = getAuthServiceNameFromResourceId(authServerResourceId);
-      productId = getproductNameFromResourceId(apimProductResourceId);
-    } else {
-      resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-      apimServiceName = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceName);
-      authServerId = apimConfig.checkAndGet(ApimPluginConfigKeys.oAuthServerId);
-      productId = apimConfig.checkAndGet(ApimPluginConfigKeys.productId);
-    }
+    const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);
+    const apimProductResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.productResourceId);
+    const authServerResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.authServerResourceId);
+    const resourceGroupName = getResourceGroupNameFromResourceId(apimServiceResourceId);
+    const apimServiceName = getApimServiceNameFromResourceId(apimServiceResourceId);
+    const authServerId = getAuthServiceNameFromResourceId(authServerResourceId);
+    const productId = getproductNameFromResourceId(apimProductResourceId);
 
     const apiPrefix = apimConfig.checkAndGet(ApimPluginConfigKeys.apiPrefix);
     const apiDocumentPath = apimConfig.checkAndGet(ApimPluginConfigKeys.apiDocumentPath);

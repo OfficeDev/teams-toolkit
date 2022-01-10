@@ -1,7 +1,7 @@
 import AdmZip from "adm-zip";
 import fs from "fs-extra";
 import path from "path";
-import { getTemplatesFolder } from "..";
+import { getTemplatesFolder } from "../../folder";
 import { fetchTemplateUrl, fetchZipFromUrl, renderTemplateContent, unzip } from "./templatesUtils";
 
 // The entire progress has following actions:

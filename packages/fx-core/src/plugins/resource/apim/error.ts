@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { FxError, returnSystemError, returnUserError } from "@microsoft/teamsfx-api";
-import { isArmSupportEnabled } from "../../../common";
 import { ProjectConstants, ConfigRetryOperations, TeamsToolkitComponent } from "./constants";
 
 enum ErrorType {
@@ -210,9 +209,7 @@ export function AssertConfigNotEmpty(
       EmptyConfigValue,
       component,
       name,
-      isArmSupportEnabled()
-        ? ProjectConstants.configFilePathArmSupported(envName)
-        : ProjectConstants.configFilePath,
+      ProjectConstants.configFilePathArmSupported(envName),
       ConfigRetryOperations[component][name]
     );
   }

@@ -15,7 +15,6 @@ import {
   PluginIdentity,
   ReadonlyPluginConfig,
 } from "@microsoft/teamsfx-api";
-import { isArmSupportEnabled } from "../../../../src";
 
 describe("config", () => {
   describe("SolutionConfig", () => {
@@ -37,9 +36,7 @@ describe("config", () => {
       chai
         .expect(() => solutionConfig.teamsAppTenantId)
         .to.throw(
-          `Project configuration 'teamsAppTenantId' of 'solution' is missing in '${
-            isArmSupportEnabled() ? "state.dev.json" : "env.default.json"
-          }'. Retry provision in the cloud or set the value manually.`
+          `Project configuration 'teamsAppTenantId' of 'solution' is missing in 'state.dev.json'. Retry provision in the cloud or set the value manually.`
         );
     });
     it("Error type property", () => {
@@ -77,9 +74,7 @@ describe("config", () => {
       chai
         .expect(() => apimPluginConfig.checkAndGet(ApimPluginConfigKeys.apiPath))
         .to.throw(
-          `Project configuration 'apiPath' of 'fx-resource-apim' is missing in '${
-            isArmSupportEnabled() ? "state.dev.json" : "env.default.json"
-          }'. Retry deploy to the cloud or set the value manually.`
+          `Project configuration 'apiPath' of 'fx-resource-apim' is missing in 'state.dev.json'. Retry deploy to the cloud or set the value manually.`
         );
     });
     it("Check and get error type property", () => {

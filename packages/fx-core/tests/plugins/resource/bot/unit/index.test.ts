@@ -284,7 +284,6 @@ describe("Teams Bot Resource Plugin", () => {
     let botPlugin: TeamsBot;
     let botPluginImpl: TeamsBotImpl;
     let rootDir: string;
-    let mockedEnvRestore: () => void;
 
     beforeEach(() => {
       botPlugin = new TeamsBot();
@@ -303,7 +302,6 @@ describe("Teams Bot Resource Plugin", () => {
 
     afterEach(async () => {
       sinon.restore();
-      mockedEnvRestore();
       await fs.remove(rootDir);
     });
 
@@ -318,9 +316,6 @@ describe("Teams Bot Resource Plugin", () => {
         "botWebAppResourceId",
         "/subscriptions/test-subscription/resourceGroups/test-rg/providers/Microsoft.Web/sites/test-webapp"
       );
-      mockedEnvRestore = mockedEnv({
-        __TEAMSFX_INSIDER_PREVIEW: "1",
-      });
 
       // Act
       const result = await botPlugin.deploy(pluginContext);

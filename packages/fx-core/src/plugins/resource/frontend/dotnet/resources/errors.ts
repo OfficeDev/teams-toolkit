@@ -20,7 +20,7 @@ const tips = {
   restoreEnvironment: `If you manually updated configuration files (under directory .${ConfigFolderName}), recover them.`,
 };
 
-export class BlazorPluginError extends FrontendPluginError {
+export class DotnetPluginError extends FrontendPluginError {
   public innerError?: Error;
 
   constructor(
@@ -48,7 +48,7 @@ export class BlazorPluginError extends FrontendPluginError {
   }
 }
 
-export class FetchConfigError extends BlazorPluginError {
+export class FetchConfigError extends DotnetPluginError {
   constructor(key: string) {
     super(ErrorType.User, "FetchConfigError", `Failed to find ${key} from configuration`, [
       tips.restoreEnvironment,
@@ -56,33 +56,7 @@ export class FetchConfigError extends BlazorPluginError {
   }
 }
 
-export class ProvisionError extends BlazorPluginError {
-  constructor(resource: string, innerErrorCode?: string) {
-    super(
-      ErrorType.User,
-      "ProvisionError",
-      `Failed to check/create '${resource}' for blazor app${
-        innerErrorCode ? `: ${innerErrorCode}` : ""
-      }.`,
-      [tips.reProvision]
-    );
-  }
-}
-
-export class ConfigureWebAppError extends BlazorPluginError {
-  constructor(innerErrorCode?: string) {
-    super(
-      ErrorType.User,
-      "ConfigureWebAppError",
-      `Failed to retrieve or update Azure Web App Settings${
-        innerErrorCode ? `: ${innerErrorCode}` : ""
-      }.`,
-      [tips.reProvision]
-    );
-  }
-}
-
-export class ProjectPathError extends BlazorPluginError {
+export class ProjectPathError extends DotnetPluginError {
   constructor(projectFilePath: string) {
     super(ErrorType.User, "ProjectPathError", `Failed to find target project ${projectFilePath}.`, [
       tips.checkLog,
@@ -91,12 +65,12 @@ export class ProjectPathError extends BlazorPluginError {
   }
 }
 
-export class BuildError extends BlazorPluginError {
+export class BuildError extends DotnetPluginError {
   constructor(innerError?: Error) {
     super(
       ErrorType.User,
       "BuildError",
-      "Failed to build Blazor project.",
+      "Failed to build Dotnet project.",
       [tips.checkLog, tips.reDeploy],
       undefined,
       innerError
@@ -104,7 +78,7 @@ export class BuildError extends BlazorPluginError {
   }
 }
 
-export class ZipError extends BlazorPluginError {
+export class ZipError extends DotnetPluginError {
   constructor() {
     super(ErrorType.User, "ZipError", "Failed to generate zip package.", [
       tips.checkFsPermissions,
@@ -113,7 +87,7 @@ export class ZipError extends BlazorPluginError {
   }
 }
 
-export class PublishCredentialError extends BlazorPluginError {
+export class PublishCredentialError extends DotnetPluginError {
   constructor() {
     super(ErrorType.User, "PublishCredentialError", "Failed to retrieve publish credential.", [
       tips.doProvision,
@@ -122,7 +96,7 @@ export class PublishCredentialError extends BlazorPluginError {
   }
 }
 
-export class UploadZipError extends BlazorPluginError {
+export class UploadZipError extends DotnetPluginError {
   constructor() {
     super(ErrorType.User, "UploadZipError", "Failed to upload zip package.", [
       tips.checkNetwork,
@@ -135,7 +109,7 @@ export const UnhandledErrorCode = "UnhandledError";
 export const UnhandledErrorMessage = "Unhandled error.";
 
 export async function runWithErrorCatchAndThrow<T>(
-  error: BlazorPluginError,
+  error: DotnetPluginError,
   fn: () => T | Promise<T>
 ): Promise<T> {
   try {
@@ -148,7 +122,7 @@ export async function runWithErrorCatchAndThrow<T>(
 }
 
 export async function runWithErrorCatchAndWrap<T>(
-  wrap: (error: any) => BlazorPluginError,
+  wrap: (error: any) => DotnetPluginError,
   fn: () => T | Promise<T>
 ): Promise<T> {
   try {

@@ -5,6 +5,10 @@ export interface Web {
   redirectUris: string[];
 }
 
+export interface Spa {
+  redirectUris: string[];
+}
+
 export interface Oauth2PermissionScopes {
   adminConsentDescription: string;
   adminConsentDisplayName: string;
@@ -67,4 +71,5 @@ export interface IAADDefinition {
   optionalClaims?: OptionalClaims;
   requiredResourceAccess?: RequiredResourceAccess[];
   passwordCredentials?: PasswordCredential[];
+  spa?: Spa;
 }

@@ -8,7 +8,7 @@
     "lint:staged": "lint-staged",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
     "test:bot": "nyc mocha \"tests/plugins/resource/bot/**/*.test.ts\"",
-    "test:blazor": "nyc mocha \"tests/plugins/resource/blazor/**/*.test.ts\"",
+    "test:dotnet": "nyc mocha \"tests/plugins/resource/dotnet/**/*.test.ts\"",
     "test:function": "nyc mocha \"tests/plugins/resource/function/**/*.test.ts\"",
     "test:localdebug": "nyc mocha \"tests/plugins/resource/localdebug/**/*.test.ts\"",
     "test:frontend": "nyc mocha \"tests/plugins/resource/frontend/**/*.test.ts\"",

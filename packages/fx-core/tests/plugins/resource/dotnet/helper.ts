@@ -9,10 +9,10 @@ import {
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import { v4 as uuid } from "uuid";
-import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/blazor/constants";
+import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/dotnet/constants";
 import { newEnvInfo } from "../../../../src";
 import { LocalCrypto } from "../../../../src/core/crypto";
-import { BlazorPluginInfo } from "../../../../src/plugins/resource/frontend/blazor/constants";
+import { DotnetPluginInfo as PluginInfo } from "../../../../src/plugins/resource/frontend/dotnet/constants";
 
 export class TestHelper {
   static appName = "ut";
@@ -51,22 +51,7 @@ export class TestHelper {
   static getFakePluginContext(): PluginContext {
     const solutionConfig = new Map([
       [DependentPluginInfo.subscriptionId, TestHelper.subscriptionId],
-      [DependentPluginInfo.resourceNameSuffix, TestHelper.resourceNameSuffix],
       [DependentPluginInfo.resourceGroupName, TestHelper.rgName],
-      [DependentPluginInfo.location, TestHelper.location],
-    ]);
-
-    const aadConfig = new Map<string, string>([
-      [DependentPluginInfo.clientID, faker.datatype.uuid()],
-      [DependentPluginInfo.aadClientSecret, faker.internet.password()],
-      [DependentPluginInfo.oauthHost, faker.internet.url()],
-      [DependentPluginInfo.tenantId, faker.datatype.uuid()],
-      [DependentPluginInfo.applicationIdUris, faker.internet.url()],
-    ]);
-
-    const botConfig = new Map<string, string>([
-      [DependentPluginInfo.botId, faker.datatype.uuid()],
-      [DependentPluginInfo.botPassword, faker.internet.password()],
     ]);
 
     const pluginContext = {
@@ -74,11 +59,7 @@ export class TestHelper {
       envInfo: newEnvInfo(
         undefined,
         undefined,
-        new Map([
-          [DependentPluginInfo.solutionPluginName, solutionConfig],
-          [DependentPluginInfo.aadPluginName, aadConfig],
-          [DependentPluginInfo.botPluginName, botConfig],
-        ])
+        new Map([[DependentPluginInfo.solutionPluginName, solutionConfig]])
       ),
       projectSettings: {
         appName: TestHelper.appName,
@@ -86,11 +67,7 @@ export class TestHelper {
         solutionSettings: {
           name: "",
           version: "",
-          activeResourcePlugins: [
-            DependentPluginInfo.aadPluginName,
-            BlazorPluginInfo.pluginName,
-            DependentPluginInfo.botPluginName,
-          ],
+          activeResourcePlugins: [PluginInfo.pluginName],
         },
       },
       config: new ConfigMap(),

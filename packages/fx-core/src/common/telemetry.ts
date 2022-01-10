@@ -1,8 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, UserError } from "@microsoft/teamsfx-api";
-import { telemetryReporter } from "../core";
+import { FxError, TelemetryReporter, UserError } from "@microsoft/teamsfx-api";
+
+export class TelemetryReporterInstance {
+  public static telemetryReporter: TelemetryReporter | undefined;
+}
 
 export enum TelemetryProperty {
   TriggerFrom = "trigger-from",
@@ -23,6 +26,7 @@ export enum TelemetryProperty {
   AzureResources = "azure-resources",
   Capabilities = "capabilities",
   ActivePlugins = "active-plugins",
+  IsSideloadingAllowed = "is-sideloading-allowed",
 }
 
 export enum TelemetryEvent {
@@ -34,6 +38,7 @@ export enum TelemetryEvent {
   DecryptUserdata = "decrypt-userdata",
   CheckResourceGroupStart = "check-resource-group-start",
   CheckResourceGroup = "check-resource-group",
+  CheckSideloading = "check-sideloading",
   EnvConfig = "env-config",
   ProjectMigratorNotificationStart = "project-migrator-notification-start",
   ProjectMigratorNotification = "project-migrator-notification",
@@ -98,7 +103,11 @@ export function sendTelemetryEvent(
     properties = {};
   }
   properties[TelemetryProperty.Component] = component;
-  telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+  TelemetryReporterInstance.telemetryReporter?.sendTelemetryEvent(
+    eventName,
+    properties,
+    measurements
+  );
 }
 
 export function sendTelemetryErrorEvent(
@@ -123,5 +132,5 @@ export function sendTelemetryErrorEvent(
     fxError.stack ? "\nstack:\n" + fxError.stack : ""
   }`;
 
-  telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, {});
+  TelemetryReporterInstance.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, {});
 }

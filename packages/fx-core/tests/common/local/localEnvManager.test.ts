@@ -5,12 +5,17 @@ import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 
-import { UserError } from "@microsoft/teamsfx-api";
+import { UserError, Result, ok } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import { cloneDeep } from "lodash";
 import * as path from "path";
 
 import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
+import { DepsInfo, DepsType } from "../../../src/common/deps-checker/depsChecker";
+import sinon from "sinon";
+import { DotnetChecker } from "../../../src/common/deps-checker/internal/dotnetChecker";
+import { NgrokChecker } from "../../../src/common/deps-checker/internal/ngrokChecker";
+import { FuncToolChecker } from "../../../src/common/deps-checker/internal/funcToolChecker";
+import { DepsCheckerError } from "../../../src/common/deps-checker/depsError";
 
 chai.use(chaiAsPromised);
 
@@ -151,4 +156,171 @@ describe("LocalEnvManager", () => {
       chai.assert.isUndefined(localSettings);
     });
   });
+
+  const testData: { message: string; activeResourcePlugins: string[]; depsTypes: DepsType[] }[] = [
+    {
+      message: "tab",
+      activeResourcePlugins: [
+        "fx-resource-frontend-hosting",
+        "fx-resource-aad-app-for-teams",
+        "fx-resource-simple-auth",
+      ],
+      depsTypes: [DepsType.Dotnet],
+    },
+    {
+      message: "tab + function",
+      activeResourcePlugins: [
+        "fx-resource-frontend-hosting",
+        "fx-resource-aad-app-for-teams",
+        "fx-resource-simple-auth",
+        "fx-resource-function",
+      ],
+      depsTypes: [DepsType.Dotnet, DepsType.FuncCoreTools],
+    },
+    {
+      message: "bot",
+      activeResourcePlugins: ["fx-resource-bot", "fx-resource-aad-app-for-teams"],
+      depsTypes: [DepsType.Ngrok],
+    },
+    {
+      message: "tab + bot",
+      activeResourcePlugins: [
+        "fx-resource-frontend-hosting",
+        "fx-resource-aad-app-for-teams",
+        "fx-resource-simple-auth",
+        "fx-resource-bot",
+      ],
+      depsTypes: [DepsType.Dotnet, DepsType.Ngrok],
+    },
+    {
+      message: "spfx",
+      activeResourcePlugins: ["fx-resource-spfx"],
+      depsTypes: [],
+    },
+  ];
+
+  describe("checkDependencies()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    testData.forEach((data) => {
+      it(data.message, async () => {
+        const projectSettings = {
+          appName: "",
+          projectId: "",
+          solutionSettings: {
+            name: "",
+            activeResourcePlugins: data.activeResourcePlugins,
+          },
+        };
+        const isInstallStubs = stubIsInstall(sandbox);
+        await localEnvManager.checkDependencies(projectSettings);
+        assertStubIsCalled(data.depsTypes, isInstallStubs);
+      });
+    });
+  });
+
+  describe("checkAndResolveDependencies()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    testData.forEach((data) => {
+      it(data.message, async () => {
+        const projectSettings = {
+          appName: "",
+          projectId: "",
+          solutionSettings: {
+            name: "",
+            activeResourcePlugins: data.activeResourcePlugins,
+          },
+        };
+        const resolveStubs = stubResolve(sandbox);
+        const getDepsInfoStubs = stubGetDepsInfo(sandbox);
+        const commandStubs = stubCommand(sandbox);
+        await localEnvManager.checkAndResolveDependencies(projectSettings);
+        assertStubIsCalled(data.depsTypes, resolveStubs);
+        assertStubIsCalled(data.depsTypes, getDepsInfoStubs);
+        assertStubIsCalled(data.depsTypes, commandStubs);
+      });
+    });
+  });
 });
+
+const checkerMapping = [
+  { checker: DotnetChecker, type: DepsType.Dotnet },
+  { checker: NgrokChecker, type: DepsType.Ngrok },
+  { checker: FuncToolChecker, type: DepsType.FuncCoreTools },
+];
+
+function stubIsInstall(sandbox: sinon.SinonSandbox) {
+  return checkerMapping.map(({ checker, type }) => {
+    return {
+      type: type,
+      stub: sandbox.stub(checker.prototype, "isInstalled").callsFake(async () => {
+        return true;
+      }),
+    };
+  });
+}
+
+function stubResolve(sandbox: sinon.SinonSandbox) {
+  return checkerMapping.map(({ checker, type }) => {
+    return {
+      type: type,
+      stub: sandbox
+        .stub(checker.prototype, "resolve")
+        .callsFake(async (): Promise<Result<boolean, DepsCheckerError>> => {
+          return ok(true);
+        }),
+    };
+  });
+}
+
+function stubCommand(sandbox: sinon.SinonSandbox) {
+  return checkerMapping.map(({ checker, type }) => {
+    return {
+      type: type,
+      stub: sandbox.stub(checker.prototype, "command").callsFake(async (): Promise<string> => {
+        return "";
+      }),
+    };
+  });
+}
+
+function stubGetDepsInfo(sandbox: sinon.SinonSandbox) {
+  return checkerMapping.map(({ checker, type }) => {
+    return {
+      type: type,
+      stub: sandbox
+        .stub(checker.prototype, "getDepsInfo")
+        .callsFake(async (): Promise<DepsInfo> => {
+          return {
+            name: "",
+            isLinuxSupported: false,
+            supportedVersions: [],
+            details: new Map<string, string>(),
+          };
+        }),
+    };
+  });
+}
+
+function assertStubIsCalled(
+  expectedDepsTypes: DepsType[],
+  stubs: {
+    type: DepsType;
+    stub: sinon.SinonStub<[], Promise<any>>;
+  }[]
+) {
+  stubs.forEach((stub) => {
+    if (expectedDepsTypes.includes(stub.type)) {
+      chai.assert.isTrue(stub.stub.calledOnce, `Assert ${stub.type} stub called once.`);
+    } else {
+      chai.assert.isTrue(stub.stub.notCalled, `Assert ${stub.type} stub not called.`);
+    }
+  });
+}

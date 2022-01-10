@@ -55,7 +55,7 @@ export interface ISolutionConfig {
   resourceGroupName: string;
   location: string;
   remoteTeamsAppId?: string | undefined;
-  subscriptionId?: string | undefined;
+  subscriptionId: string | undefined;
 }
 
 export class ApimPluginConfig implements IApimPluginConfig {
@@ -275,6 +275,12 @@ export class SolutionConfig implements ISolutionConfig {
     return this.configOfOtherPlugins
       .get(TeamsToolkitComponent.Solution)
       ?.get(SolutionConfigKeys.remoteTeamsAppId) as string;
+  }
+
+  get subscriptionId(): string | undefined {
+    return this.configOfOtherPlugins
+      .get(TeamsToolkitComponent.Solution)
+      ?.get(SolutionConfigKeys.subscriptionId) as string;
   }
 
   private checkAndGet(key: string): string {

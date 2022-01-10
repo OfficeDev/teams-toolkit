@@ -20,7 +20,7 @@ import {
   OptionItem,
 } from "@microsoft/teamsfx-api";
 
-import { FxCore, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { FxCore } from "@microsoft/teamsfx-core";
 import AzureAccountManager from "./commonlib/azureLogin";
 import AppStudioTokenProvider from "./commonlib/appStudioLogin";
 import GraphTokenProvider from "./commonlib/graphLogin";
@@ -123,15 +123,7 @@ export class HelpParamGenerator {
     }
     const systemInput = this.getSystemInputs();
     for (const stage in Stage) {
-      let result;
-      if (stage === Stage.publish) {
-        result = await this.core.getQuestions(
-          stage as Stage,
-          this.getSystemInputs("", Platform.VS)
-        );
-      } else {
-        result = await this.core.getQuestions(stage as Stage, systemInput);
-      }
+      const result = await this.core.getQuestions(stage as Stage, systemInput);
       if (result.isErr()) {
         return err(result.error);
       } else {
@@ -226,10 +218,8 @@ export class HelpParamGenerator {
     }
 
     // Add env node
-    if (isMultiEnvEnabled()) {
-      if (HelpParamGenerator.showEnvStage.indexOf(stage) >= 0) {
-        nodes = nodes.concat([EnvNodeNoCreate]);
-      }
+    if (HelpParamGenerator.showEnvStage.indexOf(stage) >= 0) {
+      nodes = nodes.concat([EnvNodeNoCreate]);
     }
 
     // hide sql-confirm-password in provision stage.

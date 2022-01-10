@@ -9,3 +9,4 @@ export * from "./depsLogger";
 export * from "./depsManager";
 export * from "./depsTelemetry";
 export * from "./constant";
+export * from "./util";

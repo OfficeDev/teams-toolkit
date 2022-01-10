@@ -1,6 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  AzureSolutionSettings,
+  err,
   Func,
   FxError,
   Plugin,
@@ -9,10 +11,18 @@ import {
   Result,
   SystemError,
   UserError,
-  err,
-  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
-
+import { Service } from "typedi";
+import { isArmSupportEnabled } from "../../..";
+import {
+  AzureResourceFunction,
+  HostTypeOptionAzure,
+  TabOptionItem,
+} from "../../solution/fx-solution/question";
+import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { FunctionEvent } from "./enums";
+import { FunctionPluginImpl } from "./plugin";
+import { ErrorType, FunctionPluginError } from "./resources/errors";
 import {
   DeploySteps,
   PostProvisionSteps,
@@ -21,36 +31,20 @@ import {
   ScaffoldSteps,
   StepHelperFactory,
 } from "./resources/steps";
-import { ErrorType, FunctionPluginError } from "./resources/errors";
-import { FunctionPluginImpl } from "./plugin";
-import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result";
-import { FunctionEvent } from "./enums";
+import { FunctionPluginResultFactory as ResultFactory, FxResult } from "./result";
 import { Logger } from "./utils/logger";
 import { TelemetryHelper } from "./utils/telemetry-helper";
-import {
-  AzureResourceApim,
-  AzureResourceFunction,
-  AzureResourceSQL,
-  HostTypeOptionAzure,
-  TabOptionItem,
-} from "../../solution/fx-solution/question";
-import { Service } from "typedi";
-import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { isArmSupportEnabled } from "../../..";
 import "./v2";
+
 @Service(ResourcePlugins.FunctionPlugin)
 export class FunctionPlugin implements Plugin {
   name = "fx-resource-function";
   displayName = "Azure Function";
   activate(solutionSettings: AzureSolutionSettings): boolean {
-    const cap = solutionSettings.capabilities || [];
     const azureResources = solutionSettings.azureResources || [];
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&
-      cap.includes(TabOptionItem.id) &&
-      (azureResources.includes(AzureResourceSQL.id) ||
-        azureResources.includes(AzureResourceApim.id) ||
-        azureResources.includes(AzureResourceFunction.id))
+      azureResources.includes(AzureResourceFunction.id)
     );
   }
 

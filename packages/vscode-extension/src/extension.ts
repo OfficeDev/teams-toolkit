@@ -153,6 +153,13 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validateSpfxDependenciesCmd);
 
+  // localdebug session starts from prerequisites checker
+  const validatePrerequisitesCmd = vscode.commands.registerCommand(
+    "fx-extension.validate-local-prerequisites",
+    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateLocalPrerequisitesHandler)
+  );
+  context.subscriptions.push(validatePrerequisitesCmd);
+
   // 1.8 pre debug check command (hide from UI)
   const preDebugCheckCmd = vscode.commands.registerCommand("fx-extension.pre-debug-check", () =>
     Correlator.runWithId(getLocalDebugSessionId(), handlers.preDebugCheckHandler)
@@ -420,9 +427,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const localDebugDataSelector = {
     language: "json",
     scheme: "file",
-    pattern: isMultiEnvEnabled()
-      ? `**/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsJsonName}`
-      : ``,
+    pattern: `**/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsJsonName}`,
   };
 
   const adaptiveCardCodeLensProvider = new AdaptiveCardCodeLensProvider();

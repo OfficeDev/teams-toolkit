@@ -27,10 +27,10 @@ import { TelemetryHelper } from "./utils/telemetry-helper";
 import { HostTypeOptionAzure, TabOptionItem } from "../../solution/fx-solution/question";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { isArmSupportEnabled, isVsCallingCli } from "../../..";
+import { isVsCallingCli } from "../../..";
 import "./v2";
-import { BlazorPluginImpl } from "./blazor/plugin";
-import { BlazorPluginInfo } from "./blazor/constants";
+import { DotnetPluginImpl } from "./dotnet/plugin";
+import { DotnetPluginInfo } from "./dotnet/constants";
 
 @Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin {
@@ -41,13 +41,13 @@ export class FrontendPlugin implements Plugin {
     return solutionSettings.hostType === HostTypeOptionAzure.id && cap.includes(TabOptionItem.id);
   }
   frontendPluginImpl = new FrontendPluginImpl();
-  blazorPluginImpl = new BlazorPluginImpl();
+  dotnetPluginImpl = new DotnetPluginImpl();
 
   private static setContext(ctx: PluginContext): void {
     Logger.setLogger(ctx.logProvider);
     TelemetryHelper.setContext(
       ctx,
-      isVsCallingCli() ? BlazorPluginInfo.pluginName : FrontendPluginInfo.PluginName
+      isVsCallingCli() ? DotnetPluginInfo.pluginName : FrontendPluginInfo.PluginName
     );
   }
 
@@ -62,36 +62,18 @@ export class FrontendPlugin implements Plugin {
   }
 
   public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (isArmSupportEnabled()) {
-      return ok(undefined);
-    }
-
-    FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.PreProvision, () =>
-      isVsCallingCli()
-        ? this.blazorPluginImpl.preProvision(ctx)
-        : this.frontendPluginImpl.preProvision(ctx)
-    );
+    return ok(undefined);
   }
 
   public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (isArmSupportEnabled()) {
-      return ok(undefined);
-    }
-
-    FrontendPlugin.setContext(ctx);
-    return this.runWithErrorHandling(ctx, TelemetryEvent.Provision, () =>
-      isVsCallingCli()
-        ? this.blazorPluginImpl.provision(ctx)
-        : this.frontendPluginImpl.provision(ctx)
-    );
+    return ok(undefined);
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PostProvision, () =>
       isVsCallingCli()
-        ? this.blazorPluginImpl.postProvision(ctx)
+        ? this.dotnetPluginImpl.postProvision(ctx)
         : this.frontendPluginImpl.postProvision(ctx)
     );
   }
@@ -110,7 +92,7 @@ export class FrontendPlugin implements Plugin {
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
-      isVsCallingCli() ? this.blazorPluginImpl.deploy(ctx) : this.frontendPluginImpl.deploy(ctx)
+      isVsCallingCli() ? this.dotnetPluginImpl.deploy(ctx) : this.frontendPluginImpl.deploy(ctx)
     );
   }
 

@@ -100,6 +100,12 @@ describe("All checkers E2E test", async () => {
       testOutputDirName
     );
     chai.assert.isTrue(await isNonEmptyDir(backendOutputPath));
+
+    // verify get deps status
+    const depsStatusFromQuery = await depsManger.getStatus(depsTypes);
+    for (const status of depsStatusFromQuery) {
+      chai.assert.isTrue(status.isInstalled);
+    }
   });
 
   it("None installed - Linux", async function () {

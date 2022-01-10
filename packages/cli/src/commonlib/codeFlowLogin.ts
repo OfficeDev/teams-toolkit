@@ -276,6 +276,7 @@ export class CodeFlowLogin {
               "[Login] silent acquire token : " + error.message
             );
             await this.logout();
+            (this.msalTokenCache as any).storage.setCache({});
             if (refresh) {
               const accessToken = await this.login();
               return accessToken;

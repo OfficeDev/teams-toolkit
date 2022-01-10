@@ -13,7 +13,6 @@ import path from "path";
 
 import { AzureStorageClient } from "./clients";
 import {
-  CreateStorageAccountError,
   EnableStaticWebsiteError,
   NoResourceGroupError,
   NoStorageError,
@@ -21,16 +20,10 @@ import {
   runWithErrorCatchAndThrow,
   CheckStorageError,
   CheckResourceGroupError,
-  InvalidStorageNameError,
-  StorageAccountAlreadyTakenError,
-  runWithErrorCatchAndWrap,
-  RegisterResourceProviderError,
   UserTaskNotImplementedError,
   MigrateV1ProjectError,
 } from "./resources/errors";
 import {
-  AzureErrorCode,
-  AzureInfo,
   DependentPluginInfo,
   FrontendOutputBicepSnippet,
   FrontendPathInfo,
@@ -47,15 +40,13 @@ import {
   PostProvisionSteps,
   PreDeploySteps,
   ProgressHelper,
-  ProvisionSteps,
   ScaffoldSteps,
 } from "./utils/progress-helper";
 import { TemplateInfo } from "./resources/templateInfo";
-import { AzureClientFactory, AzureLib } from "./utils/azure-client";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep } from "../../../common/constants";
-import { copyFiles, isArmSupportEnabled } from "../../../common";
+import { copyFiles } from "../../../common";
 import { AzureResourceFunction } from "../../solution/fx-solution/question";
 import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
@@ -79,80 +70,19 @@ export class FrontendPluginImpl {
     return ok(undefined);
   }
 
-  public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.info(Messages.StartPreProvision(PluginInfo.DisplayName));
-    await this.ensureResourceGroupExists(
-      new AzureStorageClient(await FrontendConfig.fromPluginContext(ctx))
-    );
-    Logger.info(Messages.EndPreProvision(PluginInfo.DisplayName));
-    return ok(undefined);
-  }
+  public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
+    Logger.info(Messages.StartPostProvision(PluginInfo.DisplayName));
+    const progressHandler = await ProgressHelper.startPostProvisionProgressHandler(ctx);
+    await progressHandler?.next(PostProvisionSteps.EnableStaticWebsite);
 
-  public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.info(Messages.StartProvision(PluginInfo.DisplayName));
-    const progressHandler = await ProgressHelper.startProvisionProgressHandler(ctx);
-
-    const config = await FrontendConfig.fromPluginContext(ctx);
-    const provider = AzureClientFactory.getResourceProviderClient(
-      config.credentials,
-      config.subscriptionId
-    );
-    const client = new AzureStorageClient(config);
-
-    await progressHandler?.next(ProvisionSteps.RegisterResourceProvider);
-    await runWithErrorCatchAndThrow(
-      new RegisterResourceProviderError(),
-      async () =>
-        await AzureLib.ensureResourceProviders(provider, AzureInfo.RequiredResourceProviders)
-    );
-
-    await progressHandler?.next(ProvisionSteps.CreateStorage);
-    const createStorageErrorWrapper = (innerError: any) => {
-      if (innerError.code === AzureErrorCode.ReservedResourceName) {
-        return new InvalidStorageNameError();
-      }
-      if (
-        innerError.code === AzureErrorCode.StorageAccountAlreadyTaken ||
-        innerError.code === AzureErrorCode.StorageAccountAlreadyExists
-      ) {
-        return new StorageAccountAlreadyTakenError();
-      }
-      return new CreateStorageAccountError(innerError.code);
-    };
-    config.endpoint = await runWithErrorCatchAndWrap(
-      createStorageErrorWrapper,
-      async () => await client.createStorageAccount()
-    );
-
-    await progressHandler?.next(ProvisionSteps.Configure);
+    const client = new AzureStorageClient(await FrontendConfig.fromPluginContext(ctx));
     await runWithErrorCatchAndThrow(
       new EnableStaticWebsiteError(),
       async () => await client.enableStaticWebsite()
     );
 
-    config.domain = new URL(config.endpoint).hostname;
-    config.syncToPluginContext(ctx);
-
-    await ProgressHelper.endProvisionProgress(true);
-    Logger.info(Messages.EndProvision(PluginInfo.DisplayName));
-    return ok(undefined);
-  }
-
-  public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (isArmSupportEnabled()) {
-      Logger.info(Messages.StartPostProvision(PluginInfo.DisplayName));
-      const progressHandler = await ProgressHelper.startPostProvisionProgressHandler(ctx);
-      await progressHandler?.next(PostProvisionSteps.EnableStaticWebsite);
-
-      const client = new AzureStorageClient(await FrontendConfig.fromPluginContext(ctx));
-      await runWithErrorCatchAndThrow(
-        new EnableStaticWebsiteError(),
-        async () => await client.enableStaticWebsite()
-      );
-
-      await ProgressHelper.endPostProvisionProgress(true);
-      Logger.info(Messages.EndPostProvision(PluginInfo.DisplayName));
-    }
+    await ProgressHelper.endPostProvisionProgress(true);
+    Logger.info(Messages.EndPostProvision(PluginInfo.DisplayName));
 
     await this.updateDotEnv(ctx);
 

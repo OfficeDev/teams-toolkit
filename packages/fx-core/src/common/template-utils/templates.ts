@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import semver from "semver";
-import config from "./templates-config.json";
+import config from "../templates-config.json";
 
 export const templatesVersion = config.version;
 export const tagPrefix = config.tagPrefix;

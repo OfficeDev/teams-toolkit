@@ -1,7 +1,7 @@
 import fs from "fs-extra";
 import * as path from "path";
 import AdmZip from "adm-zip";
-import { sendRequestWithRetry } from "../../../../../common/template-utils";
+import { sendRequestWithRetry } from "../../../../../common/template-utils/templatesUtils";
 import axios from "axios";
 import {
   runWithErrorCatchAndThrow,

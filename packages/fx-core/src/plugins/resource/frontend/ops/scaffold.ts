@@ -18,7 +18,7 @@ import {
   ScaffoldActionName,
   ScaffoldContext,
   scaffoldFromTemplates,
-} from "../../../../common/template-utils";
+} from "../../../../common/template-utils/templatesActions";
 import { TemplateInfo } from "../resources/templateInfo";
 
 export type Manifest = {

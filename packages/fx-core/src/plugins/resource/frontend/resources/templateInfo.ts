@@ -6,7 +6,7 @@ import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { DependentPluginInfo, FrontendPathInfo } from "../constants";
 import { InvalidTabLanguageError } from "./errors";
 import { getTemplatesFolder } from "../../../..";
-import { templatesVersion } from "../../../../common/template-utils";
+import { templatesVersion } from "../../../../common/template-utils/templates";
 
 export type TemplateVariable = { [key: string]: string };
 

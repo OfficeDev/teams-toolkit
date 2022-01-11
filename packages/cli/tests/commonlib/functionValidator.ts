@@ -49,25 +49,23 @@ export class FunctionValidator {
   private projectPath: string;
   private env: string;
 
-  private subscriptionId = "";
-  private rg = "";
-  private functionAppName = "";
+  private subscriptionId: string;
+  private rg: string;
+  private functionAppName: string;
 
   constructor(ctx: any, projectPath: string, env: string) {
     this.ctx = ctx;
     this.projectPath = projectPath;
     this.env = env;
 
-    if (
-      ctx &&
-      ctx[PluginId.Function] &&
-      ctx[PluginId.Function][StateConfigKey.functionAppResourceId]
-    ) {
-      const resourceId = ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
-      this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
-      this.rg = getResourceGroupNameFromResourceId(resourceId);
-      this.functionAppName = getSiteNameFromResourceId(resourceId);
-    }
+    const resourceId = ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
+    chai.assert.exists(resourceId);
+    this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
+    chai.assert.exists(this.subscriptionId);
+    this.rg = getResourceGroupNameFromResourceId(resourceId);
+    chai.assert.exists(this.rg);
+    this.functionAppName = getSiteNameFromResourceId(resourceId);
+    chai.assert.exists(this.functionAppName);
   }
 
   public static async validateScaffold(

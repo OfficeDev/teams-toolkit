@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { isArmSupportEnabled } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import { StateConfigKey, PluginId } from "./constants";
@@ -33,26 +32,15 @@ export class SimpleAuthValidator {
   public static init(ctx: any, isLocalDebug = false): ISimpleAuthObject {
     console.log("Start to init validator for Simple Auth.");
 
-    let simpleAuthObject: ISimpleAuthObject;
-    if (!isLocalDebug) {
-      simpleAuthObject = <ISimpleAuthObject>ctx[PluginId.SimpleAuth];
-    } else {
-      simpleAuthObject = {
-        endpoint: ctx[PluginId.SimpleAuth][StateConfigKey.endpoint],
-        webAppResourceId: ctx[PluginId.SimpleAuth][StateConfigKey.webAppResourceId],
-      } as ISimpleAuthObject;
-    }
+    const simpleAuthObject: ISimpleAuthObject = {
+      endpoint: ctx[PluginId.SimpleAuth][StateConfigKey.endpoint],
+      webAppResourceId: ctx[PluginId.SimpleAuth][StateConfigKey.webAppResourceId],
+    };
     chai.assert.exists(simpleAuthObject);
+    chai.assert.exists(simpleAuthObject.webAppResourceId);
 
-    if (isArmSupportEnabled()) {
-      chai.assert.exists(simpleAuthObject.webAppResourceId);
-      this.subscriptionId = getSubscriptionIdFromResourceId(simpleAuthObject.webAppResourceId!);
-      this.rg = getResourceGroupNameFromResourceId(simpleAuthObject.webAppResourceId!);
-    } else {
-      this.subscriptionId = ctx[PluginId.Solution][StateConfigKey.subscriptionId];
-      this.rg = ctx[PluginId.Solution][StateConfigKey.resourceGroupName];
-    }
-
+    this.subscriptionId = getSubscriptionIdFromResourceId(simpleAuthObject.webAppResourceId!);
+    this.rg = getResourceGroupNameFromResourceId(simpleAuthObject.webAppResourceId!);
     chai.assert.exists(this.subscriptionId);
     chai.assert.exists(this.rg);
 
@@ -83,13 +71,13 @@ export class SimpleAuthValidator {
       token as string
     );
     chai.assert.exists(response);
-    chai.assert.equal(aadObject.clientId, response[PropertiesKeys.clientId]);
+    chai.assert.equal(response[PropertiesKeys.clientId], aadObject.clientId);
     // chai.assert.equal(aadObject.clientSecret, response[PropertiesKeys.clientSecret]);
-    chai.assert.equal(aadObject.applicationIdUris, response[PropertiesKeys.identifierUri]);
-    chai.assert.equal(aadObject.oauthAuthority, response[PropertiesKeys.oauthAuthority]);
+    chai.assert.equal(response[PropertiesKeys.identifierUri], aadObject.applicationIdUris);
+    chai.assert.equal(response[PropertiesKeys.oauthAuthority], aadObject.oauthAuthority);
     chai.assert.equal(
-      `${aadObject.oauthAuthority}/v2.0/.well-known/openid-configuration`,
-      response[PropertiesKeys.aadMetadataAddreass]
+      response[PropertiesKeys.aadMetadataAddreass],
+      `${aadObject.oauthAuthority}/v2.0/.well-known/openid-configuration`
     );
 
     console.log("Validating app service plan.");

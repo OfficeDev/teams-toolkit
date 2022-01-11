@@ -43,26 +43,19 @@ export class KeyVaultValidator {
     this.projectPath = projectPath;
     this.env = env;
 
-    if (
-      ctx &&
-      ctx[PluginId.KeyVault] &&
-      ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
-    ) {
-      const resourceId = ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId];
-      chai.assert.exists(resourceId);
-      this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
-      chai.assert.exists(this.subscriptionId);
-      this.rg = getResourceGroupNameFromResourceId(resourceId);
-      chai.assert.exists(this.rg);
+    const resourceId = ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId];
+    chai.assert.exists(resourceId);
+    this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
+    chai.assert.exists(this.subscriptionId);
+    this.rg = getResourceGroupNameFromResourceId(resourceId);
+    chai.assert.exists(this.rg);
 
-      const keyVaultName = getKeyVaultNameFromResourceId(resourceId);
-      chai.assert.exists(keyVaultName);
-      this.keyVault = {
-        name: keyVaultName,
-        vaultUri: `https://${keyVaultName}.vault.azure.net`,
-      };
-    }
-
+    const keyVaultName = getKeyVaultNameFromResourceId(resourceId);
+    chai.assert.exists(keyVaultName);
+    this.keyVault = {
+      name: keyVaultName,
+      vaultUri: `https://${keyVaultName}.vault.azure.net`,
+    };
     console.log("Successfully init validator for Key Vault.");
   }
 

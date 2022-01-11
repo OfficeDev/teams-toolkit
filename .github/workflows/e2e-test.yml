@@ -212,7 +212,7 @@ jobs:
             email=`cat $file | grep '@author' | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
 
             if [ -z "$email" ]; then
-              description="$description <tr> <td>$case</td> <td>N/A</td> </tr> "
+              description="$description <tr> <td>$file</td> <td>N/A</td> </tr> "
               continue
             fi
             emails="$emails;$email"
@@ -223,7 +223,7 @@ jobs:
               email_uid[$email]=$uid
             fi
 
-            description="$description <tr> <td>$case</td> <td><a href=\\\"#\\\" data-vss-mention=\\\"version:2.0,${email_uid[$email]}\\\">$email</a></td> </tr> "
+            description="$description <tr> <td>$file</td> <td><a href=\\\"#\\\" data-vss-mention=\\\"version:2.0,${email_uid[$email]}\\\">$email</a></td> </tr> "
           done <<< $failures
 
           echo "::set-output name=description::$description"

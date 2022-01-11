@@ -64,10 +64,6 @@ describe("Deploy to customized resource group", function () {
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
 
-      // Validate Function App
-      const functionValidator = new FunctionValidator(context, projectPath, env);
-      await functionValidator.validateProvision();
-
       // Validate Key Vault
       const keyVault = new KeyVaultValidator(context, projectPath, env);
       await keyVault.validate();

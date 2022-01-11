@@ -20,18 +20,9 @@ jobs:
         with:
           node-version: 14
 
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v1
-        with:
-          dotnet-version: 3.1.x
-
       - name: Setup npm registry
         run: |
           echo "${{ secrets.NPMRC }}" > ~/.npmrc
-
-      - name: Setup project
-        run: |
-          npm run setup
 
       - name: update extension ai key
         if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' }}

@@ -51,13 +51,11 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
 
     // handle failures
     if (failures.length > 0) {
-      await handleFailures(failures);
-      return err(
-        returnUserError(
-          new Error("Failed to validate prerequisites"),
-          ExtensionSource,
-          ExtensionErrors.PrerequisitesValidationError
-        )
+      const failureMessage = await handleFailures(failures);
+      throw returnUserError(
+        new Error(`Failed to validate prerequisites (${failureMessage})`),
+        ExtensionSource,
+        ExtensionErrors.PrerequisitesValidationError
       );
     }
 
@@ -106,15 +104,17 @@ async function checkM365Account(): Promise<CheckFailure | undefined> {
   }
 }
 
-async function handleFailures(failures: CheckFailure[]): Promise<void> {
+async function handleFailures(failures: CheckFailure[]): Promise<string> {
   for (const failure of failures) {
     await VsCodeLogInstance.error(`${failure.checker} Checker Error: ${failure.error?.message}`);
   }
 
+  const checkers = failures.map((f) => f.checker).join(", ");
   const errorMessage = util.format(
     StringResources.vsc.localDebug.prerequisitesCheckFailure,
-    failures.map((f) => f.checker).join(", ")
+    checkers
   );
 
   VS_CODE_UI.showMessage("error", errorMessage, false, "OK");
+  return checkers;
 }

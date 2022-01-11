@@ -55,21 +55,55 @@ export type ResourceGroupInfo = {
 // TODO: use the emoji plus sign like Azure Functions extension
 const newResourceGroupOption = "+ New resource group";
 
+import { HookContext, NextFunction, Middleware, hooks } from "@feathersjs/hooks";
+
+export function ResourceGroupErrorHandlerMW(operation: string): Middleware {
+  return async (ctx: HookContext, next: NextFunction) => {
+    try {
+      await next();
+    } catch (e) {
+      const fxError = new ResourceGroupApiError(operation, "", e);
+      ctx.result = err(fxError);
+    }
+  };
+}
+
+export class ResourceGroupApiError extends UserError {
+  constructor(operation: string, resourceGroupName: string, error?: any) {
+    const baseErrorMessage = `${operation} failed, resource group: '${resourceGroupName}'`;
+    const errorName = new.target.name;
+    if (!error) super(new.target.name, baseErrorMessage, SolutionSource);
+    else if (error instanceof RestError) {
+      const restError = error as RestError;
+      // Avoid sensitive information like request headers in the error message.
+      const rawErrorString = JSON.stringify({
+        code: restError.code,
+        statusCode: restError.statusCode,
+        body: restError.body,
+        name: restError.name,
+        message: restError.message,
+      });
+      super(errorName, `${baseErrorMessage}, error: '${rawErrorString}'`, SolutionSource);
+    } else if (error instanceof Error) {
+      super({ name: errorName, error: error });
+    } else {
+      super(errorName, `${baseErrorMessage}, error: '${JSON.stringify(error)}'`, SolutionSource);
+    }
+  }
+}
+
 export class ResourceGroupHelper {
+  @hooks([ResourceGroupErrorHandlerMW("create")])
   async createNewResourceGroup(
-    azureAccountProvider: AzureAccountProvider,
-    subscriptionId: string,
+    rmClient: ResourceManagementClient,
     subscriptionName: string,
     resourceGroupName: string,
-    location: string,
-    logProvider?: LogProvider
+    location: string
   ): Promise<Result<string, FxError>> {
-    const azureToken = await azureAccountProvider.getAccountCredentialAsync();
-    const rmClient = new ResourceManagementClient(azureToken!, subscriptionId);
     const maybeExist = await this.checkResourceGroupExistence(
       rmClient,
       resourceGroupName,
-      subscriptionId,
+      rmClient.subscriptionId,
       subscriptionName
     );
     if (maybeExist.isErr()) {
@@ -108,7 +142,6 @@ export class ResourceGroupHelper {
         )
       );
     }
-
     if (response.name === undefined) {
       return err(
         returnSystemError(
@@ -118,9 +151,6 @@ export class ResourceGroupHelper {
         )
       );
     }
-    logProvider?.info(
-      `[${PluginDisplayName.Solution}] askCommonQuestions - resource group:'${response.name}' created!`
-    );
     return ok(response.name);
   }
 
@@ -146,30 +176,15 @@ export class ResourceGroupHelper {
       );
     }
   }
-
+  @hooks([ResourceGroupErrorHandlerMW("checkExistence")])
   async checkResourceGroupExistence(
     rmClient: ResourceManagementClient,
     resourceGroupName: string,
     subscriptionId: string,
     subscriptionName: string
   ): Promise<Result<boolean, FxError>> {
-    try {
-      const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
-      return ok(!!checkRes.body);
-    } catch (e) {
-      if (e instanceof RestError) {
-        return err(this.handleRestError(e, resourceGroupName, subscriptionId, subscriptionName));
-      } else {
-        return err(
-          new FailedToCheckResourceGroupExistenceError(
-            e,
-            resourceGroupName,
-            subscriptionId,
-            subscriptionName
-          )
-        );
-      }
-    }
+    const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
+    return ok(!!checkRes.body);
   }
 
   async getResourceGroupInfo(

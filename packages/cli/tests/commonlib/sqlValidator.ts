@@ -34,15 +34,13 @@ export class SqlValidator {
   static identity?: string;
   static accessToken?: string;
 
-  public static async init(ctx: any, insiderPreview = false) {
+  public static async init(ctx: any) {
     console.log("Start to init validator for sql.");
-    this.getConfig(ctx, insiderPreview);
-    const tokenCredential = await MockAzureAccountProvider.getAccountCredentialAsync();
-
+    this.getConfig(ctx);
     const sqlCredential = await MockAzureAccountProvider.getIdentityCredentialAsync();
     const sqlToken = await sqlCredential!.getToken(azureSqlScope);
     this.accessToken = sqlToken!.token;
-    this.client = new SqlManagementClient(tokenCredential!, this.subscriptionId!);
+    this.client = new SqlManagementClient(sqlCredential!, this.subscriptionId!);
     await this.addLocalFirewall();
     console.log("Successfully init validator for Azure AD app.");
   }
@@ -57,15 +55,10 @@ export class SqlValidator {
     chai.expect(this.rg).to.equal(rg);
   }
 
-  private static getConfig(ctx: any, insiderPreview = false) {
-    if (insiderPreview) {
-      const sqlResourceId = ctx[sqlPluginName][sqlResourceIdKey];
-      this.subscriptionId = getSubscriptionIdFromResourceId(sqlResourceId);
-      this.rg = getResourceGroupNameFromResourceId(sqlResourceId);
-    } else {
-      this.subscriptionId = ctx[solutionPluginName][subscriptionKey];
-      this.rg = ctx[solutionPluginName][rgKey];
-    }
+  private static getConfig(ctx: any) {
+    const sqlResourceId = ctx[sqlPluginName][sqlResourceIdKey];
+    this.subscriptionId = getSubscriptionIdFromResourceId(sqlResourceId);
+    this.rg = getResourceGroupNameFromResourceId(sqlResourceId);
     this.sqlEndpoint = ctx[sqlPluginName][sqlKey];
     this.databaseName = ctx[sqlPluginName][databaseKey];
     this.identity = ctx[identityPluginName][identityKey];

@@ -24,11 +24,6 @@ import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 import { getUuid } from "../../commonlib/utilities";
 
 describe("Deploy to customized resource group", function () {
-  //  Only test when insider feature flag enabled
-  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
-    return;
-  }
-
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   let appName: string, projectPath: string;

@@ -9,7 +9,9 @@ import {
   FxError,
   MultiSelectConfig,
   ok,
+  OptionItem,
   Result,
+  StaticOptions,
   UIConfig,
 } from "@microsoft/teamsfx-api";
 
@@ -37,6 +39,13 @@ export async function getResponseWithErrorHandling<T>(
 
 export function convertUIConfigToJson<T>(config: UIConfig<T>): UIConfig<T> {
   const newConfig = deepCopy(config);
+  if ("options" in newConfig) {
+    let options: StaticOptions = (newConfig as any).options;
+    if (options.length > 0 && typeof options[0] === "string") {
+      options = options.map((op) => <OptionItem>{ id: op, label: op });
+      (newConfig as any).options = options;
+    }
+  }
   if (config.validation) {
     const funcId = setFunc(config.validation);
     (newConfig as any).validation = <CustomizeFuncRequestType>{ type: "ValidateFunc", id: funcId };

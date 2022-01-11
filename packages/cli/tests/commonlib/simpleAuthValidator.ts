@@ -80,13 +80,15 @@ export class SimpleAuthValidator {
       token as string
     );
     chai.assert.exists(response);
+    console.log(`[dilin-debug] response: ${JSON.stringify(response)}`);
+    console.log(`[dilin-debug] ctx: ${JSON.stringify(this.ctx)}`);
     chai.assert.equal(
       response[PropertiesKeys.clientId],
       this.ctx[PluginId.Aad][StateConfigKey.clientId]
     );
     chai.assert.equal(
       response[PropertiesKeys.clientSecret],
-      this.getM365ClientSecret(activeResourcePlugins)
+      await this.getM365ClientSecret(activeResourcePlugins)
     );
     chai.assert.equal(
       response[PropertiesKeys.identifierUri],
@@ -136,6 +138,10 @@ export class SimpleAuthValidator {
     } else if (activeResourcePlugins.includes(PluginId.Bot)) {
       expectedM365ApplicationIdUri = `api://botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`;
     }
+    console.log(
+      `[dilin-debug] Successfully get expectedM365ApplicationIdUri:  ${expectedM365ApplicationIdUri}`
+    );
+
     return expectedM365ApplicationIdUri;
   }
 
@@ -155,6 +161,8 @@ export class SimpleAuthValidator {
     } else {
       m365ClientSecret = this.ctx[PluginId.Aad][StateConfigKey.clientSecret];
     }
+    console.log(`[dilin-debug] Successfully get m365ClientSecret:  ${m365ClientSecret}`);
+
     return m365ClientSecret;
   }
 }

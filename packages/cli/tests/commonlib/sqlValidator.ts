@@ -7,6 +7,7 @@ import * as chai from "chai";
 import * as tedious from "tedious";
 
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
+import { getResourceGroupNameFromResourceId, getSubscriptionIdFromResourceId } from "./utilities";
 
 const echoIpAddress = "https://api.ipify.org";
 const localRule = "AllowLocal";
@@ -21,6 +22,7 @@ const rgKey = "resourceGroupName";
 const sqlKey = "sqlEndpoint";
 const databaseKey = "databaseName";
 const identityKey = "identityName";
+const sqlResourceIdKey = "sqlResourceId";
 
 export class SqlValidator {
   static client?: SqlManagementClient;
@@ -35,12 +37,10 @@ export class SqlValidator {
   public static async init(ctx: any) {
     console.log("Start to init validator for sql.");
     this.getConfig(ctx);
-    const tokenCredential = await MockAzureAccountProvider.getAccountCredentialAsync();
-
     const sqlCredential = await MockAzureAccountProvider.getIdentityCredentialAsync();
     const sqlToken = await sqlCredential!.getToken(azureSqlScope);
     this.accessToken = sqlToken!.token;
-    this.client = new SqlManagementClient(tokenCredential!, this.subscriptionId!);
+    this.client = new SqlManagementClient(sqlCredential!, this.subscriptionId!);
     await this.addLocalFirewall();
     console.log("Successfully init validator for Azure AD app.");
   }
@@ -51,9 +51,14 @@ export class SqlValidator {
     chai.expect(res.length).to.equal(count);
   }
 
+  public static async validateResourceGroup(rg: string) {
+    chai.expect(this.rg).to.equal(rg);
+  }
+
   private static getConfig(ctx: any) {
-    this.subscriptionId = ctx[solutionPluginName][subscriptionKey];
-    this.rg = ctx[solutionPluginName][rgKey];
+    const sqlResourceId = ctx[sqlPluginName][sqlResourceIdKey];
+    this.subscriptionId = getSubscriptionIdFromResourceId(sqlResourceId);
+    this.rg = getResourceGroupNameFromResourceId(sqlResourceId);
     this.sqlEndpoint = ctx[sqlPluginName][sqlKey];
     this.databaseName = ctx[sqlPluginName][databaseKey];
     this.identity = ctx[identityPluginName][identityKey];

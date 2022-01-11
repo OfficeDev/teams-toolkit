@@ -215,7 +215,10 @@ jobs:
               description="$description <tr> <td>$file</td> <td>N/A</td> </tr> "
               continue
             fi
-            emails="$emails;$email"
+
+            if [[ ! "$emails" == *"$email"* ]]; then
+              emails="$emails;$email"
+            fi
 
             if [ ! -v "email_uid[$email]" ]; then
               resp=$(curl -u :${{ secrets.ADO_PAT }} "https://vssps.dev.azure.com/msazure/_apis/identities?searchFilter=General&filterValue=$email&queryMembership=None&api-version=6.0")

@@ -512,7 +512,7 @@
       },
       {
         "command": "fx-extension.addCICDWorkflows",
-        "title": "Add CI/CD Workflows",
+        "title": "Teams: Add CI/CD Workflows",
         "icon": "$(sync)"
       },
       {

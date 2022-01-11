@@ -83,58 +83,6 @@ describe("aadPermissionErrors", function () {
     }
   });
 
-  it(`AAD: UnknownPermissionRole`, async function () {
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-
-    {
-      // update permission
-
-      const permission = '[{"resource":"Microsoft Graph","roles": ["User.ReadData"}]';
-
-      await fs.writeJSON(`${projectPath}/permission.json`, permission, { spaces: 4 });
-    }
-
-    // provision
-
-    try {
-      await execAsync(`teamsfx provision --subscription ${subscription}`, {
-        cwd: projectPath,
-
-        env: process.env,
-
-        timeout: 0,
-      });
-    } catch (error) {
-      expect(error.toString()).to.contains("UnknownPermissionRole");
-    }
-  });
-
-  it(`AAD: ParsePermissionError`, async function () {
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-
-    {
-      // update permission
-
-      const permission = '[{"resource":"Microsoft Graph","roles": ["User.ReadData"}';
-
-      await fs.writeJSON(`${projectPath}/permission.json`, permission, { spaces: 4 });
-    }
-
-    // provision
-
-    try {
-      await execAsync(`teamsfx provision --subscription ${subscription}`, {
-        cwd: projectPath,
-
-        env: process.env,
-
-        timeout: 0,
-      });
-    } catch (error) {
-      expect(error.toString()).to.contains("ParsePermissionError");
-    }
-  });
-
   afterEach(async () => {
     // clean up
     if (isMultiEnvEnabled()) {

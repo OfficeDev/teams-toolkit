@@ -34,7 +34,7 @@ export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
   inputs: Inputs,
   localSettings?: Json
-): Promise<Result<Void, FxError>> {
+): Promise<Result<Json, FxError>> {
   return await _scaffoldLocalDebugSettings(
     ctx.projectSetting,
     inputs,
@@ -51,13 +51,14 @@ export async function scaffoldLocalDebugSettingsV1(
   if (!ctx.projectSettings || !ctx.answers || !ctx.telemetryReporter || !ctx.logProvider) {
     return err(ScaffoldLocalDebugSettingsV1Error());
   }
-  return await _scaffoldLocalDebugSettings(
+  await _scaffoldLocalDebugSettings(
     ctx.projectSettings,
     ctx.answers,
     ctx.telemetryReporter,
     ctx.logProvider,
     ctx.cryptoProvider
   );
+  return ok(Void);
 }
 
 export async function _scaffoldLocalDebugSettings(
@@ -67,7 +68,7 @@ export async function _scaffoldLocalDebugSettings(
   logProvider: LogProvider,
   cryptoProvider: CryptoProvider,
   localSettings?: Json
-): Promise<Result<Void, FxError>> {
+): Promise<Result<Json, FxError>> {
   const isSpfx = ProjectSettingsHelper.isSpfx(projectSetting);
   const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSetting);
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSetting);

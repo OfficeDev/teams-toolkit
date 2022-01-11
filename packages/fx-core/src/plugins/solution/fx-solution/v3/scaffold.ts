@@ -29,6 +29,7 @@ import { getModule } from "./utils";
 
 @Service(BuiltInScaffoldPluginNames.bot)
 export class BotScaffoldPlugin implements v3.ScaffoldPlugin {
+  type: "scaffold" = "scaffold";
   async getTemplates(
     ctx: v2.Context,
     inputs: Inputs
@@ -66,6 +67,7 @@ export class BotScaffoldPlugin implements v3.ScaffoldPlugin {
 
 @Service(BuiltInScaffoldPluginNames.blazor)
 export class BlazorScaffoldPlugin implements v3.ScaffoldPlugin {
+  type: "scaffold" = "scaffold";
   async getTemplates(
     ctx: v2.Context,
     inputs: Inputs
@@ -108,6 +110,7 @@ export class BlazorScaffoldPlugin implements v3.ScaffoldPlugin {
 
 @Service(BuiltInScaffoldPluginNames.spfx)
 export class SPFxScaffoldPlugin implements v3.ScaffoldPlugin {
+  type: "scaffold" = "scaffold";
   async getTemplates(
     ctx: v2.Context,
     inputs: Inputs
@@ -199,7 +202,7 @@ export async function getQuestionsForScaffold(
 }
 export async function scaffold(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem },
+  inputs: v3.SolutionScaffoldInputs,
   localSettings?: Json
 ): Promise<Result<Void, FxError>> {
   if (!inputs.template) {

@@ -1,25 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { ResourceManagementClient } from "@azure/arm-resources";
-import { ResourceGroupsCreateOrUpdateResponse } from "@azure/arm-resources/esm/models";
 import { SubscriptionClient } from "@azure/arm-subscriptions";
 import { RestError } from "@azure/ms-rest-js";
+import { HookContext, hooks, Middleware, NextFunction } from "@feathersjs/hooks";
 import {
   AzureAccountProvider,
   err,
   FxError,
   Inputs,
-  LogProvider,
   ok,
   OptionItem,
   QTreeNode,
   Result,
-  returnSystemError,
   returnUserError,
-  SolutionContext,
   traverse,
   UserError,
-  UserInteraction,
   v2,
 } from "@microsoft/teamsfx-api";
 import { PluginDisplayName } from "../../../../common/constants";
@@ -30,12 +26,7 @@ import {
   QuestionNewResourceGroupName,
   QuestionSelectResourceGroup,
 } from "../../../../core/question";
-import {
-  FailedToCheckResourceGroupExistenceError,
-  SolutionError,
-  SolutionSource,
-  UnauthorizedToCheckResourceGroupError,
-} from "../constants";
+import { SolutionError, SolutionSource } from "../constants";
 
 const MsResources = "Microsoft.Resources";
 const ResourceGroups = "resourceGroups";
@@ -55,22 +46,26 @@ export type ResourceGroupInfo = {
 // TODO: use the emoji plus sign like Azure Functions extension
 const newResourceGroupOption = "+ New resource group";
 
-import { HookContext, NextFunction, Middleware, hooks } from "@feathersjs/hooks";
-
 export function ResourceGroupErrorHandlerMW(operation: string): Middleware {
   return async (ctx: HookContext, next: NextFunction) => {
+    const resourceGroupName =
+      ctx.arguments.length > 0 && typeof ctx.arguments[0] === "string"
+        ? (ctx.arguments[0] as string)
+        : undefined;
     try {
       await next();
     } catch (e) {
-      const fxError = new ResourceGroupApiError(operation, "", e);
+      const fxError = new ResourceGroupApiError(operation, resourceGroupName, e);
       ctx.result = err(fxError);
     }
   };
 }
 
 export class ResourceGroupApiError extends UserError {
-  constructor(operation: string, resourceGroupName: string, error?: any) {
-    const baseErrorMessage = `${operation} failed, resource group: '${resourceGroupName}'`;
+  constructor(operation: string, resourceGroupName?: string, error?: any) {
+    const baseErrorMessage = `${operation} failed ${
+      resourceGroupName ? "resource group:" + resourceGroupName : ""
+    }`;
     const errorName = new.target.name;
     if (!error) super(new.target.name, baseErrorMessage, SolutionSource);
     else if (error instanceof RestError) {
@@ -95,17 +90,22 @@ export class ResourceGroupApiError extends UserError {
 export class ResourceGroupHelper {
   @hooks([ResourceGroupErrorHandlerMW("create")])
   async createNewResourceGroup(
-    rmClient: ResourceManagementClient,
-    subscriptionName: string,
     resourceGroupName: string,
+    azureAccountProvider: AzureAccountProvider,
+    subscriptionId: string,
     location: string
   ): Promise<Result<string, FxError>> {
-    const maybeExist = await this.checkResourceGroupExistence(
-      rmClient,
-      resourceGroupName,
-      rmClient.subscriptionId,
-      subscriptionName
-    );
+    const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+    if (!azureToken)
+      return err(
+        new UserError(
+          SolutionError.FailedToGetAzureCredential,
+          "Failed to get azure credential",
+          SolutionSource
+        )
+      );
+    const rmClient = new ResourceManagementClient(azureToken, subscriptionId);
+    const maybeExist = await this.checkResourceGroupExistence(resourceGroupName, rmClient);
     if (maybeExist.isErr()) {
       return err(maybeExist.error);
     }
@@ -118,112 +118,65 @@ export class ResourceGroupHelper {
         )
       );
     }
-    let response: ResourceGroupsCreateOrUpdateResponse;
-    try {
-      response = await rmClient.resourceGroups.createOrUpdate(resourceGroupName, {
-        location: location,
-        tags: { "created-by": "teamsfx" },
-      });
-    } catch (e) {
-      let errMsg: string;
-      if (e instanceof Error) {
-        errMsg = `Failed to create resource group ${resourceGroupName} due to ${e.name}:${e.message}`;
-      } else {
-        errMsg = `Failed to create resource group ${resourceGroupName} due to unknown error ${JSON.stringify(
-          e
-        )}`;
-      }
-
-      return err(
-        returnUserError(
-          new Error(errMsg),
-          SolutionSource,
-          SolutionError.FailedToCreateResourceGroup
-        )
-      );
-    }
+    const response = await rmClient.resourceGroups.createOrUpdate(resourceGroupName, {
+      location: location,
+      tags: { "created-by": "teamsfx" },
+    });
     if (response.name === undefined) {
-      return err(
-        returnSystemError(
-          new Error(`Failed to create resource group ${resourceGroupName}`),
-          SolutionSource,
-          SolutionError.FailedToCreateResourceGroup
-        )
-      );
+      return err(new ResourceGroupApiError("create", resourceGroupName));
     }
     return ok(response.name);
   }
 
-  handleRestError(
-    restError: RestError,
-    resourceGroupName: string,
-    subscriptionId: string,
-    subscriptionName: string
-  ): FxError {
-    // ARM API will return 403 with empty body when users does not have permission to access the resource group
-    if (restError.statusCode === 403) {
-      return new UnauthorizedToCheckResourceGroupError(
-        resourceGroupName,
-        subscriptionId,
-        subscriptionName
-      );
-    } else {
-      return new FailedToCheckResourceGroupExistenceError(
-        restError,
-        resourceGroupName,
-        subscriptionId,
-        subscriptionName
-      );
-    }
-  }
   @hooks([ResourceGroupErrorHandlerMW("checkExistence")])
   async checkResourceGroupExistence(
-    rmClient: ResourceManagementClient,
     resourceGroupName: string,
-    subscriptionId: string,
-    subscriptionName: string
+    rmClient: ResourceManagementClient
   ): Promise<Result<boolean, FxError>> {
     const checkRes = await rmClient.resourceGroups.checkExistence(resourceGroupName);
     return ok(!!checkRes.body);
   }
 
+  @hooks([ResourceGroupErrorHandlerMW("get")])
   async getResourceGroupInfo(
-    ctx: SolutionContext | v2.Context,
-    rmClient: ResourceManagementClient,
-    resourceGroupName: string
-  ): Promise<ResourceGroupInfo | undefined> {
-    try {
-      const getRes = await rmClient.resourceGroups.get(resourceGroupName);
-      if (getRes.name) {
-        return {
-          createNewResourceGroup: false,
-          name: getRes.name,
-          location: getRes.location,
-        };
-      }
-    } catch (error) {
-      ctx.logProvider?.error(
-        `[${PluginDisplayName.Solution}] failed to get resource group '${resourceGroupName}'. error = '${error}'`
-      );
-    }
-    return undefined;
+    resourceGroupName: string,
+    rmClient: ResourceManagementClient
+  ): Promise<Result<ResourceGroupInfo | undefined, FxError>> {
+    const getRes = await rmClient.resourceGroups.get(resourceGroupName);
+    if (getRes.name) {
+      return ok({
+        createNewResourceGroup: false,
+        name: getRes.name,
+        location: getRes.location,
+      });
+    } else return ok(undefined);
+  }
+
+  @hooks([ResourceGroupErrorHandlerMW("list")])
+  async listResourceGroups(
+    rmClient: ResourceManagementClient
+  ): Promise<Result<[string, string][], FxError>> {
+    const resourceGroupResults = await rmClient.resourceGroups.list();
+    const resourceGroupNameLocations = resourceGroupResults
+      .filter((item) => item.name)
+      .map((item) => [item.name, item.location] as [string, string]);
+    return ok(resourceGroupNameLocations);
   }
 
   async getLocations(
     azureAccountProvider: AzureAccountProvider,
     rmClient: ResourceManagementClient
   ): Promise<Result<string[], FxError>> {
-    const credential = await azureAccountProvider.getAccountCredentialAsync();
-    let subscriptionClient = undefined;
-    if (credential) {
-      subscriptionClient = new SubscriptionClient(credential);
-    } else {
-      throw returnUserError(
-        new Error(`Failed to get azure credential`),
-        SolutionSource,
-        SolutionError.FailedToGetAzureCredential
+    const azureToken = await azureAccountProvider.getAccountCredentialAsync();
+    if (!azureToken)
+      return err(
+        new UserError(
+          SolutionError.FailedToGetAzureCredential,
+          "Failed to get azure credential",
+          SolutionSource
+        )
       );
-    }
+    const subscriptionClient = new SubscriptionClient(azureToken);
     const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
     const listLocations = await subscriptionClient.subscriptions.listLocations(
       askSubRes!.subscriptionId
@@ -251,9 +204,8 @@ export class ResourceGroupHelper {
     defaultResourceGroupName: string,
     existingResourceGroupNameLocations: [string, string][],
     availableLocations: string[]
-  ) {
+  ): Promise<QTreeNode | undefined> {
     const selectResourceGroup = QuestionSelectResourceGroup;
-
     const staticOptions: OptionItem[] = [
       { id: newResourceGroupOption, label: newResourceGroupOption },
     ];
@@ -285,45 +237,30 @@ export class ResourceGroupHelper {
   }
 
   /**
-   * Ask user to create a new resource group or use an exsiting resource group
+   * Ask user to create a new resource group or use an existing resource group
    */
   async askResourceGroupInfo(
-    ctx: SolutionContext,
-    rmClient: ResourceManagementClient,
+    ctx: v2.Context,
     inputs: Inputs,
-    ui: UserInteraction,
+    azureAccountProvider: AzureAccountProvider,
+    rmClient: ResourceManagementClient,
     defaultResourceGroupName: string
   ): Promise<Result<ResourceGroupInfo, FxError>> {
-    // TODO: support pagination
-    let resourceGroupResults;
-    try {
-      resourceGroupResults = await rmClient.resourceGroups.list();
-    } catch (error) {
-      ctx.logProvider?.error(`Failed to list resource group: error '${error}'`);
-      return err(
-        returnSystemError(
-          new Error(`Failed to list resource group`),
-          SolutionSource,
-          SolutionError.FailedToListResourceGroup
-        )
-      );
-    }
-    const resourceGroupNameLocations = resourceGroupResults
-      .filter((item) => item.name)
-      .map((item) => [item.name, item.location] as [string, string]);
+    const listRgRes = await this.listResourceGroups(rmClient);
+    if (listRgRes.isErr()) return err(listRgRes.error);
 
-    const locations = await this.getLocations(ctx, rmClient);
-    if (locations.isErr()) {
-      return err(locations.error);
+    const getLocationsRes = await this.getLocations(azureAccountProvider, rmClient);
+    if (getLocationsRes.isErr()) {
+      return err(getLocationsRes.error);
     }
 
     const node = await this.getQuestionsForResourceGroup(
       defaultResourceGroupName,
-      resourceGroupNameLocations,
-      locations.value!
+      listRgRes.value,
+      getLocationsRes.value
     );
     if (node) {
-      const res = await traverse(node, inputs, ui);
+      const res = await traverse(node, inputs, ctx.userInteraction);
       if (res.isErr()) {
         ctx.logProvider?.debug(
           `[${PluginDisplayName.Solution}] failed to run question model for target resource group.`
@@ -340,7 +277,12 @@ export class ResourceGroupHelper {
         )}`
       );
     }
-
+    const targetResourceGroupName = inputs.targetResourceGroupName;
+    if (!targetResourceGroupName || typeof targetResourceGroupName !== "string") {
+      return err(
+        new UserError("InvalidInputError", "Invalid targetResourceGroupName", SolutionSource)
+      );
+    }
     const resourceGroupName = inputs.targetResourceGroupName;
     if (resourceGroupName === newResourceGroupOption) {
       return ok({
@@ -349,18 +291,7 @@ export class ResourceGroupHelper {
         createNewResourceGroup: true,
       });
     } else {
-      const targetResourceGroupName = inputs.targetResourceGroupName;
-      if (typeof targetResourceGroupName !== "string") {
-        return err(
-          returnSystemError(
-            new Error(`Failed to get user input for resource group info`),
-            SolutionSource,
-            SolutionError.FailedToListResourceGroup
-          )
-        );
-      }
-
-      const target = resourceGroupNameLocations.find((item) => item[0] == targetResourceGroupName);
+      const target = listRgRes.value.find((item) => item[0] == targetResourceGroupName);
       const location = target![1]; // location must exist because the user can only select from this list.
       return ok({
         createNewResourceGroup: false,
@@ -370,3 +301,5 @@ export class ResourceGroupHelper {
     }
   }
 }
+
+export const resourceGroupHelper = new ResourceGroupHelper();

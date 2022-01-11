@@ -24,7 +24,7 @@ import {
 } from "../commonUtils";
 import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 
-describe("Aad Error Tests", function () {
+describe("aadGetAppError", function () {
   let testFolder: string;
 
   let appName: string;
@@ -111,115 +111,6 @@ describe("Aad Error Tests", function () {
           expect(error.toString()).to.contains("AadGetAppError");
         }
       }
-    }
-  });
-
-  it(`AAD: GetSkipAppConfigError`, async function () {
-    if (isMultiEnvEnabled()) {
-      // Insider preview does not use skipProvision
-      return;
-    }
-    // set skip flag in context
-    {
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-
-      context["fx-resource-aad-app-for-teams"]["skipProvision"] = true;
-
-      context["fx-resource-simple-auth"]["skuName"] = "B1";
-
-      await fs.writeJSON(`${projectPath}/.fx/env.default.json`, context, { spaces: 4 });
-    }
-
-    // provision
-
-    try {
-      await execAsync(`teamsfx provision --subscription ${subscription}`, {
-        cwd: projectPath,
-
-        env: process.env,
-
-        timeout: 0,
-      });
-    } catch (error) {
-      expect(error.toString()).to.contains("GetSkipAppConfigError");
-    }
-  });
-
-  it(`AAD: UnknownPermissionScope`, async function () {
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-
-    {
-      // update permission
-
-      const permission = '[{"resource":"Microsoft Graph","scopes": ["User.ReadData"}]';
-
-      await fs.writeJSON(`${projectPath}/permission.json`, permission, { spaces: 4 });
-    }
-
-    // provision
-
-    try {
-      await execAsync(`teamsfx provision --subscription ${subscription}`, {
-        cwd: projectPath,
-
-        env: process.env,
-
-        timeout: 0,
-      });
-    } catch (error) {
-      expect(error.toString()).to.contains("UnknownPermissionScope");
-    }
-  });
-
-  it(`AAD: UnknownPermissionRole`, async function () {
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-
-    {
-      // update permission
-
-      const permission = '[{"resource":"Microsoft Graph","roles": ["User.ReadData"}]';
-
-      await fs.writeJSON(`${projectPath}/permission.json`, permission, { spaces: 4 });
-    }
-
-    // provision
-
-    try {
-      await execAsync(`teamsfx provision --subscription ${subscription}`, {
-        cwd: projectPath,
-
-        env: process.env,
-
-        timeout: 0,
-      });
-    } catch (error) {
-      expect(error.toString()).to.contains("UnknownPermissionRole");
-    }
-  });
-
-  it(`AAD: ParsePermissionError`, async function () {
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-
-    {
-      // update permission
-
-      const permission = '[{"resource":"Microsoft Graph","roles": ["User.ReadData"}';
-
-      await fs.writeJSON(`${projectPath}/permission.json`, permission, { spaces: 4 });
-    }
-
-    // provision
-
-    try {
-      await execAsync(`teamsfx provision --subscription ${subscription}`, {
-        cwd: projectPath,
-
-        env: process.env,
-
-        timeout: 0,
-      });
-    } catch (error) {
-      expect(error.toString()).to.contains("ParsePermissionError");
     }
   });
 

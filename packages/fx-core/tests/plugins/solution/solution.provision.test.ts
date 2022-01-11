@@ -84,7 +84,6 @@ import * as solutionUtil from "../../../src/plugins/solution/fx-solution/utils/u
 import * as uuid from "uuid";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { newEnvInfo } from "../../../src/core/tools";
-import { isArmSupportEnabled } from "../../../src/common/tools";
 import Container from "typedi";
 import {
   askResourceGroupInfo,
@@ -575,24 +574,14 @@ describe("Resource group creation failed for provision() in Azure projects", () 
       },
     };
 
-    if (!isArmSupportEnabled()) {
-      const result = await solution.provision(mockedCtx);
-      expect(result.isErr()).to.be.true;
-      expect(result._unsafeUnwrapErr() instanceof UserError).to.be.true;
-      expect(result._unsafeUnwrapErr().name).equals(SolutionError.FailedToCreateResourceGroup);
-      expect(result._unsafeUnwrapErr().message).contains(
-        "Failed to create resource group my_app-rg due to some error"
-      );
-    } else {
-      mockedCtx!.answers!.targetResourceGroupName = "test-new-rg";
-      const result = await solution.provision(mockedCtx);
-      expect(result.isErr()).to.be.true;
-      expect(result._unsafeUnwrapErr() instanceof UserError).to.be.true;
-      expect(result._unsafeUnwrapErr().name).equals(SolutionError.ResourceGroupNotFound);
-      expect(result._unsafeUnwrapErr().message).contains(
-        "please specify an existing resource group."
-      );
-    }
+    mockedCtx!.answers!.targetResourceGroupName = "test-new-rg";
+    const result = await solution.provision(mockedCtx);
+    expect(result.isErr()).to.be.true;
+    expect(result._unsafeUnwrapErr() instanceof UserError).to.be.true;
+    expect(result._unsafeUnwrapErr().name).equals(SolutionError.ResourceGroupNotFound);
+    expect(result._unsafeUnwrapErr().message).contains(
+      "please specify an existing resource group."
+    );
   });
 });
 
@@ -690,17 +679,7 @@ describe("provision() happy path for Azure projects", () => {
       })
     );
     const result = await solution.provision(mockedCtx);
-    if (!isArmSupportEnabled()) {
-      expect(result.isOk()).to.be.true;
-      expect(spy.calledOnce).to.be.true;
-      expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(SOLUTION_PROVISION_SUCCEEDED)).to.be
-        .true;
-      // expect(mockedCtx.envInfo.state.get(GLOBAL_CONFIG)?.get(REMOTE_TEAMS_APP_ID)).equals(
-      //   mockedAppDef.teamsAppId
-      // );
-    } else {
-      expect(stub.called).to.be.true;
-    }
+    expect(stub.called).to.be.true;
   });
 });
 

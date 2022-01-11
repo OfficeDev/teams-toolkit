@@ -80,7 +80,7 @@ export async function getQuestionsForScaffold(
 
 export async function scaffold(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem },
+  inputs: v3.SolutionScaffoldInputs,
   localSettings?: Json
 ): Promise<Result<Void, FxError>> {
   if (!inputs.template) {
@@ -137,7 +137,7 @@ export async function publishApplication(
 
 export async function addResource(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: string; resource?: string }
+  inputs: v3.SolutionAddResourceInputs
 ): Promise<Result<Void, FxError>> {
   return ok(Void);
 }

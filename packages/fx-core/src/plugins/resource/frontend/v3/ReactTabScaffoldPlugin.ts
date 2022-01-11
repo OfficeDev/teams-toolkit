@@ -29,6 +29,7 @@ import { ScaffoldSteps } from "../utils/progress-helper";
 
 @Service(BuiltInScaffoldPluginNames.tab)
 export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
+  type: "scaffold" = "scaffold";
   async getTemplates(
     ctx: v2.Context,
     inputs: Inputs

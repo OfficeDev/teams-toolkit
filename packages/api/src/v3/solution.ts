@@ -9,7 +9,20 @@ import { AppStudioTokenProvider, TokenProvider } from "../utils/login";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
 import { EnvInfoV3 } from "./types";
 
-// export type StrictOmit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+export interface SolutionScaffoldInputs extends InputsWithProjectPath {
+  module?: string;
+  template?: OptionItem;
+}
+export interface SolutionAddResourceInputs extends InputsWithProjectPath {
+  module?: string;
+  resource?: string;
+}
+export interface SolutionAddModuleInputs extends InputsWithProjectPath {
+  capabilities: string[];
+}
+export interface SolutionDeployInputs extends InputsWithProjectPath {
+  modules: string[];
+}
 
 export interface ISolution {
   name: string;
@@ -40,7 +53,7 @@ export interface ISolution {
    */
   scaffold: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { module?: string; template?: OptionItem },
+    inputs: SolutionScaffoldInputs,
     localSettings?: Json
   ) => Promise<Result<Void, FxError>>;
 
@@ -59,10 +72,7 @@ export interface ISolution {
    *
    * @returns Void
    */
-  addResource: (
-    ctx: Context,
-    inputs: InputsWithProjectPath & { module?: string; resource?: string }
-  ) => Promise<Result<Void, FxError>>;
+  addResource: (ctx: Context, inputs: SolutionAddResourceInputs) => Promise<Result<Void, FxError>>;
 
   /**
    * addModule
@@ -79,7 +89,7 @@ export interface ISolution {
    */
   addModule: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { capabilities: string[] },
+    inputs: SolutionAddModuleInputs,
     localSettings?: Json
   ) => Promise<Result<Json, FxError>>;
 
@@ -120,7 +130,7 @@ export interface ISolution {
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   deploy?: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { modules: string[] },
+    inputs: SolutionDeployInputs,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;

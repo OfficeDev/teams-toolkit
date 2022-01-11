@@ -83,25 +83,26 @@ export class FrontendDeployment {
     envName: string,
     progress?: IProgressHandler
   ): Promise<void> {
-    const skip = await FrontendDeployment.needBuild(componentPath, envName);
+    const needBuild = await FrontendDeployment.needBuild(componentPath, envName);
+    if (!needBuild) {
+      await progress?.next(DeploySteps.NPMInstall);
+      await progress?.next(DeploySteps.Build);
+      return;
+    }
     await progress?.next(DeploySteps.NPMInstall);
-    if (!skip) {
-      await runWithErrorCatchAndThrow(new v3error.NpmInstallError(), async () => {
-        await Utils.execute(Commands.InstallNodePackages, componentPath);
-      });
-    }
+    await runWithErrorCatchAndThrow(new v3error.NpmInstallError(), async () => {
+      await Utils.execute(Commands.InstallNodePackages, componentPath);
+    });
     await progress?.next(DeploySteps.Build);
-    if (!skip) {
-      await runWithErrorCatchAndThrow(new v3error.BuildError(), async () => {
-        await Utils.execute(Commands.BuildFrontend, componentPath, {
-          ...envs.customizedRemoteEnvs,
-          ...envs.teamsfxRemoteEnvs,
-        });
+    await runWithErrorCatchAndThrow(new v3error.BuildError(), async () => {
+      await Utils.execute(Commands.BuildFrontend, componentPath, {
+        ...envs.customizedRemoteEnvs,
+        ...envs.teamsfxRemoteEnvs,
       });
-      await FrontendDeployment.saveDeploymentInfo(componentPath, envName, {
-        lastBuildTime: new Date().toISOString(),
-      });
-    }
+    });
+    await FrontendDeployment.saveDeploymentInfo(componentPath, envName, {
+      lastBuildTime: new Date().toISOString(),
+    });
   }
   public static async skipBuild(): Promise<void> {
     Logger.info(Messages.SkipBuild);
@@ -159,8 +160,8 @@ export class FrontendDeployment {
     envName: string,
     progress?: IProgressHandler
   ): Promise<void> {
-    const skip = await FrontendDeployment.needDeploy(componentPath, envName);
-    if (!skip) {
+    const needDeploy = await FrontendDeployment.needDeploy(componentPath, envName);
+    if (!needDeploy) {
       await progress?.next(DeploySteps.getSrcAndDest);
       await progress?.next(DeploySteps.Clear);
       await progress?.next(DeploySteps.Upload);

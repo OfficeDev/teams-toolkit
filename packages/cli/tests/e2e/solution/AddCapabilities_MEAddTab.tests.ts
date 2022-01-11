@@ -25,6 +25,7 @@ describe("Add capabilities", function () {
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
     await cleanUp(appName, projectPath, true, true, false, true);
@@ -37,12 +38,12 @@ describe("Add capabilities", function () {
     // Act
     await CliHelper.addCapabilityToProject(projectPath, Capability.Tab);
 
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+    await setBotSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
     // Assert
-    await validateTabAndBotProjectProvision(projectPath);
+    await validateTabAndBotProjectProvision(projectPath, env);
   });
 });

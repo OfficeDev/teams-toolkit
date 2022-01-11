@@ -33,8 +33,8 @@ export class KeyVaultValidator {
   private projectPath: string;
   private env: string;
 
-  private subscriptionId = "";
-  private rg = "";
+  private subscriptionId: string;
+  private rg: string;
   private keyVault: IKeyVaultObject;
 
   constructor(ctx: any, projectPath: string, env: string) {
@@ -80,12 +80,16 @@ export class KeyVaultValidator {
       this.subscriptionId,
       this.rg,
       this.keyVault.name,
-      token,
+      token as string,
       getAzureTenantId(),
       getAzureAccountObjectId()
     );
 
     console.log("Validating key vault secrets.");
+    const identityTokenCredential = await tokenProvider.getIdentityCredentialAsync();
+    const keyvaultScope = this.keyVault.vaultUri + "/.default";
+    const tokenToGetSecret = (await identityTokenCredential.getToken(keyvaultScope)).token;
+    console.log("[dilin-debug] Successfully get new token: " + tokenToGetSecret);
     const m365ClientSecretName =
       (await getProvisionParameterValueByKey(
         this.projectPath,
@@ -95,7 +99,7 @@ export class KeyVaultValidator {
     const keyVaultSecretResponse = await this.getKeyVaultSecrets(
       this.keyVault.vaultUri,
       m365ClientSecretName,
-      token as string
+      tokenToGetSecret as string
     );
     chai.assert.exists(keyVaultSecretResponse);
 
@@ -111,7 +115,7 @@ export class KeyVaultValidator {
       const keyVaultSecretResponse = await this.getKeyVaultSecrets(
         this.keyVault.vaultUri,
         botClientSecretName,
-        token as string
+        tokenToGetSecret as string
       );
       chai.assert.exists(keyVaultSecretResponse);
     }

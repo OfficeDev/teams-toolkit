@@ -533,9 +533,8 @@ export async function customizeBicepFilesToCustomizedRg(
   }
 }
 
-export async function validateTabAndBotProjectProvision(projectPath: string) {
-  const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
-
+export async function validateTabAndBotProjectProvision(projectPath: string, env: string) {
+  const context = await readContextMultiEnv(projectPath, env);
   // Validate Aad App
   const aad = AadValidator.init(context, false, appStudioLogin);
   await AadValidator.validate(aad);

@@ -135,7 +135,7 @@ describe("Multi Env Happy Path for Azure", function () {
       });
 
       {
-        // Validate provision
+        // Validate deployment
         // Get context
         const contextResult = await loadContext(projectPath, env);
         if (contextResult.isErr()) {

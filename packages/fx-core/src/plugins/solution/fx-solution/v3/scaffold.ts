@@ -17,48 +17,15 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { Container, Service } from "typedi";
-import { BuiltInScaffoldPluginNames } from "./constants";
+import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
+import { InvalidInputError } from "../../utils/error";
 import {
   createSelectModuleQuestionNode,
   selectScaffoldTemplateQuestion,
 } from "../../utils/questions";
+import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
+import { BuiltInResourcePluginNames, BuiltInScaffoldPluginNames } from "./constants";
 import { getModule } from "./utils";
-import { InvalidInputError } from "../../utils/error";
-@Service(BuiltInScaffoldPluginNames.tab)
-export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
-  async getTemplates(
-    ctx: v2.Context,
-    inputs: Inputs
-  ): Promise<Result<v3.ScaffoldTemplate[], FxError>> {
-    return ok([
-      {
-        name: "ReactTab_JS",
-        language: "javascript",
-        description: "ReactTab Javascript",
-      },
-      {
-        name: "ReactTab_TS",
-        language: "typescript",
-        description: "ReactTab Typescript",
-      },
-    ]);
-  }
-  async scaffold(
-    ctx: v2.Context,
-    inputs: v3.PluginScaffoldInputs
-  ): Promise<Result<Json | undefined, FxError>> {
-    ctx.logProvider.info("fx-scaffold-react-tab:scaffold");
-    if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "tabs"));
-    const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-    const module = getModule(solutionSettings, inputs.module);
-    if (module) {
-      module.dir = "tabs";
-      module.deployType = "folder";
-    }
-    return ok(undefined);
-  }
-  name = BuiltInScaffoldPluginNames.tab;
-}
 
 @Service(BuiltInScaffoldPluginNames.bot)
 export class BotScaffoldPlugin implements v3.ScaffoldPlugin {
@@ -81,7 +48,7 @@ export class BotScaffoldPlugin implements v3.ScaffoldPlugin {
   }
 
   async scaffold(
-    ctx: v2.Context,
+    ctx: v3.ContextWithManifest,
     inputs: v3.PluginScaffoldInputs
   ): Promise<Result<Json | undefined, FxError>> {
     ctx.logProvider.info("fx-scaffold-bot:scaffold");
@@ -123,7 +90,7 @@ export class BlazorScaffoldPlugin implements v3.ScaffoldPlugin {
   }
 
   async scaffold(
-    ctx: v2.Context,
+    ctx: v3.ContextWithManifest,
     inputs: v3.PluginScaffoldInputs
   ): Promise<Result<Json | undefined, FxError>> {
     ctx.logProvider.info("fx-scaffold-blazor:scaffold");
@@ -232,7 +199,8 @@ export async function getQuestionsForScaffold(
 }
 export async function scaffold(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem }
+  inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem },
+  localSettings?: Json
 ): Promise<Result<Void, FxError>> {
   if (!inputs.template) {
     return err(new InvalidInputError(inputs));
@@ -249,18 +217,39 @@ export async function scaffold(
     ...inputs,
     template: templateName,
   };
-  const res = await plugin.scaffold(ctx, pluginInputs);
-  if (res.isErr()) {
-    return err(res.error);
+
+  // read manifest
+  const appStudio = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+  const manifestRes = await appStudio.loadManifest(ctx, inputs);
+  if (manifestRes.isErr()) {
+    return err(manifestRes.error);
   }
-  const manifest = [];
-  if (res.value) {
-    manifest.push(res.value);
+
+  // scaffold
+  const manifest = manifestRes.value;
+  const contextWithManifest: v3.ContextWithManifest = {
+    ...ctx,
+    appManifest: manifest,
+  };
+
+  const scaffoldRes = await plugin.scaffold(contextWithManifest, pluginInputs);
+  if (scaffoldRes.isErr()) {
+    return err(scaffoldRes.error);
   }
-  inputs.manifest = manifest;
-  //TODO
-  // //call appstudio.scaffold() API
-  // const appstudioPlugin = Container.get<v3.ScaffoldPlugin>(BuiltInResourcePluginNames.AppStudio);
-  // await appstudioPlugin.scaffold(ctx, pluginInputs);
+
+  // write manifest
+  const writeRes = await appStudio.saveManifest(ctx, inputs, manifest);
+  if (writeRes.isErr()) {
+    return err(writeRes.error);
+  }
+
+  const scaffoldLocalDebugSettingsResult = await scaffoldLocalDebugSettings(
+    ctx,
+    inputs,
+    localSettings
+  );
+  if (scaffoldLocalDebugSettingsResult.isErr()) {
+    return scaffoldLocalDebugSettingsResult;
+  }
   return ok(Void);
 }

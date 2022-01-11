@@ -171,7 +171,8 @@
       "openFAQ": "Open FAQ",
       "sideloadingHintMessage": "If any error occurs during local debug, you can refer to the FAQ page by clicking 'Open FAQ' button.",
       "npmInstallFailedHintMessage": "Task '%s' failed. Please refer to the '%s' terminal window for detailed error information or click 'Report Issue' button to report the issue.",
-      "learnMore":"Learn More"
+      "learnMore":"Learn More",
+      "prerequisitesCheckFailure": "Error occurs when checking prerequisites. Refer to the Output window for detailed error messages. (Fail to check: %s)"
     },
     "survey": {
       "takeSurvey": {

@@ -20,6 +20,8 @@ import fs from "fs-extra";
 import path from "path";
 import { TelemetryHelper } from "../utils/telemetry-helper";
 import { envFileName, envFileNamePrefix, RemoteEnvs } from "../env";
+import { IProgressHandler } from "@microsoft/teamsfx-api";
+import * as v3error from "../v3/error";
 
 interface DeploymentInfo {
   lastBuildTime?: string;
@@ -75,7 +77,32 @@ export class FrontendDeployment {
       lastBuildTime: new Date().toISOString(),
     });
   }
-
+  public static async doFrontendBuildV3(
+    componentPath: string,
+    envs: RemoteEnvs,
+    envName: string,
+    progress?: IProgressHandler
+  ): Promise<void> {
+    const skip = await FrontendDeployment.needBuild(componentPath, envName);
+    await progress?.next(DeploySteps.NPMInstall);
+    if (!skip) {
+      await runWithErrorCatchAndThrow(new v3error.NpmInstallError(), async () => {
+        await Utils.execute(Commands.InstallNodePackages, componentPath);
+      });
+    }
+    await progress?.next(DeploySteps.Build);
+    if (!skip) {
+      await runWithErrorCatchAndThrow(new v3error.BuildError(), async () => {
+        await Utils.execute(Commands.BuildFrontend, componentPath, {
+          ...envs.customizedRemoteEnvs,
+          ...envs.teamsfxRemoteEnvs,
+        });
+      });
+      await FrontendDeployment.saveDeploymentInfo(componentPath, envName, {
+        lastBuildTime: new Date().toISOString(),
+      });
+    }
+  }
   public static async skipBuild(): Promise<void> {
     Logger.info(Messages.SkipBuild);
 
@@ -121,6 +148,40 @@ export class FrontendDeployment {
       await client.uploadFiles(container, builtPath);
     });
 
+    await FrontendDeployment.saveDeploymentInfo(componentPath, envName, {
+      lastDeployTime: new Date().toISOString(),
+    });
+  }
+
+  public static async doFrontendDeploymentV3(
+    client: AzureStorageClient,
+    componentPath: string,
+    envName: string,
+    progress?: IProgressHandler
+  ): Promise<void> {
+    const skip = await FrontendDeployment.needDeploy(componentPath, envName);
+    if (!skip) {
+      await progress?.next(DeploySteps.getSrcAndDest);
+      await progress?.next(DeploySteps.Clear);
+      await progress?.next(DeploySteps.Upload);
+      return;
+    }
+    await progress?.next(DeploySteps.getSrcAndDest);
+    const builtPath = await FrontendDeployment.getBuiltPath(componentPath);
+    const container = await runWithErrorCatchAndThrow(
+      new v3error.GetContainerError(),
+      async () => await client.getContainer(Constants.AzureStorageWebContainer)
+    );
+
+    await progress?.next(DeploySteps.Clear);
+    await runWithErrorCatchAndThrow(new v3error.ClearStorageError(), async () => {
+      await client.deleteAllBlobs(container);
+    });
+
+    await progress?.next(DeploySteps.Upload);
+    await runWithErrorCatchAndThrow(new v3error.UploadToStorageError(), async () => {
+      await client.uploadFiles(container, builtPath);
+    });
     await FrontendDeployment.saveDeploymentInfo(componentPath, envName, {
       lastDeployTime: new Date().toISOString(),
     });

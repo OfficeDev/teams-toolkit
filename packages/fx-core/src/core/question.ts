@@ -127,8 +127,11 @@ export const ProgrammingLanguageQuestion: SingleSelectQuestion = {
     { id: "typescript", label: "TypeScript" },
   ],
   dynamicOptions: (inputs: Inputs): StaticOptions => {
-    const cpas = inputs[CoreQuestionNames.Capabilities] as string[];
-    if (cpas.includes(TabSPFxItem.id)) return [{ id: "typescript", label: "TypeScript" }];
+    if (inputs.platform === Platform.VS) {
+      return [{ id: "csharp", label: "C#" }];
+    }
+    const caps = inputs[CoreQuestionNames.Capabilities] as string[];
+    if (caps.includes(TabSPFxItem.id)) return [{ id: "typescript", label: "TypeScript" }];
     return [
       { id: "javascript", label: "JavaScript" },
       { id: "typescript", label: "TypeScript" },

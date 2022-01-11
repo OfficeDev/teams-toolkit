@@ -43,7 +43,6 @@ describe("Telemetry", function () {
 
   it("sendTelemetryEvent", () => {
     sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
-    sandbox.stub(Utils, "getTeamsAppId").returns(undefined);
     sandbox
       .stub(CliTelemetryReporter.prototype, "sendTelemetryEvent")
       .callsFake((eventName: string, properties?: any) => {
@@ -61,7 +60,6 @@ describe("Telemetry", function () {
 
     before(() => {
       sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
-      sandbox.stub(Utils, "getTeamsAppId").returns(undefined);
       sandbox
         .stub(CliTelemetryReporter.prototype, "sendTelemetryErrorEvent")
         .callsFake((eventName: string, properties?: any) => {
@@ -99,7 +97,6 @@ describe("Telemetry", function () {
 
   it("sendTelemetryException", () => {
     sandbox.stub(UserSettings, "getTelemetrySetting").returns(ok(false));
-    sandbox.stub(Utils, "getTeamsAppId").returns(undefined);
     sandbox
       .stub(CliTelemetryReporter.prototype, "sendTelemetryException")
       .callsFake((error: Error, properties?: any) => {

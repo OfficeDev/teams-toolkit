@@ -313,11 +313,13 @@ export async function addCapability(
       pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
       if (!alreadyHasTab) {
         pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
+        pluginNamesToArm.add(ResourcePluginsV2.SimpleAuthPlugin);
       }
     } else {
       if (!alreadyHasTab) {
         pluginNamesToScaffold.add(ResourcePluginsV2.FrontendPlugin);
         pluginNamesToArm.add(ResourcePluginsV2.FrontendPlugin);
+        pluginNamesToArm.add(ResourcePluginsV2.SimpleAuthPlugin);
       }
     }
     capabilitiesToAddManifest.push({ name: "staticTab" });

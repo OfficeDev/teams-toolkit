@@ -79,11 +79,7 @@ describe("Test Add Function", function () {
     await simpleAuth.validate();
 
     // Validate Function App
-    const functionValidator = new FunctionValidator(
-      context,
-      projectPath,
-      environmentManager.getDefaultEnvName()
-    );
+    const functionValidator = new FunctionValidator(context, projectPath, env);
     await functionValidator.validateProvision();
 
     // deploy

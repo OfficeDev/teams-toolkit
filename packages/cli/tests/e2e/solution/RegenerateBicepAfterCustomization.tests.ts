@@ -28,6 +28,7 @@ describe("User can customize Bicep files", function () {
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
     await cleanUp(appName, projectPath, true, true, false, true);
@@ -38,17 +39,17 @@ describe("User can customize Bicep files", function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     // Act
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     const customizedServicePlans: string[] = await customizeBicepFile(projectPath);
 
     // Add capability and cloud resource
     await CliHelper.addCapabilityToProject(projectPath, Capability.Bot);
-    await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setBotSkuNameToB1Bicep(projectPath, env);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureFunction);
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
-    const resourceGroup = await getRGAfterProvision(projectPath);
+    const resourceGroup = await getRGAfterProvision(projectPath, env);
     chai.assert.exists(resourceGroup);
     chai.expect(resourceGroup).to.be.a("string");
 

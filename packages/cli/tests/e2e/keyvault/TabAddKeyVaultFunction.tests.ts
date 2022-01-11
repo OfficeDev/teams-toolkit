@@ -54,11 +54,7 @@ describe("Test Azure Key Vault", function () {
       await AadValidator.validate(aad);
 
       // Validate Function App
-      const functionValidator = new FunctionValidator(
-        context,
-        projectPath,
-        environmentManager.getDefaultEnvName()
-      );
+      const functionValidator = new FunctionValidator(context, projectPath, env);
       await functionValidator.validateProvision();
 
       // Validate Key Vault

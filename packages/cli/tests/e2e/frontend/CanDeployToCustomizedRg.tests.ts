@@ -29,6 +29,7 @@ describe("Deploy to customized resource group", function () {
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
     await cleanUp(appName, projectPath, true, false, false, true);
@@ -50,7 +51,7 @@ describe("Deploy to customized resource group", function () {
     );
 
     // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
@@ -59,10 +60,7 @@ describe("Deploy to customized resource group", function () {
 
     // Assert
     {
-      const context = await readContextMultiEnv(
-        projectPath,
-        environmentManager.getDefaultEnvName()
-      );
+      const context = await readContextMultiEnv(projectPath, env);
 
       // Validate Aad App
       const aad = AadValidator.init(context, false, AppStudioLogin);

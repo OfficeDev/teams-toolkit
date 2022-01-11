@@ -58,10 +58,7 @@ describe("Deploy to customized resource group", function () {
 
     // Assert
     {
-      const context = await readContextMultiEnv(
-        projectPath,
-        environmentManager.getDefaultEnvName()
-      );
+      const context = await readContextMultiEnv(projectPath, env);
 
       // Validate Aad App
       const aad = AadValidator.init(context, false, AppStudioLogin);

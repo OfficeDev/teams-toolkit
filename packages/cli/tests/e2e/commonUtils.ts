@@ -552,8 +552,11 @@ export async function validateTabAndBotProjectProvision(projectPath: string, env
   await BotValidator.validateProvision(bot, true);
 }
 
-export async function getRGAfterProvision(projectPath: string): Promise<string | undefined> {
-  const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
+export async function getRGAfterProvision(
+  projectPath: string,
+  env: string
+): Promise<string | undefined> {
+  const context = await readContextMultiEnv(projectPath, env);
   if (context[PluginId.Solution] && context[PluginId.Solution][StateConfigKey.resourceGroupName]) {
     return context[PluginId.Solution][StateConfigKey.resourceGroupName];
   }

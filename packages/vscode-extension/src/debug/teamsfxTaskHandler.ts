@@ -41,6 +41,8 @@ const activeNpmInstallTasks = new Set<string>();
 /**
  * This EventEmitter is used to track all running tasks called by `runTask`.
  * Each task executed by `runTask` will have an internal task id.
+ * Event emitters use this id to identify each tracked task, and `runTask` matches this id
+ * to determine whether a task is terminated or not.
  */
 let taskEndEventEmitter: vscode.EventEmitter<{ id: string; exitCode?: number }>;
 let taskStartEventEmitter: vscode.EventEmitter<string>;

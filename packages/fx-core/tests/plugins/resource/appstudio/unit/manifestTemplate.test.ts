@@ -6,24 +6,40 @@ import * as chai from "chai";
 import sinon from "sinon";
 import fs, { PathLike } from "fs-extra";
 import path from "path";
-import { ConfigMap, PluginContext } from "@microsoft/teamsfx-api";
-import { AppStudioPlugin } from "./../../../../../src/plugins/resource/appstudio";
+import { ConfigMap, PluginContext, v2, Platform } from "@microsoft/teamsfx-api";
+import Container from "typedi";
+import { AppStudioPluginV3 } from "./../../../../../src/plugins/resource/appstudio/v3";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { newEnvInfo } from "../../../../../src/core/tools";
-import { getAzureProjectRoot } from "../helper";
+import { getAzureProjectRoot, MockUserInteraction } from "../helper";
+import { MockedLogProvider, MockedTelemetryReporter } from "../../../solution/util";
+import { BuiltInResourcePluginNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 
 describe("Load and Save manifest template", () => {
   const sandbox = sinon.createSandbox();
-  let plugin: AppStudioPlugin;
-  let ctx: PluginContext;
+  let plugin: AppStudioPluginV3;
+  let ctx: v2.Context;
+  let inputs: v2.InputsWithProjectPath;
 
   beforeEach(async () => {
-    plugin = new AppStudioPlugin();
+    plugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
     ctx = {
-      root: getAzureProjectRoot(),
-      envInfo: newEnvInfo(),
-      config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
+      userInteraction: new MockUserInteraction(),
+      logProvider: new MockedLogProvider(),
+      telemetryReporter: new MockedTelemetryReporter(),
+      projectSetting: {
+        appName: "test",
+        projectId: "",
+        solutionSettings: {
+          name: "",
+          activeResourcePlugins: [plugin.name],
+        },
+      },
+    };
+    inputs = {
+      platform: Platform.VSCode,
+      projectPath: getAzureProjectRoot(),
     };
   });
 
@@ -32,10 +48,14 @@ describe("Load and Save manifest template", () => {
   });
 
   it("Load and Save manifest template file", async () => {
-    const loadedManifestTemplate = await plugin.loadManifest(ctx);
+    const loadedManifestTemplate = await plugin.loadManifest(ctx, inputs);
     chai.assert.isTrue(loadedManifestTemplate.isOk());
     if (loadedManifestTemplate.isOk()) {
-      const saveManifestResult = await plugin.saveManifest(ctx, loadedManifestTemplate.value);
+      const saveManifestResult = await plugin.saveManifest(
+        ctx,
+        inputs,
+        loadedManifestTemplate.value
+      );
       chai.assert.isTrue(saveManifestResult.isOk());
     }
   });
@@ -43,16 +63,29 @@ describe("Load and Save manifest template", () => {
 
 describe("Add capability", () => {
   const sandbox = sinon.createSandbox();
-  let plugin: AppStudioPlugin;
-  let ctx: PluginContext;
+  let plugin: AppStudioPluginV3;
+  let ctx: v2.Context;
+  let inputs: v2.InputsWithProjectPath;
 
   beforeEach(async () => {
-    plugin = new AppStudioPlugin();
+    plugin = new AppStudioPluginV3();
     ctx = {
-      root: getAzureProjectRoot(),
-      envInfo: newEnvInfo(),
-      config: new ConfigMap(),
       cryptoProvider: new LocalCrypto(""),
+      userInteraction: new MockUserInteraction(),
+      logProvider: new MockedLogProvider(),
+      telemetryReporter: new MockedTelemetryReporter(),
+      projectSetting: {
+        appName: "test",
+        projectId: "",
+        solutionSettings: {
+          name: "",
+          activeResourcePlugins: [plugin.name],
+        },
+      },
+    };
+    inputs = {
+      platform: Platform.VSCode,
+      projectPath: getAzureProjectRoot(),
     };
   });
 
@@ -61,7 +94,7 @@ describe("Add capability", () => {
   });
 
   it("Check capability exceed limit: should return false", async () => {
-    const result = await plugin.capabilityExceedLimit(ctx, "staticTab");
+    const result = await plugin.capabilityExceedLimit(ctx, inputs, "staticTab");
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
       chai.assert.isFalse(result.value);
@@ -69,7 +102,7 @@ describe("Add capability", () => {
   });
 
   it("Check capability exceed limit: should return true", async () => {
-    const result = await plugin.capabilityExceedLimit(ctx, "configurableTab");
+    const result = await plugin.capabilityExceedLimit(ctx, inputs, "configurableTab");
     chai.assert.isTrue(result.isOk());
     if (result.isOk()) {
       chai.assert.isTrue(result.value);
@@ -92,10 +125,10 @@ describe("Add capability", () => {
     });
 
     const capabilities = [{ name: "staticTab" as const }];
-    const addCapabilityResult = await plugin.addCapabilities(ctx, capabilities);
+    const addCapabilityResult = await plugin.addCapabilities(ctx, inputs, capabilities);
     chai.assert.isTrue(addCapabilityResult.isOk());
 
-    const loadedManifestTemplate = await plugin.loadManifest(ctx);
+    const loadedManifestTemplate = await plugin.loadManifest(ctx, inputs);
     chai.assert.isTrue(loadedManifestTemplate.isOk());
 
     if (loadedManifestTemplate.isOk()) {

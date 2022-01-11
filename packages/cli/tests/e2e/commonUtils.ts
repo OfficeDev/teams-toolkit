@@ -540,8 +540,8 @@ export async function validateTabAndBotProjectProvision(projectPath: string, env
   await AadValidator.validate(aad);
 
   // Validate Simple Auth
-  const simpleAuth = SimpleAuthValidator.init(context);
-  await SimpleAuthValidator.validate(simpleAuth, aad);
+  const simpleAuth = new SimpleAuthValidator(context, projectPath, env);
+  await simpleAuth.validate();
 
   // Validate Tab Frontend
   const frontend = FrontendValidator.init(context, true);

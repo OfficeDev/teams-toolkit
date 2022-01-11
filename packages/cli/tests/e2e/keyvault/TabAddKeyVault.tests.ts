@@ -53,8 +53,8 @@ describe("Test Azure Key Vault", function () {
       await AadValidator.validate(aad);
 
       // Validate Simple Auth
-      const simpleAuth = SimpleAuthValidator.init(context);
-      await SimpleAuthValidator.validate(simpleAuth, aad);
+      const simpleAuth = new SimpleAuthValidator(context, projectPath, env);
+      await simpleAuth.validate();
 
       // Validate Key Vault
       const keyVault = new KeyVaultValidator(context, projectPath, env);

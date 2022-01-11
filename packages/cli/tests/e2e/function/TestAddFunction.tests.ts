@@ -27,6 +27,7 @@ describe("Test Add Function", function () {
   let appName: string;
   let subscription: string;
   let projectPath: string;
+  let env: string;
 
   // Should succeed on the 3rd try
   this.retries(2);
@@ -36,6 +37,7 @@ describe("Test Add Function", function () {
     appName = getUniqueAppName();
     subscription = getSubscriptionId();
     projectPath = path.resolve(testFolder, appName);
+    env = environmentManager.getDefaultEnvName();
   });
 
   afterEach(async () => {
@@ -46,7 +48,7 @@ describe("Test Add Function", function () {
 
   it(`Create Tab Then Add Function`, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
 
     await CliHelper.addResourceToProject(
       projectPath,
@@ -65,7 +67,7 @@ describe("Test Add Function", function () {
     // provision
     await CliHelper.provisionProject(projectPath);
 
-    const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
+    const context = await readContextMultiEnv(projectPath, env);
 
     // Validate provision
     // Validate Aad App
@@ -73,8 +75,8 @@ describe("Test Add Function", function () {
     await AadValidator.validate(aad);
 
     // Validate Simple Auth
-    const simpleAuth = SimpleAuthValidator.init(context);
-    await SimpleAuthValidator.validate(simpleAuth, aad, "B1", true);
+    const simpleAuth = new SimpleAuthValidator(context, projectPath, env);
+    await simpleAuth.validate();
 
     // Validate Function App
     const functionValidator = new FunctionValidator(

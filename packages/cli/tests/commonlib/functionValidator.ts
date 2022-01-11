@@ -11,7 +11,6 @@ import {
   getProvisionParameterValueByKey,
   getKeyVaultSecretReference,
 } from "../e2e/commonUtils";
-import { CliHelper } from "./cliHelper";
 import { StateConfigKey, PluginId, provisionParametersKey } from "./constants";
 import {
   getSubscriptionIdFromResourceId,
@@ -247,11 +246,7 @@ export class FunctionValidator {
         )) ?? "m365ClientSecret";
       m365ClientSecret = getKeyVaultSecretReference(vaultName, secretName);
     } else {
-      m365ClientSecret = await CliHelper.getUserSettings(
-        `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
-        this.projectPath,
-        this.env
-      );
+      m365ClientSecret = this.ctx[PluginId.Aad][StateConfigKey.clientSecret];
     }
     return m365ClientSecret;
   }

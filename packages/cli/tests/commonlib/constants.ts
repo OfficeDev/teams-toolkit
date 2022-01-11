@@ -55,6 +55,7 @@ export class StateConfigKey {
   // aad
   static readonly clientId = "clientId";
   static readonly clientSecret = "clientSecret";
+  static readonly oauthAuthority = "oauthAuthority";
 
   // simple auth
   static readonly endpoint = "endpoint";
@@ -86,4 +87,5 @@ export class provisionParametersKey {
   static readonly resourceBaseName = "resourceBaseName";
   static readonly m365ClientSecretName = "m365ClientSecretName";
   static readonly botClientSecretName = "botClientSecretName";
+  static readonly simpleAuthSku = "simpleAuthSku";
 }

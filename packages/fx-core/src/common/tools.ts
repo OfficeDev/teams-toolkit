@@ -380,13 +380,6 @@ export function isMultiEnvEnabled(): boolean {
   return true;
 }
 
-/**
- * @deprecated Please DO NOT use this method any more, it will be removed in near future.
- */
-export function isArmSupportEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
-}
-
 export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }

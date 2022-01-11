@@ -6,7 +6,7 @@
  * 2. All plugins will be stored in '${home}/${TeamsFx}'.
  *
  *  @example
- *  .
+ *  ~/.fx
  *  ├── manifest.json
  *  └── plugins
  *      ├── bot
@@ -29,11 +29,11 @@
  * If there's a resident process, depot will keep all of them in memory. Otherwise,
  * there will be a manifest to optimize performance like an index.
  */
-import * as path from "path";
-import * as os from "os";
-import * as fs from "fs-extra";
+import { join } from "path";
+import { homedir, tmpdir } from "os";
+import { move, remove, ensureDir, rmdir, writeFile, readJSON, pathExists } from "fs-extra";
 import { nanoid } from "nanoid";
-import * as lockfile from "proper-lockfile";
+import { lock, unlock } from "proper-lockfile";
 
 import {
   ConcurrentError,
@@ -87,7 +87,7 @@ export class Depot {
    * Path is the address of depot to store plugins. Make it static because
    * this property should be immutable.
    */
-  private static readonly address: string = path.join(os.homedir(), `.${ConfigFolderName}`);
+  private static readonly address: string = join(homedir(), `.${ConfigFolderName}`);
 
   /**
    * Manifest is a list of all plugins. You can use the two-step index to
@@ -111,7 +111,7 @@ export class Depot {
    * Do some necesscary preparations before providing services.
    */
   private async init(): Promise<void> {
-    await fs.ensureDir(Depot.address);
+    await ensureDir(Depot.address);
     await this.tally();
   }
 
@@ -125,7 +125,7 @@ export class Depot {
   private async validate(plugins: Map<PluginName, PluginVersion>): Promise<boolean> {
     // Flush data into package.json in system temp folder.
     // Nanoid is safer and faster than uuid.
-    const targetPath = path.join(os.tmpdir(), `.${ConfigFolderName}`, nanoid(16));
+    const targetPath = join(tmpdir(), `.${ConfigFolderName}`, nanoid(16));
     await this.writePackageJson(targetPath, plugins);
 
     // execute 'npm install' with "dry-run"
@@ -136,7 +136,7 @@ export class Depot {
     }
 
     // teardown
-    await fs.rmdir(targetPath);
+    await rmdir(targetPath);
     return true;
   }
 
@@ -144,7 +144,7 @@ export class Depot {
    * Write plugins as dependencies in package.json file to execute npm install
    */
   private async writePackageJson(destination: string, plugins: Map<PluginName, PluginVersion>) {
-    await fs.ensureDir(destination);
+    await ensureDir(destination);
     const rawData = {
       // name & version are required in package.json
       name: ProductName,
@@ -152,7 +152,7 @@ export class Depot {
       dependencies: plugins,
     };
     // npm install use "package.json" as default config file
-    await fs.writeFile(path.join(destination, PACKAGE_DOT_JSON), rawData);
+    await writeFile(join(destination, PACKAGE_DOT_JSON), rawData);
   }
 
   /**
@@ -174,19 +174,19 @@ export class Depot {
      * lock is necesscary because there might be several process loading plugins.
      */
     try {
-      await lockfile.lock(Depot.address);
+      await lock(Depot.address);
     } catch (e) {
       console.error(e);
       return err(new ConcurrentError(CoreSource));
     }
 
     for (const [name, version] of packages.entries()) {
-      const co = path.join(Depot.address, "plugins", name);
+      const co = join(Depot.address, "plugins", name);
       const plugin: Map<PluginName, PluginVersion> = new Map();
       plugin.set(name, version);
 
       // set as "undertermined" and rename after installing
-      const source = path.join(co, "undertermined");
+      const source = join(co, "undertermined");
       await this.writePackageJson(source, plugin);
 
       try {
@@ -204,18 +204,18 @@ export class Depot {
       /**
        * rename the folder by version in node_modules/${name}/package.json
        */
-      const config = await fs.readJSON(path.join(source, "node_modules", name, PACKAGE_DOT_JSON));
-      const destination = path.join(co, config.version);
-      await fs.move(source, destination);
+      const config = await readJSON(join(source, "node_modules", name, PACKAGE_DOT_JSON));
+      const destination = join(co, config.version);
+      await move(source, destination);
 
       /**
        * remove temporary package.json
        */
-      await fs.remove(path.join(destination, PACKAGE_DOT_JSON));
+      await remove(join(destination, PACKAGE_DOT_JSON));
       paths.push(destination);
     }
 
-    await lockfile.unlock(Depot.address);
+    await unlock(Depot.address);
 
     return ok(paths);
   }
@@ -226,12 +226,12 @@ export class Depot {
    * @param packages - particular packages to write into manifest file. Or reload manifest file.
    */
   private async tally(packages?: Map<PluginName, PluginVersion>): Promise<void> {
-    const manifestPath = path.join(Depot.address, MANIFEST_DOT_JSON);
+    const manifestPath = join(Depot.address, MANIFEST_DOT_JSON);
     /**
      * if packages exist, update manifest (both memory and disk)
      */
     if (packages) {
-      const manifest = (await fs.readJSON(manifestPath)) as Manifest;
+      const manifest = (await readJSON(manifestPath)) as Manifest;
       for (const [name, version] of packages) {
         if (!manifest.plugins.has(name)) {
           manifest.plugins.set(name, [version]);
@@ -250,18 +250,18 @@ export class Depot {
       manifest.version = PVM_SPEC_VERSION;
 
       // update disk
-      await fs.writeFile(manifestPath, JSON.stringify(manifest, null, 4));
+      await writeFile(manifestPath, JSON.stringify(manifest, null, 4));
       // update memory
       this._manifest = manifest;
     } else {
       /**
        * if packages is undefined, reload plugins into memory
        */
-      if (await fs.pathExists(manifestPath)) {
-        const manifest = (await fs.readJSON(manifestPath)) as Manifest;
+      if (await pathExists(manifestPath)) {
+        const manifest = (await readJSON(manifestPath)) as Manifest;
         this._manifest = manifest;
       } else {
-        await fs.writeFile(manifestPath, JSON.stringify(this._manifest, null, 4));
+        await writeFile(manifestPath, JSON.stringify(this._manifest, null, 4));
       }
     }
     return;

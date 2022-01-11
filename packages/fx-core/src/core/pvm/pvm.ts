@@ -2,15 +2,15 @@
  *
  * PVM(Plugin Version Manager)
  *
- *  ...........
- *  .. Depot ..
- *  ...........
+ *  ...........           .....................
+ *  .. Depot .. <-------> .. Dynamic  Plugin ..
+ *  ...........           .....................
  *       ^
  *       |
  *       v
- *   .........           .....................
- *   .. PVM .. <-------> .. Dynamic  Plugin ..
- *   .........           .....................
+ *   .........
+ *   .. PVM .. 1. init & load 2.plugins
+ *   .........
  *       ^
  *       |
  *       v
@@ -63,7 +63,7 @@ export default class PVM {
    * @param plugins - this should be like dependencies in package.json
    * @returns error on requiring plugins.
    */
-  public async load(plugins: Map<string, string>): Promise<FxError | void> {
+  public async load(plugins: Record<string, string>): Promise<FxError | void> {
     const result = await (await Depot.getInstance()).load(plugins);
 
     if (result.isOk()) {
@@ -79,3 +79,18 @@ export default class PVM {
     }
   }
 }
+
+export const BuiltInResourcePluginNames = {
+  appStudio: "fx-resource-appstudio",
+  aad: "fx-resource-aad",
+  bot: "fx-resource-bot",
+  webApp: "fx-resource-azure-web-app",
+  storage: "fx-resource-azure-storage",
+  spfx: "fx-resource-spfx",
+};
+export const BuiltInScaffoldPluginNames = {
+  blazor: "fx-scaffold-blazor",
+  tab: "fx-scaffold-react-tab",
+  spfx: "fx-scaffold-spfx",
+  bot: "fx-scaffold-bot",
+};

@@ -66,7 +66,7 @@ export class TeamsSPFxSolution implements v3.ISolution {
 
   addModule: (
     ctx: v2.Context,
-    localSettings: Json,
-    inputs: v2.InputsWithProjectPath & { capabilities?: string[] }
-  ) => Promise<Result<Void, FxError>> = addModule;
+    inputs: v2.InputsWithProjectPath & { capabilities: string[] },
+    localSettings?: Json
+  ) => Promise<Result<Json, FxError>> = addModule;
 }

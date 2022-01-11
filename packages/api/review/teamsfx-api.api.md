@@ -1571,7 +1571,7 @@ export interface SolutionContext extends Context {
 // @public (undocumented)
 interface SolutionDeployInputs extends InputsWithProjectPath {
     // (undocumented)
-    module: string;
+    modules: string[];
 }
 
 // @public (undocumented)

@@ -21,7 +21,7 @@ export interface SolutionAddModuleInputs extends InputsWithProjectPath {
   capabilities: string[];
 }
 export interface SolutionDeployInputs extends InputsWithProjectPath {
-  module: string;
+  modules: string[];
 }
 
 export interface ISolution {

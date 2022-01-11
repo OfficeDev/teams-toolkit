@@ -1239,7 +1239,7 @@ export class AppStudioPluginImpl {
 
   private getTabIndexUrl(ctx: PluginContext, isLocalDebug: boolean): string {
     const tabIndexUrl = isLocalDebug
-      ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint) as string)
+      ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabIndexUrl) as string)
       : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_URL) as string);
     return tabIndexUrl;
   }
@@ -1645,6 +1645,7 @@ export class AppStudioPluginImpl {
       localSettings: {
         frontend: {
           tabEndpoint: endpoint ? endpoint : "{{{localSettings.frontend.tabEndpoint}}}",
+          tabIndexUrl: indexUrl ?? "{{{localSettings.frontend.tabIndexUrl}}}",
         },
         auth: {
           clientId: ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)

@@ -107,9 +107,9 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG = `{
   "packageName": "com.microsoft.teams.extension",
   "developer": {
       "name": "Teams App, Inc.",
-      "websiteUrl": "{{{localSettings.frontend.tabEndpoint}}}",
-      "privacyUrl": "{{{localSettings.frontend.tabEndpoint}}}/index.html#/privacy",
-      "termsOfUseUrl": "{{{localSettings.frontend.tabEndpoint}}}/index.html#/termsofuse"
+      "websiteUrl": "{{{localSettings.frontend.tabIndexUrl}}}",
+      "privacyUrl": "{{{localSettings.frontend.tabIndexUrl}}}/privacy",
+      "termsOfUseUrl": "{{{localSettings.frontend.tabIndexUrl}}}/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -257,15 +257,15 @@ export const STATIC_TABS_TPL_LOCAL_DEBUG: IStaticTab[] = [
   {
     entityId: "index",
     name: "Personal Tab",
-    contentUrl: "{{{localSettings.frontend.tabEndpoint}}}/index.html#/tab",
-    websiteUrl: "{{{localSettings.frontend.tabEndpoint}}}/index.html#/tab",
+    contentUrl: "{{{localSettings.frontend.tabIndexUrl}}}/tab",
+    websiteUrl: "{{{localSettings.frontend.tabIndexUrl}}}/tab",
     scopes: ["personal"],
   },
 ];
 
 export const CONFIGURABLE_TABS_TPL_LOCAL_DEBUG: IConfigurableTab[] = [
   {
-    configurationUrl: "{{{localSettings.frontend.tabEndpoint}}}/index.html#/config",
+    configurationUrl: "{{{localSettings.frontend.tabIndexUrl}}}/config",
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },

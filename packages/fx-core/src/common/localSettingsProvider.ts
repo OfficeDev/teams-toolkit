@@ -297,6 +297,7 @@ export class LocalSettingsProvider {
     frontendLocalConfig.set(LocalSettingsFrontendKeys.SslKeyFile, "");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.TabDomain, "");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.TabEndpoint, "");
+    frontendLocalConfig.set(LocalSettingsFrontendKeys.TabIndexUrl, "");
 
     return frontendLocalConfig;
   }

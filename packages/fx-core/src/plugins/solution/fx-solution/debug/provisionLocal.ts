@@ -70,6 +70,7 @@ export async function setupLocalDebugSettings(
       const authPort = isMigrateFromV1 ? 5000 : 55000;
       let localTabEndpoint: string;
       let localTabDomain: string;
+      let localTabIndexUrl: string;
       let localAuthEndpoint: string;
       let localFuncEndpoint: string;
 
@@ -78,11 +79,13 @@ export async function setupLocalDebugSettings(
 
         localTabEndpoint = getCodespaceUrl(codespaceName, frontendPort);
         localTabDomain = new URL(localTabEndpoint).host;
+        localTabIndexUrl = `${localTabEndpoint}/index.html#`;
         localAuthEndpoint = getCodespaceUrl(codespaceName, authPort);
         localFuncEndpoint = getCodespaceUrl(codespaceName, 7071);
       } else {
         localTabDomain = "localhost";
         localTabEndpoint = `https://localhost:${frontendPort}`;
+        localTabIndexUrl = `${localTabEndpoint}/index.html#`;
         localAuthEndpoint = `http://localhost:${authPort}`;
         localFuncEndpoint = "http://localhost:7071";
       }
@@ -94,6 +97,7 @@ export async function setupLocalDebugSettings(
       if (includeFrontend) {
         localSettings.frontend.tabEndpoint = localTabEndpoint;
         localSettings.frontend.tabDomain = localTabDomain;
+        localSettings.frontend.tabIndexUrl = localTabIndexUrl;
       }
 
       if (includeBackend) {

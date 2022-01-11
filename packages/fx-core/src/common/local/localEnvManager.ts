@@ -22,11 +22,8 @@ import { getPortsInUse } from "./portChecker";
 import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
-import { DependencyStatus, DepsManager } from "../deps-checker/depsManager";
 import { DepsType } from "../deps-checker/depsChecker";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
-import { CheckerFactory } from "../deps-checker/checkerFactory";
-import { DepsLoggerAdapter, DepsTelemetryAdapter } from "./depsAdapter";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
@@ -37,38 +34,39 @@ export class LocalEnvManager {
     this.telemetry = telemetry;
   }
 
-  public async checkDependencies(projectSettings: ProjectSettings): Promise<
-    {
-      type: DepsType;
-      isInstalled: boolean;
-    }[]
-  > {
-    const depsLogger = new DepsLoggerAdapter(this.logger);
-    const depsTelemetry = new DepsTelemetryAdapter(this.telemetry);
+  public getActiveDependencies(projectSettings: ProjectSettings): DepsType[] {
+    const depsTypes: DepsType[] = [];
+    const isSPFx = ProjectSettingsHelper.isSpfx(projectSettings);
+    const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+    const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
+    const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
+    const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
 
-    const dependencies = this.getValidDeps(projectSettings);
-    const result = [];
-    for (const type of dependencies) {
-      const checker = CheckerFactory.createChecker(type, depsLogger, depsTelemetry);
-      const status = {
-        type: type,
-        isInstalled: await checker.isInstalled(),
-      };
-      result.push(status);
+    // NodeJS
+    if (isSPFx) {
+      depsTypes.push(DepsType.SpfxNode);
+    } else if (includeBackend) {
+      depsTypes.push(DepsType.FunctionNode);
+    } else {
+      depsTypes.push(DepsType.AzureNode);
     }
-    return result;
-  }
 
-  public async checkAndResolveDependencies(
-    projectSettings: ProjectSettings
-  ): Promise<DependencyStatus[]> {
-    const depsLogger = new DepsLoggerAdapter(this.logger);
-    const depsTelemetry = new DepsTelemetryAdapter(this.telemetry);
-    const depsManager = new DepsManager(depsLogger, depsTelemetry);
+    // Dotnet
+    if ((includeFrontend && includeSimpleAuth) || includeBackend) {
+      depsTypes.push(DepsType.Dotnet);
+    }
 
-    return await depsManager.ensureDependencies(this.getValidDeps(projectSettings), {
-      fastFail: true,
-    });
+    // Function core tool
+    if (includeBackend) {
+      depsTypes.push(DepsType.FuncCoreTools);
+    }
+
+    // Ngrok
+    if (includeBot) {
+      depsTypes.push(DepsType.Ngrok);
+    }
+
+    return depsTypes;
   }
 
   public async getLocalDebugEnvs(
@@ -143,23 +141,5 @@ export class LocalEnvManager {
       }
     }
     throw error;
-  }
-
-  private getValidDeps(projectSettings: ProjectSettings): DepsType[] {
-    const depsTypes: DepsType[] = [];
-
-    if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
-      depsTypes.push(DepsType.Dotnet);
-    }
-
-    if (ProjectSettingsHelper.includeBackend(projectSettings)) {
-      depsTypes.push(DepsType.FuncCoreTools);
-    }
-
-    if (ProjectSettingsHelper.includeBot(projectSettings)) {
-      depsTypes.push(DepsType.Ngrok);
-    }
-
-    return depsTypes;
   }
 }

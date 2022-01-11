@@ -6,7 +6,7 @@
 export * as cfg from "../../src/commonlib/common/userPasswordConfig";
 export * from "./aadValidate";
 export * from "./simpleAuthValidator";
-export * from "./sqlValidate";
+export * from "./sqlValidator";
 export * from "./aadManager";
 export * from "./resourceGroupManager";
 export * from "./apimValidator";

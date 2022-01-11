@@ -5,9 +5,9 @@ import * as os from "os";
 import commonlibLogger, { VsCodeLogProvider } from "../../commonlib/log";
 import { OutputChannel } from "vscode";
 import { LogLevel } from "@microsoft/teamsfx-api";
-import { IDepsLogger } from "./checker";
+import { DepsLogger } from "@microsoft/teamsfx-core";
 
-export class VSCodeLogger implements IDepsLogger {
+export class VSCodeLogger implements DepsLogger {
   public outputChannel: OutputChannel;
   private logger: VsCodeLogProvider;
   private detailLogLines: string[] = [];
@@ -18,34 +18,44 @@ export class VSCodeLogger implements IDepsLogger {
   }
 
   public async debug(message: string): Promise<boolean> {
-    this.appendLine(LogLevel.Debug, message);
+    this.addToDetailCache(LogLevel.Debug, message);
     return true;
   }
 
   public async info(message: string): Promise<boolean> {
-    this.appendLine(LogLevel.Info, message);
+    this.addToDetailCache(LogLevel.Info, message);
     return await this.logger.info(message);
   }
 
   public async warning(message: string): Promise<boolean> {
-    this.appendLine(LogLevel.Warning, message);
+    this.addToDetailCache(LogLevel.Warning, message);
     return await this.logger.warning(message);
   }
 
   public async error(message: string): Promise<boolean> {
-    this.appendLine(LogLevel.Error, message);
+    this.addToDetailCache(LogLevel.Error, message);
     return await this.logger.error(message);
   }
 
-  public async printDetailLog(): Promise<void> {
-    await this.logger.error(this.detailLogLines.join(os.EOL));
+  public appendLine(message: string): Promise<boolean> {
+    commonlibLogger.outputChannel.appendLine(message);
+    return Promise.resolve(true);
+  }
+
+  public async append(message: string): Promise<boolean> {
+    commonlibLogger.outputChannel.append(message);
+    return Promise.resolve(true);
   }
 
   public cleanup(): void {
     this.detailLogLines = [];
   }
 
-  private appendLine(level: LogLevel, message: string): void {
+  public async printDetailLog(): Promise<void> {
+    await this.logger.error(this.detailLogLines.join(os.EOL));
+  }
+
+  private addToDetailCache(level: LogLevel, message: string): void {
     const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}`;
     this.detailLogLines.push(line);
   }

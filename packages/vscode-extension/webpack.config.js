@@ -81,14 +81,6 @@ const config = {
     new CopyPlugin({
       patterns: [
         {
-          from: "./src/debug/depsChecker/resource/dotnet-install.sh",
-          to: "resource/dotnet-install.sh",
-        },
-        {
-          from: "./src/debug/depsChecker/resource/dotnet-install.ps1",
-          to: "resource/dotnet-install.ps1",
-        },
-        {
           from: "../fx-core/resource/",
           to: "../resource/",
         },

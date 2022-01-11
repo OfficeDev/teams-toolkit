@@ -2,31 +2,21 @@
 // Licensed under the MIT license.
 
 import {
+  defaultHelpLink,
   DependencyStatus,
+  DepsCheckerEvent,
   DepsLogger,
   DepsManager,
   DepsOptions,
   DepsTelemetry,
   DepsType,
   Messages,
-  DepsCheckerEvent,
-  defaultHelpLink,
 } from "@microsoft/teamsfx-core";
 import * as os from "os";
-import {
-  openUrl,
-  showWarningMessage,
-  checkerEnabled,
-  hasFunction,
-  hasNgrok,
-  hasBot,
-} from "./vscodeUtils";
+import { vscodeHelper } from "./vscodeHelper";
 
 export class VSCodeDepsChecker {
   private static learnMoreButtonText = "Learn more";
-  private static validateDotnetSdkKey = "validateDotnetSdk";
-  private static validateFuncCoreToolsKey = "validateFuncCoreTools";
-  private static validateNodeVersionKey = "validateNode";
 
   private readonly depsManager: DepsManager;
 
@@ -70,7 +60,7 @@ export class VSCodeDepsChecker {
   }
 
   public async getDepsStatus(dep: DepsType): Promise<DependencyStatus> {
-    return (await this.ensure([dep]))[0];
+    return (await this.depsManager.getStatus([dep]))[0];
   }
 
   private async ensure(deps: DepsType[]): Promise<DependencyStatus[]> {
@@ -111,13 +101,13 @@ export class VSCodeDepsChecker {
     return Messages.linuxDepsNotFound.split("@SupportedPackages").join(supportedMessage);
   }
 
-  private async display(message: string, link: string): Promise<void> {
-    const clickButton = await showWarningMessage(message, {
+  public async display(message: string, link: string): Promise<void> {
+    const clickButton = await vscodeHelper.showWarningMessage(message, {
       title: VSCodeDepsChecker.learnMoreButtonText,
     });
     if (clickButton) {
       this.telemetry.sendEvent(DepsCheckerEvent.clickLearnMore);
-      await openUrl(link);
+      await vscodeHelper.openUrl(link);
       await this.display(message, link);
       return;
     }
@@ -129,15 +119,15 @@ export class VSCodeDepsChecker {
     switch (dep) {
       case DepsType.AzureNode:
       case DepsType.SpfxNode:
-        return checkerEnabled(VSCodeDepsChecker.validateNodeVersionKey);
+        return vscodeHelper.isNodeCheckerEnabled();
       case DepsType.FunctionNode:
-        return checkerEnabled(VSCodeDepsChecker.validateNodeVersionKey) && (await hasFunction());
+        return vscodeHelper.isNodeCheckerEnabled() && (await vscodeHelper.hasFunction());
       case DepsType.Dotnet:
-        return checkerEnabled(VSCodeDepsChecker.validateDotnetSdkKey);
+        return vscodeHelper.isDotnetCheckerEnabled();
       case DepsType.FuncCoreTools:
-        return checkerEnabled(VSCodeDepsChecker.validateFuncCoreToolsKey) && (await hasFunction());
+        return vscodeHelper.isFuncCoreToolsEnabled() && (await vscodeHelper.hasFunction());
       case DepsType.Ngrok:
-        return (await hasBot()) && (await hasNgrok());
+        return (await vscodeHelper.hasBot()) && (await vscodeHelper.hasNgrok());
       default:
         return false;
     }

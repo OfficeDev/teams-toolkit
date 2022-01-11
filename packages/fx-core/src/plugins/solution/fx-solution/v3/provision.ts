@@ -19,9 +19,10 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import { assign, isUndefined } from "lodash";
+import { isUndefined } from "lodash";
 import { Container } from "typedi";
 import * as util from "util";
+import { v4 as uuidv4 } from "uuid";
 import { PluginDisplayName } from "../../../../common/constants";
 import {
   CustomizeResourceGroupType,
@@ -29,22 +30,12 @@ import {
   TelemetryProperty,
 } from "../../../../common/telemetry";
 import { getHashedEnv, getResourceGroupInPortal, getStrings } from "../../../../common/tools";
-import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
-import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import arm from "../arm";
-import {
-  askResourceGroupInfo,
-  checkResourceGroupExistence,
-  createNewResourceGroup,
-  DefaultResourceGroupLocation,
-  getResourceGroupInfo,
-  ResourceGroupInfo,
-} from "../commonQuestions";
+import { ResourceGroupInfo } from "../commonQuestions";
 import { SolutionError, SolutionSource } from "../constants";
+import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { executeConcurrently } from "../v2/executor";
-import { combineRecords } from "../v2/utils";
 import { BuiltInResourcePluginNames } from "./constants";
-import { v4 as uuidv4 } from "uuid";
 
 export async function getQuestionsForProvision(
   ctx: v2.Context,
@@ -78,7 +69,6 @@ export async function provisionResources(
   tokenProvider: TokenProvider
 ): Promise<Result<v3.EnvInfoV3, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
 
   // check M365 tenant
   const checkM365Res = await checkM365Tenant(envInfo, tokenProvider.appStudioToken);
@@ -114,13 +104,11 @@ export async function provisionResources(
   // create resource group if needed
   const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
   if (solutionConfig.needCreateResourceGroup) {
-    const createRgRes = await createNewResourceGroup(
+    const createRgRes = await resourceGroupHelper.createNewResourceGroup(
+      solutionConfig.resourceGroupName,
       tokenProvider.azureAccountProvider,
       solutionConfig.subscriptionId,
-      solutionConfig.subscriptionName,
-      solutionConfig.resourceGroupName,
-      solutionConfig.location,
-      ctx.logProvider
+      solutionConfig.location
     );
     if (createRgRes.isErr()) {
       return err(createRgRes.error);
@@ -132,8 +120,8 @@ export async function provisionResources(
     Container.get<v3.ResourcePlugin>(p)
   );
   const provisionThunks = plugins
-    .filter((plugin) => !isUndefined(plugin.provisionResource))
-    .map((plugin) => {
+    .filter((plugin: v3.ResourcePlugin) => !isUndefined(plugin.provisionResource))
+    .map((plugin: v3.ResourcePlugin) => {
       return {
         pluginName: `${plugin.name}`,
         taskName: "provisionResource",
@@ -179,8 +167,8 @@ export async function provisionResources(
 
   // collect plugins and call configureResource
   const configureResourceThunks = plugins
-    .filter((plugin) => !isUndefined(plugin.configureResource))
-    .map((plugin) => {
+    .filter((plugin: v3.ResourcePlugin) => !isUndefined(plugin.configureResource))
+    .map((plugin: v3.ResourcePlugin) => {
       if (!envInfo.state[plugin.name]) {
         envInfo.state[plugin.name] = {};
       }
@@ -222,7 +210,7 @@ export async function provisionResources(
   ctx.logProvider.info(msg);
   if (url) {
     const title = "View Provisioned Resources";
-    ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
+    ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
       const userSelected = result.isOk() ? result.value : undefined;
       if (userSelected === title) {
         ctx.userInteraction.openUrl(url);
@@ -346,12 +334,12 @@ async function fillInAzureSolutionConfigs(
   }
 
   if (inputs.targetResourceGroupName) {
-    const maybeResourceGroupInfo = await getResourceGroupInfo(
-      ctx,
-      rmClient,
-      inputs.targetResourceGroupName
+    const getRes = await resourceGroupHelper.getResourceGroupInfo(
+      inputs.targetResourceGroupName,
+      rmClient
     );
-    if (!maybeResourceGroupInfo) {
+    if (getRes.isErr()) return err(getRes.error);
+    if (!getRes.value) {
       // Currently we do not support creating resource group from command line arguments
       return err(
         new UserError(
@@ -363,11 +351,12 @@ async function fillInAzureSolutionConfigs(
     }
     telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
       CustomizeResourceGroupType.CommandLine;
-    resourceGroupInfo = maybeResourceGroupInfo;
+    resourceGroupInfo = getRes.value;
   } else if (resourceGroupNameFromEnvConfig) {
     const resourceGroupName = resourceGroupNameFromEnvConfig;
-    const maybeResourceGroupInfo = await getResourceGroupInfo(ctx, rmClient, resourceGroupName);
-    if (!maybeResourceGroupInfo) {
+    const getRes = await resourceGroupHelper.getResourceGroupInfo(resourceGroupName, rmClient);
+    if (getRes.isErr()) return err(getRes.error);
+    if (!getRes.value) {
       // Currently we do not support creating resource group by input config, so just throw an error.
       const envFile = EnvConfigFileNameTemplate.replace(EnvNamePlaceholder, inputs.envName);
       return err(
@@ -380,33 +369,29 @@ async function fillInAzureSolutionConfigs(
     }
     telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
       CustomizeResourceGroupType.EnvConfig;
-    resourceGroupInfo = maybeResourceGroupInfo;
+    resourceGroupInfo = getRes.value;
   } else if (resourceGroupNameFromState && resourceGroupLocationFromState) {
-    const maybeExist = await checkResourceGroupExistence(
-      rmClient,
+    const checkRes = await resourceGroupHelper.checkResourceGroupExistence(
       resourceGroupNameFromState,
-      envInfo.state.solution.subscriptionId,
-      envInfo.state.solution.subscriptionName
+      rmClient
     );
-    if (maybeExist.isErr()) {
-      return err(maybeExist.error);
+    if (checkRes.isErr()) {
+      return err(checkRes.error);
     }
-    const exist = maybeExist.value;
+    const exist = checkRes.value;
     resourceGroupInfo = {
       createNewResourceGroup: !exist,
       name: resourceGroupNameFromState,
       location: resourceGroupLocationFromState,
     };
-
     telemetryProperties[TelemetryProperty.CustomizeResourceGroupType] =
       CustomizeResourceGroupType.EnvState;
   } else {
-    const resourceGroupInfoResult = await askResourceGroupInfo(
+    const resourceGroupInfoResult = await resourceGroupHelper.askResourceGroupInfo(
       ctx,
+      inputs,
       tokenProvider.azureAccountProvider,
       rmClient,
-      inputs,
-      ctx.userInteraction,
       defaultResourceGroupName
     );
     if (resourceGroupInfoResult.isErr()) {
@@ -487,7 +472,7 @@ async function checkM365Tenant(
 ): Promise<Result<Void, FxError>> {
   await appStudioTokenProvider.getAccessToken();
   const appResource = envInfo.state[BuiltInResourcePluginNames.appStudio] as v3.TeamsAppResource;
-  const m365TenantId = appResource.tenantId;
+  const m365TenantId = appResource?.tenantId;
   if (!m365TenantId) {
     return ok(Void);
   }

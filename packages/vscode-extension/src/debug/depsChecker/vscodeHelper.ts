@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { commands, MessageItem, Uri, window, workspace, WorkspaceConfiguration } from "vscode";
 import { getSkipNgrokConfig, hasTeamsfxBackend, hasTeamsfxBot } from "../commonUtils";
 

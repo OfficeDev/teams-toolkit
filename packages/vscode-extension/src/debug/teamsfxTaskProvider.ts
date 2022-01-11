@@ -8,16 +8,18 @@ import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
 import { Json, ProductName, ProjectSettings, VsCodeEnv } from "@microsoft/teamsfx-api";
 import { LocalEnvManager } from "@microsoft/teamsfx-core";
-import { DotnetChecker } from "./depsChecker/dotnetChecker";
-import { FuncToolChecker } from "./depsChecker/funcToolChecker";
-import { NgrokChecker } from "./depsChecker/ngrokChecker";
+import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
+import { vscodeLogger } from "./depsChecker/vscodeLogger";
+import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import VsCodeLogInstance from "../commonlib/log";
 import { detectVsCodeEnv, showError } from "../handlers";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { vscodeAdapter } from "./depsChecker/vscodeAdapter";
-import { vscodeLogger } from "./depsChecker/vscodeLogger";
-import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
-import { NpmTaskDefinition, TaskDefinition, ITaskDefinition } from "@microsoft/teamsfx-core";
+import {
+  NpmTaskDefinition,
+  TaskDefinition,
+  ITaskDefinition,
+  DepsType,
+} from "@microsoft/teamsfx-core";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -158,12 +160,14 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
             : constants.backendProblemMatcher;
 
           // prepare PATH to execute `func`
-          let funcBinFolders: string[] | undefined = undefined;
-          const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
-          if ((await funcChecker.isEnabled()) && (await funcChecker.isPortableFuncInstalled())) {
-            funcBinFolders = funcChecker.getPortableFuncBinFolders();
-          }
-          taskDefinition = NpmTaskDefinition.backend(workspacePath, isWatchTask, funcBinFolders);
+          const depsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
+          const funcCoreTools = await depsChecker.getDepsStatus(DepsType.FuncCoreTools);
+          // const funcBinFolders = funcCoreTools.details.binFolders;
+          taskDefinition = NpmTaskDefinition.backend(
+            workspacePath,
+            isWatchTask,
+            funcCoreTools.details.binFolders
+          );
         } else if (component?.toLowerCase() === "bot") {
           problemMatcher = isWatchTask
             ? constants.tscWatchProblemMatcher
@@ -223,14 +227,14 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     definition?: vscode.TaskDefinition,
     problemMatchers?: string | string[]
   ): Promise<vscode.Task> {
-    const funcChecker = new FuncToolChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
-    const funcCommand = await funcChecker.getFuncCommand();
+    const depsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
+    const funcCoreTools = await depsChecker.getDepsStatus(DepsType.FuncCoreTools);
 
     return this.createTask(
       TaskDefinition.backendStart(
         workspaceFolder.uri.fsPath,
         programmingLanguage,
-        funcCommand,
+        funcCoreTools.command,
         true
       ),
       workspaceFolder,
@@ -247,11 +251,10 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     localEnv: { [key: string]: string } | undefined,
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
-    const dotnetChecker = new DotnetChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
-    const dotnetPath = await dotnetChecker.getDotnetExecPath();
-
+    const depsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
+    const dotnet = await depsChecker.getDepsStatus(DepsType.Dotnet);
     return this.createTask(
-      TaskDefinition.authStart(dotnetPath, authRoot),
+      TaskDefinition.authStart(dotnet.command, authRoot),
       workspaceFolder,
       commonUtils.getAuthLocalEnv(localEnv),
       definition,
@@ -267,10 +270,10 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
     definition?: vscode.TaskDefinition
   ): Promise<vscode.Task> {
     // prepare PATH to execute `ngrok`
-    const ngrokChecker = new NgrokChecker(vscodeAdapter, vscodeLogger, vscodeTelemetry);
-    const ngrokBinFolder = ngrokChecker.getNgrokBinFolder();
+    const depsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
+    const ngrok = await depsChecker.getDepsStatus(DepsType.Ngrok);
     return this.createTask(
-      TaskDefinition.ngrokStart(workspaceFolder.uri.fsPath, isSkipped, [ngrokBinFolder]),
+      TaskDefinition.ngrokStart(workspaceFolder.uri.fsPath, isSkipped, ngrok.details.binFolders),
       workspaceFolder,
       undefined,
       definition,

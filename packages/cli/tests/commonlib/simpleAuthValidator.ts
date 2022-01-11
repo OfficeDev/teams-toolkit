@@ -81,8 +81,6 @@ export class SimpleAuthValidator {
       token as string
     );
     chai.assert.exists(response);
-    console.log(`[dilin-debug] response: ${JSON.stringify(response)}`);
-    console.log(`[dilin-debug] ctx: ${JSON.stringify(this.ctx)}`);
     chai.assert.equal(
       response[PropertiesKeys.clientId],
       this.ctx[PluginId.Aad][StateConfigKey.clientId]
@@ -120,7 +118,6 @@ export class SimpleAuthValidator {
         this.env,
         provisionParametersKey.simpleAuthSku
       )) ?? "F1";
-    console.log("[dilin-debug] expectedServicePlan: " + expectedServicePlan);
     chai.assert(serivcePlanResponse, expectedServicePlan);
 
     console.log("Successfully validate Simple Auth.");
@@ -139,10 +136,6 @@ export class SimpleAuthValidator {
     } else if (activeResourcePlugins.includes(PluginId.Bot)) {
       expectedM365ApplicationIdUri = `api://botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`;
     }
-    console.log(
-      `[dilin-debug] Successfully get expectedM365ApplicationIdUri:  ${expectedM365ApplicationIdUri}`
-    );
-
     return expectedM365ApplicationIdUri;
   }
 
@@ -166,8 +159,6 @@ export class SimpleAuthValidator {
         this.env
       );
     }
-    console.log(`[dilin-debug] Successfully get m365ClientSecret:  ${m365ClientSecret}`);
-
     return m365ClientSecret;
   }
 }

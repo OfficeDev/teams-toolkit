@@ -28,6 +28,7 @@ import {
   UpdateRedirectUriError,
 } from "../../../../../src/plugins/resource/aad/errors";
 import { Utils } from "../../../../../src/plugins/resource/aad/utils/common";
+import { Constants } from "../../../../../src/plugins/resource/aad/constants";
 
 describe("AAD App Client Test", () => {
   let ctx: PluginContext;
@@ -617,6 +618,26 @@ describe("AAD App Client Test", () => {
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
       }
+    });
+
+    it("Create owner duplicated without throw error", async () => {
+      const error = {
+        response: {
+          status: 404,
+          data: {
+            error: {
+              message: Constants.createOwnerDuplicatedMessage,
+            },
+          },
+        },
+      };
+      sinon.stub(GraphClient, "grantPermission").throws(error);
+      const grantPermissionResult = await AadAppClient.grantPermission(
+        ctx,
+        "grantPermission",
+        faker.datatype.uuid(),
+        faker.datatype.uuid()
+      );
     });
   });
 

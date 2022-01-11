@@ -45,7 +45,7 @@ describe("SolutionV3 - deploy", () => {
       },
     };
     const ctx = new MockedV2Context(projectSettings);
-    const inputs: v2.InputsWithProjectPath & { modules: string[] } = {
+    const inputs: v3.SolutionDeployInputs = {
       platform: Platform.VSCode,
       projectPath: path.join(os.tmpdir(), randomAppName()),
       modules: ["0", "1"],

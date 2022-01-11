@@ -25,12 +25,13 @@ import { getModule } from "./utils";
 import { InvalidInputError } from "../../utils/error";
 @Service(BuiltInResourcePluginNames.bot)
 export class AzureBotPlugin implements v3.ResourcePlugin {
+  type: "resource" = "resource";
   resourceType = "Azure Bot";
   description = "Azure Bot";
   name = BuiltInResourcePluginNames.bot;
   async generateResourceTemplate(
     ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.PluginAddResourceInputs
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
     return ok({
       kind: "bicep",
@@ -86,12 +87,13 @@ export class AzureBotPlugin implements v3.ResourcePlugin {
 }
 @Service(BuiltInResourcePluginNames.webApp)
 export class AzureWebAppPlugin implements v3.ResourcePlugin {
+  type: "resource" = "resource";
   resourceType = "Azure Web App";
   description = "Azure Web App";
   name = BuiltInResourcePluginNames.webApp;
   async generateResourceTemplate(
     ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.PluginAddResourceInputs
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
     return ok({
       kind: "bicep",
@@ -140,6 +142,7 @@ export class AzureWebAppPlugin implements v3.ResourcePlugin {
 
 @Service(BuiltInResourcePluginNames.spfx)
 export class SPFxResourcePlugin implements v3.ResourcePlugin {
+  type: "resource" = "resource";
   resourceType = "SPFx resource";
   description = "SPFx resource";
   name = BuiltInResourcePluginNames.spfx;
@@ -182,7 +185,7 @@ export async function getQuestionsForAddResource(
 }
 export async function addResource(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: string; resource?: string }
+  inputs: v3.SolutionAddResourceInputs
 ): Promise<Result<Void, FxError>> {
   if (!inputs.resource) {
     return err(new InvalidInputError(inputs, "inputs.resource undefined"));

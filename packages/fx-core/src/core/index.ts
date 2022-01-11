@@ -841,7 +841,7 @@ export class FxCore implements v3.ICore {
     if (ctx && ctx.solutionV3 && ctx.contextV2 && ctx.envInfoV3 && ctx.solutionV3.deploy) {
       const res = await ctx.solutionV3.deploy(
         ctx.contextV2,
-        inputs as v2.InputsWithProjectPath & { modules: string[] },
+        inputs as v3.SolutionDeployInputs,
         ctx.envInfoV3,
         TOOLS.tokenProvider
       );

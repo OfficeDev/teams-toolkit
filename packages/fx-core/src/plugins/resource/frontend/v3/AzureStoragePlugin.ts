@@ -34,6 +34,7 @@ import { DeploySteps, PostProvisionSteps } from "../utils/progress-helper";
 import { EnableStaticWebsiteError, UnauthenticatedError } from "./error";
 @Service(BuiltInResourcePluginNames.storage)
 export class AzureStoragePlugin implements v3.ResourcePlugin {
+  type: "resource" = "resource";
   resourceType = "Azure Storage";
   description = "Azure Storage";
   name = BuiltInResourcePluginNames.storage;

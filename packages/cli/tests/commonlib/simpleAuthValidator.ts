@@ -29,7 +29,7 @@ export class SimpleAuthValidator {
   private static subscriptionId: string;
   private static rg: string;
 
-  public static init(ctx: any, isLocalDebug = false): ISimpleAuthObject {
+  public static init(ctx: any): ISimpleAuthObject {
     console.log("Start to init validator for Simple Auth.");
 
     const simpleAuthObject: ISimpleAuthObject = {

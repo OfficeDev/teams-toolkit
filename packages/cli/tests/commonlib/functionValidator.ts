@@ -54,6 +54,8 @@ export class FunctionValidator {
   private functionAppName: string;
 
   constructor(ctx: any, projectPath: string, env: string) {
+    console.log("Start to init validator for function.");
+
     this.ctx = ctx;
     this.projectPath = projectPath;
     this.env = env;
@@ -66,6 +68,8 @@ export class FunctionValidator {
     chai.assert.exists(this.rg);
     this.functionAppName = getSiteNameFromResourceId(resourceId);
     chai.assert.exists(this.functionAppName);
+
+    console.log("Successfully init validator for function.");
   }
 
   public static async validateScaffold(

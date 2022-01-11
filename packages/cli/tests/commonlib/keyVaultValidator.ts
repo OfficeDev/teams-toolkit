@@ -17,6 +17,7 @@ import {
   getSubscriptionIdFromResourceId,
 } from "./utilities";
 
+const keyvaultScope = "https://vault.azure.net/.default";
 const baseUrlVaultSecrets = (vaultBaseUrl: string, secretName: string, secretVersion: string) =>
   `${vaultBaseUrl}/secrets/${secretName}/${secretVersion}?api-version=7.2`;
 const baseUrlVaults = (subscriptionId: string, rg: string, vaultName: string) =>
@@ -86,47 +87,39 @@ export class KeyVaultValidator {
     );
 
     console.log("Validating key vault secrets.");
-    try {
-      const identityTokenCredential = await tokenProvider.getIdentityCredentialAsync();
-      const keyvaultScope = "https://vault.azure.net/.default";
-      console.log("[dilin-debug] keyvaultScope: " + keyvaultScope);
-      const accessToken = await identityTokenCredential?.getToken(keyvaultScope);
-      console.log("[dilin-debug] successfully get accessToken: " + JSON.stringify(accessToken));
-      const tokenToGetSecret = (await identityTokenCredential?.getToken(keyvaultScope))?.token;
-      console.log("[dilin-debug] Successfully get new token: " + tokenToGetSecret);
-      const m365ClientSecretName =
+    const identityTokenCredential = await tokenProvider.getIdentityCredentialAsync();
+    const tokenToGetSecret = (await identityTokenCredential?.getToken(keyvaultScope))?.token;
+
+    const m365ClientSecretName =
+      (await getProvisionParameterValueByKey(
+        this.projectPath,
+        this.env,
+        provisionParametersKey.m365ClientSecretName
+      )) ?? "m365ClientSecret";
+    const keyVaultSecretResponse = await this.getKeyVaultSecrets(
+      this.keyVault.vaultUri,
+      m365ClientSecretName,
+      tokenToGetSecret as string
+    );
+    chai.assert.exists(keyVaultSecretResponse);
+
+    const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
+    chai.assert.isArray(activeResourcePlugins);
+    if (activeResourcePlugins.includes(PluginId.Bot)) {
+      const botClientSecretName =
         (await getProvisionParameterValueByKey(
           this.projectPath,
           this.env,
-          provisionParametersKey.m365ClientSecretName
-        )) ?? "m365ClientSecret";
+          provisionParametersKey.botClientSecretName
+        )) ?? "botClientSecret";
       const keyVaultSecretResponse = await this.getKeyVaultSecrets(
         this.keyVault.vaultUri,
-        m365ClientSecretName,
+        botClientSecretName,
         tokenToGetSecret as string
       );
       chai.assert.exists(keyVaultSecretResponse);
-
-      const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
-      chai.assert.isArray(activeResourcePlugins);
-      if (activeResourcePlugins.includes(PluginId.Bot)) {
-        const botClientSecretName =
-          (await getProvisionParameterValueByKey(
-            this.projectPath,
-            this.env,
-            provisionParametersKey.botClientSecretName
-          )) ?? "botClientSecret";
-        const keyVaultSecretResponse = await this.getKeyVaultSecrets(
-          this.keyVault.vaultUri,
-          botClientSecretName,
-          tokenToGetSecret as string
-        );
-        chai.assert.exists(keyVaultSecretResponse);
-      }
-      console.log("Successfully validate Key Vault.");
-    } catch (e) {
-      console.log(`[Failed] get token to get key vault secrets. Error: ${e.message}`);
     }
+    console.log("Successfully validate Key Vault.");
   }
 
   private async getKeyVaultSecrets(

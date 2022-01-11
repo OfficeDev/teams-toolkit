@@ -89,7 +89,6 @@ import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ProjectSettingsLoaderMW_V3 } from "./middleware/projectSettingsLoaderV3";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
-import { ProjectUpgraderMW } from "./middleware/projectUpgrader";
 import {
   getQuestionsForAddModule,
   getQuestionsForAddResource,
@@ -855,7 +854,6 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     SupportV1ConditionMW(true),
     ProjectMigratorMW,
-    ProjectUpgraderMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(true),
     LocalSettingsLoaderMW,
@@ -903,7 +901,6 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     SupportV1ConditionMW(true),
     ProjectMigratorMW,
-    ProjectUpgraderMW,
     ProjectSettingsLoaderMW_V3,
     LocalSettingsLoaderMW,
     SolutionLoaderMW_V3,

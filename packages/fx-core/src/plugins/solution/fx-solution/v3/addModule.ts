@@ -31,7 +31,7 @@ export async function getQuestionsForAddModule(
 }
 export async function addModule(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { capabilities: string[] },
+  inputs: v3.SolutionAddModuleInputs,
   localSettings?: Json
 ): Promise<Result<Json, FxError>> {
   const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;

@@ -6,7 +6,7 @@ import { AddModuleNotSupportedError } from "./error";
 
 export async function addModule(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { capabilities?: string[] },
+  inputs: v3.SolutionAddModuleInputs,
   localSettings?: Json
 ): Promise<Result<Void, FxError>> {
   const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsSPFxSolutionSettings;

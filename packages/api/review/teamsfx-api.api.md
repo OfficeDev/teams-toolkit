@@ -1178,6 +1178,7 @@ export { Plugin_2 as Plugin }
 interface Plugin_3 {
     displayName?: string;
     name: string;
+    type: "scaffold" | "resource";
 }
 
 // @public (undocumented)
@@ -1373,6 +1374,8 @@ interface ResourcePlugin_2 extends Plugin_3 {
     provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<CloudResource, FxError>>;
     resourceType: string;
     // (undocumented)
+    type: "resource";
+    // (undocumented)
     updateResourceTemplate?: (ctx: Context_2, inputs: PluginAddResourceInputs) => Promise<Result<ResourceTemplate_2, FxError>>;
 }
 
@@ -1431,6 +1434,8 @@ interface ScaffoldPlugin extends Plugin_3 {
         };
     }, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
     scaffold: (ctx: ContextWithManifest, inputs: PluginScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
+    // (undocumented)
+    type: "scaffold";
 }
 
 // @public

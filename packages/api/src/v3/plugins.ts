@@ -66,7 +66,11 @@ export interface PluginDeployInputs extends InputsWithProjectPath {
 
 export interface Plugin {
   /**
-   * unique identifier for plugin
+   * plugin type
+   */
+  type: "scaffold" | "resource";
+  /**
+   * unique identifier for plugin in IoC container
    */
   name: string;
   /**
@@ -83,6 +87,7 @@ export interface ContextWithManifest extends Context {
 }
 
 export interface ScaffoldPlugin extends Plugin {
+  type: "scaffold";
   /**
    * Source code template descriptions
    */
@@ -121,6 +126,7 @@ export interface PluginAddResourceInputs extends InputsWithProjectPath {
 }
 
 export interface ResourcePlugin extends Plugin {
+  type: "resource";
   /**
    * resource type the plugin provide
    */

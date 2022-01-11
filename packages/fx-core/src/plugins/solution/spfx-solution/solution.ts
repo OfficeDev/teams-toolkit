@@ -33,40 +33,17 @@ export class TeamsSPFxSolution implements v3.ISolution {
   name = BuiltInSolutionNames.spfx;
   displayName: string = PluginDisplayName.SpfxSolution;
 
-  init: (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => Promise<Result<Void, FxError>> =
-    init;
-  getQuestionsForInit?: (
-    ctx: v2.Context,
-    inputs: Inputs
-  ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestionsForInit;
+  init = init;
+  getQuestionsForInit = getQuestionsForInit;
 
-  scaffold: (
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem }
-  ) => Promise<Result<Void, FxError>> = scaffold;
-  getQuestionsForScaffold?: (
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestionsForScaffold;
+  scaffold = scaffold;
+  getQuestionsForScaffold = getQuestionsForScaffold;
 
-  generateResourceTemplate: (ctx: v2.Context, inputs: Inputs) => Promise<Result<Json, FxError>> =
-    generateResourceTemplate;
+  generateResourceTemplate = generateResourceTemplate;
 
-  publishApplication: (
-    ctx: v2.Context,
-    inputs: Inputs,
-    envInfo: v2.EnvInfoV2,
-    tokenProvider: AppStudioTokenProvider
-  ) => Promise<Result<Void, FxError>> = publishApplication;
+  publishApplication = publishApplication;
 
-  addResource: (
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath & { module?: string; resource?: string }
-  ) => Promise<Result<Void, FxError>> = addResource;
+  addResource = addResource;
 
-  addModule: (
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath & { capabilities: string[] },
-    localSettings?: Json
-  ) => Promise<Result<Json, FxError>> = addModule;
+  addModule = addModule;
 }

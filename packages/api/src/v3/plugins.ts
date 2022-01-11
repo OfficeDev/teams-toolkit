@@ -116,6 +116,10 @@ export interface ScaffoldPlugin extends Plugin {
   ) => Promise<Result<Json | undefined, FxError>>;
 }
 
+export interface PluginAddResourceInputs extends InputsWithProjectPath {
+  existingResources: string[];
+}
+
 export interface ResourcePlugin extends Plugin {
   /**
    * resource type the plugin provide
@@ -142,10 +146,7 @@ export interface ResourcePlugin extends Plugin {
    * add resource is a new lifecycle task for resource plugin, which will do some extra work after project settings is updated,
    * for example, APIM will scaffold the openapi folder with files
    */
-  addResource?: (
-    ctx: Context,
-    inputs: InputsWithProjectPath & { existingResources: string[] }
-  ) => Promise<Result<Void, FxError>>;
+  addResource?: (ctx: Context, inputs: PluginAddResourceInputs) => Promise<Result<Void, FxError>>;
   /**
    * customize questions needed for local debug
    */
@@ -194,11 +195,11 @@ export interface ResourcePlugin extends Plugin {
 
   generateResourceTemplate?: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { existingResources: string[] }
+    inputs: PluginAddResourceInputs
   ) => Promise<Result<ResourceTemplate, FxError>>;
   updateResourceTemplate?: (
     ctx: Context,
-    inputs: InputsWithProjectPath & { existingResources: string[] }
+    inputs: PluginAddResourceInputs
   ) => Promise<Result<ResourceTemplate, FxError>>;
 
   /**

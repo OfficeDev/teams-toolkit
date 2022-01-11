@@ -321,7 +321,7 @@ jobs:
           prerelease: true
       
       - name: release stable VSCode extension to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && !contains(steps.version-change.outputs.CHANGED, 'rc') && github.ref == 'refs/heads/main' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && !contains(steps.version-change.outputs.CHANGED, 'rc') && !contains(steps.version-change.outputs.CHANGED, 'alpha') }}
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}

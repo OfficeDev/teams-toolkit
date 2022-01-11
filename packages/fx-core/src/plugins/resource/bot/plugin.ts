@@ -5,6 +5,7 @@ import {
   ArchiveFolderName,
   ArchiveLogFileName,
   AppPackageFolderName,
+  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 
 import { AADRegistration } from "./aadRegistration";
@@ -62,7 +63,9 @@ import {
   getSubscriptionIdFromResourceId,
   isArmSupportEnabled,
 } from "../../../common";
-
+import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
+import { generateBicepFromFile } from "../../../common/tools";
 export class TeamsBotImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
   public config: TeamsBotConfig = new TeamsBotConfig();
@@ -188,26 +191,26 @@ export class TeamsBotImpl {
     return ResultFactory.Success();
   }
 
-  public async updateArmTemplates(context: PluginContext): Promise<FxResult> {
+  public async updateArmTemplates(ctx: PluginContext): Promise<FxResult> {
     Logger.info(Messages.UpdatingArmTemplatesBot);
-
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
-
+    const configModule = await generateBicepFromFile(
+      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
+      pluginCtx
+    );
     const result: ArmTemplateResult = {
-      Provision: {
-        Reference: {
-          resourceId: BotBicep.resourceId,
-          hostName: BotBicep.hostName,
-          webAppEndpoint: BotBicep.webAppEndpoint,
-        },
+      Reference: {
+        resourceId: BotBicep.resourceId,
+        hostName: BotBicep.hostName,
+        webAppEndpoint: BotBicep.webAppEndpoint,
       },
       Configuration: {
-        Modules: {
-          bot: await fs.readFile(
-            path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
-            ConstantString.UTF8Encoding
-          ),
-        },
+        Modules: { bot: configModule },
       },
     };
 
@@ -215,40 +218,43 @@ export class TeamsBotImpl {
     return ResultFactory.Success(result);
   }
 
-  public async generateArmTemplates(context: PluginContext): Promise<FxResult> {
+  public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
     Logger.info(Messages.GeneratingArmTemplatesBot);
-
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(getTemplatesFolder(), PathInfo.BicepTemplateRelativeDir);
-
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDir, Bicep.ProvisionFileName),
+      pluginCtx
+    );
+    const provisionModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateFileName),
+      pluginCtx
+    );
+    const configOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDir, Bicep.ConfigFileName),
+      pluginCtx
+    );
+    const configModule = await generateBicepFromFile(
+      path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
+      pluginCtx
+    );
     const result: ArmTemplateResult = {
       Provision: {
-        Orchestration: await fs.readFile(
-          path.join(bicepTemplateDir, Bicep.ProvisionFileName),
-          ConstantString.UTF8Encoding
-        ),
-        Modules: {
-          bot: await fs.readFile(
-            path.join(bicepTemplateDir, PathInfo.ProvisionModuleTemplateFileName),
-            ConstantString.UTF8Encoding
-          ),
-        },
-        Reference: {
-          resourceId: BotBicep.resourceId,
-          hostName: BotBicep.hostName,
-          webAppEndpoint: BotBicep.webAppEndpoint,
-        },
+        Orchestration: provisionOrchestration,
+        Modules: { bot: provisionModules },
       },
       Configuration: {
-        Orchestration: await fs.readFile(
-          path.join(bicepTemplateDir, Bicep.ConfigFileName),
-          ConstantString.UTF8Encoding
-        ),
-        Modules: {
-          bot: await fs.readFile(
-            path.join(bicepTemplateDir, PathInfo.ConfigurationModuleTemplateFileName),
-            ConstantString.UTF8Encoding
-          ),
-        },
+        Orchestration: configOrchestration,
+        Modules: { bot: configModule },
+      },
+      Reference: {
+        resourceId: BotBicep.resourceId,
+        hostName: BotBicep.hostName,
+        webAppEndpoint: BotBicep.webAppEndpoint,
       },
       Parameters: JSON.parse(
         await fs.readFile(

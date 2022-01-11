@@ -289,6 +289,9 @@ export class AzureAccountManager extends login implements AzureAccountProvider {
     if (subscriptionFIlePath === undefined) {
       return undefined;
     }
+    if (!fs.existsSync(subscriptionFIlePath)) {
+      return undefined;
+    }
     const content = (await fs.readFile(subscriptionFIlePath)).toString();
     if (content.length == 0) {
       return undefined;

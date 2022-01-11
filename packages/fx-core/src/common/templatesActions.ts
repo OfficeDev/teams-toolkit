@@ -49,11 +49,58 @@ const defaultTimeoutInMs = 10000;
 const missKeyErrorInfo = (key: string) => `Missing ${key} in template action.`;
 
 export enum ScaffoldActionName {
+  FetchTemplateZipFromSourceCode = "FetchTemplateZipFromSourceCode",
   FetchTemplatesUrlWithTag = "FetchTemplatesUrlWithTag",
   FetchTemplatesZipFromUrl = "FetchTemplatesZipFromUrl",
   FetchTemplateZipFromLocal = "FetchTemplateZipFromLocal",
   Unzip = "Unzip",
 }
+
+// * This action is only for debug purpose
+export const fetchTemplateZipFromSourceCode: ScaffoldAction = {
+  name: ScaffoldActionName.FetchTemplateZipFromSourceCode,
+  run: async (context: ScaffoldContext) => {
+    const isDebugMode = () => {
+      const DebugTemplateFlag = process.env.DEBUG_TEMPLATE;
+      return DebugTemplateFlag?.toLowerCase() === "true" && process.env.VSCODE_PID;
+    };
+
+    if (!isDebugMode()) {
+      return;
+    }
+
+    if (context.zip) {
+      return;
+    }
+
+    if (!context.group) {
+      throw new Error(missKeyErrorInfo("group"));
+    }
+
+    if (!context.lang) {
+      throw new Error(missKeyErrorInfo("lang"));
+    }
+
+    if (!context.scenario) {
+      throw new Error(missKeyErrorInfo("scenario"));
+    }
+
+    //! This path only works in debug mode
+    const templateSourceCodePath = path.resolve(
+      __dirname,
+      "../../../../",
+      "templates",
+      context.group,
+      context.lang,
+      context.scenario
+    );
+
+    const zip = new AdmZip();
+    zip.addLocalFolder(templateSourceCodePath);
+
+    context.zip = zip;
+  },
+};
 
 export const fetchTemplatesUrlWithTagAction: ScaffoldAction = {
   name: ScaffoldActionName.FetchTemplatesUrlWithTag,
@@ -155,6 +202,7 @@ export const unzipAction: ScaffoldAction = {
 };
 
 export const defaultActionSeq: ScaffoldAction[] = [
+  fetchTemplateZipFromSourceCode,
   fetchTemplatesUrlWithTagAction,
   fetchTemplatesZipFromUrlAction,
   fetchTemplateZipFromLocalAction,

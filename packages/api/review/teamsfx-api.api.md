@@ -488,6 +488,8 @@ export interface ErrorOptionBase {
     // (undocumented)
     name?: string;
     // (undocumented)
+    notificationMessage?: string;
+    // (undocumented)
     source?: string;
     // (undocumented)
     userData?: any;
@@ -875,12 +877,12 @@ interface ISolution {
     getQuestionsForDeploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForInit?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
-    getQuestionsForLocalProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: DeepReadonly<Json>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForLocalProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, tokenProvider: TokenProvider, localSettings?: DeepReadonly<Json>) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
-    getQuestionsForProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForProvision?: (ctx: Context_2, inputs: InputsWithProjectPath, tokenProvider: TokenProvider, envInfo?: DeepReadonly<EnvInfoV3>) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForPublish?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AppStudioTokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForScaffold?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>>;
+    getQuestionsForScaffold?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
@@ -1224,6 +1226,7 @@ export interface ProjectSettings {
     defaultFunctionName?: string;
     // (undocumented)
     isFromSample?: boolean;
+    pluginSettings?: Json;
     // (undocumented)
     programmingLanguage?: string;
     // (undocumented)
@@ -1343,8 +1346,8 @@ interface ResourcePlugin_2 extends Plugin_3 {
     generateResourceTemplate?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2, FxError>>;
     getQuestionsForAddResource?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForLocalProvision?: (ctx: Context_2, inputs: Inputs, localSettings: DeepReadonly<Json>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForLocalProvision?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider, localSettings?: DeepReadonly<Json>) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider, envInfo?: DeepReadonly<EnvInfoV3>) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     pluginDependencies?(ctx: Context_2, inputs: Inputs): Promise<Result<string[], FxError>>;
     // (undocumented)
@@ -1545,7 +1548,7 @@ interface SolutionPlugin {
     generateResourceTemplate: (ctx: Context_2, inputs: Inputs) => Promise<Result<Json, FxError>>;
     // (undocumented)
     getQuestions?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | QTreeNode[] | undefined, FxError>>;
+    getQuestionsForScaffolding?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     // (undocumented)
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     grantPermission?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
@@ -1675,11 +1678,12 @@ export type SubscriptionInfo = {
 
 // @public
 export class SystemError extends Error implements FxError {
-    constructor(error: Error, source?: string, name?: string, issueLink?: string);
+    constructor(error: Error, source?: string, name?: string, issueLink?: string, notificationMessage?: string);
     constructor(opt: SystemErrorOptions);
-    constructor(name: string, message: string, source: string, stack?: string, issueLink?: string, innerError?: any);
+    constructor(name: string, message: string, source: string, stack?: string, issueLink?: string, innerError?: any, notificationMessage?: string);
     innerError?: any;
     issueLink?: string;
+    notificationMessage?: string;
     source: string;
     timestamp: Date;
     userData?: string;
@@ -1760,6 +1764,22 @@ interface TeamsFxSolutionSettings extends AzureSolutionSettings {
 }
 
 // @public (undocumented)
+interface TeamsSPFxSolutionSettings extends SolutionSettings {
+    // (undocumented)
+    activeResourcePlugins: string[];
+    // (undocumented)
+    capabilities: string[];
+    // (undocumented)
+    hostType: string;
+    // (undocumented)
+    migrateFromV1?: boolean;
+    // (undocumented)
+    modules: Module[];
+    // (undocumented)
+    version: "3.0.0";
+}
+
+// @public (undocumented)
 export enum TelemetryEvent {
     // (undocumented)
     askQuestion = "askQuestion"
@@ -1797,6 +1817,9 @@ export interface TelemetryReporter {
         [key: string]: number;
     }): void;
 }
+
+// @public (undocumented)
+export const TemplateFolderName = "templates";
 
 // @public
 export interface TextInputQuestion extends UserInputQuestion {
@@ -1921,11 +1944,12 @@ export const UserCancelError: UserError;
 
 // @public
 export class UserError extends Error implements FxError {
-    constructor(error: Error, source?: string, name?: string, helpLink?: string);
+    constructor(error: Error, source?: string, name?: string, helpLink?: string, notificationMessage?: string);
     constructor(opt: UserErrorOptions);
-    constructor(name: string, message: string, source: string, stack?: string, helpLink?: string, innerError?: any);
+    constructor(name: string, message: string, source: string, stack?: string, helpLink?: string, innerError?: any, notificationMessage?: string);
     helpLink?: string;
     innerError?: any;
+    notificationMessage?: string;
     source: string;
     timestamp: Date;
     userData?: string;
@@ -2014,6 +2038,7 @@ declare namespace v3 {
         ResourcePlugin_2 as ResourcePlugin,
         Module,
         TeamsFxSolutionSettings,
+        TeamsSPFxSolutionSettings,
         ISolution,
         ICore,
         AzureIdentity,

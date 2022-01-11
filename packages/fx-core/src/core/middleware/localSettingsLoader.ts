@@ -4,8 +4,7 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { AzureSolutionSettings, err, Inputs, Plugin } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import { CoreHookContext, isV2, NoProjectOpenedError, PathNotExistError } from "..";
-import { isMultiEnvEnabled } from "../../common";
+import { CoreHookContext, NoProjectOpenedError, PathNotExistError } from "..";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
@@ -16,7 +15,7 @@ export const LocalSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
   next: NextFunction
 ) => {
-  if (!shouldIgnored(ctx) && isMultiEnvEnabled()) {
+  if (!shouldIgnored(ctx)) {
     const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
     if (!inputs.projectPath) {
       ctx.result = err(NoProjectOpenedError());

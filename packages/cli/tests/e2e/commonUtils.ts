@@ -24,7 +24,16 @@ import {
   AadManager,
   ResourceGroupManager,
   SharepointValidator as SharepointManager,
+  AadValidator,
+  BotValidator,
+  FrontendValidator,
+  SimpleAuthValidator,
 } from "../commonlib";
+import { ConfigKey, fileEncoding, PluginId, TestFilePath } from "../commonlib/constants";
+import { environmentManager } from "@microsoft/teamsfx-core";
+import appStudioLogin from "../../src/commonlib/appStudioLogin";
+import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
+import { getWebappServicePlan } from "../commonlib/utilities";
 
 export const TEN_MEGA_BYTE = 1024 * 1024 * 10;
 export const execAsync = promisify(exec);
@@ -101,16 +110,10 @@ export function getConfigFileName(
   return path.resolve(testFolder, appName, getEnvFilePathSuffix(isMultiEnvEnabled, envName));
 }
 
-const aadPluginName = "fx-resource-aad-app-for-teams";
-const simpleAuthPluginName = "fx-resource-simple-auth";
-const sqlPluginName = "fx-resource-azure-sql";
-const botPluginName = "fx-resource-bot";
-const apimPluginName = "fx-resource-apim";
-
 export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
-  context[simpleAuthPluginName]["skuName"] = "B1";
+  context[PluginId.SimpleAuth][ConfigKey.skuName] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
@@ -129,7 +132,7 @@ export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string, envName
 export async function setBotSkuNameToB1(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
-  context[botPluginName]["skuName"] = "B1";
+  context[PluginId.Bot][ConfigKey.skuName] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
@@ -148,7 +151,7 @@ export async function setBotSkuNameToB1Bicep(projectPath: string, envName: strin
 export async function setSkipAddingSqlUser(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
-  context[sqlPluginName]["skipAddingUser"] = true;
+  context[PluginId.AzureSQL][ConfigKey.skipAddingUser] = true;
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
@@ -210,17 +213,17 @@ export async function cleanUpAadApp(
   };
 
   if (hasAadPlugin) {
-    const objectId = context[aadPluginName].objectId;
+    const objectId = context[PluginId.Aad].objectId;
     promises.push(clean(objectId));
   }
 
   if (hasBotPlugin) {
-    const objectId = context[botPluginName].objectId;
+    const objectId = context[PluginId.Bot].objectId;
     promises.push(clean(objectId));
   }
 
   if (hasApimPlugin) {
-    const objectId = context[apimPluginName].apimClientAADObjectId;
+    const objectId = context[PluginId.Apim].apimClientAADObjectId;
     promises.push(clean(objectId));
   }
 
@@ -231,26 +234,26 @@ export async function cleanUpResourceGroup(
   appName: string,
   isMultiEnvEnabled: boolean,
   envName?: string
-) {
-  return new Promise<boolean>(async (resolve) => {
-    const manager = await ResourceGroupManager.init();
-    if (appName) {
-      let name = `${appName}-rg`;
-      if (isMultiEnvEnabled) {
-        name = `${appName}-${envName}-rg`;
-      }
-      if (await manager.hasResourceGroup(name)) {
-        const result = await manager.deleteResourceGroup(name);
-        if (result) {
-          console.log(`[Successfully] clean up the Azure resource group with name: ${name}.`);
-        } else {
-          console.error(`[Faild] clean up the Azure resource group with name: ${name}.`);
-        }
-        return resolve(result);
-      }
+): Promise<boolean> {
+  if (!appName) {
+    return false;
+  }
+  const name = isMultiEnvEnabled ? `${appName}-${envName}-rg` : `${appName}-rg`;
+  return await deleteResourceGroupByName(name);
+}
+
+export async function deleteResourceGroupByName(name: string): Promise<boolean> {
+  const manager = await ResourceGroupManager.init();
+  if (await manager.hasResourceGroup(name)) {
+    const result = await manager.deleteResourceGroup(name);
+    if (result) {
+      console.log(`[Successfully] clean up the Azure resource group with name: ${name}.`);
+    } else {
+      console.error(`[Failed] clean up the Azure resource group with name: ${name}.`);
     }
-    return resolve(false);
-  });
+    return result;
+  }
+  return false;
 }
 
 export async function cleanUpLocalProject(projectPath: string, necessary?: Promise<any>) {
@@ -290,7 +293,7 @@ export async function cleanUp(
     // remove resouce group
     cleanUpResourceGroup(appName, isMultiEnvEnabled, envName),
     // remove project
-    //cleanUpLocalProject(projectPath, cleanUpAadAppPromise),
+    cleanUpLocalProject(projectPath, cleanUpAadAppPromise),
   ]);
 }
 
@@ -327,7 +330,7 @@ export async function cleanUpResourcesCreatedHoursAgo(
         );
       } else {
         console.error(
-          `[Faild] clean up the Azure resource group with name: ${filteredGroups[index].name}.`
+          `[Failed] clean up the Azure resource group with name: ${filteredGroups[index].name}.`
         );
       }
     });
@@ -335,9 +338,19 @@ export async function cleanUpResourcesCreatedHoursAgo(
   }
 }
 
+export async function createResourceGroup(name: string, location: string) {
+  const manager = await ResourceGroupManager.init();
+  const result = await manager.createOrUpdateResourceGroup(name, location);
+  if (result) {
+    console.log(`[Successfully] create resource group ${name}.`);
+  } else {
+    console.error(`[Failed] failed to create resource group ${name}.`);
+  }
+  return result;
+}
+
 // TODO: add encrypt
 export async function readContext(projectPath: string): Promise<any> {
-  const contextFilePath = `${projectPath}/.fx/env.default.json`;
   const userDataFilePath = `${projectPath}/.fx/default.userdata`;
 
   // Read Context and UserData
@@ -431,4 +444,148 @@ export async function loadContext(projectPath: string, env: string): Promise<Res
     }
   }
   return ok(context);
+}
+
+export async function customizeBicepFilesToCustomizedRg(
+  customizedRgName: string,
+  projectPath: string,
+  provisionInsertionSearchString: string,
+  configInsertionSearchString?: string
+): Promise<void> {
+  const provisionFilePath = path.join(
+    projectPath,
+    TestFilePath.armTemplateBaseFolder,
+    TestFilePath.provisionFileName
+  );
+  let content = await fs.readFile(provisionFilePath, fileEncoding);
+  let insertionIndex = content.indexOf(provisionInsertionSearchString);
+
+  const paramToAdd = `param customizedRg string = '${customizedRgName}'\r\n`;
+  const scopeToAdd = `scope: resourceGroup(customizedRg)\r\n`;
+  content =
+    paramToAdd +
+    content.substring(0, insertionIndex) +
+    scopeToAdd +
+    content.substring(insertionIndex);
+  await fs.writeFile(provisionFilePath, content);
+  console.log(
+    `[Successfully] customize ${provisionFilePath} content to deploy cloud resources to ${customizedRgName}.`
+  );
+
+  if (configInsertionSearchString) {
+    const configFilePath = path.join(
+      projectPath,
+      TestFilePath.armTemplateBaseFolder,
+      TestFilePath.configFileName
+    );
+    content = await fs.readFile(configFilePath, fileEncoding);
+    insertionIndex = content.indexOf(configInsertionSearchString);
+    content =
+      paramToAdd +
+      content.substring(0, insertionIndex) +
+      scopeToAdd +
+      content.substring(insertionIndex);
+    await fs.writeFile(configFilePath, content);
+    console.log(
+      `[Successfully] customize ${configFilePath} content to deploy cloud resources to ${customizedRgName}.`
+    );
+  }
+}
+
+export async function validateTabAndBotProjectProvision(projectPath: string) {
+  const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
+
+  // Validate Aad App
+  const aad = AadValidator.init(context, false, appStudioLogin);
+  await AadValidator.validate(aad);
+
+  // Validate Simple Auth
+  const simpleAuth = SimpleAuthValidator.init(context);
+  await SimpleAuthValidator.validate(simpleAuth, aad);
+
+  // Validate Tab Frontend
+  const frontend = FrontendValidator.init(context, true);
+  await FrontendValidator.validateProvision(frontend);
+
+  // Validate Bot Provision
+  const bot = BotValidator.init(context, true);
+  await BotValidator.validateProvision(bot, true);
+}
+
+export async function getRGAfterProvision(projectPath: string): Promise<string | undefined> {
+  const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
+  if (
+    context[ConfigKey.solutionPluginName] &&
+    context[ConfigKey.solutionPluginName][ConfigKey.resourceGroupName]
+  ) {
+    return context[ConfigKey.solutionPluginName][ConfigKey.resourceGroupName];
+  }
+  return undefined;
+}
+
+export async function customizeBicepFile(projectPath: string): Promise<string[]> {
+  const newServerFarms: string[] = [];
+  const bicepFileFolder = path.join(projectPath, TestFilePath.armTemplateBaseFolder);
+
+  const pattern = "SERVER_FARM_NAME";
+  const customizedServerFarmsBicepTemplate = `
+resource customizedServerFarms 'Microsoft.Web/serverfarms@2021-02-01' = {
+name: '${pattern}'
+location: resourceGroup().location
+sku: {
+  name: 'B1'
+}
+kind: 'app'
+}
+`;
+  const simpleAuthTestServerFarm = "simpleAuth_testResource";
+  await fs.appendFile(
+    path.join(bicepFileFolder, TestFilePath.provisionFolder, "simpleAuth.bicep"),
+    customizedServerFarmsBicepTemplate.replace(pattern, simpleAuthTestServerFarm)
+  );
+  newServerFarms.push(simpleAuthTestServerFarm);
+
+  const provisionTestServerFarm = "provision_testResource";
+  await fs.appendFile(
+    path.join(bicepFileFolder, TestFilePath.provisionFileName),
+    customizedServerFarmsBicepTemplate.replace(pattern, provisionTestServerFarm)
+  );
+  newServerFarms.push(provisionTestServerFarm);
+
+  const configTestServerFarm = "config_testResource";
+  await fs.appendFile(
+    path.join(bicepFileFolder, TestFilePath.configFileName),
+    customizedServerFarmsBicepTemplate.replace(pattern, configTestServerFarm)
+  );
+  newServerFarms.push(configTestServerFarm);
+
+  // TODO: should uncomment this part of code when the bug is resolved:
+  // https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/12902499
+  // const mainTestServerFarm = "main_testResource";
+  // await fs.appendFile(
+  //   path.join(bicepFileFolder, TestFilePath.mainFileName),
+  //   customizedServerFarmsBicepTemplate.replace(pattern, mainTestServerFarm));
+  // newServerFarms.push(mainTestServerFarm);
+
+  return newServerFarms;
+}
+
+export async function validateServicePlan(
+  servicePlanName: string,
+  resourceGroup: string,
+  subscription: string
+) {
+  console.log(`Start to validate server farm ${servicePlanName}.`);
+
+  const tokenProvider = MockAzureAccountProvider;
+  const tokenCredential = await tokenProvider.getAccountCredentialAsync();
+  const token = (await tokenCredential?.getToken())?.accessToken;
+
+  const serivcePlanResponse = await getWebappServicePlan(
+    subscription,
+    resourceGroup,
+    servicePlanName,
+    token as string
+  );
+  chai.assert(serivcePlanResponse, "B1");
 }

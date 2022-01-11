@@ -233,7 +233,6 @@ export class M365Login extends YargsCommand {
   public readonly commandHead = `m365`;
   public readonly command = `${this.commandHead}`;
   public readonly description = "Log in to M365.";
-  public params: { [_: string]: Options } = {};
 
   public builder(yargs: Argv): Argv<any> {
     return yargs.options(this.params);
@@ -402,6 +401,7 @@ export default class Account extends YargsCommand {
       description: `${this.subCommands.map((cmd) => cmd.commandHead).join("|")}`,
       type: "string",
       choices: this.subCommands.map((cmd) => cmd.commandHead),
+      global: false,
     });
     this.subCommands.forEach((cmd) => {
       yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));

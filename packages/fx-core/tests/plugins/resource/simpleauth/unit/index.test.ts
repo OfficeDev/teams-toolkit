@@ -16,7 +16,7 @@ import { WebAppClient } from "../../../../../src/plugins/resource/simpleauth/web
 import * as faker from "faker";
 import * as dotenv from "dotenv";
 import { Utils } from "../../../../../src/plugins/resource/simpleauth/utils/common";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import * as uuid from "uuid";
 import {
   ConstantString,
@@ -26,7 +26,11 @@ import {
 import { isMultiEnvEnabled } from "../../../../../src";
 import { LocalSettingsAuthKeys } from "../../../../../src/common/localSettingsConstants";
 import { getAllowedAppIds } from "../../../../../src/common/tools";
-
+import {
+  AzureResourceKeyVault,
+  HostTypeOptionAzure,
+} from "../../../../../src/plugins/solution/fx-solution/question";
+import { ResourcePlugins } from "../../util";
 chai.use(chaiAsPromised);
 
 dotenv.config();
@@ -93,9 +97,14 @@ describe("simpleAuthPlugin", () => {
   });
 
   it("generate arm templates: only simple auth plugin", async function () {
-    const activeResourcePlugins = [Constants.AadAppPlugin.id, Constants.SimpleAuthPlugin.id];
+    const activeResourcePlugins = [ResourcePlugins.Aad, ResourcePlugins.SimpleAuth];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+    } as AzureSolutionSettings;
     await testGenerateArmTemplates(
-      activeResourcePlugins,
+      settings,
       "simpleAuthConfig.result.bicep",
       "config.result.bicep"
     );
@@ -103,12 +112,18 @@ describe("simpleAuthPlugin", () => {
 
   it("generate arm templates: simple auth plugin + key vault plugin", async function () {
     const activeResourcePlugins = [
-      Constants.AadAppPlugin.id,
-      "fx-resource-key-vault",
-      Constants.SimpleAuthPlugin.id,
+      ResourcePlugins.Aad,
+      ResourcePlugins.SimpleAuth,
+      ResourcePlugins.KeyVault,
     ];
+    const settings: AzureSolutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      azureResources: [AzureResourceKeyVault.id],
+    } as AzureSolutionSettings;
     await testGenerateArmTemplates(
-      activeResourcePlugins,
+      settings,
       "simpleAuthConfigWithKeyVaultPlugin.result.bicep",
       "configWithKeyVaultPlugin.result.bicep",
       {
@@ -123,7 +138,7 @@ describe("simpleAuthPlugin", () => {
   });
 
   async function testGenerateArmTemplates(
-    activeResourcePlugins: string[],
+    settings: AzureSolutionSettings,
     testConfigurationModuleFileName: string,
     testConfigurationFileName: string,
     addtionalPluginOutput: any = {}
@@ -132,11 +147,7 @@ describe("simpleAuthPlugin", () => {
     pluginContext.projectSettings = {
       appName: "test_generate_arm_template_with_only_simple_auth_plugin_app",
       projectId: uuid.v4(),
-      solutionSettings: {
-        name: "test_solution",
-        version: "1.0.0",
-        activeResourcePlugins: activeResourcePlugins,
-      },
+      solutionSettings: settings,
     };
     const generateArmTemplatesResult = await simpleAuthPlugin.generateArmTemplates(pluginContext);
 
@@ -146,19 +157,18 @@ describe("simpleAuthPlugin", () => {
       "fx-resource-simple-auth": {
         Provision: {
           simpleAuth: {
-            ProvisionPath: `./${testProvisionModuleFileName}`,
+            path: `./${testProvisionModuleFileName}`,
           },
         },
         Configuration: {
           simpleAuth: {
-            ConfigPath: `./${testConfigurationModuleFileName}`,
+            path: `./${testConfigurationModuleFileName}`,
           },
         },
       },
     };
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: { ...simpleAuthOutput, ...addtionalPluginOutput },
+      Plugins: { ...simpleAuthOutput, ...addtionalPluginOutput },
     };
 
     chai.assert.isTrue(generateArmTemplatesResult.isOk());
@@ -209,19 +219,19 @@ describe("simpleAuthPlugin", () => {
       );
       chai.assert.strictEqual(expectedResult.Configuration!.Orchestration, OrchestrationConfigFile);
       chai.assert.isUndefined(expectedResult.Parameters);
-      chai.assert.isNotNull(expectedResult.Provision!.Reference);
+      chai.assert.isNotNull(expectedResult.Reference);
     }
   }
 
   it("update arm templates: only simple auth plugin", async function () {
     // Act
-    const activeResourcePlugins = [Constants.AadAppPlugin.id, Constants.SimpleAuthPlugin.id];
+    const activeResourcePlugins = [ResourcePlugins.Aad, ResourcePlugins.SimpleAuth];
     pluginContext.projectSettings = {
       appName: "test_generate_arm_template_with_only_simple_auth_plugin_app",
       projectId: uuid.v4(),
       solutionSettings: {
-        name: "test_solution",
-        version: "1.0.0",
+        hostType: HostTypeOptionAzure.id,
+        name: "azure",
         activeResourcePlugins: activeResourcePlugins,
       },
     };
@@ -231,17 +241,16 @@ describe("simpleAuthPlugin", () => {
     const testProvisionModuleFileName = "simpleAuthProvision.result.bicep";
     const testConfigurationModuleFileName = "simpleAuthConfig.result.bicep";
     const mockedSolutionDataContext = {
-      Plugins: activeResourcePlugins,
-      PluginOutput: {
+      Plugins: {
         "fx-resource-simple-auth": {
           Provision: {
             simpleAuth: {
-              ProvisionPath: `./${testProvisionModuleFileName}`,
+              path: `./${testProvisionModuleFileName}`,
             },
           },
           Configuration: {
             simpleAuth: {
-              ConfigPath: `./${testConfigurationModuleFileName}`,
+              path: `./${testConfigurationModuleFileName}`,
             },
           },
         },
@@ -264,12 +273,11 @@ describe("simpleAuthPlugin", () => {
         ConstantString.UTF8Encoding
       );
       chai.assert.strictEqual(expectedResult.Configuration!.Modules!.simpleAuth, configModuleFile);
-      chai.assert.notExists(expectedResult.Provision!.Orchestration);
-      chai.assert.notExists(expectedResult.Provision!.Modules);
+      chai.assert.notExists(expectedResult.Provision);
       chai.assert.notExists(expectedResult.Configuration!.Orchestration);
       chai.assert.notExists(expectedResult.Parameters);
-      chai.assert.exists(expectedResult.Provision!.Reference!.skuName);
-      chai.assert.exists(expectedResult.Provision!.Reference!.endpoint);
+      chai.assert.exists(expectedResult.Reference!.skuName);
+      chai.assert.exists(expectedResult.Reference!.endpoint);
     }
   });
 

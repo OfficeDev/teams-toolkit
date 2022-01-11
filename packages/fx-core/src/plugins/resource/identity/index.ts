@@ -27,6 +27,9 @@ import { Providers, ResourceManagementClientContext } from "@azure/arm-resources
 import { Bicep, ConstantString } from "../../../common/constants";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { isArmSupportEnabled } from "../../../common";
+import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
+import { generateBicepFromFile } from "../../../common/tools";
 import "./v2";
 @Service(ResourcePlugins.IdentityPlugin)
 export class IdentityPlugin implements Plugin {
@@ -116,13 +119,11 @@ export class IdentityPlugin implements Plugin {
 
   public async updateArmTemplates(ctx: PluginContext): Promise<Result> {
     const result: ArmTemplateResult = {
-      Provision: {
-        Reference: {
-          identityName: IdentityBicep.identityName,
-          identityClientId: IdentityBicep.identityClientId,
-          identityResourceId: IdentityBicep.identityResourceId,
-          identityPrincipalId: IdentityBicep.identityPrincipalId,
-        },
+      Reference: {
+        identityName: IdentityBicep.identityName,
+        identityClientId: IdentityBicep.identityClientId,
+        identityResourceId: IdentityBicep.identityResourceId,
+        identityPrincipalId: IdentityBicep.identityPrincipalId,
       },
     };
 
@@ -130,6 +131,11 @@ export class IdentityPlugin implements Plugin {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result> {
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -137,24 +143,24 @@ export class IdentityPlugin implements Plugin {
       "identity",
       "bicep"
     );
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
+      pluginCtx
+    );
+    const provisionModules = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, IdentityBicepFile.moduleTempalteFilename),
+      pluginCtx
+    );
     const result: ArmTemplateResult = {
       Provision: {
-        Orchestration: await fs.readFile(
-          path.join(bicepTemplateDirectory, Bicep.ProvisionFileName),
-          ConstantString.UTF8Encoding
-        ),
-        Reference: {
-          identityName: IdentityBicep.identityName,
-          identityClientId: IdentityBicep.identityClientId,
-          identityResourceId: IdentityBicep.identityResourceId,
-          identityPrincipalId: IdentityBicep.identityPrincipalId,
-        },
-        Modules: {
-          identity: await fs.readFile(
-            path.join(bicepTemplateDirectory, IdentityBicepFile.moduleTempalteFilename),
-            ConstantString.UTF8Encoding
-          ),
-        },
+        Orchestration: provisionOrchestration,
+        Modules: { identity: provisionModules },
+      },
+      Reference: {
+        identityName: IdentityBicep.identityName,
+        identityClientId: IdentityBicep.identityClientId,
+        identityResourceId: IdentityBicep.identityResourceId,
+        identityPrincipalId: IdentityBicep.identityPrincipalId,
       },
     };
 

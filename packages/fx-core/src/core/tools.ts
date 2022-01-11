@@ -12,10 +12,10 @@ import {
   ProjectSettingsFileName,
   SolutionContext,
   V1ManifestFileName,
+  v3,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
-import { isMultiEnvEnabled } from "../common";
 import { ConstantString } from "../common/constants";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { environmentManager } from "./environment";
@@ -38,13 +38,8 @@ export function validateSettings(projectSettings?: ProjectSettings): string | un
 export function isValidProject(workspacePath?: string): boolean {
   if (!workspacePath) return false;
   try {
-    const confFolderPath = isMultiEnvEnabled()
-      ? path.resolve(workspacePath, `.${ConfigFolderName}`, "configs")
-      : path.resolve(workspacePath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(
-      confFolderPath,
-      isMultiEnvEnabled() ? ProjectSettingsFileName : "settings.json"
-    );
+    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`, "configs");
+    const settingsFile = path.resolve(confFolderPath, ProjectSettingsFileName);
     const projectSettings: ProjectSettings = fs.readJsonSync(settingsFile);
     if (validateSettings(projectSettings)) return false;
     return true;
@@ -106,13 +101,8 @@ export async function validateV1Project(
 export async function isMigrateFromV1Project(workspacePath?: string): Promise<boolean> {
   if (!workspacePath) return false;
   try {
-    const confFolderPath = isMultiEnvEnabled()
-      ? path.resolve(workspacePath, `.${ConfigFolderName}`, "configs")
-      : path.resolve(workspacePath, `.${ConfigFolderName}`);
-    const settingsFile = path.resolve(
-      confFolderPath,
-      isMultiEnvEnabled() ? ProjectSettingsFileName : "settings.json"
-    );
+    const confFolderPath = path.resolve(workspacePath, `.${ConfigFolderName}`, "configs");
+    const settingsFile = path.resolve(confFolderPath, ProjectSettingsFileName);
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     if (validateSettings(projectSettings)) return false;
     return !!projectSettings?.solutionSettings?.migrateFromV1;
@@ -136,6 +126,24 @@ export function newEnvInfo(
       },
     },
     state: state ?? new Map<string, any>([[GLOBAL_CONFIG, new ConfigMap()]]),
+  };
+}
+
+export function newEnvInfoV3(
+  envName?: string,
+  config?: EnvConfig,
+  state?: v3.ResourceStates
+): v3.EnvInfoV3 {
+  return {
+    envName: envName ?? environmentManager.getDefaultEnvName(),
+    config: config ?? {
+      manifest: {
+        appName: {
+          short: "teamsfx_app",
+        },
+      },
+    },
+    state: state ?? { solution: {} },
   };
 }
 

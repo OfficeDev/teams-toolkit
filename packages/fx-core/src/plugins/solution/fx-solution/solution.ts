@@ -35,6 +35,7 @@ import {
   SystemError,
   TeamsAppManifest,
   UserError,
+  v2,
 } from "@microsoft/teamsfx-api";
 import axios from "axios";
 import * as fs from "fs-extra";
@@ -149,7 +150,7 @@ import { listCollaborator } from "./v2/listCollaborator";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { LOCAL_TENANT_ID, REMOTE_TEAMS_APP_TENANT_ID } from ".";
-import { ResourceManagementClient } from "@azure/arm-resources";
+import { scaffoldLocalDebugSettingsV1 } from "./debug/scaffolding";
 
 export type LoadedPlugin = Plugin;
 export type PluginsWithContext = [LoadedPlugin, PluginContext];
@@ -343,6 +344,11 @@ export class TeamsAppSolution implements Solution {
     const solutionSettings = settingsRes.value;
     const selectedPlugins = await this.reloadPlugins(solutionSettings);
 
+    const scaffoldLocalDebugSettingResult = await scaffoldLocalDebugSettingsV1(ctx);
+    if (scaffoldLocalDebugSettingResult.isErr()) {
+      return scaffoldLocalDebugSettingResult;
+    }
+
     const results: Result<any, FxError>[] = await Promise.all<Result<any, FxError>>(
       selectedPlugins.map<Promise<Result<any, FxError>>>((migratePlugin) => {
         return this.executeUserTask(
@@ -470,7 +476,12 @@ export class TeamsAppSolution implements Solution {
     ) {
       try {
         if (ctx.answers!.copy === true) {
-          await copyParameterJson(ctx, ctx.answers!.targetEnvName!, ctx.answers!.sourceEnvName!);
+          await copyParameterJson(
+            ctx.root,
+            ctx.projectSettings!.appName,
+            ctx.answers!.targetEnvName!,
+            ctx.answers!.sourceEnvName!
+          );
         } else {
           await getParameterJson(ctx);
         }

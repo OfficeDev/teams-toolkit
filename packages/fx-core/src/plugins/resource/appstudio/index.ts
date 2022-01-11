@@ -31,7 +31,6 @@ import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
 import { IUserList } from "./interfaces/IAppDefinition";
-import { isMultiEnvEnabled } from "../../../common";
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -118,16 +117,14 @@ export class AppStudioPlugin implements Plugin {
       );
       return err(remoteTeamsAppId.error);
     }
-    if (isMultiEnvEnabled()) {
-      const result = await this.buildTeamsPackage(ctx, false);
-      if (result.isErr()) {
-        TelemetryUtils.sendErrorEvent(
-          TelemetryEventName.postProvision,
-          result.error,
-          this.appStudioPluginImpl.commonProperties
-        );
-        return err(result.error);
-      }
+    const result = await this.buildTeamsPackage(ctx, false);
+    if (result.isErr()) {
+      TelemetryUtils.sendErrorEvent(
+        TelemetryEventName.postProvision,
+        result.error,
+        this.appStudioPluginImpl.commonProperties
+      );
+      return err(result.error);
     }
     TelemetryUtils.sendSuccessEvent(
       TelemetryEventName.postProvision,
@@ -337,11 +334,21 @@ export class AppStudioPlugin implements Plugin {
     try {
       const result = await this.appStudioPluginImpl.publish(ctx);
       ctx.logProvider?.info(`Publish success!`);
-      ctx.ui?.showMessage(
-        "info",
-        `Success: ${result.name} successfully published to the [admin portal](${Constants.TEAMS_ADMIN_PORTAL}). Once approved, your app will be available for your organization.`,
-        false
-      );
+      ctx.ui
+        ?.showMessage(
+          "info",
+          `Success: ${result.name} successfully published to the [admin portal](${Constants.TEAMS_ADMIN_PORTAL}). Once approved, your app will be available for your organization.`,
+          false,
+          Constants.LEARN_MORE,
+          Constants.ADMIN_PORTAL
+        )
+        .then((value) => {
+          if (value.isOk() && value.value === Constants.LEARN_MORE) {
+            ctx.ui?.openUrl(Constants.TEAMS_MANAGE_APP_DOC);
+          } else if (value.isOk() && value.value === Constants.ADMIN_PORTAL) {
+            ctx.ui?.openUrl(Constants.ADMIN_PORTAL);
+          }
+        });
       const properties: { [key: string]: string } = this.appStudioPluginImpl.commonProperties;
       properties[TelemetryPropertyKey.updateExistingApp] = String(result.update);
       properties[TelemetryPropertyKey.publishedAppId] = String(result.id);
@@ -386,9 +393,7 @@ export class AppStudioPlugin implements Plugin {
     const localTeamsAppId = await this.appStudioPluginImpl.postLocalDebug(ctx);
     if (localTeamsAppId.isOk()) {
       TelemetryUtils.sendSuccessEvent(TelemetryEventName.localDebug);
-      if (isMultiEnvEnabled()) {
-        await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, true);
-      }
+      await this.appStudioPluginImpl.buildTeamsAppPackage(ctx, true);
       return localTeamsAppId;
     } else {
       const error = localTeamsAppId.error;

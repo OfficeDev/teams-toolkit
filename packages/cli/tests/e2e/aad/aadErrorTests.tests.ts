@@ -62,33 +62,35 @@ describe("Aad Error Tests", function () {
       // set fake object id in context
 
       if (isMultiEnvEnabled()) {
-        const config = await fs.readJSON(
-          environmentManager.getEnvConfigPath(environmentManager.getDefaultEnvName(), projectPath)
-        );
-        config["auth"] = {
-          objectId: "fakeObjectid",
-          clientId: "fakeClientId",
-          clientSecret: "fakeClientSecret",
-          accessAsUserScopeId: "fakeAccessAsUserScopeId",
+        const state = {
+          "fx-resource-aad-app-for-teams": {
+            objectId: "fake",
+          },
+          solution: {
+            remoteTeamsAppId: "fake",
+          },
         };
-        await fs.writeJSON(
-          environmentManager.getEnvConfigPath(environmentManager.getDefaultEnvName(), projectPath),
-          config,
-          { spaces: 4 }
-        );
+        const folderPath = `${projectPath}/.fx/states`;
+        await fs.mkdir(folderPath);
+        const filePath = environmentManager.getEnvStateFilesPath(
+          environmentManager.getDefaultEnvName(),
+          projectPath
+        ).envState;
+        await fs.writeJSON(filePath, state, { spaces: 4 });
 
         setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-        const { stdout, stderr } = await execAsync(
-          `teamsfx provision --subscription ${subscription}`,
-          {
-            cwd: projectPath,
-            env: process.env,
-            timeout: 0,
-          }
-        );
-        expect(stderr.toString()).to.contains(
-          "Failed in step: Update permission for Azure AD app. You need to go to Azure Protal and mannually update the permission"
-        );
+        try {
+          const { stdout, stderr } = await execAsync(
+            `teamsfx provision --subscription ${subscription}`,
+            {
+              cwd: projectPath,
+              env: process.env,
+              timeout: 0,
+            }
+          );
+        } catch (error) {
+          expect(error.toString()).to.contains("Failed to get AAD app with Object Id");
+        }
       } else {
         const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
 

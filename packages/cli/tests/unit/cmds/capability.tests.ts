@@ -49,6 +49,9 @@ describe("Capability Command Tests", function () {
       }
       return yargs;
     });
+    sandbox.stub(yargs, "positional").callsFake((name: string) => {
+      return yargs;
+    });
     sandbox.stub(yargs, "exit").callsFake((code: number, err: Error) => {
       throw err;
     });
@@ -94,8 +97,8 @@ describe("Capability Command Tests", function () {
     const cmd = new Capability();
     yargs.command(cmd.command, cmd.description, cmd.builder.bind(cmd), cmd.handler.bind(cmd));
     expect(registeredCommands).deep.equals([
-      "capability <action>",
-      "add <capability>",
+      "capability [action]",
+      "add [capability]",
       "tab",
       "bot",
       "messaging-extension",

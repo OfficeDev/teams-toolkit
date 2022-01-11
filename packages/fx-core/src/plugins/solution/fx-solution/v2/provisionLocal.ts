@@ -22,6 +22,7 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
+import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
 
 export async function provisionLocalResource(
   ctx: v2.Context,
@@ -85,6 +86,12 @@ export async function provisionLocalResource(
     return provisionResult;
   }
 
+  const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, localSettings);
+
+  if (debugProvisionResult.isErr()) {
+    return new v2.FxPartialSuccess(localSettings, debugProvisionResult.error);
+  }
+
   const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
   if (isAzureProject(azureSolutionSettings)) {
     if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
@@ -104,13 +111,15 @@ export async function provisionLocalResource(
         return new v2.FxPartialSuccess(localSettings, result.error);
       }
     } else {
-      return new v2.FxFailure(
-        returnSystemError(
-          new Error("AAD plugin not selected or executeUserTask is undefined"),
-          SolutionSource,
-          SolutionError.InternelError
-        )
-      );
+      if (!ctx.projectSetting.solutionSettings.migrateFromV1) {
+        return new v2.FxFailure(
+          returnSystemError(
+            new Error("AAD plugin not selected or executeUserTask is undefined"),
+            SolutionSource,
+            SolutionError.InternelError
+          )
+        );
+      }
     }
   }
 
@@ -143,6 +152,12 @@ export async function provisionLocalResource(
       return new v2.FxPartialSuccess(localSettings, configureResourceResult.error);
     }
     return new v2.FxFailure(configureResourceResult.error);
+  }
+
+  const debugConfigResult = await configLocalDebugSettings(ctx, inputs, localSettings);
+
+  if (debugConfigResult.isErr()) {
+    return new v2.FxPartialSuccess(localSettings, debugConfigResult.error);
   }
 
   return new v2.FxSuccess(localSettings);

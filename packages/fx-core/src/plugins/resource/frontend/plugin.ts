@@ -32,7 +32,6 @@ import {
   AzureErrorCode,
   AzureInfo,
   DependentPluginInfo,
-  EnvironmentVariables,
   FrontendOutputBicepSnippet,
   FrontendPathInfo,
   FrontendPluginInfo as PluginInfo,
@@ -60,7 +59,10 @@ import { Bicep, ConstantString } from "../../../common/constants";
 import { EnvironmentUtils } from "./utils/environment-utils";
 import { copyFiles, isArmSupportEnabled } from "../../../common";
 import { AzureResourceFunction } from "../../solution/fx-solution/question";
-
+import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
+import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
+import { generateBicepFromFile } from "../../../common/tools";
 export class FrontendPluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
@@ -153,6 +155,9 @@ export class FrontendPluginImpl {
       await ProgressHelper.endPostProvisionProgress(true);
       Logger.info(Messages.EndPostProvision(PluginInfo.DisplayName));
     }
+
+    await this.updateMultiEnv(ctx);
+
     return ok(undefined);
   }
 
@@ -179,7 +184,9 @@ export class FrontendPluginImpl {
 
     const componentPath: string = path.join(ctx.root, FrontendPathInfo.WorkingDir);
 
-    await FrontendDeployment.doFrontendBuild(componentPath);
+    const envs = await loadEnvFile(envFilePath(ctx.envInfo.envName, componentPath));
+
+    await FrontendDeployment.doFrontendBuild(componentPath, envs);
     await FrontendDeployment.doFrontendDeployment(client, componentPath);
 
     await ProgressHelper.endDeployProgress(true);
@@ -191,11 +198,9 @@ export class FrontendPluginImpl {
     Logger.info(Messages.StartUpdateArmTemplates(PluginInfo.DisplayName));
 
     const result: ArmTemplateResult = {
-      Provision: {
-        Reference: {
-          endpoint: FrontendOutputBicepSnippet.Endpoint,
-          domain: FrontendOutputBicepSnippet.Domain,
-        },
+      Reference: {
+        endpoint: FrontendOutputBicepSnippet.Endpoint,
+        domain: FrontendOutputBicepSnippet.Domain,
       },
     };
 
@@ -204,7 +209,11 @@ export class FrontendPluginImpl {
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartGenerateArmTemplates(PluginInfo.DisplayName));
-
+    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
+    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
       FrontendPathInfo.BicepTemplateRelativeDir
@@ -215,24 +224,24 @@ export class FrontendPluginImpl {
       bicepTemplateDir,
       FrontendPathInfo.ModuleProvisionFileName
     );
+    const provisionOrchestration = await generateBicepFromFile(provisionFilePath, pluginCtx);
+    const provisionModules = await generateBicepFromFile(moduleProvisionFilePath, pluginCtx);
 
     const result: ArmTemplateResult = {
       Provision: {
-        Orchestration: await fs.readFile(provisionFilePath, ConstantString.UTF8Encoding),
-        Reference: {
-          endpoint: FrontendOutputBicepSnippet.Endpoint,
-          domain: FrontendOutputBicepSnippet.Domain,
-        },
-        Modules: {
-          frontendHosting: await fs.readFile(moduleProvisionFilePath, ConstantString.UTF8Encoding),
-        },
+        Orchestration: provisionOrchestration,
+        Modules: { frontendHosting: provisionModules },
+      },
+      Reference: {
+        endpoint: FrontendOutputBicepSnippet.Endpoint,
+        domain: FrontendOutputBicepSnippet.Domain,
       },
     };
 
     return ok(result);
   }
 
-  private async updateDotenv(ctx: PluginContext): Promise<void> {
+  private collectEnvs(ctx: PluginContext): { [key: string]: string } {
     const envs: { [key: string]: string } = {};
     const addToEnvs = (key: string, value: string | undefined) => {
       // Check for both null and undefined, add to envs when value is "", 0 or false.
@@ -244,9 +253,9 @@ export class FrontendPluginImpl {
     const solutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
 
     if (solutionSettings?.azureResources?.includes(AzureResourceFunction.id)) {
-      addToEnvs(EnvironmentVariables.FuncName, ctx.projectSettings?.defaultFunctionName);
+      addToEnvs(EnvKeys.FuncName, ctx.projectSettings?.defaultFunctionName);
       addToEnvs(
-        EnvironmentVariables.FuncEndpoint,
+        EnvKeys.FuncEndpoint,
         ctx.envInfo.state
           .get(DependentPluginInfo.FunctionPluginName)
           ?.get(DependentPluginInfo.FunctionEndpoint) as string
@@ -255,23 +264,38 @@ export class FrontendPluginImpl {
 
     if (solutionSettings?.activeResourcePlugins?.includes(DependentPluginInfo.RuntimePluginName)) {
       addToEnvs(
-        EnvironmentVariables.RuntimeEndpoint,
+        EnvKeys.RuntimeEndpoint,
         ctx.envInfo.state
           .get(DependentPluginInfo.RuntimePluginName)
           ?.get(DependentPluginInfo.RuntimeEndpoint) as string
       );
-      addToEnvs(EnvironmentVariables.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
+      addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
 
     if (solutionSettings?.activeResourcePlugins?.includes(DependentPluginInfo.AADPluginName)) {
       addToEnvs(
-        EnvironmentVariables.ClientID,
+        EnvKeys.ClientID,
         ctx.envInfo.state
           .get(DependentPluginInfo.AADPluginName)
           ?.get(DependentPluginInfo.ClientID) as string
       );
     }
+    return envs;
+  }
 
+  private async updateMultiEnv(ctx: PluginContext): Promise<void> {
+    const envs = this.collectEnvs(ctx);
+    await saveEnvFile(
+      envFilePath(ctx.envInfo.envName, path.join(ctx.root, FrontendPathInfo.WorkingDir)),
+      {
+        teamsfxRemoteEnvs: envs,
+        customizedRemoteEnvs: {},
+      }
+    );
+  }
+
+  private async updateDotenv(ctx: PluginContext): Promise<void> {
+    const envs = this.collectEnvs(ctx);
     const envFilePath = path.join(
       ctx.root,
       FrontendPathInfo.WorkingDir,

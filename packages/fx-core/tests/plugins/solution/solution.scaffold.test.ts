@@ -7,7 +7,7 @@ import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import { ok, SolutionContext, Platform, v2, Inputs } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
-import { environmentManager } from "../../../src";
+import { environmentManager, setTools } from "../../../src";
 import {
   BotOptionItem,
   HostTypeOptionAzure,
@@ -156,6 +156,7 @@ describe("Solution scaffold() reading valid manifest file", () => {
 
   it("getQuestionsForScaffolding", async () => {
     const tools = new MockTools();
+    setTools(tools);
     const contextv2: v2.Context = {
       userInteraction: tools.ui,
       logProvider: tools.logProvider,

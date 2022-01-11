@@ -22,44 +22,13 @@ export class SqlClient {
     return new SqlClient(ctx, config, token);
   }
 
-  async existUser(): Promise<boolean> {
-    try {
-      const query = `SELECT count(*) FROM [sys].[database_principals] WHERE [name] = N'${this.config.identity}';`;
-      const res = await this.doQuery(this.token, query);
-      if (res.length && res[0][0].value !== 0) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      if (error?.message?.includes(ErrorMessage.AccessMessage)) {
-        this.ctx.logProvider?.error(
-          ErrorMessage.SqlAccessError.message(this.config.identity, error.message)
-        );
-        throw SqlResultFactory.UserError(
-          ErrorMessage.SqlAccessError.name,
-          ErrorMessage.SqlAccessError.message(this.config.identity, error.message),
-          error,
-          undefined,
-          HelpLinks.default
-        );
-      } else {
-        this.ctx.logProvider?.error(
-          ErrorMessage.SqlCheckDBUserError.message(this.config.identity, error.message)
-        );
-        throw SqlResultFactory.UserError(
-          ErrorMessage.SqlCheckDBUserError.name,
-          ErrorMessage.SqlCheckDBUserError.message(this.config.identity, error.message),
-          error
-        );
-      }
-    }
-  }
-
-  async addDatabaseUser() {
+  async addDatabaseUser(): Promise<void> {
     try {
       let query: string;
-      query = `CREATE USER [${this.config.identity}] FROM EXTERNAL PROVIDER;`;
+      query = `IF NOT EXISTS (SELECT name FROM [sys].[database_principals] WHERE name='${this.config.identity}')
+      BEGIN
+      CREATE USER [${this.config.identity}] FROM EXTERNAL PROVIDER;
+      END;`;
       await this.doQuery(this.token, query);
       query = `sp_addrolemember 'db_datareader', '${this.config.identity}'`;
       await this.doQuery(this.token, query);
@@ -68,47 +37,37 @@ export class SqlClient {
     } catch (error) {
       const link = HelpLinks.default;
       if (error?.message?.includes(ErrorMessage.GuestAdminMessage)) {
-        const logMessage = ErrorMessage.DatabaseUserCreateError.message(
+        const errorMessage = ErrorMessage.DatabaseUserCreateError.message(
           this.config.sqlServer,
           this.config.databaseName,
-          this.config.identity,
-          error.message
+          this.config.identity
         );
-        this.ctx.logProvider?.error(logMessage + ` You can follow ${link} to handle it`);
-        const message = ErrorMessage.DatabaseUserCreateError.message(
-          this.config.sqlServer,
-          this.config.databaseName,
-          this.config.identity,
-          ErrorMessage.GuestAdminError
-        );
-        throw SqlResultFactory.UserError(
+        const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          message,
+          errorMessage,
           error,
           undefined,
-          link
+          link,
+          errorMessage + `. ${ErrorMessage.GuestAdminError}`
         );
+        e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
+        throw e;
       } else {
-        const logMessage = ErrorMessage.DatabaseUserCreateError.message(
+        const errorMessage = ErrorMessage.DatabaseUserCreateError.message(
           this.config.sqlServer,
           this.config.databaseName,
-          this.config.identity,
-          error.message
+          this.config.identity
         );
-        this.ctx.logProvider?.error(logMessage + ` You can follow ${link} to handle it`);
-        const message = ErrorMessage.DatabaseUserCreateError.message(
-          this.config.sqlServer,
-          this.config.databaseName,
-          this.config.identity,
-          `add database user failed. ${ErrorMessage.GetDetail}`
-        );
-        throw SqlResultFactory.UserError(
+        const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          message,
+          errorMessage,
           error,
           undefined,
-          link
+          link,
+          errorMessage + `. ${ErrorMessage.GetDetail}`
         );
+        e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
+        throw e;
       }
     }
   }
@@ -118,19 +77,19 @@ export class SqlClient {
     if (!credential) {
       const link = HelpLinks.default;
       const reason = ErrorMessage.IdentityCredentialUndefine(config.identity, config.databaseName);
-      const message = ErrorMessage.DatabaseUserCreateError.message(
+      let message = ErrorMessage.DatabaseUserCreateError.message(
         config.sqlServer,
         config.databaseName,
-        config.identity,
-        reason
+        config.identity
       );
-      ctx.logProvider?.error(message + ` You can follow ${link} to handle it`);
+      message += `. ${reason}`;
       throw SqlResultFactory.UserError(
         ErrorMessage.DatabaseUserCreateError.name,
-        message,
+        message + ` ${ErrorMessage.LinkHelpMessage(link)}`,
         undefined,
         undefined,
-        link
+        link,
+        message
       );
     }
     try {
@@ -139,47 +98,37 @@ export class SqlClient {
     } catch (error) {
       const link = HelpLinks.default;
       if (error?.message?.includes(ErrorMessage.DomainCode)) {
-        const logMessage = ErrorMessage.DatabaseUserCreateError.message(
+        const errorMessage = ErrorMessage.DatabaseUserCreateError.message(
           config.sqlServer,
           config.databaseName,
-          config.identity,
-          error.message
+          config.identity
         );
-        ctx.logProvider?.error(logMessage + ` You can follow ${link} to handle it`);
-        const message = ErrorMessage.DatabaseUserCreateError.message(
-          config.sqlServer,
-          config.databaseName,
-          config.identity,
-          ErrorMessage.DomainError
-        );
-        throw SqlResultFactory.UserError(
+        const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          message,
+          errorMessage,
           error,
           undefined,
-          link
+          link,
+          errorMessage + `. ${ErrorMessage.DomainError}`
         );
+        e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
+        throw e;
       } else {
-        const logMessage = ErrorMessage.DatabaseUserCreateError.message(
+        const errorMessage = ErrorMessage.DatabaseUserCreateError.message(
           config.sqlServer,
           config.databaseName,
-          config.identity,
-          error.message
+          config.identity
         );
-        ctx.logProvider?.error(logMessage + ` You can follow ${link} to handle it`);
-        const message = ErrorMessage.DatabaseUserCreateError.message(
-          config.sqlServer,
-          config.databaseName,
-          config.identity,
-          `access database failed. ${ErrorMessage.GetDetail}`
-        );
-        throw SqlResultFactory.UserError(
+        const e = SqlResultFactory.UserError(
           ErrorMessage.DatabaseUserCreateError.name,
-          message,
+          errorMessage,
           error,
           undefined,
-          link
+          link,
+          errorMessage + `. ${ErrorMessage.GetDetail}`
         );
+        e.message += ` ${ErrorMessage.LinkHelpMessage(link)}`;
+        throw e;
       }
     }
   }
@@ -236,5 +185,12 @@ export class SqlClient {
         reject(err);
       });
     });
+  }
+
+  public static isFireWallError(error: any): boolean {
+    if (error?.code === "ELOGIN" && error?.message?.match(ErrorMessage.FirewallErrorReg)) {
+      return true;
+    }
+    return false;
   }
 }

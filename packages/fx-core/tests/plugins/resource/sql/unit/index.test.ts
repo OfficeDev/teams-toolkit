@@ -20,6 +20,7 @@ import { ManagementClient } from "../../../../../src/plugins/resource/sql/manage
 import { SqlPluginImpl } from "../../../../../src/plugins/resource/sql/plugin";
 import { isArmSupportEnabled } from "../../../../../src";
 import { sqlUserNameValidator } from "../../../../../src/plugins/resource/sql/utils/checkInput";
+import axios from "axios";
 
 chai.use(chaiAsPromised);
 
@@ -138,28 +139,9 @@ describe("sqlPlugin", () => {
     sinon
       .stub(ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
-    sinon.stub(SqlClient.prototype, "existUser").resolves(false);
     sinon.stub(SqlClient.prototype, "addDatabaseUser").resolves();
-    if (isArmSupportEnabled()) {
-      TestHelper.mockArmOutput(pluginContext);
-    }
+    sinon.stub(axios, "get").resolves({ data: "1.1.1.1" });
 
-    // Act
-    const postProvisionResult = await sqlPlugin.postProvision(pluginContext);
-
-    // Assert
-    chai.assert.isTrue(postProvisionResult.isOk());
-  });
-
-  it("postProvision with skipAddingUser", async function () {
-    sqlPlugin.sqlImpl.config.skipAddingUser = true;
-    sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
-
-    // Arrange
-    sinon.stub(FirewallRules.prototype, "createOrUpdate").resolves();
-    sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
-    sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
-    sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
     if (isArmSupportEnabled()) {
       TestHelper.mockArmOutput(pluginContext);
     }
@@ -180,6 +162,8 @@ describe("sqlPlugin", () => {
     sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
     sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
     sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    sinon.stub(axios, "get").resolves({ data: "1.1.1.1" });
+
     if (isArmSupportEnabled()) {
       TestHelper.mockArmOutput(pluginContext);
     }

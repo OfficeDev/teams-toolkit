@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { StorageBrowserPolicy } from "@azure/storage-blob";
 import {
   AppPackageFolderName,
   err,
@@ -21,7 +20,6 @@ import {
   SelectFolderResult,
   SingleSelectConfig,
   SingleSelectResult,
-  SolutionContext,
   Stage,
   TokenProvider,
   traverse,
@@ -30,7 +28,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
-import { random } from "lodash";
 import "mocha";
 import mockedEnv, { RestoreFn } from "mocked-env";
 import * as os from "os";
@@ -42,7 +39,7 @@ import {
   FunctionRouterError,
   FxCore,
   InvalidInputError,
-  isV2,
+  setTools,
   validateProject,
   validateSettings,
 } from "../../src";
@@ -61,6 +58,7 @@ import {
   ScratchOptionYesVSC,
 } from "../../src/core/question";
 import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
+import { TeamsAppSolutionNameV2 } from "../../src/plugins/solution/fx-solution/v2/constants";
 import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
 
 describe("Core basic APIs", () => {
@@ -73,6 +71,7 @@ describe("Core basic APIs", () => {
   let projectPath = path.resolve(os.tmpdir(), appName);
 
   beforeEach(() => {
+    setTools(tools);
     Container.set(SolutionPluginsV2.AzureTeamsSolutionV2, mockSolutionV2);
     Container.set(SolutionPlugins.AzureTeamsSolution, mockSolution);
   });
@@ -82,27 +81,14 @@ describe("Core basic APIs", () => {
     deleteFolder(projectPath);
   });
 
-  describe("Core's basic APIs", async () => {
-    const AllEnvParams = [
-      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "true" },
-      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true" },
-    ];
-    const EnableMultiEnvParams = [
-      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "true" },
-      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "true" },
-    ];
-    const DisableMultiEnvParams = [
-      { TEAMSFX_APIV2: "false", __TEAMSFX_INSIDER_PREVIEW: "false" },
-      { TEAMSFX_APIV2: "true", __TEAMSFX_INSIDER_PREVIEW: "false" },
-    ];
+  describe("Core's basic APIs FOR V1 and V2", async () => {
+    const AllEnvParams = [{ TEAMSFX_APIV3: "false" }];
     for (const param of AllEnvParams) {
-      describe(`Multi-Env: ${param.__TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
+      describe(`API V3:${param.TEAMSFX_APIV3}`, () => {
         let mockedEnvRestore: RestoreFn;
         beforeEach(() => {
           sandbox.restore();
-          mockedEnvRestore = mockedEnv(param);
+          mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
         });
 
         afterEach(() => {
@@ -170,22 +156,8 @@ describe("Core basic APIs", () => {
         });
       });
     }
-    for (const param of EnableMultiEnvParams) {
-      describe(`Multi-Env: ${param.__TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
-        let mockedEnvRestore: RestoreFn;
-        beforeEach(() => {
-          mockedEnvRestore = mockedEnv(param);
-        });
-        afterEach(() => {
-          mockedEnvRestore();
-        });
-        it("create from sample", async () => {
-          await createFromSample();
-        });
-      });
-    }
-    for (const param of EnableMultiEnvParams) {
-      describe(`Multi-Env: ${param.__TEAMSFX_INSIDER_PREVIEW}, API V2:${param.TEAMSFX_APIV2}`, () => {
+    for (const param of AllEnvParams) {
+      describe(`API V3:${param.TEAMSFX_APIV3}`, () => {
         let mockedEnvRestore: RestoreFn;
         beforeEach(() => {
           mockedEnvRestore = mockedEnv(param);
@@ -205,12 +177,7 @@ describe("Core basic APIs", () => {
   });
 
   describe("migrateV1", () => {
-    let mockedEnvRestore: RestoreFn;
-    beforeEach(() => {
-      mockedEnvRestore = mockedEnv({ TEAMSFX_APIV2: "false" });
-    });
     afterEach(async () => {
-      mockedEnvRestore();
       await fs.remove(path.resolve(os.tmpdir(), "v1projectpath"));
     });
     const migrateV1Params = [
@@ -291,7 +258,7 @@ describe("Core basic APIs", () => {
           assert.isTrue(validSettingsResult === undefined);
 
           if (!commonTools.isMultiEnvEnabled()) {
-            const envInfoResult = await loadSolutionContext(tools, inputs, projectSettings);
+            const envInfoResult = await loadSolutionContext(inputs, projectSettings);
             if (envInfoResult.isErr()) {
               assert.fail("failed to load env info");
             }
@@ -309,7 +276,7 @@ describe("Core basic APIs", () => {
   });
 
   it("create project with correct version", async () => {
-    assert.isTrue(true);
+    const mockedEnvRestore = mockedEnv({ TEAMSFX_APIV3: "false" });
     appName = randomAppName();
     projectPath = path.join(os.homedir(), "TeamsApps", appName);
     const expectedInputs: Inputs = {
@@ -317,6 +284,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
+      [CoreQuestionNames.Solution]: TeamsAppSolutionNameV2,
       stage: Stage.create,
     };
     expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
@@ -373,7 +341,7 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.VSCode };
+      const inputs: Inputs = { platform: Platform.VSCode, solution: TeamsAppSolutionNameV2 };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk());
       if (res.isErr()) {
@@ -394,6 +362,7 @@ describe("Core basic APIs", () => {
       assert.isTrue(validSettingsResult === undefined);
       projectSettings.version == "2.0.0";
     }
+    mockedEnvRestore();
   });
 
   async function case1() {
@@ -404,6 +373,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
+      [CoreQuestionNames.Solution]: TeamsAppSolutionNameV2,
       stage: Stage.create,
     };
     expectedInputs[CoreQuestionNames.Capabilities] = [TabOptionItem.id];
@@ -460,7 +430,7 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.VSCode };
+      const inputs: Inputs = { platform: Platform.VSCode, solution: TeamsAppSolutionNameV2 };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk());
       assert.deepEqual(expectedInputs, inputs);
@@ -534,72 +504,6 @@ describe("Core basic APIs", () => {
           assert.isTrue(projectConfig.config !== undefined);
         }
       }
-    }
-  }
-
-  async function createFromSample() {
-    const sampleOption = SampleSelect.staticOptions[0] as OptionItem;
-    appName = sampleOption.id;
-    projectPath = path.resolve(os.tmpdir(), appName);
-    const expectedInputs: Inputs = {
-      platform: Platform.CLI,
-      [CoreQuestionNames.Folder]: os.tmpdir(),
-      [CoreQuestionNames.CreateFromScratch]: ScratchOptionNoVSC.id,
-      [CoreQuestionNames.Samples]: sampleOption.id,
-      stage: Stage.create,
-    };
-    sandbox
-      .stub<any, any>(ui, "selectFolder")
-      .callsFake(
-        async (config: SelectFolderConfig): Promise<Result<SelectFolderResult, FxError>> => {
-          if (config.name === CoreQuestionNames.Folder) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.Folder] as string,
-            });
-          }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-    sandbox
-      .stub<any, any>(ui, "selectOption")
-      .callsFake(
-        async (config: SingleSelectConfig): Promise<Result<SingleSelectResult, FxError>> => {
-          if (config.name === CoreQuestionNames.CreateFromScratch) {
-            return ok({
-              type: "success",
-              result: expectedInputs[CoreQuestionNames.CreateFromScratch] as string,
-            });
-          }
-          if (config.name === CoreQuestionNames.Samples) {
-            return ok({ type: "success", result: sampleOption.id });
-          }
-          throw err(InvalidInputError("invalid question"));
-        }
-      );
-    const core = new FxCore(tools);
-    {
-      const inputs: Inputs = { platform: Platform.CLI };
-      const res = await core.createProject(inputs);
-      assert.isTrue(res.isOk() && res.value === projectPath);
-      assert.isTrue(inputs.projectId !== undefined);
-      assert.isTrue(inputs.projectPath === projectPath);
-      expectedInputs.projectId = inputs.projectId;
-      expectedInputs.projectPath = inputs.projectPath;
-      assert.deepEqual(expectedInputs, inputs);
-      inputs.projectPath = projectPath;
-      const projectSettingsResult = await loadProjectSettings(
-        inputs,
-        commonTools.isMultiEnvEnabled()
-      );
-      if (projectSettingsResult.isErr()) {
-        assert.fail("failed to load project settings");
-      }
-
-      const projectSettings = projectSettingsResult.value;
-      projectSettings.solutionSettings.name = mockSolution.name;
-      const validSettingsResult = validateSettings(projectSettings);
-      assert.isTrue(validSettingsResult === undefined);
     }
   }
 
@@ -713,78 +617,43 @@ describe("Core basic APIs", () => {
       assert.isTrue(res.isErr() && res.error.name === FunctionRouterError(func).name);
     }
 
-    if (isV2()) {
-      sandbox
-        .stub<any, any>(mockSolutionV2, "getQuestions")
-        .callsFake(
-          async (
-            ctx: v2.Context,
-            inputs: Inputs,
-            envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
-            tokenProvider: TokenProvider
-          ): Promise<Result<QTreeNode | undefined, FxError>> => {
-            return ok(
-              new QTreeNode({
-                type: "text",
-                name: "mock-question",
-                title: "mock-question",
-              })
-            );
-          }
-        );
-      sandbox
-        .stub<any, any>(mockSolutionV2, "getQuestionsForUserTask")
-        .callsFake(
-          async (
-            ctx: v2.Context,
-            inputs: Inputs,
-            func: Func,
-            envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
-            tokenProvider: TokenProvider
-          ): Promise<Result<QTreeNode | undefined, FxError>> => {
-            return ok(
-              new QTreeNode({
-                type: "text",
-                name: "mock-question-user-task",
-                title: "mock-question-user-task",
-              })
-            );
-          }
-        );
-    } else {
-      sandbox
-        .stub<any, any>(mockSolution, "getQuestions")
-        .callsFake(
-          async (
-            task: Stage,
-            ctx: SolutionContext
-          ): Promise<Result<QTreeNode | undefined, FxError>> => {
-            return ok(
-              new QTreeNode({
-                type: "text",
-                name: "mock-question",
-                title: "mock-question",
-              })
-            );
-          }
-        );
-      sandbox
-        .stub<any, any>(mockSolution, "getQuestionsForUserTask")
-        .callsFake(
-          async (
-            func: Func,
-            ctx: SolutionContext
-          ): Promise<Result<QTreeNode | undefined, FxError>> => {
-            return ok(
-              new QTreeNode({
-                type: "text",
-                name: "mock-question-user-task",
-                title: "mock-question-user-task",
-              })
-            );
-          }
-        );
-    }
+    sandbox
+      .stub<any, any>(mockSolutionV2, "getQuestions")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: Inputs,
+          envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+          tokenProvider: TokenProvider
+        ): Promise<Result<QTreeNode | undefined, FxError>> => {
+          return ok(
+            new QTreeNode({
+              type: "text",
+              name: "mock-question",
+              title: "mock-question",
+            })
+          );
+        }
+      );
+    sandbox
+      .stub<any, any>(mockSolutionV2, "getQuestionsForUserTask")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: Inputs,
+          func: Func,
+          envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+          tokenProvider: TokenProvider
+        ): Promise<Result<QTreeNode | undefined, FxError>> => {
+          return ok(
+            new QTreeNode({
+              type: "text",
+              name: "mock-question-user-task",
+              title: "mock-question-user-task",
+            })
+          );
+        }
+      );
 
     {
       const inputs: Inputs = { platform: Platform.VS };
@@ -874,7 +743,7 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.CLI };
+      const inputs: Inputs = { platform: Platform.CLI, solution: TeamsAppSolutionNameV2 };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk() && res.value === projectPath);
 
@@ -900,6 +769,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.Folder]: os.tmpdir(),
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
+      [CoreQuestionNames.Solution]: TeamsAppSolutionNameV2,
       env: "dev",
       stage: Stage.create,
     };
@@ -965,7 +835,11 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        env: "dev",
+        solution: TeamsAppSolutionNameV2,
+      };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);
@@ -1013,6 +887,7 @@ describe("Core basic APIs", () => {
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
       projectPath: projectPath,
       env: "dev",
+      [CoreQuestionNames.Solution]: TeamsAppSolutionNameV2,
       stage: Stage.create,
     };
     expectedInputs[CoreQuestionNames.Capabilities] = TabOptionItem.id;
@@ -1075,7 +950,11 @@ describe("Core basic APIs", () => {
       });
     const core = new FxCore(tools);
     {
-      const inputs: Inputs = { platform: Platform.CLI, env: "dev" };
+      const inputs: Inputs = {
+        platform: Platform.CLI,
+        env: "dev",
+        solution: TeamsAppSolutionNameV2,
+      };
       const res = await core.createProject(inputs);
       assert.isTrue(res.isOk() && res.value === projectPath);
       assert.deepEqual(expectedInputs, inputs);

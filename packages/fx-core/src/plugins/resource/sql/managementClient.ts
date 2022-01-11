@@ -11,6 +11,7 @@ export class ManagementClient {
   client: SqlManagementClient;
   config: SqlConfig;
   ctx: PluginContext;
+  totalFirewallRuleCount = 0;
 
   private constructor(ctx: PluginContext, config: SqlConfig, client: SqlManagementClient) {
     this.ctx = ctx;
@@ -24,7 +25,7 @@ export class ManagementClient {
     return new ManagementClient(ctx, config, client);
   }
 
-  async createAzureSQL() {
+  async createAzureSQL(): Promise<void> {
     const model: SqlManagementModels.Server = {
       location: this.config.location,
       administratorLogin: this.config.admin,
@@ -37,9 +38,6 @@ export class ManagementClient {
         model
       );
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlCreateError.name,
         ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint, error.message),
@@ -64,9 +62,6 @@ export class ManagementClient {
         return true;
       }
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCheckError.message(this.config.sqlEndpoint, error.message)
-      );
       throw SqlResultFactory.SystemError(
         ErrorMessage.SqlCheckError.name,
         ErrorMessage.SqlCheckError.message(this.config.sqlEndpoint, error.message),
@@ -87,9 +82,6 @@ export class ManagementClient {
         return false;
       }
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCheckAdminError.message(this.config.identity, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlCheckAdminError.name,
         ErrorMessage.SqlCheckAdminError.message(this.config.identity, error.message),
@@ -98,7 +90,7 @@ export class ManagementClient {
     }
   }
 
-  async createDatabase() {
+  async createDatabase(): Promise<void> {
     const sku: SqlManagementModels.Sku = {
       name: "Basic",
     };
@@ -116,9 +108,6 @@ export class ManagementClient {
       // when the request returned, the instance of database may not be ready. Let's wait a moment
       await this.delay(10);
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.DatabaseCreateError.message(this.config.databaseName, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.DatabaseCreateError.name,
         ErrorMessage.DatabaseCreateError.message(this.config.databaseName, error.message),
@@ -139,9 +128,6 @@ export class ManagementClient {
         return false;
       }
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlCheckDBError.message(this.config.databaseName, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlCheckDBError.name,
         ErrorMessage.SqlCheckDBError.message(this.config.databaseName, error.message),
@@ -150,7 +136,7 @@ export class ManagementClient {
     }
   }
 
-  async addAADadmin() {
+  async addAADadmin(): Promise<void> {
     let model: SqlManagementModels.ServerAzureADAdministrator = {
       tenantId: this.config.tenantId,
       sid: this.config.aadAdminObjectId,
@@ -166,9 +152,6 @@ export class ManagementClient {
         model
       );
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlAddAdminError.name,
         ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin, error.message),
@@ -177,7 +160,7 @@ export class ManagementClient {
     }
   }
 
-  async addAzureFirewallRule() {
+  async addAzureFirewallRule(): Promise<void> {
     const model: SqlManagementModels.FirewallRule = {
       startIpAddress: Constants.firewall.azureIp,
       endIpAddress: Constants.firewall.azureIp,
@@ -190,9 +173,6 @@ export class ManagementClient {
         model
       );
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlAzureFirwallError.name,
         ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint, error.message),
@@ -217,17 +197,16 @@ export class ManagementClient {
       startIpAddress: startIp,
       endIpAddress: endIp,
     };
+    const ruleName = this.getRuleName(this.totalFirewallRuleCount);
     try {
       await this.client.firewallRules.createOrUpdate(
         this.config.resourceGroup,
         this.config.sqlServer,
-        Constants.firewall.localRule,
+        ruleName,
         model
       );
+      this.totalFirewallRuleCount++;
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlLocalFirwallError.name,
         ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, error.message),
@@ -236,17 +215,17 @@ export class ManagementClient {
     }
   }
 
-  async deleteLocalFirewallRule() {
+  async deleteLocalFirewallRule(): Promise<void> {
     try {
-      await this.client.firewallRules.deleteMethod(
-        this.config.resourceGroup,
-        this.config.sqlServer,
-        Constants.firewall.localRule
-      );
+      for (let i = 0; i < this.totalFirewallRuleCount; i++) {
+        const ruleName = this.getRuleName(i);
+        await this.client.firewallRules.deleteMethod(
+          this.config.resourceGroup,
+          this.config.sqlServer,
+          ruleName
+        );
+      }
     } catch (error) {
-      this.ctx.logProvider?.error(
-        ErrorMessage.SqlDeleteLocalFirwallError.message(this.config.sqlEndpoint, error.message)
-      );
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlDeleteLocalFirwallError.name,
         ErrorMessage.SqlDeleteLocalFirwallError.message(this.config.sqlEndpoint, error.message),
@@ -255,7 +234,11 @@ export class ManagementClient {
     }
   }
 
-  async delay(s: number) {
+  getRuleName(suffix: number): string {
+    return Constants.firewall.localRule + suffix;
+  }
+
+  async delay(s: number): Promise<void> {
     return new Promise((resolve) => setTimeout(resolve, s * 1000));
   }
 }

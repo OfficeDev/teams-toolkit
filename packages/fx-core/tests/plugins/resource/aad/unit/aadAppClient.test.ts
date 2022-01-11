@@ -22,13 +22,14 @@ import { SystemError } from "@microsoft/teamsfx-api";
 import {
   CreateAppError,
   CreateSecretError,
+  GetAppConfigError,
   GetAppError,
   UpdateAppIdUriError,
   UpdatePermissionError,
   UpdateRedirectUriError,
 } from "../../../../../src/plugins/resource/aad/errors";
 import { Utils } from "../../../../../src/plugins/resource/aad/utils/common";
-import { Constants } from "../../../../../src/plugins/resource/aad/constants";
+import { ConfigKeys, Constants } from "../../../../../src/plugins/resource/aad/constants";
 
 describe("AAD App Client Test", () => {
   let ctx: PluginContext;
@@ -465,6 +466,40 @@ describe("AAD App Client Test", () => {
       const getResult = await AadAppClient.getAadApp(ctx, "getAadApp", objectId, true, secret);
       chai.assert.equal(getResult.objectId, objectId);
       chai.assert.equal(getResult.clientId, clientId);
+    });
+
+    it("throw GetAppConfigError", async () => {
+      TokenProvider.init(ctx, TokenAudience.AppStudio);
+      const objectId = faker.datatype.uuid();
+      const clientId = faker.datatype.uuid();
+      const secret = "secret";
+      const displayName = "getAadApp";
+
+      const tenantId = faker.datatype.uuid();
+      const fileName = "fileName";
+      sinon.stub(Utils, "getCurrentTenantId").resolves(tenantId);
+      sinon.stub(Utils, "getConfigFileName").returns(fileName);
+
+      sinon.stub(AppStudio, "getAadApp").resolves({
+        id: objectId,
+        appId: clientId,
+        displayName: displayName,
+        api: {
+          requestedAccessTokenVersion: 0,
+          oauth2PermissionScopes: [],
+          preAuthorizedApplications: [],
+        },
+      });
+
+      try {
+        const getResult = await AadAppClient.getAadApp(ctx, "getAadApp", objectId, true, secret);
+      } catch (error) {
+        chai.assert.isTrue(error instanceof UserError);
+        chai.assert.equal(
+          error.message,
+          GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId, fileName)
+        );
+      }
     });
 
     it("System Error", async () => {

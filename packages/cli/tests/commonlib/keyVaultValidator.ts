@@ -88,6 +88,9 @@ export class KeyVaultValidator {
     console.log("Validating key vault secrets.");
     const identityTokenCredential = await tokenProvider.getIdentityCredentialAsync();
     const keyvaultScope = this.keyVault.vaultUri + "/.default";
+    console.log("[dilin-debug] keyvaultScope: " + keyvaultScope);
+    const accessToken = await identityTokenCredential?.getToken(keyvaultScope);
+    console.log("[dilin-debug] successfully get accessToken: " + JSON.stringify(accessToken));
     const tokenToGetSecret = (await identityTokenCredential?.getToken(keyvaultScope))?.token;
     console.log("[dilin-debug] Successfully get new token: " + tokenToGetSecret);
     const m365ClientSecretName =

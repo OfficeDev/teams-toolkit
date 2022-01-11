@@ -19,6 +19,12 @@ export declare class DefaultTediousConnectionConfiguration
 
 Only works in in server side.
 
+## Constructors
+
+|  Constructor | Modifiers | Description |
+|  --- | --- | --- |
+|  [(constructor)(sqlConfig)](./teamsfx.defaulttediousconnectionconfiguration._constructor_.md) |  | <b><i>(BETA)</i></b> Constructs a new instance of the <code>DefaultTediousConnectionConfiguration</code> class |
+
 ## Methods
 
 |  Method | Modifiers | Description |

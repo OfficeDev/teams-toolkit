@@ -38,6 +38,7 @@ export function createMicrosoftGraphClient(credential: TokenCredential, scopes?:
 
 // @beta
 export class DefaultTediousConnectionConfiguration {
+    constructor(sqlConfig?: SqlConfiguration);
     getConfig(): Promise<ConnectionConfig>;
 }
 
@@ -137,6 +138,15 @@ export function setLogger(logger?: Logger): void;
 
 // @beta
 export function setLogLevel(level: LogLevel): void;
+
+// @beta
+export interface SqlConfiguration {
+    readonly sqlDatabaseName?: string;
+    readonly sqlIdentityId?: string;
+    readonly sqlPassword?: string;
+    readonly sqlServerEndpoint: string;
+    readonly sqlUsername?: string;
+}
 
 // @beta
 export class TeamsBotSsoPrompt extends Dialog {

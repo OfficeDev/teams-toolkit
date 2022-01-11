@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { getResourceConfiguration } from "./configurationProvider";
-import { ResourceType } from "../models/configuration";
 import { AccessToken, ManagedIdentityCredential } from "@azure/identity";
-import { ErrorWithCode, ErrorCode } from "./errors";
 import { ConnectionConfig } from "tedious";
+import { ErrorWithCode, ErrorCode } from "./errors";
 import { internalLogger } from "../util/logger";
+import { SqlConfiguration } from "../models/configuration";
 
 /**
  * SQL connection configuration instance.
@@ -22,6 +21,14 @@ export class DefaultTediousConnectionConfiguration {
    * https://docs.microsoft.com/en-us/azure/app-service/app-service-web-tutorial-connect-msi
    */
   private readonly defaultSQLScope: string = "https://database.windows.net/";
+  private sqlConfig: SqlConfiguration;
+
+  /**
+   * @param { SqlConfiguration? } sqlConfig - use environment variables if not provided
+   */
+  constructor(sqlConfig?: SqlConfiguration) {
+    this.sqlConfig = sqlConfig ?? getSqlConfigFromEnv();
+  }
 
   /**
    * Generate connection configuration consumed by tedious.
@@ -36,28 +43,21 @@ export class DefaultTediousConnectionConfiguration {
    */
   public async getConfig(): Promise<ConnectionConfig> {
     internalLogger.info("Get SQL configuration");
-    const configuration = <SqlConfiguration>getResourceConfiguration(ResourceType.SQL);
-
-    if (!configuration) {
-      const errMsg = "SQL resource configuration not exist";
-      internalLogger.error(errMsg);
-      throw new ErrorWithCode(errMsg, ErrorCode.InvalidConfiguration);
-    }
 
     try {
-      this.isSQLConfigurationValid(configuration);
+      this.isSQLConfigurationValid(this.sqlConfig);
     } catch (err) {
       throw err;
     }
 
     if (!this.isMsiAuthentication()) {
-      const configWithUPS = this.generateDefaultConfig(configuration);
+      const configWithUPS = this.generateDefaultConfig(this.sqlConfig);
       internalLogger.verbose("SQL configuration with username and password generated");
       return configWithUPS;
     }
 
     try {
-      const configWithToken = await this.generateTokenConfig(configuration);
+      const configWithToken = await this.generateTokenConfig(this.sqlConfig);
       internalLogger.verbose("SQL configuration with MSI token generated");
       return configWithToken;
     } catch (error) {
@@ -75,8 +75,7 @@ export class DefaultTediousConnectionConfiguration {
     internalLogger.verbose(
       "Check connection config using MSI access token or username and password"
     );
-    const configuration = <SqlConfiguration>getResourceConfiguration(ResourceType.SQL);
-    if (configuration?.sqlUsername != null && configuration?.sqlPassword != null) {
+    if (this.sqlConfig.sqlUsername != null && this.sqlConfig.sqlPassword != null) {
       internalLogger.verbose("Login with username and password");
       return false;
     }
@@ -156,7 +155,7 @@ export class DefaultTediousConnectionConfiguration {
 
     let token: AccessToken | null;
     try {
-      const credential = new ManagedIdentityCredential(sqlConfig.sqlIdentityId);
+      const credential = new ManagedIdentityCredential(sqlConfig.sqlIdentityId!);
       token = await credential.getToken(this.defaultSQLScope);
     } catch (error) {
       const errMsg = "Get user MSI token failed";
@@ -200,42 +199,19 @@ enum TediousAuthenticationType {
 }
 
 /**
- * Configuration for SQL resource.
- * @internal
+ * @returns SQL configuration which is constructed from predefined env variables.
+ *
+ * @remarks
+ * Used variables: SQL_ENDPOINT, SQL_USER_NAME, SQL_PASSWORD, SQL_DATABASE_NAME, IDENTITY_ID
+ *
+ * @beta
  */
-interface SqlConfiguration {
-  /**
-   * SQL server endpoint.
-   *
-   * @readonly
-   */
-  readonly sqlServerEndpoint: string;
-
-  /**
-   * SQL server username.
-   *
-   * @readonly
-   */
-  readonly sqlUsername: string;
-
-  /**
-   * SQL server password.
-   *
-   * @readonly
-   */
-  readonly sqlPassword: string;
-
-  /**
-   * SQL server database name.
-   *
-   * @readonly
-   */
-  readonly sqlDatabaseName: string;
-
-  /**
-   * Managed identity id.
-   *
-   * @readonly
-   */
-  readonly sqlIdentityId: string;
+export function getSqlConfigFromEnv(): SqlConfiguration {
+  return {
+    sqlServerEndpoint: process.env.SQL_ENDPOINT || "",
+    sqlUsername: process.env.SQL_USER_NAME,
+    sqlPassword: process.env.SQL_PASSWORD,
+    sqlDatabaseName: process.env.SQL_DATABASE_NAME,
+    sqlIdentityId: process.env.IDENTITY_ID,
+  };
 }

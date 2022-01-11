@@ -125,3 +125,44 @@ export enum ResourceType {
    */
   API,
 }
+
+/**
+ * Configuration for SQL resource.
+ * @beta
+ */
+export interface SqlConfiguration {
+  /**
+   * SQL server endpoint.
+   *
+   * @readonly
+   */
+  readonly sqlServerEndpoint: string;
+
+  /**
+   * SQL server username. Used together with "sqlPassword".
+   *
+   * @readonly
+   */
+  readonly sqlUsername?: string;
+
+  /**
+   * SQL server password. Used together with "sqlUsername".
+   *
+   * @readonly
+   */
+  readonly sqlPassword?: string;
+
+  /**
+   * SQL server database name.
+   *
+   * @readonly
+   */
+  readonly sqlDatabaseName?: string;
+
+  /**
+   * Managed identity id. Specify if username & password is not used.
+   *
+   * @readonly
+   */
+  readonly sqlIdentityId?: string;
+}

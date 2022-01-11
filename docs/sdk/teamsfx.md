@@ -45,6 +45,7 @@
 |  [Configuration](./teamsfx.configuration.md) | <b><i>(BETA)</i></b> Configuration for current environment. |
 |  [Logger](./teamsfx.logger.md) | <b><i>(BETA)</i></b> Interface for customized logger. |
 |  [ResourceConfiguration](./teamsfx.resourceconfiguration.md) | <b><i>(BETA)</i></b> Configuration for resources. |
+|  [SqlConfiguration](./teamsfx.sqlconfiguration.md) | <b><i>(BETA)</i></b> Configuration for SQL resource. |
 |  [TeamsBotSsoPromptSettings](./teamsfx.teamsbotssopromptsettings.md) | <b><i>(BETA)</i></b> Settings used to configure an TeamsBotSsoPrompt instance. |
 |  [TeamsBotSsoPromptTokenResponse](./teamsfx.teamsbotssoprompttokenresponse.md) | <b><i>(BETA)</i></b> Token response provided by Teams Bot SSO prompt |
 |  [UserInfo](./teamsfx.userinfo.md) | <b><i>(BETA)</i></b> UserInfo with user displayName, objectId and preferredUserName. |

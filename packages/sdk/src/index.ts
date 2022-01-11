@@ -26,6 +26,7 @@ export {
   AuthenticationConfiguration,
   ResourceConfiguration,
   ResourceType,
+  SqlConfiguration,
 } from "./models/configuration";
 
 export {

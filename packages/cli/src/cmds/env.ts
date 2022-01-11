@@ -20,7 +20,7 @@ import { WorkspaceNotSupported } from "./preview/errors";
 import HelpParamGenerator from "../helpParamGenerator";
 import activate from "../activate";
 import { getSystemInputs, isWorkspaceSupported } from "../utils";
-import CliTelemetry, { makeEnvProperty } from "../telemetry/cliTelemetry";
+import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -98,7 +98,7 @@ class EnvAdd extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateNewEnvironment, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      ...makeEnvProperty(inputs.env),
+      ...makeEnvRelatedProperty(projectDir, inputs),
     });
 
     return ok(null);

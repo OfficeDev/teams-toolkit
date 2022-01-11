@@ -40,6 +40,8 @@ import {
   localSettingsFileName,
   FxCore,
   isSPFxProject,
+  PluginNames,
+  isValidProject,
 } from "@microsoft/teamsfx-core";
 import { WorkspaceNotSupported } from "./cmds/preview/errors";
 
@@ -317,21 +319,16 @@ export function isWorkspaceSupported(workspace: string): boolean {
   return true;
 }
 
-// Only used when multi-env is disabled
-export function getTeamsAppId(rootfolder: string | undefined): any {
-  if (!rootfolder) {
+export function getTeamsAppIdByEnv(projectDir: string, env: string): string | undefined {
+  try {
+    if (isValidProject(projectDir)) {
+      const result = environmentManager.getEnvStateFilesPath(env, projectDir);
+      const envJson = JSON.parse(fs.readFileSync(result.envState, "utf8"));
+      return envJson[PluginNames.APPST].teamsAppId;
+    }
+  } catch (e) {
     return undefined;
   }
-
-  if (isWorkspaceSupported(rootfolder)) {
-    const result = readEnvJsonFileSync(rootfolder, environmentManager.getDefaultEnvName());
-    if (result.isErr()) {
-      return undefined;
-    }
-    return result.value.solution.remoteTeamsAppId;
-  }
-
-  return undefined;
 }
 
 // Only used for telemetry

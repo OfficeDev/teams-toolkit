@@ -9,7 +9,7 @@ import { FxError, err, ok, Result, Func, Inputs } from "@microsoft/teamsfx-api";
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
 import { getSystemInputs, toLocaleLowerCase } from "../utils";
-import CliTelemetry, { makeEnvProperty } from "../telemetry/cliTelemetry";
+import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -83,7 +83,7 @@ class ManifestValidate extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.ValidateManifest, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      ...makeEnvProperty(inputs.env),
+      ...makeEnvRelatedProperty(rootFolder, inputs),
     });
     return ok(null);
   }
@@ -128,7 +128,7 @@ class ManifestUpdate extends YargsCommand {
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateManifest, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      ...makeEnvProperty(inputs.env),
+      ...makeEnvRelatedProperty(rootFolder, inputs),
     });
     return ok(null);
   }

@@ -2,11 +2,13 @@
 // Licensed under the MIT license.
 import * as uuid from "uuid";
 import axios from "axios";
+const failedToParseResourceIdErrorMessage = (name: string, resourceId: string) =>
+  `Failed to parse ${name} from resource id ${resourceId}`;
 
 export function getResourceGroupNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/resourceGroups\/([^\/]*)\//i, resourceId);
   if (!result) {
-    throw new Error(`Cannot parse resource group name from resource id ${resourceId}`);
+    throw new Error(failedToParseResourceIdErrorMessage("resource group name", resourceId));
   }
   return result;
 }
@@ -14,7 +16,7 @@ export function getResourceGroupNameFromResourceId(resourceId: string): string {
 export function getSubscriptionIdFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/\/subscriptions\/([^\/]*)\//i, resourceId);
   if (!result) {
-    throw new Error(`Cannot parse subscription id from resource id ${resourceId}`);
+    throw new Error(failedToParseResourceIdErrorMessage("subscription id", resourceId));
   }
   return result;
 }
@@ -25,7 +27,45 @@ export function getSiteNameFromResourceId(webAppResourceId: string): string {
     webAppResourceId
   );
   if (!result) {
-    throw new Error(`Cannot parse site name from resource id ${webAppResourceId}`);
+    throw new Error(failedToParseResourceIdErrorMessage("site name", webAppResourceId));
+  }
+  return result;
+}
+
+export function getKeyVaultNameFromResourceId(keyVaultResourceId: string): string {
+  const result = parseFromResourceId(
+    /providers\/Microsoft.KeyVault\/vaults\/([^\/]*)/i,
+    keyVaultResourceId
+  );
+  if (!result) {
+    throw new Error(failedToParseResourceIdErrorMessage("key vault name", keyVaultResourceId));
+  }
+  return result;
+}
+
+export function getApimServiceNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(
+    /providers\/Microsoft.ApiManagement\/service\/([^\/]*)/i,
+    resourceId
+  );
+  if (!result) {
+    throw new Error(failedToParseResourceIdErrorMessage("apim service name", resourceId));
+  }
+  return result;
+}
+
+export function getproductNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(/products\/([^\/]*)/i, resourceId);
+  if (!result) {
+    throw new Error(failedToParseResourceIdErrorMessage("product name", resourceId));
+  }
+  return result;
+}
+
+export function getAuthServiceNameFromResourceId(resourceId: string): string {
+  const result = parseFromResourceId(/authorizationServers\/([^\/]*)/i, resourceId);
+  if (!result) {
+    throw new Error(failedToParseResourceIdErrorMessage("auth service name", resourceId));
   }
   return result;
 }
@@ -47,15 +87,14 @@ export async function getWebappSettings(
   try {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     const getResponse = await axios.post(baseUrlAppSettings(subscriptionId, rg, name));
-    if (!getResponse || !getResponse.data || !getResponse.data.properties) {
-      return undefined;
+    if (getResponse && getResponse.data && getResponse.data.properties) {
+      return getResponse.data.properties;
     }
-
-    return getResponse.data.properties;
   } catch (error) {
     console.log(error);
-    return undefined;
   }
+
+  return undefined;
 }
 
 export async function getWebappConfigs(
@@ -70,15 +109,14 @@ export async function getWebappConfigs(
   try {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     const getResponse = await axios.get(baseUrlAppConfigs(subscriptionId, rg, name));
-    if (!getResponse || !getResponse.data || !getResponse.data.properties) {
-      return undefined;
+    if (getResponse && getResponse.data && getResponse.data.properties) {
+      return getResponse.data.properties;
     }
-
-    return getResponse.data.properties;
   } catch (error) {
     console.log(error);
-    return undefined;
   }
+
+  return undefined;
 }
 
 export async function getWebappServicePlan(
@@ -93,20 +131,14 @@ export async function getWebappServicePlan(
   try {
     axios.defaults.headers.common["Authorization"] = `Bearer ${token}`;
     const planResponse = await runWithRetry(() => axios.get(baseUrlPlan(subscriptionId, rg, name)));
-    if (
-      !planResponse ||
-      !planResponse.data ||
-      !planResponse.data.sku ||
-      !planResponse.data.sku.name
-    ) {
-      return undefined;
+    if (planResponse && planResponse.data && planResponse.data.sku && planResponse.data.sku.name) {
+      return planResponse.data.sku.name;
     }
-
-    return planResponse.data.sku.name;
   } catch (error) {
     console.log(error);
-    return undefined;
   }
+
+  return undefined;
 }
 
 export async function runWithRetry<T>(fn: () => Promise<T>) {

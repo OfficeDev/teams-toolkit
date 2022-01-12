@@ -1,16 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { isArmSupportEnabled } from "@microsoft/teamsfx-core";
 import * as chai from "chai";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
-import { StateConfigKey, PluginId } from "./constants";
-import { IAadObject } from "./interfaces/IAADDefinition";
+import {
+  getActivePluginsFromProjectSetting,
+  getKeyVaultSecretReference,
+  getProvisionParameterValueByKey,
+} from "../e2e/commonUtils";
+import { CliHelper } from "./cliHelper";
+import { StateConfigKey, PluginId, provisionParametersKey } from "./constants";
 import {
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
   getWebappSettings,
   getWebappServicePlan,
+  getKeyVaultNameFromResourceId,
 } from "./utilities";
 
 export class PropertiesKeys {
@@ -27,48 +32,39 @@ export interface ISimpleAuthObject {
 }
 
 export class SimpleAuthValidator {
-  private static subscriptionId: string;
-  private static rg: string;
+  private ctx: any;
+  private projectPath: string;
+  private env: string;
 
-  public static init(ctx: any, isLocalDebug = false): ISimpleAuthObject {
+  private subscriptionId: string;
+  private rg: string;
+  private simpleAuthObject: ISimpleAuthObject;
+
+  constructor(ctx: any, projectPath: string, env: string) {
     console.log("Start to init validator for Simple Auth.");
 
-    let simpleAuthObject: ISimpleAuthObject;
-    if (!isLocalDebug) {
-      simpleAuthObject = <ISimpleAuthObject>ctx[PluginId.SimpleAuth];
-    } else {
-      simpleAuthObject = {
-        endpoint: ctx[PluginId.SimpleAuth][StateConfigKey.endpoint],
-        webAppResourceId: ctx[PluginId.SimpleAuth][StateConfigKey.webAppResourceId],
-      } as ISimpleAuthObject;
-    }
-    chai.assert.exists(simpleAuthObject);
+    this.ctx = ctx;
+    this.projectPath = projectPath;
+    this.env = env;
 
-    if (isArmSupportEnabled()) {
-      chai.assert.exists(simpleAuthObject.webAppResourceId);
-      this.subscriptionId = getSubscriptionIdFromResourceId(simpleAuthObject.webAppResourceId!);
-      this.rg = getResourceGroupNameFromResourceId(simpleAuthObject.webAppResourceId!);
-    } else {
-      this.subscriptionId = ctx[PluginId.Solution][StateConfigKey.subscriptionId];
-      this.rg = ctx[PluginId.Solution][StateConfigKey.resourceGroupName];
-    }
-
+    const resourceId = ctx[PluginId.SimpleAuth][StateConfigKey.webAppResourceId];
+    chai.assert.exists(resourceId);
+    this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
     chai.assert.exists(this.subscriptionId);
+    this.rg = getResourceGroupNameFromResourceId(resourceId);
     chai.assert.exists(this.rg);
+    this.simpleAuthObject = {
+      endpoint: ctx[PluginId.SimpleAuth][StateConfigKey.endpoint],
+      webAppResourceId: ctx[PluginId.SimpleAuth][StateConfigKey.webAppResourceId],
+    };
 
     console.log("Successfully init validator for Simple Auth.");
-    return simpleAuthObject;
   }
 
-  public static async validate(
-    simpleAuthObject: ISimpleAuthObject,
-    aadObject: IAadObject,
-    servicePlan = "B1",
-    isMultiEnvEnabled = false
-  ) {
+  public async validate() {
     console.log("Start to validate Simple Auth.");
 
-    const resourceName: string = simpleAuthObject.endpoint.slice(8, -18);
+    const resourceName: string = this.simpleAuthObject.endpoint.slice(8, -18);
     chai.assert.exists(resourceName);
 
     const tokenProvider = MockAzureAccountProvider;
@@ -76,6 +72,8 @@ export class SimpleAuthValidator {
     const token = (await tokenCredential?.getToken())?.accessToken;
 
     console.log("Validating app settings.");
+    const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
+    chai.assert.isArray(activeResourcePlugins);
     const response = await getWebappSettings(
       this.subscriptionId,
       this.rg,
@@ -83,27 +81,84 @@ export class SimpleAuthValidator {
       token as string
     );
     chai.assert.exists(response);
-    chai.assert.equal(aadObject.clientId, response[PropertiesKeys.clientId]);
-    // chai.assert.equal(aadObject.clientSecret, response[PropertiesKeys.clientSecret]);
-    chai.assert.equal(aadObject.applicationIdUris, response[PropertiesKeys.identifierUri]);
-    chai.assert.equal(aadObject.oauthAuthority, response[PropertiesKeys.oauthAuthority]);
     chai.assert.equal(
-      `${aadObject.oauthAuthority}/v2.0/.well-known/openid-configuration`,
-      response[PropertiesKeys.aadMetadataAddreass]
+      response[PropertiesKeys.clientId],
+      this.ctx[PluginId.Aad][StateConfigKey.clientId]
+    );
+    chai.assert.equal(
+      response[PropertiesKeys.clientSecret],
+      await this.getM365ClientSecret(activeResourcePlugins)
+    );
+    chai.assert.equal(
+      response[PropertiesKeys.identifierUri],
+      this.getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
+    );
+    chai.assert.equal(
+      response[PropertiesKeys.oauthAuthority],
+      this.ctx[PluginId.Aad][StateConfigKey.oauthAuthority]
+    );
+    chai.assert.equal(
+      response[PropertiesKeys.aadMetadataAddreass],
+      `${
+        this.ctx[PluginId.Aad][StateConfigKey.oauthAuthority]
+      }/v2.0/.well-known/openid-configuration`
     );
 
     console.log("Validating app service plan.");
-    const servicePlanName = isMultiEnvEnabled
-      ? resourceName.replace("-webapp", "-serverfarms")
-      : resourceName;
+    const servicePlanName = resourceName.replace("-webapp", "-serverfarms");
     const serivcePlanResponse = await getWebappServicePlan(
       this.subscriptionId,
       this.rg,
       servicePlanName,
       token as string
     );
-    chai.assert(serivcePlanResponse, servicePlan);
+    const expectedServicePlan =
+      (await getProvisionParameterValueByKey(
+        this.projectPath,
+        this.env,
+        provisionParametersKey.simpleAuthSku
+      )) ?? "F1";
+    chai.assert(serivcePlanResponse, expectedServicePlan);
 
     console.log("Successfully validate Simple Auth.");
+  }
+
+  private getExpectedM365ApplicationIdUri(ctx: any, activeResourcePlugins: string[]): string {
+    let expectedM365ApplicationIdUri = "";
+    if (activeResourcePlugins.includes(PluginId.FrontendHosting)) {
+      const tabDomain = ctx[PluginId.FrontendHosting][StateConfigKey.domain];
+      const m365ClientId = ctx[PluginId.Aad][StateConfigKey.clientId];
+      expectedM365ApplicationIdUri =
+        `api://${tabDomain}/` +
+        (activeResourcePlugins.includes(PluginId.Bot)
+          ? `botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`
+          : `${m365ClientId}`);
+    } else if (activeResourcePlugins.includes(PluginId.Bot)) {
+      expectedM365ApplicationIdUri = `api://botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`;
+    }
+    return expectedM365ApplicationIdUri;
+  }
+
+  private async getM365ClientSecret(activeResourcePlugins: string[]): Promise<string> {
+    let m365ClientSecret: string;
+    if (activeResourcePlugins.includes(PluginId.KeyVault)) {
+      const vaultName = getKeyVaultNameFromResourceId(
+        this.ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
+      );
+      const secretName =
+        (await getProvisionParameterValueByKey(
+          this.projectPath,
+          this.env,
+          provisionParametersKey.m365ClientSecretName
+        )) ?? "m365ClientSecret";
+      m365ClientSecret = getKeyVaultSecretReference(vaultName, secretName);
+    } else {
+      m365ClientSecret = await CliHelper.getUserSettings(
+        `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
+        this.projectPath,
+        this.env
+      );
+    }
+    return m365ClientSecret;
   }
 }

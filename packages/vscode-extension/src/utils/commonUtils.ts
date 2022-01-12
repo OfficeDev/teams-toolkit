@@ -17,16 +17,10 @@ import {
   Json,
   SubscriptionInfo,
 } from "@microsoft/teamsfx-api";
-import {
-  environmentManager,
-  isArmSupportEnabled,
-  isValidProject,
-  PluginNames,
-} from "@microsoft/teamsfx-core";
+import { environmentManager, isValidProject, PluginNames } from "@microsoft/teamsfx-core";
 import { workspace, WorkspaceConfiguration } from "vscode";
 import * as commonUtils from "../debug/commonUtils";
 import { ConfigurationKey, CONFIGURATION_PREFIX, UserState } from "../constants";
-import { envDefaultJsonFile } from "../commonlib/common/constant";
 import { execSync } from "child_process";
 
 export function getPackageVersion(versionStr: string): string {

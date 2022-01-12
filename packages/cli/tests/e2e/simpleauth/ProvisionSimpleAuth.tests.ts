@@ -20,13 +20,14 @@ import {
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 describe("Provision", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   it(`Provision Resource: Provision SimpleAuth with different pricing tier - Test Plan ID 9576788`, async function () {
     // set env
@@ -39,7 +40,7 @@ describe("Provision", function () {
       timeout: 0,
     });
     console.log(`[Successfully] scaffold to ${projectPath}`);
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
 
     // provision
     await execAsyncWithRetry(`teamsfx provision --subscription ${subscription}`, {
@@ -48,29 +49,16 @@ describe("Provision", function () {
       timeout: 0,
     });
 
-    if (isMultiEnvEnabled()) {
-      // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+    // Get context
+    const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
-      await AadValidator.validate(aad);
+    // Validate Aad App
+    const aad = AadValidator.init(context, false, AppStudioLogin);
+    await AadValidator.validate(aad);
 
-      // Validate Simple Auth
-      const simpleAuth = SimpleAuthValidator.init(context);
-      await SimpleAuthValidator.validate(simpleAuth, aad, "D1", true);
-    } else {
-      // Get context
-      const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
-      await AadValidator.validate(aad);
-
-      // Validate Simple Auth
-      const simpleAuth = SimpleAuthValidator.init(context);
-      await SimpleAuthValidator.validate(simpleAuth, aad, "D1");
-    }
+    // Validate Simple Auth
+    const simpleAuth = new SimpleAuthValidator(context, projectPath, env);
+    await simpleAuth.validate();
 
     // deploy
     await execAsyncWithRetry(`teamsfx deploy frontend-hosting`, {
@@ -81,11 +69,6 @@ describe("Provision", function () {
   });
 
   after(async () => {
-    // clean up
-    if (isMultiEnvEnabled()) {
-      await cleanUp(appName, projectPath, true, false, false, true);
-    } else {
-      await cleanUp(appName, projectPath, true, false, false);
-    }
+    await cleanUp(appName, projectPath, true, false, false, true);
   });
 });

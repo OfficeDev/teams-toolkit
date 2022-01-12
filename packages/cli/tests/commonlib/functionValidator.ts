@@ -9,6 +9,7 @@ import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword
 import {
   getActivePluginsFromProjectSetting,
   getProvisionParameterValueByKey,
+  getKeyVaultSecretReference,
 } from "../e2e/commonUtils";
 import { CliHelper } from "./cliHelper";
 import { StateConfigKey, PluginId, provisionParametersKey } from "./constants";
@@ -19,6 +20,7 @@ import {
   getWebappSettings,
   runWithRetry,
   getWebappConfigs,
+  getKeyVaultNameFromResourceId,
 } from "./utilities";
 
 const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
@@ -47,25 +49,27 @@ export class FunctionValidator {
   private projectPath: string;
   private env: string;
 
-  private subscriptionId = "";
-  private rg = "";
-  private functionAppName = "";
+  private subscriptionId: string;
+  private rg: string;
+  private functionAppName: string;
 
   constructor(ctx: any, projectPath: string, env: string) {
+    console.log("Start to init validator for function.");
+
     this.ctx = ctx;
     this.projectPath = projectPath;
     this.env = env;
 
-    if (
-      ctx &&
-      ctx[PluginId.Function] &&
-      ctx[PluginId.Function][StateConfigKey.functionAppResourceId]
-    ) {
-      const resourceId = ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
-      this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
-      this.rg = getResourceGroupNameFromResourceId(resourceId);
-      this.functionAppName = getSiteNameFromResourceId(resourceId);
-    }
+    const resourceId = ctx[PluginId.Function][StateConfigKey.functionAppResourceId];
+    chai.assert.exists(resourceId);
+    this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
+    chai.assert.exists(this.subscriptionId);
+    this.rg = getResourceGroupNameFromResourceId(resourceId);
+    chai.assert.exists(this.rg);
+    this.functionAppName = getSiteNameFromResourceId(resourceId);
+    chai.assert.exists(this.functionAppName);
+
+    console.log("Successfully init validator for function.");
   }
 
   public static async validateScaffold(
@@ -94,11 +98,6 @@ export class FunctionValidator {
 
     const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
     chai.assert.isArray(activeResourcePlugins);
-    const resourceBaseName = await getProvisionParameterValueByKey(
-      this.projectPath,
-      this.env,
-      provisionParametersKey.resourceBaseName
-    );
     // Validating app settings
     console.log("validating app settings.");
     const webappSettingsResponse = await getWebappSettings(
@@ -118,7 +117,7 @@ export class FunctionValidator {
     );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
-      await this.getM365ClientSecret(activeResourcePlugins, resourceBaseName)
+      await this.getM365ClientSecret(activeResourcePlugins)
     );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.IDENTITY_ID],
@@ -234,13 +233,19 @@ export class FunctionValidator {
     return expectedM365ApplicationIdUri;
   }
 
-  private async getM365ClientSecret(
-    activeResourcePlugins: string[],
-    resourceBaseName: string
-  ): Promise<string> {
+  private async getM365ClientSecret(activeResourcePlugins: string[]): Promise<string> {
     let m365ClientSecret: string;
     if (activeResourcePlugins.includes(PluginId.KeyVault)) {
-      m365ClientSecret = `@Microsoft.KeyVault(VaultName=${resourceBaseName};SecretName=m365ClientSecret)`;
+      const vaultName = getKeyVaultNameFromResourceId(
+        this.ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
+      );
+      const secretName =
+        (await getProvisionParameterValueByKey(
+          this.projectPath,
+          this.env,
+          provisionParametersKey.m365ClientSecretName
+        )) ?? "m365ClientSecret";
+      m365ClientSecret = getKeyVaultSecretReference(vaultName, secretName);
     } else {
       m365ClientSecret = await CliHelper.getUserSettings(
         `${PluginId.Aad}.${StateConfigKey.clientSecret}`,

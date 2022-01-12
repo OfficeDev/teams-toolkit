@@ -40,7 +40,7 @@ import os from "os";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { CoreSource, FxCore, TOOLS } from "..";
-import { getStrings, isArmSupportEnabled, isSPFxProject } from "../../common/tools";
+import { getStrings, isSPFxProject } from "../../common/tools";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
 import {
@@ -927,10 +927,7 @@ async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolea
 }
 
 function preCheckEnvEnabled() {
-  if (isArmSupportEnabled()) {
-    return true;
-  }
-  return false;
+  return true;
 }
 
 export async function migrateArm(ctx: CoreHookContext) {

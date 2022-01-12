@@ -30,6 +30,7 @@ describe("Provision", function () {
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   it(`Provision Resource: project with new bot - Test Plan ID 9729265`, async function () {
     await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities bot`, {
@@ -40,7 +41,7 @@ describe("Provision", function () {
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
     if (isMultiEnvEnabled()) {
-      await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+      await setBotSkuNameToB1Bicep(projectPath, env);
     } else {
       await setBotSkuNameToB1(projectPath);
     }
@@ -67,10 +68,7 @@ describe("Provision", function () {
       if (isMultiEnvEnabled()) {
         // Validate provision
         // Get context
-        const context = await readContextMultiEnv(
-          projectPath,
-          environmentManager.getDefaultEnvName()
-        );
+        const context = await readContextMultiEnv(projectPath, env);
 
         // Validate Aad App
         const aad = AadValidator.init(context, false, AppStudioLogin);

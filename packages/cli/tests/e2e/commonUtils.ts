@@ -551,8 +551,8 @@ export async function validateTabAndBotProjectProvision(projectPath: string, env
   await FrontendValidator.validateProvision(frontend);
 
   // Validate Bot Provision
-  const bot = BotValidator.init(context, true);
-  await BotValidator.validateProvision(bot, true);
+  const bot = new BotValidator(context, projectPath, env);
+  await bot.validateProvision();
 }
 
 export async function getRGAfterProvision(

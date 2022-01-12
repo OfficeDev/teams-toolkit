@@ -226,3 +226,31 @@ export async function getExpectedM365ClientSecret(
   }
   return m365ClientSecret;
 }
+
+export async function getExpectedBotClientSecret(
+  ctx: any,
+  projectPath: string,
+  env: string,
+  activeResourcePlugins: string[]
+): Promise<string> {
+  let botClientSecret: string;
+  if (activeResourcePlugins.includes(PluginId.KeyVault)) {
+    const vaultName = getKeyVaultNameFromResourceId(
+      ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
+    );
+    const secretName =
+      (await getProvisionParameterValueByKey(
+        projectPath,
+        env,
+        provisionParametersKey.botAadAppClientSecret
+      )) ?? "botClientSecret";
+    botClientSecret = getKeyVaultSecretReference(vaultName, secretName);
+  } else {
+    botClientSecret = await CliHelper.getUserSettings(
+      `${PluginId.Bot}.${StateConfigKey.botPassword}`,
+      projectPath,
+      env
+    );
+  }
+  return botClientSecret;
+}

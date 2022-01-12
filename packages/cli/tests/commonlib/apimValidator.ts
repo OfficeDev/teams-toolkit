@@ -150,7 +150,6 @@ export class ApimValidator {
     chai.assert.equal(oAuthServer?.clientId, config?.apimClientAADClientId);
 
     chai.assert.isNotEmpty(config?.applicationIdUris);
-    console.log(`[dilin-debug] oAuthServer?.defaultScope: ${oAuthServer?.defaultScope}`);
     chai.assert.equal(oAuthServer?.defaultScope, `${config?.applicationIdUris}/.default`);
 
     chai.assert.isNotEmpty(config?.teamsAppTenantId);

@@ -67,9 +67,9 @@ export namespace ExtTelemetry {
       case Stage.addModule:
         return TelemetryEvent.addModule;
       case Stage.scaffold:
-        return TelemetryEvent.addModule;
+        return TelemetryEvent.scaffold;
       case Stage.addResource:
-        return TelemetryEvent.addModule;
+        return TelemetryEvent.AddResource;
       default:
         return undefined;
     }

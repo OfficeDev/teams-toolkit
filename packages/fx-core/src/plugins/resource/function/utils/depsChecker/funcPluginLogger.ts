@@ -9,24 +9,24 @@ import { DepsLogger } from "../../../../../common/deps-checker/depsLogger";
 class FuncPluginLogger implements DepsLogger {
   private detailLogLines: string[] = [];
   public debug(message: string): Promise<boolean> {
-    this.addToChache(LogLevel.Debug, message);
+    this.addToCache(LogLevel.Debug, message);
     return Promise.resolve(true);
   }
 
   public info(message: string): Promise<boolean> {
-    this.addToChache(LogLevel.Info, message);
+    this.addToCache(LogLevel.Info, message);
     Logger.info(message);
     return Promise.resolve(true);
   }
 
   public warning(message: string): Promise<boolean> {
-    this.addToChache(LogLevel.Warning, message);
+    this.addToCache(LogLevel.Warning, message);
     Logger.warning(message);
     return Promise.resolve(true);
   }
 
   public async error(message: string): Promise<boolean> {
-    this.addToChache(LogLevel.Error, message);
+    this.addToCache(LogLevel.Error, message);
     Logger.error(message);
     return Promise.resolve(true);
   }
@@ -39,7 +39,7 @@ class FuncPluginLogger implements DepsLogger {
     this.detailLogLines = [];
   }
 
-  private addToChache(level: LogLevel, message: string): void {
+  private addToCache(level: LogLevel, message: string): void {
     const line = `${LogLevel[level]} ${new Date().toISOString()}: ${message}`;
     this.detailLogLines.push(line);
   }

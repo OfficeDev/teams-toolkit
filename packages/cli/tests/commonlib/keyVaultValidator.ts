@@ -141,7 +141,7 @@ export class KeyVaultValidator {
         (await getProvisionParameterValueByKey(
           this.projectPath,
           this.env,
-          provisionParametersKey.botClientSecretName
+          provisionParametersKey.botAadAppClientSecret
         )) ?? "botClientSecret";
       const keyVaultSecretResponse = await this.getKeyVaultSecrets(
         this.keyVault.vaultUri,

@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import { ProductName } from "@microsoft/teamsfx-api";
+import * as uuid from "uuid";
 import * as vscode from "vscode";
 import {
   endLocalDebugSession,
@@ -36,6 +37,16 @@ const allRunningTeamsfxTasks: Map<IRunningTeamsfxTask, number> = new Map<
 >();
 const allRunningDebugSessions: Set<string> = new Set<string>();
 const activeNpmInstallTasks = new Set<string>();
+
+/**
+ * This EventEmitter is used to track all running tasks called by `runTask`.
+ * Each task executed by `runTask` will have an internal task id.
+ * Event emitters use this id to identify each tracked task, and `runTask` matches this id
+ * to determine whether a task is terminated or not.
+ */
+let taskEndEventEmitter: vscode.EventEmitter<{ id: string; exitCode?: number }>;
+let taskStartEventEmitter: vscode.EventEmitter<string>;
+const trackedTasks = new Set<string>();
 
 function isNpmInstallTask(task: vscode.Task): boolean {
   if (task) {
@@ -82,6 +93,41 @@ function displayTerminal(taskName: string): boolean {
   }
 
   return false;
+}
+
+export async function runTask(task: vscode.Task): Promise<number | undefined> {
+  if (task.definition.teamsfxTaskId === undefined) {
+    task.definition.teamsfxTaskId = uuid.v4();
+  }
+
+  const taskId = task.definition.teamsfxTaskId;
+  let started = false;
+
+  return new Promise<number | undefined>((resolve, reject) => {
+    // corner case but need to handle - somehow the task does not start
+    const startTimer = setTimeout(() => {
+      if (!started) {
+        reject(new Error("Task start timeout"));
+      }
+    }, 30000);
+
+    const startListener = taskStartEventEmitter.event((result) => {
+      if (taskId === result) {
+        clearTimeout(startTimer);
+        started = true;
+        startListener.dispose();
+      }
+    });
+
+    vscode.tasks.executeTask(task);
+
+    const endListener = taskEndEventEmitter.event((result) => {
+      if (taskId === result.id) {
+        endListener.dispose();
+        resolve(result.exitCode);
+      }
+    });
+  });
 }
 
 // TODO: move to local debug prerequisites checker
@@ -135,6 +181,22 @@ async function checkCustomizedPort(component: string, componentRoot: string, che
   */
 }
 
+function onDidStartTaskHandler(event: vscode.TaskStartEvent): void {
+  const taskId = event.execution.task?.definition?.teamsfxTaskId;
+  if (taskId !== undefined) {
+    trackedTasks.add(taskId);
+    taskStartEventEmitter.fire(taskId as string);
+  }
+}
+
+function onDidEndTaskHandler(event: vscode.TaskEndEvent): void {
+  const taskId = event.execution.task?.definition?.teamsfxTaskId;
+  if (taskId !== undefined && trackedTasks.has(taskId as string)) {
+    trackedTasks.delete(taskId as string);
+    taskEndEventEmitter.fire({ id: taskId as string, exitCode: undefined });
+  }
+}
+
 async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent): Promise<void> {
   if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
     const task = event.execution.task;
@@ -167,6 +229,12 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
   const timestamp = new Date();
   const task = event.execution.task;
   const activeTerminal = vscode.window.activeTerminal;
+
+  const taskId = task?.definition?.teamsfxTaskId;
+  if (taskId !== undefined) {
+    trackedTasks.delete(taskId as string);
+    taskEndEventEmitter.fire({ id: taskId as string, exitCode: event.exitCode });
+  }
 
   if (task.scope !== undefined && isTeamsfxTask(task)) {
     allRunningTeamsfxTasks.delete({ source: task.source, name: task.name, scope: task.scope });
@@ -370,6 +438,19 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
 }
 
 export function registerTeamsfxTaskAndDebugEvents(): void {
+  taskEndEventEmitter = new vscode.EventEmitter<{ id: string; exitCode?: number }>();
+  taskStartEventEmitter = new vscode.EventEmitter<string>();
+  ext.context.subscriptions.push({
+    dispose() {
+      taskEndEventEmitter.dispose();
+      taskStartEventEmitter.dispose();
+      trackedTasks.clear();
+    },
+  });
+
+  ext.context.subscriptions.push(vscode.tasks.onDidStartTask(onDidStartTaskHandler));
+  ext.context.subscriptions.push(vscode.tasks.onDidEndTask(onDidEndTaskHandler));
+
   ext.context.subscriptions.push(
     vscode.tasks.onDidStartTaskProcess((event: vscode.TaskProcessStartEvent) =>
       Correlator.runWithId(getLocalDebugSessionId(), onDidStartTaskProcessHandler, event)

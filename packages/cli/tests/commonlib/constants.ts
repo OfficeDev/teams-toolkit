@@ -107,6 +107,6 @@ export class ProjectSettingKey {
 export class provisionParametersKey {
   static readonly resourceBaseName = "resourceBaseName";
   static readonly m365ClientSecretName = "m365ClientSecretName";
-  static readonly botAadAppClientSecret = "botAadAppClientSecret";
+  static readonly botClientSecretName = "botClientSecretName";
   static readonly simpleAuthSku = "simpleAuthSku";
 }

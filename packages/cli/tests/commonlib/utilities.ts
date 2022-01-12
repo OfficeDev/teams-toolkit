@@ -242,7 +242,7 @@ export async function getExpectedBotClientSecret(
       (await getProvisionParameterValueByKey(
         projectPath,
         env,
-        provisionParametersKey.botAadAppClientSecret
+        provisionParametersKey.botClientSecretName
       )) ?? "botClientSecret";
     botClientSecret = getKeyVaultSecretReference(vaultName, secretName);
   } else {

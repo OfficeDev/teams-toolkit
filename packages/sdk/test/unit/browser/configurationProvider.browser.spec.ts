@@ -2,41 +2,33 @@
 // Licensed under the MIT license.
 
 import { assert, use as chaiUse, expect } from "chai";
-import mockedEnv from "mocked-env";
 import * as chaiPromises from "chai-as-promised";
 import {
   getApiConfigFromEnv,
   getAuthenticationConfigFromEnv,
   getSqlConfigFromEnv,
-} from "../../../src/core/configurationProvider";
+} from "../../../src/core/configurationProvider.browser";
 import { ErrorWithCode, ErrorCode } from "../../../src/index.browser";
+import {
+  MockBrowserEnvironment,
+  RestoreBrowserEnvironment,
+  authorityHost,
+  tenantId,
+  clientId,
+  simpleAuthEndpoint,
+  initiateLoginEndpoint,
+  applicationIdUri,
+} from "../helper.browser";
 
 chaiUse(chaiPromises);
 
 describe("ConfigurationProvider Tests - Browser", () => {
-  const clientId = "fake_client_id";
-  const tenantId = "fake_tenant_id";
-  const authorityHost = "https://fake_authority_host";
-  const simpleAuthEndpoint = "https://fake_simple_auth";
-  const initiateLoginEndpoint = "https://fake_login_endpoint";
-  const applicationIdUri = "fake_application_id";
-
-  let mockedEnvRestore: () => void;
-
   beforeEach(function () {
-    mockedEnvRestore = mockedEnv({
-      // Authentication
-      REACT_APP_AUTHORITY_HOST: authorityHost,
-      REACT_APP_TENANT_ID: tenantId,
-      REACT_APP_CLIENT_ID: clientId,
-      REACT_APP_TEAMSFX_ENDPOINT: simpleAuthEndpoint,
-      REACT_APP_START_LOGIN_PAGE_URL: initiateLoginEndpoint,
-      M365_APPLICATION_ID_URI: applicationIdUri,
-    });
+    MockBrowserEnvironment();
   });
 
   afterEach(function () {
-    mockedEnvRestore();
+    RestoreBrowserEnvironment();
   });
 
   it("getAuthenticationConfigFromEnv should return config set with env variables", () => {

@@ -3,7 +3,6 @@
 
 import { AccessToken } from "@azure/core-auth";
 import { assert, expect, use as chaiUse } from "chai";
-import mockedEnv from "mocked-env";
 import * as chaiPromises from "chai-as-promised";
 import {
   MsGraphAuthProvider,
@@ -12,29 +11,21 @@ import {
   ErrorCode,
 } from "../../../src/index.browser";
 import * as sinon from "sinon";
+import { MockBrowserEnvironment, RestoreBrowserEnvironment } from "../helper.browser";
 
 chaiUse(chaiPromises);
 describe("MsGraphAuthProvider Tests - Browser", () => {
-  const clientId = "fake_client_id";
-  const loginUrl = "fake_login_url";
-  const authEndpoint = "fake_auth_endpoint";
   const scopes = "fake_scope";
   const emptyScope = "";
   const defaultScope = "https://graph.microsoft.com/.default";
   const accessToken = "fake_access_token";
 
-  let mockedEnvRestore: () => void;
-
   beforeEach(function () {
-    mockedEnvRestore = mockedEnv({
-      REACT_APP_CLIENT_ID: clientId,
-      REACT_APP_TEAMSFX_ENDPOINT: authEndpoint,
-      REACT_APP_START_LOGIN_PAGE_URL: loginUrl,
-    });
+    MockBrowserEnvironment();
   });
 
   afterEach(function () {
-    mockedEnvRestore();
+    RestoreBrowserEnvironment();
   });
 
   it("create MsGraphAuthProvider instance should throw InvalidParameter error with invalid scope", function () {

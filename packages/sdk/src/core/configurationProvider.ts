@@ -6,45 +6,40 @@ import {
   AuthenticationConfiguration,
   SqlConfiguration,
 } from "../models/configuration";
-import { internalLogger } from "../util/logger";
-import { formatString, isNode } from "../util/utils";
-import { ErrorWithCode, ErrorCode, ErrorMessage } from "./errors";
 
+/**
+ * @returns Authentication configuration which is constructed from predefined env variables.
+ *
+ * @remarks
+ * Used variables: M365_AUTHORITY_HOST, M365_TENANT_ID, M365_CLIENT_ID, M365_CLIENT_SECRET,
+ * SIMPLE_AUTH_ENDPOINT, INITIATE_LOGIN_ENDPOINT, M365_APPLICATION_ID_URI
+ *
+ * @beta
+ */
 export function getAuthenticationConfigFromEnv(): AuthenticationConfiguration {
-  // TODO: test and logging
-  if (isNode) {
-    return {
-      authorityHost: process.env.M365_AUTHORITY_HOST,
-      tenantId: process.env.M365_TENANT_ID,
-      clientId: process.env.M365_CLIENT_ID,
-      clientSecret: process.env.M365_CLIENT_SECRET,
-      simpleAuthEndpoint: process.env.SIMPLE_AUTH_ENDPOINT,
-      initiateLoginEndpoint: process.env.INITIATE_LOGIN_ENDPOINT,
-      applicationIdUri: process.env.M365_APPLICATION_ID_URI,
-    };
-  } else {
-    return {
-      authorityHost: process.env.REACT_APP_AUTHORITY_HOST,
-      tenantId: process.env.REACT_APP_TENANT_ID,
-      clientId: process.env.REACT_APP_CLIENT_ID,
-      simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-      initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-      applicationIdUri: process.env.M365_APPLICATION_ID_URI,
-    };
-  }
+  return {
+    authorityHost: process.env.M365_AUTHORITY_HOST,
+    tenantId: process.env.M365_TENANT_ID,
+    clientId: process.env.M365_CLIENT_ID,
+    clientSecret: process.env.M365_CLIENT_SECRET,
+    simpleAuthEndpoint: process.env.SIMPLE_AUTH_ENDPOINT,
+    initiateLoginEndpoint: process.env.INITIATE_LOGIN_ENDPOINT,
+    applicationIdUri: process.env.M365_APPLICATION_ID_URI,
+  };
 }
 
+/**
+ * @returns API configuration which is constructed from predefined env variables.
+ *
+ * @remarks
+ * Used variables: API_ENDPOINT
+ *
+ * @beta
+ */
 export function getApiConfigFromEnv(): ApiConfiguration {
-  if (isNode) {
-    return {
-      endpoint: process.env.API_ENDPOINT,
-    };
-  } else {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "getApiConfigFromEnv"),
-      ErrorCode.RuntimeNotSupported
-    );
-  }
+  return {
+    endpoint: process.env.API_ENDPOINT,
+  };
 }
 
 /**
@@ -56,18 +51,11 @@ export function getApiConfigFromEnv(): ApiConfiguration {
  * @beta
  */
 export function getSqlConfigFromEnv(): SqlConfiguration {
-  if (isNode) {
-    return {
-      sqlServerEndpoint: process.env.SQL_ENDPOINT || "",
-      sqlUsername: process.env.SQL_USER_NAME,
-      sqlPassword: process.env.SQL_PASSWORD,
-      sqlDatabaseName: process.env.SQL_DATABASE_NAME,
-      sqlIdentityId: process.env.IDENTITY_ID,
-    };
-  } else {
-    throw new ErrorWithCode(
-      formatString(ErrorMessage.BrowserRuntimeNotSupported, "getApiConfigFromEnv"),
-      ErrorCode.RuntimeNotSupported
-    );
-  }
+  return {
+    sqlServerEndpoint: process.env.SQL_ENDPOINT || "",
+    sqlUsername: process.env.SQL_USER_NAME,
+    sqlPassword: process.env.SQL_PASSWORD,
+    sqlDatabaseName: process.env.SQL_DATABASE_NAME,
+    sqlIdentityId: process.env.IDENTITY_ID,
+  };
 }

@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { assert, expect, use as chaiUse } from "chai";
-import mockedEnv from "mocked-env";
 import * as chaiPromises from "chai-as-promised";
 import {
   createMicrosoftGraphClient,
@@ -10,28 +9,20 @@ import {
   ErrorWithCode,
   TeamsUserCredential,
 } from "../../../src/index.browser";
+import { MockBrowserEnvironment, RestoreBrowserEnvironment } from "../helper.browser";
 
 chaiUse(chaiPromises);
 describe("MsGraphClientProvider Tests - Browser", () => {
-  const clientId = "fake_client_id";
-  const loginUrl = "fake_login_url";
-  const authEndpoint = "fake_auth_endpoint";
   const scopes = "fake_scope";
   const emptyScope = "";
   const defaultScope = "https://graph.microsoft.com/.default";
 
-  let mockedEnvRestore: () => void;
-
   beforeEach(function () {
-    mockedEnvRestore = mockedEnv({
-      REACT_APP_CLIENT_ID: clientId,
-      REACT_APP_TEAMSFX_ENDPOINT: authEndpoint,
-      REACT_APP_START_LOGIN_PAGE_URL: loginUrl,
-    });
+    MockBrowserEnvironment();
   });
 
   afterEach(function () {
-    mockedEnvRestore();
+    RestoreBrowserEnvironment();
   });
 
   it("createMicrosoftGraphClient should throw InvalidParameter error with invalid scope", function () {

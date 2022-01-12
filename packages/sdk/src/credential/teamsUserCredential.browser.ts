@@ -6,7 +6,7 @@ import { UserInfo } from "../models/userinfo";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 import { Cache } from "../core/cache.browser";
 import * as microsoftTeams from "@microsoft/teams-js";
-import { getAuthenticationConfigFromEnv } from "../core/configurationProvider";
+import { getAuthenticationConfigFromEnv } from "../core/configurationProvider.browser";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { AuthCodeResult } from "../models/authCodeResult";
 import axios, { AxiosInstance } from "axios";
@@ -364,16 +364,7 @@ export class TeamsUserCredential implements TokenCredential {
     authConfig?: AuthenticationConfiguration
   ): AuthenticationConfiguration {
     internalLogger.verbose("Validate authentication configuration");
-    const config = authConfig && getAuthenticationConfigFromEnv();
-
-    if (!config) {
-      internalLogger.error(ErrorMessage.AuthenticationConfigurationNotExists);
-
-      throw new ErrorWithCode(
-        ErrorMessage.AuthenticationConfigurationNotExists,
-        ErrorCode.InvalidConfiguration
-      );
-    }
+    const config = authConfig ?? getAuthenticationConfigFromEnv();
 
     if (config.initiateLoginEndpoint && config.simpleAuthEndpoint && config.clientId) {
       return config;

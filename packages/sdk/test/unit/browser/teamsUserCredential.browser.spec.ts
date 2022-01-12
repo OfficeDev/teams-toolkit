@@ -3,11 +3,18 @@
 
 import { AccessToken } from "@azure/core-auth";
 import { assert, expect, use as chaiUse } from "chai";
-import mockedEnv from "mocked-env";
 import * as chaiPromises from "chai-as-promised";
 import { TeamsUserCredential } from "../../../src/index.browser";
 import * as sinon from "sinon";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../../src/core/errors";
+import {
+  MockBrowserEnvironment,
+  RestoreBrowserEnvironment,
+  tenantId,
+  clientId,
+  initiateLoginEndpoint,
+  simpleAuthEndpoint,
+} from "../helper.browser";
 
 chaiUse(chaiPromises);
 
@@ -15,10 +22,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
   const token = "fake_access_token";
   const scopes = "fake_scope";
   const userId = "fake_user";
-  const tenantId = "fake_tenant_id";
-  const clientId = "fake_client_id";
-  const loginUrl = "fake_login_url";
-  const authEndpoint = "fake_auth_endpoint";
 
   /** Fake sso token payload
    * {
@@ -62,18 +65,12 @@ describe("TeamsUserCredential Tests - Browser", () => {
 
   const fakeAccessToken = "fake-access-token";
 
-  let mockedEnvRestore: () => void;
-
   beforeEach(function () {
-    mockedEnvRestore = mockedEnv({
-      REACT_APP_CLIENT_ID: clientId,
-      REACT_APP_TEAMSFX_ENDPOINT: authEndpoint,
-      REACT_APP_START_LOGIN_PAGE_URL: loginUrl,
-    });
+    MockBrowserEnvironment();
   });
 
   afterEach(function () {
-    mockedEnvRestore();
+    RestoreBrowserEnvironment();
   });
 
   it("getToken and login should throw InvalidParameter error with invalid scope", async function () {
@@ -246,19 +243,9 @@ describe("TeamsUserCredential Tests - Browser", () => {
   });
 
   it("Create TeamsUserCredential should throw InvalidConfiguration when configuration is not valid", async function () {
-    // loadConfiguration({
-    //   authentication: undefined,
-    // });
-
-    // expect(() => {
-    //   new TeamsUserCredential();
-    // })
-    //   .to.throw(ErrorWithCode, ErrorMessage.AuthenticationConfigurationNotExists)
-    //   .with.property("code", ErrorCode.InvalidConfiguration);
-
     expect(() => {
       new TeamsUserCredential({
-        simpleAuthEndpoint: authEndpoint,
+        simpleAuthEndpoint: simpleAuthEndpoint,
       });
     })
       .to.throw(
@@ -269,7 +256,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
 
     expect(() => {
       new TeamsUserCredential({
-        initiateLoginEndpoint: loginUrl,
+        initiateLoginEndpoint: initiateLoginEndpoint,
       });
     })
       .to.throw(ErrorWithCode, "clientId in configuration is invalid: undefined.")

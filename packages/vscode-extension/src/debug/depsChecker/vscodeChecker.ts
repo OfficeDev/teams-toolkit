@@ -19,17 +19,15 @@ import { vscodeHelper } from "./vscodeHelper";
 
 export class VSCodeDepsChecker {
   private static learnMoreButtonText = "Learn more";
-  private readonly enableDisplayMessage: boolean;
 
   private readonly depsManager: DepsManager;
 
   constructor(
     private logger: DepsLogger,
     private telemetry: DepsTelemetry,
-    enableDisplayMessage = true
+    private enableDisplayMessage: boolean = true
   ) {
     this.depsManager = new DepsManager(logger, telemetry);
-    this.enableDisplayMessage = enableDisplayMessage;
   }
 
   private static isLinux(): boolean {

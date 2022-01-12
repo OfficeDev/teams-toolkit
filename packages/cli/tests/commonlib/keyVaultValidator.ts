@@ -25,7 +25,7 @@ const baseUrlVaultSecrets = (vaultBaseUrl: string, secretName: string, secretVer
   `${vaultBaseUrl}/secrets/${secretName}/${secretVersion}?api-version=7.2`;
 const baseUrlVaults = (subscriptionId: string, rg: string, vaultName: string) =>
   `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.KeyVault/vaults/${vaultName}?api-version=2019-09-01`;
-const baseUrlVaultAddAccessPolicy = (
+const baseUrlVaultUpdateAccessPolicy = (
   subscriptionId: string,
   rg: string,
   vaultName: string,
@@ -220,7 +220,7 @@ export class KeyVaultValidator {
         },
       };
       const getResponse = await axios.put(
-        baseUrlVaultAddAccessPolicy(subscriptionId, rg, keyVaultName, updateKind),
+        baseUrlVaultUpdateAccessPolicy(subscriptionId, rg, keyVaultName, updateKind),
         body
       );
       chai.assert.equal(getResponse.status, 200);

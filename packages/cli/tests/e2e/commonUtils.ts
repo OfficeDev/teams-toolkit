@@ -99,7 +99,10 @@ export function getAzureTenantId() {
 }
 
 export function getAzureAccountObjectId() {
-  return cfg.AZURE_ACCOUNT_OBJECT_ID || "";
+  if (!cfg.AZURE_ACCOUNT_OBJECT_ID) {
+    throw new Error("Failed to get AZURE_ACCOUNT_OBJECT_ID from environment.");
+  }
+  return cfg.AZURE_ACCOUNT_OBJECT_ID;
 }
 
 const envFilePathSuffix = path.join(".fx", "env.default.json");

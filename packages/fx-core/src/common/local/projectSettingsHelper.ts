@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { AzureSolutionSettings, ProjectSettings, v3 } from "@microsoft/teamsfx-api";
-import { isV3 } from "../../core";
+import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
 import {
   BotOptionItem,
   MessageExtensionItem,
@@ -20,16 +19,8 @@ export class ProjectSettingsHelper {
 
   public static includeFrontend = (projectSettings: ProjectSettings | undefined): boolean => {
     if (!projectSettings) return false;
-    if (isV3()) {
-      const solutionSettings = projectSettings.solutionSettings as v3.TeamsFxSolutionSettings;
-      return solutionSettings.capabilities.includes(TabOptionItem.id);
-    } else {
-      return !!(
-        projectSettings.solutionSettings as AzureSolutionSettings
-      )?.activeResourcePlugins?.some(
-        (pluginName) => pluginName === ResourcePlugins.FrontendHosting
-      );
-    }
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+    return solutionSettings.capabilities.includes(TabOptionItem.id);
   };
   public static includeBackend = (projectSettings: ProjectSettings | undefined): boolean =>
     !!(projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.some(
@@ -38,17 +29,11 @@ export class ProjectSettingsHelper {
 
   public static includeBot = (projectSettings: ProjectSettings | undefined): boolean => {
     if (!projectSettings) return false;
-    if (isV3()) {
-      const solutionSettings = projectSettings.solutionSettings as v3.TeamsFxSolutionSettings;
-      return (
-        solutionSettings.capabilities.includes(BotOptionItem.id) ||
-        solutionSettings.capabilities.includes(MessageExtensionItem.id)
-      );
-    } else {
-      return !!(
-        projectSettings?.solutionSettings as AzureSolutionSettings
-      )?.activeResourcePlugins?.some((pluginName) => pluginName === ResourcePlugins.Bot);
-    }
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
+    return (
+      solutionSettings.capabilities.includes(BotOptionItem.id) ||
+      solutionSettings.capabilities.includes(MessageExtensionItem.id)
+    );
   };
 
   public static includeAAD(projectSettings: ProjectSettings | undefined): boolean {

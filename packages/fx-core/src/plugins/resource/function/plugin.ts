@@ -15,36 +15,34 @@ import {
 import { StorageManagementClient } from "@azure/arm-storage";
 import { StringDictionary } from "@azure/arm-appservice/esm/models";
 import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
-import { v4 as uuid } from "uuid";
-import * as fs from "fs-extra";
 
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
 import {
   ConfigFunctionAppError,
+  FetchConfigError,
+  FindAppError,
+  FunctionNameConflictError,
   GetConnectionStringError,
   InitAzureSDKError,
   InstallNpmPackageError,
   InstallTeamsfxBindingError,
   ProvisionError,
-  ValidationError,
+  RegisterResourceProviderError,
   runWithErrorCatchAndThrow,
   runWithErrorCatchAndWrap,
-  FunctionNameConflictError,
-  FetchConfigError,
-  RegisterResourceProviderError,
-  FindAppError,
+  ValidationError,
 } from "./resources/errors";
 import {
   AzureInfo,
-  FunctionBicep,
   DefaultProvisionConfigs,
   DefaultValues,
   DependentPluginInfo,
+  FunctionBicep,
+  FunctionBicepFile,
   FunctionPluginInfo,
   FunctionPluginPathInfo,
   QuestionValidationFunc,
   RegularExpr,
-  FunctionBicepFile,
 } from "./constants";
 import { ErrorMessages, InfoMessages } from "./resources/message";
 import {
@@ -57,28 +55,31 @@ import {
   ResourceType,
 } from "./enums";
 import { FunctionDeploy } from "./ops/deploy";
-import { FunctionNaming, FunctionProvision } from "./ops/provision";
+import { FunctionProvision } from "./ops/provision";
 import { FunctionScaffold } from "./ops/scaffold";
-import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result";
+import { FunctionPluginResultFactory as ResultFactory, FxResult } from "./result";
 import { Logger } from "./utils/logger";
 import {
   PostProvisionSteps,
   PreDeploySteps,
   ProvisionSteps,
-  StepGroup,
   step,
+  StepGroup,
 } from "./resources/steps";
-import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
-import { Messages, isLinux, dotnetManualInstallHelpLink } from "./utils/depsChecker/common";
-import { DepsCheckerError } from "./utils/depsChecker/errors";
+import { funcDepsHelper } from "./utils/depsChecker/funcHelper";
+import { Messages } from "../../../common/deps-checker/constant/message";
+import { isLinux } from "../../../common/deps-checker/util/system";
+import { dotnetManualInstallHelpLink } from "../../../common/deps-checker/constant/helpLink";
+import { DepsCheckerError, LinuxNotSupportedError } from "../../../common/deps-checker/depsError";
+import { CheckerFactory } from "../../../common/deps-checker/checkerFactory";
+import { DepsChecker, DepsType } from "../../../common/deps-checker/depsChecker";
+import { funcDepsTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
+import { funcDepsLogger } from "./utils/depsChecker/funcPluginLogger";
 import { getNodeVersion } from "./utils/node-version";
-import { FuncPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
-import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
-import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
-import { Bicep, ConstantString } from "../../../common/constants";
+import { Bicep } from "../../../common/constants";
 import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
@@ -862,47 +863,28 @@ export class FunctionPluginImpl {
   }
 
   private async handleDotnetChecker(ctx: PluginContext): Promise<void> {
-    try {
-      const telemetry = new FuncPluginTelemetry();
-      const funcPluginAdapter = new FuncPluginAdapter(ctx, telemetry);
-      await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
-        const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, telemetry);
-        try {
-          if (!(await dotnetChecker.isEnabled()) || (await dotnetChecker.isInstalled())) {
-            return;
-          }
-        } catch (error) {
-          funcPluginLogger.debug(InfoMessages.failedToCheckDotnet(error));
-          funcPluginAdapter.handleDotnetError(error);
+    const dotnetChecker: DepsChecker = CheckerFactory.createChecker(
+      DepsType.Dotnet,
+      funcDepsLogger,
+      funcDepsTelemetry
+    );
+    await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
+      try {
+        if (!(await funcDepsHelper.dotnetCheckerEnabled(ctx))) {
           return;
         }
-
-        if (isLinux()) {
-          // TODO: handle linux installation
-          if (!(await funcPluginAdapter.handleDotnetForLinux(dotnetChecker))) {
-            // NOTE: this is a temporary fix for Linux, to make the error message more readable.
-            const message = await funcPluginAdapter.generateMsg(
-              Messages.linuxDepsNotFoundHelpLinkMessage,
-              [dotnetChecker]
-            );
-            funcPluginAdapter.handleDotnetError(
-              new DepsCheckerError(message, dotnetManualInstallHelpLink)
-            );
-          }
+        await dotnetChecker.resolve();
+      } catch (error) {
+        if (error instanceof LinuxNotSupportedError) {
           return;
         }
-
-        try {
-          await dotnetChecker.install();
-        } catch (error) {
-          await funcPluginLogger.printDetailLog();
-          funcPluginLogger.error(InfoMessages.failedToInstallDotnet(error));
-          funcPluginAdapter.handleDotnetError(error);
-        }
-      });
-    } finally {
-      funcPluginLogger.cleanup();
-    }
+        funcDepsLogger.error(InfoMessages.failedToInstallDotnet(error));
+        await funcDepsLogger.printDetailLog();
+        throw funcDepsHelper.transferError(error);
+      } finally {
+        funcDepsLogger.cleanup();
+      }
+    });
   }
 
   private async handleBackendExtensionsInstall(
@@ -918,8 +900,7 @@ export class FunctionPluginImpl {
             await FunctionDeploy.installFuncExtensions(ctx, workingPath, functionLanguage);
           } catch (error) {
             // wrap the original error to UserError so the extensibility model will pop-up a dialog correctly
-            const telemetry = new FuncPluginTelemetry();
-            new FuncPluginAdapter(ctx, telemetry).handleDotnetError(error);
+            throw funcDepsHelper.transferError(error);
           }
         })
     );

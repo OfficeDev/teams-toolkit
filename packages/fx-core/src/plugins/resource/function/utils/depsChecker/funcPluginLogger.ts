@@ -45,11 +45,12 @@ class FuncPluginLogger implements DepsLogger {
   }
 
   public async append(message: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
+    return true;
   }
 
   public async appendLine(message: string): Promise<boolean> {
-    throw new Error("Method not implemented.");
+    Logger.info(message);
+    return true;
   }
 }
 

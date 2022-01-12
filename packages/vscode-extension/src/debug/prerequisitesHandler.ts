@@ -9,6 +9,7 @@ import {
   Result,
   returnSystemError,
   returnUserError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 
 import { LocalEnvManager } from "@microsoft/teamsfx-core";
@@ -17,6 +18,7 @@ import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
+import { ext } from "../extensionVariables";
 import { tools } from "../handlers";
 import * as StringResources from "../resources/Strings.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
@@ -41,10 +43,34 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
 
     const failures: CheckFailure[] = [];
     const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-    // TODO: LocalEnvManager deps
+    const workspacePath = ext.workspaceUri.fsPath;
 
-    // login
-    const accountFailure = await checkM365Account();
+    // Get project settings
+    const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
+
+    // trigger login checker since it may have user interaction
+    const accountFailurePromise = checkM365Account();
+
+    // check port
+    const portsInUse = await localEnvManager.getPortsInUse(workspacePath, projectSettings);
+    if (portsInUse.length > 0) {
+      let message: string;
+      if (portsInUse.length > 1) {
+        message = util.format(
+          StringResources.vsc.localDebug.portsAlreadyInUse,
+          portsInUse.join(", ")
+        );
+      } else {
+        message = util.format(StringResources.vsc.localDebug.portAlreadyInUse, portsInUse[0]);
+      }
+      failures.push({
+        checker: "Ports",
+        error: new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource),
+      });
+    }
+
+    // await login checker
+    const accountFailure = await accountFailurePromise;
     if (accountFailure) {
       failures.push(accountFailure);
     }

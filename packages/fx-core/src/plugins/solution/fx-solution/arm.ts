@@ -17,6 +17,7 @@ import {
   returnSystemError,
   returnUserError,
   SolutionContext,
+  SystemError,
   UserError,
   v2,
   v3,
@@ -603,9 +604,21 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       );
     }
   } catch (error) {
-    result = err(
-      returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
-    );
+    if (error instanceof UserError || error instanceof SystemError) {
+      result = err(error);
+    } else if (error instanceof Error) {
+      result = err(
+        returnSystemError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+      );
+    } else {
+      result = err(
+        returnSystemError(
+          new Error(JSON.stringify(error)),
+          SolutionSource,
+          SolutionError.FailedToDeployArmTemplatesToAzure
+        )
+      );
+    }
     sendErrorTelemetryThenReturnError(
       SolutionTelemetryEvent.ArmDeployment,
       result.error,
@@ -649,9 +662,21 @@ export async function deployArmTemplatesV3(
       );
     }
   } catch (error) {
-    result = err(
-      returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
-    );
+    if (error instanceof UserError || error instanceof SystemError) {
+      result = err(error);
+    } else if (error instanceof Error) {
+      result = err(
+        returnSystemError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+      );
+    } else {
+      result = err(
+        returnSystemError(
+          new Error(JSON.stringify(error)),
+          SolutionSource,
+          SolutionError.FailedToDeployArmTemplatesToAzure
+        )
+      );
+    }
     sendErrorTelemetryThenReturnError(
       SolutionTelemetryEvent.ArmDeployment,
       result.error,

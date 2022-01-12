@@ -896,9 +896,6 @@ async function cleanup(projectPath: string, backupFolder: string | undefined): P
 }
 
 async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {
-  if (!preCheckEnvEnabled()) {
-    return false;
-  }
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (!inputs.projectPath) {
     return false;
@@ -924,10 +921,6 @@ async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolea
     return true;
   }
   return false;
-}
-
-function preCheckEnvEnabled() {
-  return true;
 }
 
 export async function migrateArm(ctx: CoreHookContext) {

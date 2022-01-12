@@ -62,6 +62,7 @@ export class StateConfigKey {
   static readonly webAppResourceId = "webAppResourceId";
   // bot
   static readonly botId = "botId";
+  static readonly botPassword = "botPassword";
   // sql
   static readonly skipAddingUser = "skipAddingUser";
   static readonly sqlEndpoint: string = "sqlEndpoint";

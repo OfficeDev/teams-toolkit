@@ -113,7 +113,7 @@ export class FunctionValidator {
     );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
-      await getExpectedM365ClientSecret(activeResourcePlugins)
+      await getExpectedM365ClientSecret(this.ctx, this.projectPath, this.env, activeResourcePlugins)
     );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.IDENTITY_ID],

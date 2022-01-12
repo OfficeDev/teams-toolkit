@@ -86,7 +86,7 @@ export class SimpleAuthValidator {
     );
     chai.assert.equal(
       response[PropertiesKeys.clientSecret],
-      await getExpectedM365ClientSecret(activeResourcePlugins)
+      await getExpectedM365ClientSecret(this.ctx, this.projectPath, this.env, activeResourcePlugins)
     );
     chai.assert.equal(
       response[PropertiesKeys.identifierUri],

@@ -200,25 +200,28 @@ export function getExpectedM365ApplicationIdUri(ctx: any, activeResourcePlugins:
 }
 
 export async function getExpectedM365ClientSecret(
+  ctx: any,
+  projectPath: string,
+  env: string,
   activeResourcePlugins: string[]
 ): Promise<string> {
   let m365ClientSecret: string;
   if (activeResourcePlugins.includes(PluginId.KeyVault)) {
     const vaultName = getKeyVaultNameFromResourceId(
-      this.ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
+      ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
     );
     const secretName =
       (await getProvisionParameterValueByKey(
-        this.projectPath,
-        this.env,
+        projectPath,
+        env,
         provisionParametersKey.m365ClientSecretName
       )) ?? "m365ClientSecret";
     m365ClientSecret = getKeyVaultSecretReference(vaultName, secretName);
   } else {
     m365ClientSecret = await CliHelper.getUserSettings(
       `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
-      this.projectPath,
-      this.env
+      projectPath,
+      env
     );
   }
   return m365ClientSecret;

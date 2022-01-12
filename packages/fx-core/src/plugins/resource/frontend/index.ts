@@ -119,6 +119,16 @@ export class FrontendPlugin implements Plugin {
     );
   }
 
+  public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (isVsCallingCli()) {
+      throw new NotImplemented();
+    }
+    FrontendPlugin.setContext(ctx);
+    return this.runWithErrorHandling(ctx, TelemetryEvent.LocalDebug, () =>
+      this.frontendPluginImpl.localDebug(ctx)
+    );
+  }
+
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<TeamsFxResult> {
     if (isVsCallingCli()) {
       return ok(undefined);

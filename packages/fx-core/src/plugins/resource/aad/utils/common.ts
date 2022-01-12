@@ -2,7 +2,6 @@
 // Licensed under the MIT license.
 
 import { LogProvider, PluginContext } from "@microsoft/teamsfx-api";
-import { isMultiEnvEnabled } from "../../../..";
 import { ConfigFilePath, ConfigKeys, Constants, Messages } from "../constants";
 import { GetSkipAppConfigError } from "../errors";
 import { IAADDefinition } from "../interfaces/IAADDefinition";
@@ -47,19 +46,15 @@ export class Utils {
   }
 
   public static getConfigFileName(ctx: PluginContext, isLocalDebug: boolean): string {
-    if (isMultiEnvEnabled()) {
-      if (isLocalDebug) {
-        return ConfigFilePath.LocalSettings;
-      } else {
-        return ConfigFilePath.State(ctx.envInfo.envName);
-      }
+    if (isLocalDebug) {
+      return ConfigFilePath.LocalSettings;
     } else {
-      return ConfigFilePath.Default;
+      return ConfigFilePath.State(ctx.envInfo.envName);
     }
   }
 
   public static getInputFileName(ctx: PluginContext): string {
-    return isMultiEnvEnabled() ? ConfigFilePath.Input(ctx.envInfo.envName) : ConfigFilePath.Default;
+    return ConfigFilePath.Input(ctx.envInfo.envName);
   }
 
   public static async getCurrentTenantId(ctx: PluginContext): Promise<string> {
@@ -69,11 +64,6 @@ export class Utils {
   }
 
   public static skipAADProvision(ctx: PluginContext, isLocalDebug = false): boolean {
-    if (!isMultiEnvEnabled()) {
-      const skip = ctx.config.get(ConfigKeys.skip) as boolean;
-      return skip;
-    }
-
     const objectId = isLocalDebug
       ? ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, true)
       : ctx.envInfo.config.auth?.objectId;

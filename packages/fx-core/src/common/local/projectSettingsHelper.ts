@@ -2,7 +2,13 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, ProjectSettings, v3 } from "@microsoft/teamsfx-api";
+import { isV3 } from "../../core";
+import {
+  BotOptionItem,
+  MessageExtensionItem,
+  TabOptionItem,
+} from "../../plugins/solution/fx-solution/question";
 import { ResourcePlugins } from "../constants";
 import { IsSimpleAuthEnabled } from "../tools";
 
@@ -12,20 +18,38 @@ export class ProjectSettingsHelper {
       (pluginName) => pluginName === ResourcePlugins.SPFx
     );
 
-  public static includeFrontend = (projectSettings: ProjectSettings | undefined): boolean =>
-    !!(projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.some(
-      (pluginName) => pluginName === ResourcePlugins.FrontendHosting
-    );
-
+  public static includeFrontend = (projectSettings: ProjectSettings | undefined): boolean => {
+    if (!projectSettings) return false;
+    if (isV3()) {
+      const solutionSettings = projectSettings.solutionSettings as v3.TeamsFxSolutionSettings;
+      return solutionSettings.capabilities.includes(TabOptionItem.id);
+    } else {
+      return !!(
+        projectSettings.solutionSettings as AzureSolutionSettings
+      )?.activeResourcePlugins?.some(
+        (pluginName) => pluginName === ResourcePlugins.FrontendHosting
+      );
+    }
+  };
   public static includeBackend = (projectSettings: ProjectSettings | undefined): boolean =>
     !!(projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.some(
       (pluginName) => pluginName === ResourcePlugins.Function
     );
 
-  public static includeBot = (projectSettings: ProjectSettings | undefined): boolean =>
-    !!(projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.some(
-      (pluginName) => pluginName === ResourcePlugins.Bot
-    );
+  public static includeBot = (projectSettings: ProjectSettings | undefined): boolean => {
+    if (!projectSettings) return false;
+    if (isV3()) {
+      const solutionSettings = projectSettings.solutionSettings as v3.TeamsFxSolutionSettings;
+      return (
+        solutionSettings.capabilities.includes(BotOptionItem.id) ||
+        solutionSettings.capabilities.includes(MessageExtensionItem.id)
+      );
+    } else {
+      return !!(
+        projectSettings?.solutionSettings as AzureSolutionSettings
+      )?.activeResourcePlugins?.some((pluginName) => pluginName === ResourcePlugins.Bot);
+    }
+  };
 
   public static includeAAD(projectSettings: ProjectSettings | undefined): boolean {
     const selectedPlugins = (projectSettings?.solutionSettings as AzureSolutionSettings)

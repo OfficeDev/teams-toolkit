@@ -32,6 +32,7 @@ import "./v2";
 import "./v3";
 import { DotnetPluginImpl } from "./dotnet/plugin";
 import { DotnetPluginInfo } from "./dotnet/constants";
+import { PluginImpl } from "./interface";
 
 @Service(ResourcePlugins.FrontendPlugin)
 export class FrontendPlugin implements Plugin {
@@ -43,6 +44,10 @@ export class FrontendPlugin implements Plugin {
   }
   frontendPluginImpl = new FrontendPluginImpl();
   dotnetPluginImpl = new DotnetPluginImpl();
+
+  private getImpl(ctx: PluginContext): PluginImpl {
+    return FrontendPlugin.isVsPlatform(ctx) ? this.dotnetPluginImpl : this.frontendPluginImpl;
+  }
 
   private static setContext(ctx: PluginContext): void {
     const component = this.isVsPlatform(ctx)
@@ -59,66 +64,42 @@ export class FrontendPlugin implements Plugin {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Scaffold, () =>
-      FrontendPlugin.isVsPlatform(ctx)
-        ? this.dotnetPluginImpl.scaffold(ctx)
-        : this.frontendPluginImpl.scaffold(ctx)
+      this.getImpl(ctx).scaffold(ctx)
     );
-  }
-
-  public async preProvision(ctx: PluginContext): Promise<TeamsFxResult> {
-    return ok(undefined);
-  }
-
-  public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
-    return ok(undefined);
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PostProvision, () =>
-      FrontendPlugin.isVsPlatform(ctx)
-        ? this.dotnetPluginImpl.postProvision(ctx)
-        : this.frontendPluginImpl.postProvision(ctx)
+      this.getImpl(ctx).postProvision(ctx)
     );
   }
 
   public async preDeploy(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (FrontendPlugin.isVsPlatform(ctx)) {
-      return ok(undefined);
-    }
-
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PreDeploy, () =>
-      this.frontendPluginImpl.preDeploy(ctx)
+      this.getImpl(ctx).preDeploy(ctx)
     );
   }
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.Deploy, () =>
-      FrontendPlugin.isVsPlatform(ctx)
-        ? this.dotnetPluginImpl.deploy(ctx)
-        : this.frontendPluginImpl.deploy(ctx)
+      this.getImpl(ctx).deploy(ctx)
     );
   }
 
   public async updateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
-    if (FrontendPlugin.isVsPlatform(ctx)) {
-      throw new NotImplemented();
-    }
-
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.UpdateArmTemplates, () =>
-      this.frontendPluginImpl.updateArmTemplates(ctx)
+      this.getImpl(ctx).updateArmTemplates(ctx)
     );
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.GenerateArmTemplates, () =>
-      FrontendPlugin.isVsPlatform(ctx)
-        ? this.dotnetPluginImpl.generateArmTemplates(ctx)
-        : this.frontendPluginImpl.generateArmTemplates(ctx)
+      this.getImpl(ctx).generateArmTemplates(ctx)
     );
   }
 
@@ -133,15 +114,11 @@ export class FrontendPlugin implements Plugin {
   }
 
   public async executeUserTask(func: Func, ctx: PluginContext): Promise<TeamsFxResult> {
-    if (FrontendPlugin.isVsPlatform(ctx)) {
-      return ok(undefined);
-    }
-
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(
       ctx,
       TelemetryEvent.ExecuteUserTask,
-      () => this.frontendPluginImpl.executeUserTask(func, ctx),
+      () => this.getImpl(ctx).executeUserTask(func, ctx),
       { method: func.method }
     );
   }

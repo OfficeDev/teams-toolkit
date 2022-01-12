@@ -35,6 +35,8 @@ import { Bicep } from "../../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
 import { ArmTemplateResult } from "../../../../common/armInterface";
+import { PluginImpl } from "../interface";
+import { Func } from "@microsoft/teamsfx-api";
 
 type Site = WebSiteManagementModels.Site;
 
@@ -57,7 +59,7 @@ export interface DotnetPluginConfig {
   site?: Site;
 }
 
-export class DotnetPluginImpl {
+export class DotnetPluginImpl implements PluginImpl {
   config: DotnetPluginConfig = {};
 
   private syncConfigFromContext(ctx: PluginContext): void {
@@ -140,7 +142,19 @@ export class DotnetPluginImpl {
     return ok(result);
   }
 
+  public async updateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
+    return ok(undefined);
+  }
+
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
+    return ok(undefined);
+  }
+
+  public async preDeploy(ctx: PluginContext): Promise<TeamsFxResult> {
+    return ok(undefined);
+  }
+
+  public async executeUserTask(func: Func, ctx: PluginContext): Promise<TeamsFxResult> {
     return ok(undefined);
   }
 

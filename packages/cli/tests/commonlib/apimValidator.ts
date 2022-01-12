@@ -12,8 +12,8 @@ import {
   getApimServiceNameFromResourceId,
   getAuthServiceNameFromResourceId,
   getproductNameFromResourceId,
-} from "../../../fx-core/src/plugins/resource/apim/utils/commonUtils";
-import { getResourceGroupNameFromResourceId } from "./utilities";
+  getResourceGroupNameFromResourceId,
+} from "./utilities";
 
 export class ApimValidator {
   static apimClient?: ApiManagementClient;

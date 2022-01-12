@@ -185,6 +185,8 @@ export class BotValidator {
       chai.assert(servicePlanResponse, botObject.appServicePlan);
     }
 
+    // TODO: validate keyvault secret
+
     console.log("Successfully validate Bot Provision.");
   }
 

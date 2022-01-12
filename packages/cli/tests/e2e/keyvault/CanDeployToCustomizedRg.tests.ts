@@ -6,23 +6,23 @@
  */
 
 import path from "path";
-
-import { AadValidator, BotValidator } from "../../commonlib";
+import { AadValidator, FunctionValidator } from "../../commonlib";
 import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   cleanUp,
+  setSimpleAuthSkuNameToB1Bicep,
   readContextMultiEnv,
   createResourceGroup,
   deleteResourceGroupByName,
-  setBotSkuNameToB1Bicep,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, ResourceToDeploy } from "../../commonlib/constants";
+import { Capability, Resource } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
+import { KeyVaultValidator } from "../../commonlib/keyVaultValidator";
 
 describe("Deploy to customized resource group", function () {
   const testFolder = getTestFolder();
@@ -32,12 +32,13 @@ describe("Deploy to customized resource group", function () {
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false, true);
+    await cleanUp(appName, projectPath, true, false, false, true);
   });
 
-  it(`bot project can deploy bot resource to customized resource group and successfully provision / deploy`, async function () {
-    // Create new bot project
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
+  it(`tab + key vault project can deploy keyvault resource to customized resource group and successfully provision`, async function () {
+    // Create new tab + keyvault project
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
+    await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);
 
     // Create empty resource group
     const customizedRgName = `${appName}-customized-rg`;
@@ -47,19 +48,15 @@ describe("Deploy to customized resource group", function () {
     await customizeBicepFilesToCustomizedRg(
       customizedRgName,
       projectPath,
-      `name: 'botProvision'`,
-      `name: 'addTeamsFxBotConfiguration'`
+      `name: 'keyVaultProvision'`
     );
 
     // Provision
-    await setBotSkuNameToB1Bicep(projectPath, env);
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
-    // deploy
-    await CliHelper.deployProject(ResourceToDeploy.Bot, projectPath);
-
-    // Assert
+    // Validate Provision
     {
       const context = await readContextMultiEnv(projectPath, env);
 
@@ -67,10 +64,9 @@ describe("Deploy to customized resource group", function () {
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
 
-      // Validate Bot
-      const bot = BotValidator.init(context, true);
-      await BotValidator.validateProvision(bot, true);
-      await BotValidator.validateDeploy(bot);
+      // Validate Key Vault
+      const keyVault = new KeyVaultValidator(context, projectPath, env);
+      await keyVault.validate();
     }
 
     await deleteResourceGroupByName(customizedRgName);

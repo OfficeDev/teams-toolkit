@@ -5,17 +5,16 @@ import * as chai from "chai";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
 import {
   getActivePluginsFromProjectSetting,
-  getKeyVaultSecretReference,
   getProvisionParameterValueByKey,
 } from "../e2e/commonUtils";
-import { CliHelper } from "./cliHelper";
 import { StateConfigKey, PluginId, provisionParametersKey } from "./constants";
 import {
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
   getWebappSettings,
   getWebappServicePlan,
-  getKeyVaultNameFromResourceId,
+  getExpectedM365ClientSecret,
+  getExpectedM365ApplicationIdUri,
 } from "./utilities";
 
 export class PropertiesKeys {
@@ -87,11 +86,11 @@ export class SimpleAuthValidator {
     );
     chai.assert.equal(
       response[PropertiesKeys.clientSecret],
-      await this.getM365ClientSecret(activeResourcePlugins)
+      await getExpectedM365ClientSecret(activeResourcePlugins)
     );
     chai.assert.equal(
       response[PropertiesKeys.identifierUri],
-      this.getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
+      getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
     );
     chai.assert.equal(
       response[PropertiesKeys.oauthAuthority],
@@ -121,44 +120,5 @@ export class SimpleAuthValidator {
     chai.assert(serivcePlanResponse, expectedServicePlan);
 
     console.log("Successfully validate Simple Auth.");
-  }
-
-  private getExpectedM365ApplicationIdUri(ctx: any, activeResourcePlugins: string[]): string {
-    let expectedM365ApplicationIdUri = "";
-    if (activeResourcePlugins.includes(PluginId.FrontendHosting)) {
-      const tabDomain = ctx[PluginId.FrontendHosting][StateConfigKey.domain];
-      const m365ClientId = ctx[PluginId.Aad][StateConfigKey.clientId];
-      expectedM365ApplicationIdUri =
-        `api://${tabDomain}/` +
-        (activeResourcePlugins.includes(PluginId.Bot)
-          ? `botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`
-          : `${m365ClientId}`);
-    } else if (activeResourcePlugins.includes(PluginId.Bot)) {
-      expectedM365ApplicationIdUri = `api://botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`;
-    }
-    return expectedM365ApplicationIdUri;
-  }
-
-  private async getM365ClientSecret(activeResourcePlugins: string[]): Promise<string> {
-    let m365ClientSecret: string;
-    if (activeResourcePlugins.includes(PluginId.KeyVault)) {
-      const vaultName = getKeyVaultNameFromResourceId(
-        this.ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
-      );
-      const secretName =
-        (await getProvisionParameterValueByKey(
-          this.projectPath,
-          this.env,
-          provisionParametersKey.m365ClientSecretName
-        )) ?? "m365ClientSecret";
-      m365ClientSecret = getKeyVaultSecretReference(vaultName, secretName);
-    } else {
-      m365ClientSecret = await CliHelper.getUserSettings(
-        `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
-        this.projectPath,
-        this.env
-      );
-    }
-    return m365ClientSecret;
   }
 }

@@ -2,6 +2,9 @@
 // Licensed under the MIT license.
 import * as uuid from "uuid";
 import axios from "axios";
+import { PluginId, provisionParametersKey, StateConfigKey } from "./constants";
+import { getKeyVaultSecretReference, getProvisionParameterValueByKey } from "../e2e/commonUtils";
+import { CliHelper } from "./cliHelper";
 const failedToParseResourceIdErrorMessage = (name: string, resourceId: string) =>
   `Failed to parse ${name} from resource id ${resourceId}`;
 
@@ -178,4 +181,45 @@ export async function runWithRetry<T>(fn: () => Promise<T>) {
 
 export function getUuid(): string {
   return uuid.v4();
+}
+
+export function getExpectedM365ApplicationIdUri(ctx: any, activeResourcePlugins: string[]): string {
+  let expectedM365ApplicationIdUri = "";
+  if (activeResourcePlugins.includes(PluginId.FrontendHosting)) {
+    const tabDomain = ctx[PluginId.FrontendHosting][StateConfigKey.domain];
+    const m365ClientId = ctx[PluginId.Aad][StateConfigKey.clientId];
+    expectedM365ApplicationIdUri =
+      `api://${tabDomain}/` +
+      (activeResourcePlugins.includes(PluginId.Bot)
+        ? `botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`
+        : `${m365ClientId}`);
+  } else if (activeResourcePlugins.includes(PluginId.Bot)) {
+    expectedM365ApplicationIdUri = `api://botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`;
+  }
+  return expectedM365ApplicationIdUri;
+}
+
+export async function getExpectedM365ClientSecret(
+  activeResourcePlugins: string[]
+): Promise<string> {
+  let m365ClientSecret: string;
+  if (activeResourcePlugins.includes(PluginId.KeyVault)) {
+    const vaultName = getKeyVaultNameFromResourceId(
+      this.ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
+    );
+    const secretName =
+      (await getProvisionParameterValueByKey(
+        this.projectPath,
+        this.env,
+        provisionParametersKey.m365ClientSecretName
+      )) ?? "m365ClientSecret";
+    m365ClientSecret = getKeyVaultSecretReference(vaultName, secretName);
+  } else {
+    m365ClientSecret = await CliHelper.getUserSettings(
+      `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
+      this.projectPath,
+      this.env
+    );
+  }
+  return m365ClientSecret;
 }

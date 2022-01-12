@@ -3,13 +3,16 @@
 
 import axios from "axios";
 import * as chai from "chai";
-import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
+import MockAzureAccountProvider, {
+  AzureAccountProviderUserPassword,
+} from "../../src/commonlib/azureLoginUserPassword";
 import {
   getActivePluginsFromProjectSetting,
   getAzureAccountObjectId,
   getAzureTenantId,
   getProvisionParameterValueByKey,
 } from "../e2e/commonUtils";
+import { CliHelper } from "./cliHelper";
 import { PluginId, provisionParametersKey, StateConfigKey } from "./constants";
 import {
   getKeyVaultNameFromResourceId,
@@ -22,12 +25,23 @@ const baseUrlVaultSecrets = (vaultBaseUrl: string, secretName: string, secretVer
   `${vaultBaseUrl}/secrets/${secretName}/${secretVersion}?api-version=7.2`;
 const baseUrlVaults = (subscriptionId: string, rg: string, vaultName: string) =>
   `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.KeyVault/vaults/${vaultName}?api-version=2019-09-01`;
-const baseUrlVaultAddAccessPolicy = (subscriptionId: string, rg: string, vaultName: string) =>
-  `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.KeyVault/vaults/${vaultName}/accessPolicies/add?api-version=2019-09-01`;
+const baseUrlVaultAddAccessPolicy = (
+  subscriptionId: string,
+  rg: string,
+  vaultName: string,
+  updateKind: string
+) =>
+  `https://management.azure.com/subscriptions/${subscriptionId}/resourceGroups/${rg}/providers/Microsoft.KeyVault/vaults/${vaultName}/accessPolicies/${updateKind}?api-version=2019-09-01`;
 
 export interface IKeyVaultObject {
   name: string;
   vaultUri: string;
+}
+
+enum AccessPolicyUpdateKind {
+  Add = "add",
+  Remove = "remove",
+  Replace = "replace",
 }
 
 export class KeyVaultValidator {
@@ -76,17 +90,28 @@ export class KeyVaultValidator {
     );
     chai.assert.exists(keyVaultResponse);
 
-    // Update permission
-    await this.updateKeyVaultPermission(
+    await this.validateKeyVaultSecrets(tokenProvider, token as string);
+
+    console.log("Successfully validate Key Vault.");
+  }
+
+  private async validateKeyVaultSecrets(
+    tokenProvider: AzureAccountProviderUserPassword,
+    token: string
+  ) {
+    console.log("Validating key vault secrets.");
+
+    // Add "get secret" permission for test account
+    await this.updateKeyVaultGetSecretPermission(
       this.subscriptionId,
       this.rg,
       this.keyVault.name,
-      token as string,
+      token,
       getAzureTenantId(),
-      getAzureAccountObjectId()
+      getAzureAccountObjectId(),
+      AccessPolicyUpdateKind.Add
     );
 
-    console.log("Validating key vault secrets.");
     const identityTokenCredential = await tokenProvider.getIdentityCredentialAsync();
     const tokenToGetSecret = (await identityTokenCredential?.getToken(keyvaultScope))?.token;
 
@@ -102,6 +127,13 @@ export class KeyVaultValidator {
       tokenToGetSecret as string
     );
     chai.assert.exists(keyVaultSecretResponse);
+    const expectedM365ClientSecret = await CliHelper.getUserSettings(
+      `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
+      this.projectPath,
+      this.env
+    );
+    console.log(`[dilin-debug] expectedM365ClientSecret: ${expectedM365ClientSecret}`);
+    chai.assert.equal(keyVaultSecretResponse, expectedM365ClientSecret);
 
     const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
     chai.assert.isArray(activeResourcePlugins);
@@ -118,8 +150,27 @@ export class KeyVaultValidator {
         tokenToGetSecret as string
       );
       chai.assert.exists(keyVaultSecretResponse);
+      const expectedBotClientSecret = await CliHelper.getUserSettings(
+        `${PluginId.Bot}.${StateConfigKey.botPassword}`,
+        this.projectPath,
+        this.env
+      );
+      console.log(`[dilin-debug] expectedBotClientSecret: ${expectedBotClientSecret}`);
+      chai.assert.equal(keyVaultSecretResponse, expectedBotClientSecret);
     }
-    console.log("Successfully validate Key Vault.");
+
+    // Remove "get secret" permission for test account
+    await this.updateKeyVaultGetSecretPermission(
+      this.subscriptionId,
+      this.rg,
+      this.keyVault.name,
+      token,
+      getAzureTenantId(),
+      getAzureAccountObjectId(),
+      AccessPolicyUpdateKind.Remove
+    );
+
+    console.log("Successfully validate key vault secrets.");
   }
 
   private async getKeyVaultSecrets(
@@ -142,16 +193,17 @@ export class KeyVaultValidator {
     return undefined;
   }
 
-  private async updateKeyVaultPermission(
+  private async updateKeyVaultGetSecretPermission(
     subscriptionId: string,
     rg: string,
     keyVaultName: string,
     token: string,
     tenantId: string,
-    objectId: string
+    objectId: string,
+    updateKind: AccessPolicyUpdateKind
   ) {
     console.log(
-      `Add key vault "get secret" permission for ${objectId} on key vault ${keyVaultName}, subscription id: ${subscriptionId}.`
+      `${updateKind} key vault "get secret" permission for ${objectId} on key vault ${keyVaultName}, subscription id: ${subscriptionId}.`
     );
 
     try {
@@ -170,7 +222,7 @@ export class KeyVaultValidator {
         },
       };
       const getResponse = await axios.put(
-        baseUrlVaultAddAccessPolicy(subscriptionId, rg, keyVaultName),
+        baseUrlVaultAddAccessPolicy(subscriptionId, rg, keyVaultName, updateKind),
         body
       );
       chai.assert.equal(getResponse.status, 200);
@@ -178,7 +230,7 @@ export class KeyVaultValidator {
       console.log(error);
     }
 
-    console.log("Successfully Update key vault permission");
+    console.log(`Successfully ${updateKind} key vault "get secret" permission`);
   }
 
   private async getKeyVault(

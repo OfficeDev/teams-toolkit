@@ -321,7 +321,7 @@ export async function registerAccountTreeHandler(): Promise<Result<Void, FxError
           contextValue: "signedinM365",
           icon: "M365",
         };
-        tools.treeProvider?.refresh([treeItem]);
+        tools.treeProvider?.add([treeItem]);
       }
     } else if (status === "SigningIn") {
       tools.treeProvider?.refresh([

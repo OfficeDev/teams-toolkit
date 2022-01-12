@@ -23,6 +23,7 @@ export class PropertiesKeys {
   static oauthAuthority = "OAUTH_AUTHORITY";
   static identifierUri = "IDENTIFIER_URI";
   static aadMetadataAddreass = "AAD_METADATA_ADDRESS";
+  static tabAppEndpoint = "TAB_APP_ENDPOINT";
 }
 
 export interface ISimpleAuthObject {
@@ -102,6 +103,12 @@ export class SimpleAuthValidator {
         this.ctx[PluginId.Aad][StateConfigKey.oauthAuthority]
       }/v2.0/.well-known/openid-configuration`
     );
+    if (activeResourcePlugins.includes(PluginId.FrontendHosting)) {
+      chai.assert.equal(
+        response[PropertiesKeys.tabAppEndpoint],
+        this.ctx[PluginId.FrontendHosting][StateConfigKey.endpoint]
+      );
+    }
 
     console.log("Validating app service plan.");
     const servicePlanName = resourceName.replace("-webapp", "-serverfarms");

@@ -99,7 +99,6 @@ export function getAzureTenantId() {
 }
 
 export function getAzureAccountObjectId() {
-  console.log(`[dilin-debug]  cfg.AZURE_ACCOUNT_OBJECT_ID: ${cfg.AZURE_ACCOUNT_OBJECT_ID}`);
   return cfg.AZURE_ACCOUNT_OBJECT_ID || "";
 }
 

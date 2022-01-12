@@ -132,7 +132,6 @@ export class KeyVaultValidator {
       this.projectPath,
       this.env
     );
-    console.log(`[dilin-debug] expectedM365ClientSecret: ${expectedM365ClientSecret}`);
     chai.assert.equal(keyVaultSecretResponse, expectedM365ClientSecret);
 
     const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
@@ -155,7 +154,6 @@ export class KeyVaultValidator {
         this.projectPath,
         this.env
       );
-      console.log(`[dilin-debug] expectedBotClientSecret: ${expectedBotClientSecret}`);
       chai.assert.equal(keyVaultSecretResponse, expectedBotClientSecret);
     }
 

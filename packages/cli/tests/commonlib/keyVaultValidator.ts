@@ -226,11 +226,10 @@ export class KeyVaultValidator {
         body
       );
       chai.assert.equal(getResponse.status, 200);
+      console.log(`Successfully ${updateKind} key vault "get secret" permission`);
     } catch (error) {
       console.log(error);
     }
-
-    console.log(`Successfully ${updateKind} key vault "get secret" permission`);
   }
 
   private async getKeyVault(

@@ -6,12 +6,15 @@ import {
   err,
   FxError,
   ok,
+  ProjectSettings,
   Result,
   returnSystemError,
   returnUserError,
+  UserError,
 } from "@microsoft/teamsfx-api";
-
-import { LocalEnvManager } from "@microsoft/teamsfx-core";
+import { LocalEnvManager, ProjectSettingsHelper, FolderName } from "@microsoft/teamsfx-core";
+import * as path from "path";
+import * as vscode from "vscode";
 import * as util from "util";
 
 import VsCodeLogInstance from "../commonlib/log";
@@ -25,6 +28,10 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../telemetry/extTelemetryEvents";
+import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
+import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
+import { vscodeLogger } from "./depsChecker/vscodeLogger";
+import { installBackendExtension } from "./depsChecker/backendExtensionsInstall";
 
 interface CheckFailure {
   checker: string;
@@ -41,7 +48,35 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
 
     const failures: CheckFailure[] = [];
     const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-    // TODO: LocalEnvManager deps
+
+    // Get project settings
+    if (!vscode.workspace.workspaceFolders) {
+      throw new UserError(
+        ExtensionErrors.NoWorkspaceError,
+        StringResources.vsc.handlers.noOpenWorkspace,
+        ExtensionSource
+      );
+    }
+    const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
+    const workspacePath: string = workspaceFolder.uri.fsPath;
+    const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
+
+    // deps
+    const depsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry, false);
+    const depsFailure = await checkDependencies(localEnvManager, depsChecker, projectSettings);
+    if (depsFailure) {
+      failures.push(depsFailure);
+    }
+
+    // backend extension
+    const backendExtensionFailure = await resolveBackendExtension(
+      depsChecker,
+      workspacePath,
+      projectSettings
+    );
+    if (backendExtensionFailure) {
+      failures.push(backendExtensionFailure);
+    }
 
     // login
     const accountFailure = await checkM365Account();
@@ -99,6 +134,67 @@ async function checkM365Account(): Promise<CheckFailure | undefined> {
   } catch (error: any) {
     return {
       checker: "M365 Account",
+      error: assembleError(error),
+    };
+  }
+}
+
+async function checkDependencies(
+  localEnvManager: LocalEnvManager,
+  depsChecker: VSCodeDepsChecker,
+  projectSettings: ProjectSettings
+): Promise<CheckFailure | undefined> {
+  try {
+    const deps = localEnvManager.getActiveDependencies(projectSettings);
+
+    const resolveRes = await depsChecker.resolve(deps);
+    if (resolveRes.isErr()) {
+      return {
+        checker: "Dependencies",
+        error: returnUserError(
+          resolveRes.error,
+          ExtensionSource,
+          ExtensionErrors.PrerequisitesValidationError,
+          resolveRes.error.helpLink
+        ),
+      };
+    }
+
+    return undefined;
+  } catch (error: any) {
+    return {
+      checker: "Dependencies",
+      error: assembleError(error),
+    };
+  }
+}
+async function resolveBackendExtension(
+  depsChecker: VSCodeDepsChecker,
+  workspacePath: string,
+  projectSettings: ProjectSettings
+): Promise<CheckFailure | undefined> {
+  try {
+    if (ProjectSettingsHelper.includeBackend(projectSettings)) {
+      const backendRoot = path.join(workspacePath, FolderName.Function);
+
+      const res = await installBackendExtension(backendRoot, depsChecker, vscodeLogger);
+      if (res.isErr()) {
+        return {
+          checker: "Backend Extension",
+          error: returnUserError(
+            res.error,
+            ExtensionSource,
+            ExtensionErrors.PrerequisitesValidationError,
+            res.error.helpLink
+          ),
+        };
+      }
+    }
+
+    return undefined;
+  } catch (error: any) {
+    return {
+      checker: "Backend Extension",
       error: assembleError(error),
     };
   }

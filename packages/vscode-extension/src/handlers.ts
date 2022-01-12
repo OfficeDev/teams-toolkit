@@ -732,9 +732,9 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
   const deps = [nodeType, DepsType.Dotnet, DepsType.FuncCoreTools, DepsType.Ngrok];
 
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-  const shouldContinue = await vscodeDepsChecker.resolve(deps);
+  const resolveRes = await vscodeDepsChecker.resolve(deps);
 
-  if (!shouldContinue) {
+  if (resolveRes.isErr()) {
     await debug.stopDebugging();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
@@ -746,8 +746,8 @@ export async function validateAzureDependenciesHandler(): Promise<string | undef
  */
 export async function validateSpfxDependenciesHandler(): Promise<string | undefined> {
   const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-  const shouldContinue = await vscodeDepsChecker.resolve([DepsType.SpfxNode, DepsType.Ngrok]);
-  if (!shouldContinue) {
+  const resolveRes = await vscodeDepsChecker.resolve([DepsType.SpfxNode, DepsType.Ngrok]);
+  if (resolveRes.isErr()) {
     await debug.stopDebugging();
     // return non-zero value to let task "exit ${command:xxx}" to exit
     return "1";
@@ -779,8 +779,8 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
 
     if (backendRoot) {
       const depsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
-      const shouldContinue = await installBackendExtension(backendRoot, depsChecker, vscodeLogger);
-      if (shouldContinue) {
+      const res = await installBackendExtension(backendRoot, depsChecker, vscodeLogger);
+      if (res.isErr()) {
         await debug.stopDebugging();
         // return non-zero value to let task "exit ${command:xxx}" to exit
         return "1";

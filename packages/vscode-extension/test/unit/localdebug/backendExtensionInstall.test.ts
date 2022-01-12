@@ -42,7 +42,7 @@ suite("[Checker UT - Backend Extension Install]", () => {
       const res = await installer.installBackendExtension(dir, checker, logger);
 
       sandbox.assert.calledOnce(displaySpy);
-      expect(res).to.be.false;
+      expect(res.isOk()).to.be.false;
     });
   });
 });

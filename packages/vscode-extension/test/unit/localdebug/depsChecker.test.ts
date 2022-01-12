@@ -45,11 +45,11 @@ suite("[Checker UT - Extension]", () => {
       stubEnabled(sandbox);
       sandbox.stub(os, "type").onFirstCall().returns("Windows_NT").onSecondCall().returns("Linux");
 
-      const shouldContinue = await checker.resolve(deps);
-      expect(shouldContinue).to.be.true;
+      const resolveRes = await checker.resolve(deps);
+      expect(resolveRes.isOk()).to.be.true;
 
       const resolveLinux = await checker.resolve(deps);
-      expect(resolveLinux).to.be.true;
+      expect(resolveLinux.isOk()).to.be.true;
     });
 
     test("azure + f5: failed [windows]", async () => {
@@ -70,12 +70,12 @@ suite("[Checker UT - Extension]", () => {
       showSpy.onCall(0).resolves(true);
       showSpy.onCall(1).resolves(false);
 
-      const shouldContinue = await checker.resolve(deps);
+      const resolveRes = await checker.resolve(deps);
 
       sandbox.assert.calledTwice(showSpy);
       sandbox.assert.calledWith(showSpy, dotnetMessage, sinon.match.any);
       sandbox.assert.calledWith(openUrlSpy, dotnetHelpLink);
-      expect(shouldContinue).to.be.false;
+      expect(resolveRes.isOk()).to.be.false;
 
       sandbox.assert.calledTwice(sendEventSpy);
       sendEventSpy.firstCall.calledWith(DepsCheckerEvent.clickLearnMore);
@@ -97,7 +97,7 @@ suite("[Checker UT - Extension]", () => {
       showSpy.onCall(0).resolves(true);
       showSpy.onCall(1).resolves(false);
 
-      const shouldContinue = await checker.resolve(deps);
+      const resolveRes = await checker.resolve(deps);
 
       const depsNotFoundMatcher = sinon.match(function (msg: string) {
         return msg.includes("Teams Toolkit requires these dependencies");
@@ -105,7 +105,7 @@ suite("[Checker UT - Extension]", () => {
       sandbox.assert.calledTwice(showSpy);
       sandbox.assert.calledWith(showSpy, depsNotFoundMatcher, sinon.match.any);
       sandbox.assert.calledWith(openUrlSpy, defaultHelpLink);
-      expect(shouldContinue).to.be.false;
+      expect(resolveRes.isOk()).to.be.false;
     });
 
     test("azure + f5: all disabled", async () => {
@@ -133,11 +133,11 @@ suite("[Checker UT - Extension]", () => {
         return [];
       });
 
-      const shouldContinue = await checker.resolve(deps);
-      expect(shouldContinue).to.be.true;
+      const resolveRes = await checker.resolve(deps);
+      expect(resolveRes.isOk()).to.be.true;
 
       const secondRes = await checker.resolve(deps);
-      expect(secondRes).to.be.true;
+      expect(secondRes.isOk()).to.be.true;
     });
   });
 });

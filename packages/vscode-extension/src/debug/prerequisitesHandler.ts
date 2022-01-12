@@ -38,7 +38,6 @@ import {
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
-import { installBackendExtension } from "./depsChecker/backendExtensionsInstall";
 import { ext } from "../extensionVariables";
 
 interface CheckFailure {
@@ -169,6 +168,7 @@ async function resolveBackendExtension(
     if (ProjectSettingsHelper.includeBackend(projectSettings)) {
       const backendRoot = path.join(ext.workspaceUri.fsPath, FolderName.Function);
       const dotnet = (await depsManager.getStatus([DepsType.Dotnet]))[0];
+      // TODO: check before install backend extension
       await installExtension(backendRoot, dotnet.command, vscodeLogger);
     }
     return undefined;

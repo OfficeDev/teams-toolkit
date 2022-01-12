@@ -25,7 +25,6 @@ import {
   ErrorWithCode,
   ErrorCode,
   TeamsBotSsoPromptSettings,
-  loadConfiguration,
   Configuration,
 } from "../../../../src";
 import { assert, expect, use as chaiUse } from "chai";
@@ -348,7 +347,6 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       scopes: invalidScopes,
     };
 
-    loadConfiguration();
     expect(() => {
       new TeamsBotSsoPrompt(TeamsBotSsoPromptId, settings);
     })
@@ -432,8 +430,6 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       timeout: timeout_value,
       endOnInvalidMessage: endOnInvalidMessage,
     };
-
-    loadConfiguration(config);
 
     dialogs.add(new TeamsBotSsoPrompt(TeamsBotSsoPromptId, settings));
 

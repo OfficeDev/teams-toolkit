@@ -6,7 +6,6 @@ import "isomorphic-fetch";
 import * as chaiPromises from "chai-as-promised";
 import {
   createMicrosoftGraphClient,
-  loadConfiguration,
   OnBehalfOfUserCredential,
   M365TenantCredential,
 } from "../../../src";
@@ -23,7 +22,6 @@ describe("createMicrosoftGraphClient Tests - Node", () => {
   let ssoToken = "";
   beforeEach(async function () {
     restore = MockEnvironmentVariable();
-    loadConfiguration();
 
     ssoToken = await getSsoTokenFromTeams();
   });

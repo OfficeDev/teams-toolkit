@@ -64,18 +64,7 @@ export class ErrorWithCode extends Error {
 }
 
 // @beta
-export function getAuthenticationConfiguration(): AuthenticationConfiguration | undefined;
-
-// @beta
 export function getLogLevel(): LogLevel | undefined;
-
-// @beta
-export function getResourceConfiguration(resourceType: ResourceType, resourceName?: string): {
-    [index: string]: any;
-};
-
-// @beta
-export function loadConfiguration(configuration?: Configuration): void;
 
 // @beta
 export type LogFunction = (level: LogLevel, message: string) => void;
@@ -98,7 +87,7 @@ export enum LogLevel {
 
 // @beta
 export class M365TenantCredential implements TokenCredential {
-    constructor();
+    constructor(authConfig?: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
 }
 
@@ -110,7 +99,7 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
 
 // @beta
 export class OnBehalfOfUserCredential implements TokenCredential {
-    constructor(ssoToken: string);
+    constructor(ssoToken: string, authConfig?: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(): UserInfo;
 }
@@ -150,7 +139,7 @@ export interface SqlConfiguration {
 
 // @beta
 export class TeamsBotSsoPrompt extends Dialog {
-    constructor(dialogId: string, settings: TeamsBotSsoPromptSettings);
+    constructor(dialogId: string, settings: TeamsBotSsoPromptSettings, authConfig?: AuthenticationConfiguration);
     beginDialog(dc: DialogContext): Promise<DialogTurnResult>;
     continueDialog(dc: DialogContext): Promise<DialogTurnResult>;
 }
@@ -170,7 +159,7 @@ export interface TeamsBotSsoPromptTokenResponse extends TokenResponse {
 
 // @beta
 export class TeamsUserCredential implements TokenCredential {
-    constructor();
+    constructor(authConfig?: AuthenticationConfiguration);
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(): Promise<UserInfo>;
     login(scopes: string | string[]): Promise<void>;

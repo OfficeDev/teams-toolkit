@@ -6,14 +6,13 @@ import { UserInfo } from "../models/userinfo";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 import { Cache } from "../core/cache.browser";
 import * as microsoftTeams from "@microsoft/teams-js";
-import { getAuthenticationConfiguration } from "../core/configurationProvider";
+import { getAuthenticationConfigFromEnv } from "../core/configurationProvider";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { AuthCodeResult } from "../models/authCodeResult";
 import axios, { AxiosInstance } from "axios";
 import { GrantType } from "../models/grantType";
 import { AccessTokenResult } from "../models/accessTokenResult";
-import { validateScopesType, getUserInfoFromSsoToken, parseJwt } from "../util/utils";
-import { formatString } from "../util/utils";
+import { validateScopesType, getUserInfoFromSsoToken, parseJwt, formatString } from "../util/utils";
 import { internalLogger } from "../util/logger";
 
 const accessTokenCacheKeyPrefix = "accessToken";
@@ -54,14 +53,16 @@ export class TeamsUserCredential implements TokenCredential {
      const credential = new TeamsUserCredential(["https://graph.microsoft.com/User.Read"]);
    * ```
    *
+   * @param {AuthenticationConfiguration?} authConfig - The authentication configuration. Use environment variables if not provided.
+   *
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, initiate login endpoint or simple auth endpoint is not found in config.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    * 
    * @beta
    */
-  constructor() {
+  constructor(authConfig?: AuthenticationConfiguration) {
     internalLogger.info("Create teams user credential");
-    this.config = this.loadAndValidateConfig();
+    this.config = this.loadAndValidateConfig(authConfig);
     this.ssoToken = null;
   }
 
@@ -354,11 +355,16 @@ export class TeamsUserCredential implements TokenCredential {
 
   /**
    * Load and validate authentication configuration
+   *
+   * @param {AuthenticationConfiguration?} authConfig - The authentication configuration. Use environment variables if not provided.
+   *
    * @returns Authentication configuration
    */
-  private loadAndValidateConfig(): AuthenticationConfiguration {
+  private loadAndValidateConfig(
+    authConfig?: AuthenticationConfiguration
+  ): AuthenticationConfiguration {
     internalLogger.verbose("Validate authentication configuration");
-    const config = getAuthenticationConfiguration();
+    const config = authConfig && getAuthenticationConfigFromEnv();
 
     if (!config) {
       internalLogger.error(ErrorMessage.AuthenticationConfigurationNotExists);

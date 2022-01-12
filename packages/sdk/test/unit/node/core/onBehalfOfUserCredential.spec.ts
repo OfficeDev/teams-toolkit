@@ -3,13 +3,7 @@
 
 import { assert, expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
-import {
-  ErrorCode,
-  ErrorWithCode,
-  loadConfiguration,
-  OnBehalfOfUserCredential,
-  UserInfo,
-} from "../../../../src";
+import { ErrorCode, ErrorWithCode, OnBehalfOfUserCredential, UserInfo } from "../../../../src";
 import * as sinon from "sinon";
 import mockedEnv from "mocked-env";
 import { AuthenticationResult, ConfidentialClientApplication } from "@azure/msal-node";
@@ -104,17 +98,13 @@ fakeCert
   });
 
   it("create OnBehalfOfUserCredential instance should not throw InvalidConfiguration Error when clientSecret not found", async function () {
-    loadConfiguration({
-      authentication: {
+    expect(() => {
+      new OnBehalfOfUserCredential(ssoToken, {
         clientId: clientId,
         certificateContent: certificateContent,
         authorityHost: authorityHost,
         tenantId: tenantId,
-      },
-    });
-
-    expect(() => {
-      new OnBehalfOfUserCredential(ssoToken);
+      });
     }).to.not.throw();
   });
 
@@ -125,7 +115,6 @@ fakeCert
       M365_AUTHORITY_HOST: authorityHost,
       M365_TENANT_ID: tenantId,
     });
-    loadConfiguration();
 
     expect(() => {
       new OnBehalfOfUserCredential(ssoToken);
@@ -133,17 +122,13 @@ fakeCert
   });
 
   it("create OnBehalfOfUserCredential instance should not throw InvalidConfiguration Error and respect certificateContent when clientSecret and certificateContent are both set", async function () {
-    loadConfiguration({
-      authentication: {
-        clientId: clientId,
-        clientSecret: clientSecret,
-        certificateContent: certificateContent,
-        authorityHost: authorityHost,
-        tenantId: tenantId,
-      },
+    const oboCredential: any = new OnBehalfOfUserCredential(ssoToken, {
+      clientId: clientId,
+      clientSecret: clientSecret,
+      certificateContent: certificateContent,
+      authorityHost: authorityHost,
+      tenantId: tenantId,
     });
-
-    const oboCredential: any = new OnBehalfOfUserCredential(ssoToken);
 
     // certificateContent has higher priority than clientSecret
     assert.strictEqual(
@@ -162,7 +147,6 @@ fakeCert
       },
       { clear: true }
     );
-    loadConfiguration();
 
     expect(() => {
       new OnBehalfOfUserCredential(ssoToken);
@@ -180,7 +164,6 @@ fakeCert
       },
       { clear: true }
     );
-    loadConfiguration();
 
     expect(() => {
       new OnBehalfOfUserCredential(ssoToken);
@@ -198,7 +181,6 @@ fakeCert
       },
       { clear: true }
     );
-    loadConfiguration();
 
     expect(() => {
       new OnBehalfOfUserCredential(ssoToken);
@@ -219,7 +201,6 @@ fakeCert
       },
       { clear: true }
     );
-    loadConfiguration();
 
     expect(() => {
       new OnBehalfOfUserCredential(ssoToken);
@@ -230,7 +211,6 @@ fakeCert
 
   it("create OnBehalfOfUserCredential instance should throw InvalidConfiguration Error when clientId, clientSecret, certificateContent, authorityHost, tenantId not found", async function () {
     mockedEnvRestore = mockedEnv({}, { clear: true });
-    loadConfiguration();
 
     expect(() => {
       new OnBehalfOfUserCredential(ssoToken);
@@ -243,7 +223,6 @@ fakeCert
   });
 
   it("create OnBehalfOfUserCredential instance should throw InternalError with invalid sso token", async function () {
-    loadConfiguration();
     const invalidSsoToken = "invalid_sso_token";
 
     expect(() => {
@@ -254,17 +233,13 @@ fakeCert
   });
 
   it("create OnBehalfOfUserCredential instance should throw InvalidCertificate with invalid certificate", async function () {
-    loadConfiguration({
-      authentication: {
+    expect(() => {
+      new OnBehalfOfUserCredential(ssoToken, {
         clientId: clientId,
         certificateContent: "invalid_certificate_content",
         authorityHost: authorityHost,
         tenantId: tenantId,
-      },
-    });
-
-    expect(() => {
-      new OnBehalfOfUserCredential(ssoToken);
+      });
     })
       .to.throw(
         ErrorWithCode,
@@ -274,22 +249,18 @@ fakeCert
   });
 
   it("getToken should success for client certificate", async function () {
-    loadConfiguration({
-      authentication: {
-        clientId: clientId,
-        certificateContent: certificateContent,
-        authorityHost: authorityHost,
-        tenantId: tenantId,
-      },
+    const oboCredential = new OnBehalfOfUserCredential(ssoToken, {
+      clientId: clientId,
+      certificateContent: certificateContent,
+      authorityHost: authorityHost,
+      tenantId: tenantId,
     });
-    const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const token = await oboCredential.getToken(scope);
     assert.strictEqual(token!.token, accessToken);
     assert.strictEqual(token!.expiresOnTimestamp, accessTokenExpNumber);
   });
 
   it("getToken should success when scopes is empty string", async function () {
-    loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const token = await oboCredential.getToken("");
     assert.strictEqual(token!.token, ssoToken);
@@ -297,7 +268,6 @@ fakeCert
   });
 
   it("getToken should success when scopes is empty array", async function () {
-    loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const token = await oboCredential.getToken([]);
     assert.strictEqual(token!.token, ssoToken);
@@ -305,7 +275,6 @@ fakeCert
   });
 
   it("getToken should success when scopes is string", async function () {
-    loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const token = await oboCredential.getToken(scope);
     assert.strictEqual(token!.token, accessToken);
@@ -313,7 +282,6 @@ fakeCert
   });
 
   it("getToken should success when scopes is string array", async function () {
-    loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const scopesArray: string[] = [scope, "fake_scope_2"];
     const token = await oboCredential.getToken(scopesArray);
@@ -342,7 +310,6 @@ fakeCert
           throw new Error("AAD outage");
         });
       });
-    loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
 
     const errorResult = await expect(oboCredential.getToken(scope)).to.eventually.be.rejectedWith(
@@ -355,7 +322,6 @@ fakeCert
   });
 
   it("getUserInfo should succeed", async function () {
-    loadConfiguration();
     const oboCredential = new OnBehalfOfUserCredential(ssoToken);
     const userinfo: UserInfo = oboCredential.getUserInfo();
     assert.strictEqual(userinfo.displayName, testDisplayName);

@@ -2,8 +2,9 @@
 // Licensed under the MIT license.
 
 import { assert, expect, use as chaiUse } from "chai";
+import mockedEnv from "mocked-env";
 import * as chaiPromises from "chai-as-promised";
-import { createMicrosoftGraphClient, loadConfiguration } from "../../../src/index.browser";
+import { createMicrosoftGraphClient } from "../../../src/index.browser";
 import { TeamsUserCredential } from "../../../src/credential/teamsUserCredential.browser";
 import { getSSOToken, SSOToken } from "../helper.browser";
 import * as sinon from "sinon";
@@ -14,6 +15,7 @@ const env = (window as any).__env__;
 
 describe("MsGraphClientProvider Tests - Browser", () => {
   let ssoToken: SSOToken;
+  let mockedEnvRestore: () => void;
 
   beforeEach(async function () {
     ssoToken = await getSSOToken();
@@ -30,17 +32,16 @@ describe("MsGraphClientProvider Tests - Browser", () => {
         });
       });
 
-    loadConfiguration({
-      authentication: {
-        initiateLoginEndpoint: "fake_login_url",
-        simpleAuthEndpoint: "http://localhost:5000",
-        clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
-      },
+    mockedEnvRestore = mockedEnv({
+      REACT_APP_CLIENT_ID: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
+      REACT_APP_TEAMSFX_ENDPOINT: "http://localhost:5000",
+      REACT_APP_START_LOGIN_PAGE_URL: "fake_login_url",
     });
   });
 
   afterEach(() => {
     sinon.restore();
+    mockedEnvRestore();
   });
 
   it("create graph client with user.read scope should be able to get user profile", async function () {

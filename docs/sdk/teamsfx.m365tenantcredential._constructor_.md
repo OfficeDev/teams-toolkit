@@ -12,8 +12,14 @@ Constructor of M365TenantCredential.
 <b>Signature:</b>
 
 ```typescript
-constructor();
+constructor(authConfig?: AuthenticationConfiguration);
 ```
+
+## Parameters
+
+|  Parameter | Type | Description |
+|  --- | --- | --- |
+|  authConfig | [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | The authentication configuration. Use environment variables if not provided. |
 
 ## Exceptions
 

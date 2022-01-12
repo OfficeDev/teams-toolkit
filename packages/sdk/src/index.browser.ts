@@ -3,12 +3,6 @@
 
 export { ErrorWithCode, ErrorCode } from "./core/errors";
 
-export {
-  getAuthenticationConfiguration,
-  getResourceConfiguration,
-  loadConfiguration,
-} from "./core/configurationProvider";
-
 export { M365TenantCredential } from "./credential/m365TenantCredential.browser";
 export { OnBehalfOfUserCredential } from "./credential/onBehalfOfUserCredential.browser";
 export { TeamsUserCredential } from "./credential/teamsUserCredential.browser";

@@ -27,8 +27,9 @@ import {
   PromptRecognizerResult,
 } from "botbuilder-dialogs";
 import { TeamsBotSsoPromptTokenResponse } from "./teamsBotSsoPromptTokenResponse";
-import { config } from "../core/configurationProvider";
+import { getAuthenticationConfigFromEnv } from "../core/configurationProvider";
 import { OnBehalfOfUserCredential } from "../credential/onBehalfOfUserCredential";
+import { AuthenticationConfiguration } from "../models/configuration";
 import { v4 as uuidv4 } from "uuid";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { internalLogger } from "../util/logger";
@@ -135,20 +136,28 @@ export interface TeamsBotSsoPromptSettings {
  * @beta
  */
 export class TeamsBotSsoPrompt extends Dialog {
+  private config: AuthenticationConfiguration;
+
   /**
    * Constructor of TeamsBotSsoPrompt.
    *
    * @param dialogId Unique ID of the dialog within its parent `DialogSet` or `ComponentDialog`.
    * @param settings Settings used to configure the prompt.
+   * @param {AuthenticationConfiguration?} authConfig - The authentication configuration. Use environment variables if not provided.
    *
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
    *
    * @beta
    */
-  constructor(dialogId: string, private settings: TeamsBotSsoPromptSettings) {
+  constructor(
+    dialogId: string,
+    private settings: TeamsBotSsoPromptSettings,
+    authConfig?: AuthenticationConfiguration
+  ) {
     super(dialogId);
     validateScopesType(settings.scopes);
+    this.config = this.loadAndValidateConfig(authConfig);
     internalLogger.info("Create a new Teams Bot SSO Prompt");
   }
 
@@ -260,6 +269,38 @@ export class TeamsBotSsoPrompt extends Dialog {
     }
   }
 
+  private loadAndValidateConfig(authConfig?: AuthenticationConfiguration) {
+    const config = authConfig ?? getAuthenticationConfigFromEnv();
+    const missingConfigurations: string[] = [];
+
+    if (!config.initiateLoginEndpoint) {
+      missingConfigurations.push("initiateLoginEndpoint");
+    }
+
+    if (!config.clientId) {
+      missingConfigurations.push("clientId");
+    }
+
+    if (!config.tenantId) {
+      missingConfigurations.push("tenantId");
+    }
+
+    if (!config.applicationIdUri) {
+      missingConfigurations.push("applicationIdUri");
+    }
+
+    if (missingConfigurations.length != 0) {
+      const errorMsg = formatString(
+        ErrorMessage.InvalidConfiguration,
+        missingConfigurations.join(", "),
+        "undefined"
+      );
+      internalLogger.error(errorMsg);
+      throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
+    }
+    return config;
+  }
+
   /**
    * Ensure bot is running in MS Teams since TeamsBotSsoPrompt is only supported in MS Teams channel.
    * @param dc dialog context
@@ -319,45 +360,16 @@ export class TeamsBotSsoPrompt extends Dialog {
    */
   private getSignInResource(loginHint: string) {
     internalLogger.verbose("Get sign in authentication configuration");
-    const missingConfigurations: string[] = [];
 
-    if (!config?.authentication?.initiateLoginEndpoint) {
-      missingConfigurations.push("initiateLoginEndpoint");
-    }
-
-    if (!config?.authentication?.clientId) {
-      missingConfigurations.push("clientId");
-    }
-
-    if (!config?.authentication?.tenantId) {
-      missingConfigurations.push("tenantId");
-    }
-
-    if (!config?.authentication?.applicationIdUri) {
-      missingConfigurations.push("applicationIdUri");
-    }
-
-    if (missingConfigurations.length != 0) {
-      const errorMsg = formatString(
-        ErrorMessage.InvalidConfiguration,
-        missingConfigurations.join(", "),
-        "undefined"
-      );
-      internalLogger.error(errorMsg);
-      throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
-    }
-
-    const signInLink = `${config.authentication!.initiateLoginEndpoint}?scope=${encodeURI(
+    const signInLink = `${this.config.initiateLoginEndpoint}?scope=${encodeURI(
       this.settings.scopes.join(" ")
-    )}&clientId=${config.authentication!.clientId}&tenantId=${
-      config.authentication!.tenantId
-    }&loginHint=${loginHint}`;
+    )}&clientId=${this.config.clientId}&tenantId=${this.config.tenantId}&loginHint=${loginHint}`;
 
     internalLogger.verbose("Sign in link: " + signInLink);
 
     const tokenExchangeResource: TokenExchangeResource = {
       id: uuidv4(),
-      uri: config.authentication?.applicationIdUri!.replace(/\/$/, "") + "/access_as_user",
+      uri: this.config.applicationIdUri!.replace(/\/$/, "") + "/access_as_user",
     };
 
     internalLogger.verbose("Token exchange resource uri: " + tokenExchangeResource.uri);

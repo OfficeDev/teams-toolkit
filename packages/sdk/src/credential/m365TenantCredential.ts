@@ -5,7 +5,7 @@ import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
 import { AuthenticationConfiguration } from "../models/configuration";
 import { internalLogger } from "../util/logger";
 import { validateScopesType, formatString, getScopesArray } from "../util/utils";
-import { getAuthenticationConfiguration } from "../core/configurationProvider";
+import { getAuthenticationConfigFromEnv } from "../core/configurationProvider";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
 import { ConfidentialClientApplication } from "@azure/msal-node";
 import { createConfidentialClientApplication } from "../util/utils.node";
@@ -33,15 +33,17 @@ export class M365TenantCredential implements TokenCredential {
    * @remarks
    * Only works in in server side.
    *
+   * @param {AuthenticationConfiguration?} authConfig - The authentication configuration. Use environment variables if not provided.
+   *
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, client secret or tenant id is not found in config.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    *
    * @beta
    */
-  constructor() {
+  constructor(authConfig?: AuthenticationConfiguration) {
     internalLogger.info("Create M365 tenant credential");
 
-    const config = this.loadAndValidateConfig();
+    const config = this.loadAndValidateConfig(authConfig);
 
     this.msalClient = createConfidentialClientApplication(config);
   }
@@ -111,18 +113,12 @@ export class M365TenantCredential implements TokenCredential {
    * Load and validate authentication configuration
    * @returns Authentication configuration
    */
-  private loadAndValidateConfig(): AuthenticationConfiguration {
+  private loadAndValidateConfig(
+    authConfig?: AuthenticationConfiguration
+  ): AuthenticationConfiguration {
     internalLogger.verbose("Validate authentication configuration");
 
-    const config = getAuthenticationConfiguration();
-
-    if (!config) {
-      internalLogger.error(ErrorMessage.AuthenticationConfigurationNotExists);
-      throw new ErrorWithCode(
-        ErrorMessage.AuthenticationConfigurationNotExists,
-        ErrorCode.InvalidConfiguration
-      );
-    }
+    const config = authConfig ?? getAuthenticationConfigFromEnv();
 
     if (config.clientId && (config.clientSecret || config.certificateContent) && config.tenantId) {
       return config;

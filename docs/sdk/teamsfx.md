@@ -29,10 +29,7 @@
 |  Function | Description |
 |  --- | --- |
 |  [createMicrosoftGraphClient(credential, scopes)](./teamsfx.createmicrosoftgraphclient.md) | <b><i>(BETA)</i></b> Get Microsoft graph client. |
-|  [getAuthenticationConfiguration()](./teamsfx.getauthenticationconfiguration.md) | <b><i>(BETA)</i></b> Get configuration for authentication. |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | <b><i>(BETA)</i></b> Get log level. |
-|  [getResourceConfiguration(resourceType, resourceName)](./teamsfx.getresourceconfiguration.md) | <b><i>(BETA)</i></b> Get configuration for a specific resource. |
-|  [loadConfiguration(configuration)](./teamsfx.loadconfiguration.md) | <b><i>(BETA)</i></b> Initialize configuration from environment variables or configuration object and set the global instance |
 |  [setLogFunction(logFunction)](./teamsfx.setlogfunction.md) | <b><i>(BETA)</i></b> Set custom log function. Use the function if it's set. Priority is lower than setLogger. |
 |  [setLogger(logger)](./teamsfx.setlogger.md) | <b><i>(BETA)</i></b> Set custom logger. Use the output functions if it's set. Priority is higher than setLogFunction. |
 |  [setLogLevel(level)](./teamsfx.setloglevel.md) | <b><i>(BETA)</i></b> Update log level helper. |

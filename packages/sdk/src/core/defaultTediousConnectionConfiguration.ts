@@ -6,6 +6,7 @@ import { ConnectionConfig } from "tedious";
 import { ErrorWithCode, ErrorCode } from "./errors";
 import { internalLogger } from "../util/logger";
 import { SqlConfiguration } from "../models/configuration";
+import { getSqlConfigFromEnv } from "./configurationProvider";
 
 /**
  * SQL connection configuration instance.
@@ -196,22 +197,4 @@ export class DefaultTediousConnectionConfiguration {
 enum TediousAuthenticationType {
   default = "default",
   MSI = "azure-active-directory-access-token",
-}
-
-/**
- * @returns SQL configuration which is constructed from predefined env variables.
- *
- * @remarks
- * Used variables: SQL_ENDPOINT, SQL_USER_NAME, SQL_PASSWORD, SQL_DATABASE_NAME, IDENTITY_ID
- *
- * @beta
- */
-export function getSqlConfigFromEnv(): SqlConfiguration {
-  return {
-    sqlServerEndpoint: process.env.SQL_ENDPOINT || "",
-    sqlUsername: process.env.SQL_USER_NAME,
-    sqlPassword: process.env.SQL_PASSWORD,
-    sqlDatabaseName: process.env.SQL_DATABASE_NAME,
-    sqlIdentityId: process.env.IDENTITY_ID,
-  };
 }

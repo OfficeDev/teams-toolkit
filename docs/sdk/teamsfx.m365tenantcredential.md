@@ -32,7 +32,7 @@ const credential = new M365TenantCredential();
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)()](./teamsfx.m365tenantcredential._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of M365TenantCredential. |
+|  [(constructor)(authConfig)](./teamsfx.m365tenantcredential._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of M365TenantCredential. |
 
 ## Methods
 

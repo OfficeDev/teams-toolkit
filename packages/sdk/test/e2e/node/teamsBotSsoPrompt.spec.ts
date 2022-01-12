@@ -21,7 +21,6 @@ import {
   TeamsBotSsoPrompt,
   TeamsBotSsoPromptTokenResponse,
   TeamsBotSsoPromptSettings,
-  loadConfiguration,
   Configuration,
 } from "../../../src";
 import { assert, use as chaiUse } from "chai";
@@ -245,9 +244,7 @@ describe("TeamsBotSsoPrompt Tests - Node", () => {
       endOnInvalidMessage: param.endOnInvalidMessage,
     };
 
-    loadConfiguration(param.config);
-
-    dialogs.add(new TeamsBotSsoPrompt(TeamsBotSsoPromptId, settings));
+    dialogs.add(new TeamsBotSsoPrompt(TeamsBotSsoPromptId, settings, param.config?.authentication));
 
     // Initialize TestAdapter.
     const adapter: TestAdapter = new TestAdapter(async (turnContext) => {

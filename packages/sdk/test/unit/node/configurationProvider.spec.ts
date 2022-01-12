@@ -2,15 +2,13 @@
 // Licensed under the MIT license.
 
 import { assert, use as chaiUse, expect } from "chai";
+import mockedEnv from "mocked-env";
 import * as chaiPromises from "chai-as-promised";
 import {
-  loadConfiguration,
-  ResourceType,
-  ErrorWithCode,
-  ErrorCode,
-  getResourceConfiguration,
-  getAuthenticationConfiguration,
-} from "../../../src";
+  getApiConfigFromEnv,
+  getAuthenticationConfigFromEnv,
+  getSqlConfigFromEnv,
+} from "../../../src/core/configurationProvider";
 
 chaiUse(chaiPromises);
 
@@ -19,148 +17,69 @@ describe("ConfigurationProvider Tests - Node", () => {
   const fakeSQLUserName = "fake_name";
   const fakeSQLPassword = "fake_password";
   const fakeSQLDataName = "fake_data_name";
+  const fakeIdentityId = "fake_identity_id";
   const fakeAPIEndpoint = "xxx.function.windows.net";
 
   const clientId = "fake_client_id";
-  const overrideClientId = "override_client_id";
   const tenantId = "fake_tenant_id";
   const clientSecret = "fake_client_secret";
   const authorityHost = "https://fake_authority_host";
+  const simpleAuthEndpoint = "https://fake_simple_auth";
+  const initiateLoginEndpoint = "https://fake_login_endpoint";
+  const applicationIdUri = "fake_application_id";
 
-  it("getResourceConfiguration should success with valid config", () => {
-    loadConfiguration({
-      authentication: {},
-      resources: [
-        {
-          type: ResourceType.API,
-          name: "default",
-          properties: {
-            functionEndpoint: fakeAPIEndpoint,
-          },
-        },
-        {
-          type: ResourceType.SQL,
-          name: "default",
-          properties: {
-            sqlServerEndpoint: fakeSQLEndpoint,
-            sqlUsername: fakeSQLUserName,
-            sqlPassword: fakeSQLPassword,
-            sqlDatabaseName: fakeSQLDataName,
-          },
-        },
-      ],
+  let mockedEnvRestore: () => void;
+
+  beforeEach(function () {
+    mockedEnvRestore = mockedEnv({
+      // Authentication
+      M365_CLIENT_ID: clientId,
+      M365_CLIENT_SECRET: clientSecret,
+      M365_TENANT_ID: tenantId,
+      M365_AUTHORITY_HOST: authorityHost,
+      SIMPLE_AUTH_ENDPOINT: simpleAuthEndpoint,
+      INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint,
+      M365_APPLICATION_ID_URI: applicationIdUri,
+      // API
+      API_ENDPOINT: fakeAPIEndpoint,
+      // SQL
+      SQL_ENDPOINT: fakeSQLEndpoint,
+      SQL_USER_NAME: fakeSQLUserName,
+      SQL_PASSWORD: fakeSQLPassword,
+      SQL_DATABASE_NAME: fakeSQLDataName,
+      IDENTITY_ID: fakeIdentityId,
     });
-
-    const result = getResourceConfiguration(ResourceType.SQL);
-    assert.isNotNull(result);
-    assert.strictEqual(result!.sqlServerEndpoint, fakeSQLEndpoint);
-    assert.strictEqual(result!.sqlUsername, fakeSQLUserName);
-    assert.strictEqual(result!.sqlPassword, fakeSQLPassword);
-    assert.strictEqual(result!.sqlDatabaseName, fakeSQLDataName);
   });
 
-  it("getResourceConfiguration should throw InvalidConfiguration error with incorrect type", () => {
-    loadConfiguration({
-      authentication: {},
-      resources: [
-        {
-          type: ResourceType.SQL,
-          name: "default",
-          properties: {
-            sqlServerEndpoint: fakeSQLEndpoint,
-            sqlUsername: fakeSQLUserName,
-            sqlPassword: fakeSQLPassword,
-            sqlDatabaseName: fakeSQLDataName,
-          },
-        },
-      ],
-    });
-    try {
-      getResourceConfiguration(ResourceType.API);
-    } catch (err: any) {
-      expect(err).to.be.instanceOf(ErrorWithCode);
-      expect(err.code).to.eql(ErrorCode.InvalidConfiguration);
-    }
+  afterEach(function () {
+    mockedEnvRestore();
   });
 
-  it("getResourceConfiguration should throw InvalidConfiguration error without name exist", () => {
-    loadConfiguration({
-      authentication: {},
-      resources: [
-        {
-          type: ResourceType.SQL,
-          name: "default",
-          properties: {
-            sqlServerEndpoint: fakeSQLEndpoint,
-            sqlUsername: fakeSQLUserName,
-            sqlPassword: fakeSQLPassword,
-            sqlDatabaseName: fakeSQLDataName,
-          },
-        },
-      ],
-    });
-    try {
-      getResourceConfiguration(ResourceType.SQL, "API-1");
-    } catch (err: any) {
-      expect(err).to.be.instanceOf(ErrorWithCode);
-      expect(err.code).to.eql(ErrorCode.InvalidConfiguration);
-    }
+  it("getAuthenticationConfigFromEnv should return config set with env variables", () => {
+    const authConfig = getAuthenticationConfigFromEnv();
+
+    assert.strictEqual(authConfig.authorityHost, authorityHost);
+    assert.strictEqual(authConfig.tenantId, tenantId);
+    assert.strictEqual(authConfig.clientId, clientId);
+    assert.strictEqual(authConfig.clientSecret, clientSecret);
+    assert.strictEqual(authConfig.simpleAuthEndpoint, simpleAuthEndpoint);
+    assert.strictEqual(authConfig.initiateLoginEndpoint, initiateLoginEndpoint);
+    assert.strictEqual(authConfig.applicationIdUri, applicationIdUri);
   });
 
-  it("getResourceConfiguration should success with valid environment variables", () => {
-    process.env.M365_CLIENT_ID = clientId;
-    process.env.M365_TENANT_ID = tenantId;
-    process.env.M365_CLIENT_SECRET = clientSecret;
-    process.env.M365_AUTHORITY_HOST = authorityHost;
+  it("getApiConfigFromEnv should return config set with env variables", () => {
+    const apiConfig = getApiConfigFromEnv();
 
-    loadConfiguration();
-
-    const authConfig = getAuthenticationConfiguration();
-
-    assert.isNotNull(authConfig);
-    if (authConfig) {
-      assert.strictEqual(authConfig.clientId, clientId);
-      assert.strictEqual(authConfig.tenantId, tenantId);
-      assert.strictEqual(authConfig.clientSecret, clientSecret);
-      assert.strictEqual(authConfig.authorityHost, authorityHost);
-    }
+    assert.strictEqual(apiConfig.endpoint, fakeAPIEndpoint);
   });
 
-  it("getResourceConfiguration should override environment variables with local config object", () => {
-    process.env.M365_CLIENT_ID = clientId;
-    process.env.M365_TENANT_ID = tenantId;
-    process.env.M365_CLIENT_SECRET = clientSecret;
-    process.env.M365_AUTHORITY_HOST = authorityHost;
+  it("getSqlConfigFromEnv should return config set with env variables", () => {
+    const sqlConfig = getSqlConfigFromEnv();
 
-    loadConfiguration({
-      authentication: {
-        clientId: overrideClientId,
-      },
-    });
-
-    const authConfig = getAuthenticationConfiguration();
-
-    assert.isNotNull(authConfig);
-    if (authConfig) {
-      assert.strictEqual(authConfig.clientId, overrideClientId);
-      assert.strictEqual(authConfig.tenantId, undefined);
-      assert.strictEqual(authConfig.clientSecret, undefined);
-      assert.strictEqual(authConfig.authorityHost, undefined);
-    }
-  });
-
-  it("getResourceConfiguration should get undefined result when there is no environment variable", () => {
-    delete process.env.M365_CLIENT_ID;
-    delete process.env.M365_TENANT_ID;
-    delete process.env.M365_CLIENT_SECRET;
-    delete process.env.M365_AUTHORITY_HOST;
-    loadConfiguration();
-    const authConfig = getAuthenticationConfiguration();
-    if (authConfig) {
-      assert.strictEqual(authConfig.clientId, undefined);
-      assert.strictEqual(authConfig.tenantId, undefined);
-      assert.strictEqual(authConfig.clientSecret, undefined);
-      assert.strictEqual(authConfig.authorityHost, undefined);
-    }
+    assert.strictEqual(sqlConfig.sqlServerEndpoint, fakeSQLEndpoint);
+    assert.strictEqual(sqlConfig.sqlUsername, fakeSQLUserName);
+    assert.strictEqual(sqlConfig.sqlPassword, fakeSQLPassword);
+    assert.strictEqual(sqlConfig.sqlDatabaseName, fakeSQLDataName);
+    assert.strictEqual(sqlConfig.sqlIdentityId, fakeIdentityId);
   });
 });

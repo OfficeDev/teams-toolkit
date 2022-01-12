@@ -7,7 +7,6 @@ import * as chaiPromises from "chai-as-promised";
 import mockedEnv from "mocked-env";
 import {
   createMicrosoftGraphClient,
-  loadConfiguration,
   OnBehalfOfUserCredential,
   M365TenantCredential,
   ErrorWithCode,
@@ -53,7 +52,6 @@ describe("createMicrosoftGraphClient Tests - node", () => {
       M365_TENANT_ID: tenantId,
       M365_AUTHORITY_HOST: authorityHost,
     });
-    loadConfiguration();
   });
 
   afterEach(function () {

@@ -3,8 +3,9 @@
 
 import { AccessToken } from "@azure/core-auth";
 import { assert, expect, use as chaiUse } from "chai";
+import mockedEnv from "mocked-env";
 import * as chaiPromises from "chai-as-promised";
-import { loadConfiguration, TeamsUserCredential } from "../../../src/index.browser";
+import { TeamsUserCredential } from "../../../src/index.browser";
 import * as sinon from "sinon";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../../src/core/errors";
 
@@ -61,18 +62,21 @@ describe("TeamsUserCredential Tests - Browser", () => {
 
   const fakeAccessToken = "fake-access-token";
 
-  function loadDefaultConfig() {
-    loadConfiguration({
-      authentication: {
-        initiateLoginEndpoint: loginUrl,
-        simpleAuthEndpoint: authEndpoint,
-        clientId: clientId,
-      },
+  let mockedEnvRestore: () => void;
+
+  beforeEach(function () {
+    mockedEnvRestore = mockedEnv({
+      REACT_APP_CLIENT_ID: clientId,
+      REACT_APP_TEAMSFX_ENDPOINT: authEndpoint,
+      REACT_APP_START_LOGIN_PAGE_URL: loginUrl,
     });
-  }
+  });
+
+  afterEach(function () {
+    mockedEnvRestore();
+  });
 
   it("getToken and login should throw InvalidParameter error with invalid scope", async function () {
-    loadDefaultConfig();
     const invalidScopes: any = [1];
     const credential = new TeamsUserCredential();
 
@@ -89,7 +93,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
 
   it("getToken should failed when not running inside Teams", async function () {
     this.timeout(10000);
-    loadDefaultConfig();
     const credential = new TeamsUserCredential();
     const errorResult = await expect(credential.getToken([])).to.eventually.be.rejectedWith(
       ErrorWithCode
@@ -108,7 +111,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
       expiresOnTimestamp,
     };
 
-    loadDefaultConfig();
     const credential: any = new TeamsUserCredential();
 
     const key = credential.getAccessTokenCacheKey(userId, clientId, tenantId, scopes);
@@ -129,7 +131,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
       expiresOnTimestamp,
     };
 
-    loadDefaultConfig();
     const credential: any = new TeamsUserCredential();
 
     const key = credential.getAccessTokenCacheKey(userId, clientId, tenantId, scopes);
@@ -157,7 +158,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
         );
       });
 
-    loadDefaultConfig();
     const credential: TeamsUserCredential = new TeamsUserCredential();
 
     await expect(credential.getUserInfo())
@@ -174,7 +174,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
         throw new ErrorWithCode("SSO token is empty", ErrorCode.InternalError);
       });
 
-    loadDefaultConfig();
     const credential: TeamsUserCredential = new TeamsUserCredential();
 
     await expect(credential.getUserInfo())
@@ -196,7 +195,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
 
-    loadDefaultConfig();
     const credential: TeamsUserCredential = new TeamsUserCredential();
 
     await expect(credential.getUserInfo())
@@ -232,7 +230,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
       });
     });
 
-    loadDefaultConfig();
     const credential: any = new TeamsUserCredential();
 
     const userInfo1 = await credential.getUserInfo();
@@ -248,25 +245,21 @@ describe("TeamsUserCredential Tests - Browser", () => {
     sinon.restore();
   });
 
-  it("loadConfiguration should throw InvalidConfiguration when configuration is not valid", async function () {
-    loadConfiguration({
-      authentication: undefined,
-    });
+  it("Create TeamsUserCredential should throw InvalidConfiguration when configuration is not valid", async function () {
+    // loadConfiguration({
+    //   authentication: undefined,
+    // });
+
+    // expect(() => {
+    //   new TeamsUserCredential();
+    // })
+    //   .to.throw(ErrorWithCode, ErrorMessage.AuthenticationConfigurationNotExists)
+    //   .with.property("code", ErrorCode.InvalidConfiguration);
 
     expect(() => {
-      new TeamsUserCredential();
-    })
-      .to.throw(ErrorWithCode, ErrorMessage.AuthenticationConfigurationNotExists)
-      .with.property("code", ErrorCode.InvalidConfiguration);
-
-    loadConfiguration({
-      authentication: {
+      new TeamsUserCredential({
         simpleAuthEndpoint: authEndpoint,
-      },
-    });
-
-    expect(() => {
-      new TeamsUserCredential();
+      });
     })
       .to.throw(
         ErrorWithCode,
@@ -274,14 +267,10 @@ describe("TeamsUserCredential Tests - Browser", () => {
       )
       .with.property("code", ErrorCode.InvalidConfiguration);
 
-    loadConfiguration({
-      authentication: {
-        initiateLoginEndpoint: loginUrl,
-      },
-    });
-
     expect(() => {
-      new TeamsUserCredential();
+      new TeamsUserCredential({
+        initiateLoginEndpoint: loginUrl,
+      });
     })
       .to.throw(ErrorWithCode, "clientId in configuration is invalid: undefined.")
       .with.property("code", ErrorCode.InvalidConfiguration);
@@ -300,7 +289,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
 
-    loadDefaultConfig();
     const credential = new TeamsUserCredential();
     const ssoToken = await credential.getToken("");
     assert.isNotNull(ssoToken);
@@ -324,7 +312,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
 
-    loadDefaultConfig();
     const credential: any = new TeamsUserCredential();
     const scopeStr = "user.read";
     const cacheKey = await credential.getAccessTokenCacheKey(scopeStr);
@@ -363,7 +350,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
 
-    loadDefaultConfig();
     const credential: any = new TeamsUserCredential();
     const scopeStr = "user.read";
     sinon
@@ -400,7 +386,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
 
-    loadDefaultConfig();
     const credential: any = new TeamsUserCredential();
     const scopeStr = "user.read";
     sinon
@@ -432,7 +417,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
 
-    loadDefaultConfig();
     const credential: any = new TeamsUserCredential();
     const scopeStr = "user.read";
 

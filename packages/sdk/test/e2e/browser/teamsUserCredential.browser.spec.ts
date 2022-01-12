@@ -1,10 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { assert, expect, use as chaiUse } from "chai";
+import mockedEnv from "mocked-env";
 import * as chaiPromises from "chai-as-promised";
 import { AccessToken } from "@azure/core-auth";
 import * as sinon from "sinon";
-import { loadConfiguration, TeamsUserCredential, ErrorWithCode } from "../../../src/index.browser";
+import { TeamsUserCredential, ErrorWithCode } from "../../../src/index.browser";
 import { getSSOToken, AADJwtPayLoad, SSOToken } from "../helper.browser";
 import jwtDecode from "jwt-decode";
 
@@ -16,14 +17,14 @@ describe("TeamsUserCredential Tests - Browser", () => {
   const UIREQUIREDERROR = "UiRequiredError";
   const FAKE_LOGIN_ENDPOINT = "FakeLoginEndpoint";
   let ssoToken: SSOToken;
+  let mockedEnvRestore: () => void;
+
   before(async () => {
     ssoToken = await getSSOToken();
-    loadConfiguration({
-      authentication: {
-        initiateLoginEndpoint: FAKE_LOGIN_ENDPOINT,
-        simpleAuthEndpoint: "http://localhost:5000",
-        clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
-      },
+    mockedEnvRestore = mockedEnv({
+      REACT_APP_CLIENT_ID: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
+      REACT_APP_TEAMSFX_ENDPOINT: "http://localhost:5000",
+      REACT_APP_START_LOGIN_PAGE_URL: FAKE_LOGIN_ENDPOINT,
     });
     sinon
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
@@ -38,6 +39,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
   });
   after(() => {
     sinon.restore();
+    mockedEnvRestore();
   });
 
   it("GetUserInfo should success with SSOToken", async function () {

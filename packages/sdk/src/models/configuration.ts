@@ -166,3 +166,16 @@ export interface SqlConfiguration {
    */
   readonly sqlIdentityId?: string;
 }
+
+/**
+ * Configuration for API resources like Azure Function.
+ * @beta
+ */
+export interface ApiConfiguration {
+  /**
+   * Api endpoint.
+   *
+   * @readonly
+   */
+  readonly endpoint?: string;
+}

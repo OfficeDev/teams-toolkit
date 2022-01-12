@@ -3,12 +3,7 @@
 
 import { assert, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
-import {
-  loadConfiguration,
-  OnBehalfOfUserCredential,
-  M365TenantCredential,
-  MsGraphAuthProvider,
-} from "../../../src";
+import { OnBehalfOfUserCredential, M365TenantCredential, MsGraphAuthProvider } from "../../../src";
 import {
   getSsoTokenFromTeams,
   MockEnvironmentVariable,
@@ -24,7 +19,6 @@ describe("MsGraphAuthProvider Tests - Node", () => {
   let ssoToken = "";
   beforeEach(async function () {
     restore = MockEnvironmentVariable();
-    loadConfiguration();
 
     ssoToken = await getSsoTokenFromTeams();
   });

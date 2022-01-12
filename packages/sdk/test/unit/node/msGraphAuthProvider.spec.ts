@@ -5,7 +5,6 @@ import { expect, use as chaiUse } from "chai";
 import * as chaiPromises from "chai-as-promised";
 import mockedEnv from "mocked-env";
 import {
-  loadConfiguration,
   OnBehalfOfUserCredential,
   M365TenantCredential,
   MsGraphAuthProvider,
@@ -56,7 +55,6 @@ describe("MsGraphAuthProvider Tests - Node", () => {
       M365_TENANT_ID: tenantId,
       M365_AUTHORITY_HOST: authorityHost,
     });
-    loadConfiguration();
   });
 
   afterEach(function () {

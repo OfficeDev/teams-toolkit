@@ -32,7 +32,7 @@ const credential = new OnBehalfOfUserCredential(ssoToken);
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(ssoToken)](./teamsfx.onbehalfofusercredential._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of OnBehalfOfUserCredential |
+|  [(constructor)(ssoToken, authConfig)](./teamsfx.onbehalfofusercredential._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of OnBehalfOfUserCredential |
 
 ## Methods
 

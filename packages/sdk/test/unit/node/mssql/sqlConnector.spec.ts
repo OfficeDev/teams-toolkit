@@ -7,7 +7,6 @@ import * as chaiPromises from "chai-as-promised";
 import * as sinon from "sinon";
 import mockedEnv from "mocked-env";
 import {
-  loadConfiguration,
   DefaultTediousConnectionConfiguration,
   ErrorWithCode,
   setLogLevel,
@@ -48,7 +47,6 @@ describe("DefaultTediousConnection Tests - Node", () => {
       SQL_USER_NAME: fakeSQLUserName,
       SQL_PASSWORD: fakeSQLPassword,
     });
-    loadConfiguration();
 
     const sqlConnector = new DefaultTediousConnectionConfiguration();
     const tediousConnectConfig = await sqlConnector.getConfig();
@@ -67,7 +65,6 @@ describe("DefaultTediousConnection Tests - Node", () => {
       SQL_DATABASE: fakeSQLDataName,
       IDENTITY_ID: fakeSQLIdentityId,
     });
-    loadConfiguration();
 
     const identityManager_GetToken = sinon.stub(ManagedIdentityCredential.prototype, "getToken");
     identityManager_GetToken.callsFake(async () => {
@@ -97,7 +94,6 @@ describe("DefaultTediousConnection Tests - Node", () => {
       SQL_USER_NAME: fakeSQLUserName,
       SQL_PASSWORD: fakeSQLPassword,
     });
-    loadConfiguration();
 
     const sqlConnector = new DefaultTediousConnectionConfiguration();
     await expect(sqlConnector.getConfig())
@@ -110,7 +106,6 @@ describe("DefaultTediousConnection Tests - Node", () => {
       SQL_ENDPOINT: fakeSQLServerEndpoint,
       SQL_DATABASE: fakeSQLDataName,
     });
-    loadConfiguration();
 
     const sqlConnector = new DefaultTediousConnectionConfiguration();
     await expect(sqlConnector.getConfig())

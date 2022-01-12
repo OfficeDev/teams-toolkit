@@ -811,7 +811,7 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
     if (backendRoot) {
       const depsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
       const shouldContinue = await installBackendExtension(backendRoot, depsChecker, vscodeLogger);
-      if (shouldContinue) {
+      if (!shouldContinue) {
         await debug.stopDebugging();
         // return non-zero value to let task "exit ${command:xxx}" to exit
         return "1";

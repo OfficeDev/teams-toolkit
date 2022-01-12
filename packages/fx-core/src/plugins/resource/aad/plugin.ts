@@ -57,7 +57,6 @@ import * as path from "path";
 import * as fs from "fs-extra";
 import { ArmTemplateResult } from "../../../common/armInterface";
 import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
-import { isMultiEnvEnabled } from "../../../common/tools";
 import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
@@ -80,42 +79,6 @@ export class AadAppForTeamsImpl {
 
     // Move objectId etc. from input to output.
     const skip = Utils.skipAADProvision(ctx, isLocalDebug);
-    if (skip && !isMultiEnvEnabled()) {
-      ctx.logProvider?.info(Messages.getLog(Messages.SkipProvision));
-
-      if (
-        ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, isLocalDebug) &&
-        ConfigUtils.getAadConfig(ctx, ConfigKeys.clientId, isLocalDebug) &&
-        ConfigUtils.getAadConfig(ctx, ConfigKeys.clientSecret, isLocalDebug) &&
-        ConfigUtils.getAadConfig(ctx, ConfigKeys.oauth2PermissionScopeId, isLocalDebug)
-      ) {
-        const config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
-        config.oauth2PermissionScopeId = ConfigUtils.getAadConfig(
-          ctx,
-          ConfigKeys.oauth2PermissionScopeId,
-          isLocalDebug
-        ) as string;
-        config.saveConfigIntoContext(ctx, TokenProvider.tenantId as string);
-        Utils.addLogAndTelemetryWithLocalDebug(
-          ctx.logProvider,
-          Messages.EndProvision,
-          Messages.EndLocalDebug,
-          isLocalDebug,
-          { [Telemetry.skip]: Telemetry.yes }
-        );
-        return ResultFactory.Success();
-      } else {
-        const fileName = Utils.getInputFileName(ctx);
-        throw ResultFactory.UserError(
-          GetSkipAppConfigError.name,
-          GetSkipAppConfigError.message(fileName),
-          undefined,
-          undefined,
-          GetSkipAppConfigError.helpLink
-        );
-      }
-    }
-
     DialogUtils.init(ctx.ui, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
 
     let config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
@@ -201,17 +164,6 @@ export class AadAppForTeamsImpl {
     );
 
     const skip = Utils.skipAADProvision(ctx, isLocalDebug);
-    if (skip && !isMultiEnvEnabled()) {
-      ctx.logProvider?.info(Messages.SkipProvision);
-      Utils.addLogAndTelemetryWithLocalDebug(
-        ctx.logProvider,
-        Messages.EndPostProvision,
-        Messages.EndPostLocalDebug,
-        isLocalDebug
-      );
-      return ResultFactory.Success();
-    }
-
     DialogUtils.init(ctx.ui, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
 
     await TokenProvider.init(ctx);

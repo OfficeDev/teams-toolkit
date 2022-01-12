@@ -29,6 +29,7 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { isVsCallingCli } from "../../..";
 import "./v2";
+import "./v3";
 import { DotnetPluginImpl } from "./dotnet/plugin";
 import { DotnetPluginInfo } from "./dotnet/constants";
 

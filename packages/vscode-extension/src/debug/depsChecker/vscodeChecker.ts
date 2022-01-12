@@ -1,11 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { err, ok, Result, Void } from "@microsoft/teamsfx-api";
 import {
   defaultHelpLink,
   DependencyStatus,
-  DepsCheckerError,
   DepsCheckerEvent,
   DepsLogger,
   DepsManager,
@@ -22,11 +20,7 @@ export class VSCodeDepsChecker {
 
   private readonly depsManager: DepsManager;
 
-  constructor(
-    private logger: DepsLogger,
-    private telemetry: DepsTelemetry,
-    private enableDisplayMessage: boolean = true
-  ) {
+  constructor(private logger: DepsLogger, private telemetry: DepsTelemetry) {
     this.depsManager = new DepsManager(logger, telemetry);
   }
 
@@ -34,13 +28,13 @@ export class VSCodeDepsChecker {
     return os.type() === "Linux";
   }
 
-  public async resolve(deps: DepsType[]): Promise<Result<Void, DepsCheckerError>> {
-    const enabledDeps = await this.getEnabledDeps(deps);
+  public async resolve(deps: DepsType[]): Promise<boolean> {
+    const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(deps);
     const depsStatus = await this.ensure(enabledDeps);
 
-    const res = await this.handleLinux(depsStatus);
-    if (res.isErr()) {
-      return res;
+    const shouldContinue = await this.handleLinux(depsStatus);
+    if (!shouldContinue) {
+      return false;
     }
 
     for (const dep of depsStatus) {
@@ -49,13 +43,13 @@ export class VSCodeDepsChecker {
         await this.logger.error(`${dep.error.message}, error = ${dep.error}`);
         this.logger.cleanup();
         await this.display(dep.error.message, dep.error.helpLink);
-        return err(dep.error);
+        return false;
       }
     }
-    return ok(Void);
+    return true;
   }
 
-  private async getEnabledDeps(deps: DepsType[]): Promise<DepsType[]> {
+  public static async getEnabledDeps(deps: DepsType[]): Promise<DepsType[]> {
     const res: DepsType[] = [];
     for (const dep of deps) {
       if (await this.isEnabled(dep)) {
@@ -77,24 +71,22 @@ export class VSCodeDepsChecker {
     return await this.depsManager.ensureDependencies(deps, options);
   }
 
-  private async handleLinux(
-    depsStatus: DependencyStatus[]
-  ): Promise<Result<Void, DepsCheckerError>> {
+  private async handleLinux(depsStatus: DependencyStatus[]): Promise<boolean> {
     if (!VSCodeDepsChecker.isLinux()) {
-      return ok(Void);
+      return true;
     }
     const manuallyInstallDeps = depsStatus
       .filter((dep) => !dep.isInstalled)
       .filter((dep) => !dep.details.isLinuxSupported);
 
     if (manuallyInstallDeps.length == 0) {
-      return ok(Void);
+      return true;
     }
 
     const displayMessage = await this.generateLinuxMsg(manuallyInstallDeps);
     await this.display(displayMessage, defaultHelpLink);
     this.logger.cleanup();
-    return err(new DepsCheckerError(displayMessage, defaultHelpLink));
+    return false;
   }
 
   private async generateLinuxMsg(depsStatus: DependencyStatus[]): Promise<string> {
@@ -110,10 +102,6 @@ export class VSCodeDepsChecker {
   }
 
   public async display(message: string, link: string): Promise<void> {
-    if (!this.enableDisplayMessage) {
-      return;
-    }
-
     const clickButton = await vscodeHelper.showWarningMessage(message, {
       title: VSCodeDepsChecker.learnMoreButtonText,
     });
@@ -127,7 +115,7 @@ export class VSCodeDepsChecker {
     this.telemetry.sendEvent(DepsCheckerEvent.clickCancel);
   }
 
-  private async isEnabled(dep: DepsType): Promise<boolean> {
+  private static async isEnabled(dep: DepsType): Promise<boolean> {
     switch (dep) {
       case DepsType.AzureNode:
       case DepsType.SpfxNode:

@@ -10,11 +10,18 @@ import {
   Result,
   returnSystemError,
   returnUserError,
-  UserError,
 } from "@microsoft/teamsfx-api";
-import { LocalEnvManager, ProjectSettingsHelper, FolderName } from "@microsoft/teamsfx-core";
+import {
+  LocalEnvManager,
+  ProjectSettingsHelper,
+  FolderName,
+  DepsManager,
+  DepsType,
+  installExtension,
+  DepsCheckerError,
+} from "@microsoft/teamsfx-core";
+
 import * as path from "path";
-import * as vscode from "vscode";
 import * as util from "util";
 
 import VsCodeLogInstance from "../commonlib/log";
@@ -32,6 +39,7 @@ import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { installBackendExtension } from "./depsChecker/backendExtensionsInstall";
+import { ext } from "../extensionVariables";
 
 interface CheckFailure {
   checker: string;
@@ -50,30 +58,15 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
 
     // Get project settings
-    if (!vscode.workspace.workspaceFolders) {
-      throw new UserError(
-        ExtensionErrors.NoWorkspaceError,
-        StringResources.vsc.handlers.noOpenWorkspace,
-        ExtensionSource
-      );
-    }
-    const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders[0];
-    const workspacePath: string = workspaceFolder.uri.fsPath;
-    const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
+    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
 
     // deps
-    const depsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry, false);
-    const depsFailure = await checkDependencies(localEnvManager, depsChecker, projectSettings);
-    if (depsFailure) {
-      failures.push(depsFailure);
-    }
+    const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
+    const depsFailures = await checkDependencies(localEnvManager, depsManager, projectSettings);
+    failures.push(...depsFailures);
 
     // backend extension
-    const backendExtensionFailure = await resolveBackendExtension(
-      depsChecker,
-      workspacePath,
-      projectSettings
-    );
+    const backendExtensionFailure = await resolveBackendExtension(depsManager, projectSettings);
     if (backendExtensionFailure) {
       failures.push(backendExtensionFailure);
     }
@@ -141,63 +134,61 @@ async function checkM365Account(): Promise<CheckFailure | undefined> {
 
 async function checkDependencies(
   localEnvManager: LocalEnvManager,
-  depsChecker: VSCodeDepsChecker,
+  depsManager: DepsManager,
   projectSettings: ProjectSettings
-): Promise<CheckFailure | undefined> {
+): Promise<CheckFailure[]> {
   try {
     const deps = localEnvManager.getActiveDependencies(projectSettings);
-
-    const resolveRes = await depsChecker.resolve(deps);
-    if (resolveRes.isErr()) {
-      return {
-        checker: "Dependencies",
-        error: returnUserError(
-          resolveRes.error,
-          ExtensionSource,
-          ExtensionErrors.PrerequisitesValidationError,
-          resolveRes.error.helpLink
-        ),
-      };
+    const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(deps);
+    const depsStatus = await depsManager.ensureDependencies(enabledDeps, { fastFail: false });
+    const failures: CheckFailure[] = [];
+    for (const dep of depsStatus) {
+      if (!dep.isInstalled && dep.error) {
+        failures.push({
+          checker: dep.name,
+          error: handleDepsCheckerError(dep.error),
+        });
+      }
     }
-
-    return undefined;
+    return failures;
   } catch (error: any) {
-    return {
-      checker: "Dependencies",
-      error: assembleError(error),
-    };
+    return [
+      {
+        checker: "Dependencies",
+        error: handleDepsCheckerError(error),
+      },
+    ];
   }
 }
+
 async function resolveBackendExtension(
-  depsChecker: VSCodeDepsChecker,
-  workspacePath: string,
+  depsManager: DepsManager,
   projectSettings: ProjectSettings
 ): Promise<CheckFailure | undefined> {
   try {
     if (ProjectSettingsHelper.includeBackend(projectSettings)) {
-      const backendRoot = path.join(workspacePath, FolderName.Function);
-
-      const res = await installBackendExtension(backendRoot, depsChecker, vscodeLogger);
-      if (res.isErr()) {
-        return {
-          checker: "Backend Extension",
-          error: returnUserError(
-            res.error,
-            ExtensionSource,
-            ExtensionErrors.PrerequisitesValidationError,
-            res.error.helpLink
-          ),
-        };
-      }
+      const backendRoot = path.join(ext.workspaceUri.fsPath, FolderName.Function);
+      const dotnet = (await depsManager.getStatus([DepsType.Dotnet]))[0];
+      await installExtension(backendRoot, dotnet.command, vscodeLogger);
     }
-
     return undefined;
   } catch (error: any) {
     return {
       checker: "Backend Extension",
-      error: assembleError(error),
+      error: handleDepsCheckerError(error),
     };
   }
+}
+
+function handleDepsCheckerError(error: any): FxError {
+  return error instanceof DepsCheckerError
+    ? returnUserError(
+        error,
+        ExtensionSource,
+        ExtensionErrors.PrerequisitesValidationError,
+        error.helpLink
+      )
+    : assembleError(error);
 }
 
 async function handleFailures(failures: CheckFailure[]): Promise<string> {

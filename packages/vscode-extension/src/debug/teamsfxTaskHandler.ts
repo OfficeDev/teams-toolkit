@@ -111,17 +111,19 @@ export async function runTask(task: vscode.Task): Promise<number | undefined> {
       }
     }, 30000);
 
-    taskStartEventEmitter.event((result) => {
+    const startListener = taskStartEventEmitter.event((result) => {
       if (taskId === result) {
         clearTimeout(startTimer);
         started = true;
+        startListener.dispose();
       }
     });
 
     vscode.tasks.executeTask(task);
 
-    taskEndEventEmitter.event((result) => {
+    const endListener = taskEndEventEmitter.event((result) => {
       if (taskId === result.id) {
+        endListener.dispose();
         resolve(result.exitCode);
       }
     });
@@ -182,6 +184,7 @@ async function checkCustomizedPort(component: string, componentRoot: string, che
 function onDidStartTaskHandler(event: vscode.TaskStartEvent): void {
   const taskId = event.execution.task?.definition?.teamsfxTaskId;
   if (taskId !== undefined) {
+    trackedTasks.add(taskId);
     taskStartEventEmitter.fire(taskId as string);
   }
 }
@@ -189,6 +192,7 @@ function onDidStartTaskHandler(event: vscode.TaskStartEvent): void {
 function onDidEndTaskHandler(event: vscode.TaskEndEvent): void {
   const taskId = event.execution.task?.definition?.teamsfxTaskId;
   if (taskId !== undefined && trackedTasks.has(taskId as string)) {
+    trackedTasks.delete(taskId as string);
     taskEndEventEmitter.fire({ id: taskId as string, exitCode: undefined });
   }
 }

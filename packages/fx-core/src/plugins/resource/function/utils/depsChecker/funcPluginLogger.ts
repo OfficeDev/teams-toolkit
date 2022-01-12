@@ -28,7 +28,7 @@ class FuncPluginLogger implements DepsLogger {
   public async error(message: string): Promise<boolean> {
     this.addToCache(LogLevel.Error, message);
     Logger.error(message);
-    return Promise.resolve(true);
+    return true;
   }
 
   public async printDetailLog(): Promise<void> {

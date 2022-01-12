@@ -37,7 +37,9 @@ enum BaseConfig {
   IDENTITY_ID = "IDENTITY_ID",
   M365_TENANT_ID = "M365_TENANT_ID",
 }
-
+enum FunctionConfig {
+  API_ENDPOINT = "API_ENDPOINT",
+}
 enum SQLConfig {
   SQL_DATABASE_NAME = "SQL_DATABASE_NAME",
   SQL_ENDPOINT = "SQL_ENDPOINT",
@@ -128,10 +130,6 @@ export class BotValidator {
       this.ctx[PluginId.Aad][StateConfigKey.tenantId] as string
     );
     chai.assert.equal(
-      response[BaseConfig.M365_CLIENT_SECRET],
-      await getExpectedM365ClientSecret(this.ctx, this.projectPath, this.env, activeResourcePlugins)
-    );
-    chai.assert.equal(
       response[BaseConfig.M365_APPLICATION_ID_URI],
       getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
     );
@@ -140,6 +138,12 @@ export class BotValidator {
       this.ctx[PluginId.Identity][StateConfigKey.identityClientId] as string
     );
 
+    if (activeResourcePlugins.includes(PluginId.Function)) {
+      chai.assert.equal(
+        response[FunctionConfig.API_ENDPOINT],
+        this.ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
+      );
+    }
     if (activeResourcePlugins.includes(PluginId.AzureSQL)) {
       chai.assert.equal(
         response[SQLConfig.SQL_ENDPOINT],

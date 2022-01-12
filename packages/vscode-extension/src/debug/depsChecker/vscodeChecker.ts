@@ -52,7 +52,7 @@ export class VSCodeDepsChecker {
   public static async getEnabledDeps(deps: DepsType[]): Promise<DepsType[]> {
     const res: DepsType[] = [];
     for (const dep of deps) {
-      if (await this.isEnabled(dep)) {
+      if (await VSCodeDepsChecker.isEnabled(dep)) {
         res.push(dep);
       }
     }

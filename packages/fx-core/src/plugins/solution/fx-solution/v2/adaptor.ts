@@ -23,11 +23,11 @@ import {
   returnSystemError,
 } from "@microsoft/teamsfx-api";
 import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
-import { PluginNames, SolutionError, SolutionSource } from "..";
 import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../../common/armInterface";
 import { LocalCrypto } from "../../../../core/crypto";
 import { newEnvInfo } from "../../../../core/tools";
 import { flattenConfigMap, legacyConfig2EnvState } from "../../../resource/utils4v2";
+import { SolutionError, SolutionSource } from "../constants";
 import { combineRecords } from "./utils";
 
 class BaseSolutionContextAdaptor implements SolutionContext {

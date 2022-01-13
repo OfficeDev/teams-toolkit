@@ -3,9 +3,9 @@
 
 import { NextFunction } from "@feathersjs/hooks/lib";
 import { Container } from "typedi";
-import { CoreHookContext } from "../..";
 import { v3 } from "@microsoft/teamsfx-api";
 import { TeamsFxAzureSolutionNameV3 } from "../../plugins/solution/fx-solution/v3/constants";
+import { CoreHookContext } from "./CoreHookContext";
 
 export async function SolutionLoaderMW_V3(ctx: CoreHookContext, next: NextFunction) {
   if (ctx.projectSettings) {

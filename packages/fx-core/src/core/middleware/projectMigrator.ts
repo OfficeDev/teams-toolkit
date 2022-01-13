@@ -20,27 +20,22 @@ import {
   StatesFolderName,
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
+import { globalStateUpdate } from "../../common/globalState";
 import {
-  CoreHookContext,
-  environmentManager,
-  getResourceFolder,
+  CoreSource,
   NotJsonError,
   ProjectSettingError,
-  serializeDict,
   SolutionConfigError,
   SPFxConfigError,
-} from "../..";
-import { globalStateUpdate } from "../../common/globalState";
-import { UpgradeCanceledError } from "../error";
+  UpgradeCanceledError,
+} from "../error";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import fs from "fs-extra";
 import path from "path";
 import os from "os";
-import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
-import { CoreSource, FxCore, TOOLS } from "..";
-import { getStrings, isSPFxProject } from "../../common/tools";
+import { getStrings, isSPFxProject, serializeDict } from "../../common/tools";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
 import {
@@ -77,6 +72,10 @@ import { Utils as SPFxUtils } from "../../plugins/resource/spfx/utils/utils";
 import util from "util";
 import { NamedArmResourcePluginAdaptor } from "../../plugins/solution/fx-solution/v2/adaptor";
 import { LocalEnvProvider } from "../../common/local/localEnvProvider";
+import { CoreHookContext } from "./CoreHookContext";
+import { Logger, TOOLS } from "../globalVars";
+import { getResourceFolder } from "../../folder";
+import { environmentManager } from "../environment";
 
 const programmingLanguage = "programmingLanguage";
 const defaultFunctionName = "defaultFunctionName";
@@ -150,11 +149,8 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
       ctx.result = ok(undefined);
       return;
     }
-
-    const core = ctx.self as FxCore;
-
     sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorNotificationStart);
-    const res = await TOOLS?.ui.showMessage(
+    const res = await TOOLS.ui?.showMessage(
       "warn",
       getStrings().solution.MigrationToArmAndMultiEnvMessage,
       true,
@@ -196,8 +192,7 @@ export const ProjectMigratorMW: Middleware = async (ctx: CoreHookContext, next: 
 };
 
 function outputCancelMessage(ctx: CoreHookContext) {
-  const core = ctx.self as FxCore;
-  TOOLS?.logProvider.warning(`[core] Upgrade cancelled.`);
+  Logger?.warning(`[core] Upgrade cancelled.`);
 
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (inputs.platform === Platform.VSCode) {
@@ -296,7 +291,6 @@ async function migrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<void> {
   }
 
   let backupFolder: string | undefined;
-  const core = ctx.self as FxCore;
   try {
     backupFolder = await getBackupFolder(projectPath);
     await backup(projectPath, backupFolder);
@@ -337,15 +331,14 @@ async function getManifestPath(fx: string, projectPath: string): Promise<string>
 }
 
 async function preCheckKeyFiles(projectPath: string, ctx: CoreHookContext): Promise<void> {
-  const core = ctx.self as FxCore;
   const fx = path.join(projectPath, `.${ConfigFolderName}`);
   const manifestPath = await getManifestPath(fx, projectPath);
-  await preReadJsonFile(path.join(fx, "env.default.json"), core);
-  await preReadJsonFile(path.join(fx, "settings.json"), core);
-  await preReadJsonFile(manifestPath, core);
+  await preReadJsonFile(path.join(fx, "env.default.json"));
+  await preReadJsonFile(path.join(fx, "settings.json"));
+  await preReadJsonFile(manifestPath);
 }
 
-async function preReadJsonFile(path: string, core: FxCore): Promise<void> {
+async function preReadJsonFile(path: string): Promise<void> {
   try {
     await fs.readJson(path);
   } catch (err) {
@@ -380,7 +373,6 @@ async function handleError(
     await cleanup(projectPath, backupFolder);
   } catch (e) {
     // try my best to cleanup
-    const core = ctx.self as FxCore;
     TOOLS?.logProvider.error(`[core] Failed to cleanup the backup, error: '${e}'`);
   }
   TOOLS?.ui
@@ -420,7 +412,6 @@ async function postMigration(
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorMigrate);
   sendTelemetryEvent(Component.core, TelemetryEvent.ProjectMigratorGuideStart);
   await generateUpgradeReport(backupFolder);
-  const core = ctx.self as FxCore;
   await updateGitIgnore(projectPath, TOOLS.logProvider, backupFolder);
 
   TOOLS?.logProvider.warning(
@@ -551,7 +542,7 @@ async function generateLocalTemplate(manifestString: string, isSPFx: boolean, lo
 }
 
 async function getManifest(sourceManifestFile: string): Promise<TeamsAppManifest> {
-  return await readJson(sourceManifestFile);
+  return await fs.readJson(sourceManifestFile);
 }
 
 async function copyManifest(projectPath: string, fx: string, target: string) {
@@ -740,11 +731,11 @@ function getConfigDevJson(appName: string): EnvConfig {
 }
 
 async function queryProjectStatus(fx: string): Promise<any> {
-  const settings: ProjectSettings = await readJson(path.join(fx, "settings.json"));
+  const settings: ProjectSettings = await fs.readJson(path.join(fx, "settings.json"));
   const solutionSettings: AzureSolutionSettings =
     settings.solutionSettings as AzureSolutionSettings;
   const plugins = getActivatedResourcePlugins(solutionSettings);
-  const envDefaultJson: { solution: { provisionSucceeded: boolean } } = await readJson(
+  const envDefaultJson: { solution: { provisionSucceeded: boolean } } = await fs.readJson(
     path.join(fx, "env.default.json")
   );
   const hasFrontend = plugins?.some((plugin) => plugin.name === PluginNames.FE);
@@ -862,9 +853,9 @@ async function ensureProjectSettings(
   projectSettingPath: string,
   envDefaultPath: string
 ): Promise<void> {
-  const settings: ProjectSettings = await readJson(projectSettingPath);
+  const settings: ProjectSettings = await fs.readJson(projectSettingPath);
   if (!settings.programmingLanguage || !settings.defaultFunctionName) {
-    const envDefault = await readJson(envDefaultPath);
+    const envDefault = await fs.readJson(envDefaultPath);
     settings.programmingLanguage =
       settings.programmingLanguage || envDefault[PluginNames.SOLUTION]?.[programmingLanguage];
     settings.defaultFunctionName =
@@ -877,7 +868,7 @@ async function ensureProjectSettings(
 }
 
 async function getAppName(projectSettingPath: string): Promise<string> {
-  const settings: ProjectSettings = await readJson(projectSettingPath);
+  const settings: ProjectSettings = await fs.readJson(projectSettingPath);
   return settings.appName;
 }
 
@@ -1018,7 +1009,6 @@ async function updateConfig(ctx: CoreHookContext) {
 async function generateArmTemplatesFiles(ctx: CoreHookContext) {
   const minorCtx: CoreHookContext = { arguments: ctx.arguments };
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
-  const core = ctx.self as FxCore;
 
   const fx = path.join(inputs.projectPath as string, `.${ConfigFolderName}`);
   const fxConfig = path.join(fx, InputConfigsFolderName);

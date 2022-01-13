@@ -18,7 +18,7 @@ import {
 } from "../common/telemetry";
 import { getRootDirectory } from "../common/tools";
 import { FetchSampleError, InvalidInputError } from "./error";
-import { GlobalVars } from "./globalVars";
+import { TOOLS } from "./globalVars";
 import { CoreHookContext } from "./middleware/CoreHookContext";
 import { loadProjectSettings } from "./middleware/projectSettingsLoader";
 import { CoreQuestionNames, QuestionRootFolder } from "./question";
@@ -99,7 +99,7 @@ export async function downloadSample(
   ctx: CoreHookContext
 ): Promise<Result<string, FxError>> {
   let fxError;
-  const progress = GlobalVars.ui.createProgressBar("Fetch sample app", 3);
+  const progress = TOOLS.ui.createProgressBar("Fetch sample app", 3);
   progress.start();
   const telemetryProperties: any = {
     [TelemetryProperty.Success]: TelemetrySuccess.Yes,

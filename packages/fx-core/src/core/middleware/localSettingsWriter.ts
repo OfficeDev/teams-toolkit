@@ -4,8 +4,9 @@
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { CoreHookContext, TOOLS } from "..";
 import { LocalSettingsProvider } from "../../common/localSettingsProvider";
+import { TOOLS } from "../globalVars";
+import { CoreHookContext } from "./CoreHookContext";
 import { shouldIgnored } from "./projectSettingsLoader";
 
 /**

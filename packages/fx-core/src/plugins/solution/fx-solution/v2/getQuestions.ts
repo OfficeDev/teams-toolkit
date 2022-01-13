@@ -45,11 +45,11 @@ import {
   ResourcePluginsV2,
 } from "../ResourcePluginContainer";
 import { checkWetherProvisionSucceeded, getSelectedPlugins, isAzureProject } from "./utils";
-import { isV3 } from "../../../..";
 import { TeamsAppSolutionNameV2 } from "./constants";
 import { BuiltInResourcePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
+import { isV3 } from "../../../../core/featureFlags";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,

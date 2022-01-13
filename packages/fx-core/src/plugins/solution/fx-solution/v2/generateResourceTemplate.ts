@@ -1,9 +1,15 @@
-import { v2, Inputs, FxError, Result, Json, ok } from "@microsoft/teamsfx-api";
-import arm, { armV2, generateArmTemplate } from "../arm";
+import { v2, Inputs, FxError, Result, Json, ok, UserInteraction } from "@microsoft/teamsfx-api";
+import { getStrings } from "../../../../common/tools";
+import arm, { armV2 } from "../arm";
 import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor, ScaffoldingContextAdapter } from "./adaptor";
-import { showUpdateArmTemplateNotice } from "./executeUserTask";
 import { getAzureSolutionSettings, getSelectedPlugins } from "./utils";
+import * as util from "util";
+
+export function showUpdateArmTemplateNotice(ui?: UserInteraction): void {
+  const msg: string = util.format(getStrings().solution.UpdateArmTemplateNotice);
+  ui?.showMessage("info", msg, false);
+}
 
 export async function generateResourceTemplate(
   ctx: v2.Context,

@@ -4,12 +4,12 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { err, FxError, Inputs, ok, ProjectSettings, Result, v2, v3 } from "@microsoft/teamsfx-api";
 import { newEnvInfoV3 } from "../tools";
-import { CoreHookContext } from "../..";
 import { LocalCrypto } from "../crypto";
 import { environmentManager } from "../environment";
 import { NoProjectOpenedError, ProjectSettingsUndefinedError } from "../error";
 import { getTargetEnvName } from "./envInfoLoader";
 import { shouldIgnored } from "./projectSettingsLoader";
+import { CoreHookContext } from "./CoreHookContext";
 
 export function EnvInfoLoaderMW_V3(skip: boolean): Middleware {
   return async (ctx: CoreHookContext, next: NextFunction) => {

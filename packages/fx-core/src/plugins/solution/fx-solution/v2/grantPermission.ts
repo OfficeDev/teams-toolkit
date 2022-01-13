@@ -20,15 +20,11 @@ import {
   ConfigMap,
   Json,
 } from "@microsoft/teamsfx-api";
-import {
-  CollaborationState,
-  isSPFxProject,
-  PermissionsResult,
-  ResourcePermission,
-} from "../../../../common";
+import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
   PluginNames,
+  REMOTE_TEAMS_APP_TENANT_ID,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
@@ -36,7 +32,6 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
 } from "../constants";
-import { PluginsWithContext } from "../solution";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { executeConcurrently, LifecyclesWithContext } from "../executor";
 import {
@@ -47,7 +42,7 @@ import { flattenConfigMap } from "../../../resource/utils4v2";
 import { NamedThunk, executeConcurrently as executeNamedThunkConcurrently } from "./executor";
 import { CollaborationUtil, CollabApiParam } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
-import { REMOTE_TEAMS_APP_TENANT_ID } from "..";
+import { PluginsWithContext } from "../types";
 
 async function grantPermissionImpl(
   param: CollabApiParam,

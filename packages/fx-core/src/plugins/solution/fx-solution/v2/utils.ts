@@ -12,7 +12,6 @@ import {
   returnSystemError,
   Json,
   SolutionContext,
-  Plugin,
   AppStudioTokenProvider,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
@@ -36,9 +35,9 @@ import {
   TabSPFxItem,
 } from "../question";
 import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
-import { PluginsWithContext } from "../solution";
 import { getPluginContext } from "../utils/util";
 import * as util from "util";
+import { PluginsWithContext } from "../types";
 
 export function getSelectedPlugins(azureSettings: AzureSolutionSettings): v2.ResourcePlugin[] {
   const plugins = getActivatedV2ResourcePlugins(azureSettings);
@@ -59,7 +58,6 @@ export function combineRecords<T>(records: { name: string; result: T }[]): Recor
   for (const record of records) {
     ret[record.name] = record.result;
   }
-
   return ret;
 }
 

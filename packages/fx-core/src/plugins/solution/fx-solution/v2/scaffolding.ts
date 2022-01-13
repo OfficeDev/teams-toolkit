@@ -27,18 +27,18 @@ import {
 } from "./utils";
 import path from "path";
 import fs from "fs-extra";
+import { ResourcePluginsV2 } from "../ResourcePluginContainer";
+import { Container } from "typedi";
+import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import {
   DEFAULT_PERMISSION_REQUEST,
-  getTemplatesFolder,
   SolutionError,
   SolutionTelemetryComponentName,
   SolutionTelemetryEvent,
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
-} from "../../../..";
-import { ResourcePluginsV2 } from "../ResourcePluginContainer";
-import { Container } from "typedi";
-import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
+} from "../constants";
+import { getTemplatesFolder } from "../../../../folder";
 
 export async function scaffoldSourceCode(
   ctx: v2.Context,

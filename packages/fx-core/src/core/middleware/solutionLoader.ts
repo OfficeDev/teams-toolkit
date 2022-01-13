@@ -2,13 +2,13 @@
 // Licensed under the MIT license.
 
 import { NextFunction } from "@feathersjs/hooks/lib";
-import { CoreHookContext } from "..";
 import {
   getAllSolutionPlugins,
   getAllSolutionPluginsV2,
   getSolutionPluginByName,
   getSolutionPluginV2ByName,
 } from "../SolutionPluginContainer";
+import { CoreHookContext } from "./CoreHookContext";
 
 export async function SolutionLoaderMW(ctx: CoreHookContext, next: NextFunction) {
   if (ctx.projectSettings) {

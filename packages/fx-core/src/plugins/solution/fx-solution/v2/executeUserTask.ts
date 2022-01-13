@@ -51,11 +51,11 @@ import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { getAllV2ResourcePluginMap, ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { Container } from "typedi";
 import { scaffoldByPlugins } from "./scaffolding";
-import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { BuiltInResourcePluginNames } from "../v3/constants";
-import { isVSProject } from "../../../../core";
+import { isVSProject } from "../../../../core/featureFlags";
+import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,

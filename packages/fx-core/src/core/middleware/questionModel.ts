@@ -24,11 +24,8 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { Container } from "typedi";
-import { CoreSource, createV2Context, FunctionRouterError, newProjectSettings, TOOLS } from "..";
-import { CoreHookContext, FxCore } from "../..";
+import { CoreSource, FunctionRouterError } from "../error";
 import { deepCopy } from "../../common";
-import { BuiltInSolutionNames } from "../../plugins/solution/fx-solution/v3/constants";
 import {
   createCapabilityQuestion,
   DefaultAppNameFunc,
@@ -46,21 +43,23 @@ import {
   getAllSolutionPluginsV2,
   getGlobalSolutionsV3,
 } from "../SolutionPluginContainer";
+import { CoreHookContext } from "./CoreHookContext";
 import { newSolutionContext } from "./projectSettingsLoader";
 import { getProjectSettingsPath } from "./projectSettingsLoaderV3";
+import { TOOLS } from "../globalVars";
+import { createV2Context, newProjectSettings } from "../tools";
 /**
  * This middleware will help to collect input from question flow
  */
 export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
   const inputs: Inputs = ctx.arguments[ctx.arguments.length - 1];
   const method = ctx.method;
-  const core = ctx.self as FxCore;
 
   let getQuestionRes: Result<QTreeNode | undefined, FxError> = ok(undefined);
   if (method === "createProjectV2") {
-    getQuestionRes = await core._getQuestionsForCreateProjectV2(inputs);
+    getQuestionRes = await getQuestionsForCreateProjectV2(inputs);
   } else if (method === "createProjectV3") {
-    getQuestionRes = await core._getQuestionsForCreateProjectV3(inputs);
+    getQuestionRes = await getQuestionsForCreateProjectV3(inputs);
   } else if (method === "migrateV1Project") {
     const res = await TOOLS?.ui.showMessage(
       "warn",
@@ -74,9 +73,9 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
       ctx.result = ok(null);
       return;
     }
-    getQuestionRes = await core._getQuestionsForMigrateV1Project(inputs);
+    getQuestionRes = await getQuestionsForMigrateV1Project(inputs);
   } else if (method === "init" || method === "_init") {
-    getQuestionRes = await core._getQuestionsForInit(inputs);
+    getQuestionRes = await getQuestionsForInit(inputs);
   } else if (
     [
       "addModule",
@@ -92,46 +91,46 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
     const contextV2 = ctx.contextV2;
     if (solutionV3 && contextV2) {
       if (method === "addModule") {
-        getQuestionRes = await core._getQuestionsForAddModule(
+        getQuestionRes = await getQuestionsForAddModule(
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2
         );
       } else if (method === "scaffold") {
-        getQuestionRes = await core._getQuestionsForScaffold(
+        getQuestionRes = await getQuestionsForScaffold(
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2
         );
       } else if (method === "addResource") {
-        getQuestionRes = await core._getQuestionsForAddResource(
+        getQuestionRes = await getQuestionsForAddResource(
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2
         );
       } else if (method === "provisionResourcesV3") {
-        getQuestionRes = await core._getQuestionsForProvision(
+        getQuestionRes = await getQuestionsForProvision(
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2,
           ctx.envInfoV3
         );
       } else if (method === "localDebugV3") {
-        getQuestionRes = await core._getQuestionsForLocalProvision(
+        getQuestionRes = await getQuestionsForLocalProvision(
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2,
           ctx.localSettings
         );
       } else if (method === "deployArtifactsV3") {
-        getQuestionRes = await core._getQuestionsForDeploy(
+        getQuestionRes = await getQuestionsForDeploy(
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2,
           ctx.envInfoV3!
         );
       } else if (method === "publishApplicationV3") {
-        getQuestionRes = await core._getQuestionsForPublish(
+        getQuestionRes = await getQuestionsForPublish(
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2,
@@ -145,7 +144,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
       const context = ctx.contextV2;
       if (solution && context) {
         if (method === "provisionResources" || method === "provisionResourcesV2") {
-          getQuestionRes = await core._getQuestions(
+          getQuestionRes = await getQuestionsV2(
             context,
             solution,
             Stage.provision,
@@ -153,7 +152,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             ctx.envInfoV2
           );
         } else if (method === "localDebug" || method === "localDebugV2") {
-          getQuestionRes = await core._getQuestions(
+          getQuestionRes = await getQuestionsV2(
             context,
             solution,
             Stage.debug,
@@ -161,7 +160,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             ctx.envInfoV2
           );
         } else if (method === "deployArtifacts" || method === "deployArtifactsV2") {
-          getQuestionRes = await core._getQuestions(
+          getQuestionRes = await getQuestionsV2(
             context,
             solution,
             Stage.deploy,
@@ -169,7 +168,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             ctx.envInfoV2
           );
         } else if (method === "publishApplication" || method === "publishApplicationV2") {
-          getQuestionRes = await core._getQuestions(
+          getQuestionRes = await getQuestionsV2(
             context,
             solution,
             Stage.publish,
@@ -178,7 +177,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
           );
         } else if (method === "executeUserTask") {
           const func = ctx.arguments[0] as Func;
-          getQuestionRes = await core._getQuestionsForUserTask(
+          getQuestionRes = await getQuestionsForUserTaskV2(
             context,
             solution,
             func,
@@ -186,7 +185,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             ctx.envInfoV2
           );
         } else if (method === "grantPermission") {
-          getQuestionRes = await core._getQuestions(
+          getQuestionRes = await getQuestionsV2(
             context,
             solution,
             Stage.grantPermission,

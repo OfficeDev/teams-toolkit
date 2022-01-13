@@ -30,11 +30,11 @@ import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
 import { FailedToParseResourceIdError } from "../core/error";
+import { FeatureFlagName } from "../core/featureFlags";
 import { getResourceFolder } from "../folder";
 import { SolutionError } from "../plugins/solution/fx-solution/constants";
 import {
   ConstantString,
-  FeatureFlagName,
   OfficeClientId,
   OutlookClientId,
   ResourcePlugins,

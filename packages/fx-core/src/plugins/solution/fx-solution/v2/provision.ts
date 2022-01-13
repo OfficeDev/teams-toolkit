@@ -1,17 +1,40 @@
 import {
-  v2,
-  Inputs,
-  FxError,
-  Result,
-  ok,
   err,
-  returnUserError,
-  TokenProvider,
-  Void,
-  SolutionContext,
+  FxError,
+  Inputs,
+  ok,
+  Result,
   returnSystemError,
+  returnUserError,
+  SolutionContext,
+  TokenProvider,
+  v2,
+  Void,
 } from "@microsoft/teamsfx-api";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import _, { isUndefined } from "lodash";
+import { Container } from "typedi";
+import * as util from "util";
+import { PluginDisplayName } from "../../../../common/constants";
 import { getResourceGroupInPortal, getStrings, isMultiEnvEnabled } from "../../../../common/tools";
+import { isVsCallingCli } from "../../../../core/featureFlags";
+import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
+import { Constants } from "../../../resource/appstudio/constants";
+import { deployArmTemplates } from "../arm";
+import { CommonQuestions, createNewResourceGroup, fillInCommonQuestions } from "../commonQuestions";
+import {
+  ARM_TEMPLATE_OUTPUT,
+  GLOBAL_CONFIG,
+  PluginNames,
+  REMOTE_TEAMS_APP_TENANT_ID,
+  SolutionError,
+  SolutionSource,
+  SOLUTION_PROVISION_SUCCEEDED,
+  SUBSCRIPTION_ID,
+  SUBSCRIPTION_NAME,
+} from "../constants";
+import { ResourcePluginsV2 } from "../ResourcePluginContainer";
+import { ProvisionContextAdapter } from "./adaptor";
 import { executeConcurrently } from "./executor";
 import {
   combineRecords,
@@ -21,32 +44,6 @@ import {
   getSelectedPlugins,
   isAzureProject,
 } from "./utils";
-import {
-  ARM_TEMPLATE_OUTPUT,
-  GLOBAL_CONFIG,
-  PluginNames,
-  SolutionError,
-  SOLUTION_PROVISION_SUCCEEDED,
-  SUBSCRIPTION_ID,
-  SUBSCRIPTION_NAME,
-  SolutionSource,
-  RESOURCE_GROUP_NAME,
-  REMOTE_TEAMS_APP_TENANT_ID,
-} from "../constants";
-import * as util from "util";
-import _, { assign, isUndefined } from "lodash";
-import { PluginDisplayName } from "../../../../common/constants";
-import { ProvisionContextAdapter } from "./adaptor";
-import { CommonQuestions, createNewResourceGroup, fillInCommonQuestions } from "../commonQuestions";
-import { deployArmTemplates } from "../arm";
-import Container from "typedi";
-import { ResourcePluginsV2 } from "../ResourcePluginContainer";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
-import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
-import { isVsCallingCli } from "../../../../core";
-import { Constants } from "../../../resource/appstudio/constants";
-import { assignJsonInc } from "../../../resource/utils4v2";
-import { ResourceManagementClient } from "@azure/arm-resources";
 
 export async function provisionResource(
   ctx: v2.Context,

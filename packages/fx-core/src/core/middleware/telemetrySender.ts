@@ -5,7 +5,6 @@
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import { assembleError, err, FxError, Inputs } from "@microsoft/teamsfx-api";
 import { kebabCase } from "lodash";
-import { CoreHookContext, FxCore } from "..";
 import {
   Component,
   sendTelemetryErrorEvent,
@@ -13,12 +12,12 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../common/telemetry";
+import { CoreHookContext } from "./CoreHookContext";
 
 /**
  * Telemetry sender
  */
 export const TelemetrySenderMW: Middleware = async (ctx: CoreHookContext, next: NextFunction) => {
-  const core = ctx.self as FxCore;
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const solutionContext = ctx.solutionContext;
   const appId = solutionContext?.envInfo.state.get("solution")?.get("remoteTeamsAppId") as string;

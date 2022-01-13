@@ -14,13 +14,13 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import { lock, unlock } from "proper-lockfile";
-import { TOOLS } from "../..";
 import { waitSeconds } from "../../common/tools";
 import { sendTelemetryErrorEvent } from "../../common/telemetry";
 import { CallbackRegistry } from "../callback";
 import { CoreSource, InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";
 import { getLockFolder } from "../tools";
 import { shouldIgnored } from "./projectSettingsLoader";
+import { Logger } from "../globalVars";
 
 let doingTask: string | undefined = undefined;
 export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
@@ -56,9 +56,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     try {
       await lock(configFolder, { lockfilePath: lockfilePath });
       acquired = true;
-      TOOLS?.logProvider.debug(
-        `[core] success to acquire lock for task ${taskName} on: ${configFolder}`
-      );
+      Logger?.debug(`[core] success to acquire lock for task ${taskName} on: ${configFolder}`);
       for (const f of CallbackRegistry.get(CoreCallbackEvent.lock)) {
         f();
       }
@@ -79,7 +77,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
         for (const f of CallbackRegistry.get(CoreCallbackEvent.unlock)) {
           f();
         }
-        TOOLS?.logProvider.debug(`[core] lock released on ${configFolder}`);
+        Logger?.debug(`[core] lock released on ${configFolder}`);
         doingTask = undefined;
       }
       break;
@@ -93,9 +91,7 @@ export const ConcurrentLockerMW: Middleware = async (ctx: HookContext, next: Nex
     }
   }
   if (!acquired) {
-    TOOLS?.logProvider.error(
-      `[core] failed to acquire lock for task ${taskName} on: ${configFolder}`
-    );
+    Logger?.error(`[core] failed to acquire lock for task ${taskName} on: ${configFolder}`);
     // failed for 10 times and finally failed
     sendTelemetryErrorEvent(CoreSource, "concurrent-operation", new ConcurrentError(CoreSource), {
       retry: retryNum + "",

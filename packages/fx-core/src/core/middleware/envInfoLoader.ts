@@ -18,7 +18,6 @@ import {
   traverse,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
-import { TOOLS } from "..";
 import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
 import {
   DEFAULT_FUNC_NAME,
@@ -33,6 +32,7 @@ import {
   ProjectEnvNotExistError,
   ProjectSettingsUndefinedError,
 } from "../error";
+import { Logger, TOOLS } from "../globalVars";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import {
   getQuestionNewTargetEnvironmentName,
@@ -121,9 +121,7 @@ export async function getTargetEnvName(
         return err(result.error);
       }
       targetEnvName = result.value;
-      TOOLS.logProvider.info(
-        `[${targetEnvName}] is selected as the target environment to ${ctx.method}`
-      );
+      Logger?.info(`[${targetEnvName}] is selected as the target environment to ${ctx.method}`);
 
       lastUsedEnv = targetEnvName;
     }
@@ -241,24 +239,24 @@ export async function askTargetEnvironment(
 ): Promise<Result<string, FxError>> {
   const getQuestionRes = await getQuestionsForTargetEnv(inputs, lastUsedEnv);
   if (getQuestionRes.isErr()) {
-    tools.logProvider.error(
+    Logger?.error(
       `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
     );
     return err(getQuestionRes.error);
   }
 
-  tools.logProvider.debug(`[core:env] success to get questions for target environment.`);
+  Logger?.debug(`[core:env] success to get questions for target environment.`);
 
   const node = getQuestionRes.value;
   if (node) {
     const res = await traverse(node, inputs, tools.ui);
     if (res.isErr()) {
-      tools.logProvider.debug(`[core:env] failed to run question model for target environment.`);
+      Logger?.debug(`[core:env] failed to run question model for target environment.`);
       return err(res.error);
     }
 
     const desensitized = desensitize(node, inputs);
-    tools.logProvider.info(
+    Logger?.info(
       `[core:env] success to run question model for target environment, answers:${JSON.stringify(
         desensitized
       )}`
@@ -283,26 +281,26 @@ export async function askNewEnvironment(
 ): Promise<CreateEnvCopyInput | undefined> {
   const getQuestionRes = await getQuestionsForNewEnv(inputs, lastUsedEnv);
   if (getQuestionRes.isErr()) {
-    TOOLS.logProvider.error(
+    Logger?.error(
       `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`
     );
     ctx.result = err(getQuestionRes.error);
     return undefined;
   }
 
-  TOOLS.logProvider.debug(`[core:env] success to get questions for target environment.`);
+  Logger?.debug(`[core:env] success to get questions for target environment.`);
 
   const node = getQuestionRes.value;
   if (node) {
     const res = await traverse(node, inputs, TOOLS.ui);
     if (res.isErr()) {
-      TOOLS.logProvider.debug(`[core:env] failed to run question model for target environment.`);
+      Logger?.debug(`[core:env] failed to run question model for target environment.`);
       ctx.result = err(res.error);
       return undefined;
     }
 
     const desensitized = desensitize(node, inputs);
-    TOOLS.logProvider.info(
+    Logger?.info(
       `[core:env] success to run question model for target environment, answers:${JSON.stringify(
         desensitized
       )}`

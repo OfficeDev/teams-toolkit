@@ -39,7 +39,6 @@ import * as path from "path";
 import { Container } from "typedi";
 import * as uuid from "uuid";
 import { environmentManager } from "./environment";
-import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
 import { TelemetryReporterInstance } from "../common/telemetry";
@@ -86,22 +85,6 @@ import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
 import { ProjectSettingsLoaderMW_V3 } from "./middleware/projectSettingsLoaderV3";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
-import {
-  getQuestionsForAddModule,
-  getQuestionsForAddResource,
-  getQuestionsForCreateProjectV2,
-  getQuestionsForCreateProjectV3,
-  getQuestionsForDeploy,
-  getQuestionsForInit,
-  getQuestionsForLocalProvision,
-  getQuestionsForMigrateV1Project,
-  getQuestionsForProvision,
-  getQuestionsForPublish,
-  getQuestionsForScaffold,
-  getQuestionsForUserTaskV2,
-  getQuestionsV2,
-  QuestionModelMW,
-} from "./middleware/questionModel";
 import { SolutionLoaderMW } from "./middleware/solutionLoader";
 import { SolutionLoaderMW_V3 } from "./middleware/solutionLoaderV3";
 import { SupportV1ConditionMW } from "./middleware/supportV1ConditionHandler";
@@ -122,28 +105,36 @@ import {
   getAllSolutionPluginsV2,
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
-import { newEnvInfo } from "./tools";
+import {
+  createV2Context,
+  getProjectSettingsVersion,
+  newEnvInfo,
+  newProjectSettings,
+  undefinedName,
+} from "./tools";
 import { CoreHookContext } from "./middleware/CoreHookContext";
-import { GlobalVars, setTools } from "./globalVars";
+import { isV3 } from "./featureFlags";
+import {
+  getQuestionsForCreateProjectV2,
+  getQuestionsForUserTaskV2,
+  getQuestionsV2,
+  QuestionModelMW,
+} from "./middleware/questionModel";
+import { Logger, setTools, TOOLS } from "./globalVars";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
 const corePackage = require("../../package.json");
 
-function featureFlagEnabled(flagName: string): boolean {
-  const flag = process.env[flagName];
-  if (flag !== undefined && flag.toLowerCase() === "true") {
-    return true;
-  } else {
-    return false;
-  }
-}
+export let currentStage: Stage;
 
 export class FxCore implements v3.ICore {
+  tools: Tools;
   isFromSample?: boolean;
   settingsVersion?: string;
   constructor(tools: Tools) {
     setTools(tools);
+    this.tools = tools;
     TelemetryReporterInstance.telemetryReporter = tools.telemetryReporter;
   }
 
@@ -174,7 +165,6 @@ export class FxCore implements v3.ICore {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
-    currentStage = Stage.create;
     inputs.stage = Stage.create;
     let folder = inputs[QuestionRootFolder.name] as string;
     if (inputs.platform === Platform.VSCode) {
@@ -288,7 +278,6 @@ export class FxCore implements v3.ICore {
     if (!ctx) {
       return err(new ObjectIsUndefinedError("ctx for createProject"));
     }
-    currentStage = Stage.create;
     inputs.stage = Stage.create;
     let folder = inputs[QuestionRootFolder.name] as string;
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.VS) {
@@ -541,7 +530,6 @@ export class FxCore implements v3.ICore {
     EnvInfoWriterMW(true),
   ])
   async migrateV1Project(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<string, FxError>> {
-    currentStage = Stage.migrateV1;
     inputs.stage = Stage.migrateV1;
     const globalStateDescription = "openReadme";
 
@@ -681,7 +669,6 @@ export class FxCore implements v3.ICore {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
-    currentStage = Stage.provision;
     inputs.stage = Stage.provision;
     if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
       return err(new ObjectIsUndefinedError("Provision input stuff"));
@@ -721,7 +708,6 @@ export class FxCore implements v3.ICore {
     inputs: Inputs,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
-    currentStage = Stage.provision;
     inputs.stage = Stage.provision;
     if (
       ctx &&
@@ -1049,7 +1035,7 @@ export class FxCore implements v3.ICore {
     currentStage = Stage.getQuestions;
     if (stage === Stage.create) {
       delete inputs.projectPath;
-      return await this._getQuestionsForCreateProjectV2(inputs);
+      return await getQuestionsForCreateProjectV2(inputs);
     } else {
       const contextV2 = ctx.contextV2 ? ctx.contextV2 : createV2Context(newProjectSettings());
       const solutionV2 = ctx.solutionV2 ? ctx.solutionV2 : await getAllSolutionPluginsV2()[0];
@@ -1057,7 +1043,7 @@ export class FxCore implements v3.ICore {
         ? ctx.envInfoV2
         : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
       inputs.stage = stage;
-      return await this._getQuestions(contextV2, solutionV2, stage, inputs, envInfoV2);
+      return await getQuestionsV2(contextV2, solutionV2, stage, inputs, envInfoV2);
     }
   }
 
@@ -1084,7 +1070,7 @@ export class FxCore implements v3.ICore {
     const envInfoV2 = ctx.envInfoV2
       ? ctx.envInfoV2
       : { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} };
-    return await this._getQuestionsForUserTask(contextV2, solutionV2, func, inputs, envInfoV2);
+    return await getQuestionsForUserTaskV2(contextV2, solutionV2, func, inputs, envInfoV2);
   }
 
   @hooks([
@@ -1333,7 +1319,7 @@ export class FxCore implements v3.ICore {
     if (writeEnvResult.isErr()) {
       return err(writeEnvResult.error);
     }
-    this.tools.logProvider.debug(
+    Logger?.debug(
       `[core] persist ${targetEnvName} env state to path ${writeEnvResult.value}: ${JSON.stringify(
         newEnvConfig
       )}`
@@ -1363,7 +1349,7 @@ export class FxCore implements v3.ICore {
       return err(CopyFileError(e as Error));
     }
 
-    TOOLS.logProvider.debug(
+    Logger.debug(
       `[core] copy env config file for ${targetEnvName} environment to path ${targetEnvConfigFilePath}`
     );
 
@@ -1544,22 +1530,6 @@ export class FxCore implements v3.ICore {
     }
     return ok(Void);
   }
-
-  //V1,V2 questions
-  _getQuestionsForCreateProjectV2 = getQuestionsForCreateProjectV2;
-  _getQuestionsForCreateProjectV3 = getQuestionsForCreateProjectV3;
-  _getQuestionsForUserTask = getQuestionsForUserTaskV2;
-  _getQuestions = getQuestionsV2;
-  _getQuestionsForMigrateV1Project = getQuestionsForMigrateV1Project;
-  //v3 questions
-  _getQuestionsForScaffold = getQuestionsForScaffold;
-  _getQuestionsForAddModule = getQuestionsForAddModule;
-  _getQuestionsForAddResource = getQuestionsForAddResource;
-  _getQuestionsForProvision = getQuestionsForProvision;
-  _getQuestionsForDeploy = getQuestionsForDeploy;
-  _getQuestionsForLocalProvision = getQuestionsForLocalProvision;
-  _getQuestionsForPublish = getQuestionsForPublish;
-  _getQuestionsForInit = getQuestionsForInit;
 }
 
 export async function createBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {
@@ -1608,31 +1578,6 @@ export async function createBasicFolderStructure(inputs: Inputs): Promise<Result
     return err(WriteFileError(e));
   }
   return ok(null);
-}
-
-export function newProjectSettings(): ProjectSettings {
-  const projectSettings: ProjectSettings = {
-    appName: "",
-    projectId: uuid.v4(),
-    version: getProjectSettingsVersion(),
-    solutionSettings: {
-      name: "",
-    },
-  };
-  return projectSettings;
-}
-
-export function undefinedName(objs: any[], names: string[]) {
-  for (let i = 0; i < objs.length; ++i) {
-    if (objs[i] === undefined) {
-      return names[i];
-    }
-  }
-  return undefined;
-}
-
-export function getProjectSettingsVersion() {
-  return "2.0.0";
 }
 
 export * from "./error";

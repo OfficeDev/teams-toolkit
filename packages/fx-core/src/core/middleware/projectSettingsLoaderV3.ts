@@ -13,11 +13,11 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-import { CoreHookContext, createV2Context, TOOLS } from "..";
-import { readJson } from "../../common/fileUtils";
 import { LocalCrypto } from "../crypto";
 import { InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";
-import { validateSettings } from "../tools";
+import { TOOLS } from "../globalVars";
+import { createV2Context, validateSettings } from "../tools";
+import { CoreHookContext } from "./CoreHookContext";
 
 export const ProjectSettingsLoaderMW_V3: Middleware = async (
   ctx: CoreHookContext,
@@ -34,7 +34,7 @@ export const ProjectSettingsLoaderMW_V3: Middleware = async (
     return;
   }
   const settingsFile = getProjectSettingsPath(inputs.projectPath);
-  const projectSettings: ProjectSettings = await readJson(settingsFile);
+  const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
   if (!projectSettings.projectId) {
     projectSettings.projectId = uuid.v4();
   }

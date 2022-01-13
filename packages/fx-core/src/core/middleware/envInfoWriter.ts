@@ -4,11 +4,13 @@
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { CoreHookContext, flattenConfigJson, TOOLS } from "..";
+import { flattenConfigJson } from "../tools";
 import { getStrings } from "../../common";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
+import { CoreHookContext } from "./CoreHookContext";
 import { shouldIgnored } from "./projectSettingsLoader";
+import { TOOLS } from "../globalVars";
 
 /**
  * This middleware will help to persist environment state even if lifecycle task throws Error.

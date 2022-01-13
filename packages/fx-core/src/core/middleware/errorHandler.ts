@@ -2,17 +2,16 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { HookContext, NextFunction, Middleware } from "@feathersjs/hooks";
-import { assembleError, err, Func, Inputs, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { FxCore, isV3, TOOLS } from "..";
+import { HookContext, Middleware, NextFunction } from "@feathersjs/hooks";
+import { assembleError, err, Func, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { isV3 } from "../featureFlags";
+import { TOOLS } from "../globalVars";
 
 /**
  * in case there're some uncatched exceptions, this middleware will act as a guard
  * to catch exceptions and return specific error.
  */
 export const ErrorHandlerMW: Middleware = async (ctx: HookContext, next: NextFunction) => {
-  const core = ctx.self as FxCore;
-  const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   const taskName = `${ctx.method} ${
     ctx.method === "executeUserTask" ? (ctx.arguments[0] as Func).method : ""
   }`;

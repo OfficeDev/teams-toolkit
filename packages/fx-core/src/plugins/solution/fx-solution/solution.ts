@@ -20,7 +20,6 @@ import {
   OptionItem,
   Platform,
   Plugin,
-  PluginContext,
   ProjectSettings,
   QTreeNode,
   Result,
@@ -35,9 +34,7 @@ import {
   SystemError,
   TeamsAppManifest,
   UserError,
-  v2,
 } from "@microsoft/teamsfx-api";
-import axios from "axios";
 import * as fs from "fs-extra";
 import Mustache from "mustache";
 import path from "path";
@@ -56,12 +53,10 @@ import {
   isUserCancelError,
   redactObject,
 } from "../../../common/tools";
-import { CopyFileError } from "../../../core";
+import { CopyFileError } from "../../../core/error";
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { SolutionPlugins } from "../../../core/SolutionPluginContainer";
-import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
-import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
 import {
   copyParameterJson,
   deployArmTemplates,
@@ -138,7 +133,6 @@ import {
   ensurePermissionRequest,
   parseTeamsAppTenantId,
   fillInSolutionSettings,
-  parseUserName,
   checkWhetherLocalDebugM365TenantMatches,
 } from "./v2/utils";
 import { askForProvisionConsent } from "./v2/provision";
@@ -150,9 +144,10 @@ import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
 import { LOCAL_TENANT_ID, REMOTE_TEAMS_APP_TENANT_ID } from ".";
 import { scaffoldLocalDebugSettingsV1 } from "./debug/scaffolding";
-
-export type LoadedPlugin = Plugin;
-export type PluginsWithContext = [LoadedPlugin, PluginContext];
+import { SpfxPlugin } from "../../resource/spfx";
+import { AppStudioPlugin } from "../../resource/appstudio";
+import { LoadedPlugin, PluginsWithContext } from "./types";
+import { AadAppForTeamsPlugin } from "../../resource/aad";
 
 // Maybe we need a state machine to track state transition.
 export enum SolutionRunningState {

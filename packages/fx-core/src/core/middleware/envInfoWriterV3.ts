@@ -4,9 +4,10 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { CoreHookContext, FxCore, TOOLS } from "..";
 import { getStrings } from "../../common";
 import { environmentManager } from "../environment";
+import { TOOLS } from "../globalVars";
+import { CoreHookContext } from "./CoreHookContext";
 import { shouldIgnored } from "./projectSettingsLoader";
 
 /**

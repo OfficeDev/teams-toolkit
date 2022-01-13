@@ -22,8 +22,9 @@ import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { environmentManager } from "./environment";
 import crypto from "crypto";
 import * as os from "os";
-import { GlobalVars } from "./globalVars";
-
+import { LocalCrypto } from "./crypto";
+import * as uuid from "uuid";
+import { TOOLS } from "./globalVars";
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
   return res;
@@ -181,12 +182,37 @@ export function flattenConfigJson(configJson: Json): Json {
 
 export function createV2Context(projectSettings: ProjectSettings): v2.Context {
   const context: v2.Context = {
-    userInteraction: GlobalVars.ui,
-    logProvider: GlobalVars.logger,
+    userInteraction: TOOLS.ui,
+    logProvider: TOOLS.logProvider,
     telemetryReporter: TOOLS.telemetryReporter!,
     cryptoProvider: new LocalCrypto(projectSettings.projectId),
     permissionRequestProvider: TOOLS.permissionRequest,
     projectSetting: projectSettings,
   };
   return context;
+}
+
+export function newProjectSettings(): ProjectSettings {
+  const projectSettings: ProjectSettings = {
+    appName: "",
+    projectId: uuid.v4(),
+    version: getProjectSettingsVersion(),
+    solutionSettings: {
+      name: "",
+    },
+  };
+  return projectSettings;
+}
+
+export function undefinedName(objs: any[], names: string[]) {
+  for (let i = 0; i < objs.length; ++i) {
+    if (objs[i] === undefined) {
+      return names[i];
+    }
+  }
+  return undefined;
+}
+
+export function getProjectSettingsVersion() {
+  return "2.0.0";
 }

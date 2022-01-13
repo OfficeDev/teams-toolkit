@@ -1,23 +1,10 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  LogProvider,
-  Stage,
-  TelemetryReporter,
-  Tools,
-  UserInteraction,
-} from "@microsoft/teamsfx-api";
+import { LogProvider, Tools } from "@microsoft/teamsfx-api";
 
-export let GlobalVars: {
-  logger: LogProvider;
-  currentStage: Stage;
-  ui: UserInteraction;
-  telemetryReporter?: TelemetryReporter;
-};
-
+export let Logger: LogProvider;
+export let TOOLS: Tools;
 export function setTools(tools: Tools): void {
-  GlobalVars.logger = tools.logProvider;
-  GlobalVars.ui = tools.ui;
-  GlobalVars.telemetryReporter = tools.telemetryReporter;
+  TOOLS = tools;
 }

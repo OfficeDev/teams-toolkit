@@ -31,6 +31,7 @@ import {
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
   PluginNames,
+  REMOTE_TEAMS_APP_TENANT_ID,
   SolutionError,
   SolutionSource,
   SolutionTelemetryComponentName,
@@ -38,7 +39,6 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
 } from "../constants";
-import { PluginsWithContext } from "../solution";
 import { sendErrorTelemetryThenReturnError } from "../utils/util";
 import { executeConcurrently, LifecyclesWithContext } from "../executor";
 import { ResourcePlugins, ResourcePluginsV2 } from "../ResourcePluginContainer";
@@ -47,7 +47,7 @@ import { CollabApiParam, CollaborationUtil } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
 import { Container } from "typedi";
 import { flattenConfigMap } from "../../../resource/utils4v2";
-import { REMOTE_TEAMS_APP_TENANT_ID } from "..";
+import { PluginsWithContext } from "../types";
 
 export async function executeListCollaboratorV2(
   ctx: v2.Context,

@@ -677,7 +677,7 @@ async function migrateMultiEnv(projectPath: string, log: LogProvider): Promise<v
 }
 
 async function removeExpiredFields(devState: string, devUserData: string): Promise<void> {
-  const stateData = await readJson(devState);
+  const stateData = await fs.readJson(devState);
   if (stateData[PluginNames.SOLUTION] && stateData[PluginNames.SOLUTION]["remoteTeamsAppId"]) {
     stateData[PluginNames.APPST]["teamsAppId"] =
       stateData[PluginNames.SOLUTION]["remoteTeamsAppId"];

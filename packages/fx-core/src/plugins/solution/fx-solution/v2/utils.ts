@@ -13,6 +13,7 @@ import {
   Json,
   SolutionContext,
   AppStudioTokenProvider,
+  Plugin,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";

@@ -9,59 +9,43 @@ import {
   CryptoProvider,
   EnvConfig,
   EnvInfo,
-  EnvNamePlaceholder,
-  EnvStateFileNameTemplate,
   Err,
   err,
   FxError,
-  InputConfigsFolderName,
   Inputs,
-  Json,
   Ok,
   ok,
   Platform,
-  ProjectSettingsFileName,
   Result,
   SingleSelectConfig,
   SingleSelectResult,
   SolutionContext,
   Stage,
-  StatesFolderName,
   Tools,
   UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
+import mockedEnv from "mocked-env";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
-import { CoreHookContext, serializeDict, setTools, TOOLS } from "../../src";
+import { ConstantString } from "../../src/common/constants";
 import * as commonTools from "../../src/common/tools";
 import { environmentManager } from "../../src/core/environment";
+import { setTools } from "../../src/core/globalVars";
+import { CoreHookContext } from "../../src/core/middleware/CoreHookContext";
 import { EnvInfoLoaderMW } from "../../src/core/middleware/envInfoLoader";
 import { MigrateConditionHandlerMW } from "../../src/core/middleware/migrateConditionHandler";
 import {
+  ArmParameters,
   migrateArm,
   ProjectMigratorMW,
-  ArmParameters,
 } from "../../src/core/middleware/projectMigrator";
 import { SolutionPlugins } from "../../src/core/SolutionPluginContainer";
-import {
-  MockLatestVersion2_3_0Context,
-  MockLatestVersion2_3_0UserData,
-  MockPreviousVersionBefore2_3_0Context,
-  MockPreviousVersionBefore2_3_0UserData,
-  MockProjectSettings,
-  MockSolution,
-  MockTools,
-  MockUserInteraction,
-  randomAppName,
-} from "./utils";
-import { ConstantString } from "../../src/common/constants";
-import * as dotenv from "dotenv";
+import { MockSolution, MockTools, MockUserInteraction, randomAppName } from "./utils";
 let mockedEnvRestore: () => void;
 describe("Middleware - others", () => {
   const sandbox = sinon.createSandbox();

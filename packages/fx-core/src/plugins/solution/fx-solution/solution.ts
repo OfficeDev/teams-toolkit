@@ -134,6 +134,7 @@ import {
   parseTeamsAppTenantId,
   fillInSolutionSettings,
   checkWhetherLocalDebugM365TenantMatches,
+  getPluginAndContextArray,
 } from "./v2/utils";
 import { askForProvisionConsent } from "./v2/provision";
 import { grantPermission } from "./v2/grantPermission";
@@ -146,7 +147,7 @@ import { LOCAL_TENANT_ID, REMOTE_TEAMS_APP_TENANT_ID } from ".";
 import { scaffoldLocalDebugSettingsV1 } from "./debug/scaffolding";
 import { SpfxPlugin } from "../../resource/spfx";
 import { AppStudioPlugin } from "../../resource/appstudio";
-import { LoadedPlugin, PluginsWithContext } from "./types";
+import { PluginsWithContext } from "./types";
 import { AadAppForTeamsPlugin } from "../../resource/aad";
 
 // Maybe we need a state machine to track state transition.
@@ -186,14 +187,6 @@ export class TeamsAppSolution implements Solution {
     this.KeyVaultPlugin = Container.get<Plugin>(ResourcePlugins.KeyVaultPlugin);
     this.LocalDebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
     this.runningState = SolutionRunningState.Idle;
-  }
-
-  private getPluginAndContextArray(
-    ctx: SolutionContext,
-    selectedPlugins: LoadedPlugin[]
-  ): PluginsWithContext[] {
-    // let pluginContextConstructor = getPluginContextConstructor(ctx);
-    return selectedPlugins.map((plugin) => [plugin, getPluginContext(ctx, plugin.name)]);
   }
 
   async init(ctx: SolutionContext): Promise<Result<any, FxError>> {
@@ -428,14 +421,11 @@ export class TeamsAppSolution implements Solution {
 
   async doScaffold(
     ctx: SolutionContext,
-    pluginsToScaffold: LoadedPlugin[],
+    pluginsToScaffold: Plugin[],
     generateResourceTemplate: boolean,
-    pluginsToDoArm?: LoadedPlugin[]
+    pluginsToDoArm?: Plugin[]
   ): Promise<Result<any, FxError>> {
-    const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
-      ctx,
-      pluginsToScaffold
-    );
+    const pluginsWithCtx: PluginsWithContext[] = getPluginAndContextArray(ctx, pluginsToScaffold);
     const preScaffoldWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
       return [plugin?.preScaffold?.bind(plugin), context, plugin.name];
     });
@@ -660,10 +650,7 @@ export class TeamsAppSolution implements Solution {
       }
     }
 
-    const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
-      ctx,
-      selectedPlugins
-    );
+    const pluginsWithCtx: PluginsWithContext[] = getPluginAndContextArray(ctx, selectedPlugins);
     const preProvisionWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
       return [plugin?.preProvision?.bind(plugin), context, plugin.name];
     });
@@ -822,7 +809,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     const pluginMap = getAllResourcePluginMap();
-    const pluginsToDeploy: LoadedPlugin[] = [];
+    const pluginsToDeploy: Plugin[] = [];
     for (const optionId of optionsToDeploy) {
       const filtered = pluginMap.get(optionId);
       if (filtered && res.value.find((p) => p.name === filtered.name)) {
@@ -840,10 +827,7 @@ export class TeamsAppSolution implements Solution {
       //make sure sub is selected
       await ctx.azureAccountProvider?.getSelectedSubscription(true);
     }
-    const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
-      ctx,
-      pluginsToDeploy
-    );
+    const pluginsWithCtx: PluginsWithContext[] = getPluginAndContextArray(ctx, pluginsToDeploy);
     const preDeployWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
       return [plugin?.preDeploy?.bind(plugin), context, plugin.name];
     });
@@ -888,7 +872,7 @@ export class TeamsAppSolution implements Solution {
 
       this.runningState = SolutionRunningState.PublishInProgress;
 
-      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(ctx, [
+      const pluginsWithCtx: PluginsWithContext[] = getPluginAndContextArray(ctx, [
         this.AppStudioPlugin,
       ]);
       const publishWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
@@ -1038,7 +1022,7 @@ export class TeamsAppSolution implements Solution {
         const provisioned = this.checkWetherProvisionSucceeded(ctx.envInfo.state);
         if (provisioned) return ok(undefined);
       }
-      let pluginsToProvision: LoadedPlugin[];
+      let pluginsToProvision: Plugin[];
       if (isDynamicQuestion) {
         const res = this.getSelectedPlugins(ctx);
         if (res.isErr()) {
@@ -1077,7 +1061,7 @@ export class TeamsAppSolution implements Solution {
           );
         }
       }
-      let pluginsToDeploy: LoadedPlugin[];
+      let pluginsToDeploy: Plugin[];
       if (isDynamicQuestion) {
         const res = this.getSelectedPlugins(ctx);
         if (res.isErr()) {
@@ -1227,10 +1211,7 @@ export class TeamsAppSolution implements Solution {
       checkPoint = 3;
 
       //check point 4
-      const pluginsWithCtx: PluginsWithContext[] = this.getPluginAndContextArray(
-        ctx,
-        selectedPlugins
-      );
+      const pluginsWithCtx: PluginsWithContext[] = getPluginAndContextArray(ctx, selectedPlugins);
       const localDebugWithCtx: LifecyclesWithContext[] = pluginsWithCtx.map(([plugin, context]) => {
         return [plugin?.localDebug?.bind(plugin), context, plugin.name];
       });
@@ -1649,8 +1630,8 @@ export class TeamsAppSolution implements Solution {
 
     let addNewResourceToProvision = false;
     const notifications: string[] = [];
-    const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin];
-    const pluginsToDoArm: LoadedPlugin[] = [];
+    const pluginsToScaffold: Plugin[] = [this.LocalDebugPlugin];
+    const pluginsToDoArm: Plugin[] = [];
     const azureResource = Array.from(settings.azureResources || []);
     if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
       pluginsToScaffold.push(functionPlugin);
@@ -1778,7 +1759,7 @@ export class TeamsAppSolution implements Solution {
       );
     }
     let change = false;
-    const pluginsToScaffold: LoadedPlugin[] = [this.LocalDebugPlugin, this.AppStudioPlugin];
+    const pluginsToScaffold: Plugin[] = [this.LocalDebugPlugin, this.AppStudioPlugin];
     const capabilities = Array.from(settings.capabilities);
     for (const cap of capabilitiesAnswer!) {
       if (!capabilities.includes(cap)) {

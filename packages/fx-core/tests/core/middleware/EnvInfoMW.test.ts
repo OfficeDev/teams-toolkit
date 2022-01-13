@@ -22,15 +22,9 @@ import "mocha";
 import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
-import {
-  CoreHookContext,
-  environmentManager,
-  newEnvInfo,
-  newEnvInfoV3,
-  separateSecretDataV3,
-  setTools,
-} from "../../../src";
+import { environmentManager, newEnvInfo, newEnvInfoV3, separateSecretDataV3 } from "../../../src";
 import { LocalCrypto } from "../../../src/core/crypto";
+import { setTools } from "../../../src/core/globalVars";
 import {
   ContextInjectorMW,
   EnvInfoLoaderMW,
@@ -40,6 +34,7 @@ import {
   ProjectSettingsLoaderMW,
   ProjectSettingsWriterMW,
 } from "../../../src/core/middleware";
+import { CoreHookContext } from "../../../src/core/middleware/CoreHookContext";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 
 describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {

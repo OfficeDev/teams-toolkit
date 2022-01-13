@@ -25,11 +25,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
-import { CoreHookContext, createV2Context, InvalidInputError, setTools, TOOLS } from "../../../src";
+import { createV2Context, InvalidInputError } from "../../../src";
 import {
-  getQuestionsForInit,
   newSolutionContext,
   QuestionModelMW,
   SolutionLoaderMW,
@@ -38,6 +36,8 @@ import { SolutionLoaderMW_V3 } from "../../../src/core/middleware/solutionLoader
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import { Container } from "typedi";
 import { BuiltInSolutionNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import { setTools, TOOLS } from "../../../src/core/globalVars";
+import { CoreHookContext } from "../../../src/core/middleware/CoreHookContext";
 describe("Middleware - QuestionModelMW", () => {
   const sandbox = sinon.createSandbox();
   afterEach(function () {

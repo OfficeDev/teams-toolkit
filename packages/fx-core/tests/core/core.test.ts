@@ -12,7 +12,6 @@ import {
   MultiSelectConfig,
   MultiSelectResult,
   ok,
-  OptionItem,
   Platform,
   QTreeNode,
   Result,
@@ -33,13 +32,7 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import { Container } from "typedi";
-import {
-  environmentManager,
-  FxCore,
-  InvalidInputError,
-  setTools,
-  validateSettings,
-} from "../../src";
+import { environmentManager, FxCore, InvalidInputError, validateSettings } from "../../src";
 import { ConstantString } from "../../src/common/constants";
 import { loadProjectSettings } from "../../src/core/middleware/projectSettingsLoader";
 import {
@@ -47,8 +40,6 @@ import {
   CoreQuestionNames,
   MessageExtensionItem,
   ProgrammingLanguageQuestion,
-  SampleSelect,
-  ScratchOptionNoVSC,
   ScratchOptionYesVSC,
   TabOptionItem,
   TabSPFxItem,
@@ -56,6 +47,7 @@ import {
 import { SolutionPlugins, SolutionPluginsV2 } from "../../src/core/SolutionPluginContainer";
 import { deleteFolder, MockSolution, MockSolutionV2, MockTools, randomAppName } from "./utils";
 import fs from "fs-extra";
+import { setTools } from "../../src/core/globalVars";
 describe("Core basic APIs", () => {
   const sandbox = sinon.createSandbox();
   const mockSolutionV1 = new MockSolution();

@@ -6,8 +6,8 @@ import { FxError, Inputs, ok, Platform, Result } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import * as uuid from "uuid";
-import { CoreHookContext } from "../../../src";
 import { ContextInjectorMW, SolutionLoaderMW } from "../../../src/core/middleware";
+import { CoreHookContext } from "../../../src/core/middleware/CoreHookContext";
 
 describe("Middleware - SolutionLoaderMW, ContextInjectorMW", () => {
   const MockProjectSettingsMW = async (ctx: CoreHookContext, next: NextFunction) => {

@@ -28,6 +28,7 @@ import {
   PathNotExistError,
   ReadFileError,
 } from "../error";
+import { TOOLS } from "../globalVars";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { createV2Context, newEnvInfo, validateSettings } from "../tools";
 import { CoreHookContext } from "./CoreHookContext";
@@ -64,7 +65,7 @@ export const ProjectSettingsLoaderMW: Middleware = async (
     ctx.projectSettings = projectSettings;
     (ctx.self as any).isFromSample = projectSettings.isFromSample === true;
     (ctx.self as any).settingsVersion = projectSettings.version;
-    GlobalVars.cryptoProvider = new LocalCrypto(projectSettings.projectId);
+    TOOLS.cryptoProvider = new LocalCrypto(projectSettings.projectId);
     ctx.contextV2 = createV2Context(projectSettings);
   }
 

@@ -17,8 +17,8 @@ import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { isVsCallingCli } from "../../..";
 import "./v2";
+import { isVsCallingCli } from "../../../core/featureFlags";
 @Service(ResourcePlugins.SimpleAuthPlugin)
 export class SimpleAuthPlugin implements Plugin {
   name = "fx-resource-simple-auth";

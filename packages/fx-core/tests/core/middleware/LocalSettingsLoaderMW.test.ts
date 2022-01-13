@@ -21,13 +21,12 @@ import * as os from "os";
 import * as path from "path";
 import sinon from "sinon";
 import {
-  CoreHookContext,
   createV2Context,
   LocalSettingsProvider,
   NoProjectOpenedError,
   PathNotExistError,
-  setTools,
 } from "../../../src";
+import { setTools } from "../../../src/core/globalVars";
 import {
   ContextInjectorMW,
   LocalSettingsLoaderMW,
@@ -35,6 +34,7 @@ import {
   newSolutionContext,
   ProjectSettingsLoaderMW,
 } from "../../../src/core/middleware";
+import { CoreHookContext } from "../../../src/core/middleware/CoreHookContext";
 import { MockProjectSettings, MockTools, randomAppName } from "../utils";
 import mockLocalSettings from "./localSettings.json";
 

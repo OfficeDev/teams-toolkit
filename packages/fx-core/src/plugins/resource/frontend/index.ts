@@ -68,6 +68,10 @@ export class FrontendPlugin implements Plugin {
     );
   }
 
+  public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
+    return ok(undefined);
+  }
+
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.PostProvision, () =>

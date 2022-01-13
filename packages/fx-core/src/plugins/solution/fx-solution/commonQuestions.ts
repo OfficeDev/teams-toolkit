@@ -67,8 +67,8 @@ export type AzureSubscription = {
   subscriptionId: string;
 };
 
-const DefaultResourceGroupLocation = "East US";
-type ResourceGroupInfo = {
+export const DefaultResourceGroupLocation = "East US";
+export type ResourceGroupInfo = {
   createNewResourceGroup: boolean;
   name: string;
   location: string;
@@ -197,7 +197,8 @@ async function getQuestionsForResourceGroup(
  * Ask user to create a new resource group or use an exsiting resource group
  */
 export async function askResourceGroupInfo(
-  ctx: SolutionContext,
+  ctx: SolutionContext | v2.Context,
+  azureAccountProvider: AzureAccountProvider,
   rmClient: ResourceManagementClient,
   inputs: Inputs,
   ui: UserInteraction,
@@ -238,7 +239,7 @@ export async function askResourceGroupInfo(
     .filter((item) => item.name)
     .map((item) => [item.name, item.location] as [string, string]);
 
-  const locations = await getLocations(ctx, rmClient);
+  const locations = await getLocations(azureAccountProvider, rmClient);
   if (locations.isErr()) {
     return err(locations.error);
   }
@@ -295,10 +296,10 @@ export async function askResourceGroupInfo(
 }
 
 async function getLocations(
-  ctx: SolutionContext,
+  azureAccountProvider: AzureAccountProvider,
   rmClient: ResourceManagementClient
 ): Promise<Result<string[], FxError>> {
-  const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+  const credential = await azureAccountProvider.getAccountCredentialAsync();
   let subscriptionClient = undefined;
   if (credential) {
     subscriptionClient = new SubscriptionClient(credential);
@@ -309,7 +310,7 @@ async function getLocations(
       SolutionError.FailedToGetAzureCredential
     );
   }
-  const askSubRes = await ctx.azureAccountProvider!.getSelectedSubscription(true);
+  const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
   const listLocations = await subscriptionClient.subscriptions.listLocations(
     askSubRes!.subscriptionId
   );
@@ -332,8 +333,8 @@ async function getLocations(
   return ok(rgLocations);
 }
 
-async function getResourceGroupInfo(
-  ctx: SolutionContext,
+export async function getResourceGroupInfo(
+  ctx: SolutionContext | v2.Context,
   rmClient: ResourceManagementClient,
   resourceGroupName: string
 ): Promise<ResourceGroupInfo | undefined> {
@@ -506,6 +507,7 @@ async function askCommonQuestions(
   } else if (ctx.answers && ctx.ui) {
     const resourceGroupInfoResult = await askResourceGroupInfo(
       ctx,
+      ctx.azureAccountProvider!,
       rmClient,
       ctx.answers,
       ctx.ui,

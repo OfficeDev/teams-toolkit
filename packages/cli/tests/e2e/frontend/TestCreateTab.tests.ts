@@ -26,6 +26,7 @@ describe("Create single tab", function () {
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
     // clean up
@@ -43,7 +44,7 @@ describe("Create single tab", function () {
   });
 
   it("Provision Resource: React app without function", async () => {
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
 
     await CliHelper.setSubscription(subscription, projectPath);
 
@@ -58,8 +59,8 @@ describe("Create single tab", function () {
     await AadValidator.validate(aad);
 
     // Validate Simple Auth
-    const simpleAuth = SimpleAuthValidator.init(context);
-    await SimpleAuthValidator.validate(simpleAuth, aad);
+    const simpleAuth = new SimpleAuthValidator(context, projectPath, env);
+    await simpleAuth.validate();
 
     // Validate Tab Frontend
     const frontend = FrontendValidator.init(context, true);

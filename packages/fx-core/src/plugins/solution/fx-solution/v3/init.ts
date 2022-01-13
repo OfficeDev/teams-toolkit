@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, Inputs, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
-import { BuiltInSolutionNames } from "./constants";
+import { err, FxError, Inputs, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
+import { BuiltInResourcePluginNames, BuiltInSolutionNames } from "./constants";
 import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   MessageExtensionItem,
   TabOptionItem,
 } from "../question";
+import Container from "typedi";
+import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 
 export async function getQuestionsForInit(
   ctx: v2.Context,
@@ -29,6 +31,7 @@ export async function init(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath
 ): Promise<Result<Void, FxError>> {
+  // 1. init solution settings
   const solutionSettings: v3.TeamsFxSolutionSettings = {
     version: "3.0.0",
     name: ctx.projectSetting.solutionSettings.name,
@@ -39,5 +42,11 @@ export async function init(
     activeResourcePlugins: [],
   };
   ctx.projectSetting.solutionSettings = solutionSettings;
+  // 2. call appStudio.init() to generate manifest templates
+  const appStudio = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+  const initManifestRes = await appStudio.init(ctx, inputs);
+  if (initManifestRes.isErr()) {
+    return err(initManifestRes.error);
+  }
   return ok(Void);
 }

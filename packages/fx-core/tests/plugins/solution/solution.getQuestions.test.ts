@@ -6,6 +6,7 @@ import {
   Inputs,
   MultiSelectQuestion,
   ok,
+  OptionItem,
   Platform,
   ProjectSettings,
   Stage,
@@ -263,10 +264,10 @@ describe("getQuestionsForScaffolding()", async () => {
           node.data.staticOptions.length === 3
       );
       if (node && node.data && node.data.type === "multiSelect") {
-        assert.deepEqual((node.data as MultiSelectQuestion).staticOptions as string[], [
-          TabOptionItem.id,
-          BotOptionItem.id,
-          MessageExtensionItem.id,
+        assert.deepEqual((node.data as MultiSelectQuestion).staticOptions as OptionItem[], [
+          TabOptionItem,
+          BotOptionItem,
+          MessageExtensionItem,
         ]);
       }
     }

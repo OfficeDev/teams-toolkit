@@ -11,12 +11,7 @@ import {
   SolutionContext,
   returnSystemError,
 } from "@microsoft/teamsfx-api";
-import {
-  getResourceGroupInPortal,
-  getStrings,
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-} from "../../../../common/tools";
+import { getResourceGroupInPortal, getStrings, isMultiEnvEnabled } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
 import {
   combineRecords,

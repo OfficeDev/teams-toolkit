@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Microsoft Teams Framework for Node.js and browser.",
   "main": "dist/index.node.cjs.js",
   "browser": "dist/index.esm2017.js",
@@ -120,7 +120,6 @@
     "rimraf": "^3.0.2",
     "rollup": "^2.59.0",
     "rollup-plugin-typescript2": "^0.30.0",
-    "semver": "^7.3.5",
     "sinon": "^12.0.1",
     "source-map-loader": "^3.0.0",
     "ts-loader": "^9.2.6",

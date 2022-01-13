@@ -27,6 +27,7 @@ describe("Configuration successfully changed when with different plugins", funct
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
     await cleanUp(appName, projectPath, true, false, false, true);
@@ -38,8 +39,8 @@ describe("Configuration successfully changed when with different plugins", funct
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);
 
     // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+    await setBotSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(
       projectPath,
@@ -48,17 +49,10 @@ describe("Configuration successfully changed when with different plugins", funct
 
     // Assert
     {
-      const context = await readContextMultiEnv(
-        projectPath,
-        environmentManager.getDefaultEnvName()
-      );
+      const context = await readContextMultiEnv(projectPath, env);
 
       // Validate Function App
-      const functionValidator = new FunctionValidator(
-        context,
-        projectPath,
-        environmentManager.getDefaultEnvName()
-      );
+      const functionValidator = new FunctionValidator(context, projectPath, env);
       await functionValidator.validateProvision();
     }
   });

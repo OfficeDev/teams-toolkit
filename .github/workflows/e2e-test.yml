@@ -26,6 +26,7 @@ jobs:
       cases: ${{ steps.schedule-cases.outputs.cases || steps.dispatch-cases.outputs.cases || steps.pr-cases.outputs.cases }}
     env:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      AZURE_ACCOUNT_OBJECT_ID: ${{ secrets.TEST_USER_OBJECT_ID }}
       AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
       AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
@@ -83,6 +84,7 @@ jobs:
     if: ${{ needs.setup.outputs.cases }}
     env:
       AZURE_ACCOUNT_NAME: ${{ secrets.TEST_USER_NAME }}
+      AZURE_ACCOUNT_OBJECT_ID: ${{ secrets.TEST_USER_OBJECT_ID }}
       AZURE_ACCOUNT_PASSWORD: ${{ secrets.TEST_USER_PASSWORD }}
       AZURE_SUBSCRIPTION_ID: ${{ secrets.TEST_SUBSCRIPTION_ID }}
       AZURE_TENANT_ID: ${{ secrets.TEST_TENANT_ID }}
@@ -98,6 +100,8 @@ jobs:
       fail-fast: false
       matrix:
         cases: ${{ fromJson(needs.setup.outputs.cases) }}
+    name: ${{ matrix.cases }}
+
     steps:
       - name: Checkout
         uses: actions/checkout@v2
@@ -146,11 +150,21 @@ jobs:
             npx mocha --reporter @mochajs/json-file-reporter $file --parallel
           fi
 
+      - name: get job id
+        id: get-job-id
+        if: ${{ always() }}
+        run: |
+          result=`curl \
+            -u :${{ secrets.GITHUB_TOKEN }}\
+            https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
+          job_id=`echo $result | jq -r '.jobs[] | select(.name | contains("${{ matrix.cases }}")).id'`
+          echo "::set-output name=job_id::$job_id"
+
       - name: Upload test report
         uses: actions/upload-artifact@v2
         if: failure()
         with:
-          name: ${{ matrix.cases }}.json
+          name: ${{ steps.get-job-id.outputs.job_id}}.json
           path: |
             ./packages/cli/tests/e2e/report.json
 
@@ -158,7 +172,7 @@ jobs:
         if: ${{ always() && (github.event_name == 'schedule' || github.event_name == 'workflow_dispatch') }}
         run: |
           version=$(node -p -e "require('./packages/cli/package.json').version")
-          npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/report.json cli $version
+          npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/report.json cli $version
 
   teardown:
     if: ${{ always() }}
@@ -187,24 +201,26 @@ jobs:
         run: |
           result=`curl \
             -u :${{ secrets.GITHUB_TOKEN }}\
-            https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs`
+            https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
 
-          failures=`echo $result | jq -r '.jobs[]| select(.name | contains("execute")) | select(.conclusion=="failure").name'`
+          failures=`echo $result | jq -r '.jobs[]| select(.name | contains("tests.ts")) | select(.conclusion=="failure").name'`
 
           declare -A email_uid
           description="<tr> <th>Case</th> <th>Author</th> </tr>"
           emails="vsciotadt@microsoft.com"
           while IFS= read -r failure;
           do
-            case=${failure:14:-1}
-            file="tests/e2e/$case"
+            file="tests/e2e/$failure"
             email=`cat $file | grep '@author' | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
 
             if [ -z "$email" ]; then
-              description="$description <tr> <td>$case</td> <td>N/A</td> </tr> "
+              description="$description <tr> <td>$file</td> <td>N/A</td> </tr> "
               continue
             fi
-            emails="$emails;$email"
+
+            if [[ ! "$emails" == *"$email"* ]]; then
+              emails="$emails;$email"
+            fi
 
             if [ ! -v "email_uid[$email]" ]; then
               resp=$(curl -u :${{ secrets.ADO_PAT }} "https://vssps.dev.azure.com/msazure/_apis/identities?searchFilter=General&filterValue=$email&queryMembership=None&api-version=6.0")
@@ -212,7 +228,7 @@ jobs:
               email_uid[$email]=$uid
             fi
 
-            description="$description <tr> <td>$case</td> <td><a href=\\\"#\\\" data-vss-mention=\\\"version:2.0,${email_uid[$email]}\\\">$email</a></td> </tr> "
+            description="$description <tr> <td>$file</td> <td><a href=\\\"#\\\" data-vss-mention=\\\"version:2.0,${email_uid[$email]}\\\">$email</a></td> </tr> "
           done <<< $failures
 
           echo "::set-output name=description::$description"

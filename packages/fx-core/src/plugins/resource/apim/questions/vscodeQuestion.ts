@@ -20,7 +20,7 @@ import { buildAnswer } from "../answer";
 import { NamingRules } from "../utils/namingRules";
 import { BaseQuestionService, IQuestionService } from "./question";
 import { getApimServiceNameFromResourceId, Lazy } from "../utils/commonUtils";
-import { getResourceGroupNameFromResourceId, isArmSupportEnabled } from "../../../../common/tools";
+import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
 
 export class ApimServiceQuestion extends BaseQuestionService implements IQuestionService {
   private readonly lazyApimService: Lazy<ApimService>;
@@ -203,15 +203,11 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
     const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
     const solutionConfig = new SolutionConfig(ctx.envInfo);
     const answer = buildAnswer(inputs);
-    let resourceGroupName, serviceName;
-    if (isArmSupportEnabled()) {
-      const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);
-      resourceGroupName = getResourceGroupNameFromResourceId(apimServiceResourceId);
-      serviceName = getApimServiceNameFromResourceId(apimServiceResourceId);
-    } else {
-      resourceGroupName = apimConfig.resourceGroupName ?? solutionConfig.resourceGroupName;
-      serviceName = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceName);
-    }
+
+    const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);
+    const resourceGroupName = getResourceGroupNameFromResourceId(apimServiceResourceId);
+    const serviceName = getApimServiceNameFromResourceId(apimServiceResourceId);
+
     const apiPrefix = answer.apiPrefix ?? apimConfig.checkAndGet(ApimPluginConfigKeys.apiPrefix);
     const versionSetId =
       apimConfig.versionSetId ??

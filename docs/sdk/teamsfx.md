@@ -29,7 +29,10 @@
 |  Function | Description |
 |  --- | --- |
 |  [createMicrosoftGraphClient(credential, scopes)](./teamsfx.createmicrosoftgraphclient.md) | <b><i>(BETA)</i></b> Get Microsoft graph client. |
+|  [getApiConfigFromEnv()](./teamsfx.getapiconfigfromenv.md) | <b><i>(BETA)</i></b> Configuration helper function |
+|  [getAuthenticationConfigFromEnv()](./teamsfx.getauthenticationconfigfromenv.md) | <b><i>(BETA)</i></b> Configuration helper function |
 |  [getLogLevel()](./teamsfx.getloglevel.md) | <b><i>(BETA)</i></b> Get log level. |
+|  [getSqlConfigFromEnv()](./teamsfx.getsqlconfigfromenv.md) | <b><i>(BETA)</i></b> Configuration helper function |
 |  [setLogFunction(logFunction)](./teamsfx.setlogfunction.md) | <b><i>(BETA)</i></b> Set custom log function. Use the function if it's set. Priority is lower than setLogger. |
 |  [setLogger(logger)](./teamsfx.setlogger.md) | <b><i>(BETA)</i></b> Set custom logger. Use the output functions if it's set. Priority is higher than setLogFunction. |
 |  [setLogLevel(level)](./teamsfx.setloglevel.md) | <b><i>(BETA)</i></b> Update log level helper. |
@@ -38,6 +41,7 @@
 
 |  Interface | Description |
 |  --- | --- |
+|  [ApiConfiguration](./teamsfx.apiconfiguration.md) | <b><i>(BETA)</i></b> Configuration for API resources like Azure Function. |
 |  [AuthenticationConfiguration](./teamsfx.authenticationconfiguration.md) | <b><i>(BETA)</i></b> Authentication related configuration. |
 |  [Configuration](./teamsfx.configuration.md) | <b><i>(BETA)</i></b> Configuration for current environment. |
 |  [Logger](./teamsfx.logger.md) | <b><i>(BETA)</i></b> Interface for customized logger. |

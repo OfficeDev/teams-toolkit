@@ -3,6 +3,12 @@
 
 export { ErrorWithCode, ErrorCode } from "./core/errors";
 
+export {
+  getAuthenticationConfigFromEnv,
+  getApiConfigFromEnv,
+  getSqlConfigFromEnv,
+} from "./core/configurationProvider.browser";
+
 export { M365TenantCredential } from "./credential/m365TenantCredential.browser";
 export { OnBehalfOfUserCredential } from "./credential/onBehalfOfUserCredential.browser";
 export { TeamsUserCredential } from "./credential/teamsUserCredential.browser";

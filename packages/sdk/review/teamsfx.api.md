@@ -16,6 +16,11 @@ import { TokenCredential } from '@azure/identity';
 import { TokenResponse } from 'botframework-schema';
 
 // @beta
+export interface ApiConfiguration {
+    readonly endpoint?: string;
+}
+
+// @beta
 export interface AuthenticationConfiguration {
     readonly applicationIdUri?: string;
     readonly authorityHost?: string;
@@ -64,7 +69,16 @@ export class ErrorWithCode extends Error {
 }
 
 // @beta
+export function getApiConfigFromEnv(): ApiConfiguration;
+
+// @beta
+export function getAuthenticationConfigFromEnv(): AuthenticationConfiguration;
+
+// @beta
 export function getLogLevel(): LogLevel | undefined;
+
+// @beta
+export function getSqlConfigFromEnv(): SqlConfiguration;
 
 // @beta
 export type LogFunction = (level: LogLevel, message: string) => void;

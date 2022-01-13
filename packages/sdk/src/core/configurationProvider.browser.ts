@@ -7,7 +7,7 @@ import {
   SqlConfiguration,
 } from "../models/configuration";
 import { internalLogger } from "../util/logger";
-import { formatString, isNode } from "../util/utils";
+import { formatString } from "../util/utils";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "./errors";
 
 /**
@@ -20,24 +20,24 @@ import { ErrorWithCode, ErrorCode, ErrorMessage } from "./errors";
  * @beta
  */
 export function getAuthenticationConfigFromEnv(): AuthenticationConfiguration {
-  if (isNode) {
+  if (process && process.env) {
     return {
-      authorityHost: process.env.REACT_APP_AUTHORITY_HOST,
-      tenantId: process.env.REACT_APP_TENANT_ID,
-      clientId: process.env.REACT_APP_CLIENT_ID,
-      simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-      initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-      applicationIdUri: process.env.M365_APPLICATION_ID_URI,
+      authorityHost: process.env["REACT_APP_AUTHORITY_HOST"],
+      tenantId: process.env["REACT_APP_TENANT_ID"],
+      clientId: process.env["REACT_APP_CLIENT_ID"],
+      simpleAuthEndpoint: process.env["REACT_APP_TEAMSFX_ENDPOINT"],
+      initiateLoginEndpoint: process.env["REACT_APP_START_LOGIN_PAGE_URL"],
+      applicationIdUri: process.env["M365_APPLICATION_ID_URI"],
     };
   } else {
     const env = (window as any).__env__;
     return {
-      authorityHost: env.REACT_APP_AUTHORITY_HOST,
-      tenantId: env.REACT_APP_TENANT_ID,
-      clientId: env.REACT_APP_CLIENT_ID,
-      simpleAuthEndpoint: env.REACT_APP_TEAMSFX_ENDPOINT,
-      initiateLoginEndpoint: env.REACT_APP_START_LOGIN_PAGE_URL,
-      applicationIdUri: env.M365_APPLICATION_ID_URI,
+      authorityHost: env["REACT_APP_AUTHORITY_HOST"],
+      tenantId: env["REACT_APP_TENANT_ID"],
+      clientId: env["REACT_APP_CLIENT_ID"],
+      simpleAuthEndpoint: env["REACT_APP_TEAMSFX_ENDPOINT"],
+      initiateLoginEndpoint: env["REACT_APP_START_LOGIN_PAGE_URL"],
+      applicationIdUri: env["M365_APPLICATION_ID_URI"],
     };
   }
 }

@@ -8,6 +8,7 @@ import {
 } from "../models/configuration";
 
 /**
+ * Configuration helper function
  * @returns Authentication configuration which is constructed from predefined env variables.
  *
  * @remarks
@@ -29,6 +30,7 @@ export function getAuthenticationConfigFromEnv(): AuthenticationConfiguration {
 }
 
 /**
+ * Configuration helper function
  * @returns API configuration which is constructed from predefined env variables.
  *
  * @remarks
@@ -43,6 +45,7 @@ export function getApiConfigFromEnv(): ApiConfiguration {
 }
 
 /**
+ * Configuration helper function
  * @returns SQL configuration which is constructed from predefined env variables.
  *
  * @remarks

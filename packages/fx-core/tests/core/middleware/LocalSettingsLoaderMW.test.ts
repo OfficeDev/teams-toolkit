@@ -71,10 +71,10 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 1", () => 
     const my = new MyClass();
     const inputs: Inputs = { platform: Platform.VSCode };
     const res = await my.other(inputs);
-    assert.isTrue(res.isErr() && res.error.name === NoProjectOpenedError().name);
+    assert.isTrue(res.isErr() && res.error.name === "NoProjectOpenedError");
     inputs.projectPath = path.join(os.tmpdir(), randomAppName());
     const res2 = await my.other(inputs);
-    assert.isTrue(res2.isErr() && res2.error.name === PathNotExistError(inputs.projectPath).name);
+    assert.isTrue(res2.isErr() && res2.error.name === "PathNotExistError");
   });
 });
 

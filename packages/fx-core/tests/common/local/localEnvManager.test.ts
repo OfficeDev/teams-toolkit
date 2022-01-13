@@ -157,60 +157,73 @@ describe("LocalEnvManager", () => {
     });
   });
 
-  const testData: { message: string; activeResourcePlugins: string[]; depsTypes: DepsType[] }[] = [
+  const testData: { message: string; solutionSettings: any; depsTypes: DepsType[] }[] = [
     {
       message: "tab",
-      activeResourcePlugins: [
-        "fx-resource-frontend-hosting",
-        "fx-resource-aad-app-for-teams",
-        "fx-resource-simple-auth",
-      ],
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab"],
+        activeResourcePlugins: ["fx-resource-simple-auth"],
+      },
       depsTypes: [DepsType.AzureNode, DepsType.Dotnet],
     },
     {
       message: "tab without simple auth",
-      activeResourcePlugins: ["fx-resource-frontend-hosting", "fx-resource-aad-app-for-teams"],
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab"],
+      },
       depsTypes: [DepsType.AzureNode],
     },
     {
       message: "tab + function",
-      activeResourcePlugins: [
-        "fx-resource-frontend-hosting",
-        "fx-resource-aad-app-for-teams",
-        "fx-resource-simple-auth",
-        "fx-resource-function",
-      ],
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab"],
+        azureResources: ["function"],
+        activeResourcePlugins: ["fx-resource-simple-auth"],
+      },
       depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.FuncCoreTools],
     },
     {
       message: "bot",
-      activeResourcePlugins: ["fx-resource-bot", "fx-resource-aad-app-for-teams"],
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Bot"],
+      },
       depsTypes: [DepsType.AzureNode, DepsType.Ngrok],
     },
     {
       message: "tab + bot",
-      activeResourcePlugins: [
-        "fx-resource-frontend-hosting",
-        "fx-resource-aad-app-for-teams",
-        "fx-resource-simple-auth",
-        "fx-resource-bot",
-      ],
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab", "Bot"],
+        activeResourcePlugins: ["fx-resource-simple-auth"],
+      },
       depsTypes: [DepsType.AzureNode, DepsType.Dotnet, DepsType.Ngrok],
     },
     {
       message: "tab + bot + function",
-      activeResourcePlugins: [
-        "fx-resource-frontend-hosting",
-        "fx-resource-aad-app-for-teams",
-        "fx-resource-simple-auth",
-        "fx-resource-bot",
-        "fx-resource-function",
-      ],
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab", "Bot", "MessagingExtension"],
+        azureResources: ["function"],
+        activeResourcePlugins: ["fx-resource-simple-auth"],
+      },
       depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.Ngrok, DepsType.FuncCoreTools],
     },
     {
       message: "spfx",
-      activeResourcePlugins: ["fx-resource-spfx"],
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "SPFx",
+      },
       depsTypes: [DepsType.SpfxNode],
     },
   ];
@@ -226,10 +239,7 @@ describe("LocalEnvManager", () => {
         const projectSettings = {
           appName: "",
           projectId: "",
-          solutionSettings: {
-            name: "",
-            activeResourcePlugins: data.activeResourcePlugins,
-          },
+          solutionSettings: data.solutionSettings,
         };
         const result = localEnvManager.getActiveDependencies(projectSettings);
         chai.assert.sameDeepMembers(data.depsTypes, result);

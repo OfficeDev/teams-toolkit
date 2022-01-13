@@ -23,6 +23,7 @@ import { ResourceAlreadyAddedError } from "./error";
 import { createSelectModuleQuestionNode, selectResourceQuestion } from "../../utils/questions";
 import { getModule } from "./utils";
 import { InvalidInputError } from "../../utils/error";
+import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 @Service(BuiltInResourcePluginNames.bot)
 export class AzureBotPlugin implements v3.ResourcePlugin {
   type: "resource" = "resource";
@@ -217,6 +218,17 @@ export async function addResource(
   existingResourceNames.forEach((s) => allResourceNames.add(s));
   solutionSettings.activeResourcePlugins = Array.from(allResourceNames);
 
+  // read manifest
+  const appStudio = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+  const manifestRes = await appStudio.loadManifest(ctx, inputs);
+  if (manifestRes.isErr()) {
+    return err(manifestRes.error);
+  }
+  const manifest = manifestRes.value;
+  const contextWithManifest: v3.ContextWithManifest = {
+    ...ctx,
+    appManifest: manifest,
+  };
   //call arm module to generate arm templates
   const activatedPlugins = solutionSettings.activeResourcePlugins.map((n) =>
     Container.get<v3.ResourcePlugin>(n)
@@ -224,7 +236,12 @@ export async function addResource(
   const addedPlugins = Array.from(addedResourceNames).map((n) =>
     Container.get<v3.ResourcePlugin>(n)
   );
-  const armRes = await arm.generateArmTemplate(ctx, inputsNew, activatedPlugins, addedPlugins);
+  const armRes = await arm.generateArmTemplate(
+    contextWithManifest,
+    inputsNew,
+    activatedPlugins,
+    addedPlugins
+  );
   if (armRes.isErr()) {
     return err(armRes.error);
   }
@@ -234,12 +251,17 @@ export async function addResource(
     const plugin = Container.get<v3.ResourcePlugin>(pluginName);
     if (addedResourceNames.has(pluginName) && !existingResourceNames.has(pluginName)) {
       if (plugin.addResource) {
-        const res = await plugin.addResource(ctx, inputsNew);
+        const res = await plugin.addResource(contextWithManifest, inputsNew);
         if (res.isErr()) {
           return err(res.error);
         }
       }
     }
+  }
+  // write manifest
+  const writeRes = await appStudio.saveManifest(ctx, inputs, manifest);
+  if (writeRes.isErr()) {
+    return err(writeRes.error);
   }
   return ok(Void);
 }

@@ -114,7 +114,7 @@ export async function generateArmTemplate(
 }
 
 export async function generateArmTemplateV3(
-  ctx: v2.Context,
+  ctx: v3.ContextWithManifest,
   inputs: v2.InputsWithProjectPath & { existingResources: string[] },
   activatedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[],
   addedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[]
@@ -870,7 +870,7 @@ async function doGenerateArmTemplate(
 }
 
 async function doGenerateArmTemplateV3(
-  ctx: v2.Context,
+  ctx: v3.ContextWithManifest,
   inputs: v2.InputsWithProjectPath & { existingResources: string[] },
   activatedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[],
   addedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[]
@@ -1494,8 +1494,8 @@ class ArmV2 {
 
 class Arm {
   async generateArmTemplate(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath & { existingResources: string[] },
+    ctx: v3.ContextWithManifest,
+    inputs: v3.PluginAddResourceInputs,
     activatedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[],
     addedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[]
   ): Promise<Result<any, FxError>> {

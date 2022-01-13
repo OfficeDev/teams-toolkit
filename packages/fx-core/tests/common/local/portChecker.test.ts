@@ -52,13 +52,8 @@ describe("portChecker", () => {
     solutionSettings: {
       name: "fx-solution-azure",
       hostType: "Azure",
-      azureResources: [],
-      capabilities: [],
-      activeResourcePlugins: [
-        "fx-resource-frontend-hosting",
-        "fx-resource-bot",
-        "fx-resource-function",
-      ],
+      azureResources: ["function"],
+      capabilities: ["Tab", "Bot"],
     },
   };
 

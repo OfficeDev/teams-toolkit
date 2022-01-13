@@ -1,5 +1,5 @@
-import { v2, Inputs, FxError, Result, Json, ok } from "@microsoft/teamsfx-api";
-import arm, { armV2, generateArmTemplate } from "../arm";
+import { FxError, Inputs, Json, Result, v2, v3 } from "@microsoft/teamsfx-api";
+import arm, { armV2 } from "../arm";
 import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor, ScaffoldingContextAdapter } from "./adaptor";
 import { showUpdateArmTemplateNotice } from "./executeUserTask";
@@ -19,8 +19,8 @@ export async function generateResourceTemplate(
 }
 
 export async function generateResourceTemplateForPlugins(
-  ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { existingResources: string[] },
+  ctx: v3.ContextWithManifest,
+  inputs: v3.PluginAddResourceInputs,
   plugins: v2.ResourcePlugin[]
 ): Promise<Result<Json, FxError>> {
   showUpdateArmTemplateNotice(ctx.userInteraction);

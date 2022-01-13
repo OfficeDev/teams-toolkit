@@ -40,7 +40,6 @@ import {
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
-import { ext } from "../extensionVariables";
 
 interface CheckFailure {
   checker: string;

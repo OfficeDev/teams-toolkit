@@ -89,11 +89,10 @@ export function parseAccessTokenFromAuthCodeTokenResponse(
   tokenResponse: string | AuthenticationResult
 ): AccessToken {
   try {
-    if (typeof tokenResponse == "object") {
-      tokenResponse = JSON.stringify(tokenResponse);
-    }
-
-    const tokenResponseObject = JSON.parse(tokenResponse);
+    const tokenResponseObject =
+      typeof tokenResponse == "string"
+        ? (JSON.parse(tokenResponse) as AuthenticationResult)
+        : tokenResponse;
     if (!tokenResponseObject || !tokenResponseObject.accessToken) {
       const errorMsg = "Get empty access token from Auth Code token response.";
 

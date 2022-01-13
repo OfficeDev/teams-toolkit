@@ -265,6 +265,9 @@ export class TeamsUserCredential implements TokenCredential {
         clientId: this.config.clientId!,
         authority: `https://login.microsoftonline.com/${this.tid}`,
       },
+      cache: {
+        cacheLocation: "sessionStorage",
+      },
     };
 
     this.msalInstance = new PublicClientApplication(msalConfig);

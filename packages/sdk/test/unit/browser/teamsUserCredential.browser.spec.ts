@@ -61,6 +61,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
   const invalidSSOToken = "invalid-sso-token";
 
   const fakeAccessToken = "fake-access-token";
+  const fakeAccessTokenFull = fakeSSOTokenFull;
 
   const fakeAuthCodeTokenResponse: AuthenticationResult = {
     authority: "fake-authority",
@@ -70,7 +71,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
     account: null,
     idToken: "fake-id-token",
     idTokenClaims: {},
-    accessToken: fakeSSOTokenFull,
+    accessToken: fakeAccessTokenFull,
     fromCache: true,
     expiresOn: new Date(Date.now() + 10 * 60 * 1000),
     tokenType: "fake-token-type",

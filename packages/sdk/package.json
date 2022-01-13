@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx",
-  "version": "0.4.0",
+  "version": "0.4.1",
   "description": "Microsoft Teams Framework for Node.js and browser.",
   "main": "dist/index.node.cjs.js",
   "browser": "dist/index.esm2017.js",
@@ -66,12 +66,12 @@
   },
   "devDependencies": {
     "@azure/arm-sql": "^8.0.0",
-    "@azure/ms-rest-nodeauth": "^3.1.0",
+    "@azure/ms-rest-nodeauth": "^3.1.1",
     "@commitlint/cli": "^14.1.0",
     "@commitlint/config-conventional": "^12.0.1",
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
-    "@microsoft/api-documenter": "^7.13.68",
-    "@microsoft/api-extractor": "^7.18.19",
+    "@microsoft/api-documenter": "^7.14.1",
+    "@microsoft/api-extractor": "^7.19.4",
     "@microsoft/teams-js": "^1.9.0",
     "@rollup/plugin-json": "^4.1.0",
     "@shared/eslint-config": "file:../eslint-config",

@@ -7,10 +7,6 @@ import "mocha";
 import * as uuid from "uuid";
 import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import {
-  getQuestionsForProvision,
-  provisionResources,
-} from "../../../src/plugins/solution/fx-solution/v3/provision";
-import {
   executeUserTask,
   getQuestionsForUserTask,
 } from "../../../src/plugins/solution/fx-solution/v3/userTask";
@@ -21,7 +17,9 @@ import {
   MockedSharepointProvider,
   MockedV2Context,
 } from "../solution/util";
-
+import * as path from "path";
+import * as os from "os";
+import { randomAppName } from "../../core/utils";
 describe("SolutionV3 - executeUserTask", () => {
   it("executeUserTask", async () => {
     const projectSettings: ProjectSettings = {
@@ -34,7 +32,7 @@ describe("SolutionV3 - executeUserTask", () => {
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -42,7 +40,7 @@ describe("SolutionV3 - executeUserTask", () => {
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
     };
-    const envInfov3: v3.EnvInfoV3 = {
+    const envInfoV3: v3.EnvInfoV3 = {
       envName: "dev",
       state: { solution: {} },
       config: {},
@@ -52,7 +50,7 @@ describe("SolutionV3 - executeUserTask", () => {
       inputs,
       { namespace: "", method: "aa" },
       {},
-      envInfov3,
+      envInfoV3,
       mockedTokenProvider
     );
     assert.isTrue(res.isErr());
@@ -69,7 +67,7 @@ describe("SolutionV3 - executeUserTask", () => {
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const mockedTokenProvider: TokenProvider = {
       azureAccountProvider: new MockedAzureAccountProvider(),
@@ -77,7 +75,7 @@ describe("SolutionV3 - executeUserTask", () => {
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
     };
-    const envInfov3: v3.EnvInfoV3 = {
+    const envInfoV3: v3.EnvInfoV3 = {
       envName: "dev",
       state: { solution: {} },
       config: {},
@@ -87,7 +85,7 @@ describe("SolutionV3 - executeUserTask", () => {
       inputs,
       { namespace: "", method: "aa" },
       {},
-      envInfov3,
+      envInfoV3,
       mockedTokenProvider
     );
     assert.isTrue(res.isOk());

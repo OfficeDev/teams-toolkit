@@ -53,7 +53,7 @@ export async function getQuestionsForDeploy(
 }
 export async function deploy(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { modules: string[] },
+  inputs: v3.SolutionDeployInputs,
   envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
   tokenProvider: TokenProvider
 ): Promise<Result<Void, FxError>> {

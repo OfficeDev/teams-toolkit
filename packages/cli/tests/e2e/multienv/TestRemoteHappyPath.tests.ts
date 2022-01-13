@@ -107,8 +107,8 @@ describe("Multi Env Happy Path for Azure", function () {
         await AadValidator.validate(aad);
 
         // Validate Simple Auth
-        const simpleAuth = SimpleAuthValidator.init(context);
-        await SimpleAuthValidator.validate(simpleAuth, aad, "B1", true);
+        const simpleAuth = new SimpleAuthValidator(context, projectPath, env);
+        await simpleAuth.validate();
 
         // Validate Tab Frontend
         const frontend = FrontendValidator.init(context, true);
@@ -123,8 +123,8 @@ describe("Multi Env Happy Path for Azure", function () {
         await SqlValidator.validateSql();
 
         // Validate Bot Provision
-        const bot = BotValidator.init(context, true);
-        await BotValidator.validateProvision(bot, true);
+        const bot = new BotValidator(context, projectPath, env);
+        await bot.validateProvision();
       }
 
       // deploy
@@ -135,7 +135,7 @@ describe("Multi Env Happy Path for Azure", function () {
       });
 
       {
-        // Validate provision
+        // Validate deployment
         // Get context
         const contextResult = await loadContext(projectPath, env);
         if (contextResult.isErr()) {
@@ -151,8 +151,8 @@ describe("Multi Env Happy Path for Azure", function () {
         await functionValidator.validateDeploy();
 
         // Validate Bot Deploy
-        const bot = BotValidator.init(context, true);
-        await BotValidator.validateDeploy(bot);
+        const bot = new BotValidator(context, projectPath, env);
+        await bot.validateProvision();
       }
 
       // validate manifest

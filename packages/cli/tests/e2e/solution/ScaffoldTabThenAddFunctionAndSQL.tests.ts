@@ -8,20 +8,13 @@
 import path from "path";
 import fs from "fs-extra";
 import * as chai from "chai";
-import { isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
 import { getTestFolder, getUniqueAppName, cleanUpLocalProject } from "../commonUtils";
-import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
 import "mocha";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 
 // test case for bug https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/12836125
 describe("Scaffold Tab then Add Function and SQL", function () {
-  //  Only test when insider feature flag enabled
-  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
-    return;
-  }
-
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);

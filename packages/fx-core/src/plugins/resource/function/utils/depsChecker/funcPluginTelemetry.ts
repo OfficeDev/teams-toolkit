@@ -4,13 +4,16 @@
 
 import * as os from "os";
 import { performance } from "perf_hooks";
-import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
-import { IDepsTelemetry } from "./checker";
-import { DepsCheckerEvent, TelemetryMessurement } from "./common";
+import { SystemError, UserError } from "@microsoft/teamsfx-api";
+import {
+  DepsCheckerEvent,
+  TelemetryMessurement,
+} from "../../../../../common/deps-checker/constant/telemetry";
 import { TelemetryHelper } from "../telemetry-helper";
 import { TelemetryKey } from "../../enums";
+import { DepsTelemetry } from "../../../../../common/deps-checker/depsTelemetry";
 
-export class FuncPluginTelemetry implements IDepsTelemetry {
+export class FuncPluginTelemetry implements DepsTelemetry {
   private readonly _source = "func-envchecker";
 
   private static getCommonProps(): { [key: string]: string } {
@@ -72,3 +75,5 @@ export class FuncPluginTelemetry implements IDepsTelemetry {
     TelemetryHelper.sendErrorEvent(eventName, error, FuncPluginTelemetry.getCommonProps());
   }
 }
+
+export const funcDepsTelemetry = new FuncPluginTelemetry();

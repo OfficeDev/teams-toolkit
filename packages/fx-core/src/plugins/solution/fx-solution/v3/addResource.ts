@@ -23,67 +23,16 @@ import { ResourceAlreadyAddedError } from "./error";
 import { createSelectModuleQuestionNode, selectResourceQuestion } from "../../utils/questions";
 import { getModule } from "./utils";
 import { InvalidInputError } from "../../utils/error";
-@Service(BuiltInResourcePluginNames.storage)
-export class AzureStoragePlugin implements v3.ResourcePlugin {
-  resourceType = "Azure Storage";
-  description = "Azure Storage";
-  name = BuiltInResourcePluginNames.storage;
-  async generateResourceTemplate(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    return ok({
-      kind: "bicep",
-      template: {
-        Provision: {
-          Orchestration: "Orchestration",
-          Reference: {
-            endpoint: "provisionOutputs.azureStorageOutput.value.endpoint",
-            domain: "provisionOutputs.azureStorageOutput.value.domain",
-          },
-          Modules: {
-            azureStorage: "",
-          },
-        },
-        Parameters: {
-          azureStorageK1: "v1",
-        },
-      },
-    });
-  }
-  async provisionResource(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: TokenProvider
-  ): Promise<Result<v3.CloudResource, FxError>> {
-    const config: v3.AzureStorage = {
-      domain: "huajie1214dev35e42dtab.z19.web.core.windows.net",
-      endpoint: "https://huajie1214dev35e42dtab.z19.web.core.windows.net",
-      storageResourceId:
-        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Storage/storageAccounts/huajie1214dev35e42dtab",
-    };
-    return ok(config);
-  }
-
-  async deploy(
-    ctx: v2.Context,
-    inputs: v3.PluginDeployInputs,
-    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
-  ): Promise<Result<Void, FxError>> {
-    ctx.logProvider.info(`fx-resource-azure-storage deploy success!`);
-    return ok(Void);
-  }
-}
+import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 @Service(BuiltInResourcePluginNames.bot)
 export class AzureBotPlugin implements v3.ResourcePlugin {
+  type: "resource" = "resource";
   resourceType = "Azure Bot";
   description = "Azure Bot";
   name = BuiltInResourcePluginNames.bot;
   async generateResourceTemplate(
     ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.PluginAddResourceInputs
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
     return ok({
       kind: "bicep",
@@ -139,12 +88,13 @@ export class AzureBotPlugin implements v3.ResourcePlugin {
 }
 @Service(BuiltInResourcePluginNames.webApp)
 export class AzureWebAppPlugin implements v3.ResourcePlugin {
+  type: "resource" = "resource";
   resourceType = "Azure Web App";
   description = "Azure Web App";
   name = BuiltInResourcePluginNames.webApp;
   async generateResourceTemplate(
     ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
+    inputs: v3.PluginAddResourceInputs
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
     return ok({
       kind: "bicep",
@@ -193,6 +143,7 @@ export class AzureWebAppPlugin implements v3.ResourcePlugin {
 
 @Service(BuiltInResourcePluginNames.spfx)
 export class SPFxResourcePlugin implements v3.ResourcePlugin {
+  type: "resource" = "resource";
   resourceType = "SPFx resource";
   description = "SPFx resource";
   name = BuiltInResourcePluginNames.spfx;
@@ -208,11 +159,7 @@ export class SPFxResourcePlugin implements v3.ResourcePlugin {
 }
 
 function getAllResourcePlugins(): v3.ResourcePlugin[] {
-  return [
-    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.webApp),
-    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.bot),
-    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.webApp),
-  ];
+  return [Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.storage)];
 }
 
 export async function getQuestionsForAddResource(
@@ -239,7 +186,7 @@ export async function getQuestionsForAddResource(
 }
 export async function addResource(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath & { module?: string; resource?: string }
+  inputs: v3.SolutionAddResourceInputs
 ): Promise<Result<Void, FxError>> {
   if (!inputs.resource) {
     return err(new InvalidInputError(inputs, "inputs.resource undefined"));
@@ -271,6 +218,17 @@ export async function addResource(
   existingResourceNames.forEach((s) => allResourceNames.add(s));
   solutionSettings.activeResourcePlugins = Array.from(allResourceNames);
 
+  // read manifest
+  const appStudio = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+  const manifestRes = await appStudio.loadManifest(ctx, inputs);
+  if (manifestRes.isErr()) {
+    return err(manifestRes.error);
+  }
+  const manifest = manifestRes.value;
+  const contextWithManifest: v3.ContextWithManifest = {
+    ...ctx,
+    appManifest: manifest,
+  };
   //call arm module to generate arm templates
   const activatedPlugins = solutionSettings.activeResourcePlugins.map((n) =>
     Container.get<v3.ResourcePlugin>(n)
@@ -278,7 +236,12 @@ export async function addResource(
   const addedPlugins = Array.from(addedResourceNames).map((n) =>
     Container.get<v3.ResourcePlugin>(n)
   );
-  const armRes = await arm.generateArmTemplate(ctx, inputsNew, activatedPlugins, addedPlugins);
+  const armRes = await arm.generateArmTemplate(
+    contextWithManifest,
+    inputsNew,
+    activatedPlugins,
+    addedPlugins
+  );
   if (armRes.isErr()) {
     return err(armRes.error);
   }
@@ -288,12 +251,17 @@ export async function addResource(
     const plugin = Container.get<v3.ResourcePlugin>(pluginName);
     if (addedResourceNames.has(pluginName) && !existingResourceNames.has(pluginName)) {
       if (plugin.addResource) {
-        const res = await plugin.addResource(ctx, inputsNew);
+        const res = await plugin.addResource(contextWithManifest, inputsNew);
         if (res.isErr()) {
           return err(res.error);
         }
       }
     }
+  }
+  // write manifest
+  const writeRes = await appStudio.saveManifest(ctx, inputs, manifest);
+  if (writeRes.isErr()) {
+    return err(writeRes.error);
   }
   return ok(Void);
 }

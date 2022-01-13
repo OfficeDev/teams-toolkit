@@ -19,12 +19,7 @@ import sinon from "sinon";
 import Container from "typedi";
 import { FeatureFlagName } from "../../src/common/constants";
 import { readJson } from "../../src/common/fileUtils";
-import {
-  isArmSupportEnabled,
-  isFeatureFlagEnabled,
-  isMultiEnvEnabled,
-  getRootDirectory,
-} from "../../src/common/tools";
+import { isFeatureFlagEnabled, getRootDirectory } from "../../src/common/tools";
 import * as tools from "../../src/common/tools";
 import {
   ContextUpgradeError,

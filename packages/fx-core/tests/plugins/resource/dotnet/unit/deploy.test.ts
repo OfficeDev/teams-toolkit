@@ -8,7 +8,7 @@ import fs from "fs-extra";
 import { PluginContext } from "@microsoft/teamsfx-api";
 import chaiAsPromised from "chai-as-promised";
 
-import { FrontendPlugin as BlazorPlugin } from "../../../../../src/plugins/resource/frontend";
+import { FrontendPlugin as WebappPlugin } from "../../../../../src/plugins/resource/frontend";
 import { TestHelper } from "../helper";
 import { DotnetConfigInfo as ConfigInfo } from "../../../../../src/plugins/resource/frontend/dotnet/constants";
 import { AzureClientFactory } from "../../../../../src/plugins/resource/frontend/dotnet/utils/azure-client";
@@ -16,17 +16,16 @@ import * as dirWalk from "../../../../../src/plugins/resource/function/utils/dir
 import * as execute from "../../../../../src/plugins/resource/function/utils/execute";
 import axios from "axios";
 import * as core from "../../../../../src/core";
-import { WebSiteManagementClient } from "@azure/arm-appservice";
 
 chai.use(chaiAsPromised);
 
-describe("BlazorPlugin", () => {
+describe("WebappPlugin", () => {
   describe("deploy", () => {
-    let plugin: BlazorPlugin;
+    let plugin: WebappPlugin;
     let pluginContext: PluginContext;
 
     beforeEach(async () => {
-      plugin = new BlazorPlugin();
+      plugin = new WebappPlugin();
       pluginContext = TestHelper.getFakePluginContext();
       pluginContext.config.set(ConfigInfo.webAppName, "ut");
       pluginContext.config.set(ConfigInfo.appServicePlanName, "ut");

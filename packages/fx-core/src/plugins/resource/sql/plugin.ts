@@ -326,7 +326,7 @@ export class SqlPluginImpl {
 
   public async addNewDatabase(ctx: PluginContext): Promise<Result<any, FxError>> {
     const suffix = getUuid().substring(0, 6);
-    const complieCtx = {
+    const compileCtx = {
       suffix: suffix,
     };
     const bicepTemplateDirectory = path.join(
@@ -338,14 +338,14 @@ export class SqlPluginImpl {
     );
     const provisionOrchestration = await generateBicepFromFile(
       path.join(bicepTemplateDirectory, AzureSqlBicepFile.newDatabaseModuleTemplateFileName),
-      complieCtx
+      compileCtx
     );
     const provisionModules = await generateBicepFromFile(
       path.join(
         bicepTemplateDirectory,
         AzureSqlBicepFile.newDatabaseProvisionModuleTemplateFileName
       ),
-      complieCtx
+      compileCtx
     );
     const result: ArmTemplateResult = {
       Provision: {

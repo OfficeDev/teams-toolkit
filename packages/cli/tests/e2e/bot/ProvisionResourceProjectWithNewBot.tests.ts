@@ -65,31 +65,17 @@ describe("Provision", function () {
     console.log(`[Successfully] provision for ${projectPath}`);
 
     {
-      if (isMultiEnvEnabled()) {
-        // Validate provision
-        // Get context
-        const context = await readContextMultiEnv(projectPath, env);
+      // Validate provision
+      // Get context
+      const context = await readContextMultiEnv(projectPath, env);
 
-        // Validate Aad App
-        const aad = AadValidator.init(context, false, AppStudioLogin);
-        await AadValidator.validate(aad);
+      // Validate Aad App
+      const aad = AadValidator.init(context, false, AppStudioLogin);
+      await AadValidator.validate(aad);
 
-        // Validate Bot Provision
-        const bot = BotValidator.init(context, true);
-        await BotValidator.validateProvision(bot, true);
-      } else {
-        // Validate provision
-        // Get context
-        const context = await readContext(projectPath);
-
-        // Validate Aad App
-        const aad = AadValidator.init(context, false, AppStudioLogin);
-        await AadValidator.validate(aad);
-
-        // Validate Bot Provision
-        const bot = BotValidator.init(context);
-        await BotValidator.validateProvision(bot);
-      }
+      // Validate Bot Provision
+      const bot = new BotValidator(context, projectPath, env);
+      await bot.validateProvision();
     }
 
     // deploy
@@ -101,25 +87,14 @@ describe("Provision", function () {
     console.log(`[Successfully] deploy for ${projectPath}`);
 
     {
-      if (isMultiEnvEnabled()) {
-        // Validate deployment
+      // Validate deployment
 
-        // Get context
-        const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+      // Get context
+      const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-        // Validate Bot Deploy
-        const bot = BotValidator.init(context, true);
-        await BotValidator.validateDeploy(bot);
-      } else {
-        // Validate deployment
-
-        // Get context
-        const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-
-        // Validate Bot Deploy
-        const bot = BotValidator.init(context);
-        await BotValidator.validateDeploy(bot);
-      }
+      // Validate Bot Deploy
+      const bot = new BotValidator(context, projectPath, env);
+      await bot.validateDeploy();
     }
 
     // test (validate)

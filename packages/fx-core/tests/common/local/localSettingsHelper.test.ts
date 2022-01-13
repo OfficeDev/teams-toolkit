@@ -23,16 +23,9 @@ describe("localSettingsHelper", () => {
         name: "fx-solution-azure",
         version: "1.0.0",
         hostType: "Azure",
-        azureResources: [],
+        azureResources: [] as string[],
         capabilities: ["Tab"],
-        activeResourcePlugins: [
-          "fx-resource-frontend-hosting",
-          "fx-resource-identity",
-          "fx-resource-aad-app-for-teams",
-          "fx-resource-local-debug",
-          "fx-resource-appstudio",
-          "fx-resource-simple-auth",
-        ],
+        activeResourcePlugins: ["fx-resource-simple-auth"],
       },
     };
     const localSettings0 = {
@@ -91,8 +84,8 @@ describe("localSettingsHelper", () => {
       fs.ensureFileSync(botEnvPath);
       fs.writeFileSync(botEnvPath, "FOO=BOT");
       const projectSettingsAll = cloneDeep(projectSettings0);
-      projectSettingsAll.solutionSettings.activeResourcePlugins.push("fx-resource-bot");
-      projectSettingsAll.solutionSettings.activeResourcePlugins.push("fx-resource-function");
+      projectSettingsAll.solutionSettings.capabilities.push("Bot");
+      projectSettingsAll.solutionSettings.azureResources.push("function");
 
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, undefined);
 

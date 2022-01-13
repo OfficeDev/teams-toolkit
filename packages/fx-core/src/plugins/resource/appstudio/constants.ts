@@ -44,6 +44,7 @@ export const MANIFEST_TEMPLATE = "manifest.remote.template.json";
 export const MANIFEST_LOCAL = "manifest.local.template.json";
 export const FRONTEND_ENDPOINT = "endpoint";
 export const FRONTEND_DOMAIN = "domain";
+export const FRONTEND_INDEX_PATH = "indexPath";
 export const BOT_ID = "botId";
 export const LOCAL_BOT_ID = "localBotId";
 export const COLOR_TEMPLATE = "plugins/resource/appstudio/defaultIcon.png";
@@ -67,8 +68,8 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
   "developer": {
       "name": "Teams App, Inc.",
       "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}",
-      "privacyUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/privacy",
-      "termsOfUseUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/termsofuse"
+      "privacyUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/privacy",
+      "termsOfUseUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -107,8 +108,8 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG = `{
   "developer": {
       "name": "Teams App, Inc.",
       "websiteUrl": "{{{localSettings.frontend.tabEndpoint}}}",
-      "privacyUrl": "{{{localSettings.frontend.tabEndpoint}}}/index.html#/privacy",
-      "termsOfUseUrl": "{{{localSettings.frontend.tabEndpoint}}}/index.html#/termsofuse"
+      "privacyUrl": "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/privacy",
+      "termsOfUseUrl": "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/termsofuse"
   },
   "icons": {
       "color": "resources/color.png",
@@ -142,15 +143,18 @@ export const STATIC_TABS_TPL_FOR_MULTI_ENV: IStaticTab[] = [
   {
     entityId: "index",
     name: "Personal Tab",
-    contentUrl: "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/tab",
-    websiteUrl: "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/tab",
+    contentUrl:
+      "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
+    websiteUrl:
+      "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/tab",
     scopes: ["personal"],
   },
 ];
 
 export const CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV: IConfigurableTab[] = [
   {
-    configurationUrl: "{{{state.fx-resource-frontend-hosting.endpoint}}}/index.html#/config",
+    configurationUrl:
+      "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/config",
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },
@@ -256,15 +260,18 @@ export const STATIC_TABS_TPL_LOCAL_DEBUG: IStaticTab[] = [
   {
     entityId: "index",
     name: "Personal Tab",
-    contentUrl: "{{{localSettings.frontend.tabEndpoint}}}/index.html#/tab",
-    websiteUrl: "{{{localSettings.frontend.tabEndpoint}}}/index.html#/tab",
+    contentUrl:
+      "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/tab",
+    websiteUrl:
+      "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/tab",
     scopes: ["personal"],
   },
 ];
 
 export const CONFIGURABLE_TABS_TPL_LOCAL_DEBUG: IConfigurableTab[] = [
   {
-    configurationUrl: "{{{localSettings.frontend.tabEndpoint}}}/index.html#/config",
+    configurationUrl:
+      "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/config",
     canUpdateConfiguration: true,
     scopes: ["team", "groupchat"],
   },

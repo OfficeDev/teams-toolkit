@@ -6,13 +6,8 @@ import * as chai from "chai";
 import glob from "glob";
 import path from "path";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
-import {
-  getActivePluginsFromProjectSetting,
-  getProvisionParameterValueByKey,
-  getKeyVaultSecretReference,
-} from "../e2e/commonUtils";
-import { CliHelper } from "./cliHelper";
-import { StateConfigKey, PluginId, provisionParametersKey } from "./constants";
+import { getActivePluginsFromProjectSetting } from "../e2e/commonUtils";
+import { StateConfigKey, PluginId } from "./constants";
 import {
   getSubscriptionIdFromResourceId,
   getResourceGroupNameFromResourceId,
@@ -20,7 +15,8 @@ import {
   getWebappSettings,
   runWithRetry,
   getWebappConfigs,
-  getKeyVaultNameFromResourceId,
+  getExpectedM365ApplicationIdUri,
+  getExpectedM365ClientSecret,
 } from "./utilities";
 
 const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
@@ -113,11 +109,11 @@ export class FunctionValidator {
     );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.M365_APPLICATION_ID_URI],
-      this.getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
+      getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
     );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.M365_CLIENT_SECRET],
-      await this.getM365ClientSecret(activeResourcePlugins)
+      await getExpectedM365ClientSecret(this.ctx, this.projectPath, this.env, activeResourcePlugins)
     );
     chai.assert.equal(
       webappSettingsResponse[BaseConfig.IDENTITY_ID],
@@ -215,44 +211,5 @@ export class FunctionValidator {
       console.log(error);
       return undefined;
     }
-  }
-
-  private getExpectedM365ApplicationIdUri(ctx: any, activeResourcePlugins: string[]): string {
-    let expectedM365ApplicationIdUri = "";
-    if (activeResourcePlugins.includes(PluginId.FrontendHosting)) {
-      const tabDomain = ctx[PluginId.FrontendHosting][StateConfigKey.domain];
-      const m365ClientId = ctx[PluginId.Aad][StateConfigKey.clientId];
-      expectedM365ApplicationIdUri =
-        `api://${tabDomain}/` +
-        (activeResourcePlugins.includes(PluginId.Bot)
-          ? `botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`
-          : `${m365ClientId}`);
-    } else if (activeResourcePlugins.includes(PluginId.Bot)) {
-      expectedM365ApplicationIdUri = `api://botid-${ctx[PluginId.Bot][StateConfigKey.botId]}`;
-    }
-    return expectedM365ApplicationIdUri;
-  }
-
-  private async getM365ClientSecret(activeResourcePlugins: string[]): Promise<string> {
-    let m365ClientSecret: string;
-    if (activeResourcePlugins.includes(PluginId.KeyVault)) {
-      const vaultName = getKeyVaultNameFromResourceId(
-        this.ctx[PluginId.KeyVault][StateConfigKey.keyVaultResourceId]
-      );
-      const secretName =
-        (await getProvisionParameterValueByKey(
-          this.projectPath,
-          this.env,
-          provisionParametersKey.m365ClientSecretName
-        )) ?? "m365ClientSecret";
-      m365ClientSecret = getKeyVaultSecretReference(vaultName, secretName);
-    } else {
-      m365ClientSecret = await CliHelper.getUserSettings(
-        `${PluginId.Aad}.${StateConfigKey.clientSecret}`,
-        this.projectPath,
-        this.env
-      );
-    }
-    return m365ClientSecret;
   }
 }

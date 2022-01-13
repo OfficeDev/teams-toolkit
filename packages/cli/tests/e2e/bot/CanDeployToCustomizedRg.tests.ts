@@ -68,9 +68,9 @@ describe("Deploy to customized resource group", function () {
       await AadValidator.validate(aad);
 
       // Validate Bot
-      const bot = BotValidator.init(context, true);
-      await BotValidator.validateProvision(bot, true);
-      await BotValidator.validateDeploy(bot);
+      const bot = new BotValidator(context, projectPath, env);
+      await bot.validateProvision();
+      await bot.validateDeploy();
     }
 
     await deleteResourceGroupByName(customizedRgName);

@@ -14,6 +14,7 @@ import {
   getproductNameFromResourceId,
   getResourceGroupNameFromResourceId,
 } from "./utilities";
+import { PluginId, StateConfigKey } from "./constants";
 
 export class ApimValidator {
   static apimClient?: ApiManagementClient;
@@ -341,10 +342,6 @@ export class ApimValidator {
 }
 
 class Config {
-  private readonly functionPlugin = "fx-resource-function";
-  private readonly aadPlugin = "fx-resource-aad-app-for-teams";
-  private readonly solution = "solution";
-  private readonly apimPlugin = "fx-resource-apim";
   private readonly config: any;
 
   constructor(config: any) {
@@ -352,79 +349,72 @@ class Config {
   }
 
   get functionEndpoint() {
-    return this.config[this.functionPlugin]["functionEndpoint"];
+    return this.config[PluginId.Function][StateConfigKey.functionEndpoint];
   }
 
   get objectId() {
-    return this.config[this.aadPlugin]["objectId"];
+    return this.config[PluginId.Aad][StateConfigKey.objectId];
   }
   get clientId() {
-    return this.config[this.aadPlugin]["clientId"];
+    return this.config[PluginId.Aad][StateConfigKey.clientId];
   }
   get oauth2PermissionScopeId() {
-    return this.config[this.aadPlugin]["oauth2PermissionScopeId"];
+    return this.config[PluginId.Aad][StateConfigKey.oauth2PermissionScopeId];
   }
   get applicationIdUris() {
-    return this.config[this.aadPlugin]["applicationIdUris"];
+    return this.config[PluginId.Aad][StateConfigKey.applicationIdUris];
   }
 
   get subscriptionId() {
-    return this.config[this.solution]["subscriptionId"];
+    return this.config[PluginId.Solution][StateConfigKey.subscriptionId];
   }
   get resourceNameSuffix() {
-    return this.config[this.solution]["resourceNameSuffix"];
+    return this.config[PluginId.Solution][StateConfigKey.resourceNameSuffix];
   }
   get teamsAppTenantId() {
-    return this.config[this.solution]["teamsAppTenantId"];
+    return this.config[PluginId.Solution][StateConfigKey.teamsAppTenantId];
   }
   get resourceGroupName() {
-    return this.config[this.solution]["resourceGroupName"];
+    return this.config[PluginId.Solution][StateConfigKey.resourceGroupName];
   }
   get location() {
-    return this.config[this.solution]["location"];
+    return this.config[PluginId.Solution][StateConfigKey.location];
   }
 
   get apimResourceGroupName() {
-    return getResourceGroupNameFromResourceId(this.config[this.apimPlugin]["serviceResourceId"]);
-  }
-  get apimServiceName() {
-    return this.config[this.apimPlugin]["serviceName"];
-  }
-  get productId() {
-    return this.config[this.apimPlugin]["productId"];
-  }
-  get oAuthServerId() {
-    return this.config[this.apimPlugin]["oAuthServerId"];
+    return getResourceGroupNameFromResourceId(
+      this.config[PluginId.Apim][StateConfigKey.serviceResourceId]
+    );
   }
   get apimClientAADObjectId() {
-    return this.config[this.apimPlugin]["apimClientAADObjectId"];
+    return this.config[PluginId.Apim][StateConfigKey.apimClientAADObjectId];
   }
   get apimClientAADClientId() {
-    return this.config[this.apimPlugin]["apimClientAADClientId"];
+    return this.config[PluginId.Apim][StateConfigKey.apimClientAADClientId];
   }
   get apimClientAADClientSecret() {
-    return this.config[this.apimPlugin]["apimClientAADClientSecret"];
+    return this.config[PluginId.Apim][StateConfigKey.apimClientAADClientSecret];
   }
   get apiPrefix() {
-    return this.config[this.apimPlugin]["apiPrefix"];
+    return this.config[PluginId.Apim][StateConfigKey.apiPrefix];
   }
   get versionSetId() {
-    return this.config[this.apimPlugin]["versionSetId"];
+    return this.config[PluginId.Apim][StateConfigKey.versionSetId];
   }
   get apiPath() {
-    return this.config[this.apimPlugin]["apiPath"];
+    return this.config[PluginId.Apim][StateConfigKey.apiPath];
   }
   get apiDocumentPath() {
-    return this.config[this.apimPlugin]["apiDocumentPath"];
+    return this.config[PluginId.Apim][StateConfigKey.apiDocumentPath];
   }
   get serviceResourceId() {
-    return this.config[this.apimPlugin]["serviceResourceId"];
+    return this.config[PluginId.Apim][StateConfigKey.serviceResourceId];
   }
   get productResourceId() {
-    return this.config[this.apimPlugin]["productResourceId"];
+    return this.config[PluginId.Apim][StateConfigKey.productResourceId];
   }
   get authServerResourceId() {
-    return this.config[this.apimPlugin]["authServerResourceId"];
+    return this.config[PluginId.Apim][StateConfigKey.authServerResourceId];
   }
 }
 

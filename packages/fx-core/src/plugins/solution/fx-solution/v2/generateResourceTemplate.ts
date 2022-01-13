@@ -1,5 +1,4 @@
 import { v2, Inputs, FxError, Result, Json, ok } from "@microsoft/teamsfx-api";
-import { isArmSupportEnabled } from "../../../../common/tools";
 import arm, { armV2, generateArmTemplate } from "../arm";
 import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor, ScaffoldingContextAdapter } from "./adaptor";

@@ -56,7 +56,6 @@ import "../../../src/plugins/resource/localdebug/v2";
 import "../../../src/plugins/resource/appstudio/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/bot/v2";
-import { isArmSupportEnabled } from "../../../src/common/tools";
 import { newEnvInfo } from "../../../src/core/tools";
 import fs from "fs-extra";
 import { ProgrammingLanguage } from "../../../src/plugins/resource/bot/enums/programmingLanguage";
@@ -594,52 +593,6 @@ describe("V2 implementation", () => {
     expect(result.isOk()).to.be.true;
   });
 
-  it("should return ok when adding APIM", async () => {
-    if (isArmSupportEnabled()) {
-      return;
-    }
-    const projectSettings: ProjectSettings = {
-      appName: "my app",
-      projectId: uuid.v4(),
-      solutionSettings: {
-        hostType: HostTypeOptionAzure.id,
-        name: "test",
-        version: "1.0",
-        activeResourcePlugins: [appStudioPluginV2.name, frontendPluginV2.name],
-        capabilities: [TabOptionItem.id],
-        azureResources: [],
-      },
-    };
-    const mockedCtx = new MockedV2Context(projectSettings);
-    mockedCtx.projectSetting.programmingLanguage = ProgrammingLanguage.JavaScript;
-    const mockedInputs: Inputs = {
-      platform: Platform.VSCode,
-      projectPath: testFolder,
-    };
-
-    mockedInputs[AzureSolutionQuestionNames.AddResources] = [AzureResourceApim.id];
-
-    mockScaffoldCodeThatAlwaysSucceeds(appStudioPluginV2);
-    mockScaffoldCodeThatAlwaysSucceeds(localDebugPluginV2);
-    mockScaffoldCodeThatAlwaysSucceeds(sqlPluginV2);
-    mockScaffoldCodeThatAlwaysSucceeds(functionPluginV2);
-    mockExecuteUserTaskThatAlwaysSucceeds(apimPluginV2);
-
-    const apimSpy = mocker.spy(apimPluginV2);
-    const result = await executeUserTask(
-      mockedCtx,
-      mockedInputs,
-      { namespace: "solution", method: "addResource" },
-      {},
-      { envName: "default", config: {}, state: {} },
-      mockedProvider
-    );
-    expect(result.isOk()).to.be.true;
-    expect(apimSpy.executeUserTask?.calledOnce, "APIM::executeUserTask() is called").to.be.true;
-    expect(apimSpy.scaffoldSourceCode?.notCalled, "APIM::scaffoldSourceCode() is not called").to.be
-      .true;
-  });
-
   describe("executeUserTask VSpublish", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
@@ -712,23 +665,6 @@ describe("V2 implementation", () => {
         expect(result.isOk()).to.be.true;
         expect(spy.calledOnce, "publishApplication() is called").to.be.true;
       });
-    });
-
-    it("createEnv", async () => {
-      if (isArmSupportEnabled()) {
-        return;
-      }
-      const mockedCtx = new MockedV2Context(projectSettings);
-      const mockedInputs: Inputs = {
-        platform: Platform.VSCode,
-      };
-
-      const result = await createEnv(mockedCtx, mockedInputs);
-      expect(result.isOk()).to.be.true;
-
-      mockedInputs.copy = true;
-      const result2 = await createEnv(mockedCtx, mockedInputs);
-      expect(result2.isOk()).to.be.true;
     });
 
     it("createEnv, ScaffoldingContextAdapter", async () => {

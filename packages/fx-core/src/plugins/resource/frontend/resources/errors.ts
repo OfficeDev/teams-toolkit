@@ -4,14 +4,14 @@
 import { Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import path from "path";
-import { ConfigFolderName, ArchiveFolderName } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, ArchiveFolderName, FxError } from "@microsoft/teamsfx-api";
 
 export enum ErrorType {
   User,
   System,
 }
 
-const tips = {
+export const tips = {
   checkLog: "Check log for more information.",
   reScaffold: `Run 'Start A New Project' again.`,
   doProvision: `Run 'Provision Resource' before this command.`,
@@ -302,7 +302,7 @@ export const UnhandledErrorCode = "UnhandledError";
 export const UnhandledErrorMessage = "Unhandled error.";
 
 export async function runWithErrorCatchAndThrow<T>(
-  error: FrontendPluginError,
+  error: FrontendPluginError | FxError,
   fn: () => T | Promise<T>
 ): Promise<T> {
   try {
@@ -310,13 +310,13 @@ export async function runWithErrorCatchAndThrow<T>(
     return res;
   } catch (e) {
     Logger.error(e.toString());
-    error.setInnerError(e);
+    if (error instanceof FrontendPluginError) error.setInnerError(e);
     throw error;
   }
 }
 
 export async function runWithErrorCatchAndWrap<T>(
-  wrap: (error: any) => FrontendPluginError,
+  wrap: (error: any) => FrontendPluginError | FxError,
   fn: () => T | Promise<T>
 ): Promise<T> {
   try {
@@ -325,7 +325,7 @@ export async function runWithErrorCatchAndWrap<T>(
   } catch (e) {
     Logger.error(e.toString());
     const error = wrap(e);
-    error.setInnerError(e);
+    if (error instanceof FrontendPluginError) error.setInnerError(e);
     throw error;
   }
 }

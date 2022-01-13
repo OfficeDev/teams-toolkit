@@ -24,6 +24,7 @@ import {
   MigrateV1ProjectError,
 } from "./resources/errors";
 import {
+  Constants,
   DependentPluginInfo,
   FrontendOutputBicepSnippet,
   FrontendPathInfo,
@@ -52,6 +53,7 @@ import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile, IsSimpleAuthEnabled } from "../../../common/tools";
+import { LocalSettingsFrontendKeys } from "../../../common/localSettingsConstants";
 export class FrontendPluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
@@ -168,6 +170,14 @@ export class FrontendPluginImpl {
     };
 
     return ok(result);
+  }
+
+  public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+    ctx.localSettings?.frontend?.set(
+      LocalSettingsFrontendKeys.TabIndexPath,
+      Constants.FrontendIndexPath
+    );
+    return ok(undefined);
   }
 
   private collectEnvs(ctx: PluginContext): { [key: string]: string } {

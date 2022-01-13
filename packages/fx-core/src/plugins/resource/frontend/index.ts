@@ -29,6 +29,7 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { isVsCallingCli } from "../../..";
 import "./v2";
+import "./v3";
 import { DotnetPluginImpl } from "./dotnet/plugin";
 import { DotnetPluginInfo } from "./dotnet/constants";
 
@@ -115,6 +116,16 @@ export class FrontendPlugin implements Plugin {
     FrontendPlugin.setContext(ctx);
     return this.runWithErrorHandling(ctx, TelemetryEvent.GenerateArmTemplates, () =>
       this.frontendPluginImpl.generateArmTemplates(ctx)
+    );
+  }
+
+  public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+    if (isVsCallingCli()) {
+      throw new NotImplemented();
+    }
+    FrontendPlugin.setContext(ctx);
+    return this.runWithErrorHandling(ctx, TelemetryEvent.LocalDebug, () =>
+      this.frontendPluginImpl.localDebug(ctx)
     );
   }
 

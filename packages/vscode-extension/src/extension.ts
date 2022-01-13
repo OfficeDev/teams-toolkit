@@ -135,7 +135,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // localdebug session starts from environment checker
   const validateDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-dependencies",
-    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateDependenciesHandler)
+    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateAzureDependenciesHandler)
   );
   context.subscriptions.push(validateDependenciesCmd);
 

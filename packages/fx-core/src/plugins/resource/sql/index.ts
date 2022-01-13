@@ -33,10 +33,8 @@ export class SqlPlugin implements Plugin {
   displayName = "Azure SQL Database";
   activate(solutionSettings: AzureSolutionSettings): boolean {
     const azureResources = solutionSettings.azureResources || [];
-    const cap = solutionSettings.capabilities || [];
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&
-      cap.includes(TabOptionItem.id) &&
       azureResources.includes(AzureResourceSQL.id)
     );
   }

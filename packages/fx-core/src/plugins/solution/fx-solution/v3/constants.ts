@@ -10,9 +10,11 @@ export const BuiltInResourcePluginNames = {
   appStudio: "fx-resource-appstudio",
   aad: "fx-resource-aad",
   bot: "fx-resource-bot",
+  function: "fx-resource-function",
   webApp: "fx-resource-azure-web-app",
   storage: "fx-resource-azure-storage",
   spfx: "fx-resource-spfx",
+  simpleAuth: "fx-resource-simple-auth",
 };
 export const BuiltInScaffoldPluginNames = {
   blazor: "fx-scaffold-blazor",

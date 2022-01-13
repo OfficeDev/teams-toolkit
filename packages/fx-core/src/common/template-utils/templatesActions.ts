@@ -88,7 +88,7 @@ export const fetchTemplateZipFromSourceCode: ScaffoldAction = {
     //! This path only works in debug mode
     const templateSourceCodePath = path.resolve(
       __dirname,
-      "../../../../",
+      "../../../../../",
       "templates",
       context.group,
       context.lang,

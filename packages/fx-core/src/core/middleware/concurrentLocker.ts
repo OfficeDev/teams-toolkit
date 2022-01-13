@@ -14,8 +14,8 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import { lock, unlock } from "proper-lockfile";
-import { FxCore, TOOLS } from "..";
-import { waitSeconds } from "../..";
+import { TOOLS } from "../..";
+import { waitSeconds } from "../../common/tools";
 import { sendTelemetryErrorEvent } from "../../common/telemetry";
 import { CallbackRegistry } from "../callback";
 import { CoreSource, InvalidProjectError, NoProjectOpenedError, PathNotExistError } from "../error";

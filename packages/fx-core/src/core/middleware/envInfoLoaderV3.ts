@@ -3,7 +3,7 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import { err, FxError, Inputs, ok, ProjectSettings, Result, v2, v3 } from "@microsoft/teamsfx-api";
-import { newEnvInfoV3 } from "..";
+import { newEnvInfoV3 } from "../tools";
 import { CoreHookContext } from "../..";
 import { LocalCrypto } from "../crypto";
 import { environmentManager } from "../environment";

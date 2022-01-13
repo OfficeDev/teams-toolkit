@@ -20,9 +20,7 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-import { createV2Context } from "..";
-import { CoreHookContext, FxCore } from "../..";
-import { readJson } from "../../common/fileUtils";
+import { createV2Context, FxCore } from "../..";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { LocalCrypto } from "../crypto";
 import {
@@ -33,6 +31,7 @@ import {
 } from "../error";
 import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo, validateSettings } from "../tools";
+import { CoreHookContext } from "./CoreHookContext";
 
 export const ProjectSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -86,7 +85,7 @@ export async function loadProjectSettings(
     const settingsFile = isMultiEnvEnabled
       ? path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName)
       : path.resolve(confFolderPath, "settings.json");
-    const projectSettings: ProjectSettings = await readJson(settingsFile);
+    const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     if (!projectSettings.projectId) {
       projectSettings.projectId = uuid.v4();
     }

@@ -19,29 +19,28 @@ import {
   EnvInfo,
   Json,
   v3,
+  PathNotExistError,
+  WriteFileError,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
 import * as dotenv from "dotenv";
-import {
-  dataNeedEncryption,
-  replaceTemplateWithUserData,
-  PathNotExistError,
-  serializeDict,
-  separateSecretData,
-  WriteFileError,
-  mapToJson,
-  objectToMap,
-  ProjectEnvNotExistError,
-  InvalidEnvConfigError,
-} from "..";
 import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { Component, sendTelemetryErrorEvent, TelemetryEvent } from "../common/telemetry";
-import { compileHandlebarsTemplateString } from "../common";
+import {
+  compileHandlebarsTemplateString,
+  dataNeedEncryption,
+  mapToJson,
+  objectToMap,
+  replaceTemplateWithUserData,
+  separateSecretData,
+  serializeDict,
+} from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
 import { ConstantString } from "../common/constants";
+import { CoreSource, InvalidEnvConfigError, ProjectEnvNotExistError } from "./error";
 
 export interface EnvStateFiles {
   envState: string;
@@ -74,7 +73,7 @@ class EnvironmentManager {
     isV3 = false
   ): Promise<Result<EnvInfo | v3.EnvInfoV3, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(CoreSource, projectPath));
     }
 
     envName = envName ?? this.getDefaultEnvName();
@@ -122,7 +121,7 @@ class EnvironmentManager {
     envName?: string
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(CoreSource, projectPath));
     }
 
     const envConfigsFolder = this.getEnvConfigsFolder(projectPath);
@@ -136,7 +135,7 @@ class EnvironmentManager {
     try {
       await fs.writeFile(envConfigPath, JSON.stringify(envConfig, null, 4));
     } catch (error) {
-      return err(WriteFileError(error));
+      return err(new WriteFileError(CoreSource, error));
     }
 
     return ok(envConfigPath);
@@ -150,7 +149,7 @@ class EnvironmentManager {
     isV3?: boolean
   ): Promise<Result<string, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(CoreSource, projectPath));
     }
 
     const envStatesFolder = this.getEnvStatesFolder(projectPath);
@@ -171,7 +170,7 @@ class EnvironmentManager {
       await fs.writeFile(envFiles.envState, JSON.stringify(data, null, 4));
       await fs.writeFile(envFiles.userDataFile, serializeDict(secrets));
     } catch (error) {
-      return err(WriteFileError(error));
+      return err(new WriteFileError(CoreSource, error));
     }
 
     return ok(envFiles.envState);
@@ -179,7 +178,7 @@ class EnvironmentManager {
 
   public async listEnvConfigs(projectPath: string): Promise<Result<Array<string>, FxError>> {
     if (!(await fs.pathExists(projectPath))) {
-      return err(PathNotExistError(projectPath));
+      return err(new PathNotExistError(CoreSource, projectPath));
     }
 
     const envConfigsFolder = this.getEnvConfigsFolder(projectPath);

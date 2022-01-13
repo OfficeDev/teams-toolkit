@@ -12,6 +12,7 @@ import {
   ProjectSettingsFileName,
   SolutionContext,
   V1ManifestFileName,
+  v2,
   v3,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
@@ -21,6 +22,7 @@ import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { environmentManager } from "./environment";
 import crypto from "crypto";
 import * as os from "os";
+import { GlobalVars } from "./globalVars";
 
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
@@ -175,4 +177,16 @@ export function flattenConfigJson(configJson: Json): Json {
   }
 
   return config;
+}
+
+export function createV2Context(projectSettings: ProjectSettings): v2.Context {
+  const context: v2.Context = {
+    userInteraction: GlobalVars.ui,
+    logProvider: GlobalVars.logger,
+    telemetryReporter: TOOLS.telemetryReporter!,
+    cryptoProvider: new LocalCrypto(projectSettings.projectId),
+    permissionRequestProvider: TOOLS.permissionRequest,
+    projectSetting: projectSettings,
+  };
+  return context;
 }

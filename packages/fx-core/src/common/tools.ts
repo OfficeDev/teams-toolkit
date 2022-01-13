@@ -3,6 +3,7 @@
 import {
   AppPackageFolderName,
   AzureAccountProvider,
+  AzureSolutionSettings,
   ConfigFolderName,
   ConfigMap,
   err,
@@ -10,47 +11,35 @@ import {
   Json,
   ok,
   OptionItem,
+  ProjectSettings,
   Result,
   returnSystemError,
   returnUserError,
   SubscriptionInfo,
   SystemError,
   UserInteraction,
-  ProjectSettings,
-  AzureSolutionSettings,
-  SolutionContext,
-  v3,
-  PluginContext,
 } from "@microsoft/teamsfx-api";
-import AdmZip from "adm-zip";
-import axios, { AxiosResponse } from "axios";
+import axios from "axios";
 import { exec, ExecOptions } from "child_process";
+import * as crypto from "crypto";
 import * as fs from "fs-extra";
-import { glob } from "glob";
 import * as Handlebars from "handlebars";
+import Mustache from "mustache";
+import * as os from "os";
 import * as path from "path";
 import { promisify } from "util";
 import * as uuid from "uuid";
+import { FailedToParseResourceIdError } from "../core/error";
 import { getResourceFolder } from "../folder";
+import { SolutionError } from "../plugins/solution/fx-solution/constants";
 import {
   ConstantString,
   FeatureFlagName,
-  TeamsClientId,
   OfficeClientId,
   OutlookClientId,
   ResourcePlugins,
+  TeamsClientId,
 } from "./constants";
-import * as crypto from "crypto";
-import * as os from "os";
-import { FailedToParseResourceIdError, FetchSampleError } from "../core/error";
-import {
-  GLOBAL_CONFIG,
-  RESOURCE_GROUP_NAME,
-  SolutionError,
-  SUBSCRIPTION_ID,
-} from "../plugins/solution/fx-solution/constants";
-import Mustache from "mustache";
-import { CloudResource } from "@microsoft/teamsfx-api/build/v3";
 import {
   Component,
   sendTelemetryErrorEvent,

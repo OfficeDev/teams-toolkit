@@ -3,14 +3,12 @@
 
 import { Middleware, NextFunction } from "@feathersjs/hooks/lib";
 import {
-  ConfigMap,
   EnvInfo,
   err,
   FxError,
   Inputs,
   Json,
   ok,
-  Platform,
   ProjectSettings,
   QTreeNode,
   Result,
@@ -21,31 +19,30 @@ import {
   UserCancelError,
 } from "@microsoft/teamsfx-api";
 import { TOOLS } from "..";
-import { CoreHookContext, FxCore } from "../..";
-import {
-  NoProjectOpenedError,
-  ProjectEnvNotExistError,
-  ProjectSettingsUndefinedError,
-} from "../error";
-import { LocalCrypto } from "../crypto";
-import { environmentManager } from "../environment";
+import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
 import {
   DEFAULT_FUNC_NAME,
   GLOBAL_CONFIG,
   PluginNames,
   PROGRAMMING_LANGUAGE,
 } from "../../plugins/solution/fx-solution/constants";
+import { LocalCrypto } from "../crypto";
+import { environmentManager } from "../environment";
+import {
+  NoProjectOpenedError,
+  ProjectEnvNotExistError,
+  ProjectSettingsUndefinedError,
+} from "../error";
+import { PermissionRequestFileProvider } from "../permissionRequest";
 import {
   getQuestionNewTargetEnvironmentName,
   QuestionSelectSourceEnvironment,
   QuestionSelectTargetEnvironment,
 } from "../question";
-import { desensitize } from "./questionModel";
-import { shouldIgnored } from "./projectSettingsLoader";
-import { PermissionRequestFileProvider } from "../permissionRequest";
 import { newEnvInfo } from "../tools";
-import { mapToJson } from "../../common";
-import { legacyConfig2EnvState } from "../../plugins/resource/utils4v2";
+import { CoreHookContext } from "./CoreHookContext";
+import { shouldIgnored } from "./projectSettingsLoader";
+import { desensitize } from "./questionModel";
 
 const newTargetEnvNameOption = "+ new environment";
 const lastUsedMark = " (last used)";
@@ -285,7 +282,6 @@ export async function askNewEnvironment(
   inputs: Inputs
 ): Promise<CreateEnvCopyInput | undefined> {
   const getQuestionRes = await getQuestionsForNewEnv(inputs, lastUsedEnv);
-  const core = ctx.self as FxCore;
   if (getQuestionRes.isErr()) {
     TOOLS.logProvider.error(
       `[core:env] failed to get questions for target environment: ${getQuestionRes.error.message}`

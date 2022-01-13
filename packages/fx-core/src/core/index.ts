@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { HookContext, hooks } from "@feathersjs/hooks";
+import { hooks } from "@feathersjs/hooks";
 import {
   AppPackageFolderName,
   ArchiveFolderName,
@@ -16,8 +16,6 @@ import {
   FxError,
   InputConfigsFolderName,
   Inputs,
-  Json,
-  LogProvider,
   ok,
   OptionItem,
   Platform,
@@ -25,7 +23,6 @@ import {
   ProjectSettings,
   QTreeNode,
   Result,
-  Solution,
   SolutionContext,
   Stage,
   StatesFolderName,
@@ -41,7 +38,7 @@ import { assign } from "lodash";
 import * as path from "path";
 import { Container } from "typedi";
 import * as uuid from "uuid";
-import { environmentManager } from "..";
+import { environmentManager } from "./environment";
 import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
@@ -126,25 +123,12 @@ import {
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
 import { newEnvInfo } from "./tools";
+import { CoreHookContext } from "./middleware/CoreHookContext";
+import { GlobalVars, setTools } from "./globalVars";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
 const corePackage = require("../../package.json");
-
-export interface CoreHookContext extends HookContext {
-  projectSettings?: ProjectSettings;
-  solutionContext?: SolutionContext;
-  solution?: Solution;
-  //for v2 api
-  contextV2?: v2.Context;
-  solutionV2?: v2.SolutionPlugin;
-  envInfoV2?: v2.EnvInfoV2;
-  localSettings?: Json;
-
-  //for v3
-  envInfoV3?: v3.EnvInfoV3;
-  solutionV3?: v3.ISolution;
-}
 
 function featureFlagEnabled(flagName: string): boolean {
   const flag = process.env[flagName];
@@ -155,34 +139,11 @@ function featureFlagEnabled(flagName: string): boolean {
   }
 }
 
-export function isV3() {
-  return featureFlagEnabled(FeatureFlagName.APIV3);
-}
-
-// On VS calling CLI, interactive questions need to be skipped.
-export function isVsCallingCli() {
-  return featureFlagEnabled(FeatureFlagName.VSCallingCLI);
-}
-
-export function isVSProject(projectSettings: ProjectSettings) {
-  return projectSettings.programmingLanguage === "csharp";
-}
-
-export let Logger: LogProvider;
-export let currentStage: Stage;
-export let TOOLS: Tools;
-export function setTools(tools: Tools) {
-  TOOLS = tools;
-}
 export class FxCore implements v3.ICore {
-  tools: Tools;
   isFromSample?: boolean;
   settingsVersion?: string;
-
   constructor(tools: Tools) {
-    this.tools = tools;
-    TOOLS = tools;
-    Logger = tools.logProvider;
+    setTools(tools);
     TelemetryReporterInstance.telemetryReporter = tools.telemetryReporter;
   }
 
@@ -1659,18 +1620,6 @@ export function newProjectSettings(): ProjectSettings {
     },
   };
   return projectSettings;
-}
-
-export function createV2Context(projectSettings: ProjectSettings): v2.Context {
-  const context: v2.Context = {
-    userInteraction: TOOLS.ui,
-    logProvider: TOOLS.logProvider,
-    telemetryReporter: TOOLS.telemetryReporter!,
-    cryptoProvider: new LocalCrypto(projectSettings.projectId),
-    permissionRequestProvider: TOOLS.permissionRequest,
-    projectSetting: projectSettings,
-  };
-  return context;
 }
 
 export function undefinedName(objs: any[], names: string[]) {

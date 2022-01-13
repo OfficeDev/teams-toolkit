@@ -1,7 +1,15 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { Platform, ProjectSettings, v2 } from "@microsoft/teamsfx-api";
+import {
+  FxError,
+  ok,
+  Platform,
+  ProjectSettings,
+  Result,
+  TeamsAppManifest,
+  v2,
+} from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
 import * as os from "os";
@@ -12,12 +20,45 @@ import {
   addResource,
   getQuestionsForAddResource,
 } from "../../../src/plugins/solution/fx-solution/v3/addResource";
-import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import {
+  BuiltInResourcePluginNames,
+  TeamsFxAzureSolutionNameV3,
+} from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, randomAppName } from "../../core/utils";
 import { MockedV2Context } from "../solution/util";
 import { MockResourcePluginNames } from "./mockPlugins";
-
+import sinon from "sinon";
+import { Container } from "typedi";
+import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
 describe("SolutionV3 - addResource", () => {
+  const sandbox = sinon.createSandbox();
+  beforeEach(async () => {
+    const appStudio = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    sandbox
+      .stub<any, any>(appStudio, "loadManifest")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath
+        ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> => {
+          return ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() });
+        }
+      );
+    sandbox
+      .stub<any, any>(appStudio, "saveManifest")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
+        ): Promise<Result<any, FxError>> => {
+          return ok({ local: {}, remote: {} });
+        }
+      );
+  });
+  afterEach(async () => {
+    sandbox.restore();
+  });
   it("addResource", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",

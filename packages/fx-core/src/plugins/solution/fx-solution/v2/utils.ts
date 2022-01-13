@@ -182,7 +182,7 @@ export async function checkWhetherLocalDebugM365TenantMatches(
         getStrings().solution.LocalDebugTenantConfirmNotice,
         localDebugTenantId,
         m365UserAccount.value,
-        isMultiEnvEnabled() ? "localSettings.json" : "default.userdata"
+        "localSettings.json"
       );
 
       return err(

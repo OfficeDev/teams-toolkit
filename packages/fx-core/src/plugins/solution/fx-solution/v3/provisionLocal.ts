@@ -6,12 +6,14 @@ import {
   QTreeNode,
   Result,
   TokenProvider,
+  UserError,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import { Container } from "typedi";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/local/constants";
+import { getStrings } from "../../../../common/tools";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
 import { executeConcurrently } from "../v2/executor";
@@ -20,6 +22,9 @@ import {
   ensurePermissionRequest,
   loadTeamsAppTenantIdForLocal,
 } from "../v2/utils";
+import { getM365TenantId } from "./provision";
+import * as util from "util";
+import { SolutionError } from "../constants";
 
 export async function getQuestionsForLocalProvision(
   ctx: v2.Context,
@@ -35,36 +40,32 @@ export async function provisionLocalResources(
   localSettings: Json,
   tokenProvider: TokenProvider
 ): Promise<Result<Json, FxError>> {
-  if (ctx.permissionRequestProvider === undefined) {
-    ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
-  }
-  const azureSolutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-  // TODO permission.json is required?
-  // const result = await ensurePermissionRequest(
-  //   azureSolutionSettings,
-  //   ctx.permissionRequestProvider
-  // );
-  // if (result.isErr()) {
-  //   return err(result.error);
-  // }
-
-  // Just to trigger M365 login before the concurrent execution of localDebug.
-  // Because concurrent execution of localDebug may getAccessToken() concurrently, which
-  // causes 2 M365 logins before the token caching in common lib takes effect.
-  await tokenProvider.appStudioToken.getAccessToken();
-
+  const solutionSetting = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
+  // check M365 tenantId match
   const v2localSettings = localSettings as v2.LocalSettings;
-  // Pop-up window to confirm if local debug in another tenant
-  const localDebugTenantId = v2localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId];
-  const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
-    localDebugTenantId,
-    tokenProvider.appStudioToken
-  );
-  if (m365TenantMatches.isErr()) {
-    return err(m365TenantMatches.error);
+  const tenantIdInConfig = v2localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId];
+  const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);
+  if (tenantIdInTokenRes.isErr()) {
+    return err(tenantIdInTokenRes.error);
+  }
+  const tenantIdInToken = tenantIdInTokenRes.value;
+  if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
+    const errorMessage: string = util.format(
+      getStrings().solution.LocalDebugTenantConfirmNotice,
+      tenantIdInConfig,
+      tenantIdInToken,
+      "localSettings.json"
+    );
+    return err(
+      new UserError(SolutionError.CannotLocalDebugInDifferentTenant, errorMessage, "Solution")
+    );
+  }
+  if (!tenantIdInConfig) {
+    v2localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = tenantIdInToken;
   }
 
-  const plugins: v3.ResourcePlugin[] = azureSolutionSettings.activeResourcePlugins.map((n) =>
+  // provision resources for local debug
+  const plugins: v3.ResourcePlugin[] = solutionSetting.activeResourcePlugins.map((n) =>
     Container.get<v3.ResourcePlugin>(n)
   );
   const provisionLocalResourceThunks = plugins
@@ -120,15 +121,6 @@ export async function provisionLocalResources(
   //     }
   //   }
   // }
-
-  const parseTenantIdResult = loadTeamsAppTenantIdForLocal(
-    localSettings as v2.LocalSettings,
-    await tokenProvider.appStudioToken.getJsonObject()
-  );
-  if (parseTenantIdResult.isErr()) {
-    return err(parseTenantIdResult.error);
-  }
-
   const configureLocalResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureLocalResource))
     .map((plugin) => {

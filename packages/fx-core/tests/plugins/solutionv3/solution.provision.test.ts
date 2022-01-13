@@ -109,6 +109,11 @@ describe("SolutionV3 - provision", () => {
         return [mockSub];
       });
     sandbox
+      .stub<any, any>(mockedTokenProvider.appStudioToken, "getJsonObject")
+      .callsFake(async (showDialog?: boolean): Promise<Record<string, unknown> | undefined> => {
+        return { tid: "mock-tenant-id" };
+      });
+    sandbox
       .stub<any, any>(ctx.userInteraction, "showMessage")
       .callsFake(
         async (
@@ -123,11 +128,14 @@ describe("SolutionV3 - provision", () => {
 
     const envInfoV3: v3.EnvInfoV3 = {
       envName: "dev",
-      state: { solution: { ...mockSub } },
+      state: { solution: { ...mockSub }, "fx-resource-appstudio": {} },
       config: {},
     };
     const res = await provisionResources(ctx, inputs, envInfoV3, mockedTokenProvider);
     assert.isTrue(res.isOk());
+    if (res.isOk()) {
+      assert.isTrue(res.value.state["fx-resource-appstudio"].tenantId === "mock-tenant-id");
+    }
   });
 
   it("getQuestionsForProvision", async () => {

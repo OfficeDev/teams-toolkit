@@ -129,3 +129,9 @@ export const LocalSettingsBotKeys = Object.freeze({
   BotDomain: "botDomain",
   BotEndpoint: "botEndpoint",
 });
+
+export class LocalDebugCertificate {
+  public static readonly CertFileName: string = "localhost.crt";
+  public static readonly KeyFileName: string = "localhost.key";
+  public static readonly FriendlyName: string = "TeamsFx Development Certificate";
+}

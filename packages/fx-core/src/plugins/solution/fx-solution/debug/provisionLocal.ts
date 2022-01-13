@@ -34,7 +34,7 @@ import {
 } from "../../../../common/local/localEnvProvider";
 import { prepareLocalAuthService } from "./util/localService";
 import { getAllowedAppIds } from "../../../../common/tools";
-import { LocalCertificateManager } from "./util/certificate";
+import { LocalCertificateManager } from "../../../../common/local/localCertificateManager";
 
 export async function setupLocalDebugSettings(
   ctx: v2.Context,
@@ -235,7 +235,10 @@ export async function configLocalDebugSettings(
             localSettings.frontend.trustDevCert = trustDevCert;
           }
 
-          const certManager = new LocalCertificateManager(ctx, inputs);
+          const certManager = new LocalCertificateManager(ctx.userInteraction, ctx.logProvider);
+
+          // TODO: remove setup local certificate
+          // const localCert = certManager.getCertificate();
           const localCert = await certManager.setupCertificate(trustDevCert);
           if (localCert) {
             localSettings.frontend.sslCertFile = localCert.certPath;

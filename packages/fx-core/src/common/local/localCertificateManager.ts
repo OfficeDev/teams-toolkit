@@ -3,19 +3,12 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import {
-  ConfigFolderName,
-  Inputs,
-  LogProvider,
-  Platform,
-  UserInteraction,
-  v2,
-} from "@microsoft/teamsfx-api";
+import { ConfigFolderName, LogProvider, UserInteraction } from "@microsoft/teamsfx-api";
 import { asn1, md, pki } from "node-forge";
 import * as os from "os";
 import { v4 as uuidv4 } from "uuid";
 
-import { LocalDebugCertificate } from "../constants";
+import { LocalDebugCertificate } from "./constants";
 import * as ps from "./process";
 
 const installText = "Install";
@@ -33,19 +26,17 @@ const confirmMessage =
 export interface LocalCertificate {
   certPath: string;
   keyPath: string;
-  isTrusted: boolean;
+  isTrusted?: boolean;
 }
 
 export class LocalCertificateManager {
   private readonly ui?: UserInteraction;
-  private readonly platform?: Platform;
   private readonly logger?: LogProvider;
   private readonly certFolder: string;
 
-  constructor(ctx: v2.Context | undefined, inputs: Inputs) {
-    this.ui = ctx?.userInteraction;
-    this.logger = ctx?.logProvider;
-    this.platform = inputs.platform;
+  constructor(ui?: UserInteraction, logger?: LogProvider) {
+    this.ui = ui;
+    this.logger = logger;
     this.certFolder = `${os.homedir()}/.${ConfigFolderName}/certificate`;
   }
 
@@ -58,11 +49,8 @@ export class LocalCertificateManager {
    * - Add to cert store if not trusted (friendly name as well)
    */
   public async setupCertificate(needTrust: boolean): Promise<LocalCertificate> {
-    const certFilePath = `${this.certFolder}/${LocalDebugCertificate.CertFileName}`;
-    const keyFilePath = `${this.certFolder}/${LocalDebugCertificate.KeyFileName}`;
     const localCert: LocalCertificate = {
-      certPath: certFilePath,
-      keyPath: keyFilePath,
+      ...this.getCertificate(),
       isTrusted: false,
     };
     let certThumbprint: string | undefined = undefined;
@@ -70,9 +58,9 @@ export class LocalCertificateManager {
 
     this.logger?.info("Detecting/Verifying local certificate.");
 
-    if ((await fs.pathExists(certFilePath)) && (await fs.pathExists(keyFilePath))) {
-      const certContent = await fs.readFile(certFilePath, { encoding: "utf8" });
-      const keyContent = await fs.readFile(keyFilePath, { encoding: "utf8" });
+    if ((await fs.pathExists(localCert.certPath)) && (await fs.pathExists(localCert.keyPath))) {
+      const certContent = await fs.readFile(localCert.certPath, { encoding: "utf8" });
+      const keyContent = await fs.readFile(localCert.keyPath, { encoding: "utf8" });
       const verifyRes = this.verifyCertificateContent(certContent, keyContent);
       if (verifyRes[1]) {
         certThumbprint = verifyRes[0];
@@ -81,7 +69,7 @@ export class LocalCertificateManager {
 
     if (!certThumbprint) {
       // generate cert and key
-      certThumbprint = await this.generateCertificate(certFilePath, keyFilePath);
+      certThumbprint = await this.generateCertificate(localCert.certPath, localCert.keyPath);
     }
 
     if (needTrust) {
@@ -90,7 +78,7 @@ export class LocalCertificateManager {
         localCert.isTrusted = true;
       } else {
         localCert.isTrusted = await this.trustCertificate(
-          certFilePath,
+          localCert.certPath,
           certThumbprint,
           LocalDebugCertificate.FriendlyName
         );
@@ -98,6 +86,15 @@ export class LocalCertificateManager {
     }
 
     return localCert;
+  }
+
+  public getCertificate(): LocalCertificate {
+    const certFilePath = `${this.certFolder}/${LocalDebugCertificate.CertFileName}`;
+    const keyFilePath = `${this.certFolder}/${LocalDebugCertificate.KeyFileName}`;
+    return {
+      certPath: certFilePath,
+      keyPath: keyFilePath,
+    };
   }
 
   private async generateCertificate(certFile: string, keyFile: string): Promise<string> {
@@ -318,22 +315,6 @@ export class LocalCertificateManager {
       // treat any error as install failure, to not block the main progress
       this.logger?.warning(`Failed to install certificate. Error: ${error}`);
       return false;
-    }
-  }
-
-  private showWarningMessage() {
-    if (this.ui) {
-      if (this.platform === Platform.CLI) {
-        // no user interaction for CLI
-        this.ui.showMessage("warn", warningMessage, false);
-      } else {
-        this.ui.showMessage("warn", warningMessage, false, learnMoreText).then((result) => {
-          const userSelected = result.isOk() ? result.value : undefined;
-          if (userSelected === learnMoreText) {
-            this.ui!.openUrl(learnMoreUrl);
-          }
-        });
-      }
     }
   }
 

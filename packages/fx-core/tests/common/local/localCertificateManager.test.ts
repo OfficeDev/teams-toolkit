@@ -6,15 +6,13 @@ import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { asn1, md, pki } from "node-forge";
 import * as sinon from "sinon";
-import * as uuid from "uuid";
 
 import * as fs from "fs-extra";
 import os from "os";
 import * as path from "path";
 
-import { LocalCertificateManager } from "../../../../../src/plugins/solution/fx-solution/debug/util/certificate";
-import { ConfigFolderName, Platform } from "@microsoft/teamsfx-api";
-import { MockedV2Context } from "../../util";
+import { LocalCertificateManager } from "../../../src/common/local/localCertificateManager";
+import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
 
@@ -41,27 +39,7 @@ describe("certificate", () => {
       sinon.stub(os, "type").returns("Linux");
 
       fs.emptyDirSync(fakeHomeDir);
-      const projectSetting = {
-        appName: "",
-        projectId: uuid.v4(),
-        solutionSettings: {
-          name: "",
-          version: "",
-          activeResourcePlugins: [
-            "fx-resource-aad-app-for-teams",
-            "fx-resource-simple-auth",
-            "fx-resource-frontend-hosting",
-            "fx-resource-function",
-          ],
-        },
-        programmingLanguage: "typescript",
-      };
-      const inputs = {
-        platform: Platform.VSCode,
-        projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
-      };
-      const v2Context = new MockedV2Context(projectSetting);
-      certManager = new LocalCertificateManager(v2Context, inputs);
+      certManager = new LocalCertificateManager();
     });
 
     afterEach(() => {

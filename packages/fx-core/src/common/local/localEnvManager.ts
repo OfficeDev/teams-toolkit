@@ -11,6 +11,7 @@ import {
   ProjectSettingsFileName,
   TelemetryReporter,
   UserError,
+  UserInteraction,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -24,14 +25,17 @@ import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
 import { DepsType } from "../deps-checker/depsChecker";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
+import { LocalCertificateManager } from "./localCertificateManager";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
   private readonly telemetry: TelemetryReporter | undefined;
+  private readonly ui: UserInteraction | undefined;
 
-  constructor(logger?: LogProvider, telemetry?: TelemetryReporter) {
+  constructor(logger?: LogProvider, telemetry?: TelemetryReporter, ui?: UserInteraction) {
     this.logger = logger;
     this.telemetry = telemetry;
+    this.ui = ui;
   }
 
   public getActiveDependencies(projectSettings: ProjectSettings): DepsType[] {
@@ -122,6 +126,18 @@ export class LocalEnvManager {
         throw ReadFileError(error);
       }
     });
+  }
+
+  public async resolveLocalCertificate(trustDevCert: boolean): Promise<boolean> {
+    try {
+      const certManager = new LocalCertificateManager(this.ui, this.logger);
+      const localCert = await certManager.setupCertificate(trustDevCert);
+      return !!localCert.isTrusted;
+    } catch (error: any) {
+      // do not break if cert error
+      this.logger?.warning(`Failed to setup local certificate. ${error?.message}`);
+      return false;
+    }
   }
 
   // Retry logic when reading project config files in case of read-write conflict

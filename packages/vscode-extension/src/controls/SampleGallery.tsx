@@ -1,5 +1,6 @@
 import * as React from "react";
 import { Icon, Stack, Image, PrimaryButton, Label } from "@fluentui/react";
+import { VSCodeButton, VSCodeTag } from "./webviewUiToolkit";
 import "./SampleGallery.scss";
 import { Commands } from "./Commands";
 import FAQPlus from "../../media/faq-plus.gif";
@@ -178,7 +179,7 @@ class SampleAppCard extends React.Component<any, any> {
         <div className="section" aria-labelledby="tagLabel">
           {this.props.tags &&
             this.props.tags.map((value: string) => {
-              return <p className="tag">{value}</p>;
+              return <VSCodeTag className="tag">{value}</VSCodeTag>;
             })}
         </div>
         <div className="estimation-time">
@@ -229,15 +230,16 @@ class SampleAppCard extends React.Component<any, any> {
         </label>
         <h3>{this.props.description}</h3>
         <div className="section buttons">
-          <PrimaryButton
-            text="View on Github"
+          <VSCodeButton
             className="right-aligned"
             onClick={() => {
               this.viewSampleApp(this.props.sampleAppFolder, this.props.baseUrl);
             }}
-          />
-          <PrimaryButton
-            text="Create"
+          >
+            View on Github
+          </VSCodeButton>
+
+          <VSCodeButton
             className="right-aligned"
             onClick={() => {
               this.cloneSampleApp(
@@ -246,7 +248,9 @@ class SampleAppCard extends React.Component<any, any> {
                 this.props.sampleAppFolder
               );
             }}
-          />
+          >
+            Create
+          </VSCodeButton>
         </div>
       </div>
     );

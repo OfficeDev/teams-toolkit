@@ -61,17 +61,7 @@
     }
 
     .tag {
-      background-color: var(--vscode-editor-inactiveSelectionBackground);
-      border-radius: 20px;
-      width: fit-content;
-      padding: 3px 8px 3px 8px;
-      font-size: 9px;
-      line-height: 11px;
-      align-items: center;
-      text-align: center;
-      color: var(--vscode-titleBar-activeForeground);
       margin: 8px 0px 0px 8px;
-      white-space: nowrap;
     }
 
     .estimation-time{

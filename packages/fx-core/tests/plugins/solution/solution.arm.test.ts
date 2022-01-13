@@ -799,8 +799,7 @@ describe("Deploy ARM Template to Azure", () => {
     // Assert
     chai.assert.isTrue(result.isErr());
     const error = (result as Err<void, FxError>).error;
-    chai.assert.strictEqual(error.name, "FailedToDeployArmTemplatesToAzure");
-    chai.assert.strictEqual(error.innerError.name, "ParameterFileNotExist");
+    chai.assert.strictEqual(error.name, "ParameterFileNotExist");
     expect(error.message)
       .to.be.a("string")
       .that.contains("azure.parameters.default.json does not exist.");

@@ -5,7 +5,6 @@ import path from "path";
 
 import { SqlValidator } from "../../commonlib";
 import {
-  execAsync,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
@@ -15,22 +14,21 @@ import {
   createResourceGroup,
   deleteResourceGroupByName,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
-import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
-import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
-import { Capability, Resource, ResourceToDeploy } from "../../commonlib/constants";
+import { Capability, Resource } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 import { getUuid } from "../../commonlib/utilities";
 
 describe("Deploy to customized resource group", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
-  let appName: string, projectPath: string;
+  let appName: string, projectPath: string, env: string;
 
   beforeEach(async () => {
     appName = getUniqueAppName();
     projectPath = path.resolve(testFolder, appName);
+    env = environmentManager.getDefaultEnvName();
   });
 
   afterEach(async () => {
@@ -54,7 +52,7 @@ describe("Deploy to customized resource group", function () {
     );
 
     // Provision
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(
       projectPath,
@@ -63,10 +61,7 @@ describe("Deploy to customized resource group", function () {
 
     // Assert
     {
-      const context = await readContextMultiEnv(
-        projectPath,
-        environmentManager.getDefaultEnvName()
-      );
+      const context = await readContextMultiEnv(projectPath, env);
 
       // Validate sql
       await SqlValidator.init(context);

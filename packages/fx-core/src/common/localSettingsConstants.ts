@@ -23,6 +23,7 @@ export const LocalSettingsAuthKeys = Object.freeze({
 export const LocalSettingsFrontendKeys = Object.freeze({
   TabDomain: "tabDomain",
   TabEndpoint: "tabEndpoint",
+  TabIndexPath: "tabIndexPath",
   Browser: "browser",
   Https: "https",
   TrustDevCert: "trustDevCert",

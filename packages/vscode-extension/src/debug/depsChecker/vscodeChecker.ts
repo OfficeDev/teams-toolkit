@@ -29,7 +29,7 @@ export class VSCodeDepsChecker {
   }
 
   public async resolve(deps: DepsType[]): Promise<boolean> {
-    const enabledDeps = await this.getEnabledDeps(deps);
+    const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(deps);
     const depsStatus = await this.ensure(enabledDeps);
 
     const shouldContinue = await this.handleLinux(depsStatus);
@@ -49,10 +49,10 @@ export class VSCodeDepsChecker {
     return true;
   }
 
-  private async getEnabledDeps(deps: DepsType[]): Promise<DepsType[]> {
+  public static async getEnabledDeps(deps: DepsType[]): Promise<DepsType[]> {
     const res: DepsType[] = [];
     for (const dep of deps) {
-      if (await this.isEnabled(dep)) {
+      if (await VSCodeDepsChecker.isEnabled(dep)) {
         res.push(dep);
       }
     }
@@ -115,7 +115,7 @@ export class VSCodeDepsChecker {
     this.telemetry.sendEvent(DepsCheckerEvent.clickCancel);
   }
 
-  private async isEnabled(dep: DepsType): Promise<boolean> {
+  private static async isEnabled(dep: DepsType): Promise<boolean> {
     switch (dep) {
       case DepsType.AzureNode:
       case DepsType.SpfxNode:

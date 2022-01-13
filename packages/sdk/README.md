@@ -33,29 +33,34 @@ Install the TeamsFx SDK for TypeScript/JavaScript with `npm`:
 npm install @microsoft/teamsfx
 ```
 
-### Create and authenticate a `MicrosoftGraphClient`
+### Create and authenticate a service like `MicrosoftGraphClient`
 
 To create a graph client object to access the Microsoft Graph API, you will need the credential to do authentication. The SDK provides several credential classes to choose that meets various requirements.
 
-Please note that you need to load configuration before using any credentials.
+By default the SDK will use environment variables, you can also override it when creating instances.
 
-- In browser environment, you need to explicitly pass in the config parameters. The scaffolded React project has provided environment variables to use.
+- In browser environment, the scaffolded React project has provided environment variables to use.
+  * REACT_APP_AUTHORITY_HOST
+  * REACT_APP_TENANT_ID
+  * REACT_APP_CLIENT_ID
+  * REACT_APP_TEAMSFX_ENDPOINT
+  * REACT_APP_START_LOGIN_PAGE_URL
+  * M365_APPLICATION_ID_URI
 
-```ts
-loadConfiguration({
-  authentication: {
-    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID,
-  },
-});
-```
-
-- In NodeJS environment like Azure Function, you can just call `loadConfiguration`. It will load from environment variables by default.
-
-```ts
-loadConfiguration();
-```
+- In NodeJS environment like Azure Function, following variables are provided as environment variables.
+  * M365_AUTHORITY_HOST
+  * M365_TENANT_ID
+  * M365_CLIENT_ID
+  * M365_CLIENT_SECRET
+  * SIMPLE_AUTH_ENDPOINT
+  * INITIATE_LOGIN_ENDPOINT
+  * M365_APPLICATION_ID_URI
+  * API_ENDPOINT
+  * SQL_ENDPOINT
+  * SQL_USER_NAME
+  * SQL_PASSWORD
+  * SQL_DATABASE_NAME
+  * IDENTITY_ID
 
 #### Using Teams App User Credential
 
@@ -64,13 +69,12 @@ Use the snippet below:
 **Note:** You can only use this credential class in browser application like Teams Tab App.
 
 ```ts
-loadConfiguration({
-  authentication: {
-    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID,
-  },
-});
+// Equivalent to:
+// const credential = new TeamsUserCredential({
+//    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+//    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
+//    clientId: process.env.REACT_APP_CLIENT_ID,
+// });
 const credential = new TeamsUserCredential();
 const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
 const profile = await graphClient.api("/me").get();
@@ -82,7 +86,12 @@ It doesn't require the interaction with Teams App user. You can call Microsoft G
 Use the snippet below:
 
 ```ts
-loadConfiguration();
+// Equivalent to:
+// const credential = new M365TenantCredential({
+//    clientId: process.env.M365_CLIENT_ID,
+//    clientSecret: process.env.M365_CLIENT_SECRET,
+//    tenantId: process.env.M365_TENANT_ID,
+// });
 const credential = new M365TenantCredential();
 const graphClient = createMicrosoftGraphClient(credential);
 const profile = await graphClient.api("/users/{object_id_of_another_people}").get();
@@ -162,13 +171,6 @@ The following sections provide several code snippets covering some of the most c
 Use `TeamsUserCredential` and `createMicrosoftGraphClient`.
 
 ```ts
-loadConfiguration({
-  authentication: {
-    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID,
-  },
-});
 const credential: any = new TeamsUserCredential();
 const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]);
 const profile = await graphClient.api("/me").get();
@@ -179,17 +181,10 @@ const profile = await graphClient.api("/me").get();
 Use `axios` library to make HTTP request to Azure Function.
 
 ```ts
-loadConfiguration({
-  authentication: {
-    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-    clientId: process.env.REACT_APP_CLIENT_ID,
-  },
-});
 const credential: any = new TeamsUserCredential();
 const token = credential.getToken(""); // Get SSO token for the user
 // Call API hosted in Azure Functions on behalf of user
-const apiConfig = getResourceConfiguration(ResourceType.API);
+const apiConfig = getApiConfigFromEnv();
 const response = await axios.default.get(apiConfig.endpoint + "api/httptrigger1", {
   headers: {
     authorization: "Bearer " + token,
@@ -203,7 +198,12 @@ Use `tedious` library to access SQL and leverage `DefaultTediousConnectionConfig
 Apart from `tedious`, you can also compose connection config of other SQL libraries based on the result of `sqlConnectionConfig.getConfig()`.
 
 ```ts
-loadConfiguration();
+// Equivalent to:
+// const sqlConnectConfig = new DefaultTediousConnectionConfiguration({
+//    sqlServerEndpoint: process.env.SQL_ENDPOINT,
+//    sqlUsername: process.env.SQL_USER_NAME,
+//    sqlPassword: process.env.SQL_PASSWORD,
+// });
 const sqlConnectConfig = new DefaultTediousConnectionConfiguration();
 const config = await sqlConnectConfig.getConfig();
 const connection = new Connection(config);
@@ -217,14 +217,13 @@ connection.on("connect", (error) => {
 ### Use certificate-based authentication in Azure Function
 
 ```ts
-loadConfiguration({
-  authentication: {
-    clientId: process.env.M365_CLIENT_ID,
-    certificateContent: "The content of a PEM-encoded public/private key certificate",
-    authorityHost: process.env.M365_AUTHORITY_HOST,
-    tenantId: process.env.M365_TENANT_ID,
-  },
-});
+const authConfig = {
+  clientId: process.env.M365_CLIENT_ID,
+  certificateContent: "The content of a PEM-encoded public/private key certificate",
+  authorityHost: process.env.M365_AUTHORITY_HOST,
+  tenantId: process.env.M365_TENANT_ID,
+};
+const credential = new M365TenantCredential(authConfig);
 ```
 
 ### Use Graph API in Bot application
@@ -240,7 +239,6 @@ const convoState = new ConversationState(new MemoryStorage());
 const dialogState = convoState.createProperty("dialogState");
 const dialogs = new DialogSet(dialogState);
 
-loadConfiguration();
 dialogs.add(
   new TeamsBotSsoPrompt("TeamsBotSsoPrompt", {
     scopes: ["User.Read"],

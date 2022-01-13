@@ -22,7 +22,6 @@ import { createConfidentialClientApplication } from "../util/utils.node";
  *
  * @example
  * ```typescript
- * loadConfiguration(); // load configuration from environment variables
  * const credential = new OnBehalfOfUserCredential(ssoToken);
  * ```
  *

@@ -38,26 +38,25 @@ export class TeamsUserCredential implements TokenCredential {
 
   /**
    * Constructor of TeamsUserCredential.
-   * Developer need to call loadConfiguration(config) before using this class.
-   * 
+   *
    * @example
    * ```typescript
    * const config = {
-   *  authentication: {
-   *    runtimeConnectorEndpoint: "https://xxx.xxx.com",
-   *    initiateLoginEndpoint: "https://localhost:3000/auth-start.html",
-   *    clientId: "xxx"
-   *   }
-   * }
-     loadConfiguration(config); // No default config from environment variables, developers must provide the config object.
-     const credential = new TeamsUserCredential(["https://graph.microsoft.com/User.Read"]);
+   *  simpleAuthEndpoint: "https://xxx.xxx.com",
+   *  initiateLoginEndpoint: "https://localhost:3000/auth-start.html",
+   *  clientId: "xxx"
+   * };
+   * // Use default configuration provided by Teams Toolkit
+   * const credential = new TeamsUserCredential();
+   * // Use a customized configuration
+   * const anotherCredential = new TeamsUserCredential(config);
    * ```
    *
    * @param {AuthenticationConfiguration?} authConfig - The authentication configuration. Use environment variables if not provided.
    *
    * @throws {@link ErrorCode|InvalidConfiguration} when client id, initiate login endpoint or simple auth endpoint is not found in config.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
-   * 
+   *
    * @beta
    */
   constructor(authConfig?: AuthenticationConfiguration) {

@@ -60,7 +60,6 @@ export interface TeamsBotSsoPromptSettings {
  * const dialogState = convoState.createProperty('dialogState');
  * const dialogs = new DialogSet(dialogState);
  *
- * loadConfiguration();
  * dialogs.add(new TeamsBotSsoPrompt('TeamsBotSsoPrompt', {
  *    scopes: ["User.Read"],
  * }));

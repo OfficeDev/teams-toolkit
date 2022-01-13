@@ -10,6 +10,7 @@ import {
   Result,
   returnSystemError,
   returnUserError,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import {
   LocalEnvManager,
@@ -27,6 +28,7 @@ import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
+import { ext } from "../extensionVariables";
 import { tools } from "../handlers";
 import * as StringResources from "../resources/Strings.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
@@ -38,7 +40,6 @@ import {
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
-import { ext } from "../extensionVariables";
 
 interface CheckFailure {
   checker: string;
@@ -55,9 +56,10 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
 
     const failures: CheckFailure[] = [];
     const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+    const workspacePath = ext.workspaceUri.fsPath;
 
     // Get project settings
-    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
 
     // deps
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
@@ -70,8 +72,29 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       failures.push(backendExtensionFailure);
     }
 
-    // login
-    const accountFailure = await checkM365Account();
+    // trigger login checker since it may have user interaction
+    const accountFailurePromise = checkM365Account();
+
+    // check port
+    const portsInUse = await localEnvManager.getPortsInUse(workspacePath, projectSettings);
+    if (portsInUse.length > 0) {
+      let message: string;
+      if (portsInUse.length > 1) {
+        message = util.format(
+          StringResources.vsc.localDebug.portsAlreadyInUse,
+          portsInUse.join(", ")
+        );
+      } else {
+        message = util.format(StringResources.vsc.localDebug.portAlreadyInUse, portsInUse[0]);
+      }
+      failures.push({
+        checker: "Ports",
+        error: new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource),
+      });
+    }
+
+    // await login checker
+    const accountFailure = await accountFailurePromise;
     if (accountFailure) {
       failures.push(accountFailure);
     }

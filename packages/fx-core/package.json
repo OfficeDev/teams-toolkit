@@ -38,10 +38,7 @@
     "prepare": "npm run build && node ./scripts/download-templates-zip.js $(git tag --list)",
     "prepublishOnly": "npm run test:unit && npm run build",
     "package": "rimraf build && webpack --mode production --config ./webpack.config.js",
-    "precommit": "lint-staged",
-    "install:api": "cd api && npm install",
-    "install:tabs": "cd tabs && npm install",
-    "installAll": "npm run install:api & npm run install:tabs"
+    "precommit": "lint-staged"
   },
   "dependencies": {
     "@apidevtools/swagger-parser": "^10.0.2",

@@ -717,7 +717,7 @@ export async function copyParameterJson(
   await fs.ensureDir(parameterFolderPath);
   await fs.writeFile(
     targetParameterFilePath,
-    JSON.stringify(targetParameterContent, undefined, 4).replace(/\r?\n/g, os.EOL)
+    JSON.stringify(targetParameterContent, undefined, 2).replace(/\r?\n/g, os.EOL)
   );
 }
 

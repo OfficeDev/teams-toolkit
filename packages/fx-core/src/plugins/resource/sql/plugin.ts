@@ -23,7 +23,7 @@ import {
 import { SqlConfig } from "./config";
 import { SqlClient } from "./sqlClient";
 import { ContextUtils } from "./utils/contextUtils";
-import { formatEndpoint, parseToken, UserType } from "./utils/commonUtils";
+import { parseToken, UserType } from "./utils/commonUtils";
 import { AzureSqlBicep, AzureSqlBicepFile, Constants, HelpLinks, Telemetry } from "./constants";
 import { Message } from "./utils/message";
 import { TelemetryUtils } from "./utils/telemetryUtils";
@@ -40,7 +40,7 @@ import {
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile } from "../../../common/tools";
+import { generateBicepFromFile, getUuid } from "../../../common/tools";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
@@ -65,6 +65,7 @@ export class SqlPluginImpl {
     );
 
     this.loadConfigSql(ctx);
+    this.loadDatabases(ctx);
   }
 
   async getQuestions(
@@ -80,6 +81,7 @@ export class SqlPluginImpl {
 
   async preProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
     ctx.logProvider?.info(Message.startPreProvision);
+    this.removeDatabases(ctx);
     await this.loadConfig(ctx);
 
     DialogUtils.init(ctx);
@@ -174,15 +176,18 @@ export class SqlPluginImpl {
 
     DialogUtils.init(ctx, ProgressTitle.PostProvision, Object.keys(ConfigureMessage).length);
     TelemetryUtils.init(ctx);
-    TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix, undefined, {
+
+    const telemetryProperties = {
       [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser
         ? Telemetry.valueYes
         : Telemetry.valueNo,
-    });
-
-    this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
-    this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
-    this.config.azureSubscriptionId = getSubscriptionIdFromResourceId(this.config.sqlResourceId);
+      [Telemetry.properties.dbCount]: this.config.databases.length.toString(),
+    };
+    TelemetryUtils.sendEvent(
+      Telemetry.stage.postProvision + Telemetry.startSuffix,
+      undefined,
+      telemetryProperties
+    );
 
     ctx.config.delete(Constants.adminPassword);
 
@@ -222,11 +227,7 @@ export class SqlPluginImpl {
 
     await managementClient.deleteLocalFirewallRule();
 
-    TelemetryUtils.sendEvent(Telemetry.stage.postProvision, true, {
-      [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser
-        ? Telemetry.valueYes
-        : Telemetry.valueNo,
-    });
+    TelemetryUtils.sendEvent(Telemetry.stage.postProvision, true, telemetryProperties);
     ctx.logProvider?.info(Message.endPostProvision);
     await DialogUtils.progressBar?.end(true);
     return ok(undefined);
@@ -249,9 +250,18 @@ export class SqlPluginImpl {
     managementClient: ManagementClient
   ): Promise<void> {
     let retryCount = 0;
+    const databases: { [key: string]: boolean } = {};
+    this.config.databases.forEach((element) => {
+      databases[element] = false;
+    });
     while (true) {
       try {
-        await sqlClient.addDatabaseUser();
+        for (const database in databases) {
+          if (!databases[database]) {
+            await sqlClient.addDatabaseUser(database);
+            databases[database] = true;
+          }
+        }
         return;
       } catch (error) {
         if (
@@ -271,6 +281,9 @@ export class SqlPluginImpl {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
+    if (ctx.answers?.existingResources?.includes(Constants.pluginFullName)) {
+      return this.addNewDatabase(ctx);
+    }
     const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
@@ -302,6 +315,43 @@ export class SqlPluginImpl {
           ConstantString.UTF8Encoding
         )
       ),
+      Reference: {
+        sqlResourceId: AzureSqlBicep.sqlResourceId,
+        sqlEndpoint: AzureSqlBicep.sqlEndpoint,
+        databaseName: AzureSqlBicep.databaseName,
+      },
+    };
+    return ok(result);
+  }
+
+  public async addNewDatabase(ctx: PluginContext): Promise<Result<any, FxError>> {
+    const suffix = getUuid().substring(0, 6);
+    const complieCtx = {
+      suffix: suffix,
+    };
+    const bicepTemplateDirectory = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "sql",
+      "bicep"
+    );
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, AzureSqlBicepFile.newDatabaseModuleTemplateFileName),
+      complieCtx
+    );
+    const provisionModules = await generateBicepFromFile(
+      path.join(
+        bicepTemplateDirectory,
+        AzureSqlBicepFile.newDatabaseProvisionModuleTemplateFileName
+      ),
+      complieCtx
+    );
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: provisionOrchestration,
+        Modules: { azureSql: provisionModules },
+      },
       Reference: {
         sqlResourceId: AzureSqlBicep.sqlResourceId,
         sqlEndpoint: AzureSqlBicep.sqlEndpoint,
@@ -445,5 +495,21 @@ export class SqlPluginImpl {
     if (this.config.sqlEndpoint) {
       this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
     }
+  }
+
+  private loadDatabases(ctx: PluginContext) {
+    ctx.config.forEach((v: string, k: string) => {
+      if (k.startsWith(Constants.databaseName)) {
+        this.config.databases.push(v);
+      }
+    });
+  }
+
+  private removeDatabases(ctx: PluginContext) {
+    ctx.config.forEach((v: string, k: string) => {
+      if (k.startsWith(Constants.databaseName) && k !== Constants.databaseName) {
+        ctx.config.delete(k);
+      }
+    });
   }
 }

@@ -47,7 +47,6 @@ export class TeamsUserCredential implements TokenCredential {
    * ```typescript
    * const config = {
    *  authentication: {
-   *    runtimeConnectorEndpoint: "https://xxx.xxx.com",
    *    initiateLoginEndpoint: "https://localhost:3000/auth-start.html",
    *    clientId: "xxx"
    *   }
@@ -84,14 +83,13 @@ export class TeamsUserCredential implements TokenCredential {
    * @param scopes - The list of scopes for which the token will have access, before that, we will request user to consent.
    *
    * @throws {@link ErrorCode|InternalError} when failed to login with unknown error.
-   * @throws {@link ErrorCode|ServiceError} when simple auth server failed to exchange access token.
    * @throws {@link ErrorCode|ConsentFailed} when user canceled or failed to consent.
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    *
    * @beta
    */
-  async login(scopes: string | string[]): Promise<AccessToken | null> {
+  async login(scopes: string | string[]): Promise<AccessToken> {
     validateScopesType(scopes);
     const scopesStr = typeof scopes === "string" ? scopes : scopes.join(" ");
 
@@ -101,7 +99,7 @@ export class TeamsUserCredential implements TokenCredential {
       await this.init();
     }
 
-    return new Promise<AccessToken | null>((resolve, reject) => {
+    return new Promise<AccessToken>((resolve, reject) => {
       microsoftTeams.initialize(() => {
         microsoftTeams.authentication.authenticate({
           url: `${this.config.initiateLoginEndpoint}?clientId=${
@@ -159,7 +157,6 @@ export class TeamsUserCredential implements TokenCredential {
    *
    * @throws {@link ErrorCode|InternalError} when failed to get access token with unknown error.
    * @throws {@link ErrorCode|UiRequiredError} when need user consent to get access token.
-   * @throws {@link ErrorCode|ServiceError} when failed to get access token from simple auth server.
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    *
@@ -189,19 +186,9 @@ export class TeamsUserCredential implements TokenCredential {
         await this.init();
       }
 
-      // Get domain from login start page. Will be used in redirect uri.
-      let domain;
-      try {
-        domain = new URL(this.config.initiateLoginEndpoint!).origin;
-      } catch (error: any) {
-        const failedToParseLoginEndpoint = `Failed to parse INITIATE_LOGIN_ENDPOINT in config. Reson: ${error.message}`;
-        internalLogger.error(failedToParseLoginEndpoint);
-        throw new ErrorWithCode(failedToParseLoginEndpoint, ErrorCode.InternalError);
-      }
-
       let tokenResponse;
-      let errorMessage = "";
       const scopesArray = typeof scopes === "string" ? scopes.split(" ") : scopes;
+      const domain = window.location.origin;
 
       // First try to get Access Token from cache.
       try {
@@ -216,7 +203,7 @@ export class TeamsUserCredential implements TokenCredential {
         );
       } catch (error: any) {
         const acquireTokenSilentFailedMessage = `Failed to call acquireTokenSilent. Reason: ${error?.message}. `;
-        errorMessage += acquireTokenSilentFailedMessage;
+        internalLogger.verbose(acquireTokenSilentFailedMessage);
       }
 
       if (!tokenResponse) {
@@ -230,17 +217,17 @@ export class TeamsUserCredential implements TokenCredential {
           tokenResponse = await this.msalInstance!.ssoSilent(scopesRequestForSsoSilent);
         } catch (error: any) {
           const ssoSilentFailedMessage = `Failed to call ssoSilent. Reason: ${error?.message}. `;
-          errorMessage += ssoSilentFailedMessage;
+          internalLogger.verbose(ssoSilentFailedMessage);
         }
       }
 
       if (!tokenResponse) {
-        const errorMsg = `Get empty authentication result from MSAL. Error: ${errorMessage}`;
+        const errorMsg = `Failed to get access token cache silently, please login first: you need login first before get access token.`;
         internalLogger.error(errorMsg);
-        throw new ErrorWithCode(errorMsg, ErrorCode.InternalError);
+        throw new ErrorWithCode(errorMsg, ErrorCode.UiRequiredError);
       }
 
-      const accessToken = parseAccessTokenFromAuthCodeTokenResponse(JSON.stringify(tokenResponse));
+      const accessToken = parseAccessTokenFromAuthCodeTokenResponse(tokenResponse);
       return accessToken;
     }
   }
@@ -279,10 +266,6 @@ export class TeamsUserCredential implements TokenCredential {
       auth: {
         clientId: this.config.clientId!,
         authority: `https://login.microsoftonline.com/${this.tid}`,
-      },
-      cache: {
-        cacheLocation: "sessionStorage",
-        storeAuthStateInCookie: false,
       },
     };
 
@@ -371,17 +354,13 @@ export class TeamsUserCredential implements TokenCredential {
       );
     }
 
-    if (config.initiateLoginEndpoint && config.simpleAuthEndpoint && config.clientId) {
+    if (config.initiateLoginEndpoint && config.clientId) {
       return config;
     }
 
     const missingValues = [];
     if (!config.initiateLoginEndpoint) {
       missingValues.push("initiateLoginEndpoint");
-    }
-
-    if (!config.simpleAuthEndpoint) {
-      missingValues.push("simpleAuthEndpoint");
     }
 
     if (!config.clientId) {

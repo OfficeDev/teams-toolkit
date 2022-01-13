@@ -7,6 +7,7 @@ import * as chaiPromises from "chai-as-promised";
 import { loadConfiguration, TeamsUserCredential } from "../../../src/index.browser";
 import * as sinon from "sinon";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../../../src/core/errors";
+import { AccountInfo, AuthenticationResult, PublicClientApplication } from "@azure/msal-browser";
 
 chaiUse(chaiPromises);
 
@@ -16,7 +17,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
   const userId = "fake_user";
   const tenantId = "fake_tenant_id";
   const clientId = "fake_client_id";
-  const loginUrl = "fake_login_url";
+  const loginUrl = "https://fake_login_url";
   const authEndpoint = "fake_auth_endpoint";
 
   /** Fake sso token payload
@@ -61,6 +62,21 @@ describe("TeamsUserCredential Tests - Browser", () => {
 
   const fakeAccessToken = "fake-access-token";
 
+  const fakeAuthCodeTokenResponse: AuthenticationResult = {
+    authority: "fake-authority",
+    uniqueId: "fake-uniqure-id",
+    tenantId: "fake-tenant-id",
+    scopes: ["user.read"],
+    account: null,
+    idToken: "fake-id-token",
+    idTokenClaims: {},
+    accessToken: fakeSSOTokenFull,
+    fromCache: true,
+    expiresOn: new Date(Date.now() + 10 * 60 * 1000),
+    tokenType: "fake-token-type",
+    correlationId: "fake-correlation-id",
+  };
+
   function loadDefaultConfig() {
     loadConfiguration({
       authentication: {
@@ -99,52 +115,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
       errorResult.message,
       "Initialize teams sdk timeout, maybe the code is not running inside Teams"
     );
-  });
-
-  it("getTokenCache should success with valid config", async function () {
-    const expiresOnTimestamp: number = Date.now() + 10 * 60 * 1000;
-    const accessToken: AccessToken = {
-      token,
-      expiresOnTimestamp,
-    };
-
-    loadDefaultConfig();
-    const credential: any = new TeamsUserCredential();
-
-    const key = credential.getAccessTokenCacheKey(userId, clientId, tenantId, scopes);
-    credential.setTokenCache(key, accessToken);
-    const accessTokenFromCache = credential.getTokenCache(key);
-
-    assert.isNotNull(accessTokenFromCache);
-    if (accessTokenFromCache) {
-      assert.strictEqual(accessTokenFromCache.token, accessToken.token);
-      assert.strictEqual(accessTokenFromCache.expiresOnTimestamp, accessToken.expiresOnTimestamp);
-    }
-  });
-
-  it("isAccessTokenNearExpired should return true when token is nearly expired", async function () {
-    const expiresOnTimestamp: number = Date.now();
-    const accessToken: AccessToken = {
-      token,
-      expiresOnTimestamp,
-    };
-
-    loadDefaultConfig();
-    const credential: any = new TeamsUserCredential();
-
-    const key = credential.getAccessTokenCacheKey(userId, clientId, tenantId, scopes);
-
-    credential.setTokenCache(key, accessToken);
-
-    const accessTokenFromCache = credential.getTokenCache(key);
-
-    assert.isNotNull(accessTokenFromCache);
-    if (accessTokenFromCache) {
-      const isNearExpired = credential.isAccessTokenNearExpired(
-        accessTokenFromCache.expiresOnTimestamp
-      );
-      assert.isTrue(isNearExpired);
-    }
   });
 
   it("getUserInfo should throw InternalError when get SSO token failed", async function () {
@@ -311,7 +281,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
     sinon.restore();
   });
 
-  it("getToken should success with local token cache", async function () {
+  it("getToken should success with acqureTokenSilent", async function () {
     sinon
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
       .callsFake((): Promise<AccessToken | null> => {
@@ -324,33 +294,34 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
 
+    sinon
+      .stub(PublicClientApplication.prototype, <any>"getAccountByUsername")
+      .callsFake((): AccountInfo | null => {
+        return null;
+      });
+
+    sinon
+      .stub(PublicClientApplication.prototype, <any>"acquireTokenSilent")
+      .callsFake((): Promise<AuthenticationResult> => {
+        return new Promise((resolve) => {
+          resolve(fakeAuthCodeTokenResponse);
+        });
+      });
+
     loadDefaultConfig();
     const credential: any = new TeamsUserCredential();
     const scopeStr = "user.read";
-    const cacheKey = await credential.getAccessTokenCacheKey(scopeStr);
-    sinon
-      .stub(TeamsUserCredential.prototype, <any>"getTokenCache")
-      .callsFake((key: string): AccessToken | null => {
-        if (key === cacheKey) {
-          return {
-            token: fakeAccessToken,
-            expiresOnTimestamp: Date.now() + 10 * 60 * 1000,
-          };
-        }
-
-        return null;
-      });
 
     const accessToken = await credential.getToken(scopeStr);
     assert.isNotNull(accessToken);
     if (accessToken) {
-      assert.strictEqual(accessToken.token, fakeAccessToken);
+      assert.strictEqual(accessToken.token, fakeSSOTokenFull);
     }
 
     sinon.restore();
   });
 
-  it("getToken should success with token cache from remote server", async function () {
+  it("getToken should success with ssoSilent", async function () {
     sinon
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
       .callsFake((): Promise<AccessToken | null> => {
@@ -363,25 +334,29 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
 
+    sinon
+      .stub(PublicClientApplication.prototype, <any>"getAccountByUsername")
+      .callsFake((): AccountInfo | null => {
+        throw new Error("Failed to get account.");
+      });
+
+    sinon
+      .stub(PublicClientApplication.prototype, <any>"ssoSilent")
+      .callsFake((): Promise<AuthenticationResult> => {
+        return new Promise((resolve) => {
+          resolve(fakeAuthCodeTokenResponse);
+        });
+      });
+
     loadDefaultConfig();
     const credential: any = new TeamsUserCredential();
     const scopeStr = "user.read";
-    sinon
-      .stub(TeamsUserCredential.prototype, <any>"getAndCacheAccessTokenFromSimpleAuthServer")
-      .callsFake(async (): Promise<AccessToken> => {
-        return new Promise((resolve) => {
-          resolve({
-            token: fakeAccessToken,
-            expiresOnTimestamp: Date.now() + 10 * 60 * 1000,
-          });
-        });
-      });
 
     const accessToken = await credential.getToken(scopeStr);
 
     assert.isNotNull(accessToken);
     if (accessToken) {
-      assert.strictEqual(accessToken.token, fakeAccessToken);
+      assert.strictEqual(accessToken.token, fakeSSOTokenFull);
     }
 
     sinon.restore();
@@ -400,17 +375,23 @@ describe("TeamsUserCredential Tests - Browser", () => {
         });
       });
 
+    sinon
+      .stub(PublicClientApplication.prototype, <any>"getAccountByUsername")
+      .callsFake((): AccountInfo | null => {
+        throw new Error("Failed to get account.");
+      });
+
+    sinon
+      .stub(PublicClientApplication.prototype, <any>"ssoSilent")
+      .callsFake((): Promise<AuthenticationResult> => {
+        return new Promise((resolve) => {
+          throw new Error("Failed to call ssoSilent.");
+        });
+      });
+
     loadDefaultConfig();
     const credential: any = new TeamsUserCredential();
     const scopeStr = "user.read";
-    sinon
-      .stub(TeamsUserCredential.prototype, <any>"getAndCacheAccessTokenFromSimpleAuthServer")
-      .callsFake(async (): Promise<AccessToken> => {
-        throw new ErrorWithCode(
-          `Failed to get access token cache from authentication server, please login first: you need login first before get access token`,
-          ErrorCode.UiRequiredError
-        );
-      });
 
     await expect(credential.getToken(scopeStr))
       .to.eventually.be.rejectedWith(ErrorWithCode)
@@ -419,7 +400,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
     sinon.restore();
   });
 
-  it("getToken should success after login", async function () {
+  it("getToken should success with login", async function () {
     sinon
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
       .callsFake((): Promise<AccessToken | null> => {
@@ -436,16 +417,18 @@ describe("TeamsUserCredential Tests - Browser", () => {
     const credential: any = new TeamsUserCredential();
     const scopeStr = "user.read";
 
-    sinon.stub(TeamsUserCredential.prototype, <any>"login").callsFake(async (): Promise<void> => {
-      const key = await credential.getAccessTokenCacheKey(scopeStr);
-      credential.setTokenCache(key, {
-        token: fakeAccessToken,
-        expiresOnTimestamp: Date.now() + 10 * 1000 * 60,
+    sinon
+      .stub(TeamsUserCredential.prototype, <any>"login")
+      .callsFake(async (): Promise<AccessToken | null> => {
+        return new Promise((resolve) => {
+          resolve({
+            token: fakeAccessToken,
+            expiresOnTimestamp: Date.now() + 10 * 1000 * 60,
+          });
+        });
       });
-    });
 
-    await credential.login(scopeStr);
-    const accessToken = await credential.getToken(scopeStr);
+    const accessToken = await credential.login(scopeStr);
 
     assert.isNotNull(accessToken);
     if (accessToken) {

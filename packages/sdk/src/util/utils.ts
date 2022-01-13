@@ -6,6 +6,7 @@ import { UserInfo } from "../models/userinfo";
 import jwt_decode from "jwt-decode";
 import { internalLogger } from "./logger";
 import { AccessToken } from "@azure/identity";
+import { AuthenticationResult } from "@azure/msal-browser";
 
 /**
  * Parse jwt token payload
@@ -84,8 +85,14 @@ export function getTenantIdAndLoginHintFromSsoToken(ssoToken: string): any {
 /**
  * @internal
  */
-export function parseAccessTokenFromAuthCodeTokenResponse(tokenResponse: string): AccessToken {
+export function parseAccessTokenFromAuthCodeTokenResponse(
+  tokenResponse: string | AuthenticationResult
+): AccessToken {
   try {
+    if (typeof tokenResponse == "object") {
+      tokenResponse = JSON.stringify(tokenResponse);
+    }
+
     const tokenResponseObject = JSON.parse(tokenResponse);
     if (!tokenResponseObject || !tokenResponseObject.accessToken) {
       const errorMsg = "Get empty access token from Auth Code token response.";

@@ -255,8 +255,6 @@ export class TeamsUserCredential implements TokenCredential {
   }
 
   private async init(): Promise<void> {
-    microsoftTeams.initialize();
-
     const ssoToken = await this.getSSOToken();
     const info = getTenantIdAndLoginHintFromSsoToken(ssoToken.token);
     this.loginHint = info.loginHint;

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { ErrorWithCode, ErrorCode } from "../core/errors";
 import { SSOTokenInfoBase, SSOTokenV1Info, SSOTokenV2Info } from "../models/ssoTokenInfo";
-import { UserInfo } from "../models/userinfo";
+import { UserInfo, UserTenantIdAndLoginHint } from "../models/userinfo";
 import jwt_decode from "jwt-decode";
 import { internalLogger } from "./logger";
 import { AccessToken } from "@azure/identity";
@@ -63,7 +63,7 @@ export function getUserInfoFromSsoToken(ssoToken: string): UserInfo {
 /**
  * @internal
  */
-export function getTenantIdAndLoginHintFromSsoToken(ssoToken: string): any {
+export function getTenantIdAndLoginHintFromSsoToken(ssoToken: string): UserTenantIdAndLoginHint {
   if (!ssoToken) {
     const errorMsg = "SSO token is undefined.";
     internalLogger.error(errorMsg);
@@ -71,7 +71,7 @@ export function getTenantIdAndLoginHintFromSsoToken(ssoToken: string): any {
   }
   const tokenObject = parseJwt(ssoToken) as SSOTokenV1Info | SSOTokenV2Info;
 
-  const userInfo = {
+  const userInfo: UserTenantIdAndLoginHint = {
     tid: tokenObject.tid,
     loginHint:
       tokenObject.ver === "2.0"

@@ -27,7 +27,7 @@ import sinon from "sinon";
 import { Container } from "typedi";
 import * as uuid from "uuid";
 import "../../../../../src/index";
-import { setTools, SPFXQuestionNames } from "../../../../../src/index";
+import { SPFXQuestionNames } from "../../../../../src/index";
 import { TabLanguage } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { SpfxPluginV2 } from "../../../../../src/plugins/resource/spfx/v2/index";
 import {
@@ -37,6 +37,7 @@ import {
 import { MockTools, randomAppName } from "../../../../core/utils";
 import "../../../../../src/plugins/resource/spfx/v2/index";
 import { mockDeployThatAlwaysSucceed } from "../../../solution/solution.deploy.test";
+import { setTools } from "../../../../../src/core/globalVars";
 
 describe("SPFX V2", () => {
   const sandbox = sinon.createSandbox();

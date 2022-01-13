@@ -13,8 +13,8 @@ import sinon from "sinon";
 import { Container } from "typedi";
 import * as uuid from "uuid";
 import { ArmTemplateResult } from "../../../../../src/common/armInterface";
+import { setTools } from "../../../../../src/core/globalVars";
 import "../../../../../src/index";
-import { setTools } from "../../../../../src/index";
 import { TabLanguage } from "../../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { FrontendPluginV2 } from "../../../../../src/plugins/resource/frontend/v2/index";
 import {
@@ -22,11 +22,7 @@ import {
   ResourcePluginsV2,
 } from "../../../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
 import { MockTools, randomAppName } from "../../../../core/utils";
-import {
-  ConstantString,
-  mockSolutionGenerateArmTemplates,
-  mockSolutionUpdateArmTemplates,
-} from "../../util";
+import { ConstantString, mockSolutionGenerateArmTemplates } from "../../util";
 
 describe("Frontend hosting V2", () => {
   const sandbox = sinon.createSandbox();

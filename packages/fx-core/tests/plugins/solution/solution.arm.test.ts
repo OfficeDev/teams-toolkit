@@ -49,11 +49,11 @@ import chai, { assert } from "chai";
 import chaiAsPromised from "chai-as-promised";
 import { TestHelper } from "./helper";
 import { isFeatureFlagEnabled } from "../../../src/common/tools";
-import { FeatureFlagName } from "../../../src/common/constants";
 import * as bicepChecker from "../../../src/plugins/solution/fx-solution/utils/depsChecker/bicepChecker";
 chai.use(chaiAsPromised);
 import { expect } from "chai";
 import { MockedLogProvider } from "./util";
+import { FeatureFlagName } from "../../../src/core/featureFlags";
 
 describe("Generate ARM Template for project", () => {
   //  Only test when insider feature flag enabled

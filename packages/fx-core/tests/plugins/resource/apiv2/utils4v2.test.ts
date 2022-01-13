@@ -19,7 +19,7 @@ import {
 import { Context, EnvInfoV2, ProvisionInputs } from "@microsoft/teamsfx-api/build/v2";
 import { assert } from "chai";
 import "mocha";
-import { newEnvInfo, setTools } from "../../../../src";
+import { newEnvInfo } from "../../../../src";
 import { TabLanguage } from "../../../../src/plugins/resource/frontend/resources/templateInfo";
 import { LocalCrypto } from "../../../../src/core/crypto";
 import {
@@ -38,6 +38,7 @@ import {
 } from "../../../core/utils";
 import * as path from "path";
 import * as os from "os";
+import { setTools } from "../../../../src/core/globalVars";
 describe("API V2 adapter", () => {
   beforeEach(() => {});
 

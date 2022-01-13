@@ -15,7 +15,7 @@ import { AzureClientFactory } from "../../../../../src/plugins/resource/frontend
 import * as dirWalk from "../../../../../src/plugins/resource/function/utils/dir-walk";
 import * as execute from "../../../../../src/plugins/resource/function/utils/execute";
 import axios from "axios";
-import * as core from "../../../../../src/core";
+import * as flag from "../../../../../src/core/featureFlags";
 
 chai.use(chaiAsPromised);
 
@@ -31,7 +31,7 @@ describe("WebappPlugin", () => {
       pluginContext.config.set(ConfigInfo.appServicePlanName, "ut");
       pluginContext.config.set(ConfigInfo.projectFilePath, "./ut");
 
-      sinon.stub(core, "isVsCallingCli").returns(true);
+      sinon.stub(flag, "isVsCallingCli").returns(true);
       sinon.stub(dirWalk, "forEachFileAndDir").resolves(undefined);
       sinon.stub(execute, "execute").resolves("");
       sinon.stub(fs, "pathExists").resolves(true);

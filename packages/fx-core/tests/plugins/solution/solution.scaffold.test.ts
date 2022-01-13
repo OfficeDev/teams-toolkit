@@ -7,7 +7,7 @@ import { TeamsAppSolution } from " ../../../src/plugins/solution";
 import { ok, SolutionContext, Platform, v2, Inputs } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
-import { environmentManager, setTools } from "../../../src";
+import { environmentManager } from "../../../src";
 import {
   BotOptionItem,
   HostTypeOptionAzure,
@@ -35,6 +35,7 @@ import {
 } from "../../constants";
 import mockedEnv from "mocked-env";
 import * as os from "os";
+import { setTools } from "../../../src/core/globalVars";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 

@@ -108,39 +108,6 @@ export class BlazorScaffoldPlugin implements v3.ScaffoldPlugin {
   name = BuiltInScaffoldPluginNames.blazor;
 }
 
-@Service(BuiltInScaffoldPluginNames.spfx)
-export class SPFxScaffoldPlugin implements v3.ScaffoldPlugin {
-  type: "scaffold" = "scaffold";
-  async getTemplates(
-    ctx: v2.Context,
-    inputs: Inputs
-  ): Promise<Result<v3.ScaffoldTemplate[], FxError>> {
-    return ok([
-      {
-        name: "SPFxTab",
-        language: "typescript",
-        description: "SPFx Tab",
-      },
-    ]);
-  }
-
-  async scaffold(
-    ctx: v2.Context,
-    inputs: v3.PluginScaffoldInputs
-  ): Promise<Result<Json | undefined, FxError>> {
-    ctx.logProvider.info("fx-scaffold-spfx:scaffold");
-    if (!inputs.test) await fs.ensureDir(path.join(inputs.projectPath, "spfx"));
-    const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-    const module = getModule(solutionSettings, inputs.module);
-    if (module) {
-      module.dir = "spfx";
-      module.deployType = "zip";
-    }
-    return ok(undefined);
-  }
-  name = BuiltInScaffoldPluginNames.spfx;
-}
-
 function getAllScaffoldPlugins(): v3.ScaffoldPlugin[] {
   return [
     Container.get<v3.ScaffoldPlugin>(BuiltInScaffoldPluginNames.blazor),

@@ -671,7 +671,7 @@ async function checkCollaborationState(env: string): Promise<Result<any, FxError
       });
     }
 
-    const tokenJsonObject = await AppStudioLogin.getInstance().getJsonObject(true);
+    const tokenJsonObject = await AppStudioTokenInstance.getJsonObject(true);
     if (tokenJsonObject) {
       const m365TenantId = await getM365TenantFromEnv(env);
       if (m365TenantId && tokenJsonObject.tid !== m365TenantId) {

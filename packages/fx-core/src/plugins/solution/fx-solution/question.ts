@@ -256,21 +256,31 @@ export const AskSubscriptionQuestion: FuncQuestion = {
   },
 };
 
-export const GetUserEmailQuestion: TextInputQuestion = {
-  name: "email",
-  type: "text",
-  title: "Add owner to Teams/AAD app for the account under the same M365 tenant (email)",
-  validation: {
-    validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
-      if (!input || input.trim() === "") {
-        return "Email address cannot be null or empty";
-      }
+export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestion {
+  const defaultUserEmail = "[UserName]@" + currentUserEmail.split("@")[1];
+  return {
+    name: "email",
+    type: "text",
+    title: "Add owner to Teams/AAD app for the account under the same M365 tenant (email)",
+    default: defaultUserEmail,
+    validation: {
+      validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
+        if (!input || input.trim() === "") {
+          return "Email address cannot be null or empty";
+        }
 
-      const re = /\S+@\S+\.\S+/;
-      if (!re.test(input)) {
-        return "Email address is not valid";
-      }
-      return undefined;
+        input = input.trim();
+
+        if (input === defaultUserEmail) {
+          return "Please change [UserName] to the real user name";
+        }
+
+        const re = /\S+@\S+\.\S+/;
+        if (!re.test(input)) {
+          return "Email address is not valid";
+        }
+        return undefined;
+      },
     },
-  },
-};
+  };
+}

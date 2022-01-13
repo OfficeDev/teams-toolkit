@@ -115,9 +115,9 @@ import {
   HostTypeOptionAzure,
   MessageExtensionItem,
   TabOptionItem,
-  GetUserEmailQuestion,
   TabSPFxItem,
   AzureResourceKeyVault,
+  getUserEmailQuestion,
 } from "./question";
 import {
   getActivatedResourcePlugins,
@@ -1168,7 +1168,8 @@ export class TeamsAppSolution implements Solution {
         }
       }
     } else if (stage === Stage.grantPermission) {
-      node.addChild(new QTreeNode(GetUserEmailQuestion));
+      const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+      node.addChild(new QTreeNode(getUserEmailQuestion((appStudioTokenJson as any).upn)));
     }
     return ok(node);
   }

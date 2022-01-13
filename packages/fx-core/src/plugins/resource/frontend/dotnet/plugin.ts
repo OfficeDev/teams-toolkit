@@ -24,13 +24,13 @@ import * as Deploy from "./ops/deploy";
 import { Logger } from "../utils/logger";
 import path from "path";
 import fs from "fs-extra";
+import { getTemplatesFolder } from "../../../../folder";
 import {
   generateBicepFromFile,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
-  getTemplatesFolder,
-} from "../../../..";
+} from "../../../../common/tools";
 import { Bicep } from "../../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
@@ -143,6 +143,10 @@ export class DotnetPluginImpl implements PluginImpl {
   }
 
   public async updateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
+    return ok(undefined);
+  }
+
+  public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
     return ok(undefined);
   }
 

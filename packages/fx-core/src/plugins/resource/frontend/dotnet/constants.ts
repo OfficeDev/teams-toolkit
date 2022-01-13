@@ -66,4 +66,9 @@ export class WebappBicep {
   static readonly webappEndpoint = "provisionOutputs.webappOutput.value.endpoint";
   static readonly webappResourceId = "provisionOutputs.webappOutput.value.resourceId";
   static readonly webappDomain = "provisionOutputs.webappOutput.value.domain";
+  static readonly Reference = {
+    webappResourceId: WebappBicep.webappResourceId,
+    endpoint: WebappBicep.webappEndpoint,
+    domain: WebappBicep.webappDomain,
+  };
 }

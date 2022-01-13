@@ -43,6 +43,14 @@ export abstract class NodeChecker implements DepsChecker {
   }
 
   public async isInstalled(): Promise<boolean> {
+    try {
+      return await this.checkInstalled();
+    } catch (e) {
+      return false;
+    }
+  }
+
+  public async checkInstalled(): Promise<boolean> {
     const supportedVersions = await this.getSupportedVersions();
 
     this._logger.debug(
@@ -75,7 +83,7 @@ export abstract class NodeChecker implements DepsChecker {
 
   public async resolve(): Promise<Result<boolean, DepsCheckerError>> {
     try {
-      if (!(await this.isInstalled())) {
+      if (!(await this.checkInstalled())) {
         await this.install();
       }
     } catch (error) {

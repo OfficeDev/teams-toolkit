@@ -7,12 +7,7 @@
 import "isomorphic-fetch";
 import { Context, HttpRequest } from "@azure/functions";
 import { Client } from "@microsoft/microsoft-graph-client";
-import {
-  createMicrosoftGraphClient,
-  loadConfiguration,
-  OnBehalfOfUserCredential,
-  UserInfo,
-} from "@microsoft/teamsfx";
+import { createMicrosoftGraphClient, OnBehalfOfUserCredential, UserInfo } from "@microsoft/teamsfx";
 
 interface Response {
   status: number;
@@ -55,19 +50,6 @@ export default async function run(
 
   // Put an echo into response body.
   res.body.receivedHTTPRequestBody = req.body || "";
-
-  // Set default configuration for teamsfx SDK.
-  try {
-    loadConfiguration();
-  } catch (e) {
-    context.log.error(e);
-    return {
-      status: 500,
-      body: {
-        error: "Failed to load app configuration.",
-      },
-    };
-  }
 
   // Prepare access token.
   const accessToken: string = teamsfxContext["AccessToken"];

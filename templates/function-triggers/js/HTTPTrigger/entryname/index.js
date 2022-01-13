@@ -38,19 +38,6 @@ module.exports = async function (context, req, teamsfxContext) {
   // Put an echo into response body.
   res.body.receivedHTTPRequestBody = req.body || "";
 
-  // Set default configuration for teamsfx SDK.
-  try {
-    teamsfx.loadConfiguration();
-  } catch (e) {
-    context.log.error(e);
-    return {
-      status: 500,
-      body: {
-        error: "Failed to load app configuration.",
-      },
-    };
-  }
-
   // Prepare access token.
   const accessToken = teamsfxContext["AccessToken"];
   if (!accessToken) {

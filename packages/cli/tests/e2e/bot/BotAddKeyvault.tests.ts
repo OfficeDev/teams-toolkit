@@ -7,7 +7,6 @@
 
 import path from "path";
 import "mocha";
-import { AadValidator, BotValidator } from "../../commonlib";
 import {
   getSubscriptionId,
   getTestFolder,
@@ -16,13 +15,12 @@ import {
   readContextMultiEnv,
   setBotSkuNameToB1Bicep,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import { KeyVaultValidator } from "../../commonlib/keyVaultValidator";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
+import { BotValidator } from "../../commonlib";
 
-describe("Test Azure Key Vault", function () {
+describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
@@ -33,32 +31,22 @@ describe("Test Azure Key Vault", function () {
     await cleanUp(appName, projectPath, true, true, false, true);
   });
 
-  it(`bot + key vault project happy path`, async function () {
-    // Create bot + key vault project
+  it(`bot + key vault`, async function () {
     await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);
 
+    // Provision
     await setBotSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
-
-    // Provision
     await CliHelper.provisionProject(projectPath);
 
-    // Validate Provision
+    // Assert
     {
       const context = await readContextMultiEnv(projectPath, env);
 
-      // Validate Aad App
-      const aad = AadValidator.init(context, false, AppStudioLogin);
-      await AadValidator.validate(aad);
-
-      // Validate Bot
+      // Validate Function App
       const bot = new BotValidator(context, projectPath, env);
       await bot.validateProvision();
-
-      // Validate Key Vault
-      const keyVault = new KeyVaultValidator(context, projectPath, env);
-      await keyVault.validate();
     }
   });
 });

@@ -56,6 +56,7 @@ import {
   Correlator,
   DepsType,
   environmentManager,
+  FolderName,
   FxCore,
   getAppDirectory,
   getHashedEnv,
@@ -559,7 +560,7 @@ export async function runCommand(
 
     switch (stage) {
       case Stage.create: {
-        inputs["scratch"] = "yes";
+        inputs["scratch"] = inputs["scratch"] ?? "yes";
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
@@ -805,7 +806,7 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
     const workspaceFolder = workspace.workspaceFolders[0];
     const backendRoot = await commonUtils.getProjectRoot(
       workspaceFolder.uri.fsPath,
-      constants.backendFolderName
+      FolderName.Function
     );
 
     if (backendRoot) {
@@ -973,11 +974,8 @@ async function openMarkdownHandler() {
       targetFolder = `${workspacePath}/SPFx`;
     } else {
       showLocalDebugMessage();
-      const tabFolder = await commonUtils.getProjectRoot(
-        workspacePath,
-        constants.frontendFolderName
-      );
-      const botFolder = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
+      const tabFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
+      const botFolder = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
       if (tabFolder && botFolder) {
         targetFolder = workspacePath;
       } else if (tabFolder) {

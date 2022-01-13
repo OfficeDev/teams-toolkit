@@ -123,8 +123,8 @@ describe("Multi Env Happy Path for Azure", function () {
         await SqlValidator.validateSql();
 
         // Validate Bot Provision
-        const bot = BotValidator.init(context, true);
-        await BotValidator.validateProvision(bot, true);
+        const bot = new BotValidator(context, projectPath, env);
+        await bot.validateProvision();
       }
 
       // deploy
@@ -151,8 +151,8 @@ describe("Multi Env Happy Path for Azure", function () {
         await functionValidator.validateDeploy();
 
         // Validate Bot Deploy
-        const bot = BotValidator.init(context, true);
-        await BotValidator.validateDeploy(bot);
+        const bot = new BotValidator(context, projectPath, env);
+        await bot.validateProvision();
       }
 
       // validate manifest

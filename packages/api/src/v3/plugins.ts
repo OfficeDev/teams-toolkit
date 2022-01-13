@@ -91,25 +91,12 @@ export interface ScaffoldPlugin extends Plugin {
   /**
    * Source code template descriptions
    */
-  getTemplates: (
-    ctx: Context & {
-      appManifest?: {
-        local: AppManifest;
-        remote: AppManifest;
-      };
-    },
-    inputs: Inputs
-  ) => Promise<Result<ScaffoldTemplate[], FxError>>;
+  getTemplates: (ctx: Context, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
   /**
    * get questions before scaffolding
    */
   getQuestionsForScaffold?: (
-    ctx: Context & {
-      appManifest?: {
-        local: AppManifest;
-        remote: AppManifest;
-      };
-    },
+    ctx: Context,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   /**
@@ -152,7 +139,10 @@ export interface ResourcePlugin extends Plugin {
    * add resource is a new lifecycle task for resource plugin, which will do some extra work after project settings is updated,
    * for example, APIM will scaffold the openapi folder with files
    */
-  addResource?: (ctx: Context, inputs: PluginAddResourceInputs) => Promise<Result<Void, FxError>>;
+  addResource?: (
+    ctx: ContextWithManifest,
+    inputs: PluginAddResourceInputs
+  ) => Promise<Result<Void, FxError>>;
   /**
    * customize questions needed for local debug
    */
@@ -200,11 +190,11 @@ export interface ResourcePlugin extends Plugin {
   ) => Promise<Result<Void, FxError>>;
 
   generateResourceTemplate?: (
-    ctx: Context,
+    ctx: ContextWithManifest,
     inputs: PluginAddResourceInputs
   ) => Promise<Result<ResourceTemplate, FxError>>;
   updateResourceTemplate?: (
-    ctx: Context,
+    ctx: ContextWithManifest,
     inputs: PluginAddResourceInputs
   ) => Promise<Result<ResourceTemplate, FxError>>;
 

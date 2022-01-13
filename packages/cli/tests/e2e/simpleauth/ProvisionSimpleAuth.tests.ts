@@ -5,22 +5,22 @@
  * @author Chaoyi Yuan <chyuan@microsoft.com>
  */
 
-import fs from "fs-extra";
 import path from "path";
 
 import { AadValidator, SimpleAuthValidator } from "../../commonlib";
 
 import {
-  execAsync,
-  execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
+  readContextMultiEnv,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
+import { CliHelper } from "../../commonlib/cliHelper";
+import { Capability, ResourceToDeploy } from "../../commonlib/constants";
 
 describe("Provision", function () {
   const testFolder = getTestFolder();
@@ -34,23 +34,15 @@ describe("Provision", function () {
     process.env.SIMPLE_AUTH_SKU_NAME = "D1";
 
     // new a project
-    await execAsync(`teamsfx new --interactive false --app-name ${appName}`, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] scaffold to ${projectPath}`);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
 
     // provision
-    await execAsyncWithRetry(`teamsfx provision --subscription ${subscription}`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
+    await CliHelper.setSubscription(subscription, projectPath);
+    await CliHelper.provisionProject(projectPath);
 
     // Get context
-    const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+    const context = await readContextMultiEnv(projectPath, env);
 
     // Validate Aad App
     const aad = AadValidator.init(context, false, AppStudioLogin);
@@ -61,11 +53,7 @@ describe("Provision", function () {
     await simpleAuth.validate();
 
     // deploy
-    await execAsyncWithRetry(`teamsfx deploy frontend-hosting`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
+    await CliHelper.deployProject(ResourceToDeploy.FrontendHosting, projectPath);
   });
 
   after(async () => {

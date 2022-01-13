@@ -54,7 +54,9 @@ import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/Resour
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile, IsSimpleAuthEnabled } from "../../../common/tools";
 import { LocalSettingsFrontendKeys } from "../../../common/localSettingsConstants";
-export class FrontendPluginImpl {
+import { PluginImpl } from "./interface";
+
+export class FrontendPluginImpl implements PluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
     const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx);

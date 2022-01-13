@@ -50,12 +50,20 @@ export enum ResourceToDeploy {
 export class StateConfigKey {
   // solution
   static readonly subscriptionId = "subscriptionId";
+  static readonly resourceNameSuffix = "resourceNameSuffix";
   static readonly resourceGroupName = "resourceGroupName";
+  static readonly teamsAppTenantId = "teamsAppTenantId";
+  static readonly location = "location";
 
   // aad
   static readonly clientId = "clientId";
+  static readonly tenantId = "tenantId";
+  static readonly objectId = "objectId";
   static readonly clientSecret = "clientSecret";
   static readonly oauthAuthority = "oauthAuthority";
+  static readonly oauthHost = "oauthHost";
+  static readonly oauth2PermissionScopeId = "oauth2PermissionScopeId";
+  static readonly applicationIdUris = "applicationIdUris";
 
   // simple auth
   static readonly endpoint = "endpoint";
@@ -63,6 +71,7 @@ export class StateConfigKey {
   // bot
   static readonly botId = "botId";
   static readonly botPassword = "botPassword";
+  static readonly botWebAppResourceId = "botWebAppResourceId";
   // sql
   static readonly skipAddingUser = "skipAddingUser";
   static readonly sqlEndpoint: string = "sqlEndpoint";
@@ -76,6 +85,17 @@ export class StateConfigKey {
   static readonly identityClientId = "identityClientId";
   // key vault
   static readonly keyVaultResourceId = "keyVaultResourceId";
+  // Apim
+  static readonly serviceResourceId = "serviceResourceId";
+  static readonly productResourceId = "productResourceId";
+  static readonly authServerResourceId = "authServerResourceId";
+  static readonly apiPrefix = "apiPrefix";
+  static readonly versionSetId = "versionSetId";
+  static readonly apiPath = "apiPath";
+  static readonly apiDocumentPath = "apiDocumentPath";
+  static readonly apimClientAADObjectId = "apimClientAADObjectId";
+  static readonly apimClientAADClientId = "apimClientAADClientId";
+  static readonly apimClientAADClientSecret = "apimClientAADClientSecret";
 
   static readonly skuName = "skuName";
 }

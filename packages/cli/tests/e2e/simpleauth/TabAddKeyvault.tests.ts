@@ -7,22 +7,21 @@
 
 import path from "path";
 import "mocha";
-import { AadValidator, BotValidator } from "../../commonlib";
 import {
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
   cleanUp,
+  setSimpleAuthSkuNameToB1Bicep,
   readContextMultiEnv,
-  setBotSkuNameToB1Bicep,
 } from "../commonUtils";
-import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 import { environmentManager } from "@microsoft/teamsfx-core";
-import { KeyVaultValidator } from "../../commonlib/keyVaultValidator";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
+import { AadValidator, SimpleAuthValidator } from "../../commonlib";
+import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
 
-describe("Test Azure Key Vault", function () {
+describe("Configuration successfully changed when with different plugins", function () {
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
@@ -30,21 +29,19 @@ describe("Test Azure Key Vault", function () {
   const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, true, false, true);
+    await cleanUp(appName, projectPath, true, false, false, true);
   });
 
-  it(`bot + key vault project happy path`, async function () {
-    // Create bot + key vault project
-    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Bot);
+  it(`tab + key vault`, async function () {
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
     await CliHelper.addResourceToProject(projectPath, Resource.AzureKeyVault);
 
-    await setBotSkuNameToB1Bicep(projectPath, env);
-    await CliHelper.setSubscription(subscription, projectPath);
-
     // Provision
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+    await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
-    // Validate Provision
+    // Assert
     {
       const context = await readContextMultiEnv(projectPath, env);
 
@@ -52,13 +49,9 @@ describe("Test Azure Key Vault", function () {
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
 
-      // Validate Bot
-      const bot = new BotValidator(context, projectPath, env);
-      await bot.validateProvision();
-
-      // Validate Key Vault
-      const keyVault = new KeyVaultValidator(context, projectPath, env);
-      await keyVault.validate();
+      // Validate Simple Auth
+      const simpleAuth = new SimpleAuthValidator(context, projectPath, env);
+      await simpleAuth.validate();
     }
   });
 });

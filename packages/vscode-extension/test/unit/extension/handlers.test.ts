@@ -407,7 +407,28 @@ suite("handlers", () => {
 
       const result = await handlers.grantPermission("env");
       chai.expect(result.isOk()).equals(true);
-      sinon.restore();
+    });
+
+    test("grant permission with empty tenant id", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
+      sinon.stub(AppStudioTokenInstance, "getJsonObject").resolves({
+        tid: "fake-tenant-id",
+      });
+      sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
+        return "";
+      });
+
+      const result = await handlers.grantPermission("env");
+
+      if (result.isErr()) {
+        throw new Error("Unexpected error: " + result.error.message);
+      }
+
+      chai.expect(result.isOk()).equals(true);
+      chai.expect(result.value.state === CollaborationState.EmptyM365Tenant);
     });
 
     test("list all collaborators: with user", async () => {
@@ -441,7 +462,6 @@ suite("handlers", () => {
       );
       chai.assert.equal(result["env"][0].icon, "person");
       chai.assert.equal(result["env"][0].isCustom, false);
-      sinon.restore();
     });
 
     test("list collaborator: with error", async () => {
@@ -471,7 +491,6 @@ suite("handlers", () => {
       chai.assert.equal(result["env"][0].commandId, "fx-extension.listcollaborator.env");
       chai.assert.equal(result["env"][0].icon, "warning");
       chai.assert.equal(result["env"][0].isCustom, true);
-      sinon.restore();
     });
 
     test("list collaborator: with empty user info", async () => {
@@ -501,7 +520,6 @@ suite("handlers", () => {
       chai.assert.equal(result["env"][0].commandId, "fx-extension.listcollaborator.env");
       chai.assert.equal(result["env"][0].icon, "warning");
       chai.assert.equal(result["env"][0].isCustom, true);
-      sinon.restore();
     });
 
     test("check permission: with both permission", async () => {
@@ -532,7 +550,6 @@ suite("handlers", () => {
 
       const result = await handlers.checkPermission("env");
       chai.assert.equal(result, true);
-      sinon.restore();
     });
 
     test("check permission: without permission", async () => {
@@ -563,7 +580,6 @@ suite("handlers", () => {
 
       const result = await handlers.checkPermission("env");
       chai.assert.equal(result, false);
-      sinon.restore();
     });
 
     test("check permission: throw error without permission", async () => {
@@ -574,7 +590,6 @@ suite("handlers", () => {
 
       const result = await handlers.checkPermission("env");
       chai.assert.equal(result, false);
-      sinon.restore();
     });
 
     test("edit manifest template: local", async () => {
@@ -594,7 +609,6 @@ suite("handlers", () => {
           "undefined/templates/appPackage/manifest.local.template.json" as any
         )
       );
-      sinon.restore();
     });
 
     test("edit manifest template: remote", async () => {
@@ -614,7 +628,6 @@ suite("handlers", () => {
           "undefined/templates/appPackage/manifest.remote.template.json" as any
         )
       );
-      sinon.restore();
     });
   });
 });

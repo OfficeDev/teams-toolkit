@@ -190,7 +190,7 @@ async function listCollaboratorImpl(
 
   let errorMsg = "";
   if (errors.length > 0) {
-    errorMsg += `Failed to list collaborator for the project.\n Error details: \n`;
+    errorMsg += `Failed to list Teams App owners for the project.\nError details: \n`;
     for (const fxError of errors) {
       errorMsg += fxError.error.message + "\n";
     }
@@ -278,6 +278,13 @@ async function listCollaboratorImpl(
     if (platform === Platform.CLI) {
       ui?.showMessage("info", message, false);
     } else if (platform === Platform.VSCode) {
+      ui?.showMessage(
+        "info",
+        `List M365 Teams App${
+          CollaborationUtil.isSpfxProject(param.ctx) ? "(With AAD App)" : ""
+        } owners success, you can view it in Teams Toolkit output window`,
+        false
+      );
       logProvider?.info(message);
     }
   }

@@ -675,7 +675,13 @@ async function checkCollaborationState(env: string): Promise<Result<any, FxError
     const tokenJsonObject = await AppStudioTokenInstance.getJsonObject(true);
     if (tokenJsonObject) {
       const m365TenantId = await getM365TenantFromEnv(env);
-      if (m365TenantId && tokenJsonObject.tid !== m365TenantId) {
+      if (!m365TenantId) {
+        return ok({
+          state: CollaborationState.EmptyM365Tenant,
+          message: StringResources.vsc.commandsTreeViewProvider.emptyM365Tenant,
+        });
+      }
+      if (tokenJsonObject.tid !== m365TenantId) {
         return ok({
           state: CollaborationState.M365TenantNotMatch,
           message: StringResources.vsc.commandsTreeViewProvider.m365TenantNotMatch,
@@ -1323,7 +1329,7 @@ export async function openResourceGroupInPortal(env: string): Promise<Result<Voi
   }
 }
 
-export async function grantPermission(env: string): Promise<Result<Void, FxError>> {
+export async function grantPermission(env: string): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermissionStart);
 

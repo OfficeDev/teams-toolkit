@@ -257,7 +257,10 @@ export const AskSubscriptionQuestion: FuncQuestion = {
 };
 
 export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestion {
-  const defaultUserEmail = "[UserName]@" + currentUserEmail.split("@")[1];
+  let defaultUserEmail = "";
+  if (currentUserEmail && currentUserEmail.indexOf("@") > 0) {
+    defaultUserEmail = "[UserName]@" + currentUserEmail.split("@")[1];
+  }
   return {
     name: "email",
     type: "text",

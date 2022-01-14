@@ -28,6 +28,7 @@ import {
 } from "../../constants";
 import { MockedLogProvider, MockedTelemetryReporter, MockedUserInteraction } from "./util";
 import { UserTokenCredentials } from "@azure/ms-rest-nodeauth";
+import os from "os";
 import * as cpUtils from "../../../src/common/cpUtils";
 
 export class TestHelper {
@@ -318,5 +319,21 @@ export class TestHelper {
     plugin.postScaffold = async function (_ctx: PluginContext): Promise<Result<any, FxError>> {
       return ok(Void);
     };
+  }
+
+  static getParameterFileContent(
+    provisionParameters: Record<string, string>,
+    customizedParameters?: Record<string, string>
+  ): string {
+    const params = Object.assign(
+      { provisionParameters: { value: provisionParameters } },
+      customizedParameters
+    );
+    const parameterObject = {
+      $schema: "https://schema.management.azure.com/schemas/2019-04-01/deploymentParameters.json#",
+      contentVersion: "1.0.0.0",
+      parameters: params,
+    };
+    return JSON.stringify(parameterObject, undefined, 2).replace(/\r?\n/g, os.EOL);
   }
 }

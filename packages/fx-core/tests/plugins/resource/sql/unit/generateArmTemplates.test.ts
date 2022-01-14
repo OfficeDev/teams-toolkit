@@ -147,7 +147,7 @@ describe("generateArmTemplates", () => {
     const result = await sqlPlugin.generateArmTemplates(pluginContext);
 
     // Assert
-    const testModuleFileName = "newDatabase.result.bicep";
+    const testModuleFileName = "newDatabase.orchestration.result.bicep";
     const mockedSolutionDataContext = {
       Plugins: {
         "fx-resource-azure-sql": {

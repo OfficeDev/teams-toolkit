@@ -337,14 +337,11 @@ export class SqlPluginImpl {
       "bicep"
     );
     const provisionOrchestration = await generateBicepFromFile(
-      path.join(bicepTemplateDirectory, AzureSqlBicepFile.newDatabaseModuleTemplateFileName),
+      path.join(bicepTemplateDirectory, AzureSqlBicepFile.newDatabaseOrchestrationTemplateFileName),
       compileCtx
     );
     const provisionModules = await generateBicepFromFile(
-      path.join(
-        bicepTemplateDirectory,
-        AzureSqlBicepFile.newDatabaseProvisionModuleTemplateFileName
-      ),
+      path.join(bicepTemplateDirectory, AzureSqlBicepFile.newDatabaseProvisionTemplateFileName),
       compileCtx
     );
     const result: ArmTemplateResult = {

@@ -22,6 +22,9 @@ import { BotOptionItem, MessageExtensionItem } from "../../solution/fx-solution/
 import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
+import { DotnetBotImpl } from "./dotnet/plugin";
+import { PluginImpl } from "./interface";
+import { isVsCallingCli } from "../../..";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
@@ -32,13 +35,18 @@ export class TeamsBot implements Plugin {
     return cap.includes(BotOptionItem.id) || cap.includes(MessageExtensionItem.id);
   }
   public teamsBotImpl: TeamsBotImpl = new TeamsBotImpl();
+  public dotnetBotImpl: DotnetBotImpl = new DotnetBotImpl();
+
+  public getImpl(context: PluginContext): PluginImpl {
+    return isVsCallingCli() ? this.dotnetBotImpl : this.getImpl(context);
+  }
 
   public async scaffold(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.scaffold(context),
+      () => this.getImpl(context).scaffold(context),
       true,
       LifecycleFuncNames.SCAFFOLD
     );
@@ -53,7 +61,7 @@ export class TeamsBot implements Plugin {
 
     return await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.preProvision(context),
+      () => this.getImpl(context).preProvision(context),
       true,
       LifecycleFuncNames.PRE_PROVISION
     );
@@ -64,7 +72,7 @@ export class TeamsBot implements Plugin {
 
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.provision(context),
+      () => this.getImpl(context).provision(context),
       true,
       LifecycleFuncNames.PROVISION
     );
@@ -79,7 +87,7 @@ export class TeamsBot implements Plugin {
 
     return await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.postProvision(context),
+      () => this.getImpl(context).postProvision(context),
       true,
       LifecycleFuncNames.POST_PROVISION
     );
@@ -90,7 +98,7 @@ export class TeamsBot implements Plugin {
 
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.updateArmTemplates(context),
+      () => this.getImpl(context).updateArmTemplates(context),
       true,
       LifecycleFuncNames.GENERATE_ARM_TEMPLATES
     );
@@ -103,7 +111,7 @@ export class TeamsBot implements Plugin {
 
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.generateArmTemplates(context),
+      () => this.getImpl(context).generateArmTemplates(context),
       true,
       LifecycleFuncNames.GENERATE_ARM_TEMPLATES
     );
@@ -116,7 +124,7 @@ export class TeamsBot implements Plugin {
 
     return await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.preDeploy(context),
+      () => this.getImpl(context).preDeploy(context),
       true,
       LifecycleFuncNames.PRE_DEPLOY
     );
@@ -127,7 +135,7 @@ export class TeamsBot implements Plugin {
 
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.deploy(context),
+      () => this.getImpl(context).deploy(context),
       true,
       LifecycleFuncNames.DEPLOY
     );
@@ -142,7 +150,7 @@ export class TeamsBot implements Plugin {
 
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.localDebug(context),
+      () => this.getImpl(context).localDebug(context),
       false,
       LifecycleFuncNames.LOCAL_DEBUG
     );
@@ -160,7 +168,7 @@ export class TeamsBot implements Plugin {
 
     return await this.runWithExceptionCatching(
       context,
-      () => this.teamsBotImpl.postLocalDebug(context),
+      () => this.getImpl(context).postLocalDebug(context),
       false,
       LifecycleFuncNames.POST_LOCAL_DEBUG
     );
@@ -172,7 +180,7 @@ export class TeamsBot implements Plugin {
     if (func.method === "migrateV1Project") {
       return await this.runWithExceptionCatching(
         context,
-        () => this.teamsBotImpl.migrateV1Project(context),
+        () => this.getImpl(context).migrateV1Project(context),
         true,
         LifecycleFuncNames.MIGRATE_V1_PROJECT
       );

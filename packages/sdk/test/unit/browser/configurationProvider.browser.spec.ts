@@ -15,9 +15,9 @@ import {
   authorityHost,
   tenantId,
   clientId,
-  simpleAuthEndpoint,
   initiateLoginEndpoint,
   applicationIdUri,
+  apiEndpoint,
 } from "../helper.browser";
 
 chaiUse(chaiPromises);
@@ -37,17 +37,14 @@ describe("ConfigurationProvider Tests - Browser", () => {
     assert.strictEqual(authConfig.authorityHost, authorityHost);
     assert.strictEqual(authConfig.tenantId, tenantId);
     assert.strictEqual(authConfig.clientId, clientId);
-    assert.strictEqual(authConfig.simpleAuthEndpoint, simpleAuthEndpoint);
     assert.strictEqual(authConfig.initiateLoginEndpoint, initiateLoginEndpoint);
     assert.strictEqual(authConfig.applicationIdUri, applicationIdUri);
   });
 
   it("getApiConfigFromEnv should throw error", () => {
-    expect(() => {
-      getApiConfigFromEnv();
-    })
-      .to.throw(ErrorWithCode, "getApiConfigFromEnv is not supported in browser.")
-      .with.property("code", ErrorCode.RuntimeNotSupported);
+    const apiConfig = getApiConfigFromEnv();
+
+    assert.strictEqual(apiConfig.endpoint, apiEndpoint);
   });
 
   it("getSqlConfigFromEnv should throw error", () => {

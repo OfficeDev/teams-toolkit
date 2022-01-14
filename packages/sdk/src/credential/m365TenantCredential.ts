@@ -110,6 +110,9 @@ export class M365TenantCredential implements TokenCredential {
 
   /**
    * Load and validate authentication configuration
+   *
+   * @param {AuthenticationConfiguration?} authConfig - The authentication configuration. Use environment variables if not provided.
+   *
    * @returns Authentication configuration
    */
   private loadAndValidateConfig(

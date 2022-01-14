@@ -23,7 +23,6 @@ export function getAuthenticationConfigFromEnv(): AuthenticationConfiguration {
     tenantId: process.env.M365_TENANT_ID,
     clientId: process.env.M365_CLIENT_ID,
     clientSecret: process.env.M365_CLIENT_SECRET,
-    simpleAuthEndpoint: process.env.SIMPLE_AUTH_ENDPOINT,
     initiateLoginEndpoint: process.env.INITIATE_LOGIN_ENDPOINT,
     applicationIdUri: process.env.M365_APPLICATION_ID_URI,
   };

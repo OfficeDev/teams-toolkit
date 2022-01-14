@@ -12,7 +12,6 @@ import {
   initiateLoginEndpoint,
   MockBrowserEnvironment,
   RestoreBrowserEnvironment,
-  simpleAuthEndpoint,
 } from "../helper.browser";
 
 chaiUse(chaiPromises);
@@ -211,9 +210,7 @@ describe("TeamsUserCredential Tests - Browser", () => {
 
   it("Create TeamsUserCredential should throw InvalidConfiguration when configuration is not valid", async function () {
     expect(() => {
-      new TeamsUserCredential({
-        simpleAuthEndpoint: simpleAuthEndpoint,
-      });
+      new TeamsUserCredential({});
     })
       .to.throw(
         ErrorWithCode,

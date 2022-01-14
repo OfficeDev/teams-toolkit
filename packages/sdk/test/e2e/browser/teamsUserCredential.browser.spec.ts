@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import { assert, expect, use as chaiUse } from "chai";
-import mockedEnv from "mocked-env";
 import * as chaiPromises from "chai-as-promised";
 import { AccessToken } from "@azure/core-auth";
 import * as sinon from "sinon";
@@ -17,15 +16,10 @@ describe("TeamsUserCredential Tests - Browser", () => {
   const UIREQUIREDERROR = "UiRequiredError";
   const FAKE_LOGIN_ENDPOINT = "FakeLoginEndpoint";
   let ssoToken: SSOToken;
-  let mockedEnvRestore: () => void;
+  let credential: TeamsUserCredential;
 
   before(async () => {
     ssoToken = await getSSOToken();
-    mockedEnvRestore = mockedEnv({
-      REACT_APP_CLIENT_ID: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
-      REACT_APP_TEAMSFX_ENDPOINT: "http://localhost:5000",
-      REACT_APP_START_LOGIN_PAGE_URL: FAKE_LOGIN_ENDPOINT,
-    });
     sinon
       .stub(TeamsUserCredential.prototype, <any>"getSSOToken")
       .callsFake((): Promise<AccessToken | null> => {
@@ -39,11 +33,16 @@ describe("TeamsUserCredential Tests - Browser", () => {
   });
   after(() => {
     sinon.restore();
-    mockedEnvRestore();
+  });
+
+  beforeEach(() => {
+    credential = new TeamsUserCredential({
+      initiateLoginEndpoint: FAKE_LOGIN_ENDPOINT,
+      clientId: env.SDK_INTEGRATION_TEST_M365_AAD_CLIENT_ID,
+    });
   });
 
   it("GetUserInfo should success with SSOToken", async function () {
-    const credential: TeamsUserCredential = new TeamsUserCredential();
     const info = await credential.getUserInfo();
     assert.strictEqual(info.preferredUserName, env.SDK_INTEGRATION_TEST_ACCOUNT_NAME);
     assert.strictEqual(info.displayName, env.SDK_INTEGRATION_TEST_ACCOUNT_NAME.split("@", 1)[0]);
@@ -51,7 +50,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
   });
 
   it("GetToken should success with consent scope", async function () {
-    const credential: TeamsUserCredential = new TeamsUserCredential();
     // await expect(credential.getToken(["User.Read"])).to.be.eventually.have.property("token");
     const accessToken = await credential.getToken(["User.Read"]);
     const decodedToken = jwtDecode<AADJwtPayLoad>(accessToken!.token);
@@ -60,7 +58,6 @@ describe("TeamsUserCredential Tests - Browser", () => {
   });
 
   it("GetToken should throw UiRequiredError with unconsent scope", async function () {
-    const credential: TeamsUserCredential = new TeamsUserCredential();
     await expect(credential.getToken(["Calendars.Read"]))
       .to.eventually.be.rejectedWith(ErrorWithCode)
       .and.property("code", UIREQUIREDERROR);

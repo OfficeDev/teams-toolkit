@@ -28,7 +28,6 @@ export interface AuthenticationConfiguration {
     readonly clientId?: string;
     readonly clientSecret?: string;
     readonly initiateLoginEndpoint?: string;
-    readonly simpleAuthEndpoint?: string;
     readonly tenantId?: string;
 }
 

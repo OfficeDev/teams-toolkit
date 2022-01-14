@@ -24,7 +24,6 @@ describe("ConfigurationProvider Tests - Node", () => {
   const tenantId = "fake_tenant_id";
   const clientSecret = "fake_client_secret";
   const authorityHost = "https://fake_authority_host";
-  const simpleAuthEndpoint = "https://fake_simple_auth";
   const initiateLoginEndpoint = "https://fake_login_endpoint";
   const applicationIdUri = "fake_application_id";
 
@@ -37,7 +36,6 @@ describe("ConfigurationProvider Tests - Node", () => {
       M365_CLIENT_SECRET: clientSecret,
       M365_TENANT_ID: tenantId,
       M365_AUTHORITY_HOST: authorityHost,
-      SIMPLE_AUTH_ENDPOINT: simpleAuthEndpoint,
       INITIATE_LOGIN_ENDPOINT: initiateLoginEndpoint,
       M365_APPLICATION_ID_URI: applicationIdUri,
       // API
@@ -62,7 +60,6 @@ describe("ConfigurationProvider Tests - Node", () => {
     assert.strictEqual(authConfig.tenantId, tenantId);
     assert.strictEqual(authConfig.clientId, clientId);
     assert.strictEqual(authConfig.clientSecret, clientSecret);
-    assert.strictEqual(authConfig.simpleAuthEndpoint, simpleAuthEndpoint);
     assert.strictEqual(authConfig.initiateLoginEndpoint, initiateLoginEndpoint);
     assert.strictEqual(authConfig.applicationIdUri, applicationIdUri);
   });

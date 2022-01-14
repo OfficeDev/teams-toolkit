@@ -62,13 +62,6 @@ export interface AuthenticationConfiguration {
   readonly certificateContent?: string;
 
   /**
-   * Endpoint of auth service provisioned by Teams Framework. Default value comes from SIMPLE_AUTH_ENDPOINT environment variable.
-   *
-   * @readonly
-   */
-  readonly simpleAuthEndpoint?: string;
-
-  /**
    * Login page for Teams to redirect to.  Default value comes from INITIATE_LOGIN_ENDPOINT environment variable.
    *
    * @readonly

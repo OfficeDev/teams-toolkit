@@ -12,7 +12,7 @@ import { SqlConfiguration } from "../models/configuration";
  * @beta
  */
 export class DefaultTediousConnectionConfiguration {
-  constructor() {
+  constructor(sqlConfig?: SqlConfiguration) {
     throw new ErrorWithCode(
       formatString(
         ErrorMessage.BrowserRuntimeNotSupported,
@@ -37,19 +37,4 @@ export class DefaultTediousConnectionConfiguration {
       ErrorCode.RuntimeNotSupported
     );
   }
-}
-
-/**
- * @returns SQL configuration which is constructed from predefined env variables.
- *
- * @remarks
- * Used variables: SQL_ENDPOINT, SQL_USER_NAME, SQL_PASSWORD, SQL_DATABASE_NAME, IDENTITY_ID
- *
- * @beta
- */
-export function getSqlConfigFromEnv(): SqlConfiguration {
-  throw new ErrorWithCode(
-    formatString(ErrorMessage.BrowserRuntimeNotSupported, "getSqlConfigFromEnv"),
-    ErrorCode.RuntimeNotSupported
-  );
 }

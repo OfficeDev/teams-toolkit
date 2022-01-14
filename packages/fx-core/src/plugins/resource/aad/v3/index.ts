@@ -87,7 +87,7 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
   name = Plugins.pluginNameComplex;
   type: "resource" = "resource";
   resourceType = "Azure AD App";
-  description = "Azure AD App";
+  description = "Azure AD App provide single-sign-on feature for Teams App";
 
   /**
    * when AAD is added, permissions.json is created

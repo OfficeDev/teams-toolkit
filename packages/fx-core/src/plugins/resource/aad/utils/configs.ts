@@ -29,7 +29,6 @@ import {
 } from "../../../../common/localSettingsConstants";
 import { getPermissionRequest } from "../v3";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
-import { AADApp, TeamsFxSolutionSettings } from "../../../../../../api/build/v3";
 import { BotOptionItem, TabOptionItem } from "../../../solution/fx-solution/question";
 
 export class ConfigUtils {
@@ -158,7 +157,7 @@ export class ProvisionConfig {
       return err(permissionRes.error);
     }
     this.permissionRequest = permissionRes.value;
-    const config = envInfo.state[BuiltInResourcePluginNames.aad] as AADApp;
+    const config = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
     const objectId = config?.objectId;
     if (objectId) {
       this.objectId = objectId as string;
@@ -247,9 +246,9 @@ export class ProvisionConfig {
   public saveConfigIntoEnvInfo(envInfo: v3.EnvInfoV3, tenantId: string): void {
     if (!envInfo.state[BuiltInResourcePluginNames.aad]) {
       envInfo.state[BuiltInResourcePluginNames.aad] = {};
-      (envInfo.state[BuiltInResourcePluginNames.aad] as AADApp).secretFields = ["clientSecret"];
+      (envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp).secretFields = ["clientSecret"];
     }
-    const envState = envInfo.state[BuiltInResourcePluginNames.aad] as AADApp;
+    const envState = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
     const oauthAuthority = ProvisionConfig.getOauthAuthority(tenantId);
     if (this.clientId) envState.clientId = this.clientId;
     if (this.password) envState.clientSecret = this.password;
@@ -338,7 +337,7 @@ export class SetApplicationInContextConfig {
     }
   }
   public restoreConfigFromEnvInfo(ctx: v2.Context, envInfo: v3.EnvInfoV3): void {
-    const solutionSettings = ctx.projectSetting.solutionSettings as TeamsFxSolutionSettings;
+    const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
     let frontendDomain = envInfo.state[BuiltInResourcePluginNames.aad].domain;
     if (!frontendDomain) {
       const tabModules = solutionSettings.modules.filter((m) =>
@@ -370,7 +369,7 @@ export class SetApplicationInContextConfig {
       this.botId = format(botId as string, Formats.UUID);
     }
 
-    const clientId: ConfigValue = (envInfo.state[BuiltInResourcePluginNames.aad] as AADApp)
+    const clientId: ConfigValue = (envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp)
       .clientId;
     if (clientId) {
       this.clientId = clientId as string;
@@ -453,7 +452,7 @@ export class PostProvisionConfig {
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3
   ): Promise<void> {
-    const solutionSettings = ctx.projectSetting.solutionSettings as TeamsFxSolutionSettings;
+    const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
     let frontendEndpoint = envInfo.state[BuiltInResourcePluginNames.aad]?.endpoint;
     if (!frontendEndpoint) {
       const tabModules = solutionSettings.modules.filter((m) =>

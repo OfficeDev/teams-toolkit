@@ -281,7 +281,7 @@ async function listCollaboratorImpl(
       ui?.showMessage(
         "info",
         `List M365 Teams App${
-          CollaborationUtil.isSpfxProject(param.ctx) ? "(With AAD App)" : ""
+          !CollaborationUtil.isSpfxProject(param.ctx) ? "(With AAD App)" : ""
         } owners success, you can view it in Teams Toolkit output window`,
         false
       );

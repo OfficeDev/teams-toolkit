@@ -250,16 +250,16 @@ export class SqlPluginImpl {
     managementClient: ManagementClient
   ): Promise<void> {
     let retryCount = 0;
-    const databases: { [key: string]: boolean } = {};
+    const databaseWithUser: { [key: string]: boolean } = {};
     this.config.databases.forEach((element) => {
-      databases[element] = false;
+      databaseWithUser[element] = false;
     });
     while (true) {
       try {
-        for (const database in databases) {
-          if (!databases[database]) {
+        for (const database in databaseWithUser) {
+          if (!databaseWithUser[database]) {
             await sqlClient.addDatabaseUser(database);
-            databases[database] = true;
+            databaseWithUser[database] = true;
           }
         }
         return;
@@ -281,9 +281,6 @@ export class SqlPluginImpl {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
-    if (ctx.answers?.existingResources?.includes(Constants.pluginFullName)) {
-      return this.addNewDatabase(ctx);
-    }
     const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
     const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
@@ -324,7 +321,7 @@ export class SqlPluginImpl {
     return ok(result);
   }
 
-  public async addNewDatabase(ctx: PluginContext): Promise<Result<any, FxError>> {
+  public async generateNewDatabaseBicepSnippet(ctx: PluginContext): Promise<Result<any, FxError>> {
     const suffix = getUuid().substring(0, 6);
     const compileCtx = {
       suffix: suffix,

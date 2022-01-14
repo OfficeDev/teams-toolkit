@@ -75,7 +75,7 @@ export default class SampleGallery extends React.Component<any, any> {
       <div className="sample-gallery">
         <div className="section" id="title">
           <div className="logo">
-            <Icon iconName="Heart" className="logo" />
+            <Icon iconName="Library" className="logo" />
           </div>
           <div className="title">
             <h2>Samples</h2>
@@ -251,6 +251,102 @@ class SampleAppCard extends React.Component<any, any> {
           >
             Create
           </VSCodeButton>
+        </div>
+      </div>
+    );
+  }
+
+  cloneSampleApp = (sampleAppName: string, sampleAppUrl: string, sampleAppFolder: string) => {
+    vscode.postMessage({
+      command: Commands.CloneSampleApp,
+      data: {
+        appName: sampleAppName,
+        appUrl: sampleAppUrl,
+        appFolder: sampleAppFolder,
+      },
+    });
+  };
+
+  viewSampleApp = (sampleAppFolder: string, sampleBaseUrl: string) => {
+    vscode.postMessage({
+      command: Commands.OpenExternalLink,
+      data: sampleBaseUrl + sampleAppFolder,
+    });
+  };
+}
+
+class SampleCard extends React.Component<any, any> {
+  constructor(props: any) {
+    super(props);
+  }
+
+  render() {
+    return (
+      <div className="sample-card" tabIndex={0}>
+        <label
+          style={{
+            position: "absolute",
+            top: "auto",
+            left: -9999,
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+          }}
+        >
+          sample app card
+        </label>
+        <Image src={this.props.image} width={203} height={117} />
+        <label
+          style={{
+            position: "absolute",
+            top: "auto",
+            left: -9999,
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+          }}
+          id="tagLabel"
+        >
+          sample app tags:
+        </label>
+        <div className="section" aria-labelledby="tagLabel">
+          {this.props.tags &&
+            this.props.tags.map((value: string) => {
+              return <VSCodeTag className="tag">{value}</VSCodeTag>;
+            })}
+        </div>
+        <label
+          style={{
+            position: "absolute",
+            top: "auto",
+            left: -9999,
+            width: 1,
+            height: 1,
+            overflow: "hidden",
+          }}
+          id="titleLabel"
+        >
+          sample app title:
+        </label>
+        <h2>{this.props.title}</h2>
+        <div className="estimation-time">
+          <Image
+            src={Watch}
+            width={16}
+            height={16}
+            style={{ marginTop: "auto", marginBottom: "auto" }}
+          ></Image>
+
+          <label style={{ paddingLeft: 4 }}>{this.props.time}</label>
+        </div>
+        <div className="configuration">
+          <Image
+            src={Settings}
+            width={16}
+            height={16}
+            style={{ marginTop: "auto", marginBottom: "auto" }}
+          ></Image>
+          <label style={{ paddingLeft: 4 }}>{this.props.configuration}</label>
         </div>
       </div>
     );

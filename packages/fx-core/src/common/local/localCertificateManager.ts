@@ -49,16 +49,22 @@ export class LocalCertificateManager {
    * - Add to cert store if not trusted (friendly name as well)
    */
   public async setupCertificate(needTrust: boolean): Promise<LocalCertificate> {
-    const localCert: LocalCertificate = this.getCertificate();
+    const certFilePath = `${this.certFolder}/${LocalDebugCertificate.CertFileName}`;
+    const keyFilePath = `${this.certFolder}/${LocalDebugCertificate.KeyFileName}`;
+    const localCert: LocalCertificate = {
+      certPath: certFilePath,
+      keyPath: keyFilePath,
+    };
+
     try {
       let certThumbprint: string | undefined = undefined;
       await fs.ensureDir(this.certFolder);
 
       this.logger?.info("Detecting/Verifying local certificate.");
 
-      if ((await fs.pathExists(localCert.certPath)) && (await fs.pathExists(localCert.keyPath))) {
-        const certContent = await fs.readFile(localCert.certPath, { encoding: "utf8" });
-        const keyContent = await fs.readFile(localCert.keyPath, { encoding: "utf8" });
+      if ((await fs.pathExists(certFilePath)) && (await fs.pathExists(keyFilePath))) {
+        const certContent = await fs.readFile(certFilePath, { encoding: "utf8" });
+        const keyContent = await fs.readFile(keyFilePath, { encoding: "utf8" });
         const verifyRes = this.verifyCertificateContent(certContent, keyContent);
         if (verifyRes[1]) {
           certThumbprint = verifyRes[0];
@@ -67,7 +73,7 @@ export class LocalCertificateManager {
 
       if (!certThumbprint) {
         // generate cert and key
-        certThumbprint = await this.generateCertificate(localCert.certPath, localCert.keyPath);
+        certThumbprint = await this.generateCertificate(certFilePath, keyFilePath);
       }
 
       if (needTrust) {
@@ -88,15 +94,6 @@ export class LocalCertificateManager {
     } finally {
       return localCert;
     }
-  }
-
-  public getCertificate(): LocalCertificate {
-    const certFilePath = `${this.certFolder}/${LocalDebugCertificate.CertFileName}`;
-    const keyFilePath = `${this.certFolder}/${LocalDebugCertificate.KeyFileName}`;
-    return {
-      certPath: certFilePath,
-      keyPath: keyFilePath,
-    };
   }
 
   private async generateCertificate(certFile: string, keyFile: string): Promise<string> {

@@ -128,16 +128,10 @@ export class LocalEnvManager {
     });
   }
 
-  public async resolveLocalCertificate(trustDevCert: boolean): Promise<boolean> {
-    try {
-      const certManager = new LocalCertificateManager(this.ui, this.logger);
-      const localCert = await certManager.setupCertificate(trustDevCert);
-      return !!localCert.isTrusted;
-    } catch (error: any) {
-      // do not break if cert error
-      this.logger?.warning(`Failed to setup local certificate. ${error?.message}`);
-      return false;
-    }
+  public async resolveLocalCertificate(trustDevCert: boolean): Promise<boolean | undefined> {
+    const certManager = new LocalCertificateManager(this.ui, this.logger);
+    const localCert = await certManager.setupCertificate(trustDevCert);
+    return localCert.isTrusted;
   }
 
   // Retry logic when reading project config files in case of read-write conflict

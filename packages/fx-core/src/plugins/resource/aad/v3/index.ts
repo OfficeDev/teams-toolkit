@@ -10,6 +10,7 @@ import {
   ok,
   ProjectSettings,
   Result,
+  TeamsAppManifest,
   TokenProvider as TokenProviderInAPI,
   UserError,
   v2,
@@ -90,6 +91,7 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
 
   /**
    * when AAD is added, permissions.json is created
+   * manifest template will also be updated
    */
   async addResource(
     ctx: v3.ContextWithManifest,
@@ -97,6 +99,14 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
   ): Promise<Result<Void, FxError>> {
     const res = await createPermissionRequestFile(inputs.projectPath);
     if (res.isErr()) return err(res.error);
+    (ctx.appManifest.local as TeamsAppManifest).webApplicationInfo = {
+      id: "{{localSettings.auth.clientId}}",
+      resource: "{{{localSettings.auth.applicationIdUris}}}",
+    };
+    (ctx.appManifest.remote as TeamsAppManifest).webApplicationInfo = {
+      id: `{{state.${Plugins.pluginNameComplex}.clientId}}`,
+      resource: `{{{state.${Plugins.pluginNameComplex}.applicationIdUris}}}`,
+    };
     return ok(Void);
   }
 

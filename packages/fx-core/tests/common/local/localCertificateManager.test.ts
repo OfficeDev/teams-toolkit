@@ -12,6 +12,7 @@ import os from "os";
 import * as path from "path";
 
 import { LocalCertificateManager } from "../../../src/common/local/localCertificateManager";
+import * as ps from "../../../src/common/local/process";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
 
 chai.use(chaiAsPromised);
@@ -36,8 +37,17 @@ describe("certificate", () => {
 
     beforeEach(() => {
       sinon.stub(os, "homedir").callsFake(() => fakeHomeDir);
-      sinon.stub(os, "type").returns("Linux");
-
+      sinon.stub(ps, "execPowerShell").callsFake(async (command: string) => {
+        if (command.startsWith("Get-ChildItem")) {
+          // Command: `(Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match '${thumbprint}' }).Thumbprint`
+          return command.split("'")[1];
+        } else if (command.startsWith("Import-Certificate")) {
+          // Command: `(Import-Certificate -FilePath '${certPath}' -CertStoreLocation Cert:\\CurrentUser\\Root)[0].Thumbprint`
+          return "thumbprint";
+        } else {
+          return "";
+        }
+      });
       fs.emptyDirSync(fakeHomeDir);
       certManager = new LocalCertificateManager();
     });
@@ -46,47 +56,68 @@ describe("certificate", () => {
       sinon.restore();
     });
 
-    it("happy path", async () => {
-      await certManager.setupCertificate(true);
+    [
+      { osType: "Windows_NT", isTrusted: true },
+      { osType: "Linux", isTrusted: undefined },
+    ].forEach((data) => {
+      it(`happy path ${data.osType}`, async () => {
+        sinon.stub(os, "type").returns(data.osType);
+        const res = await certManager.setupCertificate(true);
 
-      chai.assert.isTrue(fs.pathExistsSync(expectedCertFile));
-      const certContent = fs.readFileSync(expectedCertFile, { encoding: "utf8" });
-      chai.assert.isTrue(
-        /-----BEGIN CERTIFICATE-----.*-----END CERTIFICATE-----/gs.test(certContent)
-      );
-      chai.assert.isTrue(fs.pathExistsSync(expectedKeyFile));
-      const keyContent = fs.readFileSync(expectedKeyFile, { encoding: "utf8" });
-      chai.assert.isTrue(
-        /-----BEGIN RSA PRIVATE KEY-----.*-----END RSA PRIVATE KEY-----/gs.test(keyContent)
-      );
+        chai.assert.isTrue(fs.pathExistsSync(expectedCertFile));
+        const certContent = fs.readFileSync(expectedCertFile, { encoding: "utf8" });
+        chai.assert.isTrue(
+          /-----BEGIN CERTIFICATE-----.*-----END CERTIFICATE-----/gs.test(certContent)
+        );
+        chai.assert.isTrue(fs.pathExistsSync(expectedKeyFile));
+        const keyContent = fs.readFileSync(expectedKeyFile, { encoding: "utf8" });
+        chai.assert.isTrue(
+          /-----BEGIN RSA PRIVATE KEY-----.*-----END RSA PRIVATE KEY-----/gs.test(keyContent)
+        );
+        chai.assert.equal(res.isTrusted, data.isTrusted);
+      });
     });
 
-    it("skip trust", async () => {
-      await certManager.setupCertificate(false);
+    [
+      { osType: "Windows_NT", isTrusted: undefined },
+      { osType: "Linux", isTrusted: undefined },
+    ].forEach((data) => {
+      it(`skip trust ${data.osType}`, async () => {
+        sinon.stub(os, "type").returns(data.osType);
+        const res = await certManager.setupCertificate(false);
 
-      chai.assert.isTrue(fs.pathExistsSync(expectedCertFile));
-      const certContent = fs.readFileSync(expectedCertFile, { encoding: "utf8" });
-      chai.assert.isTrue(
-        /-----BEGIN CERTIFICATE-----.*-----END CERTIFICATE-----/gs.test(certContent)
-      );
-      chai.assert.isTrue(fs.pathExistsSync(expectedKeyFile));
-      const keyContent = fs.readFileSync(expectedKeyFile, { encoding: "utf8" });
-      chai.assert.isTrue(
-        /-----BEGIN RSA PRIVATE KEY-----.*-----END RSA PRIVATE KEY-----/gs.test(keyContent)
-      );
+        chai.assert.isTrue(fs.pathExistsSync(expectedCertFile));
+        const certContent = fs.readFileSync(expectedCertFile, { encoding: "utf8" });
+        chai.assert.isTrue(
+          /-----BEGIN CERTIFICATE-----.*-----END CERTIFICATE-----/gs.test(certContent)
+        );
+        chai.assert.isTrue(fs.pathExistsSync(expectedKeyFile));
+        const keyContent = fs.readFileSync(expectedKeyFile, { encoding: "utf8" });
+        chai.assert.isTrue(
+          /-----BEGIN RSA PRIVATE KEY-----.*-----END RSA PRIVATE KEY-----/gs.test(keyContent)
+        );
+        chai.assert.equal(res.isTrusted, data.isTrusted);
+      });
     });
 
-    it("existing verified cert", async () => {
-      await certManager.setupCertificate(true);
-      const certContent1 = fs.readFileSync(expectedCertFile, { encoding: "utf8" });
-      const thumbprint1 = getCertThumbprint(certContent1);
+    [
+      { osType: "Windows_NT", isTrusted: true },
+      { osType: "Linux", isTrusted: undefined },
+    ].forEach((data) => {
+      it(`existing verified cert ${data.osType}`, async () => {
+        sinon.stub(os, "type").returns(data.osType);
+        let res = await certManager.setupCertificate(true);
+        const certContent1 = fs.readFileSync(expectedCertFile, { encoding: "utf8" });
+        const thumbprint1 = getCertThumbprint(certContent1);
 
-      await certManager.setupCertificate(true);
-      chai.assert.isTrue(fs.pathExistsSync(expectedCertFile));
-      chai.assert.isTrue(fs.pathExistsSync(expectedKeyFile));
-      const certContent2 = fs.readFileSync(expectedCertFile, { encoding: "utf8" });
-      const thumbprint2 = getCertThumbprint(certContent2);
-      chai.assert.equal(thumbprint1, thumbprint2);
+        res = await certManager.setupCertificate(true);
+        chai.assert.isTrue(fs.pathExistsSync(expectedCertFile));
+        chai.assert.isTrue(fs.pathExistsSync(expectedKeyFile));
+        const certContent2 = fs.readFileSync(expectedCertFile, { encoding: "utf8" });
+        const thumbprint2 = getCertThumbprint(certContent2);
+        chai.assert.equal(thumbprint1, thumbprint2);
+        chai.assert.equal(res.isTrusted, data.isTrusted);
+      });
     });
   });
 });

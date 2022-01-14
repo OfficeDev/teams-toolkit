@@ -49,43 +49,45 @@ export class LocalCertificateManager {
    * - Add to cert store if not trusted (friendly name as well)
    */
   public async setupCertificate(needTrust: boolean): Promise<LocalCertificate> {
-    const localCert: LocalCertificate = {
-      ...this.getCertificate(),
-      isTrusted: false,
-    };
-    let certThumbprint: string | undefined = undefined;
-    await fs.ensureDir(this.certFolder);
+    const localCert: LocalCertificate = this.getCertificate();
+    try {
+      let certThumbprint: string | undefined = undefined;
+      await fs.ensureDir(this.certFolder);
 
-    this.logger?.info("Detecting/Verifying local certificate.");
+      this.logger?.info("Detecting/Verifying local certificate.");
 
-    if ((await fs.pathExists(localCert.certPath)) && (await fs.pathExists(localCert.keyPath))) {
-      const certContent = await fs.readFile(localCert.certPath, { encoding: "utf8" });
-      const keyContent = await fs.readFile(localCert.keyPath, { encoding: "utf8" });
-      const verifyRes = this.verifyCertificateContent(certContent, keyContent);
-      if (verifyRes[1]) {
-        certThumbprint = verifyRes[0];
+      if ((await fs.pathExists(localCert.certPath)) && (await fs.pathExists(localCert.keyPath))) {
+        const certContent = await fs.readFile(localCert.certPath, { encoding: "utf8" });
+        const keyContent = await fs.readFile(localCert.keyPath, { encoding: "utf8" });
+        const verifyRes = this.verifyCertificateContent(certContent, keyContent);
+        if (verifyRes[1]) {
+          certThumbprint = verifyRes[0];
+        }
       }
-    }
 
-    if (!certThumbprint) {
-      // generate cert and key
-      certThumbprint = await this.generateCertificate(localCert.certPath, localCert.keyPath);
-    }
-
-    if (needTrust) {
-      if (certThumbprint && (await this.verifyCertificateInStore(certThumbprint))) {
-        // already trusted
-        localCert.isTrusted = true;
-      } else {
-        localCert.isTrusted = await this.trustCertificate(
-          localCert.certPath,
-          certThumbprint,
-          LocalDebugCertificate.FriendlyName
-        );
+      if (!certThumbprint) {
+        // generate cert and key
+        certThumbprint = await this.generateCertificate(localCert.certPath, localCert.keyPath);
       }
-    }
 
-    return localCert;
+      if (needTrust) {
+        if (certThumbprint && (await this.verifyCertificateInStore(certThumbprint))) {
+          // already trusted
+          localCert.isTrusted = true;
+        } else {
+          localCert.isTrusted = await this.trustCertificate(
+            localCert.certPath,
+            certThumbprint,
+            LocalDebugCertificate.FriendlyName
+          );
+        }
+      }
+    } catch (error: any) {
+      this.logger?.warning(`Failed to setup certificate. Error: ${error}`);
+      localCert.isTrusted = false;
+    } finally {
+      return localCert;
+    }
   }
 
   public getCertificate(): LocalCertificate {
@@ -247,7 +249,7 @@ export class LocalCertificateManager {
     }
   }
 
-  private async verifyCertificateInStore(thumbprint: string): Promise<boolean> {
+  private async verifyCertificateInStore(thumbprint: string): Promise<boolean | undefined> {
     try {
       if (os.type() === "Windows_NT") {
         const getCertCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match '${thumbprint}' }).Thumbprint`;
@@ -270,7 +272,7 @@ export class LocalCertificateManager {
         return false;
       } else {
         // TODO: Linux
-        return false;
+        return undefined;
       }
     } catch (error) {
       // treat any error as not verified, to not block the main progress
@@ -283,7 +285,7 @@ export class LocalCertificateManager {
     certPath: string,
     thumbprint: string,
     friendlyName: string
-  ): Promise<boolean> {
+  ): Promise<boolean | undefined> {
     try {
       if (os.type() === "Windows_NT") {
         if (!(await this.waitForUserConfirm())) {
@@ -309,7 +311,7 @@ export class LocalCertificateManager {
         return true;
       } else {
         // TODO: Linux
-        return false;
+        return undefined;
       }
     } catch (error) {
       // treat any error as install failure, to not block the main progress

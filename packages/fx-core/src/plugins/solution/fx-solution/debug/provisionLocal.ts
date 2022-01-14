@@ -237,8 +237,6 @@ export async function configLocalDebugSettings(
 
           const certManager = new LocalCertificateManager(ctx.userInteraction, ctx.logProvider);
 
-          // TODO: remove setup local certificate
-          // const localCert = certManager.getCertificate();
           const localCert = await certManager.setupCertificate(trustDevCert);
           if (localCert) {
             localSettings.frontend.sslCertFile = localCert.certPath;

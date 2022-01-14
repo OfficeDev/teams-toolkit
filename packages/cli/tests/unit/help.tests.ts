@@ -1,28 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import * as sinon from "sinon";
 import { Stage, SystemError } from "@microsoft/teamsfx-api";
 
 import HelpParamGenerator from "../../src/helpParamGenerator";
 import { expect } from "./utils";
 import { sqlPasswordConfirmQuestionName } from "../../src/constants";
-import appStudioLogin from "../../src/commonlib/appStudioLogin";
 
 describe("Help Parameter Tests", function () {
-  const sandbox = sinon.createSandbox();
-
-  before(() => {
-    sandbox.stub(appStudioLogin, "getJsonObject").resolves({ upn: "fakeUserPrincipalName" });
-  });
-
   beforeEach(async () => {
     const result = await HelpParamGenerator.initializeQuestionsForHelp();
     expect(result.isOk() ? result.value : result.error).to.be.true;
-  });
-
-  after(() => {
-    sandbox.restore();
   });
 
   it("No Initalized Error", () => {

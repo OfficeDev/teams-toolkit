@@ -333,8 +333,10 @@ export async function getQuestions(
       }
     }
   } else if (stage === Stage.grantPermission) {
-    const jsonObject = await tokenProvider.appStudioToken.getJsonObject();
-    node.addChild(new QTreeNode(getUserEmailQuestion((jsonObject as any).upn)));
+    if (isDynamicQuestion) {
+      const jsonObject = await tokenProvider.appStudioToken.getJsonObject();
+      node.addChild(new QTreeNode(getUserEmailQuestion((jsonObject as any).upn)));
+    }
   }
   return ok(node);
 }

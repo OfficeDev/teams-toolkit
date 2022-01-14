@@ -1168,8 +1168,10 @@ export class TeamsAppSolution implements Solution {
         }
       }
     } else if (stage === Stage.grantPermission) {
-      const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
-      node.addChild(new QTreeNode(getUserEmailQuestion((appStudioTokenJson as any)?.upn)));
+      if (isDynamicQuestion) {
+        const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+        node.addChild(new QTreeNode(getUserEmailQuestion((appStudioTokenJson as any)?.upn)));
+      }
     }
     return ok(node);
   }

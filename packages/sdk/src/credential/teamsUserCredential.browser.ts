@@ -4,26 +4,24 @@
 import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
 import { UserInfo } from "../models/userinfo";
 import { ErrorCode, ErrorMessage, ErrorWithCode } from "../core/errors";
-import { Cache } from "../core/cache.browser";
 import * as microsoftTeams from "@microsoft/teams-js";
 import { getAuthenticationConfiguration } from "../core/configurationProvider";
 import { AuthenticationConfiguration } from "../models/configuration";
-import { AuthCodeResult } from "../models/authCodeResult";
-import axios, { AxiosInstance } from "axios";
-import { GrantType } from "../models/grantType";
-import { AccessTokenResult } from "../models/accessTokenResult";
-import { validateScopesType, getUserInfoFromSsoToken, parseJwt } from "../util/utils";
+import {
+  validateScopesType,
+  getUserInfoFromSsoToken,
+  parseJwt,
+  getTenantIdAndLoginHintFromSsoToken,
+  parseAccessTokenFromAuthCodeTokenResponse,
+} from "../util/utils";
 import { formatString } from "../util/utils";
 import { internalLogger } from "../util/logger";
+import { PublicClientApplication } from "@azure/msal-browser";
 
-const accessTokenCacheKeyPrefix = "accessToken";
-const separator = "-";
 const tokenRefreshTimeSpanInMillisecond = 5 * 60 * 1000;
 const initializeTeamsSdkTimeoutInMillisecond = 5000;
 const loginPageWidth = 600;
 const loginPageHeight = 535;
-const maxRetryCount = 3;
-const retryTimeSpanInMillisecond = 3000;
 
 /**
  * Represent Teams current user's identity, and it is used within Teams tab application.
@@ -36,6 +34,10 @@ const retryTimeSpanInMillisecond = 3000;
 export class TeamsUserCredential implements TokenCredential {
   private readonly config: AuthenticationConfiguration;
   private ssoToken: AccessToken | null;
+  private initialized: boolean;
+  private msalInstance?: PublicClientApplication;
+  private tid?: string;
+  private loginHint?: string;
 
   /**
    * Constructor of TeamsUserCredential.
@@ -45,7 +47,6 @@ export class TeamsUserCredential implements TokenCredential {
    * ```typescript
    * const config = {
    *  authentication: {
-   *    runtimeConnectorEndpoint: "https://xxx.xxx.com",
    *    initiateLoginEndpoint: "https://localhost:3000/auth-start.html",
    *    clientId: "xxx"
    *   }
@@ -63,6 +64,7 @@ export class TeamsUserCredential implements TokenCredential {
     internalLogger.info("Create teams user credential");
     this.config = this.loadAndValidateConfig();
     this.ssoToken = null;
+    this.initialized = false;
   }
 
   /**
@@ -81,42 +83,44 @@ export class TeamsUserCredential implements TokenCredential {
    * @param scopes - The list of scopes for which the token will have access, before that, we will request user to consent.
    *
    * @throws {@link ErrorCode|InternalError} when failed to login with unknown error.
-   * @throws {@link ErrorCode|ServiceError} when simple auth server failed to exchange access token.
    * @throws {@link ErrorCode|ConsentFailed} when user canceled or failed to consent.
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    *
    * @beta
    */
-  public async login(scopes: string | string[]): Promise<void> {
+  async login(scopes: string | string[]): Promise<AccessToken> {
     validateScopesType(scopes);
     const scopesStr = typeof scopes === "string" ? scopes : scopes.join(" ");
 
     internalLogger.info(`Popup login page to get user's access token with scopes: ${scopesStr}`);
 
-    return new Promise<void>((resolve, reject) => {
+    if (!this.initialized) {
+      await this.init();
+    }
+
+    return new Promise<AccessToken>((resolve, reject) => {
       microsoftTeams.initialize(() => {
         microsoftTeams.authentication.authenticate({
           url: `${this.config.initiateLoginEndpoint}?clientId=${
             this.config.clientId
-          }&scope=${encodeURI(scopesStr)}`,
+          }&scope=${encodeURI(scopesStr)}&loginHint=${this.loginHint}`,
           width: loginPageWidth,
           height: loginPageHeight,
           successCallback: async (result?: string) => {
             if (!result) {
-              const errorMsg = "Get empty authentication result from Teams";
+              const errorMsg = "Get empty authentication result from MSAL";
 
               internalLogger.error(errorMsg);
               reject(new ErrorWithCode(errorMsg, ErrorCode.InternalError));
               return;
             }
 
-            const authCodeResult: AuthCodeResult = JSON.parse(result);
             try {
-              await this.exchangeAccessTokenFromSimpleAuthServer(scopesStr, authCodeResult);
-              resolve();
-            } catch (err) {
-              reject(this.generateAuthServerError(err));
+              const accessToken = parseAccessTokenFromAuthCodeTokenResponse(result);
+              resolve(accessToken);
+            } catch (error: any) {
+              reject(error);
             }
           },
           failureCallback: (reason?: string) => {
@@ -153,7 +157,6 @@ export class TeamsUserCredential implements TokenCredential {
    *
    * @throws {@link ErrorCode|InternalError} when failed to get access token with unknown error.
    * @throws {@link ErrorCode|UiRequiredError} when need user consent to get access token.
-   * @throws {@link ErrorCode|ServiceError} when failed to get access token from simple auth server.
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
    * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is nodeJS.
    *
@@ -178,21 +181,53 @@ export class TeamsUserCredential implements TokenCredential {
       return ssoToken;
     } else {
       internalLogger.info("Get access token with scopes: " + scopeStr);
-      const cachedKey = await this.getAccessTokenCacheKey(scopeStr);
-      const cachedToken = this.getTokenCache(cachedKey);
 
-      if (cachedToken) {
-        if (!this.isAccessTokenNearExpired(cachedToken)) {
-          internalLogger.verbose("Get access token from cache");
-          return cachedToken;
-        } else {
-          internalLogger.verbose("Cached access token is expired");
-        }
-      } else {
-        internalLogger.verbose("No cached access token");
+      if (!this.initialized) {
+        await this.init();
       }
 
-      const accessToken = await this.getAndCacheAccessTokenFromSimpleAuthServer(scopeStr);
+      let tokenResponse;
+      const scopesArray = typeof scopes === "string" ? scopes.split(" ") : scopes;
+      const domain = window.location.origin;
+
+      // First try to get Access Token from cache.
+      try {
+        const account = this.msalInstance!.getAccountByUsername(this.loginHint!);
+        const scopesRequestForAcquireTokenSilent = {
+          scopes: scopesArray,
+          account: account ?? undefined,
+          redirectUri: `${domain}/blank-auth-end.html`,
+        };
+        tokenResponse = await this.msalInstance!.acquireTokenSilent(
+          scopesRequestForAcquireTokenSilent
+        );
+      } catch (error: any) {
+        const acquireTokenSilentFailedMessage = `Failed to call acquireTokenSilent. Reason: ${error?.message}. `;
+        internalLogger.verbose(acquireTokenSilentFailedMessage);
+      }
+
+      if (!tokenResponse) {
+        // If fail to get Access Token from cache, try to get Access token by silent login.
+        try {
+          const scopesRequestForSsoSilent = {
+            scopes: scopesArray,
+            loginHint: this.loginHint,
+            redirectUri: `${domain}/blank-auth-end.html`,
+          };
+          tokenResponse = await this.msalInstance!.ssoSilent(scopesRequestForSsoSilent);
+        } catch (error: any) {
+          const ssoSilentFailedMessage = `Failed to call ssoSilent. Reason: ${error?.message}. `;
+          internalLogger.verbose(ssoSilentFailedMessage);
+        }
+      }
+
+      if (!tokenResponse) {
+        const errorMsg = `Failed to get access token cache silently, please login first: you need login first before get access token.`;
+        internalLogger.error(errorMsg);
+        throw new ErrorWithCode(errorMsg, ErrorCode.UiRequiredError);
+      }
+
+      const accessToken = parseAccessTokenFromAuthCodeTokenResponse(tokenResponse);
       return accessToken;
     }
   }
@@ -219,73 +254,24 @@ export class TeamsUserCredential implements TokenCredential {
     return getUserInfoFromSsoToken(ssoToken.token);
   }
 
-  private async exchangeAccessTokenFromSimpleAuthServer(
-    scopesStr: string,
-    authCodeResult: AuthCodeResult
-  ): Promise<void> {
-    const axiosInstance: AxiosInstance = await this.getAxiosInstance();
+  private async init(): Promise<void> {
+    const ssoToken = await this.getSSOToken();
+    const info = getTenantIdAndLoginHintFromSsoToken(ssoToken.token);
+    this.loginHint = info.loginHint;
+    this.tid = info.tid;
 
-    let retryCount = 0;
-    while (true) {
-      try {
-        const response = await axiosInstance.post("/auth/token", {
-          scope: scopesStr,
-          code: authCodeResult.code,
-          code_verifier: authCodeResult.codeVerifier,
-          redirect_uri: authCodeResult.redirectUri,
-          grant_type: GrantType.authCode,
-        });
+    const msalConfig = {
+      auth: {
+        clientId: this.config.clientId!,
+        authority: `https://login.microsoftonline.com/${this.tid}`,
+      },
+      cache: {
+        cacheLocation: "sessionStorage",
+      },
+    };
 
-        const tokenResult: AccessTokenResult = response.data;
-        const key = await this.getAccessTokenCacheKey(scopesStr);
-        // Important: tokens are stored in sessionStorage, read more here: https://aka.ms/teamsfx-session-storage-notice
-        this.setTokenCache(key, {
-          token: tokenResult.access_token,
-          expiresOnTimestamp: tokenResult.expires_on,
-        });
-        return;
-      } catch (err: any) {
-        if (err.response?.data?.type && err.response.data.type === "AadUiRequiredException") {
-          internalLogger.warn("Exchange access token failed, retry...");
-          if (retryCount < maxRetryCount) {
-            await this.sleep(retryTimeSpanInMillisecond);
-            retryCount++;
-            continue;
-          }
-        }
-        throw err;
-      }
-    }
-  }
-
-  /**
-   * Get access token cache from authentication server
-   * @returns Access token
-   */
-  private async getAndCacheAccessTokenFromSimpleAuthServer(
-    scopesStr: string
-  ): Promise<AccessToken> {
-    try {
-      internalLogger.verbose(
-        "Get access token from authentication server with scopes: " + scopesStr
-      );
-      const axiosInstance: AxiosInstance = await this.getAxiosInstance();
-      const response = await axiosInstance.post("/auth/token", {
-        scope: scopesStr,
-        grant_type: GrantType.ssoToken,
-      });
-
-      const accessTokenResult: AccessTokenResult = response.data;
-      const accessToken: AccessToken = {
-        token: accessTokenResult.access_token,
-        expiresOnTimestamp: accessTokenResult.expires_on,
-      };
-      const cacheKey = await this.getAccessTokenCacheKey(scopesStr);
-      this.setTokenCache(cacheKey, accessToken);
-      return accessToken;
-    } catch (err) {
-      throw this.generateAuthServerError(err);
-    }
+    this.msalInstance = new PublicClientApplication(msalConfig);
+    this.initialized = true;
   }
 
   /**
@@ -369,17 +355,13 @@ export class TeamsUserCredential implements TokenCredential {
       );
     }
 
-    if (config.initiateLoginEndpoint && config.simpleAuthEndpoint && config.clientId) {
+    if (config.initiateLoginEndpoint && config.clientId) {
       return config;
     }
 
     const missingValues = [];
     if (!config.initiateLoginEndpoint) {
       missingValues.push("initiateLoginEndpoint");
-    }
-
-    if (!config.simpleAuthEndpoint) {
-      missingValues.push("simpleAuthEndpoint");
     }
 
     if (!config.clientId) {
@@ -394,124 +376,5 @@ export class TeamsUserCredential implements TokenCredential {
 
     internalLogger.error(errorMsg);
     throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
-  }
-
-  /**
-   * Get axios instance with sso token bearer header
-   * @returns AxiosInstance
-   */
-  private async getAxiosInstance(): Promise<AxiosInstance> {
-    const ssoToken = await this.getSSOToken();
-    const axiosInstance: AxiosInstance = axios.create({
-      baseURL: this.config.simpleAuthEndpoint,
-    });
-
-    axiosInstance.interceptors.request.use((config) => {
-      config.headers!.Authorization = "Bearer " + ssoToken.token;
-      return config;
-    });
-
-    return axiosInstance;
-  }
-
-  /**
-   * Set access token to cache
-   * @param key
-   * @param token
-   */
-  private setTokenCache(key: string, token: AccessToken): void {
-    Cache.set(key, JSON.stringify(token));
-  }
-
-  /**
-   * Get access token from cache.
-   * If there is no cache or cannot be parsed, then it will return null
-   * @param key
-   * @returns Access token or null
-   */
-  private getTokenCache(key: string): AccessToken | null {
-    const value = Cache.get(key);
-    if (value === null) {
-      return null;
-    }
-
-    const accessToken: AccessToken | null = this.validateAndParseJson(value);
-    return accessToken;
-  }
-
-  /**
-   * Parses passed value as JSON access token, if value is not a valid json string JSON.parse() will throw an error.
-   * @param jsonValue
-   */
-  private validateAndParseJson(jsonValue: string): AccessToken | null {
-    try {
-      const parsedJson = JSON.parse(jsonValue);
-      /**
-       * There are edge cases in which JSON.parse will successfully parse a non-valid JSON object
-       * (e.g. JSON.parse will parse an escaped string into an unescaped string), so adding a type check
-       * of the parsed value is necessary in order to be certain that the string represents a valid JSON object.
-       *
-       */
-      return parsedJson && typeof parsedJson === "object" ? parsedJson : null;
-    } catch (error) {
-      return null;
-    }
-  }
-
-  /**
-   * Generate cache key
-   * @param scopesStr
-   * @returns Access token cache key, a key example: accessToken-userId-clientId-tenantId-scopes
-   */
-  private async getAccessTokenCacheKey(scopesStr: string): Promise<string> {
-    const ssoToken = await this.getSSOToken();
-    const ssoTokenObj = parseJwt(ssoToken.token);
-
-    const clientId = this.config.clientId;
-    const userObjectId = ssoTokenObj.oid;
-    const tenantId = ssoTokenObj.tid;
-
-    const key = [accessTokenCacheKeyPrefix, userObjectId, clientId, tenantId, scopesStr]
-      .join(separator)
-      .replace(/" "/g, "_");
-    return key;
-  }
-
-  /**
-   * Check whether the token is about to expire (within 5 minutes)
-   * @returns Boolean value indicate whether the token is about to expire
-   */
-  private isAccessTokenNearExpired(token: AccessToken): boolean {
-    const expireDate = new Date(token.expiresOnTimestamp);
-    if (expireDate.getTime() - Date.now() > tokenRefreshTimeSpanInMillisecond) {
-      return false;
-    }
-    return true;
-  }
-
-  private generateAuthServerError(err: any): Error {
-    let errorMessage = err.message;
-    if (err.response?.data?.type) {
-      errorMessage = err.response.data.detail;
-      if (err.response.data.type === "AadUiRequiredException") {
-        const fullErrorMsg =
-          "Failed to get access token from authentication server, please login first: " +
-          errorMessage;
-        internalLogger.warn(fullErrorMsg);
-        return new ErrorWithCode(fullErrorMsg, ErrorCode.UiRequiredError);
-      } else {
-        const fullErrorMsg =
-          "Failed to get access token from authentication server: " + errorMessage;
-        internalLogger.error(fullErrorMsg);
-        return new ErrorWithCode(fullErrorMsg, ErrorCode.ServiceError);
-      }
-    }
-
-    const fullErrorMsg = "Failed to get access token with error: " + errorMessage;
-    return new ErrorWithCode(fullErrorMsg, ErrorCode.InternalError);
-  }
-
-  private sleep(ms: number): Promise<void> {
-    return new Promise((resolve) => setTimeout(resolve, ms));
   }
 }

@@ -29,7 +29,8 @@ import {
 } from "../../../../common/localSettingsConstants";
 import { getPermissionRequest } from "../v3";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
-import { AADApp } from "../../../../../../api/build/v3";
+import { AADApp, TeamsFxSolutionSettings } from "../../../../../../api/build/v3";
+import { BotOptionItem, TabOptionItem } from "../../../solution/fx-solution/question";
 
 export class ConfigUtils {
   public static getAadConfig(
@@ -316,7 +317,70 @@ export class SetApplicationInContextConfig {
       );
     }
   }
+  public restoreConfigFromLocalSettings(localSettings: v2.LocalSettings): void {
+    const frontendDomain = localSettings.frontend?.tabDomain;
+    if (frontendDomain) {
+      this.frontendDomain = format(frontendDomain as string, Formats.Domain);
+    }
+    const botId = localSettings.bot?.botId;
+    if (botId) {
+      this.botId = format(botId as string, Formats.UUID);
+    }
 
+    const clientId = localSettings.auth?.clientId;
+    if (clientId) {
+      this.clientId = clientId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+      );
+    }
+  }
+  public restoreConfigFromEnvInfo(ctx: v2.Context, envInfo: v3.EnvInfoV3): void {
+    const solutionSettings = ctx.projectSetting.solutionSettings as TeamsFxSolutionSettings;
+    let frontendDomain = envInfo.state[BuiltInResourcePluginNames.aad].domain;
+    if (!frontendDomain) {
+      const tabModules = solutionSettings.modules.filter((m) =>
+        m.capabilities.includes(TabOptionItem.id)
+      );
+      if (tabModules.length > 0) {
+        const hostingPlugin = tabModules[0].hostingPlugin;
+        if (hostingPlugin) {
+          frontendDomain = (envInfo.state[hostingPlugin] as v3.AzureStorage)?.domain;
+        }
+      }
+    }
+
+    if (frontendDomain) {
+      this.frontendDomain = format(frontendDomain as string, Formats.Domain);
+    }
+
+    const botModules = solutionSettings.modules.filter((m) =>
+      m.capabilities.includes(BotOptionItem.id)
+    );
+    let botId;
+    if (botModules.length > 0) {
+      const hostingPlugin = botModules[0].hostingPlugin;
+      if (hostingPlugin) {
+        botId = (envInfo.state[hostingPlugin] as v3.AzureBot)?.botId;
+      }
+    }
+    if (botId) {
+      this.botId = format(botId as string, Formats.UUID);
+    }
+
+    const clientId: ConfigValue = (envInfo.state[BuiltInResourcePluginNames.aad] as AADApp)
+      .clientId;
+    if (clientId) {
+      this.clientId = clientId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+      );
+    }
+  }
   public saveConfigIntoContext(ctx: PluginContext): void {
     ConfigUtils.checkAndSaveConfig(
       ctx,
@@ -337,6 +401,110 @@ export class PostProvisionConfig {
 
   constructor(isLocalDebug = false) {
     this.isLocalDebug = isLocalDebug;
+  }
+  public async restoreConfigFromLocalSettings(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    localSettings: v2.LocalSettings
+  ): Promise<void> {
+    const frontendEndpoint = localSettings.frontend?.tabEndpoint;
+    if (frontendEndpoint) {
+      this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
+    }
+    const botEndpoint = localSettings.bot?.botEndpoint;
+    if (botEndpoint) {
+      this.botEndpoint = format(botEndpoint as string, Formats.Endpoint);
+    }
+    const objectId = localSettings.auth?.objectId;
+    if (objectId) {
+      this.objectId = objectId as string;
+    }
+    if (objectId) {
+      this.objectId = objectId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName))
+      );
+    }
+    const applicationIdUri = localSettings.auth?.applicationIdUri;
+    if (applicationIdUri) {
+      this.applicationIdUri = applicationIdUri as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(
+          Errors.GetConfigError(ConfigKeys.applicationIdUri, Plugins.pluginName)
+        )
+      );
+    }
+    const clientId = localSettings.auth?.clientId;
+    if (objectId) {
+      this.clientId = clientId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+      );
+    }
+  }
+  public async restoreConfigFromEnvInfo(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3
+  ): Promise<void> {
+    const solutionSettings = ctx.projectSetting.solutionSettings as TeamsFxSolutionSettings;
+    let frontendEndpoint = envInfo.state[BuiltInResourcePluginNames.aad]?.endpoint;
+    if (!frontendEndpoint) {
+      const tabModules = solutionSettings.modules.filter((m) =>
+        m.capabilities.includes(TabOptionItem.id)
+      );
+      if (tabModules.length > 0) {
+        const hostingPlugin = tabModules[0].hostingPlugin;
+        if (hostingPlugin) {
+          frontendEndpoint = envInfo.state[hostingPlugin]?.endpoint;
+        }
+      }
+    }
+
+    if (frontendEndpoint) {
+      this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
+    }
+    const botModules = solutionSettings.modules.filter((m) =>
+      m.capabilities.includes(BotOptionItem.id)
+    );
+    let botEndpoint;
+    if (botModules.length > 0) {
+      const hostingPlugin = botModules[0].hostingPlugin;
+      if (hostingPlugin) {
+        botEndpoint = (envInfo.state[hostingPlugin] as v3.AzureBot)?.siteEndpoint;
+      }
+    }
+    if (botEndpoint) {
+      this.botEndpoint = format(botEndpoint as string, Formats.Endpoint);
+    }
+    const objectId = envInfo.state[BuiltInResourcePluginNames.aad]?.objectId;
+    if (objectId) {
+      this.objectId = objectId as string;
+    }
+    if (objectId) {
+      this.objectId = objectId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName))
+      );
+    }
+
+    const clientId = envInfo.state[BuiltInResourcePluginNames.aad]?.clientId;
+    if (clientId) {
+      this.clientId = clientId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
+      );
+    }
   }
 
   public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {

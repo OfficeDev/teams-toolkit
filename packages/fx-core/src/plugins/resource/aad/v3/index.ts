@@ -19,15 +19,22 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { Service } from "typedi";
+import { AADApp } from "../../../../../../api/build/v3";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { DEFAULT_PERMISSION_REQUEST, SolutionError } from "../../../solution";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
-import { envFileName } from "../../frontend/env";
 import { AadAppClient } from "../aadAppClient";
 import { Messages, Plugins, ProgressDetail, ProgressTitle, Telemetry } from "../constants";
+import { AppIdUriInvalidError } from "../errors";
+import { IAADDefinition } from "../interfaces/IAADDefinition";
 import { AadAppForTeamsImpl } from "../plugin";
+import { ResultFactory } from "../results";
 import { Utils } from "../utils/common";
-import { ProvisionConfig } from "../utils/configs";
+import {
+  PostProvisionConfig,
+  ProvisionConfig,
+  SetApplicationInContextConfig,
+} from "../utils/configs";
 import { DialogUtils } from "../utils/dialog";
 import { TokenProvider } from "../utils/tokenProvider";
 
@@ -196,6 +203,81 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
     return ok(aadConfig);
   }
 
+  @hooks([CommonErrorHandlerMW()])
+  async _postProvision(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    tokenProvider: TokenProviderInAPI,
+    localSettings?: Json,
+    envInfo?: v3.EnvInfoV3
+  ): Promise<Result<Void, FxError>> {
+    const isLocalDebug = localSettings ? true : false;
+    if (!localSettings && !envInfo) {
+      return err(
+        new InvalidInputError(Plugins.pluginNameShort, "localSettings or envInfo", "missing")
+      );
+    }
+    Utils.addLogAndTelemetryWithLocalDebug(
+      ctx.logProvider,
+      Messages.StartPostProvision,
+      Messages.StartPostLocalDebug,
+      isLocalDebug
+    );
+    const localSettingsV2 = localSettings as v2.LocalSettings | undefined;
+    const skip = localSettingsV2
+      ? Utils.skipCreateAadForLocalProvision(localSettingsV2)
+      : Utils.skipCreateAadForProvision(envInfo!);
+    DialogUtils.init(
+      ctx.userInteraction,
+      ProgressTitle.PostProvision,
+      ProgressTitle.PostProvisionSteps
+    );
+
+    await TokenProvider.init({
+      graph: tokenProvider.graphTokenProvider,
+      appStudio: tokenProvider.appStudioToken,
+    });
+    const config: PostProvisionConfig = new PostProvisionConfig(isLocalDebug);
+    localSettingsV2
+      ? config.restoreConfigFromLocalSettings(ctx, inputs, localSettingsV2)
+      : config.restoreConfigFromEnvInfo(ctx, inputs, envInfo!);
+
+    await DialogUtils.progress?.start(ProgressDetail.Starting);
+    await DialogUtils.progress?.next(ProgressDetail.UpdateRedirectUri);
+
+    const redirectUris: IAADDefinition = AadAppForTeamsImpl.getRedirectUris(
+      config.frontendEndpoint,
+      config.botEndpoint,
+      config.clientId!
+    );
+    await AadAppClient.updateAadAppRedirectUriV3(
+      isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
+      config.objectId as string,
+      redirectUris,
+      skip
+    );
+    ctx.logProvider?.info(Messages.getLog(Messages.UpdateRedirectUriSuccess));
+
+    await DialogUtils.progress?.next(ProgressDetail.UpdateAppIdUri);
+    await AadAppClient.updateAadAppIdUriV3(
+      isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
+      config.objectId as string,
+      config.applicationIdUri as string,
+      skip
+    );
+    ctx.logProvider?.info(Messages.getLog(Messages.UpdateAppIdUriSuccess));
+
+    await DialogUtils.progress?.end(true);
+    Utils.addLogAndTelemetryWithLocalDebug(
+      ctx.logProvider,
+      Messages.EndPostProvision,
+      Messages.EndPostLocalDebug,
+      isLocalDebug,
+      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
+    );
+    return ok(Void);
+  }
+
   async provisionLocalResource(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
@@ -211,7 +293,9 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
     localSettings: Json,
     tokenProvider: TokenProviderInAPI
   ): Promise<Result<Void, FxError>> {
-    throw new Error();
+    const setApplicationInContextRes = await this.setApplicationInContext(ctx, localSettings);
+    if (setApplicationInContextRes.isErr()) return err(setApplicationInContextRes.error);
+    return this._postProvision(ctx, inputs, tokenProvider, localSettings);
   }
 
   async provisionResource(
@@ -220,14 +304,59 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: TokenProviderInAPI
   ): Promise<Result<v3.CloudResource, FxError>> {
-    return this._provision(ctx, inputs, tokenProvider, undefined, envInfo as v3.EnvInfoV3);
+    return await this._provision(ctx, inputs, tokenProvider, undefined, envInfo as v3.EnvInfoV3);
   }
   async configureResource(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProviderInAPI
   ): Promise<Result<Void, FxError>> {
-    throw new Error();
+    const setApplicationInContextRes = await this.setApplicationInContext(
+      ctx,
+      undefined,
+      envInfo as v3.EnvInfoV3
+    );
+    if (setApplicationInContextRes.isErr()) return err(setApplicationInContextRes.error);
+    return await this._postProvision(
+      ctx,
+      inputs,
+      tokenProvider,
+      undefined,
+      envInfo as v3.EnvInfoV3
+    );
+  }
+
+  public async setApplicationInContext(
+    ctx: v2.Context,
+    localSettings?: Json,
+    envInfo?: v3.EnvInfoV3
+  ): Promise<Result<Void, FxError>> {
+    if (!localSettings && !envInfo) {
+      return err(
+        new InvalidInputError(Plugins.pluginNameShort, "localSettings or envInfo", "missing")
+      );
+    }
+    const isLocalDebug = localSettings ? true : false;
+    const config: SetApplicationInContextConfig = new SetApplicationInContextConfig(isLocalDebug);
+    isLocalDebug
+      ? config.restoreConfigFromLocalSettings(localSettings as v2.LocalSettings)
+      : config.restoreConfigFromEnvInfo(ctx, envInfo!);
+
+    if (!config.frontendDomain && !config.botId) {
+      throw ResultFactory.UserError(AppIdUriInvalidError.name, AppIdUriInvalidError.message());
+    }
+
+    let applicationIdUri = "api://";
+    applicationIdUri += config.frontendDomain ? `${config.frontendDomain}/` : "";
+    applicationIdUri += config.botId ? "botid-" + config.botId : config.clientId;
+    config.applicationIdUri = applicationIdUri;
+
+    ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));
+    isLocalDebug
+      ? ((localSettings as v2.LocalSettings).auth!.applicationIdUris = config.applicationIdUri)
+      : ((envInfo!.state[BuiltInResourcePluginNames.aad] as AADApp).applicationIdUris =
+          config.applicationIdUri);
+    return ok(Void);
   }
 }

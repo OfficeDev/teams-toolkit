@@ -366,7 +366,7 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success(result);
   }
 
-  private static getRedirectUris(
+  public static getRedirectUris(
     frontendEndpoint: string | undefined,
     botEndpoint: string | undefined,
     clientId: string

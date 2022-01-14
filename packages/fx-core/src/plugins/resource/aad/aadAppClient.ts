@@ -164,7 +164,35 @@ export class AadAppClient {
       }
     }
   }
-
+  public static async updateAadAppRedirectUriV3(
+    stage: string,
+    objectId: string,
+    redirectUris: IAADDefinition,
+    skip = false
+  ): Promise<void> {
+    try {
+      if (TokenProvider.audience === TokenAudience.AppStudio) {
+        await AadAppClient.retryHanlderV3(stage, () =>
+          AppStudio.updateAADApp(TokenProvider.token as string, objectId as string, redirectUris)
+        );
+      } else {
+        await AadAppClient.retryHanlderV3(stage, () =>
+          GraphClient.updateAADApp(TokenProvider.token as string, objectId as string, redirectUris)
+        );
+      }
+    } catch (error) {
+      if (skip) {
+        const message = Messages.StepFailedAndSkipped(
+          ProgressDetail.UpdateRedirectUri,
+          Messages.UpdateRedirectUriHelpMessage(Utils.parseRedirectUriMessage(redirectUris))
+        );
+        TOOLS.logProvider?.warning(Messages.getLog(message));
+        DialogUtils.show(message, UILevels.Warn);
+      } else {
+        throw AadAppClient.handleError(error, UpdateRedirectUriError);
+      }
+    }
+  }
   public static async updateAadAppIdUri(
     ctx: PluginContext,
     stage: string,
@@ -204,7 +232,44 @@ export class AadAppClient {
       }
     }
   }
-
+  public static async updateAadAppIdUriV3(
+    stage: string,
+    objectId: string,
+    applicationIdUri: string,
+    skip = false
+  ): Promise<void> {
+    try {
+      const updateAppIdObject = AadAppClient.getAadApplicationIdObject(applicationIdUri);
+      if (TokenProvider.audience === TokenAudience.AppStudio) {
+        await AadAppClient.retryHanlderV3(stage, () =>
+          AppStudio.updateAADApp(
+            TokenProvider.token as string,
+            objectId as string,
+            updateAppIdObject
+          )
+        );
+      } else {
+        await AadAppClient.retryHanlderV3(stage, () =>
+          GraphClient.updateAADApp(
+            TokenProvider.token as string,
+            objectId as string,
+            updateAppIdObject
+          )
+        );
+      }
+    } catch (error) {
+      if (skip) {
+        const message = Messages.StepFailedAndSkipped(
+          ProgressDetail.UpdateAppIdUri,
+          Messages.UpdateAppIdUriHelpMessage(applicationIdUri)
+        );
+        TOOLS.logProvider?.warning(Messages.getLog(message));
+        DialogUtils.show(message, UILevels.Warn);
+      } else {
+        throw AadAppClient.handleError(error, UpdateAppIdUriError);
+      }
+    }
+  }
   public static async updateAadAppPermission(
     ctx: PluginContext,
     stage: string,

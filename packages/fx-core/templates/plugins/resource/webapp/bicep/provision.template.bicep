@@ -11,5 +11,6 @@ output webappOutput object = {
   teamsFxPluginId: 'fx-resource-frontend-hosting'
   domain: webappProvision.outputs.domain
   endpoint: webappProvision.outputs.endpoint
+  indexPath: webappProvision.outputs.indexPath
   webAppResourceId: webappProvision.outputs.resourceId
 }

@@ -23,7 +23,7 @@ var webappDomain = provisionOutputs.webappOutput.value.domain
 var webappEndpoint = provisionOutputs.webappOutput.value.endpoint
 
 {{#if (contains "fx-resource-bot" plugins) }}
-var botId = provisionParameters['botAadAppClientId']
+var botAadAppClientId = provisionParameters['botAadAppClientId']
   {{#if (contains "fx-resource-key-vault" plugins) }}
 var botAadAppClientSecret = \{{fx-resource-key-vault.References.botClientSecretReference}}
   {{else}}
@@ -32,7 +32,7 @@ var botAadAppClientSecret = provisionParameters['botAadAppClientSecret']
 {{/if}}
 
 {{#if (contains "fx-resource-bot" plugins) }}
-var m365ApplicationIdUri = 'api://${webappDomain}/botid-${botId}'
+var m365ApplicationIdUri = 'api://${webappDomain}/botid-${botAadAppClientId}'
 {{else}}
 var m365ApplicationIdUri = 'api://${webappDomain}/${m365ClientId}'
 {{/if}}

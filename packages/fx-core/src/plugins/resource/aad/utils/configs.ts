@@ -1,7 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext, ConfigValue, Platform, Stage } from "@microsoft/teamsfx-api";
+import {
+  PluginContext,
+  ConfigValue,
+  Platform,
+  Stage,
+  v2,
+  err,
+  Result,
+  FxError,
+  ok,
+  v3,
+} from "@microsoft/teamsfx-api";
 import { Constants, Plugins, ConfigKeysOfOtherPlugin, ConfigKeys } from "../constants";
 import {
   ConfigErrorMessages as Errors,
@@ -16,6 +27,9 @@ import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
 } from "../../../../common/localSettingsConstants";
+import { getPermissionRequest } from "../v3";
+import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { AADApp } from "../../../../../../api/build/v3";
 
 export class ConfigUtils {
   public static getAadConfig(
@@ -95,7 +109,65 @@ export class ProvisionConfig {
     this.isLocalDebug = isLocalDebug;
     this.oauth2PermissionScopeId = uuidv4();
   }
-
+  public async restoreConfigFromLocalSettings(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    localSettings: v2.LocalSettings
+  ): Promise<Result<any, FxError>> {
+    const displayName: string = ctx.projectSetting.appName;
+    if (displayName) {
+      this.displayName = displayName.substr(0, Constants.aadAppMaxLength) as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetDisplayNameError)
+      );
+    }
+    const permissionRes = await getPermissionRequest(inputs.projectPath);
+    if (permissionRes.isErr()) {
+      return err(permissionRes.error);
+    }
+    this.permissionRequest = permissionRes.value;
+    const objectId = localSettings.auth?.objectId;
+    if (objectId) {
+      this.objectId = objectId as string;
+    }
+    const clientSecret = localSettings.auth?.clientSecret;
+    if (clientSecret) {
+      this.password = clientSecret as string;
+    }
+    return ok(undefined);
+  }
+  public async restoreConfigFromEnvInfo(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3
+  ): Promise<Result<any, FxError>> {
+    const displayName: string = ctx.projectSetting.appName;
+    if (displayName) {
+      this.displayName = displayName.substr(0, Constants.aadAppMaxLength) as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetDisplayNameError)
+      );
+    }
+    const permissionRes = await getPermissionRequest(inputs.projectPath);
+    if (permissionRes.isErr()) {
+      return err(permissionRes.error);
+    }
+    this.permissionRequest = permissionRes.value;
+    const config = envInfo.state[BuiltInResourcePluginNames.aad] as AADApp;
+    const objectId = config?.objectId;
+    if (objectId) {
+      this.objectId = objectId as string;
+    }
+    const clientSecret = config?.clientSecret;
+    if (clientSecret) {
+      this.password = clientSecret as string;
+    }
+    return ok(undefined);
+  }
   public async restoreConfigFromContext(ctx: PluginContext): Promise<void> {
     const displayName: string = ctx.projectSettings!.appName;
     if (displayName) {
@@ -155,7 +227,38 @@ export class ProvisionConfig {
       this.isLocalDebug
     );
   }
-
+  public saveConfigIntoLocalSettings(localSettings: v2.LocalSettings, tenantId: string): void {
+    const oauthAuthority = ProvisionConfig.getOauthAuthority(tenantId);
+    if (!localSettings.auth) {
+      localSettings.auth = {};
+    }
+    if (localSettings.auth) {
+      if (this.clientId) localSettings.auth.clientId = this.clientId;
+      if (this.password) localSettings.auth.clientSecret = this.password;
+      if (this.objectId) localSettings.auth.objectId = this.objectId;
+      if (this.oauth2PermissionScopeId)
+        localSettings.auth.oauth2PermissionScopeId = this.oauth2PermissionScopeId;
+      localSettings.auth.tenantId = tenantId;
+      localSettings.auth.oauthHost = Constants.oauthAuthorityPrefix;
+      localSettings.auth.oauthAuthority = oauthAuthority;
+    }
+  }
+  public saveConfigIntoEnvInfo(envInfo: v3.EnvInfoV3, tenantId: string): void {
+    if (!envInfo.state[BuiltInResourcePluginNames.aad]) {
+      envInfo.state[BuiltInResourcePluginNames.aad] = {};
+      (envInfo.state[BuiltInResourcePluginNames.aad] as AADApp).secretFields = ["clientSecret"];
+    }
+    const envState = envInfo.state[BuiltInResourcePluginNames.aad] as AADApp;
+    const oauthAuthority = ProvisionConfig.getOauthAuthority(tenantId);
+    if (this.clientId) envState.clientId = this.clientId;
+    if (this.password) envState.clientSecret = this.password;
+    if (this.objectId) envState.objectId = this.objectId;
+    if (this.oauth2PermissionScopeId)
+      envState.oauth2PermissionScopeId = this.oauth2PermissionScopeId;
+    envState.tenantId = tenantId;
+    envState.oauthHost = Constants.oauthAuthorityPrefix;
+    envState.oauthAuthority = oauthAuthority;
+  }
   private static getOauthAuthority(tenantId: string): string {
     return `${Constants.oauthAuthorityPrefix}/${tenantId}`;
   }

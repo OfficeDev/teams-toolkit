@@ -90,6 +90,10 @@ export async function provisionResources(
     appResource.tenantId = tenantIdInToken;
   }
 
+  //TODO teams app provision, return app id
+  // call appStudio.provision()
+  appResource.teamsAppId = "fake-remote-teams-app-id";
+
   // ask common question and fill in solution config
   const solutionConfigRes = await fillInAzureSolutionConfigs(
     ctx,

@@ -75,7 +75,7 @@ export class AadAppForTeamsImpl {
       ? Messages.EndLocalDebug.telemetry
       : Messages.EndProvision.telemetry;
 
-    await TokenProvider.init(ctx);
+    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
 
     // Move objectId etc. from input to output.
     const skip = Utils.skipAADProvision(ctx, isLocalDebug);
@@ -166,7 +166,7 @@ export class AadAppForTeamsImpl {
     const skip = Utils.skipAADProvision(ctx, isLocalDebug);
     DialogUtils.init(ctx.ui, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
 
-    await TokenProvider.init(ctx);
+    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
     const config: PostProvisionConfig = new PostProvisionConfig(isLocalDebug);
     config.restoreConfigFromContext(ctx);
 
@@ -225,7 +225,7 @@ export class AadAppForTeamsImpl {
       return ResultFactory.Success();
     }
 
-    await TokenProvider.init(ctx);
+    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
 
     const permissions = AadAppForTeamsImpl.parsePermission(
       configs[0].permissionRequest as string,
@@ -277,7 +277,10 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartCheckPermission);
 
-    await TokenProvider.init(ctx, TokenAudience.Graph);
+    await TokenProvider.init(
+      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
+      TokenAudience.Graph
+    );
     const config = new CheckGrantPermissionConfig();
     await config.restoreConfigFromContext(ctx);
 
@@ -305,7 +308,10 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartListCollaborator);
 
-    await TokenProvider.init(ctx, TokenAudience.Graph);
+    await TokenProvider.init(
+      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
+      TokenAudience.Graph
+    );
 
     const objectId = ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, false);
     if (!objectId) {
@@ -333,7 +339,10 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);
 
-    await TokenProvider.init(ctx, TokenAudience.Graph);
+    await TokenProvider.init(
+      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
+      TokenAudience.Graph
+    );
     const config = new CheckGrantPermissionConfig(true);
     await config.restoreConfigFromContext(ctx);
 
@@ -431,7 +440,7 @@ export class AadAppForTeamsImpl {
     return configs;
   }
 
-  private static parsePermission(
+  public static parsePermission(
     permissionRequest: string,
     logProvider?: LogProvider
   ): RequiredResourceAccess[] {

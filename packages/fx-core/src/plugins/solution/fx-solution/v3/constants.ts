@@ -8,7 +8,7 @@ export const BuiltInSolutionNames = {
 };
 export const BuiltInResourcePluginNames = {
   appStudio: "fx-resource-appstudio",
-  aad: "fx-resource-aad",
+  aad: "fx-resource-aad-app-for-teams",
   bot: "fx-resource-bot",
   function: "fx-resource-function",
   webApp: "fx-resource-azure-web-app",

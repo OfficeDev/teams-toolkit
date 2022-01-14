@@ -1,11 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError } from "@microsoft/teamsfx-api";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { FxError, GraphTokenProvider, PluginContext } from "@microsoft/teamsfx-api";
 import { AadOwner } from "../../../common/permissionInterface";
 import { AppStudio } from "./appStudio";
-import { ConfigKeys, Constants, Messages, ProgressDetail, Telemetry, UILevels } from "./constants";
+import {
+  ConfigFilePath,
+  ConfigKeys,
+  Constants,
+  Messages,
+  ProgressDetail,
+  Telemetry,
+  UILevels,
+} from "./constants";
 import { GraphErrorCodes } from "./errorCodes";
 import {
   AppStudioErrorMessage,
@@ -31,6 +38,7 @@ import { DialogUtils } from "./utils/dialog";
 import { TelemetryUtils } from "./utils/telemetry";
 import { TokenAudience, TokenProvider } from "./utils/tokenProvider";
 import { getAllowedAppIds } from "../../../common/tools";
+import { TOOLS } from "../../../core";
 
 function delay(ms: number) {
   // tslint:disable-next-line no-string-based-set-timeout
@@ -65,7 +73,29 @@ export class AadAppClient {
       throw AadAppClient.handleError(error, CreateAppError);
     }
   }
+  public static async createAadAppV3(stage: string, config: ProvisionConfig): Promise<void> {
+    try {
+      const provisionObject = AadAppClient.getAadAppProvisionObject(
+        config.displayName as string,
+        config.oauth2PermissionScopeId as string
+      );
+      let provisionAadResponse: IAADDefinition;
+      if (TokenProvider.audience === TokenAudience.AppStudio) {
+        provisionAadResponse = (await this.retryHanlderV3(stage, () =>
+          AppStudio.createAADAppV2(TokenProvider.token as string, provisionObject)
+        )) as IAADDefinition;
+      } else {
+        provisionAadResponse = (await this.retryHanlderV3(stage, () =>
+          GraphClient.createAADApp(TokenProvider.token as string, provisionObject)
+        )) as IAADDefinition;
+      }
 
+      config.clientId = provisionAadResponse.appId;
+      config.objectId = provisionAadResponse.id;
+    } catch (error) {
+      throw AadAppClient.handleError(error, CreateAppError);
+    }
+  }
   public static async createAadAppSecret(
     ctx: PluginContext,
     stage: string,
@@ -87,7 +117,23 @@ export class AadAppClient {
       throw AadAppClient.handleError(error, CreateSecretError);
     }
   }
-
+  public static async createAadAppSecretV3(stage: string, config: ProvisionConfig): Promise<void> {
+    try {
+      let createSecretObject: IAADPassword;
+      if (TokenProvider.audience === TokenAudience.AppStudio) {
+        createSecretObject = (await AadAppClient.retryHanlderV3(stage, () =>
+          AppStudio.createAADAppPassword(TokenProvider.token as string, config.objectId as string)
+        )) as IAADPassword;
+      } else {
+        createSecretObject = (await AadAppClient.retryHanlderV3(stage, () =>
+          GraphClient.createAadAppSecret(TokenProvider.token as string, config.objectId as string)
+        )) as IAADPassword;
+      }
+      config.password = createSecretObject.value;
+    } catch (error) {
+      throw AadAppClient.handleError(error, CreateSecretError);
+    }
+  }
   public static async updateAadAppRedirectUri(
     ctx: PluginContext,
     stage: string,
@@ -118,7 +164,35 @@ export class AadAppClient {
       }
     }
   }
-
+  public static async updateAadAppRedirectUriV3(
+    stage: string,
+    objectId: string,
+    redirectUris: IAADDefinition,
+    skip = false
+  ): Promise<void> {
+    try {
+      if (TokenProvider.audience === TokenAudience.AppStudio) {
+        await AadAppClient.retryHanlderV3(stage, () =>
+          AppStudio.updateAADApp(TokenProvider.token as string, objectId as string, redirectUris)
+        );
+      } else {
+        await AadAppClient.retryHanlderV3(stage, () =>
+          GraphClient.updateAADApp(TokenProvider.token as string, objectId as string, redirectUris)
+        );
+      }
+    } catch (error) {
+      if (skip) {
+        const message = Messages.StepFailedAndSkipped(
+          ProgressDetail.UpdateRedirectUri,
+          Messages.UpdateRedirectUriHelpMessage(Utils.parseRedirectUriMessage(redirectUris))
+        );
+        TOOLS.logProvider?.warning(Messages.getLog(message));
+        DialogUtils.show(message, UILevels.Warn);
+      } else {
+        throw AadAppClient.handleError(error, UpdateRedirectUriError);
+      }
+    }
+  }
   public static async updateAadAppIdUri(
     ctx: PluginContext,
     stage: string,
@@ -158,7 +232,44 @@ export class AadAppClient {
       }
     }
   }
-
+  public static async updateAadAppIdUriV3(
+    stage: string,
+    objectId: string,
+    applicationIdUri: string,
+    skip = false
+  ): Promise<void> {
+    try {
+      const updateAppIdObject = AadAppClient.getAadApplicationIdObject(applicationIdUri);
+      if (TokenProvider.audience === TokenAudience.AppStudio) {
+        await AadAppClient.retryHanlderV3(stage, () =>
+          AppStudio.updateAADApp(
+            TokenProvider.token as string,
+            objectId as string,
+            updateAppIdObject
+          )
+        );
+      } else {
+        await AadAppClient.retryHanlderV3(stage, () =>
+          GraphClient.updateAADApp(
+            TokenProvider.token as string,
+            objectId as string,
+            updateAppIdObject
+          )
+        );
+      }
+    } catch (error) {
+      if (skip) {
+        const message = Messages.StepFailedAndSkipped(
+          ProgressDetail.UpdateAppIdUri,
+          Messages.UpdateAppIdUriHelpMessage(applicationIdUri)
+        );
+        TOOLS.logProvider?.warning(Messages.getLog(message));
+        DialogUtils.show(message, UILevels.Warn);
+      } else {
+        throw AadAppClient.handleError(error, UpdateAppIdUriError);
+      }
+    }
+  }
   public static async updateAadAppPermission(
     ctx: PluginContext,
     stage: string,
@@ -198,7 +309,86 @@ export class AadAppClient {
       }
     }
   }
+  public static async updateAadAppPermissionV3(
+    stage: string,
+    objectId: string,
+    permissions: RequiredResourceAccess[],
+    skip = false
+  ): Promise<void> {
+    try {
+      const updatePermissionObject = AadAppClient.getAadPermissionObject(permissions);
+      if (TokenProvider.audience === TokenAudience.AppStudio) {
+        await AadAppClient.retryHanlderV3(stage, () =>
+          AppStudio.updateAADApp(
+            TokenProvider.token as string,
+            objectId as string,
+            updatePermissionObject
+          )
+        );
+      } else {
+        await AadAppClient.retryHanlderV3(stage, () =>
+          GraphClient.updateAADApp(
+            TokenProvider.token as string,
+            objectId as string,
+            updatePermissionObject
+          )
+        );
+      }
+    } catch (error) {
+      if (skip) {
+        const message = Messages.StepFailedAndSkipped(
+          ProgressDetail.UpdatePermission,
+          Messages.UpdatePermissionHelpMessage
+        );
+        TOOLS.logProvider?.warning(Messages.getLog(message));
+        DialogUtils.show(message, UILevels.Warn);
+      } else {
+        throw AadAppClient.handleError(error, UpdatePermissionError);
+      }
+    }
+  }
+  public static async getAadAppV3(
+    stage: string,
+    objectId: string,
+    clientSecret: string | undefined,
+    graphTokenProvider: GraphTokenProvider,
+    envName?: string
+  ): Promise<ProvisionConfig> {
+    let getAppObject: IAADDefinition;
+    const fileName = envName ? ConfigFilePath.State(envName) : ConfigFilePath.LocalSettings;
+    try {
+      if (TokenProvider.audience === TokenAudience.AppStudio) {
+        getAppObject = (await this.retryHanlderV3(stage, () =>
+          AppStudio.getAadApp(TokenProvider.token as string, objectId)
+        )) as IAADDefinition;
+      } else {
+        getAppObject = (await this.retryHanlderV3(stage, () =>
+          GraphClient.getAadApp(TokenProvider.token as string, objectId)
+        )) as IAADDefinition;
+      }
+    } catch (error) {
+      const tenantId = await Utils.getCurrentTenantId(graphTokenProvider);
+      throw AadAppClient.handleError(error, GetAppError, objectId, tenantId, fileName);
+    }
 
+    const config = new ProvisionConfig(envName ? false : true);
+    if (
+      getAppObject.api?.oauth2PermissionScopes &&
+      getAppObject.api?.oauth2PermissionScopes[0] &&
+      getAppObject.api?.oauth2PermissionScopes[0].id
+    ) {
+      config.oauth2PermissionScopeId = getAppObject.api?.oauth2PermissionScopes[0].id;
+    } else {
+      throw ResultFactory.UserError(
+        GetAppConfigError.name,
+        GetAppConfigError.message(ConfigKeys.oauth2PermissionScopeId, fileName)
+      );
+    }
+    config.objectId = objectId;
+    config.clientId = getAppObject.appId;
+    config.password = clientSecret;
+    return config;
+  }
   public static async getAadApp(
     ctx: PluginContext,
     stage: string,
@@ -219,7 +409,7 @@ export class AadAppClient {
         )) as IAADDefinition;
       }
     } catch (error) {
-      const tenantId = await Utils.getCurrentTenantId(ctx);
+      const tenantId = await Utils.getCurrentTenantId(ctx.graphTokenProvider);
       const fileName = Utils.getConfigFileName(ctx, islocalDebug);
       throw AadAppClient.handleError(error, GetAppError, objectId, tenantId, fileName);
     }
@@ -307,6 +497,30 @@ export class AadAppClient {
     let retries = Constants.maxRetryTimes;
     let response;
     TelemetryUtils.init(ctx);
+    while (retries > 0) {
+      retries = retries - 1;
+
+      try {
+        response = await fn();
+        TelemetryUtils.sendEvent(stage, {
+          [Telemetry.methodName]: fn.toString(),
+          [Telemetry.retryTimes]: (Constants.maxRetryTimes - retries - 1).toString(),
+        });
+        return response;
+      } catch (error) {
+        if (retries === 0) {
+          throw error;
+        } else {
+          await delay(5000);
+        }
+      }
+    }
+
+    throw new Error(AppStudioErrorMessage.ReachRetryLimit);
+  }
+  public static async retryHanlderV3(stage: string, fn: () => Promise<any>): Promise<any> {
+    let retries = Constants.maxRetryTimes;
+    let response;
     while (retries > 0) {
       retries = retries - 1;
 

@@ -159,7 +159,10 @@ export class SPFxResourcePlugin implements v3.ResourcePlugin {
 }
 
 function getAllResourcePlugins(): v3.ResourcePlugin[] {
-  return [Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.storage)];
+  return [
+    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.storage),
+    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.aad),
+  ];
 }
 
 export async function getQuestionsForAddResource(

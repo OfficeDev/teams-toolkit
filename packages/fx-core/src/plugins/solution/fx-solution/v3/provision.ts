@@ -69,17 +69,30 @@ export async function provisionResources(
   tokenProvider: TokenProvider
 ): Promise<Result<v3.EnvInfoV3, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-
-  // check M365 tenant
-  const checkM365Res = await checkM365Tenant(envInfo, tokenProvider.appStudioToken);
-  if (checkM365Res.isErr()) {
-    return err(checkM365Res.error);
+  // check M365 tenant match
+  const appResource = envInfo.state[BuiltInResourcePluginNames.appStudio] as v3.TeamsAppResource;
+  const tenantIdInConfig = appResource.tenantId;
+  const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);
+  if (tenantIdInTokenRes.isErr()) {
+    return err(tenantIdInTokenRes.error);
+  }
+  const tenantIdInToken = tenantIdInTokenRes.value;
+  if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
+    return err(
+      new UserError(
+        SolutionError.TeamsAppTenantIdNotRight,
+        `The signed in M365 account does not match the M365 tenant in config file for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
+        "Solution"
+      )
+    );
+  }
+  if (!tenantIdInConfig) {
+    appResource.tenantId = tenantIdInToken;
   }
 
-  // TODO check AAD permission request, can this step moved into AAD's provision() method?
-  const aadEnable = solutionSetting.activeResourcePlugins.includes(BuiltInResourcePluginNames.aad);
-  if (aadEnable) {
-  }
+  //TODO teams app provision, return app id
+  // call appStudio.provision()
+  appResource.teamsAppId = "fake-remote-teams-app-id";
 
   // ask common question and fill in solution config
   const solutionConfigRes = await fillInAzureSolutionConfigs(
@@ -466,16 +479,13 @@ export async function askForProvisionConsent(
   return ok(Void);
 }
 
-async function checkM365Tenant(
-  envInfo: v3.EnvInfoV3,
+export async function getM365TenantId(
   appStudioTokenProvider: AppStudioTokenProvider
-): Promise<Result<Void, FxError>> {
+): Promise<Result<string, FxError>> {
+  // Just to trigger M365 login before the concurrent execution of localDebug.
+  // Because concurrent execution of localDebug may getAccessToken() concurrently, which
+  // causes 2 M365 logins before the token caching in common lib takes effect.
   await appStudioTokenProvider.getAccessToken();
-  const appResource = envInfo.state[BuiltInResourcePluginNames.appStudio] as v3.TeamsAppResource;
-  const m365TenantId = appResource?.tenantId;
-  if (!m365TenantId) {
-    return ok(Void);
-  }
   const appstudioTokenJson = await appStudioTokenProvider.getJsonObject();
   if (appstudioTokenJson === undefined) {
     return err(
@@ -486,12 +496,8 @@ async function checkM365Tenant(
       )
     );
   }
-  const teamsAppTenantId = (appstudioTokenJson as any).tid;
-  if (
-    teamsAppTenantId === undefined ||
-    !(typeof teamsAppTenantId === "string") ||
-    teamsAppTenantId.length === 0
-  ) {
+  const tenantIdInToken = (appstudioTokenJson as any).tid;
+  if (!tenantIdInToken) {
     return err(
       new SystemError(
         SolutionError.NoTeamsAppTenantId,
@@ -500,15 +506,5 @@ async function checkM365Tenant(
       )
     );
   }
-  if (teamsAppTenantId !== m365TenantId) {
-    return err(
-      new UserError(
-        SolutionError.TeamsAppTenantIdNotRight,
-        `The signed in M365 account does not match the M365 tenant used in previous provision for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
-        "Solution"
-      )
-    );
-  }
-  appResource.tenantId = teamsAppTenantId;
-  return ok(Void);
+  return ok(tenantIdInToken);
 }

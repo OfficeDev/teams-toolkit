@@ -9,7 +9,6 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import { AADApp } from "../../../../../../api/build/v3";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { ConfigFilePath, ConfigKeys, Constants, Messages } from "../constants";
 import { GetSkipAppConfigError } from "../errors";
@@ -74,7 +73,7 @@ export class Utils {
 
   public static skipCreateAadForProvision(envInfo: v3.EnvInfoV3): boolean {
     const envConfig: EnvConfig = envInfo.config as EnvConfig;
-    const envState: AADApp = envInfo.state[BuiltInResourcePluginNames.aad] as AADApp;
+    const envState: v3.AADApp = envInfo.state[BuiltInResourcePluginNames.aad] as AADApp;
     const objectId = envConfig.auth?.objectId ? envConfig.auth.objectId : envState.objectId;
     const clientId = envConfig.auth?.clientId ? envConfig.auth.clientId : envState.clientId;
     const clientSecret = envConfig.auth?.clientSecret

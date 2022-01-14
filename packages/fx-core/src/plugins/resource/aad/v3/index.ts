@@ -20,7 +20,6 @@ import {
 import fs from "fs-extra";
 import * as path from "path";
 import { Service } from "typedi";
-import { AADApp } from "../../../../../../api/build/v3";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { DEFAULT_PERMISSION_REQUEST, SolutionError } from "../../../solution";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
@@ -365,7 +364,7 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
     ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));
     isLocalDebug
       ? ((localSettings as v2.LocalSettings).auth!.applicationIdUris = config.applicationIdUri)
-      : ((envInfo!.state[BuiltInResourcePluginNames.aad] as AADApp).applicationIdUris =
+      : ((envInfo!.state[BuiltInResourcePluginNames.aad] as v3.AADApp).applicationIdUris =
           config.applicationIdUri);
     return ok(Void);
   }

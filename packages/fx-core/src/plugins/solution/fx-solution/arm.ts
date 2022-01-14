@@ -40,11 +40,6 @@ import {
   SUBSCRIPTION_ID,
 } from "./constants";
 import { environmentManager } from "../../../core/environment";
-import {
-  AzureSolutionConfig,
-  TeamsFxAzureResourceStates,
-  TeamsFxSolutionSettings,
-} from "../../../../../api/build/v3";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../common/armInterface";
 import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
@@ -563,7 +558,7 @@ function syncArmOutput(envInfo: EnvInfo | v3.EnvInfoV3, armOutput: any) {
                       .get(pluginId)
                       ?.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
                   } else {
-                    (envInfo.state as TeamsFxAzureResourceStates)[pluginId][pluginOutputKey] =
+                    (envInfo.state as v3.TeamsFxAzureResourceStates)[pluginId][pluginOutputKey] =
                       pluginOutput[pluginOutputKey];
                   }
                 }
@@ -1308,13 +1303,13 @@ function expandParameterPlaceholdersV3(
   envInfo: v3.EnvInfoV3,
   parameterContent: string
 ): string {
-  const azureSolutionSettings = ctx.projectSetting.solutionSettings as TeamsFxSolutionSettings;
+  const azureSolutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
   const plugins = azureSolutionSettings.activeResourcePlugins.map((p) =>
     Container.get<v3.ResourcePlugin>(p)
   );
   const stateVariables: Record<string, Record<string, any>> = {};
   const availableVariables: Record<string, Record<string, any>> = { state: stateVariables };
-  const envState = envInfo.state as TeamsFxAzureResourceStates;
+  const envState = envInfo.state as v3.TeamsFxAzureResourceStates;
   // Add plugin contexts to available variables
   for (const plugin of plugins) {
     const resourceState = envState[plugin.name] || {};
@@ -1329,7 +1324,7 @@ function expandParameterPlaceholdersV3(
     stateVariables[plugin.name] = pluginVariables;
   }
   // Add solution config to available variables
-  const solutionConfig = envState.solution as AzureSolutionConfig;
+  const solutionConfig = envState.solution as v3.AzureSolutionConfig;
   if (solutionConfig) {
     const solutionVariables: Record<string, string> = {};
     for (const key of Object.keys(solutionConfig)) {

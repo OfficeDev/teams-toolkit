@@ -7,7 +7,7 @@ import * as vscode from "vscode";
 import * as constants from "./constants";
 import * as commonUtils from "./commonUtils";
 import { Json, ProductName, ProjectSettings, VsCodeEnv } from "@microsoft/teamsfx-api";
-import { LocalEnvManager } from "@microsoft/teamsfx-core";
+import { FolderName, LocalEnvManager } from "@microsoft/teamsfx-core";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
@@ -20,6 +20,7 @@ import {
   ITaskDefinition,
   DepsType,
 } from "@microsoft/teamsfx-core";
+import { ProgrammingLanguage } from "@microsoft/teamsfx-core";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -56,23 +57,17 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
       const programmingLanguage = projectSettings?.programmingLanguage;
 
       // Always provide the following tasks no matter whether it is defined in tasks.json
-      const frontendRoot = await commonUtils.getProjectRoot(
-        workspacePath,
-        constants.frontendFolderName
-      );
+      const frontendRoot = await commonUtils.getProjectRoot(workspacePath, FolderName.Frontend);
       if (frontendRoot) {
         tasks.push(await this.createFrontendStartTask(workspaceFolder, localEnv));
       }
 
-      const backendRoot = await commonUtils.getProjectRoot(
-        workspacePath,
-        constants.backendFolderName
-      );
+      const backendRoot = await commonUtils.getProjectRoot(workspacePath, FolderName.Function);
       if (backendRoot) {
         tasks.push(
           await this.createBackendStartTask(workspaceFolder, programmingLanguage, localEnv)
         );
-        if (programmingLanguage === constants.ProgrammingLanguage.typescript) {
+        if (programmingLanguage === ProgrammingLanguage.typescript) {
           tasks.push(await this.createBackendWatchTask(workspaceFolder));
         }
       }
@@ -82,7 +77,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
         tasks.push(await this.createAuthStartTask(workspaceFolder, authRoot, localEnv));
       }
 
-      const botRoot = await commonUtils.getProjectRoot(workspacePath, constants.botFolderName);
+      const botRoot = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
       if (botRoot) {
         const skipNgrok = (localSettings?.bot?.skipNgrok as boolean) === true;
         tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot, skipNgrok));

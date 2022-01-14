@@ -2,24 +2,20 @@
 // Licensed under the MIT license.
 
 import {
-  TokenProvider,
+  AppStudioTokenProvider,
+  err,
   FxError,
   Inputs,
-  Json,
+  ok,
+  OptionItem,
+  QTreeNode,
   Result,
   v2,
   v3,
-  AppStudioTokenProvider,
   Void,
-  ok,
-  err,
-  OptionItem,
-  QTreeNode,
 } from "@microsoft/teamsfx-api";
-import Module from "module";
-import Container from "typedi";
+import { Container } from "typedi";
 import { BuiltInScaffoldPluginNames } from "../fx-solution/v3/constants";
-import { InvalidInputError } from "../utils/error";
 import { createSelectModuleQuestionNode, selectScaffoldTemplateQuestion } from "../utils/questions";
 
 export async function getQuestionsForScaffold(
@@ -76,54 +72,6 @@ export async function getQuestionsForScaffold(
   node.addChild(templateNode);
 
   return ok(node);
-}
-
-export async function scaffold(
-  ctx: v2.Context,
-  inputs: v3.SolutionScaffoldInputs,
-  localSettings?: Json
-): Promise<Result<Void, FxError>> {
-  if (!inputs.template) {
-    return err(new InvalidInputError(inputs));
-  }
-  const template = inputs.template;
-  if (!template.data) {
-    return err(new InvalidInputError(inputs, "template.data is undefined"));
-  }
-  const data = template.data as { pluginName: string; templateName: string };
-  const pluginName = data.pluginName;
-  const templateName = data.templateName;
-  const plugin = Container.get<v3.ScaffoldPlugin>(pluginName);
-  const pluginInputs: v3.PluginScaffoldInputs = {
-    ...inputs,
-    template: templateName,
-  };
-  const contextWithManifest: v3.ContextWithManifest = {
-    ...ctx,
-    appManifest: { local: {}, remote: {} },
-  };
-  const res = await plugin.scaffold(contextWithManifest, pluginInputs);
-  if (res.isErr()) {
-    return err(res.error);
-  }
-  const manifest = [];
-  if (res.value) {
-    manifest.push(res.value);
-  }
-  inputs.manifest = manifest;
-  pluginInputs.manifest = manifest;
-  //TODO
-  // //call appstudio.scaffold() API
-  // const appstudioPlugin = Container.get<v3.ScaffoldPlugin>(BuiltInResourcePluginNames.AppStudio);
-  // await appstudioPlugin.scaffold(ctx, pluginInputs);
-  return ok(Void);
-}
-
-export async function generateResourceTemplate(
-  ctx: v2.Context,
-  inputs: Inputs
-): Promise<Result<Json, FxError>> {
-  return ok({});
 }
 
 export async function publishApplication(

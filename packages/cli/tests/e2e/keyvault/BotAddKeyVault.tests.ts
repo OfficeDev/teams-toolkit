@@ -53,8 +53,8 @@ describe("Test Azure Key Vault", function () {
       await AadValidator.validate(aad);
 
       // Validate Bot
-      const bot = BotValidator.init(context, true);
-      await BotValidator.validateProvision(bot, true);
+      const bot = new BotValidator(context, projectPath, env);
+      await bot.validateProvision();
 
       // Validate Key Vault
       const keyVault = new KeyVaultValidator(context, projectPath, env);

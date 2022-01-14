@@ -99,7 +99,10 @@ export function getAzureTenantId() {
 }
 
 export function getAzureAccountObjectId() {
-  return cfg.AZURE_ACCOUNT_OBJECT_ID || "c35fa297-dc10-4993-a18c-e8709b8410d1";
+  if (!cfg.AZURE_ACCOUNT_OBJECT_ID) {
+    throw new Error("Failed to get AZURE_ACCOUNT_OBJECT_ID from environment.");
+  }
+  return cfg.AZURE_ACCOUNT_OBJECT_ID;
 }
 
 const envFilePathSuffix = path.join(".fx", "env.default.json");
@@ -548,8 +551,8 @@ export async function validateTabAndBotProjectProvision(projectPath: string, env
   await FrontendValidator.validateProvision(frontend);
 
   // Validate Bot Provision
-  const bot = BotValidator.init(context, true);
-  await BotValidator.validateProvision(bot, true);
+  const bot = new BotValidator(context, projectPath, env);
+  await bot.validateProvision();
 }
 
 export async function getRGAfterProvision(

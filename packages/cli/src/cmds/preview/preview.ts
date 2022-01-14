@@ -19,11 +19,13 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   DepsType,
+  FolderName,
   FxCore,
   ITaskDefinition,
   LocalEnvManager,
   ProjectSettingsHelper,
   TaskDefinition,
+  ProgrammingLanguage,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -195,22 +197,22 @@ export default class Preview extends YargsCommand {
     const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
 
     // TODO: move path validation to core
-    const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
+    const spfxRoot = path.join(workspaceFolder, FolderName.SPFx);
     if (includeSpfx && !(await fs.pathExists(spfxRoot))) {
       return err(errors.RequiredPathNotExists(spfxRoot));
     }
 
-    const frontendRoot = path.join(workspaceFolder, constants.frontendFolderName);
+    const frontendRoot = path.join(workspaceFolder, FolderName.Frontend);
     if (includeFrontend && !(await fs.pathExists(frontendRoot))) {
       return err(errors.RequiredPathNotExists(frontendRoot));
     }
 
-    const backendRoot = path.join(workspaceFolder, constants.backendFolderName);
+    const backendRoot = path.join(workspaceFolder, FolderName.Function);
     if (includeBackend && !(await fs.pathExists(backendRoot))) {
       return err(errors.RequiredPathNotExists(backendRoot));
     }
 
-    const botRoot = path.join(workspaceFolder, constants.botFolderName);
+    const botRoot = path.join(workspaceFolder, FolderName.Bot);
     if (includeBot && !(await fs.pathExists(botRoot))) {
       return err(errors.RequiredPathNotExists(botRoot));
     }
@@ -465,7 +467,7 @@ export default class Preview extends YargsCommand {
       if (!this.sharepointSiteUrl) {
         return err(errors.NoUrlForSPFxRemotePreview());
       }
-      const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
+      const spfxRoot = path.join(workspaceFolder, FolderName.SPFx);
       return this.spfxPreview(spfxRoot, browser, this.sharepointSiteUrl, browserArguments);
     }
 
@@ -627,7 +629,7 @@ export default class Preview extends YargsCommand {
         )
       : undefined;
     const backendWatchTask =
-      includeBackend && programmingLanguage === constants.ProgrammingLanguage.typescript
+      includeBackend && programmingLanguage === ProgrammingLanguage.typescript
         ? this.prepareTask(
             TaskDefinition.backendWatch(workspaceFolder),
             constants.backendWatchStartMessage,

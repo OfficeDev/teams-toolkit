@@ -74,6 +74,7 @@ import {
   DEFAULT_OUTLINE_PNG_FILENAME,
   MANIFEST_RESOURCES,
   APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
+  FRONTEND_INDEX_PATH,
 } from "./constants";
 import AdmZip from "adm-zip";
 import * as fs from "fs-extra";
@@ -100,6 +101,7 @@ import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks } from "../../../common/constants";
 import { loadManifest } from "./manifestTemplate";
+import localdebug from "../localdebug";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -1197,6 +1199,7 @@ export class AppStudioPluginImpl {
   ): Promise<{
     tabEndpoint?: string;
     tabDomain?: string;
+    tabIndexPath?: string;
     aadId: string;
     botDomain?: string;
     botId?: string;
@@ -1205,6 +1208,7 @@ export class AppStudioPluginImpl {
   }> {
     const tabEndpoint = this.getTabEndpoint(ctx, localDebug);
     const tabDomain = this.getTabDomain(ctx, localDebug);
+    const tabIndexPath = this.getTabIndexPath(ctx, localDebug);
     const aadId = this.getAadClientId(ctx, localDebug);
     const botId = this.getBotId(ctx, localDebug);
     const botDomain = this.getBotDomain(ctx, localDebug);
@@ -1217,6 +1221,7 @@ export class AppStudioPluginImpl {
     return {
       tabEndpoint,
       tabDomain,
+      tabIndexPath,
       aadId,
       botDomain,
       botId,
@@ -1238,6 +1243,13 @@ export class AppStudioPluginImpl {
       ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain) as string)
       : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_DOMAIN) as string);
     return tabDomain;
+  }
+
+  private getTabIndexPath(ctx: PluginContext, isLocalDebug: boolean): string {
+    const tabIndexPath = isLocalDebug
+      ? (ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabIndexPath) as string)
+      : (ctx.envInfo.state.get(PluginNames.FE)?.get(FRONTEND_INDEX_PATH) as string);
+    return tabIndexPath;
   }
 
   private getAadClientId(ctx: PluginContext, isLocalDebug: boolean): string {
@@ -1545,6 +1557,7 @@ export class AppStudioPluginImpl {
     const {
       tabEndpoint,
       tabDomain,
+      tabIndexPath,
       aadId,
       botDomain,
       botId,
@@ -1597,11 +1610,13 @@ export class AppStudioPluginImpl {
 
     // Bot only project, without frontend hosting
     let endpoint = tabEndpoint;
+    let indexPath = tabIndexPath;
     const solutionSettings: AzureSolutionSettings = ctx.projectSettings
       ?.solutionSettings as AzureSolutionSettings;
     const hasFrontend = solutionSettings.capabilities.includes(TabOptionItem.id);
     if (!endpoint && !hasFrontend) {
       endpoint = DEFAULT_DEVELOPER_WEBSITE_URL;
+      indexPath = "";
     }
 
     const customizedKeys = getCustomizedKeys("", JSON.parse(manifestString));
@@ -1613,6 +1628,7 @@ export class AppStudioPluginImpl {
       state: {
         "fx-resource-frontend-hosting": {
           endpoint: endpoint ?? "{{{state.fx-resource-frontend-hosting.endpoint}}}",
+          indexPath: indexPath ?? "{{{state.fx-resource-frontend-hosting.indexPath}}}",
         },
         "fx-resource-aad-app-for-teams": {
           clientId: aadId ?? "{{state.fx-resource-aad-app-for-teams.clientId}}",
@@ -1630,6 +1646,7 @@ export class AppStudioPluginImpl {
       localSettings: {
         frontend: {
           tabEndpoint: endpoint ? endpoint : "{{{localSettings.frontend.tabEndpoint}}}",
+          tabIndexPath: indexPath ?? "{{{localSettings.frontend.tabIndexPath}}}",
         },
         auth: {
           clientId: ctx.localSettings?.auth?.get(LocalSettingsAuthKeys.ClientId)

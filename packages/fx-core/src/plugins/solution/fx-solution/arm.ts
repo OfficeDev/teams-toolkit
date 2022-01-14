@@ -17,6 +17,7 @@ import {
   returnSystemError,
   returnUserError,
   SolutionContext,
+  SystemError,
   UserError,
   v2,
   v3,
@@ -113,7 +114,7 @@ export async function generateArmTemplate(
 }
 
 export async function generateArmTemplateV3(
-  ctx: v2.Context,
+  ctx: v3.ContextWithManifest,
   inputs: v2.InputsWithProjectPath & { existingResources: string[] },
   activatedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[],
   addedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[]
@@ -603,9 +604,21 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       );
     }
   } catch (error) {
-    result = err(
-      returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
-    );
+    if (error instanceof UserError || error instanceof SystemError) {
+      result = err(error);
+    } else if (error instanceof Error) {
+      result = err(
+        returnSystemError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+      );
+    } else {
+      result = err(
+        returnSystemError(
+          new Error(JSON.stringify(error)),
+          SolutionSource,
+          SolutionError.FailedToDeployArmTemplatesToAzure
+        )
+      );
+    }
     sendErrorTelemetryThenReturnError(
       SolutionTelemetryEvent.ArmDeployment,
       result.error,
@@ -649,9 +662,21 @@ export async function deployArmTemplatesV3(
       );
     }
   } catch (error) {
-    result = err(
-      returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
-    );
+    if (error instanceof UserError || error instanceof SystemError) {
+      result = err(error);
+    } else if (error instanceof Error) {
+      result = err(
+        returnSystemError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+      );
+    } else {
+      result = err(
+        returnSystemError(
+          new Error(JSON.stringify(error)),
+          SolutionSource,
+          SolutionError.FailedToDeployArmTemplatesToAzure
+        )
+      );
+    }
     sendErrorTelemetryThenReturnError(
       SolutionTelemetryEvent.ArmDeployment,
       result.error,
@@ -692,7 +717,7 @@ export async function copyParameterJson(
   await fs.ensureDir(parameterFolderPath);
   await fs.writeFile(
     targetParameterFilePath,
-    JSON.stringify(targetParameterContent, undefined, 4).replace(/\r?\n/g, os.EOL)
+    JSON.stringify(targetParameterContent, undefined, 2).replace(/\r?\n/g, os.EOL)
   );
 }
 
@@ -845,7 +870,7 @@ async function doGenerateArmTemplate(
 }
 
 async function doGenerateArmTemplateV3(
-  ctx: v2.Context,
+  ctx: v3.ContextWithManifest,
   inputs: v2.InputsWithProjectPath & { existingResources: string[] },
   activatedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[],
   addedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[]
@@ -1469,8 +1494,8 @@ class ArmV2 {
 
 class Arm {
   async generateArmTemplate(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath & { existingResources: string[] },
+    ctx: v3.ContextWithManifest,
+    inputs: v3.PluginAddResourceInputs,
     activatedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[],
     addedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[]
   ): Promise<Result<any, FxError>> {

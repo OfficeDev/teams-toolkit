@@ -1350,7 +1350,7 @@ interface ResourcePlugin {
 
 // @public (undocumented)
 interface ResourcePlugin_2 extends Plugin_3 {
-    addResource?: (ctx: Context_2, inputs: PluginAddResourceInputs) => Promise<Result<Void, FxError>>;
+    addResource?: (ctx: ContextWithManifest, inputs: PluginAddResourceInputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
     configureLocalResource?: (ctx: Context_2, inputs: InputsWithProjectPath, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
@@ -1361,7 +1361,7 @@ interface ResourcePlugin_2 extends Plugin_3 {
     // (undocumented)
     executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
     // (undocumented)
-    generateResourceTemplate?: (ctx: Context_2, inputs: PluginAddResourceInputs) => Promise<Result<ResourceTemplate_2, FxError>>;
+    generateResourceTemplate?: (ctx: ContextWithManifest, inputs: PluginAddResourceInputs) => Promise<Result<ResourceTemplate_2, FxError>>;
     getQuestionsForAddResource?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForLocalProvision?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider, localSettings?: DeepReadonly<Json>) => Promise<Result<QTreeNode | undefined, FxError>>;
@@ -1376,7 +1376,7 @@ interface ResourcePlugin_2 extends Plugin_3 {
     // (undocumented)
     type: "resource";
     // (undocumented)
-    updateResourceTemplate?: (ctx: Context_2, inputs: PluginAddResourceInputs) => Promise<Result<ResourceTemplate_2, FxError>>;
+    updateResourceTemplate?: (ctx: ContextWithManifest, inputs: PluginAddResourceInputs) => Promise<Result<ResourceTemplate_2, FxError>>;
 }
 
 // @public (undocumented)
@@ -1421,18 +1421,8 @@ export interface RunnableTask<T> {
 
 // @public (undocumented)
 interface ScaffoldPlugin extends Plugin_3 {
-    getQuestionsForScaffold?: (ctx: Context_2 & {
-        appManifest?: {
-            local: AppManifest;
-            remote: AppManifest;
-        };
-    }, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getTemplates: (ctx: Context_2 & {
-        appManifest?: {
-            local: AppManifest;
-            remote: AppManifest;
-        };
-    }, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
+    getQuestionsForScaffold?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getTemplates: (ctx: Context_2, inputs: Inputs) => Promise<Result<ScaffoldTemplate[], FxError>>;
     scaffold: (ctx: ContextWithManifest, inputs: PluginScaffoldInputs) => Promise<Result<Json | undefined, FxError>>;
     // (undocumented)
     type: "scaffold";

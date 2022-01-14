@@ -125,7 +125,7 @@ export class SPFxScaffoldPlugin implements v3.ScaffoldPlugin {
   }
 
   async scaffold(
-    ctx: v2.Context,
+    ctx: v3.ContextWithManifest,
     inputs: v3.PluginScaffoldInputs
   ): Promise<Result<Json | undefined, FxError>> {
     ctx.logProvider.info("fx-scaffold-spfx:scaffold");

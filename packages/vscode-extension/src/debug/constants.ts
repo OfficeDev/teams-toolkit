@@ -11,10 +11,6 @@ export const ngrokProblemMatcher = "$teamsfx-ngrok-watch";
 export const botProblemMatcher = "$teamsfx-bot-watch";
 export const tscWatchProblemMatcher = "$tsc-watch";
 
-export const frontendFolderName = "tabs";
-export const backendFolderName = "api";
-export const botFolderName = "bot";
-
 export const localSettingsJsonName = "localSettings.json";
 
 export const frontendLocalEnvPrefix = "FRONTEND_";
@@ -22,11 +18,6 @@ export const backendLocalEnvPrefix = "BACKEND_";
 export const authLocalEnvPrefix = "AUTH_";
 export const authServicePathEnvKey = "AUTH_SERVICE_PATH";
 export const botLocalEnvPrefix = "BOT_";
-
-export enum ProgrammingLanguage {
-  javascript = "javascript",
-  typescript = "typescript",
-}
 
 export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new?";
 export const issueTemplate = `

@@ -15,7 +15,7 @@ import {
   Result,
   FxError,
 } from "@microsoft/teamsfx-api";
-import AppStudioTokenInstance, { AppStudioLogin } from "../../../src/commonlib/appStudioLogin";
+import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { WebviewPanel } from "../../../src/controls/webviewPanel";
 import { PanelType } from "../../../src/controls/PanelType";
@@ -59,7 +59,11 @@ suite("handlers", () => {
     chai.expect(input.platform).equals(Platform.VSCode);
   });
 
-  suite("command handlers", () => {
+  suite("command handlers", function () {
+    this.afterEach(() => {
+      sinon.restore();
+    });
+
     test("createNewProjectHandler()", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -110,7 +114,10 @@ suite("handlers", () => {
     });
   });
 
-  suite("runCommand()", () => {
+  suite("runCommand()", function () {
+    this.afterEach(() => {
+      sinon.restore();
+    });
     test("create", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -197,7 +204,11 @@ suite("handlers", () => {
     });
   });
 
-  suite("detectVsCodeEnv()", () => {
+  suite("detectVsCodeEnv()", function () {
+    this.afterEach(() => {
+      sinon.restore();
+    });
+
     test("locally run", () => {
       const expectedResult = {
         extensionKind: vscode.ExtensionKind.UI,
@@ -292,7 +303,10 @@ suite("handlers", () => {
     sendTelemetryEvent.restore();
   });
 
-  suite("decryptSecret", () => {
+  suite("decryptSecret", function () {
+    this.afterEach(() => {
+      sinon.restore();
+    });
     test("successfully update secret", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -354,12 +368,21 @@ suite("handlers", () => {
     });
   });
 
-  suite("permissions", async () => {
+  suite("permissions", async function () {
+    this.afterEach(() => {
+      sinon.restore();
+    });
     test("grant permission", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
+      sinon.stub(AppStudioTokenInstance, "getJsonObject").resolves({
+        tid: "fake-tenant-id",
+      });
+      sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
+        return "fake-tenant-id";
+      });
 
       sinon.stub(envTree, "addCollaboratorToEnv").resolves();
       sinon.stub(MockCore.prototype, "grantPermission").returns(
@@ -425,6 +448,13 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
+      sinon.stub(AppStudioTokenInstance, "getJsonObject").resolves({
+        tid: "fake-tenant-id",
+      });
+      sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
+        return "fake-tenant-id";
+      });
       sinon.stub(MockCore.prototype, "listAllCollaborators").returns(
         Promise.resolve(
           ok({
@@ -448,6 +478,13 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
+      sinon.stub(AppStudioTokenInstance, "getJsonObject").resolves({
+        tid: "fake-tenant-id",
+      });
+      sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
+        return "fake-tenant-id";
+      });
       sinon.stub(MockCore.prototype, "listAllCollaborators").returns(
         Promise.resolve(
           ok({

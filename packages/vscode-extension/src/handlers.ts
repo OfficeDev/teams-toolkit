@@ -90,6 +90,8 @@ import { WebviewPanel } from "./controls/webviewPanel";
 import * as constants from "./debug/constants";
 import {
   anonymizeFilePaths,
+  getM365TenantFromEnv,
+  getProvisionSucceedFromEnv,
   getResourceGroupNameFromEnv,
   getSubscriptionInfoFromEnv,
   getTeamsAppIdByEnv,
@@ -658,6 +660,40 @@ export async function runUserTask(
 //TODO workaround
 function isLoginFaiureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
+}
+
+async function checkCollaborationState(env: string): Promise<Result<any, FxError>> {
+  try {
+    const provisionSucceeded = await getProvisionSucceedFromEnv(env);
+    if (!provisionSucceeded) {
+      return ok({
+        state: CollaborationState.NotProvisioned,
+        message: StringResources.vsc.handlers.provisionBeforeGrantOrListPermission,
+      });
+    }
+
+    const tokenJsonObject = await AppStudioTokenInstance.getJsonObject(true);
+    if (tokenJsonObject) {
+      const m365TenantId = await getM365TenantFromEnv(env);
+      if (m365TenantId && tokenJsonObject.tid !== m365TenantId) {
+        return ok({
+          state: CollaborationState.M365TenantNotMatch,
+          message: StringResources.vsc.commandsTreeViewProvider.m365TenantNotMatch,
+        });
+      }
+    } else {
+      return ok({
+        state: CollaborationState.m365AccountNotSignedIn,
+        message: StringResources.vsc.commandsTreeViewProvider.m365AccountNotSignedIn,
+      });
+    }
+
+    return ok({
+      state: CollaborationState.OK,
+    });
+  } catch (e) {
+    return wrapError(e);
+  }
 }
 
 async function processResult(
@@ -1298,13 +1334,18 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       throw checkCoreRes.error;
     }
 
-    inputs = getSystemInputs();
-    inputs.env = env;
-    result = await core.grantPermission(inputs);
-    if (result.isErr()) {
-      throw result.error;
+    const collaborationStateResult = await checkCollaborationState(env);
+    if (collaborationStateResult.isErr()) {
+      throw collaborationStateResult.error;
     }
-    if (result.value.state === CollaborationState.OK) {
+
+    if (collaborationStateResult.value.state === CollaborationState.OK) {
+      inputs = getSystemInputs();
+      inputs.env = env;
+      result = await core.grantPermission(inputs);
+      if (result.isErr()) {
+        throw result.error;
+      }
       const grantSucceededMsg = util.format(
         StringResources.vsc.commandsTreeViewProvider.grantPermissionSucceeded,
         inputs.email,
@@ -1320,6 +1361,7 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
       // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
       // await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {
+      result = collaborationStateResult;
       window.showWarningMessage(result.value.message);
     }
   } catch (e) {
@@ -1460,19 +1502,26 @@ export async function listCollaborator(env: string): Promise<void> {
       throw checkCoreRes.error;
     }
 
-    inputs = getSystemInputs();
-    inputs.env = env;
-
-    result = await core.listCollaborator(inputs);
-    if (result.isErr()) {
-      throw result.error;
+    const collaborationStateResult = await checkCollaborationState(env);
+    if (collaborationStateResult.isErr()) {
+      throw collaborationStateResult.error;
     }
-    if (result.value.state !== CollaborationState.OK) {
+
+    if (collaborationStateResult.value.state === CollaborationState.OK) {
+      inputs = getSystemInputs();
+      inputs.env = env;
+
+      result = await core.listCollaborator(inputs);
+      if (result.isErr()) {
+        throw result.error;
+      }
+
+      // TODO: For short-term workaround. Remove after webview is ready.
+      VsCodeLogInstance.outputChannel.show();
+    } else {
+      result = collaborationStateResult;
       window.showWarningMessage(result.value.message);
     }
-
-    // TODO: For short-term workaround. Remove after webview is ready.
-    VsCodeLogInstance.outputChannel.show();
   } catch (e) {
     result = wrapError(e);
   }

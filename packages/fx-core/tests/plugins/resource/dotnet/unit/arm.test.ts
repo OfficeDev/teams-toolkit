@@ -62,6 +62,7 @@ var siteDomain = webApp.properties.defaultHostName
 output resourceId string = webApp.id
 output endpoint string = 'https://\${siteDomain}'
 output domain string = siteDomain
+output indexPath string = ''
 `;
 const provisionModuleFilePath = "./webappProvision.result.bicep";
 const provisionOrchestration = `// Resources for web app
@@ -77,6 +78,7 @@ output webappOutput object = {
   teamsFxPluginId: 'fx-resource-frontend-hosting'
   domain: webappProvision.outputs.domain
   endpoint: webappProvision.outputs.endpoint
+  indexPath: webappProvision.outputs.indexPath
   webAppResourceId: webappProvision.outputs.resourceId
 }
 `;
@@ -149,22 +151,29 @@ chai.use(chaiAsPromised);
 
 describe("WebappPlugin", () => {
   let plugin: WebappPlugin;
+  let pluginContext: PluginContext;
 
   beforeEach(() => {
     plugin = new WebappPlugin();
+    pluginContext = TestHelper.getFakePluginContext();
     sinon.stub(WebappPlugin, <any>"isVsPlatform").returns(true);
   });
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   it("generate bicep arm templates", async () => {
-    // Act
+    // Arrange
     const activeResourcePlugins = [ResourcePlugins.Aad, ResourcePlugins.FrontendHosting];
-    const pluginContext: PluginContext = TestHelper.getFakePluginContext();
     pluginContext.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
       name: "azure",
       activeResourcePlugins: activeResourcePlugins,
       capabilities: [TabOptionItem.id],
     } as AzureSolutionSettings;
+
+    // Act
     const result = await plugin.generateArmTemplates(pluginContext);
 
     // Assert
@@ -204,6 +213,54 @@ describe("WebappPlugin", () => {
       chai.assert.strictEqual(expectedResult.Provision!.Orchestration, provisionOrchestration);
       chai.assert.strictEqual(expectedResult.Configuration!.Modules!.webapp, configModule);
       chai.assert.strictEqual(expectedResult.Configuration!.Orchestration, configOrchestration);
+      chai.assert.isNotNull(expectedResult.Reference);
+      chai.assert.isUndefined(expectedResult.Parameters);
+    }
+  });
+
+  it("update bicep arm templates", async () => {
+    // Arrange
+    const activeResourcePlugins = [ResourcePlugins.Aad, ResourcePlugins.FrontendHosting];
+    pluginContext.projectSettings!.solutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: activeResourcePlugins,
+      capabilities: [TabOptionItem.id],
+    } as AzureSolutionSettings;
+
+    // Act
+    const result = await plugin.updateArmTemplates(pluginContext);
+
+    // Assert
+    const mockedSolutionDataContext = {
+      Plugins: {
+        "fx-resource-frontend-hosting": {
+          Configuration: {
+            webapp: {
+              path: configModuleFilePath,
+            },
+          },
+        },
+        "fx-resource-identity": {
+          Outputs: {
+            endpoint: "frontend_hosting_test_endpoint",
+          },
+          References: {
+            identityClientId: "provisionOutputs.identityOutput.value.identityClientId",
+            identityResourceId: "userAssignedIdentityProvision.outputs.identityResourceId",
+          },
+        },
+      },
+    };
+    chai.assert.isTrue(result.isOk());
+    if (result.isOk()) {
+      const expectedResult = mockSolutionGenerateArmTemplates(
+        mockedSolutionDataContext,
+        result.value
+      );
+
+      chai.assert.strictEqual(expectedResult.Configuration!.Modules!.webapp, configModule);
+      chai.assert.isEmpty(expectedResult.Configuration?.Orchestration);
       chai.assert.isNotNull(expectedResult.Reference);
       chai.assert.isUndefined(expectedResult.Parameters);
     }

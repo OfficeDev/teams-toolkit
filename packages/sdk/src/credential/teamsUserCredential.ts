@@ -34,7 +34,7 @@ export class TeamsUserCredential implements TokenCredential {
    * Can only be used within Teams.
    * @beta
    */
-  public async login(scopes: string | string[]): Promise<AccessToken> {
+  public async login(scopes: string | string[]): Promise<void> {
     throw new ErrorWithCode(
       formatString(ErrorMessage.NodejsRuntimeNotSupported, "TeamsUserCredential"),
       ErrorCode.RuntimeNotSupported

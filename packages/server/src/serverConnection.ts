@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { CancellationToken, MessageConnection, ResponseError } from "vscode-jsonrpc";
+import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
 
-import { FxError, Inputs, Void, Tools } from "@microsoft/teamsfx-api";
+import { FxError, Inputs, Void, Tools, Result } from "@microsoft/teamsfx-api";
 import { FxCore } from "@microsoft/teamsfx-core";
 
 import { IServerConnection, Namespaces } from "./apis";
@@ -12,7 +12,7 @@ import TokenProvider from "./providers/tokenProvider";
 import TelemetryReporter from "./providers/telemetry";
 import UserInteraction from "./providers/userInteraction";
 import { callFunc } from "./customizedFuncAdapter";
-import { convertToHandlerResult } from "./utils";
+import { standardizeResult } from "./utils";
 
 export default class ServerConnection implements IServerConnection {
   public static readonly namespace = Namespaces.Server;
@@ -54,58 +54,58 @@ export default class ServerConnection implements IServerConnection {
   public async createProjectRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<string | ResponseError<FxError>> {
+  ): Promise<Result<string, FxError>> {
     const res = await this.core.createProject(inputs);
-    return convertToHandlerResult(res);
+    return standardizeResult(res);
   }
 
   public async localDebugRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Void | ResponseError<FxError>> {
+  ): Promise<Result<Void, FxError>> {
     const res = await this.core.localDebug(inputs);
-    return convertToHandlerResult(res);
+    return standardizeResult(res);
   }
 
   public async provisionResourcesRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Void | ResponseError<FxError>> {
+  ): Promise<Result<Void, FxError>> {
     const res = await this.core.provisionResources(inputs);
-    return convertToHandlerResult(res);
+    return standardizeResult(res);
   }
 
   public async deployArtifactsRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Void | ResponseError<FxError>> {
+  ): Promise<Result<Void, FxError>> {
     const res = await this.core.deployArtifacts(inputs);
-    return convertToHandlerResult(res);
+    return standardizeResult(res);
   }
 
   public async buildArtifactsRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Void | ResponseError<FxError>> {
+  ): Promise<Result<Void, FxError>> {
     const res = await this.core.buildArtifacts(inputs);
-    return convertToHandlerResult(res);
+    return standardizeResult(res);
   }
 
   public async publishApplicationRequest(
     inputs: Inputs,
     token: CancellationToken
-  ): Promise<Void | ResponseError<FxError>> {
+  ): Promise<Result<Void, FxError>> {
     const res = await this.core.publishApplication(inputs);
-    return convertToHandlerResult(res);
+    return standardizeResult(res);
   }
 
   public async customizeLocalFuncRequest(
     funcId: number,
     params: Inputs,
     token: CancellationToken
-  ): Promise<any | ResponseError<FxError>> {
+  ): Promise<Result<Void, FxError>> {
     const res = await callFunc("LocalFunc", funcId, params);
-    return convertToHandlerResult(res);
+    return standardizeResult(res);
   }
 
   public async customizeValidateFuncRequest(
@@ -113,9 +113,9 @@ export default class ServerConnection implements IServerConnection {
     answer: any,
     previousAnswers: Inputs | undefined,
     token: CancellationToken
-  ): Promise<any | ResponseError<FxError>> {
+  ): Promise<Result<any, FxError>> {
     const res = await callFunc("ValidateFunc", funcId, answer, previousAnswers);
-    return convertToHandlerResult(res);
+    return standardizeResult(res);
   }
 
   public async customizeOnSelectionChangeFuncRequest(
@@ -123,13 +123,13 @@ export default class ServerConnection implements IServerConnection {
     currentSelectedIds: Set<string>,
     previousSelectedIds: Set<string>,
     token: CancellationToken
-  ): Promise<any | ResponseError<FxError>> {
+  ): Promise<Result<any, FxError>> {
     const res = await callFunc(
       "OnSelectionChangeFunc",
       funcId,
       currentSelectedIds,
       previousSelectedIds
     );
-    return convertToHandlerResult(res);
+    return standardizeResult(res);
   }
 }

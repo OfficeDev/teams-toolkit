@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { HandlerResult, MessageConnection, ResponseError } from "vscode-jsonrpc";
+import { HandlerResult, ResponseError } from "vscode-jsonrpc";
 
 import {
   assembleError,
@@ -13,9 +13,10 @@ import {
   Result,
   StaticOptions,
   UIConfig,
+  UserError,
 } from "@microsoft/teamsfx-api";
 
-import { CustomizeFuncRequestType } from "./apis";
+import { CustomizeFuncRequestType, IServerFxError } from "./apis";
 import { setFunc } from "./customizedFuncAdapter";
 
 export async function getResponseWithErrorHandling<T>(
@@ -60,72 +61,23 @@ export function convertUIConfigToJson<T>(config: UIConfig<T>): UIConfig<T> {
   return newConfig;
 }
 
-export async function sendRequest(
-  connection: MessageConnection,
-  type: any,
-  ...args: any[]
-): Promise<Result<any, FxError>> {
-  return new Promise(async (resolve) => {
-    let promise;
-    if (args.length === 0) {
-      promise = connection.sendRequest(type);
-    } else if (args.length === 1) promise = connection.sendRequest(type, args[0]);
-    else if (args.length === 2) promise = connection.sendRequest(type, args[0], args[1]);
-    else if (args.length === 3) promise = connection.sendRequest(type, args[0], args[1], args[2]);
-    else if (args.length === 4)
-      promise = connection.sendRequest(type, args[0], args[1], args[2], args[3]);
-    else if (args.length === 5)
-      promise = connection.sendRequest(type, args[0], args[1], args[2], args[3], args[4]);
-    else if (args.length === 6)
-      promise = connection.sendRequest(type, args[0], args[1], args[2], args[3], args[4], args[5]);
-    else if (args.length === 7)
-      promise = connection.sendRequest(
-        type,
-        args[0],
-        args[1],
-        args[2],
-        args[3],
-        args[4],
-        args[5],
-        args[6]
-      );
-    else if (args.length === 8)
-      promise = connection.sendRequest(
-        type,
-        args[0],
-        args[1],
-        args[2],
-        args[3],
-        args[4],
-        args[5],
-        args[6],
-        args[7]
-      );
-    else
-      promise = connection.sendRequest(
-        type,
-        args[0],
-        args[1],
-        args[2],
-        args[3],
-        args[4],
-        args[5],
-        args[6],
-        args[7],
-        args[8]
-      );
-    promise
-      .then((v) => {
-        resolve(ok(v));
-      })
-      .catch((e) => {
-        if (e.data) {
-          const fxError = e.data as FxError;
-          fxError.source = "VS";
-          resolve(err(fxError));
-        } else resolve(err(assembleError(e)));
-      });
-  });
+export function standardizeResult<R>(result: Result<R, FxError>): Result<R, FxError> {
+  if (result.isErr()) {
+    const errorType = result.error instanceof UserError ? "UserError" : "SystemError";
+    return err<R, IServerFxError>({
+      errorType: errorType,
+      source: result.error.source,
+      name: result.error.name,
+      message: result.error.message,
+      stack: result.error.stack,
+      innerError: result.error.innerError,
+      userData: result.error.userData,
+      timestamp: result.error.timestamp,
+      helpLink: (result.error as any).helpLink,
+      issueLink: (result.error as any).issueLink,
+    });
+  }
+  return ok(result.value);
 }
 
 export function convertToHandlerResult<R>(result: Result<R, FxError>): HandlerResult<R, FxError> {

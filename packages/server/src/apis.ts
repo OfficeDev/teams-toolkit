@@ -10,6 +10,7 @@ import {
   LogLevel,
   MultiSelectConfig,
   MultiSelectResult,
+  Result,
   SelectFileConfig,
   SelectFileResult,
   SelectFilesConfig,
@@ -22,12 +23,10 @@ import {
   Void,
 } from "@microsoft/teamsfx-api";
 import {
+  CancellationToken,
   NotificationType2,
   NotificationType3,
   NotificationType4,
-  RequestHandler,
-  RequestHandler2,
-  RequestHandler3,
   RequestType0,
   RequestType1,
   RequestType4,
@@ -62,28 +61,45 @@ export interface CustomizeFuncRequestType {
  * server-side request / notification types which are called from client to the server.
  */
 export interface IServerConnection {
-  createProjectRequest: RequestHandler<Inputs, string, FxError>;
-  localDebugRequest: RequestHandler<Inputs, Void, FxError>;
-  provisionResourcesRequest: RequestHandler<Inputs, Void, FxError>;
-  deployArtifactsRequest: RequestHandler<Inputs, Void, FxError>;
-  buildArtifactsRequest: RequestHandler<Inputs, Void, FxError>;
-  publishApplicationRequest: RequestHandler<Inputs, Void, FxError>;
+  createProjectRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<string, FxError>>;
+  localDebugRequest: (inputs: Inputs, token: CancellationToken) => Promise<Result<Void, FxError>>;
+  provisionResourcesRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<Void, FxError>>;
+  deployArtifactsRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<Void, FxError>>;
+  buildArtifactsRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<Void, FxError>>;
+  publishApplicationRequest: (
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<Void, FxError>>;
 
-  customizeLocalFuncRequest: RequestHandler2<number, Inputs, any, FxError>;
-  customizeValidateFuncRequest: RequestHandler3<
-    number,
-    any,
-    Inputs | undefined,
-    string | undefined,
-    FxError
-  >;
-  customizeOnSelectionChangeFuncRequest: RequestHandler3<
-    number,
-    Set<string>,
-    Set<string>,
-    Set<string>,
-    FxError
-  >;
+  customizeLocalFuncRequest: (
+    funcId: number,
+    inputs: Inputs,
+    token: CancellationToken
+  ) => Promise<Result<Void, FxError>>;
+  customizeValidateFuncRequest: (
+    funcId: number,
+    answer: any,
+    previousAnswers: Inputs | undefined,
+    token: CancellationToken
+  ) => Promise<Result<Void, FxError>>;
+  customizeOnSelectionChangeFuncRequest: (
+    funcId: number,
+    currentSelectedIds: Set<string>,
+    previousSelectedIds: Set<string>,
+    token: CancellationToken
+  ) => Promise<Result<Void, FxError>>;
 }
 
 /**
@@ -195,3 +211,16 @@ export const RequestTypes = {
     >(`${Namespaces.UserInteraction}/showMessageRequest`),
   },
 };
+
+export interface IServerFxError {
+  errorType: "UserError" | "SystemError";
+  source: string;
+  name: string;
+  message: string;
+  stack?: string;
+  innerError?: any;
+  userData?: any;
+  timestamp: Date;
+  helpLink?: string;
+  issueLink?: string;
+}

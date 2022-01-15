@@ -61,7 +61,7 @@ export async function provisionLocalResources(
 
   //TODO teams app provision, return app id
   // call appStudio.provision()
-  localSettingsV2.teamsAppId[LocalSettingsTeamsAppKeys.TeamsAppId] = "fake-local-teams-app-id";
+  localSettingsV2.teamsApp[LocalSettingsTeamsAppKeys.TeamsAppId] = "fake-local-teams-app-id";
   solutionGlobalVars.TeamsAppId = "fake-local-teams-app-id";
 
   // provision resources for local debug

@@ -361,7 +361,7 @@ describe("AAD resource plugin V3", () => {
           accessAsUserScopeId: "mockAccessAsUserScopeId",
         },
         [BuiltInResourcePluginNames.storage]: {
-          domain: "https://mydomain.com",
+          domain: "mydomain.com",
         },
         [BuiltInResourcePluginNames.bot]: {
           botId: uuid.v4(),
@@ -408,7 +408,7 @@ describe("AAD resource plugin V3", () => {
           accessAsUserScopeId: "mockAccessAsUserScopeId",
         },
         [BuiltInResourcePluginNames.storage]: {
-          domain: "https://mydomain.com",
+          domain: "mydomain.com",
         },
         [BuiltInResourcePluginNames.bot]: {
           botId: uuid.v4(),
@@ -447,7 +447,7 @@ describe("AAD resource plugin V3", () => {
         applicationIdUri: "https://oossyyy.com",
       },
       frontend: {
-        tabDomain: "https://mydomain.com",
+        tabDomain: "mydomain.com",
         tabEndpoint: "https://mydomain.com/tab",
       },
       bot: {
@@ -463,7 +463,60 @@ describe("AAD resource plugin V3", () => {
     assert.equal(localSettings.auth!.objectId, config.objectId);
     assert.equal(localSettings.auth!.clientId, config.clientId);
   });
-
+  it("PostProvisionConfig - restoreConfigFromEnvInfo - success", async () => {
+    const envConfig: EnvConfig = {
+      auth: {},
+      manifest: {
+        appName: {
+          short: "myApp",
+        },
+      },
+    };
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      config: envConfig,
+      state: {
+        solution: {},
+        [BuiltInResourcePluginNames.aad]: {
+          objectId: "mockObjectId",
+          clientId: "mockClientId",
+          clientSecret: "mockClientSecret",
+          accessAsUserScopeId: "mockAccessAsUserScopeId",
+          applicationIdUri: "https://oossyyy.com",
+        },
+        [BuiltInResourcePluginNames.storage]: {
+          domain: "mydomain.com",
+          tabEndpoint: "https://mydomain.com/tab",
+        },
+        [BuiltInResourcePluginNames.bot]: {
+          botId: uuid.v4(),
+          botEndpoint: "https://mydomain.com/bot",
+        },
+      },
+    };
+    const projectSettings = newProjectSettings();
+    projectSettings.appName = randomAppName();
+    projectSettings.solutionSettings.modules = [
+      {
+        capabilities: ["Tab"],
+        hostingPlugin: BuiltInResourcePluginNames.storage,
+      },
+      {
+        capabilities: ["Bot"],
+        hostingPlugin: BuiltInResourcePluginNames.bot,
+      },
+    ];
+    const ctx = createV2Context(projectSettings);
+    const config = new PostProvisionConfig(true);
+    config.restoreConfigFromEnvInfo(ctx, envInfo);
+    assert.equal(
+      envInfo.state[BuiltInResourcePluginNames.storage].tabEndpoint,
+      config.frontendEndpoint
+    );
+    assert.equal(envInfo.state[BuiltInResourcePluginNames.bot].botEndpoint, config.botEndpoint);
+    assert.equal(envInfo.state[BuiltInResourcePluginNames.aad].objectId, config.objectId);
+    assert.equal(envInfo.state[BuiltInResourcePluginNames.aad].clientId, config.clientId);
+  });
   it("PostProvisionConfig - restoreConfigFromLocalSettings - failure", async () => {
     const localSettings: v2.LocalSettings = {
       teamsApp: {},

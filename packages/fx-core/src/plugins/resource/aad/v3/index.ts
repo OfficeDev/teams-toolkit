@@ -249,8 +249,8 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
     });
     const config: PostProvisionConfig = new PostProvisionConfig(isLocalDebug);
     localSettingsV2
-      ? config.restoreConfigFromLocalSettings(ctx, inputs, localSettingsV2)
-      : config.restoreConfigFromEnvInfo(ctx, inputs, envInfo!);
+      ? config.restoreConfigFromLocalSettings(localSettingsV2)
+      : config.restoreConfigFromEnvInfo(ctx, envInfo!);
 
     await DialogUtils.progress?.start(ProgressDetail.Starting);
     await DialogUtils.progress?.next(ProgressDetail.UpdateRedirectUri);

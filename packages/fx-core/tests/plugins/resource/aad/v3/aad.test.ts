@@ -16,6 +16,7 @@ import {
 } from "../../../../../src/plugins/resource/aad/errors";
 import { Utils } from "../../../../../src/plugins/resource/aad/utils/common";
 import {
+  PostProvisionConfig,
   ProvisionConfig,
   SetApplicationInContextConfig,
 } from "../../../../../src/plugins/resource/aad/utils/configs";
@@ -26,6 +27,7 @@ import {
 } from "../../../../../src/plugins/resource/aad/v3";
 import { BuiltInResourcePluginNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, MockTools, randomAppName } from "../../../../core/utils";
+import * as uuid from "uuid";
 describe("AAD resource plugin V3", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
@@ -216,7 +218,7 @@ describe("AAD resource plugin V3", () => {
         tabDomain: "https://mydomain.com",
       },
       bot: {
-        botId: "mockBotId",
+        botId: uuid.v4(),
       },
     };
     const config = new SetApplicationInContextConfig(true);
@@ -238,6 +240,54 @@ describe("AAD resource plugin V3", () => {
       },
     };
     const config = new SetApplicationInContextConfig(true);
+    try {
+      config.restoreConfigFromLocalSettings(localSettings);
+    } catch (e) {
+      assert.isTrue(e.name === GetConfigError.name);
+    }
+  });
+
+  it("PostProvisionConfig - restoreConfigFromLocalSettings - success", async () => {
+    const localSettings: v2.LocalSettings = {
+      teamsApp: {},
+      auth: {
+        objectId: "mockObjectId",
+        clientId: "mockClientId",
+        clientSecret: "mockClientSecret",
+        accessAsUserScopeId: "mockAccessAsUserScopeId",
+        applicationIdUri: "https://oossyyy.com",
+      },
+      frontend: {
+        tabDomain: "https://mydomain.com",
+        tabEndpoint: "https://mydomain.com/tab",
+      },
+      bot: {
+        botId: uuid.v4(),
+        botEndpoint: "https://mydomain.com/bot",
+      },
+    };
+    const config = new PostProvisionConfig(true);
+    config.restoreConfigFromLocalSettings(localSettings);
+    assert.equal(localSettings.frontend!.tabEndpoint, config.frontendEndpoint);
+    assert.equal(localSettings.bot!.botEndpoint, config.botEndpoint);
+    assert.equal(localSettings.auth!.applicationIdUri, config.applicationIdUri);
+    assert.equal(localSettings.auth!.objectId, config.objectId);
+    assert.equal(localSettings.auth!.clientId, config.clientId);
+  });
+
+  it("PostProvisionConfig - restoreConfigFromLocalSettings - failure", async () => {
+    const localSettings: v2.LocalSettings = {
+      teamsApp: {},
+      auth: {
+        objectId: "mockObjectId",
+        clientSecret: "mockClientSecret",
+        accessAsUserScopeId: "mockAccessAsUserScopeId",
+      },
+      frontend: {
+        tabDomain: "https://mydomain.com",
+      },
+    };
+    const config = new PostProvisionConfig(true);
     try {
       config.restoreConfigFromLocalSettings(localSettings);
     } catch (e) {

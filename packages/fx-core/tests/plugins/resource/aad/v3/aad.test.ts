@@ -10,9 +10,15 @@ import * as path from "path";
 import "reflect-metadata";
 import sinon from "sinon";
 import { createV2Context, newProjectSettings, setTools } from "../../../../../src";
-import { GetSkipAppConfigError } from "../../../../../src/plugins/resource/aad/errors";
+import {
+  GetConfigError,
+  GetSkipAppConfigError,
+} from "../../../../../src/plugins/resource/aad/errors";
 import { Utils } from "../../../../../src/plugins/resource/aad/utils/common";
-import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/configs";
+import {
+  ProvisionConfig,
+  SetApplicationInContextConfig,
+} from "../../../../../src/plugins/resource/aad/utils/configs";
 import {
   checkPermissionRequest,
   createPermissionRequestFile,
@@ -195,5 +201,41 @@ describe("AAD resource plugin V3", () => {
     };
     const res = await config.restoreConfigFromLocalSettings(ctx, inputs, localSettings);
     assert.isTrue(res.isErr());
+  });
+
+  it("SetApplicationInContextConfig - restoreConfigFromLocalSettings - success", async () => {
+    const localSettings: v2.LocalSettings = {
+      teamsApp: {},
+      auth: {
+        objectId: "mockObjectId",
+        clientId: "mockClientId",
+        clientSecret: "mockClientSecret",
+        accessAsUserScopeId: "mockAccessAsUserScopeId",
+      },
+      bot: {
+        botId: "mockBotId",
+      },
+    };
+    const config = new SetApplicationInContextConfig(true);
+    config.restoreConfigFromLocalSettings(localSettings);
+    assert.equal(localSettings.bot!.botId, config.botId);
+    assert.equal(localSettings.auth!.clientId, config.clientId);
+  });
+
+  it("SetApplicationInContextConfig - restoreConfigFromLocalSettings - failure", async () => {
+    const localSettings: v2.LocalSettings = {
+      teamsApp: {},
+      auth: {
+        objectId: "mockObjectId",
+        clientSecret: "mockClientSecret",
+        accessAsUserScopeId: "mockAccessAsUserScopeId",
+      },
+    };
+    const config = new SetApplicationInContextConfig(true);
+    try {
+      config.restoreConfigFromLocalSettings(localSettings);
+    } catch (e) {
+      assert.isTrue(e.name === GetConfigError.name);
+    }
   });
 });

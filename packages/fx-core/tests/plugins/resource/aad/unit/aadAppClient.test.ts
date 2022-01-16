@@ -34,7 +34,12 @@ import {
 } from "../../../../../src/plugins/resource/aad/errors";
 import { Utils } from "../../../../../src/plugins/resource/aad/utils/common";
 import { ConfigKeys, Constants } from "../../../../../src/plugins/resource/aad/constants";
-import { MockAppStudioTokenProvider, MockGraphTokenProvider } from "../../../../core/utils";
+import {
+  MockAppStudioTokenProvider,
+  MockGraphTokenProvider,
+  MockTools,
+} from "../../../../core/utils";
+import { setTools } from "../../../../../src";
 
 describe("AAD App Client Test", () => {
   let ctx: PluginContext;
@@ -44,6 +49,7 @@ describe("AAD App Client Test", () => {
     appStudio: new MockAppStudioTokenProvider(),
   };
   beforeEach(async () => {
+    setTools(new MockTools());
     ctx = await TestHelper.pluginContext(new Map(), true, false, false);
     config = new ProvisionConfig(true);
     config.restoreConfigFromContext(ctx);
@@ -64,7 +70,7 @@ describe("AAD App Client Test", () => {
         displayName: displayName,
       });
 
-      await AadAppClient.createAadApp(ctx, "createAADApp", config);
+      await AadAppClient.createAadApp("createAADApp", config);
       chai.assert.equal(config.objectId, objectId);
     });
 
@@ -78,7 +84,7 @@ describe("AAD App Client Test", () => {
         displayName: displayName,
       });
 
-      await AadAppClient.createAadApp(ctx, "createAADApp", config);
+      await AadAppClient.createAadApp("createAADApp", config);
       chai.assert.equal(config.objectId, objectId);
     });
 
@@ -93,7 +99,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(GraphClient, "createAADApp").throws(error);
       try {
-        await AadAppClient.createAadApp(ctx, "createAADApp", config);
+        await AadAppClient.createAadApp("createAADApp", config);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
         chai.assert.equal(error.message, CreateAppError.message());
@@ -111,7 +117,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.createAadApp(ctx, "createAADApp", config);
+        await AadAppClient.createAadApp("createAADApp", config);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(error.message, CreateAppError.message());
@@ -130,7 +136,7 @@ describe("AAD App Client Test", () => {
         value: "secret",
       });
 
-      await AadAppClient.createAadAppSecret(ctx, "createAadAppSecret", config);
+      await AadAppClient.createAadAppSecret("createAadAppSecret", config);
       chai.assert.equal(config.password, "secret");
     });
 
@@ -144,7 +150,7 @@ describe("AAD App Client Test", () => {
         value: "secret",
       });
 
-      await AadAppClient.createAadAppSecret(ctx, "createAadAppSecret", config);
+      await AadAppClient.createAadAppSecret("createAadAppSecret", config);
       chai.assert.equal(config.password, "secret");
     });
 
@@ -159,7 +165,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.createAadAppSecret(ctx, "createAadAppSecret", config);
+        await AadAppClient.createAadAppSecret("createAadAppSecret", config);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
         chai.assert.equal(error.message, CreateSecretError.message());
@@ -177,7 +183,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.createAadAppSecret(ctx, "createAadAppSecret", config);
+        await AadAppClient.createAadAppSecret("createAadAppSecret", config);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(error.message, CreateSecretError.message());
@@ -196,12 +202,7 @@ describe("AAD App Client Test", () => {
       };
 
       sinon.stub(GraphClient, "updateAADApp").resolves();
-      await AadAppClient.updateAadAppRedirectUri(
-        ctx,
-        "updateAadAppRedirectUri",
-        objectId,
-        redirectUris
-      );
+      await AadAppClient.updateAadAppRedirectUri("updateAadAppRedirectUri", objectId, redirectUris);
     });
 
     it("Happy Path: App Studio", async () => {
@@ -214,12 +215,7 @@ describe("AAD App Client Test", () => {
       };
 
       sinon.stub(AppStudio, "updateAADApp").resolves();
-      await AadAppClient.updateAadAppRedirectUri(
-        ctx,
-        "updateAadAppRedirectUri",
-        objectId,
-        redirectUris
-      );
+      await AadAppClient.updateAadAppRedirectUri("updateAadAppRedirectUri", objectId, redirectUris);
     });
 
     it("System Error", async () => {

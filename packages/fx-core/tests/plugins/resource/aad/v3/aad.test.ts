@@ -182,6 +182,27 @@ describe("AAD resource plugin V3", () => {
     assert.equal(localSettings.auth!.objectId, config.objectId);
     assert.equal(localSettings.auth!.clientSecret, config.password);
   });
+  it("ProvisionConfig - restoreConfigFromLocalSettings - failure", async () => {
+    const localSettings: v2.LocalSettings = {
+      teamsApp: {},
+      auth: {
+        objectId: "mockObjectId",
+        clientId: "mockClientId",
+        clientSecret: "mockClientSecret",
+        accessAsUserScopeId: "mockAccessAsUserScopeId",
+      },
+    };
+    const config = new ProvisionConfig(true);
+    const projectSettings = newProjectSettings();
+    projectSettings.appName = randomAppName();
+    const ctx = createV2Context(projectSettings);
+    const inputs: v2.InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), randomAppName()),
+    };
+    const res = await config.restoreConfigFromLocalSettings(ctx, inputs, localSettings);
+    assert.isTrue(res.isErr());
+  });
   it("ProvisionConfig - restoreConfigFromEnvInfo - success", async () => {
     const envConfig: EnvConfig = {
       auth: {},
@@ -218,27 +239,7 @@ describe("AAD resource plugin V3", () => {
     assert.equal(aadResource.objectId, config.objectId);
     assert.equal(aadResource.clientSecret, config.password);
   });
-  it("ProvisionConfig - restoreConfigFromLocalSettings - failure", async () => {
-    const localSettings: v2.LocalSettings = {
-      teamsApp: {},
-      auth: {
-        objectId: "mockObjectId",
-        clientId: "mockClientId",
-        clientSecret: "mockClientSecret",
-        accessAsUserScopeId: "mockAccessAsUserScopeId",
-      },
-    };
-    const config = new ProvisionConfig(true);
-    const projectSettings = newProjectSettings();
-    projectSettings.appName = randomAppName();
-    const ctx = createV2Context(projectSettings);
-    const inputs: v2.InputsWithProjectPath = {
-      platform: Platform.VSCode,
-      projectPath: path.join(os.tmpdir(), randomAppName()),
-    };
-    const res = await config.restoreConfigFromLocalSettings(ctx, inputs, localSettings);
-    assert.isTrue(res.isErr());
-  });
+
   it("ProvisionConfig - restoreConfigFromEnvInfo - failure", async () => {
     const envConfig: EnvConfig = {
       auth: {},
@@ -293,6 +294,29 @@ describe("AAD resource plugin V3", () => {
     assert.equal(localSettings.auth!.clientId, config.clientId);
     assert.equal(localSettings.frontend!.tabDomain, config.frontendDomain);
   });
+  it("SetApplicationInContextConfig - restoreConfigFromLocalSettings - failure", async () => {
+    const localSettings: v2.LocalSettings = {
+      teamsApp: {},
+      auth: {
+        objectId: "mockObjectId",
+        clientId: "mockClientId",
+        clientSecret: "mockClientSecret",
+        accessAsUserScopeId: "mockAccessAsUserScopeId",
+      },
+      frontend: {
+        tabDomain: "mydomain.com",
+      },
+      bot: {
+        botId: uuid.v4(),
+      },
+    };
+    const config = new SetApplicationInContextConfig(true);
+    try {
+      config.restoreConfigFromLocalSettings(localSettings);
+    } catch (e) {
+      assert.isTrue(e.name === GetConfigError.name);
+    }
+  });
   it("SetApplicationInContextConfig - restoreConfigFromEnvInfo - success", async () => {
     const envConfig: EnvConfig = {
       auth: {},
@@ -340,7 +364,7 @@ describe("AAD resource plugin V3", () => {
     assert.equal(envInfo.state[BuiltInResourcePluginNames.aad].clientId, config.clientId);
     assert.equal(envInfo.state[BuiltInResourcePluginNames.storage].domain, config.frontendDomain);
   });
-  it("SetApplicationInContextConfig - restoreConfigFromLocalSettings - failure", async () => {
+  it("SetApplicationInContextConfig - restoreConfigFromEnvInfo - failure", async () => {
     const envConfig: EnvConfig = {
       auth: {},
       manifest: {
@@ -388,53 +412,6 @@ describe("AAD resource plugin V3", () => {
       assert.isTrue(e.name === GetConfigError.name);
     }
   });
-  it("SetApplicationInContextConfig - restoreConfigFromEnvInfo - failure", async () => {
-    const envConfig: EnvConfig = {
-      auth: {},
-      manifest: {
-        appName: {
-          short: "myApp",
-        },
-      },
-    };
-    const envInfo: v3.EnvInfoV3 = {
-      envName: "dev",
-      config: envConfig,
-      state: {
-        solution: {},
-        [BuiltInResourcePluginNames.aad]: {
-          objectId: "mockObjectId",
-          clientSecret: "mockClientSecret",
-          accessAsUserScopeId: "mockAccessAsUserScopeId",
-        },
-        [BuiltInResourcePluginNames.storage]: {
-          domain: "mydomain.com",
-        },
-        [BuiltInResourcePluginNames.bot]: {
-          botId: uuid.v4(),
-        },
-      },
-    };
-    const projectSettings = newProjectSettings();
-    projectSettings.appName = randomAppName();
-    projectSettings.solutionSettings.modules = [
-      {
-        capabilities: ["Tab"],
-        hostingPlugin: BuiltInResourcePluginNames.storage,
-      },
-      {
-        capabilities: ["Bot"],
-        hostingPlugin: BuiltInResourcePluginNames.bot,
-      },
-    ];
-    const ctx = createV2Context(projectSettings);
-    const config = new SetApplicationInContextConfig(false);
-    try {
-      config.restoreConfigFromEnvInfo(ctx, envInfo);
-    } catch (e) {
-      assert.isTrue(e.name === GetConfigError.name);
-    }
-  });
 
   it("PostProvisionConfig - restoreConfigFromLocalSettings - success", async () => {
     const localSettings: v2.LocalSettings = {
@@ -463,6 +440,25 @@ describe("AAD resource plugin V3", () => {
     assert.equal(localSettings.auth!.objectId, config.objectId);
     assert.equal(localSettings.auth!.clientId, config.clientId);
   });
+  it("PostProvisionConfig - restoreConfigFromLocalSettings - failure", async () => {
+    const localSettings: v2.LocalSettings = {
+      teamsApp: {},
+      auth: {
+        objectId: "mockObjectId",
+        clientSecret: "mockClientSecret",
+        accessAsUserScopeId: "mockAccessAsUserScopeId",
+      },
+      frontend: {
+        tabDomain: "https://mydomain.com",
+      },
+    };
+    const config = new PostProvisionConfig(true);
+    try {
+      config.restoreConfigFromLocalSettings(localSettings);
+    } catch (e) {
+      assert.isTrue(e.name === GetConfigError.name);
+    }
+  });
   it("PostProvisionConfig - restoreConfigFromEnvInfo - success", async () => {
     const envConfig: EnvConfig = {
       auth: {},
@@ -486,11 +482,11 @@ describe("AAD resource plugin V3", () => {
         },
         [BuiltInResourcePluginNames.storage]: {
           domain: "mydomain.com",
-          tabEndpoint: "https://mydomain.com/tab",
+          endpoint: "https://mydomain.com/tab",
         },
         [BuiltInResourcePluginNames.bot]: {
           botId: uuid.v4(),
-          botEndpoint: "https://mydomain.com/bot",
+          siteEndpoint: "https://mydomain.com/bot",
         },
       },
     };
@@ -510,28 +506,58 @@ describe("AAD resource plugin V3", () => {
     const config = new PostProvisionConfig(true);
     config.restoreConfigFromEnvInfo(ctx, envInfo);
     assert.equal(
-      envInfo.state[BuiltInResourcePluginNames.storage].tabEndpoint,
+      envInfo.state[BuiltInResourcePluginNames.storage].endpoint,
       config.frontendEndpoint
     );
     assert.equal(envInfo.state[BuiltInResourcePluginNames.bot].botEndpoint, config.botEndpoint);
     assert.equal(envInfo.state[BuiltInResourcePluginNames.aad].objectId, config.objectId);
     assert.equal(envInfo.state[BuiltInResourcePluginNames.aad].clientId, config.clientId);
   });
-  it("PostProvisionConfig - restoreConfigFromLocalSettings - failure", async () => {
-    const localSettings: v2.LocalSettings = {
-      teamsApp: {},
-      auth: {
-        objectId: "mockObjectId",
-        clientSecret: "mockClientSecret",
-        accessAsUserScopeId: "mockAccessAsUserScopeId",
-      },
-      frontend: {
-        tabDomain: "https://mydomain.com",
+  it("PostProvisionConfig - restoreConfigFromEnvInfo - failure", async () => {
+    const envConfig: EnvConfig = {
+      auth: {},
+      manifest: {
+        appName: {
+          short: "myApp",
+        },
       },
     };
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      config: envConfig,
+      state: {
+        solution: {},
+        [BuiltInResourcePluginNames.aad]: {
+          clientSecret: "mockClientSecret",
+          accessAsUserScopeId: "mockAccessAsUserScopeId",
+          applicationIdUri: "https://oossyyy.com",
+        },
+        [BuiltInResourcePluginNames.storage]: {
+          domain: "mydomain.com",
+          endpoint: "https://mydomain.com/tab",
+        },
+        [BuiltInResourcePluginNames.bot]: {
+          botId: uuid.v4(),
+          siteEndpoint: "https://mydomain.com/bot",
+        },
+      },
+    };
+    const projectSettings = newProjectSettings();
+    projectSettings.appName = randomAppName();
+    projectSettings.solutionSettings.modules = [
+      {
+        capabilities: ["Tab"],
+        hostingPlugin: BuiltInResourcePluginNames.storage,
+      },
+      {
+        capabilities: ["Bot"],
+        hostingPlugin: BuiltInResourcePluginNames.bot,
+      },
+    ];
+    const ctx = createV2Context(projectSettings);
     const config = new PostProvisionConfig(true);
     try {
-      config.restoreConfigFromLocalSettings(localSettings);
+      config.restoreConfigFromEnvInfo(ctx, envInfo);
     } catch (e) {
       assert.isTrue(e.name === GetConfigError.name);
     }

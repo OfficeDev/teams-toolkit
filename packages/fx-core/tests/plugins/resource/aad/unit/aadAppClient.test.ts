@@ -236,7 +236,6 @@ describe("AAD App Client Test", () => {
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
         await AadAppClient.updateAadAppRedirectUri(
-          ctx,
           "updateAadAppRedirectUri",
           objectId,
           redirectUris
@@ -265,7 +264,6 @@ describe("AAD App Client Test", () => {
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
         await AadAppClient.updateAadAppRedirectUri(
-          ctx,
           "updateAadAppRedirectUri",
           objectId,
           redirectUris
@@ -284,7 +282,7 @@ describe("AAD App Client Test", () => {
       const applicationIdUri = "applicationIdUri";
 
       sinon.stub(GraphClient, "updateAADApp").resolves();
-      await AadAppClient.updateAadAppIdUri(ctx, "updateAadAppIdUri", objectId, applicationIdUri);
+      await AadAppClient.updateAadAppIdUri("updateAadAppIdUri", objectId, applicationIdUri);
     });
 
     it("Happy Path: App Studio", async () => {
@@ -293,7 +291,7 @@ describe("AAD App Client Test", () => {
       const applicationIdUri = "applicationIdUri";
 
       sinon.stub(AppStudio, "updateAADApp").resolves();
-      await AadAppClient.updateAadAppIdUri(ctx, "updateAadAppIdUri", objectId, applicationIdUri);
+      await AadAppClient.updateAadAppIdUri("updateAadAppIdUri", objectId, applicationIdUri);
     });
 
     it("System Error", async () => {
@@ -309,7 +307,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.updateAadAppIdUri(ctx, "updateAadAppIdUri", objectId, applicationIdUri);
+        await AadAppClient.updateAadAppIdUri("updateAadAppIdUri", objectId, applicationIdUri);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
         chai.assert.equal(error.message, UpdateAppIdUriError.message());
@@ -329,7 +327,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.updateAadAppIdUri(ctx, "updateAadAppIdUri", objectId, applicationIdUri);
+        await AadAppClient.updateAadAppIdUri("updateAadAppIdUri", objectId, applicationIdUri);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(error.message, UpdateAppIdUriError.message());
@@ -344,12 +342,7 @@ describe("AAD App Client Test", () => {
       const permissions: RequiredResourceAccess[] = [{}];
 
       sinon.stub(GraphClient, "updateAADApp").resolves();
-      await AadAppClient.updateAadAppPermission(
-        ctx,
-        "updateAadAppPermission",
-        objectId,
-        permissions
-      );
+      await AadAppClient.updateAadAppPermission("updateAadAppPermission", objectId, permissions);
     });
 
     it("Happy Path: AppStudio", async () => {
@@ -358,12 +351,7 @@ describe("AAD App Client Test", () => {
       const permissions: RequiredResourceAccess[] = [{}];
 
       sinon.stub(AppStudio, "updateAADApp").resolves();
-      await AadAppClient.updateAadAppPermission(
-        ctx,
-        "updateAadAppPermission",
-        objectId,
-        permissions
-      );
+      await AadAppClient.updateAadAppPermission("updateAadAppPermission", objectId, permissions);
     });
 
     it("System Error", async () => {
@@ -379,12 +367,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.updateAadAppPermission(
-          ctx,
-          "updateAadAppPermission",
-          objectId,
-          permissions
-        );
+        await AadAppClient.updateAadAppPermission("updateAadAppPermission", objectId, permissions);
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
         chai.assert.equal(error.message, UpdatePermissionError.message());
@@ -404,12 +387,7 @@ describe("AAD App Client Test", () => {
       };
       sinon.stub(AadAppClient, "retryHanlder").throws(error);
       try {
-        await AadAppClient.updateAadAppPermission(
-          ctx,
-          "updateAadAppPermission",
-          objectId,
-          permissions
-        );
+        await AadAppClient.updateAadAppPermission("updateAadAppPermission", objectId, permissions);
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(error.message, UpdatePermissionError.message());
@@ -448,7 +426,12 @@ describe("AAD App Client Test", () => {
         },
       });
 
-      const getResult = await AadAppClient.getAadApp(ctx, "getAadApp", objectId, true, secret);
+      const getResult = await AadAppClient.getAadApp(
+        "getAadApp",
+        objectId,
+        secret,
+        new MockGraphTokenProvider()
+      );
       chai.assert.equal(getResult.objectId, objectId);
       chai.assert.equal(getResult.clientId, clientId);
     });
@@ -483,7 +466,12 @@ describe("AAD App Client Test", () => {
         },
       });
 
-      const getResult = await AadAppClient.getAadApp(ctx, "getAadApp", objectId, true, secret);
+      const getResult = await AadAppClient.getAadApp(
+        "getAadApp",
+        objectId,
+        secret,
+        new MockGraphTokenProvider()
+      );
       chai.assert.equal(getResult.objectId, objectId);
       chai.assert.equal(getResult.clientId, clientId);
     });
@@ -512,7 +500,12 @@ describe("AAD App Client Test", () => {
       });
 
       try {
-        const getResult = await AadAppClient.getAadApp(ctx, "getAadApp", objectId, true, secret);
+        const getResult = await AadAppClient.getAadApp(
+          "getAadApp",
+          objectId,
+          secret,
+          new MockGraphTokenProvider()
+        );
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(
@@ -539,7 +532,12 @@ describe("AAD App Client Test", () => {
       sinon.stub(Utils, "getCurrentTenantId").resolves(tenantId);
       sinon.stub(Utils, "getConfigFileName").returns(fileName);
       try {
-        const getResult = await AadAppClient.getAadApp(ctx, "getAadApp", objectId, true, secret);
+        const getResult = await AadAppClient.getAadApp(
+          "getAadApp",
+          objectId,
+          secret,
+          new MockGraphTokenProvider()
+        );
       } catch (error) {
         chai.assert.isTrue(error instanceof SystemError);
         chai.assert.equal(error.message, GetAppError.message(objectId, tenantId, fileName));
@@ -563,7 +561,12 @@ describe("AAD App Client Test", () => {
       sinon.stub(Utils, "getCurrentTenantId").resolves(tenantId);
       sinon.stub(Utils, "getConfigFileName").returns(fileName);
       try {
-        const getResult = await AadAppClient.getAadApp(ctx, "getAadApp", objectId, true, secret);
+        const getResult = await AadAppClient.getAadApp(
+          "getAadApp",
+          objectId,
+          secret,
+          new MockGraphTokenProvider()
+        );
       } catch (error) {
         chai.assert.isTrue(error instanceof UserError);
         chai.assert.equal(error.message, GetAppError.message(objectId, tenantId, fileName));

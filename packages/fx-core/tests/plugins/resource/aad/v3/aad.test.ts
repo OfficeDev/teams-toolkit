@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { EnvConfig, v2, v3 } from "@microsoft/teamsfx-api";
+import { EnvConfig, Platform, v2, v3 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import fs from "fs-extra";
 import "mocha";
@@ -9,40 +9,21 @@ import * as os from "os";
 import * as path from "path";
 import "reflect-metadata";
 import sinon from "sinon";
+import { createV2Context, newProjectSettings, setTools } from "../../../../../src";
 import { GetSkipAppConfigError } from "../../../../../src/plugins/resource/aad/errors";
 import { Utils } from "../../../../../src/plugins/resource/aad/utils/common";
+import { ProvisionConfig } from "../../../../../src/plugins/resource/aad/utils/configs";
 import {
   checkPermissionRequest,
   createPermissionRequestFile,
   getPermissionRequest,
 } from "../../../../../src/plugins/resource/aad/v3";
-import { AADAppCheckingError } from "../../../../../src/plugins/resource/bot/errors";
 import { BuiltInResourcePluginNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
-import { deleteFolder, randomAppName } from "../../../../core/utils";
+import { deleteFolder, MockTools, randomAppName } from "../../../../core/utils";
 describe("AAD resource plugin V3", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
-    // sandbox
-    //   .stub<any, any>(appStudio, "loadManifest")
-    //   .callsFake(
-    //     async (
-    //       ctx: v2.Context,
-    //       inputs: v2.InputsWithProjectPath
-    //     ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> => {
-    //       return ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() });
-    //     }
-    //   );
-    // sandbox
-    //   .stub<any, any>(appStudio, "saveManifest")
-    //   .callsFake(
-    //     async (
-    //       ctx: v2.Context,
-    //       inputs: v2.InputsWithProjectPath,
-    //       manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
-    //     ): Promise<Result<any, FxError>> => {
-    //       return ok({ local: {}, remote: {} });
-    //     }
-    //   );
+    setTools(new MockTools());
   });
   afterEach(async () => {
     sandbox.restore();
@@ -166,5 +147,53 @@ describe("AAD resource plugin V3", () => {
     } catch (e) {
       assert.isTrue(e.name === GetSkipAppConfigError.name);
     }
+  });
+
+  it("ProvisionConfig - restoreConfigFromLocalSettings - success", async () => {
+    const localSettings: v2.LocalSettings = {
+      teamsApp: {},
+      auth: {
+        objectId: "mockObjectId",
+        clientId: "mockClientId",
+        clientSecret: "mockClientSecret",
+        accessAsUserScopeId: "mockAccessAsUserScopeId",
+      },
+    };
+    const config = new ProvisionConfig(true);
+    const projectSettings = newProjectSettings();
+    projectSettings.appName = randomAppName();
+    const ctx = createV2Context(projectSettings);
+    const inputs: v2.InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), randomAppName()),
+    };
+    sandbox.stub<any, any>(fs, "pathExists").resolves(true);
+    sandbox.stub<any, any>(fs, "readJSON").resolves("");
+    const res = await config.restoreConfigFromLocalSettings(ctx, inputs, localSettings);
+    assert.isTrue(res.isOk());
+    assert.equal(localSettings.auth!.objectId, config.objectId);
+    assert.equal(localSettings.auth!.clientSecret, config.password);
+  });
+
+  it("ProvisionConfig - restoreConfigFromLocalSettings - failure", async () => {
+    const localSettings: v2.LocalSettings = {
+      teamsApp: {},
+      auth: {
+        objectId: "mockObjectId",
+        clientId: "mockClientId",
+        clientSecret: "mockClientSecret",
+        accessAsUserScopeId: "mockAccessAsUserScopeId",
+      },
+    };
+    const config = new ProvisionConfig(true);
+    const projectSettings = newProjectSettings();
+    projectSettings.appName = randomAppName();
+    const ctx = createV2Context(projectSettings);
+    const inputs: v2.InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), randomAppName()),
+    };
+    const res = await config.restoreConfigFromLocalSettings(ctx, inputs, localSettings);
+    assert.isTrue(res.isErr());
   });
 });

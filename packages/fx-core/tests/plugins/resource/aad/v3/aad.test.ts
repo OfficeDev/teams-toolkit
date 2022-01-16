@@ -509,7 +509,7 @@ describe("AAD resource plugin V3", () => {
       envInfo.state[BuiltInResourcePluginNames.storage].endpoint,
       config.frontendEndpoint
     );
-    assert.equal(envInfo.state[BuiltInResourcePluginNames.bot].botEndpoint, config.botEndpoint);
+    assert.equal(envInfo.state[BuiltInResourcePluginNames.bot].siteEndpoint, config.botEndpoint);
     assert.equal(envInfo.state[BuiltInResourcePluginNames.aad].objectId, config.objectId);
     assert.equal(envInfo.state[BuiltInResourcePluginNames.aad].clientId, config.clientId);
   });

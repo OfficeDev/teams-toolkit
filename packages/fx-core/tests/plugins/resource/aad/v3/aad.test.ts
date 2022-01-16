@@ -212,6 +212,9 @@ describe("AAD resource plugin V3", () => {
         clientSecret: "mockClientSecret",
         accessAsUserScopeId: "mockAccessAsUserScopeId",
       },
+      frontend: {
+        tabDomain: "https://mydomain.com",
+      },
       bot: {
         botId: "mockBotId",
       },
@@ -229,6 +232,9 @@ describe("AAD resource plugin V3", () => {
         objectId: "mockObjectId",
         clientSecret: "mockClientSecret",
         accessAsUserScopeId: "mockAccessAsUserScopeId",
+      },
+      frontend: {
+        tabDomain: "https://mydomain.com",
       },
     };
     const config = new SetApplicationInContextConfig(true);

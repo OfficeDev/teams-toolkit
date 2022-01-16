@@ -314,7 +314,7 @@ describe("AAD resource plugin V3", () => {
           accessAsUserScopeId: "mockAccessAsUserScopeId",
         },
         [BuiltInResourcePluginNames.storage]: {
-          domain: "https://mydomain.com",
+          domain: "mydomain.com",
         },
         [BuiltInResourcePluginNames.bot]: {
           botId: uuid.v4(),

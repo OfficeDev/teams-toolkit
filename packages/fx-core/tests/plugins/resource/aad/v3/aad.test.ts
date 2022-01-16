@@ -182,7 +182,42 @@ describe("AAD resource plugin V3", () => {
     assert.equal(localSettings.auth!.objectId, config.objectId);
     assert.equal(localSettings.auth!.clientSecret, config.password);
   });
-
+  it("ProvisionConfig - restoreConfigFromEnvInfo - success", async () => {
+    const envConfig: EnvConfig = {
+      auth: {},
+      manifest: {
+        appName: {
+          short: "myApp",
+        },
+      },
+    };
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      config: envConfig,
+      state: {
+        solution: {},
+        [BuiltInResourcePluginNames.aad]: {
+          objectId: "mockObjectId",
+          clientSecret: "mockClientSecret",
+        },
+      },
+    };
+    const aadResource = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
+    const config = new ProvisionConfig(false);
+    const projectSettings = newProjectSettings();
+    projectSettings.appName = randomAppName();
+    const ctx = createV2Context(projectSettings);
+    const inputs: v2.InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), randomAppName()),
+    };
+    sandbox.stub<any, any>(fs, "pathExists").resolves(true);
+    sandbox.stub<any, any>(fs, "readJSON").resolves("");
+    const res = await config.restoreConfigFromEnvInfo(ctx, inputs, envInfo);
+    assert.isTrue(res.isOk());
+    assert.equal(aadResource.objectId, config.objectId);
+    assert.equal(aadResource.clientSecret, config.password);
+  });
   it("ProvisionConfig - restoreConfigFromLocalSettings - failure", async () => {
     const localSettings: v2.LocalSettings = {
       teamsApp: {},
@@ -204,6 +239,37 @@ describe("AAD resource plugin V3", () => {
     const res = await config.restoreConfigFromLocalSettings(ctx, inputs, localSettings);
     assert.isTrue(res.isErr());
   });
+  it("ProvisionConfig - restoreConfigFromEnvInfo - failure", async () => {
+    const envConfig: EnvConfig = {
+      auth: {},
+      manifest: {
+        appName: {
+          short: "myApp",
+        },
+      },
+    };
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      config: envConfig,
+      state: {
+        solution: {},
+        [BuiltInResourcePluginNames.aad]: {
+          objectId: "mockObjectId",
+          clientSecret: "mockClientSecret",
+        },
+      },
+    };
+    const config = new ProvisionConfig(false);
+    const projectSettings = newProjectSettings();
+    projectSettings.appName = randomAppName();
+    const ctx = createV2Context(projectSettings);
+    const inputs: v2.InputsWithProjectPath = {
+      platform: Platform.VSCode,
+      projectPath: path.join(os.tmpdir(), randomAppName()),
+    };
+    const res = await config.restoreConfigFromEnvInfo(ctx, inputs, envInfo);
+    assert.isTrue(res.isErr());
+  });
 
   it("SetApplicationInContextConfig - restoreConfigFromLocalSettings - success", async () => {
     const localSettings: v2.LocalSettings = {
@@ -215,7 +281,7 @@ describe("AAD resource plugin V3", () => {
         accessAsUserScopeId: "mockAccessAsUserScopeId",
       },
       frontend: {
-        tabDomain: "https://mydomain.com",
+        tabDomain: "mydomain.com",
       },
       bot: {
         botId: uuid.v4(),
@@ -225,23 +291,146 @@ describe("AAD resource plugin V3", () => {
     config.restoreConfigFromLocalSettings(localSettings);
     assert.equal(localSettings.bot!.botId, config.botId);
     assert.equal(localSettings.auth!.clientId, config.clientId);
+    assert.equal(localSettings.frontend!.tabDomain, config.frontendDomain);
   });
-
-  it("SetApplicationInContextConfig - restoreConfigFromLocalSettings - failure", async () => {
-    const localSettings: v2.LocalSettings = {
-      teamsApp: {},
-      auth: {
-        objectId: "mockObjectId",
-        clientSecret: "mockClientSecret",
-        accessAsUserScopeId: "mockAccessAsUserScopeId",
-      },
-      frontend: {
-        tabDomain: "https://mydomain.com",
+  it("SetApplicationInContextConfig - restoreConfigFromEnvInfo - success", async () => {
+    const envConfig: EnvConfig = {
+      auth: {},
+      manifest: {
+        appName: {
+          short: "myApp",
+        },
       },
     };
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      config: envConfig,
+      state: {
+        solution: {},
+        [BuiltInResourcePluginNames.aad]: {
+          objectId: "mockObjectId",
+          clientId: "mockClientId",
+          clientSecret: "mockClientSecret",
+          accessAsUserScopeId: "mockAccessAsUserScopeId",
+        },
+        [BuiltInResourcePluginNames.storage]: {
+          domain: "https://mydomain.com",
+        },
+        [BuiltInResourcePluginNames.bot]: {
+          botId: uuid.v4(),
+        },
+      },
+    };
+    const projectSettings = newProjectSettings();
+    projectSettings.appName = randomAppName();
+    projectSettings.solutionSettings.modules = [
+      {
+        capabilities: ["Tab"],
+        hostingPlugin: BuiltInResourcePluginNames.storage,
+      },
+      {
+        capabilities: ["Bot"],
+        hostingPlugin: BuiltInResourcePluginNames.bot,
+      },
+    ];
+    const ctx = createV2Context(projectSettings);
+    const config = new SetApplicationInContextConfig(false);
+    config.restoreConfigFromEnvInfo(ctx, envInfo);
+    assert.equal(envInfo.state[BuiltInResourcePluginNames.bot].botId, config.botId);
+    assert.equal(envInfo.state[BuiltInResourcePluginNames.aad].clientId, config.clientId);
+    assert.equal(envInfo.state[BuiltInResourcePluginNames.storage].domain, config.frontendDomain);
+  });
+  it("SetApplicationInContextConfig - restoreConfigFromLocalSettings - failure", async () => {
+    const envConfig: EnvConfig = {
+      auth: {},
+      manifest: {
+        appName: {
+          short: "myApp",
+        },
+      },
+    };
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      config: envConfig,
+      state: {
+        solution: {},
+        [BuiltInResourcePluginNames.aad]: {
+          objectId: "mockObjectId",
+          clientId: "mockClientId",
+          clientSecret: "mockClientSecret",
+          accessAsUserScopeId: "mockAccessAsUserScopeId",
+        },
+        [BuiltInResourcePluginNames.storage]: {
+          domain: "https://mydomain.com",
+        },
+        [BuiltInResourcePluginNames.bot]: {
+          botId: uuid.v4(),
+        },
+      },
+    };
+    const projectSettings = newProjectSettings();
+    projectSettings.appName = randomAppName();
+    projectSettings.solutionSettings.modules = [
+      {
+        capabilities: ["Tab"],
+        hostingPlugin: BuiltInResourcePluginNames.storage,
+      },
+      {
+        capabilities: ["Bot"],
+        hostingPlugin: BuiltInResourcePluginNames.bot,
+      },
+    ];
     const config = new SetApplicationInContextConfig(true);
+    const ctx = createV2Context(projectSettings);
     try {
-      config.restoreConfigFromLocalSettings(localSettings);
+      config.restoreConfigFromEnvInfo(ctx, envInfo);
+    } catch (e) {
+      assert.isTrue(e.name === GetConfigError.name);
+    }
+  });
+  it("SetApplicationInContextConfig - restoreConfigFromEnvInfo - failure", async () => {
+    const envConfig: EnvConfig = {
+      auth: {},
+      manifest: {
+        appName: {
+          short: "myApp",
+        },
+      },
+    };
+    const envInfo: v3.EnvInfoV3 = {
+      envName: "dev",
+      config: envConfig,
+      state: {
+        solution: {},
+        [BuiltInResourcePluginNames.aad]: {
+          objectId: "mockObjectId",
+          clientSecret: "mockClientSecret",
+          accessAsUserScopeId: "mockAccessAsUserScopeId",
+        },
+        [BuiltInResourcePluginNames.storage]: {
+          domain: "https://mydomain.com",
+        },
+        [BuiltInResourcePluginNames.bot]: {
+          botId: uuid.v4(),
+        },
+      },
+    };
+    const projectSettings = newProjectSettings();
+    projectSettings.appName = randomAppName();
+    projectSettings.solutionSettings.modules = [
+      {
+        capabilities: ["Tab"],
+        hostingPlugin: BuiltInResourcePluginNames.storage,
+      },
+      {
+        capabilities: ["Bot"],
+        hostingPlugin: BuiltInResourcePluginNames.bot,
+      },
+    ];
+    const ctx = createV2Context(projectSettings);
+    const config = new SetApplicationInContextConfig(false);
+    try {
+      config.restoreConfigFromEnvInfo(ctx, envInfo);
     } catch (e) {
       assert.isTrue(e.name === GetConfigError.name);
     }

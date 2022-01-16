@@ -53,11 +53,11 @@ export class Utils {
       : message;
   }
 
-  public static getConfigFileName(ctx: PluginContext, isLocalDebug: boolean): string {
-    if (isLocalDebug) {
+  public static getConfigFileName(envName?: string): string {
+    if (!envName) {
       return ConfigFilePath.LocalSettings;
     } else {
-      return ConfigFilePath.State(ctx.envInfo.envName);
+      return ConfigFilePath.State(envName);
     }
   }
 

@@ -189,7 +189,7 @@ export class TeamsAppSolution implements Solution {
     this.ApimPlugin = Container.get<Plugin>(ResourcePlugins.ApimPlugin);
     this.KeyVaultPlugin = Container.get<Plugin>(ResourcePlugins.KeyVaultPlugin);
     this.LocalDebugPlugin = Container.get<Plugin>(ResourcePlugins.LocalDebugPlugin);
-    this.CICDPlugin = Container.get<Plugin>(ResourcePlugins.CICDPlugin);
+    this.CICDPlugin = Container.get<Plugin>(ResourcePluginsV2.CICDPlugin);
     this.runningState = SolutionRunningState.Idle;
   }
 

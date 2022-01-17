@@ -1,12 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  Plugin,
   PluginContext,
   err,
   UserError,
   SystemError,
   AzureSolutionSettings,
+  v2,
+  TokenProvider,
+  FxError,
+  Result,
+  Inputs,
+  Json,
+  Func,
+  ok,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
@@ -16,10 +23,12 @@ import { Logger } from "./logger";
 import { telemetryHelper } from "./utils/telemetry-helper";
 import { LifecycleFuncNames } from "./constants";
 import { Service } from "typedi";
-import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
+import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
+import { ResourcePlugin, Context } from "@microsoft/teamsfx-api/build/v2";
+import { executeUserTaskAdapter } from "../utils4v2";
 
-@Service(ResourcePlugins.CICDPlugin)
-export class CICDPlugin implements Plugin {
+@Service(ResourcePluginsV2.CICDPlugin)
+export class CICDPluginV2 implements ResourcePlugin {
   name = "fx-resource-cicd";
   displayName = "CICD";
   // eslint-disable-next-line @typescript-eslint/no-unused-vars
@@ -40,6 +49,25 @@ export class CICDPlugin implements Plugin {
     );
 
     return result;
+  }
+
+  async executeUserTask(
+    ctx: Context,
+    inputs: Inputs,
+    func: Func,
+    localSettings: Json,
+    envInfo: v2.EnvInfoV2,
+    tokenProvider: TokenProvider
+  ): Promise<Result<unknown, FxError>> {
+    if (func.method === "addCICDWorkflows") {
+      return await this.runWithExceptionCatching(
+        ctx,
+        () => this.cicdImpl.addCICDWorkflows(ctx),
+        true,
+        LifecycleFuncNames.ADD_CICD_WORKFLOWS
+      );
+    }
+    return ok(undefined);
   }
 
   private async runWithExceptionCatching(
@@ -82,4 +110,4 @@ export class CICDPlugin implements Plugin {
   }
 }
 
-export default new CICDPlugin();
+export default new CICDPluginV2();

@@ -50,10 +50,7 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
       path.join("plugins", "resource", "storage", "bicep")
     );
     const provisionFilePath = path.join(bicepTemplateDir, Bicep.ProvisionFileName);
-    const moduleProvisionFilePath = path.join(
-      bicepTemplateDir,
-      FrontendPathInfo.ModuleProvisionFileName
-    );
+    const moduleProvisionFilePath = path.join(bicepTemplateDir, "azureStorageProvision.bicep");
     const provisionOrchestration = await generateBicepFromFile(provisionFilePath, pluginCtx);
     const provisionModules = await generateBicepFromFile(moduleProvisionFilePath, pluginCtx);
 

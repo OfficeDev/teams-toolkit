@@ -20,7 +20,7 @@ import {
   TabOptionItem,
 } from "../../solution/fx-solution/question";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { Telemetry } from "./constants";
+import { Constants, Telemetry } from "./constants";
 import { ErrorMessage } from "./errors";
 import { SqlPluginImpl } from "./plugin";
 import { SqlResult, SqlResultFactory } from "./results";
@@ -69,9 +69,15 @@ export class SqlPlugin implements Plugin {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<SqlResult> {
+    let handleFunction: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+    if (ctx.answers?.existingResources?.includes(Constants.pluginFullName)) {
+      handleFunction = this.sqlImpl.generateNewDatabaseBicepSnippet;
+    } else {
+      handleFunction = this.sqlImpl.generateArmTemplates;
+    }
     return this.runWithSqlError(
       Telemetry.stage.generateArmTemplates,
-      () => this.sqlImpl.generateArmTemplates(ctx),
+      () => handleFunction(ctx),
       ctx
     );
   }

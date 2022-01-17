@@ -8,5 +8,6 @@ module botProvision '\{{fx-resource-bot.Provision.botservice.path}}' = {
 }
 
 output botOutput object = {
+  teamsFxPluginId: 'fx-resource-bot'
   validDomain: \{{fx-resource-frontend-hosting.References.domainAsParam}}
 }

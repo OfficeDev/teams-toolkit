@@ -127,6 +127,9 @@ export class DefaultTediousConnectionConfiguration {
     sqlConfig: SqlConfiguration,
     databaseName?: string
   ): ConnectionConfig {
+    if (databaseName === "") {
+      internalLogger.warn(`SQL database name is empty string`);
+    }
     const dbName = databaseName ?? sqlConfig.sqlDatabaseName;
     internalLogger.verbose(
       `SQL server ${sqlConfig.sqlServerEndpoint}, user name ${sqlConfig.sqlUsername}, database name ${dbName}`
@@ -162,6 +165,9 @@ export class DefaultTediousConnectionConfiguration {
     databaseName?: string
   ): Promise<ConnectionConfig> {
     internalLogger.verbose("Generate tedious config with MSI token");
+    if (databaseName === "") {
+      internalLogger.warn(`SQL database name is empty string`);
+    }
 
     let token: AccessToken | null;
     try {

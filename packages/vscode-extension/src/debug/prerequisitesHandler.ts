@@ -59,8 +59,6 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       // ignore telemetry error
     }
 
-    // [deps] => [backend extension, npm install, account] => [certificate] => [port]
-
     const failures: CheckFailure[] = [];
     const localEnvManager = new LocalEnvManager(
       VsCodeLogInstance,
@@ -77,12 +75,14 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     const depsFailures = await checkDependencies(localEnvManager, depsManager, projectSettings);
     failures.push(...depsFailures);
 
-    const checkPromises = [];
-
     // backend extension
-    checkPromises.push(resolveBackendExtension(depsManager, projectSettings));
+    const backendExtensionFailure = await resolveBackendExtension(depsManager, projectSettings);
+    if (backendExtensionFailure) {
+      failures.push(backendExtensionFailure);
+    }
 
     // npm installs
+    const checkPromises = [];
     if (ProjectSettingsHelper.isSpfx(projectSettings)) {
       checkPromises.push(checkNpmInstall("SPFx", path.join(workspacePath, FolderName.SPFx)));
     } else {
@@ -102,22 +102,15 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
         checkPromises.push(checkNpmInstall("bot", path.join(workspacePath, FolderName.Bot)));
       }
     }
-
-    // login checker
-    checkPromises.push(checkM365Account());
-
-    const checkResults = await Promise.all(checkPromises);
-    for (const r of checkResults) {
+    const rs = await Promise.all(checkPromises);
+    for (const r of rs) {
       if (r !== undefined) {
         failures.push(r);
       }
     }
 
-    // local cert
-    const localCertFailure = await resolveLocalCertificate(localEnvManager);
-    if (localCertFailure) {
-      failures.push(localCertFailure);
-    }
+    // trigger login checker since it may have user interaction
+    const accountFailurePromise = checkM365Account();
 
     // check port
     const portsInUse = await localEnvManager.getPortsInUse(workspacePath, projectSettings);
@@ -135,6 +128,18 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
         checker: "Ports",
         error: new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource),
       });
+    }
+
+    // await login checker
+    const accountFailure = await accountFailurePromise;
+    if (accountFailure) {
+      failures.push(accountFailure);
+    }
+
+    // local cert
+    const localCertFailure = await resolveLocalCertificate(localEnvManager);
+    if (localCertFailure) {
+      failures.push(localCertFailure);
     }
 
     // handle failures

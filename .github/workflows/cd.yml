@@ -15,6 +15,10 @@ on:
         description: "skip sync up target pkg version. input templates to skip sync up version with sdk; fx-core to skip sync up with simpleauth"
         required: false
         default: ""
+      produce-visx:
+        description: "skip repo version and publish, just pack extension tools"
+        required: false
+        default: "no"
   schedule:
     - cron: "0 8 * * *"
 
@@ -258,7 +262,7 @@ jobs:
           npx lerna publish from-package --dist-tag=alpha --yes --allow-branch dev
 
       - name: update cli ai key
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable'||github.event.inputs.preid == 'rc') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) }}
         uses: jossef/action-set-json-field@v1
         with:
           file: ./packages/cli/package.json
@@ -266,7 +270,7 @@ jobs:
           value: ${{ secrets.CLI_PUBLIC_AIKEY }}
 
       - name: update extension ai key
-        if: ${{ github.event_name == 'workflow_dispatch' && (github.event.inputs.preid == 'stable' || github.event.inputs.preid == 'rc') }}
+        if: ${{ github.event_name == 'workflow_dispatch' && (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) }}
         uses: jossef/action-set-json-field@v1
         with:
           file: ./packages/vscode-extension/package.json
@@ -321,7 +325,7 @@ jobs:
           prerelease: true
       
       - name: release stable VSCode extension to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && !contains(steps.version-change.outputs.CHANGED, 'rc') && !contains(steps.version-change.outputs.CHANGED, 'alpha') }}
+        if: ${{ (github.ref == 'refs/heads/main' || startsWith(github.ref, 'refs/heads/hotfix/')) && !contains(steps.version-change.outputs.CHANGED, 'rc') && !contains(steps.version-change.outputs.CHANGED, 'alpha') }}
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}

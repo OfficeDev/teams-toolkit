@@ -6,7 +6,6 @@
     "src/**/*.js"
   ],
   "exclude": [
-      "src/plugins/resource/function/utils/depsChecker/**/*",
       "src/plugins/solution/fx-solution/utils/depsChecker/**/*",
       "src/common/deps-checker/**/*",
       "src/plugins/resource/localdebug/legacyPlugin.ts"

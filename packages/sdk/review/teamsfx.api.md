@@ -163,7 +163,7 @@ export class TeamsUserCredential implements TokenCredential {
     constructor();
     getToken(scopes: string | string[], options?: GetTokenOptions): Promise<AccessToken | null>;
     getUserInfo(): Promise<UserInfo>;
-    login(scopes: string | string[]): Promise<AccessToken>;
+    login(scopes: string | string[]): Promise<void>;
 }
 
 // @beta

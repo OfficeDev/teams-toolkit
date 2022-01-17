@@ -16,11 +16,11 @@ import fs from "fs-extra";
 import { PathInfo } from "./constants";
 import { TeamsBotImpl } from "../plugin";
 
+// Extends TeamsBotImpl to reuse provision method
 export class DotnetBotImpl extends TeamsBotImpl {
   public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
     Logger.info(Messages.GeneratingArmTemplatesBot);
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
@@ -51,12 +51,11 @@ export class DotnetBotImpl extends TeamsBotImpl {
     return ResultFactory.Success(result);
   }
 
+  // Overwrite below lifecycle for dotnet scenario
   public async updateArmTemplates(ctx: PluginContext): Promise<FxResult> {
-    Logger.info(Messages.UpdatingArmTemplatesBot);
     return ResultFactory.Success();
   }
 
-  // Overwrite below lifecycle for dotnet scenario
   public async scaffold(context: PluginContext): Promise<FxResult> {
     return ResultFactory.Success();
   }

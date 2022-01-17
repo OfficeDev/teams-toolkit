@@ -129,7 +129,7 @@ describe("AAD resource plugin V3", () => {
         objectId: "mockObjectId",
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
-        accessAsUserScopeId: "mockAccessAsUserScopeId",
+        oauth2PermissionScopeId: "mockOauth2PermissionScopeId",
       },
     };
     const skip = await Utils.skipCreateAadForLocalProvision(localSettings);
@@ -164,7 +164,7 @@ describe("AAD resource plugin V3", () => {
         objectId: "mockObjectId",
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
-        accessAsUserScopeId: "mockAccessAsUserScopeId",
+        oauth2PermissionScopeId: "mockOauth2PermissionScopeId",
       },
     };
     const config = new ProvisionConfig(true);
@@ -189,7 +189,7 @@ describe("AAD resource plugin V3", () => {
         objectId: "mockObjectId",
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
-        accessAsUserScopeId: "mockAccessAsUserScopeId",
+        oauth2PermissionScopeId: "mockOauth2PermissionScopeId",
       },
     };
     const config = new ProvisionConfig(true);
@@ -279,7 +279,7 @@ describe("AAD resource plugin V3", () => {
         objectId: "mockObjectId",
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
-        accessAsUserScopeId: "mockAccessAsUserScopeId",
+        oauth2PermissionScopeId: "mockOauth2PermissionScopeId",
       },
       frontend: {
         tabDomain: "mydomain.com",
@@ -301,7 +301,7 @@ describe("AAD resource plugin V3", () => {
         objectId: "mockObjectId",
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
-        accessAsUserScopeId: "mockAccessAsUserScopeId",
+        oauth2PermissionScopeId: "mockOauth2PermissionScopeId",
       },
       frontend: {
         tabDomain: "mydomain.com",
@@ -335,7 +335,7 @@ describe("AAD resource plugin V3", () => {
           objectId: "mockObjectId",
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",
-          accessAsUserScopeId: "mockAccessAsUserScopeId",
+          oauth2PermissionScopeId: "mockOauth2PermissionScopeId",
         },
         [BuiltInResourcePluginNames.storage]: {
           domain: "mydomain.com",
@@ -382,7 +382,7 @@ describe("AAD resource plugin V3", () => {
           objectId: "mockObjectId",
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",
-          accessAsUserScopeId: "mockAccessAsUserScopeId",
+          oauth2PermissionScopeId: "mockOauth2PermissionScopeId",
         },
         [BuiltInResourcePluginNames.storage]: {
           domain: "mydomain.com",
@@ -420,8 +420,7 @@ describe("AAD resource plugin V3", () => {
         objectId: "mockObjectId",
         clientId: "mockClientId",
         clientSecret: "mockClientSecret",
-        accessAsUserScopeId: "mockAccessAsUserScopeId",
-        applicationIdUri: "https://oossyyy.com",
+        applicationIdUris: "https://oossyyy.com",
       },
       frontend: {
         tabDomain: "mydomain.com",
@@ -436,7 +435,7 @@ describe("AAD resource plugin V3", () => {
     config.restoreConfigFromLocalSettings(localSettings);
     assert.equal(localSettings.frontend!.tabEndpoint, config.frontendEndpoint);
     assert.equal(localSettings.bot!.botEndpoint, config.botEndpoint);
-    assert.equal(localSettings.auth!.applicationIdUri, config.applicationIdUri);
+    assert.equal(localSettings.auth!.applicationIdUris, config.applicationIdUri);
     assert.equal(localSettings.auth!.objectId, config.objectId);
     assert.equal(localSettings.auth!.clientId, config.clientId);
   });
@@ -446,7 +445,6 @@ describe("AAD resource plugin V3", () => {
       auth: {
         objectId: "mockObjectId",
         clientSecret: "mockClientSecret",
-        accessAsUserScopeId: "mockAccessAsUserScopeId",
       },
       frontend: {
         tabDomain: "https://mydomain.com",
@@ -477,8 +475,7 @@ describe("AAD resource plugin V3", () => {
           objectId: "mockObjectId",
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",
-          accessAsUserScopeId: "mockAccessAsUserScopeId",
-          applicationIdUri: "https://oossyyy.com",
+          applicationIdUris: "https://oossyyy.com",
         },
         [BuiltInResourcePluginNames.storage]: {
           domain: "mydomain.com",
@@ -528,9 +525,9 @@ describe("AAD resource plugin V3", () => {
       state: {
         solution: {},
         [BuiltInResourcePluginNames.aad]: {
+          objectId: "mockObjectId",
+          clientId: "mockClientId",
           clientSecret: "mockClientSecret",
-          accessAsUserScopeId: "mockAccessAsUserScopeId",
-          applicationIdUri: "https://oossyyy.com",
         },
         [BuiltInResourcePluginNames.storage]: {
           domain: "mydomain.com",

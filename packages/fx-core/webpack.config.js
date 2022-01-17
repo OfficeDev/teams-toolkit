@@ -76,6 +76,7 @@ const config = {
     new webpack.IgnorePlugin({ resourceRegExp: /@opentelemetry\/tracing/ }),
     new webpack.IgnorePlugin({ resourceRegExp: /applicationinsights-native-metrics/ }),
     new webpack.IgnorePlugin({ resourceRegExp: /original-fs/ }),
+    new webpack.IgnorePlugin({ resourceRegExp: /node-gyp[\/\\]bin[\/\\]node-gyp.js/ }),
     // new CopyPlugin({
     //   patterns: [
     //     { from: "src/resources/strings.json", to: "resources/strings.json" }

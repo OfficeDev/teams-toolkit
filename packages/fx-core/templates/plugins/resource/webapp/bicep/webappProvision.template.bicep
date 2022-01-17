@@ -45,3 +45,4 @@ var siteDomain = webApp.properties.defaultHostName
 output resourceId string = webApp.id
 output endpoint string = 'https://${siteDomain}'
 output domain string = siteDomain
+output indexPath string = ''

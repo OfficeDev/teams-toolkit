@@ -8,6 +8,7 @@ import {
   FxError,
   Inputs,
   Json,
+  ProjectSettings,
   Result,
   TokenProvider,
   v2,
@@ -46,7 +47,8 @@ export class FrontendPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.FrontendPlugin)
   plugin!: FrontendPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 

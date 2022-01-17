@@ -111,8 +111,7 @@ export class DotnetPluginImpl implements PluginImpl {
       WebappBicepFile.configurationTemplateFileName
     );
 
-    const solutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(solutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
@@ -133,17 +132,32 @@ export class DotnetPluginImpl implements PluginImpl {
         Orchestration: configOrchestration,
         Modules: { webapp: configModule },
       },
-      Reference: {
-        webappResourceId: WebappBicep.webappResourceId,
-        endpoint: WebappBicep.webappEndpoint,
-        domain: WebappBicep.webappDomain,
-      },
+      Reference: WebappBicep.Reference,
     };
     return ok(result);
   }
 
   public async updateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
-    return ok(undefined);
+    const bicepTemplateDirectory = PathInfo.bicepTemplateFolder(getTemplatesFolder());
+    const configWebappTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      WebappBicepFile.configurationTemplateFileName
+    );
+
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
+      (p) => new NamedArmResourcePluginAdaptor(p)
+    );
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+    const configModule = await generateBicepFromFile(configWebappTemplateFilePath, pluginCtx);
+
+    const result: ArmTemplateResult = {
+      Reference: WebappBicep.Reference,
+      Configuration: {
+        Modules: { webapp: configModule },
+      },
+    };
+
+    return ok(result);
   }
 
   public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {

@@ -12,6 +12,7 @@ export enum CollaborationState {
   OK = "OK",
   NotProvisioned = "NotProvisioned",
   M365TenantNotMatch = "M365TenantNotMatch",
+  EmptyM365Tenant = "EmptyM365Tenant",
   SolutionIsNotIdle = "SolutionIsNotIdle",
   m365AccountNotSignedIn = "M365AccountNotSignedIn",
   ERROR = "ERROR",

@@ -14,6 +14,7 @@ import {
   SolutionContext,
   Plugin,
   AppStudioTokenProvider,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
@@ -40,8 +41,10 @@ import { PluginsWithContext } from "../solution";
 import { getPluginContext } from "../utils/util";
 import * as util from "util";
 
-export function getSelectedPlugins(azureSettings: AzureSolutionSettings): v2.ResourcePlugin[] {
-  const plugins = getActivatedV2ResourcePlugins(azureSettings);
+export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
+  const azureSettings: AzureSolutionSettings =
+    projectSettings.solutionSettings as AzureSolutionSettings;
+  const plugins = getActivatedV2ResourcePlugins(projectSettings);
   azureSettings.activeResourcePlugins = plugins.map((p) => p.name);
   return plugins;
 }
@@ -76,8 +79,10 @@ export function extractSolutionInputs(record: Json): v2.SolutionInputs {
   };
 }
 
-export function reloadV2Plugins(solutionSettings: AzureSolutionSettings): v2.ResourcePlugin[] {
-  const res = getActivatedV2ResourcePlugins(solutionSettings);
+export function reloadV2Plugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
+  const solutionSettings: AzureSolutionSettings =
+    projectSettings.solutionSettings as AzureSolutionSettings;
+  const res = getActivatedV2ResourcePlugins(projectSettings);
   solutionSettings.activeResourcePlugins = res.map((p) => p.name);
   return res;
 }

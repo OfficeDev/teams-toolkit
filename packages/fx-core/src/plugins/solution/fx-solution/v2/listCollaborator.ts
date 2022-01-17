@@ -25,6 +25,7 @@ import {
   CollaborationState,
   Collaborator,
   getHashedEnv,
+  getStrings,
   ListCollaboratorResult,
   TeamsAppAdmin,
 } from "../../../../common";
@@ -48,6 +49,7 @@ import { getPluginAndContextArray } from "./utils";
 import { Container } from "typedi";
 import { flattenConfigMap } from "../../../resource/utils4v2";
 import { REMOTE_TEAMS_APP_TENANT_ID } from "..";
+import * as util from "util";
 
 export async function executeListCollaboratorV2(
   ctx: v2.Context,
@@ -190,7 +192,7 @@ async function listCollaboratorImpl(
 
   let errorMsg = "";
   if (errors.length > 0) {
-    errorMsg += `Failed to list Teams App owners for the project.\nError details: \n`;
+    errorMsg += getStrings().solution.Collaboration.FailedToListCollaborators;
     for (const fxError of errors) {
       errorMsg += fxError.error.message + "\n";
     }
@@ -280,9 +282,12 @@ async function listCollaboratorImpl(
     } else if (platform === Platform.VSCode) {
       ui?.showMessage(
         "info",
-        `List M365 Teams App${
-          !CollaborationUtil.isSpfxProject(param.ctx) ? "(With AAD App)" : ""
-        } owners success, you can view it in Teams Toolkit output window`,
+        util.format(
+          getStrings().solution.Collaboration.ListCollaboratorsSuccess,
+          CollaborationUtil.isSpfxProject(param.ctx)
+            ? getStrings().solution.Collaboration.WithAadApp
+            : ""
+        ),
         false
       );
       logProvider?.info(message);

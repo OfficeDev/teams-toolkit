@@ -70,7 +70,7 @@ describe("portChecker", () => {
 
     it("happy path", async () => {
       const mockServer = new MockServer([]);
-      sinon.stub(net, "createServer").returns(mockServer as unknown as net.Server);
+      sinon.stub(net, "Server").returns(mockServer as unknown as net.Server);
 
       const ports = await getPortsInUse(projectPath, projectSettings0);
 
@@ -85,7 +85,7 @@ describe("portChecker", () => {
           host: "0.0.0.0",
         },
       ]);
-      sinon.stub(net, "createServer").returns(mockServer as unknown as net.Server);
+      sinon.stub(net, "Server").returns(mockServer as unknown as net.Server);
 
       const ports = await getPortsInUse(projectPath, projectSettings0);
 
@@ -100,7 +100,7 @@ describe("portChecker", () => {
           host: "unknown",
         },
       ]);
-      sinon.stub(net, "createServer").returns(mockServer as unknown as net.Server);
+      sinon.stub(net, "Server").returns(mockServer as unknown as net.Server);
 
       const ports = await getPortsInUse(projectPath, projectSettings0);
 
@@ -115,7 +115,7 @@ describe("portChecker", () => {
           host: "0.0.0.0",
         },
       ]);
-      sinon.stub(net, "createServer").returns(mockServer as unknown as net.Server);
+      sinon.stub(net, "Server").returns(mockServer as unknown as net.Server);
       const content = `\
         {\n\
           "name": "test",\n\
@@ -142,7 +142,7 @@ describe("portChecker", () => {
           host: "0.0.0.0",
         },
       ]);
-      sinon.stub(net, "createServer").returns(mockServer as unknown as net.Server);
+      sinon.stub(net, "Server").returns(mockServer as unknown as net.Server);
       const content = `\
         {\n\
           "name": "test",\n\
@@ -169,7 +169,7 @@ describe("portChecker", () => {
           host: "0.0.0.0",
         },
       ]);
-      sinon.stub(net, "createServer").returns(mockServer as unknown as net.Server);
+      sinon.stub(net, "Server").returns(mockServer as unknown as net.Server);
 
       const ports = await getPortsInUse(projectPath, projectSettings0, true);
 

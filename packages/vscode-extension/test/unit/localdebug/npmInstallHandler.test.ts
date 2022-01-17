@@ -5,7 +5,7 @@ import * as chai from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 
-import { checkNpmDependencies } from "../../../src/debug/npmInstallHandler";
+import { checkDependencies } from "../../../src/debug/npmInstallHandler";
 
 const testDataFolder = path.resolve(__dirname, "test-data");
 
@@ -14,7 +14,7 @@ suite("[debug > npmInstallHandler]", () => {
     await fs.ensureDir(testDataFolder);
   });
 
-  suite("checkNpmDependencies()", () => {
+  suite("checkDependencies()", () => {
     setup(async () => {
       await fs.emptyDir(testDataFolder);
     });
@@ -35,7 +35,7 @@ suite("[debug > npmInstallHandler]", () => {
       await fs.writeFile(path.join(testDataFolder, "package-lock.json"), packageLockJson);
       await fs.ensureDir(path.join(testDataFolder, "node_modules", "my-package"));
 
-      const npmInstalled = await checkNpmDependencies(testDataFolder);
+      const npmInstalled = await checkDependencies(testDataFolder);
       chai.expect(npmInstalled).to.be.true;
     });
 
@@ -56,7 +56,7 @@ suite("[debug > npmInstallHandler]", () => {
       await fs.writeFile(path.join(testDataFolder, "yarn.lock"), yarnLockJson);
       await fs.ensureDir(path.join(testDataFolder, "node_modules", "my-package"));
 
-      const npmInstalled = await checkNpmDependencies(testDataFolder);
+      const npmInstalled = await checkDependencies(testDataFolder);
       chai.expect(npmInstalled).to.be.true;
     });
 
@@ -76,7 +76,7 @@ suite("[debug > npmInstallHandler]", () => {
       await fs.writeFile(path.join(testDataFolder, "package.json"), packageJson);
       await fs.ensureDir(path.join(testDataFolder, "node_modules", "my-package1"));
 
-      const npmInstalled = await checkNpmDependencies(testDataFolder);
+      const npmInstalled = await checkDependencies(testDataFolder);
       chai.expect(npmInstalled).to.be.false;
     });
 
@@ -96,7 +96,7 @@ suite("[debug > npmInstallHandler]", () => {
       await fs.writeFile(path.join(testDataFolder, "package.json"), packageJson);
       await fs.writeFile(path.join(testDataFolder, "package-lock.json"), packageLockJson);
 
-      const npmInstalled = await checkNpmDependencies(testDataFolder);
+      const npmInstalled = await checkDependencies(testDataFolder);
       chai.expect(npmInstalled).to.be.false;
     });
 
@@ -117,7 +117,7 @@ suite("[debug > npmInstallHandler]", () => {
       await fs.writeFile(path.join(testDataFolder, "package-lock.json"), packageLockJson);
       await fs.ensureDir(path.join(testDataFolder, "node_modules", ".staging"));
 
-      const npmInstalled = await checkNpmDependencies(testDataFolder);
+      const npmInstalled = await checkDependencies(testDataFolder);
       chai.expect(npmInstalled).to.be.false;
     });
 
@@ -134,7 +134,7 @@ suite("[debug > npmInstallHandler]", () => {
         }`;
       await fs.writeFile(path.join(testDataFolder, "package.json"), packageJson);
 
-      const npmInstalled = await checkNpmDependencies(testDataFolder);
+      const npmInstalled = await checkDependencies(testDataFolder);
       chai.expect(npmInstalled).to.be.true;
     });
   });

@@ -612,6 +612,41 @@ export async function runCommand(
   return result;
 }
 
+export async function downloadSample(inputs: Inputs): Promise<Result<any, FxError>> {
+  let result: Result<any, FxError> = ok(null);
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    inputs.stage = Stage.create;
+    inputs["scratch"] = "no";
+    const tmpResult = await core.createProject(inputs);
+    if (tmpResult.isErr()) {
+      result = err(tmpResult.error);
+    } else {
+      const uri = Uri.file(tmpResult.value);
+      result = ok(uri);
+    }
+  } catch (e) {
+    result = wrapError(e);
+  }
+
+  if (result.isErr()) {
+    const error = result.error;
+    if (!isUserCancelError(error)) {
+      if (isLoginFaiureError(error)) {
+        window.showErrorMessage(StringResources.vsc.handlers.loginFailed);
+      } else {
+        showError(error);
+      }
+    }
+  }
+
+  return result;
+}
+
 export function detectVsCodeEnv(): VsCodeEnv {
   // extensionKind returns ExtensionKind.UI when running locally, so use this to detect remote
   const extension = vscode.extensions.getExtension("TeamsDevApp.ms-teams-vscode-extension");

@@ -21,7 +21,7 @@ import AzureAccountManager from "../commonlib/azureLogin";
 import GraphTokenInstance from "../commonlib/graphLogin";
 import SharepointTokenInstance from "../commonlib/sharepointLogin";
 import { ext } from "../extensionVariables";
-import { getSystemInputs, runCommand } from "../handlers";
+import { downloadSample, getSystemInputs } from "../handlers";
 import * as StringResources from "../resources/Strings.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
@@ -155,10 +155,9 @@ export class WebviewPanel {
     };
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, props);
     const inputs: Inputs = getSystemInputs();
-    inputs.stage = Stage.create;
-    inputs["scratch"] = "no";
     inputs["samples"] = msg.data.appFolder;
-    const res = await runCommand(Stage.create, inputs);
+
+    const res = await downloadSample(inputs);
     if (inputs.projectId) {
       props[TelemetryProperty.ProjectId] = inputs.projectId;
     }

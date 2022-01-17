@@ -10,7 +10,7 @@
             "tags": ["Tab", "TS"],
             "time": "5min to run",
             "configuration": "Ready for local debug",
-            "suggested": false
+            "suggested": true
         },
         {
             "id": "hello-world-tab-with-backend",
@@ -20,7 +20,7 @@
             "tags": ["Tab", "TS", "Azure function"],
             "time": "5min to run",
             "configuration": "Ready for local debug",
-            "suggested": false
+            "suggested": true
         },
         {
             "id": "hello-world-bot",
@@ -30,7 +30,7 @@
             "tags": ["Bot", "TS", "Adaptive Cards"],
             "time": "5min to run",
             "configuration": "Ready for local debug",
-            "suggested": false
+            "suggested": true
         },
         {
             "id": "bot-sso",
@@ -55,7 +55,7 @@
             "tags": ["Tab", "JS"],
             "time": "5min to run",
             "configuration": "Ready for local debug",
-            "suggested": false
+            "suggested": true
         },
         {
             "id": "todo-list-with-Azure-backend",

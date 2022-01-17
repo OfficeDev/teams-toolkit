@@ -1,5 +1,5 @@
 import * as React from "react";
-import { Icon, Stack, Image, PrimaryButton, Label } from "@fluentui/react";
+import { Icon, Stack, Image, FontIcon } from "@fluentui/react";
 import { VSCodeButton, VSCodeTag } from "./webviewUiToolkit";
 import "./SampleGallery.scss";
 import { Commands } from "./Commands";
@@ -18,22 +18,6 @@ import Settings from "../../media/settings.svg";
 import GraphToolkitContactExporter from "../../media/graph-toolkit-contact-exporter.gif";
 import BOTSSO from "../../media/bot-sso.gif";
 import { EventMessages } from "./messages";
-
-interface SampleInfo {
-  id: string;
-  title: string;
-  shortDescription: string;
-  fullDescription: string;
-  tags: string[];
-  time: string;
-  configuration: string;
-  link: string;
-}
-
-interface SampleCollection {
-  baseUrl: string;
-  samples: SampleInfo[];
-}
 
 const imageMapping: { [p: string]: any } = {
   "todo-list-with-Azure-backend": ToDoList,
@@ -114,8 +98,8 @@ export default class SampleGallery extends React.Component<any, any> {
   };
 }
 
-class SampleAppCardList extends React.Component<any, any> {
-  constructor(props: any) {
+class SampleAppCardList extends React.Component<SampleListProps, any> {
+  constructor(props: SampleListProps) {
     super(props);
   }
 
@@ -135,6 +119,7 @@ class SampleAppCardList extends React.Component<any, any> {
             description={sample.fullDescription}
             sampleAppFolder={sample.id}
             sampleAppUrl={sample.link}
+            suggested={sample.suggested}
           />
         );
       });
@@ -142,8 +127,8 @@ class SampleAppCardList extends React.Component<any, any> {
   }
 }
 
-class SampleAppCard extends React.Component<any, any> {
-  constructor(props: any) {
+class SampleAppCard extends React.Component<SampleCardProps, any> {
+  constructor(props: SampleCardProps) {
     super(props);
   }
 
@@ -275,14 +260,19 @@ class SampleAppCard extends React.Component<any, any> {
   };
 }
 
-class SampleCard extends React.Component<any, any> {
-  constructor(props: any) {
+class SampleCard extends React.Component<SampleCardProps, any> {
+  constructor(props: SampleCardProps) {
     super(props);
   }
 
   render() {
     return (
       <div className="sample-card" tabIndex={0}>
+        {this.props.suggested && (
+          <div className="triangle">
+            <FontIcon iconName="FavoriteStar" className="star"></FontIcon>
+          </div>
+        )}
         <label
           style={{
             position: "absolute",

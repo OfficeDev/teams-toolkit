@@ -141,7 +141,7 @@
     }
   }
 
-   .sample-card {
+  .sample-card {
     background-color: var(--vscode-editorWidget-background);
     border-radius: 2px;
     width: 203px;
@@ -153,6 +153,40 @@
       margin-bottom: 0px;
       flex-wrap: wrap;
       height: 58px;
+    }
+
+    .triangle{
+      display: block;
+      position: absolute;
+      height: 32px;
+      width: 32px;
+      z-index: 1;
+    }
+
+    .star{
+        display: block;
+        text-align: center;
+        height: 12px;
+        width: 12px;
+        position: absolute;
+        margin: 2px;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        z-index: 3;
+    }
+
+    .triangle:before {
+      content: '';
+      width: 0;
+      height: 0;
+      border-left: 32px solid #007ACC;
+      border-bottom: 32px solid transparent;
+      position: absolute;
+      top: 0;
+      left: 0;
+      z-index: 2;
     }
 
     .tag {

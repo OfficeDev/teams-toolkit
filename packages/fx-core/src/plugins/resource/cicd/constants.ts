@@ -2,8 +2,7 @@
 // Licensed under the MIT license.
 
 export class LifecycleFuncNames {
-  public static readonly PRE_SCAFFOLD = "pre-scaffold";
-  public static readonly SCAFFOLD = "scaffold";
+  public static readonly ADD_CICD_WORKFLOWS = "add-cicd-workflows";
 }
 
 export class ErrorNames {

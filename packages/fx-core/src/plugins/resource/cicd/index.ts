@@ -29,25 +29,14 @@ export class CICDPlugin implements Plugin {
 
   public cicdImpl: CICDImpl = new CICDImpl();
 
-  public async preScaffold(context: PluginContext): Promise<FxResult> {
-    Logger.setLogger(context.logProvider);
-
-    return await this.runWithExceptionCatching(
-      context,
-      () => this.cicdImpl.preScaffold(context),
-      true,
-      LifecycleFuncNames.PRE_SCAFFOLD
-    );
-  }
-
-  public async scaffold(context: PluginContext): Promise<FxResult> {
+  public async addCICDWorkflows(context: PluginContext): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.cicdImpl.scaffold(context),
+      () => this.cicdImpl.addCICDWorkflows(context),
       true,
-      LifecycleFuncNames.SCAFFOLD
+      LifecycleFuncNames.ADD_CICD_WORKFLOWS
     );
 
     return result;

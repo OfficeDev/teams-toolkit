@@ -123,9 +123,10 @@ import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVaria
 import { StringContext } from "./utils/stringContext";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
-import { AzurePortalUrl } from "./constants";
+import { AzureAssignRoleHelpUrl, AzurePortalUrl, SpfxManageSiteAdminUrl } from "./constants";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { generateAccountHint } from "./debug/teamsfxDebugProvider";
+import { ext } from "./extensionVariables";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -660,6 +661,27 @@ export async function runUserTask(
 //TODO workaround
 function isLoginFaiureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
+}
+
+function showWarningMessageWithProvisionButton(message: string): void {
+  window
+    .showWarningMessage(message, StringResources.vsc.handlers.provisionResourcesButton)
+    .then((result) => {
+      if (result === StringResources.vsc.handlers.provisionResourcesButton) {
+        return runCommand(Stage.provision);
+      }
+    });
+}
+
+async function showGrantSuccessMessageWithGetHelpButton(
+  message: string,
+  helpUrl: string
+): Promise<void> {
+  window.showInformationMessage(message, StringResources.vsc.handlers.getHelp).then((result) => {
+    if (result === StringResources.vsc.handlers.getHelp) {
+      return VS_CODE_UI.openUrl(helpUrl);
+    }
+  });
 }
 
 async function checkCollaborationState(env: string): Promise<Result<any, FxError>> {
@@ -1358,17 +1380,29 @@ export async function grantPermission(env: string): Promise<Result<any, FxError>
         env
       );
 
-      const warningMsg = StringResources.vsc.commandsTreeViewProvider.grantPermissionWarning;
-      window.showInformationMessage(grantSucceededMsg + " " + warningMsg);
+      let warningMsg = StringResources.vsc.commandsTreeViewProvider.grantPermissionWarning;
+      let helpUrl = AzureAssignRoleHelpUrl;
+      if (await isSPFxProject(ext.workspaceUri.fsPath)) {
+        warningMsg = StringResources.vsc.commandsTreeViewProvider.grantPermissionWarningSpfx;
+        helpUrl = SpfxManageSiteAdminUrl;
+      }
+
+      showGrantSuccessMessageWithGetHelpButton(grantSucceededMsg + " " + warningMsg, helpUrl);
 
       VsCodeLogInstance.info(grantSucceededMsg);
-      VsCodeLogInstance.warning(warningMsg);
+      VsCodeLogInstance.warning(
+        warningMsg + StringResources.vsc.commandsTreeViewProvider.referLinkForMoreDetails + helpUrl
+      );
 
       // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
       // await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {
       result = collaborationStateResult;
-      window.showWarningMessage(result.value.message);
+      if (result.value.state === CollaborationState.NotProvisioned) {
+        showWarningMessageWithProvisionButton(result.value.message);
+      } else {
+        window.showWarningMessage(result.value.message);
+      }
     }
   } catch (e) {
     result = wrapError(e);
@@ -1526,7 +1560,11 @@ export async function listCollaborator(env: string): Promise<void> {
       VsCodeLogInstance.outputChannel.show();
     } else {
       result = collaborationStateResult;
-      window.showWarningMessage(result.value.message);
+      if (result.value.state === CollaborationState.NotProvisioned) {
+        showWarningMessageWithProvisionButton(result.value.message);
+      } else {
+        window.showWarningMessage(result.value.message);
+      }
     }
   } catch (e) {
     result = wrapError(e);

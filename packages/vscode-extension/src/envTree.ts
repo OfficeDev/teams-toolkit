@@ -88,7 +88,6 @@ export async function registerEnvTreeHandler(
             contextValue: contextValue,
             icon: provisionSucceeded ? "folder-active" : "symbol-folder",
             isCustom: false,
-            expanded: isLocal ? undefined : true,
           },
         ]);
       }

@@ -74,7 +74,9 @@
       "previewAdaptiveCard": "Preview and Debug Adaptive Cards",
       "previewACDesciption": "Preview and author Adaptive Cards directly in Visual Studio Code",
       "grantPermissionSucceeded": "Added account: '%s' to the environment '%s' as a collaborator.",
-      "grantPermissionWarning": "You need to handle Azure resource permissions manually on Azure Portal.",
+      "grantPermissionWarningSpfx": "If added user is not a SharePoint App Catalog site admin, you need to handle that via SharePoint admin center. ",
+      "grantPermissionWarning": "If added user cannot access Azure resources, you need to handle that via Azure portal. ",
+      "referLinkForMoreDetails": "Please refer to this link for more details: ",
       "m365AccountNotSignedIn": "No M365 account signed in. Please sign in to M365.",
       "emptyM365Tenant": "Tenant id from environment state file is empty, please re-provision and try again",
       "m365TenantNotMatch": "The M365 tenant id(which is used to provision before) does not match the current account.",
@@ -113,7 +115,8 @@
       "configTitle": "Change location",
       "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension.",
       "teamsAppIdNotFound": "Failed to find 'fx-resource-appstudio.teamsAppId' in 'state.%s.json'.",
-      "provisionBeforeGrantOrListPermission": "You must provision the project first before adding/listing owners for others"
+      "provisionBeforeGrantOrListPermission": "You cannot add or list owners because a Teams app is not provisioned yet, please click the Provision Resources button below to register a Teams app.",
+      "provisionResourcesButton": "Provision Resources"
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",

@@ -157,12 +157,12 @@ export class ProvisionConfig {
       return err(permissionRes.error);
     }
     this.permissionRequest = permissionRes.value;
-    const config = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
-    const objectId = config?.objectId;
+    const aadResource = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
+    const objectId = aadResource?.objectId;
     if (objectId) {
       this.objectId = objectId as string;
     }
-    const clientSecret = config?.clientSecret;
+    const clientSecret = aadResource?.clientSecret;
     if (clientSecret) {
       this.password = clientSecret as string;
     }
@@ -338,7 +338,8 @@ export class SetApplicationInContextConfig {
   }
   public restoreConfigFromEnvInfo(ctx: v2.Context, envInfo: v3.EnvInfoV3): void {
     const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-    let frontendDomain = envInfo.state[BuiltInResourcePluginNames.aad].domain;
+    const aadResource = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
+    let frontendDomain = aadResource?.domain;
     if (!frontendDomain) {
       const tabModules = solutionSettings.modules.filter((m) =>
         m.capabilities.includes(TabOptionItem.id)
@@ -368,9 +369,7 @@ export class SetApplicationInContextConfig {
     if (botId) {
       this.botId = format(botId as string, Formats.UUID);
     }
-
-    const clientId: ConfigValue = (envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp)
-      .clientId;
+    const clientId: ConfigValue = aadResource?.clientId;
     if (clientId) {
       this.clientId = clientId as string;
     } else {
@@ -422,7 +421,7 @@ export class PostProvisionConfig {
         GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName))
       );
     }
-    const applicationIdUri = localSettings.auth?.applicationIdUri;
+    const applicationIdUri = localSettings.auth?.applicationIdUris;
     if (applicationIdUri) {
       this.applicationIdUri = applicationIdUri as string;
     } else {
@@ -445,7 +444,8 @@ export class PostProvisionConfig {
   }
   public restoreConfigFromEnvInfo(ctx: v2.Context, envInfo: v3.EnvInfoV3): void {
     const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-    let frontendEndpoint = envInfo.state[BuiltInResourcePluginNames.aad]?.endpoint;
+    const aadResource = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
+    let frontendEndpoint = aadResource?.endpoint;
     if (!frontendEndpoint) {
       const tabModules = solutionSettings.modules.filter((m) =>
         m.capabilities.includes(TabOptionItem.id)
@@ -474,7 +474,7 @@ export class PostProvisionConfig {
     if (botEndpoint) {
       this.botEndpoint = format(botEndpoint as string, Formats.Endpoint);
     }
-    const objectId = envInfo.state[BuiltInResourcePluginNames.aad]?.objectId;
+    const objectId = aadResource?.objectId;
     if (objectId) {
       this.objectId = objectId as string;
     }
@@ -486,8 +486,18 @@ export class PostProvisionConfig {
         GetConfigError.message(Errors.GetConfigError(ConfigKeys.objectId, Plugins.pluginName))
       );
     }
-
-    const clientId = envInfo.state[BuiltInResourcePluginNames.aad]?.clientId;
+    const applicationIdUri = aadResource?.applicationIdUris;
+    if (applicationIdUri) {
+      this.applicationIdUri = applicationIdUri as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(
+          Errors.GetConfigError(ConfigKeys.applicationIdUri, Plugins.pluginName)
+        )
+      );
+    }
+    const clientId = aadResource?.clientId;
     if (clientId) {
       this.clientId = clientId as string;
     } else {

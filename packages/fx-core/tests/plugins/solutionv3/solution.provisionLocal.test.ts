@@ -35,6 +35,8 @@ import { randomAppName } from "../../core/utils";
 import sinon from "sinon";
 import { MockResourcePluginNames } from "./mockPlugins";
 import * as localDebug from "../../../src/plugins/solution/fx-solution/debug/provisionLocal";
+import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
+import { Container } from "typedi";
 describe("SolutionV3 - provisionLocalResources", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {});
@@ -68,31 +70,11 @@ describe("SolutionV3 - provisionLocalResources", () => {
     };
     sandbox
       .stub<any, any>(mockedTokenProvider.appStudioToken, "getJsonObject")
-      .callsFake(async (showDialog?: boolean): Promise<Record<string, unknown> | undefined> => {
-        return { tid: "mock-tenant-id" };
-      });
-    sandbox
-      .stub<any, any>(localDebug, "setupLocalDebugSettings")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: Inputs,
-          localSettings: Json
-        ): Promise<Result<Void, FxError>> => {
-          return ok(Void);
-        }
-      );
-    sandbox
-      .stub<any, any>(localDebug, "configLocalDebugSettings")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: Inputs,
-          localSettings: Json
-        ): Promise<Result<Void, FxError>> => {
-          return ok(Void);
-        }
-      );
+      .resolves({ tid: "mock-tenant-id" });
+    sandbox.stub<any, any>(localDebug, "setupLocalDebugSettings").resolves(ok(Void));
+    sandbox.stub<any, any>(localDebug, "configLocalDebugSettings").resolves(ok(Void));
+    const appStudioV2 = Container.get(ResourcePluginsV2.AppStudioPlugin);
+    sandbox.stub<any, any>(appStudioV2, "configureLocalResource").resolves(ok(Void));
     const localSettings: v2.LocalSettings = {
       teamsApp: {},
     };

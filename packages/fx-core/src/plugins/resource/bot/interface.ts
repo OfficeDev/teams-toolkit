@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import { PluginContext } from "@microsoft/teamsfx-api";
 import { FxResult } from "./result";
 

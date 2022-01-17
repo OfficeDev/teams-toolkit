@@ -92,6 +92,7 @@ export class Telemetry {
     errorMessage: "error-message",
     appid: "appid",
     skipAddingUser: "skip-adding-user",
+    dbCount: "db-count",
   };
 }
 
@@ -108,4 +109,7 @@ export class AzureSqlBicep {
 export class AzureSqlBicepFile {
   static readonly moduleTemplateFileName: string = "provision.template.bicep";
   static readonly ProvisionModuleTemplateFileName = "sqlProvision.template.bicep";
+  static readonly newDatabaseOrchestrationTemplateFileName: string =
+    "newDatabase.orchestration.template.bicep";
+  static readonly newDatabaseProvisionTemplateFileName = "newDatabaseProvision.template.bicep";
 }

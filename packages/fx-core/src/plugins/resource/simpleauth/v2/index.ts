@@ -6,6 +6,7 @@ import {
   FxError,
   Inputs,
   Json,
+  ProjectSettings,
   Result,
   TokenProvider,
   v2,
@@ -32,7 +33,8 @@ export class SimpleAuthPluginV2 implements v2.ResourcePlugin {
   displayName = "Simple Auth";
   @Inject(ResourcePlugins.SimpleAuthPlugin)
   plugin!: SimpleAuthPlugin;
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 

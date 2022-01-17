@@ -265,7 +265,7 @@ describe("packageJsonHelper", () => {
       chai.assert.isFalse(npmInstalled);
     });
 
-    test("no dependencies npm installed", async () => {
+    it("no dependencies npm installed", async () => {
       const packageJson = `\
         {\n\
           "name": "test",\n\

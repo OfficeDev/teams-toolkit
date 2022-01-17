@@ -4,7 +4,8 @@
   "private": "true",
   "license": "MIT",
   "scripts": {
-    "precommit": "lint-staged"
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged"
   },
   "devDependencies": {
     "@shared/eslint-config": "file:../packages/eslint-config",
@@ -24,9 +25,6 @@
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"
-    ],
-    "*":[
-      "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'"
     ]
   }
 }

@@ -8,7 +8,8 @@
     "lint:staged": "lerna run lint:staged --stream",
     "lint": "lerna run lint --stream",
     "manual-version:rc": "lerna version --preid=rc --no-push --no-changelog --ignore-scripts",
-    "prepare": "husky install"
+    "prepare": "husky install",
+    "precommit": "lint-staged"
   },
   "devDependencies": {
     "@commitlint/cli": "^12.0.1",

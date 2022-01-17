@@ -27,7 +27,8 @@
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "precommit": "lint-staged"
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged"
   },
   "keywords": [
     "teamsfx",
@@ -140,9 +141,6 @@
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"
-    ],
-    "*":[
-      "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'"
     ]
   }
 }

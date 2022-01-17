@@ -5,6 +5,12 @@ on:
     branches:
       - main
       - dev
+    types:
+      - assigned
+      - opened
+      - synchronize
+      - reopened
+      - closed
   push:
     branches:
       - main
@@ -12,7 +18,7 @@ on:
 
 jobs:
   source-branch-test:
-    if: ${{ github.event_name == 'pull_request' }}
+    if: ${{ github.event_name == 'pull_request' || github.event.pull_request.merged == true }}
     runs-on: ubuntu-latest
     outputs:
       coverages: ${{ steps.unit-test.outputs.coverages }}

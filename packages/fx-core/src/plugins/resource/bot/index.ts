@@ -38,7 +38,7 @@ export class TeamsBot implements Plugin {
   public dotnetBotImpl: DotnetBotImpl = new DotnetBotImpl();
 
   public getImpl(context: PluginContext): PluginImpl {
-    return TeamsBot.isVsPlatform(context) ? this.dotnetBotImpl : this.getImpl(context);
+    return TeamsBot.isVsPlatform(context) ? this.dotnetBotImpl : this.teamsBotImpl;
   }
 
   private static isVsPlatform(context: PluginContext): boolean {

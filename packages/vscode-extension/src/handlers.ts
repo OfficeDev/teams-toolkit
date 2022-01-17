@@ -549,7 +549,7 @@ export async function runCommand(
     switch (stage) {
       case Stage.create: {
         inputs["scratch"] = inputs["scratch"] ?? "yes";
-        inputs["projectId"] = inputs["project-id"] ?? uuid.v4();
+        inputs.projectId = inputs.projectId ?? uuid.v4();
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);

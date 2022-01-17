@@ -60,7 +60,7 @@ export async function scaffoldSourceCode(
   const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
   const fillinRes = fillInSolutionSettings(solutionSettings, inputs);
   if (fillinRes.isErr()) return err(fillinRes.error);
-  const plugins = getSelectedPlugins(solutionSettings);
+  const plugins = getSelectedPlugins(ctx.projectSetting);
 
   let thunks: NamedThunk<Void>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)

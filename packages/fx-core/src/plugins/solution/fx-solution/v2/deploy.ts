@@ -64,7 +64,7 @@ export async function deploy(
     );
   }
 
-  const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
+  const plugins = getSelectedPlugins(ctx.projectSetting);
   const thunks: NamedThunk<Json>[] = plugins
     .filter((plugin) => !isUndefined(plugin.deploy) && optionsToDeploy.includes(plugin.name))
     .map((plugin) => {

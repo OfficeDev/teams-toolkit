@@ -135,7 +135,7 @@ export async function provisionResource(
 
   const solutionInputs = extractSolutionInputs(newEnvInfo.state[GLOBAL_CONFIG]["output"]);
 
-  const plugins = getSelectedPlugins(azureSolutionSettings);
+  const plugins = getSelectedPlugins(ctx.projectSetting);
   const provisionThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionResource))
     .map((plugin) => {

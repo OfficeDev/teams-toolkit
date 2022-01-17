@@ -1044,7 +1044,7 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
     throw SolutionConfigError();
   }
   minorCtx.solutionContext = result.value;
-  const settings = minorCtx.projectSettings?.solutionSettings as AzureSolutionSettings;
+  const settings = minorCtx.projectSettings as ProjectSettings;
   const activePlugins = getActivatedV2ResourcePlugins(settings).map(
     (p) => new NamedArmResourcePluginAdaptor(p)
   );

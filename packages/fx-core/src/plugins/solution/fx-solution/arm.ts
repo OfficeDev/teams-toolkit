@@ -797,9 +797,8 @@ async function doGenerateArmTemplate(
   ctx: SolutionContext,
   selectedPlugins: NamedArmResourcePlugin[]
 ): Promise<Result<any, FxError>> {
-  const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const baseName = generateResourceBaseName(ctx.projectSettings!.appName, ctx.envInfo!.envName);
-  const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+  const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
     (p) => new NamedArmResourcePluginAdaptor(p)
   ); // This function ensures return result won't be empty
   const bicepOrchestrationTemplate = new BicepOrchestrationContent(
@@ -1253,8 +1252,7 @@ function generateBicepModuleConfigFilePath(moduleFileName: string) {
 }
 
 function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: string): string {
-  const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-  const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+  const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
     (p) => new NamedArmResourcePluginAdaptor(p)
   ); // This function ensures return result won't be empty
   const stateVariables: Record<string, Record<string, any>> = {};

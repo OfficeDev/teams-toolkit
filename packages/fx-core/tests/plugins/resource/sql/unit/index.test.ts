@@ -18,7 +18,6 @@ import * as commonUtils from "../../../../../src/plugins/resource/sql/utils/comm
 import { UserType } from "../../../../../src/plugins/resource/sql/utils/commonUtils";
 import { ManagementClient } from "../../../../../src/plugins/resource/sql/managementClient";
 import { SqlPluginImpl } from "../../../../../src/plugins/resource/sql/plugin";
-import { isArmSupportEnabled } from "../../../../../src";
 import { sqlUserNameValidator } from "../../../../../src/plugins/resource/sql/utils/checkInput";
 import axios from "axios";
 
@@ -106,28 +105,6 @@ describe("sqlPlugin", () => {
     chai.assert.isTrue(preProvisionResult.isErr());
   });
 
-  it("provision", async function () {
-    if (isArmSupportEnabled()) {
-      // plugin provision is skipped with ARM
-      return;
-    }
-    sqlPlugin.sqlImpl.config.existSql = false;
-    sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
-
-    // Arrange
-    sinon.stub(Servers.prototype, "createOrUpdate").resolves();
-    sinon.stub(Databases.prototype, "listByServer").resolves();
-    sinon.stub(Databases.prototype, "createOrUpdate").resolves();
-    sinon.stub(Providers.prototype, "register").resolves();
-    sinon.stub(ManagementClient.prototype, "delay").resolves();
-
-    // Act
-    const provisionResult = await sqlPlugin.provision(pluginContext);
-
-    // Assert
-    chai.assert.isTrue(provisionResult.isOk());
-  });
-
   it("postProvision", async function () {
     sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
 
@@ -142,15 +119,36 @@ describe("sqlPlugin", () => {
     sinon.stub(SqlClient.prototype, "addDatabaseUser").resolves();
     sinon.stub(axios, "get").resolves({ data: "1.1.1.1" });
 
-    if (isArmSupportEnabled()) {
-      TestHelper.mockArmOutput(pluginContext);
-    }
+    TestHelper.mockArmOutput(pluginContext);
 
     // Act
     const postProvisionResult = await sqlPlugin.postProvision(pluginContext);
 
     // Assert
     chai.assert.isTrue(postProvisionResult.isOk());
+  });
+
+  it("postProvision with multiple database", async function () {
+    sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
+
+    // Arrange
+    sinon.stub(FirewallRules.prototype, "createOrUpdate").resolves();
+    sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
+    sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
+    sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    sinon
+      .stub(ApplicationTokenCredentials.prototype, "getToken")
+      .resolves({ accessToken: faker.random.word() } as TokenResponse);
+    const addUserStub = sinon.stub(SqlClient.prototype, "addDatabaseUser").resolves();
+    sinon.stub(axios, "get").resolves({ data: "1.1.1.1" });
+    TestHelper.mockArmOutput(pluginContext);
+    pluginContext.config.set("databaseName_000000", "databaseName_000000");
+    // Act
+    const postProvisionResult = await sqlPlugin.postProvision(pluginContext);
+
+    // Assert
+    chai.assert.isTrue(postProvisionResult.isOk());
+    chai.assert.isTrue(addUserStub.calledTwice);
   });
 
   it("postProvision with aadAdminType ServicePrincipal", async function () {
@@ -164,9 +162,7 @@ describe("sqlPlugin", () => {
     sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
     sinon.stub(axios, "get").resolves({ data: "1.1.1.1" });
 
-    if (isArmSupportEnabled()) {
-      TestHelper.mockArmOutput(pluginContext);
-    }
+    TestHelper.mockArmOutput(pluginContext);
 
     // Act
     const postProvisionResult = await sqlPlugin.postProvision(pluginContext);

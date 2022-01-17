@@ -11,12 +11,7 @@ import {
   SolutionContext,
   returnSystemError,
 } from "@microsoft/teamsfx-api";
-import {
-  getResourceGroupInPortal,
-  getStrings,
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-} from "../../../../common/tools";
+import { getResourceGroupInPortal, getStrings, isMultiEnvEnabled } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
 import {
   combineRecords,
@@ -140,7 +135,7 @@ export async function provisionResource(
 
   const solutionInputs = extractSolutionInputs(newEnvInfo.state[GLOBAL_CONFIG]["output"]);
 
-  const plugins = getSelectedPlugins(azureSolutionSettings);
+  const plugins = getSelectedPlugins(ctx.projectSetting);
   const provisionThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionResource))
     .map((plugin) => {

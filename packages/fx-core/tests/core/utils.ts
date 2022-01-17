@@ -23,7 +23,6 @@ import {
   MultiSelectConfig,
   MultiSelectResult,
   ok,
-  OptionItem,
   PermissionRequestProvider,
   ProjectSettings,
   QTreeNode,
@@ -51,15 +50,14 @@ import {
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
-import * as uuid from "uuid";
 import fs from "fs-extra";
-import { environmentManager } from "../../src";
+import * as uuid from "uuid";
 import {
   DEFAULT_PERMISSION_REQUEST,
   PluginNames,
 } from "../../src/plugins/solution/fx-solution/constants";
-import Container from "typedi";
-import { BuiltInSolutionNames } from "../../src/plugins/solution/fx-solution/v3/constants";
+import { TeamsAppSolutionNameV2 } from "../../src/plugins/solution/fx-solution/v2/constants";
+import sinon from "sinon";
 
 function solutionSettings(): AzureSolutionSettings {
   return {
@@ -135,7 +133,7 @@ export class MockSolution implements Solution {
 }
 
 export class MockSolutionV2 implements v2.SolutionPlugin {
-  name = "fx-solution-azure";
+  name = TeamsAppSolutionNameV2;
   displayName = "Azure Solution V2 Mock";
   async scaffoldSourceCode(ctx: v2.Context, inputs: Inputs): Promise<Result<Void, FxError>> {
     ctx.projectSetting.solutionSettings = solutionSettings();

@@ -27,6 +27,7 @@ describe("Provision to Azure with SQL", function () {
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   it(`Provision SQL with skip adding user`, async function () {
     // new a project ( tab + function + sql )
@@ -34,11 +35,12 @@ describe("Provision to Azure with SQL", function () {
       appName,
       testFolder,
       Capability.Tab,
+      process.env,
       "--azure-resources function sql"
     );
 
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    await setSkipAddingSqlUserToConfig(projectPath, environmentManager.getDefaultEnvName());
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
+    await setSkipAddingSqlUserToConfig(projectPath, env);
 
     // provision
     await CliHelper.setSubscription(subscription, projectPath);

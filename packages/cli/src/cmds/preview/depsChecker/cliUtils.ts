@@ -1,18 +1,38 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import UI from "../../../userInteraction";
-import { CliConfigEnvChecker, UserSettings } from "../../../userSetttings";
+import { CliConfigEnvChecker, CliConfigOptions, UserSettings } from "../../../userSetttings";
+import CLIUIInstance from "../../../userInteraction";
 import * as os from "os";
 
+export function isWindows(): boolean {
+  return os.type() === "Windows_NT";
+}
+
+export function isLinux(): boolean {
+  return os.type() === "Linux";
+}
+
 export async function showWarningMessage(message: string, button: string): Promise<boolean> {
-  const res = await UI.showMessage("info", message, true, button);
-  const userSelected: string | undefined = res?.isOk() ? res.value : undefined;
-  return userSelected === button;
+  const res = await CLIUIInstance.showMessage("info", message, true, button);
+  const input: string | undefined = res?.isOk() ? res.value : undefined;
+  return input === button;
 }
 
 export async function openUrl(url: string): Promise<void> {
-  await UI.openUrl(url);
+  await CLIUIInstance.openUrl(url);
+}
+
+export async function isDotnetCheckerEnabled(): Promise<boolean> {
+  return await checkerEnabled(CliConfigOptions.EnvCheckerValidateDotnetSdk);
+}
+
+export async function isFuncCoreToolsEnabled(): Promise<boolean> {
+  return await checkerEnabled(CliConfigOptions.EnvCheckerValidateFuncCoreTools);
+}
+
+export async function isNodeCheckerEnabled(): Promise<boolean> {
+  return await checkerEnabled(CliConfigOptions.EnvCheckerValidateNode);
 }
 
 export async function checkerEnabled(key: string): Promise<boolean> {
@@ -28,8 +48,4 @@ export async function checkerEnabled(key: string): Promise<boolean> {
   } else {
     return true;
   }
-}
-
-export function isLinux(): boolean {
-  return os.type() === "Linux";
 }

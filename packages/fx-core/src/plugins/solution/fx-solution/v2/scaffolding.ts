@@ -60,7 +60,7 @@ export async function scaffoldSourceCode(
   const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
   const fillinRes = fillInSolutionSettings(solutionSettings, inputs);
   if (fillinRes.isErr()) return err(fillinRes.error);
-  const plugins = getSelectedPlugins(solutionSettings);
+  const plugins = getSelectedPlugins(ctx.projectSetting);
 
   let thunks: NamedThunk<Void>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
@@ -127,6 +127,8 @@ export async function scaffoldByPlugins(
   localSettings: Json,
   plugins: v2.ResourcePlugin[]
 ): Promise<Result<Void, FxError>> {
+  if (plugins.length === 0) return ok(Void);
+  ctx.logProvider?.info(`start scaffolding ${plugins.map((p) => p.name).join(",")}.....`);
   const thunks: NamedThunk<Void>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
     .map((plugin) => {
@@ -152,8 +154,10 @@ export async function scaffoldByPlugins(
       `Success: ${getStrings().solution.ScaffoldSuccessNotice}`,
       false
     );
+    ctx.logProvider?.info(`finish scaffolding ${plugins.map((p) => p.name).join(",")}!`);
     return ok(Void);
   } else {
+    ctx.logProvider?.info(`failed to scaffold ${plugins.map((p) => p.name).join(",")}!`);
     return err(result.error);
   }
 }

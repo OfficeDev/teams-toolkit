@@ -5,7 +5,6 @@ import { BuildError, NotImplemented } from "../error";
 import { IApimPluginConfig } from "../config";
 import * as VSCode from "../questions/vscodeQuestion";
 import * as CLI from "../questions/cliQuestion";
-import { isArmSupportEnabled } from "../../../../common/tools";
 
 export interface IQuestionManager {
   callFunc(func: Func, ctx: PluginContext): Promise<any>;
@@ -45,13 +44,7 @@ export class VscQuestionManager implements IQuestionManager {
     const rootNode = new QTreeNode({
       type: "group",
     });
-    if (apimConfig.serviceName || isArmSupportEnabled()) {
-      return rootNode;
-    }
 
-    const question = this.apimServiceQuestion.getQuestion();
-    const apimServiceNode = new QTreeNode(question);
-    rootNode.addChild(apimServiceNode);
     return rootNode;
   }
 

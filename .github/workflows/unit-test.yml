@@ -5,6 +5,12 @@ on:
     branches:
       - main
       - dev
+    types:
+      - assigned
+      - opened
+      - synchronize
+      - reopened
+      - closed
   push:
     branches:
       - main
@@ -129,7 +135,7 @@ jobs:
           done
 
   report-coverage:
-    if: ${{ github.event_name == 'push' }}
+    if: ${{ github.event.pull_request.merged }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

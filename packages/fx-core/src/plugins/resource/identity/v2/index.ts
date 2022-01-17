@@ -6,6 +6,7 @@ import {
   FxError,
   Inputs,
   Json,
+  ProjectSettings,
   Result,
   TokenProvider,
   v2,
@@ -35,7 +36,8 @@ export class IdentityPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.IdentityPlugin)
   plugin!: IdentityPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
   async provisionResource(

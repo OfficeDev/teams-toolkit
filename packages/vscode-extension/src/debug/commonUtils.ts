@@ -12,7 +12,7 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { getTeamsAppIdByEnv } from "../utils/commonUtils";
 import { core, getSystemInputs, showError } from "../handlers";
 import { ext } from "../extensionVariables";
-import { LocalEnvManager } from "@microsoft/teamsfx-core";
+import { LocalEnvManager, FolderName } from "@microsoft/teamsfx-core";
 
 export async function getProjectRoot(
   folderPath: string,
@@ -83,7 +83,7 @@ export async function hasTeamsfxBackend(): Promise<boolean> {
     return false;
   }
 
-  const backendRoot = await getProjectRoot(workspacePath, constants.backendFolderName);
+  const backendRoot = await getProjectRoot(workspacePath, FolderName.Function);
 
   return backendRoot !== undefined;
 }
@@ -99,7 +99,7 @@ export async function hasTeamsfxBot(): Promise<boolean> {
     return false;
   }
 
-  const botRoot = await getProjectRoot(workspacePath, constants.botFolderName);
+  const botRoot = await getProjectRoot(workspacePath, FolderName.Bot);
 
   return botRoot !== undefined;
 }

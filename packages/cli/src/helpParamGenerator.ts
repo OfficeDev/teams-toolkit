@@ -123,15 +123,7 @@ export class HelpParamGenerator {
     }
     const systemInput = this.getSystemInputs();
     for (const stage in Stage) {
-      let result;
-      if (stage === Stage.publish) {
-        result = await this.core.getQuestions(
-          stage as Stage,
-          this.getSystemInputs("", Platform.VS)
-        );
-      } else {
-        result = await this.core.getQuestions(stage as Stage, systemInput);
-      }
+      const result = await this.core.getQuestions(stage as Stage, systemInput);
       if (result.isErr()) {
         return err(result.error);
       } else {
@@ -165,6 +157,7 @@ export class HelpParamGenerator {
     }
     const root = this.getQuestionRootNodeForHelp(stage);
     let nodes: QTreeNode[] = [];
+    if (root && !root.children) root.children = [];
     if (resourceName && root?.children) {
       const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
       // Do CLI map for resource add

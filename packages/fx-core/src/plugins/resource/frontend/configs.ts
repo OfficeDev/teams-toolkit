@@ -14,7 +14,6 @@ import {
   getResourceGroupNameFromResourceId,
   getStorageAccountNameFromResourceId,
   getSubscriptionIdFromResourceId,
-  isArmSupportEnabled,
 } from "../../..";
 
 export class FrontendConfig {
@@ -28,7 +27,7 @@ export class FrontendConfig {
   endpoint?: string;
   domain?: string;
 
-  private constructor(
+  public constructor(
     subscriptionId: string,
     resourceGroupName: string,
     location: string,
@@ -73,9 +72,7 @@ export class FrontendConfig {
   static getStorageName(ctx: PluginContext): string {
     let result;
     try {
-      result = isArmSupportEnabled()
-        ? getStorageAccountNameFromResourceId(FrontendConfig.getStorageResourceId(ctx))
-        : ctx.config.getString(FrontendConfigInfo.StorageName);
+      result = getStorageAccountNameFromResourceId(FrontendConfig.getStorageResourceId(ctx));
     } catch (e) {
       throw new InvalidConfigError(FrontendConfigInfo.StorageName, (e as Error).message);
     }
@@ -105,12 +102,7 @@ export class FrontendConfig {
   }
 
   static getSubscriptionId(ctx: PluginContext): string {
-    const result = isArmSupportEnabled()
-      ? getSubscriptionIdFromResourceId(FrontendConfig.getStorageResourceId(ctx))
-      : FrontendConfig.getConfig<string>(
-          DependentPluginInfo.SubscriptionId,
-          ctx.envInfo.state.get(DependentPluginInfo.SolutionPluginName)
-        );
+    const result = getSubscriptionIdFromResourceId(FrontendConfig.getStorageResourceId(ctx));
     if (!result) {
       throw new InvalidConfigError(DependentPluginInfo.SubscriptionId);
     }
@@ -118,12 +110,7 @@ export class FrontendConfig {
   }
 
   static getResourceGroupName(ctx: PluginContext): string {
-    const result = isArmSupportEnabled()
-      ? getResourceGroupNameFromResourceId(FrontendConfig.getStorageResourceId(ctx))
-      : FrontendConfig.getConfig<string>(
-          DependentPluginInfo.ResourceGroupName,
-          ctx.envInfo.state.get(DependentPluginInfo.SolutionPluginName)
-        );
+    const result = getResourceGroupNameFromResourceId(FrontendConfig.getStorageResourceId(ctx));
     if (!result) {
       throw new InvalidConfigError(DependentPluginInfo.ResourceGroupName);
     }

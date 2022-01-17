@@ -115,8 +115,6 @@ export enum TelemetryEvent {
   OpenSubscriptionInPortal = "open-subscription-in-portal",
   OpenResourceGroupInPortal = "open-resource-group-in-portal",
 
-  CheckSideloading = "check-sideloading",
-
   ListCollaboratorStart = "list-collaborator-start",
   ListCollaborator = "list-collaborator",
 
@@ -186,7 +184,6 @@ export enum TelemetryProperty {
   VideoPlayFrom = "video-play-from",
   FeatureFlags = "feature-flags",
   UpdateTeamsAppReason = "update-teams-app-reason",
-  IsSideloadingAllowed = "is-sideloading-allowed",
   IsExistingUser = "is-existing-user",
   CollaborationState = "collaboration-state",
   Env = "env",

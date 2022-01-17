@@ -101,7 +101,7 @@ export class Utils {
     const objectId = localSettings.auth?.objectId;
     const clientId = localSettings.auth?.clientId;
     const clientSecret = localSettings.auth?.clientSecret;
-    const oauth2PermissionScopeId = localSettings.auth?.accessAsUserScopeId;
+    const oauth2PermissionScopeId = localSettings.auth?.oauth2PermissionScopeId;
     if (objectId && clientId && oauth2PermissionScopeId && clientSecret) {
       return true;
     } else if (objectId || clientId || oauth2PermissionScopeId || clientSecret) {

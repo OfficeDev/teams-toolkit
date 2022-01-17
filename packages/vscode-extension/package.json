@@ -946,6 +946,7 @@
     "decache": "^4.6.0",
     "eslint": "^8.1.0",
     "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
     "find-process": "^1.4.4",
     "fs-extra": "^9.0.1",
@@ -1019,6 +1020,9 @@
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"
+    ],
+    "*":[
+      "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'"
     ]
   }
 }

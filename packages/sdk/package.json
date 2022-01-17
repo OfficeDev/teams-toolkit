@@ -96,6 +96,7 @@
     "dotenv": "^10.0.0",
     "eslint": "^8.1.0",
     "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
     "fs-extra": "^9.1.0",
     "got": "^11.8.2",
@@ -137,6 +138,9 @@
   "lint-staged": {
     "*.{js,jsx,css,ts,tsx}": [
       "npx eslint --cache --fix --quiet"
+    ],
+    "*":[
+      "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'"
     ]
   }
 }

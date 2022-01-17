@@ -125,6 +125,7 @@ export class TeamsUserCredential implements TokenCredential {
               const failedToParseResult = "Failed to parse result to Json.";
               internalLogger.verbose(failedToParseResult);
               resolve();
+              return;
             }
 
             // If sessionStorage exists in result, set the values in current session storage.

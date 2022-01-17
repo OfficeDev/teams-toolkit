@@ -13,6 +13,7 @@
     "test:localdebug": "nyc mocha \"tests/plugins/resource/localdebug/**/*.test.ts\"",
     "test:frontend": "nyc mocha \"tests/plugins/resource/frontend/**/*.test.ts\"",
     "test:aad": "nyc mocha \"tests/plugins/resource/aad/**/*.test.ts\"",
+    "test:aadv3": "nyc mocha \"tests/plugins/resource/aad/v3/*.test.ts\"",
     "test:simpleauth": "nyc mocha \"tests/plugins/resource/simpleauth/**/*.test.ts\"",
     "test:sql": "nyc mocha \"tests/plugins/resource/sql/**/*.test.ts\"",
     "test:identity": "nyc mocha \"tests/plugins/resource/identity/**/*.test.ts\"",

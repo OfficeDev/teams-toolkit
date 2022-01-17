@@ -164,29 +164,30 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
     if (config.objectId) {
       if (!skip) {
         await DialogUtils.progress?.next(ProgressDetail.GetAadApp);
-        config = await AadAppClient.getAadAppV3(
+        config = await AadAppClient.getAadApp(
           telemetryMessage,
           config.objectId,
           config.password,
-          tokenProvider.graphTokenProvider
+          tokenProvider.graphTokenProvider,
+          isLocalDebug ? undefined : envInfo?.envName
         );
         ctx.logProvider?.info(Messages.getLog(Messages.GetAadAppSuccess));
       }
     } else {
       await DialogUtils.progress?.next(ProgressDetail.ProvisionAadApp);
-      await AadAppClient.createAadAppV3(telemetryMessage, config);
+      await AadAppClient.createAadApp(telemetryMessage, config);
       config.password = undefined;
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
     }
 
     if (!config.password) {
       await DialogUtils.progress?.next(ProgressDetail.CreateAadAppSecret);
-      await AadAppClient.createAadAppSecretV3(telemetryMessage, config);
+      await AadAppClient.createAadAppSecret(telemetryMessage, config);
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppPasswordSuccess));
     }
 
     await DialogUtils.progress?.next(ProgressDetail.UpdatePermission);
-    await AadAppClient.updateAadAppPermissionV3(
+    await AadAppClient.updateAadAppPermission(
       telemetryMessage,
       config.objectId as string,
       permissions,
@@ -248,8 +249,8 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
     });
     const config: PostProvisionConfig = new PostProvisionConfig(isLocalDebug);
     localSettingsV2
-      ? config.restoreConfigFromLocalSettings(ctx, inputs, localSettingsV2)
-      : config.restoreConfigFromEnvInfo(ctx, inputs, envInfo!);
+      ? config.restoreConfigFromLocalSettings(localSettingsV2)
+      : config.restoreConfigFromEnvInfo(ctx, envInfo!);
 
     await DialogUtils.progress?.start(ProgressDetail.Starting);
     await DialogUtils.progress?.next(ProgressDetail.UpdateRedirectUri);
@@ -259,7 +260,7 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
       config.botEndpoint,
       config.clientId!
     );
-    await AadAppClient.updateAadAppRedirectUriV3(
+    await AadAppClient.updateAadAppRedirectUri(
       isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
       config.objectId as string,
       redirectUris,
@@ -268,7 +269,7 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
     ctx.logProvider?.info(Messages.getLog(Messages.UpdateRedirectUriSuccess));
 
     await DialogUtils.progress?.next(ProgressDetail.UpdateAppIdUri);
-    await AadAppClient.updateAadAppIdUriV3(
+    await AadAppClient.updateAadAppIdUri(
       isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
       config.objectId as string,
       config.applicationIdUri as string,

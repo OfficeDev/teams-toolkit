@@ -17,6 +17,7 @@ import { LocalSettingsTeamsAppKeys } from "../../../../common/local/constants";
 import { getStrings } from "../../../../common/tools";
 import { SolutionError } from "../constants";
 import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
+import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { executeConcurrently } from "../v2/executor";
 import { getM365TenantId } from "./provision";
 import { solutionGlobalVars } from "./solutionGlobalVars";
@@ -61,7 +62,7 @@ export async function provisionLocalResources(
 
   //TODO teams app provision, return app id
   // call appStudio.provision()
-  localSettingsV2.teamsAppId[LocalSettingsTeamsAppKeys.TeamsAppId] = "fake-local-teams-app-id";
+  localSettingsV2.teamsApp[LocalSettingsTeamsAppKeys.TeamsAppId] = "fake-local-teams-app-id";
   solutionGlobalVars.TeamsAppId = "fake-local-teams-app-id";
 
   // provision resources for local debug
@@ -90,37 +91,6 @@ export async function provisionLocalResources(
     return err(debugProvisionResult.error);
   }
 
-  // if AAD is enabled TODO
-  // const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
-  // if (isAzureProject(azureSolutionSettings)) {
-  //   if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
-  //     const result = await aadPlugin.executeUserTask(
-  //       ctx,
-  //       inputs,
-  //       {
-  //         namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-  //         method: "setApplicationInContext",
-  //         params: { isLocal: true },
-  //       },
-  //       localSettings,
-  //       { envName: environmentManager.getDefaultEnvName(), config: {}, state: {} },
-  //       tokenProvider
-  //     );
-  //     if (result.isErr()) {
-  //       return new v2.FxPartialSuccess(localSettings, result.error);
-  //     }
-  //   } else {
-  //     if (!ctx.projectSetting.solutionSettings.migrateFromV1) {
-  //       return new v2.FxFailure(
-  //         returnSystemError(
-  //           new Error("AAD plugin not selected or executeUserTask is undefined"),
-  //           SolutionSource,
-  //           SolutionError.InternelError
-  //         )
-  //       );
-  //     }
-  //   }
-  // }
   const configureLocalResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureLocalResource))
     .map((plugin) => {
@@ -146,5 +116,14 @@ export async function provisionLocalResources(
   if (configLocalDebugSettingsRes.isErr()) {
     return err(configLocalDebugSettingsRes.error);
   }
+
+  const appStuioV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
+  if (appStuioV2.configureLocalResource) {
+    const res = await appStuioV2.configureLocalResource(ctx, inputs, localSettings, tokenProvider);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+  }
+
   return ok(localSettings);
 }

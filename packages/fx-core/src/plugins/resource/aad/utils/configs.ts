@@ -401,11 +401,7 @@ export class PostProvisionConfig {
   constructor(isLocalDebug = false) {
     this.isLocalDebug = isLocalDebug;
   }
-  public async restoreConfigFromLocalSettings(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    localSettings: v2.LocalSettings
-  ): Promise<void> {
+  public restoreConfigFromLocalSettings(localSettings: v2.LocalSettings): void {
     const frontendEndpoint = localSettings.frontend?.tabEndpoint;
     if (frontendEndpoint) {
       this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
@@ -447,11 +443,7 @@ export class PostProvisionConfig {
       );
     }
   }
-  public async restoreConfigFromEnvInfo(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3
-  ): Promise<void> {
+  public restoreConfigFromEnvInfo(ctx: v2.Context, envInfo: v3.EnvInfoV3): void {
     const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
     let frontendEndpoint = envInfo.state[BuiltInResourcePluginNames.aad]?.endpoint;
     if (!frontendEndpoint) {

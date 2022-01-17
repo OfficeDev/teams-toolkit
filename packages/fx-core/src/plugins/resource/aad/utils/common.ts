@@ -53,11 +53,11 @@ export class Utils {
       : message;
   }
 
-  public static getConfigFileName(ctx: PluginContext, isLocalDebug: boolean): string {
-    if (isLocalDebug) {
+  public static getConfigFileName(envName?: string): string {
+    if (!envName) {
       return ConfigFilePath.LocalSettings;
     } else {
-      return ConfigFilePath.State(ctx.envInfo.envName);
+      return ConfigFilePath.State(envName);
     }
   }
 
@@ -67,13 +67,13 @@ export class Utils {
 
   public static async getCurrentTenantId(graphTokenProvider?: GraphTokenProvider): Promise<string> {
     const tokenObject = await graphTokenProvider?.getJsonObject();
-    const tenantId: string = (tokenObject as any).tid;
+    const tenantId: string = (tokenObject as any)?.tid;
     return tenantId;
   }
 
   public static skipCreateAadForProvision(envInfo: v3.EnvInfoV3): boolean {
     const envConfig: EnvConfig = envInfo.config as EnvConfig;
-    const envState: v3.AADApp = envInfo.state[BuiltInResourcePluginNames.aad] as AADApp;
+    const envState: v3.AADApp = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
     const objectId = envConfig.auth?.objectId ? envConfig.auth.objectId : envState.objectId;
     const clientId = envConfig.auth?.clientId ? envConfig.auth.clientId : envState.clientId;
     const clientSecret = envConfig.auth?.clientSecret

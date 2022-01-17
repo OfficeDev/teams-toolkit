@@ -271,8 +271,7 @@ export class SqlPluginImpl {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };

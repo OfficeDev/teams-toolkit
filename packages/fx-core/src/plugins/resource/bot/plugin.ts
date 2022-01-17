@@ -163,8 +163,7 @@ export class TeamsBotImpl {
 
   public async updateArmTemplates(ctx: PluginContext): Promise<FxResult> {
     Logger.info(Messages.UpdatingArmTemplatesBot);
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
@@ -190,8 +189,7 @@ export class TeamsBotImpl {
 
   public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
     Logger.info(Messages.GeneratingArmTemplatesBot);
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };

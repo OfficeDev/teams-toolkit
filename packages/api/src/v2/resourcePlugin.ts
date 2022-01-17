@@ -4,7 +4,7 @@
 import { Result } from "neverthrow";
 import { FxError } from "../error";
 import { Func, QTreeNode } from "../qm/question";
-import { AzureSolutionSettings, Inputs, Json, Void } from "../types";
+import { ProjectSettings, Inputs, Json, Void } from "../types";
 import { AppStudioTokenProvider, TokenProvider } from "../utils";
 import {
   Context,
@@ -53,13 +53,13 @@ export interface ResourcePlugin {
 
   /**
    * A resource plugin can decide whether it needs to be activated when the Toolkit initializes
-   * based on solution settings.
+   * based on project settings.
    *
-   * @param solutionSettings solution settings
+   * @param projectSettings project settings
    *
    * @returns whether to be activated
    */
-  activate(solutionSettings: AzureSolutionSettings): boolean;
+  activate(projectSettings: ProjectSettings): boolean;
 
   /**
    * Called by Toolkit when creating a new project or adding a new resource.

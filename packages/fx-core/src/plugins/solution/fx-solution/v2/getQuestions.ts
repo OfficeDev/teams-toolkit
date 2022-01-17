@@ -34,7 +34,7 @@ import {
   createAddAzureResourceQuestion,
   createV1CapabilityQuestion,
   DeployPluginSelectQuestion,
-  GetUserEmailQuestion,
+  getUserEmailQuestion,
   MessageExtensionItem,
   TabOptionItem,
   TabSPFxItem,
@@ -333,7 +333,10 @@ export async function getQuestions(
       }
     }
   } else if (stage === Stage.grantPermission) {
-    node.addChild(new QTreeNode(GetUserEmailQuestion));
+    if (isDynamicQuestion) {
+      const jsonObject = await tokenProvider.appStudioToken.getJsonObject();
+      node.addChild(new QTreeNode(getUserEmailQuestion((jsonObject as any).upn)));
+    }
   }
   return ok(node);
 }

@@ -3,19 +3,12 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import {
-  ConfigFolderName,
-  Inputs,
-  LogProvider,
-  Platform,
-  UserInteraction,
-  v2,
-} from "@microsoft/teamsfx-api";
+import { ConfigFolderName, LogProvider, UserInteraction } from "@microsoft/teamsfx-api";
 import { asn1, md, pki } from "node-forge";
 import * as os from "os";
 import { v4 as uuidv4 } from "uuid";
 
-import { LocalDebugCertificate } from "../constants";
+import { LocalDebugCertificate } from "./constants";
 import * as ps from "./process";
 
 const installText = "Install";
@@ -33,19 +26,17 @@ const confirmMessage =
 export interface LocalCertificate {
   certPath: string;
   keyPath: string;
-  isTrusted: boolean;
+  isTrusted?: boolean;
 }
 
 export class LocalCertificateManager {
   private readonly ui?: UserInteraction;
-  private readonly platform?: Platform;
   private readonly logger?: LogProvider;
   private readonly certFolder: string;
 
-  constructor(ctx: v2.Context | undefined, inputs: Inputs) {
-    this.ui = ctx?.userInteraction;
-    this.logger = ctx?.logProvider;
-    this.platform = inputs.platform;
+  constructor(ui?: UserInteraction, logger?: LogProvider) {
+    this.ui = ui;
+    this.logger = logger;
     this.certFolder = `${os.homedir()}/.${ConfigFolderName}/certificate`;
   }
 
@@ -63,41 +54,46 @@ export class LocalCertificateManager {
     const localCert: LocalCertificate = {
       certPath: certFilePath,
       keyPath: keyFilePath,
-      isTrusted: false,
     };
-    let certThumbprint: string | undefined = undefined;
-    await fs.ensureDir(this.certFolder);
 
-    this.logger?.info("Detecting/Verifying local certificate.");
+    try {
+      let certThumbprint: string | undefined = undefined;
+      await fs.ensureDir(this.certFolder);
 
-    if ((await fs.pathExists(certFilePath)) && (await fs.pathExists(keyFilePath))) {
-      const certContent = await fs.readFile(certFilePath, { encoding: "utf8" });
-      const keyContent = await fs.readFile(keyFilePath, { encoding: "utf8" });
-      const verifyRes = this.verifyCertificateContent(certContent, keyContent);
-      if (verifyRes[1]) {
-        certThumbprint = verifyRes[0];
+      this.logger?.info("Detecting/Verifying local certificate.");
+
+      if ((await fs.pathExists(certFilePath)) && (await fs.pathExists(keyFilePath))) {
+        const certContent = await fs.readFile(certFilePath, { encoding: "utf8" });
+        const keyContent = await fs.readFile(keyFilePath, { encoding: "utf8" });
+        const verifyRes = this.verifyCertificateContent(certContent, keyContent);
+        if (verifyRes[1]) {
+          certThumbprint = verifyRes[0];
+        }
       }
-    }
 
-    if (!certThumbprint) {
-      // generate cert and key
-      certThumbprint = await this.generateCertificate(certFilePath, keyFilePath);
-    }
-
-    if (needTrust) {
-      if (certThumbprint && (await this.verifyCertificateInStore(certThumbprint))) {
-        // already trusted
-        localCert.isTrusted = true;
-      } else {
-        localCert.isTrusted = await this.trustCertificate(
-          certFilePath,
-          certThumbprint,
-          LocalDebugCertificate.FriendlyName
-        );
+      if (!certThumbprint) {
+        // generate cert and key
+        certThumbprint = await this.generateCertificate(certFilePath, keyFilePath);
       }
-    }
 
-    return localCert;
+      if (needTrust) {
+        if (certThumbprint && (await this.verifyCertificateInStore(certThumbprint))) {
+          // already trusted
+          localCert.isTrusted = true;
+        } else {
+          localCert.isTrusted = await this.trustCertificate(
+            localCert.certPath,
+            certThumbprint,
+            LocalDebugCertificate.FriendlyName
+          );
+        }
+      }
+    } catch (error: any) {
+      this.logger?.warning(`Failed to setup certificate. Error: ${error}`);
+      localCert.isTrusted = false;
+    } finally {
+      return localCert;
+    }
   }
 
   private async generateCertificate(certFile: string, keyFile: string): Promise<string> {
@@ -250,7 +246,7 @@ export class LocalCertificateManager {
     }
   }
 
-  private async verifyCertificateInStore(thumbprint: string): Promise<boolean> {
+  private async verifyCertificateInStore(thumbprint: string): Promise<boolean | undefined> {
     try {
       if (os.type() === "Windows_NT") {
         const getCertCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root | Where-Object { $_.Thumbprint -match '${thumbprint}' }).Thumbprint`;
@@ -273,7 +269,7 @@ export class LocalCertificateManager {
         return false;
       } else {
         // TODO: Linux
-        return false;
+        return undefined;
       }
     } catch (error) {
       // treat any error as not verified, to not block the main progress
@@ -286,7 +282,7 @@ export class LocalCertificateManager {
     certPath: string,
     thumbprint: string,
     friendlyName: string
-  ): Promise<boolean> {
+  ): Promise<boolean | undefined> {
     try {
       if (os.type() === "Windows_NT") {
         if (!(await this.waitForUserConfirm())) {
@@ -312,28 +308,12 @@ export class LocalCertificateManager {
         return true;
       } else {
         // TODO: Linux
-        return false;
+        return undefined;
       }
     } catch (error) {
       // treat any error as install failure, to not block the main progress
       this.logger?.warning(`Failed to install certificate. Error: ${error}`);
       return false;
-    }
-  }
-
-  private showWarningMessage() {
-    if (this.ui) {
-      if (this.platform === Platform.CLI) {
-        // no user interaction for CLI
-        this.ui.showMessage("warn", warningMessage, false);
-      } else {
-        this.ui.showMessage("warn", warningMessage, false, learnMoreText).then((result) => {
-          const userSelected = result.isOk() ? result.value : undefined;
-          if (userSelected === learnMoreText) {
-            this.ui!.openUrl(learnMoreUrl);
-          }
-        });
-      }
     }
   }
 

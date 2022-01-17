@@ -60,7 +60,11 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     }
 
     const failures: CheckFailure[] = [];
-    const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
     const workspacePath = ext.workspaceUri.fsPath;
 
     // Get project settings
@@ -130,6 +134,12 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     const accountFailure = await accountFailurePromise;
     if (accountFailure) {
       failures.push(accountFailure);
+    }
+
+    // local cert
+    const localCertFailure = await resolveLocalCertificate(localEnvManager);
+    if (localCertFailure) {
+      failures.push(localCertFailure);
     }
 
     // handle failures
@@ -232,6 +242,25 @@ async function resolveBackendExtension(
     return {
       checker: "Backend Extension",
       error: handleDepsCheckerError(error),
+    };
+  }
+}
+
+async function resolveLocalCertificate(
+  localEnvManager: LocalEnvManager
+): Promise<CheckFailure | undefined> {
+  try {
+    // TODO: Use new trustDevCert flag
+    const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
+    const trustDevCert = (localSettings?.frontend?.trustDevCert as boolean | undefined) ?? true;
+
+    // TODO: Return CheckFailure when isTrusted === false
+    await localEnvManager.resolveLocalCertificate(trustDevCert);
+    return undefined;
+  } catch (error: any) {
+    return {
+      checker: "Local Certificate",
+      error: assembleError(error),
     };
   }
 }

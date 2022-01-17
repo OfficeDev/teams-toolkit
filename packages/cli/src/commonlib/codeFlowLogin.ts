@@ -279,6 +279,7 @@ export class CodeFlowLogin {
               return undefined;
             }
             await this.logout();
+            (this.msalTokenCache as any).storage.setCache({});
             if (refresh) {
               const accessToken = await this.login();
               return accessToken;

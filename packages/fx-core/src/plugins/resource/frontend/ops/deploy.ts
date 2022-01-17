@@ -19,7 +19,9 @@ import { Utils } from "../utils";
 import fs from "fs-extra";
 import path from "path";
 import { TelemetryHelper } from "../utils/telemetry-helper";
-import { RemoteEnvs } from "../env";
+import { envFileName, envFileNamePrefix, RemoteEnvs } from "../env";
+import { IProgressHandler } from "@microsoft/teamsfx-api";
+import * as v3error from "../v3/error";
 
 interface DeploymentInfo {
   lastBuildTime?: string;
@@ -27,25 +29,33 @@ interface DeploymentInfo {
 }
 
 export class FrontendDeployment {
-  public static async needBuild(componentPath: string): Promise<boolean> {
-    const lastBuildTime = await FrontendDeployment.getLastBuildTime(componentPath);
+  public static async needBuild(componentPath: string, envName: string): Promise<boolean> {
+    const lastBuildTime = await FrontendDeployment.getLastBuildTime(componentPath, envName);
     if (!lastBuildTime) {
       return true;
     }
-    return FrontendDeployment.hasUpdatedContent(componentPath, lastBuildTime);
+    return FrontendDeployment.hasUpdatedContent(
+      componentPath,
+      lastBuildTime,
+      (itemPath) => !itemPath.startsWith(envFileNamePrefix) || itemPath === envFileName(envName)
+    );
   }
 
-  public static async needDeploy(componentPath: string): Promise<boolean> {
-    const lastBuildTime = await FrontendDeployment.getLastBuildTime(componentPath);
-    const lastDeployTime = await FrontendDeployment.getLastDeploymentTime(componentPath);
+  public static async needDeploy(componentPath: string, envName: string): Promise<boolean> {
+    const lastBuildTime = await FrontendDeployment.getLastBuildTime(componentPath, envName);
+    const lastDeployTime = await FrontendDeployment.getLastDeploymentTime(componentPath, envName);
     if (!lastBuildTime || !lastDeployTime) {
       return true;
     }
     return lastDeployTime < lastBuildTime;
   }
 
-  public static async doFrontendBuild(componentPath: string, envs: RemoteEnvs): Promise<void> {
-    if (!(await FrontendDeployment.needBuild(componentPath))) {
+  public static async doFrontendBuild(
+    componentPath: string,
+    envs: RemoteEnvs,
+    envName: string
+  ): Promise<void> {
+    if (!(await FrontendDeployment.needBuild(componentPath, envName))) {
       return FrontendDeployment.skipBuild();
     }
 
@@ -63,11 +73,37 @@ export class FrontendDeployment {
         ...envs.teamsfxRemoteEnvs,
       });
     });
-    await FrontendDeployment.saveDeploymentInfo(componentPath, {
+    await FrontendDeployment.saveDeploymentInfo(componentPath, envName, {
       lastBuildTime: new Date().toISOString(),
     });
   }
-
+  public static async doFrontendBuildV3(
+    componentPath: string,
+    envs: RemoteEnvs,
+    envName: string,
+    progress?: IProgressHandler
+  ): Promise<void> {
+    const needBuild = await FrontendDeployment.needBuild(componentPath, envName);
+    if (!needBuild) {
+      await progress?.next(DeploySteps.NPMInstall);
+      await progress?.next(DeploySteps.Build);
+      return;
+    }
+    await progress?.next(DeploySteps.NPMInstall);
+    await runWithErrorCatchAndThrow(new v3error.NpmInstallError(), async () => {
+      await Utils.execute(Commands.InstallNodePackages, componentPath);
+    });
+    await progress?.next(DeploySteps.Build);
+    await runWithErrorCatchAndThrow(new v3error.BuildError(), async () => {
+      await Utils.execute(Commands.BuildFrontend, componentPath, {
+        ...envs.customizedRemoteEnvs,
+        ...envs.teamsfxRemoteEnvs,
+      });
+    });
+    await FrontendDeployment.saveDeploymentInfo(componentPath, envName, {
+      lastBuildTime: new Date().toISOString(),
+    });
+  }
   public static async skipBuild(): Promise<void> {
     Logger.info(Messages.SkipBuild);
 
@@ -87,9 +123,10 @@ export class FrontendDeployment {
 
   public static async doFrontendDeployment(
     client: AzureStorageClient,
-    componentPath: string
+    componentPath: string,
+    envName: string
   ): Promise<void> {
-    if (!(await FrontendDeployment.needDeploy(componentPath))) {
+    if (!(await FrontendDeployment.needDeploy(componentPath, envName))) {
       return FrontendDeployment.skipDeployment();
     }
 
@@ -112,7 +149,41 @@ export class FrontendDeployment {
       await client.uploadFiles(container, builtPath);
     });
 
-    await FrontendDeployment.saveDeploymentInfo(componentPath, {
+    await FrontendDeployment.saveDeploymentInfo(componentPath, envName, {
+      lastDeployTime: new Date().toISOString(),
+    });
+  }
+
+  public static async doFrontendDeploymentV3(
+    client: AzureStorageClient,
+    componentPath: string,
+    envName: string,
+    progress?: IProgressHandler
+  ): Promise<void> {
+    const needDeploy = await FrontendDeployment.needDeploy(componentPath, envName);
+    if (!needDeploy) {
+      await progress?.next(DeploySteps.getSrcAndDest);
+      await progress?.next(DeploySteps.Clear);
+      await progress?.next(DeploySteps.Upload);
+      return;
+    }
+    await progress?.next(DeploySteps.getSrcAndDest);
+    const builtPath = await FrontendDeployment.getBuiltPath(componentPath);
+    const container = await runWithErrorCatchAndThrow(
+      new v3error.GetContainerError(),
+      async () => await client.getContainer(Constants.AzureStorageWebContainer)
+    );
+
+    await progress?.next(DeploySteps.Clear);
+    await runWithErrorCatchAndThrow(new v3error.ClearStorageError(), async () => {
+      await client.deleteAllBlobs(container);
+    });
+
+    await progress?.next(DeploySteps.Upload);
+    await runWithErrorCatchAndThrow(new v3error.UploadToStorageError(), async () => {
+      await client.uploadFiles(container, builtPath);
+    });
+    await FrontendDeployment.saveDeploymentInfo(componentPath, envName, {
       lastDeployTime: new Date().toISOString(),
     });
   }
@@ -129,7 +200,8 @@ export class FrontendDeployment {
 
   private static async hasUpdatedContent(
     componentPath: string,
-    referenceTime: Date
+    referenceTime: Date,
+    filter?: (itemPath: string) => boolean
   ): Promise<boolean> {
     const folderFilter = (itemPath: string) =>
       !FrontendPathInfo.TabDeployIgnoreFolder.includes(path.basename(itemPath));
@@ -139,7 +211,7 @@ export class FrontendDeployment {
       componentPath,
       (itemPath, stats) => {
         const relativePath = path.relative(componentPath, itemPath);
-        if (relativePath && referenceTime < stats.mtime) {
+        if (relativePath && referenceTime < stats.mtime && (!filter || filter(relativePath))) {
           changed = true;
           return true;
         }
@@ -151,28 +223,39 @@ export class FrontendDeployment {
   }
 
   private static async getDeploymentInfo(
-    componentPath: string
+    componentPath: string,
+    envName: string
   ): Promise<DeploymentInfo | undefined> {
     const deploymentDir = path.join(componentPath, FrontendPathInfo.TabDeploymentFolderName);
     const deploymentInfoPath = path.join(deploymentDir, FrontendPathInfo.TabDeploymentInfoFileName);
 
     try {
-      return await fs.readJSON(deploymentInfoPath);
+      const deploymentInfoJson = await fs.readJSON(deploymentInfoPath);
+      if (!deploymentInfoJson) {
+        return undefined;
+      }
+      return deploymentInfoJson[envName];
     } catch {
       TelemetryHelper.sendGeneralEvent(TelemetryEvent.DeploymentInfoNotFound);
       return undefined;
     }
   }
 
-  private static async getLastBuildTime(componentPath: string): Promise<Date | undefined> {
-    const deploymentInfoJson = await FrontendDeployment.getDeploymentInfo(componentPath);
+  private static async getLastBuildTime(
+    componentPath: string,
+    envName: string
+  ): Promise<Date | undefined> {
+    const deploymentInfoJson = await FrontendDeployment.getDeploymentInfo(componentPath, envName);
     return deploymentInfoJson?.lastBuildTime
       ? new Date(deploymentInfoJson.lastBuildTime)
       : undefined;
   }
 
-  private static async getLastDeploymentTime(componentPath: string): Promise<Date | undefined> {
-    const deploymentInfoJson = await FrontendDeployment.getDeploymentInfo(componentPath);
+  private static async getLastDeploymentTime(
+    componentPath: string,
+    envName: string
+  ): Promise<Date | undefined> {
+    const deploymentInfoJson = await FrontendDeployment.getDeploymentInfo(componentPath, envName);
     return deploymentInfoJson?.lastDeployTime
       ? new Date(deploymentInfoJson.lastDeployTime)
       : undefined;
@@ -180,6 +263,7 @@ export class FrontendDeployment {
 
   private static async saveDeploymentInfo(
     componentPath: string,
+    envName: string,
     deploymentInfo: DeploymentInfo
   ): Promise<void> {
     const deploymentDir = path.join(componentPath, FrontendPathInfo.TabDeploymentFolderName);
@@ -193,10 +277,11 @@ export class FrontendDeployment {
       // Failed to read info file, which doesn't block deployment
     }
 
-    deploymentInfoJson.lastBuildTime =
-      deploymentInfo.lastBuildTime ?? deploymentInfoJson.lastBuildTime;
-    deploymentInfoJson.lastDeployTime =
-      deploymentInfo.lastDeployTime ?? deploymentInfoJson.lastDeployTime;
+    deploymentInfoJson[envName] ??= {};
+    deploymentInfoJson[envName].lastBuildTime =
+      deploymentInfo.lastBuildTime ?? deploymentInfoJson[envName].lastBuildTime;
+    deploymentInfoJson[envName].lastDeployTime =
+      deploymentInfo.lastDeployTime ?? deploymentInfoJson[envName].lastDeployTime;
 
     try {
       await fs.writeJSON(deploymentInfoPath, deploymentInfoJson);

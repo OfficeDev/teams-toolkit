@@ -193,14 +193,13 @@ export const AzureResourcesQuestion: MultiSelectQuestion = {
 
 export function createAddAzureResourceQuestion(
   alreadyHaveFunction: boolean,
-  alreadhHaveSQL: boolean,
+  alreadyHaveSQL: boolean,
   alreadyHaveAPIM: boolean,
-  alreadyHavekeyVault: boolean
+  alreadyHaveKeyVault: boolean
 ): MultiSelectQuestion {
-  const options: OptionItem[] = [AzureResourceFunction];
-  if (!alreadhHaveSQL) options.push(AzureResourceSQL);
+  const options: OptionItem[] = [AzureResourceFunction, AzureResourceSQL];
   if (!alreadyHaveAPIM) options.push(AzureResourceApim);
-  if (!alreadyHavekeyVault) options.push(AzureResourceKeyVault);
+  if (!alreadyHaveKeyVault) options.push(AzureResourceKeyVault);
   return {
     name: AzureSolutionQuestionNames.AddResources,
     title: "Cloud resources",
@@ -257,21 +256,34 @@ export const AskSubscriptionQuestion: FuncQuestion = {
   },
 };
 
-export const GetUserEmailQuestion: TextInputQuestion = {
-  name: "email",
-  type: "text",
-  title: "Add owner to Teams/AAD app for the account under the same M365 tenant (email)",
-  validation: {
-    validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
-      if (!input || input.trim() === "") {
-        return "Email address cannot be null or empty";
-      }
+export function getUserEmailQuestion(currentUserEmail: string): TextInputQuestion {
+  let defaultUserEmail = "";
+  if (currentUserEmail && currentUserEmail.indexOf("@") > 0) {
+    defaultUserEmail = "[UserName]@" + currentUserEmail.split("@")[1];
+  }
+  return {
+    name: "email",
+    type: "text",
+    title: "Add owner to Teams/AAD app for the account under the same M365 tenant (email)",
+    default: defaultUserEmail,
+    validation: {
+      validFunc: (input: string, previousInputs?: Inputs): string | undefined => {
+        if (!input || input.trim() === "") {
+          return "Email address cannot be null or empty";
+        }
 
-      const re = /\S+@\S+\.\S+/;
-      if (!re.test(input)) {
-        return "Email address is not valid";
-      }
-      return undefined;
+        input = input.trim();
+
+        if (input === defaultUserEmail) {
+          return "Please change [UserName] to the real user name";
+        }
+
+        const re = /\S+@\S+\.\S+/;
+        if (!re.test(input)) {
+          return "Email address is not valid";
+        }
+        return undefined;
+      },
     },
-  },
-};
+  };
+}

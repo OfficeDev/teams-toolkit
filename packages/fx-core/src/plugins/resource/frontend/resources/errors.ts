@@ -1,17 +1,17 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureInfo, Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
+import { Constants, FrontendPathInfo, FrontendPluginInfo } from "../constants";
 import { Logger } from "../utils/logger";
 import path from "path";
-import { ConfigFolderName, ArchiveFolderName } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, ArchiveFolderName, FxError } from "@microsoft/teamsfx-api";
 
 export enum ErrorType {
   User,
   System,
 }
 
-const tips = {
+export const tips = {
   checkLog: "Check log for more information.",
   reScaffold: `Run 'Start A New Project' again.`,
   doProvision: `Run 'Provision Resource' before this command.`,
@@ -31,9 +31,6 @@ const tips = {
   checkStoragePermissions: "Check if you have permissions to your Azure Storage Account.",
   checkSystemTime: "You may get expired credentials, check if your system time is correct.",
   restoreEnvironment: `If you manually updated configuration files (under directory .${ConfigFolderName}), recover them.`,
-  registerRequiredRP: `Register required resource provider '${AzureInfo.RequiredResourceProviders.join(
-    `', '`
-  )}' for your subscription manually.`,
   migrateV1Project: `Rollback your project from '${ArchiveFolderName}' folder.`,
 };
 
@@ -78,12 +75,6 @@ export class UnauthenticatedError extends FrontendPluginError {
     super(ErrorType.User, "UnauthenticatedError", "Failed to get user login information.", [
       tips.doLogin,
     ]);
-  }
-}
-
-export class NoPreStepError extends FrontendPluginError {
-  constructor() {
-    super(ErrorType.System, "NoPreStepError", "The pre-step is not done.", [tips.checkLog]);
   }
 }
 
@@ -148,40 +139,6 @@ export class InvalidStorageNameError extends FrontendPluginError {
     super(ErrorType.User, "InvalidStorageNameError", "Azure Storage Name is invalid.", [
       tips.ensureAppNameValid,
     ]);
-  }
-}
-
-export class StorageAccountAlreadyTakenError extends FrontendPluginError {
-  constructor() {
-    super(
-      ErrorType.User,
-      "StorageAccountAlreadyTakenError",
-      "Azure Storage Name is already in use.",
-      [tips.deleteSameNameStorage]
-    );
-  }
-}
-
-// TODO: help link for this error
-export class RegisterResourceProviderError extends FrontendPluginError {
-  constructor() {
-    super(
-      ErrorType.User,
-      "RegisterResourceProviderError",
-      "Failed to register required resource provider for Tab frontend app.",
-      [tips.registerRequiredRP, tips.checkLog]
-    );
-  }
-}
-
-export class CreateStorageAccountError extends FrontendPluginError {
-  constructor(innerErrorCode?: string) {
-    super(
-      ErrorType.User,
-      "CreateStorageAccountError",
-      `Failed to create Azure Storage Account${innerErrorCode ? `: ${innerErrorCode}` : ""}.`,
-      [tips.checkLog]
-    );
   }
 }
 
@@ -272,6 +229,12 @@ export class UnzipTemplateError extends FrontendPluginError {
   }
 }
 
+export class FileSystemError extends FrontendPluginError {
+  constructor(message: string) {
+    super(ErrorType.System, "FileSystemError", message, [tips.checkLog]);
+  }
+}
+
 export class NoBuildPathError extends FrontendPluginError {
   constructor() {
     super(ErrorType.User, "NoBuildPathError", `Failed to find 'build' folder.`, [
@@ -303,28 +266,6 @@ export class InvalidTabLanguageError extends FrontendPluginError {
       "InvalidTabLanguageError",
       "The selected programming language yet is not supported by Tab.",
       [tips.restoreEnvironment, tips.reScaffold]
-    );
-  }
-}
-
-export class InvalidAuthPluginConfigError extends FrontendPluginError {
-  constructor() {
-    super(
-      ErrorType.User,
-      "InvalidAuthPluginConfigError",
-      "The auth plugin configuration is invalid.",
-      [tips.restoreEnvironment, tips.reProvision]
-    );
-  }
-}
-
-export class InvalidAadPluginConfigError extends FrontendPluginError {
-  constructor() {
-    super(
-      ErrorType.User,
-      "InvalidAadPluginConfigError",
-      "The aad plugin configuration is invalid.",
-      [tips.restoreEnvironment, tips.reProvision]
     );
   }
 }
@@ -361,7 +302,7 @@ export const UnhandledErrorCode = "UnhandledError";
 export const UnhandledErrorMessage = "Unhandled error.";
 
 export async function runWithErrorCatchAndThrow<T>(
-  error: FrontendPluginError,
+  error: FrontendPluginError | FxError,
   fn: () => T | Promise<T>
 ): Promise<T> {
   try {
@@ -369,13 +310,13 @@ export async function runWithErrorCatchAndThrow<T>(
     return res;
   } catch (e) {
     Logger.error(e.toString());
-    error.setInnerError(e);
+    if (error instanceof FrontendPluginError) error.setInnerError(e);
     throw error;
   }
 }
 
 export async function runWithErrorCatchAndWrap<T>(
-  wrap: (error: any) => FrontendPluginError,
+  wrap: (error: any) => FrontendPluginError | FxError,
   fn: () => T | Promise<T>
 ): Promise<T> {
   try {
@@ -384,7 +325,7 @@ export async function runWithErrorCatchAndWrap<T>(
   } catch (e) {
     Logger.error(e.toString());
     const error = wrap(e);
-    error.setInnerError(e);
+    if (error instanceof FrontendPluginError) error.setInnerError(e);
     throw error;
   }
 }

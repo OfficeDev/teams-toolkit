@@ -29,6 +29,7 @@ export const MockResourcePluginNames = {
 
 @Service(MockScaffoldPluginNames.tab)
 export class MockTabScaffoldPlugin implements v3.ScaffoldPlugin {
+  type: "scaffold" = "scaffold";
   async getTemplates(
     ctx: v2.Context,
     inputs: Inputs
@@ -64,6 +65,7 @@ export class MockTabScaffoldPlugin implements v3.ScaffoldPlugin {
 
 @Service(MockScaffoldPluginNames.bot)
 export class MockBotScaffoldPlugin implements v3.ScaffoldPlugin {
+  type: "scaffold" = "scaffold";
   async getTemplates(
     ctx: v2.Context,
     inputs: Inputs
@@ -118,6 +120,7 @@ const MockStorageResourceTemplate: v2.ResourceTemplate = {
 
 @Service(MockResourcePluginNames.storage)
 export class MockStoragePlugin implements v3.ResourcePlugin {
+  type: "resource" = "resource";
   resourceType = "Azure Storage";
   description = "Azure Storage";
   name = MockResourcePluginNames.storage;

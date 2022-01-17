@@ -34,7 +34,7 @@ import {
 } from "../../../../common/local/localEnvProvider";
 import { prepareLocalAuthService } from "./util/localService";
 import { getAllowedAppIds } from "../../../../common/tools";
-import { LocalCertificateManager } from "./util/certificate";
+import { LocalCertificateManager } from "../../../../common/local/localCertificateManager";
 
 export async function setupLocalDebugSettings(
   ctx: v2.Context,
@@ -45,7 +45,8 @@ export async function setupLocalDebugSettings(
   const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
-  const includeAuth = ProjectSettingsHelper.includeAuth(ctx.projectSetting);
+  const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
   let skipNgrok = localSettings?.bot?.skipNgrok as boolean;
 
   const telemetryProperties = {
@@ -54,7 +55,7 @@ export async function setupLocalDebugSettings(
     frontend: includeFrontend ? "true" : "false",
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
-    auth: includeAuth ? "true" : "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
@@ -86,7 +87,7 @@ export async function setupLocalDebugSettings(
         localFuncEndpoint = "http://localhost:7071";
       }
 
-      if (includeAuth) {
+      if (includeSimpleAuth) {
         localSettings.auth.AuthServiceEndpoint = localAuthEndpoint;
       }
 
@@ -152,7 +153,8 @@ export async function configLocalDebugSettings(
   const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
-  const includeAuth = ProjectSettingsHelper.includeAuth(ctx.projectSetting);
+  const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
   let trustDevCert = localSettings?.frontend?.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
@@ -160,7 +162,7 @@ export async function configLocalDebugSettings(
     frontend: includeFrontend ? "true" : "false",
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
-    auth: includeAuth ? "true" : "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "trust-development-certificate": trustDevCert + "",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
@@ -172,7 +174,7 @@ export async function configLocalDebugSettings(
 
       const localEnvProvider = new LocalEnvProvider(inputs.projectPath!);
       const frontendEnvs = includeFrontend
-        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAuth, isMigrateFromV1)
+        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAAD, isMigrateFromV1)
         : undefined;
       const backendEnvs = includeBackend
         ? await localEnvProvider.loadBackendLocalEnvs()
@@ -197,12 +199,15 @@ export async function configLocalDebugSettings(
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
         }
 
-        if (includeAuth) {
-          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
+        if (includeAAD) {
           frontendEnvs!.teamsfxLocalEnvs[
             EnvKeysFrontend.LoginUrl
           ] = `${localTabEndpoint}/auth-start.html`;
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.ClientId] = clientId;
+        }
+
+        if (includeSimpleAuth) {
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
           await prepareLocalAuthService(localAuthPackagePath);
         }
 
@@ -230,7 +235,8 @@ export async function configLocalDebugSettings(
             localSettings.frontend.trustDevCert = trustDevCert;
           }
 
-          const certManager = new LocalCertificateManager(ctx, inputs);
+          const certManager = new LocalCertificateManager(ctx.userInteraction, ctx.logProvider);
+
           const localCert = await certManager.setupCertificate(trustDevCert);
           if (localCert) {
             localSettings.frontend.sslCertFile = localCert.certPath;

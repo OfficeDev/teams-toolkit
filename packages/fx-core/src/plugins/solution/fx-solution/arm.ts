@@ -17,6 +17,7 @@ import {
   returnSystemError,
   returnUserError,
   SolutionContext,
+  SystemError,
   UserError,
   v2,
   v3,
@@ -67,6 +68,8 @@ const bicepOrchestrationConfigFileName = "config.bicep";
 const templatesFolder = "./templates/azure";
 const configsFolder = `.${ConfigFolderName}/configs`;
 const parameterFileNameTemplate = `azure.parameters.${EnvNamePlaceholder}.json`;
+const pollWaitSeconds = 10;
+const maxRetryTimes = 4;
 
 // constant string
 const resourceBaseName = "resourceBaseName";
@@ -111,10 +114,10 @@ export async function generateArmTemplate(
 }
 
 export async function generateArmTemplateV3(
-  ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath,
-  activatedPlugins: v3.ResourcePlugin[],
-  addedPlugins: v3.ResourcePlugin[]
+  ctx: v3.ContextWithManifest,
+  inputs: v2.InputsWithProjectPath & { existingResources: string[] },
+  activatedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[],
+  addedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[]
 ): Promise<Result<any, FxError>> {
   let result: Result<void, FxError>;
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplateStart, {
@@ -148,9 +151,7 @@ export async function generateArmTemplateV3(
 }
 
 type DeployContext = {
-  azureAccountProvider?: AzureAccountProvider;
-  logProvider?: LogProvider;
-  // ctx: SolutionContext;
+  ctx: SolutionContext;
   finished: boolean;
   client: ResourceManagementClient;
   resourceGroupName: string;
@@ -162,6 +163,7 @@ type OperationStatus = {
   resourceName: string;
   resourceGroupName: string;
   subscriptionId: string;
+  resourceType?: string;
   status: string;
 };
 
@@ -187,6 +189,7 @@ export function getRequiredOperation(
         resourceName: operation.properties?.targetResource?.resourceName,
         resourceGroupName: resourceGroupName,
         subscriptionId: subscriptionId,
+        resourceType: operation.properties.targetResource.resourceType,
         status: operation.properties.provisioningState,
       };
     } catch (error) {
@@ -198,18 +201,17 @@ export function getRequiredOperation(
 }
 
 export async function pollDeploymentStatus(deployCtx: DeployContext) {
-  const failedCount = 4;
   let tryCount = 0;
   let previousStatus: { [key: string]: string } = {};
   let polledOperations: string[] = [];
-  deployCtx.logProvider?.info(
+  deployCtx.ctx.logProvider?.info(
     format(
       getStrings().solution.DeployArmTemplates.PollDeploymentStatusNotice,
       PluginDisplayName.Solution
     )
   );
   while (!deployCtx.finished) {
-    await waitSeconds(10);
+    await waitSeconds(pollWaitSeconds);
     try {
       const operations = await deployCtx.client.deploymentOperations.list(
         deployCtx.resourceGroupName,
@@ -228,23 +230,26 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
             currentStatus[operation.resourceName] = operation.status;
             if (!polledOperations.includes(operation.resourceName)) {
               polledOperations.push(operation.resourceName);
-              let client = deployCtx.client;
-              if (operation.subscriptionId !== deployCtx.client.subscriptionId) {
-                const azureToken =
-                  await deployCtx.azureAccountProvider?.getAccountCredentialAsync();
-                client = new ResourceManagementClient(azureToken!, operation.subscriptionId);
-              }
-
-              const subOperations = await client.deploymentOperations.list(
-                operation.resourceGroupName,
-                operation.resourceName
-              );
-              subOperations.forEach((sub) => {
-                const subOperation = getRequiredOperation(sub, deployCtx);
-                if (subOperation) {
-                  currentStatus[subOperation.resourceName] = subOperation.status;
+              // get sub operations when resource type is deployments.
+              if (operation.resourceType === ConstantString.DeploymentResourceType) {
+                let client = deployCtx.client;
+                if (operation.subscriptionId !== deployCtx.client.subscriptionId) {
+                  const azureToken =
+                    await deployCtx.ctx.azureAccountProvider?.getAccountCredentialAsync();
+                  client = new ResourceManagementClient(azureToken!, operation.subscriptionId);
                 }
-              });
+
+                const subOperations = await client.deploymentOperations.list(
+                  operation.resourceGroupName,
+                  operation.resourceName
+                );
+                subOperations.forEach((sub) => {
+                  const subOperation = getRequiredOperation(sub, deployCtx);
+                  if (subOperation) {
+                    currentStatus[subOperation.resourceName] = subOperation.status;
+                  }
+                });
+              }
             }
           }
         })
@@ -252,7 +257,7 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
 
       for (const key in currentStatus) {
         if (currentStatus[key] !== previousStatus[key]) {
-          deployCtx.logProvider?.info(
+          deployCtx.ctx.logProvider?.info(
             `[${PluginDisplayName.Solution}] ${key} -> ${currentStatus[key]}`
           );
         }
@@ -261,12 +266,22 @@ export async function pollDeploymentStatus(deployCtx: DeployContext) {
       polledOperations = [];
     } catch (error) {
       tryCount++;
-      if (tryCount > failedCount) {
-        throw error;
+      if (tryCount < maxRetryTimes) {
+        deployCtx.ctx.logProvider?.warning(
+          `[${PluginDisplayName.Solution}] ${deployCtx.deploymentName} -> waiting to get deplomyment status [Retry time: ${tryCount}]`
+        );
+      } else if (tryCount === maxRetryTimes) {
+        const pollError = returnSystemError(
+          error,
+          SolutionSource,
+          SolutionError.FailedToPollArmDeploymentStatus
+        );
+        sendErrorTelemetryThenReturnError(
+          SolutionTelemetryEvent.ArmDeployment,
+          pollError,
+          deployCtx.ctx.telemetryReporter
+        );
       }
-      deployCtx.logProvider?.warning(
-        `[${PluginDisplayName.Solution}] ${deployCtx.deploymentName} -> waiting to get deplomyment status [${tryCount}]`
-      );
     }
   }
 }
@@ -321,8 +336,7 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
   };
 
   const deployCtx: DeployContext = {
-    azureAccountProvider: ctx.azureAccountProvider,
-    logProvider: ctx.logProvider,
+    ctx: ctx,
     finished: false,
     deploymentStartTime: Date.now(),
     client: client,
@@ -453,8 +467,7 @@ export async function doDeployArmTemplatesV3(
   };
 
   const deployCtx: DeployContext = {
-    azureAccountProvider: azureAccountProvider,
-    logProvider: ctx.logProvider,
+    ctx: ctx as any as SolutionContext,
     finished: false,
     deploymentStartTime: Date.now(),
     client: client,
@@ -591,9 +604,21 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       );
     }
   } catch (error) {
-    result = err(
-      returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
-    );
+    if (error instanceof UserError || error instanceof SystemError) {
+      result = err(error);
+    } else if (error instanceof Error) {
+      result = err(
+        returnSystemError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+      );
+    } else {
+      result = err(
+        returnSystemError(
+          new Error(JSON.stringify(error)),
+          SolutionSource,
+          SolutionError.FailedToDeployArmTemplatesToAzure
+        )
+      );
+    }
     sendErrorTelemetryThenReturnError(
       SolutionTelemetryEvent.ArmDeployment,
       result.error,
@@ -637,9 +662,21 @@ export async function deployArmTemplatesV3(
       );
     }
   } catch (error) {
-    result = err(
-      returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
-    );
+    if (error instanceof UserError || error instanceof SystemError) {
+      result = err(error);
+    } else if (error instanceof Error) {
+      result = err(
+        returnSystemError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+      );
+    } else {
+      result = err(
+        returnSystemError(
+          new Error(JSON.stringify(error)),
+          SolutionSource,
+          SolutionError.FailedToDeployArmTemplatesToAzure
+        )
+      );
+    }
     sendErrorTelemetryThenReturnError(
       SolutionTelemetryEvent.ArmDeployment,
       result.error,
@@ -680,7 +717,7 @@ export async function copyParameterJson(
   await fs.ensureDir(parameterFolderPath);
   await fs.writeFile(
     targetParameterFilePath,
-    JSON.stringify(targetParameterContent, undefined, 4).replace(/\r?\n/g, os.EOL)
+    JSON.stringify(targetParameterContent, undefined, 2).replace(/\r?\n/g, os.EOL)
   );
 }
 
@@ -765,9 +802,8 @@ async function doGenerateArmTemplate(
   ctx: SolutionContext,
   selectedPlugins: NamedArmResourcePlugin[]
 ): Promise<Result<any, FxError>> {
-  const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const baseName = generateResourceBaseName(ctx.projectSettings!.appName, ctx.envInfo!.envName);
-  const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+  const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
     (p) => new NamedArmResourcePluginAdaptor(p)
   ); // This function ensures return result won't be empty
   const bicepOrchestrationTemplate = new BicepOrchestrationContent(
@@ -782,10 +818,12 @@ async function doGenerateArmTemplate(
     const pluginContext = getPluginContext(ctx, pluginWithArm.name);
     let result: Result<ArmTemplateResult, FxError>;
     let errMessage = "";
+    let method = "";
     if (
       pluginWithArm.updateArmTemplates &&
       !selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
     ) {
+      method = "updateArmTemplates";
       result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,
         FxError
@@ -795,6 +833,7 @@ async function doGenerateArmTemplate(
       pluginWithArm.generateArmTemplates &&
       selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
     ) {
+      method = "generateArmTemplates";
       result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,
         FxError
@@ -804,6 +843,7 @@ async function doGenerateArmTemplate(
       continue;
     }
     if (result.isOk()) {
+      ctx.logProvider?.info(`[arm] ${plugin.name}.${method} success!`);
       generateArmFromResult(
         result.value,
         bicepOrchestrationTemplate,
@@ -829,10 +869,10 @@ async function doGenerateArmTemplate(
 }
 
 async function doGenerateArmTemplateV3(
-  ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath,
-  activatedPlugins: v3.ResourcePlugin[],
-  addedPlugins: v3.ResourcePlugin[]
+  ctx: v3.ContextWithManifest,
+  inputs: v2.InputsWithProjectPath & { existingResources: string[] },
+  activatedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[],
+  addedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[]
 ): Promise<Result<any, FxError>> {
   const baseName = generateResourceBaseName(ctx.projectSetting.appName, "");
   const bicepOrchestrationTemplate = new BicepOrchestrationContent(
@@ -841,25 +881,26 @@ async function doGenerateArmTemplateV3(
   );
   const moduleProvisionFiles = new Map<string, string>();
   const moduleConfigFiles = new Map<string, string>();
+  const addedSet = new Set<string>();
+  addedPlugins.forEach((p) => addedSet.add(p.name));
   for (const plugin of activatedPlugins) {
     let result: Result<v2.ResourceTemplate, FxError>;
     let errMessage = "";
-    if (
-      plugin.updateResourceTemplate &&
-      !addedPlugins.find((pluginItem) => pluginItem.name === plugin.name)
-    ) {
+    let method = "";
+    const isAdd = addedSet.has(plugin.name);
+    if (plugin.updateResourceTemplate && !isAdd) {
       result = await plugin.updateResourceTemplate(ctx, inputs);
       errMessage = getStrings().solution.UpdateArmTemplateFailNotice;
-    } else if (
-      plugin.generateResourceTemplate &&
-      addedPlugins.find((pluginItem) => pluginItem.name === plugin.name)
-    ) {
+      method = "updateResourceTemplate";
+    } else if (plugin.generateResourceTemplate && isAdd) {
       result = await plugin.generateResourceTemplate(ctx, inputs);
       errMessage = getStrings().solution.GenerateArmTemplateFailNotice;
+      method = "generateResourceTemplate";
     } else {
       continue;
     }
     if (result.isOk()) {
+      ctx.logProvider.info(`[arm] ${plugin.name}.${method} success!`);
       if (result.value.kind === "bicep") {
         const armTemplate = result.value.template as ArmTemplateResult;
         generateArmFromResult(
@@ -1216,8 +1257,7 @@ function generateBicepModuleConfigFilePath(moduleFileName: string) {
 }
 
 function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: string): string {
-  const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-  const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+  const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
     (p) => new NamedArmResourcePluginAdaptor(p)
   ); // This function ensures return result won't be empty
   const stateVariables: Record<string, Record<string, any>> = {};
@@ -1334,7 +1374,7 @@ async function wrapGetDeploymentError(
     const deploymentError = await getDeploymentError(deployCtx, resourceGroupName, deploymentName);
     return ok(deploymentError);
   } catch (error: any) {
-    deployCtx.logProvider?.error(
+    deployCtx.ctx.logProvider?.error(
       `[${PluginDisplayName.Solution}] Failed to get deployment error for ${error.message}.`
     );
     const returnError = new Error(
@@ -1438,12 +1478,24 @@ export function formattedDeploymentError(deploymentError: any): any {
   }
 }
 
+class ArmV2 {
+  async generateArmTemplate(
+    ctx: SolutionContext,
+    selectedPlugins: NamedArmResourcePlugin[] = []
+  ): Promise<Result<any, FxError>> {
+    return generateArmTemplate(ctx, selectedPlugins);
+  }
+  async deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
+    return deployArmTemplates(ctx);
+  }
+}
+
 class Arm {
   async generateArmTemplate(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    activatedPlugins: v3.ResourcePlugin[],
-    addedPlugins: v3.ResourcePlugin[]
+    ctx: v3.ContextWithManifest,
+    inputs: v3.PluginAddResourceInputs,
+    activatedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[],
+    addedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[]
   ): Promise<Result<any, FxError>> {
     return generateArmTemplateV3(ctx, inputs, activatedPlugins, addedPlugins);
   }
@@ -1458,5 +1510,6 @@ class Arm {
 }
 
 const arm = new Arm();
+export const armV2 = new ArmV2();
 
 export default arm;

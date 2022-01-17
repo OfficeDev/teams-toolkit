@@ -6,7 +6,7 @@
  */
 
 import { AppPackageFolderName, BuildFolderName } from "@microsoft/teamsfx-api";
-import { expect } from "chai";
+import * as chai from "chai";
 import fs from "fs-extra";
 import path from "path";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
@@ -19,6 +19,7 @@ import {
   SimpleAuthValidator,
   SqlValidator,
 } from "../../commonlib";
+import { CliHelper } from "../../commonlib/cliHelper";
 import {
   cleanUp,
   execAsync,
@@ -55,21 +56,10 @@ describe("Multi Env Happy Path for Azure", function () {
         `[Successfully] scaffold to ${projectPath}, stdout: '${result.stdout}', stderr: '${result.stderr}''`
       );
 
-      // set subscription
-      result = await execAsync(`teamsfx account set --subscription ${subscription}`, {
-        cwd: projectPath,
-        env: processEnv,
-        timeout: 0,
-      });
-      console.log(`[Successfully] set sub, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
+      await CliHelper.setSubscription(subscription, projectPath, processEnv);
 
       // add env
-      result = await execAsync(`teamsfx env add ${env} --env dev`, {
-        cwd: projectPath,
-        env: processEnv,
-        timeout: 0,
-      });
-      console.log(`[Successfully] env add, stdout: '${result.stdout}', stderr: '${result.stderr}'`);
+      await CliHelper.addEnv(env, projectPath, processEnv);
 
       // update SKU from free to B1 to prevent free SKU limit error
       await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
@@ -83,8 +73,8 @@ describe("Multi Env Happy Path for Azure", function () {
         timeout: 0,
       });
       const envs = result.stdout.trim().split(/\r?\n/).sort();
-      expect(envs).to.deep.equal(["dev", "e2e"]);
-      expect(result.stderr).to.be.empty;
+      chai.expect(envs).to.deep.equal(["dev", "e2e"]);
+      chai.expect(result.stderr).to.be.empty;
       console.log(
         `[Successfully] env list, stdout: '${result.stdout}', stderr: '${result.stderr}'`
       );
@@ -102,6 +92,7 @@ describe("Multi Env Happy Path for Azure", function () {
         `[Successfully] provision, stdout: '${result.stdout}', stderr: '${result.stderr}'`
       );
 
+      let functionValidator: FunctionValidator;
       {
         // Validate provision
         // Get context
@@ -116,24 +107,24 @@ describe("Multi Env Happy Path for Azure", function () {
         await AadValidator.validate(aad);
 
         // Validate Simple Auth
-        const simpleAuth = SimpleAuthValidator.init(context);
-        await SimpleAuthValidator.validate(simpleAuth, aad, "B1", true);
+        const simpleAuth = new SimpleAuthValidator(context, projectPath, env);
+        await simpleAuth.validate();
 
         // Validate Tab Frontend
         const frontend = FrontendValidator.init(context, true);
         await FrontendValidator.validateProvision(frontend);
 
         // Validate Function App
-        const func = FunctionValidator.init(context, true);
-        await FunctionValidator.validateProvision(func, false, true);
+        functionValidator = new FunctionValidator(context, projectPath, env);
+        await functionValidator.validateProvision();
 
         // Validate SQL
         await SqlValidator.init(context);
         await SqlValidator.validateSql();
 
         // Validate Bot Provision
-        const bot = BotValidator.init(context, true);
-        await BotValidator.validateProvision(bot, true);
+        const bot = new BotValidator(context, projectPath, env);
+        await bot.validateProvision();
       }
 
       // deploy
@@ -144,7 +135,7 @@ describe("Multi Env Happy Path for Azure", function () {
       });
 
       {
-        // Validate provision
+        // Validate deployment
         // Get context
         const contextResult = await loadContext(projectPath, env);
         if (contextResult.isErr()) {
@@ -157,12 +148,11 @@ describe("Multi Env Happy Path for Azure", function () {
         await FrontendValidator.validateDeploy(frontend);
 
         // Validate Function App
-        const func = FunctionValidator.init(context, true);
-        await FunctionValidator.validateDeploy(func);
+        await functionValidator.validateDeploy();
 
         // Validate Bot Deploy
-        const bot = BotValidator.init(context, true);
-        await BotValidator.validateDeploy(bot);
+        const bot = new BotValidator(context, projectPath, env);
+        await bot.validateProvision();
       }
 
       // validate manifest
@@ -174,7 +164,7 @@ describe("Multi Env Happy Path for Azure", function () {
 
       {
         // Validate validate manifest
-        expect(result.stderr).to.be.empty;
+        chai.expect(result.stderr).to.be.empty;
       }
 
       // update manifest
@@ -186,7 +176,7 @@ describe("Multi Env Happy Path for Azure", function () {
 
       {
         // Validate update manifest
-        expect(result.stderr).to.be.empty;
+        chai.expect(result.stderr).to.be.empty;
       }
 
       // package
@@ -199,7 +189,7 @@ describe("Multi Env Happy Path for Azure", function () {
       {
         // Validate package
         const file = `${projectPath}/${BuildFolderName}/${AppPackageFolderName}/appPackage.${env}.zip`;
-        expect(await fs.pathExists(file)).to.be.true;
+        chai.expect(await fs.pathExists(file)).to.be.true;
       }
 
       // publish

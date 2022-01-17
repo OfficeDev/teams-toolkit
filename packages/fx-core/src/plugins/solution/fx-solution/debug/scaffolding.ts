@@ -34,7 +34,7 @@ export async function scaffoldLocalDebugSettings(
   ctx: v2.Context,
   inputs: Inputs,
   localSettings?: Json
-): Promise<Result<Void, FxError>> {
+): Promise<Result<Json, FxError>> {
   return await _scaffoldLocalDebugSettings(
     ctx.projectSetting,
     inputs,
@@ -51,13 +51,14 @@ export async function scaffoldLocalDebugSettingsV1(
   if (!ctx.projectSettings || !ctx.answers || !ctx.telemetryReporter || !ctx.logProvider) {
     return err(ScaffoldLocalDebugSettingsV1Error());
   }
-  return await _scaffoldLocalDebugSettings(
+  await _scaffoldLocalDebugSettings(
     ctx.projectSettings,
     ctx.answers,
     ctx.telemetryReporter,
     ctx.logProvider,
     ctx.cryptoProvider
   );
+  return ok(Void);
 }
 
 export async function _scaffoldLocalDebugSettings(
@@ -67,13 +68,14 @@ export async function _scaffoldLocalDebugSettings(
   logProvider: LogProvider,
   cryptoProvider: CryptoProvider,
   localSettings?: Json
-): Promise<Result<Void, FxError>> {
+): Promise<Result<Json, FxError>> {
   const isSpfx = ProjectSettingsHelper.isSpfx(projectSetting);
   const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSetting);
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(projectSetting);
-  const includeAuth = ProjectSettingsHelper.includeAuth(projectSetting);
+  const includeAAD = ProjectSettingsHelper.includeAAD(projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSetting);
   const programmingLanguage = projectSetting.programmingLanguage ?? "";
 
   const telemetryProperties = {
@@ -82,7 +84,7 @@ export async function _scaffoldLocalDebugSettings(
     frontend: includeFrontend ? "true" : "false",
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
-    auth: includeAuth ? "true" : "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "programming-language": programmingLanguage,
   };
   TelemetryUtils.init(telemetryReporter);
@@ -150,7 +152,7 @@ export async function _scaffoldLocalDebugSettings(
           includeFrontend,
           includeBackend,
           includeBot,
-          includeAuth,
+          includeSimpleAuth,
           isMigrateFromV1,
           programmingLanguage
         );
@@ -183,7 +185,13 @@ export async function _scaffoldLocalDebugSettings(
         );
 
         // generate localSettings.json
-        await scaffoldLocalSettingsJson(projectSetting, inputs, cryptoProvider, localSettings);
+
+        localSettings = await scaffoldLocalSettingsJson(
+          projectSetting,
+          inputs,
+          cryptoProvider,
+          localSettings
+        );
 
         // add 'npm install' scripts into root package.json
         const packageJsonPath = inputs.projectPath;
@@ -237,7 +245,7 @@ export async function _scaffoldLocalDebugSettings(
     TelemetryEventName.scaffoldLocalDebugSettings,
     telemetryProperties
   );
-  return ok(Void);
+  return ok(localSettings as Json);
 }
 
 async function scaffoldLocalSettingsJson(
@@ -245,7 +253,7 @@ async function scaffoldLocalSettingsJson(
   inputs: Inputs,
   cryptoProvider: CryptoProvider,
   localSettings?: Json
-): Promise<void> {
+): Promise<Json> {
   const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath!);
 
   const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSetting);
@@ -266,4 +274,5 @@ async function scaffoldLocalSettingsJson(
     localSettings = localSettingsProvider.initV2(includeFrontend, includeBackend, includeBot);
     await localSettingsProvider.saveJson(localSettings, cryptoProvider);
   }
+  return localSettings;
 }

@@ -14,6 +14,7 @@ export class Constants {
   static FrontendIndexDocument = "index.html";
   static FrontendErrorDocument = "index.html";
   static FrontendSuffix = "fe";
+  static FrontendIndexPath = `/${Constants.FrontendIndexDocument}#`;
 
   static EmptyString = "";
 
@@ -115,7 +116,11 @@ export class TelemetryEvent {
   static readonly GenerateArmTemplates = "generate-arm-templates";
   static readonly UpdateArmTemplates = "update-arm-templates";
   static readonly ExecuteUserTask = "execute-user-task";
+
+  static readonly LocalDebug = "local-debug";
+
   static readonly SaveEnvFile = "frontend-save-env-file";
+  static readonly LoadEnvFile = "frontend-load-env-file";
 }
 
 export class TelemetryKey {
@@ -134,18 +139,8 @@ export class TelemetryValue {
   static readonly SystemError = "system";
 }
 
-export class AzureErrorCode {
-  static readonly ReservedResourceName = "ReservedResourceName";
-  static readonly StorageAccountAlreadyTaken = "StorageAccountAlreadyTaken";
-  static readonly StorageAccountAlreadyExists = "StorageAccountAlreadyExists";
-}
-
 export class RegularExpr {
   static readonly AllCharToBeSkippedInName = /[^a-zA-Z0-9]/g;
   static readonly FrontendStorageNamePattern = /^[a-z0-9]{3,24}$/;
   static readonly ReplaceTemplateExt = /\.tpl$/;
-}
-
-export class AzureInfo {
-  static readonly RequiredResourceProviders = ["Microsoft.Storage"];
 }

@@ -74,12 +74,10 @@ describe("solution.debug.scaffolding", () => {
           solutionSettings: {
             name: "",
             version: "",
-            activeResourcePlugins: [
-              "fx-resource-aad-app-for-teams",
-              "fx-resource-simple-auth",
-              "fx-resource-frontend-hosting",
-              "fx-resource-function",
-            ],
+            hostType: "Azure",
+            capabilities: ["Tab"],
+            azureResources: ["function"],
+            activeResourcePlugins: ["fx-resource-simple-auth"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -135,11 +133,9 @@ describe("solution.debug.scaffolding", () => {
           solutionSettings: {
             name: "",
             version: "",
-            activeResourcePlugins: [
-              "fx-resource-aad-app-for-teams",
-              "fx-resource-simple-auth",
-              "fx-resource-frontend-hosting",
-            ],
+            hostType: "Azure",
+            capabilities: ["Tab"],
+            activeResourcePlugins: ["fx-resource-simple-auth"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -191,7 +187,8 @@ describe("solution.debug.scaffolding", () => {
           solutionSettings: {
             name: "",
             version: "",
-            activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-bot"],
+            hostType: "Azure",
+            capabilities: ["Bot"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -243,13 +240,10 @@ describe("solution.debug.scaffolding", () => {
           solutionSettings: {
             name: "",
             version: "",
-            activeResourcePlugins: [
-              "fx-resource-aad-app-for-teams",
-              "fx-resource-simple-auth",
-              "fx-resource-frontend-hosting",
-              "fx-resource-function",
-              "fx-resource-bot",
-            ],
+            hostType: "Azure",
+            capabilities: ["Tab", "Bot"],
+            azureResources: ["function"],
+            activeResourcePlugins: ["fx-resource-simple-auth"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -305,12 +299,9 @@ describe("solution.debug.scaffolding", () => {
           solutionSettings: {
             name: "",
             version: "",
-            activeResourcePlugins: [
-              "fx-resource-aad-app-for-teams",
-              "fx-resource-frontend-hosting",
-              "fx-resource-simple-auth",
-              "fx-resource-bot",
-            ],
+            hostType: "Azure",
+            capabilities: ["Tab", "Bot"],
+            activeResourcePlugins: ["fx-resource-simple-auth"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -345,7 +336,7 @@ describe("solution.debug.scaffolding", () => {
         solutionSettings: {
           name: "",
           version: "",
-          activeResourcePlugins: ["fx-resource-spfx"],
+          hostType: "SPFx",
         },
       };
       const v2Context = new MockedV2Context(projectSetting);
@@ -382,7 +373,10 @@ describe("solution.debug.scaffolding", () => {
         solutionSettings: {
           name: "",
           version: "",
-          activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-function"],
+          hostType: "Azure",
+          capabilities: ["Tab"],
+          azureResources: ["function"],
+          activeResourcePlugins: ["fx-resource-simple-auth"],
         },
       };
       const v2Context = new MockedV2Context(projectSetting);
@@ -404,7 +398,6 @@ describe("solution.debug.scaffolding", () => {
         solutionSettings: {
           name: "",
           version: "",
-          activeResourcePlugins: [],
         },
       };
 
@@ -443,7 +436,8 @@ describe("solution.debug.scaffolding", () => {
           solutionSettings: {
             name: "",
             version: "",
-            activeResourcePlugins: ["fx-resource-frontend-hosting"],
+            hostType: "Azure",
+            capabilities: ["Tab"],
             migrateFromV1: true,
           },
           programmingLanguage: parameter.programmingLanguage,
@@ -475,13 +469,10 @@ describe("solution.debug.scaffolding", () => {
         solutionSettings: {
           name: "",
           version: "",
-          activeResourcePlugins: [
-            "fx-resource-aad-app-for-teams",
-            "fx-resource-simple-auth",
-            "fx-resource-frontend-hosting",
-            "fx-resource-function",
-            "fx-resource-bot",
-          ],
+          hostType: "Azure",
+          capabilities: ["Tab", "Bot"],
+          azureResources: ["function"],
+          activeResourcePlugins: ["fx-resource-simple-auth"],
         },
         programmingLanguage: "javascript",
       };

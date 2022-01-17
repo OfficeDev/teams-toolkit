@@ -16,7 +16,12 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { SPFXQuestionNames } from ".";
 import { Utils, sleep } from "./utils/utils";
-import { Constants, PlaceHolders, PreDeployProgressMessage } from "./utils/constants";
+import {
+  Constants,
+  DeployProgressMessage,
+  PlaceHolders,
+  PreDeployProgressMessage,
+} from "./utils/constants";
 import {
   BuildSPPackageError,
   CreateAppCatalogFailedError,
@@ -284,12 +289,14 @@ export class SPFxPluginImpl {
           "warn",
           util.format(getStrings().plugins.SPFx.createAppCatalogNotice, tenant.value),
           true,
+          "OK",
           Constants.READ_MORE
         );
         const confirm = res?.isOk() ? res.value : undefined;
         switch (confirm) {
           case "OK":
             try {
+              await progressHandler?.next(DeployProgressMessage.CreateSPAppCatalog);
               await SPOClient.createAppCatalog(spoToken);
             } catch (e: any) {
               return err(CreateAppCatalogFailedError(e));
@@ -297,16 +304,23 @@ export class SPFxPluginImpl {
             let retry = 0;
             appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
             while (appCatalogSite == null && retry < Constants.APP_CATALOG_MAX_TIMES) {
+              ctx.logProvider?.warning(`No tenant app catalog found, retry: ${retry}`);
               await sleep(Constants.APP_CATALOG_REFRESH_TIME);
               appCatalogSite = await SPOClient.getAppCatalogSite(spoToken);
               retry += 1;
             }
             if (appCatalogSite) {
               SPOClient.setBaseUrl(appCatalogSite);
+              ctx.logProvider?.info(
+                `Sharepoint tenant app catalog ${appCatalogSite} created, wait for a few minutes to be active.`
+              );
+              await sleep(Constants.APP_CATALOG_ACTIVE_TIME);
             } else {
               return err(
                 CreateAppCatalogFailedError(
-                  new Error("Cannot get app catalog site url after creation.")
+                  new Error(
+                    "Cannot get app catalog site url after creation. You may need wait a few minutes and retry."
+                  )
                 )
               );
             }
@@ -327,6 +341,7 @@ export class SPFxPluginImpl {
       const fileName = path.parse(appPackage).base;
       const bytes = await fs.readFile(appPackage);
       try {
+        await progressHandler?.next(DeployProgressMessage.UploadAndDeploy);
         await SPOClient.uploadAppPackage(spoToken, fileName, bytes);
       } catch (e: any) {
         if (e.response?.status === 403) {

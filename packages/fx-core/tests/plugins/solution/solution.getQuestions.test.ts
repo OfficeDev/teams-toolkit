@@ -2,15 +2,13 @@
 // Licensed under the MIT license.
 import {
   AzureSolutionSettings,
-  ConfigMap,
   Func,
   Inputs,
-  Json,
+  MultiSelectQuestion,
   ok,
+  OptionItem,
   Platform,
   ProjectSettings,
-  SolutionConfig,
-  SolutionContext,
   Stage,
   TokenProvider,
   v2,
@@ -24,6 +22,7 @@ import Container from "typedi";
 import * as uuid from "uuid";
 import "../../../src/plugins/resource/apim/v2";
 import "../../../src/plugins/resource/appstudio/v2";
+import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
 import "../../../src/plugins/resource/bot/v2";
 import "../../../src/plugins/resource/frontend/v2";
 import "../../../src/plugins/resource/function/v2";
@@ -35,8 +34,10 @@ import {
   SOLUTION_PROVISION_SUCCEEDED,
 } from "../../../src/plugins/solution/fx-solution/constants";
 import {
+  BotOptionItem,
   HostTypeOptionAzure,
   HostTypeOptionSPFx,
+  MessageExtensionItem,
   TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import { ResourcePluginsV2 } from "../../../src/plugins/solution/fx-solution/ResourcePluginContainer";
@@ -45,6 +46,7 @@ import {
   getQuestionsForScaffolding,
   getQuestionsForUserTask,
 } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
+import { BuiltInResourcePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { MockGraphTokenProvider, MockSharepointTokenProvider } from "../../core/utils";
 import { MockedAppStudioProvider, MockedAzureAccountProvider, MockedV2Context } from "./util";
 
@@ -52,11 +54,7 @@ chai.use(chaiAsPromised);
 const expect = chai.expect;
 const functionPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
 const sqlPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SqlPlugin);
-const apimPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.ApimPlugin);
 const spfxPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.SpfxPlugin);
-
-const localDebugPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.LocalDebugPlugin);
-const appStudioPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin);
 const frontendPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FrontendPlugin);
 const botPluginV2 = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.BotPlugin);
 const mockedProvider: TokenProvider = {
@@ -72,7 +70,7 @@ const envInfo: EnvInfoV2 = {
 };
 
 describe("getQuestionsForScaffolding()", async () => {
-  const mocker = sinon.createSandbox();
+  const sandbox = sinon.createSandbox();
   const projectSettings: ProjectSettings = {
     appName: "my app",
     projectId: uuid.v4(),
@@ -104,7 +102,9 @@ describe("getQuestionsForScaffolding()", async () => {
     };
   });
 
-  afterEach(() => {});
+  afterEach(() => {
+    sandbox.restore();
+  });
 
   it("getQuestionsForScaffolding", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);
@@ -199,8 +199,7 @@ describe("getQuestionsForScaffolding()", async () => {
       assert.isTrue(node !== undefined && node.data !== undefined);
     }
   });
-
-  it("getQuestionsForUserTask - addCapability", async () => {
+  it("getQuestionsForUserTask - addCapability for SPFx failed", async () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = {
       platform: Platform.VSCode,
@@ -222,22 +221,89 @@ describe("getQuestionsForScaffolding()", async () => {
       );
       assert.isTrue(res.isErr());
     }
-    {
-      (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
-        HostTypeOptionAzure.id;
-      const res = await getQuestionsForUserTask(
-        mockedCtx,
-        mockedInputs,
-        func,
-        envInfo,
-        mockedProvider
+  });
+
+  it("getQuestionsForUserTask - addCapability success", async () => {
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.grantPermission,
+    };
+    const func: Func = {
+      method: "addCapability",
+      namespace: "fx-solution-azure",
+    };
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    sandbox
+      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+        ) => {
+          return ok(false);
+        }
       );
-      assert.isTrue(res.isOk());
-      if (res.isOk()) {
-        const node = res.value;
-        assert.isTrue(node !== undefined && node.data !== undefined);
+    (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+      HostTypeOptionAzure.id;
+    const res = await getQuestionsForUserTask(
+      mockedCtx,
+      mockedInputs,
+      func,
+      envInfo,
+      mockedProvider
+    );
+    assert.isTrue(res.isOk() && res.value && res.value.data !== undefined);
+    if (res.isOk()) {
+      const node = res.value;
+      assert.isTrue(
+        node &&
+          node.data &&
+          node.data.type === "multiSelect" &&
+          node.data.staticOptions.length === 3
+      );
+      if (node && node.data && node.data.type === "multiSelect") {
+        assert.deepEqual((node.data as MultiSelectQuestion).staticOptions as OptionItem[], [
+          TabOptionItem,
+          BotOptionItem,
+          MessageExtensionItem,
+        ]);
       }
     }
+  });
+  it("getQuestionsForUserTask - addCapability failed because of capabilityExceedLimit", async () => {
+    const mockedCtx = new MockedV2Context(projectSettings);
+    const mockedInputs: Inputs = {
+      platform: Platform.VSCode,
+      stage: Stage.grantPermission,
+    };
+    const func: Func = {
+      method: "addCapability",
+      namespace: "fx-solution-azure",
+    };
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    sandbox
+      .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
+      .callsFake(
+        async (
+          ctx: v2.Context,
+          inputs: v2.InputsWithProjectPath,
+          capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
+        ) => {
+          return ok(true);
+        }
+      );
+    (mockedCtx.projectSetting.solutionSettings as AzureSolutionSettings).hostType =
+      HostTypeOptionAzure.id;
+    const res = await getQuestionsForUserTask(
+      mockedCtx,
+      mockedInputs,
+      func,
+      envInfo,
+      mockedProvider
+    );
+    assert.isTrue(res.isOk() && res.value === undefined);
   });
 
   it("getQuestionsForUserTask - addResource", async () => {

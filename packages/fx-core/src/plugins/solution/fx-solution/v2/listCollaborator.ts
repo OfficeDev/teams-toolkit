@@ -25,6 +25,7 @@ import {
   CollaborationState,
   Collaborator,
   getHashedEnv,
+  getStrings,
   ListCollaboratorResult,
   TeamsAppAdmin,
 } from "../../../../common";
@@ -48,6 +49,7 @@ import { getPluginAndContextArray } from "./utils";
 import { Container } from "typedi";
 import { flattenConfigMap } from "../../../resource/utils4v2";
 import { REMOTE_TEAMS_APP_TENANT_ID } from "..";
+import * as util from "util";
 
 export async function executeListCollaboratorV2(
   ctx: v2.Context,
@@ -190,7 +192,7 @@ async function listCollaboratorImpl(
 
   let errorMsg = "";
   if (errors.length > 0) {
-    errorMsg += `Failed to list collaborator for the project.\n Error details: \n`;
+    errorMsg += getStrings().solution.Collaboration.FailedToListCollaborators;
     for (const fxError of errors) {
       errorMsg += fxError.error.message + "\n";
     }
@@ -278,6 +280,16 @@ async function listCollaboratorImpl(
     if (platform === Platform.CLI) {
       ui?.showMessage("info", message, false);
     } else if (platform === Platform.VSCode) {
+      ui?.showMessage(
+        "info",
+        util.format(
+          getStrings().solution.Collaboration.ListCollaboratorsSuccess,
+          CollaborationUtil.isSpfxProject(param.ctx)
+            ? getStrings().solution.Collaboration.WithAadApp
+            : ""
+        ),
+        false
+      );
       logProvider?.info(message);
     }
   }

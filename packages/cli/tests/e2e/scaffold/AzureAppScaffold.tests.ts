@@ -1,12 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import path from "path";
-
 /**
  * @author Zhijie Huang <zhijie.huang@microsoft.com>
  */
 
+import path from "path";
 import { BotValidator, FrontendValidator, FunctionValidator } from "../../commonlib";
 
 import { execAsync, getTestFolder, getUniqueAppName, cleanUpLocalProject } from "../commonUtils";
@@ -44,9 +43,9 @@ describe("Azure App Scaffold", function () {
     console.log(`[Successfully] scaffold to ${projectPath}`);
 
     {
-      FrontendValidator.validateScaffold(projectPath, lang);
-      FunctionValidator.validateScaffold(projectPath, lang);
-      BotValidator.validateScaffold(projectPath, lang);
+      await FrontendValidator.validateScaffold(projectPath, lang);
+      await BotValidator.validateScaffold(projectPath, lang);
+      await FunctionValidator.validateScaffold(projectPath, lang);
     }
   });
 });

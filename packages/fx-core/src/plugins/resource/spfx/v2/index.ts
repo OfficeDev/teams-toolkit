@@ -10,6 +10,7 @@ import {
   Result,
   Void,
   TokenProvider,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
@@ -37,7 +38,8 @@ export class SpfxPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.SpfxPlugin)
   plugin!: SpfxPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 

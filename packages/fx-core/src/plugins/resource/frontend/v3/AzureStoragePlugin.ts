@@ -47,24 +47,21 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     const pluginCtx = { plugins: solutionSettings.activeResourcePlugins };
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
-      FrontendPathInfo.BicepTemplateRelativeDir
+      path.join("plugins", "resource", "storage", "bicep")
     );
     const provisionFilePath = path.join(bicepTemplateDir, Bicep.ProvisionFileName);
-    const moduleProvisionFilePath = path.join(
-      bicepTemplateDir,
-      FrontendPathInfo.ModuleProvisionFileName
-    );
+    const moduleProvisionFilePath = path.join(bicepTemplateDir, "azureStorageProvision.bicep");
     const provisionOrchestration = await generateBicepFromFile(provisionFilePath, pluginCtx);
     const provisionModules = await generateBicepFromFile(moduleProvisionFilePath, pluginCtx);
 
     const result: ArmTemplateResult = {
       Provision: {
         Orchestration: provisionOrchestration,
-        Modules: { frontendHosting: provisionModules },
+        Modules: { azureStorage: provisionModules },
       },
       Reference: {
-        endpoint: FrontendOutputBicepSnippet.Endpoint,
-        domain: FrontendOutputBicepSnippet.Domain,
+        endpoint: "provisionOutputs.azureStorageOutput.value.endpoint",
+        domain: "provisionOutputs.azureStorageOutput.value.domain",
       },
     };
     return ok({ kind: "bicep", template: result });
@@ -77,8 +74,8 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     ctx.logProvider.info(Messages.StartUpdateArmTemplates(this.name));
     const result: ArmTemplateResult = {
       Reference: {
-        endpoint: FrontendOutputBicepSnippet.Endpoint,
-        domain: FrontendOutputBicepSnippet.Domain,
+        endpoint: "provisionOutputs.azureStorageOutput.value.endpoint",
+        domain: "provisionOutputs.azureStorageOutput.value.domain",
       },
     };
     return ok({ kind: "bicep", template: result });

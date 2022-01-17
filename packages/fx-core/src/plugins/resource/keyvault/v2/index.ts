@@ -1,7 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureSolutionSettings, FxError, Inputs, Result, v2 } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionSettings,
+  FxError,
+  Inputs,
+  ProjectSettings,
+  Result,
+  v2,
+} from "@microsoft/teamsfx-api";
 import { Context, ResourcePlugin } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { KeyVaultPlugin } from "..";
@@ -19,7 +26,8 @@ export class KeyVaultPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.KeyVaultPlugin)
   plugin!: KeyVaultPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     const azureResources = solutionSettings.azureResources || [];
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&

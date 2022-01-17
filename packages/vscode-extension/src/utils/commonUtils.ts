@@ -281,7 +281,7 @@ export async function getM365TenantFromEnv(env: string): Promise<string | undefi
     return undefined;
   }
 
-  return provisionResult?.[PluginNames.AAD]?.tenantId;
+  return provisionResult?.[PluginNames.SOLUTION]?.teamsAppTenantId;
 }
 
 export async function getResourceGroupNameFromEnv(env: string): Promise<string | undefined> {

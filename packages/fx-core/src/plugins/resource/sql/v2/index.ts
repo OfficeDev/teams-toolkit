@@ -5,6 +5,7 @@ import {
   AzureSolutionSettings,
   FxError,
   Inputs,
+  ProjectSettings,
   QTreeNode,
   Result,
   TokenProvider,
@@ -38,7 +39,8 @@ export class SqlPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.SqlPlugin)
   plugin!: SqlPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 

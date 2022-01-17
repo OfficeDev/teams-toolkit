@@ -57,7 +57,12 @@
     "ProvisionFinishNotice": "[%s] Provison finished!",
     "DeployStartNotice": "[%s] Deployment start.",
     "SelectedPluginsToDeployNotice": "[%s] Selected plugins to deploy: %s",
-    "PublishStartNotice": "[%s] Publish start."
+    "PublishStartNotice": "[%s] Publish start.",
+    "Collaboration": {
+      "ListCollaboratorsSuccess": "List M365 Teams App%s owners success, you can view it in Teams Toolkit output window",
+      "WithAadApp": "(With AAD App)",
+      "FailedToListCollaborators": "Failed to list Teams App owners for the project.\nError details: \n"
+    }
   },
   "plugins": {
     "SPFx": {

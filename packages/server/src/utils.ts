@@ -20,20 +20,23 @@ import { CustomizeFuncRequestType, IServerFxError } from "./apis";
 import { setFunc } from "./customizedFuncAdapter";
 
 export async function getResponseWithErrorHandling<T>(
-  promise: Promise<T>
+  promise: Promise<Result<T, FxError>>
 ): Promise<Result<T, FxError>> {
   return new Promise(async (resolve) => {
     promise
       .then((v) => {
-        resolve(ok(v));
+        if ("error" in v && v.error != null) {
+          resolve(err(v.error));
+        } else {
+          if ("value" in v && v.value !== null) {
+            resolve(ok(v.value));
+          } else {
+            resolve(ok(undefined as any));
+          }
+        }
       })
       .catch((e) => {
-        /// TODO: this part needs to be refined.
-        if (e.data) {
-          const fxError = e.data as FxError;
-          fxError.source = "VS";
-          resolve(err(fxError));
-        } else resolve(err(assembleError(e)));
+        resolve(err(assembleError(e, "Fx-VS")));
       });
   });
 }

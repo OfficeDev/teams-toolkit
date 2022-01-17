@@ -140,37 +140,43 @@ export const RequestTypes = {
    */
   [Namespaces.Azure]: {
     getAccountCredential: new RequestType0<
-      { accessToken: string; tokenJsonString: string },
-      FxError
+      Result<{ accessToken: string; tokenJsonString: string }, FxError>,
+      Error
     >(`${Namespaces.Azure}/getAccountCredentialRequest`),
-    getJsonObject: new RequestType0<string, FxError>(`${Namespaces.Azure}/getJsonObjectRequest`),
-    listSubscriptions: new RequestType0<SubscriptionInfo[], FxError>(
+    getJsonObject: new RequestType0<Result<string, FxError>, Error>(
+      `${Namespaces.Azure}/getJsonObjectRequest`
+    ),
+    listSubscriptions: new RequestType0<Result<SubscriptionInfo[], FxError>, Error>(
       `${Namespaces.Azure}/listSubscriptionsRequest`
     ),
-    setSubscription: new RequestType1<string, undefined, FxError>(
+    setSubscription: new RequestType1<string, Result<undefined, FxError>, Error>(
       `${Namespaces.Azure}/setSubscriptionRequest`
     ),
-    getSelectedSubscription: new RequestType0<SubscriptionInfo | undefined, FxError>(
+    getSelectedSubscription: new RequestType0<Result<SubscriptionInfo | undefined, FxError>, Error>(
       `${Namespaces.Azure}/getSelectedSubscriptionRequest`
     ),
   },
   [Namespaces.Graph]: {
-    getAccessToken: new RequestType0<string, FxError>(`${Namespaces.Graph}/getAccessTokenRequest`),
-    getJsonObject: new RequestType0<string, FxError>(`${Namespaces.Graph}/getJsonObjectRequest`),
+    getAccessToken: new RequestType0<Result<string, FxError>, Error>(
+      `${Namespaces.Graph}/getAccessTokenRequest`
+    ),
+    getJsonObject: new RequestType0<Result<string, FxError>, Error>(
+      `${Namespaces.Graph}/getJsonObjectRequest`
+    ),
   },
   [Namespaces.AppStudio]: {
-    getAccessToken: new RequestType0<string, FxError>(
+    getAccessToken: new RequestType0<Result<string, FxError>, Error>(
       `${Namespaces.AppStudio}/getAccessTokenRequest`
     ),
-    getJsonObject: new RequestType0<string, FxError>(
+    getJsonObject: new RequestType0<Result<string, FxError>, Error>(
       `${Namespaces.AppStudio}/getJsonObjectRequest`
     ),
   },
   [Namespaces.SharePoint]: {
-    getAccessToken: new RequestType0<string, FxError>(
+    getAccessToken: new RequestType0<Result<string, FxError>, Error>(
       `${Namespaces.SharePoint}/getAccessTokenRequest`
     ),
-    getJsonObject: new RequestType0<string, FxError>(
+    getJsonObject: new RequestType0<Result<string, FxError>, Error>(
       `${Namespaces.SharePoint}/getJsonObjectRequest`
     ),
   },
@@ -180,25 +186,25 @@ export const RequestTypes = {
    * TODO: add the progress part.
    */
   [Namespaces.UserInteraction]: {
-    selectOption: new RequestType1<SingleSelectConfig, SingleSelectResult, FxError>(
+    selectOption: new RequestType1<SingleSelectConfig, Result<SingleSelectResult, FxError>, Error>(
       `${Namespaces.UserInteraction}/selectOptionRequest`
     ),
-    selectOptions: new RequestType1<MultiSelectConfig, MultiSelectResult, FxError>(
+    selectOptions: new RequestType1<MultiSelectConfig, Result<MultiSelectResult, FxError>, Error>(
       `${Namespaces.UserInteraction}/selectOptionsRequest`
     ),
-    inputText: new RequestType1<InputTextConfig, InputTextResult, FxError>(
+    inputText: new RequestType1<InputTextConfig, Result<InputTextResult, FxError>, Error>(
       `${Namespaces.UserInteraction}/inputTextRequest`
     ),
-    openUrl: new RequestType1<string, boolean, FxError>(
+    openUrl: new RequestType1<string, Result<boolean, FxError>, Error>(
       `${Namespaces.UserInteraction}/openUrlRequest`
     ),
-    selectFile: new RequestType1<SelectFileConfig, SelectFileResult, FxError>(
+    selectFile: new RequestType1<SelectFileConfig, Result<SelectFileResult, FxError>, Error>(
       `${Namespaces.UserInteraction}/selectFileRequest`
     ),
-    selectFiles: new RequestType1<SelectFilesConfig, SelectFilesResult, FxError>(
+    selectFiles: new RequestType1<SelectFilesConfig, Result<SelectFilesResult, FxError>, Error>(
       `${Namespaces.UserInteraction}/selectFilesRequest`
     ),
-    selectFolder: new RequestType1<SelectFolderConfig, SelectFolderResult, FxError>(
+    selectFolder: new RequestType1<SelectFolderConfig, Result<SelectFolderResult, FxError>, Error>(
       `${Namespaces.UserInteraction}/selectFolderRequest`
     ),
     showMessage: new RequestType4<
@@ -206,8 +212,8 @@ export const RequestTypes = {
       string | Array<{ content: string; color: Colors }>,
       boolean,
       string[],
-      string | undefined,
-      FxError
+      Result<string | undefined, FxError>,
+      Error
     >(`${Namespaces.UserInteraction}/showMessageRequest`),
   },
 };

@@ -4,12 +4,11 @@
 
 import { ProjectSettings } from "@microsoft/teamsfx-api";
 import * as path from "path";
+import detectPort from "detect-port";
 
 import { FolderName } from "./constants";
 import { loadTeamsFxDevScript } from "./packageJsonHelper";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
-
-const detect = require("detect-port");
 
 const frontendPortsV1 = [3000];
 const frontendPorts = [53000];
@@ -23,14 +22,13 @@ const botDebugPorts = [9239];
 const botServicePorts = [3978];
 
 async function detectPortListening(port: number): Promise<boolean> {
-  return detect(port)
-    .then((portChosen: number) => {
-      return portChosen !== port;
-    })
-    .catch(() => {
-      // ignore any error to not block debugging
-      return false;
-    });
+  try {
+    const portChosen = await detectPort(port);
+    return portChosen !== port;
+  } catch {
+    // ignore any error to not block debugging
+    return false;
+  }
 }
 
 export async function getPortsInUse(

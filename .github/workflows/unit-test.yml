@@ -18,7 +18,7 @@ on:
 
 jobs:
   source-branch-test:
-    if: ${{ github.event_name == 'pull_request' || github.event.pull_request.merged == true }}
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     outputs:
       coverages: ${{ steps.unit-test.outputs.coverages }}
@@ -135,7 +135,7 @@ jobs:
           done
 
   report-coverage:
-    if: ${{ github.event_name == 'push' }}
+    if: ${{ github.event.pull_request.merged }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

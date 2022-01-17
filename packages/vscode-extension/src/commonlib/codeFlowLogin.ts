@@ -362,14 +362,20 @@ export function ConvertTokenToJson(token: string): object {
 }
 
 export async function checkIsOnline(): Promise<boolean> {
-  try {
-    await new Promise<http.IncomingMessage>((resolve, reject) => {
-      const url = "https://login.microsoftonline.com/";
-      https.get(url, resolve).on("error", reject);
+  const options = {
+    hostname: "login.microsoftonline.com",
+    path: "/",
+    method: "head",
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = http.request(options, (res) => {
+      res.on("data", () => {});
+      res.on("end", () => {
+        resolve(true);
+      });
     });
-    return true;
-  } catch (err) {
-    console.warn(err);
-    return false;
-  }
+    req.on("error", (e) => resolve(false));
+    req.end();
+  });
 }

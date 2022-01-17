@@ -275,6 +275,9 @@ export class CodeFlowLogin {
               LogLevel.Error,
               "[Login] silent acquire token : " + error.message
             );
+            if (!(await checkIsOnline())) {
+              return undefined;
+            }
             await this.logout();
             if (refresh) {
               const accessToken = await this.login();
@@ -324,6 +327,9 @@ export class CodeFlowLogin {
                 LogLevel.Error,
                 "[Login] getTenantToken acquireTokenSilent : " + error.message
               );
+              if (!(await checkIsOnline())) {
+                return undefined;
+              }
               const accountList = await this.msalTokenCache?.getAllAccounts();
               for (let i = 0; i < accountList!.length; ++i) {
                 this.msalTokenCache?.removeAccount(accountList![i]);
@@ -439,4 +445,23 @@ export function ConvertTokenToJson(token: string): any {
   const array = token!.split(".");
   const buff = Buffer.from(array[1], "base64");
   return JSON.parse(buff.toString(UTF8));
+}
+
+export async function checkIsOnline(): Promise<boolean> {
+  const options = {
+    hostname: "login.microsoftonline.com",
+    path: "/",
+    method: "head",
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = http.request(options, (res) => {
+      res.on("data", () => {});
+      res.on("end", () => {
+        resolve(true);
+      });
+    });
+    req.on("error", (e) => resolve(false));
+    req.end();
+  });
 }

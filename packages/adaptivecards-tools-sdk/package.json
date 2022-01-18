@@ -10,8 +10,9 @@
     "build": "rollup -c",
     "lint": "eslint \"**/*.ts\"",
     "lint:staged": "lint-staged",
-    "precommit": "lint-staged",
-    "format": "prettier --write --config ./.prettierrc.js --ignore-path ./.prettierignore \"src/**/*.ts\" \"*.{js,json}\""
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged",
+    "format": "prettier --write --config ./.prettierrc.js --ignore-path ./.prettierignore \"src/**/*.ts\" \"*.{js,json}\"",
   },
   "repository": "https://github.com/OfficeDev/TeamsFx",
   "author": "Microsoft Corporation",

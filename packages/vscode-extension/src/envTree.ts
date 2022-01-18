@@ -78,6 +78,7 @@ export async function registerEnvTreeHandler(
             contextValue = contextValue + "-provisioned";
           }
         }
+        const isSpfxProject = await isSPFxProject(ext.workspaceUri.fsPath);
 
         environmentTreeProvider.add([
           {
@@ -88,6 +89,7 @@ export async function registerEnvTreeHandler(
             contextValue: contextValue,
             icon: provisionSucceeded ? "folder-active" : "symbol-folder",
             isCustom: false,
+            expanded: isLocal || isSpfxProject ? undefined : true,
           },
         ]);
       }
@@ -277,7 +279,6 @@ async function appendSubscriptionAndResourceGroupNode(env: string): Promise<void
       };
 
       envSubItems.push(subscriptionTreeItem);
-
       const resourceGroupName = await getResourceGroupNameFromEnv(env);
       if (resourceGroupName) {
         const resourceGroupTreeItem: TreeItem = {

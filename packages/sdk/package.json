@@ -26,7 +26,8 @@
     "test:e2e:node": "nyc --reporter lcovonly -- mocha 'test/e2e/node/*.spec.ts' --file src/index.ts -r config/mocha.env.ts --config config/mocharc.node.js",
     "test:e2e": "npm run test:e2e:node && npm run test:e2e:browser",
     "ui-test": "mocha --no-timeouts -r test/mocha.env.ts -r ts-node/register test/ui/**/*.spec.ts --exit",
-    "precommit": "lint-staged",
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged",
     "version": "../../.github/scripts/pkg-version.sh templates",
     "postversion": "../../.github/scripts/pkg-postversion.sh templates"
   },
@@ -96,6 +97,7 @@
     "dotenv": "^10.0.0",
     "eslint": "^8.1.0",
     "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
     "fs-extra": "^9.1.0",
     "got": "^11.8.2",

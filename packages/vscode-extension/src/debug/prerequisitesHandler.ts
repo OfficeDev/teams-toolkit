@@ -14,6 +14,7 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import {
+  checkNpmDependencies,
   DepsCheckerError,
   DepsManager,
   DepsType,
@@ -43,7 +44,6 @@ import {
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
-import { checkNpmDependencies } from "./npmInstallHandler";
 import { runTask } from "./teamsfxTaskHandler";
 
 interface CheckFailure {
@@ -60,7 +60,6 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     }
 
     // [deps] => [backend extension, npm install, account] => [certificate] => [port]
-
     const failures: CheckFailure[] = [];
     const localEnvManager = new LocalEnvManager(
       VsCodeLogInstance,

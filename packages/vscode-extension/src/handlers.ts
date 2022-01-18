@@ -399,6 +399,7 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
   }
 
   const accountHint = await generateAccountHint();
+  // eslint-disable-next-line no-secrets/no-secrets
   const uri = `https://teams.microsoft.com/l/app/${debugConfig.appId}?installAppPackage=true&webjoin=true&${accountHint}`;
   await vscode.env.openExternal(Uri.parse(uri));
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {

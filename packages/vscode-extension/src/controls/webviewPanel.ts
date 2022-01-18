@@ -156,10 +156,11 @@ export class WebviewPanel {
     ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DownloadSampleStart, props);
     const inputs: Inputs = getSystemInputs();
     inputs["samples"] = msg.data.appFolder;
+    inputs.projectId = inputs.projectId ?? uuid.v4();
 
     const res = await downloadSample(inputs);
     if (inputs.projectId) {
-      props[TelemetryProperty.ProjectId] = inputs.projectId;
+      props[TelemetryProperty.NewProjectId] = inputs.projectId;
     }
     if (res.isOk()) {
       props[TelemetryProperty.Success] = TelemetrySuccess.Yes;
@@ -347,6 +348,7 @@ export class WebviewPanel {
 
   private getNonce() {
     let text = "";
+    // eslint-disable-next-line no-secrets/no-secrets
     const possible = "ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789";
     for (let i = 0; i < 32; i++) {
       text += possible.charAt(Math.floor(Math.random() * possible.length));

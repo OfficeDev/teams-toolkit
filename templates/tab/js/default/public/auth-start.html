@@ -12,6 +12,7 @@
       integrity="sha384-mhp2E+BLMiZLe7rDIzj19WjgXJeI32NkPvrvvZBrMi5IvWup/1NUfS5xuYN5S3VT"
       crossorigin="anonymous"
     ></script>
+    <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.21.0/js/msal-browser.min.js"></script>
     <script type="text/javascript">
       microsoftTeams.initialize();
 
@@ -23,30 +24,29 @@
         localStorage.removeItem("codeVerifier");
         var currentURL = new URL(window.location);
         var clientId = currentURL.searchParams.get("clientId");
-
+        var tenantId = currentURL.searchParams.get("tenantId");
         var scope = currentURL.searchParams.get("scope");
+        var loginHint = currentURL.searchParams.get("loginHint");
 
-        var originalCode = _guid();
-        var codeChallenge = await pkceChallengeFromVerifier(originalCode);
+        const msalConfig = {
+          auth: {
+            clientId: clientId,
+            authority: `https://login.microsoftonline.com/${context.tid}`,
+            navigateToLoginRequestUrl: false
+          },
+          cache: {
+            cacheLocation: "sessionStorage",
+          },
+        }
 
-        localStorage.setItem("codeVerifier", originalCode);
-        let queryParams = {
-          client_id: clientId,
-          response_type: "code",
-          response_mode: "fragment",
-          scope: scope,
-          redirect_uri: window.location.origin + "/auth-end.html",
-          nonce: _guid(),
-          state: state,
-          login_hint: context.loginHint,
-          code_challenge: codeChallenge,
-          code_challenge_method: "S256",
+        const msalInstance = new msal.PublicClientApplication(msalConfig);
+        const scopesArray = scope.split(" ");
+        const scopesRequest = {
+          scopes: scopesArray,
+          redirectUri: window.location.origin + `/auth-end.html?clientId=${clientId}`,
+          loginHint: loginHint
         };
-
-        let authorizeEndpoint = `https://login.microsoftonline.com/${
-          context.tid
-        }/oauth2/v2.0/authorize?${toQueryString(queryParams)}`;
-        window.location.assign(authorizeEndpoint);
+        await msalInstance.loginRedirect(scopesRequest);
       });
 
       // Build query string from map of query parameter

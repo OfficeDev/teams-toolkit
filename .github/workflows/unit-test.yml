@@ -43,7 +43,7 @@ jobs:
         run: |
           # make sure the coverage data is cleaned
           rm -rf .nyc_output
-          xvfb-run -a npx lerna run test:unit --stream --parallel
+          xvfb-run -a npx lerna run test:unit --parallel
 
           echo "{}" > coverages.json
           for i in $(find . -name coverage-summary.json); do

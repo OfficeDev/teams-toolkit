@@ -127,6 +127,7 @@ import { AzureAssignRoleHelpUrl, AzurePortalUrl, SpfxManageSiteAdminUrl } from "
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { generateAccountHint } from "./debug/teamsfxDebugProvider";
 import { ext } from "./extensionVariables";
+import * as uuid from "uuid";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -399,6 +400,7 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
   }
 
   const accountHint = await generateAccountHint();
+  // eslint-disable-next-line no-secrets/no-secrets
   const uri = `https://teams.microsoft.com/l/app/${debugConfig.appId}?installAppPackage=true&webjoin=true&${accountHint}`;
   await vscode.env.openExternal(Uri.parse(uri));
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
@@ -549,6 +551,7 @@ export async function runCommand(
     switch (stage) {
       case Stage.create: {
         inputs["scratch"] = inputs["scratch"] ?? "yes";
+        inputs.projectId = inputs.projectId ?? uuid.v4();
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
@@ -607,6 +610,41 @@ export async function runCommand(
   }
 
   await processResult(eventName, result, inputs);
+
+  return result;
+}
+
+export async function downloadSample(inputs: Inputs): Promise<Result<any, FxError>> {
+  let result: Result<any, FxError> = ok(null);
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    inputs.stage = Stage.create;
+    inputs["scratch"] = "no";
+    const tmpResult = await core.createProject(inputs);
+    if (tmpResult.isErr()) {
+      result = err(tmpResult.error);
+    } else {
+      const uri = Uri.file(tmpResult.value);
+      result = ok(uri);
+    }
+  } catch (e) {
+    result = wrapError(e);
+  }
+
+  if (result.isErr()) {
+    const error = result.error;
+    if (!isUserCancelError(error)) {
+      if (isLoginFaiureError(error)) {
+        window.showErrorMessage(StringResources.vsc.handlers.loginFailed);
+      } else {
+        showError(error);
+      }
+    }
+  }
 
   return result;
 }
@@ -730,14 +768,22 @@ async function processResult(
   inputs?: Inputs
 ) {
   const envProperty: { [key: string]: string } = {};
+  const createProperty: { [key: string]: string } = {};
+
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
     envProperty[TelemetryProperty.AapId] = getTeamsAppIdByEnv(inputs.env);
   }
+  if (eventName == TelemetryEvent.CreateProject && inputs?.projectId) {
+    createProperty[TelemetryProperty.NewProjectId] = inputs?.projectId;
+  }
 
   if (result.isErr()) {
     if (eventName) {
-      ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error, envProperty);
+      ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error, {
+        ...createProperty,
+        ...envProperty,
+      });
     }
     const error = result.error;
     if (isUserCancelError(error)) {
@@ -760,6 +806,7 @@ async function processResult(
       }
       ExtTelemetry.sendTelemetryEvent(eventName, {
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        ...createProperty,
         ...envProperty,
       });
     }

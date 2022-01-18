@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Context } from "@microsoft/teamsfx-api";
+import { Context } from "@microsoft/teamsfx-api/build/v2";
 import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
 import { Logger } from "./logger";
 

@@ -19,6 +19,6 @@ if(!semver.prerelease(templateVersion)){
         console.log("==================== template config version is not match with template latest release version")
 
         templateConfigFile.version = `^${templateVersion}`;
-        fse.writeJsonSync(templateConfig, templateConfigFile)
+        fse.writeFileSync(templateConfig, JSON.stringify(templateConfigFile, null, 4))
     }
 }

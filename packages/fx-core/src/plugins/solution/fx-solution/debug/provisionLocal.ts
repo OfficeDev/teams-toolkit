@@ -47,7 +47,7 @@ export async function setupLocalDebugSettings(
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
-  const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
+  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
   let skipNgrok = localSettings?.bot?.skipNgrok as boolean;
 
   const telemetryProperties = {
@@ -58,7 +58,7 @@ export async function setupLocalDebugSettings(
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
-    v1: migrateFromV1 ? "true" : "false",
+    v1: isMigrateFromV1 ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
@@ -67,7 +67,6 @@ export async function setupLocalDebugSettings(
     // setup configs used by other plugins
     // TODO: dynamicly determine local ports
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
-      const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
       const frontendPort = isMigrateFromV1 ? 3000 : 53000;
       const authPort = isMigrateFromV1 ? 5000 : 55000;
       let localTabEndpoint: string;

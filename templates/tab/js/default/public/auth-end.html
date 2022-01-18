@@ -12,7 +12,12 @@
       integrity="sha384-mhp2E+BLMiZLe7rDIzj19WjgXJeI32NkPvrvvZBrMi5IvWup/1NUfS5xuYN5S3VT"
       crossorigin="anonymous"
     ></script>
-    <script type="text/javascript" src="https://alcdn.msauth.net/browser/2.21.0/js/msal-browser.min.js"></script>
+    <script
+      type="text/javascript"
+      src="https://alcdn.msauth.net/browser/2.21.0/js/msal-browser.min.js"
+      integrity="sha384-s/NxjjAgw1QgpDhOlVjTceLl4axrp5nqpUbCPOEQy1PqbFit9On6uw2XmEF1eq0s"
+      crossorigin="anonymous">
+    </script>
     <script type="text/javascript">
       var currentURL = new URL(window.location);
       var clientId = currentURL.searchParams.get("clientId");
@@ -42,25 +47,9 @@
             }
           })
           .catch((error) => {
-            console.log(error);
             microsoftTeams.authentication.notifyFailure(error);
           });
       })
-
-      // Parse hash parameters into key-value pairs
-      function getHashParameters() {
-        let hashParams = {};
-        location.hash
-          .substr(1)
-          .split("&")
-          .forEach(function (item) {
-            let s = item.split("="),
-              k = s[0],
-              v = s[1] && decodeURIComponent(s[1]);
-            hashParams[k] = v;
-          });
-        return hashParams;
-      }
     </script>
   </body>
 </html>

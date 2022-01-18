@@ -2,95 +2,90 @@
  *
  * PVM(Plugin Version Manager)
  *
- *  ...........           .....................
- *  .. Depot .. <-------> .. Dynamic  Plugin ..
- *  ...........           .....................
- *       ^
- *       |
- *       v
- *   .........
- *   .. PVM .. 1. init & load 2.plugins
- *   .........
- *       ^
- *       |
- *       v
- *   ..........           ...................
- *   .. Core .. <-------> .. Static Plugin ..
- *   ..........           ...................
+ * ....................     ....................
+ * .. Project Config ..     .. Dynamic Plugin ..
+ * ....................     ....................
+ *          |                        |
+ *          v                        v
+ *     ............             ...........
+ *     .. Broker ..             .. Depot ..
+ *     ............             ...........
+ *          ^                        ^
+ *          |                        |
+ *          v                        v
+ * .............................................           ...................
+ * ..       PVM(Plugin Version Manager)       .. <-------> .. Static Plugin ..
+ * .............................................           ...................
+ *                    ^
+ *                    |
+ *                    v
+ *                ..........
+ *                .. Core ..
+ *                ..........
  *
  * We're gonna setup a community for developers to contribute plugin together, which
  * means Core should have capability to manage and load plugin dynamically.
  *
  * This component will act as:
  * 1. A depot which holds all plugins with varieties of versions.
- * 2. A broker which load plugin for core dynamically.
- * 3. A coordinator which combine build-in plugins and dynamic plugins.
+ * 2. A broker which provides C.R.U.D operation of plugin for core.
+ * 3. A coordinator which combines build-in plugins and dynamic plugins.
  *
  * PVM will store all plugins with the pattern '${home}/.fx/${plugin}/${version}/'
  *
  */
 
-import { FxError } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+
 import { LoadPluginError } from "../error";
 import { Depot } from "./depot";
+import { Broker } from "./broker";
+import { PluginName } from "./type";
 
 export default class PVM {
-  private static instance: PVM;
-
   /**
-   * The Singleton's constructor should always be private to prevent direct
-   * construction calls with the `new` operator.
-   */
-  private constructor() {}
-
-  /**
-   * The static method that controls the access to the singleton instance.
+   * core should use this api to load plugins of a specific project dynamically
    *
-   * This implementation let you subclass the Singleton class while keeping
-   * just one instance of each subclass around.
-   */
-  public static async getInstance(): Promise<PVM> {
-    if (!PVM.instance) {
-      PVM.instance = new PVM();
-    }
-
-    return PVM.instance;
-  }
-
-  /**
-   * Core should use this api to load plugins dynamically
-   *
-   * @param plugins - this should be like dependencies in package.json
+   * @param root - target project root path.
    * @returns error on requiring plugins.
    */
-  public async load(plugins: Record<string, string>): Promise<FxError | void> {
-    const result = await (await Depot.getInstance()).load(plugins);
+  public static async load(root: string): Promise<Result<PluginName[], FxError>> {
+    const config = await Broker.list(root);
 
+    const result = await Depot.install(config);
     if (result.isOk()) {
+      const plugins = result.value;
       try {
-        for (const i of result.value) {
-          await require(i);
+        for (const p of plugins.values()) {
+          await require(p);
         }
       } catch (e) {
-        return LoadPluginError();
+        return err(LoadPluginError());
       }
+      const dynamicPlugins = Array.from(plugins.keys());
+      const allPlugins = [
+        ...dynamicPlugins,
+        ...BuiltInResourcePluginNames,
+        ...BuiltInScaffoldPluginNames,
+      ] as PluginName[];
+      return ok(allPlugins);
     } else {
-      return result.error;
+      return err(result.error);
     }
   }
 }
 
-export const BuiltInResourcePluginNames = {
-  appStudio: "fx-resource-appstudio",
-  aad: "fx-resource-aad",
-  bot: "fx-resource-bot",
-  webApp: "fx-resource-azure-web-app",
-  storage: "fx-resource-azure-storage",
-  spfx: "fx-resource-spfx",
-};
-export const BuiltInScaffoldPluginNames = {
-  blazor: "fx-scaffold-blazor",
-  tab: "fx-scaffold-react-tab",
-  spfx: "fx-scaffold-spfx",
-  bot: "fx-scaffold-bot",
-};
+export const BuiltInResourcePluginNames: string[] = [
+  "fx-resource-appstudio",
+  "fx-resource-aad",
+  "fx-resource-bot",
+  "fx-resource-azure-web-app",
+  "fx-resource-azure-storage",
+  "fx-resource-spfx",
+];
+export const BuiltInScaffoldPluginNames: string[] = [
+  "fx-scaffold-blazor",
+  "fx-scaffold-react-tab",
+  "fx-scaffold-spfx",
+  "fx-scaffold-bot",
+];

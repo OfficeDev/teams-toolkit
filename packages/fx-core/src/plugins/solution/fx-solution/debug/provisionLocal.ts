@@ -47,6 +47,7 @@ export async function setupLocalDebugSettings(
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
+  const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
   let skipNgrok = localSettings?.bot?.skipNgrok as boolean;
 
   const telemetryProperties = {
@@ -57,6 +58,7 @@ export async function setupLocalDebugSettings(
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
+    v1: migrateFromV1 ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
@@ -155,6 +157,7 @@ export async function configLocalDebugSettings(
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
+  const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
   let trustDevCert = localSettings?.frontend?.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
@@ -164,6 +167,7 @@ export async function configLocalDebugSettings(
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "trust-development-certificate": trustDevCert + "",
+    v1: migrateFromV1 ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);

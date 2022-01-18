@@ -29,6 +29,7 @@ const config = {
   devtool: "source-map",
   externals: {
     keytar: "keytar",
+    "node-gyp/bin/node-gyp.js": ".", // ignore node-gyp/bin/node-gyp.js since it's not used in runtime
   },
   resolve: {
     // support reading TypeScript and JavaScript files, 📖 -> https://github.com/TypeStrong/ts-loader
@@ -86,7 +87,6 @@ const config = {
     new webpack.IgnorePlugin({ resourceRegExp: /@opentelemetry\/tracing/ }),
     new webpack.IgnorePlugin({ resourceRegExp: /applicationinsights-native-metrics/ }),
     new webpack.IgnorePlugin({ resourceRegExp: /original-fs/ }),
-    new webpack.IgnorePlugin({ resourceRegExp: /node-gyp[\/\\]bin[\/\\]node-gyp.js/ }),
   ],
   optimization: {
     minimizer: [

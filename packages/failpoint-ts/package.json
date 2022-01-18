@@ -20,7 +20,9 @@
     "test:unit": "npx nyc --check-coverage --reporter=json-summary --reporter=text mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
     "build": "npx tsc -p ./",
     "prepare": "rimraf build && npm run build",
-    "format-check": "echo test"
+    "format-check": "echo test",
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged"
   },
   "bugs": {
     "url": "https://github.com/OfficeDev/TeamsFx/issues"
@@ -36,6 +38,7 @@
     "chai": "^4.3.4",
     "eslint": "^7.22.0",
     "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
     "lint-staged": "^10.5.4",
     "mocha": "^9.0.2",

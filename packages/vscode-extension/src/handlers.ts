@@ -127,6 +127,8 @@ import graphLogin from "./commonlib/graphLogin";
 import { AzurePortalUrl } from "./constants";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { generateAccountHint } from "./debug/teamsfxDebugProvider";
+import * as uuid from "uuid";
+
 export let core: FxCore;
 export let tools: Tools;
 export function getWorkspacePath(): string | undefined {
@@ -563,6 +565,7 @@ export async function runCommand(
     switch (stage) {
       case Stage.create: {
         inputs["scratch"] = inputs["scratch"] ?? "yes";
+        inputs.projectId = inputs.projectId ?? uuid.v4();
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
@@ -739,14 +742,22 @@ async function processResult(
   inputs?: Inputs
 ) {
   const envProperty: { [key: string]: string } = {};
+  const createProperty: { [key: string]: string } = {};
+
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
     envProperty[TelemetryProperty.AapId] = getTeamsAppIdByEnv(inputs.env);
   }
+  if (eventName == TelemetryEvent.CreateProject && inputs?.projectId) {
+    createProperty[TelemetryProperty.NewProjectId] = inputs?.projectId;
+  }
 
   if (result.isErr()) {
     if (eventName) {
-      ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error, envProperty);
+      ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error, {
+        ...createProperty,
+        ...envProperty,
+      });
     }
     const error = result.error;
     if (isUserCancelError(error)) {
@@ -769,6 +780,7 @@ async function processResult(
       }
       ExtTelemetry.sendTelemetryEvent(eventName, {
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        ...createProperty,
         ...envProperty,
       });
     }

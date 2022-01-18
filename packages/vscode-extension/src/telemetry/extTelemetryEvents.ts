@@ -196,6 +196,7 @@ export enum TelemetryProperty {
   IsFromSample = "is-from-sample",
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
+  NewProjectId = "new-project-id",
 }
 
 export enum TelemetrySuccess {

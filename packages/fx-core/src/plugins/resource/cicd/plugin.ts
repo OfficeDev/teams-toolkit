@@ -1,14 +1,11 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { Context } from "@microsoft/teamsfx-api";
 import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
 import { Logger } from "./logger";
 
 export class CICDImpl {
-  private ctx?: PluginContext;
-
-  public async addCICDWorkflows(context: PluginContext): Promise<FxResult> {
-    this.ctx = context;
+  public async addCICDWorkflows(context: Context): Promise<FxResult> {
     Logger.info("Calling addCICDWorkflows.");
     return ResultFactory.Success();
   }

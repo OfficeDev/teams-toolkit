@@ -1,7 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  PluginContext,
   err,
   UserError,
   SystemError,
@@ -25,7 +24,6 @@ import { LifecycleFuncNames } from "./constants";
 import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
 import { ResourcePlugin, Context } from "@microsoft/teamsfx-api/build/v2";
-import { executeUserTaskAdapter } from "../utils4v2";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {
@@ -38,7 +36,7 @@ export class CICDPluginV2 implements ResourcePlugin {
 
   public cicdImpl: CICDImpl = new CICDImpl();
 
-  public async addCICDWorkflows(context: PluginContext): Promise<FxResult> {
+  public async addCICDWorkflows(context: Context): Promise<FxResult> {
     Logger.setLogger(context.logProvider);
 
     const result = await this.runWithExceptionCatching(
@@ -71,7 +69,7 @@ export class CICDPluginV2 implements ResourcePlugin {
   }
 
   private async runWithExceptionCatching(
-    context: PluginContext,
+    context: Context,
     fn: () => Promise<FxResult>,
     sendTelemetry: boolean,
     name: string

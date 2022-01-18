@@ -18,7 +18,7 @@ if(!semver.prerelease(templateVersion)){
     if(!semver.intersects(templateConfigFile.version, templateVersion)){
         console.log("==================== template config version is not match with template latest release version")
 
-        templateConfigFile.version = templateVersion;
+        templateConfigFile.version = `^${templateVersion}`;
         fse.writeJsonSync(templateConfig, templateConfigFile)
     }
 }

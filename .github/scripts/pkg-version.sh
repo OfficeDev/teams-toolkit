@@ -31,4 +31,5 @@ elif [ $1 == 'function-extension' ]; then
 elif [ $1 == 'core-template' ]; then
     echo "need to bump up templates' fallback version in fx-core"
     node ../.github/scripts/fxcore-sync-up-version.js
+    git add ../packages/fx-core
 fi

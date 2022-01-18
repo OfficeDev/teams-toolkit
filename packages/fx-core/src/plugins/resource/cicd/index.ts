@@ -13,6 +13,7 @@ import {
   Json,
   Func,
   ok,
+  QTreeNode,
 } from "@microsoft/teamsfx-api";
 
 import { FxResult, FxCICDPluginResultFactory as ResultFactory } from "./result";
@@ -21,7 +22,8 @@ import { ErrorType, PluginError } from "./errors";
 import { LifecycleFuncNames } from "./constants";
 import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
-import { ResourcePlugin, Context } from "@microsoft/teamsfx-api/build/v2";
+import { ResourcePlugin, Context, DeepReadonly, EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
+import { githubOption, azdoOption, jenkinsOption, ciOption, cdOption, provisionOption, publishOption } from "./questions";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {
@@ -45,7 +47,40 @@ export class CICDPluginV2 implements ResourcePlugin {
     return result;
   }
 
-  async executeUserTask(
+  public async getQuestionsForUserTask?: (
+    ctx: Context,
+    inputs: Inputs,
+    func: Func,
+    envInfo: DeepReadonly<EnvInfoV2>,
+    tokenProvider: TokenProvider
+  ): Promise<Result<QTreeNode | undefined, FxError>> {
+    const cicdWorkflowQuestions = new QTreeNode({
+      type: "group",
+    });
+
+    const whichPlatform = new QTreeNode({
+      name: "WhichPlatform",
+      type: "singleSelect",
+      staticOptions: [githubOption, azdoOption, jenkinsOption],
+      title: "Choose your CI/CD Platform",
+      default: githubOption.id,
+    });
+
+    const whichTemplate = new QTreeNode({
+      name: "WhichTemplate",
+      type: "multiSelect",
+      staticOptions: [ciOption, cdOption, provisionOption, publishOption],
+      title: "Choose your workflow type",
+      default: ciOption.id,
+    });
+
+    cicdWorkflowQuestions.addChild(whichPlatform);
+    cicdWorkflowQuestions.addChild(whichTemplate);
+
+    return ok(cicdWorkflowQuestions);
+  }
+
+  public async executeUserTask(
     ctx: Context,
     inputs: Inputs,
     func: Func,

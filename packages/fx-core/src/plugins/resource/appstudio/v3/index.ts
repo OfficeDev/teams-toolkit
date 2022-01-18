@@ -26,7 +26,17 @@ import {
   saveManifest,
   capabilityExceedLimit,
 } from "../manifestTemplate";
-
+import { getTemplatesFolder } from "../../../../folder";
+import * as path from "path";
+import fs from "fs-extra";
+import {
+  APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
+  COLOR_TEMPLATE,
+  DEFAULT_COLOR_PNG_FILENAME,
+  DEFAULT_OUTLINE_PNG_FILENAME,
+  MANIFEST_RESOURCES,
+  OUTLINE_TEMPLATE,
+} from "../constants";
 @Service(BuiltInResourcePluginNames.appStudio)
 export class AppStudioPluginV3 {
   name = "fx-resource-appstudio";
@@ -39,8 +49,17 @@ export class AppStudioPluginV3 {
    * @returns
    */
   async init(ctx: v2.Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
-    const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
-    return await init(pluginContext.root);
+    const res = await init(inputs.projectPath);
+    if (res.isErr()) return err(res.error);
+    const templatesFolder = getTemplatesFolder();
+    const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
+    const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
+    const appPackageDir = path.resolve(inputs.projectPath, APP_PACKAGE_FOLDER_FOR_MULTI_ENV);
+    const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
+    await fs.ensureDir(resourcesDir);
+    await fs.copy(defaultColorPath, path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME));
+    await fs.copy(defaultOutlinePath, path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME));
+    return ok(undefined);
   }
 
   /**

@@ -29,7 +29,6 @@ import {
   isValidProject,
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
-import { enableMigrateV1 } from "./utils/migrateV1";
 import {
   canUpgradeToArmAndMultiEnv,
   isSPFxProject,
@@ -498,13 +497,6 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onWillSaveTextDocument(handlers.saveTextDocumentHandler)
   );
-
-  ext.context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(enableMigrateV1));
-  enableMigrateV1();
-  const migrateV1Cmd = vscode.commands.registerCommand("fx-extension.migrateV1Project", () =>
-    Correlator.run(handlers.migrateV1ProjectHandler)
-  );
-  context.subscriptions.push(migrateV1Cmd);
 
   const migrateTeamsTabAppCmd = vscode.commands.registerCommand(
     "fx-extension.migrateTeamsTabApp",

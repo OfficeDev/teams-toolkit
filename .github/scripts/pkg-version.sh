@@ -28,4 +28,7 @@ elif [ $1 == 'function-extension' ]; then
     node ../../.github/scripts/sync-up-dotnet-ver.js
     fi
     git add ../../templates
+elif [ $1 == 'core-template' ]; then
+    echo "need to bump up templates' fallback version in fx-core"
+    node ../.github/scripts/fxcore-sync-up-version.js
 fi

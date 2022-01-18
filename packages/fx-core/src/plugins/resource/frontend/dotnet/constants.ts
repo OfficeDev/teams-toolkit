@@ -63,12 +63,17 @@ export class WebappBicepFile {
 }
 
 export class WebappBicep {
-  static readonly webappEndpoint = "provisionOutputs.webappOutput.value.endpoint";
-  static readonly webappResourceId = "provisionOutputs.webappOutput.value.resourceId";
-  static readonly webappDomain = "provisionOutputs.webappOutput.value.domain";
+  static readonly endpoint = "provisionOutputs.webappOutput.value.endpoint";
+  static readonly resourceId = "provisionOutputs.webappOutput.value.resourceId";
+  static readonly domain = "provisionOutputs.webappOutput.value.domain";
+  static readonly endpointAsParam = "webappProvision.outputs.endpoint";
+  static readonly domainAsParam = "webappProvision.outputs.domain";
+
   static readonly Reference = {
-    webappResourceId: WebappBicep.webappResourceId,
-    endpoint: WebappBicep.webappEndpoint,
-    domain: WebappBicep.webappDomain,
+    webappResourceId: WebappBicep.resourceId,
+    endpoint: WebappBicep.endpoint,
+    domain: WebappBicep.domain,
+    endpointAsParam: WebappBicep.endpointAsParam,
+    domainAsParam: WebappBicep.domainAsParam,
   };
 }

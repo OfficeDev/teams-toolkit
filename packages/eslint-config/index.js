@@ -40,7 +40,7 @@ module.exports = {
             "error",
             { "additionalRegexes": { 
                 "Basic Auth": "Authorization: Basic [A-Za-z0-9+/=]*",
-                "Common Pattern": "^(?=.*?[A-Z])(?=.*?[a-z])(?=.*?[0-9])(?=.*?[#?!@$%^&*-~|]).{8,}$"
+                "Common Pattern": "^(?=.*[A-Za-z])(?=.*[0-9])(?=.*[@$!%*#?&])[A-Za-z0-9@$!%*#?&~-]{8,}$"
             },
         }]
     },

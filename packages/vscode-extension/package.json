@@ -986,7 +986,6 @@
     "@microsoft/fast-react-wrapper": "^0.1.20",
     "@microsoft/teamsfx-api": "^0.13.0",
     "@microsoft/teamsfx-core": "^1.2.1",
-    "@npmcli/arborist": "^4.0.4",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.8.5",
     "async-mutex": "^0.3.1",

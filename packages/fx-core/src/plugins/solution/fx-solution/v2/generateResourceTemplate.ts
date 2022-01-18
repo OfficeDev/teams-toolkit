@@ -10,8 +10,7 @@ export async function generateResourceTemplate(
   inputs: Inputs
 ): Promise<Result<Json, FxError>> {
   const legacyContext = new ScaffoldingContextAdapter([ctx, inputs]);
-  const azureSolutionSettings = getAzureSolutionSettings(ctx);
-  const plugins = getSelectedPlugins(azureSolutionSettings).map(
+  const plugins = getSelectedPlugins(ctx.projectSetting).map(
     (plugin) => new NamedArmResourcePluginAdaptor(plugin)
   );
   const armResult = await armV2.generateArmTemplate(legacyContext, plugins);
@@ -24,8 +23,7 @@ export async function generateResourceTemplateForPlugins(
   plugins: v2.ResourcePlugin[]
 ): Promise<Result<Json, FxError>> {
   showUpdateArmTemplateNotice(ctx.userInteraction);
-  const azureSolutionSettings = getAzureSolutionSettings(ctx);
-  const allPlugins = getActivatedV2ResourcePlugins(azureSolutionSettings);
+  const allPlugins = getActivatedV2ResourcePlugins(ctx.projectSetting);
   const armResult = await arm.generateArmTemplate(ctx, inputs, allPlugins, plugins);
   return armResult;
 }

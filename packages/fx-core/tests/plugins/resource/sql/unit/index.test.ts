@@ -128,6 +128,29 @@ describe("sqlPlugin", () => {
     chai.assert.isTrue(postProvisionResult.isOk());
   });
 
+  it("postProvision with multiple database", async function () {
+    sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
+
+    // Arrange
+    sinon.stub(FirewallRules.prototype, "createOrUpdate").resolves();
+    sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
+    sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
+    sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    sinon
+      .stub(ApplicationTokenCredentials.prototype, "getToken")
+      .resolves({ accessToken: faker.random.word() } as TokenResponse);
+    const addUserStub = sinon.stub(SqlClient.prototype, "addDatabaseUser").resolves();
+    sinon.stub(axios, "get").resolves({ data: "1.1.1.1" });
+    TestHelper.mockArmOutput(pluginContext);
+    pluginContext.config.set("databaseName_000000", "databaseName_000000");
+    // Act
+    const postProvisionResult = await sqlPlugin.postProvision(pluginContext);
+
+    // Assert
+    chai.assert.isTrue(postProvisionResult.isOk());
+    chai.assert.isTrue(addUserStub.calledTwice);
+  });
+
   it("postProvision with aadAdminType ServicePrincipal", async function () {
     sqlPlugin.sqlImpl.config.aadAdminType = UserType.ServicePrincipal;
     sqlPlugin.sqlImpl.config.sqlServer = "test-sql";

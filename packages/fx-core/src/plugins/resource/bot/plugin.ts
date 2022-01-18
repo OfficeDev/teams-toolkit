@@ -20,10 +20,7 @@ import {
   FolderNames,
   WebAppConstants,
   TemplateProjectsConstants,
-  AuthEnvNames,
-  AuthValues,
   MaxLengths,
-  IdentityConstants,
   AzureConstants,
   PathInfo,
   BotBicep,
@@ -43,7 +40,6 @@ import {
 } from "./errors";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import { ProgressBarFactory } from "./progressBars";
-import { PluginActRoles } from "./enums/pluginActRoles";
 import { ResourceNameFactory } from "./utils/resourceNameFactory";
 import { AppStudio } from "./appStudio/appStudio";
 import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
@@ -65,7 +61,9 @@ import {
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile } from "../../../common/tools";
-export class TeamsBotImpl {
+import { PluginImpl } from "./interface";
+
+export class TeamsBotImpl implements PluginImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
   public config: TeamsBotConfig = new TeamsBotConfig();
   private ctx?: PluginContext;
@@ -163,8 +161,7 @@ export class TeamsBotImpl {
 
   public async updateArmTemplates(ctx: PluginContext): Promise<FxResult> {
     Logger.info(Messages.UpdatingArmTemplatesBot);
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
@@ -190,8 +187,7 @@ export class TeamsBotImpl {
 
   public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
     Logger.info(Messages.GeneratingArmTemplatesBot);
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };

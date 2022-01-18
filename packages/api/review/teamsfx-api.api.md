@@ -1315,7 +1315,7 @@ export type ResourceConfigs = ResourceTemplates;
 
 // @public
 interface ResourcePlugin {
-    activate(solutionSettings: AzureSolutionSettings): boolean;
+    activate(projectSettings: ProjectSettings): boolean;
     // (undocumented)
     checkPermission?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider, userInfo: Json) => Promise<Result<Json, FxError>>;
     configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;

@@ -58,7 +58,6 @@
     "onCommand:fx-extension.openAppManagement",
     "onCommand:fx-extension.openBotManagement",
     "onCommand:fx-extension.openReportIssues",
-    "onCommand:fx-extension.migrateV1Project",
     "onCommand:workbench.action.tasks.runTask",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
@@ -310,10 +309,6 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.migrateV1Project",
-          "when": "fx-extension.v1Project"
-        },
-        {
           "command": "fx-extension.refreshEnvironment",
           "when": "false"
         },
@@ -530,10 +525,6 @@
         "title": "Teams: Update manifest to Teams platform",
         "icon": "$(sync)",
         "enablement": "fx-extension.isMultiEnvEnabled"
-      },
-      {
-        "command": "fx-extension.migrateV1Project",
-        "title": "Teams: Initialize Your Project to Work with the Latest Teams Toolkit"
       },
       {
         "command": "fx-extension.addEnvironment",
@@ -903,7 +894,8 @@
     "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
     "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
     "prepare": "npm run build",
-    "precommit": "lint-staged"
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged"
   },
   "devDependencies": {
     "@azure/arm-subscriptions": "^3.0.0",
@@ -946,6 +938,7 @@
     "decache": "^4.6.0",
     "eslint": "^8.1.0",
     "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
     "find-process": "^1.4.4",
     "fs-extra": "^9.0.1",
@@ -993,7 +986,6 @@
     "@microsoft/fast-react-wrapper": "^0.1.20",
     "@microsoft/teamsfx-api": "^0.13.0",
     "@microsoft/teamsfx-core": "^1.2.1",
-    "@npmcli/arborist": "^4.0.4",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.8.5",
     "async-mutex": "^0.3.1",

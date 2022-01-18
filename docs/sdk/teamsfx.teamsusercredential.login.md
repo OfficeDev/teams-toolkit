@@ -12,7 +12,7 @@ Popup login page to get user's access token with specific scopes.
 <b>Signature:</b>
 
 ```typescript
-login(scopes: string | string[]): Promise<AccessToken>;
+login(scopes: string | string[]): Promise<void>;
 ```
 
 ## Parameters
@@ -23,7 +23,7 @@ login(scopes: string | string[]): Promise<AccessToken>;
 
 <b>Returns:</b>
 
-Promise&lt;AccessToken&gt;
+Promise&lt;void&gt;
 
 ## Remarks
 

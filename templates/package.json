@@ -4,7 +4,8 @@
   "private": "true",
   "license": "MIT",
   "scripts": {
-    "precommit": "lint-staged"
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged"
   },
   "devDependencies": {
     "@shared/eslint-config": "file:../packages/eslint-config",
@@ -14,6 +15,7 @@
     "eslint": "^7.22.0",
     "eslint-config-react-app": "^7.0.0",
     "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
     "lint-staged": "^10.5.4",
     "prettier": "^2.4.1",

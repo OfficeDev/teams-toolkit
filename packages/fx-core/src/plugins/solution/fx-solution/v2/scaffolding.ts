@@ -60,7 +60,7 @@ export async function scaffoldSourceCode(
   const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
   const fillinRes = fillInSolutionSettings(solutionSettings, inputs);
   if (fillinRes.isErr()) return err(fillinRes.error);
-  const plugins = getSelectedPlugins(solutionSettings);
+  const plugins = getSelectedPlugins(ctx.projectSetting);
 
   let thunks: NamedThunk<Void>[] = plugins
     .filter((plugin) => !!plugin.scaffoldSourceCode)
@@ -100,6 +100,7 @@ export async function scaffoldSourceCode(
         [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
         [SolutionTelemetryProperty.ProgrammingLanguage]:
           ctx.projectSetting?.programmingLanguage ?? "",
+        "host-type": "azure",
       });
     } else {
       //For SPFx plugin, execute it alone lastly
@@ -108,6 +109,14 @@ export async function scaffoldSourceCode(
         if (spfxRes.isErr()) {
           return err(spfxRes.error);
         }
+        ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
+          [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
+          [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
+          [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
+          [SolutionTelemetryProperty.ProgrammingLanguage]:
+            ctx.projectSetting?.programmingLanguage ?? "",
+          "host-type": "spfx",
+        });
       }
     }
     ctx.userInteraction.showMessage(

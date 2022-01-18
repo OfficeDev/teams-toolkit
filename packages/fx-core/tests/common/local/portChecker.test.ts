@@ -4,44 +4,12 @@
 import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
-import * as events from "events";
 import * as fs from "fs-extra";
-import net from "net";
 import * as path from "path";
 import * as sinon from "sinon";
-
-import { getPortsInUse } from "../../../src/common/local/portChecker";
+import proxyquire from "proxyquire";
 
 chai.use(chaiAsPromised);
-
-class MockServer extends events.EventEmitter {
-  private readonly usedPorts: Array<{ port: number; host: string }>;
-
-  constructor(usedPorts: Array<{ port: number; host: string }>) {
-    super();
-    super.setMaxListeners(0);
-    this.usedPorts = usedPorts;
-  }
-
-  public close(callback?: (err?: Error) => void): this {
-    super.emit("close");
-    if (callback) {
-      callback();
-    }
-
-    return this;
-  }
-
-  public listen(port: number, host: string): this {
-    if (this.usedPorts.findIndex((e) => e.port === port && e.host === host) >= 0) {
-      super.emit("error", new Error("EADDRINUSE"));
-    } else {
-      super.emit("listening");
-    }
-
-    return this;
-  }
-}
 
 describe("portChecker", () => {
   const projectPath = path.resolve(__dirname, "data");
@@ -69,53 +37,28 @@ describe("portChecker", () => {
     });
 
     it("happy path", async () => {
-      const mockServer = new MockServer([]);
-      sinon.stub(net, "createServer").returns(mockServer as unknown as net.Server);
+      const portChecker = proxyquire("../../../src/common/local/portChecker", {
+        "detect-port": async (port: number) => port,
+      });
 
-      const ports = await getPortsInUse(projectPath, projectSettings0);
+      const ports = await portChecker.getPortsInUse(projectPath, projectSettings0);
 
       chai.assert.isDefined(ports);
       chai.assert.equal(ports.length, 0);
     });
 
     it("53000 in use", async () => {
-      const mockServer = new MockServer([
-        {
-          port: 53000,
-          host: "0.0.0.0",
-        },
-      ]);
-      sinon.stub(net, "createServer").returns(mockServer as unknown as net.Server);
+      const portChecker = proxyquire("../../../src/common/local/portChecker", {
+        "detect-port": async (port: number) => (port === 53000 ? 53001 : port),
+      });
 
-      const ports = await getPortsInUse(projectPath, projectSettings0);
+      const ports = await portChecker.getPortsInUse(projectPath, projectSettings0);
 
       chai.assert.isDefined(ports);
       chai.assert.deepEqual(ports, [53000]);
     });
 
-    it("53000 in another host", async () => {
-      const mockServer = new MockServer([
-        {
-          port: 53000,
-          host: "unknown",
-        },
-      ]);
-      sinon.stub(net, "createServer").returns(mockServer as unknown as net.Server);
-
-      const ports = await getPortsInUse(projectPath, projectSettings0);
-
-      chai.assert.isDefined(ports);
-      chai.assert.equal(ports.length, 0);
-    });
-
     it("dev:teamsfx port", async () => {
-      const mockServer = new MockServer([
-        {
-          port: 9229,
-          host: "0.0.0.0",
-        },
-      ]);
-      sinon.stub(net, "createServer").returns(mockServer as unknown as net.Server);
       const content = `\
         {\n\
           "name": "test",\n\
@@ -129,20 +72,17 @@ describe("portChecker", () => {
       await fs.ensureDir(path.join(projectPath, "api"));
       await fs.writeFile(packageJsonPath, content);
 
-      const ports = await getPortsInUse(projectPath, projectSettings0);
+      const portChecker = proxyquire("../../../src/common/local/portChecker", {
+        "detect-port": async (port: number) => (port === 9229 ? 9230 : port),
+      });
+
+      const ports = await portChecker.getPortsInUse(projectPath, projectSettings0);
 
       chai.assert.isDefined(ports);
       chai.assert.deepEqual(ports, [9229]);
     });
 
     it("ignore customized port", async () => {
-      const mockServer = new MockServer([
-        {
-          port: 9229,
-          host: "0.0.0.0",
-        },
-      ]);
-      sinon.stub(net, "createServer").returns(mockServer as unknown as net.Server);
       const content = `\
         {\n\
           "name": "test",\n\
@@ -156,22 +96,22 @@ describe("portChecker", () => {
       await fs.ensureDir(path.join(projectPath, "api"));
       await fs.writeFile(packageJsonPath, content);
 
-      const ports = await getPortsInUse(projectPath, projectSettings0);
+      const portChecker = proxyquire("../../../src/common/local/portChecker", {
+        "detect-port": async (port: number) => (port === 9229 ? 9230 : port),
+      });
+
+      const ports = await portChecker.getPortsInUse(projectPath, projectSettings0);
 
       chai.assert.isDefined(ports);
       chai.assert.equal(ports.length, 0);
     });
 
     it("ignore debug port", async () => {
-      const mockServer = new MockServer([
-        {
-          port: 9229,
-          host: "0.0.0.0",
-        },
-      ]);
-      sinon.stub(net, "createServer").returns(mockServer as unknown as net.Server);
+      const portChecker = proxyquire("../../../src/common/local/portChecker", {
+        "detect-port": async (port: number) => (port === 9229 ? 9230 : port),
+      });
 
-      const ports = await getPortsInUse(projectPath, projectSettings0, true);
+      const ports = await portChecker.getPortsInUse(projectPath, projectSettings0, true);
 
       chai.assert.isDefined(ports);
       chai.assert.equal(ports.length, 0);

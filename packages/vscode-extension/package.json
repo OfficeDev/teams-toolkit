@@ -58,7 +58,6 @@
     "onCommand:fx-extension.openAppManagement",
     "onCommand:fx-extension.openBotManagement",
     "onCommand:fx-extension.openReportIssues",
-    "onCommand:fx-extension.migrateV1Project",
     "onCommand:workbench.action.tasks.runTask",
     "workspaceContains:**/.fx/*",
     "onView:teamsfx",
@@ -310,10 +309,6 @@
           "when": "false"
         },
         {
-          "command": "fx-extension.migrateV1Project",
-          "when": "fx-extension.v1Project"
-        },
-        {
           "command": "fx-extension.refreshEnvironment",
           "when": "false"
         },
@@ -530,10 +525,6 @@
         "title": "Teams: Update manifest to Teams platform",
         "icon": "$(sync)",
         "enablement": "fx-extension.isMultiEnvEnabled"
-      },
-      {
-        "command": "fx-extension.migrateV1Project",
-        "title": "Teams: Initialize Your Project to Work with the Latest Teams Toolkit"
       },
       {
         "command": "fx-extension.addEnvironment",

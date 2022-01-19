@@ -50,7 +50,7 @@ export enum ErrorCode {
     InvalidCertificate = "InvalidCertificate",
     InvalidConfiguration = "InvalidConfiguration",
     InvalidParameter = "InvalidParameter",
-    ProjectNeedUpgrade = "ProjectNeedUpgrade",
+    InvalidResponse = "InvalidResponse",
     RuntimeNotSupported = "RuntimeNotSupported",
     ServiceError = "ServiceError",
     TokenExpiredError = "TokenExpiredError",

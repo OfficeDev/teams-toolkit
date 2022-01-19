@@ -1,3 +1,11 @@
+# 0.5.0
+- Update authentication flow for tab app and remove simple auth dependency
+- Support multiple SQL database connection
+- Fix TeamsBotSsoPrompt runtime error
+
+# 0.4.1
+- Move "@microsoft/teams-js" to peer dependency
+
 # 0.3.0
 - Support certificate-based authentication for TeamsFx SDK
 

@@ -7,7 +7,7 @@
 
 import fs from "fs-extra";
 import path from "path";
-import { AadValidator, FrontendValidator, SimpleAuthValidator } from "../../commonlib";
+import { AadValidator, FrontendValidator } from "../../commonlib";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import {
   execAsyncWithRetry,
@@ -57,10 +57,6 @@ describe("Create single tab", function () {
     // Validate Aad App
     const aad = AadValidator.init(context, false, AppStudioLogin);
     await AadValidator.validate(aad);
-
-    // Validate Simple Auth
-    const simpleAuth = new SimpleAuthValidator(context, projectPath, env);
-    await simpleAuth.validate();
 
     // Validate Tab Frontend
     const frontend = FrontendValidator.init(context, true);

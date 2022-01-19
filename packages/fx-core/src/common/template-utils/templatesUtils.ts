@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import AdmZip from "adm-zip";
-import axios, { AxiosResponse } from "axios";
+import axios, { AxiosResponse, CancelToken } from "axios";
 import path from "path";
 import fs from "fs-extra";
 import Mustache from "mustache";
@@ -42,16 +42,34 @@ export async function sendRequestWithRetry<T>(
   throw error;
 }
 
+export async function sendRequestWithTimeout<T>(
+  requestFn: (cancelToken: CancelToken) => Promise<AxiosResponse<T>>,
+  timeoutInMs: number,
+  tryLimits = 1
+): Promise<AxiosResponse<T>> {
+  const source = axios.CancelToken.source();
+  const timeout = setTimeout(() => {
+    source.cancel();
+  }, timeoutInMs);
+  const res = await sendRequestWithRetry(() => requestFn(source.token), tryLimits);
+  clearTimeout(timeout);
+  return res;
+}
+
 export async function fetchTemplateTagList(
   url: string,
   tryLimits: number,
   timeoutInMs: number
 ): Promise<string> {
-  const res: AxiosResponse<string> = await sendRequestWithRetry(async () => {
-    return await axios.get(url, {
-      timeout: timeoutInMs,
-    });
-  }, tryLimits);
+  const res: AxiosResponse<string> = await sendRequestWithTimeout(
+    async (cancelToken) => {
+      return await axios.get(url, {
+        cancelToken: cancelToken,
+      });
+    },
+    timeoutInMs,
+    tryLimits
+  );
   return res.data;
 }
 
@@ -75,12 +93,16 @@ export async function fetchZipFromUrl(
   tryLimits: number,
   timeoutInMs: number
 ): Promise<AdmZip> {
-  const res: AxiosResponse<any> = await sendRequestWithRetry(async () => {
-    return await axios.get(url, {
-      responseType: "arraybuffer",
-      timeout: timeoutInMs,
-    });
-  }, tryLimits);
+  const res: AxiosResponse<any> = await sendRequestWithTimeout(
+    async (cancelToken) => {
+      return await axios.get(url, {
+        responseType: "arraybuffer",
+        cancelToken: cancelToken,
+      });
+    },
+    timeoutInMs,
+    tryLimits
+  );
 
   const zip = new AdmZip(res.data);
   return zip;

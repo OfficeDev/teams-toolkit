@@ -95,7 +95,7 @@ class TreeViewManager {
       developmentCommand.push(
         new TreeViewCommand(
           StringResources.vsc.commandsTreeViewProvider.previewAdaptiveCard,
-          StringResources.vsc.commandsTreeViewProvider.previewACDesciption,
+          StringResources.vsc.commandsTreeViewProvider.previewACDescription,
           "fx-extension.OpenAdaptiveCardExt",
           vscode.TreeItemCollapsibleState.None,
           undefined,

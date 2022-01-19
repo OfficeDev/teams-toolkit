@@ -384,13 +384,6 @@ export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
 
-/**
- * @deprecated Please DO NOT use this method any more, it will be removed in near future.
- */
-export function isRemoteCollaborateEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
-}
-
 export function getRootDirectory(): string {
   const root = process.env[FeatureFlagName.rootDirectory];
   if (root === undefined || root === "") {

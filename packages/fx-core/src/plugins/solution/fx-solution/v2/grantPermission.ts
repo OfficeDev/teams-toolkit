@@ -342,9 +342,7 @@ async function executeGrantPermissionsV2(
   tokenProvider: TokenProvider,
   userInfo: IUserList
 ): Promise<[ResourcePermission[], Err<any, FxError>[]]> {
-  const plugins = getActivatedV2ResourcePlugins(
-    ctx.projectSetting?.solutionSettings as AzureSolutionSettings
-  );
+  const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting);
 
   const thunks: NamedThunk<Json>[] = plugins
     .filter((plugin) => !!plugin.grantPermission)

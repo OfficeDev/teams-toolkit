@@ -23,5 +23,5 @@ Only works in in server side.
 
 |  Method | Modifiers | Description |
 |  --- | --- | --- |
-|  [getConfig()](./teamsfx.defaulttediousconnectionconfiguration.getconfig.md) |  | <b><i>(BETA)</i></b> Generate connection configuration consumed by tedious. |
+|  [getConfig(databaseName)](./teamsfx.defaulttediousconnectionconfiguration.getconfig.md) |  | <b><i>(BETA)</i></b> Generate connection configuration consumed by tedious. |
 

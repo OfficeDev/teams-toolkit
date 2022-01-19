@@ -7,43 +7,35 @@
 
 import fs from "fs-extra";
 import path from "path";
-import { AadValidator, FrontendValidator, SimpleAuthValidator } from "../../commonlib";
-import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { AadValidator, FrontendValidator } from "../../commonlib";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import {
-  execAsync,
   execAsyncWithRetry,
   getSubscriptionId,
   getTestFolder,
   getUniqueAppName,
-  setSimpleAuthSkuNameToB1,
   cleanUp,
   setSimpleAuthSkuNameToB1Bicep,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
+import { CliHelper } from "../../commonlib/cliHelper";
+import { Capability } from "../../commonlib/constants";
 
 describe("Create single tab", function () {
   const testFolder = getTestFolder();
   const appName = getUniqueAppName();
   const subscription = getSubscriptionId();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
     // clean up
-    if (isMultiEnvEnabled()) {
-      await cleanUp(appName, projectPath, true, false, false, true);
-    } else {
-      await cleanUp(appName, projectPath);
-    }
+    await cleanUp(appName, projectPath, true, false, false, true);
   });
 
   it("Create react app without Azure Function", async () => {
     // new a project ( tab only )
-    await execAsync(`teamsfx new --interactive false --app-name ${appName} --capabilities tab `, {
-      cwd: testFolder,
-      env: process.env,
-      timeout: 0,
-    });
-    console.log(`[Successfully] scaffold to ${projectPath}`);
+    await CliHelper.createProjectWithCapability(appName, testFolder, Capability.Tab);
 
     {
       // Validate scaffold
@@ -52,61 +44,23 @@ describe("Create single tab", function () {
   });
 
   it("Provision Resource: React app without function", async () => {
-    if (isMultiEnvEnabled()) {
-      await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
-    } else {
-      await setSimpleAuthSkuNameToB1(projectPath);
-    }
+    await setSimpleAuthSkuNameToB1Bicep(projectPath, env);
 
-    // set subscription
-    await execAsync(`teamsfx account set --subscription ${subscription}`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
+    await CliHelper.setSubscription(subscription, projectPath);
 
-    // provision
-    await execAsyncWithRetry(`teamsfx provision`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
+    await CliHelper.provisionProject(projectPath);
 
-    {
-      if (isMultiEnvEnabled()) {
-        // Validate provision
-        // Get context
-        const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+    // Validate provision
+    // Get context
+    const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-        // Validate Aad App
-        const aad = AadValidator.init(context, false, AppStudioLogin);
-        await AadValidator.validate(aad);
+    // Validate Aad App
+    const aad = AadValidator.init(context, false, AppStudioLogin);
+    await AadValidator.validate(aad);
 
-        // Validate Simple Auth
-        const simpleAuth = SimpleAuthValidator.init(context);
-        await SimpleAuthValidator.validate(simpleAuth, aad);
-
-        // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context, true);
-        await FrontendValidator.validateProvision(frontend);
-      } else {
-        // Validate provision
-        // Get context
-        const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-
-        // Validate Aad App
-        const aad = AadValidator.init(context, false, AppStudioLogin);
-        await AadValidator.validate(aad);
-
-        // Validate Simple Auth
-        const simpleAuth = SimpleAuthValidator.init(context);
-        await SimpleAuthValidator.validate(simpleAuth, aad);
-
-        // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
-        await FrontendValidator.validateProvision(frontend);
-      }
-    }
+    // Validate Tab Frontend
+    const frontend = FrontendValidator.init(context, true);
+    await FrontendValidator.validateProvision(frontend);
   });
 
   it("Deploy react app without Azure Function and SQL", async () => {
@@ -117,24 +71,11 @@ describe("Create single tab", function () {
       timeout: 0,
     });
 
-    {
-      if (isMultiEnvEnabled()) {
-        // Validate deployment
-        // Get context
-        const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
+    // Validate deployment
+    const context = await fs.readJSON(`${projectPath}/.fx/states/state.dev.json`);
 
-        // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context, true);
-        await FrontendValidator.validateDeploy(frontend);
-      } else {
-        // Validate deployment
-        // Get context
-        const context = await fs.readJSON(`${projectPath}/.fx/env.default.json`);
-
-        // Validate Tab Frontend
-        const frontend = FrontendValidator.init(context);
-        await FrontendValidator.validateDeploy(frontend);
-      }
-    }
+    // Validate Tab Frontend
+    const frontend = FrontendValidator.init(context, true);
+    await FrontendValidator.validateDeploy(frontend);
   });
 });

@@ -165,16 +165,20 @@ export class TaskDefinition {
   static ngrokStart(
     workspaceFolder: string,
     skipNgrok: boolean,
-    ngrokBinFolder: string
+    ngrokBinFolders: string[] | undefined
   ): ITaskDefinition {
     return {
       name: "ngrok start",
       command: skipNgrok
         ? "echo 'Skip starting ngrok, and will use predefined bot endpoint.'"
-        : "npx ngrok http 3978 --log=stdout",
-      env: {
-        PATH: `${ngrokBinFolder}${path.delimiter}${process.env.PATH ?? ""}`,
-      },
+        : "ngrok http 3978 --log=stdout",
+      env: ngrokBinFolders
+        ? {
+            PATH: `${ngrokBinFolders.join(path.delimiter)}${path.delimiter}${
+              process.env.PATH ?? ""
+            }`,
+          }
+        : undefined,
       cwd: path.join(workspaceFolder, FolderName.Bot),
       execOptions: {
         needShell: true,

@@ -20,13 +20,13 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-import { createV2Context } from "..";
+import { createV2Context, TOOLS } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { LocalCrypto } from "../crypto";
 import {
-  InvalidProjectError,
+  InvalidProjectSettingsFileError,
   NoProjectOpenedError,
   PathNotExistError,
   ReadFileError,
@@ -59,7 +59,11 @@ export const ProjectSettingsLoaderMW: Middleware = async (
 
     const validRes = validateSettings(projectSettings);
     if (validRes) {
-      ctx.result = err(InvalidProjectError(validRes));
+      ctx.result = err(
+        InvalidProjectSettingsFileError(
+          `reason: ${validRes}, projectSettings: ${JSON.stringify(projectSettings)}`
+        )
+      );
       return;
     }
 

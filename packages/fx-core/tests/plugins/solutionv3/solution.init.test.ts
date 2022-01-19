@@ -8,7 +8,9 @@ import * as uuid from "uuid";
 import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { getQuestionsForInit, init } from "../../../src/plugins/solution/fx-solution/v3/init";
 import { MockedV2Context } from "../solution/util";
-
+import * as path from "path";
+import * as os from "os";
+import { randomAppName } from "../../core/utils";
 describe("SolutionV3 - init", () => {
   it("init", async () => {
     const projectSettings: ProjectSettings = {
@@ -21,7 +23,7 @@ describe("SolutionV3 - init", () => {
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const res = await init(ctx, inputs);
     assert.isTrue(res.isOk());
@@ -47,7 +49,7 @@ describe("SolutionV3 - init", () => {
     const ctx = new MockedV2Context(projectSettings);
     const inputs: v2.InputsWithProjectPath = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
     };
     const res = await getQuestionsForInit(ctx, inputs);
     assert.isTrue(res.isOk());

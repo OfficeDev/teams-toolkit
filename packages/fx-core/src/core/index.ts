@@ -29,7 +29,6 @@ import {
   SolutionContext,
   Stage,
   StatesFolderName,
-  TelemetryReporter,
   Tools,
   UserCancelError,
   v2,
@@ -46,6 +45,7 @@ import { environmentManager } from "..";
 import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
 import { localSettingsFileName } from "../common/localSettingsProvider";
+import { TelemetryReporterInstance } from "../common/telemetry";
 import { getRootDirectory, mapToJson } from "../common/tools";
 import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
 import {
@@ -164,8 +164,11 @@ export function isVsCallingCli() {
   return featureFlagEnabled(FeatureFlagName.VSCallingCLI);
 }
 
+export function isVSProject(projectSettings: ProjectSettings) {
+  return projectSettings.programmingLanguage === "csharp";
+}
+
 export let Logger: LogProvider;
-export let telemetryReporter: TelemetryReporter | undefined;
 export let currentStage: Stage;
 export let TOOLS: Tools;
 export function setTools(tools: Tools) {
@@ -180,7 +183,7 @@ export class FxCore implements v3.ICore {
     this.tools = tools;
     TOOLS = tools;
     Logger = tools.logProvider;
-    telemetryReporter = tools.telemetryReporter;
+    TelemetryReporterInstance.telemetryReporter = tools.telemetryReporter;
   }
 
   /**
@@ -837,7 +840,7 @@ export class FxCore implements v3.ICore {
     if (ctx && ctx.solutionV3 && ctx.contextV2 && ctx.envInfoV3 && ctx.solutionV3.deploy) {
       const res = await ctx.solutionV3.deploy(
         ctx.contextV2,
-        inputs as v2.InputsWithProjectPath & { modules: string[] },
+        inputs as v3.SolutionDeployInputs,
         ctx.envInfoV3,
         TOOLS.tokenProvider
       );
@@ -1505,21 +1508,27 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
     if (ctx && ctx.solutionV3 && ctx.contextV2) {
-      return await ctx.solutionV3.addModule(
+      const addModuleRes = await ctx.solutionV3.addModule(
         ctx.contextV2,
-        {},
-        inputs as v2.InputsWithProjectPath & { capabilities?: string[] }
+        inputs as v2.InputsWithProjectPath & { capabilities: string[] },
+        ctx.localSettings
       );
+      if (addModuleRes.isErr()) {
+        return err(addModuleRes.error);
+      }
+      ctx.localSettings = addModuleRes.value; // return back local settings
     }
     return ok(Void);
   }
   @hooks([
     ErrorHandlerMW,
     ProjectSettingsLoaderMW_V3,
+    LocalSettingsLoaderMW,
     SolutionLoaderMW_V3,
     QuestionModelMW,
     ContextInjectorMW,
     ProjectSettingsWriterMW,
+    LocalSettingsWriterMW,
   ])
   async addModule(
     inputs: v2.InputsWithProjectPath,
@@ -1674,7 +1683,7 @@ export function undefinedName(objs: any[], names: string[]) {
 }
 
 export function getProjectSettingsVersion() {
-  return "2.0.0";
+  return "2.1.0";
 }
 
 export * from "./error";

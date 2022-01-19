@@ -19,7 +19,7 @@ import _ from "lodash";
 import path from "path";
 import { newProjectSettings } from "../../../src";
 import { getQuestionsForScaffolding } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
-import { MockTools } from "../../core/utils";
+import { MockTools, randomAppName } from "../../core/utils";
 import { assert } from "console";
 import { TestHelper } from "./helper";
 import {
@@ -34,7 +34,7 @@ import {
   identityPlugin,
 } from "../../constants";
 import mockedEnv from "mocked-env";
-
+import * as os from "os";
 chai.use(chaiAsPromised);
 const expect = chai.expect;
 
@@ -165,7 +165,10 @@ describe("Solution scaffold() reading valid manifest file", () => {
       permissionRequestProvider: tools.permissionRequestProvider!,
       projectSetting: newProjectSettings(),
     };
-    const inputs: Inputs = { platform: Platform.CLI, projectPath: "." };
+    const inputs: Inputs = {
+      platform: Platform.CLI,
+      projectPath: path.join(os.tmpdir(), randomAppName()),
+    };
     const res = await getQuestionsForScaffolding(contextv2, inputs);
     assert(res.isOk());
   });

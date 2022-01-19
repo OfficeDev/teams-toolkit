@@ -12,7 +12,7 @@
     "url": "git+https://github.com/OfficeDev/TeamsFx.git"
   },
   "scripts": {
-    "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css src/**/*.sh src/**/*.ps1 lib/",
+    "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css lib/",
     "build": "rimraf lib && tsc -p ./ && npm run copy-files",
     "watch": "rimraf lib && npm run copy-files && tsc -w -p ./",
     "package": "rimraf lib && node --max-old-space-size=4096 node_modules/webpack/bin/webpack.js --mode production --config ./webpack.config.js",
@@ -27,7 +27,8 @@
     "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"{src,tests}/**/*.ts\" \"*.{js,json}\"",
     "lint:fix": "eslint \"src/**/*.ts\" \"tests/**/*.ts\" --fix",
     "lint": "eslint \"src/**/*.ts\" \"tests/**/*.ts\"",
-    "precommit": "lint-staged"
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged"
   },
   "keywords": [
     "teamsfx",
@@ -72,6 +73,7 @@
     "css-loader": "^5.2.5",
     "eslint": "^7.9.0",
     "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
     "html-webpack-plugin": "^5.3.1",
     "jsonschema": "^1.4.0",

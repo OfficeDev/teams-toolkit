@@ -129,7 +129,7 @@ jobs:
           done
 
   report-coverage:
-    if: ${{ github.event_name == 'push' }}
+    if: ${{ github.event.pull_request.merged }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout

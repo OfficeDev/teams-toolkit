@@ -12,20 +12,35 @@ import {
   IStaticTab,
   TeamsAppManifest,
   PluginContext,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { Service, Inject } from "typedi";
+import { Service } from "typedi";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
-import { AppStudioPlugin } from "../";
 import { convert2PluginContext } from "../../utils4v2";
 import { AppStudioResultFactory } from "../results";
 import { AppStudioError } from "../errors";
-
+import {
+  init,
+  addCapabilities,
+  loadManifest,
+  saveManifest,
+  capabilityExceedLimit,
+} from "../manifestTemplate";
+import { getTemplatesFolder } from "../../../../folder";
+import * as path from "path";
+import fs from "fs-extra";
+import {
+  APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
+  COLOR_TEMPLATE,
+  DEFAULT_COLOR_PNG_FILENAME,
+  DEFAULT_OUTLINE_PNG_FILENAME,
+  MANIFEST_RESOURCES,
+  OUTLINE_TEMPLATE,
+} from "../constants";
 @Service(BuiltInResourcePluginNames.appStudio)
 export class AppStudioPluginV3 {
   name = "fx-resource-appstudio";
   displayName = "App Studio";
-  @Inject("AppStudioPlugin")
-  plugin!: AppStudioPlugin;
 
   /**
    * Generate initial manifest template file, for both local debug & remote
@@ -34,8 +49,17 @@ export class AppStudioPluginV3 {
    * @returns
    */
   async init(ctx: v2.Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
-    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
-    return await this.plugin.init(pluginContext);
+    const res = await init(inputs.projectPath);
+    if (res.isErr()) return err(res.error);
+    const templatesFolder = getTemplatesFolder();
+    const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
+    const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
+    const appPackageDir = path.resolve(inputs.projectPath, APP_PACKAGE_FOLDER_FOR_MULTI_ENV);
+    const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
+    await fs.ensureDir(resourcesDir);
+    await fs.copy(defaultColorPath, path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME));
+    await fs.copy(defaultOutlinePath, path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME));
+    return ok(undefined);
   }
 
   /**
@@ -58,7 +82,7 @@ export class AppStudioPluginV3 {
         }
     )[]
   ): Promise<Result<any, FxError>> {
-    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
+    const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
     capabilities.map(async (capability) => {
       const exceedLimit = await this.capabilityExceedLimit(ctx, inputs, capability.name);
       if (exceedLimit.isErr()) {
@@ -73,7 +97,7 @@ export class AppStudioPluginV3 {
         );
       }
     });
-    return await this.plugin.addCapabilities(pluginContext, capabilities);
+    return await addCapabilities(pluginContext.root, capabilities);
   }
 
   /**
@@ -84,8 +108,18 @@ export class AppStudioPluginV3 {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> {
-    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
-    return await this.plugin.loadManifest(pluginContext);
+    const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
+    const localManifest = await loadManifest(pluginContext.root, true);
+    if (localManifest.isErr()) {
+      return err(localManifest.error);
+    }
+
+    const remoteManifest = await loadManifest(pluginContext.root, false);
+    if (remoteManifest.isErr()) {
+      return err(remoteManifest.error);
+    }
+
+    return ok({ local: localManifest.value, remote: remoteManifest.value });
   }
 
   /**
@@ -94,13 +128,23 @@ export class AppStudioPluginV3 {
    * @param inputs
    * @returns
    */
-  async SaveManifest(
+  async saveManifest(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
   ): Promise<Result<any, FxError>> {
-    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
-    return await this.plugin.saveManifest(pluginContext, manifest);
+    const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
+    let res = await saveManifest(pluginContext.root, manifest.local, true);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+
+    res = await saveManifest(pluginContext.root, manifest.remote, false);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+
+    return ok(undefined);
   }
 
   /**
@@ -115,7 +159,7 @@ export class AppStudioPluginV3 {
     inputs: v2.InputsWithProjectPath,
     capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
   ): Promise<Result<boolean, FxError>> {
-    const pluginContext: PluginContext = convert2PluginContext(this.plugin.name, ctx, inputs);
-    return await this.plugin.capabilityExceedLimit(pluginContext, capability);
+    const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
+    return await capabilityExceedLimit(pluginContext.root, capability);
   }
 }

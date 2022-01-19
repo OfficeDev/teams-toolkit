@@ -29,7 +29,6 @@ import {
   isValidProject,
 } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
-import { enableMigrateV1 } from "./utils/migrateV1";
 import {
   canUpgradeToArmAndMultiEnv,
   isSPFxProject,
@@ -78,13 +77,6 @@ export async function activate(context: vscode.ExtensionContext) {
     .getTreatmentVariableAsync(
       TreatmentVariables.VSCodeConfig,
       TreatmentVariables.EmbeddedSurvey,
-      true
-    )) as boolean | undefined;
-  TreatmentVariableValue.removeCreateFromSample = (await exp
-    .getExpService()
-    .getTreatmentVariableAsync(
-      TreatmentVariables.VSCodeConfig,
-      TreatmentVariables.RemoveCreateFromSample,
       true
     )) as boolean | undefined;
 
@@ -142,7 +134,7 @@ export async function activate(context: vscode.ExtensionContext) {
   // localdebug session starts from environment checker
   const validateDependenciesCmd = vscode.commands.registerCommand(
     "fx-extension.validate-dependencies",
-    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateDependenciesHandler)
+    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateAzureDependenciesHandler)
   );
   context.subscriptions.push(validateDependenciesCmd);
 
@@ -152,6 +144,13 @@ export async function activate(context: vscode.ExtensionContext) {
     () => Correlator.runWithId(startLocalDebugSession(), handlers.validateSpfxDependenciesHandler)
   );
   context.subscriptions.push(validateSpfxDependenciesCmd);
+
+  // localdebug session starts from prerequisites checker
+  const validatePrerequisitesCmd = vscode.commands.registerCommand(
+    "fx-extension.validate-local-prerequisites",
+    () => Correlator.runWithId(startLocalDebugSession(), handlers.validateLocalPrerequisitesHandler)
+  );
+  context.subscriptions.push(validatePrerequisitesCmd);
 
   // 1.8 pre debug check command (hide from UI)
   const preDebugCheckCmd = vscode.commands.registerCommand("fx-extension.pre-debug-check", () =>
@@ -420,9 +419,7 @@ export async function activate(context: vscode.ExtensionContext) {
   const localDebugDataSelector = {
     language: "json",
     scheme: "file",
-    pattern: isMultiEnvEnabled()
-      ? `**/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsJsonName}`
-      : ``,
+    pattern: `**/.${ConfigFolderName}/${InputConfigsFolderName}/${localSettingsJsonName}`,
   };
 
   const adaptiveCardCodeLensProvider = new AdaptiveCardCodeLensProvider();
@@ -500,13 +497,6 @@ export async function activate(context: vscode.ExtensionContext) {
   context.subscriptions.push(
     vscode.workspace.onWillSaveTextDocument(handlers.saveTextDocumentHandler)
   );
-
-  ext.context.subscriptions.push(vscode.workspace.onDidChangeWorkspaceFolders(enableMigrateV1));
-  enableMigrateV1();
-  const migrateV1Cmd = vscode.commands.registerCommand("fx-extension.migrateV1Project", () =>
-    Correlator.run(handlers.migrateV1ProjectHandler)
-  );
-  context.subscriptions.push(migrateV1Cmd);
 
   const migrateTeamsTabAppCmd = vscode.commands.registerCommand(
     "fx-extension.migrateTeamsTabApp",

@@ -7,13 +7,18 @@ import * as fs from "fs";
 import path from "path";
 
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
+import { getActivePluginsFromProjectSetting } from "../e2e/commonUtils";
+import { PluginId, StateConfigKey } from "./constants";
 
 import {
   getSubscriptionIdFromResourceId,
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getWebappServicePlan,
-  getWebappConfigs,
+  getWebappSettings,
+  getExpectedM365ClientSecret,
+  getExpectedM365ApplicationIdUri,
+  getExpectedBotClientSecret,
 } from "./utilities";
 
 const baseUrlListDeployments = (subscriptionId: string, rg: string, name: string) =>
@@ -29,107 +34,41 @@ enum BaseConfig {
   M365_AUTHORITY_HOST = "M365_AUTHORITY_HOST",
   M365_CLIENT_ID = "M365_CLIENT_ID",
   M365_CLIENT_SECRET = "M365_CLIENT_SECRET",
+  IDENTITY_ID = "IDENTITY_ID",
   M365_TENANT_ID = "M365_TENANT_ID",
 }
-
-class DependentPluginInfo {
-  public static readonly botPluginName = "fx-resource-bot";
-  public static readonly botId = "botId";
-
-  public static readonly solutionPluginName = "solution";
-  public static readonly resourceGroupName: string = "resourceGroupName";
-  public static readonly subscriptionId: string = "subscriptionId";
-  public static readonly resourceNameSuffix: string = "resourceNameSuffix";
-  public static readonly location: string = "location";
-  public static readonly programmingLanguage: string = "programmingLanguage";
-
-  public static readonly aadPluginName: string = "fx-resource-aad-app-for-teams";
-  public static readonly aadClientId: string = "clientId";
-  public static readonly aadClientSecret: string = "clientSecret";
-  public static readonly oauthHost: string = "oauthHost";
-  public static readonly teamsAppTenantId: string = "teamsAppTenantId";
-  public static readonly applicationIdUris: string = "applicationIdUris";
+enum FunctionConfig {
+  API_ENDPOINT = "API_ENDPOINT",
 }
-
-interface IBotObject {
-  siteName: string;
-  appServicePlan?: string;
-  expectValues: Map<string, string>;
+enum SQLConfig {
+  SQL_DATABASE_NAME = "SQL_DATABASE_NAME",
+  SQL_ENDPOINT = "SQL_ENDPOINT",
 }
-
 export class BotValidator {
-  private static subscriptionId: string;
-  private static rg: string;
+  private ctx: any;
+  private projectPath: string;
+  private env: string;
+  private subscriptionId: string;
+  private rg: string;
+  private botAppSiteName: string;
 
-  private static botWebAppResourceIdKeyName = "botWebAppResourceId";
-
-  public static init(ctx: any, insiderPreview = false): IBotObject {
+  constructor(ctx: any, projectPath: string, env: string) {
     console.log("Start to init validator for Bot.");
 
-    let botObject: IBotObject;
+    this.ctx = ctx;
+    this.projectPath = projectPath;
+    this.env = env;
 
-    if (insiderPreview) {
-      const resourceId = ctx[DependentPluginInfo.botPluginName][this.botWebAppResourceIdKeyName];
-      this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
-      this.rg = getResourceGroupNameFromResourceId(resourceId);
-
-      const expectValues = new Map<string, string>([]);
-      expectValues.set(
-        BaseConfig.BOT_ID,
-        ctx[DependentPluginInfo.botPluginName][DependentPluginInfo.botId] as string
-      );
-      expectValues.set(
-        BaseConfig.M365_APPLICATION_ID_URI,
-        ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.applicationIdUris] as string
-      );
-      expectValues.set(BaseConfig.M365_AUTHORITY_HOST, "https://login.microsoftonline.com");
-      expectValues.set(
-        BaseConfig.M365_CLIENT_ID,
-        ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.aadClientId] as string
-      );
-      expectValues.set(
-        BaseConfig.M365_TENANT_ID,
-        ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.teamsAppTenantId] as string
-      );
-
-      botObject = {
-        siteName: getSiteNameFromResourceId(resourceId),
-        expectValues: expectValues,
-      };
-    } else {
-      botObject = ctx[DependentPluginInfo.botPluginName] as IBotObject;
-      chai.assert.exists(botObject);
-
-      this.subscriptionId =
-        ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.subscriptionId];
-      chai.assert.exists(this.subscriptionId);
-
-      this.rg = ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.resourceGroupName];
-      chai.assert.exists(this.rg);
-
-      const expectValues = new Map<string, string>([]);
-      expectValues.set(
-        BaseConfig.BOT_ID,
-        ctx[DependentPluginInfo.botPluginName][DependentPluginInfo.botId] as string
-      );
-      expectValues.set(
-        BaseConfig.M365_APPLICATION_ID_URI,
-        ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.applicationIdUris] as string
-      );
-      expectValues.set(BaseConfig.M365_AUTHORITY_HOST, "https://login.microsoftonline.com");
-      expectValues.set(
-        BaseConfig.M365_CLIENT_ID,
-        ctx[DependentPluginInfo.aadPluginName][DependentPluginInfo.aadClientId] as string
-      );
-      expectValues.set(
-        BaseConfig.M365_TENANT_ID,
-        ctx[DependentPluginInfo.solutionPluginName][DependentPluginInfo.teamsAppTenantId] as string
-      );
-      botObject.expectValues = expectValues;
-    }
+    const resourceId = ctx[PluginId.Bot][StateConfigKey.botWebAppResourceId];
+    chai.assert.exists(resourceId);
+    this.subscriptionId = getSubscriptionIdFromResourceId(resourceId);
+    chai.assert.exists(this.subscriptionId);
+    this.rg = getResourceGroupNameFromResourceId(resourceId);
+    chai.assert.exists(this.rg);
+    this.botAppSiteName = getSiteNameFromResourceId(resourceId);
+    chai.assert.exists(this.botAppSiteName);
 
     console.log("Successfully init validator for Bot.");
-    return botObject;
   }
 
   public static async validateScaffold(
@@ -148,47 +87,78 @@ export class BotValidator {
     });
   }
 
-  public static async validateProvision(
-    botObject: IBotObject,
-    insiderPreviewEnabled = false
-  ): Promise<void> {
+  public async validateProvision(): Promise<void> {
     console.log("Start to validate Bot Provision.");
 
     const tokenProvider = MockAzureAccountProvider;
     const tokenCredential = await tokenProvider.getAccountCredentialAsync();
     const token = (await tokenCredential?.getToken())?.accessToken;
 
+    const activeResourcePlugins = await getActivePluginsFromProjectSetting(this.projectPath);
+    chai.assert.isArray(activeResourcePlugins);
+
     console.log("Validating app settings.");
-    const response = await getWebappConfigs(
+    const response = await getWebappSettings(
       this.subscriptionId,
       this.rg,
-      botObject.siteName,
+      this.botAppSiteName,
       token as string
     );
     chai.assert.exists(response);
+    chai.assert.equal(
+      response[BaseConfig.BOT_ID],
+      this.ctx[PluginId.Bot][StateConfigKey.botId] as string
+    );
+    chai.assert.equal(
+      response[BaseConfig.BOT_PASSWORD],
+      await getExpectedBotClientSecret(this.ctx, this.projectPath, this.env, activeResourcePlugins)
+    );
+    chai.assert.equal(
+      response[BaseConfig.M365_AUTHORITY_HOST],
+      this.ctx[PluginId.Aad][StateConfigKey.oauthHost] as string
+    );
+    chai.assert.equal(
+      response[BaseConfig.M365_CLIENT_ID],
+      this.ctx[PluginId.Aad][StateConfigKey.clientId] as string
+    );
+    chai.assert.equal(
+      response[BaseConfig.M365_CLIENT_SECRET],
+      await getExpectedM365ClientSecret(this.ctx, this.projectPath, this.env, activeResourcePlugins)
+    );
+    chai.assert.equal(
+      response[BaseConfig.M365_TENANT_ID],
+      this.ctx[PluginId.Aad][StateConfigKey.tenantId] as string
+    );
+    chai.assert.equal(
+      response[BaseConfig.M365_APPLICATION_ID_URI],
+      getExpectedM365ApplicationIdUri(this.ctx, activeResourcePlugins)
+    );
+    chai.assert.equal(
+      response[BaseConfig.IDENTITY_ID],
+      this.ctx[PluginId.Identity][StateConfigKey.identityClientId] as string
+    );
 
-    Object.values(BaseConfig).forEach((v: string) => {
-      chai.assert.exists(response[v]);
-      if (botObject.expectValues.get(v)) {
-        chai.assert.equal(botObject.expectValues.get(v), response[v]);
-      }
-    });
-
-    if (!insiderPreviewEnabled) {
-      console.log("Validating app service plan.");
-      const servicePlanResponse = await getWebappServicePlan(
-        this.subscriptionId,
-        this.rg,
-        botObject.appServicePlan!,
-        token as string
+    if (activeResourcePlugins.includes(PluginId.Function)) {
+      chai.assert.equal(
+        response[FunctionConfig.API_ENDPOINT],
+        this.ctx[PluginId.Function][StateConfigKey.functionEndpoint] as string
       );
-      chai.assert(servicePlanResponse, botObject.appServicePlan);
+    }
+    if (activeResourcePlugins.includes(PluginId.AzureSQL)) {
+      chai.assert.equal(
+        response[SQLConfig.SQL_ENDPOINT],
+        this.ctx[PluginId.AzureSQL][StateConfigKey.sqlEndpoint] as string
+      );
+      chai.assert.equal(
+        response[SQLConfig.SQL_DATABASE_NAME],
+        this.ctx[PluginId.AzureSQL][StateConfigKey.databaseName] as string
+      );
     }
 
     console.log("Successfully validate Bot Provision.");
   }
 
-  public static async validateDeploy(botObject: IBotObject): Promise<void> {
+  public async validateDeploy(): Promise<void> {
     // ToDo: uncomment this function in the future.
     /*
         console.log("Start to validate Bot Deployment.");

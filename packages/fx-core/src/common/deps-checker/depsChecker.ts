@@ -18,6 +18,7 @@ export interface DepsInfo {
   isLinuxSupported: boolean;
   installVersion?: string;
   supportedVersions: string[];
+  binFolders?: string[];
   details: Map<string, string>;
 }
 

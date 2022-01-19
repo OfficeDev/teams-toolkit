@@ -230,6 +230,7 @@ export interface Inputs extends Json {
   ignoreEnvInfo?: boolean;
   env?: string;
   projectId?: string;
+  existingResources?: string[];
 }
 
 export interface ProjectConfig {

@@ -15,36 +15,34 @@ import {
 import { StorageManagementClient } from "@azure/arm-storage";
 import { StringDictionary } from "@azure/arm-appservice/esm/models";
 import { WebSiteManagementClient, WebSiteManagementModels } from "@azure/arm-appservice";
-import { v4 as uuid } from "uuid";
-import * as fs from "fs-extra";
 
 import { AzureClientFactory, AzureLib } from "./utils/azure-client";
 import {
   ConfigFunctionAppError,
+  FetchConfigError,
+  FindAppError,
+  FunctionNameConflictError,
   GetConnectionStringError,
   InitAzureSDKError,
   InstallNpmPackageError,
   InstallTeamsfxBindingError,
   ProvisionError,
-  ValidationError,
+  RegisterResourceProviderError,
   runWithErrorCatchAndThrow,
   runWithErrorCatchAndWrap,
-  FunctionNameConflictError,
-  FetchConfigError,
-  RegisterResourceProviderError,
-  FindAppError,
+  ValidationError,
 } from "./resources/errors";
 import {
   AzureInfo,
-  FunctionBicep,
   DefaultProvisionConfigs,
   DefaultValues,
   DependentPluginInfo,
+  FunctionBicep,
+  FunctionBicepFile,
   FunctionPluginInfo,
   FunctionPluginPathInfo,
   QuestionValidationFunc,
   RegularExpr,
-  FunctionBicepFile,
 } from "./constants";
 import { ErrorMessages, InfoMessages } from "./resources/message";
 import {
@@ -57,33 +55,35 @@ import {
   ResourceType,
 } from "./enums";
 import { FunctionDeploy } from "./ops/deploy";
-import { FunctionNaming, FunctionProvision } from "./ops/provision";
+import { FunctionProvision } from "./ops/provision";
 import { FunctionScaffold } from "./ops/scaffold";
-import { FxResult, FunctionPluginResultFactory as ResultFactory } from "./result";
+import { FunctionPluginResultFactory as ResultFactory, FxResult } from "./result";
 import { Logger } from "./utils/logger";
 import {
   PostProvisionSteps,
   PreDeploySteps,
   ProvisionSteps,
-  StepGroup,
   step,
+  StepGroup,
 } from "./resources/steps";
-import { DotnetChecker } from "./utils/depsChecker/dotnetChecker";
-import { Messages, isLinux, dotnetManualInstallHelpLink } from "./utils/depsChecker/common";
-import { DepsCheckerError } from "./utils/depsChecker/errors";
+import { funcDepsHelper } from "./utils/depsChecker/funcHelper";
+import { Messages } from "../../../common/deps-checker/constant/message";
+import { isLinux } from "../../../common/deps-checker/util/system";
+import { dotnetManualInstallHelpLink } from "../../../common/deps-checker/constant/helpLink";
+import { DepsCheckerError, LinuxNotSupportedError } from "../../../common/deps-checker/depsError";
+import { CheckerFactory } from "../../../common/deps-checker/checkerFactory";
+import { DepsChecker, DepsType } from "../../../common/deps-checker/depsChecker";
+import { funcDepsTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
+import { funcDepsLogger } from "./utils/depsChecker/funcPluginLogger";
 import { getNodeVersion } from "./utils/node-version";
-import { FuncPluginAdapter } from "./utils/depsChecker/funcPluginAdapter";
-import { funcPluginLogger } from "./utils/depsChecker/funcPluginLogger";
-import { FuncPluginTelemetry } from "./utils/depsChecker/funcPluginTelemetry";
 import { TelemetryHelper } from "./utils/telemetry-helper";
 import { getTemplatesFolder } from "../../../folder";
 import { ArmTemplateResult } from "../../../common/armInterface";
-import { Bicep, ConstantString } from "../../../common/constants";
+import { Bicep } from "../../../common/constants";
 import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
-  isArmSupportEnabled,
 } from "../../../common";
 import { functionNameQuestion } from "./question";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
@@ -126,32 +126,9 @@ export class FunctionPluginImpl {
     this.config.defaultFunctionName = ctx.projectSettings?.defaultFunctionName as string;
 
     this.config.functionEndpoint = ctx.config.get(FunctionConfigKey.functionEndpoint) as string;
-    if (isArmSupportEnabled()) {
-      this.config.functionAppResourceId = ctx.config.get(
-        FunctionConfigKey.functionAppResourceId
-      ) as string;
-    } else {
-      const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
-        DependentPluginInfo.solutionPluginName
-      );
-      this.config.resourceNameSuffix = solutionConfig?.get(
-        DependentPluginInfo.resourceNameSuffix
-      ) as string;
-      this.config.resourceGroupName = solutionConfig?.get(
-        DependentPluginInfo.resourceGroupName
-      ) as string;
-      this.config.subscriptionId = solutionConfig?.get(
-        DependentPluginInfo.subscriptionId
-      ) as string;
-      this.config.location = solutionConfig?.get(DependentPluginInfo.location) as string;
-      this.config.functionAppName = ctx.config.get(FunctionConfigKey.functionAppName) as string;
-      this.config.storageAccountName = ctx.config.get(
-        FunctionConfigKey.storageAccountName
-      ) as string;
-      this.config.appServicePlanName = ctx.config.get(
-        FunctionConfigKey.appServicePlanName
-      ) as string;
-    }
+    this.config.functionAppResourceId = ctx.config.get(
+      FunctionConfigKey.functionAppResourceId
+    ) as string;
 
     /* Always validate after sync for safety and security. */
     this.validateConfig();
@@ -355,39 +332,6 @@ export class FunctionPluginImpl {
 
   public async preProvision(ctx: PluginContext): Promise<FxResult> {
     await this.syncConfigFromContext(ctx);
-
-    if (
-      !isArmSupportEnabled() &&
-      (!this.config.functionAppName ||
-        !this.config.storageAccountName ||
-        !this.config.appServicePlanName)
-    ) {
-      const teamsAppName: string = ctx.projectSettings!.appName;
-      const suffix: string = this.config.resourceNameSuffix ?? uuid().substr(0, 6);
-
-      if (!this.config.functionAppName) {
-        this.config.functionAppName = FunctionNaming.generateFunctionAppName(
-          teamsAppName,
-          DefaultProvisionConfigs.nameSuffix,
-          suffix
-        );
-        Logger.info(InfoMessages.generateFunctionAppName(this.config.functionAppName));
-      }
-
-      if (!this.config.storageAccountName) {
-        this.config.storageAccountName = FunctionNaming.generateStorageAccountName(
-          teamsAppName,
-          DefaultProvisionConfigs.nameSuffix,
-          suffix
-        );
-        Logger.info(InfoMessages.generateStorageAccountName(this.config.storageAccountName));
-      }
-
-      if (!this.config.appServicePlanName) {
-        this.config.appServicePlanName = this.config.functionAppName;
-        Logger.info(InfoMessages.generateAppServicePlanName(this.config.appServicePlanName));
-      }
-    }
 
     this.syncConfigToContext(ctx);
     return ResultFactory.Success();
@@ -611,15 +555,6 @@ export class FunctionPluginImpl {
     );
     Logger.info(InfoMessages.functionAppSettingsUpdated);
 
-    if (!isArmSupportEnabled()) {
-      await this.updateAuthSetting(
-        ctx,
-        webSiteManagementClient,
-        resourceGroupName,
-        functionAppName
-      );
-    }
-
     this.syncConfigToContext(ctx);
 
     return ResultFactory.Success();
@@ -671,8 +606,7 @@ export class FunctionPluginImpl {
       "function",
       "bicep"
     );
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const configFuncTemplateFilePath = path.join(
@@ -703,8 +637,7 @@ export class FunctionPluginImpl {
       "function",
       "bicep"
     );
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
 
@@ -805,36 +738,21 @@ export class FunctionPluginImpl {
   }
 
   private getFunctionAppName(): string {
-    return isArmSupportEnabled()
-      ? getSiteNameFromResourceId(
-          this.checkAndGet(
-            this.config.functionAppResourceId,
-            FunctionConfigKey.functionAppResourceId
-          )
-        )
-      : this.checkAndGet(this.config.functionAppName, FunctionConfigKey.functionAppName);
+    return getSiteNameFromResourceId(
+      this.checkAndGet(this.config.functionAppResourceId, FunctionConfigKey.functionAppResourceId)
+    );
   }
 
   private getFunctionAppResourceGroupName(): string {
-    return isArmSupportEnabled()
-      ? getResourceGroupNameFromResourceId(
-          this.checkAndGet(
-            this.config.functionAppResourceId,
-            FunctionConfigKey.functionAppResourceId
-          )
-        )
-      : this.checkAndGet(this.config.resourceGroupName, FunctionConfigKey.resourceGroupName);
+    return getResourceGroupNameFromResourceId(
+      this.checkAndGet(this.config.functionAppResourceId, FunctionConfigKey.functionAppResourceId)
+    );
   }
 
   private getFunctionAppSubscriptionId(): string {
-    return isArmSupportEnabled()
-      ? getSubscriptionIdFromResourceId(
-          this.checkAndGet(
-            this.config.functionAppResourceId,
-            FunctionConfigKey.functionAppResourceId
-          )
-        )
-      : this.checkAndGet(this.config.subscriptionId, FunctionConfigKey.subscriptionId);
+    return getSubscriptionIdFromResourceId(
+      this.checkAndGet(this.config.functionAppResourceId, FunctionConfigKey.functionAppResourceId)
+    );
   }
 
   private async getSite(
@@ -843,19 +761,12 @@ export class FunctionPluginImpl {
     resourceGroupName: string,
     functionAppName: string
   ): Promise<Site> {
-    if (isArmSupportEnabled()) {
-      const site = await AzureLib.findFunctionApp(client, resourceGroupName, functionAppName);
-      if (!site) {
-        throw new FindAppError();
-      } else {
-        const nodeVersion = await this.getValidNodeVersion(ctx);
-        FunctionProvision.pushAppSettings(site, "WEBSITE_NODE_DEFAULT_VERSION", "~" + nodeVersion);
-        return site;
-      }
+    const site = await AzureLib.findFunctionApp(client, resourceGroupName, functionAppName);
+    if (!site) {
+      throw new FindAppError();
     } else {
-      // Retrieve and do cleanup
-      const site = this.checkAndGet(this.config.site, FunctionConfigKey.site);
-      this.config.site = undefined;
+      const nodeVersion = await this.getValidNodeVersion(ctx);
+      FunctionProvision.pushAppSettings(site, "WEBSITE_NODE_DEFAULT_VERSION", "~" + nodeVersion);
       return site;
     }
   }
@@ -891,101 +802,6 @@ export class FunctionPluginImpl {
       this.config.functionEndpoint,
       FunctionConfigKey.functionEndpoint
     );
-    if (!isArmSupportEnabled()) {
-      FunctionProvision.updateFunctionSettingsSelf(site, functionEndpoint);
-
-      const aadConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
-        DependentPluginInfo.aadPluginName
-      );
-      if (this.isPluginEnabled(ctx, DependentPluginInfo.aadPluginName) && aadConfig) {
-        Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.aadPluginName));
-
-        const clientId: string = this.checkAndGet(
-          aadConfig.get(DependentPluginInfo.aadClientId) as string,
-          "AAD client Id"
-        );
-        const clientSecret: string = this.checkAndGet(
-          aadConfig.get(DependentPluginInfo.aadClientSecret) as string,
-          "AAD secret"
-        );
-        const oauthHost: string = this.checkAndGet(
-          aadConfig.get(DependentPluginInfo.oauthHost) as string,
-          "OAuth Host"
-        );
-        const tenantId: string = this.checkAndGet(
-          aadConfig.get(DependentPluginInfo.tenantId) as string,
-          "Tenant Id"
-        );
-        const applicationIdUris: string = this.checkAndGet(
-          aadConfig.get(DependentPluginInfo.applicationIdUris) as string,
-          "Application Id URI"
-        );
-
-        FunctionProvision.updateFunctionSettingsForAAD(
-          site,
-          clientId,
-          clientSecret,
-          oauthHost,
-          tenantId,
-          applicationIdUris
-        );
-      }
-
-      const frontendConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
-        DependentPluginInfo.frontendPluginName
-      );
-      if (this.isPluginEnabled(ctx, DependentPluginInfo.frontendPluginName) && frontendConfig) {
-        Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.frontendPluginName));
-
-        const frontendEndpoint: string = this.checkAndGet(
-          frontendConfig.get(DependentPluginInfo.frontendEndpoint) as string,
-          "frontend endpoint"
-        );
-
-        FunctionProvision.updateFunctionSettingsForFrontend(site, frontendEndpoint);
-      }
-
-      const sqlConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
-        DependentPluginInfo.sqlPluginName
-      );
-      const identityConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
-        DependentPluginInfo.identityPluginName
-      );
-      if (
-        this.isPluginEnabled(ctx, DependentPluginInfo.sqlPluginName) &&
-        this.isPluginEnabled(ctx, DependentPluginInfo.identityPluginName) &&
-        sqlConfig &&
-        identityConfig
-      ) {
-        Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.sqlPluginName));
-        Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.identityPluginName));
-
-        const identityId: string = this.checkAndGet(
-          identityConfig.get(DependentPluginInfo.identityClientId) as string,
-          "identity client id"
-        );
-        const databaseName: string = this.checkAndGet(
-          sqlConfig.get(DependentPluginInfo.databaseName) as string,
-          "database name"
-        );
-        const sqlEndpoint: string = this.checkAndGet(
-          sqlConfig.get(DependentPluginInfo.sqlEndpoint) as string,
-          "sql endpoint"
-        );
-        const identityResourceId: string = this.checkAndGet(
-          identityConfig.get(DependentPluginInfo.identityResourceId) as string,
-          "identity resource id"
-        );
-
-        FunctionProvision.updateFunctionSettingsForSQL(
-          site,
-          identityId,
-          databaseName,
-          sqlEndpoint,
-          identityResourceId
-        );
-      }
-    }
 
     const apimConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
       DependentPluginInfo.apimPluginName
@@ -1045,47 +861,28 @@ export class FunctionPluginImpl {
   }
 
   private async handleDotnetChecker(ctx: PluginContext): Promise<void> {
-    try {
-      const telemetry = new FuncPluginTelemetry();
-      const funcPluginAdapter = new FuncPluginAdapter(ctx, telemetry);
-      await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
-        const dotnetChecker = new DotnetChecker(funcPluginAdapter, funcPluginLogger, telemetry);
-        try {
-          if (!(await dotnetChecker.isEnabled()) || (await dotnetChecker.isInstalled())) {
-            return;
-          }
-        } catch (error) {
-          funcPluginLogger.debug(InfoMessages.failedToCheckDotnet(error));
-          funcPluginAdapter.handleDotnetError(error);
+    const dotnetChecker: DepsChecker = CheckerFactory.createChecker(
+      DepsType.Dotnet,
+      funcDepsLogger,
+      funcDepsTelemetry
+    );
+    await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
+      try {
+        if (!(await funcDepsHelper.dotnetCheckerEnabled(ctx))) {
           return;
         }
-
-        if (isLinux()) {
-          // TODO: handle linux installation
-          if (!(await funcPluginAdapter.handleDotnetForLinux(dotnetChecker))) {
-            // NOTE: this is a temporary fix for Linux, to make the error message more readable.
-            const message = await funcPluginAdapter.generateMsg(
-              Messages.linuxDepsNotFoundHelpLinkMessage,
-              [dotnetChecker]
-            );
-            funcPluginAdapter.handleDotnetError(
-              new DepsCheckerError(message, dotnetManualInstallHelpLink)
-            );
-          }
+        await dotnetChecker.resolve();
+      } catch (error) {
+        if (error instanceof LinuxNotSupportedError) {
           return;
         }
-
-        try {
-          await dotnetChecker.install();
-        } catch (error) {
-          await funcPluginLogger.printDetailLog();
-          funcPluginLogger.error(InfoMessages.failedToInstallDotnet(error));
-          funcPluginAdapter.handleDotnetError(error);
-        }
-      });
-    } finally {
-      funcPluginLogger.cleanup();
-    }
+        funcDepsLogger.error(InfoMessages.failedToInstallDotnet(error));
+        await funcDepsLogger.printDetailLog();
+        throw funcDepsHelper.transferError(error);
+      } finally {
+        funcDepsLogger.cleanup();
+      }
+    });
   }
 
   private async handleBackendExtensionsInstall(
@@ -1101,8 +898,7 @@ export class FunctionPluginImpl {
             await FunctionDeploy.installFuncExtensions(ctx, workingPath, functionLanguage);
           } catch (error) {
             // wrap the original error to UserError so the extensibility model will pop-up a dialog correctly
-            const telemetry = new FuncPluginTelemetry();
-            new FuncPluginAdapter(ctx, telemetry).handleDotnetError(error);
+            throw funcDepsHelper.transferError(error);
           }
         })
     );

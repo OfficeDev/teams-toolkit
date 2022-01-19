@@ -9,6 +9,7 @@ import {
   Inputs,
   Json,
   ok,
+  ProjectSettings,
   Result,
   TokenProvider,
   v2,
@@ -37,7 +38,8 @@ export class LocalDebugPluginV2 implements ResourcePlugin {
   displayName = "LocalDebug";
   @Inject(ResourcePlugins.LocalDebugPlugin)
   plugin!: LocalDebugPlugin;
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 

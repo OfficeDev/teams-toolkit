@@ -1,5 +1,14 @@
 # Changelog
 
+## 3.3.0 - Feb 07, 2022
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+	- Add cloud resource feature now support add multiple instances of the same cloud resource type. For example, add multiple instance of SQL DB at the same time.
+	
+Enhancement:
+  - Teams Tab project created by Teams Toolkit now is updated to use Auth Code Flow with PKCE for SPA authentication. You can find more detail [here]  (https://aka.ms/teamsfx-auth-code-flow). Note that Tab projects created by Teams Toolkit of this version will not be supported by previous versions of Teams Toolkit.
+
 ## 3.2.0 - Jan 10, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
 

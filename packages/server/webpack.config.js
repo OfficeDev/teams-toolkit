@@ -84,6 +84,11 @@ const config = {
     new webpack.IgnorePlugin({ resourceRegExp: /@opentelemetry\/tracing/ }),
     new webpack.IgnorePlugin({ resourceRegExp: /applicationinsights-native-metrics/ }),
     new webpack.IgnorePlugin({ resourceRegExp: /original-fs/ }),
+    // ignore node-gyp/bin/node-gyp.js since it's not used in runtime
+    new webpack.NormalModuleReplacementPlugin(
+      /node-gyp[\/\\]bin[\/\\]node-gyp.js/,
+      "@npmcli/node-gyp"
+    ),
   ],
   optimization: {
     minimizer: [

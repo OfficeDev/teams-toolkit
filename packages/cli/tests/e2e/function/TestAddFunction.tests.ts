@@ -7,7 +7,7 @@
 
 import path from "path";
 
-import { AadValidator, FunctionValidator, SimpleAuthValidator } from "../../commonlib";
+import { AadValidator, FunctionValidator } from "../../commonlib";
 import { environmentManager, isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import {
   execAsyncWithRetry,
@@ -73,10 +73,6 @@ describe("Test Add Function", function () {
     // Validate Aad App
     const aad = AadValidator.init(context, false, AppStudioLogin);
     await AadValidator.validate(aad);
-
-    // Validate Simple Auth
-    const simpleAuth = new SimpleAuthValidator(context, projectPath, env);
-    await simpleAuth.validate();
 
     // Validate Function App
     const functionValidator = new FunctionValidator(context, projectPath, env);

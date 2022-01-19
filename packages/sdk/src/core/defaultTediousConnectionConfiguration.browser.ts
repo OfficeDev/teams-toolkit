@@ -27,7 +27,7 @@ export class DefaultTediousConnectionConfiguration {
    * Only works in in server side.
    * @beta
    */
-  public async getConfig(): Promise<ConnectionConfig> {
+  public async getConfig(databaseName?: string): Promise<ConnectionConfig> {
     throw new ErrorWithCode(
       formatString(
         ErrorMessage.BrowserRuntimeNotSupported,

@@ -38,7 +38,7 @@ export function createMicrosoftGraphClient(credential: TokenCredential, scopes?:
 
 // @beta
 export class DefaultTediousConnectionConfiguration {
-    getConfig(): Promise<ConnectionConfig>;
+    getConfig(databaseName?: string): Promise<ConnectionConfig>;
 }
 
 // @beta

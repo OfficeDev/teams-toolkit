@@ -35,12 +35,10 @@ export class AADRegistration {
       let regResponse = undefined;
       try {
         regResponse = await RetryHandler.Retry(() =>
-          axiosInstance.post(
-            `${AADRegistrationConstants.GRAPH_REST_BASE_URL}/applications`, {
+          axiosInstance.post(`${AADRegistrationConstants.GRAPH_REST_BASE_URL}/applications`, {
             displayName: displayName,
             signInAudience: AADRegistrationConstants.AZURE_AD_MULTIPLE_ORGS,
-            }
-          )
+          })
         );
       } catch (e) {
         throw new CreateAADAppError(e);

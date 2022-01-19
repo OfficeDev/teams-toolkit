@@ -171,6 +171,29 @@ describe("sqlPlugin", () => {
     chai.assert.isTrue(postProvisionResult.isOk());
   });
 
+  it("postProvision with axios error", async function () {
+    sqlPlugin.sqlImpl.config.aadAdminType = UserType.ServicePrincipal;
+    sqlPlugin.sqlImpl.config.sqlServer = "test-sql";
+
+    // Arrange
+    sinon.stub(FirewallRules.prototype, "createOrUpdate").resolves();
+    sinon.stub(FirewallRules.prototype, "deleteMethod").resolves();
+    sinon.stub(ServerAzureADAdministrators.prototype, "listByServer").resolves([]);
+    sinon.stub(ServerAzureADAdministrators.prototype, "createOrUpdate").resolves();
+    const errorMessage = "getaddrinfo ENOTFOUND";
+    sinon.stub(axios, "get").throws(new Error(errorMessage));
+
+    TestHelper.mockArmOutput(pluginContext);
+
+    // Act
+    const postProvisionResult = await sqlPlugin.postProvision(pluginContext);
+
+    // Assert
+    chai.assert.isTrue(postProvisionResult.isErr());
+    const err = postProvisionResult._unsafeUnwrapErr();
+    chai.assert.isTrue(err.message.includes(errorMessage));
+  });
+
   it("check invalid username", async function () {
     const invalidNames = ["admin", "Admin", "root", "Root", "dbmanager", "DbManager"];
     invalidNames.forEach((name) => {

@@ -3,24 +3,11 @@
 
 "use strict";
 
-import fs from "fs-extra";
-import os from "os";
-import path from "path";
 import { Argv, Options } from "yargs";
 
-import {
-  Colors,
-  FxError,
-  Json,
-  LogLevel,
-  ok,
-  Question,
-  Result,
-  UserError,
-} from "@microsoft/teamsfx-api";
+import { Colors, FxError, LogLevel, ok, Question, Result, UserError } from "@microsoft/teamsfx-api";
 
 import { YargsCommand } from "../yargsCommand";
-import GraphTokenProvider from "../commonlib/graphLogin";
 import AppStudioTokenProvider from "../commonlib/appStudioLogin";
 import AzureTokenProvider, { getAzureProvider } from "../commonlib/azureLogin";
 import AzureTokenCIProvider from "../commonlib/azureLoginCI";
@@ -35,17 +22,7 @@ import CLILogProvider from "../commonlib/log";
 import * as constants from "../constants";
 import { getColorizedString, setSubscriptionId, toLocaleLowerCase, toYargsOptions } from "../utils";
 
-/// TODO: temp lines, need to remove.
-const fakeAccountFilePath = path.join(os.homedir(), ".fx", "account", "fakeAccount.json");
-const fakeAccount: Json = {};
-
 async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
-  {
-    /// TODO: temp lines, need to remove.
-    const result = await AppStudioTokenProvider.getStatus();
-    fakeAccount.AppStudioAccessToken = result.token;
-    fakeAccount.AppStudioTokenJsonString = JSON.stringify(result.accountInfo);
-  }
   const result = await AppStudioTokenProvider.getJsonObject();
   if (result) {
     if (commandType === "login") {
@@ -72,13 +49,6 @@ async function outputM365Info(commandType: "login" | "show"): Promise<boolean> {
         `[${constants.cliSource}] Failed to sign in to M365.`
       );
     }
-  }
-  {
-    /// TODO: temp lines, need to remove.
-    const token = await GraphTokenProvider.getAccessToken();
-    const accountInfo = await GraphTokenProvider.getJsonObject();
-    fakeAccount.GraphAccessToken = token;
-    fakeAccount.GraphTokenJsonString = JSON.stringify(accountInfo);
   }
   return Promise.resolve(result !== undefined);
 }
@@ -185,15 +155,6 @@ class AccountShow extends YargsCommand {
     }
 
     const azureStatus = await AzureTokenProvider.getStatus();
-    /// TODO: temp lines, need to remove.
-    fakeAccount.AzureAccessToken = azureStatus.token;
-    fakeAccount.AzureTokenJsonString = JSON.stringify(azureStatus.accountInfo);
-    const subscriptions = await AzureTokenProvider.listSubscriptions();
-    /// TODO: if this is not the usually used subscription, you can write hard code here.
-    fakeAccount.AzureSubscriptionInfo = subscriptions[0];
-    await fs.ensureDir(path.dirname(fakeAccountFilePath));
-    await fs.writeJson(fakeAccountFilePath, fakeAccount, { spaces: 4, encoding: "utf-8" });
-
     if (azureStatus.status === signedIn) {
       await outputAzureInfo("show");
     }

@@ -285,8 +285,8 @@ async function listCollaboratorImpl(
         util.format(
           getStrings().solution.Collaboration.ListCollaboratorsSuccess,
           CollaborationUtil.isSpfxProject(param.ctx)
-            ? getStrings().solution.Collaboration.WithAadApp
-            : ""
+            ? ""
+            : getStrings().solution.Collaboration.WithAadApp
         ),
         false
       );

@@ -18,6 +18,7 @@ import Settings from "../../media/settings.svg";
 import GraphToolkitContactExporter from "../../media/graph-toolkit-contact-exporter.gif";
 import BOTSSO from "../../media/bot-sso.gif";
 import { EventMessages } from "./messages";
+import SampleDetailPage from "./sampleDetailPage";
 
 const imageMapping: { [p: string]: any } = {
   "todo-list-with-Azure-backend": ToDoList,
@@ -40,6 +41,7 @@ export default class SampleGallery extends React.Component<any, any> {
     this.state = {
       baseUrl: "",
       samples: [],
+      highlightSample: "",
     };
   }
 
@@ -55,29 +57,56 @@ export default class SampleGallery extends React.Component<any, any> {
   }
 
   render() {
+    const samples = this.state.samples as Array<SampleInfo>;
+    const hightSample = samples.filter(
+      (sample: SampleInfo) => sample.id == this.state.highlightSample
+    )[0];
     return (
-      <div className="sample-gallery">
-        <div className="section" id="title">
-          <div className="logo">
-            <Icon iconName="Library" className="logo" />
+      <div>
+        {this.state.highlightSample == "" && (
+          <div className="sample-gallery">
+            <div className="section" id="title">
+              <div className="logo">
+                <Icon iconName="Library" className="logo" />
+              </div>
+              <div className="title">
+                <h2>Samples</h2>
+                <h3>
+                  Explore our sample apps to quickly get started with concepts and code examples.
+                </h3>
+              </div>
+            </div>
+            <Stack
+              className="sample-stack"
+              horizontal
+              verticalFill
+              wrap
+              horizontalAlign={"start"}
+              verticalAlign={"start"}
+              styles={{ root: { overflow: "visible" } }}
+              tokens={{ childrenGap: 20 }}
+            >
+              <SampleAppCardList
+                samples={this.state.samples}
+                baseUrl={this.state.baseUrl}
+                onSampleCard={this.onSampleCardClicked}
+              />
+            </Stack>
           </div>
-          <div className="title">
-            <h2>Samples</h2>
-            <h3>Explore our sample apps to quickly get started with concepts and code examples.</h3>
-          </div>
-        </div>
-        <Stack
-          className="sample-stack"
-          horizontal
-          verticalFill
-          wrap
-          horizontalAlign={"start"}
-          verticalAlign={"start"}
-          styles={{ root: { overflow: "visible" } }}
-          tokens={{ childrenGap: 20 }}
-        >
-          <SampleAppCardList samples={this.state.samples} baseUrl={this.state.baseUrl} />
-        </Stack>
+        )}
+        {this.state.highlightSample != "" && (
+          <SampleDetailPage
+            baseUrl={this.state.baseUrl}
+            image={imageMapping[hightSample.id]}
+            tags={hightSample.tags}
+            time={hightSample.time}
+            configuration={hightSample.configuration}
+            title={hightSample.title}
+            description={hightSample.fullDescription}
+            sampleAppFolder={hightSample.id}
+            sampleAppUrl={hightSample.link}
+          ></SampleDetailPage>
+        )}
       </div>
     );
   }
@@ -95,6 +124,12 @@ export default class SampleGallery extends React.Component<any, any> {
       default:
         break;
     }
+  };
+
+  onSampleCardClicked = (id: string) => {
+    this.setState({
+      highlightSample: id,
+    });
   };
 }
 
@@ -120,6 +155,7 @@ class SampleAppCardList extends React.Component<SampleListProps, any> {
             sampleAppFolder={sample.id}
             sampleAppUrl={sample.link}
             suggested={sample.suggested}
+            onSampleCard={this.props.onSampleCard}
           />
         );
       });
@@ -267,7 +303,13 @@ class SampleCard extends React.Component<SampleCardProps, any> {
 
   render() {
     return (
-      <div className="sample-card" tabIndex={0}>
+      <div
+        className="sample-card"
+        tabIndex={0}
+        onClick={() => {
+          this.props.onSampleCard(this.props.sampleAppFolder);
+        }}
+      >
         {this.props.suggested && (
           <div className="triangle">
             <FontIcon iconName="FavoriteStar" className="star"></FontIcon>

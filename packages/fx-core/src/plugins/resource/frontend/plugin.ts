@@ -209,7 +209,6 @@ export class FrontendPluginImpl implements PluginImpl {
           .get(DependentPluginInfo.RuntimePluginName)
           ?.get(DependentPluginInfo.RuntimeEndpoint) as string
       );
-      addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
 
     if (solutionSettings?.activeResourcePlugins?.includes(DependentPluginInfo.AADPluginName)) {
@@ -219,6 +218,7 @@ export class FrontendPluginImpl implements PluginImpl {
           .get(DependentPluginInfo.AADPluginName)
           ?.get(DependentPluginInfo.ClientID) as string
       );
+      addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
     return envs;
   }

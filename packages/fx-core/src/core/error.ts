@@ -125,7 +125,7 @@ export function InvalidProjectError(msg?: string): UserError {
 export function InvalidProjectSettingsFileError(msg?: string): UserError {
   return new UserError(
     "InvalidProjectSettingsFile",
-    `The projectSettings.json file is corrupted.`,
+    `The projectSettings.json file is invalid ${msg}`,
     CoreSource
   );
 }

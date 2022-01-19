@@ -37,7 +37,6 @@ import {
   fileEncoding,
   identityPlugin,
   PluginId,
-  simpleAuthPlugin,
   SOLUTION_CONFIG_NAME,
   spfxPlugin,
   TestFileContent,
@@ -93,26 +92,15 @@ describe("Generate ARM Template for project", () => {
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
       name: "azure",
-      activeResourcePlugins: [
-        aadPlugin.name,
-        fehostPlugin.name,
-        simpleAuthPlugin.name,
-        identityPlugin.name,
-      ],
+      activeResourcePlugins: [aadPlugin.name, fehostPlugin.name, identityPlugin.name],
       capabilities: [TabOptionItem.id],
     };
     TestHelper.mockedFehostGenerateArmTemplates(mocker);
-    TestHelper.mockedSimpleAuthGenerateArmTemplates(mocker);
     TestHelper.mockedAadGenerateArmTemplates(mocker);
     TestHelper.mockedIdentityGenerateArmTemplates(mocker);
 
     // Action
-    const result = await generateArmTemplate(mockedCtx, [
-      aadPlugin,
-      simpleAuthPlugin,
-      fehostPlugin,
-      identityPlugin,
-    ]);
+    const result = await generateArmTemplate(mockedCtx, [aadPlugin, fehostPlugin, identityPlugin]);
 
     // Assert
     const projectArmTemplateFolder = path.join(
@@ -159,8 +147,7 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
 param provisionParameters object
 Mocked frontend hosting provision orchestration content. Module path: './provision/frontendHostingProvision.bicep'.
 Mocked identity provision orchestration content. Module path: './provision/identityProvision.bicep'.
-Mocked aad provision orchestration content. Module path: './provision/aadProvision.bicep'.
-Mocked simple auth provision orchestration content. Module path: './provision/simpleAuthProvision.bicep'.`.replace(
+Mocked aad provision orchestration content. Module path: './provision/aadProvision.bicep'.`.replace(
         /\r?\n/g,
         os.EOL
       )
@@ -177,8 +164,7 @@ param provisionParameters object
 param provisionOutputs object
 Mocked frontend hosting configuration orchestration content. Module path: './teamsFx/frontendHostingConfig.bicep'.
 Mocked identity configuration orchestration content. Module path: './teamsFx/identityConfig.bicep'.
-Mocked aad configuration orchestration content. Module path: './teamsFx/aadConfig.bicep'.
-Mocked simple auth configuration orchestration content. Module path: './teamsFx/simpleAuthConfig.bicep'.`.replace(
+Mocked aad configuration orchestration content. Module path: './teamsFx/aadConfig.bicep'.`.replace(
         /\r?\n/g,
         os.EOL
       )
@@ -194,16 +180,6 @@ Mocked simple auth configuration orchestration content. Module path: './teamsFx/
         fileEncoding
       )
     ).equals(TestFileContent.feHostProvisionModule);
-    expect(
-      await fs.readFile(
-        path.join(
-          projectArmTemplateFolder,
-          TestFilePath.provisionFolder,
-          TestFilePath.simpleAuthProvisionFileName
-        ),
-        fileEncoding
-      )
-    ).equals(TestFileContent.simpleAuthProvisionModule);
     expect(
       await fs.readFile(
         path.join(
@@ -240,16 +216,6 @@ Mocked simple auth configuration orchestration content. Module path: './teamsFx/
         path.join(
           projectArmTemplateFolder,
           TestFilePath.configurationFolder,
-          TestFilePath.simpleAuthConfigFileName
-        ),
-        fileEncoding
-      )
-    ).equals(TestFileContent.simpleAuthConfigurationModule);
-    expect(
-      await fs.readFile(
-        path.join(
-          projectArmTemplateFolder,
-          TestFilePath.configurationFolder,
           TestFilePath.aadConfigFileName
         ),
         fileEncoding
@@ -281,7 +247,6 @@ Mocked simple auth configuration orchestration content. Module path: './teamsFx/
         FrontendParameter: `${TestFileContent.feHostParameterValue}`,
         IdentityParameter: `${TestFileContent.identityParameterValue}`,
         AadParameter: `${TestFileContent.aadParameterValue}`,
-        SimpleAuthParameter: `${TestFileContent.simpleAuthParameterValue}`,
       })
     );
   });
@@ -291,33 +256,20 @@ Mocked simple auth configuration orchestration content. Module path: './teamsFx/
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
       name: "azure",
-      activeResourcePlugins: [
-        aadPlugin.name,
-        fehostPlugin.name,
-        simpleAuthPlugin.name,
-        identityPlugin.name,
-      ],
+      activeResourcePlugins: [aadPlugin.name, fehostPlugin.name, identityPlugin.name],
       capabilities: [TabOptionItem.id],
     };
     TestHelper.mockedFehostGenerateArmTemplates(mocker);
     TestHelper.mockedAadGenerateArmTemplates(mocker);
     TestHelper.mockedIdentityGenerateArmTemplates(mocker);
-    const simpleAuthGenerateArmTemplatesStub =
-      TestHelper.mockedSimpleAuthGenerateArmTemplates(mocker);
     const botGenerateArmTemplatesStub = TestHelper.mockedBotGenerateArmTemplates(mocker);
 
-    const simpleAuthUpdateArmTemplatesStub = TestHelper.mockedSimpleAuthUpdateArmTemplates(mocker);
     const botUpdateArmTemplatesStub = TestHelper.mockedBotUpdateArmTemplates(mocker);
     TestHelper.mockedFeHostUpdateArmTemplates(mocker);
     TestHelper.mockedIdentityUpdateArmTemplates(mocker);
 
     // Scaffold tab project
-    let result = await generateArmTemplate(mockedCtx, [
-      aadPlugin,
-      simpleAuthPlugin,
-      fehostPlugin,
-      identityPlugin,
-    ]);
+    let result = await generateArmTemplate(mockedCtx, [aadPlugin, fehostPlugin, identityPlugin]);
     const projectArmTemplateFolder = path.join(
       TestHelper.rootDir,
       TestFilePath.armTemplateBaseFolder
@@ -338,7 +290,6 @@ Mocked simple auth configuration orchestration content. Module path: './teamsFx/
         FrontendParameter: `${TestFileContent.feHostParameterValue}`,
         IdentityParameter: `${TestFileContent.identityParameterValue}`,
         AadParameter: `${TestFileContent.aadParameterValue}`,
-        SimpleAuthParameter: `${TestFileContent.simpleAuthParameterValue}`,
       })
     );
     expect(
@@ -359,20 +310,8 @@ Mocked simple auth configuration orchestration content. Module path: './teamsFx/
         )
       )
     ).to.be.false;
-    expect(
-      await fs.readFile(
-        path.join(
-          projectArmTemplateFolder,
-          TestFilePath.configurationFolder,
-          TestFilePath.simpleAuthConfigFileName
-        ),
-        fileEncoding
-      )
-    ).equals(TestFileContent.simpleAuthConfigurationModule);
     assert(botGenerateArmTemplatesStub.notCalled);
     assert(botUpdateArmTemplatesStub.notCalled);
-    assert(simpleAuthUpdateArmTemplatesStub.notCalled);
-    assert(simpleAuthGenerateArmTemplatesStub.calledOnce);
 
     // Add bot capability
     (
@@ -399,7 +338,6 @@ Mocked simple auth configuration orchestration content. Module path: './teamsFx/
         FrontendParameter: `${TestFileContent.feHostParameterValue}`,
         IdentityParameter: `${TestFileContent.identityParameterValue}`,
         AadParameter: `${TestFileContent.aadParameterValue}`,
-        SimpleAuthParameter: `${TestFileContent.simpleAuthParameterValue}`,
         BotParameter: `${TestFileContent.botParameterValue}`,
       })
     );
@@ -423,20 +361,8 @@ Mocked simple auth configuration orchestration content. Module path: './teamsFx/
         fileEncoding
       )
     ).equals(TestFileContent.botConfigurationModule);
-    expect(
-      await fs.readFile(
-        path.join(
-          projectArmTemplateFolder,
-          TestFilePath.configurationFolder,
-          TestFilePath.simpleAuthConfigFileName
-        ),
-        fileEncoding
-      )
-    ).equals(TestFileContent.simpleAuthUpdatedConfigurationModule);
     assert(botGenerateArmTemplatesStub.calledOnce);
     assert(botUpdateArmTemplatesStub.notCalled);
-    assert(simpleAuthUpdateArmTemplatesStub.calledOnce);
-    assert(simpleAuthGenerateArmTemplatesStub.calledOnce);
 
     expect(
       await fs.readFile(
@@ -449,7 +375,6 @@ param provisionParameters object
 Mocked frontend hosting provision orchestration content. Module path: './provision/frontendHostingProvision.bicep'.
 Mocked identity provision orchestration content. Module path: './provision/identityProvision.bicep'.
 Mocked aad provision orchestration content. Module path: './provision/aadProvision.bicep'.
-Mocked simple auth provision orchestration content. Module path: './provision/simpleAuthProvision.bicep'.
 Mocked bot provision orchestration content. Module path: './provision/botProvision.bicep'.`.replace(
         /\r?\n/g,
         os.EOL
@@ -468,7 +393,6 @@ param provisionOutputs object
 Mocked frontend hosting configuration orchestration content. Module path: './teamsFx/frontendHostingConfig.bicep'.
 Mocked identity configuration orchestration content. Module path: './teamsFx/identityConfig.bicep'.
 Mocked aad configuration orchestration content. Module path: './teamsFx/aadConfig.bicep'.
-Mocked simple auth configuration orchestration content. Module path: './teamsFx/simpleAuthConfig.bicep'.
 Mocked bot configuration orchestration content. Module path: './teamsFx/botConfig.bicep'.`.replace(
         /\r?\n/g,
         os.EOL
@@ -498,13 +422,6 @@ describe("Deploy ARM Template to Azure", () => {
             identityOutputKey: TestHelper.identityOutputValue,
           },
         },
-        simpleAuthOutput: {
-          type: "Object",
-          value: {
-            teamsFxPluginId: PluginId.SimpleAuth,
-            simpleAuthOutputKey: TestHelper.simpleAuthOutputValue,
-          },
-        },
       },
     },
   };
@@ -514,12 +431,7 @@ describe("Deploy ARM Template to Azure", () => {
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
       name: "azure",
-      activeResourcePlugins: [
-        aadPlugin.name,
-        fehostPlugin.name,
-        simpleAuthPlugin.name,
-        identityPlugin.name,
-      ],
+      activeResourcePlugins: [aadPlugin.name, fehostPlugin.name, identityPlugin.name],
       capabilities: [TabOptionItem.id],
     };
     mockedCtx.envInfo.state.set(
@@ -634,10 +546,6 @@ describe("Deploy ARM Template to Azure", () => {
     chai.assert.strictEqual(
       mockedCtx.envInfo.state.get(PluginId.Identity)?.get("identityOutputKey"),
       TestHelper.identityOutputValue
-    );
-    chai.assert.strictEqual(
-      mockedCtx.envInfo.state.get(PluginId.SimpleAuth)?.get("simpleAuthOutputKey"),
-      TestHelper.simpleAuthOutputValue
     );
 
     envRestore();
@@ -804,17 +712,6 @@ describe("Poll Deployment Status", () => {
             resourceName: "test resource",
             resourceType: "Microsoft.Resources/deployments",
             id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Resources/deployments/addTeamsFxConfigurations",
-          },
-          provisioningState: "Running",
-          timestamp: Date.now(),
-        },
-      },
-      {
-        properties: {
-          targetResource: {
-            resourceName: "test resource",
-            resourceType: "Microsoft.Web/sites/config",
-            id: "/subscriptions/00000000-0000-0000-0000-000000000000/resourceGroups/test-rg/providers/Microsoft.Web/sites/simpleAuth/config/appsettings",
           },
           provisioningState: "Running",
           timestamp: Date.now(),

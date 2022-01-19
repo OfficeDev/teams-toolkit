@@ -1,5 +1,5 @@
 # 0.5.0
-- Breaking: TeamsUserCredential now will use Auth Code Flow for authentication. You can find more detail here: https://aka.ms/teamsfx-auth-code-flow.
+- Breaking: TeamsUserCredential now will use Auth Code Flow with PKCE for SPA authentication. You can find more detail here: https://aka.ms/teamsfx-auth-code-flow.
 - Support multiple SQL database connection
 - Fix TeamsBotSsoPrompt runtime error
 

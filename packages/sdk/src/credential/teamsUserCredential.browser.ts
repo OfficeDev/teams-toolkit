@@ -128,6 +128,15 @@ export class TeamsUserCredential implements TokenCredential {
               return;
             }
 
+            // If code exists in result, user may using previous auth-start and auth-end page.
+            if (resultJson.code) {
+              const helpLink = "https://aka.ms/teamsfx-auth-code-flow";
+              const usingPreviousAuthPage =
+                "Found auth code in response. You may be using the latest TeamsFx SDK on an old project." +
+                `Please refer to the help link for how to fix the issue: ${helpLink}.`;
+              reject(new ErrorWithCode(usingPreviousAuthPage, ErrorCode.ProjectNeedUpgrade));
+            }
+
             // If sessionStorage exists in result, set the values in current session storage.
             if (resultJson.sessionStorage) {
               this.setSessionStorage(resultJson.sessionStorage);

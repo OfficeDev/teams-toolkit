@@ -47,6 +47,7 @@ export async function setupLocalDebugSettings(
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
+  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
   let skipNgrok = localSettings?.bot?.skipNgrok as boolean;
 
   const telemetryProperties = {
@@ -57,6 +58,7 @@ export async function setupLocalDebugSettings(
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
+    v1: isMigrateFromV1 ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
@@ -65,7 +67,6 @@ export async function setupLocalDebugSettings(
     // setup configs used by other plugins
     // TODO: dynamicly determine local ports
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
-      const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
       const frontendPort = isMigrateFromV1 ? 3000 : 53000;
       const authPort = isMigrateFromV1 ? 5000 : 55000;
       let localTabEndpoint: string;
@@ -88,19 +89,31 @@ export async function setupLocalDebugSettings(
       }
 
       if (includeSimpleAuth) {
+        if (!localSettings.auth) {
+          localSettings.auth = {};
+        }
         localSettings.auth.AuthServiceEndpoint = localAuthEndpoint;
       }
 
       if (includeFrontend) {
+        if (!localSettings.frontend) {
+          localSettings.frontend = {};
+        }
         localSettings.frontend.tabEndpoint = localTabEndpoint;
         localSettings.frontend.tabDomain = localTabDomain;
       }
 
       if (includeBackend) {
+        if (!localSettings.backend) {
+          localSettings.backend = {};
+        }
         localSettings.backend.functionEndpoint = localFuncEndpoint;
       }
 
       if (includeBot) {
+        if (!localSettings.bot) {
+          localSettings.bot = {};
+        }
         if (skipNgrok === undefined) {
           skipNgrok = false;
           localSettings.bot.skipNgrok = skipNgrok;
@@ -155,6 +168,7 @@ export async function configLocalDebugSettings(
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
+  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
   let trustDevCert = localSettings?.frontend?.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
@@ -164,14 +178,13 @@ export async function configLocalDebugSettings(
     bot: includeBot ? "true" : "false",
     auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "trust-development-certificate": trustDevCert + "",
+    v1: isMigrateFromV1 ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
 
   try {
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
-      const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
-
       const localEnvProvider = new LocalEnvProvider(inputs.projectPath!);
       const frontendEnvs = includeFrontend
         ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAAD, isMigrateFromV1)

@@ -128,7 +128,7 @@ export class SqlPlugin implements Plugin {
       TelemetryUtils.init(ctx);
       let errorMessage = res.error.message;
       if (res.error.innerError) {
-        errorMessage += ` Detailed error: ${e.innerError.message}.`;
+        errorMessage += ` Detailed error: ${res.error.innerError.message}.`;
       }
       TelemetryUtils.sendErrorEvent(stage, errorCode, errorType, errorMessage);
       return res;

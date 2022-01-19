@@ -26,6 +26,8 @@ import * as extension from "../../../src/extension";
 import * as accountTree from "../../../src/accountTree";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
+import { ext } from "../../../src/extensionVariables";
+import { Uri } from "vscode";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
@@ -380,6 +382,9 @@ suite("handlers", () => {
       sinon.stub(AppStudioTokenInstance, "getJsonObject").resolves({
         tid: "fake-tenant-id",
       });
+
+      ext.workspaceUri = Uri.parse("file://fakeProjectPath");
+      sinon.stub(commonUtils, "isSPFxProject").resolves(false);
       sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
         return "fake-tenant-id";
       });

@@ -7,7 +7,7 @@
 
 import path from "path";
 import "mocha";
-import { AadValidator, SimpleAuthValidator } from "../../commonlib";
+import { AadValidator } from "../../commonlib";
 import {
   getSubscriptionId,
   getTestFolder,
@@ -51,10 +51,6 @@ describe("Test Azure Key Vault", function () {
       // Validate Aad App
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
-
-      // Validate Simple Auth
-      const simpleAuth = new SimpleAuthValidator(context, projectPath, env);
-      await simpleAuth.validate();
 
       // Validate Key Vault
       const keyVault = new KeyVaultValidator(context, projectPath, env);

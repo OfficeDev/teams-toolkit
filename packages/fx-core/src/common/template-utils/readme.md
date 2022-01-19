@@ -1,6 +1,6 @@
 ## How to scaffold from pre-release templates?
 
-By default, when scaffolding Teams Toolkit downloads latest available templates from [GitHub releases](https://github.com/OfficeDev/TeamsFx/releases).
+Teams Toolkit downloads latest stable templates by default from [GitHub releases](https://github.com/OfficeDev/TeamsFx/releases) for scaffolding.
 
 To scaffold your project from rc templates, set the environment varaible `TEAMSFX_TEMPLATE_PRERELEASE=rc`. Then Teams Toolkit download templates from [rc release](https://github.com/OfficeDev/TeamsFx/releases/tag/templates%400.0.0-rc)
 

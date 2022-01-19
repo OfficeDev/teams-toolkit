@@ -1,3 +1,4 @@
+- [3.3.0 - Feb 07 2022](#330---feb-07-2022)
 - [3.2.0 - Jan 10 2022](#320---jan-10-2022)
 - [3.1.1 - Dec 27 2021](#311---dec-27-2021)
 - [3.1.0 - Dec 13 2021](#310---dec-13-2021)
@@ -6,6 +7,15 @@
 - [2.9.0 - Nov 01 2021](#290---nov-01-2021)
 - [2.8.0 - Oct 18 2021](#280---oct-18-2021)
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
+
+## 3.3.0 - Feb 07, 2022
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- Add cloud resource feature now support add multiple instances of the same cloud resource type. For example, add multiple instance of SQL DB at the same time.
+	
+Enhancement:
+ - Teams Tab project created by Teams Toolkit now is updated to use Auth Code Flow with PKCE for SPA authentication. You can find more detail [here](https://aka.ms/teamsfx-auth-code-flow). Note that Tab projects created by Teams Toolkit of this version will not be supported by previous versions of Teams Toolkit.
 
 ## 3.2.0 - Jan 10, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:

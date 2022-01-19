@@ -1,5 +1,5 @@
 # 0.5.0
-- Update authentication flow for tab app and remove simple auth dependency
+- Breaking: TeamsUserCredential now will use Auth Code Flow for authentication. You can find more detail here: https://aka.ms/teamsfx-auth-code-flow.
 - Support multiple SQL database connection
 - Fix TeamsBotSsoPrompt runtime error
 

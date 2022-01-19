@@ -171,7 +171,7 @@ export class TaskDefinition {
       name: "ngrok start",
       command: skipNgrok
         ? "echo 'Skip starting ngrok, and will use predefined bot endpoint.'"
-        : "npx ngrok http 3978 --log=stdout",
+        : "ngrok http 3978 --log=stdout",
       env: ngrokBinFolders
         ? {
             PATH: `${ngrokBinFolders.join(path.delimiter)}${path.delimiter}${

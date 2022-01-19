@@ -59,6 +59,42 @@ export const APP_PACKAGE_FOLDER_FOR_MULTI_ENV = "templates/appPackage";
 export const SOLUTION = "solution";
 export const SOLUTION_USERINFO = "userinfo";
 
+export const TEAMS_APP_MANIFEST_TEMPLATE_V3 = `{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.11",
+  "version": "1.0.0",
+  "id": "{{state.fx-resource-appstudio.teamsAppId}}",
+  "packageName": "com.microsoft.teams.extension",
+  "developer": {
+      "name": "Teams App, Inc.",
+      "websiteUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}",
+      "privacyUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/privacy",
+      "termsOfUseUrl": "{{{state.fx-resource-frontend-hosting.endpoint}}}{{{state.fx-resource-frontend-hosting.indexPath}}}/termsofuse"
+  },
+  "icons": {
+      "color": "resources/color.png",
+      "outline": "resources/outline.png"
+  },
+  "name": {
+      "short": "{{config.manifest.appName.short}}",
+      "full": "{{config.manifest.appName.full}}"
+  },
+  "description": {
+      "short": "Short description of {{config.manifest.appName.short}}",
+      "full": "Full description of {{config.manifest.appName.short}}"
+  },
+  "accentColor": "#FFFFFF",
+  "bots": [],
+  "composeExtensions": [],
+  "configurableTabs": [],
+  "staticTabs": [],
+  "permissions": [
+      "identity",
+      "messageTeamMembers"
+  ],
+  "validDomains": []
+}`;
+
 export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
   "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
   "manifestVersion": "1.11",
@@ -97,6 +133,42 @@ export const TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV = `{
       "id": "{{state.fx-resource-aad-app-for-teams.clientId}}",
       "resource": "{{{state.fx-resource-aad-app-for-teams.applicationIdUris}}}"
   }
+}`;
+
+export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3 = `{
+  "$schema": "https://developer.microsoft.com/en-us/json-schemas/teams/v1.11/MicrosoftTeams.schema.json",
+  "manifestVersion": "1.11",
+  "version": "1.0.0",
+  "id": "{{localSettings.teamsApp.teamsAppId}}",
+  "packageName": "com.microsoft.teams.extension",
+  "developer": {
+      "name": "Teams App, Inc.",
+      "websiteUrl": "{{{localSettings.frontend.tabEndpoint}}}",
+      "privacyUrl": "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/privacy",
+      "termsOfUseUrl": "{{{localSettings.frontend.tabEndpoint}}}{{{localSettings.frontend.tabIndexPath}}}/termsofuse"
+  },
+  "icons": {
+      "color": "resources/color.png",
+      "outline": "resources/outline.png"
+  },
+  "name": {
+      "short": "{appName}",
+      "full": "{appName}"
+  },
+  "description": {
+      "short": "Short description of {appName}",
+      "full": "Full description of {appName}"
+  },
+  "accentColor": "#FFFFFF",
+  "bots": [],
+  "composeExtensions": [],
+  "configurableTabs": [],
+  "staticTabs": [],
+  "permissions": [
+      "identity",
+      "messageTeamMembers"
+  ],
+  "validDomains": []
 }`;
 
 export const TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG = `{

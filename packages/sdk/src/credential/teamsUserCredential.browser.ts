@@ -89,7 +89,7 @@ export class TeamsUserCredential implements TokenCredential {
    *
    * @beta
    */
-  async login(scopes: string | string[]): Promise<AccessToken> {
+  async login(scopes: string | string[]): Promise<void> {
     validateScopesType(scopes);
     const scopesStr = typeof scopes === "string" ? scopes : scopes.join(" ");
 
@@ -99,7 +99,7 @@ export class TeamsUserCredential implements TokenCredential {
       await this.init();
     }
 
-    return new Promise<AccessToken>((resolve, reject) => {
+    return new Promise<void>((resolve, reject) => {
       microsoftTeams.initialize(() => {
         microsoftTeams.authentication.authenticate({
           url: `${this.config.initiateLoginEndpoint}?clientId=${
@@ -116,12 +116,32 @@ export class TeamsUserCredential implements TokenCredential {
               return;
             }
 
+            let resultJson: any = {};
             try {
-              const accessToken = parseAccessTokenFromAuthCodeTokenResponse(result);
-              resolve(accessToken);
-            } catch (error: any) {
-              reject(error);
+              resultJson = JSON.parse(result);
+            } catch (error) {
+              // If can not parse result as Json, will throw error.
+              const failedToParseResult = "Failed to parse response to Json.";
+              internalLogger.error(failedToParseResult);
+              reject(new ErrorWithCode(failedToParseResult, ErrorCode.InvalidResponse));
             }
+
+            // If code exists in result, user may using previous auth-start and auth-end page.
+            if (resultJson.code) {
+              const helpLink = "https://aka.ms/teamsfx-auth-code-flow";
+              const usingPreviousAuthPage =
+                "Found auth code in response. Auth code is not support for current version of SDK. " +
+                `Please refer to the help link for how to fix the issue: ${helpLink}.`;
+              internalLogger.error(usingPreviousAuthPage);
+              reject(new ErrorWithCode(usingPreviousAuthPage, ErrorCode.InvalidResponse));
+            }
+
+            // If sessionStorage exists in result, set the values in current session storage.
+            if (resultJson.sessionStorage) {
+              this.setSessionStorage(resultJson.sessionStorage);
+            }
+
+            resolve();
           },
           failureCallback: (reason?: string) => {
             const errorMsg = `Consent failed for the scope ${scopesStr} with error: ${reason}`;
@@ -376,5 +396,20 @@ export class TeamsUserCredential implements TokenCredential {
 
     internalLogger.error(errorMsg);
     throw new ErrorWithCode(errorMsg, ErrorCode.InvalidConfiguration);
+  }
+
+  private setSessionStorage(sessonStorageValues: any): void {
+    try {
+      const sessionStorageKeys = Object.keys(sessonStorageValues);
+      sessionStorageKeys.forEach((key) => {
+        sessionStorage.setItem(key, sessonStorageValues[key]);
+      });
+    } catch (error: any) {
+      // Values in result.sessionStorage can not be set into session storage.
+      // Throw error since this may block user.
+      const errorMessage = `Failed to set values in session storage. Error: ${error.message}`;
+      internalLogger.error(errorMessage);
+      throw new ErrorWithCode(errorMessage, ErrorCode.InternalError);
+    }
   }
 }

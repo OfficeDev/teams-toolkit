@@ -142,8 +142,7 @@ export class FrontendPluginImpl implements PluginImpl {
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartGenerateArmTemplates(PluginInfo.DisplayName));
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
@@ -210,7 +209,6 @@ export class FrontendPluginImpl implements PluginImpl {
           .get(DependentPluginInfo.RuntimePluginName)
           ?.get(DependentPluginInfo.RuntimeEndpoint) as string
       );
-      addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
 
     if (solutionSettings?.activeResourcePlugins?.includes(DependentPluginInfo.AADPluginName)) {
@@ -220,6 +218,7 @@ export class FrontendPluginImpl implements PluginImpl {
           .get(DependentPluginInfo.AADPluginName)
           ?.get(DependentPluginInfo.ClientID) as string
       );
+      addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
     return envs;
   }

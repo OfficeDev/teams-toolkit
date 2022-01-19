@@ -18,14 +18,11 @@ describe("solution.debug.provisionLocal", () => {
         appName: "",
         projectId: uuid.v4(),
         solutionSettings: {
-          name: "",
-          version: "",
-          activeResourcePlugins: [
-            "fx-resource-aad-app-for-teams",
-            "fx-resource-simple-auth",
-            "fx-resource-frontend-hosting",
-            "fx-resource-function",
-          ],
+          name: "fx-solution-azure",
+          hostType: "Azure",
+          capabilities: ["Tab"],
+          azureResources: ["function"],
+          activeResourcePlugins: ["fx-resource-simple-auth"],
         },
         programmingLanguage: "typescript",
       };
@@ -40,6 +37,35 @@ describe("solution.debug.provisionLocal", () => {
         backend: {},
       });
       chai.assert.isTrue(result.isOk());
+    });
+
+    it("partial local settings", async () => {
+      const projectSetting = {
+        appName: "",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          name: "fx-solution-azure",
+          hostType: "Azure",
+          capabilities: ["Tab"],
+          azureResources: ["function"],
+          activeResourcePlugins: ["fx-resource-simple-auth"],
+        },
+        programmingLanguage: "typescript",
+      };
+      const inputs = {
+        platform: Platform.VSCode,
+        projectPath: path.resolve(__dirname, `./data/${projectSetting.projectId}`),
+      };
+      const v2Context = new MockedV2Context(projectSetting);
+      const localSettings = {
+        foo: {},
+        bar: {},
+      } as any;
+      const result = await setupLocalDebugSettings(v2Context, inputs, localSettings);
+      chai.assert.isTrue(result.isOk());
+      chai.assert.isDefined(localSettings.auth);
+      chai.assert.isDefined(localSettings.frontend);
+      chai.assert.isDefined(localSettings.backend);
     });
   });
 

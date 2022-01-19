@@ -1,7 +1,6 @@
 import {
   AppPackageFolderName,
   ArchiveFolderName,
-  AzureSolutionSettings,
   ConfigFolderName,
   ConfigMap,
   EnvConfig,
@@ -21,6 +20,7 @@ import { GLOBAL_CONFIG } from "../plugins/solution/fx-solution/constants";
 import { environmentManager } from "./environment";
 import crypto from "crypto";
 import * as os from "os";
+import { validateProjectSettings } from "../common/projectSettingsValidator";
 
 export function validateProject(solutionContext: SolutionContext): string | undefined {
   const res = validateSettings(solutionContext.projectSettings);
@@ -29,10 +29,7 @@ export function validateProject(solutionContext: SolutionContext): string | unde
 
 export function validateSettings(projectSettings?: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
-  if (!projectSettings.solutionSettings) return "empty solutionSettings";
-  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-  if (solutionSettings.hostType === undefined) return "empty solutionSettings.hostType";
-  return undefined;
+  return validateProjectSettings(projectSettings);
 }
 
 export function isValidProject(workspacePath?: string): boolean {

@@ -8,6 +8,7 @@ var administratorLogin = contains(provisionParameters, 'azureSqlAdmin') ? provis
 var administratorLoginPassword = contains(provisionParameters, 'azureSqlAdminPassword') ? provisionParameters['azureSqlAdminPassword'] : '' // Try to read admin password for SQL Server from parameters, empty means do not update admin password
 
 // SQL Server that hosts the databases
+// The symbolic name of SQL Server will be referenced as parent when adding nmultiple databases
 resource sqlServer 'Microsoft.Sql/servers@2021-05-01-preview' = {
   location: resourceGroup().location
   name: sqlServerName

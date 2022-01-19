@@ -11,11 +11,9 @@ import {
   Result,
   SystemError,
   UserCancelError,
-  UserError,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import { ErrorHandlerMW } from "../../../src/core/middleware";
 import { CommonErrorHandlerMW } from "../../../src/core/middleware/CommonErrorHandlerMW";
 
 describe("Middleware - CommonErrorHandlerMW", () => {

@@ -224,7 +224,7 @@ export async function getQuestions(
     }
     let plugins: v2.ResourcePlugin[] = [];
     if (isDynamicQuestion) {
-      plugins = getSelectedPlugins(solutionSettings);
+      plugins = getSelectedPlugins(ctx.projectSetting);
     } else {
       plugins = getAllV2ResourcePlugins();
       node.addChild(new QTreeNode(AskSubscriptionQuestion));
@@ -256,7 +256,7 @@ export async function getQuestions(
     }
     let plugins: v2.ResourcePlugin[] = [];
     if (isDynamicQuestion) {
-      plugins = getSelectedPlugins(solutionSettings);
+      plugins = getSelectedPlugins(ctx.projectSetting);
     } else {
       plugins = getAllV2ResourcePlugins();
     }
@@ -317,7 +317,7 @@ export async function getQuestions(
     }
     let plugins: v2.ResourcePlugin[] = [];
     if (isDynamicQuestion) {
-      plugins = getSelectedPlugins(solutionSettings);
+      plugins = getSelectedPlugins(ctx.projectSetting);
     } else {
       plugins = getAllV2ResourcePlugins();
     }

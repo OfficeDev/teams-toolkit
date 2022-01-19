@@ -182,23 +182,23 @@ export class ManagementClient {
   }
 
   async addLocalFirewallRule(): Promise<void> {
-    const response = await axios.get(Constants.echoIpAddress);
-    const localIp: string = response.data;
-    const partials: string[] = localIp.split(".");
-
-    partials[2] = Constants.ipBeginToken;
-    partials[3] = Constants.ipBeginToken;
-    const startIp: string = partials.join(".");
-
-    partials[2] = Constants.ipEndToken;
-    partials[3] = Constants.ipEndToken;
-    const endIp: string = partials.join(".");
-    const model: SqlManagementModels.FirewallRule = {
-      startIpAddress: startIp,
-      endIpAddress: endIp,
-    };
-    const ruleName = this.getRuleName(this.totalFirewallRuleCount);
     try {
+      const response = await axios.get(Constants.echoIpAddress);
+      const localIp: string = response.data;
+      const partials: string[] = localIp.split(".");
+
+      partials[2] = Constants.ipBeginToken;
+      partials[3] = Constants.ipBeginToken;
+      const startIp: string = partials.join(".");
+
+      partials[2] = Constants.ipEndToken;
+      partials[3] = Constants.ipEndToken;
+      const endIp: string = partials.join(".");
+      const model: SqlManagementModels.FirewallRule = {
+        startIpAddress: startIp,
+        endIpAddress: endIp,
+      };
+      const ruleName = this.getRuleName(this.totalFirewallRuleCount);
       await this.client.firewallRules.createOrUpdate(
         this.config.resourceGroup,
         this.config.sqlServer,

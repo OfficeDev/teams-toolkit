@@ -205,7 +205,10 @@ Apart from `tedious`, you can also compose connection config of other SQL librar
 ```ts
 loadConfiguration();
 const sqlConnectConfig = new DefaultTediousConnectionConfiguration();
+// if there's only one SQL database
 const config = await sqlConnectConfig.getConfig();
+// if there are multiple SQL databases
+const config2 = await sqlConnectionConfig.getConfig("your database name");
 const connection = new Connection(config);
 connection.on("connect", (error) => {
   if (error) {

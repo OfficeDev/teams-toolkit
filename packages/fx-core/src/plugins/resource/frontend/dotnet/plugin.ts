@@ -111,8 +111,7 @@ export class DotnetPluginImpl implements PluginImpl {
       WebappBicepFile.configurationTemplateFileName
     );
 
-    const solutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(solutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
@@ -145,8 +144,7 @@ export class DotnetPluginImpl implements PluginImpl {
       WebappBicepFile.configurationTemplateFileName
     );
 
-    const solutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(solutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };

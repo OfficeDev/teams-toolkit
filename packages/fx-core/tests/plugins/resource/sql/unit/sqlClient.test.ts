@@ -53,7 +53,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await client.addDatabaseUser();
+      await client.addDatabaseUser("test_db");
     } catch (error) {
       // Assert
       chai.assert.include(error.notificationMessage, ErrorMessage.GetDetail);
@@ -70,7 +70,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await client.addDatabaseUser();
+      await client.addDatabaseUser("test_db");
     } catch (error) {
       // Assert
       chai.assert.isTrue(SqlClient.isFireWallError(error?.innerError));
@@ -85,7 +85,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await client.addDatabaseUser();
+      await client.addDatabaseUser("test_db");
     } catch (error) {
       // Assert
       chai.assert.include(error.notificationMessage, ErrorMessage.GuestAdminError);
@@ -126,7 +126,7 @@ describe("sqlClient", () => {
       // Assert
       const reason = ErrorMessage.IdentityCredentialUndefine(
         sqlPlugin.sqlImpl.config.identity,
-        sqlPlugin.sqlImpl.config.databaseName
+        `(${sqlPlugin.sqlImpl.config.databaseName})`
       );
       chai.assert.include(error.message, reason);
     }

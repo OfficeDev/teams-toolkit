@@ -123,9 +123,11 @@ import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVaria
 import { StringContext } from "./utils/stringContext";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
-import { AzurePortalUrl } from "./constants";
+import { AzureAssignRoleHelpUrl, AzurePortalUrl, SpfxManageSiteAdminUrl } from "./constants";
 import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { generateAccountHint } from "./debug/teamsfxDebugProvider";
+import { ext } from "./extensionVariables";
+import * as uuid from "uuid";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -398,6 +400,7 @@ export async function treeViewPreviewHandler(env: string): Promise<Result<null, 
   }
 
   const accountHint = await generateAccountHint();
+  // eslint-disable-next-line no-secrets/no-secrets
   const uri = `https://teams.microsoft.com/l/app/${debugConfig.appId}?installAppPackage=true&webjoin=true&${accountHint}`;
   await vscode.env.openExternal(Uri.parse(uri));
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.TreeViewPreview, {
@@ -548,6 +551,7 @@ export async function runCommand(
     switch (stage) {
       case Stage.create: {
         inputs["scratch"] = inputs["scratch"] ?? "yes";
+        inputs.projectId = inputs.projectId ?? uuid.v4();
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
@@ -610,6 +614,41 @@ export async function runCommand(
   return result;
 }
 
+export async function downloadSample(inputs: Inputs): Promise<Result<any, FxError>> {
+  let result: Result<any, FxError> = ok(null);
+  try {
+    const checkCoreRes = checkCoreNotEmpty();
+    if (checkCoreRes.isErr()) {
+      throw checkCoreRes.error;
+    }
+
+    inputs.stage = Stage.create;
+    inputs["scratch"] = "no";
+    const tmpResult = await core.createProject(inputs);
+    if (tmpResult.isErr()) {
+      result = err(tmpResult.error);
+    } else {
+      const uri = Uri.file(tmpResult.value);
+      result = ok(uri);
+    }
+  } catch (e) {
+    result = wrapError(e);
+  }
+
+  if (result.isErr()) {
+    const error = result.error;
+    if (!isUserCancelError(error)) {
+      if (isLoginFaiureError(error)) {
+        window.showErrorMessage(StringResources.vsc.handlers.loginFailed);
+      } else {
+        showError(error);
+      }
+    }
+  }
+
+  return result;
+}
+
 export function detectVsCodeEnv(): VsCodeEnv {
   // extensionKind returns ExtensionKind.UI when running locally, so use this to detect remote
   const extension = vscode.extensions.getExtension("TeamsDevApp.ms-teams-vscode-extension");
@@ -662,6 +701,27 @@ function isLoginFaiureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
 }
 
+function showWarningMessageWithProvisionButton(message: string): void {
+  window
+    .showWarningMessage(message, StringResources.vsc.handlers.provisionResourcesButton)
+    .then((result) => {
+      if (result === StringResources.vsc.handlers.provisionResourcesButton) {
+        return runCommand(Stage.provision);
+      }
+    });
+}
+
+async function showGrantSuccessMessageWithGetHelpButton(
+  message: string,
+  helpUrl: string
+): Promise<void> {
+  window.showInformationMessage(message, StringResources.vsc.handlers.getHelp).then((result) => {
+    if (result === StringResources.vsc.handlers.getHelp) {
+      return VS_CODE_UI.openUrl(helpUrl);
+    }
+  });
+}
+
 async function checkCollaborationState(env: string): Promise<Result<any, FxError>> {
   try {
     const provisionSucceeded = await getProvisionSucceedFromEnv(env);
@@ -675,7 +735,13 @@ async function checkCollaborationState(env: string): Promise<Result<any, FxError
     const tokenJsonObject = await AppStudioTokenInstance.getJsonObject(true);
     if (tokenJsonObject) {
       const m365TenantId = await getM365TenantFromEnv(env);
-      if (m365TenantId && tokenJsonObject.tid !== m365TenantId) {
+      if (!m365TenantId) {
+        return ok({
+          state: CollaborationState.EmptyM365Tenant,
+          message: StringResources.vsc.commandsTreeViewProvider.emptyM365Tenant,
+        });
+      }
+      if (tokenJsonObject.tid !== m365TenantId) {
         return ok({
           state: CollaborationState.M365TenantNotMatch,
           message: StringResources.vsc.commandsTreeViewProvider.m365TenantNotMatch,
@@ -702,14 +768,22 @@ async function processResult(
   inputs?: Inputs
 ) {
   const envProperty: { [key: string]: string } = {};
+  const createProperty: { [key: string]: string } = {};
+
   if (inputs?.env) {
     envProperty[TelemetryProperty.Env] = getHashedEnv(inputs.env);
     envProperty[TelemetryProperty.AapId] = getTeamsAppIdByEnv(inputs.env);
   }
+  if (eventName == TelemetryEvent.CreateProject && inputs?.projectId) {
+    createProperty[TelemetryProperty.NewProjectId] = inputs?.projectId;
+  }
 
   if (result.isErr()) {
     if (eventName) {
-      ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error, envProperty);
+      ExtTelemetry.sendTelemetryErrorEvent(eventName, result.error, {
+        ...createProperty,
+        ...envProperty,
+      });
     }
     const error = result.error;
     if (isUserCancelError(error)) {
@@ -732,6 +806,7 @@ async function processResult(
       }
       ExtTelemetry.sendTelemetryEvent(eventName, {
         [TelemetryProperty.Success]: TelemetrySuccess.Yes,
+        ...createProperty,
         ...envProperty,
       });
     }
@@ -1323,7 +1398,7 @@ export async function openResourceGroupInPortal(env: string): Promise<Result<Voi
   }
 }
 
-export async function grantPermission(env: string): Promise<Result<Void, FxError>> {
+export async function grantPermission(env: string): Promise<Result<any, FxError>> {
   let result: Result<any, FxError> = ok(Void);
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.GrantPermissionStart);
 
@@ -1352,17 +1427,29 @@ export async function grantPermission(env: string): Promise<Result<Void, FxError
         env
       );
 
-      const warningMsg = StringResources.vsc.commandsTreeViewProvider.grantPermissionWarning;
-      window.showInformationMessage(grantSucceededMsg + " " + warningMsg);
+      let warningMsg = StringResources.vsc.commandsTreeViewProvider.grantPermissionWarning;
+      let helpUrl = AzureAssignRoleHelpUrl;
+      if (await isSPFxProject(ext.workspaceUri.fsPath)) {
+        warningMsg = StringResources.vsc.commandsTreeViewProvider.grantPermissionWarningSpfx;
+        helpUrl = SpfxManageSiteAdminUrl;
+      }
+
+      showGrantSuccessMessageWithGetHelpButton(grantSucceededMsg + " " + warningMsg, helpUrl);
 
       VsCodeLogInstance.info(grantSucceededMsg);
-      VsCodeLogInstance.warning(warningMsg);
+      VsCodeLogInstance.warning(
+        warningMsg + StringResources.vsc.commandsTreeViewProvider.referLinkForMoreDetails + helpUrl
+      );
 
       // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
       // await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {
       result = collaborationStateResult;
-      window.showWarningMessage(result.value.message);
+      if (result.value.state === CollaborationState.NotProvisioned) {
+        showWarningMessageWithProvisionButton(result.value.message);
+      } else {
+        window.showWarningMessage(result.value.message);
+      }
     }
   } catch (e) {
     result = wrapError(e);
@@ -1520,7 +1607,11 @@ export async function listCollaborator(env: string): Promise<void> {
       VsCodeLogInstance.outputChannel.show();
     } else {
       result = collaborationStateResult;
-      window.showWarningMessage(result.value.message);
+      if (result.value.state === CollaborationState.NotProvisioned) {
+        showWarningMessageWithProvisionButton(result.value.message);
+      } else {
+        window.showWarningMessage(result.value.message);
+      }
     }
   } catch (e) {
     result = wrapError(e);

@@ -1,0 +1,79 @@
+.sampleDetail{
+    margin: 20px 100px;
+    min-width: 500px;
+    max-width: 800px;
+
+    button{
+        width: 51px;
+        height: 16px;
+        font-size: 13px;
+        padding: 0;
+        margin: 0;
+        color: #3794FF;
+
+        span>i{
+                font-size: 12px;
+                width: 14px;
+                height: 14px;
+                color: #3794FF;
+        }
+    }
+
+    .header{
+        display: flex;
+        height: 32px;
+        margin: 44px 0 12px 0;
+
+        h2{
+            font-size: 26px;
+            height: 32px;
+            margin: auto 0;
+        }
+
+        .buttons{
+            margin: auto 0 auto auto;
+
+            vscode-button{
+                margin-left: 8px;
+            }
+        }
+    }
+
+    .tags{
+        vscode-tag{
+            margin-right: 8px;
+        }
+    }
+
+    .info{
+        display: flex;
+        height: 24px;
+        font-size: 11px;
+        line-height: 11px;  
+
+        .ms-Image{
+            width: 16px;
+            height: 16px;
+            margin: auto 0; 
+        }
+
+        label{
+            padding-left: 4px;
+            margin: auto 0;
+        }
+    }
+
+    .estimation-time{
+        margin-top: 8px;
+    }
+
+    .configuration{
+        margin-top: 4px;
+        margin-bottom: 16px;
+    }
+
+    .description{
+        margin-top: 16px;
+        word-break: break-all;
+    }
+}

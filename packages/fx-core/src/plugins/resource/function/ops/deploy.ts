@@ -26,13 +26,14 @@ import { LanguageStrategyFactory } from "../language-strategy";
 import { Logger } from "../utils/logger";
 import { execute } from "../utils/execute";
 import { forEachFileAndDir } from "../utils/dir-walk";
-import { BackendExtensionsInstaller } from "../utils/depsChecker/backendExtensionsInstall";
-import { DotnetChecker } from "../utils/depsChecker/dotnetChecker";
-import { FuncPluginAdapter } from "../utils/depsChecker/funcPluginAdapter";
-import { funcPluginLogger } from "../utils/depsChecker/funcPluginLogger";
-import { FuncPluginTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
+import { installExtension } from "../../../../common/deps-checker/util/extensionInstaller";
+import { DepsType } from "../../../../common/deps-checker/depsChecker";
+import { funcDepsTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
+import { funcDepsLogger } from "../utils/depsChecker/funcPluginLogger";
+import { DepsManager } from "../../../../common/deps-checker/depsManager";
 import { TelemetryHelper } from "../utils/telemetry-helper";
-import { sendRequestWithRetry } from "../../../../common/templatesUtils";
+import { sendRequestWithRetry } from "../../../../common/template-utils/templatesUtils";
+import { funcDepsHelper } from "../utils/depsChecker/funcHelper";
 
 export class FunctionDeploy {
   public static async getLastDeploymentTime(componentPath: string, envName: string): Promise<Date> {
@@ -118,20 +119,14 @@ export class FunctionDeploy {
     if (LanguageStrategyFactory.getStrategy(language).skipFuncExtensionInstall) {
       return;
     }
-
     const binPath = path.join(componentPath, FunctionPluginPathInfo.functionExtensionsFolderName);
-    const telemetry = new FuncPluginTelemetry();
-    const dotnetChecker = new DotnetChecker(
-      new FuncPluginAdapter(ctx, telemetry),
-      funcPluginLogger,
-      telemetry
-    );
-    const backendExtensionsInstaller = new BackendExtensionsInstaller(
-      dotnetChecker,
-      funcPluginLogger
-    );
-    await backendExtensionsInstaller.install(
+    const depsManager = new DepsManager(funcDepsLogger, funcDepsTelemetry);
+    const dotentStatus = (await depsManager.getStatus([DepsType.Dotnet]))[0];
+
+    await funcDepsHelper.installFuncExtension(
       componentPath,
+      dotentStatus.command,
+      funcDepsLogger,
       FunctionPluginPathInfo.functionExtensionsFileName,
       binPath
     );

@@ -34,7 +34,7 @@ import {
 } from "../../../../common/local/localEnvProvider";
 import { prepareLocalAuthService } from "./util/localService";
 import { getAllowedAppIds } from "../../../../common/tools";
-import { LocalCertificateManager } from "./util/certificate";
+import { LocalCertificateManager } from "../../../../common/local/localCertificateManager";
 
 export async function setupLocalDebugSettings(
   ctx: v2.Context,
@@ -45,7 +45,9 @@ export async function setupLocalDebugSettings(
   const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
-  const includeAuth = ProjectSettingsHelper.includeAuth(ctx.projectSetting);
+  const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
+  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
   let skipNgrok = localSettings?.bot?.skipNgrok as boolean;
 
   const telemetryProperties = {
@@ -54,8 +56,9 @@ export async function setupLocalDebugSettings(
     frontend: includeFrontend ? "true" : "false",
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
-    auth: includeAuth ? "true" : "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "skip-ngrok": skipNgrok ? "true" : "false",
+    v1: isMigrateFromV1 ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.setupLocalDebugSettings, telemetryProperties);
@@ -64,7 +67,6 @@ export async function setupLocalDebugSettings(
     // setup configs used by other plugins
     // TODO: dynamicly determine local ports
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
-      const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
       const frontendPort = isMigrateFromV1 ? 3000 : 53000;
       const authPort = isMigrateFromV1 ? 5000 : 55000;
       let localTabEndpoint: string;
@@ -86,20 +88,32 @@ export async function setupLocalDebugSettings(
         localFuncEndpoint = "http://localhost:7071";
       }
 
-      if (includeAuth) {
+      if (includeSimpleAuth) {
+        if (!localSettings.auth) {
+          localSettings.auth = {};
+        }
         localSettings.auth.AuthServiceEndpoint = localAuthEndpoint;
       }
 
       if (includeFrontend) {
+        if (!localSettings.frontend) {
+          localSettings.frontend = {};
+        }
         localSettings.frontend.tabEndpoint = localTabEndpoint;
         localSettings.frontend.tabDomain = localTabDomain;
       }
 
       if (includeBackend) {
+        if (!localSettings.backend) {
+          localSettings.backend = {};
+        }
         localSettings.backend.functionEndpoint = localFuncEndpoint;
       }
 
       if (includeBot) {
+        if (!localSettings.bot) {
+          localSettings.bot = {};
+        }
         if (skipNgrok === undefined) {
           skipNgrok = false;
           localSettings.bot.skipNgrok = skipNgrok;
@@ -152,7 +166,9 @@ export async function configLocalDebugSettings(
   const includeFrontend = ProjectSettingsHelper.includeFrontend(ctx.projectSetting);
   const includeBackend = ProjectSettingsHelper.includeBackend(ctx.projectSetting);
   const includeBot = ProjectSettingsHelper.includeBot(ctx.projectSetting);
-  const includeAuth = ProjectSettingsHelper.includeAuth(ctx.projectSetting);
+  const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
+  const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
+  const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
   let trustDevCert = localSettings?.frontend?.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
@@ -160,19 +176,18 @@ export async function configLocalDebugSettings(
     frontend: includeFrontend ? "true" : "false",
     function: includeBackend ? "true" : "false",
     bot: includeBot ? "true" : "false",
-    auth: includeAuth ? "true" : "false",
+    auth: includeAAD && includeSimpleAuth ? "true" : "false",
     "trust-development-certificate": trustDevCert + "",
+    v1: isMigrateFromV1 ? "true" : "false",
   };
   TelemetryUtils.init(ctx.telemetryReporter);
   TelemetryUtils.sendStartEvent(TelemetryEventName.configLocalDebugSettings, telemetryProperties);
 
   try {
     if (inputs.platform === Platform.VSCode || inputs.platform === Platform.CLI) {
-      const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
-
       const localEnvProvider = new LocalEnvProvider(inputs.projectPath!);
       const frontendEnvs = includeFrontend
-        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAuth, isMigrateFromV1)
+        ? await localEnvProvider.loadFrontendLocalEnvs(includeBackend, includeAAD, isMigrateFromV1)
         : undefined;
       const backendEnvs = includeBackend
         ? await localEnvProvider.loadBackendLocalEnvs()
@@ -197,12 +212,15 @@ export async function configLocalDebugSettings(
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.Port] = "53000";
         }
 
-        if (includeAuth) {
-          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
+        if (includeAAD) {
           frontendEnvs!.teamsfxLocalEnvs[
             EnvKeysFrontend.LoginUrl
           ] = `${localTabEndpoint}/auth-start.html`;
           frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.ClientId] = clientId;
+        }
+
+        if (includeSimpleAuth) {
+          frontendEnvs!.teamsfxLocalEnvs[EnvKeysFrontend.TeamsFxEndpoint] = localAuthEndpoint;
           await prepareLocalAuthService(localAuthPackagePath);
         }
 
@@ -230,7 +248,8 @@ export async function configLocalDebugSettings(
             localSettings.frontend.trustDevCert = trustDevCert;
           }
 
-          const certManager = new LocalCertificateManager(ctx, inputs);
+          const certManager = new LocalCertificateManager(ctx.userInteraction, ctx.logProvider);
+
           const localCert = await certManager.setupCertificate(trustDevCert);
           if (localCert) {
             localSettings.frontend.sslCertFile = localCert.certPath;

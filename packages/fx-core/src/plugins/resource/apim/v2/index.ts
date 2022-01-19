@@ -9,6 +9,7 @@ import {
   FxError,
   Inputs,
   Json,
+  ProjectSettings,
   QTreeNode,
   Result,
   Stage,
@@ -52,7 +53,8 @@ export class ApimPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.ApimPlugin)
   plugin!: ApimPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 

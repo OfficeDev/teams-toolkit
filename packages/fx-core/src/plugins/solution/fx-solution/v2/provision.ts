@@ -11,12 +11,7 @@ import {
   SolutionContext,
   returnSystemError,
 } from "@microsoft/teamsfx-api";
-import {
-  getResourceGroupInPortal,
-  getStrings,
-  isArmSupportEnabled,
-  isMultiEnvEnabled,
-} from "../../../../common/tools";
+import { getResourceGroupInPortal, getStrings, isMultiEnvEnabled } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
 import {
   combineRecords,
@@ -98,13 +93,15 @@ export async function provisionResource(
     //fill in common questions for solution
     const appName = ctx.projectSetting.appName;
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
-    const res = await fillInCommonQuestions(
-      contextAdaptor,
-      appName,
-      contextAdaptor.envInfo.state,
-      tokenProvider.azureAccountProvider,
-      await tokenProvider.appStudioToken.getJsonObject()
-    );
+    const res = inputs.isForUT
+      ? ok({})
+      : await fillInCommonQuestions(
+          contextAdaptor,
+          appName,
+          contextAdaptor.envInfo.state,
+          tokenProvider.azureAccountProvider,
+          await tokenProvider.appStudioToken.getJsonObject()
+        );
 
     if (res.isErr()) {
       return new v2.FxFailure(res.error);
@@ -138,7 +135,7 @@ export async function provisionResource(
 
   const solutionInputs = extractSolutionInputs(newEnvInfo.state[GLOBAL_CONFIG]["output"]);
 
-  const plugins = getSelectedPlugins(azureSolutionSettings);
+  const plugins = getSelectedPlugins(ctx.projectSetting);
   const provisionThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionResource))
     .map((plugin) => {
@@ -179,7 +176,7 @@ export async function provisionResource(
   );
 
   // call deployArmTemplates
-  if (isArmSupportEnabled() && isAzureProject(azureSolutionSettings)) {
+  if (isAzureProject(azureSolutionSettings) && !inputs.isForUT) {
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
     const armDeploymentResult = await deployArmTemplates(contextAdaptor);
     if (armDeploymentResult.isErr()) {

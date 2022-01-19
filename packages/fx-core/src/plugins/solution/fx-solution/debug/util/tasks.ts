@@ -3,7 +3,7 @@
 "use strict";
 
 import { ProductName } from "@microsoft/teamsfx-api";
-import { ProgrammingLanguage } from "../constants";
+import { ProgrammingLanguage } from "../../../../../common/local/constants";
 
 export function generateTasks(
   includeFrontend: boolean,

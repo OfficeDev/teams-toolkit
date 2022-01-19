@@ -36,8 +36,8 @@ export class ErrorMessage {
 
   public static readonly DatabaseUserCreateError = {
     name: "DatabaseUserCreateError",
-    message: (sqlName: string, database: string, user: string) =>
-      `Failed to create user '${user}' in database '${sqlName}.${database}'`,
+    message: (database: string, user: string) =>
+      `Failed to create user '${user}' in database ${database}`,
   };
 
   public static readonly SqlAddAdminError = {

@@ -6,7 +6,15 @@ export class FolderName {
   static readonly Frontend = "tabs";
   static readonly Bot = "bot";
   static readonly Function = "api";
+  static readonly SPFx = "SPFx";
 }
+
+export enum ProgrammingLanguage {
+  javascript = "javascript",
+  typescript = "typescript",
+}
+
+export const npmInstallCommand = "npm install --no-audit";
 
 export const LocalEnvAuthKeys = Object.freeze({
   ClientId: "AUTH_CLIENT_ID",
@@ -121,3 +129,9 @@ export const LocalSettingsBotKeys = Object.freeze({
   BotDomain: "botDomain",
   BotEndpoint: "botEndpoint",
 });
+
+export class LocalDebugCertificate {
+  public static readonly CertFileName: string = "localhost.crt";
+  public static readonly KeyFileName: string = "localhost.key";
+  public static readonly FriendlyName: string = "TeamsFx Development Certificate";
+}

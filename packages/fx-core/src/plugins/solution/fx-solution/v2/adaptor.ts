@@ -57,7 +57,7 @@ export class ScaffoldingContextAdapter extends BaseSolutionContextAdaptor {
     const v2context: v2.Context = params[0];
     const inputs: Inputs = params[1];
     if (!inputs.projectPath) {
-      throw new Error(`ivalid project path: ${inputs.projectPath}`);
+      throw new Error(`invalid project path: ${inputs.projectPath}`);
     }
     this.root = inputs.projectPath;
     this.targetEnvName = inputs.targetEnvName;
@@ -201,7 +201,7 @@ export class NamedArmResourcePluginAdaptor implements NamedArmResourcePlugin {
         projectSetting: ctx.projectSettings,
       };
       ctx.answers.projectPath = ctx.root;
-      const result = await fn(v2ctx, ctx.answers);
+      const result = await fn(v2ctx, ctx.answers as Inputs & { existingResources: string[] });
       return result.map((r) => r.template);
     };
   }
@@ -234,7 +234,7 @@ export class NamedArmResourcePluginAdaptor implements NamedArmResourcePlugin {
         projectSetting: ctx.projectSettings,
       };
       ctx.answers.projectPath = ctx.root;
-      const result = await fn(v2ctx, ctx.answers);
+      const result = await fn(v2ctx, ctx.answers as Inputs & { existingResources: string[] });
       return result.map((r) => r.template);
     };
   }

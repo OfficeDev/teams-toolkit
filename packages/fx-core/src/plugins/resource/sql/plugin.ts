@@ -23,7 +23,7 @@ import {
 import { SqlConfig } from "./config";
 import { SqlClient } from "./sqlClient";
 import { ContextUtils } from "./utils/contextUtils";
-import { formatEndpoint, parseToken, UserType } from "./utils/commonUtils";
+import { parseToken, UserType } from "./utils/commonUtils";
 import { AzureSqlBicep, AzureSqlBicepFile, Constants, HelpLinks, Telemetry } from "./constants";
 import { Message } from "./utils/message";
 import { TelemetryUtils } from "./utils/telemetryUtils";
@@ -37,11 +37,10 @@ import * as fs from "fs-extra";
 import {
   getResourceGroupNameFromResourceId,
   getSubscriptionIdFromResourceId,
-  isArmSupportEnabled,
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
-import { generateBicepFromFile } from "../../../common/tools";
+import { generateBicepFromFile, getUuid } from "../../../common/tools";
 
 export class SqlPluginImpl {
   config: SqlConfig = new SqlConfig();
@@ -66,6 +65,7 @@ export class SqlPluginImpl {
     );
 
     this.loadConfigSql(ctx);
+    this.loadDatabases(ctx);
   }
 
   async getQuestions(
@@ -81,6 +81,7 @@ export class SqlPluginImpl {
 
   async preProvision(ctx: PluginContext): Promise<Result<any, FxError>> {
     ctx.logProvider?.info(Message.startPreProvision);
+    this.removeDatabases(ctx);
     await this.loadConfig(ctx);
 
     DialogUtils.init(ctx);
@@ -107,9 +108,8 @@ export class SqlPluginImpl {
 
     await this.parseLoginToken(ctx);
 
-    if (isArmSupportEnabled()) {
-      this.setContext(ctx);
-    }
+    this.setContext(ctx);
+
     TelemetryUtils.sendEvent(Telemetry.stage.preProvision, true);
     ctx.logProvider?.info(Message.endPreProvision);
     return ok(undefined);
@@ -176,17 +176,18 @@ export class SqlPluginImpl {
 
     DialogUtils.init(ctx, ProgressTitle.PostProvision, Object.keys(ConfigureMessage).length);
     TelemetryUtils.init(ctx);
-    TelemetryUtils.sendEvent(Telemetry.stage.postProvision + Telemetry.startSuffix, undefined, {
+
+    const telemetryProperties = {
       [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser
         ? Telemetry.valueYes
         : Telemetry.valueNo,
-    });
-
-    if (isArmSupportEnabled()) {
-      this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
-      this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
-      this.config.azureSubscriptionId = getSubscriptionIdFromResourceId(this.config.sqlResourceId);
-    }
+      [Telemetry.properties.dbCount]: this.config.databases.length.toString(),
+    };
+    TelemetryUtils.sendEvent(
+      Telemetry.stage.postProvision + Telemetry.startSuffix,
+      undefined,
+      telemetryProperties
+    );
 
     ctx.config.delete(Constants.adminPassword);
 
@@ -226,11 +227,7 @@ export class SqlPluginImpl {
 
     await managementClient.deleteLocalFirewallRule();
 
-    TelemetryUtils.sendEvent(Telemetry.stage.postProvision, true, {
-      [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser
-        ? Telemetry.valueYes
-        : Telemetry.valueNo,
-    });
+    TelemetryUtils.sendEvent(Telemetry.stage.postProvision, true, telemetryProperties);
     ctx.logProvider?.info(Message.endPostProvision);
     await DialogUtils.progressBar?.end(true);
     return ok(undefined);
@@ -253,9 +250,18 @@ export class SqlPluginImpl {
     managementClient: ManagementClient
   ): Promise<void> {
     let retryCount = 0;
+    const databaseWithUser: { [key: string]: boolean } = {};
+    this.config.databases.forEach((element) => {
+      databaseWithUser[element] = false;
+    });
     while (true) {
       try {
-        await sqlClient.addDatabaseUser();
+        for (const database in databaseWithUser) {
+          if (!databaseWithUser[database]) {
+            await sqlClient.addDatabaseUser(database);
+            databaseWithUser[database] = true;
+          }
+        }
         return;
       } catch (error) {
         if (
@@ -275,8 +281,7 @@ export class SqlPluginImpl {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<Result<any, FxError>> {
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
@@ -315,6 +320,40 @@ export class SqlPluginImpl {
     return ok(result);
   }
 
+  public async generateNewDatabaseBicepSnippet(ctx: PluginContext): Promise<Result<any, FxError>> {
+    const suffix = getUuid().substring(0, 6);
+    const compileCtx = {
+      suffix: suffix,
+    };
+    const bicepTemplateDirectory = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "sql",
+      "bicep"
+    );
+    const provisionOrchestration = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, AzureSqlBicepFile.newDatabaseOrchestrationTemplateFileName),
+      compileCtx
+    );
+    const provisionModules = await generateBicepFromFile(
+      path.join(bicepTemplateDirectory, AzureSqlBicepFile.newDatabaseProvisionTemplateFileName),
+      compileCtx
+    );
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: provisionOrchestration,
+        Modules: { azureSql: provisionModules },
+      },
+      Reference: {
+        sqlResourceId: AzureSqlBicep.sqlResourceId,
+        sqlEndpoint: AzureSqlBicep.sqlEndpoint,
+        databaseName: AzureSqlBicep.databaseName,
+      },
+    };
+    return ok(result);
+  }
+
   private setContext(ctx: PluginContext) {
     ctx.config.set(Constants.admin, this.config.admin);
     ctx.config.set(Constants.adminPassword, this.config.adminPassword);
@@ -332,9 +371,6 @@ export class SqlPluginImpl {
 
   private async AddFireWallRules(client: ManagementClient) {
     await client.addLocalFirewallRule();
-    if (!isArmSupportEnabled()) {
-      await client.addAzureFirewallRule();
-    }
   }
 
   private async CheckAndSetAadAdmin(ctx: PluginContext, client: ManagementClient) {
@@ -374,14 +410,10 @@ export class SqlPluginImpl {
 
   private async checkSqlExisting(ctx: PluginContext) {
     const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
-    if (isArmSupportEnabled()) {
-      this.config.admin = ctx.config.get(Constants.admin) as string;
-      this.config.adminPassword = ctx.config.get(Constants.adminPassword) as string;
-      this.config.sqlEndpoint = ctx.config.get(Constants.sqlEndpoint);
-      if (this.config.sqlEndpoint && this.config.azureSubscriptionId) {
-        this.config.existSql = await managementClient.existAzureSQL();
-      }
-    } else {
+    this.config.admin = ctx.config.get(Constants.admin) as string;
+    this.config.adminPassword = ctx.config.get(Constants.adminPassword) as string;
+    this.config.sqlEndpoint = ctx.config.get(Constants.sqlEndpoint);
+    if (this.config.sqlEndpoint && this.config.azureSubscriptionId) {
       this.config.existSql = await managementClient.existAzureSQL();
     }
   }
@@ -419,70 +451,58 @@ export class SqlPluginImpl {
   }
 
   private loadConfigResourceGroup(ctx: PluginContext) {
-    if (isArmSupportEnabled()) {
-      this.config.sqlResourceId = ctx.config.get(Constants.sqlResourceId) as string;
-      if (this.config.sqlResourceId) {
-        try {
-          this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
-        } catch (error) {
-          throw SqlResultFactory.UserError(
-            ErrorMessage.SqlInvalidConfigError.name,
-            ErrorMessage.SqlInvalidConfigError.message(this.config.sqlResourceId, error.message),
-            error
-          );
-        }
+    this.config.sqlResourceId = ctx.config.get(Constants.sqlResourceId) as string;
+    if (this.config.sqlResourceId) {
+      try {
+        this.config.resourceGroup = getResourceGroupNameFromResourceId(this.config.sqlResourceId);
+      } catch (error) {
+        throw SqlResultFactory.UserError(
+          ErrorMessage.SqlInvalidConfigError.name,
+          ErrorMessage.SqlInvalidConfigError.message(this.config.sqlResourceId, error.message),
+          error
+        );
       }
-    } else {
-      this.config.resourceGroup = ContextUtils.getConfig<string>(
-        ctx,
-        Constants.solution,
-        Constants.solutionConfigKey.resourceGroupName
-      );
     }
   }
 
   private loadConfigSubscription(ctx: PluginContext) {
-    if (isArmSupportEnabled()) {
-      this.config.sqlResourceId = ctx.config.get(Constants.sqlResourceId) as string;
-      if (this.config.sqlResourceId) {
-        try {
-          this.config.azureSubscriptionId = getSubscriptionIdFromResourceId(
-            this.config.sqlResourceId
-          );
-        } catch (error) {
-          throw SqlResultFactory.UserError(
-            ErrorMessage.SqlInvalidConfigError.name,
-            ErrorMessage.SqlInvalidConfigError.message(this.config.sqlResourceId, error.message),
-            error
-          );
-        }
+    this.config.sqlResourceId = ctx.config.get(Constants.sqlResourceId) as string;
+    if (this.config.sqlResourceId) {
+      try {
+        this.config.azureSubscriptionId = getSubscriptionIdFromResourceId(
+          this.config.sqlResourceId
+        );
+      } catch (error) {
+        throw SqlResultFactory.UserError(
+          ErrorMessage.SqlInvalidConfigError.name,
+          ErrorMessage.SqlInvalidConfigError.message(this.config.sqlResourceId, error.message),
+          error
+        );
       }
-    } else {
-      this.config.azureSubscriptionId = ContextUtils.getConfig<string>(
-        ctx,
-        Constants.solution,
-        Constants.solutionConfigKey.subscriptionId
-      );
     }
   }
 
   private loadConfigSql(ctx: PluginContext) {
-    if (isArmSupportEnabled()) {
-      this.config.sqlEndpoint = ctx.config.get(Constants.sqlEndpoint) as string;
-      this.config.databaseName = ctx.config.get(Constants.databaseName) as string;
-      if (this.config.sqlEndpoint) {
-        this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
-      }
-    } else {
-      let defaultEndpoint = `${ctx.projectSettings!.appName}-sql-${this.config.resourceNameSuffix}`;
-      defaultEndpoint = formatEndpoint(defaultEndpoint);
-      this.config.sqlServer = defaultEndpoint;
-      this.config.sqlEndpoint = `${this.config.sqlServer}.database.windows.net`;
-
-      const defaultDatabase = `${ctx.projectSettings!.appName}-db-${
-        this.config.resourceNameSuffix
-      }`;
-      this.config.databaseName = defaultDatabase;
+    this.config.sqlEndpoint = ctx.config.get(Constants.sqlEndpoint) as string;
+    this.config.databaseName = ctx.config.get(Constants.databaseName) as string;
+    if (this.config.sqlEndpoint) {
+      this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
     }
+  }
+
+  private loadDatabases(ctx: PluginContext) {
+    ctx.config.forEach((v: string, k: string) => {
+      if (k.startsWith(Constants.databaseName)) {
+        this.config.databases.push(v);
+      }
+    });
+  }
+
+  private removeDatabases(ctx: PluginContext) {
+    ctx.config.forEach((v: string, k: string) => {
+      if (k.startsWith(Constants.databaseName) && k !== Constants.databaseName) {
+        ctx.config.delete(k);
+      }
+    });
   }
 }

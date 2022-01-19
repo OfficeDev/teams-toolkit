@@ -26,6 +26,11 @@ export interface Module {
    * deployment type for bits
    */
   deployType?: string;
+
+  /**
+   * index path
+   */
+  indexPath?: string;
 }
 
 export interface TeamsFxSolutionSettings extends AzureSolutionSettings {

@@ -30,7 +30,10 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { Links } from "../bot/constants";
 import { ResourcePermission, TeamsAppAdmin } from "../../../common/permissionInterface";
 import "./v2";
+import "./v3";
 import { IUserList } from "./interfaces/IAppDefinition";
+import { getManifestTemplatePath } from "./manifestTemplate";
+
 @Service(ResourcePlugins.AppStudioPlugin)
 export class AppStudioPlugin implements Plugin {
   name = "fx-resource-appstudio";
@@ -264,33 +267,24 @@ export class AppStudioPlugin implements Plugin {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.updateManifest);
 
-    try {
-      const res = await this.appStudioPluginImpl.updateManifest(ctx, isLocalDebug);
-      if (res.isErr()) {
-        TelemetryUtils.sendErrorEvent(
-          TelemetryEventName.updateManifest,
-          res.error,
-          this.appStudioPluginImpl.commonProperties
-        );
+    const res = await this.appStudioPluginImpl.updateManifest(ctx, isLocalDebug);
+    if (res.isErr()) {
+      TelemetryUtils.sendErrorEvent(
+        TelemetryEventName.updateManifest,
+        res.error,
+        this.appStudioPluginImpl.commonProperties
+      );
+      if (res.error.name === AppStudioError.UpdateManifestCancelError.name) {
         return ok(Void);
+      } else {
+        return err(res.error);
       }
+    } else {
       TelemetryUtils.sendSuccessEvent(
         TelemetryEventName.updateManifest,
         this.appStudioPluginImpl.commonProperties
       );
       return ok(Void);
-    } catch (error) {
-      TelemetryUtils.sendErrorEvent(
-        TelemetryEventName.updateManifest,
-        error,
-        this.appStudioPluginImpl.commonProperties
-      );
-      return err(
-        AppStudioResultFactory.SystemError(
-          AppStudioError.UpdateManifestError.name,
-          AppStudioError.UpdateManifestError.message(error)
-        )
-      );
     }
   }
 
@@ -346,7 +340,7 @@ export class AppStudioPlugin implements Plugin {
           if (value.isOk() && value.value === Constants.LEARN_MORE) {
             ctx.ui?.openUrl(Constants.TEAMS_MANAGE_APP_DOC);
           } else if (value.isOk() && value.value === Constants.ADMIN_PORTAL) {
-            ctx.ui?.openUrl(Constants.ADMIN_PORTAL);
+            ctx.ui?.openUrl(Constants.TEAMS_ADMIN_PORTAL);
           }
         });
       const properties: { [key: string]: string } = this.appStudioPluginImpl.commonProperties;
@@ -526,10 +520,7 @@ export class AppStudioPlugin implements Plugin {
       return await this.migrateV1Project(ctx);
     } else if (func.method === "getManifestTemplatePath") {
       const isLocalDebug = (func.params.type as string) === "localDebug";
-      const filePath = await this.appStudioPluginImpl.getManifestTemplatePath(
-        ctx.root,
-        isLocalDebug
-      );
+      const filePath = await getManifestTemplatePath(ctx.root, isLocalDebug);
       return ok(filePath);
     } else if (func.method === "updateManifest") {
       return await this.updateManifest(ctx, func.params && func.params.envName === "local");

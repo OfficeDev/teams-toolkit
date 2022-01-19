@@ -14,11 +14,13 @@ import {
   returnSystemError,
   returnUserError,
   SubscriptionInfo,
+  SystemError,
   UserInteraction,
   ProjectSettings,
   AzureSolutionSettings,
   SolutionContext,
   v3,
+  PluginContext,
 } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import axios, { AxiosResponse } from "axios";
@@ -36,6 +38,7 @@ import {
   TeamsClientId,
   OfficeClientId,
   OutlookClientId,
+  ResourcePlugins,
 } from "./constants";
 import * as crypto from "crypto";
 import * as os from "os";
@@ -48,6 +51,13 @@ import {
 } from "../plugins/solution/fx-solution/constants";
 import Mustache from "mustache";
 import { CloudResource } from "@microsoft/teamsfx-api/build/v3";
+import {
+  Component,
+  sendTelemetryErrorEvent,
+  sendTelemetryEvent,
+  TelemetryEvent,
+  TelemetryProperty,
+} from "./telemetry";
 
 Handlebars.registerHelper("contains", (value, array) => {
   array = array instanceof Array ? array : [array];
@@ -370,13 +380,6 @@ export function isMultiEnvEnabled(): boolean {
   return true;
 }
 
-/**
- * @deprecated Please DO NOT use this method any more, it will be removed in near future.
- */
-export function isArmSupportEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
-}
-
 export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
@@ -421,16 +424,11 @@ export function compileHandlebarsTemplateString(templateString: string, context:
 
 export async function getAppDirectory(projectRoot: string): Promise<string> {
   const REMOTE_MANIFEST = "manifest.source.json";
-  const MANIFEST_TEMPLATE = "manifest.remote.template.json";
-  const MANIFEST_LOCAL = "manifest.local.template.json";
   const appDirNewLocForMultiEnv = `${projectRoot}/templates/${AppPackageFolderName}`;
   const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
   const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;
 
-  if (
-    (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) ||
-    (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_LOCAL}`))
-  ) {
+  if (await fs.pathExists(`${appDirNewLocForMultiEnv}`)) {
     return appDirNewLocForMultiEnv;
   } else if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
     return appDirNewLoc;
@@ -537,6 +535,11 @@ export function getHashedEnv(envName: string): string {
   return crypto.createHash("sha256").update(envName).digest("hex");
 }
 
+export function IsSimpleAuthEnabled(projectSettings: ProjectSettings | undefined): boolean {
+  const solutionSettings = projectSettings?.solutionSettings as AzureSolutionSettings;
+  return solutionSettings?.activeResourcePlugins?.includes(ResourcePlugins.SimpleAuth);
+}
+
 interface BasicJsonSchema {
   type: string;
   properties?: {
@@ -631,4 +634,53 @@ export function getAllowedAppIds(): string[] {
     OutlookClientId.Desktop,
     OutlookClientId.Web,
   ];
+}
+
+export async function getSideloadingStatus(token: string): Promise<boolean | undefined> {
+  const instance = axios.create({
+    baseURL: getAppStudioEndpoint(),
+    timeout: 30000,
+  });
+  instance.defaults.headers.common["Authorization"] = `Bearer ${token}`;
+
+  let retry = 0;
+  const retryIntervalSeconds = 2;
+  do {
+    try {
+      const response = await instance.get("/api/usersettings/mtUserAppPolicy");
+      let result: boolean | undefined;
+      if (response.status >= 400) {
+        result = undefined;
+      } else {
+        result = response.data?.value?.isSideloadingAllowed as boolean;
+      }
+
+      if (result !== undefined) {
+        sendTelemetryEvent(Component.core, TelemetryEvent.CheckSideloading, {
+          [TelemetryProperty.IsSideloadingAllowed]: result + "",
+        });
+      } else {
+        sendTelemetryErrorEvent(
+          Component.core,
+          TelemetryEvent.CheckSideloading,
+          new SystemError(
+            "UnknownValue",
+            `AppStudio response code: ${response.status}, body: ${response.data}`,
+            "M365Account"
+          )
+        );
+      }
+
+      return result;
+    } catch (error) {
+      sendTelemetryErrorEvent(
+        Component.core,
+        TelemetryEvent.CheckSideloading,
+        new SystemError(error as Error, "M365Account")
+      );
+      await waitSeconds((retry + 1) * retryIntervalSeconds);
+    }
+  } while (++retry < 3);
+
+  return undefined;
 }

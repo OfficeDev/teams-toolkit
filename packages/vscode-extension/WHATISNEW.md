@@ -1,3 +1,4 @@
+- [3.2.0 - Jan 10 2022](#320---jan-10-2022)
 - [3.1.1 - Dec 27 2021](#311---dec-27-2021)
 - [3.1.0 - Dec 13 2021](#310---dec-13-2021)
 - [3.0.0 - Nov 29 2021](#300---nov-29-2021)
@@ -5,6 +6,19 @@
 - [2.9.0 - Nov 01 2021](#290---nov-01-2021)
 - [2.8.0 - Oct 18 2021](#280---oct-18-2021)
 - [2.7.0 - Sep 17 2021](#270---sep-17-2021)
+
+## 3.2.0 - Jan 10, 2022
+Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:
+
+New Features:
+- Use Service Principle to login Azure account in CICD template.
+- Support building React Tab app by different environment variables for multiple environments.
+
+Enhancement:
+- Provide guidance to install development certificate on WSL. See guidance [here](https://github.com/OfficeDev/TeamsFx/blob/dev/docs/fx-core/localdebug-help.md#how-to-manually-install-the-development-certificate-for-windows-subsystem-for-linux-wsl-users)
+- Support .NET SDK 6.0.
+- Improve the experience to preview manifest file and update manifest file to Developer Portal.
+- Improve CICD template by reducing dependency on project metadata file.
 
 ## 3.1.1 - Dec 27, 2021
 This is a hotfix version.

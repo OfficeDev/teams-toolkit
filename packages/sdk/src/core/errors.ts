@@ -60,6 +60,11 @@ export enum ErrorCode {
    * Operation failed.
    */
   FailedOperation = "FailedOperation",
+
+  /**
+   * Version of SDK and project does not match.
+   */
+  ProjectNeedUpgrade = "ProjectNeedUpgrade",
 }
 
 /**

@@ -43,7 +43,7 @@ export async function publishApplication(
     );
   }
 
-  const plugins = getSelectedPlugins(getAzureSolutionSettings(ctx));
+  const plugins = getSelectedPlugins(ctx.projectSetting);
   const thunks = plugins
     .filter((plugin) => !isUndefined(plugin.publishApplication))
     .map((plugin) => {

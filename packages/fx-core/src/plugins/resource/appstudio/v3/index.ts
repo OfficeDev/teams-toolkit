@@ -2,10 +2,8 @@
 // Licensed under the MIT license.
 
 import {
-  Context,
   FxError,
   Result,
-  ok,
   err,
   v2,
   IComposeExtension,
@@ -13,20 +11,66 @@ import {
   IConfigurableTab,
   IStaticTab,
   TeamsAppManifest,
+  PluginContext,
+  ok,
 } from "@microsoft/teamsfx-api";
-import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { Service } from "typedi";
-
+import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { convert2PluginContext } from "../../utils4v2";
+import { AppStudioResultFactory } from "../results";
+import { AppStudioError } from "../errors";
+import {
+  init,
+  addCapabilities,
+  loadManifest,
+  saveManifest,
+  capabilityExceedLimit,
+} from "../manifestTemplate";
+import { getTemplatesFolder } from "../../../../folder";
+import * as path from "path";
+import fs from "fs-extra";
+import {
+  APP_PACKAGE_FOLDER_FOR_MULTI_ENV,
+  COLOR_TEMPLATE,
+  DEFAULT_COLOR_PNG_FILENAME,
+  DEFAULT_OUTLINE_PNG_FILENAME,
+  MANIFEST_RESOURCES,
+  OUTLINE_TEMPLATE,
+} from "../constants";
 @Service(BuiltInResourcePluginNames.appStudio)
 export class AppStudioPluginV3 {
-  // Generate initial manifest template file, for both local debug & remote
-  async init(ctx: Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
+  name = "fx-resource-appstudio";
+  displayName = "App Studio";
+
+  /**
+   * Generate initial manifest template file, for both local debug & remote
+   * @param ctx
+   * @param inputs
+   * @returns
+   */
+  async init(ctx: v2.Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
+    const res = await init(inputs.projectPath);
+    if (res.isErr()) return err(res.error);
+    const templatesFolder = getTemplatesFolder();
+    const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
+    const defaultOutlinePath = path.join(templatesFolder, OUTLINE_TEMPLATE);
+    const appPackageDir = path.resolve(inputs.projectPath, APP_PACKAGE_FOLDER_FOR_MULTI_ENV);
+    const resourcesDir = path.resolve(appPackageDir, MANIFEST_RESOURCES);
+    await fs.ensureDir(resourcesDir);
+    await fs.copy(defaultColorPath, path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME));
+    await fs.copy(defaultOutlinePath, path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME));
     return ok(undefined);
   }
 
-  // Append to manifest template file
+  /**
+   * Append capabilities to manifest templates
+   * @param ctx
+   * @param inputs
+   * @param capabilities
+   * @returns
+   */
   async addCapabilities(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     capabilities: (
       | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
@@ -38,12 +82,22 @@ export class AppStudioPluginV3 {
         }
     )[]
   ): Promise<Result<any, FxError>> {
-    capabilities.map((capability) => {
-      if (this.capabilityExceedLimit(capability.name)) {
-        return err(new Error("Exeed limit."));
+    const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
+    capabilities.map(async (capability) => {
+      const exceedLimit = await this.capabilityExceedLimit(ctx, inputs, capability.name);
+      if (exceedLimit.isErr()) {
+        return err(exceedLimit.error);
+      }
+      if (exceedLimit.value) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.CapabilityExceedLimitError.name,
+            AppStudioError.CapabilityExceedLimitError.message(capability.name)
+          )
+        );
       }
     });
-    return ok(undefined);
+    return await addCapabilities(pluginContext.root, capabilities);
   }
 
   /**
@@ -51,32 +105,61 @@ export class AppStudioPluginV3 {
    * @returns
    */
   async loadManifest(
-    ctx: Context,
+    ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> {
-    return ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() });
+    const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
+    const localManifest = await loadManifest(pluginContext.root, true);
+    if (localManifest.isErr()) {
+      return err(localManifest.error);
+    }
+
+    const remoteManifest = await loadManifest(pluginContext.root, false);
+    if (remoteManifest.isErr()) {
+      return err(remoteManifest.error);
+    }
+
+    return ok({ local: localManifest.value, remote: remoteManifest.value });
   }
 
   /**
-   *
+   * Save manifest template file
    * @param ctx ctx.manifest
    * @param inputs
    * @returns
    */
-  async SaveManifest(
-    ctx: Context,
+  async saveManifest(
+    ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
   ): Promise<Result<any, FxError>> {
+    const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
+    let res = await saveManifest(pluginContext.root, manifest.local, true);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+
+    res = await saveManifest(pluginContext.root, manifest.remote, false);
+    if (res.isErr()) {
+      return err(res.error);
+    }
+
     return ok(undefined);
   }
 
-  // Read from manifest template, and check if it exceeds the limit.
-  // The limit of staticTab if 16, others are 1
-  // Should check both local & remote manifest template file
+  /**
+   * Load manifest template, and check if it exceeds the limit.
+   * The limit of staticTab if 16, others are 1
+   * Should check both local & remote manifest template file
+   * @param capability
+   * @returns
+   */
   async capabilityExceedLimit(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
     capability: "staticTab" | "configurableTab" | "Bot" | "MessageExtension"
-  ): Promise<boolean> {
-    return false;
+  ): Promise<Result<boolean, FxError>> {
+    const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
+    return await capabilityExceedLimit(pluginContext.root, capability);
   }
 }

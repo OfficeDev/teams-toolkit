@@ -11,6 +11,7 @@ import {
   TokenProvider,
   Void,
   v2,
+  ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
@@ -42,7 +43,8 @@ export class AadPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.AadPlugin)
   plugin!: AadAppForTeamsPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 

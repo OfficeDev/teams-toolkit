@@ -365,7 +365,10 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   if (result.isOk()) {
-    commands.executeCommand("vscode.openFolder", result.value);
+    await ExtTelemetry.dispose();
+    setTimeout(() => {
+      commands.executeCommand("vscode.openFolder", result.value);
+    }, 3000);
   }
   return result;
 }

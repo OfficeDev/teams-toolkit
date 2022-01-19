@@ -11,6 +11,7 @@ import {
   ProjectSettingsFileName,
   TelemetryReporter,
   UserError,
+  UserInteraction,
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as path from "path";
@@ -22,53 +23,54 @@ import { getPortsInUse } from "./portChecker";
 import { waitSeconds } from "../tools";
 import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
-import { DependencyStatus, DepsManager } from "../deps-checker/depsManager";
 import { DepsType } from "../deps-checker/depsChecker";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
-import { CheckerFactory } from "../deps-checker/checkerFactory";
-import { DepsLoggerAdapter, DepsTelemetryAdapter } from "./depsAdapter";
+import { LocalCertificateManager } from "./localCertificateManager";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
   private readonly telemetry: TelemetryReporter | undefined;
+  private readonly ui: UserInteraction | undefined;
 
-  constructor(logger?: LogProvider, telemetry?: TelemetryReporter) {
+  constructor(logger?: LogProvider, telemetry?: TelemetryReporter, ui?: UserInteraction) {
     this.logger = logger;
     this.telemetry = telemetry;
+    this.ui = ui;
   }
 
-  public async checkDependencies(projectSettings: ProjectSettings): Promise<
-    {
-      type: DepsType;
-      isInstalled: boolean;
-    }[]
-  > {
-    const depsLogger = new DepsLoggerAdapter(this.logger);
-    const depsTelemetry = new DepsTelemetryAdapter(this.telemetry);
+  public getActiveDependencies(projectSettings: ProjectSettings): DepsType[] {
+    const depsTypes: DepsType[] = [];
+    const isSPFx = ProjectSettingsHelper.isSpfx(projectSettings);
+    const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+    const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
+    const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
+    const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
 
-    const dependencies = this.getValidDeps(projectSettings);
-    const result = [];
-    for (const type of dependencies) {
-      const checker = CheckerFactory.createChecker(type, depsLogger, depsTelemetry);
-      const status = {
-        type: type,
-        isInstalled: await checker.isInstalled(),
-      };
-      result.push(status);
+    // NodeJS
+    if (isSPFx) {
+      depsTypes.push(DepsType.SpfxNode);
+    } else if (includeBackend) {
+      depsTypes.push(DepsType.FunctionNode);
+    } else {
+      depsTypes.push(DepsType.AzureNode);
     }
-    return result;
-  }
 
-  public async checkAndResolveDependencies(
-    projectSettings: ProjectSettings
-  ): Promise<DependencyStatus[]> {
-    const depsLogger = new DepsLoggerAdapter(this.logger);
-    const depsTelemetry = new DepsTelemetryAdapter(this.telemetry);
-    const depsManager = new DepsManager(depsLogger, depsTelemetry);
+    // Dotnet
+    if ((includeFrontend && includeSimpleAuth) || includeBackend) {
+      depsTypes.push(DepsType.Dotnet);
+    }
 
-    return await depsManager.ensureDependencies(this.getValidDeps(projectSettings), {
-      fastFail: true,
-    });
+    // Function core tool
+    if (includeBackend) {
+      depsTypes.push(DepsType.FuncCoreTools);
+    }
+
+    // Ngrok
+    if (includeBot) {
+      depsTypes.push(DepsType.Ngrok);
+    }
+
+    return depsTypes;
   }
 
   public async getLocalDebugEnvs(
@@ -126,6 +128,12 @@ export class LocalEnvManager {
     });
   }
 
+  public async resolveLocalCertificate(trustDevCert: boolean): Promise<boolean | undefined> {
+    const certManager = new LocalCertificateManager(this.ui, this.logger);
+    const localCert = await certManager.setupCertificate(trustDevCert);
+    return localCert.isTrusted;
+  }
+
   // Retry logic when reading project config files in case of read-write conflict
   private async retry<T>(func: (iteration: number) => Promise<T>): Promise<T> {
     let n = 0;
@@ -143,23 +151,5 @@ export class LocalEnvManager {
       }
     }
     throw error;
-  }
-
-  private getValidDeps(projectSettings: ProjectSettings): DepsType[] {
-    const depsTypes: DepsType[] = [];
-
-    if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
-      depsTypes.push(DepsType.Dotnet);
-    }
-
-    if (ProjectSettingsHelper.includeBackend(projectSettings)) {
-      depsTypes.push(DepsType.FuncCoreTools);
-    }
-
-    if (ProjectSettingsHelper.includeBot(projectSettings)) {
-      depsTypes.push(DepsType.Ngrok);
-    }
-
-    return depsTypes;
   }
 }

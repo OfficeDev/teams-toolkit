@@ -15,7 +15,7 @@ import {
   Result,
   FxError,
 } from "@microsoft/teamsfx-api";
-import AppStudioTokenInstance, { AppStudioLogin } from "../../../src/commonlib/appStudioLogin";
+import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
 import { WebviewPanel } from "../../../src/controls/webviewPanel";
 import { PanelType } from "../../../src/controls/PanelType";
@@ -26,6 +26,8 @@ import * as extension from "../../../src/extension";
 import * as accountTree from "../../../src/accountTree";
 import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
+import { ext } from "../../../src/extensionVariables";
+import { Uri } from "vscode";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
@@ -59,7 +61,11 @@ suite("handlers", () => {
     chai.expect(input.platform).equals(Platform.VSCode);
   });
 
-  suite("command handlers", () => {
+  suite("command handlers", function () {
+    this.afterEach(() => {
+      sinon.restore();
+    });
+
     test("createNewProjectHandler()", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -110,7 +116,10 @@ suite("handlers", () => {
     });
   });
 
-  suite("runCommand()", () => {
+  suite("runCommand()", function () {
+    this.afterEach(() => {
+      sinon.restore();
+    });
     test("create", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -197,7 +206,11 @@ suite("handlers", () => {
     });
   });
 
-  suite("detectVsCodeEnv()", () => {
+  suite("detectVsCodeEnv()", function () {
+    this.afterEach(() => {
+      sinon.restore();
+    });
+
     test("locally run", () => {
       const expectedResult = {
         extensionKind: vscode.ExtensionKind.UI,
@@ -292,7 +305,10 @@ suite("handlers", () => {
     sendTelemetryEvent.restore();
   });
 
-  suite("decryptSecret", () => {
+  suite("decryptSecret", function () {
+    this.afterEach(() => {
+      sinon.restore();
+    });
     test("successfully update secret", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -354,12 +370,24 @@ suite("handlers", () => {
     });
   });
 
-  suite("permissions", async () => {
+  suite("permissions", async function () {
+    this.afterEach(() => {
+      sinon.restore();
+    });
     test("grant permission", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
+      sinon.stub(AppStudioTokenInstance, "getJsonObject").resolves({
+        tid: "fake-tenant-id",
+      });
+
+      ext.workspaceUri = Uri.parse("file://fakeProjectPath");
+      sinon.stub(commonUtils, "isSPFxProject").resolves(false);
+      sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
+        return "fake-tenant-id";
+      });
 
       sinon.stub(envTree, "addCollaboratorToEnv").resolves();
       sinon.stub(MockCore.prototype, "grantPermission").returns(
@@ -384,7 +412,28 @@ suite("handlers", () => {
 
       const result = await handlers.grantPermission("env");
       chai.expect(result.isOk()).equals(true);
-      sinon.restore();
+    });
+
+    test("grant permission with empty tenant id", async () => {
+      sinon.stub(handlers, "core").value(new MockCore());
+      const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
+      sinon.stub(AppStudioTokenInstance, "getJsonObject").resolves({
+        tid: "fake-tenant-id",
+      });
+      sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
+        return "";
+      });
+
+      const result = await handlers.grantPermission("env");
+
+      if (result.isErr()) {
+        throw new Error("Unexpected error: " + result.error.message);
+      }
+
+      chai.expect(result.isOk()).equals(true);
+      chai.expect(result.value.state === CollaborationState.EmptyM365Tenant);
     });
 
     test("list all collaborators: with user", async () => {
@@ -418,13 +467,19 @@ suite("handlers", () => {
       );
       chai.assert.equal(result["env"][0].icon, "person");
       chai.assert.equal(result["env"][0].isCustom, false);
-      sinon.restore();
     });
 
     test("list collaborator: with error", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
+      sinon.stub(AppStudioTokenInstance, "getJsonObject").resolves({
+        tid: "fake-tenant-id",
+      });
+      sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
+        return "fake-tenant-id";
+      });
       sinon.stub(MockCore.prototype, "listAllCollaborators").returns(
         Promise.resolve(
           ok({
@@ -441,13 +496,19 @@ suite("handlers", () => {
       chai.assert.equal(result["env"][0].commandId, "fx-extension.listcollaborator.env");
       chai.assert.equal(result["env"][0].icon, "warning");
       chai.assert.equal(result["env"][0].isCustom, true);
-      sinon.restore();
     });
 
     test("list collaborator: with empty user info", async () => {
       sinon.stub(handlers, "core").value(new MockCore());
       const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const sendTelemetryErrorEvent = sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(commonUtils, "getProvisionSucceedFromEnv").resolves(true);
+      sinon.stub(AppStudioTokenInstance, "getJsonObject").resolves({
+        tid: "fake-tenant-id",
+      });
+      sinon.stub(commonUtils, "getM365TenantFromEnv").callsFake(async (env: string) => {
+        return "fake-tenant-id";
+      });
       sinon.stub(MockCore.prototype, "listAllCollaborators").returns(
         Promise.resolve(
           ok({
@@ -464,7 +525,6 @@ suite("handlers", () => {
       chai.assert.equal(result["env"][0].commandId, "fx-extension.listcollaborator.env");
       chai.assert.equal(result["env"][0].icon, "warning");
       chai.assert.equal(result["env"][0].isCustom, true);
-      sinon.restore();
     });
 
     test("check permission: with both permission", async () => {
@@ -495,7 +555,6 @@ suite("handlers", () => {
 
       const result = await handlers.checkPermission("env");
       chai.assert.equal(result, true);
-      sinon.restore();
     });
 
     test("check permission: without permission", async () => {
@@ -526,7 +585,6 @@ suite("handlers", () => {
 
       const result = await handlers.checkPermission("env");
       chai.assert.equal(result, false);
-      sinon.restore();
     });
 
     test("check permission: throw error without permission", async () => {
@@ -537,7 +595,6 @@ suite("handlers", () => {
 
       const result = await handlers.checkPermission("env");
       chai.assert.equal(result, false);
-      sinon.restore();
     });
 
     test("edit manifest template: local", async () => {
@@ -557,7 +614,6 @@ suite("handlers", () => {
           "undefined/templates/appPackage/manifest.local.template.json" as any
         )
       );
-      sinon.restore();
     });
 
     test("edit manifest template: remote", async () => {
@@ -577,7 +633,6 @@ suite("handlers", () => {
           "undefined/templates/appPackage/manifest.remote.template.json" as any
         )
       );
-      sinon.restore();
     });
   });
 });

@@ -51,7 +51,6 @@ import {
   getHashedEnv,
   getResourceGroupInPortal,
   getStrings,
-  isArmSupportEnabled,
   isCheckAccountError,
   isMultiEnvEnabled,
   isUserCancelError,
@@ -116,9 +115,9 @@ import {
   HostTypeOptionAzure,
   MessageExtensionItem,
   TabOptionItem,
-  GetUserEmailQuestion,
   TabSPFxItem,
   AzureResourceKeyVault,
+  getUserEmailQuestion,
 } from "./question";
 import {
   getActivatedResourcePlugins,
@@ -463,17 +462,14 @@ export class TeamsAppSolution implements Solution {
       await scaffoldReadme(capabilities, azureResources, ctx.root);
     }
 
-    if (isArmSupportEnabled() && generateResourceTemplate && this.isAzureProject(ctx)) {
+    if (generateResourceTemplate && this.isAzureProject(ctx)) {
       return await generateArmTemplate(ctx, pluginsToDoArm ? pluginsToDoArm : pluginsToScaffold);
     } else {
       return res;
     }
   }
   async createEnv(ctx: SolutionContext): Promise<Result<any, FxError>> {
-    if (
-      isArmSupportEnabled() &&
-      isAzureProject(ctx.projectSettings!.solutionSettings as AzureSolutionSettings)
-    ) {
+    if (isAzureProject(ctx.projectSettings!.solutionSettings as AzureSolutionSettings)) {
       try {
         if (ctx.answers!.copy === true) {
           await copyParameterJson(
@@ -719,7 +715,7 @@ export class TeamsAppSolution implements Solution {
           }
         }
 
-        if (isArmSupportEnabled() && this.isAzureProject(ctx)) {
+        if (this.isAzureProject(ctx)) {
           const armDeploymentResult = await deployArmTemplates(ctx);
           if (armDeploymentResult.isErr()) {
             return armDeploymentResult;
@@ -1172,7 +1168,10 @@ export class TeamsAppSolution implements Solution {
         }
       }
     } else if (stage === Stage.grantPermission) {
-      node.addChild(new QTreeNode(GetUserEmailQuestion));
+      if (isDynamicQuestion) {
+        const appStudioTokenJson = await ctx.appStudioToken?.getJsonObject();
+        node.addChild(new QTreeNode(getUserEmailQuestion((appStudioTokenJson as any)?.upn)));
+      }
     }
     return ok(node);
   }
@@ -1693,7 +1692,7 @@ export class TeamsAppSolution implements Solution {
     }
 
     if (notifications.length > 0) {
-      if (isArmSupportEnabled() && addNewResourceToProvision) {
+      if (addNewResourceToProvision) {
         showUpdateArmTemplateNotice(ctx.ui);
       }
       settings.azureResources = azureResource;
@@ -1806,9 +1805,8 @@ export class TeamsAppSolution implements Solution {
     }
 
     if (change) {
-      if (isArmSupportEnabled()) {
-        showUpdateArmTemplateNotice(ctx.ui);
-      }
+      showUpdateArmTemplateNotice(ctx.ui);
+
       settings.capabilities = capabilities;
       await this.reloadPlugins(settings);
       const pluginNames = pluginsToScaffold.map((p) => p.name).join(",");

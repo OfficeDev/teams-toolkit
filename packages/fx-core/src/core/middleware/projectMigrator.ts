@@ -40,7 +40,7 @@ import os from "os";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { CoreSource, FxCore, TOOLS } from "..";
-import { getStrings, isArmSupportEnabled, isSPFxProject } from "../../common/tools";
+import { getStrings, isSPFxProject } from "../../common/tools";
 import { loadProjectSettings } from "./projectSettingsLoader";
 import { generateArmTemplate } from "../../plugins/solution/fx-solution/arm";
 import {
@@ -896,9 +896,6 @@ async function cleanup(projectPath: string, backupFolder: string | undefined): P
 }
 
 async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolean> {
-  if (!preCheckEnvEnabled()) {
-    return false;
-  }
   const inputs = ctx.arguments[ctx.arguments.length - 1] as Inputs;
   if (!inputs.projectPath) {
     return false;
@@ -921,13 +918,6 @@ async function needMigrateToArmAndMultiEnv(ctx: CoreHookContext): Promise<boolea
     path.join(inputs.projectPath as string, ".fx", "configs", parameterEnvFileName)
   );
   if (envFileExist && (!armParameterExist || !configDirExist)) {
-    return true;
-  }
-  return false;
-}
-
-function preCheckEnvEnabled() {
-  if (isArmSupportEnabled()) {
     return true;
   }
   return false;
@@ -1054,7 +1044,7 @@ async function generateArmTemplatesFiles(ctx: CoreHookContext) {
     throw SolutionConfigError();
   }
   minorCtx.solutionContext = result.value;
-  const settings = minorCtx.projectSettings?.solutionSettings as AzureSolutionSettings;
+  const settings = minorCtx.projectSettings as ProjectSettings;
   const activePlugins = getActivatedV2ResourcePlugins(settings).map(
     (p) => new NamedArmResourcePluginAdaptor(p)
   );

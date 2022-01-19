@@ -1,6 +1,6 @@
 {
   "name": "@microsoft/teamsfx-api",
-  "version": "0.12.0",
+  "version": "0.13.0",
   "description": "teamsfx framework api",
   "main": "build/index.js",
   "types": "build/index.d.ts",
@@ -25,7 +25,8 @@
     "doc": "typedoc",
     "test:unit": "nyc --no-clean mocha --no-timeouts --require ts-node/register \"tests/**/*.ts\"",
     "prepublishOnly": "npm run test:unit && npm run build",
-    "precommit": "lint-staged"
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged"
   },
   "devDependencies": {
     "@istanbuljs/nyc-config-typescript": "^1.0.1",
@@ -46,6 +47,7 @@
     "cpy-cli": "^3.1.1",
     "eslint": "^7.22.0",
     "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-no-secrets": "^0.8.9",
     "eslint-plugin-prettier": "^4.0.0",
     "json-schema-to-typescript": "^10.1.4",
     "lint-staged": "^10.5.4",

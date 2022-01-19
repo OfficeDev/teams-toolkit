@@ -322,7 +322,9 @@ export class MockedAppStudioProvider implements AppStudioTokenProvider {
     return "fakeToken";
   }
   async getJsonObject(showDialog?: boolean): Promise<Record<string, unknown>> {
-    return {};
+    return {
+      upn: "fakeUserPrincipalName@fake.com",
+    };
   }
   async signout(): Promise<boolean> {
     return true;

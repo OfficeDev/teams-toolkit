@@ -57,6 +57,7 @@ import {
   PluginNames,
 } from "../../src/plugins/solution/fx-solution/constants";
 import { TeamsAppSolutionNameV2 } from "../../src/plugins/solution/fx-solution/v2/constants";
+import sinon from "sinon";
 
 function solutionSettings(): AzureSolutionSettings {
   return {

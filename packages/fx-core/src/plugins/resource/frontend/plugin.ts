@@ -24,6 +24,7 @@ import {
   MigrateV1ProjectError,
 } from "./resources/errors";
 import {
+  Constants,
   DependentPluginInfo,
   FrontendOutputBicepSnippet,
   FrontendPathInfo,
@@ -52,7 +53,10 @@ import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "./env";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile, IsSimpleAuthEnabled } from "../../../common/tools";
-export class FrontendPluginImpl {
+import { LocalSettingsFrontendKeys } from "../../../common/localSettingsConstants";
+import { PluginImpl } from "./interface";
+
+export class FrontendPluginImpl implements PluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartScaffold(PluginInfo.DisplayName));
     const progressHandler = await ProgressHelper.startScaffoldProgressHandler(ctx);
@@ -138,8 +142,7 @@ export class FrontendPluginImpl {
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartGenerateArmTemplates(PluginInfo.DisplayName));
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
@@ -170,6 +173,14 @@ export class FrontendPluginImpl {
     return ok(result);
   }
 
+  public async localDebug(ctx: PluginContext): Promise<TeamsFxResult> {
+    ctx.localSettings?.frontend?.set(
+      LocalSettingsFrontendKeys.TabIndexPath,
+      Constants.FrontendIndexPath
+    );
+    return ok(undefined);
+  }
+
   private collectEnvs(ctx: PluginContext): { [key: string]: string } {
     const envs: { [key: string]: string } = {};
     const addToEnvs = (key: string, value: string | undefined) => {
@@ -198,7 +209,6 @@ export class FrontendPluginImpl {
           .get(DependentPluginInfo.RuntimePluginName)
           ?.get(DependentPluginInfo.RuntimeEndpoint) as string
       );
-      addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
 
     if (solutionSettings?.activeResourcePlugins?.includes(DependentPluginInfo.AADPluginName)) {
@@ -208,6 +218,7 @@ export class FrontendPluginImpl {
           .get(DependentPluginInfo.AADPluginName)
           ?.get(DependentPluginInfo.ClientID) as string
       );
+      addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
     return envs;
   }

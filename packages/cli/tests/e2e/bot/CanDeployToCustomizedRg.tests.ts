@@ -19,25 +19,20 @@ import {
   setBotSkuNameToB1Bicep,
 } from "../commonUtils";
 import AppStudioLogin from "../../../src/commonlib/appStudioLogin";
-import { environmentManager, isFeatureFlagEnabled } from "@microsoft/teamsfx-core";
-import { FeatureFlagName } from "@microsoft/teamsfx-core/src/common/constants";
+import { environmentManager } from "@microsoft/teamsfx-core";
 import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, ResourceToDeploy } from "../../commonlib/constants";
 import { customizeBicepFilesToCustomizedRg } from "../commonUtils";
 
 describe("Deploy to customized resource group", function () {
-  //  Only test when insider feature flag enabled
-  if (!isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true)) {
-    return;
-  }
-
   const testFolder = getTestFolder();
   const subscription = getSubscriptionId();
   const appName = getUniqueAppName();
   const projectPath = path.resolve(testFolder, appName);
+  const env = environmentManager.getDefaultEnvName();
 
   after(async () => {
-    await cleanUp(appName, projectPath, true, false, false, true);
+    await cleanUp(appName, projectPath, true, true, false, true);
   });
 
   it(`bot project can deploy bot resource to customized resource group and successfully provision / deploy`, async function () {
@@ -57,7 +52,7 @@ describe("Deploy to customized resource group", function () {
     );
 
     // Provision
-    await setBotSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
+    await setBotSkuNameToB1Bicep(projectPath, env);
     await CliHelper.setSubscription(subscription, projectPath);
     await CliHelper.provisionProject(projectPath);
 
@@ -66,19 +61,16 @@ describe("Deploy to customized resource group", function () {
 
     // Assert
     {
-      const context = await readContextMultiEnv(
-        projectPath,
-        environmentManager.getDefaultEnvName()
-      );
+      const context = await readContextMultiEnv(projectPath, env);
 
       // Validate Aad App
       const aad = AadValidator.init(context, false, AppStudioLogin);
       await AadValidator.validate(aad);
 
       // Validate Bot
-      const bot = BotValidator.init(context, true);
-      await BotValidator.validateProvision(bot, true);
-      await BotValidator.validateDeploy(bot);
+      const bot = new BotValidator(context, projectPath, env);
+      await bot.validateProvision();
+      await bot.validateDeploy();
     }
 
     await deleteResourceGroupByName(customizedRgName);

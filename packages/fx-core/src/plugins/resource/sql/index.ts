@@ -20,7 +20,7 @@ import {
   TabOptionItem,
 } from "../../solution/fx-solution/question";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
-import { Telemetry } from "./constants";
+import { Constants, Telemetry } from "./constants";
 import { ErrorMessage } from "./errors";
 import { SqlPluginImpl } from "./plugin";
 import { SqlResult, SqlResultFactory } from "./results";
@@ -33,10 +33,8 @@ export class SqlPlugin implements Plugin {
   displayName = "Azure SQL Database";
   activate(solutionSettings: AzureSolutionSettings): boolean {
     const azureResources = solutionSettings.azureResources || [];
-    const cap = solutionSettings.capabilities || [];
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&
-      cap.includes(TabOptionItem.id) &&
       azureResources.includes(AzureResourceSQL.id)
     );
   }
@@ -71,9 +69,15 @@ export class SqlPlugin implements Plugin {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<SqlResult> {
+    let handleFunction: (ctx: PluginContext) => Promise<Result<any, FxError>>;
+    if (ctx.answers?.existingResources?.includes(Constants.pluginFullName)) {
+      handleFunction = this.sqlImpl.generateNewDatabaseBicepSnippet;
+    } else {
+      handleFunction = this.sqlImpl.generateArmTemplates;
+    }
     return this.runWithSqlError(
       Telemetry.stage.generateArmTemplates,
-      () => this.sqlImpl.generateArmTemplates(ctx),
+      () => handleFunction(ctx),
       ctx
     );
   }
@@ -124,7 +128,7 @@ export class SqlPlugin implements Plugin {
       TelemetryUtils.init(ctx);
       let errorMessage = res.error.message;
       if (res.error.innerError) {
-        errorMessage += ` Detailed error: ${e.innerError.message}.`;
+        errorMessage += ` Detailed error: ${res.error.innerError.message}.`;
       }
       TelemetryUtils.sendErrorEvent(stage, errorCode, errorType, errorMessage);
       return res;

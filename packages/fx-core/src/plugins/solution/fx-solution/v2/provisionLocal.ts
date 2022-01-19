@@ -69,7 +69,7 @@ export async function provisionLocalResource(
     return new v2.FxFailure(m365TenantMatches.error);
   }
 
-  const plugins: v2.ResourcePlugin[] = getSelectedPlugins(azureSolutionSettings);
+  const plugins: v2.ResourcePlugin[] = getSelectedPlugins(ctx.projectSetting);
   const provisionLocalResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionLocalResource))
     .map((plugin) => {

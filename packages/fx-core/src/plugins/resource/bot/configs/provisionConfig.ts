@@ -13,7 +13,6 @@ import {
 } from "../resources/strings";
 import { ConfigKeys, WebAppConstants } from "../constants";
 import { ConfigValidationError } from "../errors";
-import { isArmSupportEnabled } from "../../../../common";
 
 export class ProvisionConfig {
   // Arm support config key
@@ -81,15 +80,6 @@ export class ProvisionConfig {
 
     this.appServicePlan = context.config.get(PluginBot.APP_SERVICE_PLAN) as string;
     this.siteName = context.config.get(PluginBot.SITE_NAME) as string;
-
-    if (!isArmSupportEnabled()) {
-      const skuNameValue: ConfigValue = context.config.get(PluginBot.SKU_NAME);
-      if (skuNameValue) {
-        this.skuName = skuNameValue as string;
-      } else {
-        this.skuName = WebAppConstants.APP_SERVICE_PLAN_DEFAULT_SKU_NAME;
-      }
-    }
 
     this.siteEndpoint = context.config.get(PluginBot.SITE_ENDPOINT) as string;
 

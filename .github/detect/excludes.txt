@@ -3,5 +3,5 @@
 *.png
 *.gif
 *.svg
-packages/fx-core/tests/plugins/solution/debug/util/certificate.test.ts
+packages/fx-core/tests/common/local/localCertificateManager.test.ts
 packages/fx-core/tests/core/samples_v2.zip

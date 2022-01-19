@@ -5,6 +5,7 @@ import * as chai from "chai";
 import * as sinon from "sinon";
 import AdmZip from "adm-zip";
 import axios from "axios";
+import semver from "semver";
 
 import * as templates from "../../src/common/template-utils/templates";
 import {
@@ -13,8 +14,18 @@ import {
   sendRequestWithRetry,
 } from "../../src/common/template-utils/templatesUtils";
 
-const candidateTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "0");
-const targetTag = templates.tagPrefix + templates.templatesVersion.replace(/\*/g, "1");
+const candidateVersion1 = semver.inc(
+  templates.templatesVersion.replace(/\^/g, ""),
+  "patch"
+) as string;
+const targetVersion = semver.inc(candidateVersion1, "patch") as string;
+const candidateVersion2 = semver.inc(targetVersion, "minor") as string;
+const candidateVersion3 = semver.inc(targetVersion, "prerelease") as string;
+
+const candidateTag1 = templates.tagPrefix + candidateVersion1;
+const candidateTag2 = templates.tagPrefix + candidateVersion2;
+const candidateTag3 = templates.tagPrefix + candidateVersion3;
+const targetTag = templates.tagPrefix + targetVersion;
 
 const manifest = `
 templates@0.2.0
@@ -22,7 +33,9 @@ templates@0.1.1
 templates@0.1.1-alpha
 templates@0.2.1
 templates@0.3.1
-${candidateTag}
+${candidateTag1}
+${candidateTag2}
+${candidateTag3}
 ${targetTag}
 `;
 

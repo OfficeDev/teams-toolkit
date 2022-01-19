@@ -13,7 +13,6 @@ import {
   UserError,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { isArmSupportEnabled } from "../../..";
 import {
   AzureResourceFunction,
   HostTypeOptionAzure,
@@ -109,19 +108,7 @@ export class FunctionPlugin implements Plugin {
 
   public async provision(ctx: PluginContext): Promise<FxResult> {
     this.setContext(ctx);
-    if (isArmSupportEnabled()) {
-      return ResultFactory.Success();
-    } else {
-      await StepHelperFactory.provisionStepHelper.start(
-        Object.entries(ProvisionSteps).length,
-        ctx.ui
-      );
-      const res = await this.runWithErrorWrapper(ctx, FunctionEvent.provision, () =>
-        this.functionPluginImpl.provision(ctx)
-      );
-      await StepHelperFactory.provisionStepHelper.end(res.isOk());
-      return res;
-    }
+    return ResultFactory.Success();
   }
 
   public async postProvision(ctx: PluginContext): Promise<FxResult> {

@@ -36,7 +36,8 @@ import {
   MockTools,
   randomAppName,
 } from "../../../core/utils";
-
+import * as path from "path";
+import * as os from "os";
 describe("API V2 adapter", () => {
   beforeEach(() => {});
 
@@ -116,7 +117,7 @@ describe("API V2 adapter", () => {
     const appName = randomAppName();
     const inputs: ProvisionInputs = {
       platform: Platform.VSCode,
-      projectPath: ".",
+      projectPath: path.join(os.tmpdir(), randomAppName()),
       resourceNameSuffix: "pref",
       resourceGroupName: "rwer",
       location: "US",

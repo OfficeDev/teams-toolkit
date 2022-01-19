@@ -12,6 +12,7 @@ import {
   Json,
   ok,
   PluginContext,
+  ProjectSettings,
   QTreeNode,
   Result,
   TokenProvider,
@@ -52,7 +53,8 @@ export class AppStudioPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.AppStudioPlugin)
   plugin!: AppStudioPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 

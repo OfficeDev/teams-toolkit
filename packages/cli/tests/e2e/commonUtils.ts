@@ -27,7 +27,6 @@ import {
   AadValidator,
   BotValidator,
   FrontendValidator,
-  SimpleAuthValidator,
 } from "../commonlib";
 import {
   StateConfigKey,
@@ -94,6 +93,17 @@ export function getSubscriptionId() {
   return cfg.AZURE_SUBSCRIPTION_ID || "";
 }
 
+export function getAzureTenantId() {
+  return cfg.AZURE_TENANT_ID || "";
+}
+
+export function getAzureAccountObjectId() {
+  if (!cfg.AZURE_ACCOUNT_OBJECT_ID) {
+    throw new Error("Failed to get AZURE_ACCOUNT_OBJECT_ID from environment.");
+  }
+  return cfg.AZURE_ACCOUNT_OBJECT_ID;
+}
+
 const envFilePathSuffix = path.join(".fx", "env.default.json");
 
 function getEnvFilePathSuffix(isMultiEnvEnabled: boolean, envName: string) {
@@ -138,11 +148,19 @@ export async function getProvisionParameterValueByKey(
   projectPath: string,
   envName: string,
   key: string
-): Promise<string> {
+): Promise<string | undefined> {
   const parameters = await fs.readJSON(
     path.join(projectPath, TestFilePath.configFolder, `azure.parameters.${envName}.json`)
   );
-  return parameters["parameters"]["provisionParameters"]["value"][key];
+  if (
+    parameters.parameters &&
+    parameters.parameters.provisionParameters &&
+    parameters.parameters.provisionParameters.value &&
+    parameters.parameters.provisionParameters.value[key]
+  ) {
+    return parameters.parameters.provisionParameters.value[key];
+  }
+  return undefined;
 }
 
 export async function setBotSkuNameToB1(projectPath: string) {
@@ -517,28 +535,26 @@ export async function customizeBicepFilesToCustomizedRg(
   }
 }
 
-export async function validateTabAndBotProjectProvision(projectPath: string) {
-  const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
-
+export async function validateTabAndBotProjectProvision(projectPath: string, env: string) {
+  const context = await readContextMultiEnv(projectPath, env);
   // Validate Aad App
   const aad = AadValidator.init(context, false, appStudioLogin);
   await AadValidator.validate(aad);
-
-  // Validate Simple Auth
-  const simpleAuth = SimpleAuthValidator.init(context);
-  await SimpleAuthValidator.validate(simpleAuth, aad);
 
   // Validate Tab Frontend
   const frontend = FrontendValidator.init(context, true);
   await FrontendValidator.validateProvision(frontend);
 
   // Validate Bot Provision
-  const bot = BotValidator.init(context, true);
-  await BotValidator.validateProvision(bot, true);
+  const bot = new BotValidator(context, projectPath, env);
+  await bot.validateProvision();
 }
 
-export async function getRGAfterProvision(projectPath: string): Promise<string | undefined> {
-  const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
+export async function getRGAfterProvision(
+  projectPath: string,
+  env: string
+): Promise<string | undefined> {
+  const context = await readContextMultiEnv(projectPath, env);
   if (context[PluginId.Solution] && context[PluginId.Solution][StateConfigKey.resourceGroupName]) {
     return context[PluginId.Solution][StateConfigKey.resourceGroupName];
   }
@@ -609,4 +625,8 @@ export async function validateServicePlan(
     token as string
   );
   chai.assert(serivcePlanResponse, "B1");
+}
+
+export function getKeyVaultSecretReference(vaultName: string, secretName: string): string {
+  return `@Microsoft.KeyVault(VaultName=${vaultName};SecretName=${secretName})`;
 }

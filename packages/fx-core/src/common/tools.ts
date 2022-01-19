@@ -380,13 +380,6 @@ export function isMultiEnvEnabled(): boolean {
   return true;
 }
 
-/**
- * @deprecated Please DO NOT use this method any more, it will be removed in near future.
- */
-export function isArmSupportEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
-}
-
 export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
 }
@@ -431,16 +424,11 @@ export function compileHandlebarsTemplateString(templateString: string, context:
 
 export async function getAppDirectory(projectRoot: string): Promise<string> {
   const REMOTE_MANIFEST = "manifest.source.json";
-  const MANIFEST_TEMPLATE = "manifest.remote.template.json";
-  const MANIFEST_LOCAL = "manifest.local.template.json";
   const appDirNewLocForMultiEnv = `${projectRoot}/templates/${AppPackageFolderName}`;
   const appDirNewLoc = `${projectRoot}/${AppPackageFolderName}`;
   const appDirOldLoc = `${projectRoot}/.${ConfigFolderName}`;
 
-  if (
-    (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_TEMPLATE}`)) ||
-    (await fs.pathExists(`${appDirNewLocForMultiEnv}/${MANIFEST_LOCAL}`))
-  ) {
+  if (await fs.pathExists(`${appDirNewLocForMultiEnv}`)) {
     return appDirNewLocForMultiEnv;
   } else if (await fs.pathExists(`${appDirNewLoc}/${REMOTE_MANIFEST}`)) {
     return appDirNewLoc;

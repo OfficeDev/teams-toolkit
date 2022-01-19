@@ -1,8 +1,8 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
-  AzureAccountProvider,
   ConfigMap,
+  ConfigValue,
   EnvConfig,
   err,
   Func,
@@ -11,16 +11,15 @@ import {
   Json,
   LocalSettings,
   ok,
+  OptionItem,
   Plugin,
   PluginContext,
   QTreeNode,
   Result,
   Stage,
   TokenProvider,
-  Void,
   v2,
-  ConfigValue,
-  OptionItem,
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   BicepTemplate,
@@ -33,18 +32,13 @@ import {
   ResourceTemplate,
   SolutionInputs,
 } from "@microsoft/teamsfx-api/build/v2";
-import { CryptoDataMatchers, mapToJson } from "../../common/tools";
+import _ from "lodash";
+import { LocalSettingsProvider } from "../../common/localSettingsProvider";
 import { ArmTemplateResult } from "../../common/armInterface";
-import {
-  InvalidStateError,
-  MultipleEnvNotEnabledError,
-  NoProjectOpenedError,
-  PluginHasNoTaskImpl,
-} from "../../core/error";
+import { CryptoDataMatchers } from "../../common/tools";
+import { InvalidStateError, NoProjectOpenedError, PluginHasNoTaskImpl } from "../../core/error";
 import { newEnvInfo } from "../../core/tools";
 import { GLOBAL_CONFIG } from "../solution/fx-solution/constants";
-import _ from "lodash";
-import { LocalSettingsProvider } from "../..";
 
 export function convert2PluginContext(
   pluginName: string,

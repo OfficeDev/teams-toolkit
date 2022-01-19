@@ -89,19 +89,31 @@ export async function setupLocalDebugSettings(
       }
 
       if (includeSimpleAuth) {
+        if (!localSettings.auth) {
+          localSettings.auth = {};
+        }
         localSettings.auth.AuthServiceEndpoint = localAuthEndpoint;
       }
 
       if (includeFrontend) {
+        if (!localSettings.frontend) {
+          localSettings.frontend = {};
+        }
         localSettings.frontend.tabEndpoint = localTabEndpoint;
         localSettings.frontend.tabDomain = localTabDomain;
       }
 
       if (includeBackend) {
+        if (!localSettings.backend) {
+          localSettings.backend = {};
+        }
         localSettings.backend.functionEndpoint = localFuncEndpoint;
       }
 
       if (includeBot) {
+        if (!localSettings.bot) {
+          localSettings.bot = {};
+        }
         if (skipNgrok === undefined) {
           skipNgrok = false;
           localSettings.bot.skipNgrok = skipNgrok;

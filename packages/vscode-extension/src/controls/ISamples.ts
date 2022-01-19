@@ -15,7 +15,18 @@ interface SampleCollection {
   samples: SampleInfo[];
 }
 
-type SampleCardProps = {
+type SampleCardProps = SampleDetailProps & {
+  suggested: boolean;
+  onSampleCard: (id: string) => void;
+};
+
+type SampleListProps = {
+  samples: Array<SampleInfo>;
+  baseUrl: string;
+  onSampleCard: (id: string) => void;
+};
+
+type SampleDetailProps = {
   baseUrl: string;
   image: any;
   tags: string[];
@@ -25,10 +36,4 @@ type SampleCardProps = {
   description: string;
   sampleAppFolder: string;
   sampleAppUrl: string;
-  suggested: boolean;
-};
-
-type SampleListProps = {
-  samples: Array<SampleInfo>;
-  baseUrl: string;
 };

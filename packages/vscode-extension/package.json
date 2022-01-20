@@ -582,7 +582,7 @@
         "command": "fx-extension.grantPermission",
         "title": "Add M365 Teams App (with AAD App) Owners",
         "icon": "$(person-add)",
-        "enablement": "fx-extension.isMultiEnvEnabled && fx-extension.isRemoteCollaborateEnabled"
+        "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.migrateTeamsTabApp",

@@ -1,0 +1,16 @@
+{
+  "compilerOptions": {
+    "esModuleInterop": true,
+    "outDir": "lib",
+    "lib": ["es6"],
+    "module": "commonjs",
+    "target": "es6",
+    "sourceMap": true,
+    "skipLibCheck": true,
+    "rootDir": "src",
+    "strict": true, /* enable all strict type-checking options */
+    "resolveJsonModule": true
+  },
+  "include": ["src"],
+  "exclude": ["node_modules"]
+}

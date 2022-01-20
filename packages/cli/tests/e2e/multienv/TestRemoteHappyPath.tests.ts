@@ -16,7 +16,6 @@ import {
   BotValidator,
   FrontendValidator,
   FunctionValidator,
-  SimpleAuthValidator,
   SqlValidator,
 } from "../../commonlib";
 import { CliHelper } from "../../commonlib/cliHelper";
@@ -105,10 +104,6 @@ describe("Multi Env Happy Path for Azure", function () {
         // Validate Aad App
         const aad = AadValidator.init(context, false, AppStudioLogin);
         await AadValidator.validate(aad);
-
-        // Validate Simple Auth
-        const simpleAuth = new SimpleAuthValidator(context, projectPath, env);
-        await simpleAuth.validate();
 
         // Validate Tab Frontend
         const frontend = FrontendValidator.init(context, true);

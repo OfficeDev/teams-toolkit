@@ -1687,7 +1687,7 @@ export function undefinedName(objs: any[], names: string[]) {
 }
 
 export function getProjectSettingsVersion() {
-  return "2.0.0";
+  return "2.1.0";
 }
 
 export * from "./error";

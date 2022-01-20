@@ -120,12 +120,20 @@ export class TeamsUserCredential implements TokenCredential {
             try {
               resultJson = JSON.parse(result);
             } catch (error) {
-              // If can not parse result as Json, will NOT throw error since user may return other info in auth-end page.
-              // TODO: resolve the result.
-              const failedToParseResult = "Failed to parse result to Json.";
-              internalLogger.verbose(failedToParseResult);
-              resolve();
-              return;
+              // If can not parse result as Json, will throw error.
+              const failedToParseResult = "Failed to parse response to Json.";
+              internalLogger.error(failedToParseResult);
+              reject(new ErrorWithCode(failedToParseResult, ErrorCode.InvalidResponse));
+            }
+
+            // If code exists in result, user may using previous auth-start and auth-end page.
+            if (resultJson.code) {
+              const helpLink = "https://aka.ms/teamsfx-auth-code-flow";
+              const usingPreviousAuthPage =
+                "Found auth code in response. Auth code is not support for current version of SDK. " +
+                `Please refer to the help link for how to fix the issue: ${helpLink}.`;
+              internalLogger.error(usingPreviousAuthPage);
+              reject(new ErrorWithCode(usingPreviousAuthPage, ErrorCode.InvalidResponse));
             }
 
             // If sessionStorage exists in result, set the values in current session storage.

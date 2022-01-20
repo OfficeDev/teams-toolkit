@@ -115,7 +115,7 @@ describe("Core basic APIs", () => {
         const projectSettings = projectSettingsResult.value;
         const validSettingsResult = validateSettings(projectSettings);
         assert.isTrue(validSettingsResult === undefined);
-        assert.isTrue(projectSettings.version === "2.0.0");
+        assert.isTrue(projectSettings.version === "2.1.0");
       }
     });
 

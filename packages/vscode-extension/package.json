@@ -1,1022 +1,1022 @@
 {
-	"name": "ms-teams-vscode-extension",
-	"displayName": "Teams Toolkit (Preview)",
-	"description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-	"version": "3.2.0",
-	"publisher": "TeamsDevApp",
-	"author": "Microsoft Corporation",
-	"icon": "media/teams.png",
-	"main": "./out/src/extension.js",
-	"repository": {
-		"type": "git",
-		"url": "https://github.com/OfficeDev/TeamsFx"
-	},
-	"views": {
-		"teamsfx-toolkit": [
-			{
-				"id": "teamsfx-toolkit",
-				"name": "Commands"
-			}
-		]
-	},
-	"engines": {
-		"vscode": "^1.51.0"
-	},
-	"license": "MIT",
-	"keywords": [
-		"Microsoft Teams",
-		"Azure",
-		"M365"
-	],
-	"preview": true,
-	"categories": [
-		"Azure",
-		"Extension Packs",
-		"Snippets"
-	],
-	"aiKey": "1c56be97-bb74-42cf-b04b-8f1aabf04592",
-	"featureFlag": "true",
-	"files": [
-		"out/**/*"
-	],
-	"activationEvents": [
-		"*",
-		"onCommand:fx-extension.openWelcome",
-		"onCommand:fx-extension.openSamples",
-		"onCommand:fx-extension.openDocument",
-		"onCommand:fx-extension.cmpAccounts",
-		"onCommand:fx-extension.create",
-		"onCommand:fx-extension.addCapability",
-		"onCommand:fx-extension.update",
-		"onCommand:fx-extension.openManifest",
-		"onCommand:fx-extension.validateManifest",
-		"onCommand:fx-extension.build",
-		"onCommand:fx-extension.provision",
-		"onCommand:fx-extension.deploy",
-		"onCommand:fx-extension.publish",
-		"onCommand:fx-extension.updateAad",
-		"onCommand:fx-extension.openAppManagement",
-		"onCommand:fx-extension.openBotManagement",
-		"onCommand:fx-extension.openReportIssues",
-		"onCommand:workbench.action.tasks.runTask",
-		"workspaceContains:**/.fx/*",
-		"onView:teamsfx",
-		"onView:teamsfx-accounts",
-		"onView:teamsfx-environment",
-		"onView:teamsfx-development",
-		"onView:teamsfx-deployment",
-		"onView:teamsfx-help-and-feedback"
-	],
-	"contributes": {
-		"viewsContainers": {
-			"activitybar": [
-				{
-					"id": "teamsfx",
-					"title": "Teams Toolkit",
-					"icon": "media/teams.svg"
-				}
-			]
-		},
-		"viewsWelcome": [
-			{
-				"view": "teamsfx-empty-project",
-				"contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
-			},
-			{
-				"view": "teamsfx-empty-project-and-check-upgrade",
-				"contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\n\nYou need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.\n[Upgrade project](command:fx-extension.checkProjectUpgrade)"
-			}
-		],
-		"views": {
-			"teamsfx": [
-				{
-					"id": "teamsfx-accounts",
-					"name": "Accounts",
-					"when": "fx-extension.sidebarWelcome.treeview"
-				},
-				{
-					"id": "teamsfx-environment",
-					"name": "Environment",
-					"when": "fx-extension.isMultiEnvEnabled"
-				},
-				{
-					"id": "teamsfx-development",
-					"name": "Development",
-					"when": "fx-extension.sidebarWelcome.treeview && !fx-extension.customizedTreeview"
-				},
-				{
-					"type": "webview",
-					"id": "teamsfx-development-webview",
-					"name": "Development",
-					"when": "fx-extension.sidebarWelcome.treeview && fx-extension.customizedTreeview"
-				},
-				{
-					"id": "teamsfx-deployment",
-					"name": "Deployment",
-					"when": "fx-extension.sidebarWelcome.treeview && !fx-extension.customizedTreeview"
-				},
-				{
-					"type": "webview",
-					"id": "teamsfx-deployment-webview",
-					"name": "Deployment",
-					"when": "fx-extension.sidebarWelcome.treeview && fx-extension.customizedTreeview"
-				},
-				{
-					"id": "teamsfx-help-and-feedback",
-					"name": "Help and feedback",
-					"when": "fx-extension.sidebarWelcome.treeview"
-				},
-				{
-					"id": "teamsfx-empty-project",
-					"name": "Teams Toolkit",
-					"when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv"
-				},
-				{
-					"id": "teamsfx-empty-project-and-check-upgrade",
-					"name": "Teams Toolkit",
-					"when": "fx-extension.sidebarWelcome.default && fx-extension.canUpgradeToArmAndMultiEnv"
-				}
-			]
-		},
-		"menus": {
-			"view/title": [
-				{
-					"command": "fx-extension.addEnvironment",
-					"when": "view == teamsfx-environment",
-					"group": "navigation@1"
-				},
-				{
-					"command": "fx-extension.refreshEnvironment",
-					"when": "view == teamsfx-environment",
-					"group": "navigation@2"
-				},
-				{
-					"command": "fx-extension.openAccountLink",
-					"when": "view == teamsfx-accounts",
-					"group": "navigation@1"
-				},
-				{
-					"command": "fx-extension.openEnvLink",
-					"when": "view == teamsfx-environment",
-					"group": "navigation@3"
-				},
-				{
-					"command": "fx-extension.openDevelopmentLink",
-					"when": "view == teamsfx-development",
-					"group": "navigation@1"
-				},
-				{
-					"command": "fx-extension.openDeploymentLink",
-					"when": "view == teamsfx-deployment",
-					"group": "navigation@1"
-				},
-				{
-					"command": "fx-extension.openHelpFeedbackLink",
-					"when": "view == teamsfx-help-and-feedback",
-					"group": "navigation@1"
-				}
-			],
-			"view/item/context": [
-				{
-					"command": "fx-extension.signOut",
-					"when": "view == teamsfx-accounts && viewItem == signedinM365",
-					"group": "inline@1"
-				},
-				{
-					"command": "fx-extension.signOut",
-					"when": "view == teamsfx-accounts && viewItem == signedinAzure",
-					"group": "inline@1"
-				},
-				{
-					"command": "fx-extension.m365AccountSettings",
-					"when": "view == teamsfx-accounts && viewItem == signedinM365",
-					"group": "inline@2"
-				},
-				{
-					"command": "fx-extension.refreshSideloading",
-					"when": "view == teamsfx-accounts && viewItem == checkSideloading",
-					"group": "inline"
-				},
-				{
-					"command": "fx-extension.azureAccountSettings",
-					"when": "view == teamsfx-accounts && viewItem == signedinAzure",
-					"group": "inline@2"
-				},
-				{
-					"command": "fx-extension.specifySubscription",
-					"when": "view == teamsfx-accounts && viewItem == selectSubscription",
-					"group": "inline"
-				},
-				{
-					"command": "fx-extension.signInGuideline",
-					"when": "view == teamsfx-accounts && viewItem == signinM365",
-					"group": "inline"
-				},
-				{
-					"command": "fx-extension.signInGuideline",
-					"when": "view == teamsfx-accounts && viewItem == signinAzure",
-					"group": "inline"
-				},
-				{
-					"command": "fx-extension.preview",
-					"when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/"
-				},
-				{
-					"command": "fx-extension.previewWithIcon",
-					"when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/",
-					"group": "inline@3"
-				},
-				{
-					"command": "fx-extension.localdebug",
-					"when": "view == teamsfx-environment && viewItem =~ /local/"
-				},
-				{
-					"command": "fx-extension.localdebugWithIcon",
-					"when": "view == teamsfx-environment && viewItem =~ /local/",
-					"group": "inline@3"
-				},
-				{
-					"command": "fx-extension.listCollaborator",
-					"when": "view == teamsfx-environment && viewItem =~ /environment/",
-					"group": "inline@3"
-				},
-				{
-					"command": "fx-extension.openSubscriptionInPortal",
-					"when": "view == teamsfx-environment && viewItem == openSubscriptionInPortal",
-					"group": "inline@3"
-				},
-				{
-					"command": "fx-extension.openResourceGroupInPortal",
-					"when": "view == teamsfx-environment && viewItem == openResourceGroupInPortal",
-					"group": "inline@3"
-				},
-				{
-					"command": "fx-extension.grantPermission",
-					"when": "view == teamsfx-environment && viewItem =~ /environment/",
-					"group": "inline@3"
-				}
-			],
-			"editor/title/run": [
-				{
-					"command": "fx-extension.selectAndDebug",
-					"when": "!inDebugMode && debuggersAvailable && fx-extension.runIconActive",
-					"group": "teamsfx"
-				}
-			],
-			"editor/title": [
-				{
-					"command": "fx-extension.openPreviewFile",
-					"when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json",
-					"group": "navigation"
-				},
-				{
-					"command": "fx-extension.updatePreviewFile",
-					"when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/ && fx-extension.isMultiEnvEnabled",
-					"group": "navigation"
-				}
-			],
-			"commandPalette": [
-				{
-					"command": "fx-extension.signOut",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.signInGuideline",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.m365AccountSettings",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.refreshSideloading",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.azureAccountSettings",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.specifySubscription",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.selectAndDebug",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.cicdGuide",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.refreshEnvironment",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.preview",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.previewWithIcon",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.localdebug",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.localdebugWithIcon",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.listCollaborator",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.openSubscriptionInPortal",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.openResourceGroupInPortal",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.grantPermission",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.openSurvey",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.checkProjectUpgrade",
-					"when": "fx-extension.canUpgradeToArmAndMultiEnv"
-				},
-				{
-					"command": "fx-extension.openAccountLink",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.openEnvLink",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.openDevelopmentLink",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.openDeploymentLink",
-					"when": "false"
-				},
-				{
-					"command": "fx-extension.openHelpFeedbackLink",
-					"when": "false"
-				}
-			]
-		},
-		"commands": [
-			{
-				"command": "fx-extension.signOut",
-				"title": "Sign Out",
-				"icon": "$(sign-out)"
-			},
-			{
-				"command": "fx-extension.signInGuideline",
-				"title": "Learn more about Teams development accounts",
-				"icon": "$(info)"
-			},
-			{
-				"command": "fx-extension.m365AccountSettings",
-				"title": "M365 portal",
-				"icon": "$(settings-gear)"
-			},
-			{
-				"command": "fx-extension.refreshSideloading",
-				"title": "Refresh",
-				"icon": "$(refresh)"
-			},
-			{
-				"command": "fx-extension.azureAccountSettings",
-				"title": "Azure portal",
-				"icon": "$(settings-gear)"
-			},
-			{
-				"command": "fx-extension.specifySubscription",
-				"title": "Specify subscription",
-				"icon": "$(list-selection)"
-			},
-			{
-				"command": "fx-extension.cmpAccounts",
-				"title": "Teams: Accounts"
-			},
-			{
-				"command": "fx-extension.openWelcome",
-				"title": "Teams: Quick Start"
-			},
-			{
-				"command": "fx-extension.openSurvey",
-				"title": "Teams: Survey"
-			},
-			{
-				"command": "fx-extension.openSamples",
-				"title": "Teams: View samples"
-			},
-			{
-				"command": "fx-extension.openDocument",
-				"title": "Teams: Documentation"
-			},
-			{
-				"command": "fx-extension.create",
-				"title": "Teams: Create a new Teams app"
-			},
-			{
-				"command": "fx-extension.update",
-				"title": "Teams: Add cloud resources",
-				"enablement": "!fx-extension.isSPFx"
-			},
-			{
-				"command": "fx-extension.addCapability",
-				"title": "Teams: Add capabilities",
-				"enablement": "!fx-extension.isSPFx"
-			},
-			{
-				"command": "fx-extension.openManifest",
-				"title": "Teams: Edit manifest file"
-			},
-			{
-				"command": "fx-extension.validateManifest",
-				"title": "Teams: Validate manifest file"
-			},
-			{
-				"command": "fx-extension.build",
-				"title": "Teams: Zip Teams metadata package"
-			},
-			{
-				"command": "fx-extension.provision",
-				"title": "Teams: Provision in the cloud"
-			},
-			{
-				"command": "fx-extension.checkProjectUpgrade",
-				"title": "Teams: Upgrade project"
-			},
-			{
-				"command": "fx-extension.deploy",
-				"title": "Teams: Deploy to the cloud"
-			},
-			{
-				"command": "fx-extension.publish",
-				"title": "Teams: Publish to Teams"
-			},
-			{
-				"command": "fx-extension.openAppManagement",
-				"title": "Teams: Developer Portal for Teams"
-			},
-			{
-				"command": "fx-extension.openReportIssues",
-				"title": "Teams: Report issues on GitHub"
-			},
-			{
-				"command": "fx-extension.validate-dependencies",
-				"title": "Teams - Validate Dependencies",
-				"enablement": "never"
-			},
-			{
-				"command": "fx-extension.validate-spfx-dependencies",
-				"title": "Teams - Validate SPFx Dependencies",
-				"enablement": "never"
-			},
-			{
-				"command": "fx-extension.validate-local-prerequisites",
-				"title": "Teams - Validate Local Prerequisites",
-				"enablement": "never"
-			},
-			{
-				"command": "fx-extension.pre-debug-check",
-				"title": "Teams - Pre Debug Check",
-				"enablement": "never"
-			},
-			{
-				"command": "fx-extension.backend-extensions-install",
-				"title": "Teams - Backend Extensions Install",
-				"enablement": "never"
-			},
-			{
-				"command": "fx-extension.selectAndDebug",
-				"title": "Select and Start Debuging Teams App",
-				"icon": "$(run)"
-			},
-			{
-				"command": "fx-extension.cicdGuide",
-				"title": "CI/CD guide",
-				"icon": "$(sync)"
-			},
-			{
-				"command": "fx-extension.openPreviewFile",
-				"title": "Preview manifest file",
-				"icon": "$(file-code)"
-			},
-			{
-				"command": "fx-extension.openSchema",
-				"title": "Open manifest schema",
-				"icon": "$(file-code)"
-			},
-			{
-				"command": "fx-extension.updatePreviewFile",
-				"title": "Teams: Update manifest to Teams platform",
-				"icon": "$(sync)",
-				"enablement": "fx-extension.isMultiEnvEnabled"
-			},
-			{
-				"command": "fx-extension.addEnvironment",
-				"title": "Teams: Create new environment",
-				"icon": "$(add)",
-				"enablement": "fx-extension.isMultiEnvEnabled"
-			},
-			{
-				"command": "fx-extension.refreshEnvironment",
-				"title": "Refresh",
-				"icon": "$(refresh)",
-				"enablement": "fx-extension.isMultiEnvEnabled"
-			},
-			{
-				"command": "fx-extension.preview",
-				"title": "Preview App",
-				"enablement": "fx-extension.isMultiEnvEnabled"
-			},
-			{
-				"command": "fx-extension.previewWithIcon",
-				"title": "Preview App",
-				"icon": "$(run)",
-				"enablement": "fx-extension.isMultiEnvEnabled"
-			},
-			{
-				"command": "fx-extension.localdebug",
-				"title": "Local debug",
-				"enablement": "fx-extension.isMultiEnvEnabled"
-			},
-			{
-				"command": "fx-extension.localdebugWithIcon",
-				"title": "Local debug",
-				"icon": "$(debug-alt)",
-				"enablement": "fx-extension.isMultiEnvEnabled"
-			},
-			{
-				"command": "fx-extension.listCollaborator",
-				"title": "List M365 Teams App (with AAD App) Owners",
-				"icon": "$(organization)",
-				"enablement": "fx-extension.isMultiEnvEnabled"
-			},
-			{
-				"command": "fx-extension.openSubscriptionInPortal",
-				"title": "Open in Portal",
-				"icon": "$(ports-open-browser-icon)",
-				"enablement": "fx-extension.isMultiEnvEnabled"
-			},
-			{
-				"command": "fx-extension.openResourceGroupInPortal",
-				"title": "Open in Portal",
-				"icon": "$(ports-open-browser-icon)",
-				"enablement": "fx-extension.isMultiEnvEnabled"
-			},
-			{
-				"command": "fx-extension.grantPermission",
-				"title": "Add M365 Teams App (with AAD App) Owners",
-				"icon": "$(person-add)",
-				"enablement": "fx-extension.isMultiEnvEnabled && fx-extension.isRemoteCollaborateEnabled"
-			},
-			{
-				"command": "fx-extension.migrateTeamsTabApp",
-				"title": "Teams: Upgrade Teams JS SDK references to support Outlook and Office apps"
-			},
-			{
-				"command": "fx-extension.migrateTeamsManifest",
-				"title": "Teams: Upgrade Teams manifest to support Outlook and Office apps"
-			},
-			{
-				"command": "fx-extension.openAccountLink",
-				"title": "Learn more about accounts",
-				"icon": "$(info)"
-			},
-			{
-				"command": "fx-extension.openEnvLink",
-				"title": "Learn more about enviornments",
-				"icon": "$(info)",
-				"enablement": "fx-extension.isMultiEnvEnabled"
-			},
-			{
-				"command": "fx-extension.openDevelopmentLink",
-				"title": "Learn more about development",
-				"icon": "$(info)"
-			},
-			{
-				"command": "fx-extension.openDeploymentLink",
-				"title": "Learn more about deployment",
-				"icon": "$(info)"
-			},
-			{
-				"command": "fx-extension.openHelpFeedbackLink",
-				"title": "Learn more about help and feedback",
-				"icon": "$(info)"
-			}
-		],
-		"taskDefinitions": [
-			{
-				"type": "teamsfx",
-				"required": [
-					"command",
-					"component"
-				],
-				"properties": {
-					"command": {
-						"type": "string",
-						"description": "The command to be executed on a teamsfx component.",
-						"enum": [
-							"dev",
-							"watch"
-						]
-					},
-					"component": {
-						"type": "string",
-						"description": "The teamsfx component.",
-						"enum": [
-							"frontend",
-							"backend",
-							"bot"
-						]
-					}
-				}
-			}
-		],
-		"problemMatchers": [
-			{
-				"name": "teamsfx-frontend-watch",
-				"label": "TeamsFx Frontend Problems",
-				"owner": "Teams Toolkit",
-				"source": "teamsfx",
-				"applyTo": "allDocuments",
-				"fileLocation": [
-					"relative",
-					"${workspaceFolder}/tabs"
-				],
-				"pattern": [
-					{
-						"regexp": "^.*?\\.js$",
-						"file": 0
-					},
-					{
-						"regexp": "^\\s*Line\\s+(\\d+):(\\d+):\\s+(.*)$",
-						"line": 1,
-						"column": 2,
-						"message": 3
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": ".*",
-					"endsPattern": "Compiled|Failed"
-				},
-				"severity": "error"
-			},
-			{
-				"name": "teamsfx-backend-watch",
-				"label": "TeamsFx Backend Problems",
-				"owner": "Teams Toolkit",
-				"source": "teamsfx",
-				"applyTo": "allDocuments",
-				"fileLocation": [
-					"relative",
-					"${workspaceFolder}/api"
-				],
-				"pattern": [
-					{
-						"regexp": "^.*$",
-						"file": 0,
-						"location": 1,
-						"message": 2
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": "^.*(Job host stopped|signaling restart).*$",
-					"endsPattern": "^.*(Worker process started and initialized|Host lock lease acquired by instance ID).*$"
-				}
-			},
-			{
-				"name": "teamsfx-auth-watch",
-				"label": "TeamsFx SimpleAuth Problems",
-				"owner": "Teams Toolkit",
-				"source": "teamsfx",
-				"applyTo": "allDocuments",
-				"fileLocation": [
-					"relative",
-					"${workspaceFolder}"
-				],
-				"pattern": [
-					{
-						"regexp": "^.*$",
-						"file": 0,
-						"location": 1,
-						"message": 2
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": ".*",
-					"endsPattern": ".*"
-				}
-			},
-			{
-				"name": "teamsfx-ngrok-watch",
-				"label": "TeamsFx Ngrok Problems",
-				"owner": "Teams Toolkit",
-				"source": "teamsfx",
-				"applyTo": "allDocuments",
-				"fileLocation": [
-					"relative",
-					"${workspaceFolder}"
-				],
-				"pattern": [
-					{
-						"regexp": "^.*$",
-						"file": 0,
-						"location": 1,
-						"message": 2
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": "starting web service",
-					"endsPattern": "started tunnel|failed to reconnect session"
-				}
-			},
-			{
-				"name": "teamsfx-bot-watch",
-				"label": "TeamsFx Bot Problems",
-				"owner": "Teams Toolkit",
-				"source": "teamsfx",
-				"applyTo": "allDocuments",
-				"fileLocation": [
-					"relative",
-					"${workspaceFolder}/bot"
-				],
-				"pattern": [
-					{
-						"regexp": "^.*$",
-						"file": 0,
-						"location": 1,
-						"message": 2
-					}
-				],
-				"background": {
-					"activeOnStart": true,
-					"beginsPattern": "[nodemon] starting",
-					"endsPattern": "listening|[nodemon] app crashed"
-				}
-			}
-		],
-		"configuration": [
-			{
-				"title": "Teams Toolkit",
-				"properties": {
-					"fx-extension.validateNode": {
-						"type": "boolean",
-						"description": "Ensure Node.js is installed.",
-						"default": true
-					},
-					"fx-extension.validateDotnetSdk": {
-						"type": "boolean",
-						"description": "Ensure .NET SDK is installed.",
-						"default": true
-					},
-					"fx-extension.validateFuncCoreTools": {
-						"type": "boolean",
-						"description": "Ensure Azure Function Core Tools is installed.",
-						"default": true
-					},
-					"fx-extension.validateBicep": {
-						"type": "boolean",
-						"description": "Ensure Bicep CLI is installed.",
-						"default": true
-					},
-					"fx-extension.stopTeamsToolkitTasksPostDebug": {
-						"type": "boolean",
-						"description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
-						"default": true
-					},
-					"fx-extension.defaultProjectRootDirectory": {
-						"type": "string",
-						"description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requries reload of VS Code)",
-						"default": "${homeDir}/TeamsApps"
-					},
-					"fx-extension.automaticNpmInstall": {
-						"type": "boolean",
-						"title": "Automatic NPM Install",
-						"description": "Automatically execute npm install command for your Teams application.",
-						"default": false
-					}
-				}
-			}
-		],
-		"languages": [
-			{
-				"id": "teamsfx-toolkit-output",
-				"mimetypes": [
-					"text/x-code-output"
-				]
-			}
-		],
-		"grammars": [
-			{
-				"language": "teamsfx-toolkit-output",
-				"scopeName": "teamsfx-toolkit.output",
-				"path": "./syntaxes/teamsfx-toolkit-output.tmLanguage"
-			}
-		],
-		"walkthroughs": [
-			{
-				"id": "teamsToolkitQuickStart",
-				"title": "Get started with Teams toolkit",
-				"description": "Jumpstart your Teams app development experience",
-				"steps": [
-					{
-						"id": "teamsToolkitCapailities",
-						"title": "What are Teams app \"Capabilities\"",
-						"description": "[Capabilities](https://aka.ms/teamsfx-capabilities-overview) are the extension points for building apps on the Microsoft Teams platform.\n[Watch video (<1 min)](https://aka.ms/teamsfx-video)",
-						"media": {
-							"svg": "media/learn.svg",
-							"altText": "Watch Teams Video"
-						}
-					},
-					{
-						"id": "teamsToolkitInstallNodeJs",
-						"title": "Install Node.js",
-						"description": "Teams toolkit cannot detect the right version of Node.js on your machine.\nAs a fundamental runtime context for Teams app, Node.js v10.x, v12.x, v14.x or v16.x is required (v.14.x is recommended ). Please install the appropriate version to run the Microsoft Teams Toolkit.Read more about managing Node.js versions.\n[Download Node.js (v.14.x)](https://aka.ms/teamsfx-nodejs-download)",
-						"media": {
-							"svg": "media/step_nodejs.svg",
-							"altText": "Install NodeJs"
-						},
-						"when": "fx-extension.isNotValidNode"
-					},
-					{
-						"id": "teamsToolkitTenantAccount",
-						"title": "Get your M365 testing tenant for free",
-						"description": "Teams toolkit requires a Microsoft 365 (organizational account) with the [sideloading option](https://aka.ms/teamsfx-sideloading-option).\nIf your account is not ready, create a free M365 test tenant to start your Teams app development.\n[Create a developer tenant](https://aka.ms/teamsfx-prepare-365-tenant)",
-						"media": {
-							"markdown": "docs/itp/itp.md"
-						}
-					},
-					{
-						"id": "teamsToolkitExploreMore",
-						"title": "Explore more TeamsFx functionalities",
-						"description": " • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)",
-						"media": {
-							"svg": "media/goodToGo.svg",
-							"altText": "Explore more"
-						}
-					}
-				]
-			}
-		]
-	},
-	"scripts": {
-		"lint:staged": "lint-staged",
-		"vscode:prepublish": "rimraf out && npm run package",
-		"copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css out/src/",
-		"copy-whatisnew-files": "copyfiles WHATISNEW.md out/resource",
-		"compile": "tsc -p ./ && npm run copy-files && npm run copy-whatisnew-files",
-		"build": "rimraf out && webpack --mode development --config ./webpack.config.js && npm run compile",
-		"build-failpoint": "rimraf out && npx ttsc -p ./",
-		"watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
-		"package": "rimraf out && webpack --mode production --config ./webpack.config.js",
-		"test-compile": "tsc -p ./",
-		"test-watch": "tsc -watch -p ./",
-		"pretest": "npm run lint && npm run check-format && npm run test-compile",
-		"test:unit": "rimraf coverage && npm run compile && node out/test/unit/runTest.js && npm run test:unit:migration",
-		"test:unit:migration": "nyc mocha --require ts-node/register \"test/unit/migration/*.test.ts\"",
-		"test:integration": "echo 'to be implementd'",
-		"test:e2e": "echo 'to be implementd'",
-		"check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
-		"format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
-		"lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
-		"lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
-		"prepare": "npm run build",
-		"check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
-		"precommit": "npm run check-sensitive && lint-staged"
-	  },
-	"devDependencies": {
-		"@azure/arm-subscriptions": "^3.0.0",
-		"@azure/eslint-plugin-azure-sdk": "^2.0.1",
-		"@commitlint/cli": "^14.0.1",
-		"@commitlint/config-conventional": "^12.0.1",
-		"@fluentui/react": "^8.5.1",
-		"@istanbuljs/nyc-config-typescript": "^1.0.1",
-		"@shared/eslint-config": "file:../eslint-config",
-		"@shared/prettier-config": "file:../prettier-config",
-		"@types/adm-zip": "^0.4.33",
-		"@types/chai": "^4.2.14",
-		"@types/chai-as-promised": "^7.1.3",
-		"@types/chai-spies": "^1.0.3",
-		"@types/express": "^4.17.11",
-		"@types/fs-extra": "^9.0.5",
-		"@types/glob": "^7.1.4",
-		"@types/jscodeshift": "^0.11.2",
-		"@types/keytar": "^4.4.2",
-		"@types/mocha": "^8.0.4",
-		"@types/node": "^14.14.21",
-		"@types/react": "^17.0.3",
-		"@types/react-dom": "^17.0.2",
-		"@types/react-router-dom": "^5.1.7",
-		"@types/sinon": "^9.0.9",
-		"@types/tmp": "^0.2.0",
-		"@types/underscore": "^1.11.0",
-		"@types/uuid": "^8.3.0",
-		"@types/vscode": "^1.51.0",
-		"@typescript-eslint/eslint-plugin": "^5.0.0",
-		"@typescript-eslint/parser": "^5.0.0",
-		"@vscode/codicons": "0.0.21",
-		"adm-zip": "^0.5.4",
-		"chai": "^4.2.0",
-		"chai-as-promised": "^7.1.1",
-		"chai-spies": "^1.0.0",
-		"copy-webpack-plugin": "^6.4.1",
-		"copyfiles": "^2.4.1",
-		"css-loader": "^5.1.3",
-		"decache": "^4.6.0",
-		"eslint": "^8.1.0",
-		"eslint-plugin-import": "^2.25.2",
-		"eslint-plugin-no-secrets": "^0.8.9",
-		"eslint-plugin-prettier": "^4.0.0",
-		"find-process": "^1.4.4",
-		"fs-extra": "^9.0.1",
-		"glob": "^7.1.7",
-		"html-webpack-plugin": "^5.3.1",
-		"istanbul": "^0.4.5",
-		"lint-staged": "^11.2.6",
-		"mocha": "^9.1.1",
-		"mocha-junit-reporter": "^2.0.2",
-		"mocha-multi-reporters": "^1.5.1",
-		"mock-require": "^3.0.3",
-		"ms-rest": "^2.5.4",
-		"node-loader": "^2.0.0",
-		"node-sass": "^6.0.1",
-		"nyc": "^15.1.0",
-		"prettier": "^2.4.1",
-		"react": "^17.0.2",
-		"react-dom": "^17.0.2",
-		"react-intl": "^5.13.5",
-		"react-router-dom": "^5.2.0",
-		"remap-istanbul": "^0.13.0",
-		"rimraf": "^3.0.2",
-		"sass": "^1.32.8",
-		"sass-loader": "^10.0.1",
-		"sinon": "^9.2.2",
-		"source-map-support": "^0.5.19",
-		"style-loader": "^2.0.0",
-		"terser-webpack-plugin": "^4.2.3",
-		"tmp": "^0.2.1",
-		"ts-loader": "^8.0.3",
-		"ts-node": "^9.1.1",
-		"ttypescript": "^1.5.12",
-		"typescript": "^4.2.4",
-		"url-loader": "^4.1.1",
-		"uuid": "^8.3.2",
-		"vsce": "^1.93.0",
-		"webpack": "^5.38.1",
-		"webpack-cli": "^4.7.2",
-		"winston": "^3.3.3"
-	},
-	"dependencies": {
-		"@azure/identity": "^1.2.1",
-		"@azure/ms-rest-nodeauth": "^3.0.7",
-		"@azure/msal-node": "^1.0.0-beta.5",
-		"@microsoft/fast-react-wrapper": "^0.1.20",
-		"@microsoft/teamsfx-api": "^0.13.0",
-		"@microsoft/teamsfx-core": "^1.2.1",
-		"@npmcli/package-json": "^1.0.1",
-		"@vscode/webview-ui-toolkit": "^0.8.5",
-		"async-mutex": "^0.3.1",
-		"dotenv": "^8.2.0",
-		"express": "^4.17.1",
-		"jscodeshift": "^0.13.0",
-		"jsonschema": "^1.4.0",
-		"log4js": "^6.3.0",
-		"read-package-json-fast": "^2.0.3",
-		"sudo-prompt": "^9.2.1",
-		"underscore": "^1.12.1",
-		"vscode-extension-telemetry": "^0.2.9",
-		"vscode-tas-client": "^0.1.22",
-		"vscode-test": "^1.5.2"
-	},
-	"extensionDependencies": [
-		"ms-vscode.azure-account"
-	],
-	"gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
-	"publishConfig": {
-		"access": "public"
-	},
-	"lint-staged": {
-		"*.{js,jsx,css,ts,tsx}": [
-			"npx eslint --cache --fix --quiet"
-		]
-	}
+  "name": "ms-teams-vscode-extension",
+  "displayName": "Teams Toolkit (Preview)",
+  "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
+  "version": "3.2.0",
+  "publisher": "TeamsDevApp",
+  "author": "Microsoft Corporation",
+  "icon": "media/teams.png",
+  "main": "./out/src/extension.js",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/OfficeDev/TeamsFx"
+  },
+  "views": {
+    "teamsfx-toolkit": [
+      {
+        "id": "teamsfx-toolkit",
+        "name": "Commands"
+      }
+    ]
+  },
+  "engines": {
+    "vscode": "^1.51.0"
+  },
+  "license": "MIT",
+  "keywords": [
+    "Microsoft Teams",
+    "Azure",
+    "M365"
+  ],
+  "preview": true,
+  "categories": [
+    "Azure",
+    "Extension Packs",
+    "Snippets"
+  ],
+  "aiKey": "1c56be97-bb74-42cf-b04b-8f1aabf04592",
+  "featureFlag": "true",
+  "files": [
+    "out/**/*"
+  ],
+  "activationEvents": [
+    "*",
+    "onCommand:fx-extension.openWelcome",
+    "onCommand:fx-extension.openSamples",
+    "onCommand:fx-extension.openDocument",
+    "onCommand:fx-extension.cmpAccounts",
+    "onCommand:fx-extension.create",
+    "onCommand:fx-extension.addCapability",
+    "onCommand:fx-extension.update",
+    "onCommand:fx-extension.openManifest",
+    "onCommand:fx-extension.validateManifest",
+    "onCommand:fx-extension.build",
+    "onCommand:fx-extension.provision",
+    "onCommand:fx-extension.deploy",
+    "onCommand:fx-extension.publish",
+    "onCommand:fx-extension.updateAad",
+    "onCommand:fx-extension.openAppManagement",
+    "onCommand:fx-extension.openBotManagement",
+    "onCommand:fx-extension.openReportIssues",
+    "onCommand:workbench.action.tasks.runTask",
+    "workspaceContains:**/.fx/*",
+    "onView:teamsfx",
+    "onView:teamsfx-accounts",
+    "onView:teamsfx-environment",
+    "onView:teamsfx-development",
+    "onView:teamsfx-deployment",
+    "onView:teamsfx-help-and-feedback"
+  ],
+  "contributes": {
+    "viewsContainers": {
+      "activitybar": [
+        {
+          "id": "teamsfx",
+          "title": "Teams Toolkit",
+          "icon": "media/teams.svg"
+        }
+      ]
+    },
+    "viewsWelcome": [
+      {
+        "view": "teamsfx-empty-project",
+        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)"
+      },
+      {
+        "view": "teamsfx-empty-project-and-check-upgrade",
+        "contents": "To start Teams app development experience, create a new Teams app or explore our samples. For more information visit our [Quick Start](command:fx-extension.openWelcome?%5B%22SideBar%22%5D) or [documentation](https://aka.ms/teamsfx-first-app-react).\n[Create a new Teams app](command:fx-extension.create?%5B%22SideBar%22%5D)\n[View samples](command:fx-extension.openSamples?%5B%22SideBar%22%5D)\n\n\n\n\n\nYou can also open an existing Teams app.\n[Open folder](command:vscode.openFolder)\n\nYou need to upgrade the project to the new configuration files to use the latest features. The upgrade process will not change your custom code and create the backup files in case revert is needed.\nNotice this upgrade is a must-have to continue to use current version Teams Toolkit. If you are not ready to upgrade and want to continue to use the old version Teams Toolkit, please find Teams Toolkit in Extension and install the version <=2.10.0.\n[Upgrade project](command:fx-extension.checkProjectUpgrade)"
+      }
+    ],
+    "views": {
+      "teamsfx": [
+        {
+          "id": "teamsfx-accounts",
+          "name": "Accounts",
+          "when": "fx-extension.sidebarWelcome.treeview"
+        },
+        {
+          "id": "teamsfx-environment",
+          "name": "Environment",
+          "when": "fx-extension.isMultiEnvEnabled"
+        },
+        {
+          "id": "teamsfx-development",
+          "name": "Development",
+          "when": "fx-extension.sidebarWelcome.treeview && !fx-extension.customizedTreeview"
+        },
+        {
+          "type": "webview",
+          "id": "teamsfx-development-webview",
+          "name": "Development",
+          "when": "fx-extension.sidebarWelcome.treeview && fx-extension.customizedTreeview"
+        },
+        {
+          "id": "teamsfx-deployment",
+          "name": "Deployment",
+          "when": "fx-extension.sidebarWelcome.treeview && !fx-extension.customizedTreeview"
+        },
+        {
+          "type": "webview",
+          "id": "teamsfx-deployment-webview",
+          "name": "Deployment",
+          "when": "fx-extension.sidebarWelcome.treeview && fx-extension.customizedTreeview"
+        },
+        {
+          "id": "teamsfx-help-and-feedback",
+          "name": "Help and feedback",
+          "when": "fx-extension.sidebarWelcome.treeview"
+        },
+        {
+          "id": "teamsfx-empty-project",
+          "name": "Teams Toolkit",
+          "when": "fx-extension.sidebarWelcome.default && !fx-extension.canUpgradeToArmAndMultiEnv"
+        },
+        {
+          "id": "teamsfx-empty-project-and-check-upgrade",
+          "name": "Teams Toolkit",
+          "when": "fx-extension.sidebarWelcome.default && fx-extension.canUpgradeToArmAndMultiEnv"
+        }
+      ]
+    },
+    "menus": {
+      "view/title": [
+        {
+          "command": "fx-extension.addEnvironment",
+          "when": "view == teamsfx-environment",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.refreshEnvironment",
+          "when": "view == teamsfx-environment",
+          "group": "navigation@2"
+        },
+        {
+          "command": "fx-extension.openAccountLink",
+          "when": "view == teamsfx-accounts",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openEnvLink",
+          "when": "view == teamsfx-environment",
+          "group": "navigation@3"
+        },
+        {
+          "command": "fx-extension.openDevelopmentLink",
+          "when": "view == teamsfx-development",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openDeploymentLink",
+          "when": "view == teamsfx-deployment",
+          "group": "navigation@1"
+        },
+        {
+          "command": "fx-extension.openHelpFeedbackLink",
+          "when": "view == teamsfx-help-and-feedback",
+          "group": "navigation@1"
+        }
+      ],
+      "view/item/context": [
+        {
+          "command": "fx-extension.signOut",
+          "when": "view == teamsfx-accounts && viewItem == signedinM365",
+          "group": "inline@1"
+        },
+        {
+          "command": "fx-extension.signOut",
+          "when": "view == teamsfx-accounts && viewItem == signedinAzure",
+          "group": "inline@1"
+        },
+        {
+          "command": "fx-extension.m365AccountSettings",
+          "when": "view == teamsfx-accounts && viewItem == signedinM365",
+          "group": "inline@2"
+        },
+        {
+          "command": "fx-extension.refreshSideloading",
+          "when": "view == teamsfx-accounts && viewItem == checkSideloading",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.azureAccountSettings",
+          "when": "view == teamsfx-accounts && viewItem == signedinAzure",
+          "group": "inline@2"
+        },
+        {
+          "command": "fx-extension.specifySubscription",
+          "when": "view == teamsfx-accounts && viewItem == selectSubscription",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.signInGuideline",
+          "when": "view == teamsfx-accounts && viewItem == signinM365",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.signInGuideline",
+          "when": "view == teamsfx-accounts && viewItem == signinAzure",
+          "group": "inline"
+        },
+        {
+          "command": "fx-extension.preview",
+          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/"
+        },
+        {
+          "command": "fx-extension.previewWithIcon",
+          "when": "view == teamsfx-environment && viewItem =~ /environment-provisioned/",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.localdebug",
+          "when": "view == teamsfx-environment && viewItem =~ /local/"
+        },
+        {
+          "command": "fx-extension.localdebugWithIcon",
+          "when": "view == teamsfx-environment && viewItem =~ /local/",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.listCollaborator",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.openSubscriptionInPortal",
+          "when": "view == teamsfx-environment && viewItem == openSubscriptionInPortal",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.openResourceGroupInPortal",
+          "when": "view == teamsfx-environment && viewItem == openResourceGroupInPortal",
+          "group": "inline@3"
+        },
+        {
+          "command": "fx-extension.grantPermission",
+          "when": "view == teamsfx-environment && viewItem =~ /environment/",
+          "group": "inline@3"
+        }
+      ],
+      "editor/title/run": [
+        {
+          "command": "fx-extension.selectAndDebug",
+          "when": "!inDebugMode && debuggersAvailable && fx-extension.runIconActive",
+          "group": "teamsfx"
+        }
+      ],
+      "editor/title": [
+        {
+          "command": "fx-extension.openPreviewFile",
+          "when": "resourceFilename == manifest.local.template.json || resourceFilename == manifest.remote.template.json",
+          "group": "navigation"
+        },
+        {
+          "command": "fx-extension.updatePreviewFile",
+          "when": "resourceFilename =~ /manifest.[\\w]*.json/ && resourceDirname =~ /build/ && fx-extension.isMultiEnvEnabled",
+          "group": "navigation"
+        }
+      ],
+      "commandPalette": [
+        {
+          "command": "fx-extension.signOut",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.signInGuideline",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.m365AccountSettings",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.refreshSideloading",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.azureAccountSettings",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.specifySubscription",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.selectAndDebug",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.cicdGuide",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.refreshEnvironment",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.preview",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.previewWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.localdebug",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.localdebugWithIcon",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.listCollaborator",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openSubscriptionInPortal",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openResourceGroupInPortal",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.grantPermission",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openSurvey",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.checkProjectUpgrade",
+          "when": "fx-extension.canUpgradeToArmAndMultiEnv"
+        },
+        {
+          "command": "fx-extension.openAccountLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openEnvLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openDevelopmentLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openDeploymentLink",
+          "when": "false"
+        },
+        {
+          "command": "fx-extension.openHelpFeedbackLink",
+          "when": "false"
+        }
+      ]
+    },
+    "commands": [
+      {
+        "command": "fx-extension.signOut",
+        "title": "Sign Out",
+        "icon": "$(sign-out)"
+      },
+      {
+        "command": "fx-extension.signInGuideline",
+        "title": "Learn more about Teams development accounts",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.m365AccountSettings",
+        "title": "M365 portal",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "fx-extension.refreshSideloading",
+        "title": "Refresh",
+        "icon": "$(refresh)"
+      },
+      {
+        "command": "fx-extension.azureAccountSettings",
+        "title": "Azure portal",
+        "icon": "$(settings-gear)"
+      },
+      {
+        "command": "fx-extension.specifySubscription",
+        "title": "Specify subscription",
+        "icon": "$(list-selection)"
+      },
+      {
+        "command": "fx-extension.cmpAccounts",
+        "title": "Teams: Accounts"
+      },
+      {
+        "command": "fx-extension.openWelcome",
+        "title": "Teams: Quick Start"
+      },
+      {
+        "command": "fx-extension.openSurvey",
+        "title": "Teams: Survey"
+      },
+      {
+        "command": "fx-extension.openSamples",
+        "title": "Teams: View samples"
+      },
+      {
+        "command": "fx-extension.openDocument",
+        "title": "Teams: Documentation"
+      },
+      {
+        "command": "fx-extension.create",
+        "title": "Teams: Create a new Teams app"
+      },
+      {
+        "command": "fx-extension.update",
+        "title": "Teams: Add cloud resources",
+        "enablement": "!fx-extension.isSPFx"
+      },
+      {
+        "command": "fx-extension.addCapability",
+        "title": "Teams: Add capabilities",
+        "enablement": "!fx-extension.isSPFx"
+      },
+      {
+        "command": "fx-extension.openManifest",
+        "title": "Teams: Edit manifest file"
+      },
+      {
+        "command": "fx-extension.validateManifest",
+        "title": "Teams: Validate manifest file"
+      },
+      {
+        "command": "fx-extension.build",
+        "title": "Teams: Zip Teams metadata package"
+      },
+      {
+        "command": "fx-extension.provision",
+        "title": "Teams: Provision in the cloud"
+      },
+      {
+        "command": "fx-extension.checkProjectUpgrade",
+        "title": "Teams: Upgrade project"
+      },
+      {
+        "command": "fx-extension.deploy",
+        "title": "Teams: Deploy to the cloud"
+      },
+      {
+        "command": "fx-extension.publish",
+        "title": "Teams: Publish to Teams"
+      },
+      {
+        "command": "fx-extension.openAppManagement",
+        "title": "Teams: Developer Portal for Teams"
+      },
+      {
+        "command": "fx-extension.openReportIssues",
+        "title": "Teams: Report issues on GitHub"
+      },
+      {
+        "command": "fx-extension.validate-dependencies",
+        "title": "Teams - Validate Dependencies",
+        "enablement": "never"
+      },
+      {
+        "command": "fx-extension.validate-spfx-dependencies",
+        "title": "Teams - Validate SPFx Dependencies",
+        "enablement": "never"
+      },
+      {
+        "command": "fx-extension.validate-local-prerequisites",
+        "title": "Teams - Validate Local Prerequisites",
+        "enablement": "never"
+      },
+      {
+        "command": "fx-extension.pre-debug-check",
+        "title": "Teams - Pre Debug Check",
+        "enablement": "never"
+      },
+      {
+        "command": "fx-extension.backend-extensions-install",
+        "title": "Teams - Backend Extensions Install",
+        "enablement": "never"
+      },
+      {
+        "command": "fx-extension.selectAndDebug",
+        "title": "Select and Start Debuging Teams App",
+        "icon": "$(run)"
+      },
+      {
+        "command": "fx-extension.cicdGuide",
+        "title": "CI/CD guide",
+        "icon": "$(sync)"
+      },
+      {
+        "command": "fx-extension.openPreviewFile",
+        "title": "Preview manifest file",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "fx-extension.openSchema",
+        "title": "Open manifest schema",
+        "icon": "$(file-code)"
+      },
+      {
+        "command": "fx-extension.updatePreviewFile",
+        "title": "Teams: Update manifest to Teams platform",
+        "icon": "$(sync)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.addEnvironment",
+        "title": "Teams: Create new environment",
+        "icon": "$(add)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.refreshEnvironment",
+        "title": "Refresh",
+        "icon": "$(refresh)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.preview",
+        "title": "Preview App",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.previewWithIcon",
+        "title": "Preview App",
+        "icon": "$(run)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.localdebug",
+        "title": "Local debug",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.localdebugWithIcon",
+        "title": "Local debug",
+        "icon": "$(debug-alt)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.listCollaborator",
+        "title": "List M365 Teams App (with AAD App) Owners",
+        "icon": "$(organization)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.openSubscriptionInPortal",
+        "title": "Open in Portal",
+        "icon": "$(ports-open-browser-icon)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.openResourceGroupInPortal",
+        "title": "Open in Portal",
+        "icon": "$(ports-open-browser-icon)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.grantPermission",
+        "title": "Add M365 Teams App (with AAD App) Owners",
+        "icon": "$(person-add)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.migrateTeamsTabApp",
+        "title": "Teams: Upgrade Teams JS SDK references to support Outlook and Office apps"
+      },
+      {
+        "command": "fx-extension.migrateTeamsManifest",
+        "title": "Teams: Upgrade Teams manifest to support Outlook and Office apps"
+      },
+      {
+        "command": "fx-extension.openAccountLink",
+        "title": "Learn more about accounts",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openEnvLink",
+        "title": "Learn more about enviornments",
+        "icon": "$(info)",
+        "enablement": "fx-extension.isMultiEnvEnabled"
+      },
+      {
+        "command": "fx-extension.openDevelopmentLink",
+        "title": "Learn more about development",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openDeploymentLink",
+        "title": "Learn more about deployment",
+        "icon": "$(info)"
+      },
+      {
+        "command": "fx-extension.openHelpFeedbackLink",
+        "title": "Learn more about help and feedback",
+        "icon": "$(info)"
+      }
+    ],
+    "taskDefinitions": [
+      {
+        "type": "teamsfx",
+        "required": [
+          "command",
+          "component"
+        ],
+        "properties": {
+          "command": {
+            "type": "string",
+            "description": "The command to be executed on a teamsfx component.",
+            "enum": [
+              "dev",
+              "watch"
+            ]
+          },
+          "component": {
+            "type": "string",
+            "description": "The teamsfx component.",
+            "enum": [
+              "frontend",
+              "backend",
+              "bot"
+            ]
+          }
+        }
+      }
+    ],
+    "problemMatchers": [
+      {
+        "name": "teamsfx-frontend-watch",
+        "label": "TeamsFx Frontend Problems",
+        "owner": "Teams Toolkit",
+        "source": "teamsfx",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/tabs"
+        ],
+        "pattern": [
+          {
+            "regexp": "^.*?\\.js$",
+            "file": 0
+          },
+          {
+            "regexp": "^\\s*Line\\s+(\\d+):(\\d+):\\s+(.*)$",
+            "line": 1,
+            "column": 2,
+            "message": 3
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": "Compiled|Failed"
+        },
+        "severity": "error"
+      },
+      {
+        "name": "teamsfx-backend-watch",
+        "label": "TeamsFx Backend Problems",
+        "owner": "Teams Toolkit",
+        "source": "teamsfx",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/api"
+        ],
+        "pattern": [
+          {
+            "regexp": "^.*$",
+            "file": 0,
+            "location": 1,
+            "message": 2
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "^.*(Job host stopped|signaling restart).*$",
+          "endsPattern": "^.*(Worker process started and initialized|Host lock lease acquired by instance ID).*$"
+        }
+      },
+      {
+        "name": "teamsfx-auth-watch",
+        "label": "TeamsFx SimpleAuth Problems",
+        "owner": "Teams Toolkit",
+        "source": "teamsfx",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": [
+          {
+            "regexp": "^.*$",
+            "file": 0,
+            "location": 1,
+            "message": 2
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": ".*",
+          "endsPattern": ".*"
+        }
+      },
+      {
+        "name": "teamsfx-ngrok-watch",
+        "label": "TeamsFx Ngrok Problems",
+        "owner": "Teams Toolkit",
+        "source": "teamsfx",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}"
+        ],
+        "pattern": [
+          {
+            "regexp": "^.*$",
+            "file": 0,
+            "location": 1,
+            "message": 2
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "starting web service",
+          "endsPattern": "started tunnel|failed to reconnect session"
+        }
+      },
+      {
+        "name": "teamsfx-bot-watch",
+        "label": "TeamsFx Bot Problems",
+        "owner": "Teams Toolkit",
+        "source": "teamsfx",
+        "applyTo": "allDocuments",
+        "fileLocation": [
+          "relative",
+          "${workspaceFolder}/bot"
+        ],
+        "pattern": [
+          {
+            "regexp": "^.*$",
+            "file": 0,
+            "location": 1,
+            "message": 2
+          }
+        ],
+        "background": {
+          "activeOnStart": true,
+          "beginsPattern": "[nodemon] starting",
+          "endsPattern": "listening|[nodemon] app crashed"
+        }
+      }
+    ],
+    "configuration": [
+      {
+        "title": "Teams Toolkit",
+        "properties": {
+          "fx-extension.validateNode": {
+            "type": "boolean",
+            "description": "Ensure Node.js is installed.",
+            "default": true
+          },
+          "fx-extension.validateDotnetSdk": {
+            "type": "boolean",
+            "description": "Ensure .NET SDK is installed.",
+            "default": true
+          },
+          "fx-extension.validateFuncCoreTools": {
+            "type": "boolean",
+            "description": "Ensure Azure Function Core Tools is installed.",
+            "default": true
+          },
+          "fx-extension.validateBicep": {
+            "type": "boolean",
+            "description": "Ensure Bicep CLI is installed.",
+            "default": true
+          },
+          "fx-extension.stopTeamsToolkitTasksPostDebug": {
+            "type": "boolean",
+            "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
+            "default": true
+          },
+          "fx-extension.defaultProjectRootDirectory": {
+            "type": "string",
+            "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requries reload of VS Code)",
+            "default": "${homeDir}/TeamsApps"
+          },
+		  "fx-extension.automaticNpmInstall": {
+			"type": "boolean",
+			"title": "Automatic NPM Install",
+			"description": "Automatically execute npm install command for your Teams application.",
+			"default": false
+		  }
+        }
+      }
+    ],
+    "languages": [
+      {
+        "id": "teamsfx-toolkit-output",
+        "mimetypes": [
+          "text/x-code-output"
+        ]
+      }
+    ],
+    "grammars": [
+      {
+        "language": "teamsfx-toolkit-output",
+        "scopeName": "teamsfx-toolkit.output",
+        "path": "./syntaxes/teamsfx-toolkit-output.tmLanguage"
+      }
+    ],
+    "walkthroughs": [
+      {
+        "id": "teamsToolkitQuickStart",
+        "title": "Get started with Teams toolkit",
+        "description": "Jumpstart your Teams app development experience",
+        "steps": [
+          {
+            "id": "teamsToolkitCapailities",
+            "title": "What are Teams app \"Capabilities\"",
+            "description": "[Capabilities](https://aka.ms/teamsfx-capabilities-overview) are the extension points for building apps on the Microsoft Teams platform.\n[Watch video (<1 min)](https://aka.ms/teamsfx-video)",
+            "media": {
+              "svg": "media/learn.svg",
+              "altText": "Watch Teams Video"
+            }
+          },
+          {
+            "id": "teamsToolkitInstallNodeJs",
+            "title": "Install Node.js",
+            "description": "Teams toolkit cannot detect the right version of Node.js on your machine.\nAs a fundamental runtime context for Teams app, Node.js v10.x, v12.x, v14.x or v16.x is required (v.14.x is recommended ). Please install the appropriate version to run the Microsoft Teams Toolkit.Read more about managing Node.js versions.\n[Download Node.js (v.14.x)](https://aka.ms/teamsfx-nodejs-download)",
+            "media": {
+              "svg": "media/step_nodejs.svg",
+              "altText": "Install NodeJs"
+            },
+            "when": "fx-extension.isNotValidNode"
+          },
+          {
+            "id": "teamsToolkitTenantAccount",
+            "title": "Get your M365 testing tenant for free",
+            "description": "Teams toolkit requires a Microsoft 365 (organizational account) with the [sideloading option](https://aka.ms/teamsfx-sideloading-option).\nIf your account is not ready, create a free M365 test tenant to start your Teams app development.\n[Create a developer tenant](https://aka.ms/teamsfx-prepare-365-tenant)",
+            "media": {
+              "markdown": "docs/itp/itp.md"
+            }
+          },
+          {
+            "id": "teamsToolkitExploreMore",
+            "title": "Explore more TeamsFx functionalities",
+            "description": " • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)",
+            "media": {
+              "svg": "media/goodToGo.svg",
+              "altText": "Explore more"
+            }
+          }
+        ]
+      }
+    ]
+  },
+  "scripts": {
+    "lint:staged": "lint-staged",
+    "vscode:prepublish": "rimraf out && npm run package",
+    "copy-files": "copyfiles -u 1 src/**/*.html src/**/*.css out/src/",
+    "copy-whatisnew-files": "copyfiles WHATISNEW.md out/resource",
+    "compile": "tsc -p ./ && npm run copy-files && npm run copy-whatisnew-files",
+    "build": "rimraf out && webpack --mode development --config ./webpack.config.js && npm run compile",
+    "build-failpoint": "rimraf out && npx ttsc -p ./",
+    "watch": "webpack --watch --devtool nosources-source-map --info-verbosity verbose --config ./webpack.config.js",
+    "package": "rimraf out && webpack --mode production --config ./webpack.config.js",
+    "test-compile": "tsc -p ./",
+    "test-watch": "tsc -watch -p ./",
+    "pretest": "npm run lint && npm run check-format && npm run test-compile",
+    "test:unit": "rimraf coverage && npm run compile && node out/test/unit/runTest.js && npm run test:unit:migration",
+    "test:unit:migration": "nyc mocha --require ts-node/register \"test/unit/migration/*.test.ts\"",
+    "test:integration": "echo 'to be implementd'",
+    "test:e2e": "echo 'to be implementd'",
+    "check-format": "prettier --list-different --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
+    "format": "prettier --write --config .prettierrc.json --ignore-path .prettierignore \"src/**/*.ts\" \"test/**/*.ts\" \"*.{js,json}\"",
+    "lint:fix": "eslint --config .eslintrc.js package.json src test --ext .ts --fix --fix-type [problem,suggestion]",
+    "lint": "eslint \"src/**/*.ts\" \"test/**/*.ts\"",
+    "prepare": "npm run build",
+    "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
+    "precommit": "npm run check-sensitive && lint-staged"
+  },
+  "devDependencies": {
+    "@azure/arm-subscriptions": "^3.0.0",
+    "@azure/eslint-plugin-azure-sdk": "^2.0.1",
+    "@commitlint/cli": "^14.0.1",
+    "@commitlint/config-conventional": "^12.0.1",
+    "@fluentui/react": "^8.5.1",
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
+    "@shared/eslint-config": "file:../eslint-config",
+    "@shared/prettier-config": "file:../prettier-config",
+    "@types/adm-zip": "^0.4.33",
+    "@types/chai": "^4.2.14",
+    "@types/chai-as-promised": "^7.1.3",
+    "@types/chai-spies": "^1.0.3",
+    "@types/express": "^4.17.11",
+    "@types/fs-extra": "^9.0.5",
+    "@types/glob": "^7.1.4",
+    "@types/jscodeshift": "^0.11.2",
+    "@types/keytar": "^4.4.2",
+    "@types/mocha": "^8.0.4",
+    "@types/node": "^14.14.21",
+    "@types/react": "^17.0.3",
+    "@types/react-dom": "^17.0.2",
+    "@types/react-router-dom": "^5.1.7",
+    "@types/sinon": "^9.0.9",
+    "@types/tmp": "^0.2.0",
+    "@types/underscore": "^1.11.0",
+    "@types/uuid": "^8.3.0",
+    "@types/vscode": "^1.51.0",
+    "@typescript-eslint/eslint-plugin": "^5.0.0",
+    "@typescript-eslint/parser": "^5.0.0",
+    "@vscode/codicons": "0.0.21",
+    "adm-zip": "^0.5.4",
+    "chai": "^4.2.0",
+    "chai-as-promised": "^7.1.1",
+    "chai-spies": "^1.0.0",
+    "copy-webpack-plugin": "^6.4.1",
+    "copyfiles": "^2.4.1",
+    "css-loader": "^5.1.3",
+    "decache": "^4.6.0",
+    "eslint": "^8.1.0",
+    "eslint-plugin-import": "^2.25.2",
+    "eslint-plugin-no-secrets": "^0.8.9",
+    "eslint-plugin-prettier": "^4.0.0",
+    "find-process": "^1.4.4",
+    "fs-extra": "^9.0.1",
+    "glob": "^7.1.7",
+    "html-webpack-plugin": "^5.3.1",
+    "istanbul": "^0.4.5",
+    "lint-staged": "^11.2.6",
+    "mocha": "^9.1.1",
+    "mocha-junit-reporter": "^2.0.2",
+    "mocha-multi-reporters": "^1.5.1",
+    "mock-require": "^3.0.3",
+    "ms-rest": "^2.5.4",
+    "node-loader": "^2.0.0",
+    "node-sass": "^6.0.1",
+    "nyc": "^15.1.0",
+    "prettier": "^2.4.1",
+    "react": "^17.0.2",
+    "react-dom": "^17.0.2",
+    "react-intl": "^5.13.5",
+    "react-router-dom": "^5.2.0",
+    "remap-istanbul": "^0.13.0",
+    "rimraf": "^3.0.2",
+    "sass": "^1.32.8",
+    "sass-loader": "^10.0.1",
+    "sinon": "^9.2.2",
+    "source-map-support": "^0.5.19",
+    "style-loader": "^2.0.0",
+    "terser-webpack-plugin": "^4.2.3",
+    "tmp": "^0.2.1",
+    "ts-loader": "^8.0.3",
+    "ts-node": "^9.1.1",
+    "ttypescript": "^1.5.12",
+    "typescript": "^4.2.4",
+    "url-loader": "^4.1.1",
+    "uuid": "^8.3.2",
+    "vsce": "^1.93.0",
+    "webpack": "^5.38.1",
+    "webpack-cli": "^4.7.2",
+    "winston": "^3.3.3"
+  },
+  "dependencies": {
+    "@azure/identity": "^1.2.1",
+    "@azure/ms-rest-nodeauth": "^3.0.7",
+    "@azure/msal-node": "^1.0.0-beta.5",
+    "@microsoft/fast-react-wrapper": "^0.1.20",
+    "@microsoft/teamsfx-api": "^0.13.0",
+    "@microsoft/teamsfx-core": "^1.2.1",
+    "@npmcli/package-json": "^1.0.1",
+    "@vscode/webview-ui-toolkit": "^0.8.5",
+    "async-mutex": "^0.3.1",
+    "dotenv": "^8.2.0",
+    "express": "^4.17.1",
+    "jscodeshift": "^0.13.0",
+    "jsonschema": "^1.4.0",
+    "log4js": "^6.3.0",
+    "read-package-json-fast": "^2.0.3",
+    "sudo-prompt": "^9.2.1",
+    "underscore": "^1.12.1",
+    "vscode-extension-telemetry": "^0.2.9",
+    "vscode-tas-client": "^0.1.22",
+    "vscode-test": "^1.5.2"
+  },
+  "extensionDependencies": [
+    "ms-vscode.azure-account"
+  ],
+  "gitHead": "7d60c0765c0ea8c023a26c10d1c93001c597afbb",
+  "publishConfig": {
+    "access": "public"
+  },
+  "lint-staged": {
+    "*.{js,jsx,css,ts,tsx}": [
+      "npx eslint --cache --fix --quiet"
+    ]
+  }
 }

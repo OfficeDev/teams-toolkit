@@ -1,0 +1,5 @@
+{
+  "pkg": {
+    "assets": ["resource/**/*", "templates/**/*"]
+  }
+}

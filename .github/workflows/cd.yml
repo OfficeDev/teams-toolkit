@@ -118,7 +118,7 @@ jobs:
           fi
       
       - name: sync up templates deps with sdk version for RC
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') && !contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
         run: |
           node sdk-sync-up-version.js
         working-directory: ./.github/scripts
@@ -312,7 +312,7 @@ jobs:
           prerelease: true
 
       - name: release RC VSCode extension to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && contains(steps.version-change.outputs.CHANGED, 'rc') }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'rc'}}
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}
@@ -321,7 +321,7 @@ jobs:
           prerelease: true
       
       - name: release stable VSCode extension to github
-        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && !contains(steps.version-change.outputs.CHANGED, 'rc') && !contains(steps.version-change.outputs.CHANGED, 'alpha') }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'stable' }}
         uses: ncipollo/release-action@v1.7.3
         with:
           token: ${{ secrets.CD_PAT }}

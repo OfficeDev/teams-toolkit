@@ -356,8 +356,6 @@ export interface Core {
     getQuestionsForUserTask?: (router: FunctionRouter, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     grantPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
-    listAllCollaborators: (inputs: Inputs) => Promise<Result<any, FxError>>;
-    // (undocumented)
     listCollaborator: (inputs: Inputs) => Promise<Result<any, FxError>>;
     // (undocumented)
     localDebug: (inputs: Inputs) => Promise<Result<Void, FxError>>;
@@ -1518,8 +1516,6 @@ export interface Solution {
     getQuestionsForUserTask?: (func: Func, ctx: SolutionContext) => Promise<Result<QTreeNode | undefined, FxError>>;
     grantPermission?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
-    listAllCollaborators?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
-    // (undocumented)
     listCollaborator?: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
     // (undocumented)
     localDebug: (ctx: SolutionContext) => Promise<Result<any, FxError>>;
@@ -1595,8 +1591,6 @@ interface SolutionPlugin {
     getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     grantPermission?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
     // (undocumented)
-    listAllCollaborators?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
-    // (undocumented)
     listCollaborator?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
     // (undocumented)
     name: string;
@@ -1654,8 +1648,6 @@ export enum Stage {
     grantPermission = "grantPermission",
     // (undocumented)
     init = "init",
-    // (undocumented)
-    listAllCollaborators = "listAllCollaborators",
     // (undocumented)
     listCollaborator = "listCollaborator",
     // (undocumented)

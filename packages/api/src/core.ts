@@ -46,7 +46,6 @@ export interface Core {
   grantPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
   checkPermission: (inputs: Inputs) => Promise<Result<any, FxError>>;
   listCollaborator: (inputs: Inputs) => Promise<Result<any, FxError>>;
-  listAllCollaborators: (inputs: Inputs) => Promise<Result<any, FxError>>;
 
   /**
    * This callback type is called `onEventCallback` and is displayed as a global symbol.

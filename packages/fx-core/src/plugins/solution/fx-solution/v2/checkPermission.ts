@@ -20,7 +20,12 @@ import {
   ConfigMap,
   Json,
 } from "@microsoft/teamsfx-api";
-import { CollaborationState, PermissionsResult, ResourcePermission } from "../../../../common";
+import {
+  CollaborationState,
+  getStrings,
+  PermissionsResult,
+  ResourcePermission,
+} from "../../../../common";
 import { IUserList } from "../../../resource/appstudio/interfaces/IAppDefinition";
 import {
   PluginNames,
@@ -155,7 +160,7 @@ async function checkPermissionImpl(
         sendErrorTelemetryThenReturnError(
           SolutionTelemetryEvent.CheckPermission,
           returnSystemError(
-            new Error("Failed to get env name."),
+            new Error(getStrings().solution.Collaboration.FailedToGetEnvName),
             SolutionSource,
             SolutionError.FailedToGetEnvName
           ),
@@ -165,14 +170,17 @@ async function checkPermissionImpl(
     }
 
     const message = [
-      { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
+      {
+        content: getStrings().solution.Collaboration.AccountUsedToCheck,
+        color: Colors.BRIGHT_WHITE,
+      },
       { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
       {
-        content: `Starting check permission for environment: `,
+        content: getStrings().solution.Collaboration.StaringCheckPermission,
         color: Colors.BRIGHT_WHITE,
       },
       { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
-      { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
+      { content: getStrings().solution.Collaboration.TenantId, color: Colors.BRIGHT_WHITE },
       { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
     ];
 
@@ -191,7 +199,7 @@ async function checkPermissionImpl(
 
   let errorMsg = "";
   if (errors.length > 0) {
-    errorMsg += `Failed to check permission for the below resources.\n Resource details: \n`;
+    errorMsg += getStrings().solution.Collaboration.FailedToCheckPermission;
     for (const fxError of errors) {
       errorMsg += fxError.error.message + "\n";
     }
@@ -200,13 +208,21 @@ async function checkPermissionImpl(
   if (platform === Platform.CLI) {
     for (const permission of permissions) {
       const message = [
-        { content: `Resource ID: `, color: Colors.BRIGHT_WHITE },
-        { content: permission.resourceId ?? "undefined", color: Colors.BRIGHT_MAGENTA },
-        { content: `, Resource Name: `, color: Colors.BRIGHT_WHITE },
-        { content: permission.name, color: Colors.BRIGHT_MAGENTA },
-        { content: `, Permission: `, color: Colors.BRIGHT_WHITE },
         {
-          content: permission.roles ? permission.roles.toString() : "undefined" + "\n",
+          content: getStrings().solution.Collaboration.CheckPermissionResourceId,
+          color: Colors.BRIGHT_WHITE,
+        },
+        {
+          content: permission.resourceId ?? getStrings().solution.Collaboration.Undefined,
+          color: Colors.BRIGHT_MAGENTA,
+        },
+        { content: getStrings().solution.Collaboration.ResourceName, color: Colors.BRIGHT_WHITE },
+        { content: permission.name, color: Colors.BRIGHT_MAGENTA },
+        { content: getStrings().solution.Collaboration.Permission, color: Colors.BRIGHT_WHITE },
+        {
+          content: permission.roles
+            ? permission.roles.toString()
+            : getStrings().solution.Collaboration.Undefined + "\n",
           color: Colors.BRIGHT_MAGENTA,
         },
       ];
@@ -233,10 +249,10 @@ async function checkPermissionImpl(
     [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
     [SolutionTelemetryProperty.AadPermission]: aadPermission?.roles
       ? aadPermission.roles.join(";")
-      : "undefined",
+      : getStrings().solution.Collaboration.Undefined,
     [SolutionTelemetryProperty.TeamsAppPermission]: teamsAppPermission?.roles
       ? teamsAppPermission.roles.join(";")
-      : "undefined",
+      : getStrings().solution.Collaboration.Undefined,
   });
 
   return ok({
@@ -271,7 +287,10 @@ export async function checkPermission(
     if (!configMap) {
       return err(
         returnSystemError(
-          new Error(`failed to convert profile ${JSON.stringify(param.envInfo.state)}`),
+          new Error(
+            getStrings().solution.Collaboration.FailedToConvertProfile +
+              JSON.stringify(param.envInfo.state)
+          ),
           PluginNames.SOLUTION,
           SolutionError.InternelError
         )

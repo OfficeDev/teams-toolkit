@@ -1235,31 +1235,6 @@ export class FxCore implements v3.ICore {
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
-    SupportV1ConditionMW(true),
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(true),
-    SolutionLoaderMW,
-    QuestionModelMW,
-    ContextInjectorMW,
-  ])
-  async listAllCollaborators(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    currentStage = Stage.listAllCollaborators;
-    inputs.stage = Stage.listAllCollaborators;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
-    }
-    return ctx!.solutionV2!.listAllCollaborators!(
-      ctx!.contextV2!,
-      { ...inputs, projectPath: projectPath },
-      ctx!.envInfoV2!,
-      this.tools.tokenProvider
-    );
-  }
-
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
     ProjectSettingsLoaderMW,
     EnvInfoLoaderMW(false),
     ContextInjectorMW,

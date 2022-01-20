@@ -67,7 +67,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     });
 
     const whichPlatform = new QTreeNode({
-      name: "WhichPlatform",
+      name: "platform",
       type: "singleSelect",
       staticOptions: [githubOption, azdoOption, jenkinsOption],
       title: "Choose your CI/CD Platform",
@@ -75,7 +75,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     });
 
     const whichTemplate = new QTreeNode({
-      name: "WhichTemplate",
+      name: "template",
       type: "multiSelect",
       staticOptions: [ciOption, cdOption, provisionOption, publishOption],
       title: "Choose your workflow type",

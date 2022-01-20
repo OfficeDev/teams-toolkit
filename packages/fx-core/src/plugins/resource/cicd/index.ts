@@ -23,7 +23,15 @@ import { LifecycleFuncNames } from "./constants";
 import { Service } from "typedi";
 import { ResourcePluginsV2 } from "../../solution/fx-solution/ResourcePluginContainer";
 import { ResourcePlugin, Context, DeepReadonly, EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
-import { githubOption, azdoOption, jenkinsOption, ciOption, cdOption, provisionOption, publishOption } from "./questions";
+import {
+  githubOption,
+  azdoOption,
+  jenkinsOption,
+  ciOption,
+  cdOption,
+  provisionOption,
+  publishOption,
+} from "./questions";
 
 @Service(ResourcePluginsV2.CICDPlugin)
 export class CICDPluginV2 implements ResourcePlugin {
@@ -36,10 +44,10 @@ export class CICDPluginV2 implements ResourcePlugin {
 
   public cicdImpl: CICDImpl = new CICDImpl();
 
-  public async addCICDWorkflows(context: Context): Promise<FxResult> {
+  public async addCICDWorkflows(context: Context, projectPath: string): Promise<FxResult> {
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.cicdImpl.addCICDWorkflows(context),
+      () => this.cicdImpl.addCICDWorkflows(context, projectPath),
       true,
       LifecycleFuncNames.ADD_CICD_WORKFLOWS
     );
@@ -47,7 +55,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     return result;
   }
 
-  public async getQuestionsForUserTask?: (
+  public async getQuestionsForUserTask(
     ctx: Context,
     inputs: Inputs,
     func: Func,
@@ -71,7 +79,7 @@ export class CICDPluginV2 implements ResourcePlugin {
       type: "multiSelect",
       staticOptions: [ciOption, cdOption, provisionOption, publishOption],
       title: "Choose your workflow type",
-      default: ciOption.id,
+      default: [ciOption.id],
     });
 
     cicdWorkflowQuestions.addChild(whichPlatform);
@@ -91,7 +99,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     if (func.method === "addCICDWorkflows") {
       return await this.runWithExceptionCatching(
         ctx,
-        () => this.cicdImpl.addCICDWorkflows(ctx),
+        () => this.addCICDWorkflows(ctx, inputs.projectPath!),
         true,
         LifecycleFuncNames.ADD_CICD_WORKFLOWS
       );

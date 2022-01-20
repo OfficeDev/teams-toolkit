@@ -12,6 +12,7 @@ import {
   OptionItem,
   Result,
   StaticOptions,
+  SystemError,
   UIConfig,
   UserError,
 } from "@microsoft/teamsfx-api";
@@ -26,7 +27,32 @@ export async function getResponseWithErrorHandling<T>(
     promise
       .then((v) => {
         if ("error" in v && v.error != null) {
-          resolve(err(v.error));
+          if (v.error instanceof UserError || v.error instanceof SystemError) return v.error;
+          if ((v.error as any).errorType === "UserError") {
+            const userError = new UserError(
+              new Error(v.error.message),
+              v.error.source,
+              v.error.name,
+              (v.error as any).helpLink
+            );
+            userError.stack = v.error.stack;
+            userError.timestamp = v.error.timestamp;
+            userError.userData = v.error.userData;
+            userError.innerError = v.error.innerError;
+            resolve(err(userError));
+          } else {
+            const systemError = new SystemError(
+              new Error(v.error.message),
+              v.error.source,
+              v.error.name,
+              (v.error as any).issueLink
+            );
+            systemError.stack = v.error.stack;
+            systemError.timestamp = v.error.timestamp;
+            systemError.userData = v.error.userData;
+            systemError.innerError = v.error.innerError;
+            resolve(err(systemError));
+          }
         } else {
           if ("value" in v && v.value !== null) {
             resolve(ok(v.value));

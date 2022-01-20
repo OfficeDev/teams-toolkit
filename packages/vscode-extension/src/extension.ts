@@ -22,12 +22,7 @@ import {
   CryptoCodeLensProvider,
   ManifestTemplateCodeLensProvider,
 } from "./codeLensProvider";
-import {
-  Correlator,
-  isMultiEnvEnabled,
-  isRemoteCollaborateEnabled,
-  isValidProject,
-} from "@microsoft/teamsfx-core";
+import { Correlator, isMultiEnvEnabled, isValidProject } from "@microsoft/teamsfx-core";
 import { TreatmentVariableValue, TreatmentVariables } from "./exp/treatmentVariables";
 import {
   canUpgradeToArmAndMultiEnv,
@@ -45,7 +40,6 @@ import {
   BuildFolderName,
 } from "@microsoft/teamsfx-api";
 import { ExtensionUpgrade } from "./utils/upgrade";
-import { registerEnvTreeHandler } from "./envTree";
 import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
@@ -422,12 +416,6 @@ export async function activate(context: vscode.ExtensionContext) {
     "setContext",
     "fx-extension.canUpgradeToArmAndMultiEnv",
     await canUpgradeToArmAndMultiEnv(workspacePath)
-  );
-
-  vscode.commands.executeCommand(
-    "setContext",
-    "fx-extension.isRemoteCollaborateEnabled",
-    isRemoteCollaborateEnabled() && isValidProject(workspacePath)
   );
 
   // Setup CodeLens provider for userdata file

@@ -116,7 +116,9 @@
       "installAdaptiveCardExt": "To preview and debug Adaptive Cards, we recommend to use the \"Adaptive Card Studio\" extension.",
       "teamsAppIdNotFound": "Failed to find 'fx-resource-appstudio.teamsAppId' in 'state.%s.json'.",
       "provisionBeforeGrantOrListPermission": "You cannot add or list owners because a Teams app is not provisioned yet, please click the Provision Resources button below to register a Teams app.",
-      "provisionResourcesButton": "Provision Resources"
+      "provisionResourcesButton": "Provision Resources",
+      "disableAutomaticNpmInstall": "Disable Auto NPM Install",
+      "automaticNpmInstall": "Teams Toolkit will automatically install packages required for your project. Please refer to the command window prompt to view execution details. You can also disable this by clicking the button below and uncheck \"Automatic NPM Install\" in the settings page."
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",

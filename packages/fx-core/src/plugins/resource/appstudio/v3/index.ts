@@ -13,6 +13,9 @@ import {
   TeamsAppManifest,
   PluginContext,
   ok,
+  Json,
+  TokenProvider,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
@@ -53,7 +56,7 @@ export class AppStudioPluginV3 {
   async init(ctx: v2.Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.init);
-    const res = await init(inputs.projectPath);
+    const res = await init(inputs.projectPath, ctx.projectSetting.appName);
     if (res.isErr()) return err(res.error);
     const templatesFolder = getTemplatesFolder();
     const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
@@ -184,5 +187,22 @@ export class AppStudioPluginV3 {
   ): Promise<Result<boolean, FxError>> {
     const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
     return await capabilityExceedLimit(pluginContext.root, capability);
+  }
+
+  /**
+   *
+   * @param ctx
+   * @param inputs
+   * @param localSettings
+   * @param tokenProvider
+   * @returns
+   */
+  async configureLocalResource(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    localSettings: Json,
+    tokenProvider: TokenProvider
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
   }
 }

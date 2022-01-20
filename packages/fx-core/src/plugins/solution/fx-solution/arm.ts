@@ -17,6 +17,7 @@ import {
   returnSystemError,
   returnUserError,
   SolutionContext,
+  SystemError,
   UserError,
   v2,
   v3,
@@ -113,10 +114,10 @@ export async function generateArmTemplate(
 }
 
 export async function generateArmTemplateV3(
-  ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath,
-  activatedPlugins: v3.ResourcePlugin[],
-  addedPlugins: v3.ResourcePlugin[]
+  ctx: v3.ContextWithManifest,
+  inputs: v2.InputsWithProjectPath & { existingResources: string[] },
+  activatedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[],
+  addedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[]
 ): Promise<Result<any, FxError>> {
   let result: Result<void, FxError>;
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplateStart, {
@@ -603,9 +604,21 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       );
     }
   } catch (error) {
-    result = err(
-      returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
-    );
+    if (error instanceof UserError || error instanceof SystemError) {
+      result = err(error);
+    } else if (error instanceof Error) {
+      result = err(
+        returnSystemError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+      );
+    } else {
+      result = err(
+        returnSystemError(
+          new Error(JSON.stringify(error)),
+          SolutionSource,
+          SolutionError.FailedToDeployArmTemplatesToAzure
+        )
+      );
+    }
     sendErrorTelemetryThenReturnError(
       SolutionTelemetryEvent.ArmDeployment,
       result.error,
@@ -649,9 +662,21 @@ export async function deployArmTemplatesV3(
       );
     }
   } catch (error) {
-    result = err(
-      returnUserError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
-    );
+    if (error instanceof UserError || error instanceof SystemError) {
+      result = err(error);
+    } else if (error instanceof Error) {
+      result = err(
+        returnSystemError(error, SolutionSource, SolutionError.FailedToDeployArmTemplatesToAzure)
+      );
+    } else {
+      result = err(
+        returnSystemError(
+          new Error(JSON.stringify(error)),
+          SolutionSource,
+          SolutionError.FailedToDeployArmTemplatesToAzure
+        )
+      );
+    }
     sendErrorTelemetryThenReturnError(
       SolutionTelemetryEvent.ArmDeployment,
       result.error,
@@ -692,7 +717,7 @@ export async function copyParameterJson(
   await fs.ensureDir(parameterFolderPath);
   await fs.writeFile(
     targetParameterFilePath,
-    JSON.stringify(targetParameterContent, undefined, 4).replace(/\r?\n/g, os.EOL)
+    JSON.stringify(targetParameterContent, undefined, 2).replace(/\r?\n/g, os.EOL)
   );
 }
 
@@ -777,9 +802,8 @@ async function doGenerateArmTemplate(
   ctx: SolutionContext,
   selectedPlugins: NamedArmResourcePlugin[]
 ): Promise<Result<any, FxError>> {
-  const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
   const baseName = generateResourceBaseName(ctx.projectSettings!.appName, ctx.envInfo!.envName);
-  const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+  const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
     (p) => new NamedArmResourcePluginAdaptor(p)
   ); // This function ensures return result won't be empty
   const bicepOrchestrationTemplate = new BicepOrchestrationContent(
@@ -794,10 +818,12 @@ async function doGenerateArmTemplate(
     const pluginContext = getPluginContext(ctx, pluginWithArm.name);
     let result: Result<ArmTemplateResult, FxError>;
     let errMessage = "";
+    let method = "";
     if (
       pluginWithArm.updateArmTemplates &&
       !selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
     ) {
+      method = "updateArmTemplates";
       result = (await pluginWithArm.updateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,
         FxError
@@ -807,6 +833,7 @@ async function doGenerateArmTemplate(
       pluginWithArm.generateArmTemplates &&
       selectedPlugins.find((pluginItem) => pluginItem.name === pluginWithArm.name)
     ) {
+      method = "generateArmTemplates";
       result = (await pluginWithArm.generateArmTemplates(pluginContext)) as Result<
         ArmTemplateResult,
         FxError
@@ -816,6 +843,7 @@ async function doGenerateArmTemplate(
       continue;
     }
     if (result.isOk()) {
+      ctx.logProvider?.info(`[arm] ${plugin.name}.${method} success!`);
       generateArmFromResult(
         result.value,
         bicepOrchestrationTemplate,
@@ -841,10 +869,10 @@ async function doGenerateArmTemplate(
 }
 
 async function doGenerateArmTemplateV3(
-  ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath,
-  activatedPlugins: v3.ResourcePlugin[],
-  addedPlugins: v3.ResourcePlugin[]
+  ctx: v3.ContextWithManifest,
+  inputs: v2.InputsWithProjectPath & { existingResources: string[] },
+  activatedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[],
+  addedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[]
 ): Promise<Result<any, FxError>> {
   const baseName = generateResourceBaseName(ctx.projectSetting.appName, "");
   const bicepOrchestrationTemplate = new BicepOrchestrationContent(
@@ -853,25 +881,26 @@ async function doGenerateArmTemplateV3(
   );
   const moduleProvisionFiles = new Map<string, string>();
   const moduleConfigFiles = new Map<string, string>();
+  const addedSet = new Set<string>();
+  addedPlugins.forEach((p) => addedSet.add(p.name));
   for (const plugin of activatedPlugins) {
     let result: Result<v2.ResourceTemplate, FxError>;
     let errMessage = "";
-    if (
-      plugin.updateResourceTemplate &&
-      !addedPlugins.find((pluginItem) => pluginItem.name === plugin.name)
-    ) {
+    let method = "";
+    const isAdd = addedSet.has(plugin.name);
+    if (plugin.updateResourceTemplate && !isAdd) {
       result = await plugin.updateResourceTemplate(ctx, inputs);
       errMessage = getStrings().solution.UpdateArmTemplateFailNotice;
-    } else if (
-      plugin.generateResourceTemplate &&
-      addedPlugins.find((pluginItem) => pluginItem.name === plugin.name)
-    ) {
+      method = "updateResourceTemplate";
+    } else if (plugin.generateResourceTemplate && isAdd) {
       result = await plugin.generateResourceTemplate(ctx, inputs);
       errMessage = getStrings().solution.GenerateArmTemplateFailNotice;
+      method = "generateResourceTemplate";
     } else {
       continue;
     }
     if (result.isOk()) {
+      ctx.logProvider.info(`[arm] ${plugin.name}.${method} success!`);
       if (result.value.kind === "bicep") {
         const armTemplate = result.value.template as ArmTemplateResult;
         generateArmFromResult(
@@ -1228,8 +1257,7 @@ function generateBicepModuleConfigFilePath(moduleFileName: string) {
 }
 
 function expandParameterPlaceholders(ctx: SolutionContext, parameterContent: string): string {
-  const azureSolutionSettings = ctx.projectSettings?.solutionSettings as AzureSolutionSettings;
-  const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+  const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
     (p) => new NamedArmResourcePluginAdaptor(p)
   ); // This function ensures return result won't be empty
   const stateVariables: Record<string, Record<string, any>> = {};
@@ -1450,12 +1478,24 @@ export function formattedDeploymentError(deploymentError: any): any {
   }
 }
 
+class ArmV2 {
+  async generateArmTemplate(
+    ctx: SolutionContext,
+    selectedPlugins: NamedArmResourcePlugin[] = []
+  ): Promise<Result<any, FxError>> {
+    return generateArmTemplate(ctx, selectedPlugins);
+  }
+  async deployArmTemplates(ctx: SolutionContext): Promise<Result<void, FxError>> {
+    return deployArmTemplates(ctx);
+  }
+}
+
 class Arm {
   async generateArmTemplate(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    activatedPlugins: v3.ResourcePlugin[],
-    addedPlugins: v3.ResourcePlugin[]
+    ctx: v3.ContextWithManifest,
+    inputs: v3.PluginAddResourceInputs,
+    activatedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[],
+    addedPlugins: v3.ResourcePlugin[] | v2.ResourcePlugin[]
   ): Promise<Result<any, FxError>> {
     return generateArmTemplateV3(ctx, inputs, activatedPlugins, addedPlugins);
   }
@@ -1470,5 +1510,6 @@ class Arm {
 }
 
 const arm = new Arm();
+export const armV2 = new ArmV2();
 
 export default arm;

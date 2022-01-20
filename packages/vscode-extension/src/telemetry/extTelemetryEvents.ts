@@ -84,6 +84,8 @@ export enum TelemetryEvent {
   ClickQuickStartCard = "click-quick-start-card",
 
   DebugPreCheck = "debug-precheck",
+  DebugPrerequisitesStart = "debug-prerequisites-start",
+  DebugPrerequisites = "debug-prerequisites",
   DebugStart = "debug-start",
   DebugStop = "debug-stop",
   DebugFAQ = "debug-faq",
@@ -112,8 +114,6 @@ export enum TelemetryEvent {
 
   OpenSubscriptionInPortal = "open-subscription-in-portal",
   OpenResourceGroupInPortal = "open-resource-group-in-portal",
-
-  CheckSideloading = "check-sideloading",
 
   ListCollaboratorStart = "list-collaborator-start",
   ListCollaborator = "list-collaborator",
@@ -184,7 +184,6 @@ export enum TelemetryProperty {
   VideoPlayFrom = "video-play-from",
   FeatureFlags = "feature-flags",
   UpdateTeamsAppReason = "update-teams-app-reason",
-  IsSideloadingAllowed = "is-sideloading-allowed",
   IsExistingUser = "is-existing-user",
   CollaborationState = "collaboration-state",
   Env = "env",
@@ -193,6 +192,7 @@ export enum TelemetryProperty {
   IsFromSample = "is-from-sample",
   SettingsVersion = "settings-version",
   UpdateFailedFiles = "update-failed-files",
+  NewProjectId = "new-project-id",
 }
 
 export enum TelemetrySuccess {

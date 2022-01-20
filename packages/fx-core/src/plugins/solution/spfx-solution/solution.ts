@@ -1,72 +1,29 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  TokenProvider,
-  FxError,
-  Inputs,
-  Json,
-  Result,
-  v2,
-  v3,
-  AppStudioTokenProvider,
-  Void,
-  QTreeNode,
-  OptionItem,
-} from "@microsoft/teamsfx-api";
-import { PluginDisplayName } from "../../../common/constants";
-import Module from "module";
-import {
-  scaffold,
-  getQuestionsForScaffold,
-  generateResourceTemplate,
-  publishApplication,
-  addResource,
-} from "./scaffold";
-import { getQuestionsForInit, init } from "./init";
+import { v3 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
+import { PluginDisplayName } from "../../../common/constants";
 import { BuiltInSolutionNames } from "../fx-solution/v3/constants";
+import { scaffold } from "../fx-solution/v3/scaffold";
 import { addModule } from "./addModule";
+import { getQuestionsForInit, init } from "./init";
+import { addResource, getQuestionsForScaffold, publishApplication } from "./scaffold";
 
 @Service(BuiltInSolutionNames.spfx)
 export class TeamsSPFxSolution implements v3.ISolution {
   name = BuiltInSolutionNames.spfx;
   displayName: string = PluginDisplayName.SpfxSolution;
 
-  init: (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => Promise<Result<Void, FxError>> =
-    init;
-  getQuestionsForInit?: (
-    ctx: v2.Context,
-    inputs: Inputs
-  ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestionsForInit;
+  init = init;
+  getQuestionsForInit = getQuestionsForInit;
 
-  scaffold: (
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath & { module?: string; template?: OptionItem }
-  ) => Promise<Result<Void, FxError>> = scaffold;
-  getQuestionsForScaffold?: (
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath
-  ) => Promise<Result<QTreeNode | undefined, FxError>> = getQuestionsForScaffold;
+  scaffold = scaffold;
+  getQuestionsForScaffold = getQuestionsForScaffold;
 
-  generateResourceTemplate: (ctx: v2.Context, inputs: Inputs) => Promise<Result<Json, FxError>> =
-    generateResourceTemplate;
+  publishApplication = publishApplication;
 
-  publishApplication: (
-    ctx: v2.Context,
-    inputs: Inputs,
-    envInfo: v2.EnvInfoV2,
-    tokenProvider: AppStudioTokenProvider
-  ) => Promise<Result<Void, FxError>> = publishApplication;
+  addResource = addResource;
 
-  addResource: (
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath & { module?: string; resource?: string }
-  ) => Promise<Result<Void, FxError>> = addResource;
-
-  addModule: (
-    ctx: v2.Context,
-    localSettings: Json,
-    inputs: v2.InputsWithProjectPath & { capabilities?: string[] }
-  ) => Promise<Result<Void, FxError>> = addModule;
+  addModule = addModule;
 }

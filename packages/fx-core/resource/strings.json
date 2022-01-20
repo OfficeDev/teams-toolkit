@@ -13,12 +13,22 @@
     "FailedToDeployBeforeProvision": "Failed to deploy because the resources have not been provisioned yet. Make sure you do the provision first. Click Get Help to learn more about why you need to provision.",
     "FailedToPublishBeforeProvision": "Failed to publish because the resources have not been provisioned yet. Make sure you do the provision first. Click Get Help to learn more about why you need to provision.",
     "SPFxAskProvisionBeforePublish": "Failed to publish because the teams app has not been provisioned yet. Please provision first. Click Get Help to learn more about why you need to provision.",
-    "AddResourceNotice": "[Teams Toolkit] Resource \"%s\" have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource(s) in your Azure subscription.",
-    "AddResourceNoticeForCli": "[Teams Toolkit] Resource \"%s\" have been successfully configured for your project, run 'teamsfx provision' will create the resource(s) in your Azure subscription.",
-    "AddCapabilityNotice": "[Teams Toolkit] Capability %s has been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.",
-    "AddCapabilitiesNotice": "[Teams Toolkit] Capabilities %s have been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.",
-    "AddCapabilityNoticeForCli": "[Teams Toolkit] Capability %s has been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting.",
-    "AddCapabilitiesNoticeForCli": "[Teams Toolkit] Capabilities %s have been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting.",
+    "addCapability" : {
+      "OnlySupportAzure": "Add capability is only supported for project hosted in Azure",
+      "ExceedMaxLimit": "Your App reaches maximal limit for Tabs, Bot and Message Extension.",
+      "AddCapabilityNotice": "[Teams Toolkit] Capability %s has been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.",
+      "AddCapabilitiesNotice": "[Teams Toolkit] Capabilities %s have been successfully added to your project. F5 to local debug the application or trigger 'Teams: Provision in the cloud' to create resources in your Azure subscription for hosting.",
+      "AddCapabilityNoticeForCli": "[Teams Toolkit] Capability %s has been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting.",
+      "AddCapabilitiesNoticeForCli": "[Teams Toolkit] Capabilities %s have been successfully added to your project. Run 'teamsfx provision' to create resources in your Azure subscription for hosting."
+    },
+    "addResource": {
+      "OnlySupportAzure": "Add resource is only supported for project hosted in Azure",
+      "NotSupportForVSProject": "Add resource is not supported for csharp project",
+      "AddResourceNotice": "[Teams Toolkit] Resource \"%s\" has been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resource in your Azure subscription.",
+      "AddResourceNoticeForCli": "[Teams Toolkit] Resource \"%s\" has been successfully configured for your project, run 'teamsfx provision' will create the resource in your Azure subscription.",
+      "AddResourcesNotice": "[Teams Toolkit] Resources \"%s\" have been successfully configured for your project, trigger 'Teams: Provision in the cloud' will create the resources in your Azure subscription.",
+      "AddResourcesNoticeForCli": "[Teams Toolkit] Resources \"%s\" have been successfully configured for your project, run 'teamsfx provision' will create the resources in your Azure subscription."
+    },
     "CancelProvision": "CancelProvision",
     "AlreadyProvisionNotice": "'%s' is already provisioned in the cloud, will create the teams app again if it has been removed.",
     "NotProvisionedNotice": "'%s' is not provisioned in the cloud yet. Please provision first.",
@@ -47,14 +57,19 @@
     "ProvisionFinishNotice": "[%s] Provison finished!",
     "DeployStartNotice": "[%s] Deployment start.",
     "SelectedPluginsToDeployNotice": "[%s] Selected plugins to deploy: %s",
-    "PublishStartNotice": "[%s] Publish start."
+    "PublishStartNotice": "[%s] Publish start.",
+    "Collaboration": {
+      "ListCollaboratorsSuccess": "List M365 Teams App%s owners success, you can view it in Teams Toolkit output window",
+      "WithAadApp": "(With AAD App)",
+      "FailedToListCollaborators": "Failed to list Teams App owners for the project.\nError details: \n"
+    }
   },
   "plugins": {
     "SPFx": {
       "buildNotice": "SharePoint package successfully built at %s.",
       "deployNotice": "SharePoint package %s has been successfully deployed to [%s](%s).",
       "deployFailedNotice": "You don't have permission to upload and deploy package to App Catalog %s, please use site admin account, or you can get your own free Microsoft 365 tenant from [M365 developer program](https://developer.microsoft.com/en-us/microsoft-365/dev-program)",
-      "createAppCatalogNotice": "There is no tenant app catalog under %s, you can Read more about how to create app catalog site."
+      "createAppCatalogNotice": "There is no tenant app catalog under %s, do you want to create one?"
     }
   }
 }

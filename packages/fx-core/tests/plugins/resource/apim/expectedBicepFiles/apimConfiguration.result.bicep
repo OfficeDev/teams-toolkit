@@ -23,6 +23,7 @@ var scope = '${m365ApplicationIdUri}/.default'
 var authorizationEndpoint = uri(m365OauthAuthorityHost, '${m365TenantId}/oauth2/v2.0/authorize')
 var tokenEndpoint = uri(m365OauthAuthorityHost, '${m365TenantId}/oauth2/v2.0/token')
 
+//Enables Microsoft Power Platform to access your APIs hosted in Function App
 resource apimServiceAuthServer 'Microsoft.ApiManagement/service/authorizationServers@2020-12-01' = {
   name: '${apimServiceName}/${oauthServerName}'
   properties: {

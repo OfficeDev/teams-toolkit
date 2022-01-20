@@ -15,7 +15,6 @@ import {
   InputConfigsFolderName,
   ProjectSettingsFileName,
 } from "@microsoft/teamsfx-api";
-import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
 import { ext } from "../../../src/extensionVariables";
 import { Uri } from "vscode";
 import * as tmp from "tmp";
@@ -199,51 +198,25 @@ suite("CommonUtils", () => {
       sandbox.restore();
     });
 
-    if (isMultiEnvEnabled()) {
-      test("Multi env enabled and both new files and old files exist", async () => {
-        createOldProjectSettings();
-        createNewProjectSettings();
-        const result = commonUtils.getProjectId();
-        chai.expect(result).equals("new");
-      });
-      test("Multi env enabled and only new files exist", async () => {
-        createNewProjectSettings();
-        const result = commonUtils.getProjectId();
-        chai.expect(result).equals("new");
-      });
-      test("Multi env enabled and only old files exist", async () => {
-        createOldProjectSettings();
-        const result = commonUtils.getProjectId();
-        chai.expect(result).equals("old");
-      });
-      test("Multi env enabled and neither new nor old files exist", async () => {
-        const result = commonUtils.getProjectId();
-        chai.expect(result).equals(undefined);
-      });
-    } else {
-      test("Multi env disabled and both new files and old files exist", async () => {
-        createOldProjectSettings();
-        createNewProjectSettings();
-        const result = commonUtils.getProjectId();
-        chai.expect(result).equals("old");
-      });
-
-      test("Multi env disabled and only new files exist", async () => {
-        createNewProjectSettings();
-        const result = commonUtils.getProjectId();
-        chai.expect(result).equals(undefined);
-      });
-
-      test("Multi env disabled and only old files exist", async () => {
-        createOldProjectSettings();
-        const result = commonUtils.getProjectId();
-        chai.expect(result).equals("old");
-      });
-
-      test("Multi env disabled and neither new nor old files exist", async () => {
-        const result = commonUtils.getProjectId();
-        chai.expect(result).equals(undefined);
-      });
-    }
+    test("Multi env enabled and both new files and old files exist", async () => {
+      createOldProjectSettings();
+      createNewProjectSettings();
+      const result = commonUtils.getProjectId();
+      chai.expect(result).equals("new");
+    });
+    test("Multi env enabled and only new files exist", async () => {
+      createNewProjectSettings();
+      const result = commonUtils.getProjectId();
+      chai.expect(result).equals("new");
+    });
+    test("Multi env enabled and only old files exist", async () => {
+      createOldProjectSettings();
+      const result = commonUtils.getProjectId();
+      chai.expect(result).equals("old");
+    });
+    test("Multi env enabled and neither new nor old files exist", async () => {
+      const result = commonUtils.getProjectId();
+      chai.expect(result).equals(undefined);
+    });
   });
 });

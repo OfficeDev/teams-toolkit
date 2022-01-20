@@ -12,6 +12,7 @@ import {
   IBot,
   IConfigurableTab,
   IStaticTab,
+  AppPackageFolderName,
 } from "@microsoft/teamsfx-api";
 import { getAppDirectory } from "../../../common";
 import { AppStudioError } from "./errors";
@@ -20,8 +21,8 @@ import {
   STATIC_TABS_MAX_ITEMS,
   MANIFEST_LOCAL,
   MANIFEST_TEMPLATE,
-  TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV,
-  TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG,
+  TEAMS_APP_MANIFEST_TEMPLATE_V3,
+  TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3,
   STATIC_TABS_TPL_FOR_MULTI_ENV,
   STATIC_TABS_TPL_LOCAL_DEBUG,
   CONFIGURABLE_TABS_TPL_FOR_MULTI_ENV,
@@ -40,14 +41,19 @@ export async function getManifestTemplatePath(
   return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;
 }
 
-export async function init(projectRoot: string): Promise<any> {
-  const localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG;
+export async function init(projectRoot: string): Promise<Result<any, FxError>> {
+  const newAppPackageFolder = `${projectRoot}/templates/${AppPackageFolderName}`;
+  await fs.ensureDir(newAppPackageFolder);
+
+  const localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
   const localManifest = JSON.parse(localManifestString);
   await saveManifest(projectRoot, localManifest, true);
 
-  const remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_FOR_MULTI_ENV;
+  const remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
   const remoteManifest = JSON.parse(remoteManifestString);
   await saveManifest(projectRoot, remoteManifest, false);
+
+  return ok(undefined);
 }
 
 export async function loadManifest(
@@ -179,31 +185,36 @@ export async function addCapabilities(
   }
   const remoteManifest = remoteManifestRes.value;
 
+  let staticTabIndex = remoteManifest.staticTabs?.length ?? 0;
+
   capabilities.map((capability) => {
     switch (capability.name) {
       case "staticTab":
         if (!localManifest.staticTabs) {
-          Object.assign(localManifest.staticTabs, []);
+          Object.assign(localManifest, { staticTabs: [] });
         }
         if (!remoteManifest.staticTabs) {
-          Object.assign(remoteManifest.staticTabs, []);
+          Object.assign(remoteManifest, { staticTabs: [] });
         }
         if (capability.snippet) {
           localManifest.staticTabs!.push(capability.snippet.local);
           remoteManifest.staticTabs!.push(capability.snippet.remote);
         } else {
+          STATIC_TABS_TPL_LOCAL_DEBUG[0].entityId = "index" + staticTabIndex;
+          STATIC_TABS_TPL_FOR_MULTI_ENV[0].entityId = "index" + staticTabIndex;
           localManifest.staticTabs = localManifest.staticTabs!.concat(STATIC_TABS_TPL_LOCAL_DEBUG);
           remoteManifest.staticTabs = remoteManifest.staticTabs!.concat(
             STATIC_TABS_TPL_FOR_MULTI_ENV
           );
+          staticTabIndex++;
         }
         break;
       case "configurableTab":
         if (!localManifest.configurableTabs) {
-          Object.assign(localManifest.configurableTabs, []);
+          Object.assign(localManifest, { configurableTabs: [] });
         }
         if (!remoteManifest.configurableTabs) {
-          Object.assign(remoteManifest.configurableTabs, []);
+          Object.assign(remoteManifest, { configurableTabs: [] });
         }
         if (capability.snippet) {
           localManifest.configurableTabs!.push(capability.snippet.local);
@@ -219,10 +230,10 @@ export async function addCapabilities(
         break;
       case "Bot":
         if (!localManifest.bots) {
-          Object.assign(localManifest.bots, []);
+          Object.assign(localManifest, { bots: [] });
         }
         if (!remoteManifest.bots) {
-          Object.assign(remoteManifest.bots, []);
+          Object.assign(remoteManifest, { bots: [] });
         }
         if (capability.snippet) {
           localManifest.bots!.push(capability.snippet.local);
@@ -234,10 +245,10 @@ export async function addCapabilities(
         break;
       case "MessageExtension":
         if (!localManifest.composeExtensions) {
-          Object.assign(localManifest.composeExtensions, []);
+          Object.assign(localManifest, { composeExtensions: [] });
         }
         if (!remoteManifest.composeExtensions) {
-          Object.assign(remoteManifest.composeExtensions, []);
+          Object.assign(remoteManifest, { composeExtensions: [] });
         }
         if (capability.snippet) {
           localManifest.composeExtensions!.push(capability.snippet.local);

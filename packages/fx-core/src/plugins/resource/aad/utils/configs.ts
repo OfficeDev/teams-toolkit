@@ -12,7 +12,6 @@ import { format, Formats } from "./format";
 import { Utils } from "./common";
 import { ResultFactory } from "../results";
 import { v4 as uuidv4 } from "uuid";
-import { isMultiEnvEnabled } from "../../../../common";
 import {
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
@@ -25,17 +24,9 @@ export class ConfigUtils {
     isLocalDebug = false
   ): string | undefined {
     if (isLocalDebug) {
-      if (isMultiEnvEnabled()) {
-        return ctx.localSettings?.auth?.get(key) as string;
-      } else {
-        return ctx.config?.get(Utils.addLocalDebugPrefix(true, key)) as string;
-      }
+      return ctx.localSettings?.auth?.get(key) as string;
     } else {
-      if (isMultiEnvEnabled()) {
-        return ctx.envInfo.state.get(Plugins.pluginNameComplex)?.get(key) as string;
-      } else {
-        return ctx.config?.get(key) as string;
-      }
+      return ctx.envInfo.state.get(Plugins.pluginNameComplex)?.get(key) as string;
     }
   }
 
@@ -43,24 +34,15 @@ export class ConfigUtils {
     ctx: PluginContext,
     key: string
   ): string | undefined {
-    const isMultiEnvEnable: boolean = isMultiEnvEnabled();
     switch (key) {
       case ConfigKeysOfOtherPlugin.localDebugTabDomain:
-        return isMultiEnvEnable
-          ? ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain)
-          : ctx.envInfo.state.get(Plugins.localDebug)?.get(key);
+        return ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabDomain);
       case ConfigKeysOfOtherPlugin.localDebugTabEndpoint:
-        return isMultiEnvEnable
-          ? ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint)
-          : ctx.envInfo.state.get(Plugins.localDebug)?.get(key);
+        return ctx.localSettings?.frontend?.get(LocalSettingsFrontendKeys.TabEndpoint);
       case ConfigKeysOfOtherPlugin.localDebugBotEndpoint:
-        return isMultiEnvEnable
-          ? ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotEndpoint)
-          : ctx.envInfo.state.get(Plugins.localDebug)?.get(key);
+        return ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotEndpoint);
       case ConfigKeysOfOtherPlugin.teamsBotIdLocal:
-        return isMultiEnvEnable
-          ? ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId)
-          : ctx.envInfo.state.get(Plugins.teamsBot)?.get(key);
+        return ctx.localSettings?.bot?.get(LocalSettingsBotKeys.BotId);
       default:
         return undefined;
     }
@@ -76,14 +58,10 @@ export class ConfigUtils {
       return;
     }
 
-    if (isMultiEnvEnabled()) {
-      if (isLocalDebug) {
-        ctx.localSettings?.auth?.set(key, value);
-      } else {
-        ctx.envInfo.state.get(Plugins.pluginNameComplex)?.set(key, value);
-      }
+    if (isLocalDebug) {
+      ctx.localSettings?.auth?.set(key, value);
     } else {
-      ctx.config.set(Utils.addLocalDebugPrefix(isLocalDebug, key), value);
+      ctx.envInfo.state.get(Plugins.pluginNameComplex)?.set(key, value);
     }
   }
 
@@ -168,13 +146,13 @@ export class ProvisionConfig {
       ctx,
       ConfigKeys.oauthHost,
       Constants.oauthAuthorityPrefix,
-      isMultiEnvEnabled() && this.isLocalDebug
+      this.isLocalDebug
     );
     ConfigUtils.checkAndSaveConfig(
       ctx,
       ConfigKeys.oauthAuthority,
       oauthAuthority,
-      isMultiEnvEnabled() && this.isLocalDebug
+      this.isLocalDebug
     );
   }
 
@@ -250,6 +228,7 @@ export class PostProvisionConfig {
   public frontendEndpoint?: string;
   public botEndpoint?: string;
   public objectId?: string;
+  public clientId?: string;
   public applicationIdUri?: string;
   private isLocalDebug: boolean;
 
@@ -314,6 +293,20 @@ export class PostProvisionConfig {
         GetConfigError.message(
           Errors.GetConfigError(ConfigKeys.applicationIdUri, Plugins.pluginName)
         )
+      );
+    }
+
+    const clientId: ConfigValue = ConfigUtils.getAadConfig(
+      ctx,
+      ConfigKeys.clientId,
+      this.isLocalDebug
+    );
+    if (clientId) {
+      this.clientId = clientId as string;
+    } else {
+      throw ResultFactory.SystemError(
+        GetConfigError.name,
+        GetConfigError.message(Errors.GetConfigError(ConfigKeys.clientId, Plugins.pluginName))
       );
     }
   }

@@ -8,6 +8,7 @@ import {
   FxError,
   Inputs,
   Json,
+  ProjectSettings,
   Result,
   TokenProvider,
   v2,
@@ -36,6 +37,7 @@ import {
   generateResourceTemplateAdapter,
   provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
+  provisionLocalResourceAdapter,
 } from "../../utils4v2";
 
 @Service(ResourcePluginsV2.FrontendPlugin)
@@ -45,7 +47,8 @@ export class FrontendPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.FrontendPlugin)
   plugin!: FrontendPlugin;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 
@@ -92,6 +95,21 @@ export class FrontendPluginV2 implements ResourcePlugin {
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     return await deployAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
+  }
+
+  async provisionLocalResource(
+    ctx: Context,
+    inputs: Inputs,
+    localSettings: Json,
+    tokenProvider: TokenProvider
+  ): Promise<Result<Void, FxError>> {
+    return await provisionLocalResourceAdapter(
+      ctx,
+      inputs,
+      localSettings,
+      tokenProvider,
+      this.plugin
+    );
   }
 
   async executeUserTask(

@@ -3,6 +3,8 @@
 
 "use strict";
 
+import { FolderName } from "@microsoft/teamsfx-core";
+
 export enum Browser {
   chrome = "chrome",
   edge = "edge",
@@ -27,18 +29,8 @@ export const solutionPluginName = "solution";
 export const appstudioPluginName = "fx-resource-appstudio";
 export const spfxPluginName = "fx-resource-spfx";
 
-export enum ProgrammingLanguage {
-  javascript = "javascript",
-  typescript = "typescript",
-}
-
 export const teamsAppTenantIdConfigKey = "teamsAppTenantId";
 export const remoteTeamsAppIdConfigKey = "teamsAppId";
-
-export const spfxFolderName = "SPFx";
-export const frontendFolderName = "tabs";
-export const backendFolderName = "api";
-export const botFolderName = "bot";
 
 export const frontendStartPattern = /Compiled|Failed/g;
 export const backendStartPattern =
@@ -49,22 +41,22 @@ export const ngrokStartPattern = /started tunnel|failed to reconnect session/g;
 export const botStartPattern = /listening|[nodemon] app crashed/g;
 export const gulpServePattern = /^.*Finished subtask 'reload'.*/g;
 
-export const spfxInstallStartMessage = `executing 'npm install' under ${spfxFolderName} folder.`;
+export const spfxInstallStartMessage = `executing 'npm install' under ${FolderName.SPFx} folder.`;
 export const gulpCertTitle = "gulp trust-dev-cert";
-export const gulpCertStartMessage = `executing 'gulp trust-dev-cert' under ${spfxFolderName} folder.`;
+export const gulpCertStartMessage = `executing 'gulp trust-dev-cert' under ${FolderName.SPFx} folder.`;
 export const gulpServeTitle = "gulp serve";
-export const gulpServeStartMessage = `executing 'gulp serve' under ${spfxFolderName} folder.`;
-export const frontendInstallStartMessage = `executing 'npm install' under ${frontendFolderName} folder.`;
-export const frontendStartStartMessage = `executing 'react-scripts start' under ${frontendFolderName} folder.`;
+export const gulpServeStartMessage = `executing 'gulp serve' under ${FolderName.SPFx} folder.`;
+export const frontendInstallStartMessage = `executing 'npm install' under ${FolderName.Frontend} folder.`;
+export const frontendStartStartMessage = `executing 'react-scripts start' under ${FolderName.Frontend} folder.`;
 export const authStartStartMessage = "starting auth service.";
-export const backendInstallStartMessage = `executing 'npm install' under ${backendFolderName} folder.`;
+export const backendInstallStartMessage = `executing 'npm install' under ${FolderName.Function} folder.`;
 export const backendExtensionsInstallStartMessage =
   "installing Azure Functions binding extensions.";
-export const backendStartStartMessage = `executing 'func start' under ${backendFolderName} folder.`;
-export const backendWatchStartMessage = `executing 'tsc --watch' under ${backendFolderName} folder.`;
-export const botInstallStartMessage = `executing 'npm install' under ${botFolderName} folder.`;
+export const backendStartStartMessage = `executing 'func start' under ${FolderName.Function} folder.`;
+export const backendWatchStartMessage = `executing 'tsc --watch' under ${FolderName.Function} folder.`;
+export const botInstallStartMessage = `executing 'npm install' under ${FolderName.Bot} folder.`;
 export const botStartStartMessage = "starting bot.";
-export const ngrokStartStartMessage = `executing 'ngrok http' under ${botFolderName} folder.`;
+export const ngrokStartStartMessage = `executing 'ngrok http' under ${FolderName.Bot} folder.`;
 
 export const previewTitle = "preview";
 export const previewStartMessage = "opening Teams web client.";

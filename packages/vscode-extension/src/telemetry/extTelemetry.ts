@@ -13,8 +13,7 @@ import {
 } from "./extTelemetryEvents";
 import * as extensionPackage from "../../package.json";
 import { FxError, Stage, UserError } from "@microsoft/teamsfx-api";
-import { getIsExistingUser, getTeamsAppId } from "../utils/commonUtils";
-import { isMultiEnvEnabled } from "@microsoft/teamsfx-core";
+import { getIsExistingUser } from "../utils/commonUtils";
 
 export namespace ExtTelemetry {
   export let reporter: VSCodeTelemetryReporter;
@@ -82,10 +81,6 @@ export namespace ExtTelemetry {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
     }
 
-    if (!isMultiEnvEnabled()) {
-      properties[TelemetryProperty.AapId] = getTeamsAppId();
-    }
-
     const isExistingUser = getIsExistingUser();
     properties[TelemetryProperty.IsExistingUser] = isExistingUser ? isExistingUser : "";
 
@@ -112,10 +107,6 @@ export namespace ExtTelemetry {
 
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
-    }
-
-    if (!isMultiEnvEnabled()) {
-      properties[TelemetryProperty.AapId] = getTeamsAppId();
     }
 
     const isExistingUser = getIsExistingUser();
@@ -154,10 +145,6 @@ export namespace ExtTelemetry {
 
     if (TelemetryProperty.Component in properties === false) {
       properties[TelemetryProperty.Component] = TelemetryComponentType;
-    }
-
-    if (!isMultiEnvEnabled()) {
-      properties[TelemetryProperty.AapId] = getTeamsAppId();
     }
 
     const isExistingUser = getIsExistingUser();

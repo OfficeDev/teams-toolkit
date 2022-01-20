@@ -7,32 +7,35 @@ export type ArmResourcePlugin = Pick<Plugin, "generateArmTemplates" | "updateArm
 
 export type NamedArmResourcePlugin = { name: string } & ArmResourcePlugin;
 
-export interface BicepOrchestrationTemplate {
-  Content: string;
-}
-
-export interface BicepOrchestrationParameterTemplate extends BicepOrchestrationTemplate {
-  ParameterJson?: Record<string, unknown>;
-}
-
-export interface BicepOrchestrationModuleTemplate extends BicepOrchestrationTemplate {
-  Outputs?: { [OutputName: string]: string };
-}
-
-export interface BicepModule {
-  Content: string;
-}
-
-export interface BicepOrchestration {
-  ParameterTemplate?: BicepOrchestrationParameterTemplate;
-  VariableTemplate?: BicepOrchestrationTemplate;
-  ModuleTemplate?: BicepOrchestrationModuleTemplate;
-  OutputTemplate?: BicepOrchestrationTemplate;
-}
-
 export interface ArmTemplateResult extends Record<any, unknown> {
-  Provision?: { Orchestration?: string; Modules?: { [moduleFileName: string]: string } };
-  Configuration?: { Orchestration?: string; Modules?: { [moduleFileName: string]: string } };
+  Provision?: {
+    /*
+    Content of this property will be appended to templates/azure/provision.bicep
+    */
+    Orchestration?: string;
+    /*
+    Content of each modules will be appended to templates/azure/provision/${moduleFileName}.bicep
+    */
+    Modules?: { [moduleFileName: string]: string };
+  };
+  Configuration?: {
+    /*
+    Content of this property will be appended to templates/azure/config.bicep
+    */
+    Orchestration?: string;
+    /*
+    Content of this property override each templates/azure/teamsFx/${moduleFileName}.bicep file
+    */
+    Modules?: { [moduleFileName: string]: string };
+  };
+  /*
+  The reference values you provided here will be resolved by other resource plugins in run time
+  You always need to provide full reference value list in generateArmTemplate/updateArmTemplate function call
+  */
   Reference?: Record<string, unknown>;
+  /*
+  The parameters will be merged to .fx/configs/azure.parameters.{env}.json
+  All environments will be updated when you provides this parameter
+  */
   Parameters?: Record<string, string>;
 }

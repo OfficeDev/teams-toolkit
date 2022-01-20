@@ -17,7 +17,7 @@ import {
 } from "../../../../src/plugins/resource/frontend/constants";
 import { FrontendConfig } from "../../../../src/plugins/resource/frontend/configs";
 import { StorageAccountsCreateResponse } from "@azure/arm-storage/esm/models";
-import { ARM_TEMPLATE_OUTPUT, isArmSupportEnabled, newEnvInfo } from "../../../../src";
+import { ARM_TEMPLATE_OUTPUT, newEnvInfo } from "../../../../src";
 import { LocalCrypto } from "../../../../src/core/crypto";
 
 export class TestHelper {
@@ -133,9 +133,7 @@ export class TestHelper {
 
   static async getFakeAzureStorageClient(ctx?: PluginContext): Promise<AzureStorageClient> {
     ctx ??= TestHelper.getFakePluginContext();
-    if (isArmSupportEnabled()) {
-      ctx.config.set(FrontendConfigInfo.StorageResourceId, TestHelper.storageResourceId);
-    }
+    ctx.config.set(FrontendConfigInfo.StorageResourceId, TestHelper.storageResourceId);
     const config = await TestHelper.getFakeFrontendConfig(ctx);
     return new AzureStorageClient(config);
   }

@@ -18,11 +18,14 @@ import {
   Result,
 } from "@microsoft/teamsfx-api";
 import {
+  DepsType,
+  FolderName,
   FxCore,
   ITaskDefinition,
   LocalEnvManager,
-  TaskDefinition,
   ProjectSettingsHelper,
+  TaskDefinition,
+  ProgrammingLanguage,
 } from "@microsoft/teamsfx-core";
 
 import { YargsCommand } from "../../yargsCommand";
@@ -42,15 +45,10 @@ import {
 } from "../../telemetry/cliTelemetryEvents";
 import { ServiceLogWriter } from "./serviceLogWriter";
 import CLIUIInstance from "../../userInteraction";
-import { AzureNodeChecker } from "./depsChecker/azureNodeChecker";
-import { DotnetChecker } from "./depsChecker/dotnetChecker";
-import { FuncToolChecker } from "./depsChecker/funcToolChecker";
-import { DepsChecker } from "./depsChecker/checker";
 import { cliEnvCheckerLogger } from "./depsChecker/cliLogger";
-import { CLIAdapter } from "./depsChecker/cliAdapter";
 import { cliEnvCheckerTelemetry } from "./depsChecker/cliTelemetry";
 import { URL } from "url";
-import { NgrokChecker } from "./depsChecker/ngrokChecker";
+import { CliDepsChecker } from "./depsChecker/cliChecker";
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
@@ -199,22 +197,22 @@ export default class Preview extends YargsCommand {
     const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
 
     // TODO: move path validation to core
-    const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
+    const spfxRoot = path.join(workspaceFolder, FolderName.SPFx);
     if (includeSpfx && !(await fs.pathExists(spfxRoot))) {
       return err(errors.RequiredPathNotExists(spfxRoot));
     }
 
-    const frontendRoot = path.join(workspaceFolder, constants.frontendFolderName);
+    const frontendRoot = path.join(workspaceFolder, FolderName.Frontend);
     if (includeFrontend && !(await fs.pathExists(frontendRoot))) {
       return err(errors.RequiredPathNotExists(frontendRoot));
     }
 
-    const backendRoot = path.join(workspaceFolder, constants.backendFolderName);
+    const backendRoot = path.join(workspaceFolder, FolderName.Function);
     if (includeBackend && !(await fs.pathExists(backendRoot))) {
       return err(errors.RequiredPathNotExists(backendRoot));
     }
 
-    const botRoot = path.join(workspaceFolder, constants.botFolderName);
+    const botRoot = path.join(workspaceFolder, FolderName.Bot);
     if (includeBot && !(await fs.pathExists(botRoot))) {
       return err(errors.RequiredPathNotExists(botRoot));
     }
@@ -233,7 +231,7 @@ export default class Preview extends YargsCommand {
     if (envCheckerResult.isErr()) {
       return err(envCheckerResult.error);
     }
-    const [funcToolChecker, dotnetChecker, ngrokChecker] = envCheckerResult.value;
+    const depsChecker: CliDepsChecker = envCheckerResult.value;
 
     // clear background tasks
     this.backgroundTasks = [];
@@ -243,7 +241,7 @@ export default class Preview extends YargsCommand {
 
     /* === start ngrok === */
     if (includeBot && !skipNgrok) {
-      const result = await this.startNgrok(workspaceFolder, ngrokChecker);
+      const result = await this.startNgrok(workspaceFolder, depsChecker);
       if (result.isErr()) {
         return result;
       }
@@ -257,7 +255,7 @@ export default class Preview extends YargsCommand {
       includeFrontend,
       includeBackend,
       includeBot,
-      dotnetChecker
+      depsChecker
     );
     if (result.isErr()) {
       return result;
@@ -285,8 +283,7 @@ export default class Preview extends YargsCommand {
       includeFrontend,
       includeBackend,
       includeBot,
-      dotnetChecker,
-      funcToolChecker,
+      depsChecker,
       includeSimpleAuth
     );
     if (result.isErr()) {
@@ -470,7 +467,7 @@ export default class Preview extends YargsCommand {
       if (!this.sharepointSiteUrl) {
         return err(errors.NoUrlForSPFxRemotePreview());
       }
-      const spfxRoot = path.join(workspaceFolder, constants.spfxFolderName);
+      const spfxRoot = path.join(workspaceFolder, FolderName.SPFx);
       return this.spfxPreview(spfxRoot, browser, this.sharepointSiteUrl, browserArguments);
     }
 
@@ -501,7 +498,7 @@ export default class Preview extends YargsCommand {
 
   private async startNgrok(
     workspaceFolder: string,
-    ngrokChecker: NgrokChecker
+    depsChecker: CliDepsChecker
   ): Promise<Result<null, FxError>> {
     // bot npm install
     const botInstallTask = this.prepareTask(
@@ -514,8 +511,10 @@ export default class Preview extends YargsCommand {
     }
 
     // start ngrok
+    const ngrok = await depsChecker.getDepsStatus(DepsType.Ngrok);
+    const ngrokBinFolders = ngrok.details.binFolders;
     const ngrokStartTask = this.prepareTask(
-      TaskDefinition.ngrokStart(workspaceFolder, false, ngrokChecker.getNgrokBinFolder()),
+      TaskDefinition.ngrokStart(workspaceFolder, false, ngrokBinFolders),
       constants.ngrokStartStartMessage
     );
     result = await ngrokStartTask.task.waitFor(
@@ -537,7 +536,7 @@ export default class Preview extends YargsCommand {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBot: boolean,
-    dotnetChecker: DotnetChecker
+    depsChecker: CliDepsChecker
   ): Promise<Result<null, FxError>> {
     const frontendInstallTask = includeFrontend
       ? this.prepareTask(
@@ -553,7 +552,8 @@ export default class Preview extends YargsCommand {
         )
       : undefined;
 
-    const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
+    const dotnet = await depsChecker.getDepsStatus(DepsType.Dotnet);
+    const dotnetExecPath = dotnet.command;
     const backendExtensionsInstallTask = includeBackend
       ? this.prepareTask(
           TaskDefinition.backendExtensionsInstall(workspaceFolder, dotnetExecPath),
@@ -596,8 +596,7 @@ export default class Preview extends YargsCommand {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBot: boolean,
-    dotnetChecker: DotnetChecker,
-    funcToolChecker: FuncToolChecker,
+    depsChecker: CliDepsChecker,
     includeAuth?: boolean
   ): Promise<Result<null, FxError>> {
     const localEnv = await commonUtils.getLocalEnv(workspaceFolder);
@@ -610,17 +609,18 @@ export default class Preview extends YargsCommand {
         )
       : undefined;
 
-    const dotnetExecPath = await dotnetChecker.getDotnetExecPath();
+    const dotnet = await depsChecker.getDepsStatus(DepsType.Dotnet);
     const authStartTask =
       includeFrontend && includeAuth
         ? this.prepareTask(
-            TaskDefinition.authStart(dotnetExecPath, commonUtils.getAuthServicePath(localEnv)),
+            TaskDefinition.authStart(dotnet.command, commonUtils.getAuthServicePath(localEnv)),
             constants.authStartStartMessage,
             commonUtils.getAuthLocalEnv(localEnv)
           )
         : undefined;
 
-    const funcCommand = await funcToolChecker.getFuncCommand();
+    const func = await depsChecker.getDepsStatus(DepsType.Dotnet);
+    const funcCommand = func.command;
     const backendStartTask = includeBackend
       ? this.prepareTask(
           TaskDefinition.backendStart(workspaceFolder, programmingLanguage, funcCommand, false),
@@ -629,7 +629,7 @@ export default class Preview extends YargsCommand {
         )
       : undefined;
     const backendWatchTask =
-      includeBackend && programmingLanguage === constants.ProgrammingLanguage.typescript
+      includeBackend && programmingLanguage === ProgrammingLanguage.typescript
         ? this.prepareTask(
             TaskDefinition.backendWatch(workspaceFolder),
             constants.backendWatchStartMessage,
@@ -777,38 +777,31 @@ export default class Preview extends YargsCommand {
     hasBackend: boolean,
     hasBot: boolean,
     skipNgrok: boolean
-  ): Promise<Result<[FuncToolChecker, DotnetChecker, NgrokChecker], FxError>> {
-    const cliAdapter = new CLIAdapter(hasBackend, hasBot, !skipNgrok, cliEnvCheckerTelemetry);
-    const nodeChecker = new AzureNodeChecker(
-      cliAdapter,
+  ): Promise<Result<CliDepsChecker, FxError>> {
+    const depsChecker = new CliDepsChecker(
       cliEnvCheckerLogger,
-      cliEnvCheckerTelemetry
+      cliEnvCheckerTelemetry,
+      hasBackend,
+      hasBot,
+      !skipNgrok
     );
-    const dotnetChecker = new DotnetChecker(
-      cliAdapter,
-      cliEnvCheckerLogger,
-      cliEnvCheckerTelemetry
-    );
-    const funcChecker = new FuncToolChecker(
-      cliAdapter,
-      cliEnvCheckerLogger,
-      cliEnvCheckerTelemetry
-    );
-    const depsChecker = new DepsChecker(cliEnvCheckerLogger, cliAdapter, [
-      nodeChecker,
-      dotnetChecker,
-      funcChecker,
+    let node = DepsType.AzureNode;
+    if (hasBackend) {
+      node = DepsType.FunctionNode;
+    }
+
+    const shouldContinue = await depsChecker.resolve([
+      node,
+      DepsType.Dotnet,
+      DepsType.FunctionNode,
+      DepsType.Ngrok,
     ]);
 
-    // TODO: integrate into DepsChecker after all checkers support linux
-    const ngrokChecker = new NgrokChecker(cliAdapter, cliEnvCheckerLogger, cliEnvCheckerTelemetry);
-
-    const shouldContinue = (await depsChecker.resolve()) && ngrokChecker.resolve();
     if (!shouldContinue) {
       return err(errors.DependencyCheckerFailed());
     }
 
-    return ok([funcChecker, dotnetChecker, ngrokChecker]);
+    return ok(depsChecker);
   }
 
   private prepareTask(

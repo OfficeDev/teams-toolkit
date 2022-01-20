@@ -75,6 +75,7 @@
 
 /packages/fx-core/src/plugins/resource/frontend @hund030 @eriolchan @IvanJobs
 /packages/fx-core/tests/plugins/resource/frontend @hund030 @eriolchan @IvanJobs
+/packages/fx-core/tests/plugins/resource/dotnet @hund030 @eriolchan @IvanJobs
 
 /packages/fx-core/src/plugins/resource/function @eriolchan @hund030 @IvanJobs
 /packages/fx-core/tests/plugins/resource/function @eriolchan @hund030 @IvanJobs
@@ -109,4 +110,4 @@
 
 /.github/workflows/cd.yml @adashen @LongOddCode @IvanJobs @qinezh @wenytang-ms
 
-/packages/server @jayzhang @IvanJobs @Alive-Fish
+/packages/server @chagong @Alive-Fish @jayzhang

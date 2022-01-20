@@ -8,6 +8,7 @@ import {
   FxError,
   Inputs,
   Json,
+  ProjectSettings,
   QTreeNode,
   Result,
   TokenProvider,
@@ -48,7 +49,8 @@ export class BotPluginV2 implements ResourcePlugin {
   @Inject(ResourcePlugins.BotPlugin)
   plugin!: TeamsBot;
 
-  activate(solutionSettings: AzureSolutionSettings): boolean {
+  activate(projectSettings: ProjectSettings): boolean {
+    const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
     return this.plugin.activate(solutionSettings);
   }
 

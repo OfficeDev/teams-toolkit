@@ -6,8 +6,9 @@ export class Constants {
   public static readonly MAX_ALIAS_LENGTH = 40;
   public static readonly MAX_BUNDLE_NAME_LENGTH = 64;
   public static readonly CALLED_ID = "teamsdev";
-  public static readonly APP_CATALOG_REFRESH_TIME = 10000;
-  public static readonly APP_CATALOG_MAX_TIMES = 12;
+  public static readonly APP_CATALOG_REFRESH_TIME = 20000;
+  public static readonly APP_CATALOG_MAX_TIMES = 6;
+  public static readonly APP_CATALOG_ACTIVE_TIME = 180000;
   public static readonly PLUGIN_NAME = "SPFx";
   public static readonly PLUGIN_DEV_NAME = "fx-resource-spfx";
   public static readonly BUILD_SHAREPOINT_PACKAGE = "Build SharePoint Package";
@@ -65,6 +66,6 @@ export class PreDeployProgressMessage {
 }
 
 export class DeployProgressMessage {
-  static readonly GetSPAppCatalog = "Get SharePoint app catalog";
-  static readonly UploadAndDeploy = "Upload and deploy SPFx package on your tenant website";
+  static readonly CreateSPAppCatalog = "Create Sharepoint app catalog";
+  static readonly UploadAndDeploy = "Upload and deploy SPFx package to your tenant app catalog";
 }

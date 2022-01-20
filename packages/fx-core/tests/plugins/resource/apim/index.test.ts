@@ -21,7 +21,7 @@ import {
 } from "../../../../src/plugins/resource/apim/constants";
 import { AadService } from "../../../../src/plugins/resource/apim/services/aadService";
 import { AadManager } from "../../../../src/plugins/resource/apim/managers/aadManager";
-import { isArmSupportEnabled, newEnvInfo } from "../../../../src";
+import { newEnvInfo } from "../../../../src";
 import { createSandbox, SinonSandbox } from "sinon";
 import { Factory } from "../../../../src/plugins/resource/apim/factory";
 import {
@@ -51,10 +51,6 @@ describe("ApimPlugin", () => {
     });
     const apimPlugin = new ApimPlugin();
     it("Create a new project", async () => {
-      if (!isArmSupportEnabled()) {
-        return;
-      }
-
       mockApimPlugin(sandbox);
 
       const ctx = await buildPluginContext(sandbox);

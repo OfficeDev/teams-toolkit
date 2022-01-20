@@ -8,12 +8,6 @@ export const ScaffoldSteps = {
   Scaffold: Messages.ProgressScaffold,
 };
 
-export const ProvisionSteps = {
-  RegisterResourceProvider: Messages.ProgressRegisterRP,
-  CreateStorage: Messages.ProgressCreateStorage,
-  Configure: Messages.ProgressConfigure,
-};
-
 export const PostProvisionSteps = {
   EnableStaticWebsite: Messages.ProgressEnableStorageStaticWebsite,
 };
@@ -36,7 +30,6 @@ export const MigrateSteps = {
 
 export class ProgressHelper {
   static scaffoldProgress: IProgressHandler | undefined;
-  static provisionProgress: IProgressHandler | undefined;
   static postProvisionProgress: IProgressHandler | undefined;
   static preDeployProgress: IProgressHandler | undefined;
   static deployProgress: IProgressHandler | undefined;
@@ -66,19 +59,6 @@ export class ProgressHelper {
     );
     await this.postProvisionProgress?.start(Messages.ProgressStart);
     return this.postProvisionProgress;
-  }
-
-  static async startProvisionProgressHandler(
-    ctx: PluginContext
-  ): Promise<IProgressHandler | undefined> {
-    await this.provisionProgress?.end(true);
-
-    this.provisionProgress = ctx.ui?.createProgressBar(
-      Messages.ProvisionProgressTitle,
-      Object.entries(ProvisionSteps).length
-    );
-    await this.provisionProgress?.start(Messages.ProgressStart);
-    return this.provisionProgress;
   }
 
   static async createPreDeployProgressHandler(
@@ -122,7 +102,6 @@ export class ProgressHelper {
 
   static async endAllHandlers(success: boolean): Promise<void> {
     await this.endScaffoldProgress(success);
-    await this.endProvisionProgress(success);
     await this.endPreDeployProgress(success);
     await this.endDeployProgress(success);
     await this.endMigrateProgress(success);
@@ -131,11 +110,6 @@ export class ProgressHelper {
   static async endScaffoldProgress(success: boolean): Promise<void> {
     await this.scaffoldProgress?.end(success);
     this.scaffoldProgress = undefined;
-  }
-
-  static async endProvisionProgress(success: boolean): Promise<void> {
-    await this.provisionProgress?.end(success);
-    this.provisionProgress = undefined;
   }
 
   static async endPostProvisionProgress(success: boolean): Promise<void> {

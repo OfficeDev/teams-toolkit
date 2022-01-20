@@ -20,10 +20,7 @@ import {
   FolderNames,
   WebAppConstants,
   TemplateProjectsConstants,
-  AuthEnvNames,
-  AuthValues,
   MaxLengths,
-  IdentityConstants,
   AzureConstants,
   PathInfo,
   BotBicep,
@@ -43,7 +40,6 @@ import {
 } from "./errors";
 import { TeamsBotConfig } from "./configs/teamsBotConfig";
 import { ProgressBarFactory } from "./progressBars";
-import { PluginActRoles } from "./enums/pluginActRoles";
 import { ResourceNameFactory } from "./utils/resourceNameFactory";
 import { AppStudio } from "./appStudio/appStudio";
 import { IBotRegistration } from "./appStudio/interfaces/IBotRegistration";
@@ -61,12 +57,13 @@ import {
   getResourceGroupNameFromResourceId,
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
-  isArmSupportEnabled,
 } from "../../../common";
 import { getActivatedV2ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../solution/fx-solution/v2/adaptor";
 import { generateBicepFromFile } from "../../../common/tools";
-export class TeamsBotImpl {
+import { PluginImpl } from "./interface";
+
+export class TeamsBotImpl implements PluginImpl {
   // Made config plubic, because expect the upper layer to fill inputs.
   public config: TeamsBotConfig = new TeamsBotConfig();
   private ctx?: PluginContext;
@@ -94,20 +91,20 @@ export class TeamsBotImpl {
 
     // 1. Copy the corresponding template project into target directory.
     // Get group name.
-    let group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
+    const group_name = TemplateProjectsConstants.GROUP_NAME_BOT_MSGEXT;
     if (!this.config.actRoles || this.config.actRoles.length === 0) {
       throw new SomethingMissingError("act roles");
     }
 
-    const hasBot = this.config.actRoles.includes(PluginActRoles.Bot);
-    const hasMsgExt = this.config.actRoles.includes(PluginActRoles.MessageExtension);
-    if (hasBot && hasMsgExt) {
-      group_name = TemplateProjectsConstants.GROUP_NAME_BOT_MSGEXT;
-    } else if (hasBot) {
-      group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
-    } else {
-      group_name = TemplateProjectsConstants.GROUP_NAME_MSGEXT;
-    }
+    // const hasBot = this.config.actRoles.includes(PluginActRoles.Bot);
+    // const hasMsgExt = this.config.actRoles.includes(PluginActRoles.MessageExtension);
+    // if (hasBot && hasMsgExt) {
+    // group_name = TemplateProjectsConstants.GROUP_NAME_BOT_MSGEXT;
+    // } else if (hasBot) {
+    //   group_name = TemplateProjectsConstants.GROUP_NAME_BOT;
+    // } else {
+    //   group_name = TemplateProjectsConstants.GROUP_NAME_MSGEXT;
+    // }
 
     await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);
     await LanguageStrategy.getTemplateProject(group_name, this.config);
@@ -128,24 +125,6 @@ export class TeamsBotImpl {
       ConfigNames.PROGRAMMING_LANGUAGE,
       this.config.scaffold.programmingLanguage
     );
-
-    if (!isArmSupportEnabled()) {
-      // CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, this.config.scaffold.graphToken);
-      CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
-      CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
-      CheckThrowSomethingMissing(ConfigNames.LOCATION, this.config.provision.location);
-      CheckThrowSomethingMissing(ConfigNames.SKU_NAME, this.config.provision.skuName);
-      CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, this.ctx.projectSettings?.appName);
-
-      if (!this.config.provision.siteName) {
-        this.config.provision.siteName = ResourceNameFactory.createCommonName(
-          this.config.resourceNameSuffix,
-          this.ctx.projectSettings?.appName,
-          MaxLengths.WEB_APP_SITE_NAME
-        );
-        Logger.debug(`Site name generated to use is ${this.config.provision.siteName}.`);
-      }
-    }
 
     this.config.saveConfigIntoContext(context);
 
@@ -177,24 +156,12 @@ export class TeamsBotImpl {
     await handler?.next(ProgressBarConstants.PROVISION_STEP_BOT_REG);
     const botAuthCreds = await this.createOrGetBotAppRegistration();
 
-    if (!isArmSupportEnabled()) {
-      await this.provisionBotServiceOnAzure(botAuthCreds);
-
-      await handler?.next(ProgressBarConstants.PROVISION_STEP_WEB_APP);
-      // 2. Provision azure web app for hosting bot project.
-      await this.provisionWebApp();
-
-      this.config.saveConfigIntoContext(context);
-      Logger.info(Messages.SuccessfullyProvisionedBot);
-    }
-
     return ResultFactory.Success();
   }
 
   public async updateArmTemplates(ctx: PluginContext): Promise<FxResult> {
     Logger.info(Messages.UpdatingArmTemplatesBot);
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
@@ -220,8 +187,7 @@ export class TeamsBotImpl {
 
   public async generateArmTemplates(ctx: PluginContext): Promise<FxResult> {
     Logger.info(Messages.GeneratingArmTemplatesBot);
-    const azureSolutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const plugins = getActivatedV2ResourcePlugins(azureSolutionSettings).map(
+    const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
@@ -331,125 +297,6 @@ export class TeamsBotImpl {
   }
 
   public async postProvision(context: PluginContext): Promise<FxResult> {
-    if (isArmSupportEnabled()) {
-      return ResultFactory.Success();
-    }
-    Logger.info(Messages.PostProvisioningStart);
-
-    this.ctx = context;
-
-    await this.config.restoreConfigFromContext(context);
-
-    // 1. Get required config items from other plugins.
-    // 2. Update bot hosting env"s app settings.
-    const botId = this.config.scaffold.botId;
-    const botPassword = this.config.scaffold.botPassword;
-    const teamsAppClientId = this.config.teamsAppClientId;
-    const teamsAppClientSecret = this.config.teamsAppClientSecret;
-    const teamsAppTenant = this.config.teamsAppTenant;
-    const applicationIdUris = this.config.applicationIdUris;
-    const siteEndpoint = this.config.provision.siteEndpoint;
-
-    CheckThrowSomethingMissing(ConfigNames.BOT_ID, botId);
-    CheckThrowSomethingMissing(ConfigNames.BOT_PASSWORD, botPassword);
-    CheckThrowSomethingMissing(ConfigNames.AUTH_CLIENT_ID, teamsAppClientId);
-    CheckThrowSomethingMissing(ConfigNames.AUTH_CLIENT_SECRET, teamsAppClientSecret);
-    CheckThrowSomethingMissing(ConfigNames.AUTH_TENANT, teamsAppTenant);
-    CheckThrowSomethingMissing(ConfigNames.AUTH_APPLICATION_ID_URIS, applicationIdUris);
-    CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, siteEndpoint);
-
-    const serviceClientCredentials = await this.getAzureAccountCredenial();
-
-    const webSiteMgmtClient = factory.createWebSiteMgmtClient(
-      serviceClientCredentials,
-      this.config.provision.subscriptionId!
-    );
-
-    const appSettings = [
-      { name: AuthEnvNames.BOT_ID, value: botId },
-      { name: AuthEnvNames.BOT_PASSWORD, value: botPassword },
-      { name: AuthEnvNames.M365_CLIENT_ID, value: teamsAppClientId },
-      { name: AuthEnvNames.M365_CLIENT_SECRET, value: teamsAppClientSecret },
-      { name: AuthEnvNames.M365_TENANT_ID, value: teamsAppTenant },
-      { name: AuthEnvNames.M365_AUTHORITY_HOST, value: AuthValues.M365_AUTHORITY_HOST },
-      {
-        name: AuthEnvNames.INITIATE_LOGIN_ENDPOINT,
-        value: `${this.config.provision.siteEndpoint}${CommonStrings.AUTH_LOGIN_URI_SUFFIX}`,
-      },
-      { name: AuthEnvNames.M365_APPLICATION_ID_URI, value: applicationIdUris },
-    ];
-
-    if (this.config.provision.sqlEndpoint) {
-      appSettings.push({
-        name: AuthEnvNames.SQL_ENDPOINT,
-        value: this.config.provision.sqlEndpoint,
-      });
-    }
-    if (this.config.provision.sqlDatabaseName) {
-      appSettings.push({
-        name: AuthEnvNames.SQL_DATABASE_NAME,
-        value: this.config.provision.sqlDatabaseName,
-      });
-    }
-    if (this.config.provision.sqlUserName) {
-      appSettings.push({
-        name: AuthEnvNames.SQL_USER_NAME,
-        value: this.config.provision.sqlUserName,
-      });
-    }
-    if (this.config.provision.sqlPassword) {
-      appSettings.push({
-        name: AuthEnvNames.SQL_PASSWORD,
-        value: this.config.provision.sqlPassword,
-      });
-    }
-    if (this.config.provision.identityClientId) {
-      appSettings.push({
-        name: AuthEnvNames.IDENTITY_ID,
-        value: this.config.provision.identityClientId,
-      });
-    }
-    if (this.config.provision.functionEndpoint) {
-      appSettings.push({
-        name: AuthEnvNames.API_ENDPOINT,
-        value: this.config.provision.functionEndpoint,
-      });
-    }
-
-    const siteEnvelope: appService.WebSiteManagementModels.Site = LanguageStrategy.getSiteEnvelope(
-      this.config.scaffold.programmingLanguage!,
-      this.config.provision.appServicePlan!,
-      this.config.provision.location!,
-      appSettings
-    );
-
-    if (this.config.provision.identityResourceId) {
-      siteEnvelope.identity = {
-        type: IdentityConstants.IDENTITY_TYPE_USER_ASSIGNED,
-        userAssignedIdentities: {
-          [this.config.provision.identityResourceId]: {},
-        },
-      };
-    }
-
-    Logger.info(Messages.UpdatingAzureWebAppSettings);
-    await AzureOperations.CreateOrUpdateAzureWebApp(
-      webSiteMgmtClient,
-      this.config.provision.resourceGroup!,
-      this.config.provision.siteName!,
-      siteEnvelope,
-      true
-    );
-    Logger.info(Messages.SuccessfullyUpdatedAzureWebAppSettings);
-
-    // 3. Update message endpoint for bot registration.
-    await this.updateMessageEndpointOnAzure(
-      `${this.config.provision.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
-    );
-
-    this.config.saveConfigIntoContext(context);
-    Logger.info(Messages.SuccessfullyPostProvisionedBot);
-
     return ResultFactory.Success();
   }
 
@@ -469,13 +316,10 @@ export class TeamsBotImpl {
       ConfigNames.PROGRAMMING_LANGUAGE,
       this.config.scaffold.programmingLanguage
     );
-
-    if (isArmSupportEnabled()) {
-      CheckThrowSomethingMissing(
-        ConfigNames.BOT_SERVICE_RESOURCE_ID,
-        this.config.provision.botWebAppResourceId
-      );
-    }
+    CheckThrowSomethingMissing(
+      ConfigNames.BOT_SERVICE_RESOURCE_ID,
+      this.config.provision.botWebAppResourceId
+    );
     CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
     CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
 
@@ -488,17 +332,15 @@ export class TeamsBotImpl {
     this.ctx = context;
     await this.config.restoreConfigFromContext(context);
 
-    if (isArmSupportEnabled()) {
-      this.config.provision.subscriptionId = getSubscriptionIdFromResourceId(
-        this.config.provision.botWebAppResourceId!
-      );
-      this.config.provision.resourceGroup = getResourceGroupNameFromResourceId(
-        this.config.provision.botWebAppResourceId!
-      );
-      this.config.provision.siteName = getSiteNameFromResourceId(
-        this.config.provision.botWebAppResourceId!
-      );
-    }
+    this.config.provision.subscriptionId = getSubscriptionIdFromResourceId(
+      this.config.provision.botWebAppResourceId!
+    );
+    this.config.provision.resourceGroup = getResourceGroupNameFromResourceId(
+      this.config.provision.botWebAppResourceId!
+    );
+    this.config.provision.siteName = getSiteNameFromResourceId(
+      this.config.provision.botWebAppResourceId!
+    );
 
     Logger.info(Messages.DeployingBot);
 

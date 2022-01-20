@@ -38,7 +38,7 @@ export function createMicrosoftGraphClient(credential: TokenCredential, scopes?:
 
 // @beta
 export class DefaultTediousConnectionConfiguration {
-    getConfig(): Promise<ConnectionConfig>;
+    getConfig(databaseName?: string): Promise<ConnectionConfig>;
 }
 
 // @beta
@@ -50,6 +50,7 @@ export enum ErrorCode {
     InvalidCertificate = "InvalidCertificate",
     InvalidConfiguration = "InvalidConfiguration",
     InvalidParameter = "InvalidParameter",
+    InvalidResponse = "InvalidResponse",
     RuntimeNotSupported = "RuntimeNotSupported",
     ServiceError = "ServiceError",
     TokenExpiredError = "TokenExpiredError",

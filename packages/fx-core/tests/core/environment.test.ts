@@ -6,7 +6,7 @@ import "mocha";
 import fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
-import { randomAppName } from "./utils";
+import { deleteFolder, randomAppName } from "./utils";
 import {
   ConfigFolderName,
   CryptoProvider,
@@ -240,7 +240,7 @@ describe("APIs of Environment Manager", () => {
     });
 
     afterEach(async () => {
-      await fs.rmdir(projectPath, { recursive: true });
+      deleteFolder(projectPath);
     });
 
     after(async () => {

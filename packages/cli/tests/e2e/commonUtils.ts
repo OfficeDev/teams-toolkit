@@ -27,9 +27,14 @@ import {
   AadValidator,
   BotValidator,
   FrontendValidator,
-  SimpleAuthValidator,
 } from "../commonlib";
-import { ConfigKey, fileEncoding, PluginId, TestFilePath } from "../commonlib/constants";
+import {
+  StateConfigKey,
+  fileEncoding,
+  PluginId,
+  TestFilePath,
+  ProjectSettingKey,
+} from "../commonlib/constants";
 import { environmentManager } from "@microsoft/teamsfx-core";
 import appStudioLogin from "../../src/commonlib/appStudioLogin";
 import MockAzureAccountProvider from "../../src/commonlib/azureLoginUserPassword";
@@ -88,6 +93,17 @@ export function getSubscriptionId() {
   return cfg.AZURE_SUBSCRIPTION_ID || "";
 }
 
+export function getAzureTenantId() {
+  return cfg.AZURE_TENANT_ID || "";
+}
+
+export function getAzureAccountObjectId() {
+  if (!cfg.AZURE_ACCOUNT_OBJECT_ID) {
+    throw new Error("Failed to get AZURE_ACCOUNT_OBJECT_ID from environment.");
+  }
+  return cfg.AZURE_ACCOUNT_OBJECT_ID;
+}
+
 const envFilePathSuffix = path.join(".fx", "env.default.json");
 
 function getEnvFilePathSuffix(isMultiEnvEnabled: boolean, envName: string) {
@@ -113,26 +129,44 @@ export function getConfigFileName(
 export async function setSimpleAuthSkuNameToB1(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
-  context[PluginId.SimpleAuth][ConfigKey.skuName] = "B1";
+  context[PluginId.SimpleAuth][StateConfigKey.skuName] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
 export async function setSimpleAuthSkuNameToB1Bicep(projectPath: string, envName: string) {
-  const bicepParameterFile = path.join(
-    `.${ConfigFolderName}`,
-    InputConfigsFolderName,
+  const parametersFilePath = path.join(
+    projectPath,
+    TestFilePath.configFolder,
     `azure.parameters.${envName}.json`
   );
-  const parametersFilePath = path.resolve(projectPath, bicepParameterFile);
   const parameters = await fs.readJSON(parametersFilePath);
   parameters["parameters"]["provisionParameters"]["value"]["simpleAuthSku"] = "B1";
   return fs.writeJSON(parametersFilePath, parameters, { spaces: 4 });
 }
 
+export async function getProvisionParameterValueByKey(
+  projectPath: string,
+  envName: string,
+  key: string
+): Promise<string | undefined> {
+  const parameters = await fs.readJSON(
+    path.join(projectPath, TestFilePath.configFolder, `azure.parameters.${envName}.json`)
+  );
+  if (
+    parameters.parameters &&
+    parameters.parameters.provisionParameters &&
+    parameters.parameters.provisionParameters.value &&
+    parameters.parameters.provisionParameters.value[key]
+  ) {
+    return parameters.parameters.provisionParameters.value[key];
+  }
+  return undefined;
+}
+
 export async function setBotSkuNameToB1(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
-  context[PluginId.Bot][ConfigKey.skuName] = "B1";
+  context[PluginId.Bot][StateConfigKey.skuName] = "B1";
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
@@ -151,7 +185,7 @@ export async function setBotSkuNameToB1Bicep(projectPath: string, envName: strin
 export async function setSkipAddingSqlUser(projectPath: string) {
   const envFilePath = path.resolve(projectPath, envFilePathSuffix);
   const context = await fs.readJSON(envFilePath);
-  context[PluginId.AzureSQL][ConfigKey.skipAddingUser] = true;
+  context[PluginId.AzureSQL][StateConfigKey.skipAddingUser] = true;
   return fs.writeJSON(envFilePath, context, { spaces: 4 });
 }
 
@@ -403,6 +437,15 @@ export async function readContextMultiEnv(projectPath: string, envName: string):
   return context;
 }
 
+export async function getActivePluginsFromProjectSetting(projectPath: string): Promise<any> {
+  const projectSettings = await fs.readJSON(
+    path.join(projectPath, TestFilePath.configFolder, TestFilePath.projectSettingsFileName)
+  );
+  return projectSettings[ProjectSettingKey.solutionSettings][
+    ProjectSettingKey.activeResourcePlugins
+  ];
+}
+
 export function mockTeamsfxMultiEnvFeatureFlag() {
   const env = Object.assign({}, process.env);
   env["TEAMSFX_BICEP_ENV_CHECKER_ENABLE"] = "true";
@@ -492,33 +535,28 @@ export async function customizeBicepFilesToCustomizedRg(
   }
 }
 
-export async function validateTabAndBotProjectProvision(projectPath: string) {
-  const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
-
+export async function validateTabAndBotProjectProvision(projectPath: string, env: string) {
+  const context = await readContextMultiEnv(projectPath, env);
   // Validate Aad App
   const aad = AadValidator.init(context, false, appStudioLogin);
   await AadValidator.validate(aad);
-
-  // Validate Simple Auth
-  const simpleAuth = SimpleAuthValidator.init(context);
-  await SimpleAuthValidator.validate(simpleAuth, aad);
 
   // Validate Tab Frontend
   const frontend = FrontendValidator.init(context, true);
   await FrontendValidator.validateProvision(frontend);
 
   // Validate Bot Provision
-  const bot = BotValidator.init(context, true);
-  await BotValidator.validateProvision(bot, true);
+  const bot = new BotValidator(context, projectPath, env);
+  await bot.validateProvision();
 }
 
-export async function getRGAfterProvision(projectPath: string): Promise<string | undefined> {
-  const context = await readContextMultiEnv(projectPath, environmentManager.getDefaultEnvName());
-  if (
-    context[ConfigKey.solutionPluginName] &&
-    context[ConfigKey.solutionPluginName][ConfigKey.resourceGroupName]
-  ) {
-    return context[ConfigKey.solutionPluginName][ConfigKey.resourceGroupName];
+export async function getRGAfterProvision(
+  projectPath: string,
+  env: string
+): Promise<string | undefined> {
+  const context = await readContextMultiEnv(projectPath, env);
+  if (context[PluginId.Solution] && context[PluginId.Solution][StateConfigKey.resourceGroupName]) {
+    return context[PluginId.Solution][StateConfigKey.resourceGroupName];
   }
   return undefined;
 }
@@ -559,13 +597,12 @@ kind: 'app'
   );
   newServerFarms.push(configTestServerFarm);
 
-  // TODO: should uncomment this part of code when the bug is resolved:
-  // https://msazure.visualstudio.com/Microsoft%20Teams%20Extensibility/_workitems/edit/12902499
-  // const mainTestServerFarm = "main_testResource";
-  // await fs.appendFile(
-  //   path.join(bicepFileFolder, TestFilePath.mainFileName),
-  //   customizedServerFarmsBicepTemplate.replace(pattern, mainTestServerFarm));
-  // newServerFarms.push(mainTestServerFarm);
+  const mainTestServerFarm = "main_testResource";
+  await fs.appendFile(
+    path.join(bicepFileFolder, TestFilePath.mainFileName),
+    customizedServerFarmsBicepTemplate.replace(pattern, mainTestServerFarm)
+  );
+  newServerFarms.push(mainTestServerFarm);
 
   return newServerFarms;
 }
@@ -588,4 +625,8 @@ export async function validateServicePlan(
     token as string
   );
   chai.assert(serivcePlanResponse, "B1");
+}
+
+export function getKeyVaultSecretReference(vaultName: string, secretName: string): string {
+  return `@Microsoft.KeyVault(VaultName=${vaultName};SecretName=${secretName})`;
 }

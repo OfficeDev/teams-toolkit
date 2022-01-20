@@ -5,12 +5,17 @@ import "mocha";
 import * as chai from "chai";
 import chaiAsPromised from "chai-as-promised";
 
-import { UserError } from "@microsoft/teamsfx-api";
+import { UserError, Result, ok } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
-import { cloneDeep } from "lodash";
 import * as path from "path";
 
 import { LocalEnvManager } from "../../../src/common/local/localEnvManager";
+import { DepsInfo, DepsType } from "../../../src/common/deps-checker/depsChecker";
+import sinon from "sinon";
+import { DotnetChecker } from "../../../src/common/deps-checker/internal/dotnetChecker";
+import { NgrokChecker } from "../../../src/common/deps-checker/internal/ngrokChecker";
+import { FuncToolChecker } from "../../../src/common/deps-checker/internal/funcToolChecker";
+import { DepsCheckerError } from "../../../src/common/deps-checker/depsError";
 
 chai.use(chaiAsPromised);
 
@@ -149,6 +154,96 @@ describe("LocalEnvManager", () => {
       });
 
       chai.assert.isUndefined(localSettings);
+    });
+  });
+
+  const testData: { message: string; solutionSettings: any; depsTypes: DepsType[] }[] = [
+    {
+      message: "tab",
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab"],
+        activeResourcePlugins: ["fx-resource-simple-auth"],
+      },
+      depsTypes: [DepsType.AzureNode, DepsType.Dotnet],
+    },
+    {
+      message: "tab without simple auth",
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab"],
+      },
+      depsTypes: [DepsType.AzureNode],
+    },
+    {
+      message: "tab + function",
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab"],
+        azureResources: ["function"],
+        activeResourcePlugins: ["fx-resource-simple-auth"],
+      },
+      depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.FuncCoreTools],
+    },
+    {
+      message: "bot",
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Bot"],
+      },
+      depsTypes: [DepsType.AzureNode, DepsType.Ngrok],
+    },
+    {
+      message: "tab + bot",
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab", "Bot"],
+        activeResourcePlugins: ["fx-resource-simple-auth"],
+      },
+      depsTypes: [DepsType.AzureNode, DepsType.Dotnet, DepsType.Ngrok],
+    },
+    {
+      message: "tab + bot + function",
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "Azure",
+        capabilities: ["Tab", "Bot", "MessagingExtension"],
+        azureResources: ["function"],
+        activeResourcePlugins: ["fx-resource-simple-auth"],
+      },
+      depsTypes: [DepsType.FunctionNode, DepsType.Dotnet, DepsType.Ngrok, DepsType.FuncCoreTools],
+    },
+    {
+      message: "spfx",
+      solutionSettings: {
+        name: "fx-solution-azure",
+        hostType: "SPFx",
+      },
+      depsTypes: [DepsType.SpfxNode],
+    },
+  ];
+
+  describe("getActiveDependencies()", () => {
+    const sandbox = sinon.createSandbox();
+    afterEach(() => {
+      sandbox.restore();
+    });
+
+    testData.forEach((data) => {
+      it(data.message, async () => {
+        const projectSettings = {
+          appName: "",
+          projectId: "",
+          solutionSettings: data.solutionSettings,
+        };
+        const result = localEnvManager.getActiveDependencies(projectSettings);
+        chai.assert.sameDeepMembers(data.depsTypes, result);
+      });
     });
   });
 });

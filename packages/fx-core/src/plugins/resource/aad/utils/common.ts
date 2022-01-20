@@ -74,14 +74,10 @@ export class Utils {
   public static skipCreateAadForProvision(envInfo: v3.EnvInfoV3): boolean {
     const envConfig: EnvConfig = envInfo.config as EnvConfig;
     const envState: v3.AADApp = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
-    const objectId = envConfig.auth?.objectId ? envConfig.auth.objectId : envState.objectId;
-    const clientId = envConfig.auth?.clientId ? envConfig.auth.clientId : envState.clientId;
-    const clientSecret = envConfig.auth?.clientSecret
-      ? envConfig.auth.clientSecret
-      : envState.clientSecret;
-    const oauth2PermissionScopeId = envConfig.auth?.accessAsUserScopeId
-      ? envConfig.auth.accessAsUserScopeId
-      : envState.oauth2PermissionScopeId;
+    const objectId = envConfig.auth?.objectId;
+    const clientId = envConfig.auth?.clientId;
+    const clientSecret = envConfig.auth?.clientSecret;
+    const oauth2PermissionScopeId = envConfig.auth?.accessAsUserScopeId;
     if (objectId && clientId && oauth2PermissionScopeId && clientSecret) {
       envState.objectId = objectId;
       envState.clientId = clientId;

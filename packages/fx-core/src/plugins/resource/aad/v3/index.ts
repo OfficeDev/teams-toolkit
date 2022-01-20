@@ -143,6 +143,16 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
 
     const localSettingsV2 = localSettings as v2.LocalSettings | undefined;
 
+    //init aad part in local settings or env state
+    if (localSettingsV2) {
+      if (!localSettingsV2.auth) localSettingsV2.auth = {};
+    } else {
+      if (!envInfo?.state[BuiltInResourcePluginNames.aad]) {
+        envInfo!.state[BuiltInResourcePluginNames.aad] = {
+          secretFields: ["clientSecret"],
+        };
+      }
+    }
     // Move objectId etc. from input to output.
     const skip = localSettingsV2
       ? Utils.skipCreateAadForLocalProvision(localSettingsV2)

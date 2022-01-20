@@ -511,7 +511,7 @@ export async function activate(context: vscode.ExtensionContext) {
 
 // this method is called when your extension is deactivated
 export async function deactivate() {
-  //await ExtTelemetry.dispose();
+  await ExtTelemetry.dispose();
   handlers.cmdHdlDisposeTreeView();
   disableRunIcon();
 }

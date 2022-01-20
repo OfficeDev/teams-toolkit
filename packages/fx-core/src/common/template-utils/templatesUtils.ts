@@ -51,9 +51,16 @@ export async function sendRequestWithTimeout<T>(
   const timeout = setTimeout(() => {
     source.cancel();
   }, timeoutInMs);
-  const res = await sendRequestWithRetry(() => requestFn(source.token), tryLimits);
-  clearTimeout(timeout);
-  return res;
+  try {
+    const res = await sendRequestWithRetry(() => requestFn(source.token), tryLimits);
+    clearTimeout(timeout);
+    return res;
+  } catch (err: unknown) {
+    if (axios.isCancel(err)) {
+      throw new Error("Request timeout");
+    }
+    throw err;
+  }
 }
 
 export async function fetchTemplateTagList(

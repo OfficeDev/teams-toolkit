@@ -13,6 +13,9 @@ import {
   TeamsAppManifest,
   PluginContext,
   ok,
+  Json,
+  TokenProvider,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
@@ -37,6 +40,8 @@ import {
   MANIFEST_RESOURCES,
   OUTLINE_TEMPLATE,
 } from "../constants";
+import { TelemetryUtils, TelemetryEventName } from "../utils/telemetry";
+
 @Service(BuiltInResourcePluginNames.appStudio)
 export class AppStudioPluginV3 {
   name = "fx-resource-appstudio";
@@ -49,7 +54,9 @@ export class AppStudioPluginV3 {
    * @returns
    */
   async init(ctx: v2.Context, inputs: v2.InputsWithProjectPath): Promise<Result<any, FxError>> {
-    const res = await init(inputs.projectPath);
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.init);
+    const res = await init(inputs.projectPath, ctx.projectSetting.appName);
     if (res.isErr()) return err(res.error);
     const templatesFolder = getTemplatesFolder();
     const defaultColorPath = path.join(templatesFolder, COLOR_TEMPLATE);
@@ -59,6 +66,7 @@ export class AppStudioPluginV3 {
     await fs.ensureDir(resourcesDir);
     await fs.copy(defaultColorPath, path.join(resourcesDir, DEFAULT_COLOR_PNG_FILENAME));
     await fs.copy(defaultOutlinePath, path.join(resourcesDir, DEFAULT_OUTLINE_PNG_FILENAME));
+    TelemetryUtils.sendSuccessEvent(TelemetryEventName.init);
     return ok(undefined);
   }
 
@@ -82,6 +90,8 @@ export class AppStudioPluginV3 {
         }
     )[]
   ): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.addCapability);
     const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
     capabilities.map(async (capability) => {
       const exceedLimit = await this.capabilityExceedLimit(ctx, inputs, capability.name);
@@ -97,7 +107,13 @@ export class AppStudioPluginV3 {
         );
       }
     });
-    return await addCapabilities(pluginContext.root, capabilities);
+    const res = await addCapabilities(pluginContext.root, capabilities);
+    if (res.isOk()) {
+      TelemetryUtils.sendSuccessEvent(TelemetryEventName.addCapability);
+    } else {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.addCapability, res.error);
+    }
+    return res;
   }
 
   /**
@@ -108,17 +124,22 @@ export class AppStudioPluginV3 {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.loadManifest);
     const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
     const localManifest = await loadManifest(pluginContext.root, true);
     if (localManifest.isErr()) {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.loadManifest, localManifest.error);
       return err(localManifest.error);
     }
 
     const remoteManifest = await loadManifest(pluginContext.root, false);
     if (remoteManifest.isErr()) {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.loadManifest, remoteManifest.error);
       return err(remoteManifest.error);
     }
 
+    TelemetryUtils.sendSuccessEvent(TelemetryEventName.loadManifest);
     return ok({ local: localManifest.value, remote: remoteManifest.value });
   }
 
@@ -133,17 +154,22 @@ export class AppStudioPluginV3 {
     inputs: v2.InputsWithProjectPath,
     manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
   ): Promise<Result<any, FxError>> {
+    TelemetryUtils.init(ctx);
+    TelemetryUtils.sendStartEvent(TelemetryEventName.saveManifest);
     const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
     let res = await saveManifest(pluginContext.root, manifest.local, true);
     if (res.isErr()) {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.saveManifest, res.error);
       return err(res.error);
     }
 
     res = await saveManifest(pluginContext.root, manifest.remote, false);
     if (res.isErr()) {
+      TelemetryUtils.sendErrorEvent(TelemetryEventName.saveManifest, res.error);
       return err(res.error);
     }
 
+    TelemetryUtils.sendSuccessEvent(TelemetryEventName.saveManifest);
     return ok(undefined);
   }
 
@@ -161,5 +187,22 @@ export class AppStudioPluginV3 {
   ): Promise<Result<boolean, FxError>> {
     const pluginContext: PluginContext = convert2PluginContext(this.name, ctx, inputs);
     return await capabilityExceedLimit(pluginContext.root, capability);
+  }
+
+  /**
+   *
+   * @param ctx
+   * @param inputs
+   * @param localSettings
+   * @param tokenProvider
+   * @returns
+   */
+  async configureLocalResource(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    localSettings: Json,
+    tokenProvider: TokenProvider
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
   }
 }

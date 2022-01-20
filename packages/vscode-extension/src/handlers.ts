@@ -351,7 +351,12 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   if (result.isOk()) {
-    commands.executeCommand("vscode.openFolder", result.value);
+    await ExtTelemetry.dispose();
+    // after calling dispose(), let reder process to while for a while instead of directly call "open folder"
+    // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
+    setTimeout(() => {
+      commands.executeCommand("vscode.openFolder", result.value);
+    }, 3000);
   }
   return result;
 }

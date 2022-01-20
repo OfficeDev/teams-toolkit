@@ -227,6 +227,7 @@ export class FxCore implements v3.ICore {
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     let globalStateDescription = "openReadme";
+    const automaticNpmInstall = "automaticNpmInstall";
     if (scratch === ScratchOptionNo.id) {
       // create from sample
       const downloadRes = await downloadSample(inputs, ctx);
@@ -312,6 +313,7 @@ export class FxCore implements v3.ICore {
 
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(globalStateDescription, true);
+      await globalStateUpdate(automaticNpmInstall, true);
     }
     return ok(projectPath);
   }
@@ -341,6 +343,7 @@ export class FxCore implements v3.ICore {
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     let globalStateDescription = "openReadme";
+    const automaticNpmInstall = "automaticNpmInstall";
     if (scratch === ScratchOptionNo.id) {
       // create from sample
       const downloadRes = await downloadSample(inputs, ctx);
@@ -567,6 +570,7 @@ export class FxCore implements v3.ICore {
     }
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(globalStateDescription, true);
+      await globalStateUpdate(automaticNpmInstall, true);
     }
     return ok(projectPath);
   }

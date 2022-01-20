@@ -354,9 +354,9 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
     await ExtTelemetry.dispose();
     // after calling dispose(), let reder process to while for a while instead of directly call "open folder"
     // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
-    //setTimeout(() => {
-    commands.executeCommand("vscode.openFolder", result.value);
-    //}, 3000);
+    setTimeout(() => {
+      commands.executeCommand("vscode.openFolder", result.value);
+    }, 2000);
   }
   return result;
 }

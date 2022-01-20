@@ -143,9 +143,7 @@ export enum SolutionError {
   FailedToPollArmDeploymentStatus = "FailedToPollArmDeploymentStatus",
   FailedToValidateArmTemplates = "FailedToValidateArmTemplates",
   FailedToRetrieveUserInfo = "FailedToRetrieveUserInfo",
-  M365TenantNotMatch = "M365TenantNotMatch",
   FeatureNotSupported = "FeatureNotSupported",
-  CannotProcessBeforeProvision = "CannotProcessBeforeProvision",
   CannotFindUserInCurrentTenant = "CannotFindUserInCurrentTenant",
   FailedToGrantPermission = "FailedToGrantPermission",
   FailedToCheckPermission = "FailedToCheckPermission",
@@ -177,6 +175,11 @@ export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";
 // Teams App Id for remote
 export const REMOTE_TEAMS_APP_ID = "remoteTeamsAppId";
 
+export const AzureRoleAssignmentsHelpLink =
+  "https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current";
+export const SharePointManageSiteAdminHelpLink =
+  "https://docs.microsoft.com/en-us/sharepoint/manage-site-collection-administrators";
+
 export const DoProvisionFirstError = new UserError(
   "DoProvisionFirst",
   "DoProvisionFirst",
@@ -207,9 +210,6 @@ export enum SolutionTelemetryEvent {
 
   ListCollaboratorStart = "list-collaborator-start",
   ListCollaborator = "list-collaborator",
-
-  ListAllCollaboratorsStart = "list-all-collaborators-start",
-  ListAllCollaborators = "list-all-collaborators",
 
   GenerateArmTemplateStart = "generate-armtemplate-start",
   GenerateArmTemplate = "generate-armtemplate",

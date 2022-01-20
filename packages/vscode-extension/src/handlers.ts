@@ -45,7 +45,6 @@ import {
   SystemError,
   TemplateFolderName,
   Tools,
-  TreeItem,
   UserError,
   Void,
   VsCodeEnv,
@@ -115,7 +114,7 @@ import { registerEnvTreeHandler } from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
-import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
+import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";

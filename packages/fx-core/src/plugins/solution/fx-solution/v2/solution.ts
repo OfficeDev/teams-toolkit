@@ -23,7 +23,6 @@ import { executeUserTask } from "./executeUserTask";
 import { generateResourceTemplate } from "./generateResourceTemplate";
 import { getQuestions, getQuestionsForScaffolding, getQuestionsForUserTask } from "./getQuestions";
 import { grantPermission } from "./grantPermission";
-import { listAllCollaborators } from "./listAllCollaborators";
 import { listCollaborator } from "./listCollaborator";
 import { provisionResource } from "./provision";
 import { provisionLocalResource } from "./provisionLocal";
@@ -133,16 +132,4 @@ export class TeamsAppSolutionV2 implements v2.SolutionPlugin {
     envInfo: DeepReadonly<EnvInfoV2>,
     tokenProvider: TokenProvider
   ) => listCollaborator({ apiVersion: 2, ctx, inputs, envInfo, tokenProvider });
-
-  listAllCollaborators?: (
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV2>,
-    tokenProvider: TokenProvider
-  ) => Promise<Result<Json, FxError>> = (
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV2>,
-    tokenProvider: TokenProvider
-  ) => listAllCollaborators({ apiVersion: 2, ctx, inputs, envInfo, tokenProvider });
 }

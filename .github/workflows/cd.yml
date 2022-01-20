@@ -118,7 +118,7 @@ jobs:
           fi
       
       - name: sync up templates deps with sdk version for RC
-        if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
+        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
         run: |
           node sdk-sync-up-version.js
         working-directory: ./.github/scripts

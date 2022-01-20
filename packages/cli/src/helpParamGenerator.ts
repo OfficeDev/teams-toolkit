@@ -51,6 +51,7 @@ export class HelpParamGenerator {
     Stage.checkPermission,
     "validate",
     "update",
+    "addCICDWorkflows",
     Stage.createEnv,
     "ResourceShowFunction",
     "ResourceShowSQL",
@@ -98,7 +99,8 @@ export class HelpParamGenerator {
 
   private async getQuestionsForUserTask(stage: string, systemInput: Inputs, core: FxCore) {
     const func = {
-      namespace: "fx-solution-azure",
+      namespace:
+        stage === "addCICDWorkflows" ? "fx-solution-azure/fx-resource-cicd" : "fx-solution-azure",
       method: stage,
     };
     const result = await core.getQuestionsForUserTask(func, systemInput);
@@ -130,7 +132,7 @@ export class HelpParamGenerator {
         this.setQuestionNodes(stage, result.value);
       }
     }
-    const userTasks = ["addCapability", "addResource"];
+    const userTasks = ["addCapability", "addResource", "addCICDWorkflows"];
     for (const userTask of userTasks) {
       const result = await this.getQuestionsForUserTask(userTask, systemInput, this.core);
       if (result.isErr()) {

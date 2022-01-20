@@ -17,6 +17,7 @@ import Package from "./package";
 import Config from "./config";
 import Preview from "./preview/preview";
 import Manifest from "./manifest";
+import CICD from "./cicd";
 import { isRemoteCollaborationEnabled } from "../utils";
 import Permission from "./permission";
 import Env from "./env";
@@ -30,6 +31,7 @@ export const commands: YargsCommand[] = [
   new Deploy(),
   new Package(),
   new Manifest(),
+  new CICD(),
   new Publish(),
   new Config(),
   new Preview(),

@@ -89,7 +89,7 @@ export class LocalEnvManager {
     projectPath: string,
     projectSettings: ProjectSettings
   ): Promise<number[]> {
-    return await getPortsInUse(projectPath, projectSettings);
+    return await getPortsInUse(projectPath, projectSettings, undefined, this.logger);
   }
 
   public async getLocalSettings(

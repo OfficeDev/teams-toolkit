@@ -10,6 +10,7 @@ import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { getActivatedResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
 import { ObjectIsUndefinedError } from "../error";
 import { shouldIgnored } from "./projectSettingsLoader";
+import { IsSimpleAuthEnabled } from "../../common/tools";
 
 export const LocalSettingsLoaderMW: Middleware = async (
   ctx: CoreHookContext,
@@ -39,6 +40,7 @@ export const LocalSettingsLoaderMW: Middleware = async (
     const hasFrontend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FE);
     const hasBackend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FUNC);
     const hasBot = selectedPlugins?.some((plugin) => plugin.name === PluginNames.BOT);
+    const hasSimpleAuth = IsSimpleAuthEnabled(ctx.projectSettings);
 
     const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath);
     let exists = await fs.pathExists(localSettingsProvider.localSettingsFilePath);
@@ -53,7 +55,12 @@ export const LocalSettingsLoaderMW: Middleware = async (
     if (exists) {
       ctx.localSettings = await localSettingsProvider.loadV2(ctx.contextV2?.cryptoProvider);
     } else {
-      ctx.localSettings = localSettingsProvider.initV2(hasFrontend, hasBackend, hasBot);
+      ctx.localSettings = localSettingsProvider.initV2(
+        hasFrontend,
+        hasBackend,
+        hasBot,
+        hasSimpleAuth
+      );
     }
     if (ctx.solutionContext) {
       if (exists) {
@@ -64,7 +71,8 @@ export const LocalSettingsLoaderMW: Middleware = async (
         ctx.solutionContext.localSettings = localSettingsProvider.init(
           hasFrontend,
           hasBackend,
-          hasBot
+          hasBot,
+          hasSimpleAuth
         );
       }
     }

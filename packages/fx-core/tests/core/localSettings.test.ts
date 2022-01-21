@@ -14,6 +14,7 @@ import {
   LocalSettingsBackendKeys,
   LocalSettingsBotKeys,
   LocalSettingsFrontendKeys,
+  LocalSettingsSimpleAuthKeys,
   LocalSettingsTeamsAppKeys,
 } from "../../src/common/localSettingsConstants";
 import { assert } from "console";
@@ -87,6 +88,21 @@ describe("LocalSettings provider APIs", () => {
       assertLocalSettingsV2(updatedLocalSettings, true, true, true);
       chai.assert.equal(updatedLocalSettings.auth.AuthServiceEndpoint, updateValue);
     });
+
+    it("should init with tab and simpleauth", () => {
+      hasFrontend = true;
+      hasBackend = false;
+      hasBot = false;
+
+      const localSettings = localSettingsProvider.init(
+        hasFrontend,
+        hasBackend,
+        hasBot,
+        false,
+        true
+      );
+      assertLocalSettings(localSettings, hasFrontend, hasBackend, hasBot, true);
+    });
   });
   describe("initV2 localSettings", () => {
     it("should init with tab and backaned", () => {
@@ -147,16 +163,16 @@ describe("LocalSettings provider APIs", () => {
 
   describe("load localSettings", () => {
     it("should load after save", async () => {
-      const localSettings = localSettingsProvider.init(true, true, true);
+      const localSettings = localSettingsProvider.init(true, true, true, false, true);
       const updateValue = "http://localhost:55000";
-      localSettings.auth?.set(LocalSettingsAuthKeys.SimpleAuthServiceEndpoint, updateValue);
+      localSettings.auth?.set(LocalSettingsSimpleAuthKeys.SimpleAuthServiceEndpoint, updateValue);
 
       await localSettingsProvider.save(localSettings);
       const updatedLocalSettings = await localSettingsProvider.load();
 
       assertLocalSettings(updatedLocalSettings, true, true, true);
       chai.assert.equal(
-        updatedLocalSettings!.auth?.get(LocalSettingsAuthKeys.SimpleAuthServiceEndpoint),
+        updatedLocalSettings!.auth?.get(LocalSettingsSimpleAuthKeys.SimpleAuthServiceEndpoint),
         updateValue
       );
 
@@ -175,7 +191,8 @@ describe("LocalSettings provider APIs", () => {
     localSettings: LocalSettings | undefined,
     hasFrontend: boolean,
     hasBackend: boolean,
-    hasBot: boolean
+    hasBot: boolean,
+    hasSimpleAuth = false
   ) {
     chai.assert.isDefined(localSettings);
 
@@ -185,6 +202,16 @@ describe("LocalSettings provider APIs", () => {
     const expectedTeamsAppKeys = Object.values(LocalSettingsTeamsAppKeys);
     for (const key of expectedTeamsAppKeys) {
       chai.assert.isTrue(localSettings!.teamsApp?.has(key));
+    }
+
+    // Verify Simple Auth related settings
+    if (hasSimpleAuth) {
+      chai.assert.isDefined(localSettings!.auth);
+      const expectedSimpleAuthKeys = Object.values(LocalSettingsSimpleAuthKeys);
+
+      for (const key of expectedSimpleAuthKeys) {
+        chai.assert.isTrue(localSettings!.auth?.has(key));
+      }
     }
 
     // Verify frontend related settings.

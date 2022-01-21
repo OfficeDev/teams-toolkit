@@ -24,7 +24,7 @@ import {
   mockSolutionUpdateArmTemplates,
 } from "../../util";
 import { isMultiEnvEnabled } from "../../../../../src";
-import { LocalSettingsAuthKeys } from "../../../../../src/common/localSettingsConstants";
+import { LocalSettingsSimpleAuthKeys } from "../../../../../src/common/localSettingsConstants";
 import { getAllowedAppIds } from "../../../../../src/common/tools";
 import {
   AzureResourceKeyVault,
@@ -71,7 +71,7 @@ describe("simpleAuthPlugin", () => {
     let filePath: string;
     if (isMultiEnvEnabled()) {
       filePath = pluginContext.localSettings?.auth?.get(
-        LocalSettingsAuthKeys.SimpleAuthFilePath
+        LocalSettingsSimpleAuthKeys.SimpleAuthFilePath
       ) as string;
     } else {
       filePath = pluginContext.config.get(Constants.SimpleAuthPlugin.configKeys.filePath) as string;
@@ -84,7 +84,7 @@ describe("simpleAuthPlugin", () => {
     if (isMultiEnvEnabled()) {
       chai.assert.strictEqual(
         pluginContext.localSettings?.auth?.get(
-          LocalSettingsAuthKeys.SimpleAuthEnvironmentVariableParams
+          LocalSettingsSimpleAuthKeys.SimpleAuthEnvironmentVariableParams
         ),
         expectedEnvironmentVariableParams
       );

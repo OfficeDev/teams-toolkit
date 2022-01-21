@@ -15,6 +15,9 @@ export const LocalSettingsAuthKeys = Object.freeze({
   OauthAuthority: "oauthAuthority",
   OauthHost: "oauthHost",
   ApplicationIdUris: "applicationIdUris",
+});
+
+export const LocalSettingsSimpleAuthKeys = Object.freeze({
   SimpleAuthFilePath: "simpleAuthFilePath",
   SimpleAuthEnvironmentVariableParams: "SimpleAuthEnvironmentVariableParams",
   SimpleAuthServiceEndpoint: "AuthServiceEndpoint",

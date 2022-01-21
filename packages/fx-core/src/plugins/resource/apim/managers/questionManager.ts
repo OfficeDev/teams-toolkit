@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 import { Func, PluginContext, QTreeNode } from "@microsoft/teamsfx-api";
 import { BuildError, NotImplemented } from "../error";
-import { IApimPluginConfig } from "../config";
+import { ApimPluginConfig, IApimPluginConfig } from "../config";
 import * as VSCode from "../questions/vscodeQuestion";
 import * as CLI from "../questions/cliQuestion";
 
@@ -115,15 +115,21 @@ export class CliQuestionManager implements IQuestionManager {
     return rootNode;
   }
 
-  async deploy(): Promise<QTreeNode> {
+  async deploy(ctx: PluginContext): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
       type: "group",
     });
 
-    const openApiDocumentQuestion = this.openApiDocumentQuestion.getQuestion();
-    rootNode.addChild(new QTreeNode(openApiDocumentQuestion));
-    const apiPrefixQuestion = this.apiPrefixQuestion.getQuestion();
-    rootNode.addChild(new QTreeNode(apiPrefixQuestion));
+    const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
+    if (!apimConfig.apiDocumentPath) {
+      const openApiDocumentQuestion = this.openApiDocumentQuestion.getQuestion();
+      rootNode.addChild(new QTreeNode(openApiDocumentQuestion));
+    }
+
+    if (!apimConfig.apiPrefix) {
+      const apiPrefixQuestion = this.apiPrefixQuestion.getQuestion();
+      rootNode.addChild(new QTreeNode(apiPrefixQuestion));
+    }
     const apiVersionQuestion = this.apiVersionQuestion.getQuestion();
     rootNode.addChild(new QTreeNode(apiVersionQuestion));
     return rootNode;

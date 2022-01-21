@@ -71,7 +71,7 @@
       "StartingGrantPermission":"Starting grant permission for environment: ",
       "TenantId": "Tenant ID: ",
       "FailedToGrantPermission":"Failed to grant permission for the below resources to user: %s.\n Resource details: \n",
-      "PermissionHasBeenGrantTo":"permission has been granted to",
+      "PermissionHasBeenGrantTo":"permission has been granted to ",
       "GrantPermissionResourceId": ", Resource ID: ",
       "SharePointTip":"\nIf added user is not a SharePoint App Catalog site admin, you need to manually setup access policy via SharePoint admin center, please refer to this link for more details: ",
       "AzureTip":"\nIf added user cannot access Azure resources, you need to manually setup access policy via Azure portal, please refer to this link for more details: ",

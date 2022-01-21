@@ -14,13 +14,7 @@ import { CliHelper } from "../../commonlib/cliHelper";
 import { Capability, Resource } from "../../commonlib/constants";
 import { getUuid } from "../../commonlib/utilities";
 
-import {
-  getSubscriptionId,
-  getTestFolder,
-  getUniqueAppName,
-  cleanUp,
-  setSimpleAuthSkuNameToB1Bicep,
-} from "../commonUtils";
+import { getSubscriptionId, getTestFolder, getUniqueAppName, cleanUp } from "../commonUtils";
 
 describe("Provision to Azure with SQL", function () {
   const testFolder = getTestFolder();
@@ -38,8 +32,6 @@ describe("Provision to Azure with SQL", function () {
       "--azure-resources function sql"
     );
     await CliHelper.addResourceToProject(projectPath, Resource.AzureSql);
-
-    await setSimpleAuthSkuNameToB1Bicep(projectPath, environmentManager.getDefaultEnvName());
 
     // provision
     await CliHelper.setSubscription(subscription, projectPath);

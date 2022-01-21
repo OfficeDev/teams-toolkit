@@ -61,7 +61,6 @@ import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { SolutionPlugins } from "../../../core/SolutionPluginContainer";
 import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
-import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
 import {
   copyParameterJson,
   deployArmTemplates,
@@ -138,7 +137,6 @@ import {
   ensurePermissionRequest,
   parseTeamsAppTenantId,
   fillInSolutionSettings,
-  parseUserName,
   checkWhetherLocalDebugM365TenantMatches,
 } from "./v2/utils";
 import { askForProvisionConsent } from "./v2/provision";

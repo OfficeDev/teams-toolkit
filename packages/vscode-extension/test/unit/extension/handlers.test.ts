@@ -508,6 +508,11 @@ suite("handlers", () => {
 
       const args = [{ fsPath: "c:\\testPath\\manifest.dev.json" }, "CodeLens"];
       await handlers.editManifestTemplate(args);
+      console.log(openTextDocument.args[0]);
+      chai.assert.equal(
+        openTextDocument.args[0],
+        "undefined/templates/appPackage/manifest.remote.template.json" as any
+      );
       chai.assert.isTrue(
         openTextDocument.calledOnceWith(
           "undefined/templates/appPackage/manifest.remote.template.json" as any

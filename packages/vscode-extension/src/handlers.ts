@@ -111,7 +111,7 @@ import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
-import { registerEnvTreeHandler } from "./envTree";
+import * as envTree from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
@@ -204,7 +204,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     core = new FxCore(tools);
     registerCoreEvents();
     await registerAccountTreeHandler();
-    await registerEnvTreeHandler();
+    await envTree.registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
     await postUpgrade();
@@ -287,7 +287,7 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   }
 
   if (needRefresh) {
-    await registerEnvTreeHandler();
+    await envTree.registerEnvTreeHandler();
   }
 }
 
@@ -510,7 +510,7 @@ export async function provisionHandler(args?: any[]): Promise<Result<null, FxErr
     return result;
   } else {
     // refresh env tree except provision cancelled.
-    await registerEnvTreeHandler();
+    await envTree.registerEnvTreeHandler();
     return result;
   }
 }
@@ -1292,13 +1292,13 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   );
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
-    await registerEnvTreeHandler();
+    await envTree.registerEnvTreeHandler();
   }
   return result;
 }
 
 export async function refreshEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
-  return await registerEnvTreeHandler();
+  return await envTree.registerEnvTreeHandler();
 }
 
 function getSubscriptionUrl(subscriptionInfo: SubscriptionInfo): string {
@@ -2041,7 +2041,7 @@ export async function signOutM365(isFromTreeView: boolean) {
     ]);
   }
 
-  await registerEnvTreeHandler();
+  await envTree.registerEnvTreeHandler();
 }
 
 export async function signInAzure() {

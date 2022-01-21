@@ -167,7 +167,7 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
         if (ctx) {
           assert.deepEqual(
             ctx.localSettings,
-            localSettingsProvider.initV2(true, false, false, true, true)
+            localSettingsProvider.initV2(true, false, false, false, true)
           );
         }
         assert.isTrue(ctx?.solutionContext !== undefined);

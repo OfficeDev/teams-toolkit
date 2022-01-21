@@ -6,6 +6,11 @@ import { MessageConnection } from "vscode-jsonrpc";
 import { TelemetryReporter } from "@microsoft/teamsfx-api";
 
 import { NotificationTypes } from "../apis";
+import { Correlator } from "@microsoft/teamsfx-core";
+
+enum TelemetryProperty {
+  CorrelationId = "correlation-id",
+}
 
 export default class ServerTelemetryReporter implements TelemetryReporter {
   private readonly connection: MessageConnection;
@@ -19,6 +24,11 @@ export default class ServerTelemetryReporter implements TelemetryReporter {
     properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ): void {
+    if (!properties) {
+      properties = {};
+    }
+
+    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
     this.connection.sendNotification(
       NotificationTypes.telemetry.sendTelemetryEvent,
       eventName,
@@ -33,6 +43,11 @@ export default class ServerTelemetryReporter implements TelemetryReporter {
     measurements?: { [key: string]: number },
     errorProps?: string[]
   ): void {
+    if (!properties) {
+      properties = {};
+    }
+
+    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
     this.connection.sendNotification(
       NotificationTypes.telemetry.sendTelemetryErrorEvent,
       eventName,
@@ -47,6 +62,11 @@ export default class ServerTelemetryReporter implements TelemetryReporter {
     properties?: { [key: string]: string },
     measurements?: { [key: string]: number }
   ): void {
+    if (!properties) {
+      properties = {};
+    }
+
+    properties[TelemetryProperty.CorrelationId] = Correlator.getId();
     this.connection.sendNotification(
       NotificationTypes.telemetry.sendTelemetryException,
       error,

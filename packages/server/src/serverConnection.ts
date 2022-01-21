@@ -4,7 +4,7 @@
 import { CancellationToken, MessageConnection } from "vscode-jsonrpc";
 
 import { FxError, Inputs, Void, Tools, Result } from "@microsoft/teamsfx-api";
-import { FxCore } from "@microsoft/teamsfx-core";
+import { FxCore, Correlator } from "@microsoft/teamsfx-core";
 
 import { IServerConnection, Namespaces } from "./apis";
 import LogProvider from "./providers/logger";
@@ -55,7 +55,12 @@ export default class ServerConnection implements IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ): Promise<Result<string, FxError>> {
-    const res = await this.core.createProject(inputs);
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => this.core.createProject(params),
+      inputs
+    );
     return standardizeResult(res);
   }
 
@@ -63,7 +68,12 @@ export default class ServerConnection implements IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ): Promise<Result<Void, FxError>> {
-    const res = await this.core.localDebug(inputs);
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => this.core.localDebug(params),
+      inputs
+    );
     return standardizeResult(res);
   }
 
@@ -71,7 +81,13 @@ export default class ServerConnection implements IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ): Promise<Result<Void, FxError>> {
-    const res = await this.core.provisionResources(inputs);
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => this.core.provisionResources(params),
+      inputs
+    );
+    console.log(res);
     return standardizeResult(res);
   }
 
@@ -79,7 +95,12 @@ export default class ServerConnection implements IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ): Promise<Result<Void, FxError>> {
-    const res = await this.core.deployArtifacts(inputs);
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => this.core.deployArtifacts(params),
+      inputs
+    );
     return standardizeResult(res);
   }
 
@@ -87,7 +108,12 @@ export default class ServerConnection implements IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ): Promise<Result<Void, FxError>> {
-    const res = await this.core.buildArtifacts(inputs);
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => this.core.buildArtifacts(params),
+      inputs
+    );
     return standardizeResult(res);
   }
 
@@ -95,7 +121,12 @@ export default class ServerConnection implements IServerConnection {
     inputs: Inputs,
     token: CancellationToken
   ): Promise<Result<Void, FxError>> {
-    const res = await this.core.publishApplication(inputs);
+    const corrId = inputs.correlationId ? inputs.correlationId : "";
+    const res = await Correlator.runWithId(
+      corrId,
+      (params) => this.core.publishApplication(params),
+      inputs
+    );
     return standardizeResult(res);
   }
 

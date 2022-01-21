@@ -112,10 +112,6 @@ export class CliQuestionManager implements IQuestionManager {
       type: "group",
     });
 
-    const apimResourceGroupQuestion = this.apimResourceGroupQuestion.getQuestion();
-    rootNode.addChild(new QTreeNode(apimResourceGroupQuestion));
-    const apimServiceNameQuestion = this.apimServiceNameQuestion.getQuestion();
-    rootNode.addChild(new QTreeNode(apimServiceNameQuestion));
     return rootNode;
   }
 

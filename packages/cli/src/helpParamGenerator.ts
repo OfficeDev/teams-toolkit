@@ -160,13 +160,15 @@ export class HelpParamGenerator {
     if (root && !root.children) root.children = [];
     if (resourceName && root?.children) {
       const rootCopy: QTreeNode = JSON.parse(JSON.stringify(root));
+      const sqlOrApim = ["sql", "apim"].find((r) => r === resourceName);
+      const resources = sqlOrApim ? ["function", resourceName] : [resourceName];
       // Do CLI map for resource add
       const mustHaveNodes = rootCopy.children!.filter(
         (node) => (node.condition as any).minItems === 1
       );
       const resourcesNodes = rootCopy.children!.filter(
         (node) =>
-          (node.condition as any).contains === resourceName ||
+          resources.includes((node.condition as any).contains) ||
           (node.condition as any).containsAny?.includes(resourceName)
       );
       (rootCopy.data as any).default = [resourceName];

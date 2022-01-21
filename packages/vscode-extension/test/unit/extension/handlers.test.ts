@@ -43,6 +43,7 @@ suite("handlers", () => {
       sandbox.stub(AppStudioTokenInstance, "setStatusChangeMap");
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
       sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
+      sandbox.stub(ExtTelemetry, "dispose");
     });
 
     this.afterAll(() => {

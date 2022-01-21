@@ -9,7 +9,7 @@ import { FxError, err, ok, Result, Func, Stage, Inputs } from "@microsoft/teamsf
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
 import { getSystemInputs } from "../utils";
-import CliTelemetry, { makeEnvProperty } from "../telemetry/cliTelemetry";
+import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -48,14 +48,19 @@ export default class Package extends YargsCommand {
       inputs = getSystemInputs(rootFolder, args.env as any);
       const result = await core.executeUserTask!(func, inputs);
       if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Build, result.error);
+        CliTelemetry.sendTelemetryErrorEvent(
+          TelemetryEvent.Build,
+          result.error,
+          makeEnvRelatedProperty(rootFolder, inputs)
+        );
+
         return err(result.error);
       }
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Build, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      ...makeEnvProperty(inputs.env),
+      ...makeEnvRelatedProperty(rootFolder, inputs),
     });
     return ok(null);
   }

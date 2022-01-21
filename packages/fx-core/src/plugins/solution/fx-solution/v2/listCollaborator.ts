@@ -170,7 +170,7 @@ async function listCollaboratorImpl(
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.ListCollaborator,
         returnSystemError(
-          new Error("Failed to get env name."),
+          new Error(getStrings().solution.Collaboration.FailedToGetEnvName),
           SolutionSource,
           SolutionError.FailedToGetEnvName
         ),
@@ -239,23 +239,29 @@ async function listCollaboratorImpl(
 
   if (platform === Platform.CLI || platform === Platform.VSCode) {
     const message = [
-      { content: `Listing M365 permissions\n`, color: Colors.BRIGHT_WHITE },
-      { content: `Account used to check: `, color: Colors.BRIGHT_WHITE },
+      {
+        content: getStrings().solution.Collaboration.ListingM365Permission,
+        color: Colors.BRIGHT_WHITE,
+      },
+      {
+        content: getStrings().solution.Collaboration.AccountUsedToCheck,
+        color: Colors.BRIGHT_WHITE,
+      },
       { content: userInfo.userPrincipalName + "\n", color: Colors.BRIGHT_MAGENTA },
       {
-        content: `Starting list all teams app owners for environment: `,
+        content: getStrings().solution.Collaboration.StartingListAllTeamsAppOwners,
         color: Colors.BRIGHT_WHITE,
       },
       { content: `${envName}\n`, color: Colors.BRIGHT_MAGENTA },
-      { content: `Tenant ID: `, color: Colors.BRIGHT_WHITE },
+      { content: getStrings().solution.Collaboration.TenantId, color: Colors.BRIGHT_WHITE },
       { content: aadAppTenantId + "\n", color: Colors.BRIGHT_MAGENTA },
-      { content: `M365 Teams App (ID: `, color: Colors.BRIGHT_WHITE },
+      { content: getStrings().solution.Collaboration.M365TeamsAppId, color: Colors.BRIGHT_WHITE },
       { content: teamsAppId, color: Colors.BRIGHT_MAGENTA },
     ];
 
     if (isAadActivated) {
       message.push(
-        { content: `), SSO AAD App (ID: `, color: Colors.BRIGHT_WHITE },
+        { content: getStrings().solution.Collaboration.SsoAadAppId, color: Colors.BRIGHT_WHITE },
         { content: aadAppId, color: Colors.BRIGHT_MAGENTA },
         { content: `)\n`, color: Colors.BRIGHT_WHITE }
       );
@@ -265,13 +271,16 @@ async function listCollaboratorImpl(
 
     for (const collaborator of collaborators) {
       message.push(
-        { content: `Teams App Owner: `, color: Colors.BRIGHT_WHITE },
+        { content: getStrings().solution.Collaboration.TeamsAppOwner, color: Colors.BRIGHT_WHITE },
         { content: collaborator.userPrincipalName, color: Colors.BRIGHT_MAGENTA },
         { content: `. `, color: Colors.BRIGHT_WHITE }
       );
 
       if (isAadActivated && !collaborator.isAadOwner) {
-        message.push({ content: `(Not owner of SSO AAD app)`, color: Colors.BRIGHT_YELLOW });
+        message.push({
+          content: getStrings().solution.Collaboration.NotOwnerOfSsoAadApp,
+          color: Colors.BRIGHT_YELLOW,
+        });
       }
 
       message.push({ content: "\n", color: Colors.BRIGHT_WHITE });
@@ -337,7 +346,10 @@ export async function listCollaborator(
     if (!configMap) {
       return err(
         returnSystemError(
-          new Error(`failed to convert profile ${JSON.stringify(param.envInfo.state)}`),
+          new Error(
+            getStrings().solution.Collaboration.FailedToConvertProfile +
+              JSON.stringify(param.envInfo.state)
+          ),
           PluginNames.SOLUTION,
           SolutionError.InternelError
         )

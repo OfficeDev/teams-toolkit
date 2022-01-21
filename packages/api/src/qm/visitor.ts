@@ -89,7 +89,7 @@ const questionVisitor = async function (
   totalSteps?: number
 ): Promise<Result<InputResult<any>, FxError>> {
   if (inputs[question.name] !== undefined) {
-    return ok({ type: "success", result: inputs[question.name] });
+    return ok({ type: "skip", result: inputs[question.name] });
   }
   if (question.type === "func") {
     try {

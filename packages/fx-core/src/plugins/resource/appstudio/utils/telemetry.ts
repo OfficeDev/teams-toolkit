@@ -1,13 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { PluginContext, SystemError, UserError, v2 } from "@microsoft/teamsfx-api";
 import { Constants } from "./../constants";
-import {
-  GLOBAL_CONFIG,
-  REMOTE_TEAMS_APP_ID,
-  PluginNames,
-} from "../../../solution/fx-solution/constants";
+import { PluginNames } from "../../../solution/fx-solution/constants";
 
 export enum TelemetryPropertyKey {
   component = "component",
@@ -42,12 +38,16 @@ export enum TelemetryEventName {
   grantPermission = "grant-permission",
   listCollaborator = "list-collaborator",
   localDebug = "local-debug",
+  init = "init",
+  addCapability = "add-capability",
+  loadManifest = "load-manifest",
+  saveManifest = "save-manifest",
 }
 
 export class TelemetryUtils {
-  static ctx: PluginContext;
+  static ctx: PluginContext | v2.Context;
 
-  public static init(ctx: PluginContext) {
+  public static init(ctx: PluginContext | v2.Context) {
     TelemetryUtils.ctx = ctx;
   }
 
@@ -60,7 +60,7 @@ export class TelemetryUtils {
       properties = {};
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
-    const teamsAppId = this.ctx.envInfo.state
+    const teamsAppId = (this.ctx as PluginContext).envInfo?.state
       .get(PluginNames.APPST)
       ?.get(Constants.TEAMS_APP_ID) as string;
     if (teamsAppId) {
@@ -83,7 +83,7 @@ export class TelemetryUtils {
     }
     properties[TelemetryPropertyKey.component] = Constants.PLUGIN_NAME;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.success;
-    const teamsAppId = this.ctx.envInfo.state
+    const teamsAppId = (this.ctx as PluginContext).envInfo?.state
       .get(PluginNames.APPST)
       ?.get(Constants.TEAMS_APP_ID) as string;
     if (teamsAppId) {
@@ -111,7 +111,7 @@ export class TelemetryUtils {
     properties[TelemetryPropertyKey.errorMessage] = error.message;
     properties[TelemetryPropertyKey.success] = TelemetryPropertyValue.failure;
 
-    const teamsAppId = this.ctx.envInfo.state
+    const teamsAppId = (this.ctx as PluginContext).envInfo?.state
       .get(PluginNames.APPST)
       ?.get(Constants.TEAMS_APP_ID) as string;
     if (teamsAppId) {

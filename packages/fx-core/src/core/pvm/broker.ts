@@ -8,10 +8,11 @@
 
 import { PLUGIN_DOT_JSON } from "./constant";
 import { ConfigFolderName } from "@microsoft/teamsfx-api";
-import { pathExists, readJSON, writeFile } from "fs-extra";
+import { ensureDir, pathExists, readJSON, writeFile } from "fs-extra";
 import { join } from "path";
 import { InvalidProjectError } from "../error";
 import { Plugins } from "./type";
+import { jsonStringifyElegantly } from "./utility";
 
 /**
  * make sure all necessary files/folders are existed.
@@ -27,12 +28,10 @@ const validate = () => {
         throw InvalidProjectError();
       }
 
-      if (!(await pathExists(join(root, ConfigFolderName)))) {
-        throw InvalidProjectError();
-      }
+      await ensureDir(join(root, ConfigFolderName));
 
       if (!(await pathExists(join(root, ConfigFolderName, PLUGIN_DOT_JSON)))) {
-        await writeFile(join(root, ConfigFolderName, PLUGIN_DOT_JSON), JSON.stringify({}, null, 4));
+        await writeFile(join(root, ConfigFolderName, PLUGIN_DOT_JSON), jsonStringifyElegantly({}));
       }
       const result = originalMethod.apply(this, args);
       return result;
@@ -43,6 +42,8 @@ const validate = () => {
 /**
  * Broker is stateless which means all api should know about the path of
  * target project.
+ *
+ * All method will throw InvalidProjectError if project is invalid.
  */
 export class Broker {
   private static configPath(root: string): string {
@@ -56,10 +57,10 @@ export class Broker {
   static async save(root: string, plugins: Plugins): Promise<void> {
     const config = (await readJSON(Broker.configPath(root))) as Plugins;
 
-    for (const [name, uri] of plugins) {
-      config.set(name, uri);
+    for (const name in plugins) {
+      config[name] = plugins[name];
     }
-    await writeFile(Broker.configPath(root), JSON.stringify(config, null, 4));
+    await writeFile(Broker.configPath(root), jsonStringifyElegantly(config));
     return;
   }
 
@@ -70,13 +71,13 @@ export class Broker {
   }
 
   @validate()
-  static async remove(root: string, plugins: Plugins): Promise<void> {
+  static async remove(root: string, plugins: string[]): Promise<void> {
     const config = (await readJSON(Broker.configPath(root))) as Plugins;
 
-    for (const name in plugins) {
-      config.delete(name);
+    for (const i in plugins) {
+      delete config[plugins[i]];
     }
-    await writeFile(Broker.configPath(root), JSON.stringify(config, null, 4));
+    await writeFile(Broker.configPath(root), jsonStringifyElegantly(config));
     return;
   }
 }

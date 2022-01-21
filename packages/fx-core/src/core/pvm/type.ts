@@ -9,4 +9,4 @@ export type PluginURI = alias<string>;
 export type PluginVersion = alias<string>;
 export type PluginPath = alias<string>;
 
-export type Plugins = alias<Map<PluginName, PluginURI>>;
+export type Plugins = alias<Record<PluginName, PluginURI>>;

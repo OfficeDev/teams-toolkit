@@ -56,13 +56,13 @@ export default class PVM {
     if (result.isOk()) {
       const plugins = result.value;
       try {
-        for (const p of plugins.values()) {
-          await require(p);
+        for (const name in plugins) {
+          await require(name);
         }
       } catch (e) {
         return err(LoadPluginError());
       }
-      const dynamicPlugins = Array.from(plugins.keys());
+      const dynamicPlugins = Object.keys(plugins);
       const allPlugins = [
         ...dynamicPlugins,
         ...BuiltInResourcePluginNames,

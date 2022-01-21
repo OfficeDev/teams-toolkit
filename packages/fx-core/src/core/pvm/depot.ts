@@ -46,9 +46,10 @@ import {
 } from "@microsoft/teamsfx-api";
 
 import { Executor } from "../../common/tools";
-import { CoreSource, InvalidInputError, NpmInstallError } from "../error";
+import { CoreSource, InvalidInputError, LoadPluginError } from "../error";
 import { MANIFEST_DOT_JSON, PACKAGE_DOT_JSON, PLUGINS_FOLDER, PVM_SPEC_VERSION } from "./constant";
-import { PluginName, PluginURI, Plugins, PluginVersion, PluginPath } from "./type";
+import { PluginName, Plugins, PluginVersion, PluginPath } from "./type";
+import { jsonStringifyElegantly } from "./utility";
 
 /**
  * manifest is a structure to describe the details of all loaded plugins.
@@ -56,7 +57,7 @@ import { PluginName, PluginURI, Plugins, PluginVersion, PluginPath } from "./typ
  */
 interface Manifest {
   version: string;
-  plugins: Map<PluginName, PluginVersion[]>;
+  plugins: Record<PluginName, PluginVersion[]>;
 }
 
 /**
@@ -68,16 +69,15 @@ const DEPOT_ADDR: string = join(homedir(), `.${ConfigFolderName}`);
 /**
  * Write plugins as dependencies in package.json file to execute npm install
  */
-async function writePackageJson(destination: string, plugins: Plugins) {
-  await ensureDir(destination);
+async function writePackageJson(targetFolder: string, plugins: Plugins) {
+  await ensureDir(targetFolder);
   const rawData = {
     // name & version are required in package.json
     name: ProductName,
     version: PVM_SPEC_VERSION,
     dependencies: plugins,
   };
-  // npm install use "package.json" as default config file
-  await writeFile(join(destination, PACKAGE_DOT_JSON), rawData);
+  await writeFile(join(targetFolder, PACKAGE_DOT_JSON), jsonStringifyElegantly(rawData));
 }
 
 /**
@@ -90,8 +90,13 @@ const ensureDepot = () => {
     descriptor.value = async function (...args: any[]) {
       await ensureDir(DEPOT_ADDR);
       await ensureDir(join(DEPOT_ADDR, PLUGINS_FOLDER));
-      if (!(await pathExists(join(DEPOT_ADDR, PLUGINS_FOLDER, MANIFEST_DOT_JSON)))) {
-        await writePackageJson(join(DEPOT_ADDR, PLUGINS_FOLDER, MANIFEST_DOT_JSON), new Map());
+      if (!(await pathExists(join(DEPOT_ADDR, MANIFEST_DOT_JSON)))) {
+        const rawData = {
+          // name & version are required in package.json
+          version: PVM_SPEC_VERSION,
+          plugins: {},
+        };
+        await writeFile(join(DEPOT_ADDR, MANIFEST_DOT_JSON), jsonStringifyElegantly(rawData));
       }
       const result = originalMethod.apply(this, args);
       return result;
@@ -113,15 +118,16 @@ export class Depot {
     const targetPath = join(tmpdir(), `.${ConfigFolderName}`, nanoid(16));
     await writePackageJson(targetPath, plugins);
 
-    // execute 'npm install' with "dry-run"
     try {
-      Executor.execCommandAsync("npm install --dry-run");
+      // --prefix set the target diretory of npm package
+      // --dry-run
+      await Executor.execCommandAsync(`npm install --prefix ${targetPath} --dry-run`);
     } catch (e) {
       return false;
+    } finally {
+      // teardown
+      await rmdir(targetPath, { recursive: true });
     }
-
-    // teardown
-    await rmdir(targetPath);
     return true;
   }
 
@@ -136,13 +142,13 @@ export class Depot {
   @ensureDepot()
   public static async install(
     packages: Plugins
-  ): Promise<Result<Map<PluginName, PluginPath>, FxError>> {
-    if (await Depot.validate(packages)) {
-      return err(InvalidInputError(Array.from(packages.values()).toString()));
+  ): Promise<Result<Record<PluginName, PluginPath>, FxError>> {
+    if (!(await Depot.validate(packages))) {
+      return err(InvalidInputError(Object.keys(packages).toString()));
     }
 
-    const paths: Map<PluginName, PluginPath> = new Map();
-    const versions: Map<PluginName, PluginVersion> = new Map();
+    const paths: Record<PluginName, PluginPath> = {};
+    const versions: Record<PluginName, PluginVersion> = {};
 
     /**
      * lock is necesscary because there might be several process loading plugins.
@@ -150,96 +156,98 @@ export class Depot {
     try {
       await lock(DEPOT_ADDR);
     } catch (e) {
-      console.error(e);
       return err(new ConcurrentError(CoreSource));
     }
 
-    for (const [name, uri] of packages.entries()) {
-      if (await Depot.has(name, uri)) {
-        continue;
-      }
-      const co = join(DEPOT_ADDR, "plugins", name);
-      const plugin: Plugins = new Map();
-      plugin.set(name, uri);
+    try {
+      for (const name in packages) {
+        if (await Depot.has(name, packages[name])) {
+          continue;
+        }
+        const co = join(DEPOT_ADDR, "plugins", name);
+        const plugin: Plugins = {};
+        plugin[name] = packages[name];
 
-      // set as "undertermined" and rename after installing
-      const source = join(co, "undertermined");
-      await writePackageJson(source, plugin);
+        // set as "undertermined" and rename after installing
+        const source = join(co, "undertermined");
+        await writePackageJson(source, plugin);
 
-      try {
         // --prefix set the target diretory of npm package
         // --no-save will not gen package-lock.json
-        Executor.execCommandAsync(`npm install --prefix ${source} --no-save`);
-      } catch (e) {
-        if (e instanceof Error) {
-          return err(NpmInstallError(source, e));
-        } else {
-          return err(NpmInstallError(source, new Error(`exception: ${e}`)));
-        }
+        await Executor.execCommandAsync(`npm install --prefix ${source} --no-save`);
+
+        // rename the folder by version in node_modules/${name}/package.json
+        const config = await readJSON(join(source, "node_modules", name, PACKAGE_DOT_JSON));
+        const version = config.version;
+        const destination = join(co, version);
+        await move(source, destination);
+
+        // remove temporary package.json
+        await remove(join(destination, PACKAGE_DOT_JSON));
+        paths[name] = destination;
+        versions[name] = version;
       }
-
-      /**
-       * rename the folder by version in node_modules/${name}/package.json
-       */
-      const config = await readJSON(join(source, "node_modules", name, PACKAGE_DOT_JSON));
-      const version = config.version;
-      const destination = join(co, version);
-      await move(source, destination);
-
-      /**
-       * remove temporary package.json
-       */
-      await remove(join(destination, PACKAGE_DOT_JSON));
-      paths.set(name, destination);
-      versions.set(name, version);
+      // sync to manifest
+      Depot.saveManifest(versions);
+    } catch (e) {
+      await unlock(DEPOT_ADDR);
+      return err(LoadPluginError());
     }
-
-    /**
-     * sync to manifest
-     */
-    Depot.saveManifest(versions);
 
     await unlock(DEPOT_ADDR);
 
     return ok(paths);
   }
 
+  @ensureDepot()
   public static async getManifest(): Promise<Manifest> {
     // sync to manifest
     const manifestPath = join(DEPOT_ADDR, MANIFEST_DOT_JSON);
-    const manifest = (await readJSON(manifestPath)) as Manifest;
+    const manifest: Manifest = (await readJSON(manifestPath)) as Manifest;
     return manifest;
   }
 
-  public static async has(name: PluginName, version: PluginVersion): Promise<boolean> {
+  /**
+   * @param name - plugin's name
+   * @param version - if set, check specific version of plugin
+   *
+   * @returns whether plugin is existed or not
+   */
+  @ensureDepot()
+  public static async has(name: PluginName, version?: PluginVersion): Promise<boolean> {
     const manifest = await Depot.getManifest();
-    if (manifest.plugins.has(name)) {
-      const vers = manifest.plugins.get(name);
-      if (vers && vers.includes(version)) {
+    if (manifest.plugins[name]) {
+      if (version) {
+        const vers = manifest.plugins[name];
+        if (vers && vers.includes(version)) {
+          return true;
+        }
+      } else {
         return true;
       }
     }
     return false;
   }
 
-  private static async saveManifest(plugins: Map<PluginName, PluginVersion>) {
+  private static async saveManifest(plugins: Record<PluginName, PluginVersion>) {
     // sync to manifest
     const manifestPath = join(DEPOT_ADDR, MANIFEST_DOT_JSON);
     const manifest = (await readJSON(manifestPath)) as Manifest;
 
-    for (const [name, version] of plugins.entries()) {
-      if (manifest.plugins.has(name)) {
-        const vers = manifest.plugins.get(name);
+    for (const name in plugins) {
+      const version = plugins[name];
+      if (manifest.plugins[name]) {
+        const vers = manifest.plugins[name];
         if (vers && !vers.includes(version)) {
-          vers.push(version);
-          manifest.plugins.set(name, vers);
+          vers.push(plugins[name]);
+          manifest.plugins[name] = vers;
         } else {
-          manifest.plugins.set(name, [version]);
+          manifest.plugins[name] = [version];
         }
       } else {
-        manifest.plugins.set(name, [version]);
+        manifest.plugins[name] = [version];
       }
     }
-    await writeFile(manifestPath, JSON.stringify(manifest, null, 2));
+    await writeFile(manifestPath, jsonStringifyElegantly(manifest));
   }
 }

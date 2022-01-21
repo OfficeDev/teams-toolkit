@@ -170,7 +170,7 @@ describe("LocalSettings provider APIs", () => {
       await localSettingsProvider.save(localSettings);
       const updatedLocalSettings = await localSettingsProvider.load();
 
-      assertLocalSettings(updatedLocalSettings, true, true, true);
+      assertLocalSettings(updatedLocalSettings, true, true, true, true);
       chai.assert.equal(
         updatedLocalSettings!.auth?.get(LocalSettingsSimpleAuthKeys.SimpleAuthServiceEndpoint),
         updateValue
@@ -233,6 +233,13 @@ describe("LocalSettings provider APIs", () => {
 
       for (const key of expectedFrontendKeys) {
         chai.assert.isTrue(localSettings?.frontend?.has(key));
+      }
+
+      if (!hasSimpleAuth) {
+        const expectedSimpleAuthKeys = Object.values(LocalSettingsSimpleAuthKeys);
+        for (const key of expectedSimpleAuthKeys) {
+          chai.assert.isFalse(localSettings!.auth?.has(key));
+        }
       }
     }
 

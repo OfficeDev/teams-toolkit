@@ -108,16 +108,31 @@ describe("Generate ARM Template for project", () => {
       TestFilePath.armTemplateBaseFolder
     );
     expect(result.isOk()).to.be.true;
-    const mainBicepFilesContent = await fs.readFile(
-      path.join(__dirname, "expectedBiceps", "main.bicep"),
+    const projectMainBicep = await fs.readFile(
+      path.join(projectArmTemplateFolder, TestFilePath.mainFileName),
       fileEncoding
     );
-    expect(
-      await fs.readFile(
-        path.join(projectArmTemplateFolder, TestFilePath.mainFileName),
-        fileEncoding
-      )
-    ).equals(mainBicepFilesContent);
+    expect(projectMainBicep.replace(/\r?\n/g, os.EOL)).equals(
+      `@secure()
+param provisionParameters object
+
+module provision './provision.bicep' = {
+  name: 'provisionResources'
+  params: {
+    provisionParameters: provisionParameters
+  }
+}
+output provisionOutput object = provision
+module teamsFxConfig './config.bicep' = {
+  name: 'addTeamsFxConfigurations'
+  params: {
+    provisionParameters: provisionParameters
+    provisionOutputs: provision
+  }
+}
+output teamsFxConfigurationOutput object = contains(reference(resourceId('Microsoft.Resources/deployments', teamsFxConfig.name), '2020-06-01'), 'outputs') ? teamsFxConfig : {}
+`.replace(/\r?\n/g, os.EOL)
+    );
 
     expect(
       await fs.readFile(

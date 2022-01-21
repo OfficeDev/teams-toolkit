@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
+import { PluginContext } from "@microsoft/teamsfx-api";
 import path from "path";
 import { getTemplatesFolder } from "../../../../folder";
 import { Bicep, ConstantString } from "../../../../common/constants";

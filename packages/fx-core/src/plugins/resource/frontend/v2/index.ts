@@ -70,15 +70,6 @@ export class FrontendPluginV2 implements ResourcePlugin {
     return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 
-  async provisionResource(
-    ctx: Context,
-    inputs: ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
-    tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
-    return provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
-  }
-
   async configureResource(
     ctx: Context,
     inputs: ProvisionInputs,

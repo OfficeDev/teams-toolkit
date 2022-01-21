@@ -176,9 +176,9 @@ export const LOCAL_DEBUG_TEAMS_APP_ID = "localDebugTeamsAppId";
 export const REMOTE_TEAMS_APP_ID = "remoteTeamsAppId";
 
 export const AzureRoleAssignmentsHelpLink =
-  "https://docs.microsoft.com/en-us/azure/role-based-access-control/role-assignments-portal?tabs=current";
+  "https://aka.ms/teamsfx-azure-role-assignments-help-link";
 export const SharePointManageSiteAdminHelpLink =
-  "https://docs.microsoft.com/en-us/sharepoint/manage-site-collection-administrators";
+  "https://aka.ms/teamsfx-sharepoint-manage-site-admin-help-link";
 
 export const DoProvisionFirstError = new UserError(
   "DoProvisionFirst",

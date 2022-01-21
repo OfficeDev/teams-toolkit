@@ -1,6 +1,5 @@
 import {
   AppStudioTokenProvider,
-  AzureAccountProvider,
   Func,
   FxError,
   Inputs,

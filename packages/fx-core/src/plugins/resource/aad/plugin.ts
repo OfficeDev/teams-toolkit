@@ -1,13 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AzureSolutionSettings,
-  FxError,
-  LogProvider,
-  PluginContext,
-  Result,
-} from "@microsoft/teamsfx-api";
+import { FxError, LogProvider, PluginContext, Result } from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
   CheckGrantPermissionConfig,
@@ -26,8 +20,6 @@ import {
   UnknownPermissionName,
   UnknownPermissionRole,
   UnknownPermissionScope,
-  GetSkipAppConfigError,
-  InvalidSelectedPluginsError,
   GetConfigError,
   ConfigErrorMessages,
 } from "./errors";

@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { LogProvider, ProjectSettings, TelemetryReporter } from "@microsoft/teamsfx-api";
+import { LogProvider, ProjectSettings } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import detectPort from "detect-port";
 
@@ -37,8 +37,8 @@ async function detectPortListening(port: number, logger?: LogProvider): Promise<
 export async function getPortsInUse(
   projectPath: string,
   projectSettings: ProjectSettings,
-  ignoreDebugPort?: boolean,
-  logger?: LogProvider
+  logger?: LogProvider,
+  ignoreDebugPort?: boolean
 ): Promise<number[]> {
   const ports: number[] = [];
 

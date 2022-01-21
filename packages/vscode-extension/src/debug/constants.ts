@@ -19,6 +19,7 @@ export const authLocalEnvPrefix = "AUTH_";
 export const authServicePathEnvKey = "AUTH_SERVICE_PATH";
 export const botLocalEnvPrefix = "BOT_";
 
+export const issueChooseLink = "https://github.com/OfficeDev/TeamsFx/issues/new/choose";
 export const issueLink = "https://github.com/OfficeDev/TeamsFx/issues/new?";
 export const issueTemplate = `
 **Describe the bug**

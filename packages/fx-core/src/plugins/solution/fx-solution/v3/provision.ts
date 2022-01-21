@@ -36,6 +36,7 @@ import { SolutionError, SolutionSource } from "../constants";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { executeConcurrently } from "../v2/executor";
 import { BuiltInResourcePluginNames } from "./constants";
+import { solutionGlobalVars } from "./solutionGlobalVars";
 
 export async function getQuestionsForProvision(
   ctx: v2.Context,
@@ -89,6 +90,11 @@ export async function provisionResources(
   if (!tenantIdInConfig) {
     appResource.tenantId = tenantIdInToken;
   }
+
+  //TODO teams app provision, return app id
+  // call appStudio.provision()
+  appResource.teamsAppId = "fake-remote-teams-app-id";
+  solutionGlobalVars.TeamsAppId = "fake-remote-teams-app-id";
 
   // ask common question and fill in solution config
   const solutionConfigRes = await fillInAzureSolutionConfigs(

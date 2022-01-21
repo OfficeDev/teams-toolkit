@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { AppStudioTokenProvider, GraphTokenProvider, PluginContext } from "@microsoft/teamsfx-api";
 import { ResultFactory } from "../results";
 import { GetTokenError, TenantNotExistError } from "../errors";
 
@@ -10,19 +10,27 @@ export enum TokenAudience {
   AppStudio = "appStudio",
 }
 
+export interface GraphAndAppStudioTokenProvider {
+  graph?: GraphTokenProvider;
+  appStudio?: AppStudioTokenProvider;
+}
 interface TokenInstance {
-  getToken(ctx: PluginContext): Promise<string | undefined>;
-  getTenant(ctx: PluginContext): Promise<string | undefined>;
+  getToken(tokenProvider: GraphAndAppStudioTokenProvider): Promise<string | undefined>;
+  getTenant(tokenProvider: GraphAndAppStudioTokenProvider): Promise<string | undefined>;
 }
 
 class GraphInstance implements TokenInstance {
-  public async getToken(ctx: PluginContext): Promise<string | undefined> {
-    const token = await ctx.graphTokenProvider?.getAccessToken();
+  public async getToken(
+    tokenProvider: GraphAndAppStudioTokenProvider
+  ): Promise<string | undefined> {
+    const token = await tokenProvider.graph?.getAccessToken();
     return token;
   }
 
-  public async getTenant(ctx: PluginContext): Promise<string | undefined> {
-    const tokenObject = await ctx.graphTokenProvider?.getJsonObject();
+  public async getTenant(
+    tokenProvider: GraphAndAppStudioTokenProvider
+  ): Promise<string | undefined> {
+    const tokenObject = await tokenProvider.graph?.getJsonObject();
     if (!tokenObject) {
       return undefined;
     }
@@ -33,13 +41,17 @@ class GraphInstance implements TokenInstance {
 }
 
 class AppStudioInstance implements TokenInstance {
-  public async getToken(ctx: PluginContext): Promise<string | undefined> {
-    const token = await ctx.appStudioToken?.getAccessToken();
+  public async getToken(
+    tokenProvider: GraphAndAppStudioTokenProvider
+  ): Promise<string | undefined> {
+    const token = await tokenProvider.appStudio?.getAccessToken();
     return token;
   }
 
-  public async getTenant(ctx: PluginContext): Promise<string | undefined> {
-    const tokenObject = await ctx.appStudioToken?.getJsonObject();
+  public async getTenant(
+    tokenProvider: GraphAndAppStudioTokenProvider
+  ): Promise<string | undefined> {
+    const tokenObject = await tokenProvider.appStudio?.getJsonObject();
     if (!tokenObject) {
       return undefined;
     }
@@ -55,7 +67,7 @@ export class TokenProvider {
   static audience: TokenAudience;
 
   public static async init(
-    ctx: PluginContext,
+    tokenProvider: GraphAndAppStudioTokenProvider,
     audience: TokenAudience = TokenAudience.Graph
   ): Promise<void> {
     this.audience = audience;
@@ -67,14 +79,14 @@ export class TokenProvider {
       instance = new GraphInstance();
     }
 
-    const token = await instance.getToken(ctx);
+    const token = await instance.getToken(tokenProvider);
     if (token) {
       TokenProvider.token = token;
     } else {
       throw ResultFactory.SystemError(GetTokenError.name, GetTokenError.message(this.audience));
     }
 
-    const tenantId = await instance.getTenant(ctx);
+    const tenantId = await instance.getTenant(tokenProvider);
     if (tenantId) {
       this.tenantId = tenantId;
     } else {

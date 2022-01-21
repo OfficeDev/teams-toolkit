@@ -147,6 +147,7 @@
     width: 203px;
     height: 285px;
     position: relative;
+    cursor: pointer;
 
     .section {
       display: flex;
@@ -210,6 +211,7 @@
       label{
         margin-top: auto;
         margin-bottom: auto;
+        cursor: pointer;
       }
     }
 
@@ -230,6 +232,7 @@
         width: 242px;
         margin-top: auto;
         margin-bottom: auto;
+        cursor: pointer;
       }
     }
 

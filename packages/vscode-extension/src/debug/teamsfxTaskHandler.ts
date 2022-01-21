@@ -15,7 +15,7 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { Correlator, getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
 import * as path from "path";
-import { errorDetail, issueLink, issueTemplate } from "./constants";
+import { errorDetail, issueChooseLink, issueLink, issueTemplate } from "./constants";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
@@ -257,7 +257,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       const cwdOption = (task.execution as vscode.ShellExecution).options?.cwd;
       let cwd: string | undefined;
       if (cwdOption !== undefined) {
-        cwd = path.join(ext.workspaceUri.fsPath, cwdOption?.replace("${workspaceFolder}/", ""));
+        cwd = cwdOption.replace("${workspaceFolder}", ext.workspaceUri.fsPath);
       }
       const npmInstallLogInfo = await getNpmInstallLogInfo();
       let validNpmInstallLogInfo = false;
@@ -288,9 +288,17 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, properties);
 
       if (cwd !== undefined && event.exitCode !== undefined && event.exitCode !== 0) {
-        let url = `${issueLink}title=new+bug+report: Task '${task.name}' failed&body=${issueTemplate}`;
+        let url: string;
         if (validNpmInstallLogInfo) {
-          url = `${url}${errorDetail}${JSON.stringify(npmInstallLogInfo, undefined, 4)}`;
+          url = `${issueLink}title=new+bug+report: Task '${
+            task.name
+          }' failed&body=${issueTemplate}${errorDetail}${JSON.stringify(
+            npmInstallLogInfo,
+            undefined,
+            4
+          )}`;
+        } else {
+          url = issueChooseLink;
         }
         const issue = {
           title: StringResources.vsc.handlers.reportIssue,

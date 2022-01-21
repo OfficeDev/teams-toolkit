@@ -176,13 +176,6 @@ export interface SolutionPlugin {
     tokenProvider: TokenProvider
   ) => Promise<Result<Json, FxError>>;
 
-  listAllCollaborators?: (
-    ctx: Context,
-    inputs: InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV2>,
-    tokenProvider: TokenProvider
-  ) => Promise<Result<Json, FxError>>;
-
   //legacy API for compatibility reason
   getQuestions?: (
     ctx: Context,

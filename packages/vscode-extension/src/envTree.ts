@@ -12,14 +12,13 @@ import {
   SubscriptionInfo,
   LocalEnvironmentName,
 } from "@microsoft/teamsfx-api";
-import { environmentManager, isRemoteCollaborateEnabled } from "@microsoft/teamsfx-core";
+import { environmentManager } from "@microsoft/teamsfx-core";
 
 import * as vscode from "vscode";
 import * as util from "util";
 import { CommandsTreeViewProvider } from "./treeview/commandsTreeViewProvider";
 import TreeViewManagerInstance from "./treeview/treeViewManager";
 import * as StringResources from "./resources/Strings.json";
-import { checkPermission, listAllCollaborators, tools } from "./handlers";
 import { signedIn } from "./commonlib/common/constant";
 import { AppStudioLogin } from "./commonlib/appStudioLogin";
 import {
@@ -35,8 +34,6 @@ import { ext } from "./extensionVariables";
 
 const showEnvList: Array<string> = [];
 let environmentTreeProvider: CommandsTreeViewProvider;
-let collaboratorsRecordCache: Record<string, TreeItem[]> = {};
-let permissionCache: Record<string, boolean> = {};
 const mutex = new Mutex();
 
 interface accountStatus {
@@ -44,9 +41,7 @@ interface accountStatus {
   warnings: string[];
 }
 
-export async function registerEnvTreeHandler(
-  forceUpdateCollaboratorList = true
-): Promise<Result<Void, FxError>> {
+export async function registerEnvTreeHandler(): Promise<Result<Void, FxError>> {
   if (vscode.workspace.workspaceFolders) {
     await mutex.runExclusive(async () => {
       const workspaceFolder: vscode.WorkspaceFolder = vscode.workspace.workspaceFolders![0];
@@ -95,15 +90,6 @@ export async function registerEnvTreeHandler(
       }
 
       await checkAllEnv(envNamesResult.value);
-
-      // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
-      /*
-      const collaboratorsItem = await getAllCollaboratorList(
-        envNamesResult.value,
-        forceUpdateCollaboratorList
-      );
-      await environmentTreeProvider.add(collaboratorsItem);
-      */
     });
   }
   return ok(Void);
@@ -114,84 +100,6 @@ async function checkAllEnv(itemList: Array<string>) {
     await appendWarningItem(item);
     await appendSubscriptionAndResourceGroupNode(item);
   }
-}
-
-export async function getAllCollaboratorList(envs: string[], force = false): Promise<TreeItem[]> {
-  let result: TreeItem[] = [];
-
-  if (environmentTreeProvider && isRemoteCollaborateEnabled()) {
-    const loginStatus = await AppStudioLogin.getInstance().getStatus();
-
-    if (force || loginStatus.status !== signedIn) {
-      collaboratorsRecordCache = {};
-      permissionCache = {};
-    }
-
-    const collaboratorsRecord =
-      Object.keys(collaboratorsRecordCache).length > 0 || loginStatus.status !== signedIn
-        ? collaboratorsRecordCache
-        : await listAllCollaborators(envs);
-    collaboratorsRecordCache = collaboratorsRecord;
-
-    for (const env of envs) {
-      const collaboratorParentNode: TreeItem = generateCollaboratorParentNode(env);
-
-      result.push(collaboratorParentNode);
-
-      if (loginStatus.status === signedIn) {
-        const canAddCollaborator = permissionCache[env] ?? (await checkPermission(env));
-        permissionCache[env] = canAddCollaborator;
-        if (canAddCollaborator) {
-          collaboratorParentNode.contextValue = "addCollaborator";
-        }
-
-        if (collaboratorsRecord[env]) {
-          result = result.concat(collaboratorsRecord[env]);
-        }
-      } else {
-        result.push(
-          generateCollaboratorWarningNode(
-            env,
-            StringResources.vsc.commandsTreeViewProvider.loginM365AccountToViewCollaborators,
-            undefined,
-            false
-          )
-        );
-      }
-    }
-  }
-  return result;
-}
-
-export async function updateNewEnvCollaborators(env: string): Promise<void> {
-  await mutex.runExclusive(async () => {
-    const parentNode = generateCollaboratorParentNode(env);
-    const notProvisionedNode = generateCollaboratorWarningNode(
-      env,
-      StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration,
-      undefined,
-      false
-    );
-
-    collaboratorsRecordCache[env] = [parentNode, notProvisionedNode];
-    await environmentTreeProvider.add(collaboratorsRecordCache[env]);
-  });
-}
-
-export async function addCollaboratorToEnv(
-  env: string,
-  userObjectId: string,
-  email: string
-): Promise<void> {
-  const findDuplicated = collaboratorsRecordCache[env].find(
-    (collaborator) => collaborator.label === email
-  );
-  if (findDuplicated) {
-    return;
-  }
-  const newCollaborator = generateCollaboratorNode(env, userObjectId, email, true);
-  collaboratorsRecordCache[env].push(newCollaborator);
-  await environmentTreeProvider.add([newCollaborator]);
 }
 
 export function generateCollaboratorNode(
@@ -229,17 +137,6 @@ export function generateCollaboratorWarningNode(
     },
     isCustom: true,
     parent: `fx-extension.listcollaborator.parentNode.${env}`,
-  };
-}
-
-function generateCollaboratorParentNode(env: string): TreeItem {
-  return {
-    commandId: `fx-extension.listcollaborator.parentNode.${env}`,
-    label: StringResources.vsc.commandsTreeViewProvider.collaboratorParentNode,
-    icon: "organization",
-    isCustom: false,
-    parent: "fx-extension.environment." + env,
-    expanded: false,
   };
 }
 
@@ -301,8 +198,8 @@ async function appendSubscriptionAndResourceGroupNode(env: string): Promise<void
 function formatWarningMessages(warnings: string[]): string {
   let warningMessage = "";
   if (warnings.length > 1) {
-    const formatedWarnings = warnings.map((warning) => "> ".concat(warning));
-    warningMessage = formatedWarnings.join("\n");
+    const formattedWarnings = warnings.map((warning) => "> ".concat(warning));
+    warningMessage = formattedWarnings.join("\n");
   } else {
     warningMessage = warnings[0];
   }
@@ -310,7 +207,7 @@ function formatWarningMessages(warnings: string[]): string {
   return warningMessage;
 }
 
-async function checkAccountForEnvrironment(env: string): Promise<accountStatus | undefined> {
+async function checkAccountForEnvironment(env: string): Promise<accountStatus | undefined> {
   if (env === LocalEnvironmentName) {
     return undefined;
   }
@@ -368,7 +265,7 @@ async function checkAccountForEnvrironment(env: string): Promise<accountStatus |
 }
 
 async function appendWarningItem(env: string): Promise<void> {
-  const checkResult = await checkAccountForEnvrironment(env);
+  const checkResult = await checkAccountForEnvironment(env);
 
   if (checkResult !== undefined && !checkResult.isOk) {
     const warningTreeItem: TreeItem = {

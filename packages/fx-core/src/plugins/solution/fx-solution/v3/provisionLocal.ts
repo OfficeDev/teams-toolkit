@@ -12,19 +12,14 @@ import {
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import { Container } from "typedi";
+import * as util from "util";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/local/constants";
 import { getStrings } from "../../../../common/tools";
-import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
+import { SolutionError } from "../constants";
 import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
 import { executeConcurrently } from "../v2/executor";
-import {
-  checkWhetherLocalDebugM365TenantMatches,
-  ensurePermissionRequest,
-  loadTeamsAppTenantIdForLocal,
-} from "../v2/utils";
 import { getM365TenantId } from "./provision";
-import * as util from "util";
-import { SolutionError } from "../constants";
+import { solutionGlobalVars } from "./solutionGlobalVars";
 
 export async function getQuestionsForLocalProvision(
   ctx: v2.Context,
@@ -42,8 +37,8 @@ export async function provisionLocalResources(
 ): Promise<Result<Json, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
   // check M365 tenantId match
-  const v2localSettings = localSettings as v2.LocalSettings;
-  const tenantIdInConfig = v2localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId];
+  const localSettingsV2 = localSettings as v2.LocalSettings;
+  const tenantIdInConfig = localSettingsV2.teamsApp[LocalSettingsTeamsAppKeys.TenantId];
   const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
@@ -61,8 +56,13 @@ export async function provisionLocalResources(
     );
   }
   if (!tenantIdInConfig) {
-    v2localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = tenantIdInToken;
+    localSettingsV2.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = tenantIdInToken;
   }
+
+  //TODO teams app provision, return app id
+  // call appStudio.provision()
+  // localSettingsV2.teamsApp[LocalSettingsTeamsAppKeys.TeamsAppId] = "fake-local-teams-app-id";
+  // solutionGlobalVars.TeamsAppId = "fake-local-teams-app-id";
 
   // provision resources for local debug
   const plugins: v3.ResourcePlugin[] = solutionSetting.activeResourcePlugins.map((n) =>

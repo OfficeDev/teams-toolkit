@@ -25,11 +25,11 @@ async function detectPortListening(port: number, logger?: LogProvider): Promise<
   try {
     logger?.info(`Start to detect port: ${port}`);
     const portChosen = await detectPort(port);
-    logger?.info(`Detect port successfully. Port is in use: ${portChosen !== port}`);
+    logger?.info(`Detect port successfully. Port is${portChosen !== port ? " not " : " "}in use.`);
     return portChosen !== port;
   } catch (error: any) {
     // ignore any error to not block debugging
-    logger?.warning(`Failed to detect port. Start-start${error?.message} `);
+    logger?.warning(`Failed to detect port. ${error?.message} `);
     return false;
   }
 }

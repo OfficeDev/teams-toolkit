@@ -165,7 +165,10 @@ describe("Middleware - LocalSettingsLoaderMW, ContextInjectorMW: part 2", () => 
       async other(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
         assert.isTrue(ctx !== undefined);
         if (ctx) {
-          assert.deepEqual(ctx.localSettings, localSettingsProvider.initV2(true, false, false));
+          assert.deepEqual(
+            ctx.localSettings,
+            localSettingsProvider.initV2(true, false, false, true, true)
+          );
         }
         assert.isTrue(ctx?.solutionContext !== undefined);
         assert.isTrue(ctx?.solutionContext?.localSettings !== undefined);

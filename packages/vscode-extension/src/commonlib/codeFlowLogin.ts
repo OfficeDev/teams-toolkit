@@ -7,6 +7,7 @@ import * as vscode from "vscode";
 import { PublicClientApplication, AccountInfo, Configuration, TokenCache } from "@azure/msal-node";
 import * as express from "express";
 import * as http from "http";
+import * as https from "https";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Mutex } from "async-mutex";
@@ -258,6 +259,9 @@ export class CodeFlowLogin {
                   error.message
                 )
             );
+            if (!(await checkIsOnline())) {
+              return undefined;
+            }
             await this.logout();
             (this.msalTokenCache as any).storage.setCache({});
             if (refresh) {
@@ -356,4 +360,23 @@ export function ConvertTokenToJson(token: string): object {
   const array = token!.split(".");
   const buff = Buffer.from(array[1], "base64");
   return JSON.parse(buff.toString(UTF8));
+}
+
+export async function checkIsOnline(): Promise<boolean> {
+  const options = {
+    hostname: "login.microsoftonline.com",
+    path: "/",
+    method: "head",
+  };
+
+  return new Promise((resolve, reject) => {
+    const req = http.request(options, (res) => {
+      res.on("data", () => {});
+      res.on("end", () => {
+        resolve(true);
+      });
+    });
+    req.on("error", (e) => resolve(false));
+    req.end();
+  });
 }

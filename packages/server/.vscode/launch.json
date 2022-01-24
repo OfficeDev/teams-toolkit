@@ -12,6 +12,7 @@
                 "<node_internals>/**"
             ],
             "program": "${workspaceFolder}\\lib\\index.js",
+            "args": ["7920"],
             "outFiles": [
                 "${workspaceFolder}/**/*.js"
             ],

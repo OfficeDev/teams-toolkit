@@ -33,28 +33,16 @@ export async function runNpmInstallAll(projectRoot: string): Promise<void> {
   }
 }
 
-export async function automaticNpmInstallHandler(): Promise<void> {
+export async function automaticNpmInstallHandler(
+  excludeFrontend: boolean,
+  excludeBackend: boolean,
+  excludeBot: boolean
+): Promise<void> {
   const state = globalStateGet("automaticNpmInstall", false);
   if (state) {
     globalStateUpdate("automaticNpmInstall", false);
     const configuration = getConfiguration(ConfigurationKey.AutomaticNpmInstall);
     if (configuration && ext.workspaceUri !== undefined) {
-      VS_CODE_UI.showMessage(
-        "info",
-        StringResources.vsc.handlers.automaticNpmInstall,
-        false,
-        StringResources.vsc.handlers.disableAutomaticNpmInstall
-      ).then((selection) => {
-        if (
-          selection.isOk() &&
-          selection.value === StringResources.vsc.handlers.disableAutomaticNpmInstall
-        ) {
-          vscode.commands.executeCommand(
-            "workbench.action.openSettings",
-            ConfigurationKey.AutomaticNpmInstall
-          );
-        }
-      });
       const localEnvManager = new LocalEnvManager(
         VsCodeLogInstance,
         ExtTelemetry.reporter,
@@ -63,15 +51,41 @@ export async function automaticNpmInstallHandler(): Promise<void> {
       const workspaceFolder = vscode.workspace.workspaceFolders![0];
       const workspacePath = workspaceFolder.uri.fsPath;
       const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
+      let showMessage = false;
       if (ProjectSettingsHelper.isSpfx(projectSettings)) {
+        showMessage = true;
         runTask(await createTask(TaskDefinition.spfxInstall(workspacePath), workspaceFolder));
       } else {
-        if (ProjectSettingsHelper.includeFrontend(projectSettings)) {
+        if (!excludeFrontend && ProjectSettingsHelper.includeFrontend(projectSettings)) {
+          showMessage = true;
           runTask(await createTask(TaskDefinition.frontendInstall(workspacePath), workspaceFolder));
         }
-        if (ProjectSettingsHelper.includeBot(projectSettings)) {
+        if (!excludeBackend && ProjectSettingsHelper.includeBackend(projectSettings)) {
+          showMessage = true;
+          runTask(await createTask(TaskDefinition.backendInstall(workspacePath), workspaceFolder));
+        }
+        if (!excludeBot && ProjectSettingsHelper.includeBot(projectSettings)) {
+          showMessage = true;
           runTask(await createTask(TaskDefinition.botInstall(workspacePath), workspaceFolder));
         }
+      }
+      if (showMessage) {
+        VS_CODE_UI.showMessage(
+          "info",
+          StringResources.vsc.handlers.automaticNpmInstall,
+          false,
+          StringResources.vsc.handlers.disableAutomaticNpmInstall
+        ).then((selection) => {
+          if (
+            selection.isOk() &&
+            selection.value === StringResources.vsc.handlers.disableAutomaticNpmInstall
+          ) {
+            vscode.commands.executeCommand(
+              "workbench.action.openSettings",
+              ConfigurationKey.AutomaticNpmInstall
+            );
+          }
+        });
       }
     }
   }

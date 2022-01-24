@@ -70,13 +70,14 @@ Use the snippet below:
 
 ```ts
 // Equivalent to:
-// const credential = new TeamsUserCredential({
-//    initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-//    simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
-//    clientId: process.env.REACT_APP_CLIENT_ID,
+// const teamsfx = new TeamsFx(IdentityType.User);
+// teamsfx.setCustomConfig({
+//   initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+//   simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
+//   clientId: process.env.REACT_APP_CLIENT_ID,
 // });
-const credential = new TeamsUserCredential();
-const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
+const teamsfx = new TeamsFx();
+const graphClient = createMicrosoftGraphClient(teamsfx, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
 const profile = await graphClient.api("/me").get();
 ```
 
@@ -87,13 +88,14 @@ Use the snippet below:
 
 ```ts
 // Equivalent to:
-// const credential = new M365TenantCredential({
-//    clientId: process.env.M365_CLIENT_ID,
-//    clientSecret: process.env.M365_CLIENT_SECRET,
-//    tenantId: process.env.M365_TENANT_ID,
+// const teamsfx = new TeamsFx(IdentityType.App);
+// teamsfx.setCustomConfig({
+//   initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
+//   simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
+//   clientId: process.env.REACT_APP_CLIENT_ID,
 // });
-const credential = new M365TenantCredential();
-const graphClient = createMicrosoftGraphClient(credential);
+const teamsfx = new TeamsFx(IdentityType.App);
+const graphClient = createMicrosoftGraphClient(teamsfx);
 const profile = await graphClient.api("/users/{object_id_of_another_people}").get();
 ```
 
@@ -101,13 +103,15 @@ const profile = await graphClient.api("/users/{object_id_of_another_people}").ge
 
 ### Credential
 
+Developers should choose identity type when initializing TeamsFx. SDK provides 2 types: User and App. SDK will use different credentials to represent the identity and get access token by corresponding auth flow.
+
 There are 3 credential classes that are used to help simplifying authentication. They are located under [credential](src/credential) folder.
 Credential classes implements `TokenCredential` interface that is broadly used in Azure library APIs. They are designed to provide access token for specific scopes.
 The credential classes represents different identity under certain scenarios.
 
-`TeamsUserCredential` represents Teams current user's identity. Using this credential will request user consent at the first time.
-`M365TenantCredential` represents Microsoft 365 tenant identity. It is usually used when user is not involved like time-triggered automation job.
-`OnBehalfOfUserCredential` uses on-behalf-of flow. It needs an access token and you can get a new token for different scope. It's designed to be used in Azure Function or Bot scenarios.
+`TeamsUserCredential` represents Teams current user's identity. Using this credential will request user consent at the first time. It is automatically used when developer choose "User" identity in browser scenario.
+`M365TenantCredential` represents Microsoft 365 tenant identity. It is usually used when user is not involved like time-triggered automation job. It is automatically used when developer choose "App" identity in NodeJS scenario.
+`OnBehalfOfUserCredential` uses on-behalf-of flow. It needs an access token and you can get a new token for different scope. It's designed to be used in Azure Function or Bot scenarios. It is automatically used when developer choose "User" identity in NodeJS scenario.
 
 ### Bot
 
@@ -127,8 +131,8 @@ For example, to filter out specific error, you could use the following check:
 
 ```ts
 try {
-  const credential = new TeamsUserCredential();
-  await credential.login("User.Read");
+  const teamsfx = new TeamsFx();
+  await teamsfx.login("User.Read");
 } catch (err: unknown) {
   if (err instanceof ErrorWithCode && err.code !== ErrorCode.ConsentFailed) {
     throw err;
@@ -143,8 +147,8 @@ And if credential instance is used in other library like Microsoft Graph, it's p
 
 ```ts
 try {
-  const credential = new TeamsUserCredential();
-  const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
+  const teamsfx = new TeamsFx();
+  const graphClient = createMicrosoftGraphClient(teamsfx, ["User.Read"]); // Initializes MS Graph SDK using our MsGraphAuthProvider
   const profile = await graphClient.api("/me").get();
 } catch (err: unknown) {
   // ErrorWithCode is handled by Graph client
@@ -168,11 +172,11 @@ The following sections provide several code snippets covering some of the most c
 
 ### Use Graph API in tab app
 
-Use `TeamsUserCredential` and `createMicrosoftGraphClient`.
+Use `TeamsFx` and `createMicrosoftGraphClient`.
 
 ```ts
-const credential: any = new TeamsUserCredential();
-const graphClient = createMicrosoftGraphClient(credential, ["User.Read"]);
+const teamsfx = new TeamsFx();
+const graphClient = createMicrosoftGraphClient(teamsfx, ["User.Read"]);
 const profile = await graphClient.api("/me").get();
 ```
 
@@ -181,11 +185,11 @@ const profile = await graphClient.api("/me").get();
 Use `axios` library to make HTTP request to Azure Function.
 
 ```ts
-const credential: any = new TeamsUserCredential();
-const token = credential.getToken(""); // Get SSO token for the user
+const teamsfx = new TeamsFx();
+const token = teamsfx.Credential.getToken(""); // Get SSO token for the user
 // Call API hosted in Azure Functions on behalf of user
-const apiConfig = getApiConfigFromEnv();
-const response = await axios.default.get(apiConfig.endpoint + "api/httptrigger1", {
+const apiEndpoint = teamsfx.getConfig("apiEndpoint");
+const response = await axios.default.get(apiEndpoint + "api/httptrigger1", {
   headers: {
     authorization: "Bearer " + token,
   },
@@ -204,11 +208,11 @@ Apart from `tedious`, you can also compose connection config of other SQL librar
 //    sqlUsername: process.env.SQL_USER_NAME,
 //    sqlPassword: process.env.SQL_PASSWORD,
 // });
-const sqlConnectConfig = new DefaultTediousConnectionConfiguration();
+const teamsfx = new TeamsFx();
 // if there's only one SQL database
-const config = await sqlConnectConfig.getConfig();
+const config = await getTediousConnectionConfig(teamsfx);
 // if there are multiple SQL databases
-const config2 = await sqlConnectionConfig.getConfig("your database name");
+const config2 = await getTediousConnectionConfig(teamsfx, "your database name");
 const connection = new Connection(config);
 connection.on("connect", (error) => {
   if (error) {
@@ -226,7 +230,11 @@ const authConfig = {
   authorityHost: process.env.M365_AUTHORITY_HOST,
   tenantId: process.env.M365_TENANT_ID,
 };
-const credential = new M365TenantCredential(authConfig);
+const teamsfx = new TeamsFx(IdentityType.App);
+teamsfx.setCustomeConfig({
+  certificateContent: "The content of a PEM-encoded public/private key certificate"
+});
+const token = teamsfx.Credential.getToken();
 ```
 
 ### Use Graph API in Bot application
@@ -242,8 +250,9 @@ const convoState = new ConversationState(new MemoryStorage());
 const dialogState = convoState.createProperty("dialogState");
 const dialogs = new DialogSet(dialogState);
 
+const teamsfx = new TeamsFx();
 dialogs.add(
-  new TeamsBotSsoPrompt("TeamsBotSsoPrompt", {
+  new TeamsBotSsoPrompt(teamsfx, "TeamsBotSsoPrompt", {
     scopes: ["User.Read"],
   })
 );

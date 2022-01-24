@@ -66,10 +66,6 @@ export interface PluginDeployInputs extends InputsWithProjectPath {
 
 export interface Plugin {
   /**
-   * plugin type
-   */
-  type: "scaffold" | "resource";
-  /**
    * unique identifier for plugin in IoC container
    */
   name: string;
@@ -79,11 +75,36 @@ export interface Plugin {
   displayName?: string;
 }
 
+export interface AppManifestProvider {
+  loadManifest: (
+    ctx: Context,
+    inputs: InputsWithProjectPath
+  ) => Promise<Result<AppManifest, FxError>>;
+
+  saveManifest: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    manifest: AppManifest
+  ) => Promise<Result<Void, FxError>>;
+
+  addCapabilities: (
+    ctx: Context,
+    inputs: InputsWithProjectPath,
+    capabilities: (
+      | { name: "staticTab"; snippet?: Json; existing?: boolean }
+      | { name: "configurableTab"; snippet?: Json; existing?: boolean }
+      | { name: "Bot"; snippet?: Json; existing?: boolean }
+      | {
+          name: "MessageExtension";
+          snippet?: Json;
+          existing?: boolean;
+        }
+    )[]
+  ) => Promise<Result<Void, FxError>>;
+}
+
 export interface ContextWithManifest extends Context {
-  appManifest: {
-    local: AppManifest;
-    remote: AppManifest;
-  };
+  appManifestProvider: AppManifestProvider;
 }
 
 export interface ScaffoldPlugin extends Plugin {
@@ -226,6 +247,128 @@ export interface ResourcePlugin extends Plugin {
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
+  executeUserTask?: (
+    ctx: Context,
+    inputs: Inputs,
+    func: Func,
+    localSettings: Json,
+    envInfo: EnvInfoV3,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<unknown, FxError>>;
+}
+
+export interface FeaturePlugin extends Plugin {
+  /**
+   * resource description
+   */
+  description?: string;
+
+  /**
+   * return dependent plugin names, when adding feature
+   * If plugin A depends on plugin B, when plugin A is added into the project, plugin B will also be added
+   */
+  pluginDependencies?(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>>;
+
+  /**
+   * scaffold questions
+   */
+  getQuestionsForScaffold?: (
+    ctx: Context,
+    inputs: Inputs
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  /**
+   * scaffold source code
+   */
+  scaffold: (
+    ctx: ContextWithManifest,
+    inputs: InputsWithProjectPath
+  ) => Promise<Result<Json | undefined, FxError>>;
+  /**
+   * generate resource template
+   */
+  generateResourceTemplate?: (
+    ctx: ContextWithManifest,
+    inputs: InputsWithProjectPath
+  ) => Promise<Result<ResourceTemplate, FxError>>;
+  /**
+   * update resource template
+   */
+  updateResourceTemplate?: (
+    ctx: ContextWithManifest,
+    inputs: InputsWithProjectPath
+  ) => Promise<Result<ResourceTemplate, FxError>>;
+
+  /**
+   * customize questions needed for local debug
+   */
+  getQuestionsForLocalProvision?: (
+    ctx: Context,
+    inputs: Inputs,
+    tokenProvider: TokenProvider,
+    localSettings?: DeepReadonly<Json>
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  provisionLocalResource?: (
+    ctx: ContextWithManifest,
+    inputs: InputsWithProjectPath,
+    localSettings: Json,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Json, FxError>>;
+  configureLocalResource?: (
+    ctx: ContextWithManifest,
+    inputs: InputsWithProjectPath,
+    localSettings: Json,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Void, FxError>>;
+
+  /**
+   * customize questions needed for provision
+   */
+  getQuestionsForProvision?: (
+    ctx: Context,
+    inputs: Inputs,
+    tokenProvider: TokenProvider,
+    envInfo?: DeepReadonly<EnvInfoV3>
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  provisionResource?: (
+    ctx: ContextWithManifest,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<CloudResource, FxError>>;
+  configureResource?: (
+    ctx: ContextWithManifest,
+    inputs: InputsWithProjectPath,
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<Void, FxError>>;
+
+  /**
+   * customize questions needed for deploy
+   */
+  getQuestionsForDeploy?: (
+    ctx: Context,
+    inputs: Inputs,
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
+  deploy?: (
+    ctx: Context,
+    inputs: PluginDeployInputs,
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ) => Promise<Result<Void, FxError>>;
+
+  /**
+   * customize questions needed for user task
+   */
+  getQuestionsForUserTask?: (
+    ctx: Context,
+    inputs: Inputs,
+    func: Func,
+    localSettings: Json,
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
+  ) => Promise<Result<QTreeNode | undefined, FxError>>;
   executeUserTask?: (
     ctx: Context,
     inputs: Inputs,

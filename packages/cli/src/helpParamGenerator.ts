@@ -161,9 +161,9 @@ export class HelpParamGenerator {
 
     // Change which_platform to platform for addCICDWorkflows.
     if (stage === "addCICDWorkflows") {
-      root?.children?.array.forEach((part, index, theArray) => {
-        if (part.name === "which_platform") {
-          theArray[index].name = "platform";
+      root?.children?.forEach((part, index, theArray) => {
+        if (part.data.name === "which_platform") {
+          theArray[index].data.name = "platform";
         }
       });
     }

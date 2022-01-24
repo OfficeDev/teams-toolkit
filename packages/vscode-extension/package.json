@@ -792,10 +792,10 @@
         }
       },
       {
-        "title": "Validation",
+        "title": "Prerequisite Check",
         "order": 2,
         "properties": {
-          "fx-extension.validation": {
+          "fx-extension.prerequisiteCheck": {
             "type": "object",
             "properties": {
               "node": {

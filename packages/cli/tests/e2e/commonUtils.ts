@@ -63,6 +63,9 @@ export async function execAsyncWithRetry(
       return result;
     } catch (e) {
       console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout`);
+      }
       if (newCommand) {
         command = newCommand;
       }

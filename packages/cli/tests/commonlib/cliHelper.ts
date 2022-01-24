@@ -8,17 +8,26 @@ export class CliHelper {
     projectPath: string,
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const result = await execAsync(`teamsfx account set --subscription ${subscription}`, {
-      cwd: projectPath,
-      env: processEnv ? processEnv : process.env,
-      timeout: 0,
-    });
-    if (result.stderr) {
-      console.error(
-        `[Failed] set subscription for ${projectPath}. Error message: ${result.stderr}`
-      );
-    } else {
-      console.log(`[Successfully] set subscription for ${projectPath}`);
+    const command = `teamsfx account set --subscription ${subscription}`;
+    const timeout = 10000;
+    try {
+      const result = await execAsync(command, {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: timeout,
+      });
+      if (result.stderr) {
+        console.error(
+          `[Failed] set subscription for ${projectPath}. Error message: ${result.stderr}`
+        );
+      } else {
+        console.log(`[Successfully] set subscription for ${projectPath}`);
+      }
+    } catch (e) {
+      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
     }
   }
 
@@ -36,14 +45,11 @@ export class CliHelper {
   }
 
   static async provisionProject(projectPath: string, option = "", processEnv?: NodeJS.ProcessEnv) {
-    console.log("[dilin-debug] start provisionProject " + projectPath + " with timeout 10");
     const result = await execAsyncWithRetry(`teamsfx provision ${option}`, {
       cwd: projectPath,
       env: processEnv ? processEnv : process.env,
       timeout: 10,
     });
-    console.log(`[dilin-debug] after provisionProject. Result:${JSON.stringify(result)}`);
-    console.log(`[dilin-debug] result.stderr: ${result.stderr}. result.stdout:${result.stdout}`);
 
     if (result.stderr) {
       console.error(`[Failed] provision ${projectPath}. Error message: ${result.stderr}`);

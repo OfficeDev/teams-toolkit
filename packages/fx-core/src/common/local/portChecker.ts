@@ -2,12 +2,7 @@
 // Licensed under the MIT license.
 "use strict";
 
-import {
-  LogProvider,
-  ProjectSettings,
-  returnUserError,
-  TelemetryReporter,
-} from "@microsoft/teamsfx-api";
+import { LogProvider, ProjectSettings, returnUserError } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import detectPort from "detect-port";
 

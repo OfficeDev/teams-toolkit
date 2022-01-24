@@ -2,13 +2,20 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { LogProvider, ProjectSettings } from "@microsoft/teamsfx-api";
+import {
+  LogProvider,
+  ProjectSettings,
+  returnUserError,
+  TelemetryReporter,
+} from "@microsoft/teamsfx-api";
 import * as path from "path";
 import detectPort from "detect-port";
 
 import { FolderName } from "./constants";
 import { loadTeamsFxDevScript } from "./packageJsonHelper";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
+import { sendTelemetryErrorEvent, sendTelemetryEvent, TelemetryEvent } from "./telemetry";
+import { CoreSource } from "../../core/error";
 
 const frontendPortsV1 = [3000];
 const frontendPorts = [53000];
@@ -21,14 +28,26 @@ const botDebugPortRegex = /--inspect[\s]*=[\s"']*9239/im;
 const botDebugPorts = [9239];
 const botServicePorts = [3978];
 
-async function detectPortListening(port: number, logger?: LogProvider): Promise<boolean> {
+async function detectPortListening(
+  port: number,
+  logger?: LogProvider,
+  telemetry?: TelemetryReporter
+): Promise<boolean> {
   try {
-    logger?.info(`Start to detect port: ${port}`);
+    sendTelemetryEvent(telemetry, TelemetryEvent.DetectPortStart, { port: port.toString() });
     const portChosen = await detectPort(port);
-    logger?.info(`Detect port successfully. Port is${portChosen !== port ? " not " : " "}in use.`);
+    sendTelemetryEvent(telemetry, TelemetryEvent.DetectPort, {
+      portChosen: portChosen.toString(),
+      port: port.toString(),
+    });
     return portChosen !== port;
   } catch (error: any) {
     // ignore any error to not block debugging
+    sendTelemetryErrorEvent(
+      telemetry,
+      TelemetryEvent.DetectPort,
+      returnUserError(error, CoreSource, "DetectPortError")
+    );
     logger?.warning(`Failed to detect port. ${error?.message} `);
     return false;
   }
@@ -37,8 +56,9 @@ async function detectPortListening(port: number, logger?: LogProvider): Promise<
 export async function getPortsInUse(
   projectPath: string,
   projectSettings: ProjectSettings,
+  ignoreDebugPort?: boolean,
   logger?: LogProvider,
-  ignoreDebugPort?: boolean
+  telemetry?: TelemetryReporter
 ): Promise<number[]> {
   const ports: number[] = [];
 
@@ -78,7 +98,7 @@ export async function getPortsInUse(
 
   const portsInUse: number[] = [];
   for (const port of ports) {
-    if (await detectPortListening(port, logger)) {
+    if (await detectPortListening(port, logger, telemetry)) {
       portsInUse.push(port);
     }
   }

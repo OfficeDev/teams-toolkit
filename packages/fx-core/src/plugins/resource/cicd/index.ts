@@ -44,10 +44,10 @@ export class CICDPluginV2 implements ResourcePlugin {
 
   public cicdImpl: CICDImpl = new CICDImpl();
 
-  public async addCICDWorkflows(context: Context, projectPath: string): Promise<FxResult> {
+  public async addCICDWorkflows(context: Context, projectPath: string, template: string, envName: string): Promise<FxResult> {
     const result = await this.runWithExceptionCatching(
       context,
-      () => this.cicdImpl.addCICDWorkflows(context, projectPath),
+      () => this.cicdImpl.addCICDWorkflows(context, projectPath, template, envName),
       true,
       LifecycleFuncNames.ADD_CICD_WORKFLOWS
     );
@@ -99,7 +99,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     if (func.method === "addCICDWorkflows") {
       return await this.runWithExceptionCatching(
         ctx,
-        () => this.addCICDWorkflows(ctx, inputs.projectPath!),
+        () => this.addCICDWorkflows(ctx, inputs.projectPath!, inputs["template"], envInfo.envName),
         true,
         LifecycleFuncNames.ADD_CICD_WORKFLOWS
       );

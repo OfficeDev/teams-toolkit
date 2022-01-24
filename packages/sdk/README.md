@@ -52,7 +52,6 @@ By default the SDK will use environment variables, you can also override it when
   * M365_TENANT_ID
   * M365_CLIENT_ID
   * M365_CLIENT_SECRET
-  * SIMPLE_AUTH_ENDPOINT
   * INITIATE_LOGIN_ENDPOINT
   * M365_APPLICATION_ID_URI
   * API_ENDPOINT
@@ -73,7 +72,6 @@ Use the snippet below:
 // const teamsfx = new TeamsFx(IdentityType.User);
 // teamsfx.setCustomConfig({
 //   initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-//   simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
 //   clientId: process.env.REACT_APP_CLIENT_ID,
 // });
 const teamsfx = new TeamsFx();
@@ -91,7 +89,6 @@ Use the snippet below:
 // const teamsfx = new TeamsFx(IdentityType.App);
 // teamsfx.setCustomConfig({
 //   initiateLoginEndpoint: process.env.REACT_APP_START_LOGIN_PAGE_URL,
-//   simpleAuthEndpoint: process.env.REACT_APP_TEAMSFX_ENDPOINT,
 //   clientId: process.env.REACT_APP_CLIENT_ID,
 // });
 const teamsfx = new TeamsFx(IdentityType.App);

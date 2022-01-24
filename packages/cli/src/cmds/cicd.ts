@@ -27,6 +27,12 @@ export default class CICD extends YargsCommand {
     return yargs.version(false).options(this.params);
   }
 
+  public modifyArguments(args: { [argName: string]: any }): { [argName: string]: any } {
+    args["platform"] = args["which_platform"];
+    delete args["platform"];
+    return args;
+  }
+
   public async runCommand(args: {
     [argName: string]: string | string[];
   }): Promise<Result<null, FxError>> {

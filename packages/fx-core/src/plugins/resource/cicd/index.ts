@@ -70,7 +70,7 @@ export class CICDPluginV2 implements ResourcePlugin {
       name: "which_platform",
       type: "singleSelect",
       staticOptions: [githubOption, azdoOption, jenkinsOption],
-      title: "Choose your CI/CD Platform",
+      title: "Select a CI/CD Platform",
       default: githubOption.id,
     });
 
@@ -78,7 +78,7 @@ export class CICDPluginV2 implements ResourcePlugin {
       name: "template",
       type: "multiSelect",
       staticOptions: [ciOption, cdOption, provisionOption, publishOption],
-      title: "Choose your workflow type",
+      title: "Select template(s)",
       default: [ciOption.id],
     });
 

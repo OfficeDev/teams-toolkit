@@ -579,12 +579,12 @@ sku: {
 kind: 'app'
 }
 `;
-  const simpleAuthTestServerFarm = "simpleAuth_testResource";
+  const frontendHostingTestServerFarm = "frontendhosting_testResource";
   await fs.appendFile(
-    path.join(bicepFileFolder, TestFilePath.provisionFolder, "simpleAuth.bicep"),
-    customizedServerFarmsBicepTemplate.replace(pattern, simpleAuthTestServerFarm)
+    path.join(bicepFileFolder, TestFilePath.provisionFolder, "frontendHosting.bicep"),
+    customizedServerFarmsBicepTemplate.replace(pattern, frontendHostingTestServerFarm)
   );
-  newServerFarms.push(simpleAuthTestServerFarm);
+  newServerFarms.push(frontendHostingTestServerFarm);
 
   const provisionTestServerFarm = "provision_testResource";
   await fs.appendFile(

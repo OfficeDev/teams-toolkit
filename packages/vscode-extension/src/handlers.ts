@@ -64,6 +64,8 @@ import {
   isMigrateFromV1Project,
   isUserCancelError,
   isValidProject,
+  LocalEnvManager,
+  ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import GraphManagerInstance from "./commonlib/graphLogin";
@@ -207,7 +209,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await envTree.registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
-    automaticNpmInstallHandler();
+    automaticNpmInstallHandler(false, false, false);
     await postUpgrade();
     ExtTelemetry.isFromSample = await getIsFromSample();
     ExtTelemetry.settingsVersion = await getSettingsVersion();
@@ -417,7 +419,15 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
     namespace: "fx-solution-azure",
     method: "addResource",
   };
-  return await runUserTask(func, TelemetryEvent.AddResource, true);
+  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter, VS_CODE_UI);
+  const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+  const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
+  const result = await runUserTask(func, TelemetryEvent.AddResource, true);
+  if (result.isOk() && !includeBackend) {
+    await globalStateUpdate("automaticNpmInstall", true);
+    automaticNpmInstallHandler(true, includeBackend, true);
+  }
+  return result;
 }
 
 export async function addCapabilityHandler(args: any[]): Promise<Result<null, FxError>> {
@@ -426,7 +436,16 @@ export async function addCapabilityHandler(args: any[]): Promise<Result<null, Fx
     namespace: "fx-solution-azure",
     method: "addCapability",
   };
-  return await runUserTask(func, TelemetryEvent.AddCap, true);
+  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter, VS_CODE_UI);
+  const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+  const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+  const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
+  const result = await runUserTask(func, TelemetryEvent.AddCap, true);
+  if (result.isOk()) {
+    await globalStateUpdate("automaticNpmInstall", true);
+    automaticNpmInstallHandler(includeFrontend, true, includeBot);
+  }
+  return result;
 }
 
 export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {

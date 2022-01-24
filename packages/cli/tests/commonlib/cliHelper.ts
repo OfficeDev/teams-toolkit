@@ -9,7 +9,7 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv
   ) {
     const command = `teamsfx account set --subscription ${subscription}`;
-    const timeout = 10000;
+    const timeout = 100000;
     try {
       const result = await execAsync(command, {
         cwd: projectPath,

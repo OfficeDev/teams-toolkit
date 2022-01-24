@@ -36,11 +36,15 @@ export class CliHelper {
   }
 
   static async provisionProject(projectPath: string, option = "", processEnv?: NodeJS.ProcessEnv) {
+    console.log("[dilin-debug] start provisionProject " + projectPath + " with timeout 10");
     const result = await execAsyncWithRetry(`teamsfx provision ${option}`, {
       cwd: projectPath,
       env: processEnv ? processEnv : process.env,
-      timeout: 0,
+      timeout: 10,
     });
+    console.log(`[dilin-debug] after provisionProject. Result:${JSON.stringify(result)}`);
+    console.log(`[dilin-debug] result.stderr: ${result.stderr}. result.stdout:${result.stdout}`);
+
     if (result.stderr) {
       console.error(`[Failed] provision ${projectPath}. Error message: ${result.stderr}`);
     } else {

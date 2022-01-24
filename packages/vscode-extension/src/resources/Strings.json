@@ -110,7 +110,9 @@
       "grantPermissionSucceeded": "Added account: '%s' to the environment '%s' as the Teams app owner.",
       "grantPermissionWarningSpfx": "If added user is not a SharePoint App Catalog site admin, you need to manually setup access policy via SharePoint admin center. ",
       "grantPermissionWarning": "If added user cannot access Azure resources, you need to manually setup access policy via Azure portal. ",
-      "referLinkForMoreDetails": "Please refer to this link for more details: "
+      "referLinkForMoreDetails": "Please refer to this link for more details: ",
+      "disableAutomaticNpmInstall": "Disable Auto NPM Install",
+      "automaticNpmInstall": "Teams Toolkit will automatically install packages required for your project. Please refer to the command window prompt to view execution details. You can also disable this by clicking the button below and uncheck \"Automatic NPM Install\" in the settings page."
     },
     "progressHandler": {
       "teamsToolkitComponent": "[Teams Toolkit]",

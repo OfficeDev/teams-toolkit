@@ -167,4 +167,8 @@ export namespace ExtTelemetry {
 
     reporter.sendTelemetryException(error, properties, measurements);
   }
+
+  export async function dispose() {
+    await reporter.dispose();
+  }
 }

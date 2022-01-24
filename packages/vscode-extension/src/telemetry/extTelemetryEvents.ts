@@ -118,9 +118,6 @@ export enum TelemetryEvent {
   ListCollaboratorStart = "list-collaborator-start",
   ListCollaborator = "list-collaborator",
 
-  ListAllCollaboratorsStart = "list-all-collaborators-start",
-  ListAllCollaborators = "list-all-collaborators",
-
   GrantPermissionStart = "grant-permission-start",
   GrantPermission = "grant-permission",
 

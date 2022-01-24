@@ -45,7 +45,6 @@ import {
   SystemError,
   TemplateFolderName,
   Tools,
-  TreeItem,
   UserError,
   Void,
   VsCodeEnv,
@@ -66,6 +65,8 @@ import {
   isMigrateFromV1Project,
   isUserCancelError,
   isValidProject,
+  LocalEnvManager,
+  ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import GraphManagerInstance from "./commonlib/graphLogin";
@@ -112,11 +113,11 @@ import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
-import { registerEnvTreeHandler } from "./envTree";
+import * as envTree from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
-import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
+import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
@@ -125,6 +126,7 @@ import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { generateAccountHint } from "./debug/teamsfxDebugProvider";
 import { ext } from "./extensionVariables";
 import * as uuid from "uuid";
+import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -205,9 +207,10 @@ export async function activate(): Promise<Result<Void, FxError>> {
     core = new FxCore(tools);
     registerCoreEvents();
     await registerAccountTreeHandler();
-    await registerEnvTreeHandler();
+    await envTree.registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
+    automaticNpmInstallHandler(false, false, false);
     await postUpgrade();
     ExtTelemetry.isFromSample = await getIsFromSample();
     ExtTelemetry.settingsVersion = await getSettingsVersion();
@@ -288,7 +291,7 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   }
 
   if (needRefresh) {
-    await registerEnvTreeHandler();
+    await envTree.registerEnvTreeHandler();
   }
 }
 
@@ -352,7 +355,12 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   if (result.isOk()) {
-    commands.executeCommand("vscode.openFolder", result.value);
+    await ExtTelemetry.dispose();
+    // after calling dispose(), let reder process to while for a while instead of directly call "open folder"
+    // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
+    setTimeout(() => {
+      commands.executeCommand("vscode.openFolder", result.value);
+    }, 3000);
   }
   return result;
 }
@@ -412,7 +420,15 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
     namespace: "fx-solution-azure",
     method: "addResource",
   };
-  return await runUserTask(func, TelemetryEvent.AddResource, true);
+  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter, VS_CODE_UI);
+  const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+  const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
+  const result = await runUserTask(func, TelemetryEvent.AddResource, true);
+  if (result.isOk() && !includeBackend) {
+    await globalStateUpdate("automaticNpmInstall", true);
+    automaticNpmInstallHandler(true, includeBackend, true);
+  }
+  return result;
 }
 
 export async function addCapabilityHandler(args: any[]): Promise<Result<null, FxError>> {
@@ -421,7 +437,16 @@ export async function addCapabilityHandler(args: any[]): Promise<Result<null, Fx
     namespace: "fx-solution-azure",
     method: "addCapability",
   };
-  return await runUserTask(func, TelemetryEvent.AddCap, true);
+  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter, VS_CODE_UI);
+  const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+  const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+  const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
+  const result = await runUserTask(func, TelemetryEvent.AddCap, true);
+  if (result.isOk()) {
+    await globalStateUpdate("automaticNpmInstall", true);
+    automaticNpmInstallHandler(includeFrontend, true, includeBot);
+  }
+  return result;
 }
 
 export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -506,7 +531,7 @@ export async function provisionHandler(args?: any[]): Promise<Result<null, FxErr
     return result;
   } else {
     // refresh env tree except provision cancelled.
-    await registerEnvTreeHandler();
+    await envTree.registerEnvTreeHandler();
     return result;
   }
 }
@@ -1319,13 +1344,13 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   );
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
-    await registerEnvTreeHandler();
+    await envTree.registerEnvTreeHandler();
   }
   return result;
 }
 
 export async function refreshEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
-  return await registerEnvTreeHandler();
+  return await envTree.registerEnvTreeHandler();
 }
 
 function getSubscriptionUrl(subscriptionInfo: SubscriptionInfo): string {
@@ -2068,7 +2093,7 @@ export async function signOutM365(isFromTreeView: boolean) {
     ]);
   }
 
-  await registerEnvTreeHandler();
+  await envTree.registerEnvTreeHandler();
 }
 
 export async function signInAzure() {

@@ -48,7 +48,7 @@ export class CliHelper {
     const result = await execAsyncWithRetry(`teamsfx provision ${option}`, {
       cwd: projectPath,
       env: processEnv ? processEnv : process.env,
-      timeout: 10,
+      timeout: 0,
     });
 
     if (result.stderr) {

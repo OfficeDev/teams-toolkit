@@ -32,15 +32,27 @@ export class CliHelper {
   }
 
   static async addEnv(env: string, projectPath: string, processEnv?: NodeJS.ProcessEnv) {
-    const result = await execAsync(`teamsfx env add ${env} --env dev`, {
-      cwd: projectPath,
-      env: processEnv ? processEnv : process.env,
-      timeout: 0,
-    });
-    if (result.stderr) {
-      console.error(`[Failed] add environment for ${projectPath}. Error message: ${result.stderr}`);
-    } else {
-      console.log(`[Successfully] add environment for ${projectPath}`);
+    const command = `teamsfx env add ${env} --env dev`;
+    const timeout = 100000;
+
+    try {
+      const result = await execAsync(command, {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: timeout,
+      });
+      if (result.stderr) {
+        console.error(
+          `[Failed] add environment for ${projectPath}. Error message: ${result.stderr}`
+        );
+      } else {
+        console.log(`[Successfully] add environment for ${projectPath}`);
+      }
+    } catch (e) {
+      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
     }
   }
 
@@ -91,36 +103,51 @@ export class CliHelper {
     processEnv?: NodeJS.ProcessEnv,
     options = ""
   ) {
-    const result = await execAsync(
-      `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`,
-      {
+    const command = `teamsfx new --interactive false --app-name ${appName} --capabilities ${capability} ${options}`;
+    const timeout = 100000;
+    try {
+      const result = await execAsync(command, {
         cwd: testFolder,
         env: processEnv ? processEnv : process.env,
-        timeout: 0,
+        timeout: timeout,
+      });
+      const message = `scaffold project to ${path.resolve(
+        testFolder,
+        appName
+      )} with capability ${capability}`;
+      if (result.stderr) {
+        console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+      } else {
+        console.log(`[Successfully] ${message}`);
       }
-    );
-    const message = `scaffold project to ${path.resolve(
-      testFolder,
-      appName
-    )} with capability ${capability}`;
-    if (result.stderr) {
-      console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
-    } else {
-      console.log(`[Successfully] ${message}`);
+    } catch (e) {
+      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
     }
   }
 
   static async addCapabilityToProject(projectPath: string, capabilityToAdd: Capability) {
-    const result = await execAsync(`teamsfx capability add ${capabilityToAdd}`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
-    const message = `add capability ${capabilityToAdd} to ${projectPath}`;
-    if (result.stderr) {
-      console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
-    } else {
-      console.log(`[Successfully] ${message}`);
+    const command = `teamsfx capability add ${capabilityToAdd}`;
+    const timeout = 100000;
+    try {
+      const result = await execAsync(command, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: timeout,
+      });
+      const message = `add capability ${capabilityToAdd} to ${projectPath}`;
+      if (result.stderr) {
+        console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+      } else {
+        console.log(`[Successfully] ${message}`);
+      }
+    } catch (e) {
+      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
     }
   }
 
@@ -130,39 +157,57 @@ export class CliHelper {
     options = "",
     processEnv?: NodeJS.ProcessEnv
   ) {
-    const result = await execAsync(`teamsfx resource add ${resourceToAdd} ${options}`, {
-      cwd: projectPath,
-      env: processEnv ? processEnv : process.env,
-      timeout: 0,
-    });
-    const message = `add resource ${resourceToAdd} to ${projectPath}`;
-    if (result.stderr) {
-      console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
-    } else {
-      console.log(`[Successfully] ${message}`);
+    const command = `teamsfx resource add ${resourceToAdd} ${options}`;
+    const timeout = 100000;
+    try {
+      const result = await execAsync(command, {
+        cwd: projectPath,
+        env: processEnv ? processEnv : process.env,
+        timeout: timeout,
+      });
+      const message = `add resource ${resourceToAdd} to ${projectPath}`;
+      if (result.stderr) {
+        console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
+      } else {
+        console.log(`[Successfully] ${message}`);
+      }
+    } catch (e) {
+      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
+      }
     }
   }
 
   static async getUserSettings(key: string, projectPath: string, env: string): Promise<string> {
     let value = "";
-    const result = await execAsync(`teamsfx config get ${key} --env ${env}`, {
-      cwd: projectPath,
-      env: process.env,
-      timeout: 0,
-    });
+    const command = `teamsfx config get ${key} --env ${env}`;
+    const timeout = 100000;
+    try {
+      const result = await execAsync(command, {
+        cwd: projectPath,
+        env: process.env,
+        timeout: timeout,
+      });
 
-    const message = `get user settings in ${projectPath}. Key: ${key}`;
-    if (result.stderr) {
-      console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
-    } else {
-      const arr = (result.stdout as string).split(":");
-      if (!arr || arr.length <= 1) {
-        console.error(
-          `[Failed] ${message}. Failed to get value from cli result. result: ${result.stdout}`
-        );
+      const message = `get user settings in ${projectPath}. Key: ${key}`;
+      if (result.stderr) {
+        console.error(`[Failed] ${message}. Error message: ${result.stderr}`);
       } else {
-        value = arr[1].trim() as string;
-        console.log(`[Successfully] ${message}.`);
+        const arr = (result.stdout as string).split(":");
+        if (!arr || arr.length <= 1) {
+          console.error(
+            `[Failed] ${message}. Failed to get value from cli result. result: ${result.stdout}`
+          );
+        } else {
+          value = arr[1].trim() as string;
+          console.log(`[Successfully] ${message}.`);
+        }
+      }
+    } catch (e) {
+      console.log(`Run \`${command}\` failed with error msg: ${JSON.stringify(e)}.`);
+      if (e.killed && e.signal == "SIGTERM") {
+        console.log(`Command ${command} killed due to timeout ${timeout}`);
       }
     }
     return value;

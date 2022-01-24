@@ -510,7 +510,7 @@ suite("handlers", () => {
       await handlers.editManifestTemplate(args);
       console.log(openTextDocument.args[0][0]);
       chai.assert.equal(
-        openTextDocument.args[0],
+        openTextDocument.args[0][0],
         "undefined/templates/appPackage/manifest.remote.template.json" as any
       );
       chai.assert.isTrue(

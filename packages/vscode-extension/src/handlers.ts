@@ -706,7 +706,7 @@ function showWarningMessageWithProvisionButton(message: string): void {
     .showWarningMessage(message, StringResources.vsc.handlers.provisionResourcesButton)
     .then((result) => {
       if (result === StringResources.vsc.handlers.provisionResourcesButton) {
-        return runCommand(Stage.provision);
+        return Correlator.run(provisionHandler);
       }
     });
 }

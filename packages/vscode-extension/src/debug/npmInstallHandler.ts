@@ -21,6 +21,7 @@ import { runTask } from "./teamsfxTaskHandler";
 import { createTask } from "./teamsfxTaskProvider";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
+import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
 
 export async function runNpmInstallAll(projectRoot: string): Promise<void> {
   const packageJson = await loadPackageJson(path.join(projectRoot, "package.json"));
@@ -51,25 +52,44 @@ export async function automaticNpmInstallHandler(
       const workspaceFolder = vscode.workspace.workspaceFolders![0];
       const workspacePath = workspaceFolder.uri.fsPath;
       const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
-      let showMessage = false;
+      const tasks: Map<string, Promise<number | undefined>> = new Map();
       if (ProjectSettingsHelper.isSpfx(projectSettings)) {
-        showMessage = true;
-        runTask(await createTask(TaskDefinition.spfxInstall(workspacePath), workspaceFolder));
+        tasks.set(
+          "spfx",
+          runTask(await createTask(TaskDefinition.spfxInstall(workspacePath), workspaceFolder))
+        );
       } else {
         if (!excludeFrontend && ProjectSettingsHelper.includeFrontend(projectSettings)) {
-          showMessage = true;
-          runTask(await createTask(TaskDefinition.frontendInstall(workspacePath), workspaceFolder));
+          tasks.set(
+            "frontend",
+            runTask(
+              await createTask(TaskDefinition.frontendInstall(workspacePath), workspaceFolder)
+            )
+          );
         }
         if (!excludeBackend && ProjectSettingsHelper.includeBackend(projectSettings)) {
-          showMessage = true;
-          runTask(await createTask(TaskDefinition.backendInstall(workspacePath), workspaceFolder));
+          tasks.set(
+            "backend",
+            runTask(await createTask(TaskDefinition.backendInstall(workspacePath), workspaceFolder))
+          );
         }
         if (!excludeBot && ProjectSettingsHelper.includeBot(projectSettings)) {
-          showMessage = true;
-          runTask(await createTask(TaskDefinition.botInstall(workspacePath), workspaceFolder));
+          tasks.set(
+            "bot",
+            runTask(await createTask(TaskDefinition.botInstall(workspacePath), workspaceFolder))
+          );
         }
       }
-      if (showMessage) {
+      if (tasks.size > 0) {
+        try {
+          const properties: { [key: string]: string } = {};
+          for (const key of tasks.keys()) {
+            properties[key] = "true";
+          }
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AutomaticNpmInstallStart, properties);
+        } catch {
+          // ignore telemetry error
+        }
         VS_CODE_UI.showMessage(
           "info",
           StringResources.vsc.handlers.automaticNpmInstall,
@@ -84,8 +104,24 @@ export async function automaticNpmInstallHandler(
               "workbench.action.openSettings",
               ConfigurationKey.AutomaticNpmInstall
             );
+            try {
+              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickDisableAutomaticNpmInstall);
+            } catch {
+              // ignore telemetry error
+            }
           }
         });
+        const keys = tasks.keys();
+        const exitCodes = await Promise.all(tasks.values());
+        try {
+          const properties: { [key: string]: string } = {};
+          for (const exitCode of exitCodes) {
+            properties[keys.next().value] = exitCode + "";
+          }
+          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AutomaticNpmInstall, properties);
+        } catch {
+          // ignore telemetry error
+        }
       }
     }
   }

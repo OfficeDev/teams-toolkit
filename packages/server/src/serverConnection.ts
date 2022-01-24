@@ -87,7 +87,6 @@ export default class ServerConnection implements IServerConnection {
       (params) => this.core.provisionResources(params),
       inputs
     );
-    console.log(res);
     return standardizeResult(res);
   }
 

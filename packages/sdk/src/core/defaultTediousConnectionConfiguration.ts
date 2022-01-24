@@ -1,209 +1,197 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { getResourceConfiguration } from "./configurationProvider";
-import { ResourceType } from "../models/configuration";
 import { AccessToken, ManagedIdentityCredential } from "@azure/identity";
-import { ErrorWithCode, ErrorCode } from "./errors";
 import { ConnectionConfig } from "tedious";
+import { ErrorWithCode, ErrorCode } from "../core/errors";
 import { internalLogger } from "../util/logger";
+import { TeamsFx } from "../core/teamsfx";
 
 /**
- * SQL connection configuration instance.
- * @remarks
- * Only works in in server side.
+ * MSSQL default scope
+ * https://docs.microsoft.com/en-us/azure/app-service/app-service-web-tutorial-connect-msi
+ */
+const defaultSQLScope = "https://database.windows.net/";
+
+/**
+ * Generate connection configuration consumed by tedious.
+ *
+ * @param {TeamsFx} teamsfx - Used to provide configuration and auth
+ * @param { string? } databaseName - specify database name to override default one if there are multiple databases.
+ *
+ * @returns Connection configuration of tedious for the SQL.
+ *
+ * @throws {@link ErrorCode|InvalidConfiguration} when SQL config resource configuration is invalid.
+ * @throws {@link ErrorCode|InternalError} when get user MSI token failed or MSI token is invalid.
+ * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
  *
  * @beta
- *
  */
-export class DefaultTediousConnectionConfiguration {
-  /**
-   * MSSQL default scope
-   * https://docs.microsoft.com/en-us/azure/app-service/app-service-web-tutorial-connect-msi
-   */
-  private readonly defaultSQLScope: string = "https://database.windows.net/";
+export async function getTediousConnectionConfig(
+  teamsfx: TeamsFx,
+  databaseName?: string
+): Promise<ConnectionConfig> {
+  internalLogger.info("Get SQL configuration");
 
-  /**
-   * Generate connection configuration consumed by tedious.
-   *
-   * @param { string? } databaseName - specify database name to override default one if there are multiple databases.
-   *
-   * @returns Connection configuration of tedious for the SQL.
-   *
-   * @throws {@link ErrorCode|InvalidConfiguration} when SQL config resource configuration is invalid.
-   * @throws {@link ErrorCode|InternalError} when get user MSI token failed or MSI token is invalid.
-   * @throws {@link ErrorCode|RuntimeNotSupported} when runtime is browser.
-   *
-   * @beta
-   */
-  public async getConfig(databaseName?: string): Promise<ConnectionConfig> {
-    internalLogger.info("Get SQL configuration");
-    const configuration = <SqlConfiguration>getResourceConfiguration(ResourceType.SQL);
-
-    if (!configuration) {
-      const errMsg = "SQL resource configuration not exist";
-      internalLogger.error(errMsg);
-      throw new ErrorWithCode(errMsg, ErrorCode.InvalidConfiguration);
-    }
-
-    try {
-      this.isSQLConfigurationValid(configuration);
-    } catch (err) {
-      throw err;
-    }
-
-    if (!this.isMsiAuthentication()) {
-      const configWithUPS = this.generateDefaultConfig(configuration, databaseName);
-      internalLogger.verbose("SQL configuration with username and password generated");
-      return configWithUPS;
-    }
-
-    try {
-      const configWithToken = await this.generateTokenConfig(configuration, databaseName);
-      internalLogger.verbose("SQL configuration with MSI token generated");
-      return configWithToken;
-    } catch (error) {
-      throw error;
-    }
+  try {
+    isSQLConfigurationValid(teamsfx);
+  } catch (err) {
+    throw err;
   }
 
-  /**
-   * Check SQL use MSI identity or username and password.
-   *
-   * @returns false - login with SQL MSI identity, true - login with username and password.
-   * @internal
-   */
-  private isMsiAuthentication(): boolean {
-    internalLogger.verbose(
-      "Check connection config using MSI access token or username and password"
+  if (databaseName === "") {
+    internalLogger.warn(`SQL database name is empty string`);
+  }
+  const dbName: string | undefined =
+    databaseName ??
+    (teamsfx.hasConfig("sqlDatabaseName") ? teamsfx.getConfig("sqlDatabaseName") : undefined);
+  if (!isMsiAuthentication(teamsfx)) {
+    const configWithUPS = generateDefaultConfig(teamsfx, dbName);
+    internalLogger.verbose("SQL configuration with username and password generated");
+    return configWithUPS;
+  }
+
+  try {
+    const configWithToken = await generateTokenConfig(teamsfx, dbName);
+    internalLogger.verbose("SQL configuration with MSI token generated");
+    return configWithToken;
+  } catch (error) {
+    throw error;
+  }
+}
+
+/**
+ * check configuration is an available configurations.
+ * @param {TeamsFx} teamsfx - Used to provide configuration and auth
+ *
+ * @returns true - SQL configuration has a valid SQL endpoints, SQL username with password or identity ID.
+ *          false - configuration is not valid.
+ * @internal
+ */
+function isSQLConfigurationValid(teamsfx: TeamsFx) {
+  internalLogger.verbose("Check SQL configuration if valid");
+  if (!teamsfx.hasConfig("sqlServerEndpoint")) {
+    internalLogger.error("SQL configuration is not valid without SQL server endpoint exist");
+    throw new ErrorWithCode(
+      "SQL configuration error without SQL server endpoint exist",
+      ErrorCode.InvalidConfiguration
     );
-    const configuration = <SqlConfiguration>getResourceConfiguration(ResourceType.SQL);
-    if (configuration?.sqlUsername != null && configuration?.sqlPassword != null) {
-      internalLogger.verbose("Login with username and password");
-      return false;
-    }
-    internalLogger.verbose("Login with MSI identity");
-    return true;
   }
-
-  /**
-   * check configuration is an available configurations.
-   * @param { SqlConfiguration } sqlConfig
-   *
-   * @returns true - SQL configuration has a valid SQL endpoints, SQL username with password or identity ID.
-   *          false - configuration is not valid.
-   * @internal
-   */
-  private isSQLConfigurationValid(sqlConfig: SqlConfiguration) {
-    internalLogger.verbose("Check SQL configuration if valid");
-    if (!sqlConfig.sqlServerEndpoint) {
-      internalLogger.error("SQL configuration is not valid without SQL server endpoint exist");
-      throw new ErrorWithCode(
-        "SQL configuration error without SQL server endpoint exist",
-        ErrorCode.InvalidConfiguration
-      );
-    }
-    if (!(sqlConfig.sqlUsername && sqlConfig.sqlPassword) && !sqlConfig.sqlIdentityId) {
-      const errMsg = `SQL configuration is not valid without ${
-        sqlConfig.sqlIdentityId ? "" : "identity id "
-      } ${sqlConfig.sqlUsername ? "" : "SQL username "} ${
-        sqlConfig.sqlPassword ? "" : "SQL password"
-      } exist`;
-      internalLogger.error(errMsg);
-      throw new ErrorWithCode(errMsg, ErrorCode.InvalidConfiguration);
-    }
-    internalLogger.verbose("SQL configuration is valid");
+  if (
+    !(teamsfx.hasConfig("sqlUsername") && teamsfx.hasConfig("sqlPassword")) &&
+    !teamsfx.hasConfig("sqlIdentityId")
+  ) {
+    const errMsg = `SQL configuration is not valid without ${
+      teamsfx.hasConfig("sqlIdentityId") ? "" : "identity id "
+    } ${teamsfx.hasConfig("sqlUsername") ? "" : "SQL username "} ${
+      teamsfx.hasConfig("sqlPassword") ? "" : "SQL password"
+    } exist`;
+    internalLogger.error(errMsg);
+    throw new ErrorWithCode(errMsg, ErrorCode.InvalidConfiguration);
   }
+  internalLogger.verbose("SQL configuration is valid");
+}
 
-  /**
-   * Generate tedious connection configuration with default authentication type.
-   *
-   * @param { SqlConfiguration } SQL configuration with username and password.
-   *
-   * @returns Tedious connection configuration with username and password.
-   * @internal
-   */
-  private generateDefaultConfig(
-    sqlConfig: SqlConfiguration,
-    databaseName?: string
-  ): ConnectionConfig {
-    if (databaseName === "") {
-      internalLogger.warn(`SQL database name is empty string`);
-    }
-    const dbName = databaseName ?? sqlConfig.sqlDatabaseName;
-    internalLogger.verbose(
-      `SQL server ${sqlConfig.sqlServerEndpoint}, user name ${sqlConfig.sqlUsername}, database name ${dbName}`
-    );
+/**
+ * Check SQL use MSI identity or username and password.
+ *
+ * @param {TeamsFx} teamsfx - Used to provide configuration and auth
+ *
+ * @returns false - login with SQL MSI identity, true - login with username and password.
+ * @internal
+ */
+function isMsiAuthentication(teamsfx: TeamsFx): boolean {
+  internalLogger.verbose("Check connection config using MSI access token or username and password");
+  if (teamsfx.hasConfig("sqlUsername") && teamsfx.hasConfig("sqlPassword")) {
+    internalLogger.verbose("Login with username and password");
+    return false;
+  }
+  internalLogger.verbose("Login with MSI identity");
+  return true;
+}
 
+/**
+ * Generate tedious connection configuration with default authentication type.
+ *
+ * @param {TeamsFx} teamsfx - Used to provide configuration and auth
+ * @param { string? } databaseName - specify database name to override default one if there are multiple databases.
+ *
+ * @returns Tedious connection configuration with username and password.
+ * @internal
+ */
+function generateDefaultConfig(teamsfx: TeamsFx, databaseName?: string): ConnectionConfig {
+  internalLogger.verbose(
+    `SQL server ${teamsfx.getConfig("sqlServerEndpoint")}
+    , user name ${teamsfx.getConfig("sqlUsername")}
+    , database name ${databaseName}`
+  );
+
+  const config = {
+    server: teamsfx.getConfig("sqlServerEndpoint"),
+    authentication: {
+      type: TediousAuthenticationType.default,
+      options: {
+        userName: teamsfx.getConfig("sqlUsername"),
+        password: teamsfx.getConfig("sqlPassword"),
+      },
+    },
+    options: {
+      database: databaseName,
+      encrypt: true,
+    },
+  };
+  return config;
+}
+
+/**
+ * Generate tedious connection configuration with azure-active-directory-access-token authentication type.
+ *
+ * @param {TeamsFx} teamsfx - Used to provide configuration and auth
+ *
+ * @returns Tedious connection configuration with access token.
+ * @internal
+ */
+async function generateTokenConfig(
+  teamsfx: TeamsFx,
+  databaseName?: string
+): Promise<ConnectionConfig> {
+  internalLogger.verbose("Generate tedious config with MSI token");
+  let token: AccessToken | null;
+  try {
+    const credential = new ManagedIdentityCredential(teamsfx.getConfig("sqlIdentityId"));
+    token = await credential.getToken(defaultSQLScope);
+  } catch (error) {
+    const errMsg = "Get user MSI token failed";
+    internalLogger.error(errMsg);
+    throw new ErrorWithCode(errMsg, ErrorCode.InternalError);
+  }
+  if (token) {
     const config = {
-      server: sqlConfig.sqlServerEndpoint,
+      server: teamsfx.getConfig("sqlServerEndpoint"),
       authentication: {
-        type: TediousAuthenticationType.default,
+        type: TediousAuthenticationType.MSI,
         options: {
-          userName: sqlConfig.sqlUsername,
-          password: sqlConfig.sqlPassword,
+          token: token.token,
         },
       },
       options: {
-        database: dbName,
+        database: databaseName,
         encrypt: true,
       },
     };
+    internalLogger.verbose(
+      `Generate token configuration success
+      , server endpoint is ${teamsfx.getConfig("sqlServerEndpoint")}
+      , database name is ${databaseName}`
+    );
     return config;
   }
-
-  /**
-   * Generate tedious connection configuration with azure-active-directory-access-token authentication type.
-   *
-   * @param { SqlConfiguration } SQL configuration with AAD access token.
-   *
-   * @returns Tedious connection configuration with access token.
-   * @internal
-   */
-  private async generateTokenConfig(
-    sqlConfig: SqlConfiguration,
-    databaseName?: string
-  ): Promise<ConnectionConfig> {
-    internalLogger.verbose("Generate tedious config with MSI token");
-    if (databaseName === "") {
-      internalLogger.warn(`SQL database name is empty string`);
-    }
-
-    let token: AccessToken | null;
-    try {
-      const credential = new ManagedIdentityCredential(sqlConfig.sqlIdentityId);
-      token = await credential.getToken(this.defaultSQLScope);
-    } catch (error) {
-      const errMsg = "Get user MSI token failed";
-      internalLogger.error(errMsg);
-      throw new ErrorWithCode(errMsg, ErrorCode.InternalError);
-    }
-    if (token) {
-      const config = {
-        server: sqlConfig.sqlServerEndpoint,
-        authentication: {
-          type: TediousAuthenticationType.MSI,
-          options: {
-            token: token.token,
-          },
-        },
-        options: {
-          database: databaseName ?? sqlConfig.sqlDatabaseName,
-          encrypt: true,
-        },
-      };
-      internalLogger.verbose(
-        `Generate token configuration success, server endpoint is ${
-          sqlConfig.sqlServerEndpoint
-        }, database name is ${databaseName ?? sqlConfig.sqlDatabaseName}`
-      );
-      return config;
-    }
-    internalLogger.error(
-      `Generate token configuration, server endpoint is ${sqlConfig.sqlServerEndpoint}, MSI token is not valid`
-    );
-    throw new ErrorWithCode("MSI token is not valid", ErrorCode.InternalError);
-  }
+  internalLogger.error(
+    `Generate token configuration
+    , server endpoint is ${teamsfx.getConfig("sqlServerEndpoint")}
+    , MSI token is not valid`
+  );
+  throw new ErrorWithCode("MSI token is not valid", ErrorCode.InternalError);
 }
 
 /**
@@ -214,45 +202,4 @@ export class DefaultTediousConnectionConfiguration {
 enum TediousAuthenticationType {
   default = "default",
   MSI = "azure-active-directory-access-token",
-}
-
-/**
- * Configuration for SQL resource.
- * @internal
- */
-interface SqlConfiguration {
-  /**
-   * SQL server endpoint.
-   *
-   * @readonly
-   */
-  readonly sqlServerEndpoint: string;
-
-  /**
-   * SQL server username.
-   *
-   * @readonly
-   */
-  readonly sqlUsername: string;
-
-  /**
-   * SQL server password.
-   *
-   * @readonly
-   */
-  readonly sqlPassword: string;
-
-  /**
-   * SQL server database name.
-   *
-   * @readonly
-   */
-  readonly sqlDatabaseName: string;
-
-  /**
-   * Managed identity id.
-   *
-   * @readonly
-   */
-  readonly sqlIdentityId: string;
 }

@@ -97,9 +97,3 @@ export class OnBehalfOfUserCredential implements TokenCredential {
 ```
 
 Please check [onBehalfOfUserCredential.browser.ts](src/credential/onBehalfOfUserCredential.browser.ts) and [onBehalfOfUserCredential.ts](src/credential/onBehalfOfUserCredential.ts) to see the details.
-
-### Using isNode method
-
-Use xxx.browser.ts if the functionality has great difference and use `isNode` if it only differs a little in 2 environments.
-
-E.g. In [configurationProvider.ts](src/core/configurationProvider.ts), logic of method `loadConfiguration()` has only little difference between browser and nodejs environment. We can use the isNode to detect the environment in runtime.

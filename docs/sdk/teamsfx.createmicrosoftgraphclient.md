@@ -12,14 +12,14 @@ Get Microsoft graph client.
 <b>Signature:</b>
 
 ```typescript
-export declare function createMicrosoftGraphClient(credential: TokenCredential, scopes?: string | string[]): Client;
+export declare function createMicrosoftGraphClient(teamsfx: TeamsFx, scopes?: string | string[]): Client;
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  credential | TokenCredential | token credential instance. |
+|  teamsfx | [TeamsFx](./teamsfx.teamsfx.md) | Used to provide configuration and auth. |
 |  scopes | string \| string\[\] | The array of Microsoft Token scope of access. Default value is <code>[.default]</code>. |
 
 <b>Returns:</b>

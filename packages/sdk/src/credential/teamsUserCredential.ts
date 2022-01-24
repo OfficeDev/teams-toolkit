@@ -3,6 +3,7 @@
 
 import { AccessToken, TokenCredential, GetTokenOptions } from "@azure/identity";
 import { UserInfo } from "../models/userinfo";
+import { AuthenticationConfiguration } from "../models/configuration";
 import { ErrorWithCode, ErrorCode, ErrorMessage } from "../core/errors";
 import { formatString } from "../util/utils";
 
@@ -21,7 +22,7 @@ export class TeamsUserCredential implements TokenCredential {
    * Can only be used within Teams.
    * @beta
    */
-  constructor() {
+  constructor(authConfig: AuthenticationConfiguration) {
     throw new ErrorWithCode(
       formatString(ErrorMessage.NodejsRuntimeNotSupported, "TeamsUserCredential"),
       ErrorCode.RuntimeNotSupported

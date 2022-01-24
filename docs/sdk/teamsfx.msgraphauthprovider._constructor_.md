@@ -12,14 +12,14 @@ Constructor of MsGraphAuthProvider.
 <b>Signature:</b>
 
 ```typescript
-constructor(credential: TokenCredential, scopes?: string | string[]);
+constructor(teamsfx: TeamsFx, scopes?: string | string[]);
 ```
 
 ## Parameters
 
 |  Parameter | Type | Description |
 |  --- | --- | --- |
-|  credential | TokenCredential | Credential used to invoke Microsoft Graph APIs. |
+|  teamsfx | [TeamsFx](./teamsfx.teamsfx.md) | Used to provide configuration and auth. |
 |  scopes | string \| string\[\] | The list of scopes for which the token will have access. |
 
 ## Exceptions

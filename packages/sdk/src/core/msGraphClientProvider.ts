@@ -1,9 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { TokenCredential } from "@azure/identity";
 import { Client } from "@microsoft/microsoft-graph-client";
 import { MsGraphAuthProvider } from "./msGraphAuthProvider";
+import { TeamsFx } from "./teamsfx";
 import { internalLogger } from "../util/logger";
 
 /**
@@ -48,7 +48,7 @@ import { internalLogger } from "../util/logger";
  * }
  * ```
  *
- * @param {TokenCredential} credential - token credential instance.
+ * @param {TeamsFx} teamsfx - Used to provide configuration and auth.
  * @param scopes - The array of Microsoft Token scope of access. Default value is `[.default]`.
  *
  * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
@@ -57,12 +57,9 @@ import { internalLogger } from "../util/logger";
  *
  * @beta
  */
-export function createMicrosoftGraphClient(
-  credential: TokenCredential,
-  scopes?: string | string[]
-): Client {
+export function createMicrosoftGraphClient(teamsfx: TeamsFx, scopes?: string | string[]): Client {
   internalLogger.info("Create Microsoft Graph Client");
-  const authProvider = new MsGraphAuthProvider(credential, scopes);
+  const authProvider = new MsGraphAuthProvider(teamsfx, scopes);
   const graphClient = Client.initWithMiddleware({
     authProvider,
   });

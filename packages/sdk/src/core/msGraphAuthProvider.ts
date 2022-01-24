@@ -2,8 +2,8 @@
 // Licensed under the MIT license.
 
 import { AuthenticationProvider } from "@microsoft/microsoft-graph-client";
-import { TokenCredential } from "@azure/identity";
 import { ErrorWithCode, ErrorCode } from "./errors";
+import { TeamsFx } from "./teamsfx";
 import { internalLogger } from "../util/logger";
 import { validateScopesType } from "../util/utils";
 
@@ -15,13 +15,13 @@ const defaultScope = "https://graph.microsoft.com/.default";
  * @beta
  */
 export class MsGraphAuthProvider implements AuthenticationProvider {
-  private credential: TokenCredential;
+  private teamsfx: TeamsFx;
   private scopes: string | string[];
 
   /**
    * Constructor of MsGraphAuthProvider.
    *
-   * @param {TokenCredential} credential - Credential used to invoke Microsoft Graph APIs.
+   * @param {TeamsFx} teamsfx - Used to provide configuration and auth.
    * @param {string | string[]} scopes - The list of scopes for which the token will have access.
    *
    * @throws {@link ErrorCode|InvalidParameter} when scopes is not a valid string or string array.
@@ -30,8 +30,8 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
    *
    * @beta
    */
-  constructor(credential: TokenCredential, scopes?: string | string[]) {
-    this.credential = credential;
+  constructor(teamsfx: TeamsFx, scopes?: string | string[]) {
+    this.teamsfx = teamsfx;
 
     let scopesStr = defaultScope;
     if (scopes) {
@@ -63,7 +63,7 @@ export class MsGraphAuthProvider implements AuthenticationProvider {
    */
   public async getAccessToken(): Promise<string> {
     internalLogger.info(`Get Graph Access token with scopes: '${this.scopes}'`);
-    const accessToken = await this.credential.getToken(this.scopes);
+    const accessToken = await this.teamsfx.Credential.getToken(this.scopes);
 
     return new Promise<string>((resolve, reject) => {
       if (accessToken) {

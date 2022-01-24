@@ -35,7 +35,6 @@ const convoState = new ConversationState(new MemoryStorage());
 const dialogState = convoState.createProperty('dialogState');
 const dialogs = new DialogSet(dialogState);
 
-loadConfiguration();
 dialogs.add(new TeamsBotSsoPrompt('TeamsBotSsoPrompt', {
    scopes: ["User.Read"],
 }));
@@ -62,7 +61,7 @@ dialogs.add(new WaterfallDialog('taskNeedingLogin', [
 
 |  Constructor | Modifiers | Description |
 |  --- | --- | --- |
-|  [(constructor)(dialogId, settings)](./teamsfx.teamsbotssoprompt._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of TeamsBotSsoPrompt. |
+|  [(constructor)(teamsfx, dialogId, settings)](./teamsfx.teamsbotssoprompt._constructor_.md) |  | <b><i>(BETA)</i></b> Constructor of TeamsBotSsoPrompt. |
 
 ## Methods
 

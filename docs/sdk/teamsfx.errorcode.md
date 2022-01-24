@@ -22,6 +22,7 @@ export declare enum ErrorCode
 |  ChannelNotSupported | <code>&quot;ChannelNotSupported&quot;</code> | <b><i>(BETA)</i></b> Channel is not supported error. |
 |  ConsentFailed | <code>&quot;ConsentFailed&quot;</code> | <b><i>(BETA)</i></b> User failed to finish the AAD consent flow failed. |
 |  FailedOperation | <code>&quot;FailedOperation&quot;</code> | <b><i>(BETA)</i></b> Operation failed. |
+|  IdentityTypeNotSupported | <code>&quot;IdentityTypeNotSupported&quot;</code> | <b><i>(BETA)</i></b> Identity type error. |
 |  InternalError | <code>&quot;InternalError&quot;</code> | <b><i>(BETA)</i></b> Internal error. |
 |  InvalidCertificate | <code>&quot;InvalidCertificate&quot;</code> | <b><i>(BETA)</i></b> Invalid certificate error. |
 |  InvalidConfiguration | <code>&quot;InvalidConfiguration&quot;</code> | <b><i>(BETA)</i></b> Invalid configuration error. |

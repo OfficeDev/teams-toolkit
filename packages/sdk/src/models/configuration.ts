@@ -2,26 +2,6 @@
 // Licensed under the MIT license.
 
 /**
- * Configuration for current environment.
- * @beta
- */
-export interface Configuration {
-  /**
-   * Authentication related configuration.
-   *
-   * @readonly
-   */
-  readonly authentication?: AuthenticationConfiguration;
-
-  /**
-   * Configuration for resources.
-   *
-   * @readonly
-   */
-  readonly resources?: ResourceConfiguration[];
-}
-
-/**
  * Authentication related configuration.
  * @beta
  */
@@ -62,13 +42,6 @@ export interface AuthenticationConfiguration {
   readonly certificateContent?: string;
 
   /**
-   * Endpoint of auth service provisioned by Teams Framework. Default value comes from SIMPLE_AUTH_ENDPOINT environment variable.
-   *
-   * @readonly
-   */
-  readonly simpleAuthEndpoint?: string;
-
-  /**
    * Login page for Teams to redirect to.  Default value comes from INITIATE_LOGIN_ENDPOINT environment variable.
    *
    * @readonly
@@ -79,49 +52,4 @@ export interface AuthenticationConfiguration {
    * Application ID URI. Default value comes from M365_APPLICATION_ID_URI environment variable.
    */
   readonly applicationIdUri?: string;
-}
-
-/**
- * Configuration for resources.
- * @beta
- */
-export interface ResourceConfiguration {
-  /**
-   * Resource type.
-   *
-   * @readonly
-   */
-  readonly type: ResourceType;
-
-  /**
-   * Resource name.
-   *
-   * @readonly
-   */
-  readonly name: string;
-
-  /**
-   * Config for the resource.
-   *
-   * @readonly
-   */
-  readonly properties: { [index: string]: any };
-}
-
-/**
- * Available resource type.
- * @beta
- */
-export enum ResourceType {
-  /**
-   * SQL database.
-   *
-   */
-  SQL,
-
-  /**
-   * Rest API.
-   *
-   */
-  API,
 }

@@ -191,12 +191,3 @@ export interface ClientCertificate {
   thumbprint: string;
   privateKey: string;
 }
-
-/**
- * @internal
- */
-export const isNode =
-  typeof process !== "undefined" &&
-  !!process.version &&
-  !!process.versions &&
-  !!process.versions.node;

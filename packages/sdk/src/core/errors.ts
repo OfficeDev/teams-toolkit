@@ -65,6 +65,11 @@ export enum ErrorCode {
    * Invalid response error.
    */
   InvalidResponse = "InvalidResponse",
+
+  /**
+   * Identity type error.
+   */
+  IdentityTypeNotSupported = "IdentityTypeNotSupported",
 }
 
 /**
@@ -90,6 +95,9 @@ export class ErrorMessage {
 
   // ChannelNotSupported Error
   static readonly OnlyMSTeamsChannelSupported = "{0} is only supported in MS Teams Channel";
+
+  // IdentityTypeNotSupported Error
+  static readonly IdentityTypeNotSupported = "{0} is not supported in {1}";
 }
 
 /**

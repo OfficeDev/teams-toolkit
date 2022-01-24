@@ -14,8 +14,13 @@ import detectPort from "detect-port";
 import { FolderName } from "./constants";
 import { loadTeamsFxDevScript } from "./packageJsonHelper";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
-import { sendTelemetryErrorEvent, sendTelemetryEvent, TelemetryEvent } from "./telemetry";
 import { CoreSource } from "../../core/error";
+import {
+  Component,
+  sendTelemetryErrorEvent,
+  sendTelemetryEvent,
+  TelemetryEvent,
+} from "../telemetry";
 
 const frontendPortsV1 = [3000];
 const frontendPorts = [53000];
@@ -28,15 +33,11 @@ const botDebugPortRegex = /--inspect[\s]*=[\s"']*9239/im;
 const botDebugPorts = [9239];
 const botServicePorts = [3978];
 
-async function detectPortListening(
-  port: number,
-  logger?: LogProvider,
-  telemetry?: TelemetryReporter
-): Promise<boolean> {
+async function detectPortListening(port: number, logger?: LogProvider): Promise<boolean> {
   try {
-    sendTelemetryEvent(telemetry, TelemetryEvent.DetectPortStart, { port: port.toString() });
+    sendTelemetryEvent(Component.core, TelemetryEvent.DetectPortStart, { port: port.toString() });
     const portChosen = await detectPort(port);
-    sendTelemetryEvent(telemetry, TelemetryEvent.DetectPort, {
+    sendTelemetryEvent(Component.core, TelemetryEvent.DetectPort, {
       portChosen: portChosen.toString(),
       port: port.toString(),
     });
@@ -44,7 +45,7 @@ async function detectPortListening(
   } catch (error: any) {
     // ignore any error to not block debugging
     sendTelemetryErrorEvent(
-      telemetry,
+      Component.core,
       TelemetryEvent.DetectPort,
       returnUserError(error, CoreSource, "DetectPortError")
     );
@@ -57,8 +58,7 @@ export async function getPortsInUse(
   projectPath: string,
   projectSettings: ProjectSettings,
   ignoreDebugPort?: boolean,
-  logger?: LogProvider,
-  telemetry?: TelemetryReporter
+  logger?: LogProvider
 ): Promise<number[]> {
   const ports: number[] = [];
 
@@ -98,7 +98,7 @@ export async function getPortsInUse(
 
   const portsInUse: number[] = [];
   for (const port of ports) {
-    if (await detectPortListening(port, logger, telemetry)) {
+    if (await detectPortListening(port, logger)) {
       portsInUse.push(port);
     }
   }

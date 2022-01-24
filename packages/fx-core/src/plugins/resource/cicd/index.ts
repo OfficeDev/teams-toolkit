@@ -67,7 +67,7 @@ export class CICDPluginV2 implements ResourcePlugin {
     });
 
     const whichPlatform = new QTreeNode({
-      name: "platform",
+      name: "which_platform",
       type: "singleSelect",
       staticOptions: [githubOption, azdoOption, jenkinsOption],
       title: "Choose your CI/CD Platform",

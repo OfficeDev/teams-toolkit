@@ -35,6 +35,8 @@ const GlobalOptions = new Set([
   CliConfigOptions.EnvCheckerValidateNode as string,
   CliConfigOptions.RunFrom as string,
   CliConfigOptions.Interactive as string,
+  // TODO: enable this config
+  // CliConfigOptions.AutomaticNpmInstall as string,
 ]);
 
 export class ConfigGet extends YargsCommand {

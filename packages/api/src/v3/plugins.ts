@@ -276,27 +276,21 @@ export interface FeaturePlugin extends Plugin {
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
+
   /**
-   * scaffold source code
+   * scaffold means anything: add/update source codes/resource templates/config files
+   * if scaffold include generating resource templates, they will be returned
+   *
+   * @param {ContextWithManifest} context with manifest provider
+   *
+   * @param {InputsWithProjectPath} inputs with project path
+   *
+   * @returns {ResourceTemplate | undefined} resource template, optional if the feature include resource template
    */
   scaffold: (
     ctx: ContextWithManifest,
     inputs: InputsWithProjectPath
-  ) => Promise<Result<Json | undefined, FxError>>;
-  /**
-   * generate resource template
-   */
-  generateResourceTemplate?: (
-    ctx: ContextWithManifest,
-    inputs: InputsWithProjectPath
-  ) => Promise<Result<ResourceTemplate, FxError>>;
-  /**
-   * update resource template
-   */
-  updateResourceTemplate?: (
-    ctx: ContextWithManifest,
-    inputs: InputsWithProjectPath
-  ) => Promise<Result<ResourceTemplate, FxError>>;
+  ) => Promise<Result<ResourceTemplate | undefined, FxError>>;
 
   /**
    * customize questions needed for local debug

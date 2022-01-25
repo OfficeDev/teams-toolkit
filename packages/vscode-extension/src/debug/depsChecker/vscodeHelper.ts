@@ -17,15 +17,15 @@ class VSCodeHelper {
   }
 
   public isDotnetCheckerEnabled(): boolean {
-    return this.checkerEnabled("validateDotnetSdk");
+    return this.checkerEnabled("prerequisiteCheck.dotnetSdk");
   }
 
   public isFuncCoreToolsEnabled(): boolean {
-    return this.checkerEnabled("validateFuncCoreTools");
+    return this.checkerEnabled("prerequisiteCheck.funcCoreTools");
   }
 
   public isNodeCheckerEnabled(): boolean {
-    return this.checkerEnabled("validateNode");
+    return this.checkerEnabled("prerequisiteCheck.node");
   }
 
   public async hasFunction(): Promise<boolean> {

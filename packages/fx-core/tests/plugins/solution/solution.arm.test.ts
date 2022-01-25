@@ -123,14 +123,6 @@ module provision './provision.bicep' = {
   }
 }
 output provisionOutput object = provision
-module teamsFxConfig './config.bicep' = {
-  name: 'addTeamsFxConfigurations'
-  params: {
-    provisionParameters: provisionParameters
-    provisionOutputs: provision
-  }
-}
-output teamsFxConfigurationOutput object = contains(reference(resourceId('Microsoft.Resources/deployments', teamsFxConfig.name), '2020-06-01'), 'outputs') ? teamsFxConfig : {}
 `.replace(/\r?\n/g, os.EOL)
     );
 
@@ -143,29 +135,14 @@ output teamsFxConfigurationOutput object = contains(reference(resourceId('Micros
       `@secure()
 param provisionParameters object
 Mocked frontend hosting provision orchestration content. Module path: './provision/frontendHostingProvision.bicep'.
-Mocked identity provision orchestration content. Module path: './provision/identityProvision.bicep'.
-Mocked aad provision orchestration content. Module path: './provision/aadProvision.bicep'.`.replace(
+Mocked identity provision orchestration content. Module path: './provision/identityProvision.bicep'.`.replace(
         /\r?\n/g,
         os.EOL
       )
     );
 
-    expect(
-      await fs.readFile(
-        path.join(projectArmTemplateFolder, TestFilePath.configFileName),
-        fileEncoding
-      )
-    ).equals(
-      `@secure()
-param provisionParameters object
-param provisionOutputs object
-Mocked frontend hosting configuration orchestration content. Module path: './teamsFx/frontendHostingConfig.bicep'.
-Mocked identity configuration orchestration content. Module path: './teamsFx/identityConfig.bicep'.
-Mocked aad configuration orchestration content. Module path: './teamsFx/aadConfig.bicep'.`.replace(
-        /\r?\n/g,
-        os.EOL
-      )
-    );
+    expect(await fs.pathExists(path.join(projectArmTemplateFolder, TestFilePath.configFileName))).to
+      .be.false;
 
     expect(
       await fs.readFile(
@@ -178,15 +155,14 @@ Mocked aad configuration orchestration content. Module path: './teamsFx/aadConfi
       )
     ).equals(TestFileContent.feHostProvisionModule);
     expect(
-      await fs.readFile(
+      await fs.pathExists(
         path.join(
           projectArmTemplateFolder,
           TestFilePath.provisionFolder,
           TestFilePath.aadProvisionFileName
-        ),
-        fileEncoding
+        )
       )
-    ).equals(TestFileContent.aadProvisionModule);
+    ).to.be.false;
     expect(
       await fs.readFile(
         path.join(
@@ -199,35 +175,8 @@ Mocked aad configuration orchestration content. Module path: './teamsFx/aadConfi
     ).equals(TestFileContent.identityProvisionModule);
 
     expect(
-      await fs.readFile(
-        path.join(
-          projectArmTemplateFolder,
-          TestFilePath.configurationFolder,
-          TestFilePath.fehostConfigFileName
-        ),
-        fileEncoding
-      )
-    ).equals(TestFileContent.feHostConfigurationModule);
-    expect(
-      await fs.readFile(
-        path.join(
-          projectArmTemplateFolder,
-          TestFilePath.configurationFolder,
-          TestFilePath.aadConfigFileName
-        ),
-        fileEncoding
-      )
-    ).equals(TestFileContent.aadConfigurationModule);
-    expect(
-      await fs.readFile(
-        path.join(
-          projectArmTemplateFolder,
-          TestFilePath.configurationFolder,
-          TestFilePath.identityConfigFileName
-        ),
-        fileEncoding
-      )
-    ).equals(TestFileContent.identityConfigurationModule);
+      await fs.pathExists(path.join(projectArmTemplateFolder, TestFilePath.configurationFolder))
+    ).to.be.false;
 
     expect(
       await fs.readFile(
@@ -371,7 +320,6 @@ Mocked aad configuration orchestration content. Module path: './teamsFx/aadConfi
 param provisionParameters object
 Mocked frontend hosting provision orchestration content. Module path: './provision/frontendHostingProvision.bicep'.
 Mocked identity provision orchestration content. Module path: './provision/identityProvision.bicep'.
-Mocked aad provision orchestration content. Module path: './provision/aadProvision.bicep'.
 Mocked bot provision orchestration content. Module path: './provision/botProvision.bicep'.`.replace(
         /\r?\n/g,
         os.EOL
@@ -387,9 +335,6 @@ Mocked bot provision orchestration content. Module path: './provision/botProvisi
       `@secure()
 param provisionParameters object
 param provisionOutputs object
-Mocked frontend hosting configuration orchestration content. Module path: './teamsFx/frontendHostingConfig.bicep'.
-Mocked identity configuration orchestration content. Module path: './teamsFx/identityConfig.bicep'.
-Mocked aad configuration orchestration content. Module path: './teamsFx/aadConfig.bicep'.
 Mocked bot configuration orchestration content. Module path: './teamsFx/botConfig.bicep'.`.replace(
         /\r?\n/g,
         os.EOL

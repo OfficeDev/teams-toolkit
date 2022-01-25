@@ -86,7 +86,7 @@ export async function automaticNpmInstallHandler(
   }
 }
 
-function getAutomaticNpmInstallSetting(): boolean {
+export function getAutomaticNpmInstallSetting(): boolean {
   try {
     const result = UserSettings.getConfigSync();
     if (result.isErr()) {

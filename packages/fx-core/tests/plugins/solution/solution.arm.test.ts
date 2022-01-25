@@ -37,6 +37,7 @@ import {
   fileEncoding,
   identityPlugin,
   PluginId,
+  simpleAuthPlugin,
   SOLUTION_CONFIG_NAME,
   spfxPlugin,
   TestFileContent,
@@ -87,7 +88,7 @@ describe("Generate ARM Template for project", () => {
       .to.be.false;
   });
 
-  it("should successfully generate arm templates", async () => {
+  it("should successfully generate arm templates only tab", async () => {
     // Arrange
     mockedCtx.projectSettings!.solutionSettings = {
       hostType: HostTypeOptionAzure.id,
@@ -238,6 +239,10 @@ Mocked identity provision orchestration content. Module path: './provision/ident
         AadParameter: `${TestFileContent.aadParameterValue}`,
       })
     );
+    expect(await fs.pathExists(path.join(projectArmTemplateFolder, TestFilePath.configFileName))).to
+      .be.false;
+    expect(await fs.pathExists(path.join(projectArmTemplateFolder, TestFilePath.provisionFileName)))
+      .to.be.true;
     expect(
       await fs.pathExists(
         path.join(
@@ -248,13 +253,7 @@ Mocked identity provision orchestration content. Module path: './provision/ident
       )
     ).to.be.false;
     expect(
-      await fs.pathExists(
-        path.join(
-          projectArmTemplateFolder,
-          TestFilePath.configurationFolder,
-          TestFilePath.botConfigFileName
-        )
-      )
+      await fs.pathExists(path.join(projectArmTemplateFolder, TestFilePath.configurationFolder))
     ).to.be.false;
     assert(botGenerateArmTemplatesStub.notCalled);
     assert(botUpdateArmTemplatesStub.notCalled);
@@ -340,6 +339,149 @@ Mocked bot configuration orchestration content. Module path: './teamsFx/botConfi
         os.EOL
       )
     );
+  });
+
+  it("add bot capability on tab app with simple auth success", async () => {
+    // Arrange
+    mockedCtx.projectSettings!.solutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: [
+        aadPlugin.name,
+        fehostPlugin.name,
+        identityPlugin.name,
+        simpleAuthPlugin.name,
+      ],
+      capabilities: [TabOptionItem.id],
+    };
+    TestHelper.mockedFehostGenerateArmTemplates(mocker);
+    TestHelper.mockedAadGenerateArmTemplates(mocker);
+    TestHelper.mockedIdentityGenerateArmTemplates(mocker);
+    TestHelper.mockedSimpleAuthGenerateArmTemplates(mocker);
+    TestHelper.mockedBotGenerateArmTemplates(mocker);
+    TestHelper.mockedFeHostUpdateArmTemplates(mocker);
+    TestHelper.mockedIdentityUpdateArmTemplates(mocker);
+    TestHelper.mockedSimpleAuthUpdateArmTemplates(mocker);
+    // Action
+    let result = await generateArmTemplate(mockedCtx, [
+      aadPlugin,
+      botPlugin,
+      identityPlugin,
+      simpleAuthPlugin,
+    ]);
+
+    // Assert
+    const projectArmTemplateFolder = path.join(
+      TestHelper.rootDir,
+      TestFilePath.armTemplateBaseFolder
+    );
+    expect(result.isOk()).to.be.true;
+    const projectMainBicep = await fs.readFile(
+      path.join(projectArmTemplateFolder, TestFilePath.mainFileName),
+      fileEncoding
+    );
+    expect(projectMainBicep.replace(/\r?\n/g, os.EOL)).equals(
+      `@secure()
+param provisionParameters object
+
+module provision './provision.bicep' = {
+  name: 'provisionResources'
+  params: {
+    provisionParameters: provisionParameters
+  }
+}
+output provisionOutput object = provision
+module teamsFxConfig './config.bicep' = {
+  name: 'addTeamsFxConfigurations'
+  params: {
+    provisionParameters: provisionParameters
+    provisionOutputs: provision
+  }
+}
+output teamsFxConfigurationOutput object = contains(reference(resourceId('Microsoft.Resources/deployments', teamsFxConfig.name), '2020-06-01'), 'outputs') ? teamsFxConfig : {}
+`.replace(/\r?\n/g, os.EOL)
+    );
+    const projectConfigBicep = await fs.readFile(
+      path.join(projectArmTemplateFolder, TestFilePath.configFileName),
+      fileEncoding
+    );
+    expect(projectConfigBicep.replace(/\r?\n/g, os.EOL)).equals(
+      `@secure()
+param provisionParameters object
+param provisionOutputs object
+Mocked simple auth configuration orchestration content. Module path: './teamsFx/simpleAuthConfig.bicep'.`.replace(
+        /\r?\n/g,
+        os.EOL
+      )
+    );
+    const simpleAuthConfigContent = await fs.readFile(
+      path.join(
+        projectArmTemplateFolder,
+        TestFilePath.configurationFolder,
+        TestFilePath.simpleAuthConfigFileName
+      ),
+      fileEncoding
+    );
+    expect(simpleAuthConfigContent.replace(/\r?\n/g, os.EOL)).equals(
+      TestFileContent.simpleAuthConfigurationModule
+    );
+
+    expect(
+      await fs.pathExists(path.join(projectArmTemplateFolder, TestFilePath.configurationFolder))
+    ).to.be.true;
+    // Add bot capability
+    (
+      mockedCtx.projectSettings!.solutionSettings as AzureSolutionSettings
+    ).activeResourcePlugins.push(botPlugin.name);
+    (mockedCtx.projectSettings!.solutionSettings as AzureSolutionSettings).capabilities.push(
+      BotOptionItem.id
+    );
+    result = await generateArmTemplate(mockedCtx, [botPlugin]);
+
+    const projectMainBicepWithBot = await fs.readFile(
+      path.join(projectArmTemplateFolder, TestFilePath.mainFileName),
+      fileEncoding
+    );
+    expect(projectMainBicepWithBot.replace(/\r?\n/g, os.EOL)).equals(
+      projectMainBicep.replace(/\r?\n/g, os.EOL)
+    );
+    const simpleAuthConfigContentWithBot = await fs.readFile(
+      path.join(
+        projectArmTemplateFolder,
+        TestFilePath.configurationFolder,
+        TestFilePath.simpleAuthConfigFileName
+      ),
+      fileEncoding
+    );
+    expect(simpleAuthConfigContentWithBot.replace(/\r?\n/g, os.EOL)).equals(
+      TestFileContent.simpleAuthUpdatedConfigurationModule.replace(/\r?\n/g, os.EOL)
+    );
+    expect(
+      await fs.readFile(
+        path.join(projectArmTemplateFolder, TestFilePath.configFileName),
+        fileEncoding
+      )
+    ).equals(
+      `@secure()
+param provisionParameters object
+param provisionOutputs object
+Mocked simple auth configuration orchestration content. Module path: './teamsFx/simpleAuthConfig.bicep'.
+Mocked bot configuration orchestration content. Module path: './teamsFx/botConfig.bicep'.`.replace(
+        /\r?\n/g,
+        os.EOL
+      )
+    );
+
+    expect(
+      await fs.readFile(
+        path.join(
+          projectArmTemplateFolder,
+          TestFilePath.configurationFolder,
+          TestFilePath.botConfigFileName
+        ),
+        fileEncoding
+      )
+    ).equals(TestFileContent.botConfigurationModule);
   });
 });
 

@@ -128,7 +128,6 @@ export class TestHelper {
   }
 
   static mockedSimpleAuthGenerateArmTemplates(mocker: sinon.SinonSandbox): sinon.SinonStub {
-    console.log("no entry");
     return mocker
       .stub(simpleAuthPlugin, "generateArmTemplates")
       .callsFake(async (ctx: PluginContext) => {

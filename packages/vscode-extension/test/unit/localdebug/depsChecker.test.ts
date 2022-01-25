@@ -126,7 +126,7 @@ suite("[Checker UT - Extension]", () => {
       sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
 
       sandbox
-        .stub(vscodeHelper, "isNgrokEnabled")
+        .stub(vscodeHelper, "isNgrokCheckerEnabled")
         .onCall(0)
         .resolves(false)
         .onCall(1)
@@ -219,7 +219,7 @@ function getFailedDepsStatus(error: DepsCheckerError | undefined) {
 function stubEnabled(sandbox: sinon.SinonSandbox) {
   sandbox.stub(vscodeHelper, "checkerEnabled").returns(true);
   sandbox.stub(vscodeHelper, "hasFunction").resolves(true);
-  sandbox.stub(vscodeHelper, "isNgrokEnabled").resolves(true);
+  sandbox.stub(vscodeHelper, "isNgrokCheckerEnabled").resolves(true);
   sandbox.stub(vscodeHelper, "hasBot").resolves(true);
   sandbox.stub(vscodeHelper, "isFuncCoreToolsEnabled").returns(true);
   sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(true);

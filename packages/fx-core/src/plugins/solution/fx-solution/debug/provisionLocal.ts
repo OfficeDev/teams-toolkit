@@ -48,7 +48,7 @@ export async function setupLocalDebugSettings(
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
   const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
-  const skipNgrok = inputs.skipNgrok as boolean;
+  const skipNgrok = inputs.checkerInfo?.skipNgrok as boolean;
 
   const telemetryProperties = {
     platform: inputs.platform as string,

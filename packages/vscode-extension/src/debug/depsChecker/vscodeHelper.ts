@@ -28,7 +28,7 @@ class VSCodeHelper {
     return this.checkerEnabled("prerequisiteCheck.node");
   }
 
-  public isNgrokEnabled(): boolean {
+  public isNgrokCheckerEnabled(): boolean {
     return this.checkerEnabled("prerequisiteCheck.ngrok");
   }
 

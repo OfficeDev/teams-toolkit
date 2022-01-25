@@ -78,7 +78,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
       const botRoot = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
       if (botRoot) {
-        const skipNgrok = !vscodeHelper.isNgrokEnabled();
+        const skipNgrok = !vscodeHelper.isNgrokCheckerEnabled();
         tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot, skipNgrok));
         const silent: boolean = frontendRoot !== undefined;
         tasks.push(

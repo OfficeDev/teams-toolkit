@@ -58,7 +58,6 @@ function isNpmInstallTask(task: vscode.Task): boolean {
 
 function isTeamsfxTask(task: vscode.Task): boolean {
   // teamsfx: xxx start / xxx watch
-  // teamsfx: dev / watch
   if (task) {
     if (
       task.source === ProductName &&
@@ -75,10 +74,19 @@ function isTeamsfxTask(task: vscode.Task): boolean {
       return (
         command !== undefined &&
         (command.trim().toLocaleLowerCase().endsWith("start") ||
-          command.trim().toLocaleLowerCase().endsWith("watch") ||
-          command.trim().toLowerCase() === "dev" ||
-          command.trim().toLowerCase() === "watch")
+          command.trim().toLocaleLowerCase().endsWith("watch"))
       );
+    }
+
+    // dev:teamsfx and watch:teamsfx
+    let commandLine: string | undefined;
+    if (task.execution && <vscode.ShellExecution>task.execution) {
+      const execution = <vscode.ShellExecution>task.execution;
+      commandLine =
+        execution.commandLine || `${execution.command} ${(execution.args || []).join(" ")}`;
+    }
+    if (commandLine !== undefined) {
+      return /(npm|yarn)[\s]+(run )?[\s]*(dev|watch):teamsfx/i.test(commandLine);
     }
   }
 

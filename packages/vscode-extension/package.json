@@ -491,6 +491,11 @@
         "enablement": "never"
       },
       {
+        "command": "fx-extension.append-func-path",
+        "title": "Teams - Append Func Path Environment Variable",
+        "enablement": "never"
+      },
+      {
         "command": "fx-extension.pre-debug-check",
         "title": "Teams - Pre Debug Check",
         "enablement": "never"

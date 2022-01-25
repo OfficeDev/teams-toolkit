@@ -227,6 +227,7 @@ export class FxCore implements v3.ICore {
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     let globalStateDescription = "openReadme";
+    const automaticNpmInstall = "automaticNpmInstall";
     if (scratch === ScratchOptionNo.id) {
       // create from sample
       const downloadRes = await downloadSample(inputs, ctx);
@@ -312,6 +313,7 @@ export class FxCore implements v3.ICore {
 
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(globalStateDescription, true);
+      await globalStateUpdate(automaticNpmInstall, true);
     }
     return ok(projectPath);
   }
@@ -341,6 +343,7 @@ export class FxCore implements v3.ICore {
     const scratch = inputs[CoreQuestionNames.CreateFromScratch] as string;
     let projectPath: string;
     let globalStateDescription = "openReadme";
+    const automaticNpmInstall = "automaticNpmInstall";
     if (scratch === ScratchOptionNo.id) {
       // create from sample
       const downloadRes = await downloadSample(inputs, ctx);
@@ -567,6 +570,7 @@ export class FxCore implements v3.ICore {
     }
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(globalStateDescription, true);
+      await globalStateUpdate(automaticNpmInstall, true);
     }
     return ok(projectPath);
   }
@@ -1221,31 +1225,6 @@ export class FxCore implements v3.ICore {
       return err(new ObjectIsUndefinedError("projectPath"));
     }
     return ctx!.solutionV2!.listCollaborator!(
-      ctx!.contextV2!,
-      { ...inputs, projectPath: projectPath },
-      ctx!.envInfoV2!,
-      this.tools.tokenProvider
-    );
-  }
-
-  @hooks([
-    ErrorHandlerMW,
-    ConcurrentLockerMW,
-    SupportV1ConditionMW(true),
-    ProjectSettingsLoaderMW,
-    EnvInfoLoaderMW(true),
-    SolutionLoaderMW,
-    QuestionModelMW,
-    ContextInjectorMW,
-  ])
-  async listAllCollaborators(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<any, FxError>> {
-    currentStage = Stage.listAllCollaborators;
-    inputs.stage = Stage.listAllCollaborators;
-    const projectPath = inputs.projectPath;
-    if (!projectPath) {
-      return err(new ObjectIsUndefinedError("projectPath"));
-    }
-    return ctx!.solutionV2!.listAllCollaborators!(
       ctx!.contextV2!,
       { ...inputs, projectPath: projectPath },
       ctx!.envInfoV2!,

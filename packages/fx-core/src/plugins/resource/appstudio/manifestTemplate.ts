@@ -31,7 +31,9 @@ import {
   BOTS_TPL_LOCAL_DEBUG,
   COMPOSE_EXTENSIONS_TPL_FOR_MULTI_ENV,
   COMPOSE_EXTENSIONS_TPL_LOCAL_DEBUG,
+  TEAMS_APP_SHORT_NAME_MAX_LENGTH,
 } from "./constants";
+import { replaceConfigValue } from "./utils/utils";
 
 export async function getManifestTemplatePath(
   projectRoot: string,
@@ -41,15 +43,22 @@ export async function getManifestTemplatePath(
   return isLocalDebug ? `${appDir}/${MANIFEST_LOCAL}` : `${appDir}/${MANIFEST_TEMPLATE}`;
 }
 
-export async function init(projectRoot: string): Promise<Result<any, FxError>> {
+export async function init(projectRoot: string, appName: string): Promise<Result<any, FxError>> {
   const newAppPackageFolder = `${projectRoot}/templates/${AppPackageFolderName}`;
   await fs.ensureDir(newAppPackageFolder);
 
-  const localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
+  let localManifestString = TEAMS_APP_MANIFEST_TEMPLATE_LOCAL_DEBUG_V3;
+  const suffix = "-local-debug";
+  let localAppName = appName;
+  if (suffix.length + appName.length <= TEAMS_APP_SHORT_NAME_MAX_LENGTH) {
+    localAppName = localAppName + suffix;
+  }
+  localManifestString = replaceConfigValue(localManifestString, "appName", localAppName);
   const localManifest = JSON.parse(localManifestString);
   await saveManifest(projectRoot, localManifest, true);
 
-  const remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
+  let remoteManifestString = TEAMS_APP_MANIFEST_TEMPLATE_V3;
+  remoteManifestString = replaceConfigValue(remoteManifestString, "appName", appName);
   const remoteManifest = JSON.parse(remoteManifestString);
   await saveManifest(projectRoot, remoteManifest, false);
 

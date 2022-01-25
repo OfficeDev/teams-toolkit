@@ -155,4 +155,8 @@ export class VSCodeTelemetryReporter extends vscode.Disposable implements Teleme
       this.reporter.sendTelemetryException(error, properties, measurements);
     }
   }
+
+  async dispose() {
+    await this.reporter.dispose();
+  }
 }

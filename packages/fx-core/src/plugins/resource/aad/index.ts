@@ -25,6 +25,7 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import { Links } from "../bot/constants";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import "./v2";
+import "./v3";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
 @Service(ResourcePlugins.AadPlugin)
 export class AadAppForTeamsPlugin implements Plugin {

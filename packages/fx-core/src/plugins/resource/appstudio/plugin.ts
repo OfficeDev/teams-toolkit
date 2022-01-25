@@ -946,10 +946,10 @@ export class AppStudioPluginImpl {
     }
 
     const teamsAppAdmin: TeamsAppAdmin[] = userLists
-      .filter((userList, index) => {
+      .filter((userList) => {
         return userList.isAdministrator;
       })
-      .map((userList, index) => {
+      .map((userList) => {
         return {
           userObjectId: userList.aadId,
           displayName: userList.displayName,

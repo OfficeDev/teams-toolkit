@@ -61,15 +61,15 @@ export class AzureBotPlugin implements v3.ResourcePlugin {
     tokenProvider: TokenProvider
   ): Promise<Result<v3.CloudResource, FxError>> {
     const config: v3.AzureBot = {
-      botId: "e01c3709-3700-45dd-9f23-bdbedc78392e",
-      objectId: "ea553a03-0322-4c9a-8bd5-8d56d1d2b534",
+      botId: "mockBotId",
+      objectId: "testObjectId",
       skuName: "F1",
-      siteName: "huajie1214dev35e42dbot",
-      validDomain: "huajie1214dev35e42dbot.azurewebsites.net",
-      appServicePlanName: "huajie1214dev35e42dbot",
+      siteName: "mockSiteName",
+      validDomain: "abc.com",
+      appServicePlanName: "mockPlan",
       botWebAppResourceId:
-        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/huajie1214dev35e42dbot",
-      siteEndpoint: "https://huajie1214dev35e42dbot.azurewebsites.net",
+        "/subscriptions/xxxxx-yyy-zzzz/resourceGroups/rprprprp/providers/Microsoft.Web/sites/mockId",
+      siteEndpoint: "https://abc.azurewebsites.net",
       botPassword: "{{fx-resource-bot.botPassword}}",
       secretFields: ["botPassword"],
     };
@@ -124,8 +124,8 @@ export class AzureWebAppPlugin implements v3.ResourcePlugin {
   ): Promise<Result<v3.CloudResource, FxError>> {
     const config: v3.CloudResource = {
       resourceId:
-        "/subscriptions/63f43cd3-ab63-429d-80ad-950ec8359724/resourceGroups/fullcap-dev-rg/providers/Microsoft.Web/sites/huajie1214dev35e42dbot",
-      endpoint: "https://huajie1214dev35e42dbot.azurewebsites.net",
+        "/subscriptions/aaaa-bbbb-cccc/resourceGroups/rgrgrg/providers/Microsoft.Web/sites/mockId",
+      endpoint: "https://abc.azurewebsites.net",
     };
     return ok(config);
   }
@@ -159,7 +159,10 @@ export class SPFxResourcePlugin implements v3.ResourcePlugin {
 }
 
 function getAllResourcePlugins(): v3.ResourcePlugin[] {
-  return [Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.storage)];
+  return [
+    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.storage),
+    Container.get<v3.ResourcePlugin>(BuiltInResourcePluginNames.aad),
+  ];
 }
 
 export async function getQuestionsForAddResource(

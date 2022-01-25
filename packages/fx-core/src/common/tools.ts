@@ -42,15 +42,9 @@ import {
 } from "./constants";
 import * as crypto from "crypto";
 import * as os from "os";
-import { FailedToParseResourceIdError, FetchSampleError } from "../core/error";
-import {
-  GLOBAL_CONFIG,
-  RESOURCE_GROUP_NAME,
-  SolutionError,
-  SUBSCRIPTION_ID,
-} from "../plugins/solution/fx-solution/constants";
+import { FailedToParseResourceIdError } from "../core/error";
+import { SolutionError } from "../plugins/solution/fx-solution/constants";
 import Mustache from "mustache";
-import { CloudResource } from "@microsoft/teamsfx-api/build/v3";
 import {
   Component,
   sendTelemetryErrorEvent,
@@ -382,13 +376,6 @@ export function isMultiEnvEnabled(): boolean {
 
 export function isBicepEnvCheckerEnabled(): boolean {
   return isFeatureFlagEnabled(FeatureFlagName.BicepEnvCheckerEnable, true);
-}
-
-/**
- * @deprecated Please DO NOT use this method any more, it will be removed in near future.
- */
-export function isRemoteCollaborateEnabled(): boolean {
-  return isFeatureFlagEnabled(FeatureFlagName.InsiderPreview, true);
 }
 
 export function getRootDirectory(): string {

@@ -5,6 +5,7 @@
         "packages/fx-core",
         "packages/sdk",
         "packages/cli",
+        "packages/server",
         "packages/vscode-extension",
         "packages/failpoint-ts",
         "templates"

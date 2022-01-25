@@ -582,7 +582,7 @@
         "command": "fx-extension.grantPermission",
         "title": "Add M365 Teams App (with AAD App) Owners",
         "icon": "$(person-add)",
-        "enablement": "fx-extension.isMultiEnvEnabled && fx-extension.isRemoteCollaborateEnabled"
+        "enablement": "fx-extension.isMultiEnvEnabled"
       },
       {
         "command": "fx-extension.migrateTeamsTabApp",
@@ -776,28 +776,9 @@
     ],
     "configuration": [
       {
-        "title": "Teams Toolkit",
+        "title": "General",
+        "order": 1,
         "properties": {
-          "fx-extension.validateNode": {
-            "type": "boolean",
-            "description": "Ensure Node.js is installed.",
-            "default": true
-          },
-          "fx-extension.validateDotnetSdk": {
-            "type": "boolean",
-            "description": "Ensure .NET SDK is installed.",
-            "default": true
-          },
-          "fx-extension.validateFuncCoreTools": {
-            "type": "boolean",
-            "description": "Ensure Azure Function Core Tools is installed.",
-            "default": true
-          },
-          "fx-extension.validateBicep": {
-            "type": "boolean",
-            "description": "Ensure Bicep CLI is installed.",
-            "default": true
-          },
           "fx-extension.stopTeamsToolkitTasksPostDebug": {
             "type": "boolean",
             "description": "Automatically stop all Teams Toolkit tasks when debug session ends.",
@@ -807,6 +788,40 @@
             "type": "string",
             "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requries reload of VS Code)",
             "default": "${homeDir}/TeamsApps"
+          }
+        }
+      },
+      {
+        "title": "Prerequisite Check",
+        "order": 2,
+        "properties": {
+          "fx-extension.prerequisiteCheck": {
+            "type": "object",
+            "properties": {
+              "node": {
+                "type": "boolean",
+                "description": "Ensure Node.js is installed."
+              },
+              "dotnetSdk": {
+                "type": "boolean",
+                "description": "Ensure .NET SDK is installed."
+              },
+              "funcCoreTools": {
+                "type": "boolean",
+                "description": "Ensure Azure Function Core Tools is installed."
+              },
+              "bicep": {
+                "type": "boolean",
+                "description": "Ensure Bicep CLI is installed."
+              }
+            },
+            "additionalProperties": false,
+            "default": {
+              "node": true,
+              "dotnetSdk": true,
+              "funcCoreTools": true,
+              "bicep": true
+            }
           }
         }
       }

@@ -302,13 +302,13 @@ export interface FeaturePlugin extends Plugin {
     localSettings?: DeepReadonly<Json>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   provisionLocalResource?: (
-    ctx: ContextWithManifest,
+    ctx: Context,
     inputs: InputsWithProjectPath,
     localSettings: Json,
     tokenProvider: TokenProvider
-  ) => Promise<Result<Json, FxError>>;
+  ) => Promise<Result<Void, FxError>>;
   configureLocalResource?: (
-    ctx: ContextWithManifest,
+    ctx: Context,
     inputs: InputsWithProjectPath,
     localSettings: Json,
     tokenProvider: TokenProvider
@@ -321,18 +321,18 @@ export interface FeaturePlugin extends Plugin {
     ctx: Context,
     inputs: Inputs,
     tokenProvider: TokenProvider,
-    envInfo?: DeepReadonly<EnvInfoV3>
+    envInfo?: EnvInfoV3
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   provisionResource?: (
-    ctx: ContextWithManifest,
+    ctx: Context,
     inputs: InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV3>,
+    envInfo: EnvInfoV3,
     tokenProvider: TokenProvider
-  ) => Promise<Result<CloudResource, FxError>>;
+  ) => Promise<Result<Void, FxError>>;
   configureResource?: (
-    ctx: ContextWithManifest,
+    ctx: Context,
     inputs: InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV3>,
+    envInfo: EnvInfoV3,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
 
@@ -351,24 +351,4 @@ export interface FeaturePlugin extends Plugin {
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;
-
-  /**
-   * customize questions needed for user task
-   */
-  getQuestionsForUserTask?: (
-    ctx: Context,
-    inputs: Inputs,
-    func: Func,
-    localSettings: Json,
-    envInfo: DeepReadonly<EnvInfoV3>,
-    tokenProvider: TokenProvider
-  ) => Promise<Result<QTreeNode | undefined, FxError>>;
-  executeUserTask?: (
-    ctx: Context,
-    inputs: Inputs,
-    func: Func,
-    localSettings: Json,
-    envInfo: EnvInfoV3,
-    tokenProvider: TokenProvider
-  ) => Promise<Result<unknown, FxError>>;
 }

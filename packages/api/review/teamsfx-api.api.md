@@ -492,10 +492,24 @@ type EnvInfoV2 = Omit<EnvInfo, "state" | "config"> & {
     config: Json;
 };
 
-// @public
-interface EnvInfoV3 extends EnvInfoV2 {
+// @public (undocumented)
+interface EnvInfoV3 {
+    // (undocumented)
+    config: EnvConfig;
+    // (undocumented)
+    envName: string;
     // (undocumented)
     state: ResourceStates;
+}
+
+// @public (undocumented)
+interface EnvInfoV3Question {
+    // (undocumented)
+    config?: EnvConfig;
+    // (undocumented)
+    envName: string;
+    // (undocumented)
+    state?: ResourceStates;
 }
 
 // @public
@@ -538,28 +552,15 @@ export interface ExpServiceProvider {
 
 // @public (undocumented)
 interface FeaturePlugin extends Plugin_3 {
-    // (undocumented)
-    configureLocalResource?: (ctx: ContextWithManifest, inputs: InputsWithProjectPath, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    configureResource?: (ctx: ContextWithManifest, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    // (undocumented)
+    configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     deploy?: (ctx: Context_2, inputs: PluginDeployInputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     description?: string;
-    // (undocumented)
-    executeUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<unknown, FxError>>;
-    generateResourceTemplate?: (ctx: ContextWithManifest, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2, FxError>>;
-    getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForLocalProvision?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider, localSettings?: DeepReadonly<Json>) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, tokenProvider: TokenProvider, envInfo?: DeepReadonly<EnvInfoV3>) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3Question>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3Question>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForScaffold?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForUserTask?: (ctx: Context_2, inputs: Inputs, func: Func, localSettings: Json, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     pluginDependencies?(ctx: Context_2, inputs: Inputs): Promise<Result<string[], FxError>>;
-    // (undocumented)
-    provisionLocalResource?: (ctx: ContextWithManifest, inputs: InputsWithProjectPath, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Json, FxError>>;
-    // (undocumented)
-    provisionResource?: (ctx: ContextWithManifest, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: TokenProvider) => Promise<Result<CloudResource, FxError>>;
-    scaffold: (ctx: ContextWithManifest, inputs: InputsWithProjectPath) => Promise<Result<Json | undefined, FxError>>;
-    updateResourceTemplate?: (ctx: ContextWithManifest, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2, FxError>>;
+    provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    scaffold: (ctx: ContextWithManifest, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
 }
 
 // @public (undocumented)
@@ -2114,6 +2115,7 @@ export { v2 }
 declare namespace v3 {
     export {
         EnvInfoV3,
+        EnvInfoV3Question,
         CloudResource,
         ResourceStates,
         AzureResource,

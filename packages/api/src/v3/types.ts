@@ -1,12 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { EnvInfoV2 } from "../v2/types";
+import { EnvConfig } from "../schemas";
 import { ResourceStates } from "./resourceStates";
 
-/**
- * Upgrade EnvInfoV2, specify the state type as ResourceStates
- */
-export interface EnvInfoV3 extends EnvInfoV2 {
+export interface EnvInfoV3 {
+  envName: string;
+  // input
+  config: EnvConfig;
+  // output
   state: ResourceStates;
+}
+
+export interface EnvInfoV3Question {
+  envName: string;
+  // input
+  config?: EnvConfig;
+  // output
+  state?: ResourceStates;
 }

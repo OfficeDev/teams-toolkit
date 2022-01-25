@@ -131,7 +131,7 @@ export class FrontendPlugin implements Plugin {
       TelemetryHelper.sendSuccessEvent(stage, properties);
       return result;
     } catch (e) {
-      await ProgressHelper.endAllHandlers(false);
+      await ProgressHelper.endProgress(false);
 
       if (e instanceof FrontendPluginError) {
         const error =

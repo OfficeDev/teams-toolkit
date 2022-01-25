@@ -13,6 +13,7 @@ import {
 } from "../utils";
 import { EnvInfo } from "../context";
 import { FxError } from "../error";
+import { AppManifestProvider } from "../v3";
 
 export type PluginName = string;
 
@@ -24,6 +25,7 @@ export interface Context {
   projectSetting: ProjectSettings;
   permissionRequestProvider?: PermissionRequestProvider;
   expServiceProvider?: ExpServiceProvider;
+  appManifestProvider?: AppManifestProvider;
 }
 
 export interface LocalSettings extends Json {

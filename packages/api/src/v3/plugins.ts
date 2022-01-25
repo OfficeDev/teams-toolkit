@@ -104,7 +104,10 @@ export interface AppManifestProvider {
 }
 
 export interface ContextWithManifest extends Context {
-  appManifestProvider: AppManifestProvider;
+  appManifest: {
+    local: AppManifest;
+    remote: AppManifest;
+  };
 }
 
 export interface ScaffoldPlugin extends Plugin {
@@ -281,14 +284,14 @@ export interface FeaturePlugin extends Plugin {
    * scaffold means anything: add/update source codes/resource templates/config files
    * if scaffold include generating resource templates, they will be returned
    *
-   * @param {ContextWithManifest} context with manifest provider
+   * @param {Context} context with manifest provider
    *
    * @param {InputsWithProjectPath} inputs with project path
    *
    * @returns {ResourceTemplate | undefined} resource template, optional if the feature include resource template
    */
   scaffold: (
-    ctx: ContextWithManifest,
+    ctx: Context,
     inputs: InputsWithProjectPath
   ) => Promise<Result<ResourceTemplate | undefined, FxError>>;
 

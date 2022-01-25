@@ -334,6 +334,8 @@ export interface Context {
 // @public (undocumented)
 interface Context_2 {
     // (undocumented)
+    appManifestProvider?: AppManifestProvider;
+    // (undocumented)
     cryptoProvider: CryptoProvider;
     // (undocumented)
     expServiceProvider?: ExpServiceProvider;
@@ -352,7 +354,10 @@ interface Context_2 {
 // @public (undocumented)
 interface ContextWithManifest extends Context_2 {
     // (undocumented)
-    appManifestProvider: AppManifestProvider;
+    appManifest: {
+        local: AppManifest;
+        remote: AppManifest;
+    };
 }
 
 // @public (undocumented)
@@ -560,7 +565,7 @@ interface FeaturePlugin extends Plugin_3 {
     getQuestionsForScaffold?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     pluginDependencies?(ctx: Context_2, inputs: Inputs): Promise<Result<string[], FxError>>;
     provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    scaffold: (ctx: ContextWithManifest, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
+    scaffold: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
 }
 
 // @public (undocumented)

@@ -125,7 +125,13 @@ suite("[Checker UT - Extension]", () => {
       sandbox.stub(vscodeHelper, "isNodeCheckerEnabled").returns(false);
       sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(false);
 
-      sandbox.stub(vscodeHelper, "hasNgrok").onCall(0).resolves(false).onCall(1).resolves(true);
+      sandbox
+        .stub(vscodeHelper, "isNgrokEnabled")
+        .onCall(0)
+        .resolves(false)
+        .onCall(1)
+        .resolves(true);
+
       sandbox.stub(vscodeHelper, "hasBot").onCall(0).resolves(true).onCall(1).resolves(false);
 
       chai.util.addMethod(checker, "ensure", async function (deps: DepsType[]) {
@@ -213,7 +219,7 @@ function getFailedDepsStatus(error: DepsCheckerError | undefined) {
 function stubEnabled(sandbox: sinon.SinonSandbox) {
   sandbox.stub(vscodeHelper, "checkerEnabled").returns(true);
   sandbox.stub(vscodeHelper, "hasFunction").resolves(true);
-  sandbox.stub(vscodeHelper, "hasNgrok").resolves(true);
+  sandbox.stub(vscodeHelper, "isNgrokEnabled").resolves(true);
   sandbox.stub(vscodeHelper, "hasBot").resolves(true);
   sandbox.stub(vscodeHelper, "isFuncCoreToolsEnabled").returns(true);
   sandbox.stub(vscodeHelper, "isDotnetCheckerEnabled").returns(true);

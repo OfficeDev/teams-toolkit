@@ -19,6 +19,7 @@ import {
   ProgrammingLanguage,
   TaskDefinition,
 } from "@microsoft/teamsfx-core";
+import { vscodeHelper } from "./depsChecker/vscodeHelper";
 
 export class TeamsfxTaskProvider implements vscode.TaskProvider {
   public static readonly type: string = ProductName;
@@ -77,7 +78,7 @@ export class TeamsfxTaskProvider implements vscode.TaskProvider {
 
       const botRoot = await commonUtils.getProjectRoot(workspacePath, FolderName.Bot);
       if (botRoot) {
-        const skipNgrok = (localSettings?.bot?.skipNgrok as boolean) === true;
+        const skipNgrok = !vscodeHelper.isNgrokEnabled();
         tasks.push(await this.createNgrokStartTask(workspaceFolder, botRoot, skipNgrok));
         const silent: boolean = frontendRoot !== undefined;
         tasks.push(

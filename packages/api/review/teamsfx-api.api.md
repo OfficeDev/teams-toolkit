@@ -803,6 +803,8 @@ export interface Inputs extends Json {
     // (undocumented)
     projectPath?: string;
     // (undocumented)
+    skipNgrok?: boolean;
+    // (undocumented)
     sourceEnvName?: string;
     // (undocumented)
     stage?: Stage;

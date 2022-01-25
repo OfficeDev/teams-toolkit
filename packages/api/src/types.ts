@@ -231,6 +231,7 @@ export interface Inputs extends Json {
   env?: string;
   projectId?: string;
   existingResources?: string[];
+  skipNgrok?: boolean;
 }
 
 export interface ProjectConfig {

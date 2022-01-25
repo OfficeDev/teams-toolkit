@@ -608,6 +608,7 @@ export async function runCommand(
       }
       case Stage.debug: {
         inputs.ignoreEnvInfo = true;
+        inputs.skipNgrok = !vscodeHelper.isNgrokEnabled();
         result = await core.localDebug(inputs);
         break;
       }

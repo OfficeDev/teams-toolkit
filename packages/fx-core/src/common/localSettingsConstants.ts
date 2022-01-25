@@ -44,7 +44,6 @@ export const LocalSettingsBackendKeys = Object.freeze({
 });
 
 export const LocalSettingsBotKeys = Object.freeze({
-  SkipNgrok: "skipNgrok",
   BotId: "botId",
   BotPassword: "botPassword",
   BotAadObjectId: "botAadObjectId",

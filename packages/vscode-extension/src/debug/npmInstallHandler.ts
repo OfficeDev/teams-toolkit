@@ -21,7 +21,13 @@ import { runTask } from "./teamsfxTaskHandler";
 import { createTask } from "./teamsfxTaskProvider";
 import VsCodeLogInstance from "../commonlib/log";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
-import { TelemetryEvent } from "../telemetry/extTelemetryEvents";
+import {
+  TelemetryEvent,
+  TelemetryProperty,
+  TelemetrySuccess,
+} from "../telemetry/extTelemetryEvents";
+import { returnUserError } from "@microsoft/teamsfx-api";
+import { ExtensionSource } from "../error";
 
 export async function runNpmInstallAll(projectRoot: string): Promise<void> {
   const packageJson = await loadPackageJson(path.join(projectRoot, "package.json"));
@@ -39,90 +45,117 @@ export async function automaticNpmInstallHandler(
   excludeBackend: boolean,
   excludeBot: boolean
 ): Promise<void> {
-  const state = globalStateGet("automaticNpmInstall", false);
-  if (state) {
-    globalStateUpdate("automaticNpmInstall", false);
-    const configuration = getConfiguration(ConfigurationKey.AutomaticNpmInstall);
-    if (configuration && ext.workspaceUri !== undefined) {
-      const localEnvManager = new LocalEnvManager(
-        VsCodeLogInstance,
-        ExtTelemetry.reporter,
-        VS_CODE_UI
-      );
-      const workspaceFolder = vscode.workspace.workspaceFolders![0];
-      const workspacePath = workspaceFolder.uri.fsPath;
-      const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
-      const tasks: Map<string, Promise<number | undefined>> = new Map();
-      if (ProjectSettingsHelper.isSpfx(projectSettings)) {
-        tasks.set(
-          "spfx",
-          runTask(await createTask(TaskDefinition.spfxInstall(workspacePath), workspaceFolder))
+  try {
+    const state = globalStateGet("automaticNpmInstall", false);
+    if (state) {
+      globalStateUpdate("automaticNpmInstall", false);
+      const configuration = getConfiguration(ConfigurationKey.AutomaticNpmInstall);
+      if (configuration && ext.workspaceUri !== undefined) {
+        const localEnvManager = new LocalEnvManager(
+          VsCodeLogInstance,
+          ExtTelemetry.reporter,
+          VS_CODE_UI
         );
-      } else {
-        if (!excludeFrontend && ProjectSettingsHelper.includeFrontend(projectSettings)) {
+        const workspaceFolder = vscode.workspace.workspaceFolders![0];
+        const workspacePath = workspaceFolder.uri.fsPath;
+        const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
+        const tasks: Map<string, Promise<number | undefined>> = new Map<
+          string,
+          Promise<number | undefined>
+        >();
+        if (ProjectSettingsHelper.isSpfx(projectSettings)) {
           tasks.set(
-            "frontend",
-            runTask(
-              await createTask(TaskDefinition.frontendInstall(workspacePath), workspaceFolder)
-            )
+            "spfx",
+            runTask(await createTask(TaskDefinition.spfxInstall(workspacePath), workspaceFolder))
           );
-        }
-        if (!excludeBackend && ProjectSettingsHelper.includeBackend(projectSettings)) {
-          tasks.set(
-            "backend",
-            runTask(await createTask(TaskDefinition.backendInstall(workspacePath), workspaceFolder))
-          );
-        }
-        if (!excludeBot && ProjectSettingsHelper.includeBot(projectSettings)) {
-          tasks.set(
-            "bot",
-            runTask(await createTask(TaskDefinition.botInstall(workspacePath), workspaceFolder))
-          );
-        }
-      }
-      if (tasks.size > 0) {
-        try {
-          const properties: { [key: string]: string } = {};
-          for (const key of tasks.keys()) {
-            properties[key] = "true";
-          }
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AutomaticNpmInstallStart, properties);
-        } catch {
-          // ignore telemetry error
-        }
-        VS_CODE_UI.showMessage(
-          "info",
-          StringResources.vsc.handlers.automaticNpmInstall,
-          false,
-          StringResources.vsc.handlers.disableAutomaticNpmInstall
-        ).then((selection) => {
-          if (
-            selection.isOk() &&
-            selection.value === StringResources.vsc.handlers.disableAutomaticNpmInstall
-          ) {
-            vscode.commands.executeCommand(
-              "workbench.action.openSettings",
-              ConfigurationKey.AutomaticNpmInstall
+        } else {
+          if (!excludeFrontend && ProjectSettingsHelper.includeFrontend(projectSettings)) {
+            tasks.set(
+              "frontend",
+              runTask(
+                await createTask(TaskDefinition.frontendInstall(workspacePath), workspaceFolder)
+              )
             );
-            try {
-              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickDisableAutomaticNpmInstall);
-            } catch {
-              // ignore telemetry error
+          }
+          if (!excludeBackend && ProjectSettingsHelper.includeBackend(projectSettings)) {
+            tasks.set(
+              "backend",
+              runTask(
+                await createTask(TaskDefinition.backendInstall(workspacePath), workspaceFolder)
+              )
+            );
+          }
+          if (!excludeBot && ProjectSettingsHelper.includeBot(projectSettings)) {
+            tasks.set(
+              "bot",
+              runTask(await createTask(TaskDefinition.botInstall(workspacePath), workspaceFolder))
+            );
+          }
+        }
+        if (tasks.size > 0) {
+          try {
+            const properties: { [key: string]: string } = {};
+            for (const key of tasks.keys()) {
+              properties[key] = "true";
             }
+            ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AutomaticNpmInstallStart, properties);
+          } catch {
+            // ignore telemetry error
           }
-        });
-        const keys = tasks.keys();
-        const exitCodes = await Promise.all(tasks.values());
-        try {
-          const properties: { [key: string]: string } = {};
-          for (const exitCode of exitCodes) {
-            properties[keys.next().value] = exitCode + "";
+
+          VS_CODE_UI.showMessage(
+            "info",
+            StringResources.vsc.handlers.automaticNpmInstall,
+            false,
+            StringResources.vsc.handlers.disableAutomaticNpmInstall
+          ).then((selection) => {
+            if (
+              selection.isOk() &&
+              selection.value === StringResources.vsc.handlers.disableAutomaticNpmInstall
+            ) {
+              vscode.commands.executeCommand(
+                "workbench.action.openSettings",
+                ConfigurationKey.AutomaticNpmInstall
+              );
+              try {
+                ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ClickDisableAutomaticNpmInstall);
+              } catch {
+                // ignore telemetry error
+              }
+            }
+          });
+
+          const keys = tasks.keys();
+          const exitCodes = await Promise.all(tasks.values());
+
+          try {
+            const properties: { [key: string]: string } = {};
+            for (const exitCode of exitCodes) {
+              properties[keys.next().value] = exitCode + "";
+            }
+            const failed = exitCodes.some((exitCode) => exitCode !== 0);
+            if (failed) {
+              const error = returnUserError(
+                new Error("Npm install failed"),
+                ExtensionSource,
+                "NpmInstallFailed"
+              );
+              ExtTelemetry.sendTelemetryErrorEvent(
+                TelemetryEvent.AutomaticNpmInstall,
+                error,
+                properties
+              );
+            } else {
+              properties[TelemetryProperty.Success] = TelemetrySuccess.Yes;
+              ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AutomaticNpmInstall, properties);
+            }
+          } catch {
+            // ignore telemetry error
           }
-          ExtTelemetry.sendTelemetryEvent(TelemetryEvent.AutomaticNpmInstall, properties);
-        } catch {
-          // ignore telemetry error
         }
       }
     }
+  } catch (error: any) {
+    VsCodeLogInstance.warning(`Automatic npm install failed: ${error}`);
   }
 }

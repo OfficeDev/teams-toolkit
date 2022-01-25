@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, ok, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
+import { Func, PluginContext, ok, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
 import {
   DotnetPluginInfo as PluginInfo,
   DotnetConfigInfo as ConfigInfo,
@@ -31,7 +31,8 @@ import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/Res
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import { PluginImpl } from "../interface";
-import { Func } from "@microsoft/teamsfx-api";
+import { ProgressHelper } from "../utils/progress-helper";
+import { WebappDeployProgress as DeployProgress } from "./resources/steps";
 
 type Site = WebSiteManagementModels.Site;
 
@@ -178,6 +179,7 @@ export class DotnetPluginImpl implements PluginImpl {
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartDeploy);
+    await ProgressHelper.startProgress(ctx, DeployProgress);
 
     const config = this.syncConfigFromContext(ctx);
 
@@ -213,6 +215,7 @@ export class DotnetPluginImpl implements PluginImpl {
     const folderToBeZipped = PathInfo.publishFolderPath(projectPath, framework, runtime);
     await Deploy.zipDeploy(client, resourceGroupName, webAppName, folderToBeZipped);
 
+    await ProgressHelper.endProgress(true);
     Logger.info(Messages.EndDeploy);
     return ok(undefined);
   }

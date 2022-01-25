@@ -491,8 +491,8 @@
         "enablement": "never"
       },
       {
-        "command": "fx-extension.append-func-path",
-        "title": "Teams - Append Func Path Environment Variable",
+        "command": "fx-extension.get-func-path",
+        "title": "Teams - Get Func Path for Environment Variable",
         "enablement": "never"
       },
       {

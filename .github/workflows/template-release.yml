@@ -19,7 +19,9 @@ jobs:
       with:
         ref: ${{ github.ref }}
     - name: Generate Template Zip Files
-      run: .github/scripts/template-zip-autogen.sh
+        run: |
+          curl -sSL https://git.io/get-mo -o mo && chmod +x mo && sudo mv mo /usr/local/bin/
+          .github/scripts/template-zip-autogen.sh
     - name: Create Templates Release
       uses: ncipollo/release-action@v1.7.3
       with:

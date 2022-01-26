@@ -101,10 +101,17 @@ import { TelemetryPropertyKey } from "./utils/telemetry";
 import _ from "lodash";
 import { HelpLinks } from "../../../common/constants";
 import { loadManifest } from "./manifestTemplate";
-import localdebug from "../localdebug";
+import Ajv from "ajv-draft-04";
+import axios from "axios";
+import validation from "ajv/dist/vocabularies/validation";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
+  private readonly ajv;
+
+  constructor() {
+    this.ajv = new Ajv({ strictSchema: false });
+  }
 
   public async getAppDefinitionAndUpdate(
     ctx: PluginContext,
@@ -358,11 +365,16 @@ export class AppStudioPluginImpl {
         manifestString = JSON.stringify(appDefinitionAndManifest.value[1]);
       }
     }
-    const errors: string[] = await AppStudioClient.validateManifest(
-      manifestString,
-      appStudioToken!
-    );
     const manifest: TeamsAppManifest = JSON.parse(manifestString);
+
+    let errors: string[];
+    const res = await this.validateManifestAgainstSchema(manifest);
+    if (res.isOk()) {
+      errors = res.value;
+    } else {
+      return err(res.error);
+    }
+
     const appDirectory = await getAppDirectory(ctx.root);
     if (manifest.icons.outline) {
       if (
@@ -1007,14 +1019,13 @@ export class AppStudioPluginImpl {
     try {
       // Validate manifest
       await publishProgress?.start("Validating manifest file");
-      const validationResult = await AppStudioClient.validateManifest(
-        manifestString!,
-        (await ctx.appStudioToken?.getAccessToken())!
-      );
-      if (validationResult.length > 0) {
+      const validationResult = await this.validateManifestAgainstSchema(manifest);
+      if (validationResult.isErr()) {
+        throw validationResult.error;
+      } else if (validationResult.value.length > 0) {
         throw AppStudioResultFactory.UserError(
           AppStudioError.ValidationFailedError.name,
-          AppStudioError.ValidationFailedError.message(validationResult)
+          AppStudioError.ValidationFailedError.message(validationResult.value)
         );
       }
 
@@ -1548,6 +1559,44 @@ export class AppStudioPluginImpl {
       }
       throw e;
     }
+  }
+
+  private async validateManifestAgainstSchema(
+    manifest: TeamsAppManifest
+  ): Promise<Result<string[], FxError>> {
+    const errors: string[] = [];
+    if (manifest.$schema) {
+      const instance = axios.create();
+      try {
+        const res = await instance.get(manifest.$schema);
+        const validate = this.ajv.compile(res.data);
+        const valid = validate(manifest);
+        if (!valid) {
+          validate.errors?.map((error) => {
+            errors.push(`${error.instancePath} ${error.message}`);
+          });
+        }
+      } catch (e: any) {
+        return err(
+          AppStudioResultFactory.UserError(
+            AppStudioError.ValidationFailedError.name,
+            AppStudioError.ValidationFailedError.message([
+              `Failed to get schema from ${manifest.$schema}, message: ${e.message}`,
+            ]),
+            HelpLinks.WhyNeedProvision
+          )
+        );
+      }
+    } else {
+      return err(
+        AppStudioResultFactory.UserError(
+          AppStudioError.ValidationFailedError.name,
+          AppStudioError.ValidationFailedError.message(["Manifest schema is not defined"]),
+          HelpLinks.WhyNeedProvision
+        )
+      );
+    }
+    return ok(errors);
   }
 
   private async getAppDefinitionAndManifest(

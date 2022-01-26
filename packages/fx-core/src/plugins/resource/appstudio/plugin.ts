@@ -103,7 +103,6 @@ import { HelpLinks } from "../../../common/constants";
 import { loadManifest } from "./manifestTemplate";
 import Ajv from "ajv-draft-04";
 import axios from "axios";
-import validation from "ajv/dist/vocabularies/validation";
 
 export class AppStudioPluginImpl {
   public commonProperties: { [key: string]: string } = {};
@@ -347,7 +346,6 @@ export class AppStudioPluginImpl {
     ctx: PluginContext,
     isLocalDebug: boolean
   ): Promise<Result<string[], FxError>> {
-    const appStudioToken = await ctx?.appStudioToken?.getAccessToken();
     let manifestString: string | undefined = undefined;
     if (isSPFxProject(ctx.projectSettings)) {
       manifestString = await this.getSPFxManifest(ctx, isLocalDebug);

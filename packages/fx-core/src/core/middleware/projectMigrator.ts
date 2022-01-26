@@ -225,11 +225,7 @@ function checkMethod(ctx: CoreHookContext): boolean {
 }
 
 function checkUserTasks(ctx: CoreHookContext): boolean {
-  const userTaskArgs: Set<string> = new Set([
-    "getProgrammingLanguage",
-    "getLocalDebugEnvs",
-    "getSkipNgrokConfig",
-  ]);
+  const userTaskArgs: Set<string> = new Set(["getProgrammingLanguage", "getLocalDebugEnvs"]);
   const userTaskMethod = ctx.arguments[0]?.["method"];
   if (ctx.method === "executeUserTask" && userTaskArgs.has(userTaskMethod)) {
     return false;

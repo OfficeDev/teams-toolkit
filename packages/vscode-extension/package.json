@@ -813,6 +813,10 @@
               "bicep": {
                 "type": "boolean",
                 "description": "Ensure Bicep CLI is installed."
+              },
+              "ngrok": {
+                "type": "boolean",
+                "description": "Ensure Ngrok is installed."
               }
             },
             "additionalProperties": false,
@@ -820,7 +824,8 @@
               "node": true,
               "dotnetSdk": true,
               "funcCoreTools": true,
-              "bicep": true
+              "bicep": true,
+              "ngrok": true
             }
           }
         }

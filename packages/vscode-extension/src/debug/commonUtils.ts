@@ -147,17 +147,6 @@ export async function getDebugConfig(
   }
 }
 
-export async function getSkipNgrokConfig(): Promise<boolean> {
-  try {
-    const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
-    const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
-    return (localSettings?.bot?.skipNgrok as boolean) === true;
-  } catch (error: any) {
-    showError(error);
-    return false;
-  }
-}
-
 export async function getNpmInstallLogInfo(): Promise<any> {
   const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
   return await localEnvManager.getNpmInstallLogInfo();

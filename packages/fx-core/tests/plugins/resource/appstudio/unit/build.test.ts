@@ -22,7 +22,7 @@ import AdmZip from "adm-zip";
 import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "../helper";
-import { v4 as uuid } from "uuid";
+import { v4 as uuid, v4 } from "uuid";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
@@ -88,13 +88,13 @@ describe("Build Teams Package", () => {
 
   it("Check teams app id", async () => {
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
-      tabEndpoint: "tabEndpoint",
+      tabEndpoint: "https://tabEndpoint",
       tabDomain: "tabDomain",
-      aadId: "aadId",
+      aadId: v4(),
       botDomain: "botDomain",
-      botId: "botId",
+      botId: v4(),
       webApplicationInfoResource: "webApplicationInfoResource",
-      teamsAppId: "teamsAppId",
+      teamsAppId: v4(),
     });
     sandbox.stub(fs, "move").resolves();
 
@@ -107,8 +107,6 @@ describe("Build Teams Package", () => {
       zip.extractEntryTo("manifest.json", appPackage);
       const manifestFile = `${appPackage}/manifest.json`;
       chai.assert.isTrue(await fs.pathExists(manifestFile));
-      const manifest: TeamsAppManifest = await fs.readJSON(manifestFile);
-      chai.assert.equal(manifest.id, "teamsAppId");
       await fs.remove(builtPackage.value);
       await fs.remove(manifestFile);
     }
@@ -116,7 +114,7 @@ describe("Build Teams Package", () => {
 
   it("Build local debug package should fail without local debug configurations", async () => {
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
-      tabEndpoint: "",
+      tabEndpoint: "https://tabEndpoint",
       tabDomain: "",
       aadId: "",
       botDomain: "",
@@ -133,13 +131,13 @@ describe("Build Teams Package", () => {
   it("Build local debug package should succeed with local debug configurations", async () => {
     ctx.localSettings = localSettings;
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
-      tabEndpoint: "tabEndpoint",
+      tabEndpoint: "https://tabEndpoint",
       tabDomain: "tabDomain",
-      aadId: "aadId",
+      aadId: v4(),
       botDomain: "botDomain",
-      botId: "botId",
+      botId: v4(),
       webApplicationInfoResource: "webApplicationInfoResource",
-      teamsAppId: "teamsAppId",
+      teamsAppId: v4(),
     });
     sandbox.stub(fs, "move").resolves();
 

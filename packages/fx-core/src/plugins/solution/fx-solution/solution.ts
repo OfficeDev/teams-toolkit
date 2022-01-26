@@ -287,7 +287,7 @@ export class TeamsAppSolution implements Solution {
       ctx.projectSettings!.programmingLanguage = lang;
     }
     const solutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const settingsRes = fillInSolutionSettings(solutionSettings, ctx.answers!);
+    const settingsRes = fillInSolutionSettings(ctx.projectSettings, ctx.answers!);
     if (settingsRes.isErr()) {
       return err(
         sendErrorTelemetryThenReturnError(

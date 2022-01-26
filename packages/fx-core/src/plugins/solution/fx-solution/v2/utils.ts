@@ -36,7 +36,7 @@ import {
   TabOptionItem,
   TabSPFxItem,
 } from "../question";
-import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
+import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
 import { PluginsWithContext } from "../solution";
 import { getPluginContext } from "../utils/util";
 import * as util from "util";
@@ -217,9 +217,10 @@ export function loadTeamsAppTenantIdForLocal(
 }
 
 export function fillInSolutionSettings(
-  solutionSettings: AzureSolutionSettings,
+  projectSettings: ProjectSettings,
   answers: Inputs
 ): Result<Void, FxError> {
+  const solutionSettings = (projectSettings.solutionSettings as AzureSolutionSettings) || {};
   let capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
   if (!capabilities || capabilities.length === 0) {
     return err(
@@ -267,6 +268,12 @@ export function fillInSolutionSettings(
   }
   solutionSettings.azureResources = azureResources || [];
   solutionSettings.capabilities = capabilities || [];
+
+  // fill in activeResourcePlugins
+  const activatedPluginNames = getAllV2ResourcePlugins()
+    .filter((p) => p.activate && p.activate(projectSettings) === true)
+    .map((p) => p.name);
+  solutionSettings.activeResourcePlugins = activatedPluginNames;
   return ok(Void);
 }
 

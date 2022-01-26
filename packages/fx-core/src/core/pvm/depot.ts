@@ -180,7 +180,7 @@ export class Depot {
 
         // --prefix set the target diretory of npm package
         // --no-save will not gen package-lock.json
-        await Executor.execCommandAsync(`npm install --prefix ${source} --no-save`);
+        await Executor.execCommandAsync(`npm install --prefix ${source} --cwd ${source} --no-save`);
 
         // rename the folder by version in node_modules/${name}/package.json
         const config = await readJSON(join(source, NODE_MODULES, name, PACKAGE_DOT_JSON));

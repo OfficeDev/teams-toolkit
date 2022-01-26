@@ -58,6 +58,17 @@ describe("portChecker", () => {
       chai.assert.deepEqual(ports, [53000]);
     });
 
+    it("55000 in use, do not detect", async () => {
+      const portChecker = proxyquire("../../../src/common/local/portChecker", {
+        "detect-port": async (port: number) => (port === 55000 ? 55001 : port),
+      });
+
+      const ports = await portChecker.getPortsInUse(projectPath, projectSettings0);
+
+      chai.assert.isDefined(ports);
+      chai.assert.deepEqual(ports, []);
+    });
+
     it("dev:teamsfx port", async () => {
       const content = `\
         {\n\

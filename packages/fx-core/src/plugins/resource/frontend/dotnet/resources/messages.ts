@@ -9,4 +9,9 @@ export class Messages {
   static readonly EndPreDeploy = (name: string) => `Pre-deployed '${name}'.`;
   static readonly StartDeploy = (name: string) => `Deploying '${name}'.`;
   static readonly EndDeploy = (name: string) => `Successfully deployed '${name}'.`;
+
+  static readonly getTemplateFrom = (url: string) => `Retrieving template from '${url}'.`;
+
+  static readonly FailedFetchTemplate =
+    "Failed to retrieve latest template from GitHub. Using local template instead.";
 }

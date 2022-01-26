@@ -10,11 +10,13 @@ import {
   DotnetPluginInfo as PluginInfo,
   DotnetConfigInfo as ConfigInfo,
   DependentPluginInfo,
+  DotnetSupportCapability,
   DotnetPathInfo as PathInfo,
   WebappBicepFile,
   WebappBicep,
 } from "./constants";
 import { Messages } from "./resources/messages";
+import { DotnetScaffold as Scaffold } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import { WebSiteManagementModels } from "@azure/arm-appservice";
 import { AzureClientFactory } from "./utils/azure-client";
@@ -31,6 +33,7 @@ import {
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
 } from "../../../../common/tools";
+import { TemplateInfo, Group, Scenario } from "./resources/templateInfo";
 import { Bicep } from "../../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
@@ -93,6 +96,25 @@ export class DotnetPluginImpl implements PluginImpl {
   }
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
+    Logger.info(Messages.StartScaffold(PluginInfo.displayName));
+
+    const selectedCapabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities;
+    const includeTab = selectedCapabilities.includes(DotnetSupportCapability.tabCapability);
+    const includeBot = selectedCapabilities.includes(DotnetSupportCapability.botCapability);
+
+    if (includeTab) {
+      const templateInfo = new TemplateInfo(ctx, Group.Tab, Scenario.Default);
+      await Scaffold.scaffoldFromZipPackage(ctx.root, templateInfo);
+    }
+    if (includeBot) {
+      const templateInfo = new TemplateInfo(ctx, Group.Bot, Scenario.Default);
+      await Scaffold.scaffoldFromZipPackage(ctx.root, templateInfo);
+    }
+    const baseScenrio = (includeTab ? Scenario.Tab : "") + (includeBot ? Scenario.Bot : "")
+    const templateInfo = new TemplateInfo(ctx, Group.Base, baseScenrio);
+    await Scaffold.scaffoldFromZipPackage(ctx.root, templateInfo);
+
+    Logger.info(Messages.EndScaffold(PluginInfo.displayName));
     return ok(undefined);
   }
 

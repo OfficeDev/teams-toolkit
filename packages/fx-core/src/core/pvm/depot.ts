@@ -181,7 +181,7 @@ export class Depot {
         const destination = join(co, version);
 
         // if already installed, overwrite.
-        if (pathExists(destination)) {
+        if (await pathExists(destination)) {
           await rmdir(destination, { recursive: true });
         }
         await move(source, destination);

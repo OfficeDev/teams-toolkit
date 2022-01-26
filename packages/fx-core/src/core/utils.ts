@@ -4,7 +4,7 @@
 import { Inputs, ProjectSettings } from "@microsoft/teamsfx-api";
 
 export function isCreatedFromExistingApp(inputs: Inputs): boolean {
-  return true;
+  return false;
 }
 
 export function isPureExistingApp(projectSettings: ProjectSettings): boolean {

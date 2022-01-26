@@ -46,7 +46,14 @@ import {
 
 import { Executor } from "../../common/tools";
 import { CoreSource, InvalidInputError, LoadPluginError } from "../error";
-import { MANIFEST_DOT_JSON, PACKAGE_DOT_JSON, PLUGINS_FOLDER, PVM_SPEC_VERSION } from "./constant";
+import {
+  MANIFEST_DOT_JSON,
+  NODE_MODULES,
+  PACKAGE_DOT_JSON,
+  PLUGINS_FOLDER,
+  PVM_SPEC_VERSION,
+  UNDERTERMINED,
+} from "./constant";
 import { PluginName, Plugins, PluginVersion, PluginPath, PluginURI } from "./type";
 import { jsonStringifyElegantly } from "./utility";
 import { valid } from "semver";
@@ -163,12 +170,12 @@ export class Depot {
         if (await Depot.has(name, uri)) {
           continue;
         }
-        const co = join(DEPOT_ADDR, "plugins", name);
+        const co = join(DEPOT_ADDR, PLUGINS_FOLDER, name);
         const plugin: Plugins = {};
         plugin[name] = packages[name];
 
         // set as "undertermined" and rename after installing
-        const source = join(co, "undertermined");
+        const source = join(co, UNDERTERMINED);
         await writePackageJson(source, plugin);
 
         // --prefix set the target diretory of npm package
@@ -176,7 +183,7 @@ export class Depot {
         await Executor.execCommandAsync(`npm install --prefix ${source} --no-save`);
 
         // rename the folder by version in node_modules/${name}/package.json
-        const config = await readJSON(join(source, "node_modules", name, PACKAGE_DOT_JSON));
+        const config = await readJSON(join(source, NODE_MODULES, name, PACKAGE_DOT_JSON));
         const version = config.version;
         const destination = join(co, version);
 

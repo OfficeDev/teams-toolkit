@@ -45,6 +45,7 @@ import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { runTask } from "./teamsfxTaskHandler";
+import { vscodeHelper } from "./depsChecker/vscodeHelper";
 
 interface CheckFailure {
   checker: string;
@@ -244,9 +245,7 @@ async function resolveLocalCertificate(
   localEnvManager: LocalEnvManager
 ): Promise<CheckFailure | undefined> {
   try {
-    // TODO: Use new trustDevCert flag
-    const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
-    const trustDevCert = (localSettings?.frontend?.trustDevCert as boolean | undefined) ?? true;
+    const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
 
     // TODO: Return CheckFailure when isTrusted === false
     await localEnvManager.resolveLocalCertificate(trustDevCert);

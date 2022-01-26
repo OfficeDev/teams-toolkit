@@ -610,6 +610,7 @@ export async function runCommand(
         inputs.ignoreEnvInfo = true;
         inputs.checkerInfo = {
           skipNgrok: !vscodeHelper.isNgrokCheckerEnabled(),
+          trustDevCert: vscodeHelper.isTrustDevCertEnabled(),
         };
         result = await core.localDebug(inputs);
         break;

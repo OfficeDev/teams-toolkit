@@ -5,21 +5,23 @@ on:
     branches:
       - main
       - dev
+  push:
+    branches:
+      - main
+      - dev
 
 jobs:
-  unit-test:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, windows-latest]
-
-    runs-on: ${{ matrix.os }}
-
+  source-branch-test:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    outputs:
+      coverages: ${{ steps.unit-test.outputs.coverages }}
     steps:
       - name: Checkout
         uses: actions/checkout@v2
         with:
           ref: ${{ github.head_ref }}
-          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          repository: ${{github.event.pull_request.head.repo.full_name}}
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2
@@ -35,13 +37,154 @@ jobs:
         run: |
           npm run setup
 
-      - name: Unit Test(ubuntu)
-        if: ${{ matrix.os == 'ubuntu-latest'}}
+      - name: Unit Test
+        id: unit-test
+        shell: bash
         run: |
+          # make sure the coverage data is cleaned
+          rm -rf .nyc_output
           xvfb-run -a npx lerna run test:unit --stream
 
-      - name: Unit Test(windows)
-        if: ${{ matrix.os == 'windows-latest'}}
-        working-directory: packages\fx-core
+          echo "{}" > coverages.json
+          for i in $(find . -name coverage-summary.json); do
+            name=$(basename $(dirname $(dirname $i)))
+            jq -rc --arg package $name --slurpfile t $i '.[$package]=($t[0].total | del(.linesCovered))' coverages.json > coverages.json.tmp
+            mv coverages.json.tmp coverages.json
+          done  
+          coverages=`cat coverages.json`
+          echo $coverages
+          echo "::set-output name=coverages::$coverages"
+
+  target-branch-test:
+    if: ${{ github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    outputs:
+      coverages: ${{ steps.unit-test.outputs.coverages }}
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+        with:
+          ref: ${{ github.base_ref }}
+          repository: ${{github.event.pull_request.base.repo.full_name}}
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+
+      - name: Setup project
         run: |
-          npx mocha tests/core/pvm/*
+          npm run setup
+
+      - name: Unit Test
+        id: unit-test
+        shell: bash
+        run: |
+          rm -rf .nyc_output
+          xvfb-run -a npx lerna run test:unit --stream
+
+          echo "{}" > coverages.json
+          for i in $(find . -name coverage-summary.json); do
+            name=$(basename $(dirname $(dirname $i)))
+            jq -rc --arg package $name --slurpfile t $i '.[$package]=($t[0].total | del(.linesCovered))' coverages.json > coverages.json.tmp
+            mv coverages.json.tmp coverages.json
+          done  
+          coverages=`cat coverages.json`
+          echo $coverages
+          echo "::set-output name=coverages::$coverages"
+
+  compare-coverage:
+    needs: [source-branch-test, target-branch-test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: compare coverage between source branch and target branch
+        run: |
+          if [ '${{ needs.source-branch-test.outputs.coverages }}' == "{}" ] || [ '${{ needs.source-branch-test.outputs.coverages }}' == "" ]; then
+            exit 0
+          fi
+
+          if [ '${{ needs.target-branch-test.outputs.coverages }}' == "{}" ] || [ '${{ needs.target-branch-test.outputs.coverages }}' == "" ]; then
+            exit 0
+          fi
+
+          mapfile -t source < <(echo '${{ needs.source-branch-test.outputs.coverages }}' | jq -r 'keys[]' )
+
+          for i in ${source[@]}; do
+            if [[ $(echo '${{ needs.target-branch-test.outputs.coverages }}' | jq .\"$i\") != "null" ]]; then
+              targetpct=$(echo '${{ needs.target-branch-test.outputs.coverages }}' | jq .\"$i\".lines.pct) 
+              sourcepct=$(echo '${{ needs.source-branch-test.outputs.coverages }}' | jq .\"$i\".lines.pct) 
+              if (( ${sourcepct%.*} < ${targetpct%.*})); then
+                printf "===========================================================================\n"
+                printf "test coverage has dropped: [package]%s [target]%s, [source]%s.\n" $i $targetpct $sourcepct
+                printf "if you didn't mofify %s, please rebase the target branch and rerun.\n" $i
+                printf "==========================================================================="
+                exit 1
+              fi
+            fi
+          done
+
+  report-coverage:
+    if: ${{ github.event.pull_request.merged }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v2
+
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Setup .NET Core
+        uses: actions/setup-dotnet@v1
+        with:
+          dotnet-version: 3.1.x
+
+      - name: Setup project
+        run: |
+          npm run setup
+
+      - name: Unit Test
+        id: unit-test
+        shell: bash
+        run: |
+          rm -rf .nyc_output
+          xvfb-run -a npx lerna run test:unit --stream
+          for i in $(find . -name coverage-summary.json); do
+            package=$(basename $(dirname $(dirname $i)))
+            az storage entity insert \
+              --connection-string "${{ secrets.AZURE_STORAGE_ACCOUNT_TEAMSFXCLIDOWNLOADS_CS }}" \
+              --entity PartitionKey=TeamsFx RowKey=${{ github.run_id }}_$package Package=$package GitBranch=${{ github.ref }} Type=unit_test LinesPct=$(jq -cr '.total.lines.pct' $i) BranchesPct=$(jq -cr '.total.branches.pct' $i) StatementsPct=$(jq -cr '.total.statements.pct' $i) FunctionsPct=$(jq -cr '.total.functions.pct' $i) \
+              --if-exists replace \
+              --table-name TestCoverage
+          done
+
+      - name: calculate plugins' coverage
+        id: plugins_coverage
+        shell: bash
+        run: |
+          plugins=`cat packages/fx-core/coverage/coverage-summary.json | jq '. | keys ' | grep 'fx-core/src/plugins/resource/' | awk -F 'plugins/resource/' 'index($2,"/") != 0 {print $2}' | awk -F '/' '{print $1}' | sort -nr | uniq`
+
+          get_pct() {
+            echo `cat packages/fx-core/coverage/src/plugins/$1/index.html | grep -B1 "<span class=\"quiet\">$2</span>" | head -1 | sed -e 's/<span class="strong">//g' | sed -e 's/% <\/span>//g'`
+          }
+
+          for plugin in $plugins
+          do
+            az storage entity insert \
+              --connection-string "${{ secrets.AZURE_STORAGE_ACCOUNT_TEAMSFXCLIDOWNLOADS_CS }}" \
+              --entity PartitionKey=TeamsFx RowKey=${{ github.run_id }}_fx-core_$plugin Package=resource/$plugin GitBranch=${{ github.ref }} Type=unit_test LinesPct=$(get_pct resource/$plugin 'Lines') BranchesPct=$(get_pct resource/$plugin 'Branches') StatementsPct=$(get_pct resource/$plugin 'Statements') FunctionsPct=$(get_pct resource/$plugin 'Functions') \
+              --if-exists replace \
+              --table-name TestCoverage
+          done
+
+          az storage entity insert \
+            --connection-string "${{ secrets.AZURE_STORAGE_ACCOUNT_TEAMSFXCLIDOWNLOADS_CS }}" \
+            --entity PartitionKey=TeamsFx RowKey=${{ github.run_id }}_fx-core_fx-solution Package=solution/fx-solution GitBranch=${{ github.ref }} Type=unit_test LinesPct=$(get_pct solution/fx-solution 'Lines') BranchesPct=$(get_pct solution/fx-solution 'Branches') StatementsPct=$(get_pct solution/fx-solution 'Statements') FunctionsPct=$(get_pct solution/fx-solution 'Functions') \
+            --if-exists replace \
+            --table-name TestCoverage

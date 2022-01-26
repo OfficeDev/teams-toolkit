@@ -65,6 +65,47 @@ export class ProjectPathError extends DotnetPluginError {
   }
 }
 
+export class UnknownScaffoldError extends FrontendPluginError {
+  constructor() {
+    super(
+      ErrorType.System,
+      "UnknownScaffoldError",
+      "Failed to scaffold project causes unknown reason.",
+      [tips.checkLog]
+    );
+  }
+}
+
+export class TemplateManifestError extends FrontendPluginError {
+  constructor(msg: string) {
+    super(
+      ErrorType.User,
+      "TemplateManifestError ",
+      `Failed to find template from manifest: ${msg}`,
+      [tips.checkNetwork]
+    );
+  }
+}
+
+export class TemplateZipFallbackError extends FrontendPluginError {
+  constructor() {
+    super(
+      ErrorType.System,
+      "TemplateZipFallbackError",
+      "Failed to download zip package and open local zip package.",
+      [tips.checkLog, tips.checkNetwork]
+    );
+  }
+}
+
+export class UnzipTemplateError extends FrontendPluginError {
+  constructor() {
+    super(ErrorType.User, "UnzipTemplateError", "Failed to unzip template package.", [
+      tips.checkFsPermissions,
+    ]);
+  }
+}
+
 export class BuildError extends DotnetPluginError {
   constructor(innerError?: Error) {
     super(

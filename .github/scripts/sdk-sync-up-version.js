@@ -1,8 +1,9 @@
 const path = require("path");
 const semver = require("semver");
 const fse = require("fs-extra");
-
-const sdkPath = path.join(__dirname, "../../packages/sdk");
+let pkgName = process.argv[2];
+const sdkPath = path.join(__dirname, "../../packages/", pkgName)
+// const sdkPath = path.join(__dirname, "../../packages/sdk");
 
 const sdkVersion = require(path.join(sdkPath, "package.json")).version;
 const sdkName = require(path.join(sdkPath, "package.json")).name;
@@ -43,7 +44,7 @@ for (let file of depPkgs) {
 }
 
 // only alpha and stable release bump up version
-let needBumpUp = process.argv[2] === "yes" ? true : false;
+let needBumpUp = process.argv[3] === "yes" ? true : false;
 if (change && needBumpUp) {
     let file = path.join(templateDir, "package.json");
     let pkg_ = fse.readJsonSync(file);

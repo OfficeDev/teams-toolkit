@@ -54,19 +54,19 @@ for LANGUAGE in ${LANGUAGE_LIST[@]}; do
         fi
 
         # Generate code from Mustache templates for csharp
-        if [ ${SCOPE} == "blazor-base" ] && [ ${SCENARIO} != "tab" ]; then           
+        if [ ${SCOPE} == "blazor-base" ] && [ ${SCENARIO} = "tab" ]; then           
             IS_TAB=true mo ${TEMPLATE_FILE_PREFIX}/appsettings.Development.json.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/appsettings.Development.json
             IS_TAB=true mo ${TEMPLATE_FILE_PREFIX}/appsettings.json.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/appsettings.json
             IS_TAB=true mo ${TEMPLATE_FILE_PREFIX}/BlazorAppServer.csproj.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/BlazorAppServer.csproj
             IS_TAB=true placeholder={{BlazorAppServer}} mo ${TEMPLATE_FILE_PREFIX}/Program.cs.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/Program.cs
         fi
-        if [ ${SCOPE} == "blazor-base" ] && [ ${SCENARIO} != "bot" ]; then
+        if [ ${SCOPE} == "blazor-base" ] && [ ${SCENARIO} = "bot" ]; then
             IS_BOT=true mo ${TEMPLATE_FILE_PREFIX}/appsettings.Development.json.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/appsettings.Development.json
             IS_BOT=true mo ${TEMPLATE_FILE_PREFIX}/appsettings.json.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/appsettings.json
             IS_BOT=true mo ${TEMPLATE_FILE_PREFIX}/BlazorAppServer.csproj.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/BlazorAppServer.csproj
             IS_BOT=true placeholder={{BlazorAppServer}} mo ${TEMPLATE_FILE_PREFIX}/Program.cs.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/Program.cs
         fi
-        if [ ${SCOPE} == "blazor-base" ] && [ ${SCENARIO} != "tabbot" ]; then
+        if [ ${SCOPE} == "blazor-base" ] && [ ${SCENARIO} = "tabbot" ]; then
             IS_TAB=true mo ${TEMPLATE_FILE_PREFIX}/appsettings.Development.json.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/appsettings.Development.json
             IS_TAB=true mo ${TEMPLATE_FILE_PREFIX}/appsettings.json.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/appsettings.json
             IS_TAB=true mo ${TEMPLATE_FILE_PREFIX}/BlazorAppServer.csproj.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/BlazorAppServer.csproj

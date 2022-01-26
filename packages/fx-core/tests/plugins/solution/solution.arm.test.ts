@@ -365,7 +365,7 @@ Mocked bot configuration orchestration content. Module path: './teamsFx/botConfi
     // Action
     let result = await generateArmTemplate(mockedCtx, [
       aadPlugin,
-      botPlugin,
+      fehostPlugin,
       identityPlugin,
       simpleAuthPlugin,
     ]);

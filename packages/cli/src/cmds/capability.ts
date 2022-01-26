@@ -62,8 +62,8 @@ export class CapabilityAddTab extends YargsCommand {
       ignoreEnvInfo: true,
     });
     if (configResult.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, configResult.error, {
-        [TelemetryProperty.Resources]: this.commandHead,
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, configResult.error, {
+        [TelemetryProperty.Capabilities]: this.commandHead,
       });
       return err(configResult.error);
     }
@@ -130,8 +130,8 @@ export class CapabilityAddBot extends YargsCommand {
       ignoreEnvInfo: true,
     });
     if (configResult.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, configResult.error, {
-        [TelemetryProperty.Resources]: this.commandHead,
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, configResult.error, {
+        [TelemetryProperty.Capabilities]: this.commandHead,
       });
       return err(configResult.error);
     }
@@ -198,8 +198,8 @@ export class CapabilityAddMessageExtension extends YargsCommand {
       ignoreEnvInfo: true,
     });
     if (configResult.isErr()) {
-      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, configResult.error, {
-        [TelemetryProperty.Resources]: this.commandHead,
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, configResult.error, {
+        [TelemetryProperty.Capabilities]: this.commandHead,
       });
       return err(configResult.error);
     }

@@ -1,7 +1,8 @@
 import { it, describe } from "mocha";
 import { ensureDir, pathExists, rmdir } from "fs-extra";
 import { expect } from "chai";
-import { lock } from "proper-lockfile";
+import { join } from "path";
+import { lock, unlock } from "proper-lockfile";
 import rewire from "rewire";
 
 import { Depot } from "../../../src/core/pvm/depot";
@@ -52,10 +53,16 @@ describe("Plugin Version Manager: Depot(storage layer)", async () => {
     const mf = await Depot.getManifest();
     expect(Object.keys(mf.plugins).length).equals(0);
 
-    const pkgs: Plugins = {
+    let pkgs: Plugins = {
       "@microsoft/teamsfx-cli": "something",
     };
-    const result = await Depot.install(pkgs);
+    let result = await Depot.install(pkgs);
+    expect(result.isOk()).to.be.false;
+
+    pkgs = {
+      "@microsoft/teamsfx-cli": join("somewhere", "unknow"),
+    };
+    result = await Depot.install(pkgs);
     expect(result.isOk()).to.be.false;
   });
 
@@ -66,7 +73,7 @@ describe("Plugin Version Manager: Depot(storage layer)", async () => {
     };
     const result = await Depot.install(pkgs);
     if (result.isErr()) {
-      console.log(result.error);
+      expect(result.error).to.be.null;
     }
     expect(result.isOk()).to.be.true;
 
@@ -74,6 +81,28 @@ describe("Plugin Version Manager: Depot(storage layer)", async () => {
     expect(Object.keys(mf.plugins).length).equals(1);
     expect(Object.values(mf.plugins).length).equals(1);
     const cliPkg = require(`${targetAddr}/package.json`);
+    expect(mf.plugins["@microsoft/teamsfx-cli"][0]).equals(cliPkg.version);
+  });
+
+  it("install should be indempotent", async () => {
+    const targetAddr = `${__dirname}/../../../../cli`;
+    const pkgs: Plugins = {
+      "@microsoft/teamsfx-cli": targetAddr,
+    };
+
+    for (let i = 0; i < 2; i++) {
+      const result = await Depot.install(pkgs);
+      if (result.isErr()) {
+        expect(result.error).to.be.null;
+      }
+      expect(result.isOk()).to.be.true;
+    }
+
+    const mf = await Depot.getManifest();
+    expect(Object.keys(mf.plugins).length).equals(1);
+    expect(Object.values(mf.plugins).length).equals(1);
+    const cliPkg = require(`${targetAddr}/package.json`);
+    expect(mf.plugins["@microsoft/teamsfx-cli"].length).equals(1);
     expect(mf.plugins["@microsoft/teamsfx-cli"][0]).equals(cliPkg.version);
   });
 
@@ -88,11 +117,12 @@ describe("Plugin Version Manager: Depot(storage layer)", async () => {
       const result = await Depot.install(pkgs);
       expect(result.isOk()).to.be.false;
       if (result.isErr()) {
-        console.log(result.error.name);
         expect(result.error.name).equals("ConcurrentError");
       }
     } catch (e) {
       expect(e).to.be.null;
+    } finally {
+      await unlock(rewireDepot.__get__("DEPOT_ADDR"));
     }
   });
 });

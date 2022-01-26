@@ -29,10 +29,9 @@
  * If there's a resident process, depot will keep all of them in memory. Otherwise,
  * there will be a manifest to optimize performance like an index.
  */
-import { join } from "path";
-import { homedir, tmpdir } from "os";
+import { join, resolve } from "path";
+import { homedir } from "os";
 import { move, remove, ensureDir, rmdir, writeFile, readJSON, pathExists } from "fs-extra";
-import { nanoid } from "nanoid";
 import { lock, unlock } from "proper-lockfile";
 
 import {
@@ -48,8 +47,9 @@ import {
 import { Executor } from "../../common/tools";
 import { CoreSource, InvalidInputError, LoadPluginError } from "../error";
 import { MANIFEST_DOT_JSON, PACKAGE_DOT_JSON, PLUGINS_FOLDER, PVM_SPEC_VERSION } from "./constant";
-import { PluginName, Plugins, PluginVersion, PluginPath } from "./type";
+import { PluginName, Plugins, PluginVersion, PluginPath, PluginURI } from "./type";
 import { jsonStringifyElegantly } from "./utility";
+import { valid } from "semver";
 
 /**
  * manifest is a structure to describe the details of all loaded plugins.
@@ -106,27 +106,25 @@ const ensureDepot = () => {
 
 export class Depot {
   /**
-   * I haven't found any lib to validate deps in package.json. Currently, execute
-   * 'npm install --dry-run' in /tmp folder and catch the exit code to validate it.
+   * only support two kinds of package
+   * 1. local path
+   * 2. semantic version
    *
    * @param packages - the URI of a package
-   * @returns True if the version fit Semantic Versioning format
+   * @returns True if validation passed
+   *
+   * TODO use json-schema to validate
    */
   private static async validate(plugins: Plugins): Promise<boolean> {
-    // Flush data into package.json in system temp folder.
-    // Nanoid is safer and faster than uuid.
-    const targetPath = join(tmpdir(), `.${ConfigFolderName}`, nanoid(16));
-    await writePackageJson(targetPath, plugins);
-
-    try {
-      // --prefix set the target diretory of npm package
-      // --dry-run
-      await Executor.execCommandAsync(`npm install --prefix ${targetPath} --dry-run`);
-    } catch (e) {
+    for (const name in plugins) {
+      const uri = plugins[name];
+      if (valid(uri)) {
+        continue;
+      }
+      if (await pathExists(resolve(uri))) {
+        continue;
+      }
       return false;
-    } finally {
-      // teardown
-      await rmdir(targetPath, { recursive: true });
     }
     return true;
   }
@@ -161,7 +159,8 @@ export class Depot {
 
     try {
       for (const name in packages) {
-        if (await Depot.has(name, packages[name])) {
+        const uri = packages[name];
+        if (await Depot.has(name, uri)) {
           continue;
         }
         const co = join(DEPOT_ADDR, "plugins", name);
@@ -180,6 +179,11 @@ export class Depot {
         const config = await readJSON(join(source, "node_modules", name, PACKAGE_DOT_JSON));
         const version = config.version;
         const destination = join(co, version);
+
+        // if already installed, overwrite.
+        if (pathExists(destination)) {
+          await rmdir(destination, { recursive: true });
+        }
         await move(source, destination);
 
         // remove temporary package.json
@@ -214,12 +218,12 @@ export class Depot {
    * @returns whether plugin is existed or not
    */
   @ensureDepot()
-  public static async has(name: PluginName, version?: PluginVersion): Promise<boolean> {
+  public static async has(name: PluginName, uri?: PluginURI): Promise<boolean> {
     const manifest = await Depot.getManifest();
     if (manifest.plugins[name]) {
-      if (version) {
+      if (uri) {
         const vers = manifest.plugins[name];
-        if (vers && vers.includes(version)) {
+        if (vers && vers.includes(uri)) {
           return true;
         }
       } else {

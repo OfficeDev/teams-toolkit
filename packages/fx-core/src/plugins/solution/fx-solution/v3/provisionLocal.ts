@@ -13,7 +13,7 @@ import {
 import { isUndefined } from "lodash";
 import { Container } from "typedi";
 import * as util from "util";
-import { LocalSettingsTeamsAppKeys } from "../../../../common/local/constants";
+import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 import { getStrings } from "../../../../common/tools";
 import { SolutionError } from "../constants";
 import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";

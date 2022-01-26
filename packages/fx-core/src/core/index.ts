@@ -126,6 +126,7 @@ import {
   getSolutionPluginV2ByName,
 } from "./SolutionPluginContainer";
 import { newEnvInfo } from "./tools";
+import { isCreatedFromExistingApp, isPureExistingApp } from "./utils";
 // TODO: For package.json,
 // use require instead of import because of core building/packaging method.
 // Using import will cause the build folder structure to change.
@@ -265,52 +266,58 @@ export class FxCore implements v3.ICore {
       const projectSettings: ProjectSettings = {
         appName: appName,
         projectId: inputs.projectId ? inputs.projectId : uuid.v4(),
-        solutionSettings: {
-          name: "",
-          version: "1.0.0",
-        },
         version: getProjectSettingsVersion(),
         isFromSample: false,
       };
-      ctx.projectSettings = projectSettings;
-      const createEnvResult = await this.createEnvWithName(
-        environmentManager.getDefaultEnvName(),
-        projectSettings,
-        inputs
-      );
-      if (createEnvResult.isErr()) {
-        return err(createEnvResult.error);
-      }
+      if (isCreatedFromExistingApp(inputs)) {
+        //TODO create from existing Tab or Bot/ME
+        // 1. call App Studio V3 API to create manifest with placeholder
+        // 2. create config.local.json to store existing App information
+      } else {
+        // there is no solution settings if created from existing app
+        projectSettings.solutionSettings = {
+          name: "",
+          version: "1.0.0",
+        };
+        ctx.projectSettings = projectSettings;
+        const createEnvResult = await this.createEnvWithName(
+          environmentManager.getDefaultEnvName(),
+          projectSettings,
+          inputs
+        );
+        if (createEnvResult.isErr()) {
+          return err(createEnvResult.error);
+        }
 
-      const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
-      if (!solution) {
-        return err(new LoadSolutionError());
-      }
-      ctx.solutionV2 = solution;
-      projectSettings.solutionSettings.name = solution.name;
-      const contextV2 = createV2Context(projectSettings);
-      ctx.contextV2 = contextV2;
-      const scaffoldSourceCodeRes = await solution.scaffoldSourceCode(contextV2, inputs);
-      if (scaffoldSourceCodeRes.isErr()) {
-        return err(scaffoldSourceCodeRes.error);
-      }
-      const generateResourceTemplateRes = await solution.generateResourceTemplate(
-        contextV2,
-        inputs
-      );
-      if (generateResourceTemplateRes.isErr()) {
-        return err(generateResourceTemplateRes.error);
-      }
-      // ctx.provisionInputConfig = generateResourceTemplateRes.value;
-      if (solution.createEnv) {
-        inputs.copy = false;
-        const createEnvRes = await solution.createEnv(contextV2, inputs);
-        if (createEnvRes.isErr()) {
-          return err(createEnvRes.error);
+        const solution = await getSolutionPluginV2ByName(inputs[CoreQuestionNames.Solution]);
+        if (!solution) {
+          return err(new LoadSolutionError());
+        }
+        ctx.solutionV2 = solution;
+        projectSettings.solutionSettings.name = solution.name;
+        const contextV2 = createV2Context(projectSettings);
+        ctx.contextV2 = contextV2;
+        const scaffoldSourceCodeRes = await solution.scaffoldSourceCode(contextV2, inputs);
+        if (scaffoldSourceCodeRes.isErr()) {
+          return err(scaffoldSourceCodeRes.error);
+        }
+        const generateResourceTemplateRes = await solution.generateResourceTemplate(
+          contextV2,
+          inputs
+        );
+        if (generateResourceTemplateRes.isErr()) {
+          return err(generateResourceTemplateRes.error);
+        }
+        // ctx.provisionInputConfig = generateResourceTemplateRes.value;
+        if (solution.createEnv) {
+          inputs.copy = false;
+          const createEnvRes = await solution.createEnv(contextV2, inputs);
+          if (createEnvRes.isErr()) {
+            return err(createEnvRes.error);
+          }
         }
       }
     }
-
     if (inputs.platform === Platform.VSCode) {
       await globalStateUpdate(globalStateDescription, true);
       await globalStateUpdate(automaticNpmInstall, true);
@@ -726,7 +733,14 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
     inputs.stage = Stage.provision;
-    if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
+    if (!ctx?.projectSettings) {
+      return err(new ObjectIsUndefinedError("Provision input stuff"));
+    }
+    if (isPureExistingApp(ctx.projectSettings)) {
+      // existing app scenario, provision has no effect
+      return ok(Void);
+    }
+    if (!ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
       return err(new ObjectIsUndefinedError("Provision input stuff"));
     }
     const envInfo = ctx.envInfoV2;
@@ -807,7 +821,14 @@ export class FxCore implements v3.ICore {
   async deployArtifactsV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.deploy;
     inputs.stage = Stage.deploy;
-    if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
+    if (!ctx?.projectSettings) {
+      return err(new ObjectIsUndefinedError("deploy input stuff"));
+    }
+    if (isPureExistingApp(ctx.projectSettings)) {
+      // existing app scenario, deploy has no effect
+      return ok(Void);
+    }
+    if (!ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
       const name = undefinedName(
         [ctx, ctx?.solutionV2, ctx?.contextV2, ctx?.envInfoV2],
         ["ctx", "ctx.solutionV2", "ctx.contextV2", "ctx.envInfoV2"]
@@ -874,7 +895,14 @@ export class FxCore implements v3.ICore {
   async localDebugV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.debug;
     inputs.stage = Stage.debug;
-    if (!ctx || !ctx.solutionV2 || !ctx.contextV2) {
+    if (!ctx?.projectSettings) {
+      return err(new ObjectIsUndefinedError("local debug input stuff"));
+    }
+    if (isPureExistingApp(ctx.projectSettings)) {
+      // existing app scenario, local debug has no effect
+      return ok(Void);
+    }
+    if (!ctx.solutionV2 || !ctx.contextV2) {
       const name = undefinedName(
         [ctx, ctx?.solutionV2, ctx?.contextV2],
         ["ctx", "ctx.solutionV2", "ctx.contextV2"]
@@ -1466,7 +1494,7 @@ export class FxCore implements v3.ICore {
       return err(basicFolderRes.error);
     }
     const solution = Container.get<v3.ISolution>(inputs.solution);
-    projectSettings.solutionSettings.name = inputs.solution;
+    projectSettings.solutionSettings!.name = inputs.solution;
     const context = createV2Context(projectSettings);
     ctx.contextV2 = context;
     ctx.solutionV3 = solution;

@@ -128,6 +128,7 @@ import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { generateAccountHint } from "./debug/teamsfxDebugProvider";
 import { ext } from "./extensionVariables";
 import * as uuid from "uuid";
+import * as envTree from "./envTree";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -208,7 +209,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     core = new FxCore(tools);
     registerCoreEvents();
     await registerAccountTreeHandler();
-    await registerEnvTreeHandler();
+    await envTree.registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
     await postUpgrade();
@@ -291,7 +292,7 @@ async function refreshEnvTreeOnFileChanged(workspacePath: string, files: readonl
   }
 
   if (needRefresh) {
-    await registerEnvTreeHandler();
+    await envTree.registerEnvTreeHandler();
   }
 }
 
@@ -355,6 +356,12 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProjectStart, getTriggerFromProperty(args));
   const result = await runCommand(Stage.create);
   if (result.isOk()) {
+    await ExtTelemetry.dispose();
+    // after calling dispose(), let reder process to while for a while instead of directly call "open folder"
+    // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
+    setTimeout(() => {
+      commands.executeCommand("vscode.openFolder", result.value);
+    }, 1000);
     commands.executeCommand("vscode.openFolder", result.value);
   }
   return result;
@@ -509,7 +516,7 @@ export async function provisionHandler(args?: any[]): Promise<Result<null, FxErr
     return result;
   } else {
     // refresh env tree except provision cancelled.
-    await registerEnvTreeHandler();
+    await envTree.registerEnvTreeHandler();
     return result;
   }
 }
@@ -1291,7 +1298,7 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   );
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
-    await registerEnvTreeHandler(false);
+    await envTree.registerEnvTreeHandler(false);
 
     // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
     // await updateNewEnvCollaborators(result.value);
@@ -1300,7 +1307,7 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
 }
 
 export async function refreshEnvironment(args?: any[]): Promise<Result<Void, FxError>> {
-  return await registerEnvTreeHandler();
+  return await envTree.registerEnvTreeHandler();
 }
 
 function getSubscriptionUrl(subscriptionInfo: SubscriptionInfo): string {
@@ -2165,7 +2172,7 @@ export async function signOutM365(isFromTreeView: boolean) {
     ]);
   }
 
-  await registerEnvTreeHandler();
+  await envTree.registerEnvTreeHandler();
 }
 
 export async function signInAzure() {

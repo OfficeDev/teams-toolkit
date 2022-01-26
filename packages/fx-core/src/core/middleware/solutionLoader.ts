@@ -11,13 +11,14 @@ import {
 } from "../SolutionPluginContainer";
 
 export async function SolutionLoaderMW(ctx: CoreHookContext, next: NextFunction) {
-  if (ctx.projectSettings) {
+  const solutionName = ctx.projectSettings?.solutionSettings?.name;
+  if (solutionName) {
     {
-      const solution = getSolutionPluginV2ByName(ctx.projectSettings.solutionSettings.name);
+      const solution = getSolutionPluginV2ByName(solutionName);
       ctx.solutionV2 = solution;
     }
     {
-      const solution = getSolutionPluginByName(ctx.projectSettings.solutionSettings.name);
+      const solution = getSolutionPluginByName(solutionName);
       ctx.solution = solution;
     }
   } else {

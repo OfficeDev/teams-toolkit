@@ -9,7 +9,7 @@ import {
   MessageExtensionItem,
   TabOptionItem,
 } from "../question";
-import Container from "typedi";
+import { Container } from "typedi";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 
 export async function getQuestionsForInit(
@@ -34,7 +34,7 @@ export async function init(
   // 1. init solution settings
   const solutionSettings: v3.TeamsFxSolutionSettings = {
     version: "3.0.0",
-    name: ctx.projectSetting.solutionSettings.name,
+    name: BuiltInSolutionNames.azure,
     capabilities: [],
     hostType: "Azure",
     azureResources: [],

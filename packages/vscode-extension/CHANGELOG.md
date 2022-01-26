@@ -8,7 +8,6 @@ New Features:
 	
 Enhancement:
  - Teams Tab project created by Teams Toolkit now is updated to use Auth Code Flow with PKCE for SPA authentication. You can find more details [here](https://aka.ms/teamsfx-auth-code-flow). Please be noted that Tab project created by Teams Toolkit of this version will not be supported by previous versions of Teams Toolkit.
- - Removed "Create from samples" option from "Create new project" feature. While you can still start coding with samples from sample gallery.
 
 ## 3.2.0 - Jan 10, 2022
 Incremental version for Teams Toolkit with multiple bugs fixes and the following updates:

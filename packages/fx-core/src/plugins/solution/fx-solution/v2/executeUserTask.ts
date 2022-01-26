@@ -26,7 +26,7 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import { getStrings } from "../../../../common/tools";
-import { getAzureSolutionSettings, reloadV2Plugins } from "./utils";
+import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";
 import {
   SolutionError,
   SolutionTelemetryComponentName,
@@ -361,7 +361,7 @@ export async function addCapability(
 
   // 7. update solution settings
   solutionSettings.capabilities = Array.from(newCapabilitySet);
-  reloadV2Plugins(ctx.projectSetting);
+  setActivatedResourcePluginsV2(ctx.projectSetting);
 
   // 8. scaffold and update arm
   const pluginsToScaffold = Array.from(pluginNamesToScaffold).map((name) =>
@@ -556,7 +556,7 @@ export async function addResource(
   // 7. update solution settings
   addedResources.forEach((r) => newResourceSet.add(r));
   solutionSettings.azureResources = Array.from(newResourceSet);
-  reloadV2Plugins(ctx.projectSetting);
+  setActivatedResourcePluginsV2(ctx.projectSetting);
 
   // 8. scaffold and update arm
   if (pluginsToScaffold.length > 0 || pluginsToDoArm.length > 0) {

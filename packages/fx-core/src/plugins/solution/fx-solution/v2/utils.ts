@@ -79,12 +79,11 @@ export function extractSolutionInputs(record: Json): v2.SolutionInputs {
   };
 }
 
-export function reloadV2Plugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
-  const solutionSettings: AzureSolutionSettings =
-    projectSettings.solutionSettings as AzureSolutionSettings;
-  const res = getActivatedV2ResourcePlugins(projectSettings);
-  solutionSettings.activeResourcePlugins = res.map((p) => p.name);
-  return res;
+export function setActivatedResourcePluginsV2(projectSettings: ProjectSettings): void {
+  const activatedPluginNames = getAllV2ResourcePlugins()
+    .filter((p) => p.activate && p.activate(projectSettings) === true)
+    .map((p) => p.name);
+  projectSettings.solutionSettings!.activeResourcePlugins = activatedPluginNames;
 }
 
 export async function ensurePermissionRequest(
@@ -270,10 +269,7 @@ export function fillInSolutionSettings(
   solutionSettings.capabilities = capabilities || [];
 
   // fill in activeResourcePlugins
-  const activatedPluginNames = getAllV2ResourcePlugins()
-    .filter((p) => p.activate && p.activate(projectSettings) === true)
-    .map((p) => p.name);
-  solutionSettings.activeResourcePlugins = activatedPluginNames;
+  setActivatedResourcePluginsV2(projectSettings);
   return ok(Void);
 }
 

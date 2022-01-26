@@ -48,7 +48,7 @@ export async function setupLocalDebugSettings(
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
   const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
-  let skipNgrok = localSettings?.bot?.skipNgrok as boolean;
+  const skipNgrok = inputs.checkerInfo?.skipNgrok as boolean;
 
   const telemetryProperties = {
     platform: inputs.platform as string,
@@ -113,10 +113,6 @@ export async function setupLocalDebugSettings(
       if (includeBot) {
         if (!localSettings.bot) {
           localSettings.bot = {};
-        }
-        if (skipNgrok === undefined) {
-          skipNgrok = false;
-          localSettings.bot.skipNgrok = skipNgrok;
         }
 
         if (skipNgrok) {

@@ -89,7 +89,7 @@ export default class SampleGallery extends React.Component<any, any> {
               <SampleAppCardList
                 samples={this.state.samples}
                 baseUrl={this.state.baseUrl}
-                onSampleCard={this.onSampleCardClicked}
+                highlightSample={this.highlightSample}
               />
             </Stack>
           </div>
@@ -105,6 +105,7 @@ export default class SampleGallery extends React.Component<any, any> {
             description={hightSample.fullDescription}
             sampleAppFolder={hightSample.id}
             sampleAppUrl={hightSample.link}
+            highlightSample={this.highlightSample}
           ></SampleDetailPage>
         )}
       </div>
@@ -126,7 +127,7 @@ export default class SampleGallery extends React.Component<any, any> {
     }
   };
 
-  onSampleCardClicked = (id: string) => {
+  highlightSample = (id: string) => {
     this.setState({
       highlightSample: id,
     });
@@ -155,7 +156,7 @@ class SampleAppCardList extends React.Component<SampleListProps, any> {
             sampleAppFolder={sample.id}
             sampleAppUrl={sample.link}
             suggested={sample.suggested}
-            onSampleCard={this.props.onSampleCard}
+            highlightSample={this.props.highlightSample}
           />
         );
       });
@@ -307,7 +308,7 @@ class SampleCard extends React.Component<SampleCardProps, any> {
         className="sample-card"
         tabIndex={0}
         onClick={() => {
-          this.props.onSampleCard(this.props.sampleAppFolder);
+          this.props.highlightSample(this.props.sampleAppFolder);
         }}
       >
         {this.props.suggested && (

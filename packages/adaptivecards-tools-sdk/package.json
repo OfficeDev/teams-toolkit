@@ -12,7 +12,7 @@
     "lint:staged": "lint-staged",
     "check-sensitive": "npx eslint --plugin 'no-secrets' --cache --ignore-pattern 'package.json' --ignore-pattern 'package-lock.json'",
     "precommit": "npm run check-sensitive && lint-staged",
-    "format": "prettier --write --config ./.prettierrc.js --ignore-path ./.prettierignore \"src/**/*.ts\" \"*.{js,json}\"",
+    "format": "prettier --write --config ./.prettierrc.js --ignore-path ./.prettierignore \"src/**/*.ts\" \"*.{js,json}\""
   },
   "repository": "https://github.com/OfficeDev/TeamsFx",
   "author": "Microsoft Corporation",
@@ -45,7 +45,7 @@
     "react": "^17.0.2",
     "markdown-it": "^12.2.0",
     "adaptive-expressions": "^4.14.1",
-    "adaptivecards": "^2.10.0-beta.2",
+    "adaptivecards": "^2.10.0",
     "adaptivecards-templating": "^2.1.0",
     "json-schema-to-typescript": "^10.1.4"
   },

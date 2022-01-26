@@ -226,6 +226,7 @@ export default class Preview extends YargsCommand {
       );
     }
 
+    // TODO: move skip ngrok to cli options
     const skipNgrok = (localSettings?.bot?.skipNgrok as boolean) === true;
     const envCheckerResult = await this.handleDependences(includeBackend, includeBot, skipNgrok);
     if (envCheckerResult.isErr()) {

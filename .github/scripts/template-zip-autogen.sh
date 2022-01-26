@@ -39,7 +39,7 @@ for LANGUAGE in ${LANGUAGE_LIST[@]}; do
 
         if [ ! -d ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO} ]; then
             echo "The folder ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO} does not exist."
-            exit -1
+            continue
         fi        
         
         # Generate code from Mustache templates for js and ts

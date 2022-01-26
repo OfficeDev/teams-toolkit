@@ -194,6 +194,7 @@ export class Depot {
       // sync to manifest
       Depot.saveManifest(versions);
     } catch (e) {
+      console.log(e);
       await unlock(DEPOT_ADDR);
       return err(LoadPluginError());
     }

@@ -327,11 +327,7 @@ export class LocalSettingsProvider {
     const botLocalConfig = new ConfigMap();
     const keys = Object.values(LocalSettingsBotKeys);
     for (const key of keys) {
-      if (key === LocalSettingsBotKeys.SkipNgrok) {
-        botLocalConfig.set(key, false);
-      } else {
-        botLocalConfig.set(key, "");
-      }
+      botLocalConfig.set(key, "");
     }
 
     return botLocalConfig;

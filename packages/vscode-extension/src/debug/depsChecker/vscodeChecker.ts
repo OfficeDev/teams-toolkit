@@ -127,7 +127,7 @@ export class VSCodeDepsChecker {
       case DepsType.FuncCoreTools:
         return vscodeHelper.isFuncCoreToolsEnabled() && (await vscodeHelper.hasFunction());
       case DepsType.Ngrok:
-        return (await vscodeHelper.hasBot()) && (await vscodeHelper.hasNgrok());
+        return (await vscodeHelper.hasBot()) && (await vscodeHelper.isNgrokCheckerEnabled());
       default:
         return false;
     }

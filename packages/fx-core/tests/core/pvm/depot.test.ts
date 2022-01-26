@@ -6,7 +6,7 @@ import { lock, unlock } from "proper-lockfile";
 import rewire from "rewire";
 
 import { Depot } from "../../../src/core/pvm/depot";
-import { PVM_SPEC_VERSION } from "../../../src/core/pvm/constant";
+import { PACKAGE_DOT_JSON, PVM_SPEC_VERSION } from "../../../src/core/pvm/constant";
 import { Plugins } from "../../../src/core/pvm/type";
 
 describe("Plugin Version Manager: Depot(storage layer)", async () => {
@@ -67,7 +67,7 @@ describe("Plugin Version Manager: Depot(storage layer)", async () => {
   });
 
   it("install local plugin and save to depot", async () => {
-    const targetAddr = `${__dirname}/../../../../cli`;
+    const targetAddr = join(__dirname, "..", "..", "..", "..", "cli");
     const pkgs: Plugins = {
       "@microsoft/teamsfx-cli": targetAddr,
     };
@@ -80,12 +80,12 @@ describe("Plugin Version Manager: Depot(storage layer)", async () => {
     const mf = await Depot.getManifest();
     expect(Object.keys(mf.plugins).length).equals(1);
     expect(Object.values(mf.plugins).length).equals(1);
-    const cliPkg = require(`${targetAddr}/package.json`);
+    const cliPkg = require(join(targetAddr, PACKAGE_DOT_JSON));
     expect(mf.plugins["@microsoft/teamsfx-cli"][0]).equals(cliPkg.version);
   });
 
   it("install should be indempotent", async () => {
-    const targetAddr = `${__dirname}/../../../../cli`;
+    const targetAddr = join(__dirname, "..", "..", "..", "..", "cli");
     const pkgs: Plugins = {
       "@microsoft/teamsfx-cli": targetAddr,
     };
@@ -101,13 +101,13 @@ describe("Plugin Version Manager: Depot(storage layer)", async () => {
     const mf = await Depot.getManifest();
     expect(Object.keys(mf.plugins).length).equals(1);
     expect(Object.values(mf.plugins).length).equals(1);
-    const cliPkg = require(`${targetAddr}/package.json`);
+    const cliPkg = require(join(targetAddr, PACKAGE_DOT_JSON));
     expect(mf.plugins["@microsoft/teamsfx-cli"].length).equals(1);
     expect(mf.plugins["@microsoft/teamsfx-cli"][0]).equals(cliPkg.version);
   });
 
   it("should return error if run install in parallel", async () => {
-    const targetAddr = `${__dirname}/../../../../cli`;
+    const targetAddr = join(__dirname, "..", "..", "..", "..", "cli");
     const pkgs: Plugins = {
       "@microsoft/teamsfx-cli": targetAddr,
     };

@@ -361,7 +361,7 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
     // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
     setTimeout(() => {
       commands.executeCommand("vscode.openFolder", result.value);
-    }, 1000);
+    }, 2000);
   }
   return result;
 }

@@ -733,7 +733,7 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
     inputs.stage = Stage.provision;
-    if (!ctx || !ctx.projectSettings) {
+    if (!ctx?.projectSettings) {
       return err(new ObjectIsUndefinedError("Provision input stuff"));
     }
     if (isPureExistingApp(ctx.projectSettings)) {
@@ -821,7 +821,7 @@ export class FxCore implements v3.ICore {
   async deployArtifactsV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.deploy;
     inputs.stage = Stage.deploy;
-    if (!ctx || !ctx.projectSettings) {
+    if (!ctx?.projectSettings) {
       return err(new ObjectIsUndefinedError("deploy input stuff"));
     }
     if (isPureExistingApp(ctx.projectSettings)) {
@@ -895,7 +895,7 @@ export class FxCore implements v3.ICore {
   async localDebugV2(inputs: Inputs, ctx?: CoreHookContext): Promise<Result<Void, FxError>> {
     currentStage = Stage.debug;
     inputs.stage = Stage.debug;
-    if (!ctx || !ctx.projectSettings) {
+    if (!ctx?.projectSettings) {
       return err(new ObjectIsUndefinedError("local debug input stuff"));
     }
     if (isPureExistingApp(ctx.projectSettings)) {

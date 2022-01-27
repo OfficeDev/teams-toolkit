@@ -11,9 +11,7 @@ TEMPLATE_LIST=(
     bot.default
     msgext.default
     bot-msgext.default
-    blazor-base.tab
-    blazor-base.bot
-    blazor-base.tabbot
+    blazor-base.default
 )
 
 # Copy bot code to msgext-bot, except readme and images

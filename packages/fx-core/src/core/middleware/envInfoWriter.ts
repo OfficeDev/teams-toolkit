@@ -4,7 +4,7 @@
 
 import { NextFunction, Middleware } from "@feathersjs/hooks";
 import { Inputs, StaticPlatforms } from "@microsoft/teamsfx-api";
-import { CoreHookContext, flattenConfigJson, TOOLS } from "..";
+import { CoreHookContext, TOOLS } from "..";
 import { getStrings } from "../../common";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { environmentManager } from "../environment";
@@ -50,15 +50,15 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
 
   const envInfoV2 = ctx.envInfoV2;
   if (!envInfoV2) return;
-  const provisionOutputs = envInfoV2.state;
-  if (provisionOutputs === undefined) return;
+  const state = envInfoV2.state;
+  if (state === undefined) return;
   // DO NOT persist local debug plugin config.
-  if (provisionOutputs[PluginNames.LDEBUG]) {
-    delete provisionOutputs[PluginNames.LDEBUG];
+  if (state[PluginNames.LDEBUG]) {
+    delete state[PluginNames.LDEBUG];
   }
-  const envState = flattenConfigJson(provisionOutputs);
+  // const envState = flattenConfigJson(provisionOutputs);
   const envStatePath = await environmentManager.writeEnvState(
-    envState,
+    envInfoV2.state,
     inputs.projectPath,
     ctx.contextV2!.cryptoProvider,
     envInfoV2.envName

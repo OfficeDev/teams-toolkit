@@ -145,13 +145,10 @@ export class MockSolutionV2 implements v2.SolutionPlugin {
   async provisionResources(
     ctx: v2.Context,
     inputs: Inputs,
-    envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> {
-    return {
-      kind: "success",
-      output: {},
-    };
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
   }
   async deploy(
     ctx: v2.Context,

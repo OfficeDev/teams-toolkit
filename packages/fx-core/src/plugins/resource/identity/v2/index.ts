@@ -10,6 +10,7 @@ import {
   Result,
   TokenProvider,
   v2,
+  Void,
 } from "@microsoft/teamsfx-api";
 import {
   Context,
@@ -43,9 +44,9 @@ export class IdentityPluginV2 implements ResourcePlugin {
   async provisionResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 

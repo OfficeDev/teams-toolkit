@@ -6,7 +6,10 @@ import {
   returnSystemError,
   v2,
   v3,
-  SolutionContext,
+  Result,
+  Void,
+  err,
+  ok,
 } from "@microsoft/teamsfx-api";
 import { getResourceGroupInPortal, getStrings } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
@@ -25,7 +28,6 @@ import {
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
   SolutionSource,
-  REMOTE_TEAMS_APP_TENANT_ID,
 } from "../constants";
 import * as util from "util";
 import _, { isUndefined } from "lodash";
@@ -45,15 +47,14 @@ import { solutionGlobalVars } from "../v3/solutionGlobalVars";
 export async function provisionResource(
   ctx: v2.Context,
   inputs: Inputs,
-  envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
+  envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider
-): Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> {
-  const newEnvInfo: v2.EnvInfoV2 = _.cloneDeep(envInfo);
+): Promise<Result<Void, FxError>> {
   const azureSolutionSettings = getAzureSolutionSettings(ctx);
 
   // check projectPath
   if (inputs.projectPath === undefined) {
-    return new v2.FxFailure(
+    return err(
       returnSystemError(
         new Error("projectPath is undefined"),
         SolutionSource,
@@ -66,23 +67,21 @@ export async function provisionResource(
 
   // check M365 tenant
   if (!envInfo.state[BuiltInResourcePluginNames.appStudio])
-    newEnvInfo.state[BuiltInResourcePluginNames.appStudio] = {};
-  const teamsAppResource = newEnvInfo.state[
-    BuiltInResourcePluginNames.appStudio
-  ] as v3.TeamsAppResource;
-  if (!newEnvInfo.state.solution) newEnvInfo.state.solution = {};
-  const solutionConfig = newEnvInfo.state.solution as v3.AzureSolutionConfig;
+    envInfo.state[BuiltInResourcePluginNames.appStudio] = {};
+  const teamsAppResource = envInfo.state[BuiltInResourcePluginNames.appStudio];
+  if (!envInfo.state.solution) envInfo.state.solution = {};
+  const solutionConfig = envInfo.state.solution;
   const tenantIdInConfig = teamsAppResource.tenantId;
   const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);
   if (tenantIdInTokenRes.isErr()) {
-    return new v2.FxFailure(tenantIdInTokenRes.error);
+    return err(tenantIdInTokenRes.error);
   }
   const tenantIdInToken = tenantIdInTokenRes.value;
   if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
-    return new v2.FxFailure(
+    return err(
       new UserError(
         SolutionError.TeamsAppTenantIdNotRight,
-        `The signed in M365 account does not match the M365 tenant in config file for '${newEnvInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
+        `The signed in M365 account does not match the M365 tenant in config file for '${envInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
         "Solution"
       )
     );
@@ -100,7 +99,7 @@ export async function provisionResource(
       ctx.permissionRequestProvider
     );
     if (result.isErr()) {
-      return new v2.FxFailure(result.error);
+      return err(result.error);
     }
 
     // ask common question and fill in solution config
@@ -111,7 +110,7 @@ export async function provisionResource(
       tokenProvider
     );
     if (solutionConfigRes.isErr()) {
-      return new v2.FxFailure(solutionConfigRes.error);
+      return err(solutionConfigRes.error);
     }
 
     // ask for provision consent
@@ -121,7 +120,7 @@ export async function provisionResource(
       envInfo as v3.EnvInfoV3
     );
     if (consentResult.isErr()) {
-      return new v2.FxFailure(consentResult.error);
+      return err(consentResult.error);
     }
 
     // create resource group if needed
@@ -133,19 +132,15 @@ export async function provisionResource(
         solutionConfig.location
       );
       if (createRgRes.isErr()) {
-        return new v2.FxFailure(createRgRes.error);
+        return err(createRgRes.error);
       }
     }
   }
 
-  if (!newEnvInfo.state[GLOBAL_CONFIG]) {
-    newEnvInfo.state[GLOBAL_CONFIG] = { output: {}, secrets: {} };
-  }
-
   const pureExistingApp = isPureExistingApp(ctx.projectSetting);
 
-  newEnvInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = false;
-  const solutionInputs = extractSolutionInputs(newEnvInfo.state[GLOBAL_CONFIG]["output"]);
+  envInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = false;
+  const solutionInputs = extractSolutionInputs(envInfo.state[GLOBAL_CONFIG]);
   // for minimized teamsfx project, there is only one plugin (app studio)
   const plugins = pureExistingApp
     ? [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin)]
@@ -157,14 +152,14 @@ export async function provisionResource(
         pluginName: `${plugin.name}`,
         taskName: "provisionResource",
         thunk: () => {
-          if (!newEnvInfo.state[plugin.name]) {
-            newEnvInfo.state[plugin.name] = {};
+          if (!envInfo.state[plugin.name]) {
+            envInfo.state[plugin.name] = {};
           }
           // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
           return plugin.provisionResource!(
             ctx,
             { ...inputs, ...solutionInputs, projectPath: projectPath },
-            { ...newEnvInfo, state: newEnvInfo.state },
+            envInfo,
             tokenProvider
           );
         },
@@ -175,36 +170,28 @@ export async function provisionResource(
     util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
   );
   const provisionResult = await executeConcurrently(provisionThunks, ctx.logProvider);
-  if (provisionResult.kind === "failure") {
-    return provisionResult;
-  } else {
-    const update = combineRecords(provisionResult.output);
-    _.assign(newEnvInfo.state, update);
-    if (provisionResult.kind === "partialSuccess") {
-      return new v2.FxPartialSuccess(newEnvInfo.state, provisionResult.error);
-    }
+  if (provisionResult.kind === "failure" || provisionResult.kind === "partialSuccess") {
+    return err(provisionResult.error);
   }
 
   ctx.logProvider?.info(
     util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
   );
 
-  const teamsAppId = newEnvInfo.state[PluginNames.APPST]["output"][
-    Constants.TEAMS_APP_ID
-  ] as string;
+  const teamsAppId = envInfo.state[PluginNames.APPST][Constants.TEAMS_APP_ID] as string;
   solutionGlobalVars.TeamsAppId = teamsAppId;
   solutionInputs.remoteTeamsAppId = teamsAppId;
 
   // call deployArmTemplates
   if (isAzureProject(azureSolutionSettings) && !inputs.isForUT) {
-    const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
+    const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, envInfo, tokenProvider]);
     const armDeploymentResult = await deployArmTemplates(contextAdaptor);
     if (armDeploymentResult.isErr()) {
-      return new v2.FxPartialSuccess(newEnvInfo.state, armDeploymentResult.error);
+      return err(armDeploymentResult.error);
     }
     // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
     const update = contextAdaptor.getEnvStateJson();
-    _.assign(newEnvInfo.state, update);
+    _.assign(envInfo.state, update);
   }
 
   // there is no aad for minimized teamsfx project
@@ -221,11 +208,11 @@ export async function provisionResource(
           params: { isLocal: false },
         },
         {},
-        newEnvInfo,
+        envInfo,
         tokenProvider
       );
       if (result.isErr()) {
-        return new v2.FxPartialSuccess(newEnvInfo.state, result.error);
+        return err(result.error);
       }
     }
   }
@@ -233,8 +220,8 @@ export async function provisionResource(
   const configureResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureResource))
     .map((plugin) => {
-      if (!newEnvInfo.state[plugin.name]) {
-        newEnvInfo.state[plugin.name] = {};
+      if (!envInfo.state[plugin.name]) {
+        envInfo.state[plugin.name] = {};
       }
       return {
         pluginName: `${plugin.name}`,
@@ -244,7 +231,7 @@ export async function provisionResource(
           plugin.configureResource!(
             ctx,
             { ...inputs, ...solutionInputs, projectPath: projectPath },
-            { ...newEnvInfo, state: newEnvInfo.state },
+            envInfo,
             tokenProvider
           ),
       };
@@ -264,15 +251,10 @@ export async function provisionResource(
     const msg = util.format(getStrings().solution.ProvisionFailNotice, ctx.projectSetting.appName);
     ctx.logProvider.error(msg);
     solutionInputs[SOLUTION_PROVISION_SUCCEEDED] = false;
-
-    if (configureResourceResult.kind === "failure") {
-      return configureResourceResult;
-    } else {
-      return new v2.FxPartialSuccess(newEnvInfo.state, configureResourceResult.error);
-    }
+    return err(configureResourceResult.error);
   } else {
-    if (newEnvInfo.state[GLOBAL_CONFIG] && newEnvInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT]) {
-      delete newEnvInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
+    if (envInfo.state[GLOBAL_CONFIG] && envInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT]) {
+      delete envInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
     }
 
     if (!pureExistingApp) {
@@ -298,16 +280,7 @@ export async function provisionResource(
         ctx.userInteraction.showMessage("info", msg, false);
       }
     }
-
-    const update = combineRecords(configureResourceResult.output);
-    _.assign(newEnvInfo.state, update);
-    newEnvInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = true;
-    if (!isAzureProject(azureSolutionSettings)) {
-      const appStudioTokenJson = await tokenProvider.appStudioToken.getJsonObject();
-      newEnvInfo.state[GLOBAL_CONFIG]["output"][REMOTE_TEAMS_APP_TENANT_ID] = (
-        appStudioTokenJson as any
-      ).tid;
-    }
-    return new v2.FxSuccess(newEnvInfo.state);
+    envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = true;
+    return ok(Void);
   }
 }

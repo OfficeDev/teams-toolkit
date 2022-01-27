@@ -1074,7 +1074,7 @@ describe("API v2 implementation", () => {
         mockedEnvInfo,
         mockedTokenProvider
       );
-      expect(result.kind).equals("success");
+      expect(result.isOk()).equals(true);
     });
   });
 
@@ -1131,7 +1131,7 @@ describe("API v2 implementation", () => {
         mockedEnvInfo,
         mockedTokenProvider
       );
-      expect(result.kind).equals("success");
+      expect(result.isOk()).equals(true);
     });
   });
 });

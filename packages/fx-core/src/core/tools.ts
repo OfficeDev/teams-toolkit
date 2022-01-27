@@ -154,22 +154,22 @@ export function getLockFolder(projectPath: string): string {
 // flattens output/secrets fields in config map for backward compatibility
 // e.g. { "a": { "output": {"b": 1}, "secrets": { "value": 9 } }, "c": 2 } will be converted to
 // { "a": { "b": 1, "value": 9 }, "c": 2 }
-export function flattenConfigJson(configJson: Json): Json {
-  const config: Json = {};
-  for (const [k, v] of Object.entries(configJson)) {
-    if (v instanceof Object) {
-      const value = flattenConfigJson(v);
-      if (k === "output" || k === "secrets") {
-        for (const [k, v] of Object.entries(value)) {
-          config[k] = v;
-        }
-      } else {
-        config[k] = value;
-      }
-    } else {
-      config[k] = v;
-    }
-  }
+// export function flattenConfigJson(configJson: Json): Json {
+//   const config: Json = {};
+//   for (const [k, v] of Object.entries(configJson)) {
+//     if (v instanceof Object) {
+//       const value = flattenConfigJson(v);
+//       if (k === "output" || k === "secrets") {
+//         for (const [k, v] of Object.entries(value)) {
+//           config[k] = v;
+//         }
+//       } else {
+//         config[k] = value;
+//       }
+//     } else {
+//       config[k] = v;
+//     }
+//   }
 
-  return config;
-}
+//   return configJson;
+// }

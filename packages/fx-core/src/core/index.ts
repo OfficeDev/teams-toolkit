@@ -41,6 +41,7 @@ import { assign } from "lodash";
 import * as path from "path";
 import { Container } from "typedi";
 import * as uuid from "uuid";
+import { resourceLimits } from "worker_threads";
 import { environmentManager } from "..";
 import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";
@@ -746,15 +747,7 @@ export class FxCore implements v3.ICore {
       envInfo,
       this.tools.tokenProvider
     );
-    if (result.kind === "success") {
-      ctx.envInfoV2.state = assign(ctx.envInfoV2.state, result.output);
-      return ok(Void);
-    } else if (result.kind === "partialSuccess") {
-      ctx.envInfoV2.state = assign(ctx.envInfoV2.state, result.output);
-      return err(result.error);
-    } else {
-      return err(result.error);
-    }
+    return result;
   }
 
   @hooks([

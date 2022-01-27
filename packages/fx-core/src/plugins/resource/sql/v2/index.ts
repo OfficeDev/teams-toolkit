@@ -5,6 +5,7 @@ import {
   AzureSolutionSettings,
   FxError,
   Inputs,
+  Json,
   ProjectSettings,
   QTreeNode,
   Result,
@@ -49,7 +50,7 @@ export class SqlPluginV2 implements ResourcePlugin {
     inputs: ProvisionInputs,
     envInfo: Readonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Json, FxError>> {
     return await provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
@@ -58,7 +59,7 @@ export class SqlPluginV2 implements ResourcePlugin {
     inputs: ProvisionInputs,
     envInfo: Readonly<v2.EnvInfoV2>,
     tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Json, FxError>> {
     return await configureResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 

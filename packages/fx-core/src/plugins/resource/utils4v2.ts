@@ -126,10 +126,10 @@ export async function updateResourceTemplateAdapter(
 export async function provisionResourceAdapter(
   ctx: v2.Context,
   inputs: v2.ProvisionInputs,
-  envInfo: Readonly<v2.EnvInfoV2>,
+  envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider,
   plugin: Plugin
-): Promise<Result<v2.ResourceProvisionOutput, FxError>> {
+): Promise<Result<Void, FxError>> {
   if (!plugin.provision) {
     return err(PluginHasNoTaskImpl(plugin.displayName, "provision"));
   }
@@ -158,54 +158,54 @@ export async function provisionResourceAdapter(
     return err(res.error);
   }
   pluginContext.envInfo.state.delete(GLOBAL_CONFIG);
-  return ok(legacyConfig2EnvState(pluginContext.config, plugin.name));
+  envInfo.state[plugin.name] = pluginContext.config.toJSON();
+  return ok(Void);
 }
 
 // flattens output/secrets fields in config map for backward compatibility
 export function flattenConfigMap(configMap: ConfigMap): ConfigMap {
-  const map = new ConfigMap();
-  for (const [k, v] of configMap.entries()) {
-    if (v instanceof ConfigMap) {
-      const value = flattenConfigMap(v);
-      if (k === "output" || k === "secrets") {
-        for (const [k, v] of value.entries()) {
-          map.set(k, v);
-        }
-      } else {
-        map.set(k, value);
-      }
-    } else {
-      map.set(k, v);
-    }
-  }
+  return configMap;
+  // const map = new ConfigMap();
+  // for (const [k, v] of configMap.entries()) {
+  //   if (v instanceof ConfigMap) {
+  //     const value = flattenConfigMap(v);
+  //     if (k === "output" || k === "secrets") {
+  //       for (const [k, v] of value.entries()) {
+  //         map.set(k, v);
+  //       }
+  //     } else {
+  //       map.set(k, value);
+  //     }
+  //   } else {
+  //     map.set(k, v);
+  //   }
+  // }
 
-  return map;
+  // return map;
 }
 
 // Convert legacy config map to env state with output and secrets fields
-export function legacyConfig2EnvState(
-  config: ConfigMap,
-  pluginName: string
-): { output: Json; secrets: Json } {
+export function legacyConfig2EnvState(config: ConfigMap, pluginName: string): Json {
   const output = config.toJSON();
   //separate secret keys from output
-  const secrets: Json = {};
-  for (const key of Object.keys(output)) {
-    if (CryptoDataMatchers.has(`${pluginName}.${key}`)) {
-      secrets[key] = output[key];
-      delete output[key];
-    }
-  }
-  return { output, secrets };
+  // const secrets: Json = {};
+  // for (const key of Object.keys(output)) {
+  //   if (CryptoDataMatchers.has(`${pluginName}.${key}`)) {
+  //     secrets[key] = output[key];
+  //     delete output[key];
+  //   }
+  // }
+  // return { output, secrets };
+  return output;
 }
 
 export async function configureResourceAdapter(
   ctx: v2.Context,
   inputs: v2.ProvisionInputs,
-  envInfo: Readonly<v2.EnvInfoV2>,
+  envInfo: v2.EnvInfoV2,
   tokenProvider: TokenProvider,
   plugin: Plugin
-): Promise<Result<v2.ResourceProvisionOutput, FxError>> {
+): Promise<Result<Void, FxError>> {
   if (!plugin.postProvision) return err(PluginHasNoTaskImpl(plugin.displayName, "postProvision"));
   const pluginContext: PluginContext = convert2PluginContext(plugin.name, ctx, inputs);
 
@@ -224,7 +224,8 @@ export async function configureResourceAdapter(
   if (postRes.isErr()) {
     return err(postRes.error);
   }
-  return ok(legacyConfig2EnvState(pluginContext.config, plugin.name));
+  envInfo.state[plugin.name] = pluginContext.config.toJSON();
+  return ok(Void);
 }
 
 export async function deployAdapter(

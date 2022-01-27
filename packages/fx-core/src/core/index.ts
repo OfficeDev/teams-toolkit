@@ -736,11 +736,7 @@ export class FxCore implements v3.ICore {
     if (!ctx?.projectSettings) {
       return err(new ObjectIsUndefinedError("Provision input stuff"));
     }
-    if (isPureExistingApp(ctx.projectSettings)) {
-      // existing app scenario, provision has no effect
-      return ok(Void);
-    }
-    if (!ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
+    if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
       return err(new ObjectIsUndefinedError("Provision input stuff"));
     }
     const envInfo = ctx.envInfoV2;

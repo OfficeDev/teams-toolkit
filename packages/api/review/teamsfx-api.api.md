@@ -154,6 +154,8 @@ interface AzureSolutionConfig extends Json {
     // (undocumented)
     subscriptionName: string;
     // (undocumented)
+    teamsAppTenantId: string;
+    // (undocumented)
     tenantId: string;
 }
 

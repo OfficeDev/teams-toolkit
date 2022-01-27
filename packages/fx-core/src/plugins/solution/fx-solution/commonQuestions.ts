@@ -367,20 +367,6 @@ async function askCommonQuestions(
   azureAccountProvider?: AzureAccountProvider,
   appstudioTokenJson?: object
 ): Promise<Result<CommonQuestions, FxError>> {
-  if (appstudioTokenJson === undefined) {
-    return err(
-      returnSystemError(
-        new Error("Graph token json is undefined"),
-        SolutionSource,
-        SolutionError.NoAppStudioToken
-      )
-    );
-  }
-
-  const m365TenantResult = await checkM365Tenant(ctx.envInfo, appstudioTokenJson);
-  if (m365TenantResult.isErr()) {
-    return err(m365TenantResult.error);
-  }
   if (!azureAccountProvider) {
     return err(
       returnSystemError(

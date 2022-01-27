@@ -30,6 +30,7 @@ import {
   TelemetryProperty,
 } from "../../../../common/telemetry";
 import { getHashedEnv, getResourceGroupInPortal, getStrings } from "../../../../common/tools";
+import { SolutionV3QuestionNames } from "../../utils/questions";
 import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import { SolutionError, SolutionSource } from "../constants";
@@ -71,8 +72,11 @@ export async function provisionResources(
 ): Promise<Result<v3.EnvInfoV3, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
   // check M365 tenant match
-  const appResource = envInfo.state[BuiltInResourcePluginNames.appStudio] as v3.TeamsAppResource;
-  const tenantIdInConfig = appResource.tenantId;
+  const teamsAppResource = envInfo.state[
+    BuiltInResourcePluginNames.appStudio
+  ] as v3.TeamsAppResource;
+  const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
+  const tenantIdInConfig = teamsAppResource.tenantId;
   const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
@@ -88,16 +92,17 @@ export async function provisionResources(
     );
   }
   if (!tenantIdInConfig) {
-    appResource.tenantId = tenantIdInToken;
+    teamsAppResource.tenantId = tenantIdInToken;
+    solutionConfig.teamsAppTenantId = tenantIdInToken;
   }
 
   //TODO teams app provision, return app id
   // call appStudio.provision()
-  appResource.teamsAppId = "fake-remote-teams-app-id";
+  teamsAppResource.teamsAppId = "fake-remote-teams-app-id";
   solutionGlobalVars.TeamsAppId = "fake-remote-teams-app-id";
 
   // ask common question and fill in solution config
-  const solutionConfigRes = await fillInAzureSolutionConfigs(
+  const solutionConfigRes = await fillInAzureConfigs(
     ctx,
     inputs,
     envInfo as v3.EnvInfoV3,
@@ -117,7 +122,6 @@ export async function provisionResources(
   }
 
   // create resource group if needed
-  const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
   if (solutionConfig.needCreateResourceGroup) {
     const createRgRes = await resourceGroupHelper.createNewResourceGroup(
       solutionConfig.resourceGroupName,
@@ -295,7 +299,7 @@ export async function checkAzureSubscription(
  * Asks common questions and puts the answers in the global namespace of SolutionConfig
  *
  */
-async function fillInAzureSolutionConfigs(
+export async function fillInAzureConfigs(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
@@ -499,7 +503,7 @@ export async function getM365TenantId(
     );
   }
   const tenantIdInToken = (appstudioTokenJson as any).tid;
-  if (!tenantIdInToken) {
+  if (!tenantIdInToken || !(typeof tenantIdInToken === "string")) {
     return err(
       new SystemError(
         SolutionError.NoTeamsAppTenantId,

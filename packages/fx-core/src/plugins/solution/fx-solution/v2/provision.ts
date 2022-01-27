@@ -1,17 +1,14 @@
 import {
-  v2,
   Inputs,
   FxError,
-  Result,
-  ok,
-  err,
-  returnUserError,
+  UserError,
   TokenProvider,
-  Void,
-  SolutionContext,
   returnSystemError,
+  v2,
+  v3,
+  SolutionContext,
 } from "@microsoft/teamsfx-api";
-import { getResourceGroupInPortal, getStrings, isMultiEnvEnabled } from "../../../../common/tools";
+import { getResourceGroupInPortal, getStrings } from "../../../../common/tools";
 import { executeConcurrently } from "./executor";
 import {
   combineRecords,
@@ -27,26 +24,23 @@ import {
   PluginNames,
   SolutionError,
   SOLUTION_PROVISION_SUCCEEDED,
-  SUBSCRIPTION_ID,
-  SUBSCRIPTION_NAME,
   SolutionSource,
-  RESOURCE_GROUP_NAME,
   REMOTE_TEAMS_APP_TENANT_ID,
 } from "../constants";
 import * as util from "util";
-import _, { assign, isUndefined } from "lodash";
+import _, { isUndefined } from "lodash";
 import { PluginDisplayName } from "../../../../common/constants";
 import { ProvisionContextAdapter } from "./adaptor";
-import { CommonQuestions, createNewResourceGroup, fillInCommonQuestions } from "../commonQuestions";
 import { deployArmTemplates } from "../arm";
 import Container from "typedi";
 import { ResourcePluginsV2 } from "../ResourcePluginContainer";
-import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
-import { isVsCallingCli } from "../../../../core";
 import { Constants } from "../../../resource/appstudio/constants";
-import { assignJsonInc } from "../../../resource/utils4v2";
-import { ResourceManagementClient } from "@azure/arm-resources";
+import { isPureExistingApp } from "../../../../core/utils";
+import { BuiltInResourcePluginNames } from "../v3/constants";
+import { askForProvisionConsent, fillInAzureConfigs, getM365TenantId } from "../v3/provision";
+import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
+import { solutionGlobalVars } from "../v3/solutionGlobalVars";
 
 export async function provisionResource(
   ctx: v2.Context,
@@ -54,6 +48,10 @@ export async function provisionResource(
   envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider
 ): Promise<v2.FxResult<v2.SolutionProvisionOutput, FxError>> {
+  const newEnvInfo: v2.EnvInfoV2 = _.cloneDeep(envInfo);
+  const azureSolutionSettings = getAzureSolutionSettings(ctx);
+
+  // check projectPath
   if (inputs.projectPath === undefined) {
     return new v2.FxFailure(
       returnSystemError(
@@ -63,14 +61,33 @@ export async function provisionResource(
       )
     );
   }
+  const inputsNew: v2.InputsWithProjectPath = inputs as v2.InputsWithProjectPath;
   const projectPath: string = inputs.projectPath;
 
-  const azureSolutionSettings = getAzureSolutionSettings(ctx);
-  // Just to trigger M365 login before the concurrent execution of provision.
-  // Because concurrent exectution of provision may getAccessToken() concurrently, which
-  // causes 2 M365 logins before the token caching in common lib takes effect.
-  await tokenProvider.appStudioToken.getAccessToken();
-
+  // check M365 tenant
+  const teamsAppResource = newEnvInfo.state[
+    BuiltInResourcePluginNames.appStudio
+  ] as v3.TeamsAppResource;
+  const solutionConfig = newEnvInfo.state.solution as v3.AzureSolutionConfig;
+  const tenantIdInConfig = teamsAppResource.tenantId;
+  const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);
+  if (tenantIdInTokenRes.isErr()) {
+    return new v2.FxFailure(tenantIdInTokenRes.error);
+  }
+  const tenantIdInToken = tenantIdInTokenRes.value;
+  if (tenantIdInConfig && tenantIdInToken && tenantIdInToken !== tenantIdInConfig) {
+    return new v2.FxFailure(
+      new UserError(
+        SolutionError.TeamsAppTenantIdNotRight,
+        `The signed in M365 account does not match the M365 tenant in config file for '${newEnvInfo.envName}' environment. Please sign out and sign in with the correct M365 account.`,
+        "Solution"
+      )
+    );
+  }
+  if (!tenantIdInConfig) {
+    teamsAppResource.tenantId = tenantIdInToken;
+    solutionConfig.teamsAppTenantId = tenantIdInToken;
+  }
   if (isAzureProject(azureSolutionSettings)) {
     if (ctx.permissionRequestProvider === undefined) {
       ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
@@ -82,60 +99,54 @@ export async function provisionResource(
     if (result.isErr()) {
       return new v2.FxFailure(result.error);
     }
-  }
 
-  const newEnvInfo: EnvInfoV2 = _.cloneDeep(envInfo);
-  if (!newEnvInfo.state[GLOBAL_CONFIG]) {
-    newEnvInfo.state[GLOBAL_CONFIG] = { output: {}, secrets: {} };
-  }
-  newEnvInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = false;
-  if (isAzureProject(azureSolutionSettings)) {
-    //fill in common questions for solution
-    const appName = ctx.projectSetting.appName;
-    const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
-    const res = inputs.isForUT
-      ? ok({})
-      : await fillInCommonQuestions(
-          contextAdaptor,
-          appName,
-          contextAdaptor.envInfo.state,
-          tokenProvider.azureAccountProvider,
-          await tokenProvider.appStudioToken.getJsonObject()
-        );
-
-    if (res.isErr()) {
-      return new v2.FxFailure(res.error);
+    // ask common question and fill in solution config
+    const solutionConfigRes = await fillInAzureConfigs(
+      ctx,
+      inputsNew,
+      envInfo as v3.EnvInfoV3,
+      tokenProvider
+    );
+    if (solutionConfigRes.isErr()) {
+      return new v2.FxFailure(solutionConfigRes.error);
     }
 
-    // contextAdaptor deep-copies original JSON into a map. We need to convert it back.
-    const update = contextAdaptor.getEnvStateJson();
-    _.assign(newEnvInfo.state, update);
-    const consentResult = await askForProvisionConsent(contextAdaptor);
+    // ask for provision consent
+    const consentResult = await askForProvisionConsent(
+      ctx,
+      tokenProvider.azureAccountProvider,
+      envInfo as v3.EnvInfoV3
+    );
     if (consentResult.isErr()) {
       return new v2.FxFailure(consentResult.error);
     }
 
     // create resource group if needed
-    const commonQuestionResult = res.value as CommonQuestions;
-    if (commonQuestionResult.needCreateResourceGroup) {
-      const maybeRgName = await createNewResourceGroup(
-        tokenProvider.azureAccountProvider!,
-        commonQuestionResult.subscriptionId,
-        commonQuestionResult.subscriptionName,
-        commonQuestionResult.resourceGroupName,
-        commonQuestionResult.location,
-        ctx.logProvider
+    if (solutionConfig.needCreateResourceGroup) {
+      const createRgRes = await resourceGroupHelper.createNewResourceGroup(
+        solutionConfig.resourceGroupName,
+        tokenProvider.azureAccountProvider,
+        solutionConfig.subscriptionId,
+        solutionConfig.location
       );
-
-      if (maybeRgName.isErr()) {
-        return new v2.FxFailure(maybeRgName.error);
+      if (createRgRes.isErr()) {
+        return new v2.FxFailure(createRgRes.error);
       }
     }
   }
 
-  const solutionInputs = extractSolutionInputs(newEnvInfo.state[GLOBAL_CONFIG]["output"]);
+  if (!newEnvInfo.state[GLOBAL_CONFIG]) {
+    newEnvInfo.state[GLOBAL_CONFIG] = { output: {}, secrets: {} };
+  }
 
-  const plugins = getSelectedPlugins(ctx.projectSetting);
+  const pureExistingApp = isPureExistingApp(ctx.projectSetting);
+
+  newEnvInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = false;
+  const solutionInputs = extractSolutionInputs(newEnvInfo.state[GLOBAL_CONFIG]["output"]);
+  // for minimized teamsfx project, there is only one plugin (app studio)
+  const plugins = pureExistingApp
+    ? [Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin)]
+    : getSelectedPlugins(ctx.projectSetting);
   const provisionThunks = plugins
     .filter((plugin) => !isUndefined(plugin.provisionResource))
     .map((plugin) => {
@@ -175,6 +186,12 @@ export async function provisionResource(
     util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
   );
 
+  const teamsAppId = newEnvInfo.state[PluginNames.APPST]["output"][
+    Constants.TEAMS_APP_ID
+  ] as string;
+  solutionGlobalVars.TeamsAppId = teamsAppId;
+  solutionInputs.remoteTeamsAppId = teamsAppId;
+
   // call deployArmTemplates
   if (isAzureProject(azureSolutionSettings) && !inputs.isForUT) {
     const contextAdaptor = new ProvisionContextAdapter([ctx, inputs, newEnvInfo, tokenProvider]);
@@ -187,37 +204,35 @@ export async function provisionResource(
     _.assign(newEnvInfo.state, update);
   }
 
-  // call aad.setApplicationInContext
-  const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
-  if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
-    const result = await aadPlugin.executeUserTask(
-      ctx,
-      inputs,
-      {
-        namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
-        method: "setApplicationInContext",
-        params: { isLocal: false },
-      },
-      {},
-      newEnvInfo,
-      tokenProvider
-    );
-    if (result.isErr()) {
-      return new v2.FxPartialSuccess(newEnvInfo.state, result.error);
+  // there is no aad for minimized teamsfx project
+  if (!pureExistingApp) {
+    // call aad.setApplicationInContext
+    const aadPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin);
+    if (plugins.some((plugin) => plugin.name === aadPlugin.name) && aadPlugin.executeUserTask) {
+      const result = await aadPlugin.executeUserTask(
+        ctx,
+        inputs,
+        {
+          namespace: `${PluginNames.SOLUTION}/${PluginNames.AAD}`,
+          method: "setApplicationInContext",
+          params: { isLocal: false },
+        },
+        {},
+        newEnvInfo,
+        tokenProvider
+      );
+      if (result.isErr()) {
+        return new v2.FxPartialSuccess(newEnvInfo.state, result.error);
+      }
     }
   }
 
-  if (isAzureProject(azureSolutionSettings)) {
-    solutionInputs.remoteTeamsAppId =
-      newEnvInfo.state[PluginNames.APPST]["output"][Constants.TEAMS_APP_ID];
-  }
   const configureResourceThunks = plugins
     .filter((plugin) => !isUndefined(plugin.configureResource))
     .map((plugin) => {
       if (!newEnvInfo.state[plugin.name]) {
         newEnvInfo.state[plugin.name] = {};
       }
-
       return {
         pluginName: `${plugin.name}`,
         taskName: "configureResource",
@@ -257,27 +272,30 @@ export async function provisionResource(
       delete newEnvInfo.state[GLOBAL_CONFIG][ARM_TEMPLATE_OUTPUT];
     }
 
-    const url = getResourceGroupInPortal(
-      solutionInputs.subscriptionId,
-      solutionInputs.tenantId,
-      solutionInputs.resourceGroupName
-    );
-    const msg = util.format(
-      `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
-      ctx.projectSetting.appName
-    );
-    ctx.logProvider?.info(msg);
-    if (url) {
-      const title = "View Provisioned Resources";
-      ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
-        const userSelected = result.isOk() ? result.value : undefined;
-        if (userSelected === title) {
-          ctx.userInteraction.openUrl(url);
-        }
-      });
-    } else {
-      ctx.userInteraction.showMessage("info", msg, false);
+    if (!pureExistingApp) {
+      const url = getResourceGroupInPortal(
+        solutionInputs.subscriptionId,
+        solutionInputs.tenantId,
+        solutionInputs.resourceGroupName
+      );
+      const msg = util.format(
+        `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
+        ctx.projectSetting.appName
+      );
+      ctx.logProvider?.info(msg);
+      if (url) {
+        const title = "View Provisioned Resources";
+        ctx.userInteraction.showMessage("info", msg, false, title).then((result) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === title) {
+            ctx.userInteraction.openUrl(url);
+          }
+        });
+      } else {
+        ctx.userInteraction.showMessage("info", msg, false);
+      }
     }
+
     const update = combineRecords(configureResourceResult.output);
     _.assign(newEnvInfo.state, update);
     newEnvInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = true;
@@ -289,54 +307,4 @@ export async function provisionResource(
     }
     return new v2.FxSuccess(newEnvInfo.state);
   }
-}
-
-export async function askForProvisionConsent(ctx: SolutionContext): Promise<Result<Void, FxError>> {
-  if (isVsCallingCli()) {
-    // Skip asking users for input on VS calling CLI to simplify user interaction.
-    return ok(Void);
-  }
-
-  const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
-
-  // Only Azure project requires this confirm dialog
-  const username = (azureToken as any).username ? (azureToken as any).username : "";
-  const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
-  const subscriptionName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_NAME) as string;
-
-  const msg = util.format(
-    getStrings().solution.ProvisionConfirmNotice,
-    username,
-    subscriptionName ? subscriptionName : subscriptionId
-  );
-  let confirmRes = undefined;
-  if (isMultiEnvEnabled()) {
-    const msgNew = util.format(
-      getStrings().solution.ProvisionConfirmEnvNotice,
-      ctx.envInfo.envName,
-      username,
-      subscriptionName ? subscriptionName : subscriptionId
-    );
-    confirmRes = await ctx.ui?.showMessage("warn", msgNew, true, "Provision");
-  } else {
-    confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision", "Pricing calculator");
-  }
-
-  const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
-
-  if (confirm !== "Provision") {
-    if (confirm === "Pricing calculator") {
-      ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
-    }
-
-    return err(
-      returnUserError(
-        new Error(getStrings().solution.CancelProvision),
-        SolutionSource,
-        getStrings().solution.CancelProvision
-      )
-    );
-  }
-
-  return ok(Void);
 }

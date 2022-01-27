@@ -109,7 +109,7 @@ export class AppStudioPluginImpl {
   private readonly ajv;
 
   constructor() {
-    this.ajv = new Ajv({ strictSchema: false });
+    this.ajv = new Ajv({ formats: { uri: true } });
   }
 
   public async getAppDefinitionAndUpdate(

@@ -269,7 +269,7 @@ async function resolveLocalCertificate(localEnvManager: LocalEnvManager): Promis
     // TODO: Return CheckResult when isTrusted === false
     await localEnvManager.resolveLocalCertificate(trustDevCert);
   } catch (err: any) {
-    result = true;
+    result = false;
     error = assembleError(err);
   }
   return {

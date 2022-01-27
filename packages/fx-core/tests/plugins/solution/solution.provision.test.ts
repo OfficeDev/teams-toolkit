@@ -96,7 +96,6 @@ import { SubscriptionsListLocationsResponse } from "@azure/arm-subscriptions/esm
 import * as msRest from "@azure/ms-rest-js";
 import { ProvidersGetOptionalParams, ProvidersGetResponse } from "@azure/arm-resources/esm/models";
 import { TeamsAppSolutionV2 } from "../../../src/plugins/solution/fx-solution/v2/solution";
-import { EnvInfoV2, ResourceProvisionOutput } from "@microsoft/teamsfx-api/build/v2";
 import { LocalCrypto } from "../../../src/core/crypto";
 import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import * as armResources from "@azure/arm-resources";
@@ -281,12 +280,12 @@ function mockProvisionThatAlwaysSucceed(plugin: Plugin) {
 }
 
 function mockProvisionV2ThatAlwaysSucceed(plugin: v2.ResourcePlugin) {
-  plugin.provisionResource = async function (): Promise<Result<ResourceProvisionOutput, FxError>> {
-    return ok({ output: {}, secrets: {} });
+  plugin.provisionResource = async function (): Promise<Result<Void, FxError>> {
+    return ok(Void);
   };
 
-  plugin.configureResource = async function (): Promise<Result<ResourceProvisionOutput, FxError>> {
-    return ok({ output: {}, secrets: {} });
+  plugin.configureResource = async function (): Promise<Result<Void, FxError>> {
+    return ok(Void);
   };
 }
 
@@ -1060,7 +1059,7 @@ describe("API v2 implementation", () => {
         graphTokenProvider: new MockedGraphTokenProvider(),
         sharepointTokenProvider: new MockedSharepointProvider(),
       };
-      const mockedEnvInfo: EnvInfoV2 = {
+      const mockedEnvInfo: v2.EnvInfoV2 = {
         envName: "default",
         config: { manifest: { appName: { short: "test-app" } } },
         state: {},
@@ -1134,7 +1133,7 @@ describe("API v2 implementation", () => {
         graphTokenProvider: new MockedGraphTokenProvider(),
         sharepointTokenProvider: new MockedSharepointProvider(),
       };
-      const mockedEnvInfo: EnvInfoV2 = {
+      const mockedEnvInfo: v2.EnvInfoV2 = {
         envName: "default",
         config: { manifest: { appName: { short: "test-app" } } },
         state: {},

@@ -121,7 +121,6 @@ describe("Solution scaffold() reading valid manifest file", () => {
       activeResourcePlugins: [
         aadPlugin.name,
         fehostPlugin.name,
-        simpleAuthPlugin.name,
         identityPlugin.name,
         botPlugin.name,
       ],

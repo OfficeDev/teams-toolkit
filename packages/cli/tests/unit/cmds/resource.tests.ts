@@ -24,6 +24,7 @@ import {
   EnvStateFiles,
   FxCore,
   PathNotExistError,
+  ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
 
 import Resource, {
@@ -51,6 +52,7 @@ import { expect } from "../utils";
 import { NotFoundSubscriptionId, NotSupportedProjectType } from "../../../src/error";
 import UI from "../../../src/userInteraction";
 import * as path from "path";
+import * as npmInstallHandler from "../../../src/cmds/preview/npmInstallHandler";
 
 describe("Resource Command Tests", function () {
   const sandbox = sinon.createSandbox();
@@ -118,6 +120,15 @@ describe("Resource Command Tests", function () {
         if (inputs.projectPath?.includes("real")) return ok("");
         else return err(NotSupportedProjectType());
       });
+    sandbox.stub(FxCore.prototype, "getProjectConfig").callsFake(async (inputs: Inputs) => {
+      if (inputs.projectPath?.includes("real")) {
+        return ok({});
+      } else {
+        return err(NotSupportedProjectType());
+      }
+    });
+    sandbox.stub(ProjectSettingsHelper, "includeBackend").returns(false);
+    sandbox.stub(npmInstallHandler, "automaticNpmInstallHandler").callsFake(async () => {});
     sandbox.stub(UI, "updatePresetAnswer").callsFake((key: any, value: any) => {
       allArguments.set(key, value);
     });

@@ -347,7 +347,7 @@ describe("AAD resource plugin V3", () => {
     };
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
-    projectSettings.solutionSettings.modules = [
+    projectSettings.solutionSettings!.modules = [
       {
         capabilities: ["Tab"],
         hostingPlugin: BuiltInResourcePluginNames.storage,
@@ -394,7 +394,7 @@ describe("AAD resource plugin V3", () => {
     };
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
-    projectSettings.solutionSettings.modules = [
+    projectSettings.solutionSettings!.modules = [
       {
         capabilities: ["Tab"],
         hostingPlugin: BuiltInResourcePluginNames.storage,
@@ -489,7 +489,7 @@ describe("AAD resource plugin V3", () => {
     };
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
-    projectSettings.solutionSettings.modules = [
+    projectSettings.solutionSettings!.modules = [
       {
         capabilities: ["Tab"],
         hostingPlugin: BuiltInResourcePluginNames.storage,
@@ -541,7 +541,7 @@ describe("AAD resource plugin V3", () => {
     };
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
-    projectSettings.solutionSettings.modules = [
+    projectSettings.solutionSettings!.modules = [
       {
         capabilities: ["Tab"],
         hostingPlugin: BuiltInResourcePluginNames.storage,

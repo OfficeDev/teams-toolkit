@@ -13,7 +13,7 @@ import { TeamsFxAzureSolutionNameV3 } from "../../../src/plugins/solution/fx-sol
 describe("Middleware - SolutionLoaderMW_V3", () => {
   const MockProjectSettingsMW = async (ctx: CoreHookContext, next: NextFunction) => {
     ctx.projectSettings = newProjectSettings();
-    ctx.projectSettings.solutionSettings.name = TeamsFxAzureSolutionNameV3;
+    ctx.projectSettings.solutionSettings!.name = TeamsFxAzureSolutionNameV3;
     await next();
   };
   class MyClass {

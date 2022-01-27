@@ -2,13 +2,20 @@
 // Licensed under the MIT license.
 "use strict";
 
-import { ProjectSettings } from "@microsoft/teamsfx-api";
+import { LogProvider, ProjectSettings, returnUserError } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import detectPort from "detect-port";
 
 import { FolderName } from "./constants";
 import { loadTeamsFxDevScript } from "./packageJsonHelper";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
+import { CoreSource } from "../../core/error";
+import {
+  Component,
+  sendTelemetryErrorEvent,
+  sendTelemetryEvent,
+  TelemetryEvent,
+} from "../telemetry";
 
 const frontendPortsV1 = [3000];
 const frontendPorts = [53000];
@@ -21,12 +28,23 @@ const botDebugPortRegex = /--inspect[\s]*=[\s"']*9239/im;
 const botDebugPorts = [9239];
 const botServicePorts = [3978];
 
-async function detectPortListening(port: number): Promise<boolean> {
+async function detectPortListening(port: number, logger?: LogProvider): Promise<boolean> {
   try {
+    sendTelemetryEvent(Component.core, TelemetryEvent.DetectPortStart, { port: port.toString() });
     const portChosen = await detectPort(port);
+    sendTelemetryEvent(Component.core, TelemetryEvent.DetectPort, {
+      portChosen: portChosen.toString(),
+      port: port.toString(),
+    });
     return portChosen !== port;
-  } catch {
+  } catch (error: any) {
     // ignore any error to not block debugging
+    sendTelemetryErrorEvent(
+      Component.core,
+      TelemetryEvent.DetectPort,
+      returnUserError(error, CoreSource, "DetectPortError")
+    );
+    logger?.warning(`Failed to detect port. ${error?.message} `);
     return false;
   }
 }
@@ -34,7 +52,8 @@ async function detectPortListening(port: number): Promise<boolean> {
 export async function getPortsInUse(
   projectPath: string,
   projectSettings: ProjectSettings,
-  ignoreDebugPort?: boolean
+  ignoreDebugPort?: boolean,
+  logger?: LogProvider
 ): Promise<number[]> {
   const ports: number[] = [];
 
@@ -43,9 +62,12 @@ export async function getPortsInUse(
     const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
     if (!migrateFromV1) {
       ports.push(...frontendPorts);
-      ports.push(...simpleAuthPorts);
     } else {
       ports.push(...frontendPortsV1);
+    }
+    const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
+    if (includeSimpleAuth) {
+      ports.push(...simpleAuthPorts);
     }
   }
 
@@ -74,7 +96,7 @@ export async function getPortsInUse(
 
   const portsInUse: number[] = [];
   for (const port of ports) {
-    if (await detectPortListening(port)) {
+    if (await detectPortListening(port, logger)) {
       portsInUse.push(port);
     }
   }

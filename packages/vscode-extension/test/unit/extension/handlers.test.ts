@@ -31,7 +31,6 @@ import { ext } from "../../../src/extensionVariables";
 import { Uri } from "vscode";
 import * as envTree from "../../../src/envTree";
 import * as extTelemetryEvents from "../../../src/telemetry/extTelemetryEvents";
-import { assert } from "console";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {

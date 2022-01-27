@@ -1132,9 +1132,6 @@ describe("API v2 implementation", () => {
         mockedTokenProvider
       );
       expect(result.kind).equals("success");
-      if (result.kind === "success") {
-        expect(result.output["fx-resource-identity"] !== undefined).equals(true);
-      }
     });
   });
 });

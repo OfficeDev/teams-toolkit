@@ -18,12 +18,12 @@ import {
   DotnetPluginInfo as PluginInfo,
   RegularExpr,
 } from "../constants";
-import { execute } from "../../../function/utils/execute";
 import { forEachFileAndDir } from "../../../function/utils/dir-walk";
 import { Logger } from "../../utils/logger";
 import { Messages } from "../resources/messages";
 import { ProgressHelper } from "../../utils/progress-helper";
 import { WebappDeployProgress as DeployProgress } from "../resources/steps";
+import { Utils } from "../../utils";
 
 export async function getFrameworkVersion(projectFilePath: string): Promise<string> {
   const content = await fs.readFile(projectFilePath, "utf8");
@@ -41,7 +41,7 @@ export async function build(path: string, runtime: string): Promise<void> {
   const command = Commands.buildRelease(runtime);
   await runWithErrorCatchAndWrap(
     (error) => new BuildError(error),
-    async () => await execute(command, path)
+    async () => await Utils.execute(command, path)
   );
 }
 

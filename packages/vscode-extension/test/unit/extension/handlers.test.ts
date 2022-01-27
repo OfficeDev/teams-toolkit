@@ -35,7 +35,7 @@ import { assert } from "console";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
-    chai.expect(handlers.getWorkspacePath()).equals("/");
+    chai.expect(handlers.getWorkspacePath()).equals(undefined);
   });
 
   suite("activate()", function () {
@@ -507,7 +507,7 @@ suite("handlers", () => {
       await handlers.editManifestTemplate(args);
       chai.assert.isTrue(
         openTextDocument.calledOnceWith(
-          "//templates/appPackage/manifest.local.template.json" as any
+          "undefined/templates/appPackage/manifest.local.template.json" as any
         )
       );
     });
@@ -526,7 +526,7 @@ suite("handlers", () => {
       await handlers.editManifestTemplate(args);
       chai.assert.isTrue(
         openTextDocument.calledOnceWith(
-          "//templates/appPackage/manifest.remote.template.json" as any
+          "undefined/templates/appPackage/manifest.remote.template.json" as any
         )
       );
     });

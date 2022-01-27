@@ -817,6 +817,10 @@
               "ngrok": {
                 "type": "boolean",
                 "description": "Ensure Ngrok is installed."
+              },
+              "devCert": {
+                "type": "boolean",
+                "description": "Ensure development certification is trusted."
               }
             },
             "additionalProperties": false,
@@ -825,7 +829,8 @@
               "dotnetSdk": true,
               "funcCoreTools": true,
               "bicep": true,
-              "ngrok": true
+              "ngrok": true,
+              "devCert": true
             }
           }
         }

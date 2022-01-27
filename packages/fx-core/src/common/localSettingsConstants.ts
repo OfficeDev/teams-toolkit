@@ -29,7 +29,6 @@ export const LocalSettingsFrontendKeys = Object.freeze({
   TabIndexPath: "tabIndexPath",
   Browser: "browser",
   Https: "https",
-  TrustDevCert: "trustDevCert",
   SslCertFile: "sslCertFile",
   SslKeyFile: "sslKeyFile",
 });

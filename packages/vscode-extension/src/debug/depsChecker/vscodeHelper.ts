@@ -32,6 +32,10 @@ class VSCodeHelper {
     return this.checkerEnabled("prerequisiteCheck.ngrok");
   }
 
+  public isTrustDevCertEnabled(): boolean {
+    return this.checkerEnabled("prerequisiteCheck.devCert");
+  }
+
   public async hasFunction(): Promise<boolean> {
     return hasTeamsfxBackend();
   }

@@ -8,7 +8,12 @@ import * as fs from "fs-extra";
 import { toLower } from "lodash";
 
 export class CICDImpl {
-  public async addCICDWorkflows(context: Context, projectPath: string, template: string, envName: string): Promise<FxResult> {
+  public async addCICDWorkflows(
+    context: Context,
+    projectPath: string,
+    template: string,
+    envName: string
+  ): Promise<FxResult> {
     Logger.info("Calling addCICDWorkflows.");
     const githubWorkflowsPath = path.join(projectPath, ".github", "workflows");
     await fs.ensureDir(githubWorkflowsPath);
@@ -21,7 +26,10 @@ export class CICDImpl {
       AzureOrSPFx = "SPFx";
     }
 
-    await fs.writeFile(path.join(githubWorkflowsPath, "README.md"), `template: ${template}, AzureOrSPFx: ${AzureOrSPFx}`);
+    await fs.writeFile(
+      path.join(githubWorkflowsPath, "README.md"),
+      `template: ${template}, AzureOrSPFx: ${AzureOrSPFx}`
+    );
     const ymlPath = path.join(githubWorkflowsPath, `${template}.${envName}.yml`);
     // await fs.writeFile(cdYMLPath, `AzureOrSPFx: ${AzureOrSPFx}, template: ${template}`);
     const ymlsRoot = path.join("..", "cicd");
@@ -34,7 +42,22 @@ export class CICDImpl {
       sourceYmlPath = path.join(sourceYmlPath, `${toLower(AzureOrSPFx)}_${template}.yml`);
     }
 
-    const rawContent = await fs.readFile(sourceYmlPath, "utf-8");
+    let rawContent = await fs.readFile(sourceYmlPath, "utf-8");
+    rawContent = rawContent.replace("{{env_name}}", envName);
+    if (AzureOrSPFx == "Azure") {
+      rawContent = rawContent.replace(
+        "{{ut_script}}",
+        'echo "Set up any unit test framework you prefer (for example, mocha or jest) and update the commands accordingly."'
+      );
+    } else {
+      rawContent = rawContent.replace("{{ut_script}}", "cd SPFx; npm run test; cd -");
+    }
+
+    if (AzureOrSPFx == "Azure") {
+      rawContent = rawContent.replace("{{build_script}}", "cd tabs; npm run build; cd -");
+    } else {
+      rawContent = rawContent.replace("{{build_script}}", "cd SPFx; npm run build; cd -");
+    }
     await fs.writeFile(ymlPath, rawContent);
     return ResultFactory.Success();
   }

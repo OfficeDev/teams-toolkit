@@ -20,6 +20,7 @@ import {
   DepsCheckerError,
   DepsManager,
   DepsType,
+  EmptyLogger,
   FolderName,
   installExtension,
   LocalEnvManager,
@@ -47,7 +48,7 @@ import {
 } from "../telemetry/extTelemetryEvents";
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
-import { doctorLogger } from "./depsChecker/doctorLogger";
+import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { doctorConstant } from "./depsChecker/doctorConstant";
 import { runTask } from "./teamsfxTaskHandler";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
@@ -82,7 +83,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     VsCodeLogInstance.outputChannel.appendLine("");
 
     // deps
-    const depsManager = new DepsManager(doctorLogger, vscodeTelemetry);
+    const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
     const depsResults = await checkDependencies(localEnvManager, depsManager, projectSettings);
     checkResults.push(...depsResults);
 
@@ -247,7 +248,7 @@ async function resolveBackendExtension(
     if (ProjectSettingsHelper.includeBackend(projectSettings)) {
       const backendRoot = path.join(ext.workspaceUri.fsPath, FolderName.Function);
       const dotnet = (await depsManager.getStatus([DepsType.Dotnet]))[0];
-      await installExtension(backendRoot, dotnet.command, doctorLogger);
+      await installExtension(backendRoot, dotnet.command, new EmptyLogger());
     }
   } catch (err: any) {
     result = false;

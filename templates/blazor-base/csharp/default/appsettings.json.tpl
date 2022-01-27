@@ -6,9 +6,7 @@
       "Microsoft.Hosting.Lifetime": "Information"
     }
   },
-  "AllowedHosts": "*"
-{{#IS_TAB}}
-  ,
+  "AllowedHosts": "*"{{#IS_TAB}},
   "CLIENT_ID": "$clientId$",
   "CLIENT_SECRET": "$client-secret$",
   "IDENTIFIER_URI": "$identifierUri$",
@@ -22,9 +20,7 @@
       "SimpleAuthEndpoint": "$appEndPoint$",
       "InitiateLoginEndpoint": "$appEndPoint$auth-start.html"
     }
-  }
-{{/IS_TAB}}{{#IS_BOT}}
-  ,
+  }{{/IS_TAB}}{{#IS_BOT}},
   "BOT_ID": "$botId$",
   "BOT_PASSWORD": "$bot-password$"
 {{/IS_BOT}}

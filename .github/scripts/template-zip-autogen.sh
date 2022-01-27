@@ -1,8 +1,6 @@
 #!/usr/bin/env bash
 set -x
 
-
-TEMPLATE_FILE_PREFIX=./templates/mustache-templates
 TEMPLATE_TEAMSBOT_FILE_PREFIX=./templates/mustache-templates/teamsBot
 LANGUAGE_LIST=(js ts csharp)
 
@@ -51,26 +49,6 @@ for LANGUAGE in ${LANGUAGE_LIST[@]}; do
         fi
         if [ ${SCOPE} == "bot-msgext" ] && [ ${LANGUAGE} != "csharp" ]; then
             IS_ME=true IS_BOT=true mo ${TEMPLATE_TEAMSBOT_FILE_PREFIX}.${LANGUAGE}.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/teamsBot.${LANGUAGE}
-        fi
-
-        # Generate code from Mustache templates for csharp
-        if [ ${SCOPE} == "blazor-base" ] && [ ${SCENARIO} = "tab" ]; then           
-            IS_TAB=true mo ${TEMPLATE_FILE_PREFIX}/appsettings.Development.json.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/appsettings.Development.json
-            IS_TAB=true mo ${TEMPLATE_FILE_PREFIX}/appsettings.json.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/appsettings.json
-            IS_TAB=true mo ${TEMPLATE_FILE_PREFIX}/BlazorAppServer.csproj.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/BlazorAppServer.csproj
-            IS_TAB=true placeholder={{BlazorAppServer}} mo ${TEMPLATE_FILE_PREFIX}/Program.cs.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/Program.cs.tpl
-        fi
-        if [ ${SCOPE} == "blazor-base" ] && [ ${SCENARIO} = "bot" ]; then
-            IS_BOT=true mo ${TEMPLATE_FILE_PREFIX}/appsettings.Development.json.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/appsettings.Development.json
-            IS_BOT=true mo ${TEMPLATE_FILE_PREFIX}/appsettings.json.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/appsettings.json
-            IS_BOT=true mo ${TEMPLATE_FILE_PREFIX}/BlazorAppServer.csproj.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/BlazorAppServer.csproj
-            IS_BOT=true placeholder={{BlazorAppServer}} mo ${TEMPLATE_FILE_PREFIX}/Program.cs.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/Program.cs.tpl
-        fi
-        if [ ${SCOPE} == "blazor-base" ] && [ ${SCENARIO} = "tabbot" ]; then
-            IS_TAB=true IS_BOT=true mo ${TEMPLATE_FILE_PREFIX}/appsettings.Development.json.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/appsettings.Development.json
-            IS_TAB=true IS_BOT=true mo ${TEMPLATE_FILE_PREFIX}/appsettings.json.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/appsettings.json
-            IS_TAB=true IS_BOT=true mo ${TEMPLATE_FILE_PREFIX}/BlazorAppServer.csproj.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/BlazorAppServer.csproj
-            IS_TAB=true IS_BOT=true placeholder={{BlazorAppServer}} mo ${TEMPLATE_FILE_PREFIX}/Program.cs.mustache > ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}/Program.cs.tpl
         fi
 
         cd ./templates/${SCOPE}/${LANGUAGE}/${SCENARIO}

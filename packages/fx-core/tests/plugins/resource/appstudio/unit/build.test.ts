@@ -22,7 +22,7 @@ import AdmZip from "adm-zip";
 import { newEnvInfo } from "../../../../../src";
 import { LocalCrypto } from "../../../../../src/core/crypto";
 import { getAzureProjectRoot } from "../helper";
-import { v4 as uuid, v4 } from "uuid";
+import { v4 as uuid } from "uuid";
 import {
   LocalSettingsAuthKeys,
   LocalSettingsBotKeys,
@@ -90,11 +90,11 @@ describe("Build Teams Package", () => {
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
       tabEndpoint: "https://tabEndpoint",
       tabDomain: "tabDomain",
-      aadId: v4(),
+      aadId: uuid(),
       botDomain: "botDomain",
-      botId: v4(),
+      botId: uuid(),
       webApplicationInfoResource: "webApplicationInfoResource",
-      teamsAppId: v4(),
+      teamsAppId: uuid(),
     });
     sandbox.stub(fs, "move").resolves();
 
@@ -133,11 +133,11 @@ describe("Build Teams Package", () => {
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
       tabEndpoint: "https://tabEndpoint",
       tabDomain: "tabDomain",
-      aadId: v4(),
+      aadId: uuid(),
       botDomain: "botDomain",
-      botId: v4(),
+      botId: uuid(),
       webApplicationInfoResource: "webApplicationInfoResource",
-      teamsAppId: v4(),
+      teamsAppId: uuid(),
     });
     sandbox.stub(fs, "move").resolves();
 

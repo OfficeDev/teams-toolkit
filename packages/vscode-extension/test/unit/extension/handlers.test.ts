@@ -14,6 +14,7 @@ import {
   Void,
   Result,
   FxError,
+  TelemetryEvent,
 } from "@microsoft/teamsfx-api";
 import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
@@ -29,10 +30,11 @@ import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
 import { ext } from "../../../src/extensionVariables";
 import { Uri } from "vscode";
 import * as envTree from "../../../src/envTree";
+import * as extTelemetryEvents from "../../../src/telemetry/extTelemetryEvents";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
-    chai.expect(handlers.getWorkspacePath()).equals("/");
+    chai.expect(handlers.getWorkspacePath()).equals(undefined);
   });
 
   suite("activate()", function () {
@@ -69,17 +71,30 @@ suite("handlers", () => {
     });
 
     test("createNewProjectHandler()", async () => {
+      const clock = sinon.useFakeTimers();
+
       sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryEventFunc = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
-      sinon.stub(ExtTelemetry, "dispose");
+      const disposeFunc = sinon.stub(ExtTelemetry, "dispose");
       const createProject = sinon.spy(handlers.core, "createProject");
-      sinon.stub(vscode.commands, "executeCommand");
+      const executeCommandFunc = sinon.stub(vscode.commands, "executeCommand");
 
       await handlers.createNewProjectHandler();
 
+      chai.assert.isTrue(
+        sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProjectStart)
+      );
+      chai.assert.isTrue(
+        sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProject)
+      );
+      sinon.assert.calledOnce(disposeFunc);
       sinon.assert.calledOnce(createProject);
+      chai.assert.isFalse(executeCommandFunc.calledOnceWith("vscode.openFolder"));
+      clock.tick(3000);
+      chai.assert.isTrue(executeCommandFunc.calledOnceWith("vscode.openFolder"));
       sinon.restore();
+      clock.restore;
     });
 
     test("provisionHandler()", async () => {
@@ -491,7 +506,7 @@ suite("handlers", () => {
       await handlers.editManifestTemplate(args);
       chai.assert.isTrue(
         openTextDocument.calledOnceWith(
-          "//templates/appPackage/manifest.local.template.json" as any
+          "undefined/templates/appPackage/manifest.local.template.json" as any
         )
       );
     });
@@ -510,7 +525,7 @@ suite("handlers", () => {
       await handlers.editManifestTemplate(args);
       chai.assert.isTrue(
         openTextDocument.calledOnceWith(
-          "//templates/appPackage/manifest.remote.template.json" as any
+          "undefined/templates/appPackage/manifest.remote.template.json" as any
         )
       );
     });

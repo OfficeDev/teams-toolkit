@@ -104,6 +104,7 @@ import { aadPlugin, appStudioPlugin, spfxPlugin, fehostPlugin } from "../../cons
 import { AadAppForTeamsPlugin } from "../../../src";
 import { assert } from "sinon";
 import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
+import * as manifestTemplate from "../../../src/plugins/resource/appstudio/manifestTemplate";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -479,9 +480,8 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "validateManifest").resolves([]);
-    mocker
-      .stub(AppStudioPluginImpl.prototype, "reloadManifest" as any)
-      .returns(ok(new TeamsAppManifest()));
+    mocker.stub(manifestTemplate, "loadManifest").resolves(ok(new TeamsAppManifest()));
+    mocker.stub(AppStudioPluginImpl.prototype, "buildTeamsAppPackage").resolves("");
   });
 
   afterEach(() => {

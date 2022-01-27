@@ -15,12 +15,17 @@ import {
 } from "@microsoft/teamsfx-api";
 import {
   checkNpmDependencies,
+  defaultHelpLink,
+  DependencyStatus,
   DepsCheckerError,
   DepsManager,
   DepsType,
+  EmptyLogger,
   FolderName,
   installExtension,
   LocalEnvManager,
+  NodeNotFoundError,
+  NodeNotSupportedError,
   npmInstallCommand,
   ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
@@ -44,11 +49,13 @@ import {
 import { VSCodeDepsChecker } from "./depsChecker/vscodeChecker";
 import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { vscodeLogger } from "./depsChecker/vscodeLogger";
+import { doctorConstant } from "./depsChecker/doctorConstant";
 import { runTask } from "./teamsfxTaskHandler";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
 
-interface CheckFailure {
+interface CheckResult {
   checker: string;
+  result: boolean;
   error?: FxError;
 }
 
@@ -61,7 +68,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     }
 
     // [deps] => [backend extension, npm install, account] => [certificate] => [port]
-    const failures: CheckFailure[] = [];
+    const checkResults: CheckResult[] = [];
     const localEnvManager = new LocalEnvManager(
       VsCodeLogInstance,
       ExtTelemetry.reporter,
@@ -72,10 +79,13 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     // Get project settings
     const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
 
+    VsCodeLogInstance.info("LocalDebug Prerequisites Check");
+    VsCodeLogInstance.outputChannel.appendLine("");
+
     // deps
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
-    const depsFailures = await checkDependencies(localEnvManager, depsManager, projectSettings);
-    failures.push(...depsFailures);
+    const depsResults = await checkDependencies(localEnvManager, depsManager, projectSettings);
+    checkResults.push(...depsResults);
 
     const checkPromises = [];
 
@@ -106,17 +116,17 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     // login checker
     checkPromises.push(checkM365Account());
 
-    const checkResults = await Promise.all(checkPromises);
-    for (const r of checkResults) {
+    const promiseResults = await Promise.all(checkPromises);
+    for (const r of promiseResults) {
       if (r !== undefined) {
-        failures.push(r);
+        checkResults.push(r);
       }
     }
 
     // local cert
     const localCertFailure = await resolveLocalCertificate(localEnvManager);
     if (localCertFailure) {
-      failures.push(localCertFailure);
+      checkResults.push(localCertFailure);
     }
 
     // check port
@@ -131,15 +141,16 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       } else {
         message = util.format(StringResources.vsc.localDebug.portAlreadyInUse, portsInUse[0]);
       }
-      failures.push({
+      checkResults.push({
         checker: "Ports",
+        result: false,
         error: new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource),
       });
     }
 
-    // handle failures
-    if (failures.length > 0) {
-      const failureMessage = await handleFailures(failures);
+    // handle checkResults
+    if (checkResults.length > 0) {
+      const failureMessage = await handleCheckResults(checkResults);
       throw returnUserError(
         new Error(`Failed to validate prerequisites (${failureMessage})`),
         ExtensionSource,
@@ -168,53 +179,59 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
   return ok(null);
 }
 
-async function checkM365Account(): Promise<CheckFailure | undefined> {
+async function checkM365Account(): Promise<CheckResult> {
+  let result = true;
+  let error = undefined;
   try {
     const token = await tools.tokenProvider.appStudioToken.getAccessToken(true);
     if (token === undefined) {
       // corner case but need to handle
-      return {
-        checker: "M365 Account",
-        error: returnSystemError(
-          new Error("No M365 account login"),
-          ExtensionSource,
-          ExtensionErrors.PrerequisitesValidationError
-        ),
-      };
+      result = false;
+      error = returnSystemError(
+        new Error("No M365 account login"),
+        ExtensionSource,
+        ExtensionErrors.PrerequisitesValidationError
+      );
     }
-
-    return undefined;
-  } catch (error: any) {
-    return {
-      checker: "M365 Account",
-      error: assembleError(error),
-    };
+  } catch (err: any) {
+    result = false;
+    if (!error) {
+      error = assembleError(err);
+    }
   }
+  return {
+    checker: "M365 Account",
+    result: result,
+    error: error,
+  };
 }
 
 async function checkDependencies(
   localEnvManager: LocalEnvManager,
   depsManager: DepsManager,
   projectSettings: ProjectSettings
-): Promise<CheckFailure[]> {
+): Promise<CheckResult[]> {
   try {
     const deps = localEnvManager.getActiveDependencies(projectSettings);
     const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(deps);
-    const depsStatus = await depsManager.ensureDependencies(enabledDeps, { fastFail: false });
-    const failures: CheckFailure[] = [];
+    const depsStatus = await depsManager.ensureDependencies(enabledDeps, {
+      fastFail: false,
+      doctor: true,
+    });
+    const results: CheckResult[] = [];
     for (const dep of depsStatus) {
-      if (!dep.isInstalled && dep.error) {
-        failures.push({
-          checker: dep.name,
-          error: handleDepsCheckerError(dep.error),
-        });
-      }
+      results.push({
+        checker: dep.name,
+        result: dep.isInstalled,
+        error: handleDepsCheckerError(dep.error, dep),
+      });
     }
-    return failures;
+    return results;
   } catch (error: any) {
     return [
       {
         checker: "Dependencies",
+        result: false,
         error: handleDepsCheckerError(error),
       },
     ];
@@ -224,41 +241,54 @@ async function checkDependencies(
 async function resolveBackendExtension(
   depsManager: DepsManager,
   projectSettings: ProjectSettings
-): Promise<CheckFailure | undefined> {
+): Promise<CheckResult> {
+  let result = true;
+  let error = undefined;
   try {
     if (ProjectSettingsHelper.includeBackend(projectSettings)) {
       const backendRoot = path.join(ext.workspaceUri.fsPath, FolderName.Function);
       const dotnet = (await depsManager.getStatus([DepsType.Dotnet]))[0];
-      // TODO: check before install backend extension
-      await installExtension(backendRoot, dotnet.command, vscodeLogger);
+      await installExtension(backendRoot, dotnet.command, new EmptyLogger());
     }
-    return undefined;
-  } catch (error: any) {
-    return {
-      checker: "Backend Extension",
-      error: handleDepsCheckerError(error),
-    };
+  } catch (err: any) {
+    result = false;
+    error = handleDepsCheckerError(err);
   }
+  return {
+    checker: "Backend Extension",
+    result: result,
+    error: error,
+  };
 }
 
-async function resolveLocalCertificate(
-  localEnvManager: LocalEnvManager
-): Promise<CheckFailure | undefined> {
+async function resolveLocalCertificate(localEnvManager: LocalEnvManager): Promise<CheckResult> {
+  let result = true;
+  let error = undefined;
   try {
     const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
 
-    // TODO: Return CheckFailure when isTrusted === false
+    // TODO: Return CheckResult when isTrusted === false
     await localEnvManager.resolveLocalCertificate(trustDevCert);
-    return undefined;
-  } catch (error: any) {
-    return {
-      checker: "Local Certificate",
-      error: assembleError(error),
-    };
+  } catch (err: any) {
+    result = false;
+    error = assembleError(err);
   }
+  return {
+    checker: "Local Certificate",
+    result: result,
+    error: error,
+  };
 }
 
-function handleDepsCheckerError(error: any): FxError {
+function handleDepsCheckerError(error: any, dep?: DependencyStatus): FxError {
+  if (dep) {
+    if (error instanceof NodeNotFoundError) {
+      handleNodeNotFoundError(error);
+    }
+    if (error instanceof NodeNotSupportedError) {
+      handleNodeNotSupportedError(error, dep);
+    }
+  }
   return error instanceof DepsCheckerError
     ? returnUserError(
         error,
@@ -269,10 +299,19 @@ function handleDepsCheckerError(error: any): FxError {
     : assembleError(error);
 }
 
-async function checkNpmInstall(
-  component: string,
-  folder: string
-): Promise<CheckFailure | undefined> {
+function handleNodeNotFoundError(error: NodeNotFoundError) {
+  error.message = doctorConstant.NodeNotFound;
+}
+
+function handleNodeNotSupportedError(error: any, dep: DependencyStatus) {
+  const supportedVersions = dep.details.supportedVersions.map((v) => "v" + v).join(" ,");
+  error.message = doctorConstant.NodeNotSupported.split("@CurrentVersion")
+    .join(dep.details.installVersion)
+    .split("@SupportedVersions")
+    .join(supportedVersions);
+}
+
+async function checkNpmInstall(component: string, folder: string): Promise<CheckResult> {
   let installed = false;
   try {
     installed = await checkNpmDependencies(folder);
@@ -281,6 +320,8 @@ async function checkNpmInstall(
     await VsCodeLogInstance.warning(`Error when checking npm dependencies: ${error}`);
   }
 
+  let result = true;
+  let error = undefined;
   try {
     if (!installed) {
       const exitCode = await runTask(
@@ -298,36 +339,73 @@ async function checkNpmInstall(
 
       // check npm dependencies again if exit code not zero
       if (exitCode !== 0 && !(await checkNpmDependencies(folder))) {
-        return {
-          checker: `Npm Install(${component})`,
-          error: new UserError(
-            "NpmInstallFailure",
-            `Failed to npm install for ${component}`,
-            ExtensionSource
-          ),
-        };
+        result = false;
+        error = new UserError(
+          "NpmInstallFailure",
+          `Failed to npm install for ${component}`,
+          ExtensionSource
+        );
       }
     }
-
-    return undefined;
-  } catch (error: any) {
+  } catch (err: any) {
     // treat unexpected error as installed
-    await VsCodeLogInstance.warning(`Error when checking npm install: ${error}`);
-    return undefined;
+    error = err;
   }
+  return {
+    checker: `Npm Install(${component})`,
+    result: result,
+    error: error,
+  };
 }
 
-async function handleFailures(failures: CheckFailure[]): Promise<string> {
-  for (const failure of failures) {
-    await VsCodeLogInstance.error(`${failure.checker} Checker Error: ${failure.error?.message}`);
+async function handleCheckResults(results: CheckResult[]): Promise<void> {
+  let shouldStop = false;
+  const output = VsCodeLogInstance.outputChannel;
+  const successes = results.filter((a) => a.result);
+  const failures = results.filter((a) => !a.result);
+
+  if (failures.length > 0) {
+    shouldStop = true;
+  }
+  if (successes.length > 0) {
+    output.appendLine("");
   }
 
-  const checkers = failures.map((f) => f.checker).join(", ");
-  const errorMessage = util.format(
-    StringResources.vsc.localDebug.prerequisitesCheckFailure,
-    checkers
-  );
+  for (const result of successes) {
+    output.appendLine(`${doctorConstant.Tick} ${result.checker} `);
+  }
 
-  VS_CODE_UI.showMessage("error", errorMessage, false, "OK");
-  return checkers;
+  for (const result of failures) {
+    output.appendLine("");
+    output.appendLine(`${doctorConstant.Cross} ${result.checker}`);
+
+    if (result.error) {
+      output.appendLine(`${doctorConstant.WhiteSpace}${result.error?.message}`);
+      if (result.error instanceof UserError) {
+        const userError = result.error as UserError;
+        if (userError.helpLink) {
+          output.appendLine(
+            `${doctorConstant.WhiteSpace}${doctorConstant.HelpLink.split("@Link").join(
+              userError.helpLink
+            )}`
+          );
+        }
+      }
+    }
+  }
+  output.appendLine("");
+  output.appendLine(`${doctorConstant.LearnMore.split("@Link").join(defaultHelpLink)}`);
+
+  const checkers = results
+    .filter((r) => !r.result)
+    .map((r) => r.checker)
+    .join(", ");
+
+  if (shouldStop) {
+    throw returnUserError(
+      new Error(`Failed to validate prerequisites (${checkers})`),
+      ExtensionSource,
+      ExtensionErrors.PrerequisitesValidationError
+    );
+  }
 }

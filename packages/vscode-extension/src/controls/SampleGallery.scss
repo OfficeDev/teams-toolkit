@@ -1,5 +1,5 @@
 .sample-gallery {
-  margin: 100px 20px;
+  margin: 100px 100px;
 
   .section {
     display: flex;
@@ -9,7 +9,6 @@
   #title {
     margin-left: auto;
     margin-right: auto;
-    width: 874px;
   }
 
   .logo {
@@ -43,8 +42,25 @@
   }
 
   .sample-stack {
-    width: 874px;
+    display: grid;
+    max-width: 1164px;
     margin: 0 auto;
+    grid-template-columns: repeat(12, 1fr);
+    grid-template-rows: auto;
+    grid-gap: 20px;
+  }
+
+  .box1, .box5, .box9, .box13, .box17 {
+    grid-column: 1/4;
+  }
+  .box2, .box6, .box10, .box14 {
+    grid-column: 4/7;
+  }
+  .box3, .box7, .box11, .box15 {
+    grid-column: 7/10;
+  }
+  .box4, .box8, .box12, .box16 {
+    grid-column: 10/13;
   }
 
   .sample-app-card {
@@ -144,10 +160,11 @@
   .sample-card {
     background-color: var(--vscode-editorWidget-background);
     border-radius: 2px;
-    width: 203px;
-    height: 285px;
+    max-width: 276px;
+    height: auto;
     position: relative;
     cursor: pointer;
+    padding-bottom: 8px;
 
     .section {
       display: flex;
@@ -293,18 +310,50 @@ body.vscode-dark {
   }
 }
 
-/* On screens that are 914px or less, change to 2 column layout */
-@media screen and (max-width: 914px) {
+
+@media only screen and (max-width: 1024px) {
+  .sample-gallery{
+    .box1, .box4, .box7, .box10, .box13, .box14, .box17 {
+      grid-column: 1/5;
+    }
+    .box2, .box5, .box8, .box11, .box14, .box17 {
+      grid-column: 5/9;
+    }
+
+    .box3, .box6, .box9, .box12, .box15 {
+      grid-column: 9/13;
+    }
+  }
+}
+
+@media only screen and (max-width: 813px){
+  .sample-gallery{
+    .box1, .box3, .box5, .box7, .box9, .box11, .box13, .box15 {
+      grid-column: 1/7;
+    }
+    .box2, .box4,.box6,.box8, .box10,.box12, .box14 {
+      grid-column: 7/13;
+    }
+  }
+}
+
+@media only screen and (max-width: 640px){
+  .sample-gallery{
+    margin: 100px 32px;
+  }
+}
+
+@media only screen and (max-width: 480px) {
   .sample-gallery {
-    margin: 52px 0;
+    min-width: 320px;
 
-    #title {
-      width: 874px;
+  .box1, .box2, .box3, .box4, .box5, .box6, .box7, .box8, .box9, .box10, .box11, .box12, .box13, .box14, .box15 {
+      grid-column: 1/13;
     }
-
-    .sample-stack {
-      width: 576px;
-      min-width: 576px;
-    }
+  }
+  .sample-card {
+    justify-self: center;
+    grid-column: 1/5;
+    width: 100%;
   }
 }

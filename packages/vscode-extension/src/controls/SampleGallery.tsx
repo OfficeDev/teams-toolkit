@@ -76,22 +76,13 @@ export default class SampleGallery extends React.Component<any, any> {
                 </h3>
               </div>
             </div>
-            <Stack
-              className="sample-stack"
-              horizontal
-              verticalFill
-              wrap
-              horizontalAlign={"start"}
-              verticalAlign={"start"}
-              styles={{ root: { overflow: "visible" } }}
-              tokens={{ childrenGap: 20 }}
-            >
+            <div className="sample-stack">
               <SampleAppCardList
                 samples={this.state.samples}
                 baseUrl={this.state.baseUrl}
                 highlightSample={this.highlightSample}
               />
-            </Stack>
+            </div>
           </div>
         )}
         {this.state.highlightSample != "" && (
@@ -143,9 +134,9 @@ class SampleAppCardList extends React.Component<SampleListProps, any> {
     const samples = this.props.samples as Array<SampleInfo>;
     if (samples) {
       const baseUrl = this.props.baseUrl;
-      return samples.map((sample) => {
+      return samples.map((sample, index) => {
         return (
-          <SampleAppCard
+          <SampleCard
             baseUrl={baseUrl}
             image={imageMapping[sample.id]}
             tags={sample.tags}
@@ -156,6 +147,7 @@ class SampleAppCardList extends React.Component<SampleListProps, any> {
             sampleAppFolder={sample.id}
             sampleAppUrl={sample.link}
             suggested={sample.suggested}
+            order={index + 1}
             highlightSample={this.props.highlightSample}
           />
         );
@@ -305,7 +297,7 @@ class SampleCard extends React.Component<SampleCardProps, any> {
   render() {
     return (
       <div
-        className="sample-card"
+        className={`sample-card box${this.props.order}`}
         tabIndex={0}
         onClick={() => {
           this.props.highlightSample(this.props.sampleAppFolder);
@@ -328,7 +320,7 @@ class SampleCard extends React.Component<SampleCardProps, any> {
         >
           sample app card
         </label>
-        <Image src={this.props.image} width={203} height={117} />
+        <Image src={this.props.image} />
         <label
           style={{
             position: "absolute",

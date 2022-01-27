@@ -71,8 +71,7 @@ export class DotnetScaffold {
 }
 
 export function renderTemplateName(name: string, data: Buffer, appName: string) {
-  name.replace(/\.tpl/, "");
-  return name.replace(/BlazorAppServer/, appName);
+  return name.replace(/BlazorAppServer/, appName).replace(/\.tpl/, "");
 }
 
 export function genTemplateNameRenderReplaceFn(appName: string) {

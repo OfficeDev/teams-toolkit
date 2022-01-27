@@ -253,35 +253,40 @@ export async function checkAzureSubscription(
   envInfo: v3.EnvInfoV3,
   azureAccountProvider: AzureAccountProvider
 ): Promise<Result<Void, FxError>> {
-  const state = envInfo.state;
-  const subscriptionId = envInfo.config.azure?.subscriptionId || state.solution.subscriptionId;
-  if (!subscriptionId) {
-    const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
-    if (askSubRes) return ok(askSubRes);
-    return err(
-      new UserError(
-        SolutionError.SubscriptionNotFound,
-        "Failed to select subscription",
-        SolutionSource
-      )
-    );
-  }
-
-  let subscriptionName = state.solution.subscriptionName;
-  if (subscriptionName.length > 0) {
-    subscriptionName = `(${subscriptionName})`;
+  const subscriptionIdInConfig =
+    envInfo.config.azure?.subscriptionId || (envInfo.state.solution.subscriptionId as string);
+  if (!subscriptionIdInConfig) {
+    const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
+    if (subscriptionInAccount) {
+      envInfo.state.solution.subscriptionId = subscriptionInAccount.subscriptionId;
+      envInfo.state.solution.subscriptionName = subscriptionInAccount.subscriptionName;
+      envInfo.state.solution.tenantId = subscriptionInAccount.tenantId;
+      ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+      return ok(Void);
+    } else {
+      return err(
+        new UserError(
+          SolutionError.SubscriptionNotFound,
+          "Failed to select subscription",
+          SolutionSource
+        )
+      );
+    }
   }
   // make sure the user is logged in
   await azureAccountProvider.getAccountCredentialAsync(true);
-
   // verify valid subscription (permission)
   const subscriptions = await azureAccountProvider.listSubscriptions();
-  const targetSubInfo = subscriptions.find((item) => item.subscriptionId === subscriptionId);
+  const targetSubInfo = subscriptions.find(
+    (item) => item.subscriptionId === subscriptionIdInConfig
+  );
   if (!targetSubInfo) {
     return err(
       new UserError(
         SolutionError.SubscriptionNotFound,
-        `The subscription '${subscriptionId}'${subscriptionName} for '${
+        `The subscription '${subscriptionIdInConfig}'(${
+          envInfo.state.solution.subscriptionName
+        }) for '${
           envInfo.envName
         }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
@@ -291,10 +296,10 @@ export async function checkAzureSubscription(
       )
     );
   }
-  state.solution.subscriptionId = targetSubInfo.subscriptionId;
-  state.solution.subscriptionName = targetSubInfo.subscriptionName;
-  state.solution.tenantId = targetSubInfo.tenantId;
-  ctx.logProvider.info(`[${PluginDisplayName.Solution}] check subscriptionId pass!`);
+  envInfo.state.solution.subscriptionId = targetSubInfo.subscriptionId;
+  envInfo.state.solution.subscriptionName = targetSubInfo.subscriptionName;
+  envInfo.state.solution.tenantId = targetSubInfo.tenantId;
+  ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
   return ok(Void);
 }
 

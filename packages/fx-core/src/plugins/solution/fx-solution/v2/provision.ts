@@ -139,7 +139,7 @@ export async function provisionResource(
 
   const pureExistingApp = isPureExistingApp(ctx.projectSetting);
 
-  envInfo.state[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED] = false;
+  envInfo.state[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED] = false;
   const solutionInputs = extractSolutionInputs(envInfo.state[GLOBAL_CONFIG]);
   // for minimized teamsfx project, there is only one plugin (app studio)
   const plugins = pureExistingApp

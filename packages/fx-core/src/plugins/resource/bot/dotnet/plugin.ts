@@ -53,7 +53,7 @@ export class DotnetBotImpl extends TeamsBotImpl {
 
   // Overwrite below lifecycle for dotnet scenario
   public async updateArmTemplates(ctx: PluginContext): Promise<FxResult> {
-    return ResultFactory.Success();
+    return ResultFactory.Success({} as ArmTemplateResult);
   }
 
   public async scaffold(context: PluginContext): Promise<FxResult> {

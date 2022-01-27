@@ -66,7 +66,7 @@ export class DotnetPluginImpl implements PluginImpl {
 
     config.webAppName = ctx.config.get(ConfigInfo.webAppName) as string;
     config.appServicePlanName = ctx.config.get(ConfigInfo.appServicePlanName) as string;
-    config.projectFilePath = ctx.config.get(ConfigInfo.projectFilePath) as string;
+    config.projectFilePath = ctx.projectSettings?.pluginSettings?.projectFilePath as string;
 
     // Resource id priors to other configs
     const webAppResourceId = ctx.config.get(ConfigKey.webAppResourceId) as string;

@@ -28,10 +28,11 @@ import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
 import { ext } from "../../../src/extensionVariables";
 import { Uri } from "vscode";
+import * as envTree from "../../../src/envTree";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
-    chai.expect(handlers.getWorkspacePath()).equals(undefined);
+    chai.expect(handlers.getWorkspacePath()).equals("/");
   });
 
   suite("activate()", function () {
@@ -43,6 +44,7 @@ suite("handlers", () => {
       sandbox.stub(AppStudioTokenInstance, "setStatusChangeMap");
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
       sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
+      sandbox.stub(ExtTelemetry, "dispose");
     });
 
     this.afterAll(() => {
@@ -70,6 +72,7 @@ suite("handlers", () => {
       sinon.stub(handlers, "core").value(new MockCore());
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      sinon.stub(ExtTelemetry, "dispose");
       const createProject = sinon.spy(handlers.core, "createProject");
       sinon.stub(vscode.commands, "executeCommand");
 
@@ -84,6 +87,7 @@ suite("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const provisionResources = sinon.spy(handlers.core, "provisionResources");
+      sinon.stub(envTree, "registerEnvTreeHandler");
 
       await handlers.provisionHandler();
 
@@ -285,6 +289,7 @@ suite("handlers", () => {
   test("signOutM365", async () => {
     const signOut = sinon.stub(AppStudioTokenInstance, "signout");
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    sinon.stub(envTree, "registerEnvTreeHandler");
 
     await handlers.signOutM365(false);
 
@@ -486,7 +491,7 @@ suite("handlers", () => {
       await handlers.editManifestTemplate(args);
       chai.assert.isTrue(
         openTextDocument.calledOnceWith(
-          "undefined/templates/appPackage/manifest.local.template.json" as any
+          "//templates/appPackage/manifest.local.template.json" as any
         )
       );
     });
@@ -505,7 +510,7 @@ suite("handlers", () => {
       await handlers.editManifestTemplate(args);
       chai.assert.isTrue(
         openTextDocument.calledOnceWith(
-          "undefined/templates/appPackage/manifest.remote.template.json" as any
+          "//templates/appPackage/manifest.remote.template.json" as any
         )
       );
     });

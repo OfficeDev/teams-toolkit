@@ -44,6 +44,7 @@ import {
 import CLIUIInstance from "../userInteraction";
 import CLILogProvider from "../commonlib/log";
 import HelpParamGenerator from "../helpParamGenerator";
+import { automaticNpmInstallHandler } from "./preview/npmInstallHandler";
 
 export default class New extends YargsCommand {
   public readonly commandHead = `new`;
@@ -82,6 +83,8 @@ export default class New extends YargsCommand {
         CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CreateProject, result.error);
         return err(result.error);
       }
+
+      await automaticNpmInstallHandler(result.value, false, false, false);
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.CreateProject, {

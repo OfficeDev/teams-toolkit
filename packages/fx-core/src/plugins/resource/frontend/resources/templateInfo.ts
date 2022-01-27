@@ -5,14 +5,15 @@ import path from "path";
 import { AzureSolutionSettings, PluginContext } from "@microsoft/teamsfx-api";
 import { DependentPluginInfo, FrontendPathInfo } from "../constants";
 import { InvalidTabLanguageError } from "./errors";
-import { getTemplatesFolder } from "../../../..";
+import { getTemplatesFolder } from "../../../../folder";
 import { templatesVersion } from "../../../../common/template-utils/templates";
 
 export type TemplateVariable = { [key: string]: string };
 
-export class TabLanguage {
-  static readonly JavaScript = "javascript";
-  static readonly TypeScript = "typescript";
+export enum TabLanguage {
+  JavaScript = "javascript",
+  TypeScript = "typescript",
+  CSharp = "csharp",
 }
 
 export class Scenario {

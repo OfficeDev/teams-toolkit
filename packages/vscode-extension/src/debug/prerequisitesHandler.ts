@@ -50,6 +50,7 @@ import { vscodeTelemetry } from "./depsChecker/vscodeTelemetry";
 import { doctorLogger } from "./depsChecker/doctorLogger";
 import { doctorConstant } from "./depsChecker/doctorConstant";
 import { runTask } from "./teamsfxTaskHandler";
+import { vscodeHelper } from "./depsChecker/vscodeHelper";
 
 interface CheckResult {
   checker: string;
@@ -263,9 +264,7 @@ async function resolveLocalCertificate(localEnvManager: LocalEnvManager): Promis
   let result = true;
   let error = undefined;
   try {
-    // TODO: Use new trustDevCert flag
-    const localSettings = await localEnvManager.getLocalSettings(ext.workspaceUri.fsPath);
-    const trustDevCert = (localSettings?.frontend?.trustDevCert as boolean | undefined) ?? true;
+    const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
 
     // TODO: Return CheckResult when isTrusted === false
     await localEnvManager.resolveLocalCertificate(trustDevCert);

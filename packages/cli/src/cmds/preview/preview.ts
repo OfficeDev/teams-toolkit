@@ -49,6 +49,7 @@ import { cliEnvCheckerLogger } from "./depsChecker/cliLogger";
 import { cliEnvCheckerTelemetry } from "./depsChecker/cliTelemetry";
 import { URL } from "url";
 import { CliDepsChecker } from "./depsChecker/cliChecker";
+import { isNgrokCheckerEnabled, isTrustDevCertEnabled } from "./depsChecker/cliUtils";
 
 export default class Preview extends YargsCommand {
   public readonly commandHead = `preview`;
@@ -180,10 +181,16 @@ export default class Preview extends YargsCommand {
     }
     const core = coreResult.value;
 
+    const skipNgrok = !(await isNgrokCheckerEnabled());
+    const trustDevCert = await isTrustDevCertEnabled();
     const inputs: Inputs = {
       projectPath: workspaceFolder,
       platform: Platform.CLI,
       ignoreEnvInfo: true, // local debug does not require environments
+      checkerInfo: {
+        skipNgrok: skipNgrok,
+        trustDevCert: trustDevCert,
+      },
     };
 
     const localEnvManager = new LocalEnvManager(cliLogger, CliTelemetry.getReporter());
@@ -226,9 +233,7 @@ export default class Preview extends YargsCommand {
       );
     }
 
-    // TODO: move skip ngrok to cli options
-    const skipNgrok = (localSettings?.bot?.skipNgrok as boolean) === true;
-    const envCheckerResult = await this.handleDependences(includeBackend, includeBot, skipNgrok);
+    const envCheckerResult = await this.handleDependences(includeBackend, includeBot);
     if (envCheckerResult.isErr()) {
       return err(envCheckerResult.error);
     }
@@ -776,15 +781,13 @@ export default class Preview extends YargsCommand {
 
   private async handleDependences(
     hasBackend: boolean,
-    hasBot: boolean,
-    skipNgrok: boolean
+    hasBot: boolean
   ): Promise<Result<CliDepsChecker, FxError>> {
     const depsChecker = new CliDepsChecker(
       cliEnvCheckerLogger,
       cliEnvCheckerTelemetry,
       hasBackend,
-      hasBot,
-      !skipNgrok
+      hasBot
     );
     let node = DepsType.AzureNode;
     if (hasBackend) {

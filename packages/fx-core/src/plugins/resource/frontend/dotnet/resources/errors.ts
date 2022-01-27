@@ -65,7 +65,7 @@ export class ProjectPathError extends DotnetPluginError {
   }
 }
 
-export class UnknownScaffoldError extends FrontendPluginError {
+export class UnknownScaffoldError extends DotnetPluginError {
   constructor() {
     super(
       ErrorType.System,
@@ -76,7 +76,7 @@ export class UnknownScaffoldError extends FrontendPluginError {
   }
 }
 
-export class TemplateManifestError extends FrontendPluginError {
+export class TemplateManifestError extends DotnetPluginError {
   constructor(msg: string) {
     super(
       ErrorType.User,
@@ -87,7 +87,7 @@ export class TemplateManifestError extends FrontendPluginError {
   }
 }
 
-export class TemplateZipFallbackError extends FrontendPluginError {
+export class TemplateZipFallbackError extends DotnetPluginError {
   constructor() {
     super(
       ErrorType.System,
@@ -98,7 +98,7 @@ export class TemplateZipFallbackError extends FrontendPluginError {
   }
 }
 
-export class UnzipTemplateError extends FrontendPluginError {
+export class UnzipTemplateError extends DotnetPluginError {
   constructor() {
     super(ErrorType.User, "UnzipTemplateError", "Failed to unzip template package.", [
       tips.checkFsPermissions,

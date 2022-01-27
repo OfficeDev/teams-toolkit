@@ -33,7 +33,7 @@ import {
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
 } from "../../../../common/tools";
-import { TemplateInfo, Group, Scenario } from "./resources/templateInfo";
+import { TemplateInfo, Group, TemplateVariable } from "./resources/templateInfo";
 import { Bicep } from "../../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
@@ -101,17 +101,21 @@ export class DotnetPluginImpl implements PluginImpl {
     const selectedCapabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities;
     const includeTab = selectedCapabilities.includes(DotnetSupportCapability.tabCapability);
     const includeBot = selectedCapabilities.includes(DotnetSupportCapability.botCapability);
+    const projectName = ctx.projectSettings!.appName;
+
+    const templateVariable: TemplateVariable = { BlazorAppServer: projectName, };
 
     if (includeTab) {
-      const templateInfo = new TemplateInfo(ctx, Group.Tab, Scenario.Default);
+      templateVariable.IS_TAB = "true";
+      const templateInfo = new TemplateInfo(ctx, Group.Tab, templateVariable);
       await Scaffold.scaffoldFromZipPackage(ctx.root, templateInfo);
     }
     if (includeBot) {
-      const templateInfo = new TemplateInfo(ctx, Group.Bot, Scenario.Default);
+      templateVariable.IS_BOT = "true";
+      const templateInfo = new TemplateInfo(ctx, Group.Bot, templateVariable);
       await Scaffold.scaffoldFromZipPackage(ctx.root, templateInfo);
     }
-    const baseScenrio = (includeTab ? Scenario.Tab : "") + (includeBot ? Scenario.Bot : "")
-    const templateInfo = new TemplateInfo(ctx, Group.Base, baseScenrio);
+    const templateInfo = new TemplateInfo(ctx, Group.Base, templateVariable);
     await Scaffold.scaffoldFromZipPackage(ctx.root, templateInfo);
 
     Logger.info(Messages.EndScaffold(PluginInfo.displayName));

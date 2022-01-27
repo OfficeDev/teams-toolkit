@@ -3,5 +3,10 @@
 *.png
 *.gif
 *.svg
+*.ico
+*.woff
+*.ttf
+*.otf
+*.eot
 packages/fx-core/tests/common/local/localCertificateManager.test.ts
 packages/fx-core/tests/core/samples_v2.zip

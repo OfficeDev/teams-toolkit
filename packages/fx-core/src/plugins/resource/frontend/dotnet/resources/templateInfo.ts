@@ -9,13 +9,6 @@ export class Group {
     static readonly Base = "blazor-base";
 }
 
-export class Scenario {
-    static readonly Default = "default";
-    static readonly Tab = "tab";
-    static readonly Bot = "bot";
-    static readonly TabAndBot = "tabbot";
-}
-
 export class TemplateInfo {
     group: string;
     language: string;
@@ -23,19 +16,15 @@ export class TemplateInfo {
     version: string;
     variables: TemplateVariable;
 
-    constructor(ctx: PluginContext, group: string, scenario: string) {
+    constructor(ctx: PluginContext, group: string, templateVariable: { [key: string]: string }) {
         this.group = group;
         this.version = TemplateInfo.version;
         this.language = TemplateInfo.DonetLanguage;
-
-        const appName = ctx.projectSettings!.appName;
-        this.variables = {
-            BlazorAppServer: appName,
-        };
-
-        this.scenario = scenario;
+        this.variables = templateVariable
+        this.scenario = TemplateInfo.DefaultScenario;
     }
 
     static readonly DonetLanguage = "csharp";
+    static readonly DefaultScenario = "default";
     static readonly version = templatesVersion;
 }

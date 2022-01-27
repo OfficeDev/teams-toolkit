@@ -628,26 +628,11 @@
       {
         "type": "teamsfx",
         "required": [
-          "command",
-          "component"
+          "command"
         ],
         "properties": {
           "command": {
-            "type": "string",
-            "description": "The command to be executed on a teamsfx component.",
-            "enum": [
-              "dev",
-              "watch"
-            ]
-          },
-          "component": {
-            "type": "string",
-            "description": "The teamsfx component.",
-            "enum": [
-              "frontend",
-              "backend",
-              "bot"
-            ]
+            "type": "string"
           }
         }
       }

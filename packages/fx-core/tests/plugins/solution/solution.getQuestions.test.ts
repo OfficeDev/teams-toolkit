@@ -78,7 +78,7 @@ describe("getQuestionsForScaffolding()", async () => {
       hostType: HostTypeOptionAzure.id,
       name: "test",
       version: "1.0",
-      activeResourcePlugins: [],
+      activeResourcePlugins: ["fx-resource-frontend-hosting"],
       capabilities: [],
       azureResources: [],
     },

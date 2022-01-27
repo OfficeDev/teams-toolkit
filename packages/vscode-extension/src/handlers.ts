@@ -16,6 +16,7 @@ import {
 import {
   AppPackageFolderName,
   AppStudioTokenProvider,
+  assembleError,
   AzureSolutionSettings,
   BuildFolderName,
   ConcurrentError,
@@ -924,6 +925,24 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
       }
     }
   }
+}
+
+/**
+ * Get func binary path to be referenced by task definition.
+ * Usage like ${env:PATH}${command:...} so need to include delimiter as well
+ */
+export async function getFuncPathHandler(): Promise<string> {
+  try {
+    const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
+    const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
+    if (funcStatus?.details?.binFolders !== undefined) {
+      return `${path.delimiter}${funcStatus.details.binFolders.join(path.delimiter)}`;
+    }
+  } catch (error: any) {
+    showError(assembleError(error));
+  }
+
+  return "";
 }
 
 /**

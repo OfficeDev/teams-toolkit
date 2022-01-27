@@ -25,27 +25,6 @@ export class ManagementClient {
     return new ManagementClient(ctx, config, client);
   }
 
-  async createAzureSQL(): Promise<void> {
-    const model: SqlManagementModels.Server = {
-      location: this.config.location,
-      administratorLogin: this.config.admin,
-      administratorLoginPassword: this.config.adminPassword,
-    };
-    try {
-      await this.client.servers.createOrUpdate(
-        this.config.resourceGroup,
-        this.config.sqlServer,
-        model
-      );
-    } catch (error) {
-      throw SqlResultFactory.UserError(
-        ErrorMessage.SqlCreateError.name,
-        ErrorMessage.SqlCreateError.message(this.config.sqlEndpoint, error.message),
-        error
-      );
-    }
-  }
-
   async existAzureSQL(): Promise<boolean> {
     try {
       const result = await this.client.servers.checkNameAvailability({
@@ -90,52 +69,6 @@ export class ManagementClient {
     }
   }
 
-  async createDatabase(): Promise<void> {
-    const sku: SqlManagementModels.Sku = {
-      name: "Basic",
-    };
-    const model: SqlManagementModels.Database = {
-      location: this.config.location,
-      sku: sku,
-    };
-    try {
-      await this.client.databases.createOrUpdate(
-        this.config.resourceGroup,
-        this.config.sqlServer,
-        this.config.databaseName,
-        model
-      );
-      // when the request returned, the instance of database may not be ready. Let's wait a moment
-      await this.delay(10);
-    } catch (error) {
-      throw SqlResultFactory.UserError(
-        ErrorMessage.DatabaseCreateError.name,
-        ErrorMessage.DatabaseCreateError.message(this.config.databaseName, error.message),
-        error
-      );
-    }
-  }
-
-  async existDatabase(): Promise<boolean> {
-    try {
-      const result = await this.client.databases.listByServer(
-        this.config.resourceGroup,
-        this.config.sqlServer
-      );
-      if (result.find((item) => item.name === this.config.databaseName)) {
-        return true;
-      } else {
-        return false;
-      }
-    } catch (error) {
-      throw SqlResultFactory.UserError(
-        ErrorMessage.SqlCheckDBError.name,
-        ErrorMessage.SqlCheckDBError.message(this.config.databaseName, error.message),
-        error
-      );
-    }
-  }
-
   async addAADadmin(): Promise<void> {
     let model: SqlManagementModels.ServerAzureADAdministrator = {
       tenantId: this.config.tenantId,
@@ -155,27 +88,6 @@ export class ManagementClient {
       throw SqlResultFactory.UserError(
         ErrorMessage.SqlAddAdminError.name,
         ErrorMessage.SqlAddAdminError.message(this.config.aadAdmin, error.message),
-        error
-      );
-    }
-  }
-
-  async addAzureFirewallRule(): Promise<void> {
-    const model: SqlManagementModels.FirewallRule = {
-      startIpAddress: Constants.firewall.azureIp,
-      endIpAddress: Constants.firewall.azureIp,
-    };
-    try {
-      await this.client.firewallRules.createOrUpdate(
-        this.config.resourceGroup,
-        this.config.sqlServer,
-        Constants.firewall.azureRule,
-        model
-      );
-    } catch (error) {
-      throw SqlResultFactory.UserError(
-        ErrorMessage.SqlAzureFirwallError.name,
-        ErrorMessage.SqlAzureFirwallError.message(this.config.sqlEndpoint, error.message),
         error
       );
     }

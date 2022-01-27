@@ -102,7 +102,7 @@ import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import * as armResources from "@azure/arm-resources";
 import { aadPlugin, appStudioPlugin, spfxPlugin, fehostPlugin } from "../../constants";
 import { AadAppForTeamsPlugin } from "../../../src";
-import { assert } from "sinon";
+import * as manifestTemplate from "../../../src/plugins/resource/appstudio/manifestTemplate";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -478,9 +478,8 @@ describe("provision() happy path for SPFx projects", () => {
     mocker.stub(AppStudioClient, "createApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "updateApp").resolves(mockedAppDef);
     mocker.stub(AppStudioClient, "validateManifest").resolves([]);
-    mocker
-      .stub(AppStudioPluginImpl.prototype, "reloadManifest" as any)
-      .returns(ok(new TeamsAppManifest()));
+    mocker.stub(manifestTemplate, "loadManifest").resolves(ok(new TeamsAppManifest()));
+    mocker.stub(AppStudioPluginImpl.prototype, "buildTeamsAppPackage").resolves("");
   });
 
   afterEach(() => {
@@ -1132,9 +1131,6 @@ describe("API v2 implementation", () => {
         mockedTokenProvider
       );
       expect(result.kind).equals("success");
-      if (result.kind === "success") {
-        expect(result.output["fx-resource-identity"] !== undefined).equals(true);
-      }
     });
   });
 });

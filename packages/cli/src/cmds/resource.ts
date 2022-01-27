@@ -6,7 +6,7 @@
 import * as path from "path";
 import { Argv } from "yargs";
 
-import { err, FxError, ok, Result, LogLevel } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Result, LogLevel, Platform } from "@microsoft/teamsfx-api";
 
 import activate from "../activate";
 import { getSystemInputs, Json, setSubscriptionId } from "../utils";
@@ -20,7 +20,7 @@ import {
 import CLIUIInstance from "../userInteraction";
 import CLILogProvider from "../commonlib/log";
 import HelpParamGenerator from "../helpParamGenerator";
-import { environmentManager } from "@microsoft/teamsfx-core";
+import { environmentManager, ProjectSettingsHelper } from "@microsoft/teamsfx-core";
 import { EnvNodeNoCreate } from "../constants";
 import {
   EnvNotFound,
@@ -30,6 +30,7 @@ import {
   NotSupportedProjectType,
 } from "../error";
 import { existsSync, readJson } from "fs-extra";
+import { automaticNpmInstallHandler } from "./preview/npmInstallHandler";
 
 async function checkAndReadEnvJson(
   rootFolder: string,
@@ -256,6 +257,18 @@ export class ResourceAddFunction extends YargsCommand {
     };
 
     const core = result.value;
+    const configResult = await core.getProjectConfig({
+      projectPath: rootFolder,
+      platform: Platform.CLI,
+      ignoreEnvInfo: true,
+    });
+    if (configResult.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.UpdateProject, configResult.error, {
+        [TelemetryProperty.Resources]: this.commandHead,
+      });
+      return err(configResult.error);
+    }
+    const includeBackend = ProjectSettingsHelper.includeBackend(configResult.value?.settings);
     {
       const inputs = getSystemInputs(rootFolder);
       inputs.ignoreEnvInfo = true;
@@ -267,6 +280,8 @@ export class ResourceAddFunction extends YargsCommand {
         return err(result.error);
       }
     }
+
+    await automaticNpmInstallHandler(rootFolder, true, includeBackend, true);
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.UpdateProject, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,

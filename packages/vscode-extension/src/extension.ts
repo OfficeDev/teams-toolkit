@@ -146,6 +146,12 @@ export async function activate(context: vscode.ExtensionContext) {
   );
   context.subscriptions.push(validatePrerequisitesCmd);
 
+  // Referenced by tasks.json
+  const getFuncPathCmd = vscode.commands.registerCommand("fx-extension.get-func-path", () =>
+    Correlator.run(handlers.getFuncPathHandler)
+  );
+  context.subscriptions.push(getFuncPathCmd);
+
   // 1.8 pre debug check command (hide from UI)
   const preDebugCheckCmd = vscode.commands.registerCommand("fx-extension.pre-debug-check", () =>
     Correlator.runWithId(getLocalDebugSessionId(), handlers.preDebugCheckHandler)

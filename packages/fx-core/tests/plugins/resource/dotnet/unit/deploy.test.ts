@@ -13,8 +13,8 @@ import { TestHelper } from "../helper";
 import { DotnetConfigInfo as ConfigInfo } from "../../../../../src/plugins/resource/frontend/dotnet/constants";
 import { AzureClientFactory } from "../../../../../src/plugins/resource/frontend/dotnet/utils/azure-client";
 import * as dirWalk from "../../../../../src/plugins/resource/function/utils/dir-walk";
-import * as execute from "../../../../../src/plugins/resource/function/utils/execute";
 import axios from "axios";
+import { Utils } from "../../../../../src/plugins/resource/frontend/utils";
 
 chai.use(chaiAsPromised);
 
@@ -32,7 +32,7 @@ describe("WebappPlugin", () => {
 
       sinon.stub(WebappPlugin, <any>"isVsPlatform").returns(true);
       sinon.stub(dirWalk, "forEachFileAndDir").resolves(undefined);
-      sinon.stub(execute, "execute").resolves("");
+      sinon.stub(Utils, "execute").resolves("");
       sinon.stub(fs, "pathExists").resolves(true);
       sinon.stub(fs, "readFile").resolves("" as any);
       sinon.stub(AzureClientFactory, "getWebSiteManagementClient").returns({

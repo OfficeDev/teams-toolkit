@@ -103,6 +103,7 @@ import * as armResources from "@azure/arm-resources";
 import { aadPlugin, appStudioPlugin, spfxPlugin, fehostPlugin } from "../../constants";
 import { AadAppForTeamsPlugin } from "../../../src";
 import { assert } from "sinon";
+import { resourceGroupHelper } from "../../../src/plugins/solution/fx-solution/utils/ResourceGroupHelper";
 
 chai.use(chaiAsPromised);
 const expect = chai.expect;
@@ -1086,6 +1087,24 @@ describe("API v2 implementation", () => {
       mocker.stub(ResourceGroups.prototype, "checkExistence").resolves({
         body: false,
       } as armResources.ResourceManagementModels.ResourcesCheckExistenceResponse);
+
+      mocker
+        .stub<any, any>(resourceGroupHelper, "askResourceGroupInfo")
+        .callsFake(
+          async (
+            ctx: v2.Context,
+            inputs: Inputs,
+            azureAccountProvider: AzureAccountProvider,
+            rmClient: ResourceManagementClient,
+            defaultResourceGroupName: string
+          ): Promise<Result<any, FxError>> => {
+            return ok({
+              createNewResourceGroup: false,
+              name: "mockRG",
+              location: "mockLoc",
+            });
+          }
+        );
     });
     afterEach(() => {
       mocker.restore();

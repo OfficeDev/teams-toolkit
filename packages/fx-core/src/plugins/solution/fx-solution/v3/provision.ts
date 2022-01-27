@@ -72,9 +72,12 @@ export async function provisionResources(
 ): Promise<Result<v3.EnvInfoV3, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
   // check M365 tenant match
+  if (!envInfo.state[BuiltInResourcePluginNames.appStudio])
+    envInfo.state[BuiltInResourcePluginNames.appStudio] = {};
   const teamsAppResource = envInfo.state[
     BuiltInResourcePluginNames.appStudio
   ] as v3.TeamsAppResource;
+  if (!envInfo.state.solution) envInfo.state.solution = {};
   const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
   const tenantIdInConfig = teamsAppResource.tenantId;
   const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);

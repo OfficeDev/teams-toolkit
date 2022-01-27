@@ -65,9 +65,12 @@ export async function provisionResource(
   const projectPath: string = inputs.projectPath;
 
   // check M365 tenant
+  if (!envInfo.state[BuiltInResourcePluginNames.appStudio])
+    newEnvInfo.state[BuiltInResourcePluginNames.appStudio] = {};
   const teamsAppResource = newEnvInfo.state[
     BuiltInResourcePluginNames.appStudio
   ] as v3.TeamsAppResource;
+  if (!newEnvInfo.state.solution) newEnvInfo.state.solution = {};
   const solutionConfig = newEnvInfo.state.solution as v3.AzureSolutionConfig;
   const tenantIdInConfig = teamsAppResource.tenantId;
   const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);

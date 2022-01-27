@@ -28,7 +28,7 @@ describe("WebappPlugin", () => {
       pluginContext = TestHelper.getFakePluginContext();
       pluginContext.config.set(ConfigInfo.webAppName, "ut");
       pluginContext.config.set(ConfigInfo.appServicePlanName, "ut");
-      pluginContext.config.set(ConfigInfo.projectFilePath, "./ut");
+      pluginContext!.projectSettings!.pluginSettings = { projectFilePath: "./ut" };
 
       sinon.stub(WebappPlugin, <any>"isVsPlatform").returns(true);
       sinon.stub(dirWalk, "forEachFileAndDir").resolves(undefined);

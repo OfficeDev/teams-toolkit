@@ -8,5 +8,9 @@
 *.ttf
 *.otf
 *.eot
+*.sppkg
+.git/*
 packages/fx-core/tests/common/local/localCertificateManager.test.ts
+packages/sdk/test/unit/node/m365TenantCredential.spec.ts
+packages/sdk/test/unit/node/core/onBehalfOfUserCredential.spec.ts
 packages/fx-core/tests/core/samples_v2.zip

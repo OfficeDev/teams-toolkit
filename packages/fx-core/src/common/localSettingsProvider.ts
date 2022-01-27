@@ -18,6 +18,7 @@ import {
   LocalSettingsFrontendKeys,
   LocalSettingsTeamsAppKeys,
   LocalSettingsEncryptKeys,
+  LocalSettingsSimpleAuthKeys,
 } from "./localSettingsConstants";
 
 export const localSettingsFileName = "localSettings.json";
@@ -33,7 +34,8 @@ export class LocalSettingsProvider {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBotOrMessageExtension: boolean,
-    migrateFromV1 = false
+    migrateFromV1 = false,
+    includeSimpleAuth = false
   ): LocalSettings {
     // initialize Teams app related config for local debug.
     const teamsAppLocalConfig = new ConfigMap();
@@ -45,7 +47,7 @@ export class LocalSettingsProvider {
     };
 
     if (!migrateFromV1) {
-      localSettings.auth = this.initSimpleAuth();
+      localSettings.auth = this.initAuth(includeSimpleAuth);
     }
 
     // initialize frontend and simple auth local settings.
@@ -70,7 +72,8 @@ export class LocalSettingsProvider {
     includeFrontend: boolean,
     includeBackend: boolean,
     includeBotOrMessageExtension: boolean,
-    migrateFromV1 = false
+    migrateFromV1 = false,
+    includeSimpleAuth = false
   ): Json {
     const localSettings: Json = {
       teamsApp: {
@@ -80,7 +83,7 @@ export class LocalSettingsProvider {
     };
 
     if (!migrateFromV1) {
-      localSettings.auth = this.initSimpleAuth().toJSON();
+      localSettings.auth = this.initAuth(includeSimpleAuth).toJSON();
     }
 
     // initialize frontend and simple auth local settings.
@@ -277,12 +280,20 @@ export class LocalSettingsProvider {
     return localSettingsJson;
   }
 
-  initSimpleAuth(): ConfigMap {
+  initAuth(includeSimpleAuth = false): ConfigMap {
     // simple auth is only required by frontend
     const authLocalConfig = new ConfigMap();
     const keys = Object.values(LocalSettingsAuthKeys);
     for (const key of keys) {
       authLocalConfig.set(key, "");
+    }
+
+    // If simple auth is activated, add simple auth related configs.
+    if (includeSimpleAuth) {
+      const simpleAuthKeys = Object.values(LocalSettingsSimpleAuthKeys);
+      for (const key of simpleAuthKeys) {
+        authLocalConfig.set(key, "");
+      }
     }
 
     return authLocalConfig;
@@ -292,7 +303,6 @@ export class LocalSettingsProvider {
     const frontendLocalConfig = new ConfigMap();
     frontendLocalConfig.set(LocalSettingsFrontendKeys.Browser, "none");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.Https, true);
-    frontendLocalConfig.set(LocalSettingsFrontendKeys.TrustDevCert, true);
     frontendLocalConfig.set(LocalSettingsFrontendKeys.SslCertFile, "");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.SslKeyFile, "");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.TabDomain, "");
@@ -316,11 +326,7 @@ export class LocalSettingsProvider {
     const botLocalConfig = new ConfigMap();
     const keys = Object.values(LocalSettingsBotKeys);
     for (const key of keys) {
-      if (key === LocalSettingsBotKeys.SkipNgrok) {
-        botLocalConfig.set(key, false);
-      } else {
-        botLocalConfig.set(key, "");
-      }
+      botLocalConfig.set(key, "");
     }
 
     return botLocalConfig;

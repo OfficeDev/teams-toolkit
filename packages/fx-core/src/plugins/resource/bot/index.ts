@@ -24,7 +24,7 @@ import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContai
 import "./v2";
 import { DotnetBotImpl } from "./dotnet/plugin";
 import { PluginImpl } from "./interface";
-import { isVsCallingCli } from "../../..";
+import { ProgrammingLanguage } from "./enums/programmingLanguage";
 
 @Service(ResourcePlugins.BotPlugin)
 export class TeamsBot implements Plugin {
@@ -42,7 +42,7 @@ export class TeamsBot implements Plugin {
   }
 
   private static isVsPlatform(context: PluginContext): boolean {
-    return isVsCallingCli();
+    return context.projectSettings?.programmingLanguage === ProgrammingLanguage.Csharp;
   }
 
   public async scaffold(context: PluginContext): Promise<FxResult> {

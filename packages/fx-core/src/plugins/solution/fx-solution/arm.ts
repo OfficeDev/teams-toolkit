@@ -40,11 +40,6 @@ import {
   SUBSCRIPTION_ID,
 } from "./constants";
 import { environmentManager } from "../../../core/environment";
-import {
-  AzureSolutionConfig,
-  TeamsFxAzureResourceStates,
-  TeamsFxSolutionSettings,
-} from "../../../../../api/build/v3";
 import { compileHandlebarsTemplateString, getStrings } from "../../../common";
 import { ArmTemplateResult, NamedArmResourcePlugin } from "../../../common/armInterface";
 import { ConstantString, HelpLinks, PluginDisplayName } from "../../../common/constants";
@@ -63,6 +58,8 @@ import { getPluginContext, sendErrorTelemetryThenReturnError } from "./utils/uti
 import { NamedArmResourcePluginAdaptor } from "./v2/adaptor";
 
 const bicepOrchestrationFileName = "main.bicep";
+const bicepOrchestrationProvisionMainFileName = "mainProvision.bicep";
+const bicepOrchestrationConfigMainFileName = "mainConfig.bicep";
 const bicepOrchestrationProvisionFileName = "provision.bicep";
 const bicepOrchestrationConfigFileName = "config.bicep";
 const templatesFolder = "./templates/azure";
@@ -563,7 +560,7 @@ function syncArmOutput(envInfo: EnvInfo | v3.EnvInfoV3, armOutput: any) {
                       .get(pluginId)
                       ?.set(pluginOutputKey, pluginOutput[pluginOutputKey]);
                   } else {
-                    (envInfo.state as TeamsFxAzureResourceStates)[pluginId][pluginOutputKey] =
+                    (envInfo.state as v3.TeamsFxAzureResourceStates)[pluginId][pluginOutputKey] =
                       pluginOutput[pluginOutputKey];
                   }
                 }
@@ -991,14 +988,12 @@ async function persistBicepTemplates(
       }
       await fs.writeFile(parameterEnvFilePath, parameterFileContent.replace(/\r?\n/g, os.EOL));
     }
-    // Generate main.bicep, config.bicep, provision.bicep
+
     const templateFolderPath = path.join(projectaPath, templatesFolder);
     await fs.ensureDir(templateFolderPath);
-    await fs.ensureDir(path.join(templateFolderPath, "teamsFx"));
-    await fs.ensureDir(path.join(templateFolderPath, "provision"));
-
+    const templateSolitionPath = path.join(getTemplatesFolder(), "plugins", "solution");
+    // Generate provision.bicep and module provision bicep files
     let bicepOrchestrationProvisionContent = "";
-    let bicepOrchestrationConfigContent = "";
     if (
       !(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationProvisionFileName)))
     ) {
@@ -1007,38 +1002,56 @@ async function persistBicepTemplates(
         ConstantString.UTF8Encoding
       );
     }
-    if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationConfigFileName)))) {
-      bicepOrchestrationConfigContent = await fs.readFile(
-        path.join(getTemplatesFolder(), "plugins", "solution", "config.bicep"),
-        ConstantString.UTF8Encoding
-      );
-    }
     bicepOrchestrationProvisionContent +=
       os.EOL + bicepOrchestrationTemplate.getOrchestractionProvisionContent();
-    bicepOrchestrationConfigContent +=
-      os.EOL + bicepOrchestrationTemplate.getOrchestractionConfigContent();
-
-    const templateSolitionPath = path.join(getTemplatesFolder(), "plugins", "solution");
-    if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationFileName)))) {
-      await fs.copyFile(
-        path.join(templateSolitionPath, bicepOrchestrationFileName),
-        path.join(templateFolderPath, bicepOrchestrationFileName)
-      );
-    }
-
     await fs.appendFile(
       path.join(templateFolderPath, bicepOrchestrationProvisionFileName),
       bicepOrchestrationProvisionContent.replace(/\r?\n/g, os.EOL)
     );
-    await fs.appendFile(
-      path.join(templateFolderPath, bicepOrchestrationConfigFileName),
-      bicepOrchestrationConfigContent.replace(/\r?\n/g, os.EOL)
-    );
+    // Generate provision part to main.bicep files.
+    if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationFileName)))) {
+      await fs.copyFile(
+        path.join(templateSolitionPath, bicepOrchestrationProvisionMainFileName),
+        path.join(templateFolderPath, bicepOrchestrationFileName)
+      );
+    }
+    // Generate provision.biceps.
+    await fs.ensureDir(path.join(templateFolderPath, "provision"));
     // Generate module provision bicep files
     for (const module of moduleProvisionFiles) {
       const res = bicepOrchestrationTemplate.applyReference(module[1]);
       await fs.appendFile(path.join(templateFolderPath, module[0]), res.replace(/\r?\n/g, os.EOL));
     }
+
+    // If no config part, return.
+    if (bicepOrchestrationTemplate.getOrchestractionConfigContent() === "") {
+      return;
+    }
+
+    // Generate config.bicep and module configuration bicep files.
+    let bicepOrchestrationConfigContent = "";
+    // Configuration Biceps.
+    if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationConfigFileName)))) {
+      await fs.ensureDir(path.join(templateFolderPath, "teamsFx"));
+      bicepOrchestrationConfigContent = await fs.readFile(
+        path.join(getTemplatesFolder(), "plugins", "solution", "config.bicep"),
+        ConstantString.UTF8Encoding
+      );
+      const mainConfig = await fs.readFile(
+        path.join(templateSolitionPath, bicepOrchestrationConfigMainFileName),
+        ConstantString.UTF8Encoding
+      );
+      await fs.appendFile(
+        path.join(templateFolderPath, bicepOrchestrationFileName),
+        mainConfig.replace(/\r?\n/g, os.EOL)
+      );
+    }
+    bicepOrchestrationConfigContent +=
+      os.EOL + bicepOrchestrationTemplate.getOrchestractionConfigContent();
+    await fs.appendFile(
+      path.join(templateFolderPath, bicepOrchestrationConfigFileName),
+      bicepOrchestrationConfigContent.replace(/\r?\n/g, os.EOL)
+    );
     // Generate module configuration bicep files
     for (const module of moduleConfigFiles) {
       const res = bicepOrchestrationTemplate.applyReference(module[1]);
@@ -1306,13 +1319,13 @@ function expandParameterPlaceholdersV3(
   envInfo: v3.EnvInfoV3,
   parameterContent: string
 ): string {
-  const azureSolutionSettings = ctx.projectSetting.solutionSettings as TeamsFxSolutionSettings;
+  const azureSolutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
   const plugins = azureSolutionSettings.activeResourcePlugins.map((p) =>
     Container.get<v3.ResourcePlugin>(p)
   );
   const stateVariables: Record<string, Record<string, any>> = {};
   const availableVariables: Record<string, Record<string, any>> = { state: stateVariables };
-  const envState = envInfo.state as TeamsFxAzureResourceStates;
+  const envState = envInfo.state as v3.TeamsFxAzureResourceStates;
   // Add plugin contexts to available variables
   for (const plugin of plugins) {
     const resourceState = envState[plugin.name] || {};
@@ -1327,7 +1340,7 @@ function expandParameterPlaceholdersV3(
     stateVariables[plugin.name] = pluginVariables;
   }
   // Add solution config to available variables
-  const solutionConfig = envState.solution as AzureSolutionConfig;
+  const solutionConfig = envState.solution as v3.AzureSolutionConfig;
   if (solutionConfig) {
     const solutionVariables: Record<string, string> = {};
     for (const key of Object.keys(solutionConfig)) {

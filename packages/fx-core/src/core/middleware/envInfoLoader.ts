@@ -151,7 +151,8 @@ function legacySolutionConfig2EnvState(solutionConfig: SolutionConfig): Json {
     if (pluginConfig instanceof Map) {
       output[pluginName] = legacyConfig2EnvState(pluginConfig, pluginName);
     } else {
-      throw Error(`invalid config type ${typeof pluginConfig}`);
+      throw Error(`invalid config type[${typeof pluginConfig}].
+          pluginName[${pluginName}]. content[${JSON.stringify(pluginName)}]`);
     }
   }
 

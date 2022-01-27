@@ -58,7 +58,7 @@ export async function scaffoldSourceCode(
     ctx.projectSetting.programmingLanguage = lang;
   }
   const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
-  const fillinRes = fillInSolutionSettings(solutionSettings, inputs);
+  const fillinRes = fillInSolutionSettings(ctx.projectSetting, inputs);
   if (fillinRes.isErr()) return err(fillinRes.error);
   const plugins = getSelectedPlugins(ctx.projectSetting);
 

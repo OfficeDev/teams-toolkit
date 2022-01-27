@@ -15,7 +15,7 @@ import { ExtTelemetry } from "../telemetry/extTelemetry";
 import { TelemetryEvent, TelemetryProperty } from "../telemetry/extTelemetryEvents";
 import { Correlator, getHashedEnv, isValidProject } from "@microsoft/teamsfx-core";
 import * as path from "path";
-import { errorDetail, issueLink, issueTemplate } from "./constants";
+import { errorDetail, issueChooseLink, issueLink, issueTemplate } from "./constants";
 import * as StringResources from "../resources/Strings.json";
 import * as util from "util";
 import VsCodeLogInstance from "../commonlib/log";
@@ -25,16 +25,7 @@ import { ExtensionSurvey } from "../utils/survey";
 import { TreatmentVariableValue } from "../exp/treatmentVariables";
 import { TeamsfxDebugConfiguration } from "./teamsfxDebugProvider";
 
-interface IRunningTeamsfxTask {
-  source: string;
-  name: string;
-  scope: vscode.WorkspaceFolder | vscode.TaskScope;
-}
-
-const allRunningTeamsfxTasks: Map<IRunningTeamsfxTask, number> = new Map<
-  IRunningTeamsfxTask,
-  number
->();
+const allRunningTeamsfxTasks: Map<string, number> = new Map<string, number>();
 const allRunningDebugSessions: Set<string> = new Set<string>();
 const activeNpmInstallTasks = new Set<string>();
 
@@ -48,6 +39,16 @@ let taskEndEventEmitter: vscode.EventEmitter<{ id: string; exitCode?: number }>;
 let taskStartEventEmitter: vscode.EventEmitter<string>;
 const trackedTasks = new Set<string>();
 
+function getTaskKey(task: vscode.Task): string {
+  if (task === undefined) {
+    return "";
+  }
+
+  // "source|name|scope"
+  const scope = (task.scope as vscode.WorkspaceFolder)?.uri?.toString() || task.scope?.toString();
+  return `${task.source}|${task.name}|${scope}`;
+}
+
 function isNpmInstallTask(task: vscode.Task): boolean {
   if (task) {
     return task.name.trim().toLocaleLowerCase().endsWith("npm install");
@@ -58,7 +59,6 @@ function isNpmInstallTask(task: vscode.Task): boolean {
 
 function isTeamsfxTask(task: vscode.Task): boolean {
   // teamsfx: xxx start / xxx watch
-  // teamsfx: dev / watch
   if (task) {
     if (
       task.source === ProductName &&
@@ -75,10 +75,19 @@ function isTeamsfxTask(task: vscode.Task): boolean {
       return (
         command !== undefined &&
         (command.trim().toLocaleLowerCase().endsWith("start") ||
-          command.trim().toLocaleLowerCase().endsWith("watch") ||
-          command.trim().toLowerCase() === "dev" ||
-          command.trim().toLowerCase() === "watch")
+          command.trim().toLocaleLowerCase().endsWith("watch"))
       );
+    }
+
+    // dev:teamsfx and watch:teamsfx
+    let commandLine: string | undefined;
+    if (task.execution && <vscode.ShellExecution>task.execution) {
+      const execution = <vscode.ShellExecution>task.execution;
+      commandLine =
+        execution.commandLine || `${execution.command} ${(execution.args || []).join(" ")}`;
+    }
+    if (commandLine !== undefined) {
+      return /(npm|yarn)[\s]+(run )?[\s]*(dev|watch):teamsfx/i.test(commandLine);
     }
   }
 
@@ -201,10 +210,7 @@ async function onDidStartTaskProcessHandler(event: vscode.TaskProcessStartEvent)
   if (ext.workspaceUri && isValidProject(ext.workspaceUri.fsPath)) {
     const task = event.execution.task;
     if (task.scope !== undefined && isTeamsfxTask(task)) {
-      allRunningTeamsfxTasks.set(
-        { source: task.source, name: task.name, scope: task.scope },
-        event.processId
-      );
+      allRunningTeamsfxTasks.set(getTaskKey(task), event.processId);
     } else if (isNpmInstallTask(task)) {
       try {
         ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstallStart, {
@@ -237,7 +243,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
   }
 
   if (task.scope !== undefined && isTeamsfxTask(task)) {
-    allRunningTeamsfxTasks.delete({ source: task.source, name: task.name, scope: task.scope });
+    allRunningTeamsfxTasks.delete(getTaskKey(task));
   } else if (isNpmInstallTask(task)) {
     try {
       activeNpmInstallTasks.delete(task.name);
@@ -257,7 +263,7 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       const cwdOption = (task.execution as vscode.ShellExecution).options?.cwd;
       let cwd: string | undefined;
       if (cwdOption !== undefined) {
-        cwd = path.join(ext.workspaceUri.fsPath, cwdOption?.replace("${workspaceFolder}/", ""));
+        cwd = cwdOption.replace("${workspaceFolder}", ext.workspaceUri.fsPath);
       }
       const npmInstallLogInfo = await getNpmInstallLogInfo();
       let validNpmInstallLogInfo = false;
@@ -288,9 +294,17 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugNpmInstall, properties);
 
       if (cwd !== undefined && event.exitCode !== undefined && event.exitCode !== 0) {
-        let url = `${issueLink}title=new+bug+report: Task '${task.name}' failed&body=${issueTemplate}`;
+        let url: string;
         if (validNpmInstallLogInfo) {
-          url = `${url}${errorDetail}${JSON.stringify(npmInstallLogInfo, undefined, 4)}`;
+          url = `${issueLink}title=new+bug+report: Task '${
+            task.name
+          }' failed&body=${issueTemplate}${errorDetail}${JSON.stringify(
+            npmInstallLogInfo,
+            undefined,
+            4
+          )}`;
+        } else {
+          url = issueChooseLink;
         }
         const issue = {
           title: StringResources.vsc.handlers.reportIssue,

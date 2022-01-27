@@ -61,7 +61,6 @@ import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { SolutionPlugins } from "../../../core/SolutionPluginContainer";
 import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
-import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
 import {
   copyParameterJson,
   deployArmTemplates,
@@ -138,13 +137,11 @@ import {
   ensurePermissionRequest,
   parseTeamsAppTenantId,
   fillInSolutionSettings,
-  parseUserName,
   checkWhetherLocalDebugM365TenantMatches,
 } from "./v2/utils";
 import { askForProvisionConsent } from "./v2/provision";
 import { grantPermission } from "./v2/grantPermission";
 import { checkPermission } from "./v2/checkPermission";
-import { listAllCollaborators } from "./v2/listAllCollaborators";
 import { listCollaborator } from "./v2/listCollaborator";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
@@ -290,7 +287,7 @@ export class TeamsAppSolution implements Solution {
       ctx.projectSettings!.programmingLanguage = lang;
     }
     const solutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const settingsRes = fillInSolutionSettings(solutionSettings, ctx.answers!);
+    const settingsRes = fillInSolutionSettings(ctx.projectSettings, ctx.answers!);
     if (settingsRes.isErr()) {
       return err(
         sendErrorTelemetryThenReturnError(
@@ -1338,13 +1335,6 @@ export class TeamsAppSolution implements Solution {
   @hooks([ErrorHandlerMW])
   async checkPermission(ctx: SolutionContext): Promise<Result<PermissionsResult, FxError>> {
     return checkPermission({ apiVersion: 1, ctx });
-  }
-
-  @hooks([ErrorHandlerMW])
-  async listAllCollaborators(
-    ctx: SolutionContext
-  ): Promise<Result<Record<string, ListCollaboratorResult>, FxError>> {
-    return listAllCollaborators({ apiVersion: 1, ctx });
   }
 
   @hooks([ErrorHandlerMW])

@@ -14,6 +14,7 @@ import {
   Void,
   Result,
   FxError,
+  TelemetryEvent,
 } from "@microsoft/teamsfx-api";
 import AppStudioTokenInstance from "../../../src/commonlib/appStudioLogin";
 import { ExtTelemetry } from "../../../src/telemetry/extTelemetry";
@@ -28,6 +29,8 @@ import TreeViewManagerInstance from "../../../src/treeview/treeViewManager";
 import { CollaborationState, CoreHookContext } from "@microsoft/teamsfx-core";
 import { ext } from "../../../src/extensionVariables";
 import { Uri } from "vscode";
+import * as envTree from "../../../src/envTree";
+import * as extTelemetryEvents from "../../../src/telemetry/extTelemetryEvents";
 
 suite("handlers", () => {
   test("getWorkspacePath()", () => {
@@ -43,6 +46,7 @@ suite("handlers", () => {
       sandbox.stub(AppStudioTokenInstance, "setStatusChangeMap");
       sandbox.stub(vscode.extensions, "getExtension").returns(undefined);
       sandbox.stub(TreeViewManagerInstance, "getTreeView").returns(undefined);
+      sandbox.stub(ExtTelemetry, "dispose");
     });
 
     this.afterAll(() => {
@@ -67,16 +71,30 @@ suite("handlers", () => {
     });
 
     test("createNewProjectHandler()", async () => {
+      const clock = sinon.useFakeTimers();
+
       sinon.stub(handlers, "core").value(new MockCore());
-      sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+      const sendTelemetryEventFunc = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
+      const disposeFunc = sinon.stub(ExtTelemetry, "dispose");
       const createProject = sinon.spy(handlers.core, "createProject");
-      sinon.stub(vscode.commands, "executeCommand");
+      const executeCommandFunc = sinon.stub(vscode.commands, "executeCommand");
 
       await handlers.createNewProjectHandler();
 
+      chai.assert.isTrue(
+        sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProjectStart)
+      );
+      chai.assert.isTrue(
+        sendTelemetryEventFunc.calledWith(extTelemetryEvents.TelemetryEvent.CreateProject)
+      );
+      sinon.assert.calledOnce(disposeFunc);
       sinon.assert.calledOnce(createProject);
+      chai.assert.isFalse(executeCommandFunc.calledOnceWith("vscode.openFolder"));
+      clock.tick(3000);
+      chai.assert.isTrue(executeCommandFunc.calledOnceWith("vscode.openFolder"));
       sinon.restore();
+      clock.restore;
     });
 
     test("provisionHandler()", async () => {
@@ -84,6 +102,7 @@ suite("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       sinon.stub(ExtTelemetry, "sendTelemetryErrorEvent");
       const provisionResources = sinon.spy(handlers.core, "provisionResources");
+      sinon.stub(envTree, "registerEnvTreeHandler");
 
       await handlers.provisionHandler();
 
@@ -285,6 +304,7 @@ suite("handlers", () => {
   test("signOutM365", async () => {
     const signOut = sinon.stub(AppStudioTokenInstance, "signout");
     const sendTelemetryEvent = sinon.stub(ExtTelemetry, "sendTelemetryEvent");
+    sinon.stub(envTree, "registerEnvTreeHandler");
 
     await handlers.signOutM365(false);
 

@@ -71,11 +71,11 @@ describe("Publish Teams app with Azure", () => {
     sandbox.stub(AppStudioClient, "getAppByTeamsAppId").resolves(undefined);
 
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
-      tabEndpoint: "tabEndpoint",
+      tabEndpoint: "https://tabEndpoint",
       tabDomain: "tabDomain",
-      aadId: "aadId",
+      aadId: uuid(),
       botDomain: "botDomain",
-      botId: "botId",
+      botId: uuid(),
       webApplicationInfoResource: "webApplicationInfoResource",
       teamsAppId: uuid(),
     });
@@ -98,11 +98,11 @@ describe("Publish Teams app with Azure", () => {
     ctx.ui = new MockUserInteraction();
 
     sandbox.stub(AppStudioPluginImpl.prototype, "getConfigForCreatingManifest" as any).returns({
-      tabEndpoint: "tabEndpoint",
+      tabEndpoint: "https://tabEndpoint",
       tabDomain: "tabDomain",
-      aadId: "aadId",
+      aadId: uuid(),
       botDomain: "botDomain",
-      botId: "botId",
+      botId: uuid(),
       webApplicationInfoResource: "webApplicationInfoResource",
       teamsAppId: uuid(),
     });

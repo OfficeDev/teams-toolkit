@@ -7,7 +7,7 @@ on:
       - dev
 
 jobs:
-  source-branch-test:
+  unit-test:
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
@@ -31,7 +31,5 @@ jobs:
           npm run setup
 
       - name: Unit Test
-        id: unit-test
-        shell: bash
         run: |
           xvfb-run -a npx lerna run test:unit --stream

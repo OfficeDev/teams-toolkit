@@ -106,7 +106,6 @@ export const LocalSettingsFrontendKeys = Object.freeze({
   TabEndpoint: "tabEndpoint",
   Browser: "browser",
   Https: "https",
-  TrustDevCert: "trustDevCert",
   SslCertFile: "sslCertFile",
   SslKeyFile: "sslKeyFile",
 });

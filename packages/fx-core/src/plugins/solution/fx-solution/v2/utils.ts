@@ -36,7 +36,7 @@ import {
   TabOptionItem,
   TabSPFxItem,
 } from "../question";
-import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
+import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../ResourcePluginContainer";
 import { PluginsWithContext } from "../solution";
 import { getPluginContext } from "../utils/util";
 import * as util from "util";
@@ -79,12 +79,11 @@ export function extractSolutionInputs(record: Json): v2.SolutionInputs {
   };
 }
 
-export function reloadV2Plugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
-  const solutionSettings: AzureSolutionSettings =
-    projectSettings.solutionSettings as AzureSolutionSettings;
-  const res = getActivatedV2ResourcePlugins(projectSettings);
-  solutionSettings.activeResourcePlugins = res.map((p) => p.name);
-  return res;
+export function setActivatedResourcePluginsV2(projectSettings: ProjectSettings): void {
+  const activatedPluginNames = getAllV2ResourcePlugins()
+    .filter((p) => p.activate && p.activate(projectSettings) === true)
+    .map((p) => p.name);
+  projectSettings.solutionSettings!.activeResourcePlugins = activatedPluginNames;
 }
 
 export async function ensurePermissionRequest(
@@ -217,9 +216,10 @@ export function loadTeamsAppTenantIdForLocal(
 }
 
 export function fillInSolutionSettings(
-  solutionSettings: AzureSolutionSettings,
+  projectSettings: ProjectSettings,
   answers: Inputs
 ): Result<Void, FxError> {
+  const solutionSettings = (projectSettings.solutionSettings as AzureSolutionSettings) || {};
   let capabilities = (answers[AzureSolutionQuestionNames.Capabilities] as string[]) || [];
   if (!capabilities || capabilities.length === 0) {
     return err(
@@ -267,6 +267,9 @@ export function fillInSolutionSettings(
   }
   solutionSettings.azureResources = azureResources || [];
   solutionSettings.capabilities = capabilities || [];
+
+  // fill in activeResourcePlugins
+  setActivatedResourcePluginsV2(projectSettings);
   return ok(Void);
 }
 

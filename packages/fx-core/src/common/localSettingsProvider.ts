@@ -303,7 +303,6 @@ export class LocalSettingsProvider {
     const frontendLocalConfig = new ConfigMap();
     frontendLocalConfig.set(LocalSettingsFrontendKeys.Browser, "none");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.Https, true);
-    frontendLocalConfig.set(LocalSettingsFrontendKeys.TrustDevCert, true);
     frontendLocalConfig.set(LocalSettingsFrontendKeys.SslCertFile, "");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.SslKeyFile, "");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.TabDomain, "");

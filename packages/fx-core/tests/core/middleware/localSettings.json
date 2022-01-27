@@ -19,7 +19,6 @@
   "frontend": {
     "browser": "none",
     "https": true,
-    "trustDevCert": true,
     "sslCertFile": "somepath/.fx/certificate/localhost.crt",
     "sslKeyFile": "somepath/certificate/localhost.key",
     "tabDomain": "localhost",

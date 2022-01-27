@@ -165,7 +165,7 @@ export async function configLocalDebugSettings(
   const includeAAD = ProjectSettingsHelper.includeAAD(ctx.projectSetting);
   const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(ctx.projectSetting);
   const isMigrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(ctx.projectSetting);
-  let trustDevCert = localSettings?.frontend?.trustDevCert as boolean | undefined;
+  let trustDevCert = inputs.checkerInfo?.trustDevCert as boolean | undefined;
 
   const telemetryProperties = {
     platform: inputs.platform as string,
@@ -241,7 +241,6 @@ export async function configLocalDebugSettings(
         try {
           if (trustDevCert === undefined) {
             trustDevCert = true;
-            localSettings.frontend.trustDevCert = trustDevCert;
           }
 
           const certManager = new LocalCertificateManager(ctx.userInteraction, ctx.logProvider);

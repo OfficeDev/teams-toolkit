@@ -491,6 +491,11 @@
         "enablement": "never"
       },
       {
+        "command": "fx-extension.get-func-path",
+        "title": "Teams - Get Func Path for Environment Variable",
+        "enablement": "never"
+      },
+      {
         "command": "fx-extension.pre-debug-check",
         "title": "Teams - Pre Debug Check",
         "enablement": "never"
@@ -623,26 +628,11 @@
       {
         "type": "teamsfx",
         "required": [
-          "command",
-          "component"
+          "command"
         ],
         "properties": {
           "command": {
-            "type": "string",
-            "description": "The command to be executed on a teamsfx component.",
-            "enum": [
-              "dev",
-              "watch"
-            ]
-          },
-          "component": {
-            "type": "string",
-            "description": "The teamsfx component.",
-            "enum": [
-              "frontend",
-              "backend",
-              "bot"
-            ]
+            "type": "string"
           }
         }
       }
@@ -817,6 +807,10 @@
               "ngrok": {
                 "type": "boolean",
                 "description": "Ensure Ngrok is installed."
+              },
+              "devCert": {
+                "type": "boolean",
+                "description": "Ensure development certification is trusted."
               }
             },
             "additionalProperties": false,
@@ -825,7 +819,8 @@
               "dotnetSdk": true,
               "funcCoreTools": true,
               "bicep": true,
-              "ngrok": true
+              "ngrok": true,
+              "devCert": true
             }
           }
         }

@@ -5,5 +5,7 @@
   "ignorePatterns": ["**/node_modules/**", "debug/depsChecker/**/*"],
   "includePid": false,
   "reports": ["text", "html", "json-summary", "cobertura"],
-  "verbose": false
+  "verbose": false,
+  "check-coverage": true,
+  "lines": 95
 }

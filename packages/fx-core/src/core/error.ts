@@ -315,3 +315,9 @@ export function NpmInstallError(path: string, e: Error): SystemError {
 export function LoadPluginError(): SystemError {
   return new SystemError("LoadPluginError", "Failed to load plugin", CoreSource);
 }
+
+export class OperationNotSupportedForExistingAppError extends UserError {
+  constructor(task: string) {
+    super(new.target.name, `Task is not supported for existing app: ${task}`, CoreSource);
+  }
+}

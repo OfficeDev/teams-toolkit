@@ -57,6 +57,7 @@ import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { BuiltInResourcePluginNames } from "../v3/constants";
 import { isVSProject } from "../../../../core";
+import { TeamsAppSolutionNameV2 } from "./constants";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -219,7 +220,19 @@ export async function addCapability(
   });
 
   // 1. checking addable
-  const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
+  let solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
+  if (!solutionSettings) {
+    // pure existing app
+    solutionSettings = {
+      name: TeamsAppSolutionNameV2,
+      version: "1.0.0",
+      hostType: "Azure",
+      capabilities: [],
+      azureResources: [],
+      activeResourcePlugins: [],
+    };
+    ctx.projectSetting.solutionSettings = solutionSettings;
+  }
   const originalSettings = cloneDeep(solutionSettings);
   const inputsNew: v3.PluginAddResourceInputs = {
     ...inputs,

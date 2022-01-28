@@ -64,6 +64,7 @@ import {
   MigrateNotImplementError,
   NonExistEnvNameError,
   ObjectIsUndefinedError,
+  OperationNotSupportedForExistingAppError,
   ProjectFolderExistError,
   ProjectFolderInvalidError,
   ProjectFolderNotExistError,
@@ -269,11 +270,11 @@ export class FxCore implements v3.ICore {
         isFromSample: false,
       };
       if (isCreatedFromExistingApp(inputs)) {
+        // there is no solution settings if created from existing app
         //TODO create from existing Tab or Bot/ME
         // 1. call App Studio V3 API to create manifest with placeholder
         // 2. create config.local.json to store existing App information
       } else {
-        // there is no solution settings if created from existing app
         projectSettings.solutionSettings = {
           name: "",
           version: "1.0.0",
@@ -732,9 +733,6 @@ export class FxCore implements v3.ICore {
   ): Promise<Result<Void, FxError>> {
     currentStage = Stage.provision;
     inputs.stage = Stage.provision;
-    if (!ctx?.projectSettings) {
-      return err(new ObjectIsUndefinedError("Provision input stuff"));
-    }
     if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
       return err(new ObjectIsUndefinedError("Provision input stuff"));
     }
@@ -813,7 +811,7 @@ export class FxCore implements v3.ICore {
     }
     if (isPureExistingApp(ctx.projectSettings)) {
       // existing app scenario, deploy has no effect
-      return ok(Void);
+      return err(new OperationNotSupportedForExistingAppError("deploy"));
     }
     if (!ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
       const name = undefinedName(
@@ -887,7 +885,7 @@ export class FxCore implements v3.ICore {
     }
     if (isPureExistingApp(ctx.projectSettings)) {
       // existing app scenario, local debug has no effect
-      return ok(Void);
+      return err(new OperationNotSupportedForExistingAppError("localDebug"));
     }
     if (!ctx.solutionV2 || !ctx.contextV2) {
       const name = undefinedName(

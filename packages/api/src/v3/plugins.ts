@@ -288,12 +288,18 @@ export interface FeaturePlugin extends Plugin {
    *
    * @param {InputsWithProjectPath} inputs with project path
    *
-   * @returns {ResourceTemplate | undefined} resource template, optional if the feature include resource template
+   * @returns {Void} void
    */
-  scaffold: (
+  scaffold: (ctx: Context, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+
+  generateResourceTemplate?: (
     ctx: Context,
     inputs: InputsWithProjectPath
-  ) => Promise<Result<ResourceTemplate | undefined, FxError>>;
+  ) => Promise<Result<ResourceTemplate, FxError>>;
+  updateResourceTemplate?: (
+    ctx: Context,
+    inputs: InputsWithProjectPath
+  ) => Promise<Result<ResourceTemplate, FxError>>;
 
   /**
    * customized questions for provision

@@ -54,7 +54,3 @@ for LANGUAGE in ${LANGUAGE_LIST[@]}; do
         cd -
     done
 done
-
-
-
-

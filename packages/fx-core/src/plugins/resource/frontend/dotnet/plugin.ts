@@ -16,7 +16,7 @@ import {
   WebappBicep,
 } from "./constants";
 import { Messages } from "./resources/messages";
-import { DotnetScaffold as Scaffold } from "./ops/scaffold";
+import { scaffoldFromZipPackage } from "./ops/scaffold";
 import { TeamsFxResult } from "./error-factory";
 import { WebSiteManagementModels } from "@azure/arm-appservice";
 import { AzureClientFactory } from "./utils/azure-client";
@@ -109,15 +109,15 @@ export class DotnetPluginImpl implements PluginImpl {
     if (includeTab) {
       templateVariable.IS_TAB = "true";
       const templateInfo = new TemplateInfo(ctx, Group.Tab, templateVariable);
-      await Scaffold.scaffoldFromZipPackage(ctx.root, templateInfo);
+      await scaffoldFromZipPackage(ctx.root, templateInfo);
     }
     if (includeBot) {
       templateVariable.IS_BOT = "true";
       const templateInfo = new TemplateInfo(ctx, Group.Bot, templateVariable);
-      await Scaffold.scaffoldFromZipPackage(ctx.root, templateInfo);
+      await scaffoldFromZipPackage(ctx.root, templateInfo);
     }
     const templateInfo = new TemplateInfo(ctx, Group.Base, templateVariable);
-    await Scaffold.scaffoldFromZipPackage(ctx.root, templateInfo);
+    await scaffoldFromZipPackage(ctx.root, templateInfo);
 
     Logger.info(Messages.EndScaffold(PluginInfo.displayName));
     return ok(undefined);

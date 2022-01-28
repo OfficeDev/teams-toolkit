@@ -138,11 +138,11 @@ Since Teams requires https Tab hosting endpoint, a localhost development certifi
 ### Mitigation
 We recommend you to install the development certificate. However, if you do not want to install the development certificate and do not want the confirmation window to pop up every time during debugging, you can follow the script bellow to disable the development certificate.
 
-Close the trust development certification setting, then start debugging.
+Close the trust development certificate setting, then start debugging.
 
 For VSCode, you should set the setting `fx-extension.prerequisiteCheck.devCert` to be false.
 ![VSCode trust dev cert](../images/fx-core/localdebug/vsc-trust-dev-cert.jpg)
-For CLI, you should run command `teamsfx config set trust-development-certification off`.
+For CLI, you should run command `teamsfx config set trust-development-certificate off`.
 
 If so, an error will show in the Tab page of your app, look like:
 

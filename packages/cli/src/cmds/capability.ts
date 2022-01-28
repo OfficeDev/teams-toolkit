@@ -6,7 +6,8 @@
 import * as path from "path";
 import { Argv } from "yargs";
 
-import { err, FxError, ok, Result } from "@microsoft/teamsfx-api";
+import { err, FxError, ok, Platform, Result } from "@microsoft/teamsfx-api";
+import { ProjectSettingsHelper } from "@microsoft/teamsfx-core";
 
 import activate from "../activate";
 import { getSystemInputs } from "../utils";
@@ -19,6 +20,7 @@ import {
 } from "../telemetry/cliTelemetryEvents";
 import CLIUIInstance from "../userInteraction";
 import HelpParamGenerator from "../helpParamGenerator";
+import { automaticNpmInstallHandler } from "./preview/npmInstallHandler";
 
 export class CapabilityAddTab extends YargsCommand {
   public readonly commandHead = `tab`;
@@ -54,7 +56,18 @@ export class CapabilityAddTab extends YargsCommand {
     };
 
     const core = result.value;
-
+    const configResult = await core.getProjectConfig({
+      projectPath: rootFolder,
+      platform: Platform.CLI,
+      ignoreEnvInfo: true,
+    });
+    if (configResult.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, configResult.error, {
+        [TelemetryProperty.Capabilities]: this.commandHead,
+      });
+      return err(configResult.error);
+    }
+    const includeFrontend = ProjectSettingsHelper.includeFrontend(configResult.value?.settings);
     {
       const inputs = getSystemInputs(rootFolder);
       inputs.ignoreEnvInfo = true;
@@ -66,6 +79,8 @@ export class CapabilityAddTab extends YargsCommand {
         return err(result.error);
       }
     }
+
+    await automaticNpmInstallHandler(rootFolder, includeFrontend, true, true);
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.AddCap, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -109,6 +124,18 @@ export class CapabilityAddBot extends YargsCommand {
     };
 
     const core = result.value;
+    const configResult = await core.getProjectConfig({
+      projectPath: rootFolder,
+      platform: Platform.CLI,
+      ignoreEnvInfo: true,
+    });
+    if (configResult.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, configResult.error, {
+        [TelemetryProperty.Capabilities]: this.commandHead,
+      });
+      return err(configResult.error);
+    }
+    const includeBot = ProjectSettingsHelper.includeBot(configResult.value?.settings);
     {
       const inputs = getSystemInputs(rootFolder);
       inputs.ignoreEnvInfo = true;
@@ -120,6 +147,8 @@ export class CapabilityAddBot extends YargsCommand {
         return err(result.error);
       }
     }
+
+    await automaticNpmInstallHandler(rootFolder, true, true, includeBot);
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.AddCap, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
@@ -163,6 +192,18 @@ export class CapabilityAddMessageExtension extends YargsCommand {
     };
 
     const core = result.value;
+    const configResult = await core.getProjectConfig({
+      projectPath: rootFolder,
+      platform: Platform.CLI,
+      ignoreEnvInfo: true,
+    });
+    if (configResult.isErr()) {
+      CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCap, configResult.error, {
+        [TelemetryProperty.Capabilities]: this.commandHead,
+      });
+      return err(configResult.error);
+    }
+    const includeBot = ProjectSettingsHelper.includeBot(configResult.value?.settings);
     {
       const inputs = getSystemInputs(rootFolder);
       inputs.ignoreEnvInfo = true;
@@ -174,6 +215,8 @@ export class CapabilityAddMessageExtension extends YargsCommand {
         return err(result.error);
       }
     }
+
+    await automaticNpmInstallHandler(rootFolder, true, true, includeBot);
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.AddCap, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,

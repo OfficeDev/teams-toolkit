@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 import { FxError, Inputs, ok, QTreeNode, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
-import Container from "typedi";
+import { Container } from "typedi";
 import { HostTypeOptionSPFx, TabSPFxItem } from "../fx-solution/question";
 import { BuiltInScaffoldPluginNames, BuiltInSolutionNames } from "../fx-solution/v3/constants";
 import { TeamsSPFxSolutionQuestions } from "./questions";
@@ -42,7 +42,7 @@ export async function init(
 ): Promise<Result<Void, FxError>> {
   const solutionSettings: v3.TeamsSPFxSolutionSettings = {
     version: "3.0.0",
-    name: ctx.projectSetting.solutionSettings.name,
+    name: BuiltInSolutionNames.spfx,
     capabilities: ["tab"],
     hostType: HostTypeOptionSPFx.id,
     modules: [],

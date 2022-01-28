@@ -1302,7 +1302,7 @@ export interface ProjectSettings {
     // (undocumented)
     projectId: string;
     // (undocumented)
-    solutionSettings: SolutionSettings;
+    solutionSettings?: SolutionSettings;
     // (undocumented)
     version?: string;
 }

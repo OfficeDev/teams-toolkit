@@ -19,12 +19,6 @@ export class ProgressTitle {
   static readonly PostProvision = "Configuring SQL";
 }
 
-export class ProvisionMessage {
-  static readonly checkProvider = "Check SQL resource provider";
-  static readonly provisionSQL = "Provision SQL server";
-  static readonly provisionDatabase = "Provision database";
-}
-
 export class ConfigureMessage {
   static readonly postProvisionAddAadmin = "Configure aad admin for SQL";
   static readonly postProvisionAddUser = "Configure database user";

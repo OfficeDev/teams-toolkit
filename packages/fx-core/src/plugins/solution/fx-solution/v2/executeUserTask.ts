@@ -220,7 +220,7 @@ export async function addCapability(
   });
 
   // 1. checking addable
-  let solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
+  let solutionSettings = getAzureSolutionSettings(ctx);
   if (!solutionSettings) {
     // pure existing app
     solutionSettings = {

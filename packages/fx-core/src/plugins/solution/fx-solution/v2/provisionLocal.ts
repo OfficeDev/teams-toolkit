@@ -45,7 +45,7 @@ export async function provisionLocalResource(
       ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
     }
     const result = await ensurePermissionRequest(
-      azureSolutionSettings,
+      azureSolutionSettings!,
       ctx.permissionRequestProvider
     );
     if (result.isErr()) {

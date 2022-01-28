@@ -49,8 +49,8 @@ export function getAzureSolutionSettings(ctx: v2.Context): AzureSolutionSettings
   return ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
 }
 
-export function isAzureProject(azureSettings: AzureSolutionSettings): boolean {
-  return azureSettings && HostTypeOptionAzure.id === azureSettings.hostType;
+export function isAzureProject(azureSettings: AzureSolutionSettings | undefined): boolean {
+  return azureSettings !== undefined && HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
 export function combineRecords<T>(records: { name: string; result: T }[]): Record<string, T> {

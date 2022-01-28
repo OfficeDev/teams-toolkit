@@ -848,36 +848,45 @@
         "description": "Jumpstart your Teams app development experience",
         "steps": [
           {
-            "id": "teamsToolkitCapailities",
-            "title": "What are Teams app \"Capabilities\"",
-            "description": "[Capabilities](https://aka.ms/teamsfx-capabilities-overview) are the extension points for building apps on the Microsoft Teams platform.\n[Watch video (<1 min)](https://aka.ms/teamsfx-video)",
+            "id": "teamsToolkitEnvironment",
+            "title": "Get your environment ready",
+            "description": "Teams Toolkit requires a several prerequisites. Prepare your Teams app development environment before you start.\n[Run prerequisite checker](https://aka.ms/teamsfx-video)\n__hello teams toolkit [my link](https://aka.ms/teamsfx-video)__",
             "media": {
               "svg": "media/learn.svg",
-              "altText": "Watch Teams Video"
+              "altText": "Get your environment ready"
             }
           },
           {
-            "id": "teamsToolkitInstallNodeJs",
-            "title": "Install Node.js",
-            "description": "Teams toolkit cannot detect the right version of Node.js on your machine.\nAs a fundamental runtime context for Teams app, Node.js v10.x, v12.x, v14.x or v16.x is required (v.14.x is recommended ). Please install the appropriate version to run the Microsoft Teams Toolkit.Read more about managing Node.js versions.\n[Download Node.js (v.14.x)](https://aka.ms/teamsfx-nodejs-download)",
+            "id": "teamsToolkitBuildApp",
+            "title": "Build your first Teams app",
+            "description": "Choose [Teams app capabilities](https://aka.ms/teamsfx-capabilities-overview) and build your first Teams app.\nYou can create it from the scratch or explore our samples to help you quickly get started with the real-world examples and code structures.\n[Create a new Teams app](command:fx-extension.create?%5B%22Webview%22%5D)\n[View samples](command:toSide:fx-extension.openSamples?%5B%22Webview%22%5D)",
             "media": {
-              "svg": "media/step_nodejs.svg",
-              "altText": "Install NodeJs"
-            },
-            "when": "fx-extension.isNotValidNode"
+              "svg": "media/step_create.svg",
+              "altText": "Build your first Teams app"
+            }
           },
           {
-            "id": "teamsToolkitTenantAccount",
-            "title": "Get your M365 testing tenant for free",
-            "description": "Teams toolkit requires a Microsoft 365 (organizational account) with the [sideloading option](https://aka.ms/teamsfx-sideloading-option).\nIf your account is not ready, create a free M365 test tenant to start your Teams app development.\n[Create a developer tenant](https://aka.ms/teamsfx-prepare-365-tenant)",
+            "id": "teamsToolkitPreview",
+            "title": "Preview your Teams app locally",
+            "description": "Press [F5](https://aka.ms/teamsfx-capabilities-overview) or discover '[Run and Debug](https://aka.ms/teamsfx-capabilities-overview)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug)",
             "media": {
-              "markdown": "docs/itp/itp.md"
+              "svg": "media/step_nodejs.svg",
+              "altText": "Preview your Teams app locally"
+            }
+          },
+          {
+            "id": "teamsToolkitDeploy",
+            "title": "Deploy Teams apps",
+            "description": "You can provision resources in the cloud and deploy your app’s code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Teams Toolkit panel](command:fx-extension.openWelcome)",
+            "media": {
+              "svg": "media/goodToGo.svg",
+              "altText": "Explore more"
             }
           },
           {
             "id": "teamsToolkitExploreMore",
             "title": "Explore more TeamsFx functionalities",
-            "description": " • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)",
+            "description": "What’s next? Explore and discover more about Teams Toolkit functionalities with our README.md and Documentation.\nA few highlighted features: \n • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)",
             "media": {
               "svg": "media/goodToGo.svg",
               "altText": "Explore more"

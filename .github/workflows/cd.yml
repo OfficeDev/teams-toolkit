@@ -122,6 +122,13 @@ jobs:
         run: |
           node sdk-sync-up-version.js
         working-directory: ./.github/scripts
+
+      - name: sync up fx-core with templates version for RC
+        if: ${{ github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
+        run: |
+          node .github/scripts/fxcore-sync-up-version.js
+          git add packages/fx-core/.
+          git commit -m "chore: update templates version"
       
       - name: generate templates
         run: |

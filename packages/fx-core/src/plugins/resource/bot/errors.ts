@@ -57,8 +57,8 @@ export class PluginError extends Error {
     if (helpLink) this.helpLink = helpLink;
 
     const statusCode = this.innerError.response?.status;
+    if (!statusCode) return ;
     if (
-      statusCode &&
       statusCode >= Constants.statusCodeUserError &&
       statusCode < Constants.statusCodeServerError
     ) {

@@ -29,13 +29,13 @@ export interface ResourceStates {
   /**
    * solution object contains common configs shared by all resources
    */
-  solution?: Json;
+  solution: Json;
 
   /**
    * key is resource plugin name
    * value is cloud resource state object
    */
-  [key: string]: CloudResource | undefined;
+  [key: string]: CloudResource;
 }
 
 ////////////Azure Solution/////////////////////
@@ -71,6 +71,6 @@ export interface TeamsFxAzureResourceStates extends ResourceStates {
   /**
    * Azure solution configs contains common configs shared by all resources
    */
-  solution?: AzureSolutionConfig;
-  [key: string]: AzureResource | undefined;
+  solution: AzureSolutionConfig;
+  [key: string]: AzureResource;
 }

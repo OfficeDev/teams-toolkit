@@ -55,7 +55,7 @@ import { scaffoldByPlugins } from "./scaffolding";
 import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
-import { BuiltInResourcePluginNames } from "../v3/constants";
+import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { isVSProject } from "../../../../core";
 export async function executeUserTask(
   ctx: v2.Context,
@@ -249,7 +249,7 @@ export async function addCapability(
   const toAddTab = capabilitiesAnswer.includes(TabOptionItem.id);
   const toAddBot = capabilitiesAnswer.includes(BotOptionItem.id);
   const toAddME = capabilitiesAnswer.includes(MessageExtensionItem.id);
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
   const inputsWithProjectPath = inputs as v2.InputsWithProjectPath;
   const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,

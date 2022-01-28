@@ -22,7 +22,7 @@ export interface ISolution {
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
-  init: (ctx: Context, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+  init?: (ctx: Context, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
 
   /**
    *  add feature
@@ -40,7 +40,7 @@ export interface ISolution {
    * @param {EnvInfoV3} envInfo optional
    * @returns Void
    */
-  addFeature: (
+  addFeature?: (
     ctx: Context,
     inputs: SolutionAddFeatureInputs,
     envInfo?: EnvInfoV3

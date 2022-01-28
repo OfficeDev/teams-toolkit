@@ -16,7 +16,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import { AzureSolutionSettings, Inputs } from "../../../../../../api/build/types";
-import { selectFeatureQuestion, selectResourceQuestion } from "../../utils/questions";
+import { selectSingleFeatureQuestion } from "../../utils/questions";
 import arm from "../arm";
 
 function getAllFeaturePlugins(): v3.FeaturePlugin[] {
@@ -28,19 +28,25 @@ export async function getQuestionsForAddFeature(
   inputs: v2.InputsWithProjectPath,
   envInfo?: v2.DeepReadonly<v3.EnvInfoV3Question>
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  const node = new QTreeNode({ type: "group" });
   const plugins = getAllFeaturePlugins();
-  const resourceNode = new QTreeNode(selectFeatureQuestion);
+  const featureNode = new QTreeNode(selectSingleFeatureQuestion);
   const staticOptions: OptionItem[] = [];
   for (const plugin of plugins) {
     staticOptions.push({
       id: plugin.name,
       label: plugin.description || "",
     });
+    if (plugin.getQuestionsForAddFeature) {
+      const childNode = await plugin.getQuestionsForAddFeature(ctx, inputs, envInfo);
+      if (childNode.isErr()) return err(childNode.error);
+      if (childNode.value) {
+        childNode.value.condition = { equals: plugin.name };
+        featureNode.addChild(childNode.value);
+      }
+    }
   }
-  selectResourceQuestion.staticOptions = staticOptions;
-  node.addChild(resourceNode);
-  return ok(node);
+  selectSingleFeatureQuestion.staticOptions = staticOptions;
+  return ok(featureNode);
 }
 
 export class DefaultManifestProvider implements v3.AppManifestProvider {

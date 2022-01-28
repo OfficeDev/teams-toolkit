@@ -48,7 +48,7 @@ import { TelemetryReporterInstance } from "../common/telemetry";
 import { getRootDirectory, mapToJson } from "../common/tools";
 import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
 import {
-  BuiltInResourcePluginNames,
+  BuiltInFeaturePluginNames,
   BuiltInScaffoldPluginNames,
 } from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
@@ -432,7 +432,7 @@ export class FxCore implements v3.ICore {
             ...inputs,
             projectPath: projectPath,
             module: "0",
-            resource: BuiltInResourcePluginNames.webApp, //TODO
+            resource: BuiltInFeaturePluginNames.webApp, //TODO
           };
         const addResourceRes = await this._addResource(addResourceInputs, ctx);
         if (addResourceRes.isErr()) {
@@ -485,8 +485,8 @@ export class FxCore implements v3.ICore {
             projectPath: projectPath,
             module: "0",
             resource: capabilities.includes(TabOptionItem.id)
-              ? BuiltInResourcePluginNames.storage
-              : BuiltInResourcePluginNames.spfx, //TODO
+              ? BuiltInFeaturePluginNames.storage
+              : BuiltInFeaturePluginNames.spfx, //TODO
           };
           const addResourceRes = await this._addResource(addResourceInputs, ctx);
           if (addResourceRes.isErr()) {
@@ -541,7 +541,7 @@ export class FxCore implements v3.ICore {
             ...inputs,
             projectPath: projectPath,
             module: "1",
-            resource: BuiltInResourcePluginNames.bot, //TODO
+            resource: BuiltInFeaturePluginNames.bot, //TODO
           };
           const addResourceRes = await this._addResource(addResourceInputs, ctx);
           if (addResourceRes.isErr()) {

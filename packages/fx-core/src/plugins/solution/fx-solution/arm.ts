@@ -879,12 +879,10 @@ async function doAddFeature(
   const moduleConfigFiles = new Map<string, string>();
 
   // add feature for selected plugin
-  const addFeatureRes = await Container.get<v3.FeaturePlugin>(inputs.feature).addFeature(
-    ctx,
-    inputs,
-    envInfo
-  );
-  if (addFeatureRes.isErr()) {
+  const selectedPlugin = await Container.get<v3.FeaturePlugin>(inputs.feature);
+  if (!selectedPlugin.addFeature) return ok(undefined);
+  const addFeatureRes = await selectedPlugin.addFeature(ctx, inputs, envInfo);
+  if (addFeatureRes && addFeatureRes.isErr()) {
     return err(addFeatureRes.error);
   }
   if (addFeatureRes.value) {

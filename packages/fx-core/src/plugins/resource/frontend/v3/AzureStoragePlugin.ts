@@ -23,7 +23,7 @@ import {
   getSubscriptionIdFromResourceId,
 } from "../../../../common/tools";
 import { getTemplatesFolder } from "../../../../folder";
-import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { AzureStorageClient } from "../clients";
 import { FrontendConfig } from "../configs";
 import { DependentPluginInfo, FrontendPathInfo } from "../constants";
@@ -32,12 +32,12 @@ import { FrontendDeployment } from "../ops/deploy";
 import { Messages } from "../resources/messages";
 import { DeployProgress, PostProvisionProgress } from "../resources/steps";
 import { EnableStaticWebsiteError, UnauthenticatedError } from "./error";
-@Service(BuiltInResourcePluginNames.storage)
+@Service(BuiltInFeaturePluginNames.storage)
 export class AzureStoragePlugin implements v3.ResourcePlugin {
   type: "resource" = "resource";
   resourceType = "Azure Storage";
   description = "Azure Storage";
-  name = BuiltInResourcePluginNames.storage;
+  name = BuiltInFeaturePluginNames.storage;
   async generateResourceTemplate(
     ctx: v3.ContextWithManifest,
     inputs: v3.PluginAddResourceInputs
@@ -194,20 +194,20 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     };
 
     const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-    if (solutionSettings.activeResourcePlugins.includes(BuiltInResourcePluginNames.function)) {
-      const functionState = envInfo.state[BuiltInResourcePluginNames.function] as v3.AzureFunction;
+    if (solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.function)) {
+      const functionState = envInfo.state[BuiltInFeaturePluginNames.function] as v3.AzureFunction;
       addToEnvs(EnvKeys.FuncName, ctx.projectSetting.defaultFunctionName);
       addToEnvs(EnvKeys.FuncEndpoint, functionState.functionEndpoint);
     }
 
-    if (solutionSettings.activeResourcePlugins.includes(BuiltInResourcePluginNames.simpleAuth)) {
-      const simpleAuthState = envInfo.state[BuiltInResourcePluginNames.simpleAuth] as v3.SimpleAuth;
+    if (solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.simpleAuth)) {
+      const simpleAuthState = envInfo.state[BuiltInFeaturePluginNames.simpleAuth] as v3.SimpleAuth;
       addToEnvs(EnvKeys.RuntimeEndpoint, simpleAuthState.endpoint);
       addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
     }
 
-    if (solutionSettings.activeResourcePlugins.includes(BuiltInResourcePluginNames.aad)) {
-      const aadState = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
+    if (solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
+      const aadState = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
       addToEnvs(EnvKeys.ClientID, aadState.clientId);
     }
     return envs;

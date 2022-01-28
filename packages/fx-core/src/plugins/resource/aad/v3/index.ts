@@ -22,7 +22,7 @@ import * as path from "path";
 import { Service } from "typedi";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { DEFAULT_PERMISSION_REQUEST, SolutionError } from "../../../solution";
-import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { AadAppClient } from "../aadAppClient";
 import { Messages, Plugins, ProgressDetail, ProgressTitle, Telemetry } from "../constants";
 import { AppIdUriInvalidError } from "../errors";
@@ -147,8 +147,8 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
     if (localSettingsV2) {
       if (!localSettingsV2.auth) localSettingsV2.auth = {};
     } else {
-      if (!envInfo?.state[BuiltInResourcePluginNames.aad]) {
-        envInfo!.state[BuiltInResourcePluginNames.aad] = {
+      if (!envInfo?.state[BuiltInFeaturePluginNames.aad]) {
+        envInfo!.state[BuiltInFeaturePluginNames.aad] = {
           secretFields: ["clientSecret"],
         };
       }
@@ -219,7 +219,7 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
       skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
     if (localSettingsV2) return ok(localSettingsV2);
-    const aadConfig = envInfo!.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
+    const aadConfig = envInfo!.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
     return ok(aadConfig);
   }
 
@@ -375,7 +375,7 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
     ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));
     isLocalDebug
       ? ((localSettings as v2.LocalSettings).auth!.applicationIdUris = config.applicationIdUri)
-      : ((envInfo!.state[BuiltInResourcePluginNames.aad] as v3.AADApp).applicationIdUris =
+      : ((envInfo!.state[BuiltInFeaturePluginNames.aad] as v3.AADApp).applicationIdUris =
           config.applicationIdUri);
     return ok(Void);
   }

@@ -13,7 +13,7 @@ import {
   scaffoldFromTemplates,
 } from "../../../../common/template-utils/templatesActions";
 import {
-  BuiltInResourcePluginNames,
+  BuiltInFeaturePluginNames,
   BuiltInScaffoldPluginNames,
 } from "../../../solution/fx-solution/v3/constants";
 import { getModule } from "../../../solution/fx-solution/v3/utils";
@@ -63,7 +63,7 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
     const language = template === "ReactTab_TS" ? "ts" : "js";
     const componentPath = path.join(inputs.projectPath, FrontendPathInfo.WorkingDir);
     const hasFunction = solutionSettings.activeResourcePlugins.includes(
-      BuiltInResourcePluginNames.function
+      BuiltInFeaturePluginNames.function
     );
     const variables = {
       showFunction: hasFunction.toString(),

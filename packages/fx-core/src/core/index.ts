@@ -37,11 +37,9 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
-import { assign } from "lodash";
 import * as path from "path";
 import { Container } from "typedi";
 import * as uuid from "uuid";
-import { resourceLimits } from "worker_threads";
 import { environmentManager } from "..";
 import { FeatureFlagName } from "../common/constants";
 import { globalStateUpdate } from "../common/globalState";

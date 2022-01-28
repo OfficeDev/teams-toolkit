@@ -50,18 +50,18 @@ export class AadPluginV2 implements v2.ResourcePlugin {
   async provisionResource(
     ctx: v2.Context,
     inputs: v2.ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 
   async configureResource(
     ctx: v2.Context,
     inputs: v2.ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<Json, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 

@@ -24,6 +24,6 @@ export async function generateResourceTemplateForPlugins(
 ): Promise<Result<Json, FxError>> {
   showUpdateArmTemplateNotice(ctx.userInteraction);
   const allPlugins = getActivatedV2ResourcePlugins(ctx.projectSetting);
-  const armResult = await arm.generateArmTemplate(ctx, inputs, allPlugins, plugins);
+  const armResult = await arm.addFeature(ctx, inputs, allPlugins, plugins);
   return armResult;
 }

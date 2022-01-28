@@ -201,7 +201,7 @@ export interface ResourcePlugin extends Plugin {
     ctx: Context,
     inputs: Inputs,
     tokenProvider: TokenProvider,
-    envInfo?: DeepReadonly<EnvInfoV3>
+    envInfo?: DeepReadonly<EnvInfoV3Question>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   provisionResource?: (
@@ -288,21 +288,22 @@ export interface FeaturePlugin extends Plugin {
    */
   getQuestionsForAddFeature?: (
     ctx: Context,
-    inputs: Inputs
+    inputs: Inputs,
+    envInfo?: DeepReadonly<EnvInfoV3Question>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   /**
    * triggered by add feature event, this API aims to add/modify files in local workspace
    *
    * @param {ContextWithManifestProvider} context with manifest provider
-   *
    * @param {InputsWithProjectPath} inputs with project path
-   *
+   * @param {EnvInfoV3} envInfo optional
    * @returns {ResourceTemplate | undefined} resource template
    */
   addFeature: (
     ctx: ContextWithManifestProvider,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    envInfo?: EnvInfoV3
   ) => Promise<Result<ResourceTemplate | undefined, FxError>>;
 
   /**
@@ -313,11 +314,14 @@ export interface FeaturePlugin extends Plugin {
    *
    * @param {OtherFeaturesAddedInputs} inputs with added features
    *
+   * @param {EnvInfoV3} envInfo optional
+   *
    * @returns {ResourceTemplate | undefined} resource template
    */
   afterOtherFeaturesAdded?: (
     ctx: ContextWithManifestProvider,
-    inputs: OtherFeaturesAddedInputs
+    inputs: OtherFeaturesAddedInputs,
+    envInfo?: EnvInfoV3
   ) => Promise<Result<ResourceTemplate | undefined, FxError>>;
 
   /**
@@ -326,8 +330,8 @@ export interface FeaturePlugin extends Plugin {
   getQuestionsForProvision?: (
     ctx: Context,
     inputs: Inputs,
-    envInfo: DeepReadonly<EnvInfoV3Question>,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: DeepReadonly<EnvInfoV3Question>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   /**
    * provision includes provision local resource or remote resource
@@ -354,15 +358,15 @@ export interface FeaturePlugin extends Plugin {
   getQuestionsForDeploy?: (
     ctx: Context,
     inputs: Inputs,
-    envInfo: DeepReadonly<EnvInfoV3Question>,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: DeepReadonly<EnvInfoV3Question>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   /**
    * deploy
    */
   deploy?: (
     ctx: Context,
-    inputs: PluginDeployInputs,
+    inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ) => Promise<Result<Void, FxError>>;

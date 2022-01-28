@@ -239,7 +239,7 @@ export async function addResource(
   const addedPlugins = Array.from(addedResourceNames).map((n) =>
     Container.get<v3.ResourcePlugin>(n)
   );
-  const armRes = await arm.generateArmTemplate(
+  const armRes = await arm.addFeature(
     contextWithManifest,
     inputsNew,
     activatedPlugins,

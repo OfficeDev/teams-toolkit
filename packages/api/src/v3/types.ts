@@ -10,7 +10,7 @@ export interface EnvInfoV3 extends EnvInfoV2 {
 }
 
 export interface EnvInfoV3Question {
-  envName: string;
+  envName?: string;
   // input
   config?: EnvConfig;
   // output

@@ -15,6 +15,7 @@ export enum SolutionV3QuestionNames {
   scaffoldTemplate = "template",
   capabilities = "capabilities",
   resource = "resource",
+  feature = "feature",
   module = "module",
   modules = "modules",
 }
@@ -89,6 +90,13 @@ export const selectScaffoldTemplateQuestion: SingleSelectQuestion = {
 export const selectResourceQuestion: SingleSelectQuestion = {
   name: SolutionV3QuestionNames.resource,
   title: "Select a resources",
+  type: "singleSelect",
+  staticOptions: [],
+};
+
+export const selectFeatureQuestion: SingleSelectQuestion = {
+  name: SolutionV3QuestionNames.feature,
+  title: "Select a feature",
   type: "singleSelect",
   staticOptions: [],
 };

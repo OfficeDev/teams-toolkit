@@ -5,6 +5,7 @@ import { ResourceManagementClient } from "@azure/arm-resources";
 import {
   AppStudioTokenProvider,
   AzureAccountProvider,
+  AzureSolutionSettings,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
   err,
@@ -23,6 +24,7 @@ import { isUndefined } from "lodash";
 import { Container } from "typedi";
 import * as util from "util";
 import { v4 as uuidv4 } from "uuid";
+import { AzureSolutionConfig } from "../../../../../../api/build/v3";
 import { PluginDisplayName } from "../../../../common/constants";
 import {
   CustomizeResourceGroupType,
@@ -43,12 +45,12 @@ export async function getQuestionsForProvision(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
   tokenProvider: TokenProvider,
-  envInfo?: v2.DeepReadonly<v3.EnvInfoV3>
+  envInfo?: v2.DeepReadonly<v3.EnvInfoV3Question>
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  const solutionSetting = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
+  const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const root = new QTreeNode({ type: "group" });
   for (const pluginName of solutionSetting.activeResourcePlugins) {
-    const plugin = Container.get<v3.ResourcePlugin>(pluginName);
+    const plugin = Container.get<v3.FeaturePlugin>(pluginName);
     if (plugin.getQuestionsForProvision) {
       const res = await plugin.getQuestionsForProvision(ctx, inputs, tokenProvider, envInfo);
       if (res.isErr()) {

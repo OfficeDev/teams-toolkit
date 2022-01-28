@@ -1,6 +1,12 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Func, PluginContext, ok, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
+import {
+  Func,
+  PluginContext,
+  ok,
+  ReadonlyPluginConfig,
+  SolutionSettings,
+} from "@microsoft/teamsfx-api";
 import {
   DotnetPluginInfo as PluginInfo,
   DotnetConfigInfo as ConfigInfo,
@@ -90,9 +96,9 @@ export class DotnetPluginImpl implements PluginImpl {
   }
 
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.info(Messages.StartScaffold(PluginInfo.displayName));
+    Logger.info(Messages.StartScaffold);
 
-    const selectedCapabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+    const selectedCapabilities = (ctx.projectSettings?.solutionSettings as SolutionSettings)
       .capabilities;
     const includeTab = selectedCapabilities.includes(DotnetSupportCapability.tabCapability);
     const includeBot = selectedCapabilities.includes(DotnetSupportCapability.botCapability);
@@ -113,7 +119,7 @@ export class DotnetPluginImpl implements PluginImpl {
     const templateInfo = new TemplateInfo(ctx, Group.Base, templateVariable);
     await scaffoldFromZipPackage(ctx.root, templateInfo);
 
-    Logger.info(Messages.EndScaffold(PluginInfo.displayName));
+    Logger.info(Messages.EndScaffold);
     return ok(undefined);
   }
 

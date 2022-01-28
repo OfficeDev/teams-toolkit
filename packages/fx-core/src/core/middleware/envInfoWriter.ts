@@ -56,7 +56,6 @@ async function writeEnvInfo(ctx: CoreHookContext, skip: boolean) {
   if (state[PluginNames.LDEBUG]) {
     delete state[PluginNames.LDEBUG];
   }
-  // const envState = flattenConfigJson(provisionOutputs);
   const envStatePath = await environmentManager.writeEnvState(
     envInfoV2.state,
     inputs.projectPath,

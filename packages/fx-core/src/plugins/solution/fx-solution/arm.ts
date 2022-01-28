@@ -1023,8 +1023,8 @@ async function persistBicepTemplates(
       await fs.appendFile(path.join(templateFolderPath, module[0]), res.replace(/\r?\n/g, os.EOL));
     }
 
-    // If no any config part in orchestration or module, return.
-    if (bicepOrchestrationTemplate.getOrchestractionConfigContent() != "") {
+    // Skip if no any config part in orchestration.
+    if (bicepOrchestrationTemplate.getOrchestractionConfigContent() !== "") {
       // Generate config.bicep and module configuration bicep files.
       let bicepOrchestrationConfigContent = "";
       // Configuration Biceps.
@@ -1049,7 +1049,7 @@ async function persistBicepTemplates(
         bicepOrchestrationConfigContent.replace(/\r?\n/g, os.EOL)
       );
     }
-    // Generate module configuration bicep files.
+    // Skip if no module configuration bicep update.
     if (moduleConfigFiles.size != 0) {
       await fs.ensureDir(path.join(templateFolderPath, "teamsFx"));
       for (const module of moduleConfigFiles) {

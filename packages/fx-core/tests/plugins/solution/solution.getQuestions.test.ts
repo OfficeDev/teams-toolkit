@@ -66,7 +66,7 @@ const mockedProvider: TokenProvider = {
 const envInfo: EnvInfoV2 = {
   envName: "default",
   config: {},
-  state: { solution: { output: {}, secrets: {} } },
+  state: { solution: {} },
 };
 
 describe("getQuestionsForScaffolding()", async () => {

@@ -264,6 +264,13 @@ export interface ResourcePlugin extends Plugin {
   ) => Promise<Result<unknown, FxError>>;
 }
 
+export interface OtherFeaturesAddedInputs extends InputsWithProjectPath {
+  features: {
+    name: string; //plugin name
+    value: ResourceTemplate | undefined; //plugin addFeature result
+  }[];
+}
+
 export interface FeaturePlugin extends Plugin {
   /**
    * resource description
@@ -291,16 +298,26 @@ export interface FeaturePlugin extends Plugin {
    *
    * @param {InputsWithProjectPath} inputs with project path
    *
-   * @returns {Void} void
+   * @returns {ResourceTemplate | undefined} resource template
    */
   addFeature: (
     ctx: ContextWithManifestProvider,
     inputs: InputsWithProjectPath
   ) => Promise<Result<ResourceTemplate | undefined, FxError>>;
 
+  /**
+   * triggered after other feature(s) is/are added
+   * one scenario is that when feature A is added, feature plugin B should be notified after adding feature A.
+   *
+   * @param {ContextWithManifestProvider} context with manifest provider
+   *
+   * @param {OtherFeaturesAddedInputs} inputs with added features
+   *
+   * @returns {ResourceTemplate | undefined} resource template
+   */
   afterOtherFeaturesAdded?: (
     ctx: ContextWithManifestProvider,
-    inputs: InputsWithProjectPath & { plugins: string[] }
+    inputs: OtherFeaturesAddedInputs
   ) => Promise<Result<ResourceTemplate | undefined, FxError>>;
 
   /**

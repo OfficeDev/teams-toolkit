@@ -562,10 +562,7 @@ export interface ExpServiceProvider {
 // @public (undocumented)
 interface FeaturePlugin extends Plugin_3 {
     addFeature: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
-    // (undocumented)
-    afterOtherFeaturesAdded?: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath & {
-        plugins: string[];
-    }) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
+    afterOtherFeaturesAdded?: (ctx: ContextWithManifestProvider, inputs: OtherFeaturesAddedInputs) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
     configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     deploy?: (ctx: Context_2, inputs: PluginDeployInputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     description?: string;
@@ -1154,6 +1151,15 @@ export interface OptionItem {
     detail?: string;
     id: string;
     label: string;
+}
+
+// @public (undocumented)
+interface OtherFeaturesAddedInputs extends InputsWithProjectPath {
+    // (undocumented)
+    features: {
+        name: string;
+        value: ResourceTemplate_2 | undefined;
+    }[];
 }
 
 // @public (undocumented)
@@ -2145,6 +2151,7 @@ declare namespace v3 {
         ScaffoldPlugin,
         PluginAddResourceInputs,
         ResourcePlugin_2 as ResourcePlugin,
+        OtherFeaturesAddedInputs,
         FeaturePlugin,
         Module,
         TeamsFxSolutionSettings,

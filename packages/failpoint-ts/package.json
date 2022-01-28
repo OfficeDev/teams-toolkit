@@ -17,7 +17,7 @@
   },
   "scripts": {
     "test": "npm run test:unit",
-    "test:unit": "npx nyc --check-coverage --reporter=json-summary --reporter=text mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
+    "test:unit": "npx nyc mocha --no-timeouts --require ts-node/register test/**/*.test.ts",
     "build": "npx tsc -p ./",
     "prepare": "rimraf build && npm run build",
     "format-check": "echo test",
@@ -28,6 +28,7 @@
     "url": "https://github.com/OfficeDev/TeamsFx/issues"
   },
   "devDependencies": {
+    "@istanbuljs/nyc-config-typescript": "^1.0.1",
     "@shared/eslint-config": "file:../eslint-config",
     "@shared/prettier-config": "file:../prettier-config",
     "@types/chai": "^4.2.21",

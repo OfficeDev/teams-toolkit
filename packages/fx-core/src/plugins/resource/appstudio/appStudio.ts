@@ -216,6 +216,9 @@ export namespace AppStudioClient {
     }
   }
 
+  /**
+   * @deprecated Please DO NOT use this method any more, it will be removed in near future.
+   */
   export async function validateManifest(
     manifestString: string,
     appStudioToken: string

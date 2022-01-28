@@ -52,6 +52,8 @@ export enum TelemetryEvent {
   ProjectMigratorGuide = "project-migrator-guide",
   ProjectMigratorPrecheckFailed = "project-migrator-pre-check-failed",
   ProjectMigratorError = "project-migrator-error",
+  DetectPortStart = "detect-port-start",
+  DetectPort = "detect-port",
 }
 
 export enum TelemetrySuccess {

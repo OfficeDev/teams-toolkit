@@ -33,8 +33,12 @@ const GlobalOptions = new Set([
   CliConfigOptions.EnvCheckerValidateDotnetSdk as string,
   CliConfigOptions.EnvCheckerValidateFuncCoreTools as string,
   CliConfigOptions.EnvCheckerValidateNode as string,
+  CliConfigOptions.EnvCheckerValidateNgrok as string,
+  CliConfigOptions.TrustDevCert as string,
   CliConfigOptions.RunFrom as string,
   CliConfigOptions.Interactive as string,
+  // TODO: enable this config
+  // CliConfigOptions.AutomaticNpmInstall as string,
 ]);
 
 export class ConfigGet extends YargsCommand {

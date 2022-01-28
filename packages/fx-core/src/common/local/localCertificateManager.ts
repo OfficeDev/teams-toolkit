@@ -60,8 +60,6 @@ export class LocalCertificateManager {
       let certThumbprint: string | undefined = undefined;
       await fs.ensureDir(this.certFolder);
 
-      this.logger?.info("Detecting/Verifying local certificate.");
-
       if ((await fs.pathExists(certFilePath)) && (await fs.pathExists(keyFilePath))) {
         const certContent = await fs.readFile(certFilePath, { encoding: "utf8" });
         const keyContent = await fs.readFile(keyFilePath, { encoding: "utf8" });

@@ -303,7 +303,6 @@ export class LocalSettingsProvider {
     const frontendLocalConfig = new ConfigMap();
     frontendLocalConfig.set(LocalSettingsFrontendKeys.Browser, "none");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.Https, true);
-    frontendLocalConfig.set(LocalSettingsFrontendKeys.TrustDevCert, true);
     frontendLocalConfig.set(LocalSettingsFrontendKeys.SslCertFile, "");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.SslKeyFile, "");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.TabDomain, "");
@@ -327,11 +326,7 @@ export class LocalSettingsProvider {
     const botLocalConfig = new ConfigMap();
     const keys = Object.values(LocalSettingsBotKeys);
     for (const key of keys) {
-      if (key === LocalSettingsBotKeys.SkipNgrok) {
-        botLocalConfig.set(key, false);
-      } else {
-        botLocalConfig.set(key, "");
-      }
+      botLocalConfig.set(key, "");
     }
 
     return botLocalConfig;

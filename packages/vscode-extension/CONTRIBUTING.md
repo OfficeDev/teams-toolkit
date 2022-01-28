@@ -39,7 +39,7 @@ Verify you have the right prerequisites for building Teams apps and install some
 
 ## Test the project
 
-Mannully test UI in VS Code extenion for now.
+Manually test UI in VS Code extension for now.
 
 ## Style Guidelines
 

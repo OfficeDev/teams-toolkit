@@ -13,8 +13,7 @@ import NpmSearchConnectorM365 from "../../media/npm-search-connector-M365.gif";
 import HelloWorldTab from "../../media/helloWorld-tab.gif";
 import HelloWorldTabWithBackend from "../../media/helloWorld-tab-with-backend.gif";
 import HelloWorldBot from "../../media/helloWorld-bot.gif";
-import Watch from "../../media/watch.svg";
-import Settings from "../../media/settings.svg";
+import { Watch, Setting } from "./resources";
 import GraphToolkitContactExporter from "../../media/graph-toolkit-contact-exporter.gif";
 import BOTSSO from "../../media/bot-sso.gif";
 import { EventMessages } from "./messages";
@@ -156,139 +155,6 @@ class SampleAppCardList extends React.Component<SampleListProps, any> {
   }
 }
 
-class SampleAppCard extends React.Component<SampleCardProps, any> {
-  constructor(props: SampleCardProps) {
-    super(props);
-  }
-
-  render() {
-    return (
-      <div className="sample-app-card" tabIndex={0}>
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-        >
-          sample app card
-        </label>
-        <Image src={this.props.image} width={278} height={160} />
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-          id="tagLabel"
-        >
-          sample app tags:
-        </label>
-        <div className="section" aria-labelledby="tagLabel">
-          {this.props.tags &&
-            this.props.tags.map((value: string) => {
-              return <VSCodeTag className="tag">{value}</VSCodeTag>;
-            })}
-        </div>
-        <div className="estimation-time">
-          <Image
-            src={Watch}
-            width={16}
-            height={16}
-            style={{ marginTop: "auto", marginBottom: "auto" }}
-          ></Image>
-
-          <label style={{ paddingLeft: 4 }}>{this.props.time}</label>
-        </div>
-        <div className="configuration">
-          <Image
-            src={Settings}
-            width={16}
-            height={16}
-            style={{ marginTop: "auto", marginBottom: "auto" }}
-          ></Image>
-          <label style={{ paddingLeft: 4 }}>{this.props.configuration}</label>
-        </div>
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-          id="titleLabel"
-        >
-          sample app title:
-        </label>
-        <h2>{this.props.title}</h2>
-        <label
-          style={{
-            position: "absolute",
-            top: "auto",
-            left: -9999,
-            width: 1,
-            height: 1,
-            overflow: "hidden",
-          }}
-          id="descriptionLabel"
-        >
-          sample app description:
-        </label>
-        <h3>{this.props.description}</h3>
-        <div className="section buttons">
-          <VSCodeButton
-            className="right-aligned"
-            onClick={() => {
-              this.viewSampleApp(this.props.sampleAppFolder, this.props.baseUrl);
-            }}
-          >
-            View on Github
-          </VSCodeButton>
-
-          <VSCodeButton
-            className="right-aligned"
-            onClick={() => {
-              this.cloneSampleApp(
-                this.props.title,
-                this.props.sampleAppUrl,
-                this.props.sampleAppFolder
-              );
-            }}
-          >
-            Create
-          </VSCodeButton>
-        </div>
-      </div>
-    );
-  }
-
-  cloneSampleApp = (sampleAppName: string, sampleAppUrl: string, sampleAppFolder: string) => {
-    vscode.postMessage({
-      command: Commands.CloneSampleApp,
-      data: {
-        appName: sampleAppName,
-        appUrl: sampleAppUrl,
-        appFolder: sampleAppFolder,
-      },
-    });
-  };
-
-  viewSampleApp = (sampleAppFolder: string, sampleBaseUrl: string) => {
-    vscode.postMessage({
-      command: Commands.OpenExternalLink,
-      data: sampleBaseUrl + sampleAppFolder,
-    });
-  };
-}
-
 class SampleCard extends React.Component<SampleCardProps, any> {
   constructor(props: SampleCardProps) {
     super(props);
@@ -355,22 +221,15 @@ class SampleCard extends React.Component<SampleCardProps, any> {
         </label>
         <h2>{this.props.title}</h2>
         <div className="estimation-time">
-          <Image
-            src={Watch}
-            width={16}
-            height={16}
-            style={{ marginTop: "auto", marginBottom: "auto" }}
-          ></Image>
-
+          <div className="watch">
+            <Watch></Watch>
+          </div>
           <label style={{ paddingLeft: 4 }}>{this.props.time}</label>
         </div>
         <div className="configuration">
-          <Image
-            src={Settings}
-            width={16}
-            height={16}
-            style={{ marginTop: "auto", marginBottom: "auto" }}
-          ></Image>
+          <div className="setting">
+            <Setting></Setting>
+          </div>
           <label style={{ paddingLeft: 4 }}>{this.props.configuration}</label>
         </div>
       </div>

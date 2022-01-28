@@ -4,6 +4,7 @@ import "./sampleDetailPage.scss";
 import { VSCodeButton, VSCodeTag } from "./webviewUiToolkit";
 import Watch from "../../media/watch.svg";
 import Settings from "../../media/settings.svg";
+import { Commands } from "./Commands";
 
 export default class SampleDetailPage extends React.Component<SampleDetailProps, any> {
   constructor(props: SampleDetailProps) {
@@ -13,12 +14,16 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
   render() {
     return (
       <div className="sampleDetail">
-        <ActionButton iconProps={{ iconName: "ChevronLeft" }}>Back</ActionButton>
+        <ActionButton iconProps={{ iconName: "ChevronLeft" }} onClick={this.onBack}>
+          Back
+        </ActionButton>
         <div className="header">
           <h2>{this.props.title}</h2>
           <div className="buttons">
-            <VSCodeButton>Create</VSCodeButton>
-            <VSCodeButton appearance="secondary">View on GitHub</VSCodeButton>
+            <VSCodeButton onClick={this.onCreate}>Create</VSCodeButton>
+            <VSCodeButton appearance="secondary" onClick={this.onViewGithub}>
+              View on GitHub
+            </VSCodeButton>
           </div>
         </div>
         <div className="tags">
@@ -50,4 +55,26 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
       </div>
     );
   }
+
+  onBack = () => {
+    this.props.highlightSample("");
+  };
+
+  onCreate = () => {
+    vscode.postMessage({
+      command: Commands.CloneSampleApp,
+      data: {
+        appName: this.props.title,
+        appUrl: this.props.sampleAppUrl,
+        appFolder: this.props.sampleAppFolder,
+      },
+    });
+  };
+
+  onViewGithub = () => {
+    vscode.postMessage({
+      command: Commands.OpenExternalLink,
+      data: this.props.baseUrl + this.props.sampleAppFolder,
+    });
+  };
 }

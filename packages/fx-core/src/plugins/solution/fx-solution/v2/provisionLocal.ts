@@ -111,7 +111,7 @@ export async function provisionLocalResource(
         return new v2.FxPartialSuccess(localSettings, result.error);
       }
     } else {
-      if (!ctx.projectSetting.solutionSettings.migrateFromV1) {
+      if (!ctx.projectSetting.solutionSettings!.migrateFromV1) {
         return new v2.FxFailure(
           returnSystemError(
             new Error("AAD plugin not selected or executeUserTask is undefined"),

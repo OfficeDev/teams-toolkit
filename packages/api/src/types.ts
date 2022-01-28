@@ -170,7 +170,7 @@ export interface ProjectSettings {
   projectId: string;
   programmingLanguage?: string;
   defaultFunctionName?: string;
-  solutionSettings: SolutionSettings;
+  solutionSettings?: SolutionSettings;
   isFromSample?: boolean;
   /**
    * pluginSettings is used for plugin settings irrelevant to environments

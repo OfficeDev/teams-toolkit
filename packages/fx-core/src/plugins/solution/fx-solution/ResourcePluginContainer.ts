@@ -122,15 +122,11 @@ export function getActivatedResourcePlugins(solutionSettings: AzureSolutionSetti
 export function getActivatedV2ResourcePlugins(
   projectSettings: ProjectSettings
 ): v2.ResourcePlugin[] {
-  const activatedPlugins = getAllV2ResourcePlugins().filter(
-    (p) => p.activate && p.activate(projectSettings) === true
+  const activeResourcePlugins = (projectSettings.solutionSettings as AzureSolutionSettings)
+    ?.activeResourcePlugins;
+  if (!activeResourcePlugins) return [];
+  const activatedPlugins = getAllV2ResourcePlugins().filter((p) =>
+    activeResourcePlugins.includes(p.name)
   );
-  if (activatedPlugins.length === 0) {
-    throw returnUserError(
-      new Error(`No plugin selected`),
-      SolutionSource,
-      SolutionError.NoResourcePluginSelected
-    );
-  }
   return activatedPlugins;
 }

@@ -106,7 +106,6 @@ export const LocalSettingsFrontendKeys = Object.freeze({
   TabEndpoint: "tabEndpoint",
   Browser: "browser",
   Https: "https",
-  TrustDevCert: "trustDevCert",
   SslCertFile: "sslCertFile",
   SslKeyFile: "sslKeyFile",
 });
@@ -121,7 +120,6 @@ export const LocalSettingsBackendKeys = Object.freeze({
 });
 
 export const LocalSettingsBotKeys = Object.freeze({
-  SkipNgrok: "skipNgrok",
   BotId: "botId",
   BotPassword: "botPassword",
   BotAadObjectId: "botAadObjectId",

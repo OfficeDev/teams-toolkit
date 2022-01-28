@@ -9,17 +9,11 @@ import {
   QTreeNode,
   Platform,
   traverse,
-  AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
 import { ManagementClient } from "./managementClient";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";
-import {
-  DialogUtils,
-  ProgressTitle,
-  ProvisionMessage,
-  ConfigureMessage,
-} from "./utils/dialogUtils";
+import { DialogUtils, ProgressTitle, ConfigureMessage } from "./utils/dialogUtils";
 import { SqlConfig } from "./config";
 import { SqlClient } from "./sqlClient";
 import { ContextUtils } from "./utils/contextUtils";
@@ -28,7 +22,6 @@ import { AzureSqlBicep, AzureSqlBicepFile, Constants, HelpLinks, Telemetry } fro
 import { Message } from "./utils/message";
 import { TelemetryUtils } from "./utils/telemetryUtils";
 import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "./questions";
-import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 import path from "path";
 import { getTemplatesFolder } from "../../../folder";
 import { Bicep, ConstantString } from "../../../common/constants";
@@ -102,71 +95,14 @@ export class SqlPluginImpl {
           ErrorMessage.SqlInputError.message()
         );
       }
-      ctx.config.set(Constants.admin, this.config.admin);
-      ctx.config.set(Constants.adminPassword, this.config.adminPassword);
     }
 
     await this.parseLoginToken(ctx);
 
-    this.setContext(ctx);
+    this.setPasswordContext(ctx);
 
     TelemetryUtils.sendEvent(Telemetry.stage.preProvision, true);
     ctx.logProvider?.info(Message.endPreProvision);
-    return ok(undefined);
-  }
-
-  async provision(ctx: PluginContext): Promise<Result<any, FxError>> {
-    ctx.logProvider?.info(Message.startProvision);
-    DialogUtils.init(ctx, ProgressTitle.Provision, Object.keys(ProvisionMessage).length);
-    TelemetryUtils.init(ctx);
-    TelemetryUtils.sendEvent(Telemetry.stage.provision + Telemetry.startSuffix);
-
-    const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
-
-    await DialogUtils.progressBar?.start();
-    await DialogUtils.progressBar?.next(ProvisionMessage.checkProvider);
-    if (!this.config.existSql) {
-      try {
-        ctx.logProvider?.info(Message.checkProvider);
-        const credentials = await ctx.azureAccountProvider!.getAccountCredentialAsync();
-        const resourceManagementClient = new Providers(
-          new ResourceManagementClientContext(credentials!, this.config.azureSubscriptionId)
-        );
-        await resourceManagementClient.register(Constants.resourceProvider);
-      } catch (error: any) {
-        ctx.logProvider?.info(Message.registerResourceProviderFailed(error?.message));
-      }
-    } else {
-      ctx.logProvider?.info(Message.skipCheckProvider);
-    }
-
-    await DialogUtils.progressBar?.next(ProvisionMessage.provisionSQL);
-    if (!this.config.existSql) {
-      ctx.logProvider?.info(Message.provisionSql);
-      await managementClient.createAzureSQL();
-    } else {
-      ctx.logProvider?.info(Message.skipProvisionSql);
-    }
-
-    await DialogUtils.progressBar?.next(ProvisionMessage.provisionDatabase);
-    let existDatabase = false;
-    if (this.config.existSql) {
-      ctx.logProvider?.info(Message.checkDatabase);
-      existDatabase = await managementClient.existDatabase();
-    }
-    if (!existDatabase) {
-      ctx.logProvider?.info(Message.provisionDatabase);
-      await managementClient.createDatabase();
-    } else {
-      ctx.logProvider?.info(Message.skipProvisionDatabase);
-    }
-
-    ctx.config.set(Constants.sqlEndpoint, this.config.sqlEndpoint);
-    ctx.config.set(Constants.databaseName, this.config.databaseName);
-
-    TelemetryUtils.sendEvent(Telemetry.stage.provision, true);
-    ctx.logProvider?.info(Message.endProvision);
-    await DialogUtils.progressBar?.end(true);
     return ok(undefined);
   }
 
@@ -354,7 +290,7 @@ export class SqlPluginImpl {
     return ok(result);
   }
 
-  private setContext(ctx: PluginContext) {
+  private setPasswordContext(ctx: PluginContext) {
     ctx.config.set(Constants.admin, this.config.admin);
     ctx.config.set(Constants.adminPassword, this.config.adminPassword);
   }

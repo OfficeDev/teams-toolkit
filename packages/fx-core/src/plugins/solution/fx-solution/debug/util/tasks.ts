@@ -221,10 +221,7 @@ function startBot(): Record<string, unknown> {
 function startNgrok(): Record<string, unknown> {
   return {
     label: "start ngrok",
-    type: ProductName,
-    command: "ngrok start",
-    isBackground: true,
-    dependsOn: ["bot npm install"],
+    dependsOn: ["bot npm install", `${ProductName}: ngrok start`],
   };
 }
 

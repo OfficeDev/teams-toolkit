@@ -98,12 +98,13 @@ export class DotnetPluginImpl implements PluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartScaffold(PluginInfo.displayName));
 
-    const selectedCapabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings).capabilities;
+    const selectedCapabilities = (ctx.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .capabilities;
     const includeTab = selectedCapabilities.includes(DotnetSupportCapability.tabCapability);
     const includeBot = selectedCapabilities.includes(DotnetSupportCapability.botCapability);
     const projectName = ctx.projectSettings!.appName;
 
-    const templateVariable: TemplateVariable = { BlazorAppServer: projectName, };
+    const templateVariable: TemplateVariable = { BlazorAppServer: projectName };
 
     if (includeTab) {
       templateVariable.IS_TAB = "true";

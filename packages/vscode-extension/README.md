@@ -24,7 +24,7 @@ Teams apps are a combination of [capabilities](https://docs.microsoft.com/en-us/
 
 ## Getting started
 
-After installing the Teams toolkit, follow the [Get Started](https://aka.ms/teamsfx-build-first-app) instructions in our documentation to smoothly start with.
+After installing the Teams toolkit, follow the [Get Started](https://aka.ms/teamsfx-build-first-app) instructions in our documentation to smoothly start.
 
 In the Teams Toolkit for Visual Studio Code, you can easily discover all applicable commands in the sidebar and Command Palette with the keyword "Teams". It also supports [Command Line Interface (CLI)](https://www.npmjs.com/package/@microsoft/teamsfx-cli) to increase efficiency.
 

@@ -26,11 +26,11 @@ import { getTemplatesFolder } from "../../../../folder";
 import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { AzureStorageClient } from "../clients";
 import { FrontendConfig } from "../configs";
-import { DependentPluginInfo, FrontendOutputBicepSnippet, FrontendPathInfo } from "../constants";
+import { DependentPluginInfo, FrontendPathInfo } from "../constants";
 import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "../env";
 import { FrontendDeployment } from "../ops/deploy";
 import { Messages } from "../resources/messages";
-import { DeploySteps, PostProvisionSteps } from "../utils/progress-helper";
+import { DeployProgress, PostProvisionProgress } from "../resources/steps";
 import { EnableStaticWebsiteError, UnauthenticatedError } from "./error";
 @Service(BuiltInResourcePluginNames.storage)
 export class AzureStoragePlugin implements v3.ResourcePlugin {
@@ -108,10 +108,10 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     ctx.logProvider.info(Messages.StartPostProvision(this.name));
     const progress = ctx.userInteraction.createProgressBar(
       Messages.PostProvisionProgressTitle,
-      Object.entries(PostProvisionSteps).length
+      Object.entries(PostProvisionProgress.steps).length
     );
     await progress.start(Messages.ProgressStart);
-    await progress.next(PostProvisionSteps.EnableStaticWebsite);
+    await progress.next(PostProvisionProgress.steps.EnableStaticWebsite);
     const frontendConfigRes = await this.buildFrontendConfig(
       envInfo,
       tokenProvider.azureAccountProvider
@@ -140,7 +140,7 @@ export class AzureStoragePlugin implements v3.ResourcePlugin {
     ctx.logProvider.info(Messages.StartDeploy(this.name));
     const progress = ctx.userInteraction.createProgressBar(
       Messages.DeployProgressTitle,
-      Object.entries(DeploySteps).length
+      Object.entries(DeployProgress.steps).length
     );
     await progress.start(Messages.ProgressStart);
     const frontendConfigRes = await this.buildFrontendConfig(envInfo, tokenProvider);

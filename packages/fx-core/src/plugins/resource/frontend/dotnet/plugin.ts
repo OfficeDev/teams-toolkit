@@ -1,11 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  PluginContext,
-  ok,
-  ReadonlyPluginConfig,
-  AzureSolutionSettings,
-} from "@microsoft/teamsfx-api";
+import { Func, PluginContext, ok, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
 import {
   DotnetPluginInfo as PluginInfo,
   DotnetConfigInfo as ConfigInfo,
@@ -39,7 +34,8 @@ import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/Res
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import { PluginImpl } from "../interface";
-import { Func } from "@microsoft/teamsfx-api";
+import { ProgressHelper } from "../utils/progress-helper";
+import { WebappDeployProgress as DeployProgress } from "./resources/steps";
 
 type Site = WebSiteManagementModels.Site;
 
@@ -63,29 +59,27 @@ export interface DotnetPluginConfig {
 }
 
 export class DotnetPluginImpl implements PluginImpl {
-  config: DotnetPluginConfig = {};
-
-  private syncConfigFromContext(ctx: PluginContext): void {
+  private syncConfigFromContext(ctx: PluginContext): DotnetPluginConfig {
+    const config: DotnetPluginConfig = {};
     const solutionConfig: ReadonlyPluginConfig | undefined = ctx.envInfo.state.get(
       DependentPluginInfo.solutionPluginName
     );
-    this.config.resourceGroupName = solutionConfig?.get(
-      DependentPluginInfo.resourceGroupName
-    ) as string;
-    this.config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
+    config.resourceGroupName = solutionConfig?.get(DependentPluginInfo.resourceGroupName) as string;
+    config.subscriptionId = solutionConfig?.get(DependentPluginInfo.subscriptionId) as string;
 
-    this.config.webAppName = ctx.config.get(ConfigInfo.webAppName) as string;
-    this.config.appServicePlanName = ctx.config.get(ConfigInfo.appServicePlanName) as string;
-    this.config.projectFilePath = ctx.config.get(ConfigInfo.projectFilePath) as string;
+    config.webAppName = ctx.config.get(ConfigInfo.webAppName) as string;
+    config.appServicePlanName = ctx.config.get(ConfigInfo.appServicePlanName) as string;
+    config.projectFilePath = ctx.projectSettings?.pluginSettings?.projectFilePath as string;
 
     // Resource id priors to other configs
     const webAppResourceId = ctx.config.get(ConfigKey.webAppResourceId) as string;
     if (webAppResourceId) {
-      this.config.webAppResourceId = webAppResourceId;
-      this.config.resourceGroupName = getResourceGroupNameFromResourceId(webAppResourceId);
-      this.config.webAppName = getSiteNameFromResourceId(webAppResourceId);
-      this.config.subscriptionId = getSubscriptionIdFromResourceId(webAppResourceId);
+      config.webAppResourceId = webAppResourceId;
+      config.resourceGroupName = getResourceGroupNameFromResourceId(webAppResourceId);
+      config.webAppName = getSiteNameFromResourceId(webAppResourceId);
+      config.subscriptionId = getSubscriptionIdFromResourceId(webAppResourceId);
     }
+    return config;
   }
 
   private checkAndGet<T>(v: T | undefined, key: string) {
@@ -124,6 +118,8 @@ export class DotnetPluginImpl implements PluginImpl {
   }
 
   public async generateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
+    Logger.info(Messages.StartGenerateArmTemplates);
+
     const bicepTemplateDirectory = PathInfo.bicepTemplateFolder(getTemplatesFolder());
 
     const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionFileName);
@@ -161,10 +157,14 @@ export class DotnetPluginImpl implements PluginImpl {
       },
       Reference: WebappBicep.Reference,
     };
+
+    Logger.info(Messages.EndGenerateArmTemplates);
     return ok(result);
   }
 
   public async updateArmTemplates(ctx: PluginContext): Promise<TeamsFxResult> {
+    Logger.info(Messages.EndUpdateArmTemplates);
+
     const bicepTemplateDirectory = PathInfo.bicepTemplateFolder(getTemplatesFolder());
     const configWebappTemplateFilePath = path.join(
       bicepTemplateDirectory,
@@ -184,6 +184,7 @@ export class DotnetPluginImpl implements PluginImpl {
       },
     };
 
+    Logger.info(Messages.EndUpdateArmTemplates);
     return ok(result);
   }
 
@@ -204,16 +205,17 @@ export class DotnetPluginImpl implements PluginImpl {
   }
 
   public async deploy(ctx: PluginContext): Promise<TeamsFxResult> {
-    Logger.info(Messages.StartDeploy(PluginInfo.displayName));
+    Logger.info(Messages.StartDeploy);
+    await ProgressHelper.startProgress(ctx, DeployProgress);
 
-    this.syncConfigFromContext(ctx);
+    const config = this.syncConfigFromContext(ctx);
 
-    const webAppName = this.checkAndGet(this.config.webAppName, ConfigKey.webAppName);
+    const webAppName = this.checkAndGet(config.webAppName, ConfigKey.webAppName);
     const resourceGroupName = this.checkAndGet(
-      this.config.resourceGroupName,
+      config.resourceGroupName,
       ConfigKey.resourceGroupName
     );
-    const subscriptionId = this.checkAndGet(this.config.subscriptionId, ConfigKey.subscriptionId);
+    const subscriptionId = this.checkAndGet(config.subscriptionId, ConfigKey.subscriptionId);
     const credential = this.checkAndGet(
       await ctx.azureAccountProvider?.getAccountCredentialAsync(),
       ConfigKey.credential
@@ -221,7 +223,7 @@ export class DotnetPluginImpl implements PluginImpl {
 
     const projectFilePath = path.resolve(
       ctx.root,
-      this.checkAndGet(this.config.projectFilePath, ConfigKey.projectFilePath)
+      this.checkAndGet(config.projectFilePath, ConfigKey.projectFilePath)
     );
 
     await runWithErrorCatchAndThrow(
@@ -240,7 +242,8 @@ export class DotnetPluginImpl implements PluginImpl {
     const folderToBeZipped = PathInfo.publishFolderPath(projectPath, framework, runtime);
     await Deploy.zipDeploy(client, resourceGroupName, webAppName, folderToBeZipped);
 
-    Logger.info(Messages.EndDeploy(PluginInfo.displayName));
+    await ProgressHelper.endProgress(true);
+    Logger.info(Messages.EndDeploy);
     return ok(undefined);
   }
 }

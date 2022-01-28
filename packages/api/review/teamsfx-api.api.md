@@ -55,6 +55,32 @@ interface APIM extends AzureResource {
 export type AppManifest = Json;
 
 // @public (undocumented)
+interface AppManifestProvider {
+    // (undocumented)
+    addCapabilities: (ctx: Context_2, inputs: InputsWithProjectPath, capabilities: ({
+        name: "staticTab";
+        snippet?: Json;
+        existing?: boolean;
+    } | {
+        name: "configurableTab";
+        snippet?: Json;
+        existing?: boolean;
+    } | {
+        name: "Bot";
+        snippet?: Json;
+        existing?: boolean;
+    } | {
+        name: "MessageExtension";
+        snippet?: Json;
+        existing?: boolean;
+    })[]) => Promise<Result<Void, FxError>>;
+    // (undocumented)
+    loadManifest: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<AppManifest, FxError>>;
+    // (undocumented)
+    saveManifest: (ctx: Context_2, inputs: InputsWithProjectPath, manifest: AppManifest) => Promise<Result<Void, FxError>>;
+}
+
+// @public (undocumented)
 export const AppPackageFolderName = "appPackage";
 
 // @public
@@ -153,6 +179,8 @@ interface AzureSolutionConfig extends Json {
     subscriptionId: string;
     // (undocumented)
     subscriptionName: string;
+    // (undocumented)
+    teamsAppTenantId: string;
     // (undocumented)
     tenantId: string;
 }
@@ -333,6 +361,12 @@ interface ContextWithManifest extends Context_2 {
 }
 
 // @public (undocumented)
+interface ContextWithManifestProvider extends Context_2 {
+    // (undocumented)
+    appManifestProvider: AppManifestProvider;
+}
+
+// @public (undocumented)
 export interface Core {
     // (undocumented)
     activateEnv: (inputs: Inputs) => Promise<Result<Void, FxError>>;
@@ -469,10 +503,20 @@ type EnvInfoV2 = Omit<EnvInfo, "state" | "config"> & {
     config: Json;
 };
 
-// @public
+// @public (undocumented)
 interface EnvInfoV3 extends EnvInfoV2 {
     // (undocumented)
     state: ResourceStates;
+}
+
+// @public (undocumented)
+interface EnvInfoV3Question {
+    // (undocumented)
+    config?: EnvConfig;
+    // (undocumented)
+    envName: string;
+    // (undocumented)
+    state?: ResourceStates;
 }
 
 // @public
@@ -511,6 +555,20 @@ export interface ErrorOptionBase {
 export interface ExpServiceProvider {
     // (undocumented)
     getTreatmentVariableAsync<T extends boolean | number | string>(configId: string, name: string, checkCache?: boolean): Promise<T | undefined>;
+}
+
+// @public (undocumented)
+interface FeaturePlugin extends Plugin_3 {
+    addFeature: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
+    afterOtherFeaturesAdded?: (ctx: ContextWithManifestProvider, inputs: OtherFeaturesAddedInputs) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
+    configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
+    deploy?: (ctx: Context_2, inputs: PluginDeployInputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
+    description?: string;
+    getQuestionsForAddFeature?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3Question>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3Question>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
+    pluginDependencies?(ctx: Context_2, inputs: Inputs): Promise<Result<string[], FxError>>;
+    provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
 }
 
 // @public (undocumented)
@@ -1094,6 +1152,15 @@ export interface OptionItem {
 }
 
 // @public (undocumented)
+interface OtherFeaturesAddedInputs extends InputsWithProjectPath {
+    // (undocumented)
+    features: {
+        name: string;
+        value: ResourceTemplate_2 | undefined;
+    }[];
+}
+
+// @public (undocumented)
 export class PathAlreadyExistsError extends UserError {
     constructor(source: string, path: string);
 }
@@ -1176,7 +1243,6 @@ export { Plugin_2 as Plugin }
 interface Plugin_3 {
     displayName?: string;
     name: string;
-    type: "scaffold" | "resource";
 }
 
 // @public (undocumented)
@@ -1317,7 +1383,7 @@ interface ResourcePlugin {
     // (undocumented)
     checkPermission?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider, userInfo: Json) => Promise<Result<Json, FxError>>;
     configureLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    configureResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<ResourceProvisionOutput, FxError>>;
+    configureResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     deploy?: (ctx: Context_2, inputs: DeploymentInputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     // (undocumented)
     displayName: string;
@@ -1337,7 +1403,7 @@ interface ResourcePlugin {
     // (undocumented)
     name: string;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    provisionResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<Result<ResourceProvisionOutput, FxError>>;
+    provisionResource?: (ctx: Context_2, inputs: ProvisionInputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     publishApplication?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode?: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
     // (undocumented)
@@ -1595,7 +1661,7 @@ interface SolutionPlugin {
     // (undocumented)
     name: string;
     provisionLocalResource?: (ctx: Context_2, inputs: Inputs, localSettings: Json, tokenProvider: TokenProvider) => Promise<FxResult<Json, FxError>>;
-    provisionResources: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: TokenProvider) => Promise<FxResult<SolutionProvisionOutput, FxError>>;
+    provisionResources: (ctx: Context_2, inputs: Inputs, envInfo: EnvInfoV2, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     publishApplication: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV2>, tokenProvider: AppStudioTokenProvider) => Promise<Result<Void, FxError>>;
     scaffoldSourceCode: (ctx: Context_2, inputs: Inputs) => Promise<Result<Void, FxError>>;
 }
@@ -2066,6 +2132,7 @@ export { v2 }
 declare namespace v3 {
     export {
         EnvInfoV3,
+        EnvInfoV3Question,
         CloudResource,
         ResourceStates,
         AzureResource,
@@ -2076,10 +2143,14 @@ declare namespace v3 {
         PluginScaffoldInputs,
         PluginDeployInputs,
         Plugin_3 as Plugin,
+        AppManifestProvider,
         ContextWithManifest,
+        ContextWithManifestProvider,
         ScaffoldPlugin,
         PluginAddResourceInputs,
         ResourcePlugin_2 as ResourcePlugin,
+        OtherFeaturesAddedInputs,
+        FeaturePlugin,
         Module,
         TeamsFxSolutionSettings,
         TeamsSPFxSolutionSettings,

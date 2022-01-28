@@ -24,6 +24,7 @@
     "test:unit": "nyc --no-clean mocha \"tests/**/*.test.ts\"",
     "test:common": "nyc --no-clean mocha \"tests/common/*.test.ts\"",
     "test:solution": "nyc mocha \"tests/plugins/solution/*.test.ts\"",
+    "test:solution:deploy": "nyc mocha \"tests/plugins/solution/solution.deploy.test.ts\"",
     "test:solution:debug": "nyc mocha \"tests/plugins/solution/debug/**/*.test.ts\"",
     "test:core": "nyc mocha \"tests/core/**/*.test.ts\"",
     "test:core:sample": "nyc mocha \"tests/core/sample.test.ts\"",

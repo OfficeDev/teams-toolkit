@@ -1023,39 +1023,39 @@ async function persistBicepTemplates(
       await fs.appendFile(path.join(templateFolderPath, module[0]), res.replace(/\r?\n/g, os.EOL));
     }
 
-    // If no config part, return.
-    if (bicepOrchestrationTemplate.getOrchestractionConfigContent() === "") {
-      return;
-    }
-
-    // Generate config.bicep and module configuration bicep files.
-    let bicepOrchestrationConfigContent = "";
-    // Configuration Biceps.
-    if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationConfigFileName)))) {
-      await fs.ensureDir(path.join(templateFolderPath, "teamsFx"));
-      bicepOrchestrationConfigContent = await fs.readFile(
-        path.join(getTemplatesFolder(), "plugins", "solution", "config.bicep"),
-        ConstantString.UTF8Encoding
-      );
-      const mainConfig = await fs.readFile(
-        path.join(templateSolitionPath, bicepOrchestrationConfigMainFileName),
-        ConstantString.UTF8Encoding
-      );
+    // Skip if no any config part in orchestration.
+    if (bicepOrchestrationTemplate.getOrchestractionConfigContent() !== "") {
+      // Generate config.bicep and module configuration bicep files.
+      let bicepOrchestrationConfigContent = "";
+      // Configuration Biceps.
+      if (!(await fs.pathExists(path.join(templateFolderPath, bicepOrchestrationConfigFileName)))) {
+        bicepOrchestrationConfigContent = await fs.readFile(
+          path.join(getTemplatesFolder(), "plugins", "solution", "config.bicep"),
+          ConstantString.UTF8Encoding
+        );
+        const mainConfig = await fs.readFile(
+          path.join(templateSolitionPath, bicepOrchestrationConfigMainFileName),
+          ConstantString.UTF8Encoding
+        );
+        await fs.appendFile(
+          path.join(templateFolderPath, bicepOrchestrationFileName),
+          mainConfig.replace(/\r?\n/g, os.EOL)
+        );
+      }
+      bicepOrchestrationConfigContent +=
+        os.EOL + bicepOrchestrationTemplate.getOrchestractionConfigContent();
       await fs.appendFile(
-        path.join(templateFolderPath, bicepOrchestrationFileName),
-        mainConfig.replace(/\r?\n/g, os.EOL)
+        path.join(templateFolderPath, bicepOrchestrationConfigFileName),
+        bicepOrchestrationConfigContent.replace(/\r?\n/g, os.EOL)
       );
     }
-    bicepOrchestrationConfigContent +=
-      os.EOL + bicepOrchestrationTemplate.getOrchestractionConfigContent();
-    await fs.appendFile(
-      path.join(templateFolderPath, bicepOrchestrationConfigFileName),
-      bicepOrchestrationConfigContent.replace(/\r?\n/g, os.EOL)
-    );
-    // Generate module configuration bicep files
-    for (const module of moduleConfigFiles) {
-      const res = bicepOrchestrationTemplate.applyReference(module[1]);
-      await fs.writeFile(path.join(templateFolderPath, module[0]), res.replace(/\r?\n/g, os.EOL));
+    // Skip if no module configuration bicep update.
+    if (moduleConfigFiles.size != 0) {
+      await fs.ensureDir(path.join(templateFolderPath, "teamsFx"));
+      for (const module of moduleConfigFiles) {
+        const res = bicepOrchestrationTemplate.applyReference(module[1]);
+        await fs.writeFile(path.join(templateFolderPath, module[0]), res.replace(/\r?\n/g, os.EOL));
+      }
     }
   }
 }

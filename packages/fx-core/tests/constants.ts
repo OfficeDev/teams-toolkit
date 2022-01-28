@@ -82,6 +82,7 @@ export class TestFileContent {
 
   static readonly botProvisionModule = "Mocked bot provision module content";
   static readonly botConfigurationModule = "Mocked bot configuration module content";
+  static readonly botConfigUpdateModule = "Mocked bot update configuration module content";
   static readonly botParameterValue = "botParameterValue";
   static readonly botReferenceValue = "botReferenceValue";
 }

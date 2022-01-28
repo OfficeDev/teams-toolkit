@@ -42,11 +42,7 @@ import { getPluginContext } from "../utils/util";
 import * as util from "util";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
-  const azureSettings: AzureSolutionSettings =
-    projectSettings.solutionSettings as AzureSolutionSettings;
-  const plugins = getActivatedV2ResourcePlugins(projectSettings);
-  azureSettings.activeResourcePlugins = plugins.map((p) => p.name);
-  return plugins;
+  return getActivatedV2ResourcePlugins(projectSettings);
 }
 
 export function getAzureSolutionSettings(ctx: v2.Context): AzureSolutionSettings {
@@ -54,7 +50,7 @@ export function getAzureSolutionSettings(ctx: v2.Context): AzureSolutionSettings
 }
 
 export function isAzureProject(azureSettings: AzureSolutionSettings): boolean {
-  return HostTypeOptionAzure.id === azureSettings.hostType;
+  return azureSettings && HostTypeOptionAzure.id === azureSettings.hostType;
 }
 
 export function combineRecords<T>(records: { name: string; result: T }[]): Record<string, T> {
@@ -274,11 +270,7 @@ export function fillInSolutionSettings(
 }
 
 export function checkWetherProvisionSucceeded(config: Json): boolean {
-  return (
-    config[GLOBAL_CONFIG] &&
-    config[GLOBAL_CONFIG]["output"] &&
-    config[GLOBAL_CONFIG]["output"][SOLUTION_PROVISION_SUCCEEDED]
-  );
+  return config[GLOBAL_CONFIG] && config[GLOBAL_CONFIG][SOLUTION_PROVISION_SUCCEEDED];
 }
 
 export function getPluginAndContextArray(

@@ -37,7 +37,6 @@ import {
 } from "@microsoft/teamsfx-api";
 import * as fs from "fs-extra";
 import * as jsonschema from "jsonschema";
-import { assign } from "lodash";
 import * as path from "path";
 import { Container } from "typedi";
 import * as uuid from "uuid";
@@ -736,11 +735,7 @@ export class FxCore implements v3.ICore {
     if (!ctx?.projectSettings) {
       return err(new ObjectIsUndefinedError("Provision input stuff"));
     }
-    if (isPureExistingApp(ctx.projectSettings)) {
-      // existing app scenario, provision has no effect
-      return ok(Void);
-    }
-    if (!ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
+    if (!ctx || !ctx.solutionV2 || !ctx.contextV2 || !ctx.envInfoV2) {
       return err(new ObjectIsUndefinedError("Provision input stuff"));
     }
     const envInfo = ctx.envInfoV2;
@@ -750,15 +745,7 @@ export class FxCore implements v3.ICore {
       envInfo,
       this.tools.tokenProvider
     );
-    if (result.kind === "success") {
-      ctx.envInfoV2.state = assign(ctx.envInfoV2.state, result.output);
-      return ok(Void);
-    } else if (result.kind === "partialSuccess") {
-      ctx.envInfoV2.state = assign(ctx.envInfoV2.state, result.output);
-      return err(result.error);
-    } else {
-      return err(result.error);
-    }
+    return result;
   }
 
   @hooks([

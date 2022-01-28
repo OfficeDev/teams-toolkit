@@ -30,6 +30,7 @@ import {
   TelemetryProperty,
 } from "../../../../common/telemetry";
 import { getHashedEnv, getResourceGroupInPortal, getStrings } from "../../../../common/tools";
+import { SolutionV3QuestionNames } from "../../utils/questions";
 import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import { SolutionError, SolutionSource } from "../constants";
@@ -71,8 +72,14 @@ export async function provisionResources(
 ): Promise<Result<v3.EnvInfoV3, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
   // check M365 tenant match
-  const appResource = envInfo.state[BuiltInResourcePluginNames.appStudio] as v3.TeamsAppResource;
-  const tenantIdInConfig = appResource.tenantId;
+  if (!envInfo.state[BuiltInResourcePluginNames.appStudio])
+    envInfo.state[BuiltInResourcePluginNames.appStudio] = {};
+  const teamsAppResource = envInfo.state[
+    BuiltInResourcePluginNames.appStudio
+  ] as v3.TeamsAppResource;
+  if (!envInfo.state.solution) envInfo.state.solution = {};
+  const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
+  const tenantIdInConfig = teamsAppResource.tenantId;
   const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
@@ -88,16 +95,17 @@ export async function provisionResources(
     );
   }
   if (!tenantIdInConfig) {
-    appResource.tenantId = tenantIdInToken;
+    teamsAppResource.tenantId = tenantIdInToken;
+    solutionConfig.teamsAppTenantId = tenantIdInToken;
   }
 
   //TODO teams app provision, return app id
   // call appStudio.provision()
-  appResource.teamsAppId = "fake-remote-teams-app-id";
+  teamsAppResource.teamsAppId = "fake-remote-teams-app-id";
   solutionGlobalVars.TeamsAppId = "fake-remote-teams-app-id";
 
   // ask common question and fill in solution config
-  const solutionConfigRes = await fillInAzureSolutionConfigs(
+  const solutionConfigRes = await fillInAzureConfigs(
     ctx,
     inputs,
     envInfo as v3.EnvInfoV3,
@@ -117,7 +125,6 @@ export async function provisionResources(
   }
 
   // create resource group if needed
-  const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
   if (solutionConfig.needCreateResourceGroup) {
     const createRgRes = await resourceGroupHelper.createNewResourceGroup(
       solutionConfig.resourceGroupName,
@@ -246,35 +253,40 @@ export async function checkAzureSubscription(
   envInfo: v3.EnvInfoV3,
   azureAccountProvider: AzureAccountProvider
 ): Promise<Result<Void, FxError>> {
-  const state = envInfo.state;
-  const subscriptionId = envInfo.config.azure?.subscriptionId || state.solution.subscriptionId;
-  if (!subscriptionId) {
-    const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
-    if (askSubRes) return ok(askSubRes);
-    return err(
-      new UserError(
-        SolutionError.SubscriptionNotFound,
-        "Failed to select subscription",
-        SolutionSource
-      )
-    );
-  }
-
-  let subscriptionName = state.solution.subscriptionName;
-  if (subscriptionName.length > 0) {
-    subscriptionName = `(${subscriptionName})`;
+  const subscriptionIdInConfig =
+    envInfo.config.azure?.subscriptionId || (envInfo.state.solution.subscriptionId as string);
+  if (!subscriptionIdInConfig) {
+    const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
+    if (subscriptionInAccount) {
+      envInfo.state.solution.subscriptionId = subscriptionInAccount.subscriptionId;
+      envInfo.state.solution.subscriptionName = subscriptionInAccount.subscriptionName;
+      envInfo.state.solution.tenantId = subscriptionInAccount.tenantId;
+      ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+      return ok(Void);
+    } else {
+      return err(
+        new UserError(
+          SolutionError.SubscriptionNotFound,
+          "Failed to select subscription",
+          SolutionSource
+        )
+      );
+    }
   }
   // make sure the user is logged in
   await azureAccountProvider.getAccountCredentialAsync(true);
-
   // verify valid subscription (permission)
   const subscriptions = await azureAccountProvider.listSubscriptions();
-  const targetSubInfo = subscriptions.find((item) => item.subscriptionId === subscriptionId);
+  const targetSubInfo = subscriptions.find(
+    (item) => item.subscriptionId === subscriptionIdInConfig
+  );
   if (!targetSubInfo) {
     return err(
       new UserError(
         SolutionError.SubscriptionNotFound,
-        `The subscription '${subscriptionId}'${subscriptionName} for '${
+        `The subscription '${subscriptionIdInConfig}'(${
+          envInfo.state.solution.subscriptionName
+        }) for '${
           envInfo.envName
         }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
@@ -284,10 +296,10 @@ export async function checkAzureSubscription(
       )
     );
   }
-  state.solution.subscriptionId = targetSubInfo.subscriptionId;
-  state.solution.subscriptionName = targetSubInfo.subscriptionName;
-  state.solution.tenantId = targetSubInfo.tenantId;
-  ctx.logProvider.info(`[${PluginDisplayName.Solution}] check subscriptionId pass!`);
+  envInfo.state.solution.subscriptionId = targetSubInfo.subscriptionId;
+  envInfo.state.solution.subscriptionName = targetSubInfo.subscriptionName;
+  envInfo.state.solution.tenantId = targetSubInfo.tenantId;
+  ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
   return ok(Void);
 }
 
@@ -295,7 +307,7 @@ export async function checkAzureSubscription(
  * Asks common questions and puts the answers in the global namespace of SolutionConfig
  *
  */
-async function fillInAzureSolutionConfigs(
+export async function fillInAzureConfigs(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
@@ -499,7 +511,7 @@ export async function getM365TenantId(
     );
   }
   const tenantIdInToken = (appstudioTokenJson as any).tid;
-  if (!tenantIdInToken) {
+  if (!tenantIdInToken || !(typeof tenantIdInToken === "string")) {
     return err(
       new SystemError(
         SolutionError.NoTeamsAppTenantId,

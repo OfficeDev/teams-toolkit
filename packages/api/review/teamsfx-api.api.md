@@ -502,11 +502,7 @@ type EnvInfoV2 = Omit<EnvInfo, "state" | "config"> & {
 };
 
 // @public (undocumented)
-interface EnvInfoV3 {
-    // (undocumented)
-    config: EnvConfig;
-    // (undocumented)
-    envName: string;
+interface EnvInfoV3 extends EnvInfoV2 {
     // (undocumented)
     state: ResourceStates;
 }

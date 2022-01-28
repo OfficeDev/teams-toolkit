@@ -13,7 +13,6 @@ import {
 } from "../utils";
 import { EnvInfo } from "../context";
 import { FxError } from "../error";
-import { AppManifestProvider } from "../v3";
 
 export type PluginName = string;
 

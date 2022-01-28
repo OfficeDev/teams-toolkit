@@ -110,6 +110,10 @@ export interface ContextWithManifest extends Context {
   };
 }
 
+export interface ContextWithManifestProvider extends Context {
+  appManifestProvider: AppManifestProvider;
+}
+
 export interface ScaffoldPlugin extends Plugin {
   type: "scaffold";
   /**
@@ -273,33 +277,31 @@ export interface FeaturePlugin extends Plugin {
   pluginDependencies?(ctx: Context, inputs: Inputs): Promise<Result<string[], FxError>>;
 
   /**
-   * scaffold questions
+   * questions in add feature flow
    */
-  getQuestionsForScaffold?: (
+  getQuestionsForAddFeature?: (
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   /**
-   * scaffold means anything: add/update source codes/resource templates/config files
-   * if scaffold include generating resource templates, they will be returned
+   * triggered by add feature event, this API aims to add/modify files in local workspace
    *
-   * @param {Context} context with manifest provider
+   * @param {ContextWithManifestProvider} context with manifest provider
    *
    * @param {InputsWithProjectPath} inputs with project path
    *
    * @returns {Void} void
    */
-  scaffold: (ctx: Context, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+  addFeature: (
+    ctx: ContextWithManifestProvider,
+    inputs: InputsWithProjectPath
+  ) => Promise<Result<ResourceTemplate | undefined, FxError>>;
 
-  generateResourceTemplate?: (
-    ctx: Context,
-    inputs: InputsWithProjectPath
-  ) => Promise<Result<ResourceTemplate, FxError>>;
-  updateResourceTemplate?: (
-    ctx: Context,
-    inputs: InputsWithProjectPath
-  ) => Promise<Result<ResourceTemplate, FxError>>;
+  afterOtherFeaturesAdded?: (
+    ctx: ContextWithManifestProvider,
+    inputs: InputsWithProjectPath & { plugins: string[] }
+  ) => Promise<Result<ResourceTemplate | undefined, FxError>>;
 
   /**
    * customized questions for provision

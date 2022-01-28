@@ -25,7 +25,6 @@ export interface Context {
   projectSetting: ProjectSettings;
   permissionRequestProvider?: PermissionRequestProvider;
   expServiceProvider?: ExpServiceProvider;
-  appManifestProvider?: AppManifestProvider;
 }
 
 export interface LocalSettings extends Json {

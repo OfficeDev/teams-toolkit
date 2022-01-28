@@ -334,8 +334,6 @@ export interface Context {
 // @public (undocumented)
 interface Context_2 {
     // (undocumented)
-    appManifestProvider?: AppManifestProvider;
-    // (undocumented)
     cryptoProvider: CryptoProvider;
     // (undocumented)
     expServiceProvider?: ExpServiceProvider;
@@ -358,6 +356,12 @@ interface ContextWithManifest extends Context_2 {
         local: AppManifest;
         remote: AppManifest;
     };
+}
+
+// @public (undocumented)
+interface ContextWithManifestProvider extends Context_2 {
+    // (undocumented)
+    appManifestProvider: AppManifestProvider;
 }
 
 // @public (undocumented)
@@ -557,19 +561,19 @@ export interface ExpServiceProvider {
 
 // @public (undocumented)
 interface FeaturePlugin extends Plugin_3 {
+    addFeature: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
+    // (undocumented)
+    afterOtherFeaturesAdded?: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath & {
+        plugins: string[];
+    }) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
     configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     deploy?: (ctx: Context_2, inputs: PluginDeployInputs, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     description?: string;
-    // (undocumented)
-    generateResourceTemplate?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2, FxError>>;
+    getQuestionsForAddFeature?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForDeploy?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3Question>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
     getQuestionsForProvision?: (ctx: Context_2, inputs: Inputs, envInfo: DeepReadonly<EnvInfoV3Question>, tokenProvider: TokenProvider) => Promise<Result<QTreeNode | undefined, FxError>>;
-    getQuestionsForScaffold?: (ctx: Context_2, inputs: Inputs) => Promise<Result<QTreeNode | undefined, FxError>>;
     pluginDependencies?(ctx: Context_2, inputs: Inputs): Promise<Result<string[], FxError>>;
     provisionResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
-    scaffold: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
-    // (undocumented)
-    updateResourceTemplate?: (ctx: Context_2, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2, FxError>>;
 }
 
 // @public (undocumented)
@@ -2137,6 +2141,7 @@ declare namespace v3 {
         Plugin_3 as Plugin,
         AppManifestProvider,
         ContextWithManifest,
+        ContextWithManifestProvider,
         ScaffoldPlugin,
         PluginAddResourceInputs,
         ResourcePlugin_2 as ResourcePlugin,

@@ -24,10 +24,10 @@ namespace Microsoft.TeamsFx;
 /// </remarks>
 public class TeamsUserCredential : TokenCredential, IAsyncDisposable
 {
-    private bool _initialized;
-    private readonly AuthenticationOptions _authenticationOptions;
+    internal bool _initialized;
     internal AccessToken _ssoToken;
-    private IConfidentialClientApplication _msalApp;
+    private readonly AuthenticationOptions _authenticationOptions;
+    private IIdentityClientAdapter _identityClientAdapter;
 
     #region JS Interop
     private readonly Lazy<Task<IJSObjectReference>> _teamsSdkTask;
@@ -47,14 +47,14 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
     /// <param name="jsRuntime">JavaScript interop runtime.</param>
     /// <param name="logger">Logger of TeamsUserCredential Class.</param>
     /// <param name="memoryCache">Memory cache used in Blazor server app.</param>
-    /// <param name="confidentialClientApplication">Global instance of client app from MSAL.NET library</param>
+    /// <param name="identityClientAdapter">Global instance of adaptor to call MSAL.NET library</param>
     /// <exception cref="ExceptionCode.InvalidConfiguration">When client id, client secret, initiate login endpoint or OAuth authority is missing or invalid in config.</exception>
     public TeamsUserCredential(
         IOptions<AuthenticationOptions> authenticationOptions,
         IJSRuntime jsRuntime,
         ILogger<TeamsUserCredential> logger,
         IMemoryCache memoryCache,
-        IConfidentialClientApplication confidentialClientApplication)
+        IIdentityClientAdapter identityClientAdapter)
     {
         _logger = logger;
         try
@@ -66,7 +66,7 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
         {
             throw new ExceptionWithCode($"Authentication config is missing or not correct with error: {e.Message}", ExceptionCode.InvalidConfiguration);
         }
-        _msalApp = confidentialClientApplication;
+        _identityClientAdapter = identityClientAdapter;
         _teamsSdkTask = new(() => ImportTeamsSdk(jsRuntime).AsTask());
         _jsRuntime = jsRuntime;
         _cache = memoryCache;
@@ -365,10 +365,8 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
         try
         {
             _logger.LogDebug("Acquiring token via OBO flow.");
-            var userAssertion = new UserAssertion(ssoToken);
-            var result = await _msalApp
-                .AcquireTokenOnBehalfOf(scopeString.Split(' '), userAssertion)
-                .ExecuteAsync()
+            var result = await _identityClientAdapter
+                .GetAccessToken(scopeString, ssoToken)
                 .ConfigureAwait(false);
 
             var accessToken = new AccessToken(result.AccessToken, result.ExpiresOn);

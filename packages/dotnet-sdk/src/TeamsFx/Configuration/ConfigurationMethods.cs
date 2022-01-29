@@ -6,6 +6,7 @@ using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
 using Microsoft.TeamsFx;
 using Microsoft.TeamsFx.Configuration;
+using Microsoft.TeamsFx.Helper;
 
 namespace Microsoft.Extensions.DependencyInjection;
 
@@ -31,13 +32,13 @@ public static class TeamsFxConfigurationMethods
 
         services.AddOptions<AuthenticationOptions>().Bind(namedConfigurationSection.GetSection(AuthenticationOptions.Authentication)).ValidateDataAnnotations();
 
-        services.AddSingleton(sp => {
+        services.AddSingleton<IIdentityClientAdapter>(sp => {
             var authenticationOptions = sp.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
             var builder = ConfidentialClientApplicationBuilder.Create(authenticationOptions.ClientId)
                 .WithClientSecret(authenticationOptions.ClientSecret)
                 .WithAuthority(authenticationOptions.OAuthAuthority);
-
-            return builder.Build();
+            var identityClientAdapter = new IdentityClientAdapter(builder.Build());
+            return identityClientAdapter;
         });
 
         return services;
@@ -62,13 +63,14 @@ public static class TeamsFxConfigurationMethods
         services.AddOptions<AuthenticationOptions>()
             .Configure(configureOptions).ValidateDataAnnotations();
 
-        services.AddSingleton(sp => {
+        services.AddSingleton<IIdentityClientAdapter>(sp => {
             var authenticationOptions = sp.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
             var builder = ConfidentialClientApplicationBuilder.Create(authenticationOptions.ClientId)
                 .WithClientSecret(authenticationOptions.ClientSecret)
                 .WithAuthority(authenticationOptions.OAuthAuthority);
+            var identityClientAdapter = new IdentityClientAdapter(builder.Build());
 
-            return builder.Build();
+            return identityClientAdapter;
         });
 
         return services;
@@ -97,13 +99,14 @@ public static class TeamsFxConfigurationMethods
                 options.OAuthAuthority = userOptions.OAuthAuthority;
             }).ValidateDataAnnotations();
 
-        services.AddSingleton(sp => {
+        services.AddSingleton<IIdentityClientAdapter>(sp => {
             var authenticationOptions = sp.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
             var builder = ConfidentialClientApplicationBuilder.Create(authenticationOptions.ClientId)
                 .WithClientSecret(authenticationOptions.ClientSecret)
                 .WithAuthority(authenticationOptions.OAuthAuthority);
 
-            return builder.Build();
+            var identityClientAdapter = new IdentityClientAdapter(builder.Build());
+            return identityClientAdapter;
         });
 
         return services;

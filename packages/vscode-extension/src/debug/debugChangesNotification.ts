@@ -14,7 +14,9 @@ import {
   trustDevCertHelpLink,
   trustDevCertRetiredNotification,
 } from "./constants";
+import { commands } from "vscode";
 
+// TODO: remove the notification
 export async function showDebugChangesNotification(): Promise<void> {
   const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter);
   if (!ext.workspaceUri?.fsPath) {
@@ -31,11 +33,23 @@ export async function showDebugChangesNotification(): Promise<void> {
 }
 
 function showNotification(message: string, url: string): void {
-  VS_CODE_UI.showMessage("warn", message, false, StringResources.vsc.localDebug.learnMore).then(
-    async (result) => {
-      if (result.isOk() && result.value === StringResources.vsc.localDebug.learnMore) {
+  VS_CODE_UI.showMessage(
+    "warn",
+    message,
+    false,
+    StringResources.vsc.localDebug.openSettings,
+    StringResources.vsc.localDebug.learnMore
+  ).then(async (result) => {
+    if (result.isOk()) {
+      if (result.value === StringResources.vsc.localDebug.learnMore) {
         await VS_CODE_UI.openUrl(url);
       }
+      if (result.value === StringResources.vsc.localDebug.openSettings) {
+        await commands.executeCommand(
+          "workbench.action.openSettings",
+          "fx-extension.prerequisiteCheck"
+        );
+      }
     }
-  );
+  });
 }

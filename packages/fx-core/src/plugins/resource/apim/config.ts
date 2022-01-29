@@ -19,10 +19,6 @@ import {
 import { INamingRule, NamingRules } from "./utils/namingRules";
 
 export interface IApimPluginConfig {
-  resourceGroupName?: string | undefined;
-  serviceName?: string | undefined;
-  productId?: string | undefined;
-  oAuthServerId?: string | undefined;
   apimClientAADObjectId?: string | undefined;
   apimClientAADClientId?: string | undefined;
   apimClientAADClientSecret?: string | undefined;
@@ -68,30 +64,6 @@ export class ApimPluginConfig implements IApimPluginConfig {
     this.envName = envName;
   }
 
-  get resourceGroupName(): string | undefined {
-    return this.getValue(ApimPluginConfigKeys.resourceGroupName, NamingRules.resourceGroupName);
-  }
-  set resourceGroupName(value: string | undefined) {
-    this.setValue(ApimPluginConfigKeys.resourceGroupName, value);
-  }
-  get serviceName(): string | undefined {
-    return this.getValue(ApimPluginConfigKeys.serviceName, NamingRules.apimServiceName);
-  }
-  set serviceName(value: string | undefined) {
-    this.setValue(ApimPluginConfigKeys.serviceName, value);
-  }
-  get productId(): string | undefined {
-    return this.getValue(ApimPluginConfigKeys.productId, NamingRules.productId);
-  }
-  set productId(value: string | undefined) {
-    this.setValue(ApimPluginConfigKeys.productId, value);
-  }
-  get oAuthServerId(): string | undefined {
-    return this.getValue(ApimPluginConfigKeys.oAuthServerId, NamingRules.oAuthServerId);
-  }
-  set oAuthServerId(value: string | undefined) {
-    this.setValue(ApimPluginConfigKeys.oAuthServerId, value);
-  }
   get apimClientAADObjectId(): string | undefined {
     return this.getValue(
       ApimPluginConfigKeys.apimClientAADObjectId,

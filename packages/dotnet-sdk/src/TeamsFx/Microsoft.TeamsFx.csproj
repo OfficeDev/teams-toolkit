@@ -32,6 +32,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="6.0.0" />
     <PackageReference Include="Microsoft.Extensions.Options.DataAnnotations" Version="6.0.0" />
     <PackageReference Include="Microsoft.Graph" Version="4.10.0" />
+    <PackageReference Include="Microsoft.Identity.Client" Version="4.40.0" />
   </ItemGroup>
 
 </Project>

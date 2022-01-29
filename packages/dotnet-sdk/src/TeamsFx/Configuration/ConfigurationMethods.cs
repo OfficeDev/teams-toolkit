@@ -72,8 +72,9 @@ public static class TeamsFxConfigurationMethods
         services.AddOptions<AuthenticationOptions>()
             .Configure(options => {
                 options.ClientId = userOptions.ClientId;
+                options.ClientSecret = userOptions.ClientSecret;
                 options.InitiateLoginEndpoint = userOptions.InitiateLoginEndpoint;
-                options.SimpleAuthEndpoint = userOptions.SimpleAuthEndpoint;
+                options.OAuthAuthority = userOptions.OAuthAuthority;
             }).ValidateDataAnnotations();
 
         return services;

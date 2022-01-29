@@ -25,7 +25,7 @@
     h2 {
       font-size: 26px;
       line-height: 30px;
-      color: var(--vscode-badge-foreground);
+      color: var(--vscode-titleBar-activeForeground);
       margin-top: 0px;
       margin-bottom: 0px;
       font-weight: normal;
@@ -63,100 +63,6 @@
     grid-column: 10/13;
   }
 
-  .sample-app-card {
-    background-color: var(--vscode-editorWidget-background);
-    border-radius: 2px;
-    width: 278px;
-    height: 455px;
-    position: relative;
-
-    .section {
-      display: flex;
-      margin-bottom: 0px;
-      flex-wrap: wrap;
-    }
-
-    .tag {
-      margin: 8px 0px 0px 8px;
-    }
-
-    .estimation-time{
-      padding-left: 8px;
-      height: 20px;
-      color: var(--vscode-titleBar-activeForeground);
-      display: flex;
-      font-size: 11px;
-      margin-top: 8px;
-      margin-bottom: 2px;
-
-      .ms-Image{
-        margin-top: auto;
-        margin-bottom: auto;
-      }
-    }
-
-    .configuration{
-      padding-left: 8px;
-      height: auto;
-      color: var(--vscode-titleBar-activeForeground);
-      display: flex;
-      font-size: 11px;
-
-      .ms-Image{
-        margin-top: auto;
-        margin-bottom: auto;
-      }
-
-      label{
-        width: 242px;
-      }
-    }
-
-    h2 {
-      font-size: 13px;
-      text-align: center;
-      color: var(--vscode-titleBar-activeForeground);
-      font-weight: 700;
-      text-align: left;
-      margin: 8px 12px 0px 12px;
-    }
-
-    h3 {
-      font-size: 12px;
-      color: var(--vscode-titleBar-activeForeground);
-      opacity: 50%;
-      font-weight: normal;
-      text-align: left;
-      margin: 8px 12px 0px 12px;
-      opacity: 50%;
-    }
-
-    button {
-      font-size: 13px;
-      text-align: center;
-      background-color: var(--vscode-button-background);
-      height: 28px;
-      padding: 6px 11px 6px 11px;
-      border-radius: 0px;
-    }
-
-    span {
-      font-weight: normal;
-    }
-
-    .buttons {
-      position: absolute;
-      bottom: 12px;
-      right: 12px;
-    }
-
-    .right-aligned {
-      margin-right: 0px;
-      margin-left: 10px;
-      width: auto;
-    }
-  }
-
   .sample-card {
     background-color: var(--vscode-editorWidget-background);
     border-radius: 2px;
@@ -192,6 +98,7 @@
         right: 0;
         bottom: 0;
         z-index: 3;
+        color: #CCCCCC;
     }
 
     .triangle:before {
@@ -219,6 +126,13 @@
       margin-top: 8px;
       margin-bottom: 2px;
 
+      .watch{
+          width: 16px;
+          height: 16px;
+          margin-top: auto;
+          margin-bottom: auto;
+      }
+
       .ms-Image{
         margin-top: auto;
         margin-bottom: auto;
@@ -238,6 +152,13 @@
       display: flex;
       font-size: 11px;
       height: 24px;
+
+      .setting{
+          width: 16px;
+          height: 16px;
+          margin-top: auto;
+          margin-bottom: auto;
+      }
 
       .ms-Image{
         margin-top: auto;
@@ -297,19 +218,6 @@
     }
   }
 }
-
-body.vscode-dark {
-  .sample-app-card {
-    h2 {
-      color: #E5E5E5;
-    }
-
-    h3 {
-      color: #CCCCCC;
-    }
-  }
-}
-
 
 @media only screen and (max-width: 1024px) {
   .sample-gallery{

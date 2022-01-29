@@ -322,7 +322,7 @@ jobs:
           else
             vsname=$(cat packages/vscode-extension/package.json | jq -r '.name')
             vsver=$(cat packages/vscode-extension/package.json | jq -r'.version')
-            echo "::set-output name=EXTENSION_VERSION::$(echo $vsname@vsver)"
+            echo "::set-output name=EXTENSION_VERSION::$(echo $vsname@$vsver)"
           fi
 
       - name: release daily VSCode extension to github

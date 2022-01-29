@@ -25,7 +25,7 @@ import {
 } from "../resources/errors";
 import { Messages } from "../resources/messages";
 import { Scenario, TemplateInfo } from "../resources/templateInfo";
-import { ScaffoldSteps } from "../utils/progress-helper";
+import { ScaffoldProgress } from "../resources/steps";
 
 @Service(BuiltInScaffoldPluginNames.tab)
 export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
@@ -55,10 +55,10 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
     ctx.logProvider.info(Messages.StartScaffold(this.name));
     const progress = ctx.userInteraction.createProgressBar(
       Messages.ScaffoldProgressTitle,
-      Object.entries(ScaffoldSteps).length
+      Object.entries(ScaffoldProgress.steps).length
     );
     await progress.start(Messages.ProgressStart);
-    await progress.next(ScaffoldSteps.Scaffold);
+    await progress.next(ScaffoldProgress.steps.Scaffold);
     const template = inputs.template;
     const language = template === "ReactTab_TS" ? "ts" : "js";
     const componentPath = path.join(inputs.projectPath, FrontendPathInfo.WorkingDir);

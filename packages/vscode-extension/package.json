@@ -810,7 +810,7 @@
               },
               "devCert": {
                 "type": "boolean",
-                "description": "Ensure development certification is trusted."
+                "description": "Ensure development certificate is trusted."
               }
             },
             "additionalProperties": false,

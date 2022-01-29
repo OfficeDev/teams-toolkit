@@ -66,17 +66,22 @@ Or, if there's no `.env.teamsfx.local` file in your project (e.g., migrated from
 Since Bot and Messaging Extension requires a public address as the messaging endpoint, ngrok will be used by default to automatically create a tunnel connection forwarding localhost address to public address.
 
 ### Mitigation
-To use your own tunneling service, set the `skipNgrok`, `botDomain`, and `botEndpoint` configurations in *.fx/configs/localSettings.json* under the project root, then start debugging, like:
+To use your own tunneling service, you should set `botDomain`, and `botEndpoint` configurations in *.fx/configs/localSettings.json* under the project root.
 ```json
 {
     "bot": {
-        "skipNgrok": true,
         "botDomain": "02f6-2404-f801-9000-1a-908c-79ca-3a8-ee86.ngrok.io",
         "botEndpoint": "https://02f6-2404-f801-9000-1a-908c-79ca-3a8-ee86.ngrok.io"
     }
 }
 ```
 Please note that the `botEndpoint` should use https protocol.
+
+You should also close the ngrok validation during local debug.
+
+For VSCode, you should set the setting `fx-extension.prerequisiteCheck.skipNgrok` to be false.
+![VSCode skip ngrok](../images/fx-core/localdebug/vsc-skip-ngrok.jpg)
+For CLI, you should run command `teamsfx config set validate-ngrok off`.
 
 ## localdebug-plugin.NgrokTunnelNotConnected
 ### Error Message
@@ -133,14 +138,12 @@ Since Teams requires https Tab hosting endpoint, a localhost development certifi
 ### Mitigation
 We recommend you to install the development certificate. However, if you do not want to install the development certificate and do not want the confirmation window to pop up every time during debugging, you can follow the script bellow to disable the development certificate.
 
-Set the `trustDevCert` configuration in *.fx/configs/localSettings.json* under the project root, then start debugging, like:
-```json
-{
-    "frontend": {
-        "trustDevCert": false,
-    }
-}
-```
+Close the trust development certificate setting, then start debugging.
+
+For VSCode, you should set the setting `fx-extension.prerequisiteCheck.devCert` to be false.
+![VSCode trust dev cert](../images/fx-core/localdebug/vsc-trust-dev-cert.jpg)
+For CLI, you should run command `teamsfx config set trust-development-certificate off`.
+
 If so, an error will show in the Tab page of your app, look like:
 
 ![Tab-Https-Not-Trusted](../images/fx-core/localdebug/tab-https-not-trusted.png)

@@ -300,7 +300,7 @@ jobs:
           npx lerna publish from-package --yes
 
       - name: pack vsix
-        if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha' }}
+        if: ${{ contains(steps.version-change.outputs.CHANGED, 'ms-teams-vscode-extension@') || (github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha') }}
         uses: nick-invision/retry@v2
         with:
           timeout_minutes: 10

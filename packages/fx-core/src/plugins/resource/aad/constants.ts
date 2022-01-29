@@ -85,6 +85,8 @@ export class Plugins {
   static localDebug = "fx-resource-local-debug";
   static solution = "solution";
   static auth = "auth";
+  static apim = "apim";
+  static function = "function";
 }
 
 export class ConfigKeys {

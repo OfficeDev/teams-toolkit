@@ -114,17 +114,16 @@ export interface ResourcePlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
+   * @param {EnvInfoV2} envInfo - a reference of environment info modeled after (config|state).${env}.json
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
-   *
-   * @returns {ResourceProvisionOutput} resource provision output which will be persisted by the toolkit into envInfo's state.
+   * @returns Void because side effect is expected.
    */
   provisionResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: DeepReadonly<EnvInfoV2>,
+    envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
-  ) => Promise<Result<ResourceProvisionOutput, FxError>>;
+  ) => Promise<Result<Void, FxError>>;
 
   /**
    * configureResource() is guaranteed to run after Bicep/ARM provision.
@@ -135,17 +134,16 @@ export interface ResourcePlugin {
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
    * @param {ProvisionInputs} inputs - inputs injected by Toolkit runtime and solution.
-   * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
+   * @param {EnvInfoV2} envInfo - a reference of environment info modeled after (config|state).${env}.json
    * @param {TokenProvider} tokenProvider - Tokens for Azure and AppStudio
-   *
-   * @returns {ResourceProvisionOutput} resource provision output which will be persisted by the toolkit into envInfo's state.
+   * @returns Void because side effect is expected.
    */
   configureResource?: (
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: DeepReadonly<EnvInfoV2>,
+    envInfo: EnvInfoV2,
     tokenProvider: TokenProvider
-  ) => Promise<Result<ResourceProvisionOutput, FxError>>;
+  ) => Promise<Result<Void, FxError>>;
 
   /**
    * Depends on the provision output values returned by {@link provisionResource}, ARM/Bicep provision
@@ -156,6 +154,7 @@ export interface ResourcePlugin {
    * @param {DeploymentInputs} inputs - inputs injected by Toolkit runtime and solution.
    * @param {DeepReadonly<EnvInfoV2>} envInfo - a readonly view of environment info modeled after (config|state).${env}.json
    * @param {TokenProvider} tokenProvider - Token provider for Azure, AppStudio and m365
+   * @returns Void because side effect is expected.
    */
   deploy?: (
     ctx: Context,

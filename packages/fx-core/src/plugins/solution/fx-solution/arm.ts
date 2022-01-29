@@ -1331,10 +1331,10 @@ function expandParameterPlaceholdersV3(
   envInfo: v3.EnvInfoV3,
   parameterContent: string
 ): string {
-  const azureSolutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-  const plugins = azureSolutionSettings.activeResourcePlugins.map((p) =>
-    Container.get<v3.ResourcePlugin>(p)
-  );
+  const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  const plugins = solutionSettings
+    ? solutionSettings.activeResourcePlugins.map((p) => Container.get<v3.FeaturePlugin>(p))
+    : [];
   const stateVariables: Record<string, Record<string, any>> = {};
   const availableVariables: Record<string, Record<string, any>> = { state: stateVariables };
   const envState = envInfo.state as v3.TeamsFxAzureResourceStates;

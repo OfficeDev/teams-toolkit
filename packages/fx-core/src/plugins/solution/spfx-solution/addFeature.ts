@@ -15,14 +15,14 @@ import {
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import { DefaultManifestProvider } from "../fx-solution/v3/addFeature";
-import { BuiltInScaffoldPluginNames } from "../fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../fx-solution/v3/constants";
 
 export async function getQuestionsForAddFeature(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
   envInfo?: v2.DeepReadonly<v3.EnvInfoV3Question>
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  const plugin = Container.get<v3.FeaturePlugin>(BuiltInScaffoldPluginNames.spfx);
+  const plugin = Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.spfx);
   if (plugin.getQuestionsForAddFeature) {
     const childNode = await plugin.getQuestionsForAddFeature(ctx, inputs, envInfo);
     if (childNode.isErr()) return err(childNode.error);
@@ -38,7 +38,7 @@ export async function addFeature(
   inputs: v3.SolutionAddFeatureInputs,
   envInfo?: v3.EnvInfoV3
 ): Promise<Result<Void, FxError>> {
-  const plugin = Container.get<v3.FeaturePlugin>(BuiltInScaffoldPluginNames.spfx);
+  const plugin = Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.spfx);
   if (plugin.addFeature) {
     const contextWithManifestProvider: v3.ContextWithManifestProvider = {
       ...ctx,

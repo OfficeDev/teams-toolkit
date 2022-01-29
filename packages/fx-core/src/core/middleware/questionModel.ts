@@ -78,33 +78,15 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   } else if (method === "init" || method === "_init") {
     getQuestionRes = await core._getQuestionsForInit(inputs);
   } else if (
-    [
-      "addModule",
-      "scaffold",
-      "addResource",
-      "provisionResourcesV3",
-      "localDebugV3",
-      "deployArtifactsV3",
-      "publishApplicationV3",
-    ].includes(method || "")
+    ["addFeature", "provisionResourcesV3", "deployArtifactsV3", "publishApplicationV3"].includes(
+      method || ""
+    )
   ) {
     const solutionV3 = ctx.solutionV3;
     const contextV2 = ctx.contextV2;
     if (solutionV3 && contextV2) {
-      if (method === "addModule") {
-        getQuestionRes = await core._getQuestionsForAddModule(
-          inputs as v2.InputsWithProjectPath,
-          solutionV3,
-          contextV2
-        );
-      } else if (method === "scaffold") {
-        getQuestionRes = await core._getQuestionsForScaffold(
-          inputs as v2.InputsWithProjectPath,
-          solutionV3,
-          contextV2
-        );
-      } else if (method === "addResource") {
-        getQuestionRes = await core._getQuestionsForAddResource(
+      if (method === "addFeature") {
+        getQuestionRes = await core._getQuestionsForAddFeature(
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2
@@ -114,28 +96,21 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2,
-          ctx.envInfoV3
-        );
-      } else if (method === "localDebugV3") {
-        getQuestionRes = await core._getQuestionsForLocalProvision(
-          inputs as v2.InputsWithProjectPath,
-          solutionV3,
-          contextV2,
-          ctx.localSettings
+          ctx.envInfoV3 as v2.DeepReadonly<v3.EnvInfoV3Question>
         );
       } else if (method === "deployArtifactsV3") {
         getQuestionRes = await core._getQuestionsForDeploy(
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2,
-          ctx.envInfoV3!
+          ctx.envInfoV3 as v2.DeepReadonly<v3.EnvInfoV3Question>
         );
       } else if (method === "publishApplicationV3") {
         getQuestionRes = await core._getQuestionsForPublish(
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2,
-          ctx.envInfoV3!
+          ctx.envInfoV3 as v2.DeepReadonly<v3.EnvInfoV3Question>
         );
       }
     }
@@ -244,37 +219,14 @@ export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<strin
 }
 
 //////V3 questions
-export async function getQuestionsForScaffold(
+export async function getQuestionsForAddFeature(
   inputs: v2.InputsWithProjectPath,
   solution: v3.ISolution,
-  context: v2.Context
+  context: v2.Context,
+  envInfo?: v2.DeepReadonly<v3.EnvInfoV3Question>
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (solution.getQuestionsForScaffold) {
-    const res = await solution.getQuestionsForScaffold(context, inputs);
-    return res;
-  }
-  return ok(undefined);
-}
-
-export async function getQuestionsForAddModule(
-  inputs: v2.InputsWithProjectPath,
-  solution: v3.ISolution,
-  context: v2.Context
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (solution.getQuestionsForAddModule) {
-    const res = await solution.getQuestionsForAddModule(context, inputs);
-    return res;
-  }
-  return ok(undefined);
-}
-
-export async function getQuestionsForAddResource(
-  inputs: v2.InputsWithProjectPath,
-  solution: v3.ISolution,
-  context: v2.Context
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (solution.getQuestionsForAddResource) {
-    const res = await solution.getQuestionsForAddResource(context, inputs);
+  if (solution.getQuestionsForAddFeature) {
+    const res = await solution.getQuestionsForAddFeature(context, inputs, envInfo);
     return res;
   }
   return ok(undefined);
@@ -284,7 +236,7 @@ export async function getQuestionsForProvision(
   inputs: v2.InputsWithProjectPath,
   solution: v3.ISolution,
   context: v2.Context,
-  envInfo?: v3.EnvInfoV3
+  envInfo?: v2.DeepReadonly<v3.EnvInfoV3Question>
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (solution.getQuestionsForProvision) {
     const res = await solution.getQuestionsForProvision(
@@ -302,28 +254,10 @@ export async function getQuestionsForDeploy(
   inputs: v2.InputsWithProjectPath,
   solution: v3.ISolution,
   context: v2.Context,
-  envInfo: v3.EnvInfoV3
+  envInfo: v2.DeepReadonly<v3.EnvInfoV3Question>
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (solution.getQuestionsForDeploy) {
     const res = await solution.getQuestionsForDeploy(context, inputs, envInfo, TOOLS.tokenProvider);
-    return res;
-  }
-  return ok(undefined);
-}
-
-export async function getQuestionsForLocalProvision(
-  inputs: v2.InputsWithProjectPath,
-  solution: v3.ISolution,
-  context: v2.Context,
-  localSettings?: Json
-): Promise<Result<QTreeNode | undefined, FxError>> {
-  if (solution.getQuestionsForLocalProvision) {
-    const res = await solution.getQuestionsForLocalProvision(
-      context,
-      inputs,
-      TOOLS.tokenProvider,
-      localSettings
-    );
     return res;
   }
   return ok(undefined);
@@ -333,7 +267,7 @@ export async function getQuestionsForPublish(
   inputs: v2.InputsWithProjectPath,
   solution: v3.ISolution,
   context: v2.Context,
-  envInfo: v3.EnvInfoV3
+  envInfo: v2.DeepReadonly<v3.EnvInfoV3Question>
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (solution.getQuestionsForPublish) {
     const res = await solution.getQuestionsForPublish(

@@ -2,11 +2,13 @@
 // Licensed under the MIT license.
 
 import {
+  AzureAccountProvider,
   AzureSolutionSettings,
   err,
   FxError,
   ok,
   Result,
+  TokenProvider,
   v2,
   v3,
   Void,
@@ -23,20 +25,34 @@ import {
   ScaffoldContext,
   scaffoldFromTemplates,
 } from "../../../../common/template-utils/templatesActions";
-import { generateBicepFromFile } from "../../../../common/tools";
+import {
+  generateBicepFromFile,
+  getResourceGroupNameFromResourceId,
+  getStorageAccountNameFromResourceId,
+  getSubscriptionIdFromResourceId,
+} from "../../../../common/tools";
 import { getTemplatesFolder } from "../../../../folder";
+import { TabOptionItem } from "../../../solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
-import { Constants, FrontendOutputBicepSnippet, FrontendPathInfo } from "../constants";
+import { AzureStorageClient } from "../clients";
+import { FrontendConfig } from "../configs";
+import {
+  Constants,
+  DependentPluginInfo,
+  FrontendOutputBicepSnippet,
+  FrontendPathInfo,
+} from "../constants";
+import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "../env";
+import { FrontendDeployment } from "../ops/deploy";
 import {
   TemplateZipFallbackError,
   UnknownScaffoldError,
   UnzipTemplateError,
 } from "../resources/errors";
 import { Messages } from "../resources/messages";
-import { ScaffoldProgress } from "../resources/steps";
+import { DeployProgress, PostProvisionProgress, ScaffoldProgress } from "../resources/steps";
 import { Scenario, TemplateInfo } from "../resources/templateInfo";
-import "./AzureStoragePlugin";
-import "./ReactTabScaffoldPlugin";
+import { EnableStaticWebsiteError, UnauthenticatedError } from "./error";
 
 @Service(BuiltInFeaturePluginNames.frontend)
 export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
@@ -142,12 +158,155 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     if (scaffoldRes.isErr()) return err(scaffoldRes.error);
     const armRes = await this.generateResourceTemplate(ctx, inputs);
     if (armRes.isErr()) return err(armRes.error);
+    const capabilities = (ctx.projectSetting.solutionSettings! as AzureSolutionSettings)
+      .capabilities;
+    if (!capabilities.includes(TabOptionItem.id)) capabilities.push(TabOptionItem.id);
     return ok(armRes.value);
   }
-  // afterOtherFeaturesAdded?;
-  // getQuestionsForProvision?: ((ctx: Context, inputs: Inputs, tokenProvider: TokenProvider, envInfo?: DeepReadonly<...> | undefined) => Promise<...>) | undefined;
-  // provisionResource?: ((ctx: Context, inputs: InputsWithProjectPath, envInfo: v3.EnvInfoV3, tokenProvider: TokenProvider) => Promise<...>) | undefined;
-  // configureResource?: ((ctx: Context, inputs: InputsWithProjectPath, envInfo: v3.EnvInfoV3, tokenProvider: TokenProvider) => Promise<...>) | undefined;
-  // getQuestionsForDeploy?: ((ctx: Context, inputs: Inputs, tokenProvider: TokenProvider, envInfo?: DeepReadonly<...> | undefined) => Promise<...>) | undefined;
-  // deploy?: ((ctx: Context, inputs: InputsWithProjectPath, envInfo: DeepReadonly<v3.EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<...>) | undefined;
+  async afterOtherFeaturesAdded(
+    ctx: v3.ContextWithManifestProvider,
+    inputs: v3.OtherFeaturesAddedInputs,
+    envInfo?: v3.EnvInfoV3
+  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
+    ctx.logProvider.info(Messages.StartUpdateArmTemplates(this.name));
+    const result: ArmTemplateResult = {
+      Reference: {
+        endpoint: FrontendOutputBicepSnippet.Endpoint,
+        domain: FrontendOutputBicepSnippet.Domain,
+      },
+    };
+    return ok({ kind: "bicep", template: result });
+  }
+  private async buildFrontendConfig(
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<FrontendConfig, FxError>> {
+    const credentials = await tokenProvider.getAccountCredentialAsync();
+    if (!credentials) {
+      return err(new UnauthenticatedError());
+    }
+    const storage = envInfo.state[this.name] as v3.FrontendHostingResource;
+    const frontendConfig = new FrontendConfig(
+      getSubscriptionIdFromResourceId(storage.storageResourceId),
+      getResourceGroupNameFromResourceId(storage.storageResourceId),
+      (envInfo.state.solution as v3.AzureSolutionConfig).location,
+      getStorageAccountNameFromResourceId(storage.storageResourceId),
+      credentials
+    );
+    return ok(frontendConfig);
+  }
+  private async updateDotEnv(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3
+  ): Promise<Result<Void, FxError>> {
+    const envs = this.collectEnvs(ctx, inputs, envInfo);
+    await saveEnvFile(
+      envFilePath(envInfo.envName, path.join(inputs.projectPath, FrontendPathInfo.WorkingDir)),
+      {
+        teamsfxRemoteEnvs: envs,
+        customizedRemoteEnvs: {},
+      }
+    );
+    return ok(Void);
+  }
+  private collectEnvs(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3
+  ): { [key: string]: string } {
+    const envs: { [key: string]: string } = {};
+    const addToEnvs = (key: string, value: string | undefined) => {
+      // Check for both null and undefined, add to envs when value is "", 0 or false.
+      if (value != null) {
+        envs[key] = value;
+      }
+    };
+    const solutionSettings = ctx.projectSetting.solutionSettings as
+      | AzureSolutionSettings
+      | undefined;
+    if (solutionSettings) {
+      if (solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.function)) {
+        const functionState = envInfo.state[BuiltInFeaturePluginNames.function] as v3.AzureFunction;
+        addToEnvs(EnvKeys.FuncName, ctx.projectSetting.defaultFunctionName);
+        addToEnvs(EnvKeys.FuncEndpoint, functionState.functionEndpoint);
+      }
+
+      if (solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.simpleAuth)) {
+        const simpleAuthState = envInfo.state[
+          BuiltInFeaturePluginNames.simpleAuth
+        ] as v3.SimpleAuth;
+        addToEnvs(EnvKeys.RuntimeEndpoint, simpleAuthState.endpoint);
+        addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
+      }
+
+      if (solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
+        const aadState = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
+        addToEnvs(EnvKeys.ClientID, aadState.clientId);
+      }
+    }
+    return envs;
+  }
+  async configureResource(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProvider
+  ): Promise<Result<Void, FxError>> {
+    ctx.logProvider.info(Messages.StartPostProvision(this.name));
+    const progress = ctx.userInteraction.createProgressBar(
+      Messages.PostProvisionProgressTitle,
+      Object.entries(PostProvisionProgress.steps).length
+    );
+    await progress.start(Messages.ProgressStart);
+    await progress.next(PostProvisionProgress.steps.EnableStaticWebsite);
+    const frontendConfigRes = await this.buildFrontendConfig(
+      envInfo,
+      tokenProvider.azureAccountProvider
+    );
+    if (frontendConfigRes.isErr()) {
+      return err(frontendConfigRes.error);
+    }
+    const client = new AzureStorageClient(frontendConfigRes.value);
+    try {
+      await client.enableStaticWebsite();
+    } catch (e) {
+      return err(new EnableStaticWebsiteError());
+    }
+    await this.updateDotEnv(ctx, inputs, envInfo);
+    await progress.end(true);
+    ctx.logProvider.info(Messages.EndPostProvision(this.name));
+    return ok(Void);
+  }
+  async deploy(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    ctx.logProvider.info(Messages.StartDeploy(this.name));
+    const progress = ctx.userInteraction.createProgressBar(
+      Messages.DeployProgressTitle,
+      Object.entries(DeployProgress.steps).length
+    );
+    await progress.start(Messages.ProgressStart);
+    const frontendConfigRes = await this.buildFrontendConfig(envInfo, tokenProvider);
+    if (frontendConfigRes.isErr()) {
+      return err(frontendConfigRes.error);
+    }
+    const client = new AzureStorageClient(frontendConfigRes.value);
+    const componentPath: string = inputs.dir
+      ? inputs.dir
+      : path.join(inputs.projectPath, FrontendPathInfo.WorkingDir);
+    const envName = envInfo.envName;
+
+    const envs = await loadEnvFile(envFilePath(envName, componentPath));
+
+    await FrontendDeployment.doFrontendBuildV3(componentPath, envs, envName, progress);
+    await FrontendDeployment.doFrontendDeploymentV3(client, componentPath, envName);
+
+    await progress.end(true);
+    ctx.logProvider.info(Messages.EndDeploy(this.name));
+    return ok(Void);
+  }
 }

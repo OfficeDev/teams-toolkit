@@ -12,5 +12,7 @@ export const BuiltInFeaturePluginNames = {
   bot: "fx-resource-bot",
   function: "fx-resource-function",
   frontend: "fx-resource-frontend-hosting",
+  aspDotNet: "fx-resource-aspdnet",
   spfx: "fx-resource-spfx",
+  simpleAuth: "fx-resource-simple-auth",
 };

@@ -211,16 +211,6 @@ interface AzureSQL extends AzureResource {
     sqlResourceId: string;
 }
 
-// @public (undocumented)
-interface AzureStorage extends AzureResource {
-    // (undocumented)
-    domain: string;
-    // (undocumented)
-    endpoint: string;
-    // (undocumented)
-    storageResourceId: string;
-}
-
 // @public
 export interface BaseQuestion {
     default?: unknown;
@@ -571,6 +561,16 @@ export interface FolderQuestion extends UserInputQuestion {
     type: "folder";
     validation?: FuncValidation<string>;
     value?: string;
+}
+
+// @public (undocumented)
+interface FrontendHostingResource extends AzureResource {
+    // (undocumented)
+    domain: string;
+    // (undocumented)
+    endpoint: string;
+    // (undocumented)
+    storageResourceId: string;
 }
 
 // @public (undocumented)
@@ -2001,7 +2001,7 @@ declare namespace v3 {
         ISolution,
         ICore,
         AzureIdentity,
-        AzureStorage,
+        FrontendHostingResource,
         AzureSQL,
         AzureBot,
         AADApp,

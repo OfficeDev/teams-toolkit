@@ -3,6 +3,7 @@
 
 import { hooks } from "@feathersjs/hooks/lib";
 import {
+  AzureSolutionSettings,
   err,
   FxError,
   InvalidInputError,
@@ -76,13 +77,18 @@ export async function getPermissionRequest(projectPath: string): Promise<Result<
 }
 
 export function isAadAdded(projectSetting: ProjectSettings): boolean {
-  return (
-    projectSetting.solutionSettings as v3.TeamsFxSolutionSettings
-  ).activeResourcePlugins.includes(Plugins.pluginNameComplex);
+  if (
+    projectSetting.solutionSettings &&
+    (projectSetting.solutionSettings as AzureSolutionSettings).activeResourcePlugins.includes(
+      Plugins.pluginNameComplex
+    )
+  )
+    return true;
+  return false;
 }
 
 @Service(Plugins.pluginNameComplex)
-export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
+export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
   name = Plugins.pluginNameComplex;
   type: "resource" = "resource";
   resourceType = "Azure AD App";
@@ -92,39 +98,34 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
    * when AAD is added, permissions.json is created
    * manifest template will also be updated
    */
-  async addResource(
-    ctx: v3.ContextWithManifest,
-    inputs: v3.PluginAddResourceInputs
-  ): Promise<Result<Void, FxError>> {
+  async addFeature(
+    ctx: v3.ContextWithManifestProvider,
+    inputs: v2.InputsWithProjectPath,
+    envInfo?: v3.EnvInfoV3
+  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
     const res = await createPermissionRequestFile(inputs.projectPath);
     if (res.isErr()) return err(res.error);
-    (ctx.appManifest.local as TeamsAppManifest).webApplicationInfo = {
-      id: "{{localSettings.auth.clientId}}",
-      resource: "{{{localSettings.auth.applicationIdUris}}}",
-    };
-    (ctx.appManifest.remote as TeamsAppManifest).webApplicationInfo = {
+    const loadRes = await ctx.appManifestProvider.loadManifest(ctx, inputs);
+    if (loadRes.isErr()) return err(loadRes.error);
+    const manifest = loadRes.value;
+    (manifest as TeamsAppManifest).webApplicationInfo = {
       id: `{{state.${Plugins.pluginNameComplex}.clientId}}`,
       resource: `{{{state.${Plugins.pluginNameComplex}.applicationIdUris}}}`,
     };
-    return ok(Void);
+    await ctx.appManifestProvider.saveManifest(ctx, inputs, manifest);
+    return ok(undefined);
   }
 
   @hooks([CommonErrorHandlerMW()])
-  async _provision(
+  async provisionResource(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    tokenProvider: TokenProviderInAPI,
-    localSettings?: Json,
-    envInfo?: v3.EnvInfoV3
-  ): Promise<Result<any, FxError>> {
-    if (!localSettings && !envInfo) {
-      return err(
-        new InvalidInputError(Plugins.pluginNameShort, "localSettings or envInfo", "missing")
-      );
-    }
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProviderInAPI
+  ): Promise<Result<Void, FxError>> {
     const checkPermissionRes = await checkPermissionRequest(inputs.projectPath);
     if (checkPermissionRes.isErr()) return err(checkPermissionRes.error);
-    const isLocalDebug = localSettings ? true : false;
+    const isLocalDebug = envInfo.envName === "local";
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
       Messages.StartProvision,
@@ -141,30 +142,18 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
       appStudio: tokenProvider.appStudioToken,
     });
 
-    const localSettingsV2 = localSettings as v2.LocalSettings | undefined;
-
     //init aad part in local settings or env state
-    if (localSettingsV2) {
-      if (!localSettingsV2.auth) localSettingsV2.auth = {};
-    } else {
-      if (!envInfo?.state[BuiltInFeaturePluginNames.aad]) {
-        envInfo!.state[BuiltInFeaturePluginNames.aad] = {
-          secretFields: ["clientSecret"],
-        };
-      }
+    if (!envInfo.state[BuiltInFeaturePluginNames.aad]) {
+      envInfo.state[BuiltInFeaturePluginNames.aad] = {
+        secretFields: ["clientSecret"],
+      };
     }
     // Move objectId etc. from input to output.
-    const skip = localSettingsV2
-      ? Utils.skipCreateAadForLocalProvision(localSettingsV2)
-      : Utils.skipCreateAadForProvision(envInfo!);
+    const skip = Utils.skipCreateAadForProvision(envInfo);
     DialogUtils.init(ctx.userInteraction, ProgressTitle.Provision, ProgressTitle.ProvisionSteps);
 
     let config: ProvisionConfig = new ProvisionConfig(isLocalDebug);
-    if (localSettingsV2) {
-      await config.restoreConfigFromLocalSettings(ctx, inputs, localSettingsV2);
-    } else {
-      await config.restoreConfigFromEnvInfo(ctx, inputs, envInfo!);
-    }
+    await config.restoreConfigFromEnvInfo(ctx, inputs, envInfo);
     const permissions = AadAppForTeamsImpl.parsePermission(
       config.permissionRequest as string,
       ctx.logProvider
@@ -179,7 +168,7 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
           config.objectId,
           config.password,
           tokenProvider.graphTokenProvider,
-          isLocalDebug ? undefined : envInfo?.envName
+          envInfo.envName
         );
         ctx.logProvider?.info(Messages.getLog(Messages.GetAadAppSuccess));
       }
@@ -204,13 +193,8 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
       skip
     );
     ctx.logProvider?.info(Messages.getLog(Messages.UpdatePermissionSuccess));
-
     await DialogUtils.progress?.end(true);
-    if (localSettingsV2) {
-      config.saveConfigIntoLocalSettings(localSettingsV2, TokenProvider.tenantId as string);
-    } else {
-      config.saveConfigIntoEnvInfo(envInfo!, TokenProvider.tenantId as string);
-    }
+    config.saveConfigIntoEnvInfo(envInfo, TokenProvider.tenantId as string);
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
       Messages.EndProvision,
@@ -218,35 +202,26 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
       isLocalDebug,
       skip ? { [Telemetry.skip]: Telemetry.yes } : {}
     );
-    if (localSettingsV2) return ok(localSettingsV2);
-    const aadConfig = envInfo!.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
-    return ok(aadConfig);
+    return ok(Void);
   }
 
   @hooks([CommonErrorHandlerMW()])
-  async _postProvision(
+  async configureResource(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    tokenProvider: TokenProviderInAPI,
-    localSettings?: Json,
-    envInfo?: v3.EnvInfoV3
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProviderInAPI
   ): Promise<Result<Void, FxError>> {
-    const isLocalDebug = localSettings ? true : false;
-    if (!localSettings && !envInfo) {
-      return err(
-        new InvalidInputError(Plugins.pluginNameShort, "localSettings or envInfo", "missing")
-      );
-    }
+    const setApplicationInContextRes = await this.setApplicationInContext(ctx, envInfo);
+    if (setApplicationInContextRes.isErr()) return err(setApplicationInContextRes.error);
+    const isLocalDebug = envInfo.envName === "local";
     Utils.addLogAndTelemetryWithLocalDebug(
       ctx.logProvider,
       Messages.StartPostProvision,
       Messages.StartPostLocalDebug,
       isLocalDebug
     );
-    const localSettingsV2 = localSettings as v2.LocalSettings | undefined;
-    const skip = localSettingsV2
-      ? Utils.skipCreateAadForLocalProvision(localSettingsV2)
-      : Utils.skipCreateAadForProvision(envInfo!);
+    const skip = Utils.skipCreateAadForProvision(envInfo);
     DialogUtils.init(
       ctx.userInteraction,
       ProgressTitle.PostProvision,
@@ -258,9 +233,7 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
       appStudio: tokenProvider.appStudioToken,
     });
     const config: PostProvisionConfig = new PostProvisionConfig(isLocalDebug);
-    localSettingsV2
-      ? config.restoreConfigFromLocalSettings(localSettingsV2)
-      : config.restoreConfigFromEnvInfo(ctx, envInfo!);
+    config.restoreConfigFromEnvInfo(ctx, envInfo);
 
     await DialogUtils.progress?.start(ProgressDetail.Starting);
     await DialogUtils.progress?.next(ProgressDetail.UpdateRedirectUri);
@@ -298,70 +271,13 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
     return ok(Void);
   }
 
-  async provisionLocalResource(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    localSettings: Json,
-    tokenProvider: TokenProviderInAPI
-  ): Promise<Result<Json, FxError>> {
-    return this._provision(ctx, inputs, tokenProvider, localSettings);
-  }
-
-  async configureLocalResource(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    localSettings: Json,
-    tokenProvider: TokenProviderInAPI
-  ): Promise<Result<Void, FxError>> {
-    const setApplicationInContextRes = await this.setApplicationInContext(ctx, localSettings);
-    if (setApplicationInContextRes.isErr()) return err(setApplicationInContextRes.error);
-    return this._postProvision(ctx, inputs, tokenProvider, localSettings);
-  }
-
-  async provisionResource(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: TokenProviderInAPI
-  ): Promise<Result<v3.CloudResource, FxError>> {
-    return await this._provision(ctx, inputs, tokenProvider, undefined, envInfo as v3.EnvInfoV3);
-  }
-  async configureResource(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: TokenProviderInAPI
-  ): Promise<Result<Void, FxError>> {
-    const setApplicationInContextRes = await this.setApplicationInContext(
-      ctx,
-      undefined,
-      envInfo as v3.EnvInfoV3
-    );
-    if (setApplicationInContextRes.isErr()) return err(setApplicationInContextRes.error);
-    return await this._postProvision(
-      ctx,
-      inputs,
-      tokenProvider,
-      undefined,
-      envInfo as v3.EnvInfoV3
-    );
-  }
-
   public async setApplicationInContext(
     ctx: v2.Context,
-    localSettings?: Json,
-    envInfo?: v3.EnvInfoV3
+    envInfo: v3.EnvInfoV3
   ): Promise<Result<Void, FxError>> {
-    if (!localSettings && !envInfo) {
-      return err(
-        new InvalidInputError(Plugins.pluginNameShort, "localSettings or envInfo", "missing")
-      );
-    }
-    const isLocalDebug = localSettings ? true : false;
+    const isLocalDebug = envInfo.envName === "local";
     const config: SetApplicationInContextConfig = new SetApplicationInContextConfig(isLocalDebug);
-    isLocalDebug
-      ? config.restoreConfigFromLocalSettings(localSettings as v2.LocalSettings)
-      : config.restoreConfigFromEnvInfo(ctx, envInfo!);
+    config.restoreConfigFromEnvInfo(ctx, envInfo);
 
     if (!config.frontendDomain && !config.botId) {
       throw ResultFactory.UserError(AppIdUriInvalidError.name, AppIdUriInvalidError.message());
@@ -373,10 +289,8 @@ export class AadAppForTeamsPluginV3 implements v3.ResourcePlugin {
     config.applicationIdUri = applicationIdUri;
 
     ctx.logProvider?.info(Messages.getLog(Messages.SetAppIdUriSuccess));
-    isLocalDebug
-      ? ((localSettings as v2.LocalSettings).auth!.applicationIdUris = config.applicationIdUri)
-      : ((envInfo!.state[BuiltInFeaturePluginNames.aad] as v3.AADApp).applicationIdUris =
-          config.applicationIdUri);
+    (envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp).applicationIdUris =
+      config.applicationIdUri;
     return ok(Void);
   }
 }

@@ -219,19 +219,6 @@ jobs:
           version=$(node -p -e "require('./packages/cli/package.json').version")
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/report.json cli $version
 
-  teardown:
-    if: ${{ always() }}
-    needs: execute-case
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Setup node
-        uses: actions/setup-node@v2.1.2
-        with:
-          node-version: 14
-
   report:
     if: ${{ always() && github.event_name == 'schedule' }}
     needs: execute-case

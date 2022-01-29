@@ -48,8 +48,8 @@ export class ReactTabScaffoldPlugin implements v3.ScaffoldPlugin {
     ]);
   }
   async scaffold(
-    ctx: v3.ContextWithManifest,
-    inputs: v3.PluginScaffoldInputs
+    ctx: v3.ContextWithManifestProvider,
+    inputs: v2.InputsWithProjectPath
   ): Promise<Result<Json | undefined, FxError>> {
     const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
     ctx.logProvider.info(Messages.StartScaffold(this.name));

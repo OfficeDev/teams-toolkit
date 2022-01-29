@@ -1,14 +1,14 @@
-import { FxError, Inputs, Json, Result, v2, v3 } from "@microsoft/teamsfx-api";
-import arm, { armV2 } from "../arm";
-import { getActivatedV2ResourcePlugins } from "../ResourcePluginContainer";
+import { FxError, Inputs, Json, Result, v2 } from "@microsoft/teamsfx-api";
+import { armV2 } from "../arm";
 import { NamedArmResourcePluginAdaptor, ScaffoldingContextAdapter } from "./adaptor";
 import { showUpdateArmTemplateNotice } from "./executeUserTask";
-import { getAzureSolutionSettings, getSelectedPlugins } from "./utils";
+import { getSelectedPlugins } from "./utils";
 
 export async function generateResourceTemplate(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<Json, FxError>> {
+  showUpdateArmTemplateNotice(ctx.userInteraction);
   const legacyContext = new ScaffoldingContextAdapter([ctx, inputs]);
   const plugins = getSelectedPlugins(ctx.projectSetting).map(
     (plugin) => new NamedArmResourcePluginAdaptor(plugin)
@@ -18,12 +18,12 @@ export async function generateResourceTemplate(
 }
 
 export async function generateResourceTemplateForPlugins(
-  ctx: v3.ContextWithManifest,
-  inputs: v3.PluginAddResourceInputs,
+  ctx: v2.Context,
+  inputs: Inputs,
   plugins: v2.ResourcePlugin[]
 ): Promise<Result<Json, FxError>> {
   showUpdateArmTemplateNotice(ctx.userInteraction);
-  const allPlugins = getActivatedV2ResourcePlugins(ctx.projectSetting);
-  const armResult = await arm.addFeature(ctx, inputs, allPlugins, plugins);
+  const legacyContext = new ScaffoldingContextAdapter([ctx, inputs]);
+  const armResult = await armV2.generateArmTemplate(legacyContext, plugins);
   return armResult;
 }

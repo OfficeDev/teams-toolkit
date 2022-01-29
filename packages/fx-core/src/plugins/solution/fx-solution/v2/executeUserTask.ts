@@ -23,7 +23,6 @@ import {
   IBot,
   IComposeExtension,
   ProjectSettings,
-  v3,
 } from "@microsoft/teamsfx-api";
 import { getStrings } from "../../../../common/tools";
 import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";
@@ -221,7 +220,7 @@ export async function addCapability(
   // 1. checking addable
   const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
   const originalSettings = cloneDeep(solutionSettings);
-  const inputsNew: v3.PluginAddResourceInputs = {
+  const inputsNew = {
     ...inputs,
     projectPath: inputs.projectPath!,
     existingResources: originalSettings.activeResourcePlugins,
@@ -372,7 +371,7 @@ export async function addCapability(
   );
   if (pluginsToScaffold.length > 0) {
     const scaffoldRes = await scaffoldCodeAndResourceTemplate(
-      { ...ctx, appManifest: { local: {}, remote: {} } },
+      ctx,
       inputsNew,
       localSettings,
       pluginsToScaffold,
@@ -424,8 +423,8 @@ export function showUpdateArmTemplateNotice(ui?: UserInteraction) {
 }
 
 async function scaffoldCodeAndResourceTemplate(
-  ctx: v3.ContextWithManifest,
-  inputs: v3.PluginAddResourceInputs,
+  ctx: v2.Context,
+  inputs: Inputs,
   localSettings: Json,
   pluginsToScaffold: v2.ResourcePlugin[],
   pluginsToDoArm?: v2.ResourcePlugin[]
@@ -561,7 +560,7 @@ export async function addResource(
   // 8. scaffold and update arm
   if (pluginsToScaffold.length > 0 || pluginsToDoArm.length > 0) {
     let scaffoldRes = await scaffoldCodeAndResourceTemplate(
-      { ...ctx, appManifest: { local: {}, remote: {} } },
+      ctx,
       inputsNew,
       localSettings,
       pluginsToScaffold,

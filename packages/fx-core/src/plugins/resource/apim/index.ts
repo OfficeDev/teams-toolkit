@@ -167,16 +167,8 @@ async function _callFunc(ctx: PluginContext, progressBar: ProgressBar, func: Fun
 }
 
 async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const answer = buildAnswer(ctx.answers);
   const scaffoldManager = await Factory.buildScaffoldManager(ctx);
-
   const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
-
-  if (answer.validate) {
-    await answer.validate(PluginLifeCycle.Scaffold, apimConfig, ctx.root);
-  }
-
   await progressBar.next(ProgressStep.Scaffold, ProgressMessages[ProgressStep.Scaffold].Scaffold);
   await scaffoldManager.scaffold(appName, ctx.root);
 }

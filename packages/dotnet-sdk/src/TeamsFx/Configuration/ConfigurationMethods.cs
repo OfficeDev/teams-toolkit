@@ -2,6 +2,8 @@
 // Licensed under the MIT License.
 
 using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Options;
+using Microsoft.Identity.Client;
 using Microsoft.TeamsFx;
 using Microsoft.TeamsFx.Configuration;
 
@@ -29,6 +31,15 @@ public static class TeamsFxConfigurationMethods
 
         services.AddOptions<AuthenticationOptions>().Bind(namedConfigurationSection.GetSection(AuthenticationOptions.Authentication)).ValidateDataAnnotations();
 
+        services.AddSingleton(sp => {
+            var authenticationOptions = sp.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
+            var builder = ConfidentialClientApplicationBuilder.Create(authenticationOptions.ClientId)
+                .WithClientSecret(authenticationOptions.ClientSecret)
+                .WithAuthority(authenticationOptions.OAuthAuthority);
+
+            return builder.Build();
+        });
+
         return services;
     }
 
@@ -50,6 +61,15 @@ public static class TeamsFxConfigurationMethods
         services.Configure(configureOptions);
         services.AddOptions<AuthenticationOptions>()
             .Configure(configureOptions).ValidateDataAnnotations();
+
+        services.AddSingleton(sp => {
+            var authenticationOptions = sp.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
+            var builder = ConfidentialClientApplicationBuilder.Create(authenticationOptions.ClientId)
+                .WithClientSecret(authenticationOptions.ClientSecret)
+                .WithAuthority(authenticationOptions.OAuthAuthority);
+
+            return builder.Build();
+        });
 
         return services;
     }
@@ -76,6 +96,15 @@ public static class TeamsFxConfigurationMethods
                 options.InitiateLoginEndpoint = userOptions.InitiateLoginEndpoint;
                 options.OAuthAuthority = userOptions.OAuthAuthority;
             }).ValidateDataAnnotations();
+
+        services.AddSingleton(sp => {
+            var authenticationOptions = sp.GetRequiredService<IOptions<AuthenticationOptions>>().Value;
+            var builder = ConfidentialClientApplicationBuilder.Create(authenticationOptions.ClientId)
+                .WithClientSecret(authenticationOptions.ClientSecret)
+                .WithAuthority(authenticationOptions.OAuthAuthority);
+
+            return builder.Build();
+        });
 
         return services;
     }

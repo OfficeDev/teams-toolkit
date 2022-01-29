@@ -27,7 +27,7 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
     private bool _initialized;
     private readonly AuthenticationOptions _authenticationOptions;
     internal AccessToken _ssoToken;
-    private Lazy<IConfidentialClientApplication> _msalApp;
+    private IConfidentialClientApplication _msalApp;
 
     #region JS Interop
     private readonly Lazy<Task<IJSObjectReference>> _teamsSdkTask;
@@ -47,12 +47,14 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
     /// <param name="jsRuntime">JavaScript interop runtime.</param>
     /// <param name="logger">Logger of TeamsUserCredential Class.</param>
     /// <param name="memoryCache">Memory cache used in Blazor server app.</param>
+    /// <param name="confidentialClientApplication">Global instance of client app from MSAL.NET library</param>
     /// <exception cref="ExceptionCode.InvalidConfiguration">When client id, client secret, initiate login endpoint or OAuth authority is missing or invalid in config.</exception>
     public TeamsUserCredential(
         IOptions<AuthenticationOptions> authenticationOptions,
         IJSRuntime jsRuntime,
         ILogger<TeamsUserCredential> logger,
-        IMemoryCache memoryCache)
+        IMemoryCache memoryCache,
+        IConfidentialClientApplication confidentialClientApplication)
     {
         _logger = logger;
         try
@@ -64,7 +66,7 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
         {
             throw new ExceptionWithCode($"Authentication config is missing or not correct with error: {e.Message}", ExceptionCode.InvalidConfiguration);
         }
-        _msalApp = new(() => BuildConfidentialClientApplication());
+        _msalApp = confidentialClientApplication;
         _teamsSdkTask = new(() => ImportTeamsSdk(jsRuntime).AsTask());
         _jsRuntime = jsRuntime;
         _cache = memoryCache;
@@ -256,19 +258,6 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
         }
     }
 
-    private IConfidentialClientApplication BuildConfidentialClientApplication(string redirectUri = null)
-    {
-        var builder = ConfidentialClientApplicationBuilder.Create(_authenticationOptions.ClientId)
-                .WithClientSecret(_authenticationOptions.ClientSecret)
-                .WithAuthority(_authenticationOptions.OAuthAuthority);
-        if (!string.IsNullOrEmpty(redirectUri))
-        {
-            builder = builder.WithRedirectUri(redirectUri);
-        }
-
-        return builder.Build();
-    }
-
     private async ValueTask<IJSObjectReference> ImportTeamsSdk(IJSRuntime jsRuntime)
     {
         try
@@ -377,7 +366,7 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
         {
             _logger.LogDebug("Acquiring token via OBO flow.");
             var userAssertion = new UserAssertion(ssoToken);
-            var result = await _msalApp.Value
+            var result = await _msalApp
                 .AcquireTokenOnBehalfOf(scopeString.Split(' '), userAssertion)
                 .ExecuteAsync()
                 .ConfigureAwait(false);

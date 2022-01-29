@@ -39,4 +39,3 @@ public class AuthenticationOptions
     [RegularExpression(@"^http(s)?://[-a-zA-Z0-9@:%._\+~#=/]{1,100}$")]
     public string OAuthAuthority { get; set; }
 }
-

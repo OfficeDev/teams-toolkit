@@ -316,7 +316,7 @@ jobs:
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid != 'alpha' }}
         id: vscode-version
         run: |
-          if echo ${{ steps.version-change.outputs.EXTENSION_VERSION }}; 
+          if [ ! -z "${{ steps.version-change.outputs.EXTENSION_VERSION }}" ];
           then
             echo "::set-output name=EXTENSION_VERSION::$(echo ${{steps.version-change.outputs.EXTENSION_VERSION}})"
           else

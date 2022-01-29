@@ -2,6 +2,7 @@
     margin: 20px 100px;
     min-width: 500px;
     max-width: 800px;
+    color: var(--vscode-editor-foreground);
 
     button{
         width: 51px;
@@ -9,13 +10,17 @@
         font-size: 13px;
         padding: 0;
         margin: 0;
-        color: #3794FF;
+        color: var(--vscode-textLink-foreground);
 
         span>i{
                 font-size: 12px;
                 width: 14px;
                 height: 14px;
-                color: #3794FF;
+                color: var(--vscode-textLink-foreground);
+        }
+
+        :active{
+            color: var(--vscode-textLink-foreground);
         }
     }
 
@@ -65,11 +70,25 @@
 
     .estimation-time{
         margin-top: 8px;
+
+        .watch{
+            width: 16px;
+            height: 16px;
+            margin-top: auto;
+            margin-bottom: auto;
+        }
     }
 
     .configuration{
         margin-top: 4px;
         margin-bottom: 16px;
+
+        .setting{
+          width: 16px;
+          height: 16px;
+          margin-top: auto;
+          margin-bottom: auto;
+        }
     }
 
     .description{

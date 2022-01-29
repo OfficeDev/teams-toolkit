@@ -238,6 +238,7 @@ export async function addCapability(
     ...inputs,
     projectPath: inputs.projectPath!,
     existingResources: originalSettings.activeResourcePlugins,
+    existingCapabilities: originalSettings.capabilities,
   };
   const canProceed = canAddCapability(solutionSettings, ctx.telemetryReporter);
   if (canProceed.isErr()) {

@@ -38,11 +38,11 @@ export class AadAppForTeamsPlugin implements Plugin {
     return (
       solutionSettings.hostType === HostTypeOptionAzure.id &&
       // For scaffold, activeResourecPlugins is undefined
-      (solutionSettings.activeResourcePlugins == undefined ||
-        solutionSettings.activeResourcePlugins.includes(Plugins.pluginNameComplex) ||
+      (!solutionSettings.activeResourcePlugins ||
+        solutionSettings.activeResourcePlugins?.includes(Plugins.pluginNameComplex) ||
         // When adding function and apim as azure resources, AAD should be activated.
-        solutionSettings.azureResources.includes(Plugins.function) ||
-        solutionSettings.azureResources.includes(Plugins.apim))
+        solutionSettings.azureResources?.includes(Plugins.function) ||
+        solutionSettings.azureResources?.includes(Plugins.apim))
     );
   }
 

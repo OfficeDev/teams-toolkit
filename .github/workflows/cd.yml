@@ -333,6 +333,7 @@ jobs:
           tag: 'vscode-extension-${{ steps.version-change.outputs.EXTENSION_VERSION_NUM }}'
           artifacts: ./packages/**/*.vsix
           prerelease: true
+          allowUpdates: true
 
       - name: release RC VSCode extension to github
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'rc' }}
@@ -342,6 +343,7 @@ jobs:
           tag: ${{ steps.vscode-version.outputs.EXTENSION_VERSION }}
           artifacts: ./packages/**/*.vsix
           prerelease: true
+          allowUpdates: true
       
       - name: release stable VSCode extension to github
         if: ${{ github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
@@ -350,3 +352,4 @@ jobs:
           token: ${{ secrets.CD_PAT }}
           tag: ${{ steps.vscode-version.outputs.EXTENSION_VERSION }}
           artifacts: ./packages/**/*.vsix
+          allowUpdates: true

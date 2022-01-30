@@ -53,6 +53,7 @@ export interface AzureSolutionConfig extends Json {
   location: string;
   provisionSucceeded: boolean;
   needCreateResourceGroup: boolean;
+  teamsAppTenantId: string;
 }
 
 export interface TeamsAppResource extends AzureResource {

@@ -1,10 +1,7 @@
 {
   "extends": "@istanbuljs/nyc-config-typescript",
   "all": true,
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.js"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.js"],
   "exclude": [
     "src/cmds/preview/depsChecker/**/*",
     "src/cmds/preview/preview.ts",
@@ -14,12 +11,7 @@
     ".prettierrc.js",
     ".mocharc.js"
   ],
-  "reporter": [
-    "html",
-    "text",
-    "json-summary",
-    "cobertura"
-  ],
+  "reporter": ["html", "text", "json-summary", "cobertura"],
   "check-coverage": true,
-  "lines": 15
+  "lines": 67
 }

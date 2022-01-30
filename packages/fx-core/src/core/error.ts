@@ -307,3 +307,17 @@ export function FailedToParseResourceIdError(name: string, resourceId: string): 
 export function SPFxConfigError(file: string): UserError {
   return new UserError("SPFxConfigError", `Load SPFx config ${file} failed.`, CoreSource);
 }
+
+export function NpmInstallError(path: string, e: Error): SystemError {
+  return new SystemError(e, CoreSource, "NpmInstallError");
+}
+
+export function LoadPluginError(): SystemError {
+  return new SystemError("LoadPluginError", "Failed to load plugin", CoreSource);
+}
+
+export class OperationNotSupportedForExistingAppError extends UserError {
+  constructor(task: string) {
+    super(new.target.name, `Task is not supported for existing app: ${task}`, CoreSource);
+  }
+}

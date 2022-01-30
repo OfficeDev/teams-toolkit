@@ -4,29 +4,17 @@
 import { Result } from "neverthrow";
 import { FxError } from "../error";
 import { Func, QTreeNode } from "../qm/question";
-import { Inputs, Json, OptionItem, Void } from "../types";
+import { Inputs, Void } from "../types";
 import { AppStudioTokenProvider, TokenProvider } from "../utils/login";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
-import { EnvInfoV3 } from "./types";
+import { EnvInfoV3, EnvInfoV3Question } from "./types";
 
-export interface SolutionScaffoldInputs extends InputsWithProjectPath {
-  module?: string;
-  template?: OptionItem;
-}
-export interface SolutionAddResourceInputs extends InputsWithProjectPath {
-  module?: string;
-  resource?: string;
-}
-export interface SolutionAddModuleInputs extends InputsWithProjectPath {
-  capabilities: string[];
-}
-export interface SolutionDeployInputs extends InputsWithProjectPath {
-  modules: string[];
+export interface SolutionAddFeatureInputs extends InputsWithProjectPath {
+  feature: string;
 }
 
 export interface ISolution {
   name: string;
-
   /**
    * init
    */
@@ -34,103 +22,54 @@ export interface ISolution {
     ctx: Context,
     inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
-  init: (ctx: Context, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
+  init?: (ctx: Context, inputs: InputsWithProjectPath) => Promise<Result<Void, FxError>>;
 
   /**
-   * scaffold
+   *  add feature
    */
-  getQuestionsForScaffold?: (
+  getQuestionsForAddFeature?: (
     ctx: Context,
-    inputs: InputsWithProjectPath
+    inputs: InputsWithProjectPath,
+    envInfo?: DeepReadonly<EnvInfoV3Question>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   /**
-   * scaffold is a repeatable lifecycle stage
+   * triggered by add feature event, this API aims to add/modify files in local workspace
    *
    * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Inputs} inputs - module: module index(0,1,2), template: template name
-   *
+   * @param {InputsWithProjectPath} inputs
+   * @param {EnvInfoV3} envInfo optional
    * @returns Void
    */
-  scaffold: (
+  addFeature?: (
     ctx: Context,
-    inputs: SolutionScaffoldInputs,
-    localSettings?: Json
+    inputs: SolutionAddFeatureInputs,
+    envInfo?: EnvInfoV3
   ) => Promise<Result<Void, FxError>>;
 
-  /**
-   * addResource
-   */
-  getQuestionsForAddResource?: (
-    ctx: Context,
-    inputs: InputsWithProjectPath
-  ) => Promise<Result<QTreeNode | undefined, FxError>>;
-  /**
-   * addResource
-   *
-   * @param {Context} ctx - plugin's runtime context shared by all lifecycles.
-   * @param {Inputs} inputs - module: module index(0,1,2), template: template name
-   *
-   * @returns Void
-   */
-  addResource: (ctx: Context, inputs: SolutionAddResourceInputs) => Promise<Result<Void, FxError>>;
-
-  /**
-   * addModule
-   */
-  getQuestionsForAddModule?: (
-    ctx: Context,
-    inputs: InputsWithProjectPath
-  ) => Promise<Result<QTreeNode | undefined, FxError>>;
-
-  /**
-   * addModule means adding a sub-project
-   * @param {string[]} capabilities - capabilities for the module
-   * @returns {Json} localSettings
-   */
-  addModule: (
-    ctx: Context,
-    inputs: SolutionAddModuleInputs,
-    localSettings?: Json
-  ) => Promise<Result<Json, FxError>>;
-
-  //provision
+  //provision (remote or local)
   getQuestionsForProvision?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
     tokenProvider: TokenProvider,
-    envInfo?: DeepReadonly<EnvInfoV3>
+    envInfo?: DeepReadonly<EnvInfoV3Question>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   provisionResources?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
     envInfo: EnvInfoV3,
     tokenProvider: TokenProvider
-  ) => Promise<Result<EnvInfoV3, FxError>>;
-
-  //local provision
-  getQuestionsForLocalProvision?: (
-    ctx: Context,
-    inputs: InputsWithProjectPath,
-    tokenProvider: TokenProvider,
-    localSettings?: DeepReadonly<Json>
-  ) => Promise<Result<QTreeNode | undefined, FxError>>;
-  provisionLocalResources?: (
-    ctx: Context,
-    inputs: InputsWithProjectPath,
-    localSettings: Json,
-    tokenProvider: TokenProvider
-  ) => Promise<Result<Json, FxError>>;
+  ) => Promise<Result<Void, FxError>>;
 
   //deploy
   getQuestionsForDeploy?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV3>,
+    envInfo: DeepReadonly<EnvInfoV3Question>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   deploy?: (
     ctx: Context,
-    inputs: SolutionDeployInputs,
+    inputs: InputsWithProjectPath,
     envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<Void, FxError>>;
@@ -139,7 +78,7 @@ export interface ISolution {
   getQuestionsForPublish?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV3>,
+    envInfo: DeepReadonly<EnvInfoV3Question>,
     tokenProvider: AppStudioTokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   publishApplication: (
@@ -154,16 +93,14 @@ export interface ISolution {
     ctx: Context,
     inputs: Inputs,
     func: Func,
-    localSettings: Json,
-    envInfo: DeepReadonly<EnvInfoV3>,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    envInfo?: DeepReadonly<EnvInfoV3Question>
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   executeUserTask?: (
     ctx: Context,
     inputs: Inputs,
     func: Func,
-    localSettings: Json,
-    envInfo: EnvInfoV3,
-    tokenProvider: TokenProvider
-  ) => Promise<Result<unknown, FxError>>;
+    tokenProvider: TokenProvider,
+    envInfo?: EnvInfoV3
+  ) => Promise<Result<any, FxError>>;
 }

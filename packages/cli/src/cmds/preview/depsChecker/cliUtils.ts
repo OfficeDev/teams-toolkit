@@ -35,6 +35,14 @@ export async function isNodeCheckerEnabled(): Promise<boolean> {
   return await checkerEnabled(CliConfigOptions.EnvCheckerValidateNode);
 }
 
+export async function isNgrokCheckerEnabled(): Promise<boolean> {
+  return await checkerEnabled(CliConfigOptions.EnvCheckerValidateNgrok);
+}
+
+export async function isTrustDevCertEnabled(): Promise<boolean> {
+  return await checkerEnabled(CliConfigOptions.TrustDevCert);
+}
+
 export async function checkerEnabled(key: string): Promise<boolean> {
   const result = await UserSettings.getConfigSync();
   if (result.isErr()) {

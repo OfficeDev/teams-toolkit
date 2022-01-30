@@ -5,6 +5,7 @@ import { ResourceManagementClient } from "@azure/arm-resources";
 import {
   AppStudioTokenProvider,
   AzureAccountProvider,
+  AzureSolutionSettings,
   EnvConfigFileNameTemplate,
   EnvNamePlaceholder,
   err,
@@ -30,24 +31,27 @@ import {
   TelemetryProperty,
 } from "../../../../common/telemetry";
 import { getHashedEnv, getResourceGroupInPortal, getStrings } from "../../../../common/tools";
+import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import { SolutionError, SolutionSource } from "../constants";
+import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
+import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { executeConcurrently } from "../v2/executor";
-import { BuiltInResourcePluginNames } from "./constants";
+import { BuiltInFeaturePluginNames } from "./constants";
 import { solutionGlobalVars } from "./solutionGlobalVars";
 
 export async function getQuestionsForProvision(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
   tokenProvider: TokenProvider,
-  envInfo?: v2.DeepReadonly<v3.EnvInfoV3>
+  envInfo?: v2.DeepReadonly<v3.EnvInfoV3Question>
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  const solutionSetting = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
+  const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const root = new QTreeNode({ type: "group" });
   for (const pluginName of solutionSetting.activeResourcePlugins) {
-    const plugin = Container.get<v3.ResourcePlugin>(pluginName);
+    const plugin = Container.get<v3.FeaturePlugin>(pluginName);
     if (plugin.getQuestionsForProvision) {
       const res = await plugin.getQuestionsForProvision(ctx, inputs, tokenProvider, envInfo);
       if (res.isErr()) {
@@ -69,10 +73,16 @@ export async function provisionResources(
   envInfo: v3.EnvInfoV3,
   tokenProvider: TokenProvider
 ): Promise<Result<v3.EnvInfoV3, FxError>> {
-  const solutionSetting = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
+  const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   // check M365 tenant match
-  const appResource = envInfo.state[BuiltInResourcePluginNames.appStudio] as v3.TeamsAppResource;
-  const tenantIdInConfig = appResource.tenantId;
+  if (!envInfo.state[BuiltInFeaturePluginNames.appStudio])
+    envInfo.state[BuiltInFeaturePluginNames.appStudio] = {};
+  const teamsAppResource = envInfo.state[
+    BuiltInFeaturePluginNames.appStudio
+  ] as v3.TeamsAppResource;
+  if (!envInfo.state.solution) envInfo.state.solution = {};
+  const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
+  const tenantIdInConfig = teamsAppResource.tenantId;
   const tenantIdInTokenRes = await getM365TenantId(tokenProvider.appStudioToken);
   if (tenantIdInTokenRes.isErr()) {
     return err(tenantIdInTokenRes.error);
@@ -88,151 +98,176 @@ export async function provisionResources(
     );
   }
   if (!tenantIdInConfig) {
-    appResource.tenantId = tenantIdInToken;
+    teamsAppResource.tenantId = tenantIdInToken;
+    solutionConfig.teamsAppTenantId = tenantIdInToken;
   }
 
-  //TODO teams app provision, return app id
-  // call appStudio.provision()
-  appResource.teamsAppId = "fake-remote-teams-app-id";
-  solutionGlobalVars.TeamsAppId = "fake-remote-teams-app-id";
+  // register teams app
+  const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+  const registerTeamsAppRes = await appStudioV3.registerTeamsApp(ctx, inputs, envInfo);
+  if (registerTeamsAppRes.isErr()) return err(registerTeamsAppRes.error);
+  const teamsAppId = registerTeamsAppRes.value;
+  solutionGlobalVars.TeamsAppId = teamsAppId;
 
-  // ask common question and fill in solution config
-  const solutionConfigRes = await fillInAzureSolutionConfigs(
-    ctx,
-    inputs,
-    envInfo as v3.EnvInfoV3,
-    tokenProvider
-  );
-  if (solutionConfigRes.isErr()) {
-    return err(solutionConfigRes.error);
-  }
-  // ask for provision consent
-  const consentResult = await askForProvisionConsent(
-    ctx,
-    tokenProvider.azureAccountProvider,
-    envInfo as v3.EnvInfoV3
-  );
-  if (consentResult.isErr()) {
-    return err(consentResult.error);
-  }
+  if (solutionSetting) {
+    if (envInfo.envName === "local") {
+      // TODO for local debug
+      const debugProvisionResult = await setupLocalDebugSettings(ctx, inputs, envInfo);
+      if (debugProvisionResult.isErr()) {
+        return err(debugProvisionResult.error);
+      }
+    } else {
+      // ask common question and fill in solution config
+      const solutionConfigRes = await fillInAzureConfigs(
+        ctx,
+        inputs,
+        envInfo as v3.EnvInfoV3,
+        tokenProvider
+      );
+      if (solutionConfigRes.isErr()) {
+        return err(solutionConfigRes.error);
+      }
+      // ask for provision consent
+      const consentResult = await askForProvisionConsent(
+        ctx,
+        tokenProvider.azureAccountProvider,
+        envInfo as v3.EnvInfoV3
+      );
+      if (consentResult.isErr()) {
+        return err(consentResult.error);
+      }
 
-  // create resource group if needed
-  const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
-  if (solutionConfig.needCreateResourceGroup) {
-    const createRgRes = await resourceGroupHelper.createNewResourceGroup(
-      solutionConfig.resourceGroupName,
-      tokenProvider.azureAccountProvider,
-      solutionConfig.subscriptionId,
-      solutionConfig.location
+      // create resource group if needed
+      if (solutionConfig.needCreateResourceGroup) {
+        const createRgRes = await resourceGroupHelper.createNewResourceGroup(
+          solutionConfig.resourceGroupName,
+          tokenProvider.azureAccountProvider,
+          solutionConfig.subscriptionId,
+          solutionConfig.location
+        );
+        if (createRgRes.isErr()) {
+          return err(createRgRes.error);
+        }
+      }
+    }
+
+    // collect plugins and provisionResources
+    const plugins = solutionSetting.activeResourcePlugins.map((p) =>
+      Container.get<v3.FeaturePlugin>(p)
     );
-    if (createRgRes.isErr()) {
-      return err(createRgRes.error);
+    const provisionThunks = plugins
+      .filter((plugin: v3.FeaturePlugin) => !isUndefined(plugin.provisionResource))
+      .map((plugin: v3.FeaturePlugin) => {
+        return {
+          pluginName: `${plugin.name}`,
+          taskName: "provisionResource",
+          thunk: () => {
+            if (!envInfo.state[plugin.name]) {
+              envInfo.state[plugin.name] = {};
+            }
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            return plugin.provisionResource!(ctx, inputs, envInfo, tokenProvider);
+          },
+        };
+      });
+    ctx.logProvider.info(
+      util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
+    );
+    const provisionResult = await executeConcurrently(provisionThunks, ctx.logProvider);
+    if (provisionResult.kind !== "success") {
+      return err(provisionResult.error);
+    }
+
+    ctx.logProvider.info(
+      util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
+    );
+
+    ctx.logProvider.info(
+      util.format(getStrings().solution.DeployArmTemplates.StartNotice, PluginDisplayName.Solution)
+    );
+    const armRes = await arm.deployArmTemplates(
+      ctx,
+      inputs,
+      envInfo,
+      tokenProvider.azureAccountProvider
+    );
+    if (armRes.isErr()) {
+      return err(armRes.error);
+    }
+    ctx.logProvider.info(
+      util.format(
+        getStrings().solution.DeployArmTemplates.SuccessNotice,
+        PluginDisplayName.Solution
+      )
+    );
+
+    // collect plugins and call configureResource
+    const configureResourceThunks = plugins
+      .filter((plugin: v3.FeaturePlugin) => !isUndefined(plugin.configureResource))
+      .map((plugin: v3.FeaturePlugin) => {
+        if (!envInfo.state[plugin.name]) {
+          envInfo.state[plugin.name] = {};
+        }
+        return {
+          pluginName: `${plugin.name}`,
+          taskName: "configureResource",
+          thunk: () =>
+            // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
+            plugin.configureResource!(ctx, inputs, envInfo, tokenProvider),
+        };
+      });
+    const configureResourceResult = await executeConcurrently(
+      configureResourceThunks,
+      ctx.logProvider
+    );
+    ctx.logProvider.info(
+      util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
+    );
+    const envStates = envInfo.state as v3.TeamsFxAzureResourceStates;
+    if (configureResourceResult.kind !== "success") {
+      const msg = util.format(
+        getStrings().solution.ProvisionFailNotice,
+        ctx.projectSetting.appName
+      );
+      ctx.logProvider.error(msg);
+      envStates.solution.provisionSucceeded = false;
+      return err(configureResourceResult.error);
+    }
+
+    if (envInfo.envName === "local") {
+      // TODO config local debug settings
+      const configLocalDebugSettingsRes = await configLocalDebugSettings(ctx, inputs, envInfo);
+      if (configLocalDebugSettingsRes.isErr()) {
+        return err(configLocalDebugSettingsRes.error);
+      }
+    } else {
+      const url = getResourceGroupInPortal(
+        envStates.solution.subscriptionId,
+        envStates.solution.tenantId,
+        envStates.solution.resourceGroupName
+      );
+      const msg = util.format(
+        `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
+        ctx.projectSetting.appName
+      );
+      ctx.logProvider.info(msg);
+      if (url) {
+        const title = "View Provisioned Resources";
+        ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
+          const userSelected = result.isOk() ? result.value : undefined;
+          if (userSelected === title) {
+            ctx.userInteraction.openUrl(url);
+          }
+        });
+      } else {
+        ctx.userInteraction.showMessage("info", msg, false);
+      }
     }
   }
-
-  // collect plugins and provisionResources
-  const plugins = solutionSetting.activeResourcePlugins.map((p) =>
-    Container.get<v3.ResourcePlugin>(p)
-  );
-  const provisionThunks = plugins
-    .filter((plugin: v3.ResourcePlugin) => !isUndefined(plugin.provisionResource))
-    .map((plugin: v3.ResourcePlugin) => {
-      return {
-        pluginName: `${plugin.name}`,
-        taskName: "provisionResource",
-        thunk: () => {
-          if (!envInfo.state[plugin.name]) {
-            envInfo.state[plugin.name] = {};
-          }
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          return plugin.provisionResource!(ctx, inputs, envInfo, tokenProvider);
-        },
-      };
-    });
-  ctx.logProvider.info(
-    util.format(getStrings().solution.ProvisionStartNotice, PluginDisplayName.Solution)
-  );
-  const provisionResult = await executeConcurrently(provisionThunks, ctx.logProvider);
-  if (provisionResult.kind === "failure" || provisionResult.kind === "partialSuccess") {
-    return err(provisionResult.error);
-  }
-
-  ctx.logProvider.info(
-    util.format(getStrings().solution.ProvisionFinishNotice, PluginDisplayName.Solution)
-  );
-
-  ctx.logProvider.info(
-    util.format(getStrings().solution.DeployArmTemplates.StartNotice, PluginDisplayName.Solution)
-  );
-  const armRes = await arm.deployArmTemplates(
-    ctx,
-    inputs,
-    envInfo,
-    tokenProvider.azureAccountProvider
-  );
-  if (armRes.isErr()) {
-    return err(armRes.error);
-  }
-  ctx.logProvider.info(
-    util.format(getStrings().solution.DeployArmTemplates.SuccessNotice, PluginDisplayName.Solution)
-  );
-
-  // TODO call aad.setApplicationInContext
-  ctx.logProvider.info(util.format("AAD.setApplicationInContext", PluginDisplayName.Solution));
-
-  // collect plugins and call configureResource
-  const configureResourceThunks = plugins
-    .filter((plugin: v3.ResourcePlugin) => !isUndefined(plugin.configureResource))
-    .map((plugin: v3.ResourcePlugin) => {
-      if (!envInfo.state[plugin.name]) {
-        envInfo.state[plugin.name] = {};
-      }
-      return {
-        pluginName: `${plugin.name}`,
-        taskName: "configureResource",
-        thunk: () =>
-          // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
-          plugin.configureResource!(ctx, inputs, envInfo, tokenProvider),
-      };
-    });
-  const configureResourceResult = await executeConcurrently(
-    configureResourceThunks,
-    ctx.logProvider
-  );
-  ctx.logProvider.info(
-    util.format(getStrings().solution.ConfigurationFinishNotice, PluginDisplayName.Solution)
-  );
-  const envStates = envInfo.state as v3.TeamsFxAzureResourceStates;
-  if (
-    configureResourceResult.kind === "failure" ||
-    configureResourceResult.kind === "partialSuccess"
-  ) {
-    const msg = util.format(getStrings().solution.ProvisionFailNotice, ctx.projectSetting.appName);
-    ctx.logProvider.error(msg);
-    envStates.solution.provisionSucceeded = false;
-    return err(configureResourceResult.error);
-  }
-
-  const url = getResourceGroupInPortal(
-    envStates.solution.subscriptionId,
-    envStates.solution.tenantId,
-    envStates.solution.resourceGroupName
-  );
-  const msg = util.format(
-    `Success: ${getStrings().solution.ProvisionSuccessNotice}`,
-    ctx.projectSetting.appName
-  );
-  ctx.logProvider.info(msg);
-  if (url) {
-    const title = "View Provisioned Resources";
-    ctx.userInteraction.showMessage("info", msg, false, title).then((result: any) => {
-      const userSelected = result.isOk() ? result.value : undefined;
-      if (userSelected === title) {
-        ctx.userInteraction.openUrl(url);
-      }
-    });
-  } else {
-    ctx.userInteraction.showMessage("info", msg, false);
+  //update Teams App
+  const updateTeamsAppRes = await appStudioV3.updateTeamsApp(ctx, inputs, envInfo);
+  if (updateTeamsAppRes.isErr()) {
+    return err(updateTeamsAppRes.error);
   }
   return ok(envInfo);
 }
@@ -246,35 +281,40 @@ export async function checkAzureSubscription(
   envInfo: v3.EnvInfoV3,
   azureAccountProvider: AzureAccountProvider
 ): Promise<Result<Void, FxError>> {
-  const state = envInfo.state;
-  const subscriptionId = envInfo.config.azure?.subscriptionId || state.solution.subscriptionId;
-  if (!subscriptionId) {
-    const askSubRes = await azureAccountProvider.getSelectedSubscription(true);
-    if (askSubRes) return ok(askSubRes);
-    return err(
-      new UserError(
-        SolutionError.SubscriptionNotFound,
-        "Failed to select subscription",
-        SolutionSource
-      )
-    );
-  }
-
-  let subscriptionName = state.solution.subscriptionName;
-  if (subscriptionName.length > 0) {
-    subscriptionName = `(${subscriptionName})`;
+  const subscriptionIdInConfig =
+    envInfo.config.azure?.subscriptionId || (envInfo.state.solution.subscriptionId as string);
+  if (!subscriptionIdInConfig) {
+    const subscriptionInAccount = await azureAccountProvider.getSelectedSubscription(true);
+    if (subscriptionInAccount) {
+      envInfo.state.solution.subscriptionId = subscriptionInAccount.subscriptionId;
+      envInfo.state.solution.subscriptionName = subscriptionInAccount.subscriptionName;
+      envInfo.state.solution.tenantId = subscriptionInAccount.tenantId;
+      ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
+      return ok(Void);
+    } else {
+      return err(
+        new UserError(
+          SolutionError.SubscriptionNotFound,
+          "Failed to select subscription",
+          SolutionSource
+        )
+      );
+    }
   }
   // make sure the user is logged in
   await azureAccountProvider.getAccountCredentialAsync(true);
-
   // verify valid subscription (permission)
   const subscriptions = await azureAccountProvider.listSubscriptions();
-  const targetSubInfo = subscriptions.find((item) => item.subscriptionId === subscriptionId);
+  const targetSubInfo = subscriptions.find(
+    (item) => item.subscriptionId === subscriptionIdInConfig
+  );
   if (!targetSubInfo) {
     return err(
       new UserError(
         SolutionError.SubscriptionNotFound,
-        `The subscription '${subscriptionId}'${subscriptionName} for '${
+        `The subscription '${subscriptionIdInConfig}'(${
+          envInfo.state.solution.subscriptionName
+        }) for '${
           envInfo.envName
         }' environment is not found in the current account, please use the right Azure account or check the '${EnvConfigFileNameTemplate.replace(
           EnvNamePlaceholder,
@@ -284,10 +324,10 @@ export async function checkAzureSubscription(
       )
     );
   }
-  state.solution.subscriptionId = targetSubInfo.subscriptionId;
-  state.solution.subscriptionName = targetSubInfo.subscriptionName;
-  state.solution.tenantId = targetSubInfo.tenantId;
-  ctx.logProvider.info(`[${PluginDisplayName.Solution}] check subscriptionId pass!`);
+  envInfo.state.solution.subscriptionId = targetSubInfo.subscriptionId;
+  envInfo.state.solution.subscriptionName = targetSubInfo.subscriptionName;
+  envInfo.state.solution.tenantId = targetSubInfo.tenantId;
+  ctx.logProvider.info(`[${PluginDisplayName.Solution}] checkAzureSubscription pass!`);
   return ok(Void);
 }
 
@@ -295,7 +335,7 @@ export async function checkAzureSubscription(
  * Asks common questions and puts the answers in the global namespace of SolutionConfig
  *
  */
-async function fillInAzureSolutionConfigs(
+export async function fillInAzureConfigs(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
@@ -455,8 +495,8 @@ export async function askForProvisionConsent(
 
   // Only Azure project requires this confirm dialog
   const username = (azureToken as any).username || "";
-  const subscriptionId = envInfo.state.solution.subscriptionId;
-  const subscriptionName = envInfo.state.solution.subscriptionName;
+  const subscriptionId = envInfo.state.solution?.subscriptionId || "";
+  const subscriptionName = envInfo.state.solution?.subscriptionName || "";
   const msgNew = util.format(
     getStrings().solution.ProvisionConfirmEnvNotice,
     envInfo.envName,
@@ -499,7 +539,7 @@ export async function getM365TenantId(
     );
   }
   const tenantIdInToken = (appstudioTokenJson as any).tid;
-  if (!tenantIdInToken) {
+  if (!tenantIdInToken || !(typeof tenantIdInToken === "string")) {
     return err(
       new SystemError(
         SolutionError.NoTeamsAppTenantId,

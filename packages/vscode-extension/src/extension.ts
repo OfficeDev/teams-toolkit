@@ -43,6 +43,7 @@ import { ExtensionUpgrade } from "./utils/upgrade";
 import { getWorkspacePath } from "./handlers";
 import { localSettingsJsonName } from "./debug/constants";
 import { getLocalDebugSessionId, startLocalDebugSession } from "./debug/commonUtils";
+import { showDebugChangesNotification } from "./debug/debugChangesNotification";
 
 export let VS_CODE_UI: VsCodeUI;
 
@@ -166,6 +167,12 @@ export async function activate(context: vscode.ExtensionContext) {
     () => Correlator.runWithId(startLocalDebugSession(), handlers.validateLocalPrerequisitesHandler)
   );
   context.subscriptions.push(validatePrerequisitesCmd);
+
+  // Referenced by tasks.json
+  const getFuncPathCmd = vscode.commands.registerCommand("fx-extension.get-func-path", () =>
+    Correlator.run(handlers.getFuncPathHandler)
+  );
+  context.subscriptions.push(getFuncPathCmd);
 
   // 1.8 pre debug check command (hide from UI)
   const preDebugCheckCmd = vscode.commands.registerCommand("fx-extension.pre-debug-check", () =>
@@ -528,6 +535,8 @@ export async function activate(context: vscode.ExtensionContext) {
   }
 
   openWelcomePageAfterExtensionInstallation();
+
+  showDebugChangesNotification();
 }
 
 // this method is called when your extension is deactivated

@@ -20,7 +20,7 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-import { createV2Context, isV3, TOOLS } from "..";
+import { createV2Context, isV3 } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { LocalCrypto } from "../crypto";

@@ -33,7 +33,7 @@ import {
   TabSPFxItem,
 } from "../../src/plugins/solution/fx-solution/question";
 import {
-  BuiltInResourcePluginNames,
+  BuiltInFeaturePluginNames,
   BuiltInSolutionNames,
 } from "../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, mockSolutionV3getQuestionsAPI, MockTools, randomAppName } from "./utils";
@@ -67,7 +67,7 @@ describe("Core basic APIs for v3", () => {
           request: {},
         };
       });
-    const appStudio = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
       .stub<any, any>(appStudio, "loadManifest")
       .callsFake(

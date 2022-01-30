@@ -624,20 +624,12 @@
         "icon": "$(info)"
       },
       {
-        "command": "fx-extension.initV3",
-        "title": "Teams: init v3"
+        "command": "fx-extension.init",
+        "title": "Teams: init"
       },
       {
-        "command": "fx-extension.addModuleV3",
-        "title": "Teams: add module v3"
-      },
-      {
-        "command": "fx-extension.addResourceV3",
-        "title": "Teams: add resource v3"
-      },
-      {
-        "command": "fx-extension.scaffoldV3",
-        "title": "Teams: scaffold v3"
+        "command": "fx-extension.addFeature",
+        "title": "Teams: add feature"
       }
     ],
     "taskDefinitions": [

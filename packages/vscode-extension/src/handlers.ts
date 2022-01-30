@@ -636,16 +636,8 @@ export async function runCommand(
         result = await core.init(inputs as v2.InputsWithProjectPath);
         break;
       }
-      case Stage.addModule: {
-        result = await core.addModule(inputs as v2.InputsWithProjectPath);
-        break;
-      }
-      case Stage.scaffold: {
-        result = await core.scaffold(inputs as v2.InputsWithProjectPath);
-        break;
-      }
-      case Stage.addResource: {
-        result = await core.addResource(inputs as v2.InputsWithProjectPath);
+      case Stage.addFeature: {
+        result = await core.addFeature(inputs as v2.InputsWithProjectPath);
         break;
       }
       default:

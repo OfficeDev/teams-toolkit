@@ -242,7 +242,7 @@ async function getOldProjectInfoForTelemetry(
       // not used by `loadProjectSettings` but the type `Inputs` requires it.
       platform: Platform.VSCode,
     };
-    const loadRes = await loadProjectSettings(inputs);
+    const loadRes = await loadProjectSettings(inputs, false);
     if (loadRes.isErr()) {
       return {};
     }

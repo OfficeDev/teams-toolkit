@@ -48,7 +48,7 @@ export const ProjectSettingsLoaderMW: Middleware = async (
       ctx.result = err(PathNotExistError(inputs.projectPath));
       return;
     }
-    const loadRes = await loadProjectSettings(inputs);
+    const loadRes = await loadProjectSettings(inputs, true);
     if (loadRes.isErr()) {
       ctx.result = err(loadRes.error);
       return;
@@ -77,13 +77,18 @@ export const ProjectSettingsLoaderMW: Middleware = async (
 };
 
 export async function loadProjectSettings(
-  inputs: Inputs
+  inputs: Inputs,
+  isMultiEnvEnabled = false
 ): Promise<Result<ProjectSettings, FxError>> {
   try {
     if (!inputs.projectPath) {
       return err(NoProjectOpenedError());
     }
-    const settingsFile = getProjectSettingsPath(inputs.projectPath);
+
+    const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
+    const settingsFile = isMultiEnvEnabled
+      ? path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName)
+      : path.resolve(confFolderPath, "settings.json");
     const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     if (!projectSettings.projectId) {
       projectSettings.projectId = uuid.v4();
@@ -96,6 +101,7 @@ export async function loadProjectSettings(
     ) {
       projectSettings.solutionSettings.activeResourcePlugins.push(PluginNames.APPST);
     }
+
     return ok(projectSettings);
   } catch (e) {
     return err(ReadFileError(e));

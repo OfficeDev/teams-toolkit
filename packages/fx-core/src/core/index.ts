@@ -87,7 +87,6 @@ import { LocalSettingsWriterMW } from "./middleware/localSettingsWriter";
 import { MigrateConditionHandlerMW } from "./middleware/migrateConditionHandler";
 import { ProjectMigratorMW } from "./middleware/projectMigrator";
 import { ProjectSettingsLoaderMW } from "./middleware/projectSettingsLoader";
-import { ProjectSettingsLoaderMW_V3 } from "./middleware/projectSettingsLoaderV3";
 import { ProjectSettingsWriterMW } from "./middleware/projectSettingsWriter";
 import {
   getQuestionsForAddModule,
@@ -751,7 +750,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     SupportV1ConditionMW(false),
     ProjectMigratorMW,
-    ProjectSettingsLoaderMW_V3,
+    ProjectSettingsLoaderMM,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
     QuestionModelMW,
@@ -836,7 +835,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     SupportV1ConditionMW(false),
     ProjectMigratorMW,
-    ProjectSettingsLoaderMW_V3,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
     QuestionModelMW,
@@ -921,7 +920,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     SupportV1ConditionMW(true),
     ProjectMigratorMW,
-    ProjectSettingsLoaderMW_V3,
+    ProjectSettingsLoaderMW,
     LocalSettingsLoaderMW,
     SolutionLoaderMW_V3,
     QuestionModelMW,
@@ -1514,7 +1513,7 @@ export class FxCore implements v3.ICore {
   }
   @hooks([
     ErrorHandlerMW,
-    ProjectSettingsLoaderMW_V3,
+    ProjectSettingsLoaderMW,
     LocalSettingsLoaderMW,
     SolutionLoaderMW_V3,
     QuestionModelMW,
@@ -1531,7 +1530,7 @@ export class FxCore implements v3.ICore {
 
   @hooks([
     ErrorHandlerMW,
-    ProjectSettingsLoaderMW_V3,
+    ProjectSettingsLoaderMW,
     SolutionLoaderMW_V3,
     QuestionModelMW,
     ContextInjectorMW,
@@ -1554,7 +1553,7 @@ export class FxCore implements v3.ICore {
   }
   @hooks([
     ErrorHandlerMW,
-    ProjectSettingsLoaderMW_V3,
+    ProjectSettingsLoaderMW,
     SolutionLoaderMW_V3,
     QuestionModelMW,
     ContextInjectorMW,

@@ -20,7 +20,7 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-import { createV2Context, TOOLS } from "..";
+import { createV2Context, isV3, TOOLS } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
@@ -49,7 +49,7 @@ export const ProjectSettingsLoaderMW: Middleware = async (
       ctx.result = err(PathNotExistError(inputs.projectPath));
       return;
     }
-    const loadRes = await loadProjectSettings(inputs, true);
+    const loadRes = await loadProjectSettings(inputs);
     if (loadRes.isErr()) {
       ctx.result = err(loadRes.error);
       return;
@@ -78,30 +78,25 @@ export const ProjectSettingsLoaderMW: Middleware = async (
 };
 
 export async function loadProjectSettings(
-  inputs: Inputs,
-  isMultiEnvEnabled = false
+  inputs: Inputs
 ): Promise<Result<ProjectSettings, FxError>> {
   try {
     if (!inputs.projectPath) {
       return err(NoProjectOpenedError());
     }
-
-    const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-    const settingsFile = isMultiEnvEnabled
-      ? path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName)
-      : path.resolve(confFolderPath, "settings.json");
-    const projectSettings: ProjectSettings = await readJson(settingsFile);
+    const settingsFile = getProjectSettingsPath(inputs.projectPath);
+    const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     if (!projectSettings.projectId) {
       projectSettings.projectId = uuid.v4();
     }
     if (
+      !isV3() &&
       projectSettings.solutionSettings &&
       projectSettings.solutionSettings.activeResourcePlugins &&
       !projectSettings.solutionSettings.activeResourcePlugins.includes(PluginNames.APPST)
     ) {
       projectSettings.solutionSettings.activeResourcePlugins.push(PluginNames.APPST);
     }
-
     return ok(projectSettings);
   } catch (e) {
     return err(ReadFileError(e));
@@ -144,4 +139,13 @@ export function shouldIgnored(ctx: CoreHookContext): boolean {
   }
 
   return StaticPlatforms.includes(inputs.platform) || isCreate;
+}
+
+export function getProjectSettingsPath(projectPath: string) {
+  return path.resolve(
+    projectPath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
 }

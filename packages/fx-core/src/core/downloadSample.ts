@@ -145,7 +145,7 @@ export async function downloadSample(
       ...inputs,
       projectPath: sampleAppPath,
     };
-    const projectSettingsRes = await loadProjectSettings(loadInputs, true);
+    const projectSettingsRes = await loadProjectSettings(loadInputs);
     if (projectSettingsRes.isOk()) {
       const projectSettings = projectSettingsRes.value;
       projectSettings.projectId = inputs.projectId ? inputs.projectId : uuid.v4();

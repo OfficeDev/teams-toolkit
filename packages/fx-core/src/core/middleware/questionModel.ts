@@ -46,8 +46,7 @@ import {
   getAllSolutionPluginsV2,
   getGlobalSolutionsV3,
 } from "../SolutionPluginContainer";
-import { newSolutionContext } from "./projectSettingsLoader";
-import { getProjectSettingsPath } from "./projectSettingsLoaderV3";
+import { getProjectSettingsPath, newSolutionContext } from "./projectSettingsLoader";
 /**
  * This middleware will help to collect input from question flow
  */

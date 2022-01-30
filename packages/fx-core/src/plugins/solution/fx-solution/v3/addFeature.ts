@@ -10,15 +10,18 @@ import {
   OptionItem,
   QTreeNode,
   Result,
+  TeamsAppManifest,
   v2,
   v3,
   Void,
 } from "@microsoft/teamsfx-api";
 import { Container } from "typedi";
 import { AzureSolutionSettings, Inputs } from "../../../../../../api/build/types";
+import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
+import "../../../resource/appstudio/v3";
 import { selectSingleFeatureQuestion } from "../../utils/questions";
 import arm from "../arm";
-import { BuiltInFeaturePluginNames } from "./constants";
+import { BuiltInFeaturePluginNames, TeamsFxAzureSolutionNameV3 } from "./constants";
 
 function getAllFeaturePlugins(): v3.FeaturePlugin[] {
   return [
@@ -58,7 +61,10 @@ export class DefaultManifestProvider implements v3.AppManifestProvider {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<AppManifest, FxError>> {
-    return ok({});
+    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const res = await appStudioV3.loadManifest(ctx, inputs);
+    if (res.isErr()) return err(res.error);
+    return ok(res.value.remote);
   }
 
   async saveManifest(
@@ -66,6 +72,12 @@ export class DefaultManifestProvider implements v3.AppManifestProvider {
     inputs: v2.InputsWithProjectPath,
     manifest: AppManifest
   ): Promise<Result<Void, FxError>> {
+    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const res = await appStudioV3.saveManifest(ctx, inputs, {
+      local: manifest as TeamsAppManifest,
+      remote: manifest as TeamsAppManifest,
+    });
+    if (res.isErr()) return err(res.error);
     return ok(Void);
   }
 
@@ -83,6 +95,8 @@ export class DefaultManifestProvider implements v3.AppManifestProvider {
         }
     )[]
   ): Promise<Result<Void, FxError>> {
+    const appStudioV3 = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
+    const res = await appStudioV3.addCapabilities(ctx, inputs, []);
     return ok(Void);
   }
 }
@@ -92,6 +106,20 @@ export async function addFeature(
   inputs: v3.SolutionAddFeatureInputs,
   envInfo?: v3.EnvInfoV3
 ): Promise<Result<Void, FxError>> {
+  let solutionSettings: AzureSolutionSettings | undefined = ctx.projectSetting.solutionSettings as
+    | AzureSolutionSettings
+    | undefined;
+  if (!ctx.projectSetting.solutionSettings) {
+    solutionSettings = {
+      name: TeamsFxAzureSolutionNameV3,
+      version: "1.0.0",
+      hostType: "Azure",
+      capabilities: [],
+      azureResources: [],
+      activeResourcePlugins: [],
+    };
+    ctx.projectSetting.solutionSettings = solutionSettings;
+  }
   const existingResources = new Set<string>();
   const allResources = new Set<string>();
   const pluginNames = ctx.projectSetting.solutionSettings

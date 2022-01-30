@@ -64,8 +64,7 @@ export enum Stage {
   getQuestions = "getQuestions",
   getProjectConfig = "getProjectConfig",
   init = "init",
-  addModule = "addModule",
-  scaffold = "scaffold",
+  addFeature = "addFeature",
   addResource = "addResource",
   addCapability = "addCapability",
 }

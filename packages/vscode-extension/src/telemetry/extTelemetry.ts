@@ -50,8 +50,6 @@ export namespace ExtTelemetry {
         return TelemetryEvent.CreateProject;
       case Stage.migrateV1:
         return TelemetryEvent.MigrateV1Project;
-      case Stage.update:
-        return TelemetryEvent.AddResource;
       case Stage.provision:
         return TelemetryEvent.Provision;
       case Stage.deploy:
@@ -64,12 +62,8 @@ export namespace ExtTelemetry {
         return TelemetryEvent.GrantPermission;
       case Stage.init:
         return TelemetryEvent.init;
-      case Stage.addModule:
-        return TelemetryEvent.addModule;
-      case Stage.scaffold:
-        return TelemetryEvent.scaffold;
-      case Stage.addResource:
-        return TelemetryEvent.AddResource;
+      case Stage.addFeature:
+        return TelemetryEvent.addFeature;
       default:
         return undefined;
     }

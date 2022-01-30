@@ -545,17 +545,9 @@ export async function initHandler(args?: any[]): Promise<Result<null, FxError>> 
   ExtTelemetry.sendTelemetryEvent("init-start", getTriggerFromProperty(args));
   return await runCommand(Stage.init);
 }
-export async function addModuleHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent("add-module-start", getTriggerFromProperty(args));
-  return await runCommand(Stage.addModule);
-}
-export async function scaffoldHandler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent("scaffold-start", getTriggerFromProperty(args));
-  return await runCommand(Stage.scaffold);
-}
-export async function addResourceV3Handler(args?: any[]): Promise<Result<null, FxError>> {
-  ExtTelemetry.sendTelemetryEvent("add-resource-v3-start", getTriggerFromProperty(args));
-  return await runCommand(Stage.addResource);
+export async function addFeatureHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent("add-feature-start", getTriggerFromProperty(args));
+  return await runCommand(Stage.addFeature);
 }
 export async function publishHandler(args?: any[]): Promise<Result<null, FxError>> {
   ExtTelemetry.sendTelemetryEvent(TelemetryEvent.PublishStart, getTriggerFromProperty(args));

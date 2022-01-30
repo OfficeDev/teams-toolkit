@@ -1568,7 +1568,7 @@ export enum Stage {
     // (undocumented)
     addCapability = "addCapability",
     // (undocumented)
-    addModule = "addModule",
+    addFeature = "addFeature",
     // (undocumented)
     addResource = "addResource",
     // (undocumented)
@@ -1605,8 +1605,6 @@ export enum Stage {
     publish = "publish",
     // (undocumented)
     removeEnv = "removeEnv",
-    // (undocumented)
-    scaffold = "scaffold",
     // (undocumented)
     switchEnv = "switchEnv",
     // (undocumented)

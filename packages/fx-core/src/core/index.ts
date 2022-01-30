@@ -750,7 +750,7 @@ export class FxCore implements v3.ICore {
     ConcurrentLockerMW,
     SupportV1ConditionMW(false),
     ProjectMigratorMW,
-    ProjectSettingsLoaderMM,
+    ProjectSettingsLoaderMW,
     EnvInfoLoaderMW_V3(false),
     SolutionLoaderMW_V3,
     QuestionModelMW,

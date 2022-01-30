@@ -22,7 +22,6 @@ import * as path from "path";
 import * as uuid from "uuid";
 import { createV2Context, isV3, TOOLS } from "..";
 import { CoreHookContext, FxCore } from "../..";
-import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { LocalCrypto } from "../crypto";
 import {

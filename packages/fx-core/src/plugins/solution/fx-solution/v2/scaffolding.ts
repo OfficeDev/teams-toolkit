@@ -57,7 +57,7 @@ export async function scaffoldSourceCode(
   if (lang) {
     ctx.projectSetting.programmingLanguage = lang;
   }
-  const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
+  const solutionSettings = getAzureSolutionSettings(ctx);
   const fillinRes = fillInSolutionSettings(ctx.projectSetting, inputs);
   if (fillinRes.isErr()) return err(fillinRes.error);
   const plugins = getSelectedPlugins(ctx.projectSetting);
@@ -80,8 +80,8 @@ export async function scaffoldSourceCode(
   }
   const result = await executeConcurrently(thunks, ctx.logProvider);
   if (result.kind === "success") {
-    const capabilities = solutionSettings.capabilities;
-    const azureResources = solutionSettings.azureResources;
+    const capabilities = solutionSettings?.capabilities || [];
+    const azureResources = solutionSettings?.azureResources || [];
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     const scaffoldLocalDebugSettingsResult = await scaffoldLocalDebugSettings(ctx, inputs);
@@ -96,8 +96,8 @@ export async function scaffoldSourceCode(
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
         [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-        [SolutionTelemetryProperty.Resources]: solutionSettings.azureResources.join(";"),
-        [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
+        [SolutionTelemetryProperty.Resources]: (solutionSettings?.azureResources || []).join(";"),
+        [SolutionTelemetryProperty.Capabilities]: (solutionSettings?.capabilities || []).join(";"),
         [SolutionTelemetryProperty.ProgrammingLanguage]:
           ctx.projectSetting?.programmingLanguage ?? "",
         "host-type": "azure",
@@ -112,7 +112,9 @@ export async function scaffoldSourceCode(
         ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.Create, {
           [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
           [SolutionTelemetryProperty.Success]: SolutionTelemetrySuccess.Yes,
-          [SolutionTelemetryProperty.Capabilities]: solutionSettings.capabilities.join(";"),
+          [SolutionTelemetryProperty.Capabilities]: (solutionSettings?.capabilities || []).join(
+            ";"
+          ),
           [SolutionTelemetryProperty.ProgrammingLanguage]:
             ctx.projectSetting?.programmingLanguage ?? "",
           "host-type": "spfx",
@@ -152,8 +154,8 @@ export async function scaffoldByPlugins(
   const result = await executeConcurrently(thunks, ctx.logProvider);
   const solutionSettings = getAzureSolutionSettings(ctx);
   if (result.kind === "success") {
-    const capabilities = solutionSettings.capabilities;
-    const azureResources = solutionSettings.azureResources;
+    const capabilities = solutionSettings?.capabilities || [];
+    const azureResources = solutionSettings?.azureResources || [];
 
     // eslint-disable-next-line @typescript-eslint/no-non-null-assertion
     await scaffoldReadme(capabilities, azureResources, inputs.projectPath!);

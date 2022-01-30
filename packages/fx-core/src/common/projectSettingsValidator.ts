@@ -10,7 +10,7 @@ import {
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
-  if (!projectSettings.solutionSettings) return "empty solutionSettings";
+  if (!projectSettings.solutionSettings) return undefined;
   const solutionSettings = projectSettings.solutionSettings as v3.TeamsFxSolutionSettings;
   if (solutionSettings.hostType === undefined) return "empty solutionSettings.hostType";
   let validateRes = validateStringArray(solutionSettings.azureResources);

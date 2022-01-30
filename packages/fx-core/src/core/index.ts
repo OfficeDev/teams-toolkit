@@ -1320,9 +1320,6 @@ export class FxCore implements v3.ICore {
     const projectSettings = newProjectSettings();
     projectSettings.appName = appName;
     ctx.projectSettings = projectSettings;
-    if (!inputs.solution) {
-      return err(InvalidInputError("solution is undefined", inputs));
-    }
     const createEnvResult = await this.createEnvWithName("local", projectSettings, inputs);
     if (createEnvResult.isErr()) {
       return err(createEnvResult.error);
@@ -1342,7 +1339,7 @@ export class FxCore implements v3.ICore {
   }
   @hooks([ErrorHandlerMW, QuestionModelMW, ContextInjectorMW, ProjectSettingsWriterMW])
   async init(
-    inputs: v2.InputsWithProjectPath & { solution?: string },
+    inputs: v2.InputsWithProjectPath,
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
     return this._init(inputs, ctx);

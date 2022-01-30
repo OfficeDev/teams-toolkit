@@ -18,9 +18,13 @@ import { Container } from "typedi";
 import { AzureSolutionSettings, Inputs } from "../../../../../../api/build/types";
 import { selectSingleFeatureQuestion } from "../../utils/questions";
 import arm from "../arm";
+import { BuiltInFeaturePluginNames } from "./constants";
 
 function getAllFeaturePlugins(): v3.FeaturePlugin[] {
-  return [];
+  return [
+    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.frontend),
+    Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.aad),
+  ];
 }
 
 export async function getQuestionsForAddFeature(

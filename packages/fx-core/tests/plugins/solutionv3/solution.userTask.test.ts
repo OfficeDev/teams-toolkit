@@ -49,9 +49,8 @@ describe("SolutionV3 - executeUserTask", () => {
       ctx,
       inputs,
       { namespace: "", method: "aa" },
-      {},
-      envInfoV3,
-      mockedTokenProvider
+      mockedTokenProvider,
+      envInfoV3
     );
     assert.isTrue(res.isErr());
   });
@@ -75,17 +74,10 @@ describe("SolutionV3 - executeUserTask", () => {
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
     };
-    const envInfoV3: v3.EnvInfoV3 = {
-      envName: "dev",
-      state: { solution: {} },
-      config: {},
-    };
     const res = await getQuestionsForUserTask(
       ctx,
       inputs,
       { namespace: "", method: "aa" },
-      {},
-      envInfoV3,
       mockedTokenProvider
     );
     assert.isTrue(res.isOk());

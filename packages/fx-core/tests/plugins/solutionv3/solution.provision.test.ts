@@ -31,7 +31,7 @@ import {
   MockedSharepointProvider,
   MockedV2Context,
 } from "../solution/util";
-import { MockResourcePluginNames } from "./mockPlugins";
+import { MockFeaturePluginNames } from "./mockPlugins";
 import * as path from "path";
 import * as os from "os";
 import { randomAppName } from "../../core/utils";
@@ -83,8 +83,7 @@ describe("SolutionV3 - provision", () => {
         capabilities: ["Tab"],
         hostType: "Azure",
         azureResources: [],
-        modules: [{ capabilities: ["Tab"], hostingPlugin: MockResourcePluginNames.storage }],
-        activeResourcePlugins: [MockResourcePluginNames.storage],
+        activeResourcePlugins: [MockFeaturePluginNames.bot],
       },
     };
     const ctx = new MockedV2Context(projectSettings);
@@ -148,8 +147,7 @@ describe("SolutionV3 - provision", () => {
         capabilities: ["Tab"],
         hostType: "Azure",
         azureResources: [],
-        modules: [{ capabilities: ["Tab"], hostingPlugin: MockResourcePluginNames.storage }],
-        activeResourcePlugins: [MockResourcePluginNames.storage],
+        activeResourcePlugins: [MockFeaturePluginNames.tab],
       },
     };
     const ctx = new MockedV2Context(projectSettings);

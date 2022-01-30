@@ -17,18 +17,20 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
           Back
         </ActionButton>
         <div className="header">
-          <h2>{this.props.title}</h2>
+          <div className="contents">
+            <h2>{this.props.title}</h2>
+            <div className="tags">
+              {this.props.tags.map((value: string) => {
+                return <VSCodeTag className="tag">{value}</VSCodeTag>;
+              })}
+            </div>
+          </div>
           <div className="buttons">
             <VSCodeButton onClick={this.onCreate}>Create</VSCodeButton>
             <VSCodeButton appearance="secondary" onClick={this.onViewGithub}>
               View on GitHub
             </VSCodeButton>
           </div>
-        </div>
-        <div className="tags">
-          {this.props.tags.map((value: string) => {
-            return <VSCodeTag className="tag">{value}</VSCodeTag>;
-          })}
         </div>
         <div className="estimation-time info">
           <div className="watch">

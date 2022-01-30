@@ -3,7 +3,6 @@
 
 import { hooks, NextFunction } from "@feathersjs/hooks/lib";
 import {
-  AppStudioTokenProvider,
   EmptyOptionError,
   err,
   Func,
@@ -29,13 +28,17 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import { CoreHookContext, createV2Context, InvalidInputError, setTools, TOOLS } from "../../../src";
 import {
-  getQuestionsForInit,
   newSolutionContext,
   QuestionModelMW,
   SolutionLoaderMW,
 } from "../../../src/core/middleware";
 import { SolutionLoaderMW_V3 } from "../../../src/core/middleware/solutionLoaderV3";
-import { MockProjectSettings, MockTools, randomAppName } from "../utils";
+import {
+  MockProjectSettings,
+  mockSolutionV3getQuestionsAPI,
+  MockTools,
+  randomAppName,
+} from "../utils";
 import { Container } from "typedi";
 import { BuiltInSolutionNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 describe("Middleware - QuestionModelMW", () => {
@@ -383,69 +386,7 @@ describe("Middleware - QuestionModelMW", () => {
   });
   it("Core's getQuestion APIs", async () => {
     const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
-    sandbox
-      .stub(solution, "getQuestionsForScaffold")
-      .callsFake(async (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(undefined);
-      });
-    sandbox
-      .stub(solution, "getQuestionsForAddResource")
-      .callsFake(async (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(undefined);
-      });
-    sandbox
-      .stub(solution, "getQuestionsForAddModule")
-      .callsFake(async (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(undefined);
-      });
-    sandbox
-      .stub(solution, "getQuestionsForProvision")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          tokenProvider: TokenProvider,
-          envInfo?: v2.DeepReadonly<v3.EnvInfoV3>
-        ) => {
-          return ok(undefined);
-        }
-      );
-    sandbox
-      .stub(solution, "getQuestionsForLocalProvision")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          tokenProvider: TokenProvider,
-          localSettings?: v2.DeepReadonly<Json>
-        ) => {
-          return ok(undefined);
-        }
-      );
-    sandbox
-      .stub(solution, "getQuestionsForDeploy")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-          tokenProvider: TokenProvider
-        ) => {
-          return ok(undefined);
-        }
-      );
-    sandbox
-      .stub(solution, "getQuestionsForPublish")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-          tokenProvider: AppStudioTokenProvider
-        ) => {
-          return ok(undefined);
-        }
-      );
+    mockSolutionV3getQuestionsAPI(solution, sandbox);
     assert.isTrue(true);
   });
 });

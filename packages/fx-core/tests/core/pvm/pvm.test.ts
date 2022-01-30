@@ -5,10 +5,7 @@ import { tmpdir } from "os";
 import { join } from "path";
 import { nanoid } from "nanoid";
 
-import pvm, {
-  BuiltInResourcePluginNames,
-  BuiltInScaffoldPluginNames,
-} from "../../../src/core/pvm/pvm";
+import pvm, { BuiltInFeaturePluginNames } from "../../../src/core/pvm/pvm";
 
 describe("Plugin Version Manager: PVM", async () => {
   it("should load only static plugins", async () => {
@@ -18,9 +15,7 @@ describe("Plugin Version Manager: PVM", async () => {
     const result = await pvm.load(targetPath);
     expect(result.isOk()).is.true;
     if (result.isOk()) {
-      expect(result.value.length).equals(
-        BuiltInResourcePluginNames.length + BuiltInScaffoldPluginNames.length
-      );
+      expect(result.value.length).equals(BuiltInFeaturePluginNames.length);
     }
 
     await rmdir(targetPath, { recursive: true });
@@ -34,7 +29,7 @@ describe("Plugin Version Manager: PVM", async () => {
     expect(result.isOk()).is.true;
     if (result.isOk()) {
       expect(result.value.length).equals(
-        BuiltInResourcePluginNames.length + BuiltInScaffoldPluginNames.length
+        BuiltInFeaturePluginNames.length + BuiltInScaffoldPluginNames.length
       );
     }
 

@@ -1651,6 +1651,9 @@ export class TeamsAppSolution implements Solution {
     const pluginsToDoArm: LoadedPlugin[] = [];
     const azureResource = Array.from(settings.azureResources || []);
     if (addFunc || ((addSQL || addApim) && !alreadyHaveFunction)) {
+      if (!settings.activeResourcePlugins?.includes(PluginNames.AAD)) {
+        settings.activeResourcePlugins.push(PluginNames.AAD);
+      }
       pluginsToScaffold.push(functionPlugin);
       if (!azureResource.includes(AzureResourceFunction.id)) {
         azureResource.push(AzureResourceFunction.id);

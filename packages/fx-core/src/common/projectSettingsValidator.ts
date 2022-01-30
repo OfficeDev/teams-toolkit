@@ -10,7 +10,7 @@ import {
 
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
-  if (!projectSettings.solutionSettings) return "empty solutionSettings";
+  if (!projectSettings.solutionSettings) return undefined;
   const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (solutionSettings.hostType === undefined) return "empty solutionSettings.hostType";
   let validateRes = validateStringArray(solutionSettings.azureResources);

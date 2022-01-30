@@ -55,7 +55,8 @@ import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
-import { isVSProject } from "../../../../core";
+import { isVSProject, OperationNotSupportedForExistingAppError } from "../../../../core";
+import { TeamsAppSolutionNameV2 } from "./constants";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -161,10 +162,10 @@ export async function executeUserTask(
 }
 
 export function canAddCapability(
-  settings: AzureSolutionSettings,
+  settings: AzureSolutionSettings | undefined,
   telemetryReporter: TelemetryReporter
 ): Result<Void, FxError> {
-  if (!(settings.hostType === HostTypeOptionAzure.id)) {
+  if (settings && !(settings.hostType === HostTypeOptionAzure.id)) {
     const e = new UserError(
       SolutionError.AddCapabilityNotSupport,
       getStrings().solution.addCapability.OnlySupportAzure,
@@ -218,7 +219,19 @@ export async function addCapability(
   });
 
   // 1. checking addable
-  const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
+  let solutionSettings = getAzureSolutionSettings(ctx);
+  if (!solutionSettings) {
+    // pure existing app
+    solutionSettings = {
+      name: TeamsAppSolutionNameV2,
+      version: "1.0.0",
+      hostType: "Azure",
+      capabilities: [],
+      azureResources: [],
+      activeResourcePlugins: [],
+    };
+    ctx.projectSetting.solutionSettings = solutionSettings;
+  }
   const originalSettings = cloneDeep(solutionSettings);
   const inputsNew = {
     ...inputs,
@@ -462,7 +475,10 @@ export async function addResource(
   });
 
   // 1. checking addable
-  const solutionSettings: AzureSolutionSettings = getAzureSolutionSettings(ctx);
+  const solutionSettings = getAzureSolutionSettings(ctx);
+  if (!solutionSettings) {
+    return err(new OperationNotSupportedForExistingAppError("addResource"));
+  }
   const originalSettings = cloneDeep(solutionSettings);
   const inputsNew: v2.InputsWithProjectPath & { existingResources: string[] } = {
     ...inputs,

@@ -22,6 +22,7 @@ import "../../../resource/appstudio/v3";
 import { selectSingleFeatureQuestion } from "../../utils/questions";
 import arm from "../arm";
 import { BuiltInFeaturePluginNames, TeamsFxAzureSolutionNameV3 } from "./constants";
+import { ensureSolutionSettings } from "../utils/solutionSettingsHelper";
 
 function getAllFeaturePlugins(): v3.FeaturePlugin[] {
   return [
@@ -106,25 +107,11 @@ export async function addFeature(
   inputs: v3.SolutionAddFeatureInputs,
   envInfo?: v3.EnvInfoV3
 ): Promise<Result<Void, FxError>> {
-  let solutionSettings: AzureSolutionSettings | undefined = ctx.projectSetting.solutionSettings as
-    | AzureSolutionSettings
-    | undefined;
-  if (!ctx.projectSetting.solutionSettings) {
-    solutionSettings = {
-      name: TeamsFxAzureSolutionNameV3,
-      version: "1.0.0",
-      hostType: "Azure",
-      capabilities: [],
-      azureResources: [],
-      activeResourcePlugins: [],
-    };
-    ctx.projectSetting.solutionSettings = solutionSettings;
-  }
+  ensureSolutionSettings(ctx.projectSetting);
+  const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const existingResources = new Set<string>();
   const allResources = new Set<string>();
-  const pluginNames = ctx.projectSetting.solutionSettings
-    ? (ctx.projectSetting.solutionSettings as AzureSolutionSettings).activeResourcePlugins
-    : [];
+  const pluginNames = solutionSettings.activeResourcePlugins;
   pluginNames.forEach((p) => {
     existingResources.add(p);
     allResources.add(p);

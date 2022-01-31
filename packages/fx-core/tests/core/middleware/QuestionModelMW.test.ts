@@ -91,9 +91,6 @@ describe("Middleware - QuestionModelMW", () => {
     async localDebugV2(inputs: Inputs): Promise<Result<any, FxError>> {
       return this._return(inputs);
     }
-    async localDebugV3(inputs: Inputs): Promise<Result<any, FxError>> {
-      return this._return(inputs);
-    }
     async publishApplicationV2(inputs: Inputs): Promise<Result<any, FxError>> {
       return this._return(inputs);
     }
@@ -194,7 +191,6 @@ describe("Middleware - QuestionModelMW", () => {
     deployArtifactsV2: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
     deployArtifactsV3: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
     localDebugV2: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
-    localDebugV3: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
     publishApplicationV2: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
     publishApplicationV3: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
     executeUserTask: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
@@ -236,11 +232,6 @@ describe("Middleware - QuestionModelMW", () => {
     {
       const inputs: Inputs = { platform: Platform.VSCode };
       const res = await my.deployArtifactsV3(inputs);
-      assert.isTrue(res.isOk() && res.value === true);
-    }
-    {
-      const inputs: Inputs = { platform: Platform.VSCode };
-      const res = await my.localDebugV3(inputs);
       assert.isTrue(res.isOk() && res.value === true);
     }
     {

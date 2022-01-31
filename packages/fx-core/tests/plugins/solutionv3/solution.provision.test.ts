@@ -83,7 +83,7 @@ describe("SolutionV3 - provision", () => {
         capabilities: ["Tab"],
         hostType: "Azure",
         azureResources: [],
-        activeResourcePlugins: [MockFeaturePluginNames.bot],
+        activeResourcePlugins: [MockFeaturePluginNames.tab],
       },
     };
     const ctx = new MockedV2Context(projectSettings);

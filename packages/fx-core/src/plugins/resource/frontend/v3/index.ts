@@ -158,9 +158,11 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     if (scaffoldRes.isErr()) return err(scaffoldRes.error);
     const armRes = await this.generateResourceTemplate(ctx, inputs);
     if (armRes.isErr()) return err(armRes.error);
-    const capabilities = (ctx.projectSetting.solutionSettings! as AzureSolutionSettings)
-      .capabilities;
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    const capabilities = solutionSettings.capabilities;
+    const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     if (!capabilities.includes(TabOptionItem.id)) capabilities.push(TabOptionItem.id);
+    if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
     return ok(armRes.value);
   }
   async afterOtherFeaturesAdded(

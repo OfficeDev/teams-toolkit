@@ -58,8 +58,10 @@ export async function deploy(
 ): Promise<Result<Void, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const pluginNames = solutionSetting ? solutionSetting.activeResourcePlugins : [];
-  if (pluginNames.length === 0) return ok(Void);
-  const plugins = pluginNames.map((name) => Container.get<v3.FeaturePlugin>(name));
+  const plugins = pluginNames
+    .map((name) => Container.get<v3.FeaturePlugin>(name))
+    .filter((p) => p.deploy !== undefined);
+  if (plugins.length === 0) return ok(Void);
   const thunks = plugins.map((plugin) => {
     return {
       pluginName: `${plugin.name}`,

@@ -17,19 +17,6 @@ export class IdentityPluginV3 implements v3.FeaturePlugin {
   name = BuiltInFeaturePluginNames.identity;
   displayName = "Microsoft Identity";
   description = "Microsoft Identity";
-  template: any;
-  parameters: any;
-  armTemplateDir: string = path.resolve(
-    __dirname,
-    "..",
-    "..",
-    "..",
-    "..",
-    "templates",
-    "plugins",
-    "resource",
-    "identity"
-  );
   config: IdentityConfig = new IdentityConfig();
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
@@ -80,20 +67,19 @@ export class IdentityPluginV3 implements v3.FeaturePlugin {
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
     return ok(armRes.value);
   }
-  // async afterOtherFeaturesAdded(
-  //   ctx: v3.ContextWithManifestProvider,
-  //   inputs: v3.OtherFeaturesAddedInputs,
-  //   envInfo?: v3.EnvInfoV3
-  // ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
-  //   ctx.logProvider.info(Messages.StartUpdateArmTemplates(this.name));
-  //   const result: ArmTemplateResult = {
-  //     Reference: {
-  //       identityName: IdentityBicep.identityName,
-  //       identityClientId: IdentityBicep.identityClientId,
-  //       identityResourceId: IdentityBicep.identityResourceId,
-  //       identityPrincipalId: IdentityBicep.identityPrincipalId,
-  //     },
-  //   };
-  //   return ok({ kind: "bicep", template: result });
-  // }
+  async afterOtherFeaturesAdded(
+    ctx: v3.ContextWithManifestProvider,
+    inputs: v3.OtherFeaturesAddedInputs,
+    envInfo?: v3.EnvInfoV3
+  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
+    const result: ArmTemplateResult = {
+      Reference: {
+        identityName: IdentityBicep.identityName,
+        identityClientId: IdentityBicep.identityClientId,
+        identityResourceId: IdentityBicep.identityResourceId,
+        identityPrincipalId: IdentityBicep.identityPrincipalId,
+      },
+    };
+    return ok({ kind: "bicep", template: result });
+  }
 }

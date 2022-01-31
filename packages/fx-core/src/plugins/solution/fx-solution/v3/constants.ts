@@ -18,4 +18,5 @@ export const BuiltInFeaturePluginNames = {
   identity: "fx-resource-identity",
   apim: "fx-resource-apim",
   keyVault: "fx-resource-key-vault",
+  sql: "fx-resource-azure-sql",
 };

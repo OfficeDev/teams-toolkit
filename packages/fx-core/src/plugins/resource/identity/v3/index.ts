@@ -13,7 +13,7 @@ import { IdentityConfig } from "../config";
 import { IdentityBicep, IdentityBicepFile } from "../constants";
 
 @Service(BuiltInFeaturePluginNames.identity)
-export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
+export class IdentityPluginV3 implements v3.FeaturePlugin {
   name = BuiltInFeaturePluginNames.identity;
   displayName = "Microsoft Identity";
   description = "Microsoft Identity";

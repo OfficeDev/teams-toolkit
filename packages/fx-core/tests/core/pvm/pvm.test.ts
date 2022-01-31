@@ -28,9 +28,7 @@ describe("Plugin Version Manager: PVM", async () => {
     const result = await pvm.load(targetPath);
     expect(result.isOk()).is.true;
     if (result.isOk()) {
-      expect(result.value.length).equals(
-        BuiltInFeaturePluginNames.length + BuiltInScaffoldPluginNames.length
-      );
+      expect(result.value.length).equals(BuiltInFeaturePluginNames.length);
     }
 
     await rmdir(targetPath, { recursive: true });

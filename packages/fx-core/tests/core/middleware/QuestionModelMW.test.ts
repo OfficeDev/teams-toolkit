@@ -103,13 +103,7 @@ describe("Middleware - QuestionModelMW", () => {
     async init(inputs: Inputs): Promise<Result<any, FxError>> {
       return this._return(inputs);
     }
-    async addModule(inputs: Inputs): Promise<Result<any, FxError>> {
-      return this._return(inputs);
-    }
-    async addResource(inputs: Inputs): Promise<Result<any, FxError>> {
-      return this._return(inputs);
-    }
-    async scaffold(inputs: Inputs): Promise<Result<any, FxError>> {
+    async addFeature(inputs: Inputs): Promise<Result<any, FxError>> {
       return this._return(inputs);
     }
     async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
@@ -145,15 +139,7 @@ describe("Middleware - QuestionModelMW", () => {
       return ok(node);
     }
 
-    async _getQuestionsForAddModule(
-      inputs: v2.InputsWithProjectPath,
-      solution: v3.ISolution,
-      context: v2.Context
-    ): Promise<Result<QTreeNode | undefined, FxError>> {
-      return ok(node);
-    }
-
-    async _getQuestionsForAddResource(
+    async _getQuestionsForAddFeature(
       inputs: v2.InputsWithProjectPath,
       solution: v3.ISolution,
       context: v2.Context
@@ -185,14 +171,7 @@ describe("Middleware - QuestionModelMW", () => {
     ): Promise<Result<QTreeNode | undefined, FxError>> {
       return ok(node);
     }
-    async _getQuestionsForScaffold(
-      inputs: v2.InputsWithProjectPath,
-      solution: v3.ISolution,
-      context: v2.Context,
-      envInfo: v3.EnvInfoV3
-    ): Promise<Result<QTreeNode | undefined, FxError>> {
-      return ok(node);
-    }
+
     async _getQuestionsForPublish(
       inputs: v2.InputsWithProjectPath,
       solution: v3.ISolution,
@@ -220,9 +199,7 @@ describe("Middleware - QuestionModelMW", () => {
     publishApplicationV3: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
     executeUserTask: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
     init: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
-    addModule: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
-    scaffold: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
-    addResource: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
+    addFeature: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
   });
 
   it("success to run question model for V3 API", async () => {
@@ -238,17 +215,7 @@ describe("Middleware - QuestionModelMW", () => {
     }
     {
       const inputs: Inputs = { platform: Platform.VSCode };
-      const res = await my.addModule(inputs);
-      assert.isTrue(res.isOk() && res.value === true);
-    }
-    {
-      const inputs: Inputs = { platform: Platform.VSCode };
-      const res = await my.scaffold(inputs);
-      assert.isTrue(res.isOk() && res.value === true);
-    }
-    {
-      const inputs: Inputs = { platform: Platform.VSCode };
-      const res = await my.addResource(inputs);
+      const res = await my.addFeature(inputs);
       assert.isTrue(res.isOk() && res.value === true);
     }
     {

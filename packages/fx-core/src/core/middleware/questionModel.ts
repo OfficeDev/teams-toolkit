@@ -9,7 +9,6 @@ import {
   FunctionRouter,
   FxError,
   Inputs,
-  Json,
   ok,
   Platform,
   QTreeNode,
@@ -24,11 +23,9 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { Container } from "typedi";
 import { CoreSource, createV2Context, FunctionRouterError, newProjectSettings, TOOLS } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
-import { BuiltInSolutionNames } from "../../plugins/solution/fx-solution/v3/constants";
 import {
   createCapabilityQuestion,
   DefaultAppNameFunc,

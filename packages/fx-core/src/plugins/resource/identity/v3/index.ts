@@ -57,8 +57,7 @@ export class IdentityPluginV3 implements v3.FeaturePlugin {
   }
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath,
-    envInfo?: v3.EnvInfoV3
+    inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
     const armRes = await this.generateResourceTemplate(ctx, inputs);
     if (armRes.isErr()) return err(armRes.error);
@@ -69,8 +68,7 @@ export class IdentityPluginV3 implements v3.FeaturePlugin {
   }
   async afterOtherFeaturesAdded(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.OtherFeaturesAddedInputs,
-    envInfo?: v3.EnvInfoV3
+    inputs: v3.OtherFeaturesAddedInputs
   ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
     const result: ArmTemplateResult = {
       Reference: {

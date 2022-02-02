@@ -83,12 +83,10 @@ describe("Core basic APIs for v3", () => {
 
   it("create from new (VSC, Tab+Bot)", async () => {
     appName = randomAppName();
-    projectPath = path.resolve(os.tmpdir(), appName);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
-      projectPath: projectPath,
       stage: Stage.create,
       [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
@@ -96,6 +94,7 @@ describe("Core basic APIs for v3", () => {
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
+    projectPath = inputs.projectPath!;
     const solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
     sandbox.stub<any, any>(solutionV3, "provisionResources").resolves(ok(Void));
     const provisionRes = await core.provisionResources({
@@ -106,7 +105,6 @@ describe("Core basic APIs for v3", () => {
   });
   it("create from new (VS, Tab+Bot)", async () => {
     appName = randomAppName();
-    projectPath = path.resolve(os.tmpdir(), appName);
     const inputs: Inputs = {
       platform: Platform.VS,
       [CoreQuestionNames.AppName]: appName,
@@ -119,15 +117,14 @@ describe("Core basic APIs for v3", () => {
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
+    projectPath = inputs.projectPath!;
   });
   it("create from new (VSC, SPFx)", async () => {
     appName = randomAppName();
-    projectPath = path.resolve(os.tmpdir(), appName);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
-      projectPath: projectPath,
       stage: Stage.create,
       [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
       [CoreQuestionNames.ProgrammingLanguage]: "typescript",
@@ -135,6 +132,7 @@ describe("Core basic APIs for v3", () => {
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
+    projectPath = inputs.projectPath!;
   });
 
   it("create from sample (VSC)", async () => {

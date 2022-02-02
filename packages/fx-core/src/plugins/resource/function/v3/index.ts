@@ -10,7 +10,6 @@ import {
   ok,
   QTreeNode,
   Result,
-  Stage,
   TokenProvider,
   v2,
   v3,
@@ -20,56 +19,24 @@ import * as path from "path";
 import { Service } from "typedi";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import { Bicep } from "../../../../common/constants";
-import {
-  genTemplateRenderReplaceFn,
-  removeTemplateExtReplaceFn,
-  ScaffoldAction,
-  ScaffoldActionName,
-  ScaffoldContext,
-  scaffoldFromTemplates,
-} from "../../../../common/template-utils/templatesActions";
-import {
-  generateBicepFromFile,
-  getResourceGroupNameFromResourceId,
-  getStorageAccountNameFromResourceId,
-  getSubscriptionIdFromResourceId,
-} from "../../../../common/tools";
+import { generateBicepFromFile } from "../../../../common/tools";
 import { getTemplatesFolder } from "../../../../folder";
-import { TabOptionItem } from "../../../solution/fx-solution/question";
+import { AzureResourceFunction } from "../../../solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
-import { AzureStorageClient } from "../clients";
-import { FrontendConfig } from "../configs";
 import {
-  Constants,
   DefaultValues,
-  DependentPluginInfo,
-  FrontendOutputBicepSnippet,
-  FrontendPathInfo,
+  FunctionBicep,
+  FunctionBicepFile,
+  FunctionPluginInfo,
   FunctionPluginPathInfo,
   RegularExpr,
 } from "../constants";
 import { FunctionConfigKey, FunctionLanguage, QuestionKey } from "../enums";
-import { envFilePath, EnvKeys, loadEnvFile, saveEnvFile } from "../env";
-import { FrontendDeployment } from "../ops/deploy";
 import { FunctionScaffold } from "../ops/scaffold";
 import { FunctionConfig } from "../plugin";
 import { functionNameQuestion } from "../question";
-import {
-  TemplateZipFallbackError,
-  UnknownScaffoldError,
-  UnzipTemplateError,
-} from "../resources/errors";
 import { ErrorMessages } from "../resources/message";
-import { Messages } from "../resources/messages";
-import { DeployProgress, PostProvisionProgress, ScaffoldProgress } from "../resources/steps";
-import { Scenario, TemplateInfo } from "../resources/templateInfo";
-import {
-  EnableStaticWebsiteError,
-  FetchConfigError,
-  FunctionNameConflictError,
-  UnauthenticatedError,
-  ValidationError,
-} from "./error";
+import { FetchConfigError, FunctionNameConflictError, ValidationError } from "./error";
 
 @Service(BuiltInFeaturePluginNames.function)
 export class FunctionPluginV3 implements v3.FeaturePlugin {
@@ -84,8 +51,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
 
   async getQuestionsForAddFeature(
     ctx: v2.Context,
-    inputs: Inputs,
-    envInfo?: v2.DeepReadonly<v3.EnvInfoV3Question>
+    inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const projectPath = inputs.projectPath;
     functionNameQuestion.validation = {
@@ -129,7 +95,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
   private syncConfigToContext(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath,
-    envInfo?: v3.EnvInfoV3
+    envInfo: v3.EnvInfoV3
   ): void {
     // sync plugin config to context
     Object.entries(this.config)
@@ -140,13 +106,13 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
       )
       .forEach((kv) => {
         if (kv[1]) {
-          ctx.config.set(kv[0], kv[1].toString());
+          envInfo.state[this.name][kv[0]] = kv[1].toString();
         }
       });
 
     // sync project settings to context
     if (this.config.defaultFunctionName) {
-      ctx.projectSettings!.defaultFunctionName = this.config.defaultFunctionName;
+      ctx.projectSetting.defaultFunctionName = this.config.defaultFunctionName;
     }
   }
   private validateConfig(): void {
@@ -200,14 +166,8 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
   }
   async scaffold(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath,
-    envInfo?: v3.EnvInfoV3
+    inputs: v2.InputsWithProjectPath
   ): Promise<Result<Void | undefined, FxError>> {
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    await this.syncConfigFromContext(ctx, inputs, envInfo);
-
     const workingPath: string = this.getFunctionProjectRootPath(inputs.projectPath);
     const functionLanguage: FunctionLanguage = this.checkAndGet(
       this.config.functionLanguage,
@@ -220,49 +180,130 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
     }
 
     this.config.functionName = name;
-    return ok(undefined);
+
+    const functionName: string = this.checkAndGet(
+      this.config.functionName,
+      FunctionConfigKey.functionName
+    );
+
+    await FunctionScaffold.scaffoldFunction(
+      workingPath,
+      functionLanguage,
+      DefaultValues.functionTriggerType,
+      functionName,
+      {
+        appName: ctx.projectSetting.appName,
+        functionName: functionName,
+      }
+    );
+
+    if (!this.config.defaultFunctionName) {
+      this.config.defaultFunctionName = this.config.functionName;
+    }
+    return ok(Void);
   }
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    ctx.logProvider.info(Messages.StartGenerateArmTemplates(this.name));
     const solutionSettings = ctx.projectSetting.solutionSettings as
       | AzureSolutionSettings
       | undefined;
     const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const bicepTemplateDirectory = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "function",
+      "bicep"
+    );
 
+    const provisionTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ProvisionFileName);
+
+    const provisionFuncTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      FunctionBicepFile.provisionModuleTemplateFileName
+    );
+
+    const configTemplateFilePath = path.join(bicepTemplateDirectory, Bicep.ConfigFileName);
+
+    const configFuncTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      FunctionBicepFile.configuraitonTemplateFileName
+    );
+    const provisionOrchestration = await generateBicepFromFile(
+      provisionTemplateFilePath,
+      pluginCtx
+    );
+    const provisionModule = await generateBicepFromFile(provisionFuncTemplateFilePath, pluginCtx);
+    const configOrchestration = await generateBicepFromFile(configTemplateFilePath, pluginCtx);
+    const configModule = await generateBicepFromFile(configFuncTemplateFilePath, pluginCtx);
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: provisionOrchestration,
+        Modules: { function: provisionModule },
+      },
+      Configuration: {
+        Orchestration: configOrchestration,
+        Modules: { function: configModule },
+      },
+      Reference: {
+        functionAppResourceId: FunctionBicep.functionAppResourceId,
+        functionEndpoint: FunctionBicep.functionEndpoint,
+      },
+    };
     return ok({ kind: "bicep", template: result });
   }
+
+  async afterOtherFeaturesAdded(
+    ctx: v3.ContextWithManifestProvider,
+    inputs: v3.OtherFeaturesAddedInputs,
+    envInfo?: v3.EnvInfoV3
+  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
+    const bicepTemplateDirectory = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "function",
+      "bicep"
+    );
+    const solutionSettings = ctx.projectSetting.solutionSettings as
+      | AzureSolutionSettings
+      | undefined;
+    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const configFuncTemplateFilePath = path.join(
+      bicepTemplateDirectory,
+      FunctionBicepFile.configuraitonTemplateFileName
+    );
+    const configModule = await generateBicepFromFile(configFuncTemplateFilePath, pluginCtx);
+
+    const result: ArmTemplateResult = {
+      Reference: {
+        functionAppResourceId: FunctionBicep.functionAppResourceId,
+        functionEndpoint: FunctionBicep.functionEndpoint,
+      },
+      Configuration: {
+        Modules: { function: configModule },
+      },
+    };
+    return ok({ kind: "bicep", template: result });
+  }
+
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath,
-    envInfo?: v3.EnvInfoV3
+    inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
     const scaffoldRes = await this.scaffold(ctx, inputs);
     if (scaffoldRes.isErr()) return err(scaffoldRes.error);
     const armRes = await this.generateResourceTemplate(ctx, inputs);
     if (armRes.isErr()) return err(armRes.error);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-    const capabilities = solutionSettings.capabilities;
+    const azureResources = solutionSettings.azureResources;
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
-    if (!capabilities.includes(TabOptionItem.id)) capabilities.push(TabOptionItem.id);
+    if (!azureResources.includes(AzureResourceFunction.id))
+      azureResources.push(AzureResourceFunction.id);
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
     return ok(armRes.value);
-  }
-  async afterOtherFeaturesAdded(
-    ctx: v3.ContextWithManifestProvider,
-    inputs: v3.OtherFeaturesAddedInputs,
-    envInfo?: v3.EnvInfoV3
-  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
-    ctx.logProvider.info(Messages.StartUpdateArmTemplates(this.name));
-    const result: ArmTemplateResult = {
-      Reference: {
-        endpoint: FrontendOutputBicepSnippet.Endpoint,
-        domain: FrontendOutputBicepSnippet.Domain,
-      },
-    };
-    return ok({ kind: "bicep", template: result });
   }
 
   async configureResource(

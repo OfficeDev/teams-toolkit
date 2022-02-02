@@ -9,7 +9,7 @@ import { Inputs, Json, Void } from "../types";
 import { AzureAccountProvider, TokenProvider } from "../utils/login";
 import { ResourceTemplate } from "../v2/resourcePlugin";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
-import { EnvInfoV3, EnvInfoV3Question } from "./types";
+import { EnvInfoV3 } from "./types";
 
 export interface AppManifestProvider {
   loadManifest: (
@@ -73,8 +73,7 @@ export interface FeaturePlugin {
    */
   getQuestionsForAddFeature?: (
     ctx: Context,
-    inputs: Inputs,
-    envInfo?: DeepReadonly<EnvInfoV3Question>
+    inputs: Inputs
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
 
   /**
@@ -82,13 +81,11 @@ export interface FeaturePlugin {
    *
    * @param {ContextWithManifestProvider} context with manifest provider
    * @param {InputsWithProjectPath} inputs with project path
-   * @param {EnvInfoV3} envInfo optional
    * @returns {ResourceTemplate | undefined} resource template
    */
   addFeature: (
     ctx: ContextWithManifestProvider,
-    inputs: InputsWithProjectPath,
-    envInfo?: EnvInfoV3
+    inputs: InputsWithProjectPath
   ) => Promise<Result<ResourceTemplate | undefined, FxError>>;
 
   /**
@@ -105,8 +102,7 @@ export interface FeaturePlugin {
    */
   afterOtherFeaturesAdded?: (
     ctx: ContextWithManifestProvider,
-    inputs: OtherFeaturesAddedInputs,
-    envInfo?: EnvInfoV3
+    inputs: OtherFeaturesAddedInputs
   ) => Promise<Result<ResourceTemplate | undefined, FxError>>;
 
   /**
@@ -115,8 +111,8 @@ export interface FeaturePlugin {
   getQuestionsForProvision?: (
     ctx: Context,
     inputs: Inputs,
-    tokenProvider: TokenProvider,
-    envInfo?: DeepReadonly<EnvInfoV3Question>
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   /**
    * provision includes provision local resource or remote resource
@@ -143,8 +139,8 @@ export interface FeaturePlugin {
   getQuestionsForDeploy?: (
     ctx: Context,
     inputs: Inputs,
-    tokenProvider: TokenProvider,
-    envInfo?: DeepReadonly<EnvInfoV3Question>
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   /**
    * deploy

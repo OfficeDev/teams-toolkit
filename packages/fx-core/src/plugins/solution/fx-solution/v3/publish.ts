@@ -17,7 +17,7 @@ import {
 export async function getQuestionsForPublish(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
-  envInfo: v2.DeepReadonly<v3.EnvInfoV3Question>,
+  envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
   tokenProvider: AppStudioTokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   return ok(undefined);

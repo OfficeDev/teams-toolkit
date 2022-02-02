@@ -76,8 +76,10 @@ describe("SolutionV3 - deploy", () => {
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
     };
-    const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3Question> = {
+    const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {
       envName: "dev",
+      config: {},
+      state: { solution: {} },
     };
     const res = await getQuestionsForDeploy(ctx, inputs, envInfoV3, mockedTokenProvider);
     assert.isTrue(res.isOk());

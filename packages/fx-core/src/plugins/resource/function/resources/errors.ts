@@ -11,7 +11,7 @@ export enum ErrorType {
   System,
 }
 
-const tips = {
+export const tips = {
   recoverTeamsfxConfigFiles: `If you manually updated configuration files (under directory .${ConfigFolderName}), recover them.`,
   recreateProject: "If you can not recover configuration files, create a new project.",
   checkNetwork: "Check your network connection.",

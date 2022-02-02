@@ -100,8 +100,7 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
    */
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath,
-    envInfo?: v3.EnvInfoV3
+    inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
     const res = await createPermissionRequestFile(inputs.projectPath);
     if (res.isErr()) return err(res.error);

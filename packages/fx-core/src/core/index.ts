@@ -1363,11 +1363,7 @@ export class FxCore implements v3.ICore {
     ctx?: CoreHookContext
   ): Promise<Result<Void, FxError>> {
     if (ctx && ctx.solutionV3 && ctx.contextV2 && ctx.solutionV3.addFeature) {
-      return await ctx.solutionV3.addFeature(
-        ctx.contextV2,
-        inputs as v3.SolutionAddFeatureInputs,
-        ctx.envInfoV3
-      );
+      return await ctx.solutionV3.addFeature(ctx.contextV2, inputs as v3.SolutionAddFeatureInputs);
     }
     return ok(Void);
   }

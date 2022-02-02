@@ -112,15 +112,14 @@ export async function generateArmTemplate(
 
 export async function addFeature(
   ctx: v3.ContextWithManifestProvider,
-  inputs: v3.SolutionAddFeatureInputs,
-  envInfo?: v3.EnvInfoV3
+  inputs: v3.SolutionAddFeatureInputs
 ): Promise<Result<any, FxError>> {
   let result: Result<void, FxError>;
   ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplateStart, {
     [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
   });
   try {
-    result = await doAddFeature(ctx, inputs, envInfo);
+    result = await doAddFeature(ctx, inputs);
     if (result.isOk()) {
       ctx.telemetryReporter?.sendTelemetryEvent(SolutionTelemetryEvent.GenerateArmTemplate, {
         [SolutionTelemetryProperty.Component]: SolutionTelemetryComponentName,
@@ -866,8 +865,7 @@ async function doGenerateArmTemplate(
 
 async function doAddFeature(
   ctx: v3.ContextWithManifestProvider,
-  inputs: v3.SolutionAddFeatureInputs,
-  envInfo?: v3.EnvInfoV3
+  inputs: v3.SolutionAddFeatureInputs
 ): Promise<Result<any, FxError>> {
   const baseName = generateResourceBaseName(ctx.projectSetting.appName, "");
   const pluginNames = ctx.projectSetting.solutionSettings
@@ -881,7 +879,7 @@ async function doAddFeature(
   // add feature for selected plugin
   const selectedPlugin = await Container.get<v3.FeaturePlugin>(inputs.feature);
   if (!selectedPlugin.addFeature) return ok(undefined);
-  const addFeatureRes = await selectedPlugin.addFeature(ctx, inputs, envInfo);
+  const addFeatureRes = await selectedPlugin.addFeature(ctx, inputs);
   if (addFeatureRes && addFeatureRes.isErr()) {
     return err(addFeatureRes.error);
   }
@@ -1518,10 +1516,9 @@ class ArmV2 {
 class Arm {
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.SolutionAddFeatureInputs,
-    envInfo?: v3.EnvInfoV3
+    inputs: v3.SolutionAddFeatureInputs
   ): Promise<Result<any, FxError>> {
-    return addFeature(ctx, inputs, envInfo);
+    return addFeature(ctx, inputs);
   }
   async deployArmTemplates(
     ctx: v2.Context,

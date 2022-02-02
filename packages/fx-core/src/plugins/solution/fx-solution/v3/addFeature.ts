@@ -33,8 +33,7 @@ function getAllFeaturePlugins(): v3.FeaturePlugin[] {
 
 export async function getQuestionsForAddFeature(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath,
-  envInfo?: v2.DeepReadonly<v3.EnvInfoV3Question>
+  inputs: v2.InputsWithProjectPath
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const plugins = getAllFeaturePlugins();
   const featureNode = new QTreeNode(selectSingleFeatureQuestion);
@@ -45,7 +44,7 @@ export async function getQuestionsForAddFeature(
       label: plugin.description || "",
     });
     if (plugin.getQuestionsForAddFeature) {
-      const childNode = await plugin.getQuestionsForAddFeature(ctx, inputs, envInfo);
+      const childNode = await plugin.getQuestionsForAddFeature(ctx, inputs);
       if (childNode.isErr()) return err(childNode.error);
       if (childNode.value) {
         childNode.value.condition = { equals: plugin.name };
@@ -104,8 +103,7 @@ export class DefaultManifestProvider implements v3.AppManifestProvider {
 
 export async function addFeature(
   ctx: v2.Context,
-  inputs: v3.SolutionAddFeatureInputs,
-  envInfo?: v3.EnvInfoV3
+  inputs: v3.SolutionAddFeatureInputs
 ): Promise<Result<Void, FxError>> {
   ensureSolutionSettings(ctx.projectSetting);
   const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
@@ -125,7 +123,7 @@ export async function addFeature(
   };
   for (const resource of allResources.values()) {
     if (!existingResources.has(resource)) {
-      const generateArmRes = await arm.addFeature(contextWithManifestProvider, inputs, envInfo);
+      const generateArmRes = await arm.addFeature(contextWithManifestProvider, inputs);
       if (generateArmRes.isErr()) {
         return err(generateArmRes.error);
       }

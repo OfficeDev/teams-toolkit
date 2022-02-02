@@ -49,8 +49,8 @@ describe("SolutionV3 - executeUserTask", () => {
       ctx,
       inputs,
       { namespace: "", method: "aa" },
-      mockedTokenProvider,
-      envInfoV3
+      envInfoV3,
+      mockedTokenProvider
     );
     assert.isTrue(res.isErr());
   });
@@ -78,6 +78,7 @@ describe("SolutionV3 - executeUserTask", () => {
       ctx,
       inputs,
       { namespace: "", method: "aa" },
+      { envName: "dev", config: {}, state: { solution: {} } },
       mockedTokenProvider
     );
     assert.isTrue(res.isOk());

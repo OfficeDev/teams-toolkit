@@ -23,7 +23,7 @@ import { selectMultiPluginsQuestion } from "../../utils/questions";
 export async function getQuestionsForDeploy(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
-  envInfo: v2.DeepReadonly<v3.EnvInfoV3Question>,
+  envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
@@ -34,7 +34,7 @@ export async function getQuestionsForDeploy(
     if (pluginName) {
       const plugin = Container.get<v3.FeaturePlugin>(pluginName);
       if (plugin.deploy && plugin.getQuestionsForDeploy) {
-        const res = await plugin.getQuestionsForDeploy(ctx, inputs, tokenProvider, envInfo);
+        const res = await plugin.getQuestionsForDeploy(ctx, inputs, envInfo, tokenProvider);
         if (res.isErr()) {
           return res;
         }

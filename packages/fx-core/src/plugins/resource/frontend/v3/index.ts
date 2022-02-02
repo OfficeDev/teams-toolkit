@@ -151,8 +151,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
   }
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath,
-    envInfo?: v3.EnvInfoV3
+    inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
     const scaffoldRes = await this.scaffold(ctx, inputs);
     if (scaffoldRes.isErr()) return err(scaffoldRes.error);
@@ -167,8 +166,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
   }
   async afterOtherFeaturesAdded(
     ctx: v3.ContextWithManifestProvider,
-    inputs: v3.OtherFeaturesAddedInputs,
-    envInfo?: v3.EnvInfoV3
+    inputs: v3.OtherFeaturesAddedInputs
   ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
     ctx.logProvider.info(Messages.StartUpdateArmTemplates(this.name));
     const result: ArmTemplateResult = {

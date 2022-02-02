@@ -19,12 +19,11 @@ import { BuiltInFeaturePluginNames } from "../fx-solution/v3/constants";
 
 export async function getQuestionsForAddFeature(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath,
-  envInfo?: v2.DeepReadonly<v3.EnvInfoV3Question>
+  inputs: v2.InputsWithProjectPath
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const plugin = Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.spfx);
   if (plugin.getQuestionsForAddFeature) {
-    const childNode = await plugin.getQuestionsForAddFeature(ctx, inputs, envInfo);
+    const childNode = await plugin.getQuestionsForAddFeature(ctx, inputs);
     if (childNode.isErr()) return err(childNode.error);
     if (childNode.value) {
       return ok(childNode.value);
@@ -35,8 +34,7 @@ export async function getQuestionsForAddFeature(
 
 export async function addFeature(
   ctx: v2.Context,
-  inputs: v3.SolutionAddFeatureInputs,
-  envInfo?: v3.EnvInfoV3
+  inputs: v3.SolutionAddFeatureInputs
 ): Promise<Result<Void, FxError>> {
   const plugin = Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.spfx);
   if (plugin.addFeature) {
@@ -44,7 +42,7 @@ export async function addFeature(
       ...ctx,
       appManifestProvider: new DefaultManifestProvider(),
     };
-    const res = await plugin.addFeature(contextWithManifestProvider, inputs, envInfo);
+    const res = await plugin.addFeature(contextWithManifestProvider, inputs);
     if (res.isErr()) return err(res.error);
   }
   return ok(Void);

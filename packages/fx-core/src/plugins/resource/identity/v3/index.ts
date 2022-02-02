@@ -1,12 +1,14 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
 import { AzureSolutionSettings, err, FxError, ok, Result, v2, v3 } from "@microsoft/teamsfx-api";
 import * as path from "path";
 import { Service } from "typedi";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import { Bicep } from "../../../../common/constants";
 import { generateBicepFromFile } from "../../../../common/tools";
+import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { IdentityConfig } from "../config";
@@ -18,6 +20,7 @@ export class IdentityPluginV3 implements v3.FeaturePlugin {
   displayName = "Microsoft Identity";
   description = "Microsoft Identity";
   config: IdentityConfig = new IdentityConfig();
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.identity } })])
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
@@ -55,6 +58,7 @@ export class IdentityPluginV3 implements v3.FeaturePlugin {
     };
     return ok({ kind: "bicep", template: result });
   }
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.identity } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
@@ -66,6 +70,7 @@ export class IdentityPluginV3 implements v3.FeaturePlugin {
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
     return ok(armRes.value);
   }
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.identity } })])
   async afterOtherFeaturesAdded(
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.OtherFeaturesAddedInputs

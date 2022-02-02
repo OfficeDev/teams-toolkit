@@ -6,8 +6,6 @@ import {
   AzureSolutionSettings,
   err,
   FxError,
-  InvalidInputError,
-  Json,
   ok,
   ProjectSettings,
   Result,
@@ -98,6 +96,7 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
    * when AAD is added, permissions.json is created
    * manifest template will also be updated
    */
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.aad } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
@@ -115,26 +114,24 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
     return ok(undefined);
   }
 
-  @hooks([CommonErrorHandlerMW()])
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: { component: BuiltInFeaturePluginNames.aad, eventName: "provision" },
+    }),
+  ])
   async provisionResource(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
-    tokenProvider: TokenProviderInAPI
+    tokenProvider: TokenProviderInAPI,
+    props?: any
   ): Promise<Result<Void, FxError>> {
     const checkPermissionRes = await checkPermissionRequest(inputs.projectPath);
     if (checkPermissionRes.isErr()) return err(checkPermissionRes.error);
     const isLocalDebug = envInfo.envName === "local";
-    Utils.addLogAndTelemetryWithLocalDebug(
-      ctx.logProvider,
-      Messages.StartProvision,
-      Messages.StartLocalDebug,
-      isLocalDebug
-    );
+    ctx.logProvider.info(Messages.StartProvision.log);
 
-    const telemetryMessage = isLocalDebug
-      ? Messages.EndLocalDebug.telemetry
-      : Messages.EndProvision.telemetry;
+    const telemetryMessage = "provision";
 
     await TokenProvider.init({
       graph: tokenProvider.graphTokenProvider,
@@ -194,32 +191,27 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
     ctx.logProvider?.info(Messages.getLog(Messages.UpdatePermissionSuccess));
     await DialogUtils.progress?.end(true);
     config.saveConfigIntoEnvInfo(envInfo, TokenProvider.tenantId as string);
-    Utils.addLogAndTelemetryWithLocalDebug(
-      ctx.logProvider,
-      Messages.EndProvision,
-      Messages.EndLocalDebug,
-      isLocalDebug,
-      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
-    );
+    ctx.logProvider.info(Messages.EndProvision.log);
+    if (props) props[Telemetry.skip] = skip ? Telemetry.yes : Telemetry.no;
     return ok(Void);
   }
 
-  @hooks([CommonErrorHandlerMW()])
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: { component: BuiltInFeaturePluginNames.aad, eventName: "post-provision" },
+    }),
+  ])
   async configureResource(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
-    tokenProvider: TokenProviderInAPI
+    tokenProvider: TokenProviderInAPI,
+    props?: any
   ): Promise<Result<Void, FxError>> {
     const setApplicationInContextRes = await this.setApplicationInContext(ctx, envInfo);
     if (setApplicationInContextRes.isErr()) return err(setApplicationInContextRes.error);
     const isLocalDebug = envInfo.envName === "local";
-    Utils.addLogAndTelemetryWithLocalDebug(
-      ctx.logProvider,
-      Messages.StartPostProvision,
-      Messages.StartPostLocalDebug,
-      isLocalDebug
-    );
+    ctx.logProvider.info(Messages.StartPostProvision.log);
     const skip = Utils.skipCreateAadForProvision(envInfo);
     DialogUtils.init(
       ctx.userInteraction,
@@ -260,13 +252,8 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
     ctx.logProvider?.info(Messages.getLog(Messages.UpdateAppIdUriSuccess));
 
     await DialogUtils.progress?.end(true);
-    Utils.addLogAndTelemetryWithLocalDebug(
-      ctx.logProvider,
-      Messages.EndPostProvision,
-      Messages.EndPostLocalDebug,
-      isLocalDebug,
-      skip ? { [Telemetry.skip]: Telemetry.yes } : {}
-    );
+    ctx.logProvider.info(Messages.EndPostProvision.log);
+    if (props) props[Telemetry.skip] = skip ? Telemetry.yes : Telemetry.no;
     return ok(Void);
   }
 

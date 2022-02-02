@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
+import { hooks } from "@feathersjs/hooks/lib";
 import {
   AzureAccountProvider,
   AzureSolutionSettings,
@@ -31,6 +32,7 @@ import {
   getStorageAccountNameFromResourceId,
   getSubscriptionIdFromResourceId,
 } from "../../../../common/tools";
+import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
 import { TabOptionItem } from "../../../solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
@@ -59,6 +61,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
   name = BuiltInFeaturePluginNames.frontend;
   displayName = "NodeJS Tab frontend";
   description = "Tab frontend with React Framework using Javascript/Typescript";
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
   async scaffold(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
@@ -116,6 +119,14 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     ctx.logProvider.info(Messages.EndScaffold(this.name));
     return ok(undefined);
   }
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: {
+        component: BuiltInFeaturePluginNames.frontend,
+        eventName: "generate-arm-templates",
+      },
+    }),
+  ])
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
@@ -149,6 +160,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     };
     return ok({ kind: "bicep", template: result });
   }
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
@@ -164,6 +176,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
     return ok(armRes.value);
   }
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
   async afterOtherFeaturesAdded(
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.OtherFeaturesAddedInputs
@@ -247,6 +260,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     }
     return envs;
   }
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
   async configureResource(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
@@ -278,6 +292,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     ctx.logProvider.info(Messages.EndPostProvision(this.name));
     return ok(Void);
   }
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
   async deploy(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,

@@ -11,6 +11,7 @@ import {
   FxError,
   Inputs,
   ok,
+  ProjectSettings,
   QTreeNode,
   Result,
   TokenProvider,
@@ -22,6 +23,9 @@ import * as path from "path";
 import { Service } from "typedi";
 import { ArmTemplateResult } from "../../../../common/armInterface";
 import { Bicep } from "../../../../common/constants";
+import { CheckerFactory } from "../../../../common/deps-checker/checkerFactory";
+import { DepsChecker, DepsType } from "../../../../common/deps-checker/depsChecker";
+import { LinuxNotSupportedError } from "../../../../common/deps-checker/depsError";
 import {
   generateBicepFromFile,
   getResourceGroupNameFromResourceId,
@@ -34,23 +38,51 @@ import { AzureResourceFunction } from "../../../solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import {
   DefaultValues,
+  DependentPluginInfo,
   FunctionBicep,
   FunctionBicepFile,
   FunctionPluginInfo,
   FunctionPluginPathInfo,
   RegularExpr,
 } from "../constants";
-import { FunctionConfigKey, FunctionLanguage, NodeVersion, QuestionKey } from "../enums";
+import {
+  FunctionConfigKey,
+  FunctionEvent,
+  FunctionLanguage,
+  NodeVersion,
+  QuestionKey,
+} from "../enums";
+import { FunctionDeploy } from "../ops/deploy";
 import { FunctionProvision } from "../ops/provision";
 import { FunctionScaffold } from "../ops/scaffold";
 import { FunctionConfig } from "../plugin";
 import { functionNameQuestion } from "../question";
 import { runWithErrorCatchAndThrow } from "../resources/errors";
-import { ErrorMessages } from "../resources/message";
-import { PostProvisionSteps, StepHelperFactory } from "../resources/steps";
+import { ErrorMessages, InfoMessages } from "../resources/message";
+import {
+  DeploySteps,
+  PostProvisionSteps,
+  PreDeploySteps,
+  step,
+  StepGroup,
+  StepHelperFactory,
+} from "../resources/steps";
 import { AzureClientFactory, AzureLib } from "../utils/azure-client";
+import { funcDepsHelper } from "../utils/depsChecker/funcHelper";
+import { funcDepsLogger } from "../utils/depsChecker/funcPluginLogger";
+import { funcDepsTelemetry } from "../utils/depsChecker/funcPluginTelemetry";
 import { getNodeVersion } from "../utils/node-version";
-import { FetchConfigError, FunctionNameConflictError, ValidationError } from "./error";
+import { TelemetryHelper } from "../utils/telemetry-helper";
+import {
+  ConfigFunctionAppError,
+  FetchConfigError,
+  FindAppError,
+  FunctionNameConflictError,
+  InitAzureSDKError,
+  InstallNpmPackageError,
+  InstallTeamsfxBindingError,
+  ValidationError,
+} from "./error";
 
 @Service(BuiltInFeaturePluginNames.function)
 export class FunctionPluginV3 implements v3.FeaturePlugin {
@@ -107,7 +139,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
   }
 
   private syncConfigToContext(
-    ctx: v3.ContextWithManifestProvider,
+    ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3
   ): void {
@@ -360,23 +392,26 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
       return site;
     }
   }
-  private collectFunctionAppSettings(envInfo: v3.EnvInfoV3, site: Site): void {
+  private collectFunctionAppSettings(ctx: v2.Context, envInfo: v3.EnvInfoV3, site: Site): void {
     const functionEndpoint: string = this.checkAndGet(
       this.config.functionEndpoint,
       FunctionConfigKey.functionEndpoint
     );
 
     const apimConfig = envInfo.state[BuiltInFeaturePluginNames.apim] as v3.APIM;
-    if (this.isPluginEnabled(ctx, DependentPluginInfo.apimPluginName) && apimConfig) {
-      Logger.info(InfoMessages.dependPluginDetected(DependentPluginInfo.apimPluginName));
+    if (this.isPluginEnabled(ctx.projectSetting, BuiltInFeaturePluginNames.apim) && apimConfig) {
+      ctx.logProvider.info(InfoMessages.dependPluginDetected(BuiltInFeaturePluginNames.apim));
 
-      const clientId: string = this.checkAndGet(
-        apimConfig.get(DependentPluginInfo.apimAppId) as string,
-        "APIM app Id"
-      );
+      const clientId: string = this.checkAndGet(apimConfig.apimClientAADClientId, "APIM app Id");
 
       FunctionProvision.ensureFunctionAllowAppIds(site, [clientId]);
     }
+  }
+  public isPluginEnabled(projectSettings: ProjectSettings, plugin: string): boolean {
+    const selectedPlugins = projectSettings.solutionSettings
+      ? (projectSettings.solutionSettings as AzureSolutionSettings).activeResourcePlugins
+      : [];
+    return selectedPlugins.includes(plugin);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.function } })])
   async configureResource(
@@ -431,7 +466,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
       });
     }
 
-    this.collectFunctionAppSettings(ctx, site);
+    this.collectFunctionAppSettings(ctx, envInfo, site);
 
     await runWithErrorCatchAndThrow(
       new ConfigFunctionAppError(),
@@ -443,11 +478,53 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
             await webSiteManagementClient.webApps.update(resourceGroupName, functionAppName, site)
         )
     );
-    Logger.info(InfoMessages.functionAppSettingsUpdated);
+    ctx.logProvider.info(InfoMessages.functionAppSettingsUpdated);
 
-    this.syncConfigToContext(ctx);
+    this.syncConfigToContext(ctx, inputs, envInfo);
+
     await StepHelperFactory.postProvisionStepHelper.end(true);
     return ok(Void);
+  }
+  private async handleDotnetChecker(inputs: Inputs): Promise<void> {
+    const dotnetChecker: DepsChecker = CheckerFactory.createChecker(
+      DepsType.Dotnet,
+      funcDepsLogger,
+      funcDepsTelemetry
+    );
+    await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
+      try {
+        if (!(await funcDepsHelper.dotnetCheckerEnabled(inputs))) {
+          return;
+        }
+        await dotnetChecker.resolve();
+      } catch (error) {
+        if (error instanceof LinuxNotSupportedError) {
+          return;
+        }
+        funcDepsLogger.error(InfoMessages.failedToInstallDotnet(error));
+        await funcDepsLogger.printDetailLog();
+        throw funcDepsHelper.transferError(error);
+      } finally {
+        funcDepsLogger.cleanup();
+      }
+    });
+  }
+  private async handleBackendExtensionsInstall(
+    workingPath: string,
+    functionLanguage: FunctionLanguage
+  ): Promise<void> {
+    await runWithErrorCatchAndThrow(
+      new InstallTeamsfxBindingError(),
+      async () =>
+        await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () => {
+          try {
+            await FunctionDeploy.installFuncExtensions(workingPath, functionLanguage);
+          } catch (error) {
+            // wrap the original error to UserError so the extensibility model will pop-up a dialog correctly
+            throw funcDepsHelper.transferError(error);
+          }
+        })
+    );
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.function } })])
   async deploy(
@@ -456,6 +533,88 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
+    await StepHelperFactory.preDeployStepHelper.start(
+      Object.entries(PreDeploySteps).length,
+      ctx.userInteraction
+    );
+    //PreDeploy
+
+    await this.syncConfigFromContext(ctx, inputs, envInfo as v3.EnvInfoV3);
+
+    const workingPath: string = this.getFunctionProjectRootPath(inputs.projectPath);
+    const functionLanguage: FunctionLanguage = this.checkAndGet(
+      this.config.functionLanguage,
+      FunctionConfigKey.functionLanguage
+    );
+
+    const updated: boolean = await FunctionDeploy.hasUpdatedContent(
+      workingPath,
+      functionLanguage,
+      envInfo.envName
+    );
+    if (!updated) {
+      ctx.logProvider.info(InfoMessages.noChange);
+      this.config.skipDeploy = true;
+    } else {
+      // NOTE: make sure this step is before using `dotnet` command if you refactor this code.
+      await this.handleDotnetChecker(inputs);
+
+      await this.handleBackendExtensionsInstall(workingPath, functionLanguage);
+
+      await runWithErrorCatchAndThrow(
+        new InstallNpmPackageError(),
+        async () =>
+          await step(StepGroup.PreDeployStepGroup, PreDeploySteps.npmPrepare, async () =>
+            FunctionDeploy.build(workingPath, functionLanguage)
+          )
+      );
+
+      this.config.skipDeploy = false;
+    }
+
+    await StepHelperFactory.preDeployStepHelper.end(true);
+
+    await StepHelperFactory.deployStepHelper.start(
+      Object.entries(DeploySteps).length,
+      ctx.userInteraction
+    );
+    if (this.config.skipDeploy) {
+      TelemetryHelper.sendGeneralEvent(FunctionEvent.skipDeploy);
+      ctx.logProvider.warning(InfoMessages.skipDeployment);
+    } else {
+      const workingPath: string = this.getFunctionProjectRootPath(inputs.projectPath);
+      const functionAppName = this.getFunctionAppName();
+      const resourceGroupName = this.getFunctionAppResourceGroupName();
+      const subscriptionId = this.getFunctionAppSubscriptionId();
+      const functionLanguage: FunctionLanguage = this.checkAndGet(
+        this.config.functionLanguage,
+        FunctionConfigKey.functionLanguage
+      );
+      const credential = this.checkAndGet(
+        await tokenProvider.getAccountCredentialAsync(),
+        FunctionConfigKey.credential
+      );
+
+      const webSiteManagementClient: WebSiteManagementClient = await runWithErrorCatchAndThrow(
+        new InitAzureSDKError(),
+        () => AzureClientFactory.getWebSiteManagementClient(credential, subscriptionId)
+      );
+
+      ctx.logProvider.debug(
+        `deploy function with subscription id: ${subscriptionId}, resourceGroup name: ${resourceGroupName}, function web app name: ${functionAppName}`
+      );
+      await FunctionDeploy.deployFunction(
+        webSiteManagementClient,
+        workingPath,
+        functionAppName,
+        functionLanguage,
+        resourceGroupName,
+        envInfo.envName
+      );
+    }
+
+    await StepHelperFactory.deployStepHelper.end(true);
+
     return ok(Void);
   }
 }

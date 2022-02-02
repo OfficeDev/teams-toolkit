@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as path from "path";
-import { ConfigFolderName, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, FxError, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import { AzureInfo, FunctionPluginPathInfo as PathInfo } from "../constants";
 import { Logger } from "../utils/logger";
@@ -262,7 +262,7 @@ export class UnknownFallbackError extends FunctionPluginError {
 }
 
 export async function runWithErrorCatchAndThrow<T>(
-  error: FunctionPluginError,
+  error: FunctionPluginError | FxError,
   fn: () => T | Promise<T>
 ): Promise<T> {
   try {

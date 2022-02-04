@@ -1,15 +1,31 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Func, PluginContext, QTreeNode } from "@microsoft/teamsfx-api";
+import {
+  AzureAccountProvider,
+  Func,
+  Inputs,
+  PluginContext,
+  QTreeNode,
+  v2,
+  v3,
+} from "@microsoft/teamsfx-api";
 import { BuildError, NotImplemented } from "../error";
 import { IApimPluginConfig } from "../config";
 import * as VSCode from "../questions/vscodeQuestion";
 import * as CLI from "../questions/cliQuestion";
 
+export interface PluginContextV3 {
+  isV3: true;
+  context: v2.Context;
+  inputs: Inputs;
+  envInfo?: v3.EnvInfoV3;
+  azureAccountProvider?: AzureAccountProvider;
+}
+
 export interface IQuestionManager {
   callFunc(func: Func, ctx: PluginContext): Promise<any>;
-  addResource(ctx: PluginContext, apimConfig?: IApimPluginConfig): Promise<QTreeNode>;
-  deploy(ctx: PluginContext, apimConfig?: IApimPluginConfig): Promise<QTreeNode>;
+  addResource(): Promise<QTreeNode>;
+  deploy(ctx: PluginContext | PluginContextV3, apimConfig?: IApimPluginConfig): Promise<QTreeNode>;
 }
 
 export class VscQuestionManager implements IQuestionManager {
@@ -40,7 +56,7 @@ export class VscQuestionManager implements IQuestionManager {
     throw BuildError(NotImplemented);
   }
 
-  async addResource(ctx: PluginContext, apimConfig: IApimPluginConfig): Promise<QTreeNode> {
+  async addResource(): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
       type: "group",
     });
@@ -48,7 +64,10 @@ export class VscQuestionManager implements IQuestionManager {
     return rootNode;
   }
 
-  async deploy(ctx: PluginContext, apimConfig: IApimPluginConfig): Promise<QTreeNode> {
+  async deploy(
+    ctx: PluginContext | PluginContextV3,
+    apimConfig: IApimPluginConfig
+  ): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
       type: "group",
     });
@@ -107,7 +126,7 @@ export class CliQuestionManager implements IQuestionManager {
     throw BuildError(NotImplemented);
   }
 
-  async addResource(ctx: PluginContext): Promise<QTreeNode> {
+  async addResource(): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
       type: "group",
     });
@@ -119,7 +138,10 @@ export class CliQuestionManager implements IQuestionManager {
     return rootNode;
   }
 
-  async deploy(): Promise<QTreeNode> {
+  async deploy(
+    ctx: PluginContext | PluginContextV3,
+    apimConfig: IApimPluginConfig
+  ): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
       type: "group",
     });

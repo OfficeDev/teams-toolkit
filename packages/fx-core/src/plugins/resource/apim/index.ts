@@ -178,10 +178,9 @@ async function _getQuestionsForUserTask(
   progressBar: ProgressBar,
   func: Func
 ): Promise<QTreeNode | undefined> {
-  const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
   const questionManager = await Factory.buildQuestionManager(ctx);
   if (func.method === "addResource") {
-    return await questionManager.addResource(ctx, apimConfig);
+    return await questionManager.addResource();
   }
   return undefined;
 }

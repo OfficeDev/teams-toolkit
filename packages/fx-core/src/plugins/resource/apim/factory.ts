@@ -3,10 +3,13 @@
 import {
   AzureAccountProvider,
   GraphTokenProvider,
+  Inputs,
   LogProvider,
   Platform,
   PluginContext,
   TelemetryReporter,
+  v2,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
 import { ApimService } from "./services/apimService";
@@ -17,6 +20,7 @@ import { AadManager } from "./managers/aadManager";
 import {
   CliQuestionManager,
   IQuestionManager,
+  PluginContextV3,
   VscQuestionManager,
 } from "./managers/questionManager";
 import * as VSCode from "./questions/vscodeQuestion";
@@ -76,53 +80,74 @@ export class Factory {
     return new TeamsAppAadManager(lazyAadService, ctx.telemetryReporter, ctx.logProvider);
   }
 
-  public static async buildScaffoldManager(ctx: PluginContext): Promise<ScaffoldManager> {
-    const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
-    return new ScaffoldManager(openApiProcessor, ctx.telemetryReporter, ctx.logProvider);
+  public static async buildScaffoldManager(
+    ctx: PluginContext | PluginContextV3
+  ): Promise<ScaffoldManager> {
+    const isV3 = (ctx as any)["isV3"] as boolean;
+    const telemetryReporter = isV3
+      ? (ctx as PluginContextV3).context.telemetryReporter
+      : (ctx as PluginContext).telemetryReporter;
+    const logProvider = isV3
+      ? (ctx as PluginContextV3).context.logProvider
+      : (ctx as PluginContext).logProvider;
+    const openApiProcessor = new OpenApiProcessor(telemetryReporter, logProvider);
+    return new ScaffoldManager(openApiProcessor, telemetryReporter, logProvider);
   }
 
-  public static async buildQuestionManager(ctx: PluginContext): Promise<IQuestionManager> {
-    const solutionConfig = new SolutionConfig(ctx.envInfo);
-    switch (ctx.answers?.platform) {
+  public static async buildQuestionManager(
+    ctx: PluginContext | PluginContextV3
+  ): Promise<IQuestionManager> {
+    const isV3 = (ctx as any)["isV3"] as boolean;
+    const solutionConfig = new SolutionConfig(ctx.envInfo!);
+    const platform = isV3
+      ? (ctx as PluginContextV3).inputs?.platform
+      : (ctx as PluginContext).answers?.platform;
+    const azureAccountProvider = isV3
+      ? (ctx as PluginContextV3).azureAccountProvider
+      : (ctx as PluginContext).azureAccountProvider;
+    const telemetryReporter = isV3
+      ? (ctx as PluginContextV3).context.telemetryReporter
+      : (ctx as PluginContext).telemetryReporter;
+    const logProvider = isV3
+      ? (ctx as PluginContextV3).context.logProvider
+      : (ctx as PluginContext).logProvider;
+    switch (platform) {
       case Platform.VSCode:
         // Lazy init apim service to get the latest subscription id in configuration
         const lazyApimService = new Lazy<ApimService>(
           async () =>
             await Factory.buildApimService(
               solutionConfig,
-              ctx.azureAccountProvider,
-              ctx.telemetryReporter,
-              ctx.logProvider
+              azureAccountProvider,
+              telemetryReporter,
+              logProvider
             )
         );
-        const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
+        const openApiProcessor = new OpenApiProcessor(telemetryReporter, logProvider);
         const apimServiceQuestion = new VSCode.ApimServiceQuestion(
           lazyApimService,
-          ctx.telemetryReporter,
-          ctx.logProvider
+          telemetryReporter,
+          logProvider
         );
         const openApiDocumentQuestion = new VSCode.OpenApiDocumentQuestion(
           openApiProcessor,
-          ctx.telemetryReporter,
-          ctx.logProvider
+          telemetryReporter,
+          logProvider
         );
         const existingOpenApiDocumentFunc = new VSCode.ExistingOpenApiDocumentFunc(
           openApiProcessor,
-          ctx.telemetryReporter,
-          ctx.logProvider
+          telemetryReporter,
+          logProvider
         );
-        const apiPrefixQuestion = new VSCode.ApiPrefixQuestion(
-          ctx.telemetryReporter,
-          ctx.logProvider
-        );
+        const apiPrefixQuestion = new VSCode.ApiPrefixQuestion(telemetryReporter, logProvider);
         const apiVersionQuestion = new VSCode.ApiVersionQuestion(
           lazyApimService,
-          ctx.telemetryReporter,
-          ctx.logProvider
+          telemetryReporter,
+          logProvider
         );
         const newApiVersionQuestion = new VSCode.NewApiVersionQuestion(
-          ctx.telemetryReporter,
-          ctx.logProvider
+          telemetryReporter,
+          logProvider
         );
 
         return new VscQuestionManager(

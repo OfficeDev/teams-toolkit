@@ -21,6 +21,8 @@ import { NamingRules } from "../utils/namingRules";
 import { BaseQuestionService, IQuestionService } from "./question";
 import { getApimServiceNameFromResourceId, Lazy } from "../utils/commonUtils";
 import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
+import { PluginContextV3 } from "../managers/questionManager";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 
 export class ApimServiceQuestion extends BaseQuestionService implements IQuestionService {
   private readonly lazyApimService: Lazy<ApimService>;
@@ -84,14 +86,23 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
     this.openApiProcessor = openApiProcessor;
   }
 
-  public getQuestion(ctx: PluginContext): SingleSelectQuestion {
+  public getQuestion(ctx: PluginContext | PluginContextV3): SingleSelectQuestion {
+    const isV3 = (ctx as any)["isV3"] as boolean;
+    let root: string;
+    if (isV3) {
+      const ctxV3 = ctx as PluginContextV3;
+      root = ctxV3.inputs.projectPath!;
+    } else {
+      const ctxV2 = ctx as PluginContext;
+      root = ctxV2.root;
+    }
     return {
       type: "singleSelect",
       name: QuestionConstants.VSCode.OpenApiDocument.questionName,
       title: QuestionConstants.VSCode.OpenApiDocument.description,
       staticOptions: [],
       dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-        return this.getDynamicOptions(ctx.root);
+        return this.getDynamicOptions(root);
       },
       returnObject: true,
       skipSingleOption: false,
@@ -127,16 +138,30 @@ export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements 
     this.openApiProcessor = openApiProcessor;
   }
 
-  public getQuestion(ctx: PluginContext): FuncQuestion {
+  public getQuestion(ctx: PluginContext | PluginContextV3): FuncQuestion {
     return {
       type: "func",
       name: QuestionConstants.VSCode.ExistingOpenApiDocument.questionName,
       func: async (inputs: Inputs): Promise<OptionItem> => {
-        const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
+        let apimConfig: ApimPluginConfig;
+        const isV3 = (ctx as any)["isV3"] as boolean;
+        let root: string;
+        if (isV3) {
+          const ctxV3 = ctx as PluginContextV3;
+          apimConfig = new ApimPluginConfig(
+            ctxV3.envInfo!.state[BuiltInFeaturePluginNames.apim]!,
+            ctxV3.envInfo!.envName
+          );
+          root = ctxV3.inputs.projectPath!;
+        } else {
+          const ctxV2 = ctx as PluginContext;
+          apimConfig = new ApimPluginConfig(ctxV2.config, ctxV2.envInfo?.envName);
+          root = ctxV2.root;
+        }
         const openApiDocumentPath = apimConfig.checkAndGet(ApimPluginConfigKeys.apiDocumentPath);
         const openApiDocument = await this.openApiProcessor.loadOpenApiDocument(
           openApiDocumentPath,
-          ctx.root
+          root
         );
         return { id: openApiDocumentPath, label: openApiDocumentPath, data: openApiDocument };
       },
@@ -184,7 +209,7 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
     this.lazyApimService = lazyApimService;
   }
 
-  public getQuestion(ctx: PluginContext): SingleSelectQuestion {
+  public getQuestion(ctx: PluginContext | PluginContextV3): SingleSelectQuestion {
     return {
       type: "singleSelect",
       name: QuestionConstants.VSCode.ApiVersion.questionName,
@@ -198,10 +223,24 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
     };
   }
 
-  private async getDynamicOptions(inputs: Inputs, ctx: PluginContext): Promise<OptionItem[]> {
+  private async getDynamicOptions(
+    inputs: Inputs,
+    ctx: PluginContext | PluginContextV3
+  ): Promise<OptionItem[]> {
     const apimService = await this.lazyApimService.getValue();
-    const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-    const solutionConfig = new SolutionConfig(ctx.envInfo);
+    let apimConfig: ApimPluginConfig;
+    const isV3 = (ctx as any)["isV3"] as boolean;
+    if (isV3) {
+      const ctxV3 = ctx as PluginContextV3;
+      apimConfig = new ApimPluginConfig(
+        ctxV3.envInfo!.state[BuiltInFeaturePluginNames.apim]!,
+        ctxV3.envInfo!.envName
+      );
+    } else {
+      const ctxV2 = ctx as PluginContext;
+      apimConfig = new ApimPluginConfig(ctxV2.config, ctxV2.envInfo?.envName);
+    }
+    const solutionConfig = new SolutionConfig(ctx.envInfo!);
     const answer = buildAnswer(inputs);
 
     const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);

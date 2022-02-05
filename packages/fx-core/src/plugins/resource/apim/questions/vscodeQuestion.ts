@@ -1,30 +1,27 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { BuildError, NoValidOpenApiDocument } from "../error";
 import {
+  FuncQuestion,
+  Inputs,
+  Json,
   LogProvider,
   OptionItem,
-  SingleSelectQuestion,
-  PluginContext,
-  FuncQuestion,
-  TextInputQuestion,
-  TelemetryReporter,
-  Inputs,
-  ValidationSchema,
   PluginConfig,
-  Json,
+  SingleSelectQuestion,
+  TelemetryReporter,
+  TextInputQuestion,
+  ValidationSchema,
 } from "@microsoft/teamsfx-api";
-import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants } from "../constants";
-import { ApimPluginConfig, SolutionConfig } from "../config";
-import { ApimService } from "../services/apimService";
-import { OpenApiProcessor } from "../utils/openApiProcessor";
-import { buildAnswer } from "../answer";
-import { NamingRules } from "../utils/namingRules";
-import { BaseQuestionService, IQuestionService } from "./question";
-import { getApimServiceNameFromResourceId, Lazy } from "../utils/commonUtils";
 import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
-import { PluginContextV3 } from "../managers/questionManager";
-import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { buildAnswer } from "../answer";
+import { ApimPluginConfig, SolutionConfig } from "../config";
+import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants } from "../constants";
+import { BuildError, NoValidOpenApiDocument } from "../error";
+import { ApimService } from "../services/apimService";
+import { getApimServiceNameFromResourceId, Lazy } from "../utils/commonUtils";
+import { NamingRules } from "../utils/namingRules";
+import { OpenApiProcessor } from "../utils/openApiProcessor";
+import { BaseQuestionService, IQuestionService } from "./question";
 
 export class ApimServiceQuestion extends BaseQuestionService implements IQuestionService {
   private readonly lazyApimService: Lazy<ApimService>;
@@ -134,13 +131,13 @@ export class ExistingOpenApiDocumentFunc extends BaseQuestionService {
   public getQuestion(
     projectPath: string,
     envName: string,
-    config: PluginConfig | Json
+    apimState: PluginConfig | Json
   ): FuncQuestion {
     return {
       type: "func",
       name: QuestionConstants.VSCode.ExistingOpenApiDocument.questionName,
       func: async (inputs: Inputs): Promise<OptionItem> => {
-        const apimConfig = new ApimPluginConfig(config, envName);
+        const apimConfig = new ApimPluginConfig(apimState, envName);
         const openApiDocumentPath = apimConfig.checkAndGet(ApimPluginConfigKeys.apiDocumentPath);
         const openApiDocument = await this.openApiProcessor.loadOpenApiDocument(
           openApiDocumentPath,
@@ -180,7 +177,7 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
   }
 }
 
-export class ApiVersionQuestion extends BaseQuestionService implements IQuestionService {
+export class ApiVersionQuestion extends BaseQuestionService {
   private readonly lazyApimService: Lazy<ApimService>;
 
   constructor(
@@ -192,14 +189,18 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
     this.lazyApimService = lazyApimService;
   }
 
-  public getQuestion(ctx: PluginContext | PluginContextV3): SingleSelectQuestion {
+  public getQuestion(
+    envName: string,
+    apimState: PluginConfig | Json,
+    solutionState: PluginConfig | Json
+  ): SingleSelectQuestion {
     return {
       type: "singleSelect",
       name: QuestionConstants.VSCode.ApiVersion.questionName,
       title: QuestionConstants.VSCode.ApiVersion.description,
       staticOptions: [],
       dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-        return this.getDynamicOptions(inputs, ctx);
+        return this.getDynamicOptions(inputs, envName, apimState, solutionState);
       },
       returnObject: true,
       skipSingleOption: false,
@@ -209,11 +210,12 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
   private async getDynamicOptions(
     inputs: Inputs,
     envName: string,
-    config: PluginConfig | Json
+    apimState: PluginConfig | Json,
+    solutionState: PluginConfig | Json
   ): Promise<OptionItem[]> {
     const apimService = await this.lazyApimService.getValue();
-    const apimConfig = new ApimPluginConfig(config, envName);
-    const solutionConfig = new SolutionConfig(envName, config);
+    const apimConfig = new ApimPluginConfig(apimState, envName);
+    const solutionConfig = new SolutionConfig(envName, solutionState);
     const answer = buildAnswer(inputs);
 
     const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);

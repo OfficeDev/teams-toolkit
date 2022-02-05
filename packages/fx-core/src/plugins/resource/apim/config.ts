@@ -254,8 +254,8 @@ export class AadPluginConfig implements IAadPluginConfig {
 export class SolutionConfig implements ISolutionConfig {
   private readonly config: ReadonlyPluginConfig | Json;
   private readonly envName: string;
-  constructor(envName: string, config: ReadonlyPluginConfig | Json) {
-    this.config = config;
+  constructor(envName: string, solutionConfig: ReadonlyPluginConfig | Json) {
+    this.config = solutionConfig;
     this.envName = envName;
   }
   get resourceNameSuffix(): string {

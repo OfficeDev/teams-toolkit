@@ -19,28 +19,34 @@ import {
 import * as path from "path";
 import { Service } from "typedi";
 import { ArmTemplateResult } from "../../../../common/armInterface";
-import { Bicep } from "../../../../common/constants";
-import {
-  generateBicepFromFile,
-  getResourceGroupNameFromResourceId,
-  getStorageAccountNameFromResourceId,
-  getSubscriptionIdFromResourceId,
-} from "../../../../common/tools";
+import { generateBicepFromFile } from "../../../../common/tools";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
-import { AzureResourceApim, TabOptionItem } from "../../../solution/fx-solution/question";
+import { AzureResourceApim } from "../../../solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { buildAnswer } from "../answer";
-import { ApimPluginConfig } from "../config";
-import { PluginLifeCycle } from "../constants";
+import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "../config";
+import {
+  AadDefaultValues,
+  ApimOutputBicepSnippet,
+  ApimPathInfo,
+  ApimPluginConfigKeys,
+  PluginLifeCycle,
+  PluginLifeCycleToProgressStep,
+  ProgressMessages,
+  ProgressStep,
+  TeamsToolkitComponent,
+} from "../constants";
+import { AssertNotEmpty } from "../error";
 import { Factory } from "../factory";
-import { PluginContextV3 } from "../managers/questionManager";
+import { CliQuestionManager, VscQuestionManager } from "../managers/questionManager";
+import { ProgressBar } from "../utils/progressBar";
 
 @Service(BuiltInFeaturePluginNames.apim)
 export class ApimPluginV3 implements v3.FeaturePlugin {
   name = BuiltInFeaturePluginNames.apim;
   displayName = "API Management";
-
+  private progressBar: ProgressBar = new ProgressBar();
   async getQuestionsForDeploy(
     ctx: v2.Context,
     inputs: Inputs,
@@ -48,13 +54,6 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     tokenProvider: TokenProvider
   ): Promise<Result<QTreeNode | undefined, FxError>> {
     const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
-    const pluginContext: PluginContextV3 = {
-      isV3: true,
-      context: ctx,
-      inputs: inputs,
-      envInfo: envInfo as v3.EnvInfoV3,
-      azureAccountProvider: tokenProvider.azureAccountProvider,
-    };
     const questionManager = await Factory.buildQuestionManager(
       inputs.platform,
       envInfo as v3.EnvInfoV3,
@@ -62,7 +61,16 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       ctx.telemetryReporter,
       ctx.logProvider
     );
-    const node = await questionManager.deploy(pluginContext, apimConfig);
+    const node =
+      questionManager instanceof VscQuestionManager
+        ? await (questionManager as VscQuestionManager).deploy(
+            inputs.projectPath!,
+            envInfo.envName,
+            envInfo.state[this.name],
+            envInfo.state.solution,
+            apimConfig
+          )
+        : await (questionManager as CliQuestionManager).deploy();
     return ok(node);
   }
 
@@ -104,7 +112,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
   @hooks([
     CommonErrorHandlerMW({
       telemetry: {
-        component: BuiltInFeaturePluginNames.frontend,
+        component: BuiltInFeaturePluginNames.apim,
         eventName: "generate-arm-templates",
       },
     }),
@@ -113,36 +121,26 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate, FxError>> {
-    ctx.logProvider.info(Messages.StartGenerateArmTemplates(this.name));
     const solutionSettings = ctx.projectSetting.solutionSettings as
       | AzureSolutionSettings
       | undefined;
     const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
-    const bicepTemplateDir = path.join(
-      getTemplatesFolder(),
-      FrontendPathInfo.BicepTemplateRelativeDir
+    const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
+    const configModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
+      pluginCtx
     );
-    const provisionFilePath = path.join(bicepTemplateDir, Bicep.ProvisionFileName);
-    const moduleProvisionFilePath = path.join(
-      bicepTemplateDir,
-      FrontendPathInfo.ModuleProvisionFileName
-    );
-    const provisionOrchestration = await generateBicepFromFile(provisionFilePath, pluginCtx);
-    const provisionModules = await generateBicepFromFile(moduleProvisionFilePath, pluginCtx);
-
     const result: ArmTemplateResult = {
-      Provision: {
-        Orchestration: provisionOrchestration,
-        Modules: { frontendHosting: provisionModules },
-      },
       Reference: {
-        endpoint: FrontendOutputBicepSnippet.Endpoint,
-        domain: FrontendOutputBicepSnippet.Domain,
+        serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
+      },
+      Configuration: {
+        Modules: { apim: configModules },
       },
     };
     return ok({ kind: "bicep", template: result });
   }
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.apim } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
@@ -159,120 +157,133 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       activeResourcePlugins.push(AzureResourceApim.id);
     return ok(armRes.value);
   }
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: { component: BuiltInFeaturePluginNames.apim, eventName: "update-arm-templates" },
+    }),
+  ])
   async afterOtherFeaturesAdded(
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.OtherFeaturesAddedInputs
   ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
-    ctx.logProvider.info(Messages.StartUpdateArmTemplates(this.name));
+    const solutionSettings = ctx.projectSetting.solutionSettings as
+      | AzureSolutionSettings
+      | undefined;
+    const pluginCtx = { plugins: solutionSettings ? solutionSettings.activeResourcePlugins : [] };
+    const bicepTemplateDir = path.join(getTemplatesFolder(), ApimPathInfo.BicepTemplateRelativeDir);
+    const configModules = await generateBicepFromFile(
+      path.join(bicepTemplateDir, ApimPathInfo.ConfigurationModuleFileName),
+      pluginCtx
+    );
+
     const result: ArmTemplateResult = {
       Reference: {
-        endpoint: FrontendOutputBicepSnippet.Endpoint,
-        domain: FrontendOutputBicepSnippet.Domain,
+        serviceResourceId: ApimOutputBicepSnippet.ServiceResourceId,
+      },
+      Configuration: {
+        Modules: { apim: configModules },
       },
     };
     return ok({ kind: "bicep", template: result });
   }
-  private async buildFrontendConfig(
-    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: AzureAccountProvider
-  ): Promise<Result<FrontendConfig, FxError>> {
-    const credentials = await tokenProvider.getAccountCredentialAsync();
-    if (!credentials) {
-      return err(new UnauthenticatedError());
-    }
-    const storage = envInfo.state[this.name] as v3.FrontendHostingResource;
-    const frontendConfig = new FrontendConfig(
-      getSubscriptionIdFromResourceId(storage.storageResourceId),
-      getResourceGroupNameFromResourceId(storage.storageResourceId),
-      (envInfo.state.solution as v3.AzureSolutionConfig).location,
-      getStorageAccountNameFromResourceId(storage.storageResourceId),
-      credentials
-    );
-    return ok(frontendConfig);
-  }
-  private async updateDotEnv(
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.apim } })])
+  async provisionResource(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    const envs = this.collectEnvs(ctx, inputs, envInfo);
-    await saveEnvFile(
-      envFilePath(envInfo.envName, path.join(inputs.projectPath, FrontendPathInfo.WorkingDir)),
-      {
-        teamsfxRemoteEnvs: envs,
-        customizedRemoteEnvs: {},
-      }
+    await this.progressBar.init(
+      PluginLifeCycleToProgressStep[PluginLifeCycle.Provision],
+      ctx.userInteraction
     );
+    const solutionConfig = new SolutionConfig(envInfo.envName, envInfo.state.solution);
+    const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
+
+    const apimManager = await Factory.buildApimManager(
+      envInfo.envName,
+      envInfo.state.solution,
+      ctx.telemetryReporter,
+      tokenProvider.azureAccountProvider,
+      ctx.logProvider
+    );
+    const aadManager = await Factory.buildAadManager(
+      tokenProvider.graphTokenProvider,
+      ctx.telemetryReporter,
+      ctx.logProvider
+    );
+
+    const appName = AssertNotEmpty("projectSettings.appName", ctx.projectSetting.appName);
+
+    await this.progressBar.next(
+      ProgressStep.Provision,
+      ProgressMessages[ProgressStep.Provision].CreateApim
+    );
+    await apimManager.provision(apimConfig, solutionConfig, appName);
+
+    await this.progressBar.next(
+      ProgressStep.Provision,
+      ProgressMessages[ProgressStep.Provision].CreateAad
+    );
+    await aadManager.provision(apimConfig, appName);
     return ok(Void);
   }
-  private collectEnvs(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3
-  ): { [key: string]: string } {
-    const envs: { [key: string]: string } = {};
-    const addToEnvs = (key: string, value: string | undefined) => {
-      // Check for both null and undefined, add to envs when value is "", 0 or false.
-      if (value != null) {
-        envs[key] = value;
-      }
-    };
-    const solutionSettings = ctx.projectSetting.solutionSettings as
-      | AzureSolutionSettings
-      | undefined;
-    if (solutionSettings) {
-      if (solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.function)) {
-        const functionState = envInfo.state[BuiltInFeaturePluginNames.function] as v3.AzureFunction;
-        addToEnvs(EnvKeys.FuncName, ctx.projectSetting.defaultFunctionName);
-        addToEnvs(EnvKeys.FuncEndpoint, functionState.functionEndpoint);
-      }
 
-      if (solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.simpleAuth)) {
-        const simpleAuthState = envInfo.state[
-          BuiltInFeaturePluginNames.simpleAuth
-        ] as v3.SimpleAuth;
-        addToEnvs(EnvKeys.RuntimeEndpoint, simpleAuthState.endpoint);
-        addToEnvs(EnvKeys.StartLoginPage, DependentPluginInfo.StartLoginPageURL);
-      }
-
-      if (solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.aad)) {
-        const aadState = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
-        addToEnvs(EnvKeys.ClientID, aadState.clientId);
-      }
-    }
-    return envs;
-  }
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
+  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.apim } })])
   async configureResource(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    ctx.logProvider.info(Messages.StartPostProvision(this.name));
-    const progress = ctx.userInteraction.createProgressBar(
-      Messages.PostProvisionProgressTitle,
-      Object.entries(PostProvisionProgress.steps).length
+    const apimResource = envInfo.state[this.name];
+    const apimConfig = new ApimPluginConfig(apimResource, envInfo.envName);
+    const aadConfig = new AadPluginConfig(
+      envInfo.envName,
+      envInfo.state[BuiltInFeaturePluginNames.aad]
     );
-    await progress.start(Messages.ProgressStart);
-    await progress.next(PostProvisionProgress.steps.EnableStaticWebsite);
-    const frontendConfigRes = await this.buildFrontendConfig(
-      envInfo,
-      tokenProvider.azureAccountProvider
+
+    // const apimManager = await Factory.buildApimManager(
+    //   envInfo.envName,
+    //   envInfo.state.solution,
+    //   ctx.telemetryReporter,
+    //   tokenProvider.azureAccountProvider,
+    //   ctx.logProvider
+    // );
+    const aadManager = await Factory.buildAadManager(
+      tokenProvider.graphTokenProvider,
+      ctx.telemetryReporter,
+      ctx.logProvider
     );
-    if (frontendConfigRes.isErr()) {
-      return err(frontendConfigRes.error);
-    }
-    const client = new AzureStorageClient(frontendConfigRes.value);
-    try {
-      await client.enableStaticWebsite();
-    } catch (e) {
-      return err(new EnableStaticWebsiteError());
-    }
-    await this.updateDotEnv(ctx, inputs, envInfo);
-    await progress.end(true);
-    ctx.logProvider.info(Messages.EndPostProvision(this.name));
+    const teamsAppAadManager = await Factory.buildTeamsAppAadManager(
+      tokenProvider.graphTokenProvider,
+      ctx.telemetryReporter,
+      ctx.logProvider
+    );
+
+    // const appName = AssertNotEmpty("projectSettings.appName", ctx.projectSetting.appName);
+
+    await this.progressBar.next(
+      ProgressStep.PostProvision,
+      ProgressMessages[ProgressStep.PostProvision].ConfigClientAad
+    );
+    await aadManager.postProvision(apimConfig, aadConfig, AadDefaultValues.redirectUris);
+
+    await this.progressBar.next(
+      ProgressStep.PostProvision,
+      ProgressMessages[ProgressStep.PostProvision].ConfigApim
+    );
+    // await apimManager.postProvision(apimConfig, ctx, aadConfig, appName);
+
+    await this.progressBar.next(
+      ProgressStep.PostProvision,
+      ProgressMessages[ProgressStep.PostProvision].ConfigAppAad
+    );
+    await teamsAppAadManager.postProvision(aadConfig, apimConfig);
+
+    // Delete user sensitive configuration
+    delete apimResource[ApimPluginConfigKeys.publisherEmail];
+    delete apimResource[ApimPluginConfigKeys.publisherName];
     return ok(Void);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
@@ -282,29 +293,39 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
-    ctx.logProvider.info(Messages.StartDeploy(this.name));
-    const progress = ctx.userInteraction.createProgressBar(
-      Messages.DeployProgressTitle,
-      Object.entries(DeployProgress.steps).length
+    const solutionConfig = new SolutionConfig(envInfo.envName, envInfo.state.solution);
+    const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
+    const functionConfig = new FunctionPluginConfig(
+      envInfo.envName,
+      envInfo.state[TeamsToolkitComponent.FunctionPlugin]
     );
-    await progress.start(Messages.ProgressStart);
-    const frontendConfigRes = await this.buildFrontendConfig(envInfo, tokenProvider);
-    if (frontendConfigRes.isErr()) {
-      return err(frontendConfigRes.error);
+    const answer = buildAnswer(inputs);
+
+    if (answer.validate) {
+      await answer.validate(PluginLifeCycle.Deploy, apimConfig, inputs.projectPath);
     }
-    const client = new AzureStorageClient(frontendConfigRes.value);
-    const componentPath: string = inputs.dir
-      ? inputs.dir
-      : path.join(inputs.projectPath, FrontendPathInfo.WorkingDir);
-    const envName = envInfo.envName;
 
-    const envs = await loadEnvFile(envFilePath(envName, componentPath));
+    answer.save(PluginLifeCycle.Deploy, apimConfig);
 
-    await FrontendDeployment.doFrontendBuildV3(componentPath, envs, envName, progress);
-    await FrontendDeployment.doFrontendDeploymentV3(client, componentPath, envName);
+    const apimManager = await Factory.buildApimManager(
+      envInfo.envName,
+      envInfo.state.solution,
+      ctx.telemetryReporter,
+      tokenProvider,
+      ctx.logProvider
+    );
 
-    await progress.end(true);
-    ctx.logProvider.info(Messages.EndDeploy(this.name));
+    await this.progressBar.next(
+      ProgressStep.Deploy,
+      ProgressMessages[ProgressStep.Deploy].ImportApi
+    );
+    await apimManager.deploy(
+      apimConfig,
+      solutionConfig,
+      functionConfig,
+      answer,
+      inputs.projectPath
+    );
     return ok(Void);
   }
 }

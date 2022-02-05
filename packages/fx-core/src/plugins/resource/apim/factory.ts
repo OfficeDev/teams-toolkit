@@ -1,60 +1,55 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
+import { ApiManagementClient } from "@azure/arm-apimanagement";
+import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 import {
   AzureAccountProvider,
   EnvInfo,
   GraphTokenProvider,
-  Inputs,
+  Json,
   LogProvider,
   Platform,
-  PluginContext,
+  ReadonlyPluginConfig,
   TelemetryReporter,
-  v2,
   v3,
 } from "@microsoft/teamsfx-api";
-import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
-import { ApimService } from "./services/apimService";
-import { AadService } from "./services/aadService";
-import { OpenApiProcessor } from "./utils/openApiProcessor";
-import { ApimManager } from "./managers/apimManager";
-import { AadManager } from "./managers/aadManager";
-import {
-  CliQuestionManager,
-  IQuestionManager,
-  PluginContextV3,
-  VscQuestionManager,
-} from "./managers/questionManager";
-import * as VSCode from "./questions/vscodeQuestion";
-import * as CLI from "./questions/cliQuestion";
-import { ApiManagementClient } from "@azure/arm-apimanagement";
-import { TeamsAppAadManager } from "./managers/teamsAppAadManager";
 import axios from "axios";
-import { AadDefaultValues } from "./constants";
-import { Lazy } from "./utils/commonUtils";
-import { ScaffoldManager } from "./managers/scaffoldManager";
-import { Providers, ResourceManagementClientContext } from "@azure/arm-resources";
 import { ISolutionConfig, SolutionConfig } from "./config";
+import { AadDefaultValues, TeamsToolkitComponent } from "./constants";
+import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
+import { AadManager } from "./managers/aadManager";
+import { ApimManager } from "./managers/apimManager";
+import { CliQuestionManager, VscQuestionManager } from "./managers/questionManager";
+import { ScaffoldManager } from "./managers/scaffoldManager";
+import { TeamsAppAadManager } from "./managers/teamsAppAadManager";
+import * as CLI from "./questions/cliQuestion";
+import * as VSCode from "./questions/vscodeQuestion";
+import { AadService } from "./services/aadService";
+import { ApimService } from "./services/apimService";
+import { Lazy } from "./utils/commonUtils";
+import { OpenApiProcessor } from "./utils/openApiProcessor";
 
 export class Factory {
-  public static async buildApimManager(ctx: PluginContext): Promise<ApimManager> {
-    const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
+  public static async buildApimManager(
+    envName: string,
+    sConfig: ReadonlyPluginConfig | Json,
+    telemetryReporter?: TelemetryReporter,
+    azureAccountProvider?: AzureAccountProvider,
+    logProvider?: LogProvider
+  ): Promise<ApimManager> {
+    const openApiProcessor = new OpenApiProcessor(telemetryReporter, logProvider);
 
-    const solutionConfig = new SolutionConfig(ctx.envInfo.envName, ctx.envInfo);
+    const solutionConfig = new SolutionConfig(envName, sConfig);
     const lazyApimService = new Lazy<ApimService>(
       async () =>
         await Factory.buildApimService(
           solutionConfig,
-          ctx.azureAccountProvider,
-          ctx.telemetryReporter,
-          ctx.logProvider
+          azureAccountProvider,
+          telemetryReporter,
+          logProvider
         )
     );
-    return new ApimManager(
-      lazyApimService,
-      openApiProcessor,
-      ctx.telemetryReporter,
-      ctx.logProvider
-    );
+    return new ApimManager(lazyApimService, openApiProcessor, telemetryReporter, logProvider);
   }
 
   public static async buildAadManager(
@@ -93,8 +88,13 @@ export class Factory {
     azureAccountProvider?: AzureAccountProvider,
     telemetryReporter?: TelemetryReporter,
     logProvider?: LogProvider
-  ): Promise<IQuestionManager> {
-    const solutionConfig = new SolutionConfig(envInfo);
+  ): Promise<VscQuestionManager | CliQuestionManager> {
+    const solutionConfig = new SolutionConfig(
+      envInfo.envName,
+      envInfo.state.get
+        ? (envInfo.state as Map<string, any>).get(TeamsToolkitComponent.Solution)
+        : (envInfo.state as Json)[TeamsToolkitComponent.Solution]
+    );
     switch (platform) {
       case Platform.VSCode:
         // Lazy init apim service to get the latest subscription id in configuration

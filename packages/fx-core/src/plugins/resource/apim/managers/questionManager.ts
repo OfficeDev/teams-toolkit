@@ -1,34 +1,18 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  AzureAccountProvider,
-  Func,
-  Inputs,
-  PluginContext,
-  QTreeNode,
-  v2,
-  v3,
-} from "@microsoft/teamsfx-api";
-import { BuildError, NotImplemented } from "../error";
+import { Func, Json, PluginConfig, PluginContext, QTreeNode } from "@microsoft/teamsfx-api";
 import { IApimPluginConfig } from "../config";
-import * as VSCode from "../questions/vscodeQuestion";
+import { BuildError, NotImplemented } from "../error";
 import * as CLI from "../questions/cliQuestion";
+import * as VSCode from "../questions/vscodeQuestion";
 
-export interface PluginContextV3 {
-  isV3: true;
-  context: v2.Context;
-  inputs: Inputs;
-  envInfo?: v3.EnvInfoV3;
-  azureAccountProvider?: AzureAccountProvider;
-}
+// export interface IQuestionManager {
+//   callFunc(func: Func, ctx: PluginContext): Promise<any>;
+//   addResource(): Promise<QTreeNode | undefined>;
+//   deploy(ctx: PluginContext | PluginContextV3, apimConfig?: IApimPluginConfig): Promise<QTreeNode>;
+// }
 
-export interface IQuestionManager {
-  callFunc(func: Func, ctx: PluginContext): Promise<any>;
-  addResource(): Promise<QTreeNode | undefined>;
-  deploy(ctx: PluginContext | PluginContextV3, apimConfig?: IApimPluginConfig): Promise<QTreeNode>;
-}
-
-export class VscQuestionManager implements IQuestionManager {
+export class VscQuestionManager {
   private readonly apimServiceQuestion: VSCode.ApimServiceQuestion;
   private readonly openApiDocumentQuestion: VSCode.OpenApiDocumentQuestion;
   private readonly existingOpenApiDocumentFunc: VSCode.ExistingOpenApiDocumentFunc;
@@ -50,6 +34,7 @@ export class VscQuestionManager implements IQuestionManager {
     this.apiVersionQuestion = apiVersionQuestion;
     this.newApiVersionQuestion = newApiVersionQuestion;
     this.existingOpenApiDocumentFunc = existingOpenApiDocumentFunc;
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 
   async callFunc(func: Func, ctx: PluginContext): Promise<any> {
@@ -61,7 +46,10 @@ export class VscQuestionManager implements IQuestionManager {
   }
 
   async deploy(
-    ctx: PluginContext | PluginContextV3,
+    projectPath: string,
+    envName: string,
+    apimState: PluginConfig | Json,
+    solutionState: PluginConfig | Json,
     apimConfig: IApimPluginConfig
   ): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
@@ -70,10 +58,14 @@ export class VscQuestionManager implements IQuestionManager {
 
     let documentNode: QTreeNode;
     if (!apimConfig.apiDocumentPath) {
-      const documentPathQuestion = this.openApiDocumentQuestion.getQuestion(ctx);
+      const documentPathQuestion = this.openApiDocumentQuestion.getQuestion(projectPath); // projectPath
       documentNode = new QTreeNode(documentPathQuestion);
     } else {
-      const documentPathFunc = this.existingOpenApiDocumentFunc.getQuestion(ctx);
+      const documentPathFunc = this.existingOpenApiDocumentFunc.getQuestion(
+        projectPath,
+        envName,
+        apimState
+      ); // projectPath, envName, apimConfig
       documentNode = new QTreeNode(documentPathFunc);
     }
 
@@ -85,7 +77,7 @@ export class VscQuestionManager implements IQuestionManager {
       documentNode.addChild(apiPrefixQuestionNode);
     }
 
-    const versionQuestion = this.apiVersionQuestion.getQuestion(ctx);
+    const versionQuestion = this.apiVersionQuestion.getQuestion(envName, apimState, solutionState);
     const versionQuestionNode = new QTreeNode(versionQuestion);
     documentNode.addChild(versionQuestionNode);
 
@@ -98,7 +90,7 @@ export class VscQuestionManager implements IQuestionManager {
   }
 }
 
-export class CliQuestionManager implements IQuestionManager {
+export class CliQuestionManager {
   private readonly apimServiceNameQuestion: CLI.ApimServiceNameQuestion;
   private readonly apimResourceGroupQuestion: CLI.ApimResourceGroupQuestion;
   private readonly openApiDocumentQuestion: CLI.OpenApiDocumentQuestion;
@@ -116,6 +108,7 @@ export class CliQuestionManager implements IQuestionManager {
     this.openApiDocumentQuestion = openApiDocumentQuestion;
     this.apiPrefixQuestion = apiPrefixQuestion;
     this.apiVersionQuestion = apiVersionQuestion;
+    Object.setPrototypeOf(this, new.target.prototype);
   }
 
   async callFunc(func: Func, ctx: PluginContext): Promise<any> {
@@ -134,10 +127,7 @@ export class CliQuestionManager implements IQuestionManager {
     return rootNode;
   }
 
-  async deploy(
-    ctx: PluginContext | PluginContextV3,
-    apimConfig: IApimPluginConfig
-  ): Promise<QTreeNode> {
+  async deploy(): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
       type: "group",
     });

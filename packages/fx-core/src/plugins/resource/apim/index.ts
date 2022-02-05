@@ -37,6 +37,7 @@ import { Service } from "typedi";
 import { ResourcePlugins } from "../../solution/fx-solution/ResourcePluginContainer";
 import "./v2";
 import { ArmTemplateResult } from "../../../common/armInterface";
+import { CliQuestionManager, VscQuestionManager } from "./managers/questionManager";
 
 @Service(ResourcePlugins.ApimPlugin)
 export class ApimPlugin implements Plugin {
@@ -119,7 +120,7 @@ export class ApimPlugin implements Plugin {
     ...params: any[]
   ): Promise<Result<T, FxError>> {
     try {
-      await this.progressBar.init(PluginLifeCycleToProgressStep[lifeCycle], ctx);
+      await this.progressBar.init(PluginLifeCycleToProgressStep[lifeCycle], ctx.ui);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
         ctx.envInfo,
@@ -174,7 +175,15 @@ async function _getQuestions(
   );
   switch (stage) {
     case Stage.deploy:
-      return await questionManager.deploy(ctx, apimConfig);
+      return questionManager instanceof VscQuestionManager
+        ? await (questionManager as VscQuestionManager).deploy(
+            ctx.root,
+            ctx.envInfo.envName,
+            ctx.config,
+            ctx.envInfo.state.get(TeamsToolkitComponent.Solution),
+            apimConfig
+          )
+        : await (questionManager as CliQuestionManager).deploy();
     default:
       return undefined;
   }
@@ -230,10 +239,19 @@ async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<
 }
 
 async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.envInfo);
+  const solutionConfig = new SolutionConfig(
+    ctx.envInfo.envName,
+    ctx.envInfo.state.get(TeamsToolkitComponent.Solution)
+  );
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
 
-  const apimManager = await Factory.buildApimManager(ctx);
+  const apimManager = await Factory.buildApimManager(
+    ctx.envInfo.envName,
+    ctx.envInfo.state.get(TeamsToolkitComponent.Solution),
+    ctx.telemetryReporter,
+    ctx.azureAccountProvider,
+    ctx.logProvider
+  );
   const aadManager = await Factory.buildAadManager(
     ctx.graphTokenProvider,
     ctx.telemetryReporter,
@@ -259,7 +277,13 @@ async function _updateArmTemplates(
   ctx: PluginContext,
   progressBar: ProgressBar
 ): Promise<ArmTemplateResult> {
-  const apimManager = await Factory.buildApimManager(ctx);
+  const apimManager = await Factory.buildApimManager(
+    ctx.envInfo.envName,
+    ctx.envInfo.state.get(TeamsToolkitComponent.Solution),
+    ctx.telemetryReporter,
+    ctx.azureAccountProvider,
+    ctx.logProvider
+  );
   return await apimManager.updateArmTemplates(ctx);
 }
 
@@ -267,7 +291,13 @@ async function _generateArmTemplates(
   ctx: PluginContext,
   progressBar: ProgressBar
 ): Promise<ArmTemplateResult> {
-  const apimManager = await Factory.buildApimManager(ctx);
+  const apimManager = await Factory.buildApimManager(
+    ctx.envInfo.envName,
+    ctx.envInfo.state.get(TeamsToolkitComponent.Solution),
+    ctx.telemetryReporter,
+    ctx.azureAccountProvider,
+    ctx.logProvider
+  );
   return await apimManager.generateArmTemplates(ctx);
 }
 
@@ -278,7 +308,13 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
     ctx.envInfo.state.get(TeamsToolkitComponent.AadPlugin)
   );
 
-  const apimManager = await Factory.buildApimManager(ctx);
+  const apimManager = await Factory.buildApimManager(
+    ctx.envInfo.envName,
+    ctx.envInfo.state.get(TeamsToolkitComponent.Solution),
+    ctx.telemetryReporter,
+    ctx.azureAccountProvider,
+    ctx.logProvider
+  );
   const aadManager = await Factory.buildAadManager(
     ctx.graphTokenProvider,
     ctx.telemetryReporter,
@@ -333,7 +369,13 @@ async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<vo
 
   answer.save(PluginLifeCycle.Deploy, apimConfig);
 
-  const apimManager = await Factory.buildApimManager(ctx);
+  const apimManager = await Factory.buildApimManager(
+    ctx.envInfo.envName,
+    ctx.envInfo.state.get(TeamsToolkitComponent.Solution),
+    ctx.telemetryReporter,
+    ctx.azureAccountProvider,
+    ctx.logProvider
+  );
 
   await progressBar.next(ProgressStep.Deploy, ProgressMessages[ProgressStep.Deploy].ImportApi);
   await apimManager.deploy(apimConfig, solutionConfig, functionConfig, answer, ctx.root);

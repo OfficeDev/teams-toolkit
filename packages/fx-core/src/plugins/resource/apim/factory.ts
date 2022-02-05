@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 import {
   AzureAccountProvider,
+  EnvInfo,
   GraphTokenProvider,
   Inputs,
   LogProvider,
@@ -38,7 +39,7 @@ export class Factory {
   public static async buildApimManager(ctx: PluginContext): Promise<ApimManager> {
     const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
 
-    const solutionConfig = new SolutionConfig(ctx.envInfo);
+    const solutionConfig = new SolutionConfig(ctx.envInfo.envName, ctx.envInfo);
     const lazyApimService = new Lazy<ApimService>(
       async () =>
         await Factory.buildApimService(
@@ -56,61 +57,44 @@ export class Factory {
     );
   }
 
-  public static async buildAadManager(ctx: PluginContext): Promise<AadManager> {
+  public static async buildAadManager(
+    graphTokenProvider?: GraphTokenProvider,
+    telemetryReporter?: TelemetryReporter,
+    logProvider?: LogProvider
+  ): Promise<AadManager> {
     const lazyAadService = new Lazy(
-      async () =>
-        await Factory.buildAadService(
-          ctx.graphTokenProvider,
-          ctx.telemetryReporter,
-          ctx.logProvider
-        )
+      async () => await Factory.buildAadService(graphTokenProvider, telemetryReporter, logProvider)
     );
-    return new AadManager(lazyAadService, ctx.telemetryReporter, ctx.logProvider);
+    return new AadManager(lazyAadService, telemetryReporter, logProvider);
   }
 
-  public static async buildTeamsAppAadManager(ctx: PluginContext): Promise<TeamsAppAadManager> {
+  public static async buildTeamsAppAadManager(
+    graphTokenProvider?: GraphTokenProvider,
+    telemetryReporter?: TelemetryReporter,
+    logProvider?: LogProvider
+  ): Promise<TeamsAppAadManager> {
     const lazyAadService = new Lazy(
-      async () =>
-        await Factory.buildAadService(
-          ctx.graphTokenProvider,
-          ctx.telemetryReporter,
-          ctx.logProvider
-        )
+      async () => await Factory.buildAadService(graphTokenProvider, telemetryReporter, logProvider)
     );
-    return new TeamsAppAadManager(lazyAadService, ctx.telemetryReporter, ctx.logProvider);
+    return new TeamsAppAadManager(lazyAadService, telemetryReporter, logProvider);
   }
 
   public static async buildScaffoldManager(
-    ctx: PluginContext | PluginContextV3
+    telemetryReporter?: TelemetryReporter,
+    logProvider?: LogProvider
   ): Promise<ScaffoldManager> {
-    const isV3 = (ctx as any)["isV3"] as boolean;
-    const telemetryReporter = isV3
-      ? (ctx as PluginContextV3).context.telemetryReporter
-      : (ctx as PluginContext).telemetryReporter;
-    const logProvider = isV3
-      ? (ctx as PluginContextV3).context.logProvider
-      : (ctx as PluginContext).logProvider;
     const openApiProcessor = new OpenApiProcessor(telemetryReporter, logProvider);
     return new ScaffoldManager(openApiProcessor, telemetryReporter, logProvider);
   }
 
   public static async buildQuestionManager(
-    ctx: PluginContext | PluginContextV3
+    platform: Platform,
+    envInfo: EnvInfo | v3.EnvInfoV3,
+    azureAccountProvider?: AzureAccountProvider,
+    telemetryReporter?: TelemetryReporter,
+    logProvider?: LogProvider
   ): Promise<IQuestionManager> {
-    const isV3 = (ctx as any)["isV3"] as boolean;
-    const solutionConfig = new SolutionConfig(ctx.envInfo!);
-    const platform = isV3
-      ? (ctx as PluginContextV3).inputs?.platform
-      : (ctx as PluginContext).answers?.platform;
-    const azureAccountProvider = isV3
-      ? (ctx as PluginContextV3).azureAccountProvider
-      : (ctx as PluginContext).azureAccountProvider;
-    const telemetryReporter = isV3
-      ? (ctx as PluginContextV3).context.telemetryReporter
-      : (ctx as PluginContext).telemetryReporter;
-    const logProvider = isV3
-      ? (ctx as PluginContextV3).context.logProvider
-      : (ctx as PluginContext).logProvider;
+    const solutionConfig = new SolutionConfig(envInfo);
     switch (platform) {
       case Platform.VSCode:
         // Lazy init apim service to get the latest subscription id in configuration
@@ -214,7 +198,7 @@ export class Factory {
   }
 
   public static async buildAadService(
-    graphTokenProvider: GraphTokenProvider | undefined,
+    graphTokenProvider?: GraphTokenProvider,
     telemetryReporter?: TelemetryReporter,
     logger?: LogProvider
   ): Promise<AadService> {

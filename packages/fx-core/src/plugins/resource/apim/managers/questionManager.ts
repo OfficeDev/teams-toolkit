@@ -24,7 +24,7 @@ export interface PluginContextV3 {
 
 export interface IQuestionManager {
   callFunc(func: Func, ctx: PluginContext): Promise<any>;
-  addResource(): Promise<QTreeNode>;
+  addResource(): Promise<QTreeNode | undefined>;
   deploy(ctx: PluginContext | PluginContextV3, apimConfig?: IApimPluginConfig): Promise<QTreeNode>;
 }
 
@@ -56,12 +56,8 @@ export class VscQuestionManager implements IQuestionManager {
     throw BuildError(NotImplemented);
   }
 
-  async addResource(): Promise<QTreeNode> {
-    const rootNode = new QTreeNode({
-      type: "group",
-    });
-
-    return rootNode;
+  async addResource(): Promise<QTreeNode | undefined> {
+    return undefined;
   }
 
   async deploy(
@@ -126,7 +122,7 @@ export class CliQuestionManager implements IQuestionManager {
     throw BuildError(NotImplemented);
   }
 
-  async addResource(): Promise<QTreeNode> {
+  async addResource(): Promise<QTreeNode | undefined> {
     const rootNode = new QTreeNode({
       type: "group",
     });

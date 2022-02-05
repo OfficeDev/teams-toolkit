@@ -11,6 +11,8 @@ import {
   TelemetryReporter,
   Inputs,
   ValidationSchema,
+  PluginConfig,
+  Json,
 } from "@microsoft/teamsfx-api";
 import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants } from "../constants";
 import { ApimPluginConfig, SolutionConfig } from "../config";
@@ -74,7 +76,7 @@ export class ApimServiceQuestion extends BaseQuestionService implements IQuestio
   }
 }
 
-export class OpenApiDocumentQuestion extends BaseQuestionService implements IQuestionService {
+export class OpenApiDocumentQuestion extends BaseQuestionService {
   private readonly openApiProcessor: OpenApiProcessor;
 
   constructor(
@@ -86,23 +88,14 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
     this.openApiProcessor = openApiProcessor;
   }
 
-  public getQuestion(ctx: PluginContext | PluginContextV3): SingleSelectQuestion {
-    const isV3 = (ctx as any)["isV3"] as boolean;
-    let root: string;
-    if (isV3) {
-      const ctxV3 = ctx as PluginContextV3;
-      root = ctxV3.inputs.projectPath!;
-    } else {
-      const ctxV2 = ctx as PluginContext;
-      root = ctxV2.root;
-    }
+  public getQuestion(projectPath: string): SingleSelectQuestion {
     return {
       type: "singleSelect",
       name: QuestionConstants.VSCode.OpenApiDocument.questionName,
       title: QuestionConstants.VSCode.OpenApiDocument.description,
       staticOptions: [],
       dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-        return this.getDynamicOptions(root);
+        return this.getDynamicOptions(projectPath);
       },
       returnObject: true,
       skipSingleOption: false,
@@ -126,7 +119,7 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
   }
 }
 
-export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements IQuestionService {
+export class ExistingOpenApiDocumentFunc extends BaseQuestionService {
   private readonly openApiProcessor: OpenApiProcessor;
 
   constructor(
@@ -138,30 +131,20 @@ export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements 
     this.openApiProcessor = openApiProcessor;
   }
 
-  public getQuestion(ctx: PluginContext | PluginContextV3): FuncQuestion {
+  public getQuestion(
+    projectPath: string,
+    envName: string,
+    config: PluginConfig | Json
+  ): FuncQuestion {
     return {
       type: "func",
       name: QuestionConstants.VSCode.ExistingOpenApiDocument.questionName,
       func: async (inputs: Inputs): Promise<OptionItem> => {
-        let apimConfig: ApimPluginConfig;
-        const isV3 = (ctx as any)["isV3"] as boolean;
-        let root: string;
-        if (isV3) {
-          const ctxV3 = ctx as PluginContextV3;
-          apimConfig = new ApimPluginConfig(
-            ctxV3.envInfo!.state[BuiltInFeaturePluginNames.apim]!,
-            ctxV3.envInfo!.envName
-          );
-          root = ctxV3.inputs.projectPath!;
-        } else {
-          const ctxV2 = ctx as PluginContext;
-          apimConfig = new ApimPluginConfig(ctxV2.config, ctxV2.envInfo?.envName);
-          root = ctxV2.root;
-        }
+        const apimConfig = new ApimPluginConfig(config, envName);
         const openApiDocumentPath = apimConfig.checkAndGet(ApimPluginConfigKeys.apiDocumentPath);
         const openApiDocument = await this.openApiProcessor.loadOpenApiDocument(
           openApiDocumentPath,
-          root
+          projectPath
         );
         return { id: openApiDocumentPath, label: openApiDocumentPath, data: openApiDocument };
       },
@@ -225,22 +208,12 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
 
   private async getDynamicOptions(
     inputs: Inputs,
-    ctx: PluginContext | PluginContextV3
+    envName: string,
+    config: PluginConfig | Json
   ): Promise<OptionItem[]> {
     const apimService = await this.lazyApimService.getValue();
-    let apimConfig: ApimPluginConfig;
-    const isV3 = (ctx as any)["isV3"] as boolean;
-    if (isV3) {
-      const ctxV3 = ctx as PluginContextV3;
-      apimConfig = new ApimPluginConfig(
-        ctxV3.envInfo!.state[BuiltInFeaturePluginNames.apim]!,
-        ctxV3.envInfo!.envName
-      );
-    } else {
-      const ctxV2 = ctx as PluginContext;
-      apimConfig = new ApimPluginConfig(ctxV2.config, ctxV2.envInfo?.envName);
-    }
-    const solutionConfig = new SolutionConfig(ctx.envInfo!);
+    const apimConfig = new ApimPluginConfig(config, envName);
+    const solutionConfig = new SolutionConfig(envName, config);
     const answer = buildAnswer(inputs);
 
     const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);

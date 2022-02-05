@@ -27,6 +27,7 @@ import {
   OperationStatus,
   UserTask,
   ApimPluginConfigKeys,
+  TeamsToolkitComponent,
 } from "./constants";
 import { Factory } from "./factory";
 import { ProgressBar } from "./utils/progressBar";
@@ -164,7 +165,13 @@ async function _getQuestions(
   stage: Stage
 ): Promise<QTreeNode | undefined> {
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const questionManager = await Factory.buildQuestionManager(ctx);
+  const questionManager = await Factory.buildQuestionManager(
+    ctx.answers!.platform!,
+    ctx.envInfo!,
+    ctx.azureAccountProvider,
+    ctx.telemetryReporter,
+    ctx.logProvider
+  );
   switch (stage) {
     case Stage.deploy:
       return await questionManager.deploy(ctx, apimConfig);
@@ -178,7 +185,13 @@ async function _getQuestionsForUserTask(
   progressBar: ProgressBar,
   func: Func
 ): Promise<QTreeNode | undefined> {
-  const questionManager = await Factory.buildQuestionManager(ctx);
+  const questionManager = await Factory.buildQuestionManager(
+    ctx.answers!.platform!,
+    ctx.envInfo!,
+    ctx.azureAccountProvider,
+    ctx.telemetryReporter,
+    ctx.logProvider
+  );
   if (func.method === "addResource") {
     return await questionManager.addResource();
   }
@@ -186,14 +199,23 @@ async function _getQuestionsForUserTask(
 }
 
 async function _callFunc(ctx: PluginContext, progressBar: ProgressBar, func: Func): Promise<any> {
-  const questionManager = await Factory.buildQuestionManager(ctx);
+  const questionManager = await Factory.buildQuestionManager(
+    ctx.answers!.platform!,
+    ctx.envInfo!,
+    ctx.azureAccountProvider,
+    ctx.telemetryReporter,
+    ctx.logProvider
+  );
   return await questionManager.callFunc(func, ctx);
 }
 
 async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
   const answer = buildAnswer(ctx.answers);
-  const scaffoldManager = await Factory.buildScaffoldManager(ctx);
+  const scaffoldManager = await Factory.buildScaffoldManager(
+    ctx.telemetryReporter,
+    ctx.logProvider
+  );
 
   const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
 
@@ -212,7 +234,11 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
 
   const apimManager = await Factory.buildApimManager(ctx);
-  const aadManager = await Factory.buildAadManager(ctx);
+  const aadManager = await Factory.buildAadManager(
+    ctx.graphTokenProvider,
+    ctx.telemetryReporter,
+    ctx.logProvider
+  );
 
   const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
 
@@ -247,11 +273,22 @@ async function _generateArmTemplates(
 
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const aadConfig = new AadPluginConfig(ctx.envInfo);
+  const aadConfig = new AadPluginConfig(
+    ctx.envInfo.envName,
+    ctx.envInfo.state.get(TeamsToolkitComponent.AadPlugin)
+  );
 
   const apimManager = await Factory.buildApimManager(ctx);
-  const aadManager = await Factory.buildAadManager(ctx);
-  const teamsAppAadManager = await Factory.buildTeamsAppAadManager(ctx);
+  const aadManager = await Factory.buildAadManager(
+    ctx.graphTokenProvider,
+    ctx.telemetryReporter,
+    ctx.logProvider
+  );
+  const teamsAppAadManager = await Factory.buildTeamsAppAadManager(
+    ctx.graphTokenProvider,
+    ctx.telemetryReporter,
+    ctx.logProvider
+  );
 
   const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
 
@@ -279,9 +316,15 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
 }
 
 async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.envInfo);
+  const solutionConfig = new SolutionConfig(
+    ctx.envInfo.envName,
+    ctx.envInfo.state.get(TeamsToolkitComponent.Solution)
+  );
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const functionConfig = new FunctionPluginConfig(ctx.envInfo);
+  const functionConfig = new FunctionPluginConfig(
+    ctx.envInfo.envName,
+    ctx.envInfo.state.get(TeamsToolkitComponent.FunctionPlugin)
+  );
   const answer = buildAnswer(ctx.answers);
 
   if (answer.validate) {

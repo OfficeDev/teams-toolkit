@@ -55,7 +55,13 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       envInfo: envInfo as v3.EnvInfoV3,
       azureAccountProvider: tokenProvider.azureAccountProvider,
     };
-    const questionManager = await Factory.buildQuestionManager(pluginContext);
+    const questionManager = await Factory.buildQuestionManager(
+      inputs.platform,
+      envInfo as v3.EnvInfoV3,
+      tokenProvider.azureAccountProvider,
+      ctx.telemetryReporter,
+      ctx.logProvider
+    );
     const node = await questionManager.deploy(pluginContext, apimConfig);
     return ok(node);
   }
@@ -64,12 +70,13 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     ctx: v2.Context,
     inputs: Inputs
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const pluginContext: PluginContextV3 = {
-      isV3: true,
-      context: ctx,
-      inputs: inputs,
-    };
-    const questionManager = await Factory.buildQuestionManager(pluginContext);
+    const questionManager = await Factory.buildQuestionManager(
+      inputs.platform,
+      { envName: "", state: { solution: {} }, config: {} },
+      undefined,
+      ctx.telemetryReporter,
+      ctx.logProvider
+    );
     const node = await questionManager.addResource();
     return ok(node);
   }
@@ -81,12 +88,10 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
   ): Promise<Result<Void | undefined, FxError>> {
     const apimConfig = new ApimPluginConfig({}, "");
     const answer = buildAnswer(inputs);
-    const pluginContext: PluginContextV3 = {
-      isV3: true,
-      context: ctx,
-      inputs: inputs,
-    };
-    const scaffoldManager = await Factory.buildScaffoldManager(pluginContext);
+    const scaffoldManager = await Factory.buildScaffoldManager(
+      ctx.telemetryReporter,
+      ctx.logProvider
+    );
     const appName = ctx.projectSetting.appName;
     if (answer.validate) {
       await answer.validate(PluginLifeCycle.Scaffold, apimConfig, inputs.projectPath);

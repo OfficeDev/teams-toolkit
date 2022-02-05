@@ -1,20 +1,21 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { EnvInfo, Json, PluginConfig, ReadonlySolutionConfig, v3 } from "@microsoft/teamsfx-api";
+import { Json, PluginConfig, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
 import {
   TeamsToolkitComponent,
-  ComponentRetryOperations,
   SolutionConfigKeys,
   AadPluginConfigKeys,
   FunctionPluginConfigKeys,
   ApimPluginConfigKeys,
+  ProjectConstants,
+  ConfigRetryOperations,
 } from "./constants";
 import {
   AssertConfigNotEmpty,
   BuildError,
+  EmptyConfigValue,
   InvalidConfigValue,
   InvalidPropertyType,
-  NoPluginConfig,
 } from "./error";
 import { INamingRule, NamingRules } from "./utils/namingRules";
 
@@ -54,7 +55,6 @@ export interface ISolutionConfig {
   teamsAppTenantId: string;
   resourceGroupName: string;
   location: string;
-  remoteTeamsAppId?: string | undefined;
   subscriptionId: string | undefined;
 }
 
@@ -199,11 +199,11 @@ export class ApimPluginConfig implements IApimPluginConfig {
 }
 
 export class FunctionPluginConfig implements IFunctionPluginConfig {
-  private readonly configOfOtherPlugins: ReadonlySolutionConfig | Json;
+  private readonly config: ReadonlyPluginConfig | Json;
   private readonly envName: string;
-  constructor(envInfo: EnvInfo | v3.EnvInfoV3) {
-    this.configOfOtherPlugins = envInfo.state;
-    this.envName = envInfo.envName;
+  constructor(envName: string, config: ReadonlyPluginConfig | Json) {
+    this.config = config;
+    this.envName = envName;
   }
 
   get functionEndpoint(): string {
@@ -212,7 +212,7 @@ export class FunctionPluginConfig implements IFunctionPluginConfig {
 
   private checkAndGet(key: string): string {
     return checkAndGetOtherPluginConfig(
-      this.configOfOtherPlugins,
+      this.config,
       TeamsToolkitComponent.FunctionPlugin,
       key,
       this.envName
@@ -221,11 +221,11 @@ export class FunctionPluginConfig implements IFunctionPluginConfig {
 }
 
 export class AadPluginConfig implements IAadPluginConfig {
-  private readonly configOfOtherPlugins: ReadonlySolutionConfig | Json;
+  private readonly config: ReadonlyPluginConfig | Json;
   private readonly envName: string;
-  constructor(envInfo: EnvInfo | v3.EnvInfoV3) {
-    this.configOfOtherPlugins = envInfo.state;
-    this.envName = envInfo.envName;
+  constructor(envName: string, config: ReadonlyPluginConfig | Json) {
+    this.config = config;
+    this.envName = envName;
   }
 
   get objectId(): string {
@@ -243,7 +243,7 @@ export class AadPluginConfig implements IAadPluginConfig {
 
   private checkAndGet(key: string): string {
     return checkAndGetOtherPluginConfig(
-      this.configOfOtherPlugins,
+      this.config,
       TeamsToolkitComponent.AadPlugin,
       key,
       this.envName
@@ -252,13 +252,12 @@ export class AadPluginConfig implements IAadPluginConfig {
 }
 
 export class SolutionConfig implements ISolutionConfig {
-  private readonly configOfOtherPlugins: ReadonlySolutionConfig | Json;
+  private readonly config: ReadonlyPluginConfig | Json;
   private readonly envName: string;
-  constructor(envInfo: EnvInfo | v3.EnvInfoV3) {
-    this.configOfOtherPlugins = envInfo.state;
-    this.envName = envInfo.envName;
+  constructor(envName: string, config: ReadonlyPluginConfig | Json) {
+    this.config = config;
+    this.envName = envName;
   }
-
   get resourceNameSuffix(): string {
     return this.checkAndGet(SolutionConfigKeys.resourceNameSuffix);
   }
@@ -271,21 +270,13 @@ export class SolutionConfig implements ISolutionConfig {
   get location(): string {
     return this.checkAndGet(SolutionConfigKeys.location);
   }
-  get remoteTeamsAppId(): string | undefined {
-    return this.configOfOtherPlugins
-      .get(TeamsToolkitComponent.Solution)
-      ?.get(SolutionConfigKeys.remoteTeamsAppId) as string;
-  }
-
   get subscriptionId(): string | undefined {
-    return this.configOfOtherPlugins
-      .get(TeamsToolkitComponent.Solution)
-      ?.get(SolutionConfigKeys.subscriptionId) as string;
+    return this.checkAndGet(SolutionConfigKeys.subscriptionId);
   }
 
   private checkAndGet(key: string): string {
     return checkAndGetOtherPluginConfig(
-      this.configOfOtherPlugins,
+      this.config,
       TeamsToolkitComponent.Solution,
       key,
       this.envName
@@ -294,19 +285,21 @@ export class SolutionConfig implements ISolutionConfig {
 }
 
 function checkAndGetOtherPluginConfig(
-  configOfOtherPlugins: ReadonlySolutionConfig | Json,
+  pluginConfig: ReadonlyPluginConfig | Json,
   component: TeamsToolkitComponent,
   key: string,
   envName: string
 ): string {
-  const pluginConfig = configOfOtherPlugins.get
-    ? configOfOtherPlugins.get(component)
-    : (configOfOtherPlugins as Json)[component];
-  if (!pluginConfig) {
-    throw BuildError(NoPluginConfig, component, ComponentRetryOperations[component]);
+  const value = pluginConfig.get ? pluginConfig.get(key) : (pluginConfig as Json)[key];
+  if (!value) {
+    throw BuildError(
+      EmptyConfigValue,
+      component,
+      key,
+      ProjectConstants.configFilePathArmSupported(envName),
+      ConfigRetryOperations[component][key]
+    );
   }
-
-  const value = AssertConfigNotEmpty(component, key, pluginConfig.get(key), envName);
   if (typeof value !== "string") {
     throw BuildError(InvalidPropertyType, key, "string");
   }

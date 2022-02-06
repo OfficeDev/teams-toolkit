@@ -4,33 +4,17 @@ import "mocha";
 import chai from "chai";
 import {
   ApimPluginConfigKeys,
-  TeamsToolkitComponent,
   SolutionConfigKeys,
 } from "../../../../src/plugins/resource/apim/constants";
 import { ApimPluginConfig, SolutionConfig } from "../../../../src/plugins/resource/apim/config";
-import {
-  ConfigMap,
-  ConfigValue,
-  EnvInfo,
-  PluginIdentity,
-  ReadonlyPluginConfig,
-} from "@microsoft/teamsfx-api";
+import { ConfigMap, ConfigValue } from "@microsoft/teamsfx-api";
 
 describe("config", () => {
   describe("SolutionConfig", () => {
-    const configContent = new Map<PluginIdentity, ReadonlyPluginConfig>([
-      [
-        TeamsToolkitComponent.Solution,
-        new Map<string, ConfigValue>([[SolutionConfigKeys.resourceNameSuffix, 1]]),
-      ],
-    ]);
-    const envInfo: EnvInfo = {
-      envName: "dev",
-      config: { manifest: { appName: { short: "appname" } } },
-      state: configContent,
-    };
-
-    const solutionConfig = new SolutionConfig(envInfo);
+    const solutionConfig = new SolutionConfig(
+      "dev",
+      new Map<string, ConfigValue>([[SolutionConfigKeys.resourceNameSuffix, 1]])
+    );
 
     it("Undefined property", () => {
       chai

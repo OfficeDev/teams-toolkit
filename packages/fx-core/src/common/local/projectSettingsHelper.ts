@@ -11,7 +11,7 @@ import {
   MessageExtensionItem,
   TabOptionItem,
 } from "../../plugins/solution/fx-solution/question";
-import { ResourcePlugins } from "../../plugins/solution/fx-solution/ResourcePluginContainer";
+import { ResourcePlugins } from "../constants";
 import { IsSimpleAuthEnabled } from "../tools";
 
 export class ProjectSettingsHelper {
@@ -42,8 +42,8 @@ export class ProjectSettingsHelper {
 
   public static includeAAD = (projectSettings: ProjectSettings | undefined): boolean =>
     !ProjectSettingsHelper.isMigrateFromV1(projectSettings) &&
-    (projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.includes(
-      ResourcePlugins.AadPlugin
+    !!(projectSettings?.solutionSettings as AzureSolutionSettings)?.activeResourcePlugins?.includes(
+      ResourcePlugins.Aad
     );
 
   public static includeSimpleAuth = (projectSettings: ProjectSettings | undefined): boolean =>

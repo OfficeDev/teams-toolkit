@@ -67,6 +67,9 @@ function validateLocalPrerequisites(): Record<string, unknown> {
     label: "validate local prerequisites",
     type: "shell",
     command: "exit ${command:fx-extension.validate-local-prerequisites}",
+    presentation: {
+      reveal: "never",
+    },
   };
 }
 
@@ -75,6 +78,9 @@ function prepareLocalEnvironment(): Record<string, unknown> {
     label: "prepare local environment",
     type: "shell",
     command: "exit ${command:fx-extension.pre-debug-check}",
+    presentation: {
+      reveal: "never",
+    },
   };
 }
 

@@ -15,10 +15,6 @@ on:
         description: "skip sync up target pkg version. input templates to skip sync up version with sdk; fx-core to skip sync up with simpleauth"
         required: false
         default: ""
-      releasae-visx:
-        description: "just release vscode extension"
-        required: false
-        default: "no"
   schedule:
     - cron: "0 8 * * *"
 

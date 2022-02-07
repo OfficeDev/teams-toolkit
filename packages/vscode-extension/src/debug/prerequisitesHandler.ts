@@ -79,6 +79,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     // Get project settings
     const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
 
+    VsCodeLogInstance.outputChannel.show();
     VsCodeLogInstance.info("LocalDebug Prerequisites Check");
     VsCodeLogInstance.outputChannel.appendLine("");
 
@@ -404,10 +405,14 @@ async function checkNpmInstall(component: string, folder: string): Promise<Check
 }
 
 async function handleCheckResults(results: CheckResult[]): Promise<void> {
+  if (results.length <= 0) {
+    return;
+  }
   let shouldStop = false;
   const output = VsCodeLogInstance.outputChannel;
   const successes = results.filter((a) => a.result);
   const failures = results.filter((a) => !a.result);
+  output.show();
 
   if (failures.length > 0) {
     shouldStop = true;

@@ -90,7 +90,6 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       // node fast fail
       if (!nodeResult.result) {
         await handleCheckResults(checkResults);
-        return ok(null);
       }
     }
 
@@ -101,7 +100,6 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       // cert fast fail
       if (!localCertResult.result) {
         await handleCheckResults(checkResults);
-        return ok(null);
       }
     }
 

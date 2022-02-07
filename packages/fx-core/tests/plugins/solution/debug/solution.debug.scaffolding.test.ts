@@ -55,14 +55,14 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 9,
+        numTasks: 5,
         numLocalEnvs: 31,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 9,
+        numTasks: 6,
         numLocalEnvs: 31,
       },
     ];
@@ -114,14 +114,14 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 4,
         numCompounds: 2,
-        numTasks: 6,
+        numTasks: 4,
         numLocalEnvs: 17,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 4,
         numCompounds: 2,
-        numTasks: 6,
+        numTasks: 4,
         numLocalEnvs: 17,
       },
     ];
@@ -168,14 +168,14 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 7,
+        numTasks: 5,
         numLocalEnvs: 12,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 7,
+        numTasks: 5,
         numLocalEnvs: 12,
       },
     ];
@@ -221,14 +221,14 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 6,
         numCompounds: 2,
-        numTasks: 12,
+        numTasks: 7,
         numLocalEnvs: 43,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 6,
         numCompounds: 2,
-        numTasks: 12,
+        numTasks: 8,
         numLocalEnvs: 43,
       },
     ];
@@ -280,14 +280,14 @@ describe("solution.debug.scaffolding", () => {
         programmingLanguage: "javascript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 9,
+        numTasks: 6,
         numLocalEnvs: 29,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
-        numTasks: 9,
+        numTasks: 6,
         numLocalEnvs: 29,
       },
     ];
@@ -488,6 +488,100 @@ describe("solution.debug.scaffolding", () => {
       const packageJson = fs.readJSONSync(packageJsonPath);
       const scripts: [] = packageJson["scripts"];
       chai.assert.isTrue(scripts !== undefined);
+    });
+
+    it("happy path: add capability", async () => {
+      fs.ensureDirSync(`${inputs.projectPath}/.vscode`);
+      fs.writeJSONSync(expectedTasksFile, {
+        version: "2.0.0",
+        tasks: [
+          {
+            label: "Pre Debug Check",
+            dependsOn: "validate local prerequisites",
+          },
+          {
+            label: "validate local prerequisites",
+            type: "shell",
+            command: "exit ${command:fx-extension.validate-local-prerequisites}",
+          },
+        ],
+      });
+      const projectSetting = {
+        appName: "",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          name: "",
+          version: "",
+          hostType: "Azure",
+          capabilities: ["Tab", "Bot"],
+          activeResourcePlugins: ["fx-resource-simple-auth"],
+        },
+        programmingLanguage: "javascript",
+      };
+      const v2Context = new MockedV2Context(projectSetting);
+      const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+      chai.assert.isTrue(result.isOk());
+
+      //assert output launch.json
+      const launch = fs.readJSONSync(expectedLaunchFile);
+      const configurations: [] = launch["configurations"];
+      const compounds: [] = launch["compounds"];
+      chai.assert.equal(configurations.length, 5);
+      chai.assert.equal(compounds.length, 2);
+
+      //assert output tasks.json
+      const tasksAll = fs.readJSONSync(expectedTasksFile);
+      const tasks: [] = tasksAll["tasks"];
+      chai.assert.equal(tasks.length, 6);
+
+      await assertLocalDebugLocalEnvs(v2Context, inputs, 29);
+    });
+
+    it("happy path: add capability to old project", async () => {
+      fs.ensureDirSync(`${inputs.projectPath}/.vscode`);
+      fs.writeJSONSync(expectedTasksFile, {
+        version: "2.0.0",
+        tasks: [
+          {
+            label: "Pre Debug Check",
+            dependsOn: "dependency check",
+          },
+          {
+            label: "dependency check",
+            type: "shell",
+            command: "exit ${command:fx-extension.validate-dependencies}",
+          },
+        ],
+      });
+      const projectSetting = {
+        appName: "",
+        projectId: uuid.v4(),
+        solutionSettings: {
+          name: "",
+          version: "",
+          hostType: "Azure",
+          capabilities: ["Tab", "Bot"],
+          activeResourcePlugins: ["fx-resource-simple-auth"],
+        },
+        programmingLanguage: "javascript",
+      };
+      const v2Context = new MockedV2Context(projectSetting);
+      const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+      chai.assert.isTrue(result.isOk());
+
+      //assert output launch.json
+      const launch = fs.readJSONSync(expectedLaunchFile);
+      const configurations: [] = launch["configurations"];
+      const compounds: [] = launch["compounds"];
+      chai.assert.equal(configurations.length, 5);
+      chai.assert.equal(compounds.length, 2);
+
+      //assert output tasks.json
+      const tasksAll = fs.readJSONSync(expectedTasksFile);
+      const tasks: [] = tasksAll["tasks"];
+      chai.assert.equal(tasks.length, 9);
+
+      await assertLocalDebugLocalEnvs(v2Context, inputs, 29);
     });
   });
 

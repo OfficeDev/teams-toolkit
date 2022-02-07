@@ -50,6 +50,8 @@ import { TeamsAppSolutionNameV2 } from "./constants";
 import { BuiltInResourcePluginNames } from "../v3/constants";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { canAddCapability, canAddResource } from "./executeUserTask";
+import { isPureExistingApp } from "../../../../core/utils";
+import { OperationNotSupportedForExistingAppError } from "../../../../core";
 
 export async function getQuestionsForScaffolding(
   ctx: v2.Context,
@@ -371,7 +373,7 @@ export async function getQuestionsForAddCapability(
   ctx: v2.Context,
   inputs: Inputs
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+  const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const addCapQuestion: MultiSelectQuestion = {
     name: AzureSolutionQuestionNames.Capabilities,
     title: "Choose capabilities",
@@ -440,12 +442,15 @@ export async function getQuestionsForAddResource(
   envInfo: v2.DeepReadonly<v2.EnvInfoV2>,
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+  const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   let addQuestion: MultiSelectQuestion;
   if (!isDynamicQuestion) {
     addQuestion = createAddAzureResourceQuestion(false, false, false, false);
   } else {
+    if (!settings) {
+      return err(new OperationNotSupportedForExistingAppError("addResource"));
+    }
     const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
     const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);
     const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);

@@ -12,6 +12,7 @@ import {
   TeamsAppManifest,
   v2,
   v3,
+  Void,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
@@ -70,25 +71,8 @@ describe("Core basic APIs for v3", () => {
     const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
       .stub<any, any>(appStudio, "loadManifest")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath
-        ): Promise<Result<{ local: TeamsAppManifest; remote: TeamsAppManifest }, FxError>> => {
-          return ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() });
-        }
-      );
-    sandbox
-      .stub<any, any>(appStudio, "saveManifest")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          manifest: { local: TeamsAppManifest; remote: TeamsAppManifest }
-        ): Promise<Result<any, FxError>> => {
-          return ok({ local: {}, remote: {} });
-        }
-      );
+      .resolves(ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() }));
+    sandbox.stub<any, any>(appStudio, "saveManifest").resolves(ok(Void));
   });
 
   afterEach(() => {
@@ -99,12 +83,10 @@ describe("Core basic APIs for v3", () => {
 
   it("create from new (VSC, Tab+Bot)", async () => {
     appName = randomAppName();
-    projectPath = path.resolve(os.tmpdir(), appName);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
-      projectPath: projectPath,
       stage: Stage.create,
       [CoreQuestionNames.Capabilities]: [TabOptionItem.id, BotOptionItem.id],
       [CoreQuestionNames.ProgrammingLanguage]: "javascript",
@@ -112,10 +94,17 @@ describe("Core basic APIs for v3", () => {
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
+    projectPath = inputs.projectPath!;
+    const solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
+    sandbox.stub<any, any>(solutionV3, "provisionResources").resolves(ok(Void));
+    const provisionRes = await core.provisionResources({
+      platform: Platform.VSCode,
+      projectPath: projectPath,
+    });
+    assert.isTrue(provisionRes.isOk());
   });
   it("create from new (VS, Tab+Bot)", async () => {
     appName = randomAppName();
-    projectPath = path.resolve(os.tmpdir(), appName);
     const inputs: Inputs = {
       platform: Platform.VS,
       [CoreQuestionNames.AppName]: appName,
@@ -128,15 +117,14 @@ describe("Core basic APIs for v3", () => {
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
+    projectPath = inputs.projectPath!;
   });
   it("create from new (VSC, SPFx)", async () => {
     appName = randomAppName();
-    projectPath = path.resolve(os.tmpdir(), appName);
     const inputs: Inputs = {
       platform: Platform.VSCode,
       [CoreQuestionNames.AppName]: appName,
       [CoreQuestionNames.CreateFromScratch]: ScratchOptionYesVSC.id,
-      projectPath: projectPath,
       stage: Stage.create,
       [CoreQuestionNames.Capabilities]: [TabSPFxItem.id],
       [CoreQuestionNames.ProgrammingLanguage]: "typescript",
@@ -144,6 +132,7 @@ describe("Core basic APIs for v3", () => {
     const core = new FxCore(tools);
     const res = await core.createProject(inputs);
     assert.isTrue(res.isOk());
+    projectPath = inputs.projectPath!;
   });
 
   it("create from sample (VSC)", async () => {

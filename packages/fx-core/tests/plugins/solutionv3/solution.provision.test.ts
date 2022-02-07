@@ -83,7 +83,7 @@ describe("SolutionV3 - provision", () => {
         capabilities: ["Tab"],
         hostType: "Azure",
         azureResources: [],
-        activeResourcePlugins: [MockFeaturePluginNames.bot],
+        activeResourcePlugins: [MockFeaturePluginNames.tab],
       },
     };
     const ctx = new MockedV2Context(projectSettings);
@@ -161,7 +161,12 @@ describe("SolutionV3 - provision", () => {
       graphTokenProvider: new MockedGraphTokenProvider(),
       sharepointTokenProvider: new MockedSharepointProvider(),
     };
-    const res = await getQuestionsForProvision(ctx, inputs, mockedTokenProvider);
+    const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {
+      envName: "dev",
+      config: {},
+      state: { solution: {} },
+    };
+    const res = await getQuestionsForProvision(ctx, inputs, envInfoV3, mockedTokenProvider);
     assert.isTrue(res.isOk());
   });
 });

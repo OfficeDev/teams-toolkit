@@ -7,7 +7,7 @@ import { Func, QTreeNode } from "../qm/question";
 import { Inputs, Void } from "../types";
 import { AppStudioTokenProvider, TokenProvider } from "../utils/login";
 import { Context, DeepReadonly, InputsWithProjectPath } from "../v2/types";
-import { EnvInfoV3, EnvInfoV3Question } from "./types";
+import { EnvInfoV3 } from "./types";
 
 export interface SolutionAddFeatureInputs extends InputsWithProjectPath {
   feature: string;
@@ -29,8 +29,7 @@ export interface ISolution {
    */
   getQuestionsForAddFeature?: (
     ctx: Context,
-    inputs: InputsWithProjectPath,
-    envInfo?: DeepReadonly<EnvInfoV3Question>
+    inputs: InputsWithProjectPath
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   /**
    * triggered by add feature event, this API aims to add/modify files in local workspace
@@ -40,18 +39,14 @@ export interface ISolution {
    * @param {EnvInfoV3} envInfo optional
    * @returns Void
    */
-  addFeature?: (
-    ctx: Context,
-    inputs: SolutionAddFeatureInputs,
-    envInfo?: EnvInfoV3
-  ) => Promise<Result<Void, FxError>>;
+  addFeature?: (ctx: Context, inputs: SolutionAddFeatureInputs) => Promise<Result<Void, FxError>>;
 
   //provision (remote or local)
   getQuestionsForProvision?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
-    tokenProvider: TokenProvider,
-    envInfo?: DeepReadonly<EnvInfoV3Question>
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   provisionResources?: (
     ctx: Context,
@@ -64,7 +59,7 @@ export interface ISolution {
   getQuestionsForDeploy?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV3Question>,
+    envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   deploy?: (
@@ -78,7 +73,7 @@ export interface ISolution {
   getQuestionsForPublish?: (
     ctx: Context,
     inputs: InputsWithProjectPath,
-    envInfo: DeepReadonly<EnvInfoV3Question>,
+    envInfo: DeepReadonly<EnvInfoV3>,
     tokenProvider: AppStudioTokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   publishApplication: (
@@ -93,14 +88,14 @@ export interface ISolution {
     ctx: Context,
     inputs: Inputs,
     func: Func,
-    tokenProvider: TokenProvider,
-    envInfo?: DeepReadonly<EnvInfoV3Question>
+    envInfo: DeepReadonly<EnvInfoV3>,
+    tokenProvider: TokenProvider
   ) => Promise<Result<QTreeNode | undefined, FxError>>;
   executeUserTask?: (
     ctx: Context,
     inputs: Inputs,
     func: Func,
-    tokenProvider: TokenProvider,
-    envInfo?: EnvInfoV3
+    envInfo: EnvInfoV3,
+    tokenProvider: TokenProvider
   ) => Promise<Result<any, FxError>>;
 }

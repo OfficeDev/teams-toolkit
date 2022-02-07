@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { FxError, ok, Result, v2, v3 } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider, FxError, ok, Result, v2, v3, Void } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 
 export const MockFeaturePluginNames = {
@@ -18,7 +18,20 @@ export class MockTabFrontendPlugin implements v3.FeaturePlugin {
     inputs: v2.InputsWithProjectPath,
     envInfo?: v3.EnvInfoV3
   ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
-    ctx.projectSetting.solutionSettings!.capabilities.push("Tab");
+    const capabilities = ctx.projectSetting.solutionSettings?.capabilities;
+    const activeResourcePlugins = ctx.projectSetting.solutionSettings?.activeResourcePlugins;
+    if (capabilities && !capabilities.includes("Tab")) capabilities.push("Tab");
+    if (activeResourcePlugins && !activeResourcePlugins.includes(MockFeaturePluginNames.tab))
+      activeResourcePlugins.push(MockFeaturePluginNames.tab);
     return ok(undefined);
+  }
+
+  async deploy(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+    tokenProvider: AzureAccountProvider
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
   }
 }

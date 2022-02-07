@@ -443,14 +443,14 @@ export async function getQuestionsForAddResource(
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const settings = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
-  if (!settings) {
-    return err(new OperationNotSupportedForExistingAppError("addResource"));
-  }
   const isDynamicQuestion = DynamicPlatforms.includes(inputs.platform);
   let addQuestion: MultiSelectQuestion;
   if (!isDynamicQuestion) {
     addQuestion = createAddAzureResourceQuestion(false, false, false, false);
   } else {
+    if (!settings) {
+      return err(new OperationNotSupportedForExistingAppError("addResource"));
+    }
     const alreadyHaveFunction = settings.azureResources.includes(AzureResourceFunction.id);
     const alreadyHaveSQL = settings.azureResources.includes(AzureResourceSQL.id);
     const alreadyHaveAPIM = settings.azureResources.includes(AzureResourceApim.id);

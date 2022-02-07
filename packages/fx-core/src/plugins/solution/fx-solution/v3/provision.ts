@@ -36,7 +36,6 @@ import arm from "../arm";
 import { ResourceGroupInfo } from "../commonQuestions";
 import { SolutionError, SolutionSource } from "../constants";
 import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
-import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { executeConcurrently } from "../v2/executor";
 import { BuiltInFeaturePluginNames } from "./constants";
@@ -45,15 +44,15 @@ import { solutionGlobalVars } from "./solutionGlobalVars";
 export async function getQuestionsForProvision(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
-  tokenProvider: TokenProvider,
-  envInfo?: v2.DeepReadonly<v3.EnvInfoV3Question>
+  envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
+  tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const root = new QTreeNode({ type: "group" });
   for (const pluginName of solutionSetting.activeResourcePlugins) {
     const plugin = Container.get<v3.FeaturePlugin>(pluginName);
     if (plugin.getQuestionsForProvision) {
-      const res = await plugin.getQuestionsForProvision(ctx, inputs, tokenProvider, envInfo);
+      const res = await plugin.getQuestionsForProvision(ctx, inputs, envInfo, tokenProvider);
       if (res.isErr()) {
         return res;
       }

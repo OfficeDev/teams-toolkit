@@ -15,4 +15,5 @@ export const BuiltInFeaturePluginNames = {
   aspDotNet: "fx-resource-aspdnet",
   spfx: "fx-resource-spfx",
   simpleAuth: "fx-resource-simple-auth",
+  apim: "fx-resource-apim",
 };

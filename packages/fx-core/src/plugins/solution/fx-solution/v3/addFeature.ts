@@ -22,6 +22,7 @@ import "../../../resource/appstudio/v3";
 import { selectSingleFeatureQuestion } from "../../utils/questions";
 import arm from "../arm";
 import { BuiltInFeaturePluginNames, TeamsFxAzureSolutionNameV3 } from "./constants";
+import { ensureSolutionSettings } from "../utils/solutionSettingsHelper";
 
 function getAllFeaturePlugins(): v3.FeaturePlugin[] {
   return [
@@ -32,8 +33,7 @@ function getAllFeaturePlugins(): v3.FeaturePlugin[] {
 
 export async function getQuestionsForAddFeature(
   ctx: v2.Context,
-  inputs: v2.InputsWithProjectPath,
-  envInfo?: v2.DeepReadonly<v3.EnvInfoV3Question>
+  inputs: v2.InputsWithProjectPath
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   const plugins = getAllFeaturePlugins();
   const featureNode = new QTreeNode(selectSingleFeatureQuestion);
@@ -44,7 +44,7 @@ export async function getQuestionsForAddFeature(
       label: plugin.description || "",
     });
     if (plugin.getQuestionsForAddFeature) {
-      const childNode = await plugin.getQuestionsForAddFeature(ctx, inputs, envInfo);
+      const childNode = await plugin.getQuestionsForAddFeature(ctx, inputs);
       if (childNode.isErr()) return err(childNode.error);
       if (childNode.value) {
         childNode.value.condition = { equals: plugin.name };
@@ -103,28 +103,13 @@ export class DefaultManifestProvider implements v3.AppManifestProvider {
 
 export async function addFeature(
   ctx: v2.Context,
-  inputs: v3.SolutionAddFeatureInputs,
-  envInfo?: v3.EnvInfoV3
+  inputs: v3.SolutionAddFeatureInputs
 ): Promise<Result<Void, FxError>> {
-  let solutionSettings: AzureSolutionSettings | undefined = ctx.projectSetting.solutionSettings as
-    | AzureSolutionSettings
-    | undefined;
-  if (!ctx.projectSetting.solutionSettings) {
-    solutionSettings = {
-      name: TeamsFxAzureSolutionNameV3,
-      version: "1.0.0",
-      hostType: "Azure",
-      capabilities: [],
-      azureResources: [],
-      activeResourcePlugins: [],
-    };
-    ctx.projectSetting.solutionSettings = solutionSettings;
-  }
+  ensureSolutionSettings(ctx.projectSetting);
+  const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
   const existingResources = new Set<string>();
   const allResources = new Set<string>();
-  const pluginNames = ctx.projectSetting.solutionSettings
-    ? (ctx.projectSetting.solutionSettings as AzureSolutionSettings).activeResourcePlugins
-    : [];
+  const pluginNames = solutionSettings.activeResourcePlugins;
   pluginNames.forEach((p) => {
     existingResources.add(p);
     allResources.add(p);
@@ -138,7 +123,7 @@ export async function addFeature(
   };
   for (const resource of allResources.values()) {
     if (!existingResources.has(resource)) {
-      const generateArmRes = await arm.addFeature(contextWithManifestProvider, inputs, envInfo);
+      const generateArmRes = await arm.addFeature(contextWithManifestProvider, inputs);
       if (generateArmRes.isErr()) {
         return err(generateArmRes.error);
       }

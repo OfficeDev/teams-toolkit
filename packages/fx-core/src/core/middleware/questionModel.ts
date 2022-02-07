@@ -9,7 +9,6 @@ import {
   FunctionRouter,
   FxError,
   Inputs,
-  Json,
   ok,
   Platform,
   QTreeNode,
@@ -24,11 +23,9 @@ import {
   v3,
 } from "@microsoft/teamsfx-api";
 import fs from "fs-extra";
-import { Container } from "typedi";
 import { CoreSource, createV2Context, FunctionRouterError, newProjectSettings, TOOLS } from "..";
 import { CoreHookContext, FxCore } from "../..";
 import { deepCopy } from "../../common";
-import { BuiltInSolutionNames } from "../../plugins/solution/fx-solution/v3/constants";
 import {
   createCapabilityQuestion,
   DefaultAppNameFunc,
@@ -95,21 +92,21 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2,
-          ctx.envInfoV3 as v2.DeepReadonly<v3.EnvInfoV3Question>
+          ctx.envInfoV3 as v2.DeepReadonly<v3.EnvInfoV3>
         );
       } else if (method === "deployArtifactsV3") {
         getQuestionRes = await core._getQuestionsForDeploy(
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2,
-          ctx.envInfoV3 as v2.DeepReadonly<v3.EnvInfoV3Question>
+          ctx.envInfoV3 as v2.DeepReadonly<v3.EnvInfoV3>
         );
       } else if (method === "publishApplicationV3") {
         getQuestionRes = await core._getQuestionsForPublish(
           inputs as v2.InputsWithProjectPath,
           solutionV3,
           contextV2,
-          ctx.envInfoV3 as v2.DeepReadonly<v3.EnvInfoV3Question>
+          ctx.envInfoV3 as v2.DeepReadonly<v3.EnvInfoV3>
         );
       }
     }
@@ -221,11 +218,10 @@ export function traverseToCollectPasswordNodes(node: QTreeNode, names: Set<strin
 export async function getQuestionsForAddFeature(
   inputs: v2.InputsWithProjectPath,
   solution: v3.ISolution,
-  context: v2.Context,
-  envInfo?: v2.DeepReadonly<v3.EnvInfoV3Question>
+  context: v2.Context
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (solution.getQuestionsForAddFeature) {
-    const res = await solution.getQuestionsForAddFeature(context, inputs, envInfo);
+    const res = await solution.getQuestionsForAddFeature(context, inputs);
     return res;
   }
   return ok(undefined);
@@ -235,14 +231,14 @@ export async function getQuestionsForProvision(
   inputs: v2.InputsWithProjectPath,
   solution: v3.ISolution,
   context: v2.Context,
-  envInfo?: v2.DeepReadonly<v3.EnvInfoV3Question>
+  envInfo: v2.DeepReadonly<v3.EnvInfoV3>
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (solution.getQuestionsForProvision) {
     const res = await solution.getQuestionsForProvision(
       context,
       inputs,
-      TOOLS.tokenProvider,
-      envInfo
+      envInfo,
+      TOOLS.tokenProvider
     );
     return res;
   }
@@ -253,7 +249,7 @@ export async function getQuestionsForDeploy(
   inputs: v2.InputsWithProjectPath,
   solution: v3.ISolution,
   context: v2.Context,
-  envInfo: v2.DeepReadonly<v3.EnvInfoV3Question>
+  envInfo: v2.DeepReadonly<v3.EnvInfoV3>
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (solution.getQuestionsForDeploy) {
     const res = await solution.getQuestionsForDeploy(context, inputs, envInfo, TOOLS.tokenProvider);
@@ -266,7 +262,7 @@ export async function getQuestionsForPublish(
   inputs: v2.InputsWithProjectPath,
   solution: v3.ISolution,
   context: v2.Context,
-  envInfo: v2.DeepReadonly<v3.EnvInfoV3Question>
+  envInfo: v2.DeepReadonly<v3.EnvInfoV3>
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (solution.getQuestionsForPublish) {
     const res = await solution.getQuestionsForPublish(

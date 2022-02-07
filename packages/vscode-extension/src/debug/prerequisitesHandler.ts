@@ -38,7 +38,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
 import { ext } from "../extensionVariables";
-import { tools } from "../handlers";
+import { showError, tools } from "../handlers";
 import * as StringResources from "../resources/Strings.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
@@ -149,14 +149,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     }
 
     // handle checkResults
-    if (checkResults.length > 0) {
-      const failureMessage = await handleCheckResults(checkResults);
-      throw returnUserError(
-        new Error(`Failed to validate prerequisites (${failureMessage})`),
-        ExtensionSource,
-        ExtensionErrors.PrerequisitesValidationError
-      );
-    }
+    await handleCheckResults(checkResults);
 
     try {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisites, {
@@ -167,6 +160,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     }
   } catch (error: any) {
     const fxError = assembleError(error);
+    showError(fxError);
     try {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, fxError);
     } catch {

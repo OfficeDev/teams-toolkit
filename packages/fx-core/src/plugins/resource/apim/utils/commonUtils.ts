@@ -87,7 +87,7 @@ export function getApimServiceNameFromResourceId(resourceId: string): string {
   return result;
 }
 
-export function getproductNameFromResourceId(resourceId: string): string {
+export function getProductNameFromResourceId(resourceId: string): string {
   const result = parseFromResourceId(/products\/([^\/]*)/i, resourceId);
   if (!result) {
     throw BuildError(FailedToParseResourceIdError, "product name", resourceId);

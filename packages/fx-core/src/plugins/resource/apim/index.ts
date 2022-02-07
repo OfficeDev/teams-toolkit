@@ -54,18 +54,6 @@ export class ApimPlugin implements Plugin {
     return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestions, ctx, stage);
   }
 
-  public async getQuestionsForUserTask(
-    func: Func,
-    ctx: PluginContext
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await this.executeWithFxError(
-      PluginLifeCycle.GetQuestionsForUserTask,
-      _getQuestionsForUserTask,
-      ctx,
-      func
-    );
-  }
-
   public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     return await this.executeWithFxError(PluginLifeCycle.CallFunc, _callFunc, ctx, func);
   }
@@ -173,43 +161,19 @@ async function _getQuestions(
   }
 }
 
-async function _getQuestionsForUserTask(
-  ctx: PluginContext,
-  progressBar: ProgressBar,
-  func: Func
-): Promise<QTreeNode | undefined> {
-  const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const questionManager = await Factory.buildQuestionManager(ctx);
-  if (func.method === "addResource") {
-    return await questionManager.addResource(ctx, apimConfig);
-  }
-  return undefined;
-}
-
 async function _callFunc(ctx: PluginContext, progressBar: ProgressBar, func: Func): Promise<any> {
   const questionManager = await Factory.buildQuestionManager(ctx);
   return await questionManager.callFunc(func, ctx);
 }
 
 async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const answer = buildAnswer(ctx.answers);
   const scaffoldManager = await Factory.buildScaffoldManager(ctx);
-
   const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
-
-  if (answer.validate) {
-    await answer.validate(PluginLifeCycle.Scaffold, apimConfig, ctx.root);
-  }
-
-  answer.save(PluginLifeCycle.Scaffold, apimConfig);
-
   await progressBar.next(ProgressStep.Scaffold, ProgressMessages[ProgressStep.Scaffold].Scaffold);
   await scaffoldManager.scaffold(appName, ctx.root);
 }
 
 async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(ctx.envInfo);
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
 
   const apimManager = await Factory.buildApimManager(ctx);
@@ -221,7 +185,7 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
     ProgressStep.Provision,
     ProgressMessages[ProgressStep.Provision].CreateApim
   );
-  await apimManager.provision(apimConfig, solutionConfig, appName);
+  await apimManager.provision(apimConfig);
 
   await progressBar.next(
     ProgressStep.Provision,
@@ -250,23 +214,14 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
   const aadConfig = new AadPluginConfig(ctx.envInfo);
 
-  const apimManager = await Factory.buildApimManager(ctx);
   const aadManager = await Factory.buildAadManager(ctx);
   const teamsAppAadManager = await Factory.buildTeamsAppAadManager(ctx);
-
-  const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
 
   await progressBar.next(
     ProgressStep.PostProvision,
     ProgressMessages[ProgressStep.PostProvision].ConfigClientAad
   );
   await aadManager.postProvision(apimConfig, aadConfig, AadDefaultValues.redirectUris);
-
-  await progressBar.next(
-    ProgressStep.PostProvision,
-    ProgressMessages[ProgressStep.PostProvision].ConfigApim
-  );
-  await apimManager.postProvision(apimConfig, ctx, aadConfig, appName);
 
   await progressBar.next(
     ProgressStep.PostProvision,

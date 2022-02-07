@@ -19,6 +19,8 @@ import {
   EnvInfo,
   Json,
   v3,
+  ExistingAppConfig,
+  ExistingTeamsAppType,
 } from "@microsoft/teamsfx-api";
 import path, { basename } from "path";
 import fs from "fs-extra";
@@ -41,7 +43,7 @@ import { compileHandlebarsTemplateString } from "../common";
 import Ajv from "ajv";
 import * as draft6MetaSchema from "ajv/dist/refs/json-schema-draft-06.json";
 import * as envConfigSchema from "@microsoft/teamsfx-api/build/schemas/envConfig.json";
-import { ConstantString } from "../common/constants";
+import { ConstantString, ManifestVariables } from "../common/constants";
 
 export interface EnvStateFiles {
   envState: string;
@@ -55,12 +57,13 @@ class EnvironmentManager {
   public readonly envConfigNameRegex = /^config\.(?<envName>[\w\d-_]+)\.json$/i;
   public readonly envStateNameRegex = /^state\.(?<envName>[\w\d-_]+)\.json$/i;
 
-  private readonly defaultEnvName = "dev";
-  private readonly ajv;
-  private readonly schema = "https://aka.ms/teamsfx-env-config-schema";
-  private readonly envConfigDescription =
+  public readonly schema = "https://aka.ms/teamsfx-env-config-schema";
+  public readonly envConfigDescription =
     `You can customize the TeamsFx config for different environments.` +
     ` Visit https://aka.ms/teamsfx-env-config to learn more about this.`;
+
+  private readonly defaultEnvName = "dev";
+  private readonly ajv;
 
   constructor() {
     this.ajv = new Ajv();
@@ -101,7 +104,7 @@ class EnvironmentManager {
       });
   }
 
-  public newEnvConfigData(appName: string): EnvConfig {
+  public newEnvConfigData(appName: string, existingAppConfig?: ExistingAppConfig): EnvConfig {
     const envConfig: EnvConfig = {
       $schema: this.schema,
       description: this.envConfigDescription,
@@ -112,6 +115,34 @@ class EnvironmentManager {
         },
       },
     };
+
+    if (!existingAppConfig || !existingAppConfig.isCreatedFromExistingApp) {
+      return envConfig;
+    }
+
+    // Common settings for existing app.
+    envConfig.manifest[ManifestVariables.DeveloperWebsiteUrl] = "";
+    envConfig.manifest[ManifestVariables.DeveloperPrivacyUrl] = "";
+    envConfig.manifest[ManifestVariables.DeveloperTermsOfUseUrl] = "";
+
+    // Settings to build a static Tab app from existing app.
+    if (existingAppConfig.newAppTypes.indexOf(ExistingTeamsAppType.StaticTab) !== -1) {
+      envConfig.manifest[ManifestVariables.TabContentUrl] = "";
+      envConfig.manifest[ManifestVariables.TabWebsiteUrl] = "";
+    }
+
+    // Settings to build a configurable Tab app from existing app.
+    if (existingAppConfig.newAppTypes.indexOf(ExistingTeamsAppType.ConfigurableTab) !== -1) {
+      envConfig.manifest[ManifestVariables.TabConfigurationUrl] = "";
+    }
+
+    // Settings to build a Bot/ME app from existing app.
+    if (
+      existingAppConfig.newAppTypes.indexOf(ExistingTeamsAppType.Bot) !== -1 ||
+      existingAppConfig.newAppTypes.indexOf(ExistingTeamsAppType.MessageExtension) !== -1
+    ) {
+      envConfig.manifest[ManifestVariables.BotId] = "";
+    }
 
     return envConfig;
   }

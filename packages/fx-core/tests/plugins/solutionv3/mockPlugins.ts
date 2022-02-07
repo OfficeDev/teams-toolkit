@@ -17,13 +17,13 @@ export class MockTabFrontendPlugin implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath,
     envInfo?: v3.EnvInfoV3
-  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const capabilities = ctx.projectSetting.solutionSettings?.capabilities;
     const activeResourcePlugins = ctx.projectSetting.solutionSettings?.activeResourcePlugins;
     if (capabilities && !capabilities.includes("Tab")) capabilities.push("Tab");
     if (activeResourcePlugins && !activeResourcePlugins.includes(MockFeaturePluginNames.tab))
       activeResourcePlugins.push(MockFeaturePluginNames.tab);
-    return ok(undefined);
+    return ok([]);
   }
 
   async deploy(

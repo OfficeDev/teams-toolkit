@@ -18,6 +18,8 @@ export enum CliConfigOptions {
   EnvCheckerValidateDotnetSdk = "validate-dotnet-sdk",
   EnvCheckerValidateFuncCoreTools = "validate-func-core-tools",
   EnvCheckerValidateNode = "validate-node",
+  EnvCheckerValidateNgrok = "validate-ngrok",
+  TrustDevCert = "trust-development-certificate",
   RunFrom = "run-from",
   Interactive = "interactive",
   // TODO: enable this config

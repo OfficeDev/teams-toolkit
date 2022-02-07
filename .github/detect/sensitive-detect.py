@@ -30,7 +30,7 @@ def read_files(filePath):
         with open(filePath, "r") as fileContent:
             contents = fileContent.read()
     except (IOError, ValueError) as e:
-        raise("Error Reading rules file")
+        raise("Error Reading rules file", filePath)
     return contents.splitlines()
 
 def read_content(contentFile, rootDir):
@@ -39,7 +39,8 @@ def read_content(contentFile, rootDir):
         with open(contentFileDir, "r") as content:
             return content.read()
     except (IOError, ValueError) as e:
-        raise("Error Reading rules file")
+        print("============ read file fail: ", contentFileDir)
+        raise Exception("Error Reading rules file")
 
 def find_string(patterns, content, diffFile):
     for pattern in patterns:
@@ -50,23 +51,52 @@ def find_string(patterns, content, diffFile):
                 print("Sensitive Content: ", res_item)
             raise Exception("Found sensitive words")
 
-def main():
-    currentDir = os.path.dirname(os.path.realpath(__file__))
-    regexesFilePath = os.path.join(currentDir, "regexes.json")
-    patterns = read_regexes(regexesFilePath)
-    rootDir = os.path.join(currentDir, "..", "..")
+def read_diffFiles(rootDir):
     includeFilePath = os.path.join(rootDir, "diffFiles.txt")
-    excludeFilePath = os.path.join(rootDir, ".github", "detect", "excludes.txt")
-    excludeFiles = read_files(excludeFilePath)
     diffFiles = read_files(includeFilePath)
+    excludeFiles = filter_diffFiles(rootDir)
     targetDiffFiles = diffFiles.copy()
     for item in diffFiles:
         for exFile in excludeFiles:
             if fnmatch.fnmatch(item, exFile):
                 targetDiffFiles.remove(item)
                 break
+    return targetDiffFiles
+
+def read_allRepoFile(rootDir):
+    result = [os.path.join(dp, f) for dp, dn, filenames in os.walk(rootDir) for f in filenames]
+    pathPerfix = rootDir + '/'
+    new_list = [str(i).replace( pathPerfix, '') for i in result]
+    targetDiffFiles = new_list.copy()
+    excludeFiles = filter_diffFiles(rootDir)
+    for item in new_list:
+        for exFile in excludeFiles:
+            if fnmatch.fnmatch(item, exFile):
+                targetDiffFiles.remove(item)
+                break
+    return targetDiffFiles
+
+def filter_diffFiles(rootDir):
+    excludeFilePath = os.path.join(rootDir, ".github", "detect", "excludes.txt")
+    excludeFiles = read_files(excludeFilePath)
+    return excludeFiles
+
+def main():
+    currentDir = os.path.dirname(os.path.realpath(__file__))
+    regexesFilePath = os.path.join(currentDir, "regexes.json")
+    patterns = read_regexes(regexesFilePath)
+    rootDir = os.path.join(currentDir, "..", "..")
+    scanType = sys.argv[1]
+    targetDiffFiles = []
+    if scanType == 'diff':
+        targetDiffFiles = read_diffFiles(rootDir)
+    else:
+        targetDiffFiles = read_allRepoFile(rootDir)
     for diffFile in targetDiffFiles:
-        content = read_content(diffFile, rootDir)
-        find_string(patterns, content, diffFile)
+        try:
+            content = read_content(diffFile, rootDir)
+            find_string(patterns, content, diffFile)
+        except IOError:
+            print("============== error file: ", diffFile)
     
 main()

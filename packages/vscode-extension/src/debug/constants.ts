@@ -62,3 +62,10 @@ export const localDebugFAQUrl =
 
 export const localDebugHelpDoc = "https://aka.ms/teamsfx-localdebug";
 export const portInUseHelpLink = "https://aka.ms/teamsfx-port-in-use";
+export const skipNgrokHelpLink = "https://aka.ms/teamsfx-skip-ngrok";
+export const trustDevCertHelpLink = "https://aka.ms/teamsfx-trust-dev-cert";
+
+export const skipNgrokRetiredNotification =
+  "Property 'skipNgrok' in '.fx/configs/localSettings.json' has been retired. Use 'fx-extension.prerequisiteCheck.ngrok' in VSCode settings instead.";
+export const trustDevCertRetiredNotification =
+  "Property 'trustDevCert' in '.fx/configs/localSettings.json' has been retired. Use 'fx-extension.prerequisiteCheck.devCert' in VSCode settings instead.";

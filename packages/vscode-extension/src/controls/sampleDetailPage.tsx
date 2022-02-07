@@ -2,8 +2,7 @@ import { ActionButton, Image } from "@fluentui/react";
 import * as React from "react";
 import "./sampleDetailPage.scss";
 import { VSCodeButton, VSCodeTag } from "./webviewUiToolkit";
-import Watch from "../../media/watch.svg";
-import Settings from "../../media/settings.svg";
+import { Watch, Setting } from "./resources";
 import { Commands } from "./Commands";
 
 export default class SampleDetailPage extends React.Component<SampleDetailProps, any> {
@@ -18,7 +17,14 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
           Back
         </ActionButton>
         <div className="header">
-          <h2>{this.props.title}</h2>
+          <div className="contents">
+            <h2>{this.props.title}</h2>
+            <div className="tags">
+              {this.props.tags.map((value: string) => {
+                return <VSCodeTag className="tag">{value}</VSCodeTag>;
+              })}
+            </div>
+          </div>
           <div className="buttons">
             <VSCodeButton onClick={this.onCreate}>Create</VSCodeButton>
             <VSCodeButton appearance="secondary" onClick={this.onViewGithub}>
@@ -26,28 +32,16 @@ export default class SampleDetailPage extends React.Component<SampleDetailProps,
             </VSCodeButton>
           </div>
         </div>
-        <div className="tags">
-          {this.props.tags.map((value: string) => {
-            return <VSCodeTag className="tag">{value}</VSCodeTag>;
-          })}
-        </div>
         <div className="estimation-time info">
-          <Image
-            src={Watch}
-            width={16}
-            height={16}
-            style={{ marginTop: "auto", marginBottom: "auto" }}
-          ></Image>
-
+          <div className="watch">
+            <Watch></Watch>
+          </div>
           <label style={{ paddingLeft: 4 }}>{this.props.time}</label>
         </div>
         <div className="configuration info">
-          <Image
-            src={Settings}
-            width={16}
-            height={16}
-            style={{ marginTop: "auto", marginBottom: "auto" }}
-          ></Image>
+          <div className="setting">
+            <Setting></Setting>
+          </div>
           <label style={{ paddingLeft: 4 }}>{this.props.configuration}</label>
         </div>
         <Image src={this.props.image} />

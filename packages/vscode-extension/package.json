@@ -491,6 +491,11 @@
         "enablement": "never"
       },
       {
+        "command": "fx-extension.get-func-path",
+        "title": "Teams - Get Func Path for Environment Variable",
+        "enablement": "never"
+      },
+      {
         "command": "fx-extension.pre-debug-check",
         "title": "Teams - Pre Debug Check",
         "enablement": "never"
@@ -623,26 +628,11 @@
       {
         "type": "teamsfx",
         "required": [
-          "command",
-          "component"
+          "command"
         ],
         "properties": {
           "command": {
-            "type": "string",
-            "description": "The command to be executed on a teamsfx component.",
-            "enum": [
-              "dev",
-              "watch"
-            ]
-          },
-          "component": {
-            "type": "string",
-            "description": "The teamsfx component.",
-            "enum": [
-              "frontend",
-              "backend",
-              "bot"
-            ]
+            "type": "string"
           }
         }
       }
@@ -820,7 +810,7 @@
               },
               "devCert": {
                 "type": "boolean",
-                "description": "Ensure development certification is trusted."
+                "description": "Ensure development certificate is trusted."
               }
             },
             "additionalProperties": false,
@@ -1014,6 +1004,7 @@
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.8.5",
     "async-mutex": "^0.3.1",
+    "ajv": "^8.5.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jscodeshift": "^0.13.0",

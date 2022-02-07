@@ -18,8 +18,12 @@ import {
   DotnetPluginInfo as PluginInfo,
   RegularExpr,
 } from "../constants";
-import { execute } from "../../../function/utils/execute";
 import { forEachFileAndDir } from "../../../function/utils/dir-walk";
+import { Logger } from "../../utils/logger";
+import { Messages } from "../resources/messages";
+import { ProgressHelper } from "../../utils/progress-helper";
+import { WebappDeployProgress as DeployProgress } from "../resources/steps";
+import { Utils } from "../../utils";
 
 export async function getFrameworkVersion(projectFilePath: string): Promise<string> {
   const content = await fs.readFile(projectFilePath, "utf8");
@@ -30,15 +34,18 @@ export async function getFrameworkVersion(projectFilePath: string): Promise<stri
   return PluginInfo.defaultFramework;
 }
 
-export async function build(path: string, runtime: string) {
+export async function build(path: string, runtime: string): Promise<void> {
+  ProgressHelper.progressHandler?.next(DeployProgress.steps.build);
+  Logger.info(Messages.Build(path));
+
   const command = Commands.buildRelease(runtime);
   await runWithErrorCatchAndWrap(
     (error) => new BuildError(error),
-    async () => await execute(command, path)
+    async () => await Utils.execute(command, path)
   );
 }
 
-export async function generateZip(componentPath: string) {
+export async function generateZip(componentPath: string): Promise<AdmZip> {
   const zip = new AdmZip();
   const tasks: Promise<void>[] = [];
   const zipFiles = new Set<string>();
@@ -69,13 +76,16 @@ export async function zipDeploy(
   resourceGroupName: string,
   webAppName: string,
   componentPath: string
-) {
+): Promise<void> {
+  Logger.info(Messages.GenerateZip(componentPath));
+  ProgressHelper.progressHandler?.next(DeployProgress.steps.generateZip);
   const zip = await runWithErrorCatchAndThrow(
     new ZipError(),
     async () => await generateZip(componentPath)
   );
   const zipContent = zip.toBuffer();
 
+  ProgressHelper.progressHandler?.next(DeployProgress.steps.fetchCredential);
   const publishCred = await runWithErrorCatchAndThrow(
     new PublishCredentialError(),
     async () => await client.webApps.listPublishingCredentials(resourceGroupName, webAppName)
@@ -84,10 +94,12 @@ export async function zipDeploy(
   const password = publishCred.publishingPassword;
 
   if (!password) {
-    // TODO: Logger.error("Filaed to query publish cred.");
+    Logger.error(Messages.FailQueryPublishCred);
     throw new PublishCredentialError();
   }
 
+  Logger.info(Messages.UploadZip(zipContent.length));
+  ProgressHelper.progressHandler?.next(DeployProgress.steps.deploy);
   await runWithErrorCatchAndThrow(
     new UploadZipError(),
     async () =>

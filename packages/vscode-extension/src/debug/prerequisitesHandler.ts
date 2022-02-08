@@ -52,6 +52,7 @@ import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { doctorConstant } from "./depsChecker/doctorConstant";
 import { runTask } from "./teamsfxTaskHandler";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
+import { taskEndEventEmitter, trackedTasks } from "./teamsfxTaskHandler";
 
 interface CheckResult {
   checker: string;
@@ -369,19 +370,39 @@ async function checkNpmInstall(component: string, folder: string): Promise<Check
   let error = undefined;
   try {
     if (!installed) {
-      VsCodeLogInstance.outputChannel.appendLine(`Npm installing (${component})`);
-      const exitCode = await runTask(
-        new vscode.Task(
-          {
-            type: "shell",
-            command: `${component} npm install`,
-          },
-          vscode.workspace.workspaceFolders![0],
-          `${component} npm install`,
-          ProductName,
-          new vscode.ShellExecution(npmInstallCommand, { cwd: folder })
-        )
-      );
+      let exitCode: number | undefined;
+
+      let running = false;
+      for (const [key, value] of trackedTasks) {
+        if (value === `${component} npm install`) {
+          running = true;
+          break;
+        }
+      }
+      if (running) {
+        exitCode = await new Promise((resolve: (value: number | undefined) => void) => {
+          const endListener = taskEndEventEmitter.event((result) => {
+            if (result.name === `${component} npm install`) {
+              endListener.dispose();
+              resolve(result.exitCode);
+            }
+          });
+        });
+      } else {
+        VsCodeLogInstance.outputChannel.appendLine(`Npm installing (${component})`);
+        exitCode = await runTask(
+          new vscode.Task(
+            {
+              type: "shell",
+              command: `${component} npm install`,
+            },
+            vscode.workspace.workspaceFolders![0],
+            `${component} npm install`,
+            ProductName,
+            new vscode.ShellExecution(npmInstallCommand, { cwd: folder })
+          )
+        );
+      }
 
       // check npm dependencies again if exit code not zero
       if (exitCode !== 0 && !(await checkNpmDependencies(folder))) {

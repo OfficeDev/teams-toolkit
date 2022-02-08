@@ -35,9 +35,13 @@ const activeNpmInstallTasks = new Set<string>();
  * Event emitters use this id to identify each tracked task, and `runTask` matches this id
  * to determine whether a task is terminated or not.
  */
-let taskEndEventEmitter: vscode.EventEmitter<{ id: string; exitCode?: number }>;
+export let taskEndEventEmitter: vscode.EventEmitter<{
+  id: string;
+  name: string;
+  exitCode?: number;
+}>;
 let taskStartEventEmitter: vscode.EventEmitter<string>;
-const trackedTasks = new Set<string>();
+export const trackedTasks = new Map<string, string>();
 
 function getTaskKey(task: vscode.Task): string {
   if (task === undefined) {
@@ -193,7 +197,7 @@ async function checkCustomizedPort(component: string, componentRoot: string, che
 function onDidStartTaskHandler(event: vscode.TaskStartEvent): void {
   const taskId = event.execution.task?.definition?.teamsfxTaskId;
   if (taskId !== undefined) {
-    trackedTasks.add(taskId);
+    trackedTasks.set(taskId, event.execution.task.name);
     taskStartEventEmitter.fire(taskId as string);
   }
 }
@@ -202,7 +206,11 @@ function onDidEndTaskHandler(event: vscode.TaskEndEvent): void {
   const taskId = event.execution.task?.definition?.teamsfxTaskId;
   if (taskId !== undefined && trackedTasks.has(taskId as string)) {
     trackedTasks.delete(taskId as string);
-    taskEndEventEmitter.fire({ id: taskId as string, exitCode: undefined });
+    taskEndEventEmitter.fire({
+      id: taskId as string,
+      name: event.execution.task.name,
+      exitCode: undefined,
+    });
   }
 }
 
@@ -239,7 +247,11 @@ async function onDidEndTaskProcessHandler(event: vscode.TaskProcessEndEvent): Pr
   const taskId = task?.definition?.teamsfxTaskId;
   if (taskId !== undefined) {
     trackedTasks.delete(taskId as string);
-    taskEndEventEmitter.fire({ id: taskId as string, exitCode: event.exitCode });
+    taskEndEventEmitter.fire({
+      id: taskId as string,
+      name: event.execution.task.name,
+      exitCode: event.exitCode,
+    });
   }
 
   if (task.scope !== undefined && isTeamsfxTask(task)) {
@@ -452,7 +464,7 @@ function onDidTerminateDebugSessionHandler(event: vscode.DebugSession): void {
 }
 
 export function registerTeamsfxTaskAndDebugEvents(): void {
-  taskEndEventEmitter = new vscode.EventEmitter<{ id: string; exitCode?: number }>();
+  taskEndEventEmitter = new vscode.EventEmitter<{ id: string; name: string; exitCode?: number }>();
   taskStartEventEmitter = new vscode.EventEmitter<string>();
   ext.context.subscriptions.push({
     dispose() {

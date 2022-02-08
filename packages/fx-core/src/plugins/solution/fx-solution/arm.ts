@@ -894,12 +894,6 @@ async function doAddFeature(
           moduleProvisionFiles,
           moduleConfigFiles
         );
-        await persistBicepTemplates(
-          bicepOrchestrationTemplate,
-          moduleProvisionFiles,
-          moduleConfigFiles,
-          inputs.projectPath
-        );
       }
     }
     // notify other plugins
@@ -935,6 +929,12 @@ async function doAddFeature(
         }
       }
     }
+    await persistBicepTemplates(
+      bicepOrchestrationTemplate,
+      moduleProvisionFiles,
+      moduleConfigFiles,
+      inputs.projectPath
+    );
   }
   return ok(undefined); // Nothing to return when success
 }

@@ -53,7 +53,7 @@ export class KeyVaultPluginV3 implements v3.FeaturePlugin {
         botClientSecretReference: Constants.KeyVaultBicep.botClientSecretReference,
       },
     };
-    return ok({ kind: "bicep", template: result });
+    return ok([{ kind: "bicep", template: result }]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.keyVault } })])
   async addFeature(
@@ -78,6 +78,6 @@ export class KeyVaultPluginV3 implements v3.FeaturePlugin {
         botClientSecretReference: Constants.KeyVaultBicep.botClientSecretReference,
       },
     };
-    return ok({ kind: "bicep", template: result });
+    return ok([{ kind: "bicep", template: result }]);
   }
 }

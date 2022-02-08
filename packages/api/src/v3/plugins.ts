@@ -99,7 +99,10 @@ export interface FeaturePlugin {
    * @param {EnvInfoV3} envInfo optional
    *
    * @returns {ResourceTemplate[]} resource template
+   */
+  afterOtherFeaturesAdded?: (
     ctx: ContextWithManifestProvider,
+    inputs: OtherFeaturesAddedInputs
   ) => Promise<Result<ResourceTemplate[], FxError>>;
 
   /**

@@ -10,6 +10,14 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import * as os from "os";
+import {
+  LocalSettingsAuthKeys,
+  LocalSettingsBackendKeys,
+  LocalSettingsBotKeys,
+  LocalSettingsFrontendKeys,
+  LocalSettingsSimpleAuthKeys,
+  LocalSettingsTeamsAppKeys,
+} from "../localSettingsConstants";
 import { getAllowedAppIds } from "../tools";
 import {
   LocalEnvAuthKeys,
@@ -18,11 +26,6 @@ import {
   LocalEnvCertKeys,
   LocalEnvFrontendKeys,
   LocalEnvBotKeysMigratedFromV1,
-  LocalSettingsAuthKeys,
-  LocalSettingsBackendKeys,
-  LocalSettingsBotKeys,
-  LocalSettingsFrontendKeys,
-  LocalSettingsTeamsAppKeys,
 } from "./constants";
 import { LocalEnvProvider } from "./localEnvProvider";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
@@ -74,7 +77,7 @@ export async function convertToLocalEnvs(
   const teamsAppTenantId = teamsAppConfigs?.get(LocalSettingsTeamsAppKeys.TenantId) as string;
 
   const localAuthEndpoint = authConfigs?.get(
-    LocalSettingsAuthKeys.SimpleAuthServiceEndpoint
+    LocalSettingsSimpleAuthKeys.SimpleAuthServiceEndpoint
   ) as string;
   const localTabEndpoint = frontendConfigs?.get(LocalSettingsFrontendKeys.TabEndpoint) as string;
   const localFuncEndpoint = backendConfigs?.get(

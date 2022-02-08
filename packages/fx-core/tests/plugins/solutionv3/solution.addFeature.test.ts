@@ -172,6 +172,8 @@ describe("SolutionV3 - addFeature", () => {
         azureResources: [],
         activeResourcePlugins: [],
       },
+      programmingLanguage: "javascript",
+      defaultFunctionName: "testAPI",
     };
     const projectPath = path.join(os.tmpdir(), randomAppName());
     const ctx = new MockedV2Context(projectSettings);

@@ -86,7 +86,7 @@ import {
 
 @Service(BuiltInFeaturePluginNames.function)
 export class FunctionPluginV3 implements v3.FeaturePlugin {
-  name = BuiltInFeaturePluginNames.frontend;
+  name = BuiltInFeaturePluginNames.function;
   displayName = "Azure Function";
   config: FunctionConfig = {
     skipDeploy: false,
@@ -132,10 +132,12 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
   ): Promise<void> {
     this.config.functionLanguage = ctx.projectSetting.programmingLanguage as FunctionLanguage;
     this.config.defaultFunctionName = ctx.projectSetting.defaultFunctionName as string;
-    this.config.functionEndpoint = (envInfo?.state[this.name] as v3.AzureFunction).functionEndpoint;
+    this.config.functionEndpoint = (
+      envInfo?.state[this.name] as v3.AzureFunction
+    )?.functionEndpoint;
     this.config.functionAppResourceId = (
       envInfo?.state[this.name] as v3.AzureFunction
-    ).functionAppResourceId;
+    )?.functionAppResourceId;
 
     /* Always validate after sync for safety and security. */
     this.validateConfig();
@@ -218,6 +220,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<Void | undefined, FxError>> {
+    await this.syncConfigFromContext(ctx, inputs);
     const workingPath: string = this.getFunctionProjectRootPath(inputs.projectPath);
     const functionLanguage: FunctionLanguage = this.checkAndGet(
       this.config.functionLanguage,
@@ -250,6 +253,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
     if (!this.config.defaultFunctionName) {
       this.config.defaultFunctionName = this.config.functionName;
     }
+
     return ok(Void);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.function } })])

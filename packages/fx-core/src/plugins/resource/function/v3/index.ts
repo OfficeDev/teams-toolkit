@@ -91,6 +91,9 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
   config: FunctionConfig = {
     skipDeploy: false,
   };
+  async pluginDependencies?(ctx: v2.Context, inputs: Inputs): Promise<Result<string[], FxError>> {
+    return ok([BuiltInFeaturePluginNames.identity]);
+  }
   private getFunctionProjectRootPath(projectPath: string): string {
     return path.join(projectPath, FunctionPluginPathInfo.solutionFolderName);
   }

@@ -156,6 +156,41 @@ describe("SolutionV3 - addFeature", () => {
     });
     deleteFolder(projectPath);
   });
+  it("addFeature: function", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: TeamsFxAzureSolutionNameV3,
+        version: "3.0.0",
+        capabilities: [],
+        hostType: "Azure",
+        azureResources: [],
+        activeResourcePlugins: [],
+      },
+    };
+    const projectPath = path.join(os.tmpdir(), randomAppName());
+    const ctx = new MockedV2Context(projectSettings);
+    const inputs: v3.SolutionAddFeatureInputs = {
+      platform: Platform.VSCode,
+      projectPath: projectPath,
+      feature: BuiltInFeaturePluginNames.function,
+    };
+    const res = await addFeature(ctx, inputs);
+    assert.isTrue(res.isOk());
+    assert.deepEqual(projectSettings.solutionSettings, {
+      name: TeamsFxAzureSolutionNameV3,
+      version: "3.0.0",
+      capabilities: [],
+      hostType: "Azure",
+      azureResources: [],
+      activeResourcePlugins: [
+        BuiltInFeaturePluginNames.function,
+        BuiltInFeaturePluginNames.identity,
+      ],
+    });
+    deleteFolder(projectPath);
+  });
   it("getQuestionsForAddFeature", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",

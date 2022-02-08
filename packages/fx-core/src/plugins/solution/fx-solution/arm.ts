@@ -5,7 +5,6 @@ import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-r
 import { DeploymentOperation } from "@azure/arm-resources/esm/models";
 import {
   AzureAccountProvider,
-  AzureSolutionSettings,
   ConfigFolderName,
   EnvInfo,
   EnvNamePlaceholder,
@@ -590,7 +589,7 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       });
     } else {
       const errorProperties: { [key: string]: string } = {};
-      if (result.error.innerError) {
+      if (result.error.innerError && typeof result.error.innerError === "string") {
         errorProperties[SolutionTelemetryProperty.ArmDeploymentError] = result.error.innerError;
       }
       sendErrorTelemetryThenReturnError(
@@ -1378,7 +1377,7 @@ function generateResourceBaseName(appName: string, envName: string): string {
   );
 }
 
-async function wrapGetDeploymentError(
+export async function wrapGetDeploymentError(
   deployCtx: DeployContext,
   resourceGroupName: string,
   deploymentName: string
@@ -1413,6 +1412,14 @@ async function getDeploymentError(
       return undefined;
     }
     throw error;
+  }
+
+  if (
+    deploymentName === deployCtx.deploymentName &&
+    deployment.properties?.timestamp &&
+    deployment.properties.timestamp.getTime() < deployCtx.deploymentStartTime
+  ) {
+    return undefined;
   }
   if (!deployment.properties?.error) {
     return undefined;

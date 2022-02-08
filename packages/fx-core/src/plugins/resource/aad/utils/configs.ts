@@ -4,8 +4,6 @@
 import {
   PluginContext,
   ConfigValue,
-  Platform,
-  Stage,
   v2,
   err,
   Result,
@@ -28,8 +26,7 @@ import {
   LocalSettingsFrontendKeys,
 } from "../../../../common/localSettingsConstants";
 import { getPermissionRequest } from "../v3";
-import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
-import { BotOptionItem, TabOptionItem } from "../../../solution/fx-solution/question";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 
 export class ConfigUtils {
   public static getAadConfig(
@@ -157,7 +154,7 @@ export class ProvisionConfig {
       return err(permissionRes.error);
     }
     this.permissionRequest = permissionRes.value;
-    const aadResource = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
+    const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
     const objectId = aadResource?.objectId;
     if (objectId) {
       this.objectId = objectId as string;
@@ -244,11 +241,11 @@ export class ProvisionConfig {
     }
   }
   public saveConfigIntoEnvInfo(envInfo: v3.EnvInfoV3, tenantId: string): void {
-    if (!envInfo.state[BuiltInResourcePluginNames.aad]) {
-      envInfo.state[BuiltInResourcePluginNames.aad] = {};
-      (envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp).secretFields = ["clientSecret"];
+    if (!envInfo.state[BuiltInFeaturePluginNames.aad]) {
+      envInfo.state[BuiltInFeaturePluginNames.aad] = {};
+      (envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp).secretFields = ["clientSecret"];
     }
-    const envState = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
+    const envState = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
     const oauthAuthority = ProvisionConfig.getOauthAuthority(tenantId);
     if (this.clientId) envState.clientId = this.clientId;
     if (this.password) envState.clientSecret = this.password;
@@ -337,35 +334,17 @@ export class SetApplicationInContextConfig {
     }
   }
   public restoreConfigFromEnvInfo(ctx: v2.Context, envInfo: v3.EnvInfoV3): void {
-    const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-    const aadResource = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
+    const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
     let frontendDomain = aadResource?.domain;
     if (!frontendDomain) {
-      const tabModules = solutionSettings.modules.filter((m) =>
-        m.capabilities.includes(TabOptionItem.id)
-      );
-      if (tabModules.length > 0) {
-        const hostingPlugin = tabModules[0].hostingPlugin;
-        if (hostingPlugin) {
-          frontendDomain = (envInfo.state[hostingPlugin] as v3.AzureStorage)?.domain;
-        }
-      }
+      frontendDomain = (
+        envInfo.state[BuiltInFeaturePluginNames.frontend] as v3.FrontendHostingResource
+      )?.domain;
     }
-
     if (frontendDomain) {
       this.frontendDomain = format(frontendDomain as string, Formats.Domain);
     }
-
-    const botModules = solutionSettings.modules.filter((m) =>
-      m.capabilities.includes(BotOptionItem.id)
-    );
-    let botId;
-    if (botModules.length > 0) {
-      const hostingPlugin = botModules[0].hostingPlugin;
-      if (hostingPlugin) {
-        botId = (envInfo.state[hostingPlugin] as v3.AzureBot)?.botId;
-      }
-    }
+    const botId = (envInfo.state[BuiltInFeaturePluginNames.bot] as v3.AzureBot)?.botId;
     if (botId) {
       this.botId = format(botId as string, Formats.UUID);
     }
@@ -443,34 +422,16 @@ export class PostProvisionConfig {
     }
   }
   public restoreConfigFromEnvInfo(ctx: v2.Context, envInfo: v3.EnvInfoV3): void {
-    const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-    const aadResource = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
+    // const solutionSettings = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
+    const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
     let frontendEndpoint = aadResource?.endpoint;
     if (!frontendEndpoint) {
-      const tabModules = solutionSettings.modules.filter((m) =>
-        m.capabilities.includes(TabOptionItem.id)
-      );
-      if (tabModules.length > 0) {
-        const hostingPlugin = tabModules[0].hostingPlugin;
-        if (hostingPlugin) {
-          frontendEndpoint = envInfo.state[hostingPlugin]?.endpoint;
-        }
-      }
+      frontendEndpoint = envInfo.state[BuiltInFeaturePluginNames.frontend]?.endpoint;
     }
-
     if (frontendEndpoint) {
       this.frontendEndpoint = format(frontendEndpoint as string, Formats.Endpoint);
     }
-    const botModules = solutionSettings.modules.filter((m) =>
-      m.capabilities.includes(BotOptionItem.id)
-    );
-    let botEndpoint;
-    if (botModules.length > 0) {
-      const hostingPlugin = botModules[0].hostingPlugin;
-      if (hostingPlugin) {
-        botEndpoint = (envInfo.state[hostingPlugin] as v3.AzureBot)?.siteEndpoint;
-      }
-    }
+    const botEndpoint = (envInfo.state[BuiltInFeaturePluginNames.bot] as v3.AzureBot)?.siteEndpoint;
     if (botEndpoint) {
       this.botEndpoint = format(botEndpoint as string, Formats.Endpoint);
     }

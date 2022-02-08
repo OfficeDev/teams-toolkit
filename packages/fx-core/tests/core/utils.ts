@@ -656,81 +656,22 @@ export function deleteFolder(filePath?: string): void {
 }
 
 export function mockSolutionV3getQuestionsAPI(solution: v3.ISolution, sandbox: sinon.SinonSandbox) {
-  if (solution.getQuestionsForScaffold) {
-    sandbox
-      .stub(solution, "getQuestionsForScaffold")
-      .callsFake(async (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(undefined);
-      });
+  if (solution.getQuestionsForAddFeature) {
+    sandbox.stub(solution, "getQuestionsForAddFeature").resolves(ok(undefined));
   }
-  if (solution.getQuestionsForAddResource) {
-    sandbox
-      .stub(solution, "getQuestionsForAddResource")
-      .callsFake(async (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(undefined);
-      });
-  }
-  if (solution.getQuestionsForAddModule) {
-    sandbox
-      .stub(solution, "getQuestionsForAddModule")
-      .callsFake(async (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(undefined);
-      });
+  if (solution.getQuestionsForInit) {
+    sandbox.stub(solution, "getQuestionsForInit").resolves(ok(undefined));
   }
   if (solution.getQuestionsForProvision) {
-    sandbox
-      .stub(solution, "getQuestionsForProvision")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          tokenProvider: TokenProvider,
-          envInfo?: v2.DeepReadonly<v3.EnvInfoV3>
-        ) => {
-          return ok(undefined);
-        }
-      );
-  }
-  if (solution.getQuestionsForLocalProvision) {
-    sandbox
-      .stub(solution, "getQuestionsForLocalProvision")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          tokenProvider: TokenProvider,
-          localSettings?: v2.DeepReadonly<Json>
-        ) => {
-          return ok(undefined);
-        }
-      );
+    sandbox.stub(solution, "getQuestionsForProvision").resolves(ok(undefined));
   }
   if (solution.getQuestionsForDeploy) {
-    sandbox
-      .stub(solution, "getQuestionsForDeploy")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-          tokenProvider: TokenProvider
-        ) => {
-          return ok(undefined);
-        }
-      );
+    sandbox.stub(solution, "getQuestionsForDeploy").resolves(ok(undefined));
   }
   if (solution.getQuestionsForPublish) {
-    sandbox
-      .stub(solution, "getQuestionsForPublish")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-          tokenProvider: AppStudioTokenProvider
-        ) => {
-          return ok(undefined);
-        }
-      );
+    sandbox.stub(solution, "getQuestionsForPublish").resolves(ok(undefined));
+  }
+  if (solution.getQuestionsForUserTask) {
+    sandbox.stub(solution, "getQuestionsForUserTask").resolves(ok(undefined));
   }
 }

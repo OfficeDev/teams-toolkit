@@ -9,6 +9,7 @@ import {
   Result,
   TeamsAppManifest,
   v2,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
@@ -17,23 +18,23 @@ import * as path from "path";
 import "reflect-metadata";
 import * as uuid from "uuid";
 import {
-  addResource,
-  getQuestionsForAddResource,
-} from "../../../src/plugins/solution/fx-solution/v3/addResource";
-import {
-  BuiltInResourcePluginNames,
+  BuiltInFeaturePluginNames,
   TeamsFxAzureSolutionNameV3,
 } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, randomAppName } from "../../core/utils";
 import { MockedV2Context } from "../solution/util";
-import { MockResourcePluginNames } from "./mockPlugins";
+import { MockFeaturePluginNames } from "./mockPlugins";
 import sinon from "sinon";
 import { Container } from "typedi";
 import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
-describe("SolutionV3 - addResource", () => {
+import {
+  addFeature,
+  getQuestionsForAddFeature,
+} from "../../../src/plugins/solution/fx-solution/v3/addFeature";
+describe("SolutionV3 - addFeature", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
-    const appStudio = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    const appStudio = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
       .stub<any, any>(appStudio, "loadManifest")
       .callsFake(
@@ -59,44 +60,73 @@ describe("SolutionV3 - addResource", () => {
   afterEach(async () => {
     sandbox.restore();
   });
-  it("addResource", async () => {
+  it("addFeature: mock plugin", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
       solutionSettings: {
         name: TeamsFxAzureSolutionNameV3,
         version: "3.0.0",
-        capabilities: ["Tab"],
-        hostType: "",
+        capabilities: [],
+        hostType: "Azure",
         azureResources: [],
-        modules: [{ capabilities: ["Tab"] }],
         activeResourcePlugins: [],
       },
     };
     const projectPath = path.join(os.tmpdir(), randomAppName());
     const ctx = new MockedV2Context(projectSettings);
-    const inputs: v2.InputsWithProjectPath = {
+    const inputs: v3.SolutionAddFeatureInputs = {
       platform: Platform.VSCode,
       projectPath: projectPath,
       module: 0,
-      resource: MockResourcePluginNames.storage,
-      test: true,
+      feature: MockFeaturePluginNames.tab,
     };
-    const res = await addResource(ctx, inputs);
+    const res = await addFeature(ctx, inputs);
     assert.isTrue(res.isOk());
     assert.deepEqual(projectSettings.solutionSettings, {
       name: TeamsFxAzureSolutionNameV3,
       version: "3.0.0",
       capabilities: ["Tab"],
-      hostType: "",
+      hostType: "Azure",
       azureResources: [],
-      modules: [{ capabilities: ["Tab"], hostingPlugin: MockResourcePluginNames.storage }],
-      activeResourcePlugins: [MockResourcePluginNames.storage],
+      activeResourcePlugins: [MockFeaturePluginNames.tab],
     });
     deleteFolder(projectPath);
   });
-
-  it("getQuestionsForAddResource", async () => {
+  it("addFeature: frontend", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: TeamsFxAzureSolutionNameV3,
+        version: "3.0.0",
+        capabilities: [],
+        hostType: "Azure",
+        azureResources: [],
+        activeResourcePlugins: [],
+      },
+    };
+    const projectPath = path.join(os.tmpdir(), randomAppName());
+    const ctx = new MockedV2Context(projectSettings);
+    const inputs: v3.SolutionAddFeatureInputs = {
+      platform: Platform.VSCode,
+      projectPath: projectPath,
+      module: 0,
+      feature: BuiltInFeaturePluginNames.frontend,
+    };
+    const res = await addFeature(ctx, inputs);
+    assert.isTrue(res.isOk());
+    assert.deepEqual(projectSettings.solutionSettings, {
+      name: TeamsFxAzureSolutionNameV3,
+      version: "3.0.0",
+      capabilities: ["Tab"],
+      hostType: "Azure",
+      azureResources: [],
+      activeResourcePlugins: [BuiltInFeaturePluginNames.frontend],
+    });
+    deleteFolder(projectPath);
+  });
+  it("getQuestionsForAddFeature", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -104,7 +134,7 @@ describe("SolutionV3 - addResource", () => {
         name: TeamsFxAzureSolutionNameV3,
         version: "3.0.0",
         capabilities: ["Tab"],
-        hostType: "",
+        hostType: "Azure",
         azureResources: [],
         modules: [{ capabilities: ["Tab"] }],
         activeResourcePlugins: [],
@@ -115,7 +145,7 @@ describe("SolutionV3 - addResource", () => {
       platform: Platform.VSCode,
       projectPath: path.join(os.tmpdir(), randomAppName()),
     };
-    const res = await getQuestionsForAddResource(ctx, inputs);
+    const res = await getQuestionsForAddFeature(ctx, inputs);
     assert.isTrue(res.isOk());
   });
 });

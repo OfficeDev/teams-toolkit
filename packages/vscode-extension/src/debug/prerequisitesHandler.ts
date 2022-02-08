@@ -81,7 +81,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
 
     VsCodeLogInstance.outputChannel.show();
-    VsCodeLogInstance.info(doctorConstant.Check);
+    VsCodeLogInstance.outputChannel.appendLine(doctorConstant.Check);
     VsCodeLogInstance.outputChannel.appendLine("");
 
     // node

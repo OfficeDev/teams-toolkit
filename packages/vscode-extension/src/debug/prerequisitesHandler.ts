@@ -68,7 +68,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       // ignore telemetry error
     }
 
-    // [deps] => [backend extension, npm install, account] => [certificate] => [port]
+    // [node, account, certificate] => [deps] => [backend extension, npm install] => [port]
     const checkResults: CheckResult[] = [];
     const localEnvManager = new LocalEnvManager(
       VsCodeLogInstance,

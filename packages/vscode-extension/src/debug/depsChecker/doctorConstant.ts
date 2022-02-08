@@ -2,7 +2,7 @@
 // Licensed under the MIT license.
 
 const InstallNode =
-  "Go to https://nodejs.org/en/about/releases/ to install Node.js (recommended version v14)";
+  "Go to https://nodejs.org/about/releases/ to install Node.js (recommended version v14)";
 
 export const doctorConstant = {
   Tick: "√",

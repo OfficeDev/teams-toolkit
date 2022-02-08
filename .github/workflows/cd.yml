@@ -183,7 +183,7 @@ jobs:
 
       - name: Generate Tag List
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
-        run: git tag | grep templates@ > ./template-tags.txt
+        run: git tag | grep templates > ./template-tags.txt
 
       - name: Update Template Tag list Release
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}

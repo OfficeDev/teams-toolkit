@@ -96,6 +96,7 @@ import {
   getQuestionsForProvision,
   getQuestionsForPublish,
   getQuestionsForUserTaskV2,
+  getQuestionsForUserTaskV3,
   getQuestionsV2,
   QuestionModelMW,
 } from "./middleware/questionModel";
@@ -1432,6 +1433,7 @@ export class FxCore implements v3.ICore {
   _getQuestionsForDeploy = getQuestionsForDeploy;
   _getQuestionsForPublish = getQuestionsForPublish;
   _getQuestionsForInit = getQuestionsForInit;
+  _getQuestionsForUserTaskV3 = getQuestionsForUserTaskV3;
 }
 
 export async function createBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {

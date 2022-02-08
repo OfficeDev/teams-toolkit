@@ -47,6 +47,7 @@ import { TelemetryUtils } from "../utils/telemetryUtils";
 import { ManagementClient } from "../managementClient";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { hooks } from "@feathersjs/hooks/lib";
+import { AzureResourceSQL } from "../../../solution/fx-solution/question";
 
 @Service(BuiltInFeaturePluginNames.sql)
 export class SqlPluginV3 implements v3.FeaturePlugin {
@@ -144,8 +145,8 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
       : await this.generateNewDatabaseBicep(ctx);
     if (armRes.isErr()) return err(armRes.error);
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
-    if (!solutionSettings.azureResources.includes("sql"))
-      solutionSettings.azureResources.push("sql");
+    if (!solutionSettings.azureResources.includes(AzureResourceSQL.id))
+      solutionSettings.azureResources.push(AzureResourceSQL.id);
     return ok(armRes.value);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.sql } })])

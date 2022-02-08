@@ -2,7 +2,16 @@
 // Licensed under the MIT license.
 
 import { hooks } from "@feathersjs/hooks/lib";
-import { AzureSolutionSettings, err, FxError, ok, Result, v2, v3 } from "@microsoft/teamsfx-api";
+import {
+  AzureSolutionSettings,
+  err,
+  FxError,
+  Inputs,
+  ok,
+  Result,
+  v2,
+  v3,
+} from "@microsoft/teamsfx-api";
 import * as path from "path";
 import { Service } from "typedi";
 import { ArmTemplateResult } from "../../../../common/armInterface";
@@ -18,6 +27,10 @@ import { Constants } from "../constants";
 export class KeyVaultPluginV3 implements v3.FeaturePlugin {
   name = BuiltInFeaturePluginNames.keyVault;
   displayName = "Key Vault Plugin";
+  async pluginDependencies?(ctx: v2.Context, inputs: Inputs): Promise<Result<string[], FxError>> {
+    return ok([BuiltInFeaturePluginNames.identity]);
+  }
+
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.keyVault } })])
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,

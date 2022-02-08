@@ -178,7 +178,10 @@ describe("SolutionV3 - addFeature", () => {
       capabilities: [],
       hostType: "Azure",
       azureResources: [AzureResourceKeyVault.id],
-      activeResourcePlugins: [BuiltInFeaturePluginNames.keyVault],
+      activeResourcePlugins: [
+        BuiltInFeaturePluginNames.keyVault,
+        BuiltInFeaturePluginNames.identity,
+      ],
     });
     deleteFolder(projectPath);
   });

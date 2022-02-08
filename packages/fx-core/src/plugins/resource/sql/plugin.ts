@@ -77,8 +77,8 @@ export class SqlPluginImpl {
     this.removeDatabases(ctx);
     await this.loadConfig(ctx);
 
-    DialogUtils.init(ctx);
-    TelemetryUtils.init(ctx);
+    DialogUtils.init(ctx.ui);
+    TelemetryUtils.init(ctx.telemetryReporter);
     TelemetryUtils.sendEvent(Telemetry.stage.preProvision + Telemetry.startSuffix);
 
     await this.loadSkipAddingUser(ctx);
@@ -110,8 +110,8 @@ export class SqlPluginImpl {
     ctx.logProvider?.info(Message.startPostProvision);
     await this.loadConfig(ctx);
 
-    DialogUtils.init(ctx, ProgressTitle.PostProvision, Object.keys(ConfigureMessage).length);
-    TelemetryUtils.init(ctx);
+    DialogUtils.init(ctx.ui, ProgressTitle.PostProvision, Object.keys(ConfigureMessage).length);
+    TelemetryUtils.init(ctx.telemetryReporter);
 
     const telemetryProperties = {
       [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser
@@ -127,7 +127,10 @@ export class SqlPluginImpl {
 
     ctx.config.delete(Constants.adminPassword);
 
-    const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
+    const managementClient: ManagementClient = await ManagementClient.create(
+      ctx.azureAccountProvider!,
+      this.config
+    );
 
     ctx.logProvider?.info(Message.addFirewall);
     await this.AddFireWallRules(managementClient);
@@ -143,7 +146,7 @@ export class SqlPluginImpl {
       // azure sql does not support service principal admin to add databse user currently, so just notice developer if so.
       if (this.config.aadAdminType === UserType.User) {
         ctx.logProvider?.info(Message.connectDatabase);
-        const sqlClient = await SqlClient.create(ctx, this.config);
+        const sqlClient = await SqlClient.create(ctx.azureAccountProvider!, this.config);
         ctx.logProvider?.info(Message.addDatabaseUser(this.config.identity));
         await this.addDatabaseUser(ctx, sqlClient, managementClient);
       } else {
@@ -345,7 +348,10 @@ export class SqlPluginImpl {
   }
 
   private async checkSqlExisting(ctx: PluginContext) {
-    const managementClient: ManagementClient = await ManagementClient.create(ctx, this.config);
+    const managementClient: ManagementClient = await ManagementClient.create(
+      ctx.azureAccountProvider!,
+      this.config
+    );
     this.config.admin = ctx.config.get(Constants.admin) as string;
     this.config.adminPassword = ctx.config.get(Constants.adminPassword) as string;
     this.config.sqlEndpoint = ctx.config.get(Constants.sqlEndpoint);

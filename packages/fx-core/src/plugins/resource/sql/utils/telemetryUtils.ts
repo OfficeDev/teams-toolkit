@@ -1,11 +1,12 @@
-import { PluginContext } from "@microsoft/teamsfx-api";
-import { Constants, Telemetry } from "../constants";
+import { TelemetryReporter } from "@microsoft/teamsfx-api";
+import { solutionGlobalVars } from "../../../solution/fx-solution/v3/solutionGlobalVars";
+import { Telemetry } from "../constants";
 
 export class TelemetryUtils {
-  static ctx: PluginContext;
+  static telemetryReporter?: TelemetryReporter;
 
-  public static init(ctx: PluginContext) {
-    TelemetryUtils.ctx = ctx;
+  public static init(telemetryReporter?: TelemetryReporter) {
+    TelemetryUtils.telemetryReporter = telemetryReporter;
   }
 
   public static sendEvent(
@@ -21,7 +22,7 @@ export class TelemetryUtils {
       properties[Telemetry.properties.success] = Telemetry.valueYes;
     }
     this.addProperties(properties);
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
+    TelemetryUtils.telemetryReporter?.sendTelemetryEvent(eventName, properties, measurements);
   }
 
   public static sendErrorEvent(
@@ -40,18 +41,12 @@ export class TelemetryUtils {
     properties[Telemetry.properties.errorType] = errorType;
     properties[Telemetry.properties.errorMessage] = errorMessage;
     this.addProperties(properties);
-    TelemetryUtils.ctx.telemetryReporter?.sendTelemetryErrorEvent(
-      eventName,
-      properties,
-      measurements
-    );
+    TelemetryUtils.telemetryReporter?.sendTelemetryErrorEvent(eventName, properties, measurements);
   }
 
   private static addProperties(properties: { [key: string]: string }) {
     properties[Telemetry.properties.component] = Telemetry.componentName;
-    const appId = this.ctx.envInfo.state
-      .get(Constants.solution)
-      ?.get(Constants.solutionConfigKey.remoteTeamsAppId);
+    const appId = solutionGlobalVars.TeamsAppId;
     if (appId) {
       properties[Telemetry.properties.appid] = appId as string;
     } else {

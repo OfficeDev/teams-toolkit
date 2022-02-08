@@ -6,23 +6,24 @@ import { SqlConfig } from "./config";
 import { ErrorMessage } from "./errors";
 import { Constants } from "./constants";
 import { SqlResultFactory } from "./results";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider } from "@microsoft/teamsfx-api";
 export class ManagementClient {
   client: SqlManagementClient;
   config: SqlConfig;
-  ctx: PluginContext;
   totalFirewallRuleCount = 0;
 
-  private constructor(ctx: PluginContext, config: SqlConfig, client: SqlManagementClient) {
-    this.ctx = ctx;
+  private constructor(config: SqlConfig, client: SqlManagementClient) {
     this.config = config;
     this.client = client;
   }
 
-  public static async create(ctx: PluginContext, config: SqlConfig): Promise<ManagementClient> {
-    const credential = await ctx.azureAccountProvider!.getAccountCredentialAsync();
+  public static async create(
+    azureAccountProvider: AzureAccountProvider,
+    config: SqlConfig
+  ): Promise<ManagementClient> {
+    const credential = await azureAccountProvider.getAccountCredentialAsync();
     const client = new SqlManagementClient(credential!, config.azureSubscriptionId);
-    return new ManagementClient(ctx, config, client);
+    return new ManagementClient(config, client);
   }
 
   async existAzureSQL(): Promise<boolean> {

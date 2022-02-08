@@ -1979,7 +1979,9 @@ export async function openConfigStateFile(args: any[]) {
   if (!(await fs.pathExists(sourcePath))) {
     const noEnvError = new UserError(
       isConfig ? ExtensionErrors.EnvConfigNotFoundError : ExtensionErrors.EnvStateNotFoundError,
-      util.format(StringResources.vsc.handlers.findEnvFailed, env),
+      isConfig
+        ? util.format(StringResources.vsc.handlers.findEnvFailed, envName.value)
+        : util.format(StringResources.vsc.handlers.stateFileNotFound, envName.value),
       ExtensionSource
     );
     showError(noEnvError);

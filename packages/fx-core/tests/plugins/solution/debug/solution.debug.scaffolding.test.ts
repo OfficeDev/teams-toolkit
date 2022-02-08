@@ -77,7 +77,7 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Tab"],
             azureResources: ["function"],
-            activeResourcePlugins: ["fx-resource-simple-auth"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -135,7 +135,7 @@ describe("solution.debug.scaffolding", () => {
             version: "",
             hostType: "Azure",
             capabilities: ["Tab"],
-            activeResourcePlugins: ["fx-resource-simple-auth"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -243,7 +243,7 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Tab", "Bot"],
             azureResources: ["function"],
-            activeResourcePlugins: ["fx-resource-simple-auth"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -301,7 +301,7 @@ describe("solution.debug.scaffolding", () => {
             version: "",
             hostType: "Azure",
             capabilities: ["Tab", "Bot"],
-            activeResourcePlugins: ["fx-resource-simple-auth"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -472,7 +472,7 @@ describe("solution.debug.scaffolding", () => {
           hostType: "Azure",
           capabilities: ["Tab", "Bot"],
           azureResources: ["function"],
-          activeResourcePlugins: ["fx-resource-simple-auth"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
         },
         programmingLanguage: "javascript",
       };

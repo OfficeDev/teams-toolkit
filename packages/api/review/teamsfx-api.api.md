@@ -1068,7 +1068,7 @@ export interface LogProvider {
 }
 
 // @public (undocumented)
-type ManifestCapability = ({
+type ManifestCapability = {
     name: "staticTab";
     snippet?: {
         local: IStaticTab;
@@ -1096,7 +1096,7 @@ type ManifestCapability = ({
         remote: IComposeExtension;
     };
     existingApp?: boolean;
-});
+};
 
 // @public (undocumented)
 export function mergeConfigMap(lhs?: ConfigMap, rhs?: ConfigMap): ConfigMap | undefined;

@@ -253,7 +253,7 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const solutionSettings = ctx.projectSetting.solutionSettings as
       | AzureSolutionSettings
       | undefined;
@@ -300,14 +300,14 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
         functionEndpoint: FunctionBicep.functionEndpoint,
       },
     };
-    return ok({ kind: "bicep", template: result });
+    return ok([{ kind: "bicep", template: result }]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.function } })])
   async afterOtherFeaturesAdded(
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.OtherFeaturesAddedInputs,
     envInfo?: v3.EnvInfoV3
-  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const bicepTemplateDirectory = path.join(
       getTemplatesFolder(),
       "plugins",
@@ -334,13 +334,13 @@ export class FunctionPluginV3 implements v3.FeaturePlugin {
         Modules: { function: configModule },
       },
     };
-    return ok({ kind: "bicep", template: result });
+    return ok([{ kind: "bicep", template: result }]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.function } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const scaffoldRes = await this.scaffold(ctx, inputs);
     if (scaffoldRes.isErr()) return err(scaffoldRes.error);
     const armRes = await this.generateResourceTemplate(ctx, inputs);

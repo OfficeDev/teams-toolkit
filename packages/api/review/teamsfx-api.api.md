@@ -523,6 +523,26 @@ export interface ErrorOptionBase {
 }
 
 // @public (undocumented)
+export interface ExistingAppConfig {
+    // (undocumented)
+    isCreatedFromExistingApp: boolean;
+    // (undocumented)
+    newAppTypes: ExistingTeamsAppType[];
+}
+
+// @public (undocumented)
+export enum ExistingTeamsAppType {
+    // (undocumented)
+    Bot = 2,
+    // (undocumented)
+    ConfigurableTab = 1,
+    // (undocumented)
+    MessageExtension = 3,
+    // (undocumented)
+    StaticTab = 0
+}
+
+// @public (undocumented)
 export interface ExpServiceProvider {
     // (undocumented)
     getTreatmentVariableAsync<T extends boolean | number | string>(configId: string, name: string, checkCache?: boolean): Promise<T | undefined>;
@@ -530,8 +550,8 @@ export interface ExpServiceProvider {
 
 // @public (undocumented)
 interface FeaturePlugin {
-    addFeature: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
-    afterOtherFeaturesAdded?: (ctx: ContextWithManifestProvider, inputs: OtherFeaturesAddedInputs) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
+    addFeature: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2[], FxError>>;
+    afterOtherFeaturesAdded?: (ctx: ContextWithManifestProvider, inputs: OtherFeaturesAddedInputs) => Promise<Result<ResourceTemplate_2[], FxError>>;
     configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     description?: string;
@@ -828,6 +848,8 @@ export interface Inputs extends Json {
     // (undocumented)
     env?: string;
     // (undocumented)
+    existingAppConfig?: ExistingAppConfig;
+    // (undocumented)
     existingResources?: string[];
     // (undocumented)
     ignoreConfigPersist?: boolean;
@@ -1119,7 +1141,7 @@ interface OtherFeaturesAddedInputs extends InputsWithProjectPath {
     // (undocumented)
     features: {
         name: string;
-        value: ResourceTemplate_2 | undefined;
+        value: ResourceTemplate_2[];
     }[];
 }
 

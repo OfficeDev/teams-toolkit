@@ -1068,6 +1068,37 @@ export interface LogProvider {
 }
 
 // @public (undocumented)
+type ManifestCapability = ({
+    name: "staticTab";
+    snippet?: {
+        local: IStaticTab;
+        remote: IStaticTab;
+    };
+    existingApp?: boolean;
+} | {
+    name: "configurableTab";
+    snippet?: {
+        local: IConfigurableTab;
+        remote: IConfigurableTab;
+    };
+    existingApp?: boolean;
+} | {
+    name: "Bot";
+    snippet?: {
+        local: IBot;
+        remote: IBot;
+    };
+    existingApp?: boolean;
+} | {
+    name: "MessageExtension";
+    snippet?: {
+        local: IComposeExtension;
+        remote: IComposeExtension;
+    };
+    existingApp?: boolean;
+});
+
+// @public (undocumented)
 export function mergeConfigMap(lhs?: ConfigMap, rhs?: ConfigMap): ConfigMap | undefined;
 
 // @public (undocumented)
@@ -1996,6 +2027,7 @@ export { v2 }
 declare namespace v3 {
     export {
         EnvInfoV3,
+        ManifestCapability,
         CloudResource,
         ResourceStates,
         AzureResource,

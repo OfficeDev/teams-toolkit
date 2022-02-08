@@ -73,6 +73,20 @@ describe("localSettingsHelper", () => {
       chai.assert.equal(localEnvs["AUTH_TAB_APP_ENDPOINT"], "https://localhost:53000");
     });
 
+    it("happy path without AAD plugin", async () => {
+      await fs.ensureDir(projectPath);
+      await fs.emptyDir(projectPath);
+
+      const projectSettingsAll = cloneDeep(projectSettings0);
+      delete projectSettingsAll.solutionSettings.activeResourcePlugins[0];
+      const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, localSettings0);
+
+      chai.assert.isDefined(localEnvs);
+      chai.assert.equal(Object.keys(localEnvs).length, 15);
+      chai.assert.isUndefined(localEnvs["FRONTEND_REACT_APP_START_LOGIN_PAGE_URL"]);
+      chai.assert.isUndefined(localEnvs["FRONTEND_REACT_APP_CLIENT_ID"]);
+    });
+
     it(".env.teamsfx.local", async () => {
       const frontendEnvPath = path.resolve(projectPath, "tabs/.env.teamsfx.local");
       fs.ensureFileSync(frontendEnvPath);

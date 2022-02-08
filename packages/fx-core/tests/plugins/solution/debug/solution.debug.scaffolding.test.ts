@@ -161,6 +161,43 @@ describe("solution.debug.scaffolding", () => {
 
         await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
       });
+
+      it(`happy path: tab without function (${parameter.programmingLanguage}) and AAD`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Tab"],
+            activeResourcePlugins: ["fx-resource-simple-auth"],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
+
+        // When AAD plugin is not activated, loginUrl and clientId will not be added.
+        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs - 2);
+      });
     });
 
     const parameters3: TestParameter[] = [
@@ -326,6 +363,42 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(Object.keys(settings).length, 1);
 
         await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
+      });
+
+      it(`happy path: tab without function and bot (${parameter.programmingLanguage}) and AAD`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Tab", "Bot"],
+            activeResourcePlugins: [],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
+
+        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs - 12);
       });
     });
 
@@ -514,7 +587,7 @@ describe("solution.debug.scaffolding", () => {
           version: "",
           hostType: "Azure",
           capabilities: ["Tab", "Bot"],
-          activeResourcePlugins: ["fx-resource-simple-auth"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
         },
         programmingLanguage: "javascript",
       };
@@ -561,7 +634,7 @@ describe("solution.debug.scaffolding", () => {
           version: "",
           hostType: "Azure",
           capabilities: ["Tab", "Bot"],
-          activeResourcePlugins: ["fx-resource-simple-auth"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
         },
         programmingLanguage: "javascript",
       };

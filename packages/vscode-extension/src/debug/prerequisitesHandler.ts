@@ -38,7 +38,7 @@ import VsCodeLogInstance from "../commonlib/log";
 import { ExtensionSource, ExtensionErrors } from "../error";
 import { VS_CODE_UI } from "../extension";
 import { ext } from "../extensionVariables";
-import { tools } from "../handlers";
+import { showError, tools } from "../handlers";
 import * as StringResources from "../resources/Strings.json";
 import { ExtTelemetry } from "../telemetry/extTelemetry";
 import {
@@ -79,11 +79,32 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     // Get project settings
     const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
 
+    VsCodeLogInstance.outputChannel.show();
     VsCodeLogInstance.info("LocalDebug Prerequisites Check");
     VsCodeLogInstance.outputChannel.appendLine("");
 
-    // deps
+    // node
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
+    const nodeResult = await checkNode(localEnvManager, depsManager, projectSettings);
+    if (nodeResult) {
+      checkResults.push(nodeResult);
+      // node fast fail
+      if (!nodeResult.result) {
+        await handleCheckResults(checkResults);
+      }
+    }
+
+    // local cert
+    const localCertResult = await resolveLocalCertificate(localEnvManager);
+    if (localCertResult) {
+      checkResults.push(localCertResult);
+      // cert fast fail
+      if (!localCertResult.result) {
+        await handleCheckResults(checkResults);
+      }
+    }
+
+    // deps
     const depsResults = await checkDependencies(localEnvManager, depsManager, projectSettings);
     checkResults.push(...depsResults);
 
@@ -123,12 +144,6 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       }
     }
 
-    // local cert
-    const localCertFailure = await resolveLocalCertificate(localEnvManager);
-    if (localCertFailure) {
-      checkResults.push(localCertFailure);
-    }
-
     // check port
     const portsInUse = await localEnvManager.getPortsInUse(workspacePath, projectSettings);
     if (portsInUse.length > 0) {
@@ -149,14 +164,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     }
 
     // handle checkResults
-    if (checkResults.length > 0) {
-      const failureMessage = await handleCheckResults(checkResults);
-      throw returnUserError(
-        new Error(`Failed to validate prerequisites (${failureMessage})`),
-        ExtensionSource,
-        ExtensionErrors.PrerequisitesValidationError
-      );
-    }
+    await handleCheckResults(checkResults);
 
     try {
       ExtTelemetry.sendTelemetryEvent(TelemetryEvent.DebugPrerequisites, {
@@ -167,6 +175,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     }
   } catch (error: any) {
     const fxError = assembleError(error);
+    showError(fxError);
     try {
       ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.DebugPrerequisites, fxError);
     } catch {
@@ -183,6 +192,7 @@ async function checkM365Account(): Promise<CheckResult> {
   let result = true;
   let error = undefined;
   try {
+    VsCodeLogInstance.outputChannel.appendLine(`Checking M365 account`);
     const token = await tools.tokenProvider.appStudioToken.getAccessToken(true);
     if (token === undefined) {
       // corner case but need to handle
@@ -206,6 +216,38 @@ async function checkM365Account(): Promise<CheckResult> {
   };
 }
 
+async function checkNode(
+  localEnvManager: LocalEnvManager,
+  depsManager: DepsManager,
+  projectSettings: ProjectSettings
+): Promise<CheckResult | undefined> {
+  try {
+    const deps = localEnvManager.getActiveDependencies(projectSettings);
+    const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(deps);
+    for (const dep of enabledDeps) {
+      if (VSCodeDepsChecker.getNodeDeps().includes(dep)) {
+        const nodeStatus = (
+          await depsManager.ensureDependencies([dep], {
+            fastFail: false,
+            doctor: true,
+          })
+        )[0];
+        return {
+          checker: nodeStatus.name,
+          result: nodeStatus.isInstalled,
+          error: handleDepsCheckerError(nodeStatus.error, nodeStatus),
+        };
+      }
+    }
+    return undefined;
+  } catch (error: any) {
+    return {
+      checker: "Node",
+      result: false,
+      error: handleDepsCheckerError(error),
+    };
+  }
+}
 async function checkDependencies(
   localEnvManager: LocalEnvManager,
   depsManager: DepsManager,
@@ -214,10 +256,13 @@ async function checkDependencies(
   try {
     const deps = localEnvManager.getActiveDependencies(projectSettings);
     const enabledDeps = await VSCodeDepsChecker.getEnabledDeps(deps);
-    const depsStatus = await depsManager.ensureDependencies(enabledDeps, {
+    // remove node deps
+    const nonNodeDeps = enabledDeps.filter((d) => !VSCodeDepsChecker.getNodeDeps().includes(d));
+    const depsStatus = await depsManager.ensureDependencies(nonNodeDeps, {
       fastFail: false,
       doctor: true,
     });
+
     const results: CheckResult[] = [];
     for (const dep of depsStatus) {
       results.push({
@@ -266,8 +311,8 @@ async function resolveLocalCertificate(localEnvManager: LocalEnvManager): Promis
   let error = undefined;
   try {
     const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
-
     // TODO: Return CheckResult when isTrusted === false
+    VsCodeLogInstance.outputChannel.appendLine(`Checking Local Certificate`);
     await localEnvManager.resolveLocalCertificate(trustDevCert);
   } catch (err: any) {
     result = false;
@@ -324,6 +369,7 @@ async function checkNpmInstall(component: string, folder: string): Promise<Check
   let error = undefined;
   try {
     if (!installed) {
+      VsCodeLogInstance.outputChannel.appendLine(`Npm installing (${component})`);
       const exitCode = await runTask(
         new vscode.Task(
           {
@@ -359,10 +405,14 @@ async function checkNpmInstall(component: string, folder: string): Promise<Check
 }
 
 async function handleCheckResults(results: CheckResult[]): Promise<void> {
+  if (results.length <= 0) {
+    return;
+  }
   let shouldStop = false;
   const output = VsCodeLogInstance.outputChannel;
   const successes = results.filter((a) => a.result);
   const failures = results.filter((a) => !a.result);
+  output.show();
 
   if (failures.length > 0) {
     shouldStop = true;

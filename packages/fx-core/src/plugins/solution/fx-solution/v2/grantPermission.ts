@@ -44,6 +44,7 @@ import { executeConcurrently, LifecyclesWithContext } from "../executor";
 import {
   getActivatedResourcePlugins,
   getActivatedV2ResourcePlugins,
+  ResourcePluginsV2,
 } from "../ResourcePluginContainer";
 import { flattenConfigMap } from "../../../resource/utils4v2";
 import { NamedThunk, executeConcurrently as executeNamedThunkConcurrently } from "./executor";
@@ -51,6 +52,7 @@ import { CollaborationUtil, CollabApiParam } from "./collaborationUtil";
 import { getPluginAndContextArray } from "./utils";
 import { REMOTE_TEAMS_APP_TENANT_ID } from "..";
 import * as util from "util";
+import { Container } from "typedi";
 
 async function grantPermissionImpl(
   param: CollabApiParam,
@@ -358,8 +360,13 @@ async function executeGrantPermissionsV2(
   tokenProvider: TokenProvider,
   userInfo: IUserList
 ): Promise<[ResourcePermission[], Err<any, FxError>[]]> {
-  const plugins = getActivatedV2ResourcePlugins(ctx.projectSetting);
+  const plugins: v2.ResourcePlugin[] = [
+    Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AppStudioPlugin),
+  ];
 
+  if (CollaborationUtil.AadResourcePluginsActivated(ctx)) {
+    plugins.push(Container.get<v2.ResourcePlugin>(ResourcePluginsV2.AadPlugin));
+  }
   const thunks: NamedThunk<Json>[] = plugins
     .filter((plugin) => !!plugin.grantPermission)
     .map((plugin) => {

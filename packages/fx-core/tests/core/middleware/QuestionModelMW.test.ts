@@ -3,7 +3,6 @@
 
 import { hooks, NextFunction } from "@feathersjs/hooks/lib";
 import {
-  AppStudioTokenProvider,
   EmptyOptionError,
   err,
   Func,
@@ -29,13 +28,17 @@ import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import { CoreHookContext, createV2Context, InvalidInputError, setTools, TOOLS } from "../../../src";
 import {
-  getQuestionsForInit,
   newSolutionContext,
   QuestionModelMW,
   SolutionLoaderMW,
 } from "../../../src/core/middleware";
 import { SolutionLoaderMW_V3 } from "../../../src/core/middleware/solutionLoaderV3";
-import { MockProjectSettings, MockTools, randomAppName } from "../utils";
+import {
+  MockProjectSettings,
+  mockSolutionV3getQuestionsAPI,
+  MockTools,
+  randomAppName,
+} from "../utils";
 import { Container } from "typedi";
 import { BuiltInSolutionNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 describe("Middleware - QuestionModelMW", () => {
@@ -88,9 +91,6 @@ describe("Middleware - QuestionModelMW", () => {
     async localDebugV2(inputs: Inputs): Promise<Result<any, FxError>> {
       return this._return(inputs);
     }
-    async localDebugV3(inputs: Inputs): Promise<Result<any, FxError>> {
-      return this._return(inputs);
-    }
     async publishApplicationV2(inputs: Inputs): Promise<Result<any, FxError>> {
       return this._return(inputs);
     }
@@ -100,13 +100,7 @@ describe("Middleware - QuestionModelMW", () => {
     async init(inputs: Inputs): Promise<Result<any, FxError>> {
       return this._return(inputs);
     }
-    async addModule(inputs: Inputs): Promise<Result<any, FxError>> {
-      return this._return(inputs);
-    }
-    async addResource(inputs: Inputs): Promise<Result<any, FxError>> {
-      return this._return(inputs);
-    }
-    async scaffold(inputs: Inputs): Promise<Result<any, FxError>> {
+    async addFeature(inputs: Inputs): Promise<Result<any, FxError>> {
       return this._return(inputs);
     }
     async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
@@ -142,15 +136,7 @@ describe("Middleware - QuestionModelMW", () => {
       return ok(node);
     }
 
-    async _getQuestionsForAddModule(
-      inputs: v2.InputsWithProjectPath,
-      solution: v3.ISolution,
-      context: v2.Context
-    ): Promise<Result<QTreeNode | undefined, FxError>> {
-      return ok(node);
-    }
-
-    async _getQuestionsForAddResource(
+    async _getQuestionsForAddFeature(
       inputs: v2.InputsWithProjectPath,
       solution: v3.ISolution,
       context: v2.Context
@@ -182,14 +168,7 @@ describe("Middleware - QuestionModelMW", () => {
     ): Promise<Result<QTreeNode | undefined, FxError>> {
       return ok(node);
     }
-    async _getQuestionsForScaffold(
-      inputs: v2.InputsWithProjectPath,
-      solution: v3.ISolution,
-      context: v2.Context,
-      envInfo: v3.EnvInfoV3
-    ): Promise<Result<QTreeNode | undefined, FxError>> {
-      return ok(node);
-    }
+
     async _getQuestionsForPublish(
       inputs: v2.InputsWithProjectPath,
       solution: v3.ISolution,
@@ -212,14 +191,11 @@ describe("Middleware - QuestionModelMW", () => {
     deployArtifactsV2: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
     deployArtifactsV3: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
     localDebugV2: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
-    localDebugV3: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
     publishApplicationV2: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
     publishApplicationV3: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
     executeUserTask: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
     init: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
-    addModule: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
-    scaffold: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
-    addResource: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
+    addFeature: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
   });
 
   it("success to run question model for V3 API", async () => {
@@ -235,17 +211,7 @@ describe("Middleware - QuestionModelMW", () => {
     }
     {
       const inputs: Inputs = { platform: Platform.VSCode };
-      const res = await my.addModule(inputs);
-      assert.isTrue(res.isOk() && res.value === true);
-    }
-    {
-      const inputs: Inputs = { platform: Platform.VSCode };
-      const res = await my.scaffold(inputs);
-      assert.isTrue(res.isOk() && res.value === true);
-    }
-    {
-      const inputs: Inputs = { platform: Platform.VSCode };
-      const res = await my.addResource(inputs);
+      const res = await my.addFeature(inputs);
       assert.isTrue(res.isOk() && res.value === true);
     }
     {
@@ -266,11 +232,6 @@ describe("Middleware - QuestionModelMW", () => {
     {
       const inputs: Inputs = { platform: Platform.VSCode };
       const res = await my.deployArtifactsV3(inputs);
-      assert.isTrue(res.isOk() && res.value === true);
-    }
-    {
-      const inputs: Inputs = { platform: Platform.VSCode };
-      const res = await my.localDebugV3(inputs);
       assert.isTrue(res.isOk() && res.value === true);
     }
     {
@@ -383,69 +344,7 @@ describe("Middleware - QuestionModelMW", () => {
   });
   it("Core's getQuestion APIs", async () => {
     const solution = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
-    sandbox
-      .stub(solution, "getQuestionsForScaffold")
-      .callsFake(async (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(undefined);
-      });
-    sandbox
-      .stub(solution, "getQuestionsForAddResource")
-      .callsFake(async (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(undefined);
-      });
-    sandbox
-      .stub(solution, "getQuestionsForAddModule")
-      .callsFake(async (ctx: v2.Context, inputs: v2.InputsWithProjectPath) => {
-        return ok(undefined);
-      });
-    sandbox
-      .stub(solution, "getQuestionsForProvision")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          tokenProvider: TokenProvider,
-          envInfo?: v2.DeepReadonly<v3.EnvInfoV3>
-        ) => {
-          return ok(undefined);
-        }
-      );
-    sandbox
-      .stub(solution, "getQuestionsForLocalProvision")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          tokenProvider: TokenProvider,
-          localSettings?: v2.DeepReadonly<Json>
-        ) => {
-          return ok(undefined);
-        }
-      );
-    sandbox
-      .stub(solution, "getQuestionsForDeploy")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-          tokenProvider: TokenProvider
-        ) => {
-          return ok(undefined);
-        }
-      );
-    sandbox
-      .stub(solution, "getQuestionsForPublish")
-      .callsFake(
-        async (
-          ctx: v2.Context,
-          inputs: v2.InputsWithProjectPath,
-          envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-          tokenProvider: AppStudioTokenProvider
-        ) => {
-          return ok(undefined);
-        }
-      );
+    mockSolutionV3getQuestionsAPI(solution, sandbox);
     assert.isTrue(true);
   });
 });

@@ -884,51 +884,57 @@ async function doAddFeature(
     return err(addFeatureRes.error);
   }
   if (addFeatureRes.value) {
-    if (addFeatureRes.value.kind === "bicep") {
-      const armTemplate = addFeatureRes.value.template as ArmTemplateResult;
-      generateArmFromResult(
-        armTemplate,
-        bicepOrchestrationTemplate,
-        inputs.feature,
-        moduleProvisionFiles,
-        moduleConfigFiles
-      );
-      // notify other plugins
-      for (const pluginName of pluginNames) {
-        if (pluginName === inputs.feature) continue;
-        const plugin = Container.get<v3.FeaturePlugin>(pluginName);
-        if (plugin.afterOtherFeaturesAdded) {
-          const notifyRes = await plugin.afterOtherFeaturesAdded(ctx, {
-            ...inputs,
-            features: [
-              {
-                name: inputs.feature,
-                value: addFeatureRes.value,
-              },
-            ],
-          });
-          if (notifyRes.isErr()) {
-            return err(notifyRes.error);
-          }
-          if (notifyRes.value && notifyRes.value.kind === "bicep") {
-            const armTemplate = notifyRes.value.template as ArmTemplateResult;
-            generateArmFromResult(
-              armTemplate,
-              bicepOrchestrationTemplate,
-              plugin.name,
-              moduleProvisionFiles,
-              moduleConfigFiles
-            );
+    for (const template of addFeatureRes.value) {
+      if (template.kind === "bicep") {
+        const armTemplate = template.template as ArmTemplateResult;
+        generateArmFromResult(
+          armTemplate,
+          bicepOrchestrationTemplate,
+          inputs.feature,
+          moduleProvisionFiles,
+          moduleConfigFiles
+        );
+      }
+    }
+    // notify other plugins
+    for (const pluginName of pluginNames) {
+      if (pluginName === inputs.feature) continue;
+      const plugin = Container.get<v3.FeaturePlugin>(pluginName);
+      if (plugin.afterOtherFeaturesAdded) {
+        const notifyRes = await plugin.afterOtherFeaturesAdded(ctx, {
+          ...inputs,
+          features: [
+            {
+              name: inputs.feature,
+              value: addFeatureRes.value,
+            },
+          ],
+        });
+        if (notifyRes.isErr()) {
+          return err(notifyRes.error);
+        }
+        if (notifyRes.value) {
+          for (const template of notifyRes.value) {
+            if (template.kind === "bicep") {
+              const armTemplate = template.template as ArmTemplateResult;
+              generateArmFromResult(
+                armTemplate,
+                bicepOrchestrationTemplate,
+                plugin.name,
+                moduleProvisionFiles,
+                moduleConfigFiles
+              );
+            }
           }
         }
       }
-      await persistBicepTemplates(
-        bicepOrchestrationTemplate,
-        moduleProvisionFiles,
-        moduleConfigFiles,
-        inputs.projectPath
-      );
     }
+    await persistBicepTemplates(
+      bicepOrchestrationTemplate,
+      moduleProvisionFiles,
+      moduleConfigFiles,
+      inputs.projectPath
+    );
   }
   return ok(undefined); // Nothing to return when success
 }

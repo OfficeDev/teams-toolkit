@@ -6,7 +6,7 @@ export interface AzureIdentity extends AzureResource {
   identityClientId: string;
 }
 
-export interface AzureStorage extends AzureResource {
+export interface FrontendHostingResource extends AzureResource {
   domain: string;
   endpoint: string;
   storageResourceId: string;

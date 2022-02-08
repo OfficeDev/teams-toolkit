@@ -18,10 +18,6 @@ import {
   combine,
   Json,
   UserError,
-  IStaticTab,
-  IConfigurableTab,
-  IBot,
-  IComposeExtension,
   ProjectSettings,
   v3,
 } from "@microsoft/teamsfx-api";
@@ -34,6 +30,7 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
   SolutionSource,
+  PluginNames,
 } from "../constants";
 import * as util from "util";
 import {
@@ -55,7 +52,7 @@ import { scaffoldByPlugins } from "./scaffolding";
 import { generateResourceTemplateForPlugins } from "./generateResourceTemplate";
 import { scaffoldLocalDebugSettings } from "../debug/scaffolding";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
-import { BuiltInResourcePluginNames } from "../v3/constants";
+import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { isVSProject, OperationNotSupportedForExistingAppError } from "../../../../core";
 import { TeamsAppSolutionNameV2 } from "./constants";
 export async function executeUserTask(
@@ -234,7 +231,7 @@ export async function addCapability(
     ctx.projectSetting.solutionSettings = solutionSettings;
   }
   const originalSettings = cloneDeep(solutionSettings);
-  const inputsNew: v3.PluginAddResourceInputs = {
+  const inputsNew = {
     ...inputs,
     projectPath: inputs.projectPath!,
     existingResources: originalSettings.activeResourcePlugins,
@@ -263,7 +260,7 @@ export async function addCapability(
   const toAddTab = capabilitiesAnswer.includes(TabOptionItem.id);
   const toAddBot = capabilitiesAnswer.includes(BotOptionItem.id);
   const toAddME = capabilitiesAnswer.includes(MessageExtensionItem.id);
-  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+  const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
   const inputsWithProjectPath = inputs as v2.InputsWithProjectPath;
   const tabExceedRes = await appStudioPlugin.capabilityExceedLimit(
     ctx,
@@ -307,15 +304,7 @@ export async function addCapability(
     );
   }
 
-  const capabilitiesToAddManifest: (
-    | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
-    | { name: "configurableTab"; snippet?: { local: IConfigurableTab; remote: IConfigurableTab } }
-    | { name: "Bot"; snippet?: { local: IBot; remote: IBot } }
-    | {
-        name: "MessageExtension";
-        snippet?: { local: IComposeExtension; remote: IComposeExtension };
-      }
-  )[] = [];
+  const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
   const pluginNamesToScaffold: Set<string> = new Set<string>();
   const pluginNamesToArm: Set<string> = new Set<string>();
   const newCapabilitySet = new Set<string>();
@@ -386,7 +375,7 @@ export async function addCapability(
   );
   if (pluginsToScaffold.length > 0) {
     const scaffoldRes = await scaffoldCodeAndResourceTemplate(
-      { ...ctx, appManifest: { local: {}, remote: {} } },
+      ctx,
       inputsNew,
       localSettings,
       pluginsToScaffold,
@@ -438,8 +427,8 @@ export function showUpdateArmTemplateNotice(ui?: UserInteraction) {
 }
 
 async function scaffoldCodeAndResourceTemplate(
-  ctx: v3.ContextWithManifest,
-  inputs: v3.PluginAddResourceInputs,
+  ctx: v2.Context,
+  inputs: Inputs,
   localSettings: Json,
   pluginsToScaffold: v2.ResourcePlugin[],
   pluginsToDoArm?: v2.ResourcePlugin[]
@@ -535,6 +524,11 @@ export async function addResource(
   let scaffoldApim = false;
   // 4. check Function
   if (addFunc) {
+    // AAD plugin needs to be activated when adding function.
+    // Since APIM also have dependency on Function, will only add depenedency here.
+    if (!solutionSettings.activeResourcePlugins?.includes(PluginNames.AAD)) {
+      solutionSettings.activeResourcePlugins?.push(PluginNames.AAD);
+    }
     const functionPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
     pluginsToScaffold.push(functionPlugin);
     if (!alreadyHaveFunction) {
@@ -578,7 +572,7 @@ export async function addResource(
   // 8. scaffold and update arm
   if (pluginsToScaffold.length > 0 || pluginsToDoArm.length > 0) {
     let scaffoldRes = await scaffoldCodeAndResourceTemplate(
-      { ...ctx, appManifest: { local: {}, remote: {} } },
+      ctx,
       inputsNew,
       localSettings,
       pluginsToScaffold,

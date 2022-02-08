@@ -18,6 +18,7 @@
     "env-cmd": "^10.1.0"
   },
   "scripts": {
+    "dev:teamsfx": "env-cmd --silent -f .env.teamsfx.local npm run start",
     "start": "react-scripts start",
     "build": "react-scripts build",
     "build:teamsfx": "cross-env-shell \"env-cmd -f .env.teamsfx.${TEAMS_FX_ENV} npm run build\"",

@@ -8,12 +8,10 @@ import * as CLI from "../questions/cliQuestion";
 
 export interface IQuestionManager {
   callFunc(func: Func, ctx: PluginContext): Promise<any>;
-  addResource(ctx: PluginContext, apimConfig?: IApimPluginConfig): Promise<QTreeNode>;
   deploy(ctx: PluginContext, apimConfig?: IApimPluginConfig): Promise<QTreeNode>;
 }
 
 export class VscQuestionManager implements IQuestionManager {
-  private readonly apimServiceQuestion: VSCode.ApimServiceQuestion;
   private readonly openApiDocumentQuestion: VSCode.OpenApiDocumentQuestion;
   private readonly existingOpenApiDocumentFunc: VSCode.ExistingOpenApiDocumentFunc;
   private readonly apiPrefixQuestion: VSCode.ApiPrefixQuestion;
@@ -21,14 +19,12 @@ export class VscQuestionManager implements IQuestionManager {
   private readonly newApiVersionQuestion: VSCode.NewApiVersionQuestion;
 
   constructor(
-    apimServiceQuestion: VSCode.ApimServiceQuestion,
     openApiDocumentQuestion: VSCode.OpenApiDocumentQuestion,
     apiPrefixQuestion: VSCode.ApiPrefixQuestion,
     apiVersionQuestion: VSCode.ApiVersionQuestion,
     newApiVersionQuestion: VSCode.NewApiVersionQuestion,
     existingOpenApiDocumentFunc: VSCode.ExistingOpenApiDocumentFunc
   ) {
-    this.apimServiceQuestion = apimServiceQuestion;
     this.openApiDocumentQuestion = openApiDocumentQuestion;
     this.apiPrefixQuestion = apiPrefixQuestion;
     this.apiVersionQuestion = apiVersionQuestion;
@@ -38,14 +34,6 @@ export class VscQuestionManager implements IQuestionManager {
 
   async callFunc(func: Func, ctx: PluginContext): Promise<any> {
     throw BuildError(NotImplemented);
-  }
-
-  async addResource(ctx: PluginContext, apimConfig: IApimPluginConfig): Promise<QTreeNode> {
-    const rootNode = new QTreeNode({
-      type: "group",
-    });
-
-    return rootNode;
   }
 
   async deploy(ctx: PluginContext, apimConfig: IApimPluginConfig): Promise<QTreeNode> {
@@ -84,20 +72,14 @@ export class VscQuestionManager implements IQuestionManager {
 }
 
 export class CliQuestionManager implements IQuestionManager {
-  private readonly apimServiceNameQuestion: CLI.ApimServiceNameQuestion;
-  private readonly apimResourceGroupQuestion: CLI.ApimResourceGroupQuestion;
   private readonly openApiDocumentQuestion: CLI.OpenApiDocumentQuestion;
   private readonly apiPrefixQuestion: CLI.ApiPrefixQuestion;
   private readonly apiVersionQuestion: CLI.ApiVersionQuestion;
   constructor(
-    apimServiceNameQuestion: CLI.ApimServiceNameQuestion,
-    apimResourceGroupQuestion: CLI.ApimResourceGroupQuestion,
     openApiDocumentQuestion: CLI.OpenApiDocumentQuestion,
     apiPrefixQuestion: CLI.ApiPrefixQuestion,
     apiVersionQuestion: CLI.ApiVersionQuestion
   ) {
-    this.apimServiceNameQuestion = apimServiceNameQuestion;
-    this.apimResourceGroupQuestion = apimResourceGroupQuestion;
     this.openApiDocumentQuestion = openApiDocumentQuestion;
     this.apiPrefixQuestion = apiPrefixQuestion;
     this.apiVersionQuestion = apiVersionQuestion;
@@ -105,18 +87,6 @@ export class CliQuestionManager implements IQuestionManager {
 
   async callFunc(func: Func, ctx: PluginContext): Promise<any> {
     throw BuildError(NotImplemented);
-  }
-
-  async addResource(ctx: PluginContext): Promise<QTreeNode> {
-    const rootNode = new QTreeNode({
-      type: "group",
-    });
-
-    const apimResourceGroupQuestion = this.apimResourceGroupQuestion.getQuestion();
-    rootNode.addChild(new QTreeNode(apimResourceGroupQuestion));
-    const apimServiceNameQuestion = this.apimServiceNameQuestion.getQuestion();
-    rootNode.addChild(new QTreeNode(apimServiceNameQuestion));
-    return rootNode;
   }
 
   async deploy(): Promise<QTreeNode> {

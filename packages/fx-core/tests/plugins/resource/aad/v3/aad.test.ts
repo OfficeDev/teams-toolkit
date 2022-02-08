@@ -25,7 +25,10 @@ import {
   createPermissionRequestFile,
   getPermissionRequest,
 } from "../../../../../src/plugins/resource/aad/v3";
-import { BuiltInResourcePluginNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
+import {
+  BuiltInFeaturePluginNames,
+  TeamsFxAzureSolutionNameV3,
+} from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 import { deleteFolder, MockTools, randomAppName } from "../../../../core/utils";
 import * as uuid from "uuid";
 describe("AAD resource plugin V3", () => {
@@ -66,12 +69,12 @@ describe("AAD resource plugin V3", () => {
       config: envConfig,
       state: {
         solution: {},
-        [BuiltInResourcePluginNames.aad]: {},
+        [BuiltInFeaturePluginNames.aad]: {},
       },
     };
     const skip = await Utils.skipCreateAadForProvision(envInfo);
     assert.isTrue(skip);
-    const aadResource = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
+    const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
     assert.isTrue(aadResource.objectId === envConfig.auth?.objectId);
     assert.isTrue(aadResource.clientId === envConfig.auth?.clientId);
     assert.isTrue(aadResource.clientSecret === envConfig.auth?.clientSecret);
@@ -91,7 +94,7 @@ describe("AAD resource plugin V3", () => {
       config: envConfig,
       state: {
         solution: {},
-        [BuiltInResourcePluginNames.aad]: {},
+        [BuiltInFeaturePluginNames.aad]: {},
       },
     };
     const skip = await Utils.skipCreateAadForProvision(envInfo);
@@ -111,7 +114,7 @@ describe("AAD resource plugin V3", () => {
       config: envConfig,
       state: {
         solution: {},
-        [BuiltInResourcePluginNames.aad]: {
+        [BuiltInFeaturePluginNames.aad]: {
           objectId: "mockObjectId",
         },
       },
@@ -217,13 +220,13 @@ describe("AAD resource plugin V3", () => {
       config: envConfig,
       state: {
         solution: {},
-        [BuiltInResourcePluginNames.aad]: {
+        [BuiltInFeaturePluginNames.aad]: {
           objectId: "mockObjectId",
           clientSecret: "mockClientSecret",
         },
       },
     };
-    const aadResource = envInfo.state[BuiltInResourcePluginNames.aad] as v3.AADApp;
+    const aadResource = envInfo.state[BuiltInFeaturePluginNames.aad] as v3.AADApp;
     const config = new ProvisionConfig(false);
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
@@ -254,7 +257,7 @@ describe("AAD resource plugin V3", () => {
       config: envConfig,
       state: {
         solution: {},
-        [BuiltInResourcePluginNames.aad]: {
+        [BuiltInFeaturePluginNames.aad]: {
           objectId: "mockObjectId",
           clientSecret: "mockClientSecret",
         },
@@ -331,38 +334,35 @@ describe("AAD resource plugin V3", () => {
       config: envConfig,
       state: {
         solution: {},
-        [BuiltInResourcePluginNames.aad]: {
+        [BuiltInFeaturePluginNames.aad]: {
           objectId: "mockObjectId",
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",
           oauth2PermissionScopeId: "mockOauth2PermissionScopeId",
         },
-        [BuiltInResourcePluginNames.storage]: {
+        [BuiltInFeaturePluginNames.frontend]: {
           domain: "mydomain.com",
         },
-        [BuiltInResourcePluginNames.bot]: {
+        [BuiltInFeaturePluginNames.bot]: {
           botId: uuid.v4(),
         },
       },
     };
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
-    projectSettings.solutionSettings!.modules = [
-      {
-        capabilities: ["Tab"],
-        hostingPlugin: BuiltInResourcePluginNames.storage,
-      },
-      {
-        capabilities: ["Bot"],
-        hostingPlugin: BuiltInResourcePluginNames.bot,
-      },
-    ];
+    projectSettings.solutionSettings = {
+      name: TeamsFxAzureSolutionNameV3,
+      version: "1.0.0",
+      capabilities: ["Tab", "Bot"],
+      azureResources: [],
+      activeResourcePlugins: [BuiltInFeaturePluginNames.frontend, BuiltInFeaturePluginNames.bot],
+    };
     const ctx = createV2Context(projectSettings);
     const config = new SetApplicationInContextConfig(false);
     config.restoreConfigFromEnvInfo(ctx, envInfo);
-    assert.equal(envInfo.state[BuiltInResourcePluginNames.bot].botId, config.botId);
-    assert.equal(envInfo.state[BuiltInResourcePluginNames.aad].clientId, config.clientId);
-    assert.equal(envInfo.state[BuiltInResourcePluginNames.storage].domain, config.frontendDomain);
+    assert.equal(envInfo.state[BuiltInFeaturePluginNames.bot].botId, config.botId);
+    assert.equal(envInfo.state[BuiltInFeaturePluginNames.aad].clientId, config.clientId);
+    assert.equal(envInfo.state[BuiltInFeaturePluginNames.frontend].domain, config.frontendDomain);
   });
   it("SetApplicationInContextConfig - restoreConfigFromEnvInfo - failure", async () => {
     const envConfig: EnvConfig = {
@@ -378,32 +378,29 @@ describe("AAD resource plugin V3", () => {
       config: envConfig,
       state: {
         solution: {},
-        [BuiltInResourcePluginNames.aad]: {
+        [BuiltInFeaturePluginNames.aad]: {
           objectId: "mockObjectId",
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",
           oauth2PermissionScopeId: "mockOauth2PermissionScopeId",
         },
-        [BuiltInResourcePluginNames.storage]: {
+        [BuiltInFeaturePluginNames.frontend]: {
           domain: "mydomain.com",
         },
-        [BuiltInResourcePluginNames.bot]: {
+        [BuiltInFeaturePluginNames.bot]: {
           botId: uuid.v4(),
         },
       },
     };
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
-    projectSettings.solutionSettings!.modules = [
-      {
-        capabilities: ["Tab"],
-        hostingPlugin: BuiltInResourcePluginNames.storage,
-      },
-      {
-        capabilities: ["Bot"],
-        hostingPlugin: BuiltInResourcePluginNames.bot,
-      },
-    ];
+    projectSettings.solutionSettings = {
+      name: TeamsFxAzureSolutionNameV3,
+      version: "1.0.0",
+      capabilities: ["Tab", "Bot"],
+      azureResources: [],
+      activeResourcePlugins: [BuiltInFeaturePluginNames.frontend, BuiltInFeaturePluginNames.bot],
+    };
     const config = new SetApplicationInContextConfig(true);
     const ctx = createV2Context(projectSettings);
     try {
@@ -471,17 +468,17 @@ describe("AAD resource plugin V3", () => {
       config: envConfig,
       state: {
         solution: {},
-        [BuiltInResourcePluginNames.aad]: {
+        [BuiltInFeaturePluginNames.aad]: {
           objectId: "mockObjectId",
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",
           applicationIdUris: "https://oossyyy.com",
         },
-        [BuiltInResourcePluginNames.storage]: {
+        [BuiltInFeaturePluginNames.frontend]: {
           domain: "mydomain.com",
           endpoint: "https://mydomain.com/tab",
         },
-        [BuiltInResourcePluginNames.bot]: {
+        [BuiltInFeaturePluginNames.bot]: {
           botId: uuid.v4(),
           siteEndpoint: "https://mydomain.com/bot",
         },
@@ -489,26 +486,23 @@ describe("AAD resource plugin V3", () => {
     };
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
-    projectSettings.solutionSettings!.modules = [
-      {
-        capabilities: ["Tab"],
-        hostingPlugin: BuiltInResourcePluginNames.storage,
-      },
-      {
-        capabilities: ["Bot"],
-        hostingPlugin: BuiltInResourcePluginNames.bot,
-      },
-    ];
+    projectSettings.solutionSettings = {
+      name: TeamsFxAzureSolutionNameV3,
+      version: "1.0.0",
+      capabilities: ["Tab", "Bot"],
+      azureResources: [],
+      activeResourcePlugins: [BuiltInFeaturePluginNames.frontend, BuiltInFeaturePluginNames.bot],
+    };
     const ctx = createV2Context(projectSettings);
     const config = new PostProvisionConfig(true);
     config.restoreConfigFromEnvInfo(ctx, envInfo);
     assert.equal(
-      envInfo.state[BuiltInResourcePluginNames.storage].endpoint,
+      envInfo.state[BuiltInFeaturePluginNames.frontend].endpoint,
       config.frontendEndpoint
     );
-    assert.equal(envInfo.state[BuiltInResourcePluginNames.bot].siteEndpoint, config.botEndpoint);
-    assert.equal(envInfo.state[BuiltInResourcePluginNames.aad].objectId, config.objectId);
-    assert.equal(envInfo.state[BuiltInResourcePluginNames.aad].clientId, config.clientId);
+    assert.equal(envInfo.state[BuiltInFeaturePluginNames.bot].siteEndpoint, config.botEndpoint);
+    assert.equal(envInfo.state[BuiltInFeaturePluginNames.aad].objectId, config.objectId);
+    assert.equal(envInfo.state[BuiltInFeaturePluginNames.aad].clientId, config.clientId);
   });
   it("PostProvisionConfig - restoreConfigFromEnvInfo - failure", async () => {
     const envConfig: EnvConfig = {
@@ -524,16 +518,16 @@ describe("AAD resource plugin V3", () => {
       config: envConfig,
       state: {
         solution: {},
-        [BuiltInResourcePluginNames.aad]: {
+        [BuiltInFeaturePluginNames.aad]: {
           objectId: "mockObjectId",
           clientId: "mockClientId",
           clientSecret: "mockClientSecret",
         },
-        [BuiltInResourcePluginNames.storage]: {
+        [BuiltInFeaturePluginNames.frontend]: {
           domain: "mydomain.com",
           endpoint: "https://mydomain.com/tab",
         },
-        [BuiltInResourcePluginNames.bot]: {
+        [BuiltInFeaturePluginNames.bot]: {
           botId: uuid.v4(),
           siteEndpoint: "https://mydomain.com/bot",
         },
@@ -541,16 +535,13 @@ describe("AAD resource plugin V3", () => {
     };
     const projectSettings = newProjectSettings();
     projectSettings.appName = randomAppName();
-    projectSettings.solutionSettings!.modules = [
-      {
-        capabilities: ["Tab"],
-        hostingPlugin: BuiltInResourcePluginNames.storage,
-      },
-      {
-        capabilities: ["Bot"],
-        hostingPlugin: BuiltInResourcePluginNames.bot,
-      },
-    ];
+    projectSettings.solutionSettings = {
+      name: TeamsFxAzureSolutionNameV3,
+      version: "1.0.0",
+      capabilities: ["Tab", "Bot"],
+      azureResources: [],
+      activeResourcePlugins: [BuiltInFeaturePluginNames.frontend, BuiltInFeaturePluginNames.bot],
+    };
     const ctx = createV2Context(projectSettings);
     const config = new PostProvisionConfig(true);
     try {

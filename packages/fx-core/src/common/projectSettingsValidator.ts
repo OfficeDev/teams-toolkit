@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { ProjectSettings, v3 } from "@microsoft/teamsfx-api";
+import { AzureSolutionSettings, ProjectSettings } from "@microsoft/teamsfx-api";
 import {
   BotOptionItem,
   MessageExtensionItem,
@@ -11,7 +11,7 @@ import {
 export function validateProjectSettings(projectSettings: ProjectSettings): string | undefined {
   if (!projectSettings) return "empty projectSettings";
   if (!projectSettings.solutionSettings) return undefined;
-  const solutionSettings = projectSettings.solutionSettings as v3.TeamsFxSolutionSettings;
+  const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
   if (solutionSettings.hostType === undefined) return "empty solutionSettings.hostType";
   let validateRes = validateStringArray(solutionSettings.azureResources);
   if (validateRes) {
@@ -28,19 +28,6 @@ export function validateProjectSettings(projectSettings: ProjectSettings): strin
   validateRes = validateStringArray(solutionSettings.activeResourcePlugins);
   if (validateRes) {
     return `solutionSettings.activeResourcePlugins validation failed: ${validateRes}`;
-  }
-  return undefined;
-}
-
-export function validateProjectSettingsV3(projectSettings: ProjectSettings): string | undefined {
-  const res = validateProjectSettings(projectSettings);
-  if (res) return res;
-  const solutionSettings = projectSettings.solutionSettings as v3.TeamsFxSolutionSettings;
-  if (!solutionSettings.modules) {
-    return "solutionSettings.modules is undefined";
-  }
-  if (!Array.isArray(solutionSettings.modules)) {
-    return "solutionSettings.modules is not array";
   }
   return undefined;
 }

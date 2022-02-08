@@ -11,6 +11,7 @@ import {
   TelemetryProperty,
   TelemetrySuccess,
 } from "../../common/telemetry";
+import { solutionGlobalVars } from "../../plugins/solution/fx-solution/v3/solutionGlobalVars";
 
 export interface ErrorHandleOption {
   error?: FxError;
@@ -48,6 +49,7 @@ export function CommonErrorHandlerMW(option?: ErrorHandleOption): Middleware {
           ? option.telemetry.eventName
           : kebabCase(ctx.method!);
         option.telemetry.properties![TelemetryProperty.Success] = TelemetrySuccess.Yes;
+        option.telemetry.properties![TelemetryProperty.AppId] = solutionGlobalVars.TeamsAppId || "";
         sendTelemetryEvent(option.telemetry.component, event, option.telemetry.properties);
       }
     } catch (e) {
@@ -62,6 +64,7 @@ export function CommonErrorHandlerMW(option?: ErrorHandleOption): Middleware {
           ? option.telemetry.eventName
           : kebabCase(ctx.method!);
         option.telemetry.properties![TelemetryProperty.Success] = TelemetrySuccess.No;
+        option.telemetry.properties![TelemetryProperty.AppId] = solutionGlobalVars.TeamsAppId || "";
         sendTelemetryErrorEvent(
           option.telemetry.component,
           event,

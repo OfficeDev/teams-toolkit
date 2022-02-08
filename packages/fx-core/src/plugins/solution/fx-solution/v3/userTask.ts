@@ -6,7 +6,6 @@ import {
   Func,
   FxError,
   Inputs,
-  Json,
   NotImplementedError,
   ok,
   QTreeNode,
@@ -20,7 +19,6 @@ export async function getQuestionsForUserTask(
   ctx: v2.Context,
   inputs: Inputs,
   func: Func,
-  localSettings: Json,
   envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
@@ -30,7 +28,6 @@ export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
   func: Func,
-  localSettings: Json,
   envInfo: v3.EnvInfoV3,
   tokenProvider: TokenProvider
 ): Promise<Result<unknown, FxError>> {

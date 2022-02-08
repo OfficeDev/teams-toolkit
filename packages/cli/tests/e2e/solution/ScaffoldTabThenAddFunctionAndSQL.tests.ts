@@ -33,13 +33,6 @@ describe("Scaffold Tab then Add Function and SQL", function () {
     const localSettingsPath = path.resolve(projectPath, ".fx", "configs", "localSettings.json");
     const localSettings = await fs.readJSON(localSettingsPath);
     chai.assert.isTrue(localSettings["backend"] != undefined);
-    chai.assert.hasAllKeys(localSettings["backend"], [
-      "functionEndpoint",
-      "functionName",
-      "sqlEndpoint",
-      "sqlDatabaseName",
-      "sqlUserName",
-      "sqlPassword",
-    ]);
+    chai.assert.hasAllKeys(localSettings["backend"], ["functionEndpoint", "functionName"]);
   });
 });

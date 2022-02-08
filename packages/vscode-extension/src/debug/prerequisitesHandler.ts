@@ -318,17 +318,9 @@ async function resolveLocalCertificate(localEnvManager: LocalEnvManager): Promis
   try {
     VsCodeLogInstance.outputChannel.appendLine(`Checking Local Certificate ...`);
     const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
-    const isTrusted: boolean | undefined = await localEnvManager.resolveLocalCertificate(
-      trustDevCert
-    );
-    if (!isTrusted) {
-      result = false;
-      error = new UserError(
-        "CheckCertificateFailure",
-        "Local debug again and select to install certificate",
-        ExtensionSource
-      );
-    }
+    // TODO: Return CheckResult when isTrusted === false
+    VsCodeLogInstance.outputChannel.appendLine(`Checking Local Certificate`);
+    await localEnvManager.resolveLocalCertificate(trustDevCert);
   } catch (err: any) {
     result = false;
     error = assembleError(err);

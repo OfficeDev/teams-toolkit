@@ -30,6 +30,7 @@ import {
   ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
 
+import * as os from "os";
 import * as path from "path";
 import * as util from "util";
 import * as vscode from "vscode";
@@ -68,7 +69,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       // ignore telemetry error
     }
 
-    // [deps] => [backend extension, npm install, account] => [certificate] => [port]
+    // [node, account, certificate] => [deps] => [backend extension, npm install] => [port]
     const checkResults: CheckResult[] = [];
     const localEnvManager = new LocalEnvManager(
       VsCodeLogInstance,
@@ -81,7 +82,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
 
     VsCodeLogInstance.outputChannel.show();
-    VsCodeLogInstance.info("LocalDebug Prerequisites Check");
+    VsCodeLogInstance.outputChannel.appendLine(doctorConstant.Check);
     VsCodeLogInstance.outputChannel.appendLine("");
 
     // node
@@ -93,6 +94,14 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       if (!nodeResult.result) {
         await handleCheckResults(checkResults);
       }
+    }
+
+    // login checker
+    const accountResult = await checkM365Account();
+    checkResults.push(accountResult);
+    if (!accountResult.result) {
+      // account fast fail
+      await handleCheckResults(checkResults);
     }
 
     // local cert
@@ -134,9 +143,6 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
         checkPromises.push(checkNpmInstall("bot", path.join(workspacePath, FolderName.Bot)));
       }
     }
-
-    // login checker
-    checkPromises.push(checkM365Account());
 
     const promiseResults = await Promise.all(checkPromises);
     for (const r of promiseResults) {
@@ -193,7 +199,7 @@ async function checkM365Account(): Promise<CheckResult> {
   let result = true;
   let error = undefined;
   try {
-    VsCodeLogInstance.outputChannel.appendLine(`Checking M365 account`);
+    VsCodeLogInstance.outputChannel.appendLine(`Checking M365 account ...`);
     const token = await tools.tokenProvider.appStudioToken.getAccessToken(true);
     if (token === undefined) {
       // corner case but need to handle
@@ -311,9 +317,9 @@ async function resolveLocalCertificate(localEnvManager: LocalEnvManager): Promis
   let result = true;
   let error = undefined;
   try {
+    VsCodeLogInstance.outputChannel.appendLine(`Checking Local Certificate ...`);
     const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
     // TODO: Return CheckResult when isTrusted === false
-    VsCodeLogInstance.outputChannel.appendLine(`Checking Local Certificate`);
     await localEnvManager.resolveLocalCertificate(trustDevCert);
   } catch (err: any) {
     result = false;
@@ -346,15 +352,15 @@ function handleDepsCheckerError(error: any, dep?: DependencyStatus): FxError {
 }
 
 function handleNodeNotFoundError(error: NodeNotFoundError) {
-  error.message = doctorConstant.NodeNotFound;
+  error.message = `${doctorConstant.NodeNotFound}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
 }
 
 function handleNodeNotSupportedError(error: any, dep: DependencyStatus) {
   const supportedVersions = dep.details.supportedVersions.map((v) => "v" + v).join(" ,");
-  error.message = doctorConstant.NodeNotSupported.split("@CurrentVersion")
+  error.message = `${doctorConstant.NodeNotSupported.split("@CurrentVersion")
     .join(dep.details.installVersion)
     .split("@SupportedVersions")
-    .join(supportedVersions);
+    .join(supportedVersions)}${os.EOL}${doctorConstant.WhiteSpace}${doctorConstant.RestartVSCode}`;
 }
 
 async function checkNpmInstall(component: string, folder: string): Promise<CheckResult> {
@@ -439,6 +445,8 @@ async function handleCheckResults(results: CheckResult[]): Promise<void> {
   const successes = results.filter((a) => a.result);
   const failures = results.filter((a) => !a.result);
   output.show();
+  output.appendLine("");
+  output.appendLine(doctorConstant.Summary);
 
   if (failures.length > 0) {
     shouldStop = true;
@@ -479,7 +487,7 @@ async function handleCheckResults(results: CheckResult[]): Promise<void> {
 
   if (shouldStop) {
     throw returnUserError(
-      new Error(`Failed to validate prerequisites (${checkers})`),
+      new Error(`Prerequisites Check Failed, please fix all issues above then local debug again.`),
       ExtensionSource,
       ExtensionErrors.PrerequisitesValidationError
     );

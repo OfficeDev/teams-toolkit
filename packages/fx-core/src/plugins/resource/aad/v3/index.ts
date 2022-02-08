@@ -100,7 +100,7 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const res = await createPermissionRequestFile(inputs.projectPath);
     if (res.isErr()) return err(res.error);
     const loadRes = await ctx.appManifestProvider.loadManifest(ctx, inputs);
@@ -111,7 +111,7 @@ export class AadAppForTeamsPluginV3 implements v3.FeaturePlugin {
       resource: `{{{state.${Plugins.pluginNameComplex}.applicationIdUris}}}`,
     };
     await ctx.appManifestProvider.saveManifest(ctx, inputs, manifest);
-    return ok(undefined);
+    return ok([]);
   }
 
   @hooks([

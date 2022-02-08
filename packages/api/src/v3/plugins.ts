@@ -44,7 +44,7 @@ export interface ContextWithManifestProvider extends Context {
 export interface OtherFeaturesAddedInputs extends InputsWithProjectPath {
   features: {
     name: string; //plugin name
-    value: ResourceTemplate | undefined; //plugin addFeature result
+    value: ResourceTemplate[]; //plugin addFeature result
   }[];
 }
 
@@ -81,12 +81,12 @@ export interface FeaturePlugin {
    *
    * @param {ContextWithManifestProvider} context with manifest provider
    * @param {InputsWithProjectPath} inputs with project path
-   * @returns {ResourceTemplate | undefined} resource template
+   * @returns {ResourceTemplate[]} resource template
    */
   addFeature: (
     ctx: ContextWithManifestProvider,
     inputs: InputsWithProjectPath
-  ) => Promise<Result<ResourceTemplate | undefined, FxError>>;
+  ) => Promise<Result<ResourceTemplate[], FxError>>;
 
   /**
    * triggered after other feature(s) is/are added
@@ -98,12 +98,12 @@ export interface FeaturePlugin {
    *
    * @param {EnvInfoV3} envInfo optional
    *
-   * @returns {ResourceTemplate | undefined} resource template
+   * @returns {ResourceTemplate[]} resource template
    */
   afterOtherFeaturesAdded?: (
     ctx: ContextWithManifestProvider,
     inputs: OtherFeaturesAddedInputs
-  ) => Promise<Result<ResourceTemplate | undefined, FxError>>;
+  ) => Promise<Result<ResourceTemplate[], FxError>>;
 
   /**
    * customized questions for provision

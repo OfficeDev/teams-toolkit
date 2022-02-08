@@ -392,7 +392,7 @@ export class FxCore implements v3.ICore {
         const addFeatureInputs: v2.InputsWithProjectPath = {
           ...inputs,
           projectPath: projectPath,
-          feature: BuiltInFeaturePluginNames.aspDotNet, //TODO
+          feature: BuiltInFeaturePluginNames.dotnet, //TODO
         };
         const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
         if (addFeatureRes.isErr()) {

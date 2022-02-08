@@ -56,18 +56,6 @@ export class ApimPlugin implements Plugin {
     return await this.executeWithFxError(PluginLifeCycle.GetQuestions, _getQuestions, ctx, stage);
   }
 
-  public async getQuestionsForUserTask(
-    func: Func,
-    ctx: PluginContext
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    return await this.executeWithFxError(
-      PluginLifeCycle.GetQuestionsForUserTask,
-      _getQuestionsForUserTask,
-      ctx,
-      func
-    );
-  }
-
   public async callFunc(func: Func, ctx: PluginContext): Promise<Result<any, FxError>> {
     return await this.executeWithFxError(PluginLifeCycle.CallFunc, _callFunc, ctx, func);
   }
@@ -189,24 +177,6 @@ async function _getQuestions(
   }
 }
 
-async function _getQuestionsForUserTask(
-  ctx: PluginContext,
-  progressBar: ProgressBar,
-  func: Func
-): Promise<QTreeNode | undefined> {
-  const questionManager = await Factory.buildQuestionManager(
-    ctx.answers!.platform!,
-    ctx.envInfo!,
-    ctx.azureAccountProvider,
-    ctx.telemetryReporter,
-    ctx.logProvider
-  );
-  if (func.method === "addResource") {
-    return await questionManager.addResource();
-  }
-  return undefined;
-}
-
 async function _callFunc(ctx: PluginContext, progressBar: ProgressBar, func: Func): Promise<any> {
   const questionManager = await Factory.buildQuestionManager(
     ctx.answers!.platform!,
@@ -219,30 +189,16 @@ async function _callFunc(ctx: PluginContext, progressBar: ProgressBar, func: Fun
 }
 
 async function _scaffold(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const answer = buildAnswer(ctx.answers);
   const scaffoldManager = await Factory.buildScaffoldManager(
     ctx.telemetryReporter,
     ctx.logProvider
   );
-
   const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
-
-  if (answer.validate) {
-    await answer.validate(PluginLifeCycle.Scaffold, apimConfig, ctx.root);
-  }
-
-  answer.save(PluginLifeCycle.Scaffold, apimConfig);
-
   await progressBar.next(ProgressStep.Scaffold, ProgressMessages[ProgressStep.Scaffold].Scaffold);
   await scaffoldManager.scaffold(appName, ctx.root);
 }
 
 async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(
-    ctx.envInfo.envName,
-    ctx.envInfo.state.get(TeamsToolkitComponent.Solution)
-  );
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
 
   const apimManager = await Factory.buildApimManager(
@@ -264,7 +220,7 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
     ProgressStep.Provision,
     ProgressMessages[ProgressStep.Provision].CreateApim
   );
-  await apimManager.provision(apimConfig, solutionConfig, appName);
+  await apimManager.provision(apimConfig);
 
   await progressBar.next(
     ProgressStep.Provision,
@@ -307,14 +263,6 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
     ctx.envInfo.envName,
     ctx.envInfo.state.get(TeamsToolkitComponent.AadPlugin)
   );
-
-  const apimManager = await Factory.buildApimManager(
-    ctx.envInfo.envName,
-    ctx.envInfo.state.get(TeamsToolkitComponent.Solution),
-    ctx.telemetryReporter,
-    ctx.azureAccountProvider,
-    ctx.logProvider
-  );
   const aadManager = await Factory.buildAadManager(
     ctx.graphTokenProvider,
     ctx.telemetryReporter,
@@ -325,20 +273,11 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
     ctx.telemetryReporter,
     ctx.logProvider
   );
-
-  const appName = AssertNotEmpty("projectSettings.appName", ctx?.projectSettings?.appName);
-
   await progressBar.next(
     ProgressStep.PostProvision,
     ProgressMessages[ProgressStep.PostProvision].ConfigClientAad
   );
   await aadManager.postProvision(apimConfig, aadConfig, AadDefaultValues.redirectUris);
-
-  await progressBar.next(
-    ProgressStep.PostProvision,
-    ProgressMessages[ProgressStep.PostProvision].ConfigApim
-  );
-  await apimManager.postProvision(apimConfig, ctx, aadConfig, appName);
 
   await progressBar.next(
     ProgressStep.PostProvision,

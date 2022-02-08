@@ -154,7 +154,6 @@ export class LocalCertificateManager {
     await fs.writeFile(certFile, certContent, { encoding: "utf8" });
     await fs.writeFile(keyFile, keyContent, { encoding: "utf8" });
 
-    this.logger?.info(`Local certificate generated to ${certFile}`);
     return thumbprint;
   }
 

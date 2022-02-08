@@ -35,7 +35,12 @@ export class AadAppForTeamsPlugin implements Plugin {
     if (solutionSettings?.migrateFromV1) {
       return false;
     }
-    return solutionSettings.hostType === HostTypeOptionAzure.id;
+    return (
+      solutionSettings.hostType === HostTypeOptionAzure.id &&
+      // For scaffold, activeResourecPlugins is undefined
+      (!solutionSettings.activeResourcePlugins ||
+        solutionSettings.activeResourcePlugins?.includes(Plugins.pluginNameComplex))
+    );
   }
 
   public pluginImpl: AadAppForTeamsImpl = new AadAppForTeamsImpl();

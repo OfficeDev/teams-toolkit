@@ -14,6 +14,7 @@ import {
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
+import { getQuestionsForAddCapability, getQuestionsForAddResource } from "../v2/getQuestions";
 
 export async function getQuestionsForUserTask(
   ctx: v2.Context,
@@ -22,6 +23,12 @@ export async function getQuestionsForUserTask(
   envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (func.method === "addCapability") {
+    return await getQuestionsForAddCapability(ctx, inputs);
+  }
+  if (func.method === "addResource") {
+    return await getQuestionsForAddResource(ctx, inputs, func, envInfo, tokenProvider);
+  }
   return ok(undefined);
 }
 export async function executeUserTask(

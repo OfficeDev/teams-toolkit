@@ -30,6 +30,7 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
   SolutionSource,
+  PluginNames,
 } from "../constants";
 import * as util from "util";
 import {
@@ -54,7 +55,6 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { isVSProject, OperationNotSupportedForExistingAppError } from "../../../../core";
 import { TeamsAppSolutionNameV2 } from "./constants";
-import { PluginNames } from "../constants";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,

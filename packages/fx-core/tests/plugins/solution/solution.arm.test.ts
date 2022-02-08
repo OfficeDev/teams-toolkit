@@ -7,6 +7,7 @@ import {
   ok,
   SolutionContext,
   AzureSolutionSettings,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -23,6 +24,7 @@ import {
   generateArmTemplate,
   pollDeploymentStatus,
 } from "../../../src/plugins/solution/fx-solution/arm";
+import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import path from "path";
 import mockedEnv from "mocked-env";
 import { ResourceManagementModels, Deployments } from "@azure/arm-resources";
@@ -865,6 +867,34 @@ describe("Deploy ARM Template to Azure", () => {
     const error = (result as Err<void, FxError>).error;
     chai.assert.strictEqual(error.name, "FailedToDeployArmTemplatesToAzure");
     expect(error.message).to.be.a("string").that.contains(testErrorMsg);
+  });
+
+  it("should return error with notification message", async () => {
+    TestHelper.mockArmDeploymentDependencies(mockedCtx, mocker);
+
+    const envRestore = mockedEnv({
+      MOCKED_EXPAND_VAR_TEST: TestHelper.envVariable,
+    });
+
+    const thrownError = new Error("thrown error");
+    const fetchError = {
+      error: {
+        code: "fetchError",
+        message: "fetch error",
+      },
+    };
+    mocker.stub(Deployments.prototype, "createOrUpdate").throwsException(thrownError);
+    mocker.stub(arm, "wrapGetDeploymentError").resolves(ok(fetchError));
+
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
+
+    // Assert
+    chai.assert.isTrue(result.isErr());
+    const returnedError = result._unsafeUnwrapErr() as UserError;
+    chai.assert.isNotNull(returnedError.notificationMessage);
+
+    envRestore();
   });
 });
 

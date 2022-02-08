@@ -25,7 +25,7 @@ describe("localSettingsHelper", () => {
         hostType: "Azure",
         azureResources: [] as string[],
         capabilities: ["Tab"],
-        activeResourcePlugins: ["fx-resource-simple-auth"],
+        activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
       },
     };
     const localSettings0 = {

@@ -287,7 +287,7 @@ jobs:
           method: POST
           payload: |
             {
-              "to": "${{ steps.list-failed-jobs.outputs.emails }}",
+              "to": "${{ steps.list-jobs.outputs.emails }}",
               "body": "<table class=\"w3-table w3-striped w3-bordered\">${{ steps.list-jobs.outputs.description }}</table> <br /> The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}",
               "subject": "TeamsFx E2E Test Report",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"

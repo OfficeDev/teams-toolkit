@@ -31,6 +31,7 @@ import {
   addFeature,
   getQuestionsForAddFeature,
 } from "../../../src/plugins/solution/fx-solution/v3/addFeature";
+import { AzureResourceKeyVault } from "../../../src/plugins/solution/fx-solution/question";
 describe("SolutionV3 - addFeature", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
@@ -176,7 +177,7 @@ describe("SolutionV3 - addFeature", () => {
       version: "3.0.0",
       capabilities: [],
       hostType: "Azure",
-      azureResources: [],
+      azureResources: [AzureResourceKeyVault.id],
       activeResourcePlugins: [BuiltInFeaturePluginNames.keyVault],
     });
     deleteFolder(projectPath);

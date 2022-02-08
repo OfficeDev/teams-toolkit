@@ -31,6 +31,7 @@ import {
   addFeature,
   getQuestionsForAddFeature,
 } from "../../../src/plugins/solution/fx-solution/v3/addFeature";
+import { AzureResourceFunction } from "../../../src/plugins/solution/fx-solution/question";
 describe("SolutionV3 - addFeature", () => {
   const sandbox = sinon.createSandbox();
   beforeEach(async () => {
@@ -183,7 +184,7 @@ describe("SolutionV3 - addFeature", () => {
       version: "3.0.0",
       capabilities: [],
       hostType: "Azure",
-      azureResources: [],
+      azureResources: [AzureResourceFunction.id],
       activeResourcePlugins: [
         BuiltInFeaturePluginNames.function,
         BuiltInFeaturePluginNames.identity,

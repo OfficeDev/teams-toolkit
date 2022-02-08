@@ -138,7 +138,7 @@ export class FrontendPluginImpl implements PluginImpl {
     const plugins = getActivatedV2ResourcePlugins(ctx.projectSettings!).map(
       (p) => new NamedArmResourcePluginAdaptor(p)
     );
-    const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
+    const pluginCtx = { plugins: plugins.map((obj) => obj.name), capabilities: [] };
     const bicepTemplateDir = path.join(
       getTemplatesFolder(),
       FrontendPathInfo.BicepTemplateRelativeDir

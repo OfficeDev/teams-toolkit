@@ -324,7 +324,7 @@ async function resolveLocalCertificate(localEnvManager: LocalEnvManager): Promis
     if (typeof localCertResult.isTrusted === "undefined") {
       result = ResultStatus.warn;
       error = returnUserError(
-        new Error("Skip to trust local certificate."),
+        new Error("Skip trusting local certificate."),
         ExtensionSource,
         "SkipTrustDevCertError",
         trustDevCertHelpLink

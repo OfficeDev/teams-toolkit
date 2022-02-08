@@ -10,7 +10,7 @@ export const doctorConstant = {
   WhiteSpace: "   ",
   Check:
     "Teams Toolkit is checking if all the prerequisites are installed and trying to install the missing ones. A summary report will be generated later for further tasks to you might need to perform.",
-  Summary: "Prerequisites Check Summary",
+  Summary: "Prerequisites Check Summary:",
   RestartVSCode:
     "Restart all your Visual Studio Code instances after the installation is finished.",
   NodeNotFound: `Cannot find Node.js. ${InstallNode}`,

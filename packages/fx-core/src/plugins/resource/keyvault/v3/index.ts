@@ -21,7 +21,7 @@ export class KeyVaultPluginV3 implements v3.FeaturePlugin {
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const solutionSettings = ctx.projectSetting.solutionSettings as
       | AzureSolutionSettings
       | undefined;
@@ -59,7 +59,7 @@ export class KeyVaultPluginV3 implements v3.FeaturePlugin {
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const armRes = await this.generateResourceTemplate(ctx, inputs);
     if (armRes.isErr()) return err(armRes.error);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
@@ -71,7 +71,7 @@ export class KeyVaultPluginV3 implements v3.FeaturePlugin {
   async afterOtherFeaturesAdded(
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.OtherFeaturesAddedInputs
-  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const result: ArmTemplateResult = {
       Reference: {
         m365ClientSecretReference: Constants.KeyVaultBicep.m365ClientSecretReference,

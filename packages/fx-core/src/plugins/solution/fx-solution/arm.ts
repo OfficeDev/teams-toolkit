@@ -5,6 +5,7 @@ import { ResourceManagementClient, ResourceManagementModels } from "@azure/arm-r
 import { DeploymentOperation } from "@azure/arm-resources/esm/models";
 import {
   AzureAccountProvider,
+  AzureSolutionSettings,
   ConfigFolderName,
   EnvInfo,
   EnvNamePlaceholder,

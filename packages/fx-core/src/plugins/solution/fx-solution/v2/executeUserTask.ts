@@ -18,11 +18,8 @@ import {
   combine,
   Json,
   UserError,
-  IStaticTab,
-  IConfigurableTab,
-  IBot,
-  IComposeExtension,
   ProjectSettings,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { getStrings } from "../../../../common/tools";
 import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";
@@ -33,6 +30,7 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
   SolutionSource,
+  PluginNames,
 } from "../constants";
 import * as util from "util";
 import {
@@ -57,7 +55,6 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { isVSProject, OperationNotSupportedForExistingAppError } from "../../../../core";
 import { TeamsAppSolutionNameV2 } from "./constants";
-import { PluginNames } from "../constants";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -307,15 +304,7 @@ export async function addCapability(
     );
   }
 
-  const capabilitiesToAddManifest: (
-    | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
-    | { name: "configurableTab"; snippet?: { local: IConfigurableTab; remote: IConfigurableTab } }
-    | { name: "Bot"; snippet?: { local: IBot; remote: IBot } }
-    | {
-        name: "MessageExtension";
-        snippet?: { local: IComposeExtension; remote: IComposeExtension };
-      }
-  )[] = [];
+  const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
   const pluginNamesToScaffold: Set<string> = new Set<string>();
   const pluginNamesToArm: Set<string> = new Set<string>();
   const newCapabilitySet = new Set<string>();

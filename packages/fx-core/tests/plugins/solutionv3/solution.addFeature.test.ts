@@ -197,7 +197,6 @@ describe("SolutionV3 - addFeature", () => {
     const inputs: v3.SolutionAddFeatureInputs = {
       platform: Platform.VSCode,
       projectPath: projectPath,
-      module: 0,
       feature: BuiltInFeaturePluginNames.keyVault,
     };
     const res = await addFeature(ctx, inputs);

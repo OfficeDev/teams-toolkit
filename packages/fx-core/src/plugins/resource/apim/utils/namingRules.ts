@@ -38,42 +38,6 @@ export class NamingRules {
     },
   };
 
-  static resourceGroupName: INamingRule = {
-    minLength: ValidationConstants.defaultMinLength,
-    maxLength: 90,
-    validPattern: ValidationConstants.resourceGroupValidPattern,
-  };
-
-  static apimServiceName: INamingRule & ISanitizer = {
-    minLength: ValidationConstants.defaultMinLength,
-    maxLength: 50,
-    validPattern: ValidationConstants.serviceIdValidPattern,
-    sanitize(appName: string, suffix: string): string {
-      const sanitizedAppName = NamingRules.sanitizeId(appName, false, false);
-      return `${NamingRules.short(sanitizedAppName, 48 - suffix.length)}am${suffix}`;
-    },
-  };
-
-  static productId: INamingRule & ISanitizer = {
-    minLength: ValidationConstants.defaultMinLength,
-    maxLength: ValidationConstants.defaultMaxLength,
-    validPattern: ValidationConstants.defaultValidPattern,
-    sanitize(appName: string, suffix: string): string {
-      const sanitizedAppName = NamingRules.sanitizeId(appName, false, false);
-      return `${NamingRules.short(sanitizedAppName, 80 - suffix.length - 9)}-${suffix}-product`;
-    },
-  };
-
-  static oAuthServerId: INamingRule & ISanitizer = {
-    minLength: ValidationConstants.defaultMinLength,
-    maxLength: ValidationConstants.defaultMaxLength,
-    validPattern: ValidationConstants.defaultValidPattern,
-    sanitize(appName: string, suffix: string): string {
-      const sanitizedAppName = NamingRules.sanitizeId(appName, false, false);
-      return `${NamingRules.short(sanitizedAppName, 80 - suffix.length - 8)}-${suffix}-server`;
-    },
-  };
-
   static versionSetId: INamingRule & ISanitizer = {
     minLength: ValidationConstants.defaultMinLength,
     maxLength: ValidationConstants.defaultMaxLength,

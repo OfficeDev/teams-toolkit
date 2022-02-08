@@ -22,56 +22,6 @@ import { BaseQuestionService, IQuestionService } from "./question";
 import { getApimServiceNameFromResourceId, Lazy } from "../utils/commonUtils";
 import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
 
-export class ApimServiceQuestion extends BaseQuestionService implements IQuestionService {
-  private readonly lazyApimService: Lazy<ApimService>;
-
-  constructor(
-    lazyApimService: Lazy<ApimService>,
-    telemetryReporter?: TelemetryReporter,
-    logger?: LogProvider
-  ) {
-    super(telemetryReporter, logger);
-    this.lazyApimService = lazyApimService;
-  }
-
-  public getQuestion(): SingleSelectQuestion {
-    return {
-      type: "singleSelect",
-      name: QuestionConstants.VSCode.Apim.questionName,
-      title: QuestionConstants.VSCode.Apim.description,
-      staticOptions: [
-        {
-          id: QuestionConstants.VSCode.Apim.createNewApimOption,
-          label: QuestionConstants.VSCode.Apim.createNewApimOption,
-        },
-      ],
-      dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-        return this.getDynamicOptions();
-      },
-      returnObject: true,
-      skipSingleOption: false,
-    };
-  }
-
-  private async getDynamicOptions(): Promise<OptionItem[]> {
-    const apimService: ApimService = await this.lazyApimService.getValue();
-    const apimServiceList = await apimService.listService();
-    const existingOptions = apimServiceList.map((apimService) => {
-      return {
-        id: apimService.serviceName,
-        label: apimService.serviceName,
-        description: apimService.resourceGroupName,
-        data: apimService,
-      };
-    });
-    const newOption = {
-      id: QuestionConstants.VSCode.Apim.createNewApimOption,
-      label: QuestionConstants.VSCode.Apim.createNewApimOption,
-    };
-    return [newOption, ...existingOptions];
-  }
-}
-
 export class OpenApiDocumentQuestion extends BaseQuestionService implements IQuestionService {
   private readonly openApiProcessor: OpenApiProcessor;
 

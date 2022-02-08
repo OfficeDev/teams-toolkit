@@ -57,6 +57,7 @@ import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
 import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { isVSProject, OperationNotSupportedForExistingAppError } from "../../../../core";
 import { TeamsAppSolutionNameV2 } from "./constants";
+import { PluginNames } from "../constants";
 export async function executeUserTask(
   ctx: v2.Context,
   inputs: Inputs,
@@ -534,6 +535,11 @@ export async function addResource(
   let scaffoldApim = false;
   // 4. check Function
   if (addFunc) {
+    // AAD plugin needs to be activated when adding function.
+    // Since APIM also have dependency on Function, will only add depenedency here.
+    if (!solutionSettings.activeResourcePlugins?.includes(PluginNames.AAD)) {
+      solutionSettings.activeResourcePlugins?.push(PluginNames.AAD);
+    }
     const functionPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
     pluginsToScaffold.push(functionPlugin);
     if (!alreadyHaveFunction) {

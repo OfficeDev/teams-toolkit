@@ -59,6 +59,10 @@ export class VSCodeDepsChecker {
     return res;
   }
 
+  public static getNodeDeps(): DepsType[] {
+    return [DepsType.FunctionNode, DepsType.SpfxNode, DepsType.AzureNode];
+  }
+
   public async getDepsStatus(dep: DepsType): Promise<DependencyStatus> {
     return (await this.depsManager.getStatus([dep]))[0];
   }

@@ -514,7 +514,7 @@ describe("solution.debug.scaffolding", () => {
           version: "",
           hostType: "Azure",
           capabilities: ["Tab", "Bot"],
-          activeResourcePlugins: ["fx-resource-simple-auth"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
         },
         programmingLanguage: "javascript",
       };
@@ -561,7 +561,7 @@ describe("solution.debug.scaffolding", () => {
           version: "",
           hostType: "Azure",
           capabilities: ["Tab", "Bot"],
-          activeResourcePlugins: ["fx-resource-simple-auth"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
         },
         programmingLanguage: "javascript",
       };

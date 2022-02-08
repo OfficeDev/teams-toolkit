@@ -73,6 +73,8 @@ describe("Core basic APIs for v3", () => {
       .stub<any, any>(appStudio, "loadManifest")
       .resolves(ok({ local: new TeamsAppManifest(), remote: new TeamsAppManifest() }));
     sandbox.stub<any, any>(appStudio, "saveManifest").resolves(ok(Void));
+    const solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
+    sandbox.stub<any, any>(solutionV3, "addFeature").resolves(ok([]));
   });
 
   afterEach(() => {

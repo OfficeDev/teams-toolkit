@@ -123,7 +123,11 @@ export async function addFeature(
   };
   for (const resource of allResources.values()) {
     if (!existingResources.has(resource)) {
-      const generateArmRes = await arm.addFeature(contextWithManifestProvider, inputs);
+      const armInputs: v3.SolutionAddFeatureInputs = {
+        ...inputs,
+        feature: resource,
+      };
+      const generateArmRes = await arm.addFeature(contextWithManifestProvider, armInputs);
       if (generateArmRes.isErr()) {
         return err(generateArmRes.error);
       }

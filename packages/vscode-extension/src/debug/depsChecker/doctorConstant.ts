@@ -4,6 +4,7 @@
 export const doctorConstant = {
   Tick: "√",
   Cross: "×",
+  Exclamation: "!",
   WhiteSpace: "   ",
   NodeNotFound: `Cannot find Node.js.`,
   NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions).`,

@@ -52,11 +52,18 @@ import { vscodeLogger } from "./depsChecker/vscodeLogger";
 import { doctorConstant } from "./depsChecker/doctorConstant";
 import { runTask } from "./teamsfxTaskHandler";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
+import { trustDevCertHelpLink } from "./constants";
 
 interface CheckResult {
   checker: string;
-  result: boolean;
+  result: ResultStatus;
   error?: FxError;
+}
+
+enum ResultStatus {
+  success = "success",
+  warn = "warn",
+  failed = "failed",
 }
 
 export async function checkAndInstall(): Promise<Result<any, FxError>> {
@@ -158,7 +165,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       }
       checkResults.push({
         checker: "Ports",
-        result: false,
+        result: ResultStatus.failed,
         error: new UserError(ExtensionErrors.PortAlreadyInUse, message, ExtensionSource),
       });
     }
@@ -189,14 +196,14 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
 }
 
 async function checkM365Account(): Promise<CheckResult> {
-  let result = true;
+  let result = ResultStatus.success;
   let error = undefined;
   try {
     VsCodeLogInstance.outputChannel.appendLine(`Checking M365 account`);
     const token = await tools.tokenProvider.appStudioToken.getAccessToken(true);
     if (token === undefined) {
       // corner case but need to handle
-      result = false;
+      result = ResultStatus.failed;
       error = returnSystemError(
         new Error("No M365 account login"),
         ExtensionSource,
@@ -204,7 +211,7 @@ async function checkM365Account(): Promise<CheckResult> {
       );
     }
   } catch (err: any) {
-    result = false;
+    result = ResultStatus.failed;
     if (!error) {
       error = assembleError(err);
     }
@@ -234,7 +241,7 @@ async function checkNode(
         )[0];
         return {
           checker: nodeStatus.name,
-          result: nodeStatus.isInstalled,
+          result: nodeStatus.isInstalled ? ResultStatus.success : ResultStatus.failed,
           error: handleDepsCheckerError(nodeStatus.error, nodeStatus),
         };
       }
@@ -243,7 +250,7 @@ async function checkNode(
   } catch (error: any) {
     return {
       checker: "Node",
-      result: false,
+      result: ResultStatus.failed,
       error: handleDepsCheckerError(error),
     };
   }
@@ -267,7 +274,7 @@ async function checkDependencies(
     for (const dep of depsStatus) {
       results.push({
         checker: dep.name,
-        result: dep.isInstalled,
+        result: dep.isInstalled ? ResultStatus.success : ResultStatus.failed,
         error: handleDepsCheckerError(dep.error, dep),
       });
     }
@@ -276,7 +283,7 @@ async function checkDependencies(
     return [
       {
         checker: "Dependencies",
-        result: false,
+        result: ResultStatus.failed,
         error: handleDepsCheckerError(error),
       },
     ];
@@ -287,7 +294,7 @@ async function resolveBackendExtension(
   depsManager: DepsManager,
   projectSettings: ProjectSettings
 ): Promise<CheckResult> {
-  let result = true;
+  let result = ResultStatus.success;
   let error = undefined;
   try {
     if (ProjectSettingsHelper.includeBackend(projectSettings)) {
@@ -296,7 +303,7 @@ async function resolveBackendExtension(
       await installExtension(backendRoot, dotnet.command, new EmptyLogger());
     }
   } catch (err: any) {
-    result = false;
+    result = ResultStatus.failed;
     error = handleDepsCheckerError(err);
   }
   return {
@@ -307,15 +314,27 @@ async function resolveBackendExtension(
 }
 
 async function resolveLocalCertificate(localEnvManager: LocalEnvManager): Promise<CheckResult> {
-  let result = true;
+  let result = ResultStatus.success;
   let error = undefined;
   try {
     const trustDevCert = vscodeHelper.isTrustDevCertEnabled();
-    // TODO: Return CheckResult when isTrusted === false
     VsCodeLogInstance.outputChannel.appendLine(`Checking Local Certificate`);
-    await localEnvManager.resolveLocalCertificate(trustDevCert);
+    const localCertResult = await localEnvManager.resolveLocalCertificate(trustDevCert);
+
+    if (typeof localCertResult.isTrusted === "undefined") {
+      result = ResultStatus.warn;
+      error = returnUserError(
+        new Error("Skip to trust local certificate."),
+        ExtensionSource,
+        "SkipTrustDevCertError",
+        trustDevCertHelpLink
+      );
+    } else if (localCertResult.isTrusted === false) {
+      result = ResultStatus.failed;
+      error = localCertResult.error;
+    }
   } catch (err: any) {
-    result = false;
+    result = ResultStatus.failed;
     error = assembleError(err);
   }
   return {
@@ -365,7 +384,7 @@ async function checkNpmInstall(component: string, folder: string): Promise<Check
     await VsCodeLogInstance.warning(`Error when checking npm dependencies: ${error}`);
   }
 
-  let result = true;
+  let result = ResultStatus.success;
   let error = undefined;
   try {
     if (!installed) {
@@ -385,7 +404,7 @@ async function checkNpmInstall(component: string, folder: string): Promise<Check
 
       // check npm dependencies again if exit code not zero
       if (exitCode !== 0 && !(await checkNpmDependencies(folder))) {
-        result = false;
+        result = ResultStatus.failed;
         error = new UserError(
           "NpmInstallFailure",
           `Failed to npm install for ${component}`,
@@ -410,8 +429,9 @@ async function handleCheckResults(results: CheckResult[]): Promise<void> {
   }
   let shouldStop = false;
   const output = VsCodeLogInstance.outputChannel;
-  const successes = results.filter((a) => a.result);
-  const failures = results.filter((a) => !a.result);
+  const successes = results.filter((a) => a.result === ResultStatus.success);
+  const failures = results.filter((a) => a.result === ResultStatus.failed);
+  const warnings = results.filter((a) => a.result === ResultStatus.warn);
   output.show();
 
   if (failures.length > 0) {
@@ -425,31 +445,21 @@ async function handleCheckResults(results: CheckResult[]): Promise<void> {
     output.appendLine(`${doctorConstant.Tick} ${result.checker} `);
   }
 
+  for (const result of warnings) {
+    output.appendLine("");
+    output.appendLine(`${doctorConstant.Exclamation} ${result.checker} `);
+    outputCheckResultError(result, output);
+  }
+
   for (const result of failures) {
     output.appendLine("");
     output.appendLine(`${doctorConstant.Cross} ${result.checker}`);
-
-    if (result.error) {
-      output.appendLine(`${doctorConstant.WhiteSpace}${result.error?.message}`);
-      if (result.error instanceof UserError) {
-        const userError = result.error as UserError;
-        if (userError.helpLink) {
-          output.appendLine(
-            `${doctorConstant.WhiteSpace}${doctorConstant.HelpLink.split("@Link").join(
-              userError.helpLink
-            )}`
-          );
-        }
-      }
-    }
+    outputCheckResultError(result, output);
   }
   output.appendLine("");
   output.appendLine(`${doctorConstant.LearnMore.split("@Link").join(defaultHelpLink)}`);
 
-  const checkers = results
-    .filter((r) => !r.result)
-    .map((r) => r.checker)
-    .join(", ");
+  const checkers = failures.map((r) => r.checker).join(", ");
 
   if (shouldStop) {
     throw returnUserError(
@@ -457,5 +467,21 @@ async function handleCheckResults(results: CheckResult[]): Promise<void> {
       ExtensionSource,
       ExtensionErrors.PrerequisitesValidationError
     );
+  }
+}
+
+function outputCheckResultError(result: CheckResult, output: vscode.OutputChannel) {
+  if (result.error) {
+    output.appendLine(`${doctorConstant.WhiteSpace}${result.error?.message}`);
+    if (result.error instanceof UserError) {
+      const userError = result.error as UserError;
+      if (userError.helpLink) {
+        output.appendLine(
+          `${doctorConstant.WhiteSpace}${doctorConstant.HelpLink.split("@Link").join(
+            userError.helpLink
+          )}`
+        );
+      }
+    }
   }
 }

@@ -11,7 +11,6 @@ import { generateBicepFromFile } from "../../../../common/tools";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
-import { IdentityConfig } from "../config";
 import { IdentityBicep, IdentityBicepFile } from "../constants";
 
 @Service(BuiltInFeaturePluginNames.identity)
@@ -19,7 +18,6 @@ export class IdentityPluginV3 implements v3.FeaturePlugin {
   name = BuiltInFeaturePluginNames.identity;
   displayName = "Microsoft Identity";
   description = "Microsoft Identity";
-  config: IdentityConfig = new IdentityConfig();
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.identity } })])
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,

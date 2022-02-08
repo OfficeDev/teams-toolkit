@@ -18,7 +18,6 @@ import {
 import { Container } from "typedi";
 import { AzureSolutionSettings, Inputs } from "../../../../../../api/build/types";
 import { AppStudioPluginV3 } from "../../../resource/appstudio/v3";
-import "../../../resource/appstudio/v3";
 import { selectSingleFeatureQuestion } from "../../utils/questions";
 import arm from "../arm";
 import { BuiltInFeaturePluginNames, TeamsFxAzureSolutionNameV3 } from "./constants";
@@ -123,7 +122,11 @@ export async function addFeature(
   };
   for (const resource of allResources.values()) {
     if (!existingResources.has(resource)) {
-      const generateArmRes = await arm.addFeature(contextWithManifestProvider, inputs);
+      const armInputs: v3.SolutionAddFeatureInputs = {
+        ...inputs,
+        feature: resource,
+      };
+      const generateArmRes = await arm.addFeature(contextWithManifestProvider, armInputs);
       if (generateArmRes.isErr()) {
         return err(generateArmRes.error);
       }

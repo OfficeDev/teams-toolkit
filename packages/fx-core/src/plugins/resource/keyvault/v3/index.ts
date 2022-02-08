@@ -10,6 +10,7 @@ import { Bicep } from "../../../../common/constants";
 import { generateBicepFromFile } from "../../../../common/tools";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { getTemplatesFolder } from "../../../../folder";
+import { AzureResourceKeyVault } from "../../../solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { Constants } from "../constants";
 
@@ -65,6 +66,9 @@ export class KeyVaultPluginV3 implements v3.FeaturePlugin {
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
+    const azureResources = solutionSettings.azureResources;
+    if (!azureResources.includes(AzureResourceKeyVault.id))
+      azureResources.push(AzureResourceKeyVault.id);
     return ok(armRes.value);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.keyVault } })])

@@ -382,17 +382,14 @@ async function checkNpmInstall(component: string, folder: string): Promise<Check
       };
       if (checkNpmInstallRunning()) {
         exitCode = await new Promise((resolve: (value: number | undefined) => void) => {
-          if (checkNpmInstallRunning()) {
-            const endListener = taskEndEventEmitter.event((result) => {
-              if (result.name === `${component} npm install`) {
-                endListener.dispose();
-                resolve(result.exitCode);
-              } else if (!checkNpmInstallRunning()) {
-                endListener.dispose();
-                resolve(undefined);
-              }
-            });
-          } else {
+          const endListener = taskEndEventEmitter.event((result) => {
+            if (result.name === `${component} npm install`) {
+              endListener.dispose();
+              resolve(result.exitCode);
+            }
+          });
+          if (!checkNpmInstallRunning()) {
+            endListener.dispose();
             resolve(undefined);
           }
         });

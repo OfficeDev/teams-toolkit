@@ -372,21 +372,29 @@ async function checkNpmInstall(component: string, folder: string): Promise<Check
     if (!installed) {
       let exitCode: number | undefined;
 
-      let running = false;
-      for (const [key, value] of trackedTasks) {
-        if (value === `${component} npm install`) {
-          running = true;
-          break;
+      const checkNpmInstallRunning = () => {
+        for (const [key, value] of trackedTasks) {
+          if (value === `${component} npm install`) {
+            return true;
+          }
         }
-      }
-      if (running) {
+        return false;
+      };
+      if (checkNpmInstallRunning()) {
         exitCode = await new Promise((resolve: (value: number | undefined) => void) => {
-          const endListener = taskEndEventEmitter.event((result) => {
-            if (result.name === `${component} npm install`) {
-              endListener.dispose();
-              resolve(result.exitCode);
-            }
-          });
+          if (checkNpmInstallRunning()) {
+            const endListener = taskEndEventEmitter.event((result) => {
+              if (result.name === `${component} npm install`) {
+                endListener.dispose();
+                resolve(result.exitCode);
+              } else if (!checkNpmInstallRunning()) {
+                endListener.dispose();
+                resolve(undefined);
+              }
+            });
+          } else {
+            resolve(undefined);
+          }
         });
       } else {
         VsCodeLogInstance.outputChannel.appendLine(`Npm installing (${component})`);

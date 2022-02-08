@@ -149,7 +149,7 @@ describe("SolutionV3 - addFeature", () => {
     assert.deepEqual(projectSettings.solutionSettings, {
       name: TeamsFxAzureSolutionNameV3,
       version: "3.0.0",
-      capabilities: ["Tab"],
+      capabilities: [],
       hostType: "Azure",
       azureResources: [],
       activeResourcePlugins: [BuiltInFeaturePluginNames.identity],

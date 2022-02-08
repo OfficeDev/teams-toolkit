@@ -203,24 +203,6 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     return ok([{ kind: "bicep", template: result }]);
   }
 
-  async provisionResource(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: TokenProvider
-  ): Promise<Result<v3.CloudResource, FxError>> {
-    return ok(Void);
-  }
-
-  async configureResource(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-    tokenProvider: TokenProvider
-  ): Promise<Result<Void, FxError>> {
-    return ok(Void);
-  }
-
   private buildConfig(envInfo: v2.DeepReadonly<v3.EnvInfoV3>) {
     const config: DotnetPluginConfig = {};
     const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;

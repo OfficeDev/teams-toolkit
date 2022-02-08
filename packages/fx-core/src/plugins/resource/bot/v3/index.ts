@@ -11,7 +11,6 @@ import {
   v3,
   AzureSolutionSettings,
   TokenProvider,
-  AzureAccountProvider,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
@@ -32,13 +31,6 @@ export class BotPluginV3 implements v3.FeaturePlugin {
   name = BuiltInFeaturePluginNames.bot;
   displayName = "Teams Bot";
   description = "Teams Bot";
-
-  private checkAndGet<T>(v: T | undefined, key: string) {
-    if (v) {
-      return v;
-    }
-    throw new Error(`Failed to fetch config ${key}`);
-  }
 
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
@@ -87,20 +79,6 @@ export class BotPluginV3 implements v3.FeaturePlugin {
 
     ctx.logProvider.info(`[${this.name}] Successfully generated Arm template`);
     return ok([{ kind: "bicep", template: result }]);
-  }
-
-  async afterOtherFeaturesAdded(
-    ctx: v3.ContextWithManifestProvider,
-    inputs: v3.OtherFeaturesAddedInputs
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    return await this.updateResourceTemplate(ctx, inputs);
-  }
-
-  async updateResourceTemplate(
-    ctx: v3.ContextWithManifestProvider,
-    inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
-    return ok([{ kind: "bicep", template: {} as ArmTemplateResult }]);
   }
 
   async provisionResource(

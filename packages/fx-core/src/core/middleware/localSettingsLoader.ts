@@ -44,6 +44,7 @@ export const LocalSettingsLoaderMW: Middleware = async (
       const hasBackend = selectedPlugins?.some((plugin) => plugin.name === PluginNames.FUNC);
       const hasBot = selectedPlugins?.some((plugin) => plugin.name === PluginNames.BOT);
       const hasSimpleAuth = IsSimpleAuthEnabled(ctx.projectSettings);
+      const hasAAD = selectedPlugins?.some((plugin) => plugin.name === PluginNames.AAD);
 
       const localSettingsProvider = new LocalSettingsProvider(inputs.projectPath);
       let exists = await fs.pathExists(localSettingsProvider.localSettingsFilePath);
@@ -63,7 +64,8 @@ export const LocalSettingsLoaderMW: Middleware = async (
           hasBackend,
           hasBot,
           false,
-          hasSimpleAuth
+          hasSimpleAuth,
+          hasAAD
         );
       }
       if (ctx.solutionContext) {
@@ -77,7 +79,8 @@ export const LocalSettingsLoaderMW: Middleware = async (
             hasBackend,
             hasBot,
             false,
-            hasSimpleAuth
+            hasSimpleAuth,
+            hasAAD
           );
         }
       }

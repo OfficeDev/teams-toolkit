@@ -7,7 +7,6 @@ import {
   v2,
   v3,
   ok,
-  TokenProvider,
   AzureAccountProvider,
   Void,
   err,
@@ -29,6 +28,7 @@ import { Bicep } from "../../../common/constants";
 import { Site } from "@azure/arm-appservice/esm/models";
 import * as Deploy from "./deploy";
 import { WebSiteManagementClient } from "@azure/arm-appservice";
+import { TabOptionItem } from "../../solution/fx-solution/question";
 
 export interface DotnetPluginConfig {
   /* Config from solution */
@@ -86,9 +86,9 @@ export class WebappBicep {
   };
 }
 
-@Service(BuiltInFeaturePluginNames.aspDotNet)
+@Service(BuiltInFeaturePluginNames.dotnet)
 export class DotnetPlugin implements v3.FeaturePlugin {
-  name = BuiltInFeaturePluginNames.aspDotNet;
+  name = BuiltInFeaturePluginNames.dotnet;
   displayName = "ASP.Net App";
   description = "ASP.Net App";
 
@@ -99,12 +99,22 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     throw new Error(`Failed to fetch config ${key}`);
   }
 
+  private getCapabilities(inputs: v2.InputsWithProjectPath): string[] {
+    // TODO: No schema for answers yet
+    return inputs.answers.capabilities as string[];
+  }
+
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const armResult = await this.generateResourceTemplate(ctx, inputs);
     if (armResult.isErr()) return err(armResult.error);
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    const capabilities = solutionSettings.capabilities;
+    const activeResourcePlugins = solutionSettings.activeResourcePlugins;
+    if (!capabilities.includes(TabOptionItem.id)) capabilities.push(TabOptionItem.id);
+    if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
     return ok(armResult.value);
   }
 
@@ -113,6 +123,43 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<Void | undefined, FxError>> {
     return ok(Void);
+  }
+
+  async generateBotServiceTemplate(
+    ctx: v3.ContextWithManifestProvider,
+    inputs: v2.InputsWithProjectPath
+  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+    const bicepTemplateDir = path.join(
+      getTemplatesFolder(),
+      "plugins",
+      "resource",
+      "botservice",
+      "bicep"
+    );
+    const provisionTemplateFilePath = path.join(bicepTemplateDir, Bicep.ProvisionFileName);
+    const provisionBotTemplateFilePath = path.join(
+      bicepTemplateDir,
+      "botServiceProvision.template.bicep"
+    );
+    const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
+    const pluginCtx = {
+      plugins: solutionSettings.activeResourcePlugins ?? [],
+    };
+    const provisionOrchestration = await generateBicepFromFile(
+      provisionTemplateFilePath,
+      pluginCtx
+    );
+    const provisionModule = await generateBicepFromFile(provisionBotTemplateFilePath, pluginCtx);
+    const result: ArmTemplateResult = {
+      Provision: {
+        Orchestration: provisionOrchestration,
+        Modules: { botservice: provisionModule },
+      },
+      Parameters: JSON.parse(
+        await fs.readFile(path.join(bicepTemplateDir, Bicep.ParameterFileName), "utf-8")
+      ),
+    };
+    return ok({ kind: "bicep", template: result });
   }
 
   async generateResourceTemplate(
@@ -140,7 +187,11 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     );
 
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-    const pluginCtx = { plugins: solutionSettings.activeResourcePlugins ?? [] };
+    const capabilities = this.getCapabilities(inputs);
+    const pluginCtx = {
+      plugins: solutionSettings.activeResourcePlugins ?? [],
+      capabilities: capabilities,
+    };
     const provisionOrchestration = await generateBicepFromFile(
       provisionTemplateFilePath,
       pluginCtx
@@ -149,7 +200,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     const configOrchestration = await generateBicepFromFile(configTemplateFilePath, pluginCtx);
     const configModule = await generateBicepFromFile(configWebappTemplateFilePath, pluginCtx);
 
-    const result: ArmTemplateResult = {
+    const bicepResult: ArmTemplateResult = {
       Provision: {
         Orchestration: provisionOrchestration,
         Modules: { webapp: provisionModule },
@@ -161,8 +212,18 @@ export class DotnetPlugin implements v3.FeaturePlugin {
       Reference: WebappBicep.Reference,
     };
 
+    const result: v2.ResourceTemplate[] = [{ kind: "bicep", template: bicepResult }];
+
+    if (capabilities.includes("bot")) {
+      const botBicep = await this.generateBotServiceTemplate(ctx, inputs);
+      if (botBicep.isErr()) {
+        return err(botBicep.error);
+      }
+      result.push(botBicep.value);
+    }
+
     ctx.logProvider.info(`[${this.name}] Successfully generated Arm template`);
-    return ok([{ kind: "bicep", template: result }]);
+    return ok(result);
   }
 
   async afterOtherFeaturesAdded(

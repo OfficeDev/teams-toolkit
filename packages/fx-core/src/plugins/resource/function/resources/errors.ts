@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import * as path from "path";
-import { ConfigFolderName, SystemError, UserError } from "@microsoft/teamsfx-api";
+import { ConfigFolderName, FxError, SystemError, UserError } from "@microsoft/teamsfx-api";
 
 import { AzureInfo, FunctionPluginPathInfo as PathInfo } from "../constants";
 import { Logger } from "../utils/logger";
@@ -11,7 +11,7 @@ export enum ErrorType {
   System,
 }
 
-const tips = {
+export const tips = {
   recoverTeamsfxConfigFiles: `If you manually updated configuration files (under directory .${ConfigFolderName}), recover them.`,
   recreateProject: "If you can not recover configuration files, create a new project.",
   checkNetwork: "Check your network connection.",
@@ -262,7 +262,7 @@ export class UnknownFallbackError extends FunctionPluginError {
 }
 
 export async function runWithErrorCatchAndThrow<T>(
-  error: FunctionPluginError,
+  error: FunctionPluginError | FxError,
   fn: () => T | Promise<T>
 ): Promise<T> {
   try {

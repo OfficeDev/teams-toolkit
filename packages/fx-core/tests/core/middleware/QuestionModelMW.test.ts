@@ -18,13 +18,11 @@ import {
   Solution,
   SolutionContext,
   Stage,
-  TokenProvider,
   v2,
   v3,
 } from "@microsoft/teamsfx-api";
 import { assert } from "chai";
 import "mocha";
-import mockedEnv, { RestoreFn } from "mocked-env";
 import sinon from "sinon";
 import { CoreHookContext, createV2Context, InvalidInputError, setTools, TOOLS } from "../../../src";
 import {
@@ -103,7 +101,10 @@ describe("Middleware - QuestionModelMW", () => {
     async addFeature(inputs: Inputs): Promise<Result<any, FxError>> {
       return this._return(inputs);
     }
-    async executeUserTask(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
+    async executeUserTaskV2(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
+      return this._return(inputs);
+    }
+    async executeUserTaskV3(func: Func, inputs: Inputs): Promise<Result<unknown, FxError>> {
       return this._return(inputs);
     }
     async _getQuestionsForCreateProjectV2(
@@ -135,7 +136,15 @@ describe("Middleware - QuestionModelMW", () => {
     ): Promise<Result<QTreeNode | undefined, FxError>> {
       return ok(node);
     }
-
+    async _getQuestionsForUserTaskV3(
+      ctx: SolutionContext | v2.Context,
+      solution: Solution | v2.SolutionPlugin,
+      func: FunctionRouter,
+      inputs: Inputs,
+      envInfo?: v2.EnvInfoV2
+    ): Promise<Result<QTreeNode | undefined, FxError>> {
+      return ok(node);
+    }
     async _getQuestionsForAddFeature(
       inputs: v2.InputsWithProjectPath,
       solution: v3.ISolution,
@@ -193,7 +202,8 @@ describe("Middleware - QuestionModelMW", () => {
     localDebugV2: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
     publishApplicationV2: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
     publishApplicationV3: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
-    executeUserTask: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
+    executeUserTaskV2: [SolutionLoaderMW, MockContextLoaderMW, QuestionModelMW],
+    executeUserTaskV3: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
     init: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
     addFeature: [SolutionLoaderMW_V3, MockContextLoaderMW, QuestionModelMW],
   });
@@ -239,8 +249,14 @@ describe("Middleware - QuestionModelMW", () => {
       const res = await my.publishApplicationV3(inputs);
       assert.isTrue(res.isOk() && res.value === true);
     }
+    {
+      const inputs: Inputs = { platform: Platform.VSCode };
+      const func: Func = { method: "test", namespace: "" };
+      const res = await my.executeUserTaskV3(func, inputs);
+      assert.isTrue(res.isOk() && res.value === true);
+    }
   });
-  it("success to run question model for createProject, provisionResources, deployArtifacts, localDebug, publishApplication, executeUserTask", async () => {
+  it("success to run question model for V2 API", async () => {
     sandbox.stub(TOOLS.ui, "inputText").callsFake(async (config: InputTextConfig) => {
       return ok({ type: "success", result: questionValue });
     });
@@ -273,7 +289,7 @@ describe("Middleware - QuestionModelMW", () => {
     }
     {
       const func: Func = { method: "test", namespace: "" };
-      const userTaskRes = await my.executeUserTask(func, inputs);
+      const userTaskRes = await my.executeUserTaskV2(func, inputs);
       assert.isTrue(userTaskRes.isOk() && userTaskRes.value);
     }
   });
@@ -339,7 +355,7 @@ describe("Middleware - QuestionModelMW", () => {
     delete inputs[questionName];
     questionValue = randomAppName() + "executeUserTask";
     const func: Func = { method: "test", namespace: "" };
-    const res2 = await my.executeUserTask(func, inputs);
+    const res2 = await my.executeUserTaskV2(func, inputs);
     assert(res2.isErr() && res2.error.name === new EmptyOptionError().name);
   });
   it("Core's getQuestion APIs", async () => {

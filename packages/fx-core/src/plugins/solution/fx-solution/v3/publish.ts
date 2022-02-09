@@ -5,6 +5,7 @@ import {
   AppStudioTokenProvider,
   err,
   FxError,
+  Json,
   NotImplementedError,
   ok,
   QTreeNode,
@@ -26,7 +27,8 @@ export async function publishApplication(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
   envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-  tokenProvider: AppStudioTokenProvider
+  tokenProvider: AppStudioTokenProvider,
+  telemetryProps?: Json
 ): Promise<Result<Void, FxError>> {
   return err(new NotImplementedError("Solution", "publishApplication"));
 }

@@ -2,8 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  AzureAccountProvider,
-  AzureSolutionSettings,
   Func,
   FxError,
   Inputs,
@@ -20,11 +18,11 @@ import {
   DeepReadonly,
   ProvisionInputs,
   ResourcePlugin,
-  ResourceProvisionOutput,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { FrontendPlugin } from "../..";
+import { AzureSolutionSettings } from "../../../../../../api/build/types";
 import {
   ResourcePlugins,
   ResourcePluginsV2,
@@ -35,10 +33,10 @@ import {
   executeUserTaskAdapter,
   updateResourceTemplateAdapter,
   generateResourceTemplateAdapter,
-  provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
   provisionLocalResourceAdapter,
 } from "../../utils4v2";
+import { TabLanguage } from "../resources/templateInfo";
 
 @Service(ResourcePluginsV2.FrontendPlugin)
 export class FrontendPluginV2 implements ResourcePlugin {
@@ -48,8 +46,9 @@ export class FrontendPluginV2 implements ResourcePlugin {
   plugin!: FrontendPlugin;
 
   activate(projectSettings: ProjectSettings): boolean {
+    const activateInVS = projectSettings.programmingLanguage === TabLanguage.CSharp;
     const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-    return this.plugin.activate(solutionSettings);
+    return this.plugin.activate(solutionSettings) || activateInVS;
   }
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {

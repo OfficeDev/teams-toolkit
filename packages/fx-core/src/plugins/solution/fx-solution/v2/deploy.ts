@@ -12,6 +12,7 @@ import {
 } from "@microsoft/teamsfx-api";
 import { isUndefined } from "lodash";
 import * as util from "util";
+import { isVSProject } from "../../../..";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getStrings } from "../../../../common/tools";
 import {
@@ -51,20 +52,28 @@ export async function deploy(
     );
   }
 
-  const optionsToDeploy = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] as string[];
-  if (optionsToDeploy === undefined || optionsToDeploy.length === 0) {
-    return err(
-      returnUserError(
-        new Error(`No plugin selected`),
-        SolutionSource,
-        SolutionError.NoResourcePluginSelected
-      )
-    );
+  const isVsProject = isVSProject(ctx.projectSetting);
+
+  let optionsToDeploy: string[] = [];
+  if (isVsProject) {
+    optionsToDeploy = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] as string[];
+    if (optionsToDeploy === undefined || optionsToDeploy.length === 0) {
+      return err(
+        returnUserError(
+          new Error(`No plugin selected`),
+          SolutionSource,
+          SolutionError.NoResourcePluginSelected
+        )
+      );
+    }
   }
 
   const plugins = getSelectedPlugins(ctx.projectSetting);
   const thunks: NamedThunk<Json>[] = plugins
-    .filter((plugin) => !isUndefined(plugin.deploy) && optionsToDeploy.includes(plugin.name))
+    .filter(
+      (plugin) =>
+        !isUndefined(plugin.deploy) && (isVsProject ? optionsToDeploy.includes(plugin.name) : true)
+    )
     .map((plugin) => {
       return {
         pluginName: `${plugin.name}`,

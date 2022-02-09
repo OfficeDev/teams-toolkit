@@ -877,9 +877,11 @@ async function doAddFeature(
   inputs: v3.SolutionAddFeatureInputs
 ): Promise<Result<any, FxError>> {
   const baseName = generateResourceBaseName(ctx.projectSetting.appName, "");
-  const pluginNames = ctx.projectSetting.solutionSettings
-    ? (ctx.projectSetting.solutionSettings as AzureSolutionSettings).activeResourcePlugins
-    : [];
+  const pluginNames = [];
+  if (ctx.projectSetting.solutionSettings)
+    (ctx.projectSetting.solutionSettings as AzureSolutionSettings).activeResourcePlugins.forEach(
+      (p) => pluginNames.push(p)
+    );
   pluginNames.push(inputs.feature);
   const bicepOrchestrationTemplate = new BicepOrchestrationContent(pluginNames, baseName);
   const moduleProvisionFiles = new Map<string, string>();

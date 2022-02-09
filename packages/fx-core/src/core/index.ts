@@ -99,6 +99,7 @@ import {
   getQuestionsForProvision,
   getQuestionsForPublish,
   getQuestionsForUserTaskV2,
+  getQuestionsForUserTaskV3,
   getQuestionsV2,
   QuestionModelMW,
 } from "./middleware/questionModel";
@@ -914,6 +915,14 @@ export class FxCore implements v3.ICore {
     }
     return ok(Void);
   }
+  async executeUserTask(
+    func: Func,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<unknown, FxError>> {
+    if (isV3()) return this.executeUserTaskV3(func, inputs);
+    else return this.executeUserTaskV2(func, inputs);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -928,7 +937,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
   ])
-  async executeUserTask(
+  async executeUserTaskV2(
     func: Func,
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -961,7 +970,51 @@ export class FxCore implements v3.ICore {
     }
     return err(FunctionRouterError(func));
   }
-
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(false),
+    LocalSettingsLoaderMW,
+    SolutionLoaderMW,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW(),
+  ])
+  async executeUserTaskV3(
+    func: Func,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<unknown, FxError>> {
+    currentStage = Stage.userTask;
+    inputs.stage = Stage.userTask;
+    const namespace = func.namespace;
+    const array = namespace ? namespace.split("/") : [];
+    if ("" !== namespace && array.length > 0) {
+      if (!ctx || !ctx.solutionV3 || !ctx.envInfoV3) {
+        const name = undefinedName(
+          [ctx, ctx?.solutionV3, ctx?.envInfoV3],
+          ["ctx", "ctx.solutionV3", "ctx.envInfoV3"]
+        );
+        return err(new ObjectIsUndefinedError(`executeUserTask input stuff: ${name}`));
+      }
+      if (!ctx.contextV2) ctx.contextV2 = createV2Context(newProjectSettings());
+      if (ctx.solutionV3.executeUserTask) {
+        const res = await ctx.solutionV3.executeUserTask(
+          ctx.contextV2,
+          inputs,
+          func,
+          ctx.envInfoV3,
+          this.tools.tokenProvider
+        );
+        return res;
+      } else return err(FunctionRouterError(func));
+    }
+    return err(FunctionRouterError(func));
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -1402,6 +1455,7 @@ export class FxCore implements v3.ICore {
   _getQuestionsForDeploy = getQuestionsForDeploy;
   _getQuestionsForPublish = getQuestionsForPublish;
   _getQuestionsForInit = getQuestionsForInit;
+  _getQuestionsForUserTaskV3 = getQuestionsForUserTaskV3;
 }
 
 export async function createBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {

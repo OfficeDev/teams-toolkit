@@ -112,7 +112,6 @@ export class FunctionDeploy {
   }
 
   public static async installFuncExtensions(
-    ctx: PluginContext,
     componentPath: string,
     language: FunctionLanguage
   ): Promise<void> {

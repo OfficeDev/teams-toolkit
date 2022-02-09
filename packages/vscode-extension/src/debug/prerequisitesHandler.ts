@@ -69,7 +69,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
       // ignore telemetry error
     }
 
-    // [node, account, certificate] => [deps] => [backend extension, npm install] => [port]
+    // [node] => [account, certificate, deps] => [backend extension, npm install] => [port]
     const checkResults: CheckResult[] = [];
     const localEnvManager = new LocalEnvManager(
       VsCodeLogInstance,
@@ -80,44 +80,31 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
 
     // Get project settings
     const projectSettings = await localEnvManager.getProjectSettings(workspacePath);
-
     VsCodeLogInstance.outputChannel.show();
     VsCodeLogInstance.outputChannel.appendLine(doctorConstant.Check);
-    VsCodeLogInstance.outputChannel.appendLine("");
 
     // node
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
     const nodeResult = await checkNode(localEnvManager, depsManager, projectSettings);
     if (nodeResult) {
       checkResults.push(nodeResult);
-      // node fast fail
-      if (!nodeResult.result) {
-        await handleCheckResults(checkResults);
-      }
     }
+    await checkFailure(checkResults);
+    VsCodeLogInstance.outputChannel.appendLine("");
 
     // login checker
     const accountResult = await checkM365Account();
     checkResults.push(accountResult);
-    if (!accountResult.result) {
-      // account fast fail
-      await handleCheckResults(checkResults);
-    }
 
     // local cert
     const localCertResult = await resolveLocalCertificate(localEnvManager);
-    if (localCertResult) {
-      checkResults.push(localCertResult);
-      // cert fast fail
-      if (!localCertResult.result) {
-        await handleCheckResults(checkResults);
-      }
-    }
+    checkResults.push(localCertResult);
 
     // deps
     const depsResults = await checkDependencies(localEnvManager, depsManager, projectSettings);
     checkResults.push(...depsResults);
 
+    await checkFailure(checkResults);
     const checkPromises = [];
 
     // backend extension
@@ -150,6 +137,7 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
         checkResults.push(r);
       }
     }
+    await checkFailure(checkResults);
 
     // check port
     const portsInUse = await localEnvManager.getPortsInUse(workspacePath, projectSettings);
@@ -255,6 +243,7 @@ async function checkNode(
     };
   }
 }
+
 async function checkDependencies(
   localEnvManager: LocalEnvManager,
   depsManager: DepsManager,
@@ -289,7 +278,6 @@ async function checkDependencies(
     ];
   }
 }
-
 async function resolveBackendExtension(
   depsManager: DepsManager,
   projectSettings: ProjectSettings
@@ -464,7 +452,13 @@ async function handleCheckResults(results: CheckResult[]): Promise<void> {
     output.appendLine(`${doctorConstant.Cross} ${result.checker}`);
 
     if (result.error) {
-      output.appendLine(`${doctorConstant.WhiteSpace}${result.error?.message}`);
+      let message: string = result.error.message;
+      if (message.startsWith("User Cancel")) {
+        message = doctorConstant.SignInCancelled;
+      }
+
+      output.appendLine(`${doctorConstant.WhiteSpace}${message}`);
+
       if (result.error instanceof UserError) {
         const userError = result.error as UserError;
         if (userError.helpLink) {
@@ -480,16 +474,17 @@ async function handleCheckResults(results: CheckResult[]): Promise<void> {
   output.appendLine("");
   output.appendLine(`${doctorConstant.LearnMore.split("@Link").join(defaultHelpLink)}`);
 
-  const checkers = results
-    .filter((r) => !r.result)
-    .map((r) => r.checker)
-    .join(", ");
-
   if (shouldStop) {
     throw returnUserError(
       new Error(`Prerequisites Check Failed, please fix all issues above then local debug again.`),
       ExtensionSource,
       ExtensionErrors.PrerequisitesValidationError
     );
+  }
+}
+
+async function checkFailure(checkResults: CheckResult[]) {
+  if (checkResults.some((r) => !r.result)) {
+    await handleCheckResults(checkResults);
   }
 }

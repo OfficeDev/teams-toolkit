@@ -43,7 +43,6 @@ import { Message } from "../utils/message";
 import { ConfigureMessage, DialogUtils, ProgressTitle } from "../utils/dialogUtils";
 import { UserType } from "../utils/commonUtils";
 import { SqlClient } from "../sqlClient";
-import { TelemetryUtils } from "../utils/telemetryUtils";
 import { ManagementClient } from "../managementClient";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
 import { hooks } from "@feathersjs/hooks/lib";
@@ -256,7 +255,8 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
     envInfo: v3.EnvInfoV3,
-    tokenProvider: TokenProvider
+    tokenProvider: TokenProvider,
+    telemetryProps?: any
   ): Promise<Result<Void, FxError>> {
     ctx.logProvider?.info(Message.startPostProvision);
 
@@ -267,19 +267,13 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
       ProgressTitle.PostProvision,
       Object.keys(ConfigureMessage).length
     );
-    TelemetryUtils.init(ctx.telemetryReporter);
 
-    const telemetryProperties = {
-      [Telemetry.properties.skipAddingUser]: this.config.skipAddingUser
+    if (telemetryProps) {
+      telemetryProps[Telemetry.properties.skipAddingUser] = this.config.skipAddingUser
         ? Telemetry.valueYes
-        : Telemetry.valueNo,
-      [Telemetry.properties.dbCount]: this.config.databases.length.toString(),
-    };
-    TelemetryUtils.sendEvent(
-      Telemetry.stage.postProvision + Telemetry.startSuffix,
-      undefined,
-      telemetryProperties
-    );
+        : Telemetry.valueNo;
+      telemetryProps[Telemetry.properties.dbCount] = this.config.databases.length.toString();
+    }
 
     const managementClient: ManagementClient = await ManagementClient.create(
       tokenProvider.azureAccountProvider,
@@ -319,8 +313,6 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
     }
 
     await managementClient.deleteLocalFirewallRule();
-
-    TelemetryUtils.sendEvent(Telemetry.stage.postProvision, true, telemetryProperties);
     ctx.logProvider?.info(Message.endPostProvision);
     await DialogUtils.progressBar?.end(true);
     return ok(Void);

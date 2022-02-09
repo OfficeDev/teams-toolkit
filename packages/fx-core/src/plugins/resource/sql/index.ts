@@ -126,7 +126,7 @@ export class SqlPlugin implements Plugin {
       const errorCode = res.error.source + "." + res.error.name;
       const errorType =
         res.error instanceof SystemError ? Telemetry.systemError : Telemetry.userError;
-      TelemetryUtils.init(ctx);
+      TelemetryUtils.init(ctx.telemetryReporter);
       let errorMessage = res.error.message;
       if (res.error.innerError) {
         errorMessage += ` Detailed error: ${res.error.innerError.message}.`;

@@ -493,7 +493,7 @@ async function handleCheckResults(results: CheckResult[]): Promise<void> {
 function outputCheckResultError(result: CheckResult, output: vscode.OutputChannel) {
   if (result.error) {
     let message: string = result.error.message;
-    if (message.startsWith("User Cancel")) {
+    if (result.checker === "M365 Account" && message.startsWith("User Cancel")) {
       message = doctorConstant.SignInCancelled;
     }
 

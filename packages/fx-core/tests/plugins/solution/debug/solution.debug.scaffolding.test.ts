@@ -19,6 +19,8 @@ import { scaffoldLocalDebugSettings } from "../../../../src/plugins/solution/fx-
 import { LocalDebugPlugin, newEnvInfo } from "../../../../src";
 import { MockCryptoProvider } from "../../../core/utils";
 
+const numAADLocalEnvs = 2;
+
 chai.use(chaiAsPromised);
 
 interface TestParameter {
@@ -56,14 +58,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 5,
-        numLocalEnvs: 31,
+        numLocalEnvs: 21,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 6,
-        numLocalEnvs: 31,
+        numLocalEnvs: 21,
       },
     ];
     parameters1.forEach((parameter: TestParameter) => {
@@ -77,7 +79,7 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Tab"],
             azureResources: ["function"],
-            activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -115,14 +117,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 4,
         numCompounds: 2,
         numTasks: 4,
-        numLocalEnvs: 17,
+        numLocalEnvs: 7,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 4,
         numCompounds: 2,
         numTasks: 4,
-        numLocalEnvs: 17,
+        numLocalEnvs: 7,
       },
     ];
     parameters2.forEach((parameter) => {
@@ -135,7 +137,7 @@ describe("solution.debug.scaffolding", () => {
             version: "",
             hostType: "Azure",
             capabilities: ["Tab"],
-            activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -171,7 +173,7 @@ describe("solution.debug.scaffolding", () => {
             version: "",
             hostType: "Azure",
             capabilities: ["Tab"],
-            activeResourcePlugins: ["fx-resource-simple-auth"],
+            activeResourcePlugins: [],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -196,7 +198,11 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(Object.keys(settings).length, 1);
 
         // When AAD plugin is not activated, loginUrl and clientId will not be added.
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs - 2);
+        await assertLocalDebugLocalEnvs(
+          v2Context,
+          inputs,
+          parameter.numLocalEnvs - numAADLocalEnvs
+        );
       });
     });
 
@@ -259,14 +265,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 6,
         numCompounds: 2,
         numTasks: 7,
-        numLocalEnvs: 43,
+        numLocalEnvs: 33,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 6,
         numCompounds: 2,
         numTasks: 8,
-        numLocalEnvs: 43,
+        numLocalEnvs: 33,
       },
     ];
     parameters4.forEach((parameter) => {
@@ -280,7 +286,7 @@ describe("solution.debug.scaffolding", () => {
             hostType: "Azure",
             capabilities: ["Tab", "Bot"],
             azureResources: ["function"],
-            activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -318,14 +324,14 @@ describe("solution.debug.scaffolding", () => {
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 6,
-        numLocalEnvs: 29,
+        numLocalEnvs: 19,
       },
       {
         programmingLanguage: "typescript",
         numConfigurations: 5,
         numCompounds: 2,
         numTasks: 6,
-        numLocalEnvs: 29,
+        numLocalEnvs: 19,
       },
     ];
     parameters5.forEach((parameter) => {
@@ -338,7 +344,7 @@ describe("solution.debug.scaffolding", () => {
             version: "",
             hostType: "Azure",
             capabilities: ["Tab", "Bot"],
-            activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
           },
           programmingLanguage: parameter.programmingLanguage,
         };
@@ -398,7 +404,11 @@ describe("solution.debug.scaffolding", () => {
         const settings = fs.readJSONSync(expectedSettingsFile);
         chai.assert.equal(Object.keys(settings).length, 1);
 
-        await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs - 12);
+        await assertLocalDebugLocalEnvs(
+          v2Context,
+          inputs,
+          parameter.numLocalEnvs - numAADLocalEnvs
+        );
       });
     });
 
@@ -449,7 +459,7 @@ describe("solution.debug.scaffolding", () => {
           hostType: "Azure",
           capabilities: ["Tab"],
           azureResources: ["function"],
-          activeResourcePlugins: ["fx-resource-simple-auth"],
+          activeResourcePlugins: [],
         },
       };
       const v2Context = new MockedV2Context(projectSetting);
@@ -545,7 +555,7 @@ describe("solution.debug.scaffolding", () => {
           hostType: "Azure",
           capabilities: ["Tab", "Bot"],
           azureResources: ["function"],
-          activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
         programmingLanguage: "javascript",
       };
@@ -587,7 +597,7 @@ describe("solution.debug.scaffolding", () => {
           version: "",
           hostType: "Azure",
           capabilities: ["Tab", "Bot"],
-          activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
         programmingLanguage: "javascript",
       };
@@ -607,7 +617,7 @@ describe("solution.debug.scaffolding", () => {
       const tasks: [] = tasksAll["tasks"];
       chai.assert.equal(tasks.length, 6);
 
-      await assertLocalDebugLocalEnvs(v2Context, inputs, 29);
+      await assertLocalDebugLocalEnvs(v2Context, inputs, 19);
     });
 
     it("happy path: add capability to old project", async () => {
@@ -634,7 +644,7 @@ describe("solution.debug.scaffolding", () => {
           version: "",
           hostType: "Azure",
           capabilities: ["Tab", "Bot"],
-          activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
         programmingLanguage: "javascript",
       };
@@ -654,7 +664,7 @@ describe("solution.debug.scaffolding", () => {
       const tasks: [] = tasksAll["tasks"];
       chai.assert.equal(tasks.length, 9);
 
-      await assertLocalDebugLocalEnvs(v2Context, inputs, 29);
+      await assertLocalDebugLocalEnvs(v2Context, inputs, 19);
     });
   });
 

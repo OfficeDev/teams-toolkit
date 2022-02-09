@@ -25,7 +25,7 @@ describe("localSettingsHelper", () => {
         hostType: "Azure",
         azureResources: [] as string[],
         capabilities: ["Tab"],
-        activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
+        activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
       },
     };
     const localSettings0 = {
@@ -51,7 +51,7 @@ describe("localSettingsHelper", () => {
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettings0, localSettings0);
 
       chai.assert.isDefined(localEnvs);
-      chai.assert.equal(Object.keys(localEnvs).length, 17);
+      chai.assert.equal(Object.keys(localEnvs).length, 7);
       chai.assert.equal(
         localEnvs["FRONTEND_REACT_APP_START_LOGIN_PAGE_URL"],
         "https://localhost:53000/auth-start.html"
@@ -60,17 +60,6 @@ describe("localSettingsHelper", () => {
         localEnvs["FRONTEND_REACT_APP_CLIENT_ID"],
         "44444444-4444-4444-4444-444444444444"
       );
-      chai.assert.equal(localEnvs["AUTH_CLIENT_ID"], "44444444-4444-4444-4444-444444444444");
-      chai.assert.equal(localEnvs["AUTH_CLIENT_SECRET"], "password-placeholder");
-      chai.assert.equal(
-        localEnvs["AUTH_AAD_METADATA_ADDRESS"],
-        "https://login.microsoftonline.com/22222222-2222-2222-2222-222222222222/v2.0/.well-known/openid-configuration"
-      );
-      chai.assert.equal(
-        localEnvs["AUTH_OAUTH_AUTHORITY"],
-        "https://login.microsoftonline.com/22222222-2222-2222-2222-222222222222"
-      );
-      chai.assert.equal(localEnvs["AUTH_TAB_APP_ENDPOINT"], "https://localhost:53000");
     });
 
     it("happy path without AAD plugin", async () => {
@@ -78,11 +67,16 @@ describe("localSettingsHelper", () => {
       await fs.emptyDir(projectPath);
 
       const projectSettingsAll = cloneDeep(projectSettings0);
-      delete projectSettingsAll.solutionSettings.activeResourcePlugins[0];
+      const aadPluginKey = projectSettingsAll.solutionSettings.activeResourcePlugins.indexOf(
+        "fx-resource-aad-app-for-teams"
+      );
+      if (aadPluginKey > -1) {
+        projectSettingsAll.solutionSettings.activeResourcePlugins.splice(aadPluginKey, 1);
+      }
       const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, localSettings0);
 
       chai.assert.isDefined(localEnvs);
-      chai.assert.equal(Object.keys(localEnvs).length, 15);
+      chai.assert.equal(Object.keys(localEnvs).length, 5);
       chai.assert.isUndefined(localEnvs["FRONTEND_REACT_APP_START_LOGIN_PAGE_URL"]);
       chai.assert.isUndefined(localEnvs["FRONTEND_REACT_APP_CLIENT_ID"]);
     });

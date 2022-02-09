@@ -18,7 +18,7 @@ describe("ProjectSettingsHelper", () => {
         hostType: "Azure",
         capabilities: ["Tab", "Bot", "MessagingExtension"],
         azureResources: ["function"],
-        activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
+        activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
       },
     } as ProjectSettings;
 
@@ -35,7 +35,7 @@ describe("ProjectSettingsHelper", () => {
     chai.assert.isTrue(includeBackend);
     chai.assert.isTrue(includeBot);
     chai.assert.isTrue(includeAAD);
-    chai.assert.isTrue(includeSimpleAuth);
+    chai.assert.isFalse(includeSimpleAuth);
     chai.assert.isFalse(migrateFromV1);
   });
 

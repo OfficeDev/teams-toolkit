@@ -20,7 +20,7 @@ import { BuiltInSolutionNames, TeamsFxAzureSolutionNameV3 } from "./constants";
 import { deploy, getQuestionsForDeploy } from "./deploy";
 import { getQuestionsForProvision, provisionResources } from "./provision";
 import { getQuestionsForPublish, publishApplication } from "./publish";
-import { addCapability, addResource, executeUserTask, getQuestionsForUserTask } from "./userTask";
+import { addCapability, addResource, getQuestionsForUserTask } from "./userTask";
 
 @Service(TeamsFxAzureSolutionNameV3)
 export class TeamsFxAzureSolution implements v3.ISolution {

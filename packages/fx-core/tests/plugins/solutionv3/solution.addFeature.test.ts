@@ -32,9 +32,10 @@ import {
   getQuestionsForAddFeature,
 } from "../../../src/plugins/solution/fx-solution/v3/addFeature";
 import {
+  AzureResourceApim,
+  AzureResourceFunction,
   AzureResourceKeyVault,
   AzureResourceSQL,
-  AzureResourceFunction,
 } from "../../../src/plugins/solution/fx-solution/question";
 describe("SolutionV3 - addFeature", () => {
   const sandbox = sinon.createSandbox();
@@ -284,6 +285,39 @@ describe("SolutionV3 - addFeature", () => {
       hostType: "Azure",
       azureResources: [AzureResourceSQL.id],
       activeResourcePlugins: [BuiltInFeaturePluginNames.sql, BuiltInFeaturePluginNames.identity],
+    });
+    deleteFolder(projectPath);
+  });
+
+  it("addFeature: apim", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: TeamsFxAzureSolutionNameV3,
+        version: "3.0.0",
+        capabilities: [],
+        hostType: "Azure",
+        azureResources: [],
+        activeResourcePlugins: [],
+      },
+    };
+    const projectPath = path.join(os.tmpdir(), randomAppName());
+    const ctx = new MockedV2Context(projectSettings);
+    const inputs: v3.SolutionAddFeatureInputs = {
+      platform: Platform.VSCode,
+      projectPath: projectPath,
+      feature: BuiltInFeaturePluginNames.apim,
+    };
+    const res = await addFeature(ctx, inputs);
+    assert.isTrue(res.isOk());
+    assert.deepEqual(projectSettings.solutionSettings, {
+      name: TeamsFxAzureSolutionNameV3,
+      version: "3.0.0",
+      capabilities: [],
+      hostType: "Azure",
+      azureResources: [AzureResourceApim.id],
+      activeResourcePlugins: [BuiltInFeaturePluginNames.apim],
     });
     deleteFolder(projectPath);
   });

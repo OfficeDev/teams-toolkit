@@ -1,19 +1,19 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { IProgressHandler, PluginContext } from "@microsoft/teamsfx-api";
+import { IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
 import { ProgressMessages, ProgressStep } from "../constants";
 
 export class ProgressBar {
   private progressBarMap = new Map<ProgressStep, IProgressHandler>();
 
-  public async init(step: ProgressStep, ctx: PluginContext): Promise<void> {
+  public async init(step: ProgressStep, ui?: UserInteraction): Promise<void> {
     if (step === ProgressStep.None) {
       return;
     }
 
     await this.progressBarMap.get(step)?.end(true);
 
-    const progressBar = ctx.ui?.createProgressBar(step, Object.keys(ProgressMessages[step]).length);
+    const progressBar = ui?.createProgressBar(step, Object.keys(ProgressMessages[step]).length);
 
     if (progressBar) {
       this.progressBarMap.set(step, progressBar);

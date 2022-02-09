@@ -1,28 +1,32 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { BuildError, NoValidOpenApiDocument } from "../error";
 import {
+  EnvInfo,
+  FuncQuestion,
+  Inputs,
+  Json,
   LogProvider,
   OptionItem,
+  PluginConfig,
   SingleSelectQuestion,
-  PluginContext,
-  FuncQuestion,
-  TextInputQuestion,
   TelemetryReporter,
-  Inputs,
+  TextInputQuestion,
+  v3,
   ValidationSchema,
 } from "@microsoft/teamsfx-api";
-import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants } from "../constants";
-import { ApimPluginConfig, SolutionConfig } from "../config";
-import { ApimService } from "../services/apimService";
-import { OpenApiProcessor } from "../utils/openApiProcessor";
-import { buildAnswer } from "../answer";
-import { NamingRules } from "../utils/namingRules";
-import { BaseQuestionService, IQuestionService } from "./question";
-import { getApimServiceNameFromResourceId, Lazy } from "../utils/commonUtils";
 import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { buildAnswer } from "../answer";
+import { ApimPluginConfig, SolutionConfig } from "../config";
+import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants } from "../constants";
+import { BuildError, NoValidOpenApiDocument } from "../error";
+import { ApimService } from "../services/apimService";
+import { getApimServiceNameFromResourceId, Lazy } from "../utils/commonUtils";
+import { NamingRules } from "../utils/namingRules";
+import { OpenApiProcessor } from "../utils/openApiProcessor";
+import { BaseQuestionService, IQuestionService } from "./question";
 
-export class OpenApiDocumentQuestion extends BaseQuestionService implements IQuestionService {
+export class OpenApiDocumentQuestion extends BaseQuestionService {
   private readonly openApiProcessor: OpenApiProcessor;
 
   constructor(
@@ -34,14 +38,14 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
     this.openApiProcessor = openApiProcessor;
   }
 
-  public getQuestion(ctx: PluginContext): SingleSelectQuestion {
+  public getQuestion(projectPath: string): SingleSelectQuestion {
     return {
       type: "singleSelect",
       name: QuestionConstants.VSCode.OpenApiDocument.questionName,
       title: QuestionConstants.VSCode.OpenApiDocument.description,
       staticOptions: [],
       dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-        return this.getDynamicOptions(ctx.root);
+        return this.getDynamicOptions(projectPath);
       },
       returnObject: true,
       skipSingleOption: false,
@@ -65,7 +69,7 @@ export class OpenApiDocumentQuestion extends BaseQuestionService implements IQue
   }
 }
 
-export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements IQuestionService {
+export class ExistingOpenApiDocumentFunc extends BaseQuestionService {
   private readonly openApiProcessor: OpenApiProcessor;
 
   constructor(
@@ -77,16 +81,20 @@ export class ExistingOpenApiDocumentFunc extends BaseQuestionService implements 
     this.openApiProcessor = openApiProcessor;
   }
 
-  public getQuestion(ctx: PluginContext): FuncQuestion {
+  public getQuestion(
+    projectPath: string,
+    envName: string,
+    apimState: PluginConfig | Json
+  ): FuncQuestion {
     return {
       type: "func",
       name: QuestionConstants.VSCode.ExistingOpenApiDocument.questionName,
       func: async (inputs: Inputs): Promise<OptionItem> => {
-        const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
+        const apimConfig = new ApimPluginConfig(apimState, envName);
         const openApiDocumentPath = apimConfig.checkAndGet(ApimPluginConfigKeys.apiDocumentPath);
         const openApiDocument = await this.openApiProcessor.loadOpenApiDocument(
           openApiDocumentPath,
-          ctx.root
+          projectPath
         );
         return { id: openApiDocumentPath, label: openApiDocumentPath, data: openApiDocument };
       },
@@ -122,7 +130,7 @@ export class ApiPrefixQuestion extends BaseQuestionService implements IQuestionS
   }
 }
 
-export class ApiVersionQuestion extends BaseQuestionService implements IQuestionService {
+export class ApiVersionQuestion extends BaseQuestionService {
   private readonly lazyApimService: Lazy<ApimService>;
 
   constructor(
@@ -134,24 +142,30 @@ export class ApiVersionQuestion extends BaseQuestionService implements IQuestion
     this.lazyApimService = lazyApimService;
   }
 
-  public getQuestion(ctx: PluginContext): SingleSelectQuestion {
+  public getQuestion(envInfo: EnvInfo | v3.EnvInfoV3): SingleSelectQuestion {
     return {
       type: "singleSelect",
       name: QuestionConstants.VSCode.ApiVersion.questionName,
       title: QuestionConstants.VSCode.ApiVersion.description,
       staticOptions: [],
       dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-        return this.getDynamicOptions(inputs, ctx);
+        return this.getDynamicOptions(inputs, envInfo);
       },
       returnObject: true,
       skipSingleOption: false,
     };
   }
 
-  private async getDynamicOptions(inputs: Inputs, ctx: PluginContext): Promise<OptionItem[]> {
+  private async getDynamicOptions(
+    inputs: Inputs,
+    envInfo: EnvInfo | v3.EnvInfoV3
+  ): Promise<OptionItem[]> {
     const apimService = await this.lazyApimService.getValue();
-    const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-    const solutionConfig = new SolutionConfig(ctx.envInfo);
+    const apimState = envInfo.state.get
+      ? (envInfo.state as Map<string, any>).get(BuiltInFeaturePluginNames.apim)
+      : (envInfo.state as Json)[BuiltInFeaturePluginNames.apim];
+    const apimConfig = new ApimPluginConfig(apimState, envInfo.envName);
+    const solutionConfig = new SolutionConfig(envInfo);
     const answer = buildAnswer(inputs);
 
     const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);

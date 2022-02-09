@@ -4,8 +4,8 @@ import "mocha";
 import chai from "chai";
 import {
   ApimPluginConfigKeys,
-  TeamsToolkitComponent,
   SolutionConfigKeys,
+  TeamsToolkitComponent,
 } from "../../../../src/plugins/resource/apim/constants";
 import { ApimPluginConfig, SolutionConfig } from "../../../../src/plugins/resource/apim/config";
 import {
@@ -29,7 +29,6 @@ describe("config", () => {
       config: { manifest: { appName: { short: "appname" } } },
       state: configContent,
     };
-
     const solutionConfig = new SolutionConfig(envInfo);
 
     it("Undefined property", () => {

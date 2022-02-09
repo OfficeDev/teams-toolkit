@@ -256,7 +256,7 @@ describe("SolutionV3 - addFeature", () => {
     });
     deleteFolder(projectPath);
   });
-  it("addFeature: sql", async () => {
+  it("addFeature: sql server", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",
       projectId: uuid.v4(),
@@ -288,7 +288,38 @@ describe("SolutionV3 - addFeature", () => {
     });
     deleteFolder(projectPath);
   });
-
+  it("addFeature: sql database", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: TeamsFxAzureSolutionNameV3,
+        version: "3.0.0",
+        capabilities: [],
+        hostType: "Azure",
+        azureResources: [AzureResourceSQL.id],
+        activeResourcePlugins: [BuiltInFeaturePluginNames.sql, BuiltInFeaturePluginNames.identity],
+      },
+    };
+    const projectPath = path.join(os.tmpdir(), randomAppName());
+    const ctx = new MockedV2Context(projectSettings);
+    const inputs: v3.SolutionAddFeatureInputs = {
+      platform: Platform.VSCode,
+      projectPath: projectPath,
+      feature: BuiltInFeaturePluginNames.sql,
+    };
+    const res = await addFeature(ctx, inputs);
+    assert.isTrue(res.isOk());
+    assert.deepEqual(projectSettings.solutionSettings, {
+      name: TeamsFxAzureSolutionNameV3,
+      version: "3.0.0",
+      capabilities: [],
+      hostType: "Azure",
+      azureResources: [AzureResourceSQL.id],
+      activeResourcePlugins: [BuiltInFeaturePluginNames.sql, BuiltInFeaturePluginNames.identity],
+    });
+    deleteFolder(projectPath);
+  });
   it("addFeature: apim", async () => {
     const projectSettings: ProjectSettings = {
       appName: "my app",

@@ -48,7 +48,7 @@ describe("APIM V3 API", () => {
     const envInfoV3: v2.DeepReadonly<v3.EnvInfoV3> = {
       envName: "dev",
       config: {},
-      state: { solution: {} },
+      state: { solution: {}, "fx-resource-apim": {} },
     };
     const apimPlugin = Container.get<v3.FeaturePlugin>(BuiltInFeaturePluginNames.apim);
     const res = await apimPlugin.getQuestionsForDeploy!(

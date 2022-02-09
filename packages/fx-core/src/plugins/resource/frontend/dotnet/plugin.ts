@@ -11,7 +11,6 @@ import {
   DotnetPluginInfo as PluginInfo,
   DotnetConfigInfo as ConfigInfo,
   DependentPluginInfo,
-  DotnetSupportCapability,
   DotnetPathInfo as PathInfo,
   WebappBicepFile,
   WebappBicep,
@@ -34,7 +33,7 @@ import {
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
 } from "../../../../common/tools";
-import { TemplateInfo, Group, TemplateVariable } from "./resources/templateInfo";
+import { TemplateInfo, generateTemplateInfos } from "./resources/templateInfo";
 import { Bicep } from "../../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";
@@ -100,24 +99,9 @@ export class DotnetPluginImpl implements PluginImpl {
 
     const selectedCapabilities = (ctx.projectSettings?.solutionSettings as SolutionSettings)
       .capabilities;
-    const includeTab = selectedCapabilities.includes(DotnetSupportCapability.tabCapability);
-    const includeBot = selectedCapabilities.includes(DotnetSupportCapability.botCapability);
-    const projectName = ctx.projectSettings!.appName;
-
-    const templateVariable: TemplateVariable = { BlazorAppServer: projectName };
-
-    if (includeTab) {
-      templateVariable.IS_TAB = "true";
-      const templateInfo = new TemplateInfo(ctx, Group.Tab, templateVariable);
+    generateTemplateInfos(selectedCapabilities, ctx).forEach(async (templateInfo: TemplateInfo) => {
       await scaffoldFromZipPackage(ctx.root, templateInfo);
-    }
-    if (includeBot) {
-      templateVariable.IS_BOT = "true";
-      const templateInfo = new TemplateInfo(ctx, Group.Bot, templateVariable);
-      await scaffoldFromZipPackage(ctx.root, templateInfo);
-    }
-    const templateInfo = new TemplateInfo(ctx, Group.Base, templateVariable);
-    await scaffoldFromZipPackage(ctx.root, templateInfo);
+    });
 
     Logger.info(Messages.EndScaffold);
     return ok(undefined);

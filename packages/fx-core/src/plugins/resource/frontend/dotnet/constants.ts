@@ -58,9 +58,9 @@ export class DotnetConfigInfo {
   static readonly projectFilePath = "projectFilePath";
 }
 
-export class DotnetSupportCapability {
-  static readonly tabCapability = "Tab";
-  static readonly botCapability = "Bot";
+export class Capability {
+  static readonly tab = "Tab";
+  static readonly bot = "Bot";
 }
 
 export class WebappBicepFile {

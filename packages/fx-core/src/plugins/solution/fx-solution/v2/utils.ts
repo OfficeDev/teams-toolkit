@@ -209,7 +209,7 @@ export function loadTeamsAppTenantIdForLocal(
     (teamsAppTenantId) => {
       localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = teamsAppTenantId;
       if (isConfigUnifyEnabled()) {
-        envInfo!.state.solution.output.teamsAppTenantId = teamsAppTenantId;
+        envInfo!.state.solution.teamsAppTenantId = teamsAppTenantId;
       }
       return ok(Void);
     }

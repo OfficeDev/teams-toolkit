@@ -1352,9 +1352,6 @@ export class TeamsAppSolution implements Solution {
       (teamsAppTenantId) => {
         if (isLocalDebug && isMultiEnvEnabled()) {
           ctx.localSettings?.teamsApp?.set(LocalSettingsTeamsAppKeys.TenantId, teamsAppTenantId);
-          if (isConfigUnifyEnabled()) {
-            ctx.envInfo.state.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
-          }
         } else {
           ctx.envInfo.state.get(GLOBAL_CONFIG)?.set("teamsAppTenantId", teamsAppTenantId);
         }

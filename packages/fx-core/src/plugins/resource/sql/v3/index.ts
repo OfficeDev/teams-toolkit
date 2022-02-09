@@ -34,19 +34,17 @@ import {
 import { AzureSqlBicep, AzureSqlBicepFile, Constants, HelpLinks, Telemetry } from "../constants";
 import fs from "fs-extra";
 import { adminNameQuestion, adminPasswordQuestion, confirmPasswordQuestion } from "../questions";
-import { SqlManagementClient, SqlManagementModels } from "@azure/arm-sql";
 import { SqlResultFactory } from "../results";
 import { ErrorMessage } from "../errors";
-import axios from "axios";
 import { SqlConfig } from "../config";
 import { Message } from "../utils/message";
 import { ConfigureMessage, DialogUtils, ProgressTitle } from "../utils/dialogUtils";
 import { UserType } from "../utils/commonUtils";
 import { SqlClient } from "../sqlClient";
-import { ManagementClient } from "../managementClient";
 import { CommonErrorHandlerMW } from "../../../../core/middleware/CommonErrorHandlerMW";
-import { hooks } from "@feathersjs/hooks/lib";
+import { hooks } from "@feathersjs/hooks";
 import { AzureResourceSQL } from "../../../solution/fx-solution/question";
+import { ManagementClient, SqlMgrClient } from "../managementClient";
 
 @Service(BuiltInFeaturePluginNames.sql)
 export class SqlPluginV3 implements v3.FeaturePlugin {
@@ -169,41 +167,12 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: TokenProvider
   ): Promise<Result<QTreeNode | undefined, FxError>> {
-    let sqlExist = false;
-    if (envInfo && envInfo.state && envInfo.state[BuiltInFeaturePluginNames.sql]) {
-      const sqlResource = envInfo.state[BuiltInFeaturePluginNames.sql] as v3.AzureSQL;
-      if (sqlResource.sqlEndpoint) {
-        const sqlServer = sqlResource.sqlEndpoint.split(".")[0];
-        const azureSubscriptionId = getSubscriptionIdFromResourceId(sqlResource.sqlResourceId);
-        const credential = await tokenProvider.azureAccountProvider.getAccountCredentialAsync();
-        const client = new SqlManagementClient(credential!, azureSubscriptionId);
-        try {
-          const result = await client.servers.checkNameAvailability({
-            name: sqlServer,
-          });
-          if (result.available) {
-          } else if (result.reason === "Invalid") {
-            return err(
-              SqlResultFactory.UserError(
-                ErrorMessage.SqlEndpointError.name,
-                ErrorMessage.SqlEndpointError.message(sqlResource.sqlEndpoint)
-              )
-            );
-          } else {
-            sqlExist = true;
-          }
-        } catch (error) {
-          throw SqlResultFactory.SystemError(
-            ErrorMessage.SqlCheckError.name,
-            ErrorMessage.SqlCheckError.message(sqlResource.sqlEndpoint, error.message),
-            error
-          );
-        }
-      }
-    }
-    if (!sqlExist || inputs.platform === Platform.CLI_HELP) {
+    await this.loadConfig(envInfo as v3.EnvInfoV3, tokenProvider.azureAccountProvider);
+    await SqlMgrClient.create(tokenProvider.azureAccountProvider, this.config);
+    this.config.existSql = await SqlMgrClient.existAzureSQL();
+    if (!this.config.existSql || inputs.platform === Platform.CLI_HELP) {
       // sql question will be returned in two cases:
-      // 1. CLI_HELP; 2. SQL already exists
+      // 1. CLI_HELP; 2. SQL not exists
       const sqlNode = new QTreeNode({
         type: "group",
       });
@@ -217,39 +186,7 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
   getRuleName(suffix: number): string {
     return Constants.firewall.localRule + suffix;
   }
-  async addLocalFirewallRule(client: SqlManagementClient): Promise<void> {
-    try {
-      const response = await axios.get(Constants.echoIpAddress);
-      const localIp: string = response.data;
-      const partials: string[] = localIp.split(".");
 
-      partials[2] = Constants.ipBeginToken;
-      partials[3] = Constants.ipBeginToken;
-      const startIp: string = partials.join(".");
-
-      partials[2] = Constants.ipEndToken;
-      partials[3] = Constants.ipEndToken;
-      const endIp: string = partials.join(".");
-      const model: SqlManagementModels.FirewallRule = {
-        startIpAddress: startIp,
-        endIpAddress: endIp,
-      };
-      const ruleName = this.getRuleName(this.totalFirewallRuleCount);
-      await client.firewallRules.createOrUpdate(
-        this.config.resourceGroup,
-        this.config.sqlServer,
-        ruleName,
-        model
-      );
-      this.totalFirewallRuleCount++;
-    } catch (error) {
-      throw SqlResultFactory.UserError(
-        ErrorMessage.SqlLocalFirwallError.name,
-        ErrorMessage.SqlLocalFirwallError.message(this.config.sqlEndpoint, error.message),
-        error
-      );
-    }
-  }
   @hooks([
     CommonErrorHandlerMW({
       telemetry: {
@@ -268,6 +205,7 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
     ctx.logProvider?.info(Message.startPostProvision);
 
     await this.loadConfig(envInfo, tokenProvider.azureAccountProvider);
+    await SqlMgrClient.create(tokenProvider.azureAccountProvider, this.config);
 
     DialogUtils.init(
       ctx.userInteraction,
@@ -282,17 +220,12 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
       telemetryProps[Telemetry.properties.dbCount] = this.config.databases.length.toString();
     }
 
-    const managementClient: ManagementClient = await ManagementClient.create(
-      tokenProvider.azureAccountProvider,
-      this.config
-    );
-
     ctx.logProvider?.info(Message.addFirewall);
-    await managementClient.addLocalFirewallRule();
+    await SqlMgrClient.addLocalFirewallRule();
 
     await DialogUtils.progressBar?.start();
     await DialogUtils.progressBar?.next(ConfigureMessage.postProvisionAddAadmin);
-    await this.CheckAndSetAadAdmin(ctx, managementClient);
+    await this.CheckAndSetAadAdmin(ctx, SqlMgrClient);
 
     this.getIdentity(envInfo);
 
@@ -303,7 +236,7 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
         ctx.logProvider?.info(Message.connectDatabase);
         const sqlClient = await SqlClient.create(tokenProvider.azureAccountProvider, this.config);
         ctx.logProvider?.info(Message.addDatabaseUser(this.config.identity));
-        await this.addDatabaseUser(ctx, sqlClient, managementClient);
+        await this.addDatabaseUser(ctx, sqlClient, SqlMgrClient);
       } else {
         const message = ErrorMessage.ServicePrincipalWarning(
           this.config.identity,
@@ -319,7 +252,7 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
       );
     }
 
-    await managementClient.deleteLocalFirewallRule();
+    await SqlMgrClient.deleteLocalFirewallRule();
     ctx.logProvider?.info(Message.endPostProvision);
     await DialogUtils.progressBar?.end(true);
     return ok(Void);
@@ -382,6 +315,8 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
   }
   private loadConfigSql(sqlResource: v3.AzureSQL) {
     this.config.sqlEndpoint = sqlResource.sqlEndpoint;
+    this.config.admin = sqlResource.admin;
+    this.config.adminPassword = sqlResource.adminPassword;
     this.config.databaseName = sqlResource.databaseName;
     if (this.config.sqlEndpoint) {
       this.config.sqlServer = this.config.sqlEndpoint.split(".")[0];
@@ -424,7 +359,7 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
       this.loadConfigSql(sqlResource);
       this.loadDatabases(sqlResource);
     }
-    const solutionConfig = envInfo.state[BuiltInSolutionNames.azure] as v3.AzureSolutionConfig;
+    const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
     this.config.resourceNameSuffix = solutionConfig.resourceNameSuffix;
     this.config.location = solutionConfig.location;
     this.config.tenantId = solutionConfig.tenantId;

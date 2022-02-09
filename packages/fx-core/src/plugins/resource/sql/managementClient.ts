@@ -8,25 +8,21 @@ import { Constants } from "./constants";
 import { SqlResultFactory } from "./results";
 import { AzureAccountProvider } from "@microsoft/teamsfx-api";
 export class ManagementClient {
-  client: SqlManagementClient;
-  config: SqlConfig;
+  client?: SqlManagementClient;
+  config?: SqlConfig;
   totalFirewallRuleCount = 0;
 
-  private constructor(config: SqlConfig, client: SqlManagementClient) {
-    this.config = config;
-    this.client = client;
-  }
-
-  public static async create(
+  public async create(
     azureAccountProvider: AzureAccountProvider,
     config: SqlConfig
-  ): Promise<ManagementClient> {
+  ): Promise<void> {
     const credential = await azureAccountProvider.getAccountCredentialAsync();
-    const client = new SqlManagementClient(credential!, config.azureSubscriptionId);
-    return new ManagementClient(config, client);
+    this.config = config;
+    this.client = new SqlManagementClient(credential!, config.azureSubscriptionId);
   }
 
   async existAzureSQL(): Promise<boolean> {
+    if (!this.client || !this.config || !this.config.sqlServer) return false;
     try {
       const result = await this.client.servers.checkNameAvailability({
         name: this.config.sqlServer,
@@ -51,12 +47,13 @@ export class ManagementClient {
   }
 
   async existAadAdmin(): Promise<boolean> {
+    if (!this.client || !this.config) return false;
     try {
       const result = await this.client.serverAzureADAdministrators.listByServer(
         this.config.resourceGroup,
         this.config.sqlServer
       );
-      if (result.find((item: { login: string }) => item.login === this.config.aadAdmin)) {
+      if (result.find((item: { login: string }) => item.login === this.config!.aadAdmin)) {
         return true;
       } else {
         return false;
@@ -71,6 +68,7 @@ export class ManagementClient {
   }
 
   async addAADadmin(): Promise<void> {
+    if (!this.client || !this.config) return;
     let model: SqlManagementModels.ServerAzureADAdministrator = {
       tenantId: this.config.tenantId,
       sid: this.config.aadAdminObjectId,
@@ -95,6 +93,7 @@ export class ManagementClient {
   }
 
   async addLocalFirewallRule(): Promise<void> {
+    if (!this.client || !this.config) return;
     try {
       const response = await axios.get(Constants.echoIpAddress);
       const localIp: string = response.data;
@@ -129,6 +128,7 @@ export class ManagementClient {
   }
 
   async deleteLocalFirewallRule(): Promise<void> {
+    if (!this.client || !this.config) return;
     try {
       for (let i = 0; i < this.totalFirewallRuleCount; i++) {
         const ruleName = this.getRuleName(i);
@@ -155,3 +155,5 @@ export class ManagementClient {
     return new Promise((resolve) => setTimeout(resolve, s * 1000));
   }
 }
+
+export const SqlMgrClient = new ManagementClient();

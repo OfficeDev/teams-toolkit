@@ -16,6 +16,8 @@ export const doctorConstant = {
     "Restart all your Visual Studio Code instances after the installation is finished.",
   NodeNotFound: `Cannot find Node.js. ${InstallNode}`,
   NodeNotSupported: `Node.js (@CurrentVersion) is not in the supported version list (@SupportedVersions). ${InstallNode}`,
+  SignInCancelled:
+    "Sign in cancelled. The Teams Toolkit requires a Microsoft 365 organizational account where Teams is running and has been registered.",
   HelpLink: `Please refer to @Link for more information.`,
   LearnMore: `Visit @Link to learn more about prerequisites check.`,
 };

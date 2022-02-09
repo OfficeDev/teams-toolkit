@@ -316,9 +316,10 @@ describe("API v2 cases: deploy() for Azure projects", () => {
       projectId: uuid.v4(),
       solutionSettings: {
         hostType: HostTypeOptionAzure.id,
+        capabilities: [TabOptionItem.id],
         name: "azure",
         version: "1.0",
-        activeResourcePlugins: [new AadAppForTeamsPlugin().name],
+        activeResourcePlugins: [new AadAppForTeamsPlugin().name, fehostPlugin.name],
       },
       // Whether this project is on VS platform is determined by programmingLanguage
       programmingLanguage: "csharp",
@@ -332,6 +333,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
     };
     const mockedInputs: Inputs = {
       platform: Platform.VS,
+      projectPath: "mock",
     };
     const envInfo: EnvInfoV2 = {
       envName: "default",
@@ -340,6 +342,7 @@ describe("API v2 cases: deploy() for Azure projects", () => {
         solution: { provisionSucceeded: true },
       },
     };
+    mockDeployThatAlwaysSucceed(fehostPlugin);
     const result = await deploy(mockedCtx, mockedInputs, envInfo, mockedTokenProvider);
     expect(result.isOk()).to.be.true;
   });

@@ -55,7 +55,7 @@ export async function deploy(
   const isVsProject = isVSProject(ctx.projectSetting);
 
   let optionsToDeploy: string[] = [];
-  if (isVsProject) {
+  if (!isVsProject) {
     optionsToDeploy = inputs[AzureSolutionQuestionNames.PluginSelectionDeploy] as string[];
     if (optionsToDeploy === undefined || optionsToDeploy.length === 0) {
       return err(
@@ -72,7 +72,7 @@ export async function deploy(
   const thunks: NamedThunk<Json>[] = plugins
     .filter(
       (plugin) =>
-        !isUndefined(plugin.deploy) && (isVsProject ? optionsToDeploy.includes(plugin.name) : true)
+        !isUndefined(plugin.deploy) && (isVsProject ? true : optionsToDeploy.includes(plugin.name))
     )
     .map((plugin) => {
       return {

@@ -250,7 +250,14 @@ export class SqlPluginV3 implements v3.FeaturePlugin {
       );
     }
   }
-  @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.sql } })])
+  @hooks([
+    CommonErrorHandlerMW({
+      telemetry: {
+        component: BuiltInFeaturePluginNames.sql,
+        eventName: Telemetry.stage.postProvision,
+      },
+    }),
+  ])
   async configureResource(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,

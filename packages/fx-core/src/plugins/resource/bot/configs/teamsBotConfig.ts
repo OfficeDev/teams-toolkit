@@ -1,6 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, PluginContext, AzureSolutionSettings } from "@microsoft/teamsfx-api";
+import {
+  ConfigValue,
+  PluginContext,
+  AzureSolutionSettings,
+  v2,
+  Inputs,
+  v3,
+} from "@microsoft/teamsfx-api";
 
 import { LocalDebugConfig } from "./localDebugConfig";
 import { ProvisionConfig } from "./provisionConfig";
@@ -26,6 +33,54 @@ export class TeamsBotConfig {
   public async restoreConfigFromContext(context: PluginContext): Promise<void> {
     await this.scaffold.restoreConfigFromContext(context);
     await this.provision.restoreConfigFromContext(context);
+    await this.localDebug.restoreConfigFromContext(context);
+    await this.deploy.restoreConfigFromContext(context);
+
+    this.teamsAppClientId = context.envInfo.state
+      .get(PluginAAD.PLUGIN_NAME)
+      ?.get(PluginAAD.CLIENT_ID) as string;
+
+    this.teamsAppClientSecret = context.envInfo.state
+      .get(PluginAAD.PLUGIN_NAME)
+      ?.get(PluginAAD.CLIENT_SECRET) as string;
+
+    this.teamsAppTenant = context.envInfo.state
+      .get(PluginSolution.PLUGIN_NAME)
+      ?.get(PluginSolution.M365_TENANT_ID) as string;
+
+    this.applicationIdUris = context.envInfo.state
+      .get(PluginAAD.PLUGIN_NAME)
+      ?.get(PluginAAD.APPLICATION_ID_URIS) as string;
+
+    const capabilities = (context.projectSettings?.solutionSettings as AzureSolutionSettings)
+      .capabilities;
+
+    if (capabilities?.includes(PluginActRoles.Bot) && !this.actRoles.includes(PluginActRoles.Bot)) {
+      this.actRoles.push(PluginActRoles.Bot);
+    }
+
+    if (
+      capabilities?.includes(PluginActRoles.MessageExtension) &&
+      !this.actRoles.includes(PluginActRoles.MessageExtension)
+    ) {
+      this.actRoles.push(PluginActRoles.MessageExtension);
+    }
+
+    const resourceNameSuffixValue: ConfigValue = context.envInfo.state
+      .get(PluginSolution.PLUGIN_NAME)
+      ?.get(PluginSolution.RESOURCE_NAME_SUFFIX);
+    this.resourceNameSuffix = resourceNameSuffixValue
+      ? (resourceNameSuffixValue as string)
+      : utils.genUUID();
+  }
+
+  public async restoreConfigFromContextV3(
+    context: v2.Context,
+    inputs: Inputs,
+    envInfo?: v3.EnvInfoV3
+  ): Promise<void> {
+    await this.scaffold.restoreConfigFromContextV3(context, inputs, envInfo);
+    await this.provision.restoreConfigFromContextV3(context, inputs, envInfo!);
     await this.localDebug.restoreConfigFromContext(context);
     await this.deploy.restoreConfigFromContext(context);
 

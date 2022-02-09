@@ -1,6 +1,6 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { ConfigValue, PluginContext } from "@microsoft/teamsfx-api";
+import { ConfigValue, Inputs, PluginContext, v2, v3 } from "@microsoft/teamsfx-api";
 
 import * as utils from "../utils/common";
 import {
@@ -13,6 +13,7 @@ import {
 } from "../resources/strings";
 import { ConfigKeys, WebAppConstants } from "../constants";
 import { ConfigValidationError } from "../errors";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 
 export class ProvisionConfig {
   // Arm support config key
@@ -88,7 +89,48 @@ export class ProvisionConfig {
 
     this.validateRestoredConfig();
   }
+  public async restoreConfigFromContextV3(
+    context: v2.Context,
+    inputs: Inputs,
+    envInfo: v3.EnvInfoV3
+  ): Promise<void> {
+    const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
+    this.subscriptionId = solutionConfig.subscriptionId;
+    this.resourceGroup = solutionConfig.resourceGroupName;
+    this.location = solutionConfig.location;
 
+    const sqlConfig = envInfo.state[BuiltInFeaturePluginNames.sql] as v3.AzureSQL | undefined;
+    if (sqlConfig) {
+      this.sqlEndpoint = sqlConfig.sqlEndpoint;
+      this.sqlDatabaseName = sqlConfig.databaseName;
+      this.sqlUserName = sqlConfig[PluginSql.SQL_USERNAME];
+      this.sqlPassword = sqlConfig[PluginSql.SQL_PASSWORD];
+    }
+    const identityConfig = envInfo.state[BuiltInFeaturePluginNames.identity] as
+      | v3.AzureIdentity
+      | undefined;
+    if (identityConfig) {
+      this.identityClientId = identityConfig.identityClientId;
+      this.identityResourceId = identityConfig.identityResourceId;
+    }
+
+    const functionConfig = envInfo.state[BuiltInFeaturePluginNames.function] as
+      | v3.AzureFunction
+      | undefined;
+    if (functionConfig) {
+      this.functionEndpoint = functionConfig?.functionEndpoint;
+    }
+
+    const botConfig = envInfo.state[BuiltInFeaturePluginNames.bot] as v3.AzureBot | undefined;
+    if (botConfig) {
+      this.appServicePlan = botConfig[PluginBot.APP_SERVICE_PLAN];
+      this.siteName = botConfig.siteName;
+      this.siteEndpoint = botConfig.siteEndpoint;
+      this.botChannelRegName = botConfig[PluginBot.BOT_CHANNEL_REGISTRATION];
+      this.botWebAppResourceId = botConfig[PluginBot.BOT_WEB_APP_RESOURCE_ID];
+    }
+    this.validateRestoredConfig();
+  }
   public saveConfigIntoContext(context: PluginContext): void {
     utils.checkAndSaveConfig(context, PluginBot.VALID_DOMAIN, this.validDomain);
     utils.checkAndSaveConfig(context, PluginBot.APP_SERVICE_PLAN, this.appServicePlan);

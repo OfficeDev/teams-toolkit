@@ -6,7 +6,7 @@ import { exec } from "child_process";
 import { default as urlParse } from "url-parse";
 import AdmZip from "adm-zip";
 
-import { ConfigValue, PluginContext } from "@microsoft/teamsfx-api";
+import { ConfigValue, Json, PluginContext } from "@microsoft/teamsfx-api";
 import { RegularExprs, WebAppConstants } from "../constants";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import * as appService from "@azure/arm-appservice";
@@ -87,6 +87,14 @@ export function checkAndSaveConfig(context: PluginContext, key: string, value: C
   }
 
   context.config.set(key, value);
+}
+
+export function checkAndSaveConfigV3(config: Json, key: string, value: ConfigValue): void {
+  if (!value) {
+    return;
+  }
+
+  config[key] = value;
 }
 
 export function existsInEnumValues<T extends string>(

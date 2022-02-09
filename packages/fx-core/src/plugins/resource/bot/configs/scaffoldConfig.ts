@@ -3,9 +3,10 @@
 import * as utils from "../utils/common";
 import { CommonStrings, PluginBot } from "../resources/strings";
 import { isMultiEnvEnabled } from "../../../../common";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { Inputs, PluginContext, v2, v3 } from "@microsoft/teamsfx-api";
 import { ProgrammingLanguage } from "../enums/programmingLanguage";
 import path from "path";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 
 export class ScaffoldConfig {
   public botId?: string;
@@ -32,6 +33,30 @@ export class ScaffoldConfig {
     }
 
     const rawProgrammingLanguage = context.projectSettings?.programmingLanguage;
+    if (
+      rawProgrammingLanguage &&
+      utils.existsInEnumValues(rawProgrammingLanguage, ProgrammingLanguage)
+    ) {
+      this.programmingLanguage = rawProgrammingLanguage as ProgrammingLanguage;
+    }
+  }
+
+  public async restoreConfigFromContextV3(
+    context: v2.Context,
+    inputs: Inputs,
+    envInfo?: v3.EnvInfoV3
+  ): Promise<void> {
+    this.workingDir = path.join(inputs.projectPath!, CommonStrings.BOT_WORKING_DIR_NAME);
+    const botConfig = envInfo?.state[BuiltInFeaturePluginNames.bot] as v3.AzureBot;
+    this.botId = botConfig?.botId;
+    this.botPassword = botConfig?.botPassword;
+    this.objectId = botConfig?.objectId;
+    if (isMultiEnvEnabled()) {
+      this.botId = envInfo?.config.bot?.appId ?? this.botId;
+      this.botPassword = envInfo?.config.bot?.appPassword ?? this.botPassword;
+    }
+
+    const rawProgrammingLanguage = context.projectSetting.programmingLanguage;
     if (
       rawProgrammingLanguage &&
       utils.existsInEnumValues(rawProgrammingLanguage, ProgrammingLanguage)

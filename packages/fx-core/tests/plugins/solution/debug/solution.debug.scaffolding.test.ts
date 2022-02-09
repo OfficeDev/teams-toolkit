@@ -644,7 +644,7 @@ describe("solution.debug.scaffolding", () => {
           version: "",
           hostType: "Azure",
           capabilities: ["Tab", "Bot"],
-          activeResourcePlugins: ["fx-resource-aad-app-for-teams"]
+          activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
         },
         programmingLanguage: "javascript",
       };

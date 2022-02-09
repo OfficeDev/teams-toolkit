@@ -120,7 +120,7 @@ jobs:
       - name: sync up templates deps with sdk version for RC
         if: ${{ contains(steps.version-change.outputs.CHANGED, '@microsoft/teamsfx') && !contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.ref == 'refs/heads/main' && github.event.inputs.preid == 'rc' }}
         run: |
-          node sdk-sync-up-version.js
+          node sdk-sync-up-version.js sdk
         working-directory: ./.github/scripts
 
       - name: sync up fx-core with templates version for RC
@@ -183,7 +183,7 @@ jobs:
 
       - name: Generate Tag List
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}
-        run: git tag | grep templates@ > ./template-tags.txt
+        run: git tag | grep templates > ./template-tags.txt
 
       - name: Update Template Tag list Release
         if: ${{ contains(steps.version-change.outputs.CHANGED, 'templates@') && github.event_name == 'workflow_dispatch' && github.event.inputs.preid == 'stable' }}

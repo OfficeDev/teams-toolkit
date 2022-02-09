@@ -114,13 +114,6 @@ export const InvalidAzureResourceId: IApimPluginError = {
   message: (resourceId: string) => `Invalid Azure resource id ${resourceId}.`,
 };
 
-export const InvalidApimServiceChoice: IApimPluginError = {
-  type: ErrorType.System,
-  code: "InvalidApimServiceChoice",
-  message: (serviceName: string) =>
-    `The selected API Management service '${serviceName}' is invalid.`,
-};
-
 export const EmptyProperty: IApimPluginError = {
   type: ErrorType.System,
   code: "EmptyProperty",

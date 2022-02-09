@@ -523,6 +523,26 @@ export interface ErrorOptionBase {
 }
 
 // @public (undocumented)
+export interface ExistingAppConfig {
+    // (undocumented)
+    isCreatedFromExistingApp: boolean;
+    // (undocumented)
+    newAppTypes: ExistingTeamsAppType[];
+}
+
+// @public (undocumented)
+export enum ExistingTeamsAppType {
+    // (undocumented)
+    Bot = 2,
+    // (undocumented)
+    ConfigurableTab = 1,
+    // (undocumented)
+    MessageExtension = 3,
+    // (undocumented)
+    StaticTab = 0
+}
+
+// @public (undocumented)
 export interface ExpServiceProvider {
     // (undocumented)
     getTreatmentVariableAsync<T extends boolean | number | string>(configId: string, name: string, checkCache?: boolean): Promise<T | undefined>;
@@ -530,8 +550,8 @@ export interface ExpServiceProvider {
 
 // @public (undocumented)
 interface FeaturePlugin {
-    addFeature: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
-    afterOtherFeaturesAdded?: (ctx: ContextWithManifestProvider, inputs: OtherFeaturesAddedInputs) => Promise<Result<ResourceTemplate_2 | undefined, FxError>>;
+    addFeature: (ctx: ContextWithManifestProvider, inputs: InputsWithProjectPath) => Promise<Result<ResourceTemplate_2[], FxError>>;
+    afterOtherFeaturesAdded?: (ctx: ContextWithManifestProvider, inputs: OtherFeaturesAddedInputs) => Promise<Result<ResourceTemplate_2[], FxError>>;
     configureResource?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: EnvInfoV3, tokenProvider: TokenProvider) => Promise<Result<Void, FxError>>;
     deploy?: (ctx: Context_2, inputs: InputsWithProjectPath, envInfo: DeepReadonly<EnvInfoV3>, tokenProvider: AzureAccountProvider) => Promise<Result<Void, FxError>>;
     description?: string;
@@ -828,6 +848,8 @@ export interface Inputs extends Json {
     // (undocumented)
     env?: string;
     // (undocumented)
+    existingAppConfig?: ExistingAppConfig;
+    // (undocumented)
     existingResources?: string[];
     // (undocumented)
     ignoreConfigPersist?: boolean;
@@ -1046,6 +1068,37 @@ export interface LogProvider {
 }
 
 // @public (undocumented)
+type ManifestCapability = {
+    name: "staticTab";
+    snippet?: {
+        local: IStaticTab;
+        remote: IStaticTab;
+    };
+    existingApp?: boolean;
+} | {
+    name: "configurableTab";
+    snippet?: {
+        local: IConfigurableTab;
+        remote: IConfigurableTab;
+    };
+    existingApp?: boolean;
+} | {
+    name: "Bot";
+    snippet?: {
+        local: IBot;
+        remote: IBot;
+    };
+    existingApp?: boolean;
+} | {
+    name: "MessageExtension";
+    snippet?: {
+        local: IComposeExtension;
+        remote: IComposeExtension;
+    };
+    existingApp?: boolean;
+};
+
+// @public (undocumented)
 export function mergeConfigMap(lhs?: ConfigMap, rhs?: ConfigMap): ConfigMap | undefined;
 
 // @public (undocumented)
@@ -1119,7 +1172,7 @@ interface OtherFeaturesAddedInputs extends InputsWithProjectPath {
     // (undocumented)
     features: {
         name: string;
-        value: ResourceTemplate_2 | undefined;
+        value: ResourceTemplate_2[];
     }[];
 }
 
@@ -1974,6 +2027,7 @@ export { v2 }
 declare namespace v3 {
     export {
         EnvInfoV3,
+        ManifestCapability,
         CloudResource,
         ResourceStates,
         AzureResource,

@@ -96,11 +96,6 @@ export class Factory {
             )
         );
         const openApiProcessor = new OpenApiProcessor(ctx.telemetryReporter, ctx.logProvider);
-        const apimServiceQuestion = new VSCode.ApimServiceQuestion(
-          lazyApimService,
-          ctx.telemetryReporter,
-          ctx.logProvider
-        );
         const openApiDocumentQuestion = new VSCode.OpenApiDocumentQuestion(
           openApiProcessor,
           ctx.telemetryReporter,
@@ -126,7 +121,6 @@ export class Factory {
         );
 
         return new VscQuestionManager(
-          apimServiceQuestion,
           openApiDocumentQuestion,
           apiPrefixQuestion,
           apiVersionQuestion,
@@ -135,15 +129,11 @@ export class Factory {
         );
       case Platform.CLI:
       case Platform.CLI_HELP:
-        const cliApimServiceNameQuestion = new CLI.ApimServiceNameQuestion();
-        const cliApimResourceGroupQuestion = new CLI.ApimResourceGroupQuestion();
         const cliOpenApiDocumentQuestion = new CLI.OpenApiDocumentQuestion();
         const cliApiPrefixQuestion = new CLI.ApiPrefixQuestion();
         const cliApiVersionQuestion = new CLI.ApiVersionQuestion();
 
         return new CliQuestionManager(
-          cliApimServiceNameQuestion,
-          cliApimResourceGroupQuestion,
           cliOpenApiDocumentQuestion,
           cliApiPrefixQuestion,
           cliApiVersionQuestion

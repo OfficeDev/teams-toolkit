@@ -18,10 +18,6 @@ import {
   combine,
   Json,
   UserError,
-  IStaticTab,
-  IConfigurableTab,
-  IBot,
-  IComposeExtension,
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { getStrings } from "../../../../common/tools";
@@ -33,6 +29,7 @@ import {
   SolutionTelemetryProperty,
   SolutionTelemetrySuccess,
   SolutionSource,
+  PluginNames,
 } from "../constants";
 import * as util from "util";
 import {
@@ -306,15 +303,7 @@ export async function addCapability(
     );
   }
 
-  const capabilitiesToAddManifest: (
-    | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
-    | { name: "configurableTab"; snippet?: { local: IConfigurableTab; remote: IConfigurableTab } }
-    | { name: "Bot"; snippet?: { local: IBot; remote: IBot } }
-    | {
-        name: "MessageExtension";
-        snippet?: { local: IComposeExtension; remote: IComposeExtension };
-      }
-  )[] = [];
+  const capabilitiesToAddManifest: v3.ManifestCapability[] = [];
   const pluginNamesToScaffold: Set<string> = new Set<string>();
   const pluginNamesToArm: Set<string> = new Set<string>();
   const newCapabilitySet = new Set<string>();
@@ -534,6 +523,11 @@ export async function addResource(
   let scaffoldApim = false;
   // 4. check Function
   if (addFunc) {
+    // AAD plugin needs to be activated when adding function.
+    // Since APIM also have dependency on Function, will only add depenedency here.
+    if (!solutionSettings.activeResourcePlugins?.includes(PluginNames.AAD)) {
+      solutionSettings.activeResourcePlugins?.push(PluginNames.AAD);
+    }
     const functionPlugin = Container.get<v2.ResourcePlugin>(ResourcePluginsV2.FunctionPlugin);
     pluginsToScaffold.push(functionPlugin);
     if (!alreadyHaveFunction) {

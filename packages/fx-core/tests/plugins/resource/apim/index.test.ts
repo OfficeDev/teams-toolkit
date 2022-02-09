@@ -189,10 +189,6 @@ function updateConfig(
 }
 
 const answer: Inputs = {
-  [QuestionConstants.VSCode.Apim.questionName]: {
-    id: QuestionConstants.VSCode.Apim.createNewApimOption,
-    label: QuestionConstants.VSCode.Apim.createNewApimOption,
-  },
   [QuestionConstants.VSCode.ApiVersion.questionName]: {
     id: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,
     label: QuestionConstants.VSCode.ApiVersion.createNewApiVersionOption,

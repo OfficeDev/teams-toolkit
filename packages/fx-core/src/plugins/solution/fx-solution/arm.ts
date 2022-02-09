@@ -162,6 +162,10 @@ type OperationStatus = {
   status: string;
 };
 
+class DeploymentErrorMessage {
+  value = "";
+}
+
 export function getRequiredOperation(
   operation: DeploymentOperation,
   deployCtx: DeployContext
@@ -397,7 +401,10 @@ export async function doDeployArmTemplates(ctx: SolutionContext): Promise<Result
         HelpLinks.ArmHelpLink,
         notificationMessage
       );
-      returnError.innerError = JSON.stringify(deploymentErrorObj);
+      returnError.innerError = {
+        value: JSON.stringify(deploymentErrorObj),
+      } as DeploymentErrorMessage;
+
       return err(returnError);
     } else {
       return result;
@@ -588,8 +595,10 @@ export async function deployArmTemplates(ctx: SolutionContext): Promise<Result<v
       });
     } else {
       const errorProperties: { [key: string]: string } = {};
-      if (result.error.innerError) {
-        errorProperties[SolutionTelemetryProperty.ArmDeploymentError] = result.error.innerError;
+      // If the innerError is a DeploymentErrorMessage value, we will set it in telemetry.
+      if (result.error.innerError && result.error.innerError instanceof DeploymentErrorMessage) {
+        errorProperties[SolutionTelemetryProperty.ArmDeploymentError] =
+          result.error.innerError.value;
       }
       sendErrorTelemetryThenReturnError(
         SolutionTelemetryEvent.ArmDeployment,
@@ -868,9 +877,11 @@ async function doAddFeature(
   inputs: v3.SolutionAddFeatureInputs
 ): Promise<Result<any, FxError>> {
   const baseName = generateResourceBaseName(ctx.projectSetting.appName, "");
-  const pluginNames = ctx.projectSetting.solutionSettings
-    ? (ctx.projectSetting.solutionSettings as AzureSolutionSettings).activeResourcePlugins
-    : [];
+  const pluginNames = [];
+  if (ctx.projectSetting.solutionSettings)
+    (ctx.projectSetting.solutionSettings as AzureSolutionSettings).activeResourcePlugins.forEach(
+      (p) => pluginNames.push(p)
+    );
   pluginNames.push(inputs.feature);
   const bicepOrchestrationTemplate = new BicepOrchestrationContent(pluginNames, baseName);
   const moduleProvisionFiles = new Map<string, string>();
@@ -884,51 +895,57 @@ async function doAddFeature(
     return err(addFeatureRes.error);
   }
   if (addFeatureRes.value) {
-    if (addFeatureRes.value.kind === "bicep") {
-      const armTemplate = addFeatureRes.value.template as ArmTemplateResult;
-      generateArmFromResult(
-        armTemplate,
-        bicepOrchestrationTemplate,
-        inputs.feature,
-        moduleProvisionFiles,
-        moduleConfigFiles
-      );
-      // notify other plugins
-      for (const pluginName of pluginNames) {
-        if (pluginName === inputs.feature) continue;
-        const plugin = Container.get<v3.FeaturePlugin>(pluginName);
-        if (plugin.afterOtherFeaturesAdded) {
-          const notifyRes = await plugin.afterOtherFeaturesAdded(ctx, {
-            ...inputs,
-            features: [
-              {
-                name: inputs.feature,
-                value: addFeatureRes.value,
-              },
-            ],
-          });
-          if (notifyRes.isErr()) {
-            return err(notifyRes.error);
-          }
-          if (notifyRes.value && notifyRes.value.kind === "bicep") {
-            const armTemplate = notifyRes.value.template as ArmTemplateResult;
-            generateArmFromResult(
-              armTemplate,
-              bicepOrchestrationTemplate,
-              plugin.name,
-              moduleProvisionFiles,
-              moduleConfigFiles
-            );
+    for (const template of addFeatureRes.value) {
+      if (template.kind === "bicep") {
+        const armTemplate = template.template as ArmTemplateResult;
+        generateArmFromResult(
+          armTemplate,
+          bicepOrchestrationTemplate,
+          inputs.feature,
+          moduleProvisionFiles,
+          moduleConfigFiles
+        );
+      }
+    }
+    // notify other plugins
+    for (const pluginName of pluginNames) {
+      if (pluginName === inputs.feature) continue;
+      const plugin = Container.get<v3.FeaturePlugin>(pluginName);
+      if (plugin.afterOtherFeaturesAdded) {
+        const notifyRes = await plugin.afterOtherFeaturesAdded(ctx, {
+          ...inputs,
+          features: [
+            {
+              name: inputs.feature,
+              value: addFeatureRes.value,
+            },
+          ],
+        });
+        if (notifyRes.isErr()) {
+          return err(notifyRes.error);
+        }
+        if (notifyRes.value) {
+          for (const template of notifyRes.value) {
+            if (template.kind === "bicep") {
+              const armTemplate = template.template as ArmTemplateResult;
+              generateArmFromResult(
+                armTemplate,
+                bicepOrchestrationTemplate,
+                plugin.name,
+                moduleProvisionFiles,
+                moduleConfigFiles
+              );
+            }
           }
         }
       }
-      await persistBicepTemplates(
-        bicepOrchestrationTemplate,
-        moduleProvisionFiles,
-        moduleConfigFiles,
-        inputs.projectPath
-      );
     }
+    await persistBicepTemplates(
+      bicepOrchestrationTemplate,
+      moduleProvisionFiles,
+      moduleConfigFiles,
+      inputs.projectPath
+    );
   }
   return ok(undefined); // Nothing to return when success
 }
@@ -1388,7 +1405,7 @@ function generateResourceBaseName(appName: string, envName: string): string {
   );
 }
 
-async function wrapGetDeploymentError(
+export async function wrapGetDeploymentError(
   deployCtx: DeployContext,
   resourceGroupName: string,
   deploymentName: string
@@ -1423,6 +1440,17 @@ async function getDeploymentError(
       return undefined;
     }
     throw error;
+  }
+
+  // The root deployment error name is deployCtx.deploymentName.
+  // If we find the root error has a timestamp less than startTime, it is an old error to be ignored.
+  // Other erros will be ignored as well.
+  if (
+    deploymentName === deployCtx.deploymentName &&
+    deployment.properties?.timestamp &&
+    deployment.properties.timestamp.getTime() < deployCtx.deploymentStartTime
+  ) {
+    return undefined;
   }
   if (!deployment.properties?.error) {
     return undefined;

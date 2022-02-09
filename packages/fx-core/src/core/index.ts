@@ -48,7 +48,10 @@ import { TelemetryReporterInstance } from "../common/telemetry";
 import { getRootDirectory, mapToJson } from "../common/tools";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
-import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
+import {
+  BuiltInFeaturePluginNames,
+  BuiltInSolutionNames,
+} from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
 import { LocalCrypto } from "./crypto";
 import { downloadSample } from "./downloadSample";
@@ -96,6 +99,7 @@ import {
   getQuestionsForProvision,
   getQuestionsForPublish,
   getQuestionsForUserTaskV2,
+  getQuestionsForUserTaskV3,
   getQuestionsV2,
   QuestionModelMW,
 } from "./middleware/questionModel";
@@ -380,19 +384,21 @@ export class FxCore implements v3.ICore {
       const initInputs: v2.InputsWithProjectPath & { solution?: string } = {
         ...inputs,
         projectPath: projectPath,
-        // solution: solution,
       };
       const initRes = await this._init(initInputs, ctx);
       if (initRes.isErr()) {
         return err(initRes.error);
       }
 
+      // set solution in context
+      ctx.solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
+
       // addFeature
       if (inputs.platform === Platform.VS) {
         const addFeatureInputs: v2.InputsWithProjectPath = {
           ...inputs,
           projectPath: projectPath,
-          feature: BuiltInFeaturePluginNames.aspDotNet, //TODO
+          feature: BuiltInFeaturePluginNames.dotnet, //TODO
         };
         const addFeatureRes = await this._addFeature(addFeatureInputs, ctx);
         if (addFeatureRes.isErr()) {
@@ -410,6 +416,7 @@ export class FxCore implements v3.ICore {
             return err(addFeatureRes.error);
           }
         } else if (capabilities.includes(TabSPFxItem.id)) {
+          ctx.solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.spfx);
           const addFeatureInputs: v2.InputsWithProjectPath = {
             ...inputs,
             projectPath: projectPath,
@@ -895,6 +902,14 @@ export class FxCore implements v3.ICore {
     }
     return ok(Void);
   }
+  async executeUserTask(
+    func: Func,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<unknown, FxError>> {
+    if (isV3()) return this.executeUserTaskV3(func, inputs);
+    else return this.executeUserTaskV2(func, inputs);
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -909,7 +924,7 @@ export class FxCore implements v3.ICore {
     ProjectSettingsWriterMW,
     EnvInfoWriterMW(),
   ])
-  async executeUserTask(
+  async executeUserTaskV2(
     func: Func,
     inputs: Inputs,
     ctx?: CoreHookContext
@@ -942,7 +957,51 @@ export class FxCore implements v3.ICore {
     }
     return err(FunctionRouterError(func));
   }
-
+  @hooks([
+    ErrorHandlerMW,
+    ConcurrentLockerMW,
+    SupportV1ConditionMW(false),
+    ProjectMigratorMW,
+    ProjectSettingsLoaderMW,
+    EnvInfoLoaderMW(false),
+    LocalSettingsLoaderMW,
+    SolutionLoaderMW,
+    QuestionModelMW,
+    ContextInjectorMW,
+    ProjectSettingsWriterMW,
+    EnvInfoWriterMW(),
+  ])
+  async executeUserTaskV3(
+    func: Func,
+    inputs: Inputs,
+    ctx?: CoreHookContext
+  ): Promise<Result<unknown, FxError>> {
+    currentStage = Stage.userTask;
+    inputs.stage = Stage.userTask;
+    const namespace = func.namespace;
+    const array = namespace ? namespace.split("/") : [];
+    if ("" !== namespace && array.length > 0) {
+      if (!ctx || !ctx.solutionV3 || !ctx.envInfoV3) {
+        const name = undefinedName(
+          [ctx, ctx?.solutionV3, ctx?.envInfoV3],
+          ["ctx", "ctx.solutionV3", "ctx.envInfoV3"]
+        );
+        return err(new ObjectIsUndefinedError(`executeUserTask input stuff: ${name}`));
+      }
+      if (!ctx.contextV2) ctx.contextV2 = createV2Context(newProjectSettings());
+      if (ctx.solutionV3.executeUserTask) {
+        const res = await ctx.solutionV3.executeUserTask(
+          ctx.contextV2,
+          inputs,
+          func,
+          ctx.envInfoV3,
+          this.tools.tokenProvider
+        );
+        return res;
+      } else return err(FunctionRouterError(func));
+    }
+    return err(FunctionRouterError(func));
+  }
   @hooks([
     ErrorHandlerMW,
     ConcurrentLockerMW,
@@ -1380,6 +1439,7 @@ export class FxCore implements v3.ICore {
   _getQuestionsForDeploy = getQuestionsForDeploy;
   _getQuestionsForPublish = getQuestionsForPublish;
   _getQuestionsForInit = getQuestionsForInit;
+  _getQuestionsForUserTaskV3 = getQuestionsForUserTaskV3;
 }
 
 export async function createBasicFolderStructure(inputs: Inputs): Promise<Result<null, FxError>> {

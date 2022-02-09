@@ -130,7 +130,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     ctx.logProvider.info(Messages.StartGenerateArmTemplates(this.name));
     const solutionSettings = ctx.projectSetting.solutionSettings as
       | AzureSolutionSettings
@@ -158,13 +158,13 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
         domain: FrontendOutputBicepSnippet.Domain,
       },
     };
-    return ok({ kind: "bicep", template: result });
+    return ok([{ kind: "bicep", template: result }]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const scaffoldRes = await this.scaffold(ctx, inputs);
     if (scaffoldRes.isErr()) return err(scaffoldRes.error);
     const armRes = await this.generateResourceTemplate(ctx, inputs);
@@ -180,7 +180,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
   async afterOtherFeaturesAdded(
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.OtherFeaturesAddedInputs
-  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     ctx.logProvider.info(Messages.StartUpdateArmTemplates(this.name));
     const result: ArmTemplateResult = {
       Reference: {
@@ -188,7 +188,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
         domain: FrontendOutputBicepSnippet.Domain,
       },
     };
-    return ok({ kind: "bicep", template: result });
+    return ok([{ kind: "bicep", template: result }]);
   }
   private async buildFrontendConfig(
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,

@@ -10,6 +10,7 @@ import {
   EnvNamePlaceholder,
   err,
   FxError,
+  Json,
   ok,
   QTreeNode,
   Result,
@@ -70,7 +71,8 @@ export async function provisionResources(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
   envInfo: v3.EnvInfoV3,
-  tokenProvider: TokenProvider
+  tokenProvider: TokenProvider,
+  telemetryProps?: Json
 ): Promise<Result<v3.EnvInfoV3, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   // check M365 tenant match

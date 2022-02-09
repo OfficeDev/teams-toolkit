@@ -81,6 +81,37 @@ describe("localSettingsHelper", () => {
       chai.assert.isUndefined(localEnvs["FRONTEND_REACT_APP_CLIENT_ID"]);
     });
 
+    it("happy path with Simple Auth", async () => {
+      await fs.ensureDir(projectPath);
+      await fs.emptyDir(projectPath);
+
+      const projectSettingsAll = cloneDeep(projectSettings0);
+      projectSettingsAll.solutionSettings.activeResourcePlugins.push("fx-resource-simple-auth");
+      const localEnvs = await convertToLocalEnvs(projectPath, projectSettingsAll, localSettings0);
+
+      chai.assert.isDefined(localEnvs);
+      chai.assert.equal(Object.keys(localEnvs).length, 17);
+      chai.assert.equal(
+        localEnvs["FRONTEND_REACT_APP_START_LOGIN_PAGE_URL"],
+        "https://localhost:53000/auth-start.html"
+      );
+      chai.assert.equal(
+        localEnvs["FRONTEND_REACT_APP_CLIENT_ID"],
+        "44444444-4444-4444-4444-444444444444"
+      );
+      chai.assert.equal(localEnvs["AUTH_CLIENT_ID"], "44444444-4444-4444-4444-444444444444");
+      chai.assert.equal(localEnvs["AUTH_CLIENT_SECRET"], "password-placeholder");
+      chai.assert.equal(
+        localEnvs["AUTH_AAD_METADATA_ADDRESS"],
+        "https://login.microsoftonline.com/22222222-2222-2222-2222-222222222222/v2.0/.well-known/openid-configuration"
+      );
+      chai.assert.equal(
+        localEnvs["AUTH_OAUTH_AUTHORITY"],
+        "https://login.microsoftonline.com/22222222-2222-2222-2222-222222222222"
+      );
+      chai.assert.equal(localEnvs["AUTH_TAB_APP_ENDPOINT"], "https://localhost:53000");
+    });
+
     it(".env.teamsfx.local", async () => {
       const frontendEnvPath = path.resolve(projectPath, "tabs/.env.teamsfx.local");
       fs.ensureFileSync(frontendEnvPath);

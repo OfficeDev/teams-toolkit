@@ -20,6 +20,7 @@ import { LocalDebugPlugin, newEnvInfo } from "../../../../src";
 import { MockCryptoProvider } from "../../../core/utils";
 
 const numAADLocalEnvs = 2;
+const numSimpleAuthLocalEnvs = 10;
 
 chai.use(chaiAsPromised);
 
@@ -162,6 +163,46 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(Object.keys(settings).length, 1);
 
         await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
+      });
+
+      it(`happy path: tab with Simple Auth and without function (${parameter.programmingLanguage})`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Tab"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
+
+        await assertLocalDebugLocalEnvs(
+          v2Context,
+          inputs,
+          parameter.numLocalEnvs + numSimpleAuthLocalEnvs
+        );
       });
 
       it(`happy path: tab without function (${parameter.programmingLanguage}) and AAD`, async () => {
@@ -369,6 +410,46 @@ describe("solution.debug.scaffolding", () => {
         chai.assert.equal(Object.keys(settings).length, 1);
 
         await assertLocalDebugLocalEnvs(v2Context, inputs, parameter.numLocalEnvs);
+      });
+
+      it(`happy path: tab with Simple Auth and without function and bot (${parameter.programmingLanguage})`, async () => {
+        const projectSetting = {
+          appName: "",
+          projectId: uuid.v4(),
+          solutionSettings: {
+            name: "",
+            version: "",
+            hostType: "Azure",
+            capabilities: ["Tab", "Bot"],
+            activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
+          },
+          programmingLanguage: parameter.programmingLanguage,
+        };
+        const v2Context = new MockedV2Context(projectSetting);
+        const result = await scaffoldLocalDebugSettings(v2Context, inputs);
+        chai.assert.isTrue(result.isOk());
+
+        //assert output launch.json
+        const launch = fs.readJSONSync(expectedLaunchFile);
+        const configurations: [] = launch["configurations"];
+        const compounds: [] = launch["compounds"];
+        chai.assert.equal(configurations.length, parameter.numConfigurations);
+        chai.assert.equal(compounds.length, parameter.numCompounds);
+
+        //assert output tasks.json
+        const tasksAll = fs.readJSONSync(expectedTasksFile);
+        const tasks: [] = tasksAll["tasks"];
+        chai.assert.equal(tasks.length, parameter.numTasks);
+
+        //assert output settings.json
+        const settings = fs.readJSONSync(expectedSettingsFile);
+        chai.assert.equal(Object.keys(settings).length, 1);
+
+        await assertLocalDebugLocalEnvs(
+          v2Context,
+          inputs,
+          parameter.numLocalEnvs + numSimpleAuthLocalEnvs
+        );
       });
 
       it(`happy path: tab without function and bot (${parameter.programmingLanguage}) and AAD`, async () => {

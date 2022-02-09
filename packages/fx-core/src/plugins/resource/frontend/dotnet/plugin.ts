@@ -21,7 +21,12 @@ import { TeamsFxResult } from "./error-factory";
 import { WebSiteManagementModels } from "@azure/arm-appservice";
 import { AzureClientFactory } from "./utils/azure-client";
 import { DotnetConfigKey as ConfigKey } from "./enum";
-import { FetchConfigError, ProjectPathError, runWithErrorCatchAndThrow } from "./resources/errors";
+import {
+  FetchConfigError,
+  NoProjectSettingError,
+  ProjectPathError,
+  runWithErrorCatchAndThrow,
+} from "./resources/errors";
 import * as Deploy from "./ops/deploy";
 import { Logger } from "../utils/logger";
 import path from "path";
@@ -97,12 +102,21 @@ export class DotnetPluginImpl implements PluginImpl {
   public async scaffold(ctx: PluginContext): Promise<TeamsFxResult> {
     Logger.info(Messages.StartScaffold);
 
+    if (!ctx.projectSettings) {
+      throw new NoProjectSettingError();
+    }
+
     const selectedCapabilities = (ctx.projectSettings?.solutionSettings as SolutionSettings)
       .capabilities;
     const templateInfos = generateTemplateInfos(selectedCapabilities, ctx);
     for (const templateInfo of templateInfos) {
       await scaffoldFromZipPackage(ctx.root, templateInfo);
     }
+
+    ctx.projectSettings.pluginSettings = {
+      ...ctx.projectSettings?.pluginSettings,
+      projectFilePath: path.join(ctx.root, PathInfo.projectFilename(ctx.projectSettings.appName)),
+    };
 
     Logger.info(Messages.EndScaffold);
     return ok(undefined);

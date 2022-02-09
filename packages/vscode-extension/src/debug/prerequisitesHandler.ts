@@ -54,6 +54,7 @@ import { doctorConstant } from "./depsChecker/doctorConstant";
 import { runTask } from "./teamsfxTaskHandler";
 import { vscodeHelper } from "./depsChecker/vscodeHelper";
 import { taskEndEventEmitter, trackedTasks } from "./teamsfxTaskHandler";
+import { trustDevCertHelpLink } from "./constants";
 
 interface CheckResult {
   checker: string;

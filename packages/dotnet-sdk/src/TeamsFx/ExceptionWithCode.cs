@@ -40,7 +40,7 @@ public enum ExceptionCode
     /// </summary>
     TokenExpiredError,
     /// <summary>
-    /// Call service (AAD or simple authentication server) failed.
+    /// Call service (AAD) failed.
     /// </summary>
     ServiceError,
     /// <summary>

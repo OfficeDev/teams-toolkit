@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Func, Json, PluginConfig, PluginContext, QTreeNode } from "@microsoft/teamsfx-api";
+import { EnvInfo, Func, PluginContext, QTreeNode, v3 } from "@microsoft/teamsfx-api";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { IApimPluginConfig } from "../config";
 import { BuildError, NotImplemented } from "../error";
 import * as CLI from "../questions/cliQuestion";
@@ -34,9 +35,7 @@ export class VscQuestionManager {
 
   async deploy(
     projectPath: string,
-    envName: string,
-    apimState: PluginConfig | Json,
-    solutionState: PluginConfig | Json,
+    envInfo: EnvInfo | v3.EnvInfoV3,
     apimConfig: IApimPluginConfig
   ): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
@@ -48,9 +47,12 @@ export class VscQuestionManager {
       const documentPathQuestion = this.openApiDocumentQuestion.getQuestion(projectPath);
       documentNode = new QTreeNode(documentPathQuestion);
     } else {
+      const apimState = envInfo.state.get
+        ? (envInfo.state as Map<string, any>).get(BuiltInFeaturePluginNames.apim)
+        : (envInfo.state as v3.ResourceStates)[BuiltInFeaturePluginNames.apim];
       const documentPathFunc = this.existingOpenApiDocumentFunc.getQuestion(
         projectPath,
-        envName,
+        envInfo.envName,
         apimState
       );
       documentNode = new QTreeNode(documentPathFunc);
@@ -64,7 +66,7 @@ export class VscQuestionManager {
       documentNode.addChild(apiPrefixQuestionNode);
     }
 
-    const versionQuestion = this.apiVersionQuestion.getQuestion(envName, apimState, solutionState);
+    const versionQuestion = this.apiVersionQuestion.getQuestion(envInfo);
     const versionQuestionNode = new QTreeNode(versionQuestion);
     documentNode.addChild(versionQuestionNode);
 

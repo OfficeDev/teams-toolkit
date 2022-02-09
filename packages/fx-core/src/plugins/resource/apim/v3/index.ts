@@ -31,14 +31,12 @@ import {
   ApimOutputBicepSnippet,
   ApimPathInfo,
   ApimPluginConfigKeys,
-  ComponentRetryOperations,
   PluginLifeCycle,
   PluginLifeCycleToProgressStep,
   ProgressMessages,
   ProgressStep,
-  TeamsToolkitComponent,
 } from "../constants";
-import { AssertNotEmpty, BuildError, NoPluginConfig } from "../error";
+import { AssertNotEmpty } from "../error";
 import { Factory } from "../factory";
 import { CliQuestionManager, VscQuestionManager } from "../managers/questionManager";
 import { ProgressBar } from "../utils/progressBar";
@@ -66,9 +64,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       questionManager instanceof VscQuestionManager
         ? await (questionManager as VscQuestionManager).deploy(
             inputs.projectPath!,
-            envInfo.envName,
-            envInfo.state[this.name],
-            envInfo.state.solution,
+            envInfo as v3.EnvInfoV3,
             apimConfig
           )
         : await (questionManager as CliQuestionManager).deploy();
@@ -185,8 +181,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
 
     const apimManager = await Factory.buildApimManager(
-      envInfo.envName,
-      envInfo.state.solution,
+      envInfo,
       ctx.telemetryReporter,
       tokenProvider.azureAccountProvider,
       ctx.logProvider
@@ -222,15 +217,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
   ): Promise<Result<Void, FxError>> {
     const apimResource = envInfo.state[this.name];
     const apimConfig = new ApimPluginConfig(apimResource, envInfo.envName);
-    const aadState = envInfo.state[BuiltInFeaturePluginNames.aad];
-    if (!aadState) {
-      throw BuildError(
-        NoPluginConfig,
-        TeamsToolkitComponent.AadPlugin,
-        ComponentRetryOperations[TeamsToolkitComponent.AadPlugin]
-      );
-    }
-    const aadConfig = new AadPluginConfig(envInfo.envName, aadState);
+    const aadConfig = new AadPluginConfig(envInfo);
     const aadManager = await Factory.buildAadManager(
       tokenProvider.graphTokenProvider,
       ctx.telemetryReporter,
@@ -269,19 +256,9 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
-    const solutionConfig = new SolutionConfig(envInfo.envName, envInfo.state.solution);
+    const solutionConfig = new SolutionConfig(envInfo as v3.EnvInfoV3);
     const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
-
-    const functionState = envInfo.state[TeamsToolkitComponent.FunctionPlugin];
-    if (!functionState) {
-      throw BuildError(
-        NoPluginConfig,
-        TeamsToolkitComponent.FunctionPlugin,
-        ComponentRetryOperations[TeamsToolkitComponent.FunctionPlugin]
-      );
-    }
-
-    const functionConfig = new FunctionPluginConfig(envInfo.envName, functionState);
+    const functionConfig = new FunctionPluginConfig(envInfo as v3.EnvInfoV3);
     const answer = buildAnswer(inputs);
 
     if (answer.validate) {
@@ -291,8 +268,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     answer.save(PluginLifeCycle.Deploy, apimConfig);
 
     const apimManager = await Factory.buildApimManager(
-      envInfo.envName,
-      envInfo.state.solution,
+      envInfo as v3.EnvInfoV3,
       ctx.telemetryReporter,
       tokenProvider,
       ctx.logProvider

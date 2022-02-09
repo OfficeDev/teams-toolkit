@@ -31,15 +31,14 @@ import { OpenApiProcessor } from "./utils/openApiProcessor";
 
 export class Factory {
   public static async buildApimManager(
-    envName: string,
-    sConfig: ReadonlyPluginConfig | Json,
+    envInfo: EnvInfo | v3.EnvInfoV3,
     telemetryReporter?: TelemetryReporter,
     azureAccountProvider?: AzureAccountProvider,
     logProvider?: LogProvider
   ): Promise<ApimManager> {
     const openApiProcessor = new OpenApiProcessor(telemetryReporter, logProvider);
 
-    const solutionConfig = new SolutionConfig(envName, sConfig);
+    const solutionConfig = new SolutionConfig(envInfo);
     const lazyApimService = new Lazy<ApimService>(
       async () =>
         await Factory.buildApimService(
@@ -89,12 +88,7 @@ export class Factory {
     telemetryReporter?: TelemetryReporter,
     logProvider?: LogProvider
   ): Promise<VscQuestionManager | CliQuestionManager> {
-    const solutionConfig = new SolutionConfig(
-      envInfo.envName,
-      envInfo.state.get
-        ? (envInfo.state as Map<string, any>).get(TeamsToolkitComponent.Solution)
-        : (envInfo.state as Json)[TeamsToolkitComponent.Solution]
-    );
+    const solutionConfig = new SolutionConfig(envInfo);
     switch (platform) {
       case Platform.VSCode:
         // Lazy init apim service to get the latest subscription id in configuration

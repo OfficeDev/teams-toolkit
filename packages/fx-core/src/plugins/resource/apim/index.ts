@@ -161,13 +161,7 @@ async function _getQuestions(
   switch (stage) {
     case Stage.deploy:
       return questionManager instanceof VscQuestionManager
-        ? await (questionManager as VscQuestionManager).deploy(
-            ctx.root,
-            ctx.envInfo.envName,
-            ctx.config,
-            ctx.envInfo.state.get(TeamsToolkitComponent.Solution),
-            apimConfig
-          )
+        ? await (questionManager as VscQuestionManager).deploy(ctx.root, ctx.envInfo, apimConfig)
         : await (questionManager as CliQuestionManager).deploy();
     default:
       return undefined;
@@ -199,8 +193,7 @@ async function _provision(ctx: PluginContext, progressBar: ProgressBar): Promise
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
 
   const apimManager = await Factory.buildApimManager(
-    ctx.envInfo.envName,
-    ctx.envInfo.state.get(TeamsToolkitComponent.Solution),
+    ctx.envInfo,
     ctx.telemetryReporter,
     ctx.azureAccountProvider,
     ctx.logProvider
@@ -231,8 +224,7 @@ async function _updateArmTemplates(
   progressBar: ProgressBar
 ): Promise<ArmTemplateResult> {
   const apimManager = await Factory.buildApimManager(
-    ctx.envInfo.envName,
-    ctx.envInfo.state.get(TeamsToolkitComponent.Solution),
+    ctx.envInfo,
     ctx.telemetryReporter,
     ctx.azureAccountProvider,
     ctx.logProvider
@@ -245,8 +237,7 @@ async function _generateArmTemplates(
   progressBar: ProgressBar
 ): Promise<ArmTemplateResult> {
   const apimManager = await Factory.buildApimManager(
-    ctx.envInfo.envName,
-    ctx.envInfo.state.get(TeamsToolkitComponent.Solution),
+    ctx.envInfo,
     ctx.telemetryReporter,
     ctx.azureAccountProvider,
     ctx.logProvider
@@ -256,15 +247,7 @@ async function _generateArmTemplates(
 
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const aadState = ctx.envInfo.state.get(TeamsToolkitComponent.AadPlugin);
-  if (!aadState) {
-    throw BuildError(
-      NoPluginConfig,
-      TeamsToolkitComponent.AadPlugin,
-      ComponentRetryOperations[TeamsToolkitComponent.AadPlugin]
-    );
-  }
-  const aadConfig = new AadPluginConfig(ctx.envInfo.envName, aadState);
+  const aadConfig = new AadPluginConfig(ctx.envInfo);
   const aadManager = await Factory.buildAadManager(
     ctx.graphTokenProvider,
     ctx.telemetryReporter,
@@ -293,20 +276,9 @@ async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Pro
 }
 
 async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
-  const solutionConfig = new SolutionConfig(
-    ctx.envInfo.envName,
-    ctx.envInfo.state.get(TeamsToolkitComponent.Solution)
-  );
+  const solutionConfig = new SolutionConfig(ctx.envInfo);
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const functionState = ctx.envInfo.state.get(TeamsToolkitComponent.FunctionPlugin);
-  if (!functionState) {
-    throw BuildError(
-      NoPluginConfig,
-      TeamsToolkitComponent.FunctionPlugin,
-      ComponentRetryOperations[TeamsToolkitComponent.FunctionPlugin]
-    );
-  }
-  const functionConfig = new FunctionPluginConfig(ctx.envInfo.envName, functionState);
+  const functionConfig = new FunctionPluginConfig(ctx.envInfo);
   const answer = buildAnswer(ctx.answers);
 
   if (answer.validate) {
@@ -316,8 +288,7 @@ async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<vo
   answer.save(PluginLifeCycle.Deploy, apimConfig);
 
   const apimManager = await Factory.buildApimManager(
-    ctx.envInfo.envName,
-    ctx.envInfo.state.get(TeamsToolkitComponent.Solution),
+    ctx.envInfo,
     ctx.telemetryReporter,
     ctx.azureAccountProvider,
     ctx.logProvider

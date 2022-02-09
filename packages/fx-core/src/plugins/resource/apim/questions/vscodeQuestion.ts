@@ -1,6 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 import {
+  EnvInfo,
   FuncQuestion,
   Inputs,
   Json,
@@ -10,9 +11,11 @@ import {
   SingleSelectQuestion,
   TelemetryReporter,
   TextInputQuestion,
+  v3,
   ValidationSchema,
 } from "@microsoft/teamsfx-api";
 import { getResourceGroupNameFromResourceId } from "../../../../common/tools";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { buildAnswer } from "../answer";
 import { ApimPluginConfig, SolutionConfig } from "../config";
 import { ApimDefaultValues, ApimPluginConfigKeys, QuestionConstants } from "../constants";
@@ -139,18 +142,14 @@ export class ApiVersionQuestion extends BaseQuestionService {
     this.lazyApimService = lazyApimService;
   }
 
-  public getQuestion(
-    envName: string,
-    apimState: PluginConfig | Json,
-    solutionState: PluginConfig | Json
-  ): SingleSelectQuestion {
+  public getQuestion(envInfo: EnvInfo | v3.EnvInfoV3): SingleSelectQuestion {
     return {
       type: "singleSelect",
       name: QuestionConstants.VSCode.ApiVersion.questionName,
       title: QuestionConstants.VSCode.ApiVersion.description,
       staticOptions: [],
       dynamicOptions: async (inputs: Inputs): Promise<OptionItem[]> => {
-        return this.getDynamicOptions(inputs, envName, apimState, solutionState);
+        return this.getDynamicOptions(inputs, envInfo);
       },
       returnObject: true,
       skipSingleOption: false,
@@ -159,13 +158,14 @@ export class ApiVersionQuestion extends BaseQuestionService {
 
   private async getDynamicOptions(
     inputs: Inputs,
-    envName: string,
-    apimState: PluginConfig | Json,
-    solutionState: PluginConfig | Json
+    envInfo: EnvInfo | v3.EnvInfoV3
   ): Promise<OptionItem[]> {
     const apimService = await this.lazyApimService.getValue();
-    const apimConfig = new ApimPluginConfig(apimState, envName);
-    const solutionConfig = new SolutionConfig(envName, solutionState);
+    const apimState = envInfo.state.get
+      ? (envInfo.state as Map<string, any>).get(BuiltInFeaturePluginNames.apim)
+      : (envInfo.state as Json)[BuiltInFeaturePluginNames.apim];
+    const apimConfig = new ApimPluginConfig(apimState, envInfo.envName);
+    const solutionConfig = new SolutionConfig(envInfo);
     const answer = buildAnswer(inputs);
 
     const apimServiceResourceId = apimConfig.checkAndGet(ApimPluginConfigKeys.serviceResourceId);

@@ -1,6 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { Json, PluginConfig, ReadonlyPluginConfig } from "@microsoft/teamsfx-api";
+import {
+  EnvInfo,
+  Json,
+  PluginConfig,
+  ReadonlyPluginConfig,
+  ReadonlySolutionConfig,
+  v3,
+} from "@microsoft/teamsfx-api";
 import {
   TeamsToolkitComponent,
   SolutionConfigKeys,
@@ -179,11 +186,11 @@ export class ApimPluginConfig implements IApimPluginConfig {
 }
 
 export class FunctionPluginConfig implements IFunctionPluginConfig {
-  private readonly config: ReadonlyPluginConfig | Json;
+  private readonly configOfOtherPlugins: ReadonlySolutionConfig | v3.ResourceStates;
   private readonly envName: string;
-  constructor(envName: string, config: ReadonlyPluginConfig | Json) {
-    this.config = config;
-    this.envName = envName;
+  constructor(envInfo: EnvInfo | v3.EnvInfoV3) {
+    this.configOfOtherPlugins = envInfo.state;
+    this.envName = envInfo.envName;
   }
 
   get functionEndpoint(): string {
@@ -192,7 +199,7 @@ export class FunctionPluginConfig implements IFunctionPluginConfig {
 
   private checkAndGet(key: string): string {
     return checkAndGetOtherPluginConfig(
-      this.config,
+      this.configOfOtherPlugins,
       TeamsToolkitComponent.FunctionPlugin,
       key,
       this.envName
@@ -201,11 +208,11 @@ export class FunctionPluginConfig implements IFunctionPluginConfig {
 }
 
 export class AadPluginConfig implements IAadPluginConfig {
-  private readonly config: ReadonlyPluginConfig | Json;
+  private readonly configOfOtherPlugins: ReadonlySolutionConfig | v3.ResourceStates;
   private readonly envName: string;
-  constructor(envName: string, config: ReadonlyPluginConfig | Json) {
-    this.config = config;
-    this.envName = envName;
+  constructor(envInfo: EnvInfo | v3.EnvInfoV3) {
+    this.configOfOtherPlugins = envInfo.state;
+    this.envName = envInfo.envName;
   }
 
   get objectId(): string {
@@ -223,7 +230,7 @@ export class AadPluginConfig implements IAadPluginConfig {
 
   private checkAndGet(key: string): string {
     return checkAndGetOtherPluginConfig(
-      this.config,
+      this.configOfOtherPlugins,
       TeamsToolkitComponent.AadPlugin,
       key,
       this.envName
@@ -232,11 +239,11 @@ export class AadPluginConfig implements IAadPluginConfig {
 }
 
 export class SolutionConfig implements ISolutionConfig {
-  private readonly config: ReadonlyPluginConfig | Json;
+  private readonly configOfOtherPlugins: ReadonlySolutionConfig | v3.ResourceStates;
   private readonly envName: string;
-  constructor(envName: string, solutionConfig: ReadonlyPluginConfig | Json) {
-    this.config = solutionConfig;
-    this.envName = envName;
+  constructor(envInfo: EnvInfo | v3.EnvInfoV3) {
+    this.configOfOtherPlugins = envInfo.state;
+    this.envName = envInfo.envName;
   }
   get resourceNameSuffix(): string {
     return this.checkAndGet(SolutionConfigKeys.resourceNameSuffix);
@@ -256,7 +263,7 @@ export class SolutionConfig implements ISolutionConfig {
 
   private checkAndGet(key: string): string {
     return checkAndGetOtherPluginConfig(
-      this.config,
+      this.configOfOtherPlugins,
       TeamsToolkitComponent.Solution,
       key,
       this.envName
@@ -265,13 +272,19 @@ export class SolutionConfig implements ISolutionConfig {
 }
 
 function checkAndGetOtherPluginConfig(
-  pluginConfig: ReadonlyPluginConfig | Json,
+  configOfOtherPlugins: ReadonlySolutionConfig | v3.ResourceStates,
   component: TeamsToolkitComponent,
   key: string,
   envName: string
 ): string {
-  let value = pluginConfig.get ? pluginConfig.get(key) : (pluginConfig as Json)[key];
-  value = AssertConfigNotEmpty(component, key, value, envName);
+  const pluginConfig = configOfOtherPlugins.get
+    ? (configOfOtherPlugins as ReadonlySolutionConfig).get(component)
+    : (configOfOtherPlugins as v3.ResourceStates)[component];
+  if (!pluginConfig) {
+    throw BuildError(NoPluginConfig, component, ComponentRetryOperations[component]);
+  }
+
+  const value = AssertConfigNotEmpty(component, key, pluginConfig.get(key), envName);
   if (typeof value !== "string") {
     throw BuildError(InvalidPropertyType, key, "string");
   }

@@ -850,9 +850,9 @@
           {
             "id": "teamsToolkitEnvironment",
             "title": "Get your environment ready",
-            "description": "Teams Toolkit requires a several prerequisites. Prepare your Teams app development environment before you start.\n[Run prerequisite checker](https://aka.ms/teamsfx-video)\n__hello teams toolkit [my link](https://aka.ms/teamsfx-video)__",
+            "description": "Teams Toolkit requires a several prerequisites. Prepare your Teams app development environment before you start.\n[Run prerequisite checker](https://aka.ms/teamsfx-video)",
             "media": {
-              "svg": "media/learn.svg",
+              "svg": "media/environment.svg",
               "altText": "Get your environment ready"
             }
           },
@@ -868,25 +868,25 @@
           {
             "id": "teamsToolkitPreview",
             "title": "Preview your Teams app locally",
-            "description": "Press [F5](https://aka.ms/teamsfx-capabilities-overview) or discover '[Run and Debug](https://aka.ms/teamsfx-capabilities-overview)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug)",
+            "description": "Press [F5](https://aka.ms/teamsfx-capabilities-overview) or discover '[Run and Debug](https://aka.ms/teamsfx-capabilities-overview)' panel on the activity bar, and click the play icon to locally preview your app in Teams context.\n[Run local preview (F5)](command:fx-extension.selectAndDebug)\n__Tip: To run local preview, [sign in to M365](https://www.bing.com) (organizational account) with sideloading option.__",
             "media": {
-              "svg": "media/step_nodejs.svg",
+              "svg": "media/preview.svg",
               "altText": "Preview your Teams app locally"
             }
           },
           {
             "id": "teamsToolkitDeploy",
             "title": "Deploy Teams apps",
-            "description": "You can provision resources in the cloud and deploy your app’s code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Teams Toolkit panel](command:fx-extension.openWelcome)",
+            "description": "You can provision resources in the cloud and deploy your app’s code to the provisioned resources. Finally, distribute your first app to Teams.\n[Open Teams Toolkit panel](command:fx-extension.openWelcome)\n__Tip: Learn more about ['Provision' and 'Deployment'](https://www.bing.com).__",
             "media": {
-              "svg": "media/goodToGo.svg",
-              "altText": "Explore more"
+              "svg": "media/openExtensionIcon.svg",
+              "altText": "Deploy Teams apps"
             }
           },
           {
             "id": "teamsToolkitExploreMore",
             "title": "Explore more TeamsFx functionalities",
-            "description": "What’s next? Explore and discover more about Teams Toolkit functionalities with our README.md and Documentation.\nA few highlighted features: \n • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)",
+            "description": "What’s next? Explore and discover more about Teams Toolkit functionalities with our README.md and [Documentation](https://www.bing.com).\nA few highlighted features: \n • Use [TeamsFx Command Line Interface (CLI)](https://aka.ms/teamsfx-toolkit-cli) to increase productivity\n • Manage [multiple environments](https://aka.ms/teamsfx-treeview-environment) and [collaborate with others](https://aka.ms/teamsfx-collaboration)\n • Customize resource provision with [ARM templates](https://aka.ms/teamsfx-arm-templates)\n[Open README.md](https://aka.ms/teamsfx-arm-templates)",
             "media": {
               "svg": "media/goodToGo.svg",
               "altText": "Explore more"

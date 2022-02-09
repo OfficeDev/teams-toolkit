@@ -19,7 +19,7 @@ export class TemplateInfo {
     this.scenario = TemplateInfo.DefaultScenario;
   }
 
-  static readonly SupportCapability = [Capability.tab, Capability.bot];
+  static readonly SupportedCapabilities = [Capability.tab, Capability.bot];
   static readonly DonetLanguage = "csharp";
   static readonly DefaultScenario = "default";
   static readonly BaseGroup = "blazor-base";
@@ -32,7 +32,7 @@ export function generateTemplateInfos(selectedCapabilities: string[], ctx: Plugi
   const templateInfoList: TemplateInfo[] = [];
 
   selectedCapabilities.forEach((capability) => {
-    if (capability in TemplateInfo.SupportCapability) {
+    if (TemplateInfo.SupportedCapabilities.includes(capability)) {
       templateInfoList.push(new TemplateInfo(ctx, capability.toLowerCase(), templateVariable));
     }
   });

@@ -60,14 +60,11 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       ctx.telemetryReporter,
       ctx.logProvider
     );
-    const node =
-      questionManager instanceof VscQuestionManager
-        ? await (questionManager as VscQuestionManager).deploy(
-            inputs.projectPath!,
-            envInfo as v3.EnvInfoV3,
-            apimConfig
-          )
-        : await (questionManager as CliQuestionManager).deploy();
+    const node = await questionManager.deploy(
+      inputs.projectPath,
+      envInfo as v3.EnvInfoV3,
+      apimConfig
+    );
     return ok(node);
   }
 

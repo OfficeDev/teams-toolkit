@@ -5,16 +5,31 @@ import chai from "chai";
 import {
   ApimPluginConfigKeys,
   SolutionConfigKeys,
+  TeamsToolkitComponent,
 } from "../../../../src/plugins/resource/apim/constants";
 import { ApimPluginConfig, SolutionConfig } from "../../../../src/plugins/resource/apim/config";
-import { ConfigMap, ConfigValue } from "@microsoft/teamsfx-api";
+import {
+  ConfigMap,
+  ConfigValue,
+  EnvInfo,
+  PluginIdentity,
+  ReadonlyPluginConfig,
+} from "@microsoft/teamsfx-api";
 
 describe("config", () => {
   describe("SolutionConfig", () => {
-    const solutionConfig = new SolutionConfig(
-      "dev",
-      new Map<string, ConfigValue>([[SolutionConfigKeys.resourceNameSuffix, 1]])
-    );
+    const configContent = new Map<PluginIdentity, ReadonlyPluginConfig>([
+      [
+        TeamsToolkitComponent.Solution,
+        new Map<string, ConfigValue>([[SolutionConfigKeys.resourceNameSuffix, 1]]),
+      ],
+    ]);
+    const envInfo: EnvInfo = {
+      envName: "dev",
+      config: { manifest: { appName: { short: "appname" } } },
+      state: configContent,
+    };
+    const solutionConfig = new SolutionConfig(envInfo);
 
     it("Undefined property", () => {
       chai

@@ -19,7 +19,11 @@ import { AadDefaultValues, TeamsToolkitComponent } from "./constants";
 import { AssertNotEmpty, BuildError, NotImplemented } from "./error";
 import { AadManager } from "./managers/aadManager";
 import { ApimManager } from "./managers/apimManager";
-import { CliQuestionManager, VscQuestionManager } from "./managers/questionManager";
+import {
+  CliQuestionManager,
+  IQuestionManager,
+  VscQuestionManager,
+} from "./managers/questionManager";
 import { ScaffoldManager } from "./managers/scaffoldManager";
 import { TeamsAppAadManager } from "./managers/teamsAppAadManager";
 import * as CLI from "./questions/cliQuestion";
@@ -87,7 +91,7 @@ export class Factory {
     azureAccountProvider?: AzureAccountProvider,
     telemetryReporter?: TelemetryReporter,
     logProvider?: LogProvider
-  ): Promise<VscQuestionManager | CliQuestionManager> {
+  ): Promise<IQuestionManager> {
     const solutionConfig = new SolutionConfig(envInfo);
     switch (platform) {
       case Platform.VSCode:

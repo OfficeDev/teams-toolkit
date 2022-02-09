@@ -6,8 +6,15 @@ import { IApimPluginConfig } from "../config";
 import { BuildError, NotImplemented } from "../error";
 import * as CLI from "../questions/cliQuestion";
 import * as VSCode from "../questions/vscodeQuestion";
-
-export class VscQuestionManager {
+export interface IQuestionManager {
+  callFunc(func: Func, ctx: PluginContext): Promise<any>;
+  deploy(
+    projectPath?: string,
+    envInfo?: EnvInfo | v3.EnvInfoV3,
+    apimConfig?: IApimPluginConfig
+  ): Promise<QTreeNode>;
+}
+export class VscQuestionManager implements IQuestionManager {
   private readonly openApiDocumentQuestion: VSCode.OpenApiDocumentQuestion;
   private readonly existingOpenApiDocumentFunc: VSCode.ExistingOpenApiDocumentFunc;
   private readonly apiPrefixQuestion: VSCode.ApiPrefixQuestion;
@@ -34,25 +41,25 @@ export class VscQuestionManager {
   }
 
   async deploy(
-    projectPath: string,
-    envInfo: EnvInfo | v3.EnvInfoV3,
-    apimConfig: IApimPluginConfig
+    projectPath?: string,
+    envInfo?: EnvInfo | v3.EnvInfoV3,
+    apimConfig?: IApimPluginConfig
   ): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
       type: "group",
     });
 
     let documentNode: QTreeNode;
-    if (!apimConfig.apiDocumentPath) {
-      const documentPathQuestion = this.openApiDocumentQuestion.getQuestion(projectPath);
+    if (!apimConfig!.apiDocumentPath) {
+      const documentPathQuestion = this.openApiDocumentQuestion.getQuestion(projectPath!);
       documentNode = new QTreeNode(documentPathQuestion);
     } else {
-      const apimState = envInfo.state.get
-        ? (envInfo.state as Map<string, any>).get(BuiltInFeaturePluginNames.apim)
-        : (envInfo.state as v3.ResourceStates)[BuiltInFeaturePluginNames.apim];
+      const apimState = envInfo!.state.get
+        ? (envInfo!.state as Map<string, any>).get(BuiltInFeaturePluginNames.apim)
+        : (envInfo!.state as v3.ResourceStates)[BuiltInFeaturePluginNames.apim];
       const documentPathFunc = this.existingOpenApiDocumentFunc.getQuestion(
-        projectPath,
-        envInfo.envName,
+        projectPath!,
+        envInfo!.envName,
         apimState
       );
       documentNode = new QTreeNode(documentPathFunc);
@@ -60,13 +67,13 @@ export class VscQuestionManager {
 
     rootNode.addChild(documentNode);
 
-    if (!apimConfig.apiPrefix) {
+    if (!apimConfig!.apiPrefix) {
       const apiPrefixQuestion = this.apiPrefixQuestion.getQuestion();
       const apiPrefixQuestionNode = new QTreeNode(apiPrefixQuestion);
       documentNode.addChild(apiPrefixQuestionNode);
     }
 
-    const versionQuestion = this.apiVersionQuestion.getQuestion(envInfo);
+    const versionQuestion = this.apiVersionQuestion.getQuestion(envInfo!);
     const versionQuestionNode = new QTreeNode(versionQuestion);
     documentNode.addChild(versionQuestionNode);
 
@@ -79,7 +86,7 @@ export class VscQuestionManager {
   }
 }
 
-export class CliQuestionManager {
+export class CliQuestionManager implements IQuestionManager {
   private readonly openApiDocumentQuestion: CLI.OpenApiDocumentQuestion;
   private readonly apiPrefixQuestion: CLI.ApiPrefixQuestion;
   private readonly apiVersionQuestion: CLI.ApiVersionQuestion;
@@ -98,7 +105,11 @@ export class CliQuestionManager {
     throw BuildError(NotImplemented);
   }
 
-  async deploy(): Promise<QTreeNode> {
+  async deploy(
+    projectPath?: string,
+    envInfo?: EnvInfo | v3.EnvInfoV3,
+    apimConfig?: IApimPluginConfig
+  ): Promise<QTreeNode> {
     const rootNode = new QTreeNode({
       type: "group",
     });

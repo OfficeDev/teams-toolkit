@@ -160,9 +160,7 @@ async function _getQuestions(
   );
   switch (stage) {
     case Stage.deploy:
-      return questionManager instanceof VscQuestionManager
-        ? await (questionManager as VscQuestionManager).deploy(ctx.root, ctx.envInfo, apimConfig)
-        : await (questionManager as CliQuestionManager).deploy();
+      return await questionManager.deploy(ctx.root, ctx.envInfo, apimConfig);
     default:
       return undefined;
   }

@@ -39,7 +39,7 @@ For .NET 6 projects (VS 2022): Choose version >= 0.3.0-rc.
     "Authentication": {
         "ClientId": "xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx",
         "ClientSecret": "xxx", // 'User Secrets' is a better place to store secret string.
-        "InitiateLoginEndpoint": "https://localhost:44357/auth-start.html",
+        "InitiateLoginEndpoint": "https://localhost:44302/auth-start.html",
         "OAuthAuthority": "https://login.microsoftonline.com/xxxxxxxx-xxxx-xxxx-xxxx-xxxxxxxxxxxx"
     }
 }
@@ -141,7 +141,7 @@ private void printLog(LogLevel level, string message)
 If there is an existing project created in VS2022 17.1 Preview, you can use the following steps to upgrade:
 - In `appsettings.{Environment}.json` file:
 1. Add `OAuthAuthority` under `TeamsFx:Authentication` and copy the value from `OAUTH_AUTHORITY`.
-2. Remove the line `"SimpleAuthEndpoint": "https://localhost:44357/"`.
+2. Remove the line `"SimpleAuthEndpoint": "https://localhost:port/"`.
 3. Remove lines of configuration starting with "CLIENT_ID", "IDENTIFIER_URI", "TAB_APP_ENDPOINT", "OAUTH_AUTHORITY", "AAD_METADATA_ADDRESS", "ALLOWED_APP_IDS".
 4. Remove the Nuget dependency package "Microsoft.TeamsFx.SimpleAuth".
 - In Solution Explorer:

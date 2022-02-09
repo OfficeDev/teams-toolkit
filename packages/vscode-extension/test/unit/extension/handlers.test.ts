@@ -499,7 +499,7 @@ suite("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const openTextDocument = sinon
         .stub(vscode.workspace, "openTextDocument")
-        .returns(new Promise<vscode.TextDocument>((resolve) => { }));
+        .returns(new Promise<vscode.TextDocument>((resolve) => {}));
       sinon
         .stub(vscode.workspace, "workspaceFolders")
         .returns([{ uri: { fsPath: "c:\\manifestTestFolder" } }]);
@@ -518,7 +518,7 @@ suite("handlers", () => {
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
       const openTextDocument = sinon
         .stub(vscode.workspace, "openTextDocument")
-        .returns(new Promise<vscode.TextDocument>((resolve) => { }));
+        .returns(new Promise<vscode.TextDocument>((resolve) => {}));
       sinon
         .stub(vscode.workspace, "workspaceFolders")
         .returns([{ uri: { fsPath: "c:\\manifestTestFolder" } }]);

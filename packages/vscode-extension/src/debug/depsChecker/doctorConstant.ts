@@ -7,6 +7,7 @@ const InstallNode =
 export const doctorConstant = {
   Tick: "√",
   Cross: "×",
+  Exclamation: "!",
   WhiteSpace: "   ",
   Check:
     "Teams Toolkit is checking if all the prerequisites are installed and trying to install the missing ones. A summary report will be generated later for further tasks to you might need to perform.",

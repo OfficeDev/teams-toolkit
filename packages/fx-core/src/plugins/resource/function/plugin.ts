@@ -868,7 +868,7 @@ export class FunctionPluginImpl {
     );
     await step(StepGroup.PreDeployStepGroup, PreDeploySteps.dotnetInstall, async () => {
       try {
-        if (!(await funcDepsHelper.dotnetCheckerEnabled(ctx))) {
+        if (!(await funcDepsHelper.dotnetCheckerEnabled(ctx.answers))) {
           return;
         }
         await dotnetChecker.resolve();
@@ -895,7 +895,7 @@ export class FunctionPluginImpl {
       async () =>
         await step(StepGroup.PreDeployStepGroup, PreDeploySteps.installTeamsfxBinding, async () => {
           try {
-            await FunctionDeploy.installFuncExtensions(ctx, workingPath, functionLanguage);
+            await FunctionDeploy.installFuncExtensions(workingPath, functionLanguage);
           } catch (error) {
             // wrap the original error to UserError so the extensibility model will pop-up a dialog correctly
             throw funcDepsHelper.transferError(error);

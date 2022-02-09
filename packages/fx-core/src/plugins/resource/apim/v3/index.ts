@@ -31,13 +31,14 @@ import {
   ApimOutputBicepSnippet,
   ApimPathInfo,
   ApimPluginConfigKeys,
+  ComponentRetryOperations,
   PluginLifeCycle,
   PluginLifeCycleToProgressStep,
   ProgressMessages,
   ProgressStep,
   TeamsToolkitComponent,
 } from "../constants";
-import { AssertNotEmpty } from "../error";
+import { AssertNotEmpty, BuildError, NoPluginConfig } from "../error";
 import { Factory } from "../factory";
 import { CliQuestionManager, VscQuestionManager } from "../managers/questionManager";
 import { ProgressBar } from "../utils/progressBar";
@@ -221,10 +222,15 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
   ): Promise<Result<Void, FxError>> {
     const apimResource = envInfo.state[this.name];
     const apimConfig = new ApimPluginConfig(apimResource, envInfo.envName);
-    const aadConfig = new AadPluginConfig(
-      envInfo.envName,
-      envInfo.state[BuiltInFeaturePluginNames.aad]
-    );
+    const aadState = envInfo.state[BuiltInFeaturePluginNames.aad];
+    if (!aadState) {
+      throw BuildError(
+        NoPluginConfig,
+        TeamsToolkitComponent.AadPlugin,
+        ComponentRetryOperations[TeamsToolkitComponent.AadPlugin]
+      );
+    }
+    const aadConfig = new AadPluginConfig(envInfo.envName, aadState);
     const aadManager = await Factory.buildAadManager(
       tokenProvider.graphTokenProvider,
       ctx.telemetryReporter,
@@ -265,10 +271,17 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
   ): Promise<Result<Void, FxError>> {
     const solutionConfig = new SolutionConfig(envInfo.envName, envInfo.state.solution);
     const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
-    const functionConfig = new FunctionPluginConfig(
-      envInfo.envName,
-      envInfo.state[TeamsToolkitComponent.FunctionPlugin]
-    );
+
+    const functionState = envInfo.state[TeamsToolkitComponent.FunctionPlugin];
+    if (!functionState) {
+      throw BuildError(
+        NoPluginConfig,
+        TeamsToolkitComponent.FunctionPlugin,
+        ComponentRetryOperations[TeamsToolkitComponent.FunctionPlugin]
+      );
+    }
+
+    const functionConfig = new FunctionPluginConfig(envInfo.envName, functionState);
     const answer = buildAnswer(inputs);
 
     if (answer.validate) {

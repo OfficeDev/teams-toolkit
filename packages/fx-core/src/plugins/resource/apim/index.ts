@@ -14,7 +14,13 @@ import {
   Func,
   AzureSolutionSettings,
 } from "@microsoft/teamsfx-api";
-import { AssertNotEmpty, BuildError, NotImplemented, UnhandledError } from "./error";
+import {
+  AssertNotEmpty,
+  BuildError,
+  NoPluginConfig,
+  NotImplemented,
+  UnhandledError,
+} from "./error";
 import { Telemetry } from "./utils/telemetry";
 import { AadPluginConfig, ApimPluginConfig, FunctionPluginConfig, SolutionConfig } from "./config";
 import {
@@ -28,6 +34,7 @@ import {
   UserTask,
   ApimPluginConfigKeys,
   TeamsToolkitComponent,
+  ComponentRetryOperations,
 } from "./constants";
 import { Factory } from "./factory";
 import { ProgressBar } from "./utils/progressBar";
@@ -110,19 +117,9 @@ export class ApimPlugin implements Plugin {
   ): Promise<Result<T, FxError>> {
     try {
       await this.progressBar.init(PluginLifeCycleToProgressStep[lifeCycle], ctx.ui);
-      Telemetry.sendLifeCycleEvent(
-        ctx.telemetryReporter,
-        ctx.envInfo,
-        lifeCycle,
-        OperationStatus.Started
-      );
+      Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, lifeCycle, OperationStatus.Started);
       const result = await fn(ctx, this.progressBar, ...params);
-      Telemetry.sendLifeCycleEvent(
-        ctx.telemetryReporter,
-        ctx.envInfo,
-        lifeCycle,
-        OperationStatus.Succeeded
-      );
+      Telemetry.sendLifeCycleEvent(ctx.telemetryReporter, lifeCycle, OperationStatus.Succeeded);
       await this.progressBar.close(PluginLifeCycleToProgressStep[lifeCycle], true);
       return ok(result);
     } catch (error: any) {
@@ -138,7 +135,6 @@ export class ApimPlugin implements Plugin {
       ctx.logProvider?.error(`[${ProjectConstants.pluginDisplayName}] ${error.message}`);
       Telemetry.sendLifeCycleEvent(
         ctx.telemetryReporter,
-        ctx.envInfo,
         lifeCycle,
         OperationStatus.Failed,
         packagedError
@@ -260,10 +256,15 @@ async function _generateArmTemplates(
 
 async function _postProvision(ctx: PluginContext, progressBar: ProgressBar): Promise<void> {
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const aadConfig = new AadPluginConfig(
-    ctx.envInfo.envName,
-    ctx.envInfo.state.get(TeamsToolkitComponent.AadPlugin)
-  );
+  const aadState = ctx.envInfo.state.get(TeamsToolkitComponent.AadPlugin);
+  if (!aadState) {
+    throw BuildError(
+      NoPluginConfig,
+      TeamsToolkitComponent.AadPlugin,
+      ComponentRetryOperations[TeamsToolkitComponent.AadPlugin]
+    );
+  }
+  const aadConfig = new AadPluginConfig(ctx.envInfo.envName, aadState);
   const aadManager = await Factory.buildAadManager(
     ctx.graphTokenProvider,
     ctx.telemetryReporter,
@@ -297,10 +298,15 @@ async function _deploy(ctx: PluginContext, progressBar: ProgressBar): Promise<vo
     ctx.envInfo.state.get(TeamsToolkitComponent.Solution)
   );
   const apimConfig = new ApimPluginConfig(ctx.config, ctx.envInfo.envName);
-  const functionConfig = new FunctionPluginConfig(
-    ctx.envInfo.envName,
-    ctx.envInfo.state.get(TeamsToolkitComponent.FunctionPlugin)
-  );
+  const functionState = ctx.envInfo.state.get(TeamsToolkitComponent.FunctionPlugin);
+  if (!functionState) {
+    throw BuildError(
+      NoPluginConfig,
+      TeamsToolkitComponent.FunctionPlugin,
+      ComponentRetryOperations[TeamsToolkitComponent.FunctionPlugin]
+    );
+  }
+  const functionConfig = new FunctionPluginConfig(ctx.envInfo.envName, functionState);
   const answer = buildAnswer(ctx.answers);
 
   if (answer.validate) {

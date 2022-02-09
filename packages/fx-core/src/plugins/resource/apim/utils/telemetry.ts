@@ -22,7 +22,6 @@ class TelemetryPropertyName {
 export class Telemetry {
   public static sendLifeCycleEvent(
     telemetryReporter: TelemetryReporter | undefined,
-    envInfo: EnvInfo,
     lifeCycle: PluginLifeCycle,
     status: OperationStatus,
     error?: UserError | SystemError

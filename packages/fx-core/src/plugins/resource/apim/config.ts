@@ -9,6 +9,7 @@ import {
   ApimPluginConfigKeys,
   ProjectConstants,
   ConfigRetryOperations,
+  ComponentRetryOperations,
 } from "./constants";
 import {
   AssertConfigNotEmpty,
@@ -16,6 +17,7 @@ import {
   EmptyConfigValue,
   InvalidConfigValue,
   InvalidPropertyType,
+  NoPluginConfig,
 } from "./error";
 import { INamingRule, NamingRules } from "./utils/namingRules";
 
@@ -58,8 +60,14 @@ export class ApimPluginConfig implements IApimPluginConfig {
   // TODO update @microsoft/teamsfx-api to the latest version
   private readonly config: PluginConfig | Json;
   private readonly envName: string;
-
   constructor(config: PluginConfig | Json, envName: string) {
+    if (!config) {
+      throw BuildError(
+        NoPluginConfig,
+        TeamsToolkitComponent.ApimPlugin,
+        ComponentRetryOperations[TeamsToolkitComponent.ApimPlugin]
+      );
+    }
     this.config = config;
     this.envName = envName;
   }
@@ -262,16 +270,8 @@ function checkAndGetOtherPluginConfig(
   key: string,
   envName: string
 ): string {
-  const value = pluginConfig.get ? pluginConfig.get(key) : (pluginConfig as Json)[key];
-  if (!value) {
-    throw BuildError(
-      EmptyConfigValue,
-      component,
-      key,
-      ProjectConstants.configFilePathArmSupported(envName),
-      ConfigRetryOperations[component][key]
-    );
-  }
+  let value = pluginConfig.get ? pluginConfig.get(key) : (pluginConfig as Json)[key];
+  value = AssertConfigNotEmpty(component, key, value, envName);
   if (typeof value !== "string") {
     throw BuildError(InvalidPropertyType, key, "string");
   }

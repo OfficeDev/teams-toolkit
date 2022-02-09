@@ -45,14 +45,14 @@ export class VscQuestionManager {
 
     let documentNode: QTreeNode;
     if (!apimConfig.apiDocumentPath) {
-      const documentPathQuestion = this.openApiDocumentQuestion.getQuestion(projectPath); // projectPath
+      const documentPathQuestion = this.openApiDocumentQuestion.getQuestion(projectPath);
       documentNode = new QTreeNode(documentPathQuestion);
     } else {
       const documentPathFunc = this.existingOpenApiDocumentFunc.getQuestion(
         projectPath,
         envName,
         apimState
-      ); // projectPath, envName, apimConfig
+      );
       documentNode = new QTreeNode(documentPathFunc);
     }
 

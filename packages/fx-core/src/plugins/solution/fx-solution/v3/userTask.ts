@@ -7,6 +7,7 @@ import {
   FxError,
   Inputs,
   InvalidInputError,
+  Json,
   ok,
   Platform,
   QTreeNode,
@@ -112,7 +113,7 @@ export async function addCapability(
 export async function addResource(
   ctx: v2.Context,
   inputs: Inputs,
-  telemetryProps?: any
+  telemetryProps?: Json
 ): Promise<Result<Void, FxError>> {
   if (!inputs.projectPath) {
     return err(new InvalidInputError("solution", "inputs.projectPath is undefined"));

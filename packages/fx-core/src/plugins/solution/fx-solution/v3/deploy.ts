@@ -5,6 +5,7 @@ import {
   AzureSolutionSettings,
   err,
   FxError,
+  Json,
   ok,
   QTreeNode,
   Result,
@@ -54,7 +55,8 @@ export async function deploy(
   ctx: v2.Context,
   inputs: v2.InputsWithProjectPath,
   envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
-  tokenProvider: TokenProvider
+  tokenProvider: TokenProvider,
+  telemetryProps?: Json
 ): Promise<Result<Void, FxError>> {
   const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
   const pluginNames = solutionSetting ? solutionSetting.activeResourcePlugins : [];

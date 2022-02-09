@@ -102,7 +102,8 @@ export class DefaultManifestProvider implements v3.AppManifestProvider {
 
 export async function addFeature(
   ctx: v2.Context,
-  inputs: v3.SolutionAddFeatureInputs
+  inputs: v3.SolutionAddFeatureInputs,
+  telemetryProps?: Json
 ): Promise<Result<Void, FxError>> {
   ensureSolutionSettings(ctx.projectSetting);
   const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;

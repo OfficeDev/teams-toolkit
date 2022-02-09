@@ -48,7 +48,7 @@ export class FrontendPluginV2 implements ResourcePlugin {
   activate(projectSettings: ProjectSettings): boolean {
     const activateInVS = projectSettings.programmingLanguage === TabLanguage.CSharp;
     const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-    return this.plugin.activate(solutionSettings) || activateInVS;
+    return activateInVS || this.plugin.activate(solutionSettings);
   }
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {

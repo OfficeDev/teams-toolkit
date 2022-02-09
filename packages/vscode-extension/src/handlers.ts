@@ -117,7 +117,7 @@ import * as envTree from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
-import { TreatmentVariables } from "./exp/treatmentVariables";
+import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
@@ -1694,8 +1694,9 @@ export async function showError(e: UserError | SystemError) {
     const path = "https://github.com/OfficeDev/TeamsFx/issues/new?";
     const param = `title=bug+report: ${errorCode}&body=${anonymizeFilePaths(
       e.message
-    )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${sysError.userData ? anonymizeFilePaths(sysError.userData) : ""
-      }`;
+    )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${
+      sysError.userData ? anonymizeFilePaths(sysError.userData) : ""
+    }`;
     const issue = {
       title: StringResources.vsc.handlers.reportIssue,
       run: async (): Promise<void> => {

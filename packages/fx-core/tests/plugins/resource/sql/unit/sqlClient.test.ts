@@ -36,7 +36,7 @@ describe("sqlClient", () => {
     sinon
       .stub(msRestNodeAuth.ApplicationTokenCredentials.prototype, "getToken")
       .resolves({ accessToken: faker.random.word() } as TokenResponse);
-    client = await SqlClient.create(pluginContext, sqlPlugin.sqlImpl.config);
+    client = await SqlClient.create(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
   });
 
   afterEach(() => {
@@ -121,7 +121,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
+      await SqlClient.initToken(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
       const reason = ErrorMessage.IdentityCredentialUndefine(
@@ -138,7 +138,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
+      await SqlClient.initToken(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
       chai.assert.include(error.notificationMessage, ErrorMessage.GetDetail);
@@ -153,7 +153,7 @@ describe("sqlClient", () => {
 
     // Act
     try {
-      await SqlClient.initToken(pluginContext, sqlPlugin.sqlImpl.config);
+      await SqlClient.initToken(pluginContext.azureAccountProvider!, sqlPlugin.sqlImpl.config);
     } catch (error) {
       // Assert
       chai.assert.include(error.notificationMessage, ErrorMessage.DomainError);

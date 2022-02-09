@@ -48,7 +48,10 @@ import { TelemetryReporterInstance } from "../common/telemetry";
 import { getRootDirectory, mapToJson } from "../common/tools";
 import { AppStudioPluginV3 } from "../plugins/resource/appstudio/v3";
 import { MessageExtensionItem } from "../plugins/solution/fx-solution/question";
-import { BuiltInFeaturePluginNames } from "../plugins/solution/fx-solution/v3/constants";
+import {
+  BuiltInFeaturePluginNames,
+  BuiltInSolutionNames,
+} from "../plugins/solution/fx-solution/v3/constants";
 import { CallbackRegistry } from "./callback";
 import { LocalCrypto } from "./crypto";
 import { downloadSample } from "./downloadSample";
@@ -381,12 +384,14 @@ export class FxCore implements v3.ICore {
       const initInputs: v2.InputsWithProjectPath & { solution?: string } = {
         ...inputs,
         projectPath: projectPath,
-        // solution: solution,
       };
       const initRes = await this._init(initInputs, ctx);
       if (initRes.isErr()) {
         return err(initRes.error);
       }
+
+      // set solution in context
+      ctx.solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.azure);
 
       // addFeature
       if (inputs.platform === Platform.VS) {
@@ -411,6 +416,7 @@ export class FxCore implements v3.ICore {
             return err(addFeatureRes.error);
           }
         } else if (capabilities.includes(TabSPFxItem.id)) {
+          ctx.solutionV3 = Container.get<v3.ISolution>(BuiltInSolutionNames.spfx);
           const addFeatureInputs: v2.InputsWithProjectPath = {
             ...inputs,
             projectPath: projectPath,

@@ -56,6 +56,26 @@ export class LocalDebugConfig {
     }
   }
 
+  public async restoreConfigFromContextV3(context: PluginContext): Promise<void> {
+    this.localEndpoint = context.localSettings?.bot?.get(
+      LocalSettingsBotKeys.BotEndpoint
+    ) as string;
+    this.localRedirectUri = this.localEndpoint
+      ? `${this.localEndpoint}${CommonStrings.AUTH_REDIRECT_URI_SUFFIX}`
+      : undefined;
+
+    this.localBotId = context.localSettings?.bot?.get(LocalSettingsBotKeys.BotId) as string;
+    this.localBotPassword = context.localSettings?.bot?.get(
+      LocalSettingsBotKeys.BotPassword
+    ) as string;
+    this.localObjectId = context.localSettings?.bot?.get(
+      LocalSettingsBotKeys.BotAadObjectId
+    ) as string;
+    this.localRedirectUri = context.localSettings?.bot?.get(
+      LocalSettingsBotKeys.BotRedirectUri
+    ) as string;
+  }
+
   public saveConfigIntoContext(context: PluginContext): void {
     if (isMultiEnvEnabled()) {
       context.localSettings?.bot?.set(LocalSettingsBotKeys.BotId, this.localBotId);

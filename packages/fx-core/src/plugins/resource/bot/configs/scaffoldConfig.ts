@@ -70,4 +70,10 @@ export class ScaffoldConfig {
     utils.checkAndSaveConfig(context, PluginBot.BOT_PASSWORD, this.botPassword);
     utils.checkAndSaveConfig(context, PluginBot.OBJECT_ID, this.objectId);
   }
+
+  public saveConfigIntoContextV3(envInfo: v3.EnvInfoV3): void {
+    utils.checkAndSaveConfigV3(envInfo, PluginBot.BOT_ID, this.botId);
+    utils.checkAndSaveConfigV3(envInfo, PluginBot.BOT_PASSWORD, this.botPassword);
+    utils.checkAndSaveConfigV3(envInfo, PluginBot.OBJECT_ID, this.objectId);
+  }
 }

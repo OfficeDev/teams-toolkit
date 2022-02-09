@@ -140,7 +140,28 @@ export class ProvisionConfig {
     utils.checkAndSaveConfig(context, PluginBot.SITE_ENDPOINT, this.siteEndpoint);
     utils.checkAndSaveConfig(context, PluginBot.SKU_NAME, this.skuName);
   }
-
+  public saveConfigIntoContextV3(envInfo: v3.EnvInfoV3): void {
+    let botConfig = envInfo.state[BuiltInFeaturePluginNames.bot];
+    if (!botConfig) {
+      botConfig = {};
+      envInfo.state[BuiltInFeaturePluginNames.bot] = botConfig;
+    }
+    utils.checkAndSaveConfigV3(botConfig, PluginBot.VALID_DOMAIN, this.validDomain);
+    utils.checkAndSaveConfigV3(botConfig, PluginBot.APP_SERVICE_PLAN, this.appServicePlan);
+    utils.checkAndSaveConfigV3(
+      botConfig,
+      PluginBot.BOT_CHANNEL_REGISTRATION,
+      this.botChannelRegName
+    );
+    utils.checkAndSaveConfigV3(
+      botConfig,
+      PluginBot.BOT_WEB_APP_RESOURCE_ID,
+      this.botWebAppResourceId
+    );
+    utils.checkAndSaveConfigV3(botConfig, PluginBot.SITE_NAME, this.siteName);
+    utils.checkAndSaveConfigV3(botConfig, PluginBot.SITE_ENDPOINT, this.siteEndpoint);
+    utils.checkAndSaveConfigV3(botConfig, PluginBot.SKU_NAME, this.skuName);
+  }
   private validateRestoredConfig(): void {
     if (this.siteName && !utils.isValidWebAppSiteName(this.siteName)) {
       throw new ConfigValidationError(ConfigKeys.SITE_NAME, this.siteName);

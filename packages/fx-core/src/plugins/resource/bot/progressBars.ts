@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { IProgressHandler, PluginContext } from "@microsoft/teamsfx-api";
+import { IProgressHandler, PluginContext, v2 } from "@microsoft/teamsfx-api";
 
 export class ProgressBarFactory {
   // To store working progress bars.
@@ -10,7 +10,7 @@ export class ProgressBarFactory {
   public static async newProgressBar(
     name: string,
     steps_num: number,
-    context: PluginContext
+    context: PluginContext | v2.Context
   ): Promise<IProgressHandler | undefined> {
     if (ProgressBarFactory.progressBars.has(name)) {
       const handler = ProgressBarFactory.progressBars.get(name);
@@ -20,7 +20,9 @@ export class ProgressBarFactory {
       return handler;
     }
 
-    const handler = context.ui?.createProgressBar(name, steps_num);
+    const handler =
+      (context as PluginContext).ui?.createProgressBar(name, steps_num) ||
+      (context as v2.Context).userInteraction?.createProgressBar(name, steps_num);
     if (!handler) {
       context.logProvider?.warning(`Fail to create progress bar for ${name}.`);
     }

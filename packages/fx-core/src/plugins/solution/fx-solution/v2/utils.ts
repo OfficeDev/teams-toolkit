@@ -17,7 +17,7 @@ import {
   ProjectSettings,
 } from "@microsoft/teamsfx-api";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
-import { getStrings, isMultiEnvEnabled } from "../../../../common/tools";
+import { getStrings, isConfigUnifyEnabled, isMultiEnvEnabled } from "../../../../common/tools";
 import {
   GLOBAL_CONFIG,
   SolutionError,
@@ -40,6 +40,7 @@ import { getActivatedV2ResourcePlugins, getAllV2ResourcePlugins } from "../Resou
 import { PluginsWithContext } from "../solution";
 import { getPluginContext } from "../utils/util";
 import * as util from "util";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 
 export function getSelectedPlugins(projectSettings: ProjectSettings): v2.ResourcePlugin[] {
   const azureSettings: AzureSolutionSettings =
@@ -205,11 +206,15 @@ export async function checkWhetherLocalDebugM365TenantMatches(
 // Loads teams app tenant id into local settings.
 export function loadTeamsAppTenantIdForLocal(
   localSettings: v2.LocalSettings,
-  appStudioToken?: Record<string, unknown>
+  appStudioToken?: Record<string, unknown>,
+  envInfo?: EnvInfoV2
 ): Result<Void, FxError> {
   return parseTeamsAppTenantId(appStudioToken as Record<string, unknown> | undefined).andThen(
     (teamsAppTenantId) => {
       localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId] = teamsAppTenantId;
+      if (isConfigUnifyEnabled()) {
+        envInfo!.state.solution.output.teamsAppTenantId = teamsAppTenantId;
+      }
       return ok(Void);
     }
   );

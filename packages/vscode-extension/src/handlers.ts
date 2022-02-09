@@ -62,6 +62,7 @@ import {
   globalStateGet,
   globalStateUpdate,
   InvalidProjectError,
+  isConfigUnifyEnabled,
   isMigrateFromV1Project,
   isUserCancelError,
   isValidProject,
@@ -608,7 +609,11 @@ export async function runCommand(
         break;
       }
       case Stage.debug: {
-        inputs.ignoreEnvInfo = true;
+        if (isConfigUnifyEnabled()) {
+          inputs.ignoreEnvInfo = false;
+        } else {
+          inputs.ignoreEnvInfo = true;
+        }
         inputs.checkerInfo = {
           skipNgrok: !vscodeHelper.isNgrokCheckerEnabled(),
           trustDevCert: vscodeHelper.isTrustDevCertEnabled(),

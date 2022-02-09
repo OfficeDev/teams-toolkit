@@ -59,4 +59,5 @@ export class FeatureFlagName {
   static readonly InsiderPreview = "__TEAMSFX_INSIDER_PREVIEW";
   static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
   static readonly VSCallingCLI = "VS_CALLING_CLI";
+  static readonly ConfigUnify = "TEAMSFX_CONFIG_UNIFY";
 }

@@ -939,6 +939,9 @@ async function persistBicepTemplates(
     const parameterEnvFolderPath = path.join(projectaPath, configsFolder);
     await fs.ensureDir(parameterEnvFolderPath);
     for (const env of envListResult.value) {
+      if (env === environmentManager.getLocalEnvName()) {
+        continue;
+      }
       const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, env);
       const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
       let parameterFileContent = "";

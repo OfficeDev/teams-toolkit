@@ -23,12 +23,15 @@ import { environmentManager } from "../../../../core/environment";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { LocalSettingsTeamsAppKeys } from "../../../../common/localSettingsConstants";
 import { configLocalDebugSettings, setupLocalDebugSettings } from "../debug/provisionLocal";
+import { isConfigUnifyEnabled } from "../../../..";
+import { EnvInfoV2 } from "@microsoft/teamsfx-api/build/v2";
 
 export async function provisionLocalResource(
   ctx: v2.Context,
   inputs: Inputs,
   localSettings: Json,
-  tokenProvider: TokenProvider
+  tokenProvider: TokenProvider,
+  envInfo?: EnvInfoV2
 ): Promise<v2.FxResult<Json, FxError>> {
   if (inputs.projectPath === undefined) {
     return new v2.FxFailure(
@@ -59,7 +62,12 @@ export async function provisionLocalResource(
   await tokenProvider.appStudioToken.getAccessToken();
 
   // Pop-up window to confirm if local debug in another tenant
-  const localDebugTenantId = localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId];
+  let localDebugTenantId = "";
+  if (isConfigUnifyEnabled()) {
+    localDebugTenantId = envInfo?.state.solution.teamsAppTenantId;
+  } else {
+    localDebugTenantId = localSettings.teamsApp[LocalSettingsTeamsAppKeys.TenantId];
+  }
 
   const m365TenantMatches = await checkWhetherLocalDebugM365TenantMatches(
     localDebugTenantId,
@@ -125,7 +133,8 @@ export async function provisionLocalResource(
 
   const parseTenantIdresult = loadTeamsAppTenantIdForLocal(
     localSettings as v2.LocalSettings,
-    await tokenProvider.appStudioToken.getJsonObject()
+    await tokenProvider.appStudioToken.getJsonObject(),
+    envInfo
   );
   if (parseTenantIdresult.isErr()) {
     return new v2.FxFailure(parseTenantIdresult.error);

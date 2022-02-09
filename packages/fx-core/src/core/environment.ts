@@ -56,6 +56,7 @@ class EnvironmentManager {
   public readonly envStateNameRegex = /^state\.(?<envName>[\w\d-_]+)\.json$/i;
 
   private readonly defaultEnvName = "dev";
+  private readonly localEnvName = "local";
   private readonly ajv;
   private readonly schema = "https://aka.ms/teamsfx-env-config-schema";
   private readonly envConfigDescription =
@@ -389,6 +390,10 @@ class EnvironmentManager {
 
   public getDefaultEnvName() {
     return this.defaultEnvName;
+  }
+
+  public getLocalEnvName() {
+    return this.localEnvName;
   }
 }
 

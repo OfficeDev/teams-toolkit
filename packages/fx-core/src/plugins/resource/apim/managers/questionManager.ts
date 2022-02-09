@@ -11,8 +11,7 @@ export interface IQuestionManager {
   deploy(
     projectPath?: string,
     envInfo?: EnvInfo | v3.EnvInfoV3,
-    apimConfig?: I
-     
+    apimConfig?: IApimPluginConfig
   ): Promise<QTreeNode>;
 }
 export class VscQuestionManager implements IQuestionManager {

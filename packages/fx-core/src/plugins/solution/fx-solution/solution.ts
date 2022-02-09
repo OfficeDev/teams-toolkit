@@ -56,12 +56,11 @@ import {
   isUserCancelError,
   redactObject,
 } from "../../../common/tools";
-import { CopyFileError } from "../../../core";
+import { CopyFileError, isVsCallingCli } from "../../../core";
 import { ErrorHandlerMW } from "../../../core/middleware/errorHandler";
 import { PermissionRequestFileProvider } from "../../../core/permissionRequest";
 import { SolutionPlugins } from "../../../core/SolutionPluginContainer";
 import { AadAppForTeamsPlugin, AppStudioPlugin, SpfxPlugin } from "../../resource";
-import { IUserList } from "../../resource/appstudio/interfaces/IAppDefinition";
 import {
   copyParameterJson,
   deployArmTemplates,
@@ -97,6 +96,7 @@ import {
   SolutionSource,
   SUBSCRIPTION_ID,
   RESOURCE_GROUP_NAME,
+  SUBSCRIPTION_NAME,
 } from "./constants";
 import { executeConcurrently, executeLifecycles, LifecyclesWithContext } from "./executor";
 import {
@@ -138,13 +138,10 @@ import {
   ensurePermissionRequest,
   parseTeamsAppTenantId,
   fillInSolutionSettings,
-  parseUserName,
   checkWhetherLocalDebugM365TenantMatches,
 } from "./v2/utils";
-import { askForProvisionConsent } from "./v2/provision";
 import { grantPermission } from "./v2/grantPermission";
 import { checkPermission } from "./v2/checkPermission";
-import { listAllCollaborators } from "./v2/listAllCollaborators";
 import { listCollaborator } from "./v2/listCollaborator";
 import { scaffoldReadme } from "./v2/scaffolding";
 import { TelemetryEvent, TelemetryProperty } from "../../../common/telemetry";
@@ -290,7 +287,7 @@ export class TeamsAppSolution implements Solution {
       ctx.projectSettings!.programmingLanguage = lang;
     }
     const solutionSettings = ctx.projectSettings!.solutionSettings as AzureSolutionSettings;
-    const settingsRes = fillInSolutionSettings(solutionSettings, ctx.answers!);
+    const settingsRes = fillInSolutionSettings(ctx.projectSettings, ctx.answers!);
     if (settingsRes.isErr()) {
       return err(
         sendErrorTelemetryThenReturnError(
@@ -1341,13 +1338,6 @@ export class TeamsAppSolution implements Solution {
   }
 
   @hooks([ErrorHandlerMW])
-  async listAllCollaborators(
-    ctx: SolutionContext
-  ): Promise<Result<Record<string, ListCollaboratorResult>, FxError>> {
-    return listAllCollaborators({ apiVersion: 1, ctx });
-  }
-
-  @hooks([ErrorHandlerMW])
   async listCollaborator(ctx: SolutionContext): Promise<Result<ListCollaboratorResult, FxError>> {
     return listCollaborator({ apiVersion: 1, ctx });
   }
@@ -2128,4 +2118,54 @@ export class TeamsAppSolution implements Solution {
       applicationIdUri: configResult.value.applicationIdUri,
     });
   }
+}
+
+export async function askForProvisionConsent(ctx: SolutionContext): Promise<Result<Void, FxError>> {
+  if (isVsCallingCli()) {
+    // Skip asking users for input on VS calling CLI to simplify user interaction.
+    return ok(Void);
+  }
+
+  const azureToken = await ctx.azureAccountProvider?.getAccountCredentialAsync();
+
+  // Only Azure project requires this confirm dialog
+  const username = (azureToken as any).username ? (azureToken as any).username : "";
+  const subscriptionId = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_ID) as string;
+  const subscriptionName = ctx.envInfo.state.get(GLOBAL_CONFIG)?.get(SUBSCRIPTION_NAME) as string;
+
+  const msg = util.format(
+    getStrings().solution.ProvisionConfirmNotice,
+    username,
+    subscriptionName ? subscriptionName : subscriptionId
+  );
+  let confirmRes = undefined;
+  if (isMultiEnvEnabled()) {
+    const msgNew = util.format(
+      getStrings().solution.ProvisionConfirmEnvNotice,
+      ctx.envInfo.envName,
+      username,
+      subscriptionName ? subscriptionName : subscriptionId
+    );
+    confirmRes = await ctx.ui?.showMessage("warn", msgNew, true, "Provision");
+  } else {
+    confirmRes = await ctx.ui?.showMessage("warn", msg, true, "Provision", "Pricing calculator");
+  }
+
+  const confirm = confirmRes?.isOk() ? confirmRes.value : undefined;
+
+  if (confirm !== "Provision") {
+    if (confirm === "Pricing calculator") {
+      ctx.ui?.openUrl("https://azure.microsoft.com/en-us/pricing/calculator/");
+    }
+
+    return err(
+      returnUserError(
+        new Error(getStrings().solution.CancelProvision),
+        SolutionSource,
+        getStrings().solution.CancelProvision
+      )
+    );
+  }
+
+  return ok(Void);
 }

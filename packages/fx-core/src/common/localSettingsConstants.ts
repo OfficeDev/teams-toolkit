@@ -15,6 +15,9 @@ export const LocalSettingsAuthKeys = Object.freeze({
   OauthAuthority: "oauthAuthority",
   OauthHost: "oauthHost",
   ApplicationIdUris: "applicationIdUris",
+});
+
+export const LocalSettingsSimpleAuthKeys = Object.freeze({
   SimpleAuthFilePath: "simpleAuthFilePath",
   SimpleAuthEnvironmentVariableParams: "SimpleAuthEnvironmentVariableParams",
   SimpleAuthServiceEndpoint: "AuthServiceEndpoint",
@@ -26,7 +29,6 @@ export const LocalSettingsFrontendKeys = Object.freeze({
   TabIndexPath: "tabIndexPath",
   Browser: "browser",
   Https: "https",
-  TrustDevCert: "trustDevCert",
   SslCertFile: "sslCertFile",
   SslKeyFile: "sslKeyFile",
 });
@@ -34,14 +36,9 @@ export const LocalSettingsFrontendKeys = Object.freeze({
 export const LocalSettingsBackendKeys = Object.freeze({
   FunctionEndpoint: "functionEndpoint",
   FunctionName: "functionName",
-  SqlEndpoint: "sqlEndpoint",
-  SqlDatabaseName: "sqlDatabaseName",
-  SqlUserName: "sqlUserName",
-  SqlPassword: "sqlPassword",
 });
 
 export const LocalSettingsBotKeys = Object.freeze({
-  SkipNgrok: "skipNgrok",
   BotId: "botId",
   BotPassword: "botPassword",
   BotAadObjectId: "botAadObjectId",

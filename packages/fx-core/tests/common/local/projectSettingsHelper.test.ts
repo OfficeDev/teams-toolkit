@@ -18,7 +18,7 @@ describe("ProjectSettingsHelper", () => {
         hostType: "Azure",
         capabilities: ["Tab", "Bot", "MessagingExtension"],
         azureResources: ["function"],
-        activeResourcePlugins: ["fx-resource-simple-auth"],
+        activeResourcePlugins: ["fx-resource-aad-app-for-teams", "fx-resource-simple-auth"],
       },
     } as ProjectSettings;
 
@@ -103,6 +103,7 @@ describe("ProjectSettingsHelper", () => {
         hostType: "Azure",
         capabilities: ["Tab", "Unknown"],
         foo: "bar",
+        activeResourcePlugins: ["fx-resource-aad-app-for-teams"],
       },
     } as ProjectSettings;
 

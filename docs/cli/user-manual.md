@@ -265,7 +265,7 @@ Manage the configuration data either in user scope or project scope.
 |:----------------  |:-------------|:-------------|
 |`--env`| Yes | Select an existing environment for the project. |
 |`--folder`| No | Project directory. This is used when get/set project configuration. The default value is: `./`. |
-|`--global`| No | Cope of configuration. If this is true, the scope is limited to user scope instead of project scope. The default value is: `false`. Currently supported global configurations including: `telemetry`, `validate-dotnet-sdk`, `validate-func-core-tools`, `validate-node`. |
+|`--global`| No | Cope of configuration. If this is true, the scope is limited to user scope instead of project scope. The default value is: `false`. Currently supported global configurations including: `telemetry`, `validate-dotnet-sdk`, `validate-func-core-tools`, `validate-node`, `validate-ngrok`, `trust-development-certificate`. |
 
 ### Scenerios for `teamsfx config`
 

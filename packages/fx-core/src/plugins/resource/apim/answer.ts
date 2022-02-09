@@ -7,13 +7,10 @@ import { PluginLifeCycle, QuestionConstants, ValidationConstants } from "./const
 import { AssertNotEmpty, BuildError, InvalidCliOptionError, NotImplemented } from "./error";
 import { IApimPluginConfig } from "./config";
 import { IOpenApiDocument } from "./interfaces/IOpenApiDocument";
-import { IApimServiceResource } from "./interfaces/IApimResource";
 import { NamingRules } from "./utils/namingRules";
 import { OpenApiProcessor } from "./utils/openApiProcessor";
 
 export interface IAnswer {
-  resourceGroupName: string | undefined;
-  apimServiceName: string | undefined;
   apiDocumentPath: string | undefined;
   apiPrefix: string | undefined;
   apiId: string | undefined;
@@ -59,16 +56,6 @@ export class VSCodeAnswer extends BaseAnswer implements IAnswer {
     super(inputs);
   }
 
-  get resourceGroupName(): string | undefined {
-    const apimService = this.getOptionItem(QuestionConstants.VSCode.Apim.questionName)
-      ?.data as IApimServiceResource;
-    return apimService?.resourceGroupName;
-  }
-  get apimServiceName(): string | undefined {
-    const apimService = this.getOptionItem(QuestionConstants.VSCode.Apim.questionName)
-      ?.data as IApimServiceResource;
-    return apimService?.serviceName;
-  }
   get apiDocumentPath(): string | undefined {
     return this.getOptionItem(QuestionConstants.VSCode.OpenApiDocument.questionName)?.label;
   }
@@ -94,10 +81,6 @@ export class VSCodeAnswer extends BaseAnswer implements IAnswer {
 
   save(lifecycle: PluginLifeCycle, apimConfig: IApimPluginConfig): void {
     switch (lifecycle) {
-      case PluginLifeCycle.Scaffold:
-        apimConfig.resourceGroupName = this.resourceGroupName ?? apimConfig.resourceGroupName;
-        apimConfig.serviceName = this.apimServiceName ?? apimConfig.serviceName;
-        break;
       case PluginLifeCycle.Deploy:
         apimConfig.apiDocumentPath = this.apiDocumentPath ?? apimConfig.apiDocumentPath;
         apimConfig.apiPrefix = this.apiPrefix ?? apimConfig.apiPrefix;
@@ -111,12 +94,6 @@ export class CLIAnswer extends BaseAnswer implements IAnswer {
     super(inputs);
   }
 
-  get resourceGroupName(): string | undefined {
-    return this.getString(QuestionConstants.CLI.ApimResourceGroup.questionName);
-  }
-  get apimServiceName(): string | undefined {
-    return this.getString(QuestionConstants.CLI.ApimServiceName.questionName);
-  }
   get apiDocumentPath(): string | undefined {
     return this.getString(QuestionConstants.CLI.OpenApiDocument.questionName);
   }
@@ -132,10 +109,6 @@ export class CLIAnswer extends BaseAnswer implements IAnswer {
 
   save(lifecycle: PluginLifeCycle, apimConfig: IApimPluginConfig): void {
     switch (lifecycle) {
-      case PluginLifeCycle.Scaffold:
-        apimConfig.resourceGroupName = this.resourceGroupName ?? apimConfig.resourceGroupName;
-        apimConfig.serviceName = this.apimServiceName ?? apimConfig.serviceName;
-        break;
       case PluginLifeCycle.Deploy:
         apimConfig.apiDocumentPath = this.apiDocumentPath ?? apimConfig.apiDocumentPath;
         apimConfig.apiPrefix = this.apiPrefix ?? apimConfig.apiPrefix;
@@ -163,29 +136,6 @@ export class CLIAnswer extends BaseAnswer implements IAnswer {
     projectRootDir: string
   ): Promise<string | undefined> {
     switch (lifecycle) {
-      case PluginLifeCycle.Scaffold:
-        // Validate the option format
-        if (typeof this.resourceGroupName !== "undefined") {
-          const message = NamingRules.validate(
-            this.resourceGroupName,
-            NamingRules.resourceGroupName
-          );
-          if (message) {
-            return `${ValidationConstants.CLI.invalidOptionMessage(
-              QuestionConstants.CLI.ApimResourceGroup.questionName
-            )} ${message}`;
-          }
-        }
-
-        if (typeof this.apimServiceName !== "undefined") {
-          const message = NamingRules.validate(this.apimServiceName, NamingRules.apimServiceName);
-          if (message) {
-            return `${ValidationConstants.CLI.invalidOptionMessage(
-              QuestionConstants.CLI.ApimServiceName.questionName
-            )} ${message}`;
-          }
-        }
-        break;
       case PluginLifeCycle.Deploy:
         // Validate the option requirements
         if (!apimConfig.apiPrefix && !this.apiPrefix) {

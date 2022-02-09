@@ -20,7 +20,7 @@ import {
 import activate from "../activate";
 import { YargsCommand } from "../yargsCommand";
 import { flattenNodes, getSystemInputs, toLocaleLowerCase } from "../utils";
-import CliTelemetry, { makeEnvProperty } from "../telemetry/cliTelemetry";
+import CliTelemetry, { makeEnvRelatedProperty } from "../telemetry/cliTelemetry";
 import {
   TelemetryEvent,
   TelemetryProperty,
@@ -95,14 +95,19 @@ export default class Deploy extends YargsCommand {
       }
       const result = await core.deployArtifacts(inputs);
       if (result.isErr()) {
-        CliTelemetry.sendTelemetryErrorEvent(TelemetryEvent.Deploy, result.error);
+        CliTelemetry.sendTelemetryErrorEvent(
+          TelemetryEvent.Deploy,
+          result.error,
+          makeEnvRelatedProperty(rootFolder, inputs)
+        );
+
         return err(result.error);
       }
     }
 
     CliTelemetry.sendTelemetryEvent(TelemetryEvent.Deploy, {
       [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-      ...makeEnvProperty(inputs.env),
+      ...makeEnvRelatedProperty(rootFolder, inputs),
     });
     return ok(null);
   }

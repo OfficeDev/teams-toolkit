@@ -1,4 +1,4 @@
-import { IProgressHandler, PluginContext, UserInteraction } from "@microsoft/teamsfx-api";
+import { IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
 import { getStrings } from "../../../../common";
 
 export enum DeployArmTemplatesSteps {

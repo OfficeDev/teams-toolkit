@@ -5,7 +5,7 @@ import { assert, expect } from "chai";
 import * as dotenv from "dotenv";
 import "mocha";
 import { convertDotenvToEmbeddedJson, redactObject, replaceTemplateWithUserData } from "../../src";
-import { flattenConfigJson, isValidProject, newEnvInfo } from "../../src/core/tools";
+import { isValidProject, newEnvInfo } from "../../src/core/tools";
 describe("tools", () => {
   // it("base64 encode", () => {
   //   const source = "Hello, World!";
@@ -22,15 +22,6 @@ describe("tools", () => {
 
   it("is not valid project", () => {
     expect(isValidProject()).is.false;
-  });
-});
-
-describe("flattenConfigJson", () => {
-  it("should flatten output and secrets fields", () => {
-    const config: Json = { a: { output: { b: 1 }, secrets: { value: 9 } }, c: 2 };
-    const expected: Json = { a: { b: 1, value: 9 }, c: 2 };
-    const result = flattenConfigJson(config);
-    assert.deepEqual(result, expected);
   });
 });
 

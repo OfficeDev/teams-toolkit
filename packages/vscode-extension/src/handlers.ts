@@ -16,6 +16,7 @@ import {
 import {
   AppPackageFolderName,
   AppStudioTokenProvider,
+  assembleError,
   AzureSolutionSettings,
   BuildFolderName,
   ConcurrentError,
@@ -45,7 +46,6 @@ import {
   SystemError,
   TemplateFolderName,
   Tools,
-  TreeItem,
   UserError,
   Void,
   VsCodeEnv,
@@ -65,6 +65,8 @@ import {
   isMigrateFromV1Project,
   isUserCancelError,
   isValidProject,
+  LocalEnvManager,
+  ProjectSettingsHelper,
 } from "@microsoft/teamsfx-core";
 import * as vscode from "vscode";
 import GraphManagerInstance from "./commonlib/graphLogin";
@@ -111,15 +113,11 @@ import * as localPrerequisites from "./debug/prerequisitesHandler";
 import { terminateAllRunningTeamsfxTasks } from "./debug/teamsfxTaskHandler";
 import { VS_CODE_UI } from "./extension";
 import { registerAccountTreeHandler } from "./accountTree";
-import {
-  generateCollaboratorNode,
-  generateCollaboratorWarningNode,
-  registerEnvTreeHandler,
-} from "./envTree";
+import * as envTree from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
-import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
+import { TreatmentVariables } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
@@ -128,7 +126,7 @@ import { TeamsAppMigrationHandler } from "./migration/migrationHandler";
 import { generateAccountHint } from "./debug/teamsfxDebugProvider";
 import { ext } from "./extensionVariables";
 import * as uuid from "uuid";
-import * as envTree from "./envTree";
+import { automaticNpmInstallHandler } from "./debug/npmInstallHandler";
 
 export let core: FxCore;
 export let tools: Tools;
@@ -212,6 +210,7 @@ export async function activate(): Promise<Result<Void, FxError>> {
     await envTree.registerEnvTreeHandler();
     await openMarkdownHandler();
     await openSampleReadmeHandler();
+    automaticNpmInstallHandler(false, false, false);
     await postUpgrade();
     ExtTelemetry.isFromSample = await getIsFromSample();
     ExtTelemetry.settingsVersion = await getSettingsVersion();
@@ -421,7 +420,24 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
     namespace: "fx-solution-azure",
     method: "addResource",
   };
-  return await runUserTask(func, TelemetryEvent.AddResource, true);
+  let excludeBackend = true;
+  try {
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    excludeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
+  } catch (error) {
+    VsCodeLogInstance.warning(`${error}`);
+  }
+  const result = await runUserTask(func, TelemetryEvent.AddResource, true);
+  if (result.isOk() && !excludeBackend) {
+    await globalStateUpdate("automaticNpmInstall", true);
+    automaticNpmInstallHandler(true, excludeBackend, true);
+  }
+  return result;
 }
 
 export async function addCapabilityHandler(args: any[]): Promise<Result<null, FxError>> {
@@ -430,7 +446,26 @@ export async function addCapabilityHandler(args: any[]): Promise<Result<null, Fx
     namespace: "fx-solution-azure",
     method: "addCapability",
   };
-  return await runUserTask(func, TelemetryEvent.AddCap, true);
+  let excludeFrontend = true,
+    excludeBot = true;
+  try {
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    excludeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+    excludeBot = ProjectSettingsHelper.includeBot(projectSettings);
+  } catch (error) {
+    VsCodeLogInstance.warning(`${error}`);
+  }
+  const result = await runUserTask(func, TelemetryEvent.AddCap, true);
+  if (result.isOk()) {
+    await globalStateUpdate("automaticNpmInstall", true);
+    automaticNpmInstallHandler(excludeFrontend, true, excludeBot);
+  }
+  return result;
 }
 
 export async function validateManifestHandler(args?: any[]): Promise<Result<null, FxError>> {
@@ -595,6 +630,10 @@ export async function runCommand(
       }
       case Stage.debug: {
         inputs.ignoreEnvInfo = true;
+        inputs.checkerInfo = {
+          skipNgrok: !vscodeHelper.isNgrokCheckerEnabled(),
+          trustDevCert: vscodeHelper.isTrustDevCertEnabled(),
+        };
         result = await core.localDebug(inputs);
         break;
       }
@@ -646,7 +685,7 @@ export async function downloadSample(inputs: Inputs): Promise<Result<any, FxErro
   if (result.isErr()) {
     const error = result.error;
     if (!isUserCancelError(error)) {
-      if (isLoginFaiureError(error)) {
+      if (isLoginFailureError(error)) {
         window.showErrorMessage(StringResources.vsc.handlers.loginFailed);
       } else {
         showError(error);
@@ -705,7 +744,7 @@ export async function runUserTask(
 }
 
 //TODO workaround
-function isLoginFaiureError(error: FxError): boolean {
+function isLoginFailureError(error: FxError): boolean {
   return !!error.message && error.message.includes("Cannot get user login information");
 }
 
@@ -797,7 +836,7 @@ async function processResult(
     if (isUserCancelError(error)) {
       return;
     }
-    if (isLoginFaiureError(error)) {
+    if (isLoginFailureError(error)) {
       window.showErrorMessage(StringResources.vsc.handlers.loginFailed);
       return;
     }
@@ -907,6 +946,24 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
       }
     }
   }
+}
+
+/**
+ * Get func binary path to be referenced by task definition.
+ * Usage like ${env:PATH}${command:...} so need to include delimiter as well
+ */
+export async function getFuncPathHandler(): Promise<string> {
+  try {
+    const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
+    const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
+    if (funcStatus?.details?.binFolders !== undefined) {
+      return `${path.delimiter}${funcStatus.details.binFolders.join(path.delimiter)}`;
+    }
+  } catch (error: any) {
+    showError(assembleError(error));
+  }
+
+  return "";
 }
 
 /**
@@ -1299,10 +1356,7 @@ export async function createNewEnvironment(args?: any[]): Promise<Result<Void, F
   );
   const result = await runCommand(Stage.createEnv);
   if (!result.isErr()) {
-    await envTree.registerEnvTreeHandler(false);
-
-    // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
-    // await updateNewEnvCollaborators(result.value);
+    await envTree.registerEnvTreeHandler();
   }
   return result;
 }
@@ -1430,15 +1484,15 @@ export async function grantPermission(env: string): Promise<Result<any, FxError>
         throw result.error;
       }
       const grantSucceededMsg = util.format(
-        StringResources.vsc.commandsTreeViewProvider.grantPermissionSucceeded,
+        StringResources.vsc.handlers.grantPermissionSucceeded,
         inputs.email,
         env
       );
 
-      let warningMsg = StringResources.vsc.commandsTreeViewProvider.grantPermissionWarning;
+      let warningMsg = StringResources.vsc.handlers.grantPermissionWarning;
       let helpUrl = AzureAssignRoleHelpUrl;
       if (await isSPFxProject(ext.workspaceUri.fsPath)) {
-        warningMsg = StringResources.vsc.commandsTreeViewProvider.grantPermissionWarningSpfx;
+        warningMsg = StringResources.vsc.handlers.grantPermissionWarningSpfx;
         helpUrl = SpfxManageSiteAdminUrl;
       }
 
@@ -1446,11 +1500,8 @@ export async function grantPermission(env: string): Promise<Result<any, FxError>
 
       VsCodeLogInstance.info(grantSucceededMsg);
       VsCodeLogInstance.warning(
-        warningMsg + StringResources.vsc.commandsTreeViewProvider.referLinkForMoreDetails + helpUrl
+        warningMsg + StringResources.vsc.handlers.referLinkForMoreDetails + helpUrl
       );
-
-      // Remove collaborators node in tree view, and temporary keep this code which will be used for future implementation
-      // await addCollaboratorToEnv(env, result.value.userInfo.aadId, inputs.email);
     } else {
       result = collaborationStateResult;
       if (result.value.state === CollaborationState.NotProvisioned) {
@@ -1464,125 +1515,6 @@ export async function grantPermission(env: string): Promise<Result<any, FxError>
   }
 
   await processResult(TelemetryEvent.GrantPermission, result, inputs);
-  return result;
-}
-
-export async function listAllCollaborators(envs: string[]): Promise<Record<string, TreeItem[]>> {
-  const result: Record<string, TreeItem[]> = {};
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListAllCollaboratorsStart);
-
-  const checkCoreRes = checkCoreNotEmpty();
-  if (checkCoreRes.isErr()) {
-    throw checkCoreRes.error;
-  }
-
-  const inputs: Inputs = getSystemInputs();
-  const userListRecordResult = await core.listAllCollaborators(inputs);
-
-  for (const env of envs) {
-    try {
-      if (userListRecordResult.isErr()) {
-        throw userListRecordResult.error;
-      }
-
-      const userList = userListRecordResult.value[env];
-
-      if (userList.state === CollaborationState.OK) {
-        result[env] = userList.collaborators.map((user: any) => {
-          return generateCollaboratorNode(
-            env,
-            user.userObjectId,
-            user.userPrincipalName,
-            user.isAadOwner
-          );
-        });
-        if (!result[env] || result[env].length === 0) {
-          result[env] = [
-            generateCollaboratorWarningNode(
-              env,
-              StringResources.vsc.commandsTreeViewProvider.noPermissionToListCollaborators,
-              undefined,
-              true
-            ),
-          ];
-        }
-      } else if (userList.state !== CollaborationState.ERROR) {
-        let label = userList.message;
-        const toolTip = userList.message;
-        let showWarning = true;
-        if (userList.state === CollaborationState.NotProvisioned) {
-          label = StringResources.vsc.commandsTreeViewProvider.unableToFindTeamsAppRegistration;
-          showWarning = false;
-        }
-
-        if (userList.state === CollaborationState.M365TenantNotMatch) {
-          showWarning = false;
-        }
-
-        result[env] = [generateCollaboratorWarningNode(env, label, toolTip, showWarning)];
-        ExtTelemetry.sendTelemetryEvent(TelemetryEvent.ListAllCollaborators, {
-          [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        });
-      } else {
-        throw userList.error.error;
-      }
-    } catch (e) {
-      if (!(e instanceof SystemError || e instanceof UserError)) {
-        e = wrapError(e);
-      }
-      ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.ListAllCollaborators, e);
-      VsCodeLogInstance.warning(
-        `code:${e.source}.${e.name}, message: Failed to list collaborator for environment '${env}':  ${e.message}`
-      );
-      result[env] = [generateCollaboratorWarningNode(env, e.message, undefined, true)];
-    }
-  }
-
-  return result;
-}
-
-export async function checkPermission(env: string): Promise<boolean> {
-  let result = false;
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CheckPermissionStart);
-
-  try {
-    const checkCoreRes = checkCoreNotEmpty();
-    if (checkCoreRes.isErr()) {
-      throw checkCoreRes.error;
-    }
-
-    const inputs: Inputs = getSystemInputs();
-    inputs.env = env;
-    const permissions = await core.checkPermission(inputs);
-    if (permissions.isErr()) {
-      throw permissions.error;
-    }
-    if (permissions.value.state === CollaborationState.OK) {
-      const teamsAppPermission = permissions.value.permissions.find(
-        (permission: any) => permission.name === "Teams App"
-      );
-      const aadPermission = permissions.value.permissions.find(
-        (permission: any) => permission.name === "Azure AD App"
-      );
-      result =
-        (teamsAppPermission.roles?.includes("Administrator") ?? false) &&
-        (aadPermission.roles?.includes("Owner") ?? false);
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CheckPermission, {
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        [TelemetryProperty.CollaborationState]: permissions.value.state.toString(),
-      });
-    } else {
-      result = false;
-      ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CheckPermission, {
-        [TelemetryProperty.Success]: TelemetrySuccess.Yes,
-        [TelemetryProperty.CollaborationState]: permissions.value.state.toString(),
-      });
-    }
-  } catch (e) {
-    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.CheckPermission, e);
-    result = false;
-  }
-
   return result;
 }
 
@@ -1762,9 +1694,8 @@ export async function showError(e: UserError | SystemError) {
     const path = "https://github.com/OfficeDev/TeamsFx/issues/new?";
     const param = `title=bug+report: ${errorCode}&body=${anonymizeFilePaths(
       e.message
-    )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${
-      sysError.userData ? anonymizeFilePaths(sysError.userData) : ""
-    }`;
+    )}\n\nstack:\n${anonymizeFilePaths(e.stack)}\n\n${sysError.userData ? anonymizeFilePaths(sysError.userData) : ""
+      }`;
     const issue = {
       title: StringResources.vsc.handlers.reportIssue,
       run: async (): Promise<void> => {

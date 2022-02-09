@@ -3,13 +3,21 @@
 "use strict";
 
 import * as fs from "fs-extra";
-import { ConfigFolderName, LogProvider, UserInteraction } from "@microsoft/teamsfx-api";
+import {
+  ConfigFolderName,
+  LogProvider,
+  UserInteraction,
+  FxError,
+  returnUserError,
+  UserCancelError,
+} from "@microsoft/teamsfx-api";
 import { asn1, md, pki } from "node-forge";
 import * as os from "os";
 import { v4 as uuidv4 } from "uuid";
 
 import { LocalDebugCertificate } from "./constants";
 import * as ps from "./process";
+import { CoreSource } from "../../core/error";
 
 const installText = "Install";
 const learnMoreText = "Learn More";
@@ -27,6 +35,7 @@ export interface LocalCertificate {
   certPath: string;
   keyPath: string;
   isTrusted?: boolean;
+  error?: FxError;
 }
 
 export class LocalCertificateManager {
@@ -60,8 +69,6 @@ export class LocalCertificateManager {
       let certThumbprint: string | undefined = undefined;
       await fs.ensureDir(this.certFolder);
 
-      this.logger?.info("Detecting/Verifying local certificate.");
-
       if ((await fs.pathExists(certFilePath)) && (await fs.pathExists(keyFilePath))) {
         const certContent = await fs.readFile(certFilePath, { encoding: "utf8" });
         const keyContent = await fs.readFile(keyFilePath, { encoding: "utf8" });
@@ -81,8 +88,8 @@ export class LocalCertificateManager {
           // already trusted
           localCert.isTrusted = true;
         } else {
-          localCert.isTrusted = await this.trustCertificate(
-            localCert.certPath,
+          await this.trustCertificate(
+            localCert,
             certThumbprint,
             LocalDebugCertificate.FriendlyName
           );
@@ -91,6 +98,7 @@ export class LocalCertificateManager {
     } catch (error: any) {
       this.logger?.warning(`Failed to setup certificate. Error: ${error}`);
       localCert.isTrusted = false;
+      localCert.error = returnUserError(error, CoreSource, "SetupCertificateError", learnMoreUrl);
     } finally {
       return localCert;
     }
@@ -156,7 +164,6 @@ export class LocalCertificateManager {
     await fs.writeFile(certFile, certContent, { encoding: "utf8" });
     await fs.writeFile(keyFile, keyContent, { encoding: "utf8" });
 
-    this.logger?.info(`Local certificate generated to ${certFile}`);
     return thumbprint;
   }
 
@@ -279,41 +286,52 @@ export class LocalCertificateManager {
   }
 
   private async trustCertificate(
-    certPath: string,
+    localCert: LocalCertificate,
     thumbprint: string,
     friendlyName: string
-  ): Promise<boolean | undefined> {
+  ): Promise<void> {
     try {
       if (os.type() === "Windows_NT") {
         if (!(await this.waitForUserConfirm())) {
-          return false;
+          localCert.isTrusted = false;
+          localCert.error = UserCancelError;
+          return;
         }
 
-        const installCertCommand = `(Import-Certificate -FilePath '${certPath}' -CertStoreLocation Cert:\\CurrentUser\\Root)[0].Thumbprint`;
+        const installCertCommand = `(Import-Certificate -FilePath '${localCert.certPath}' -CertStoreLocation Cert:\\CurrentUser\\Root)[0].Thumbprint`;
         const thumbprint = (await ps.execPowerShell(installCertCommand)).trim();
 
         const friendlyNameCommand = `(Get-ChildItem -Path Cert:\\CurrentUser\\Root\\${thumbprint}).FriendlyName='${friendlyName}'`;
         await ps.execPowerShell(friendlyNameCommand);
 
-        return true;
+        localCert.isTrusted = true;
+        return;
       } else if (os.type() === "Darwin") {
         if (!(await this.waitForUserConfirm())) {
-          return false;
+          localCert.isTrusted = false;
+          localCert.error = UserCancelError;
+          return;
         }
 
         await ps.execShell(
-          `security add-trusted-cert -p ssl -k "${os.homedir()}/Library/Keychains/login.keychain-db" "${certPath}"`
+          `security add-trusted-cert -p ssl -k "${os.homedir()}/Library/Keychains/login.keychain-db" "${
+            localCert.certPath
+          }"`
         );
 
-        return true;
+        localCert.isTrusted = true;
+        return;
       } else {
         // TODO: Linux
-        return undefined;
+        localCert.isTrusted = undefined;
+        return;
       }
-    } catch (error) {
+    } catch (error: any) {
       // treat any error as install failure, to not block the main progress
       this.logger?.warning(`Failed to install certificate. Error: ${error}`);
-      return false;
+      localCert.isTrusted = false;
+      localCert.error = returnUserError(error, CoreSource, "TrustCertificateError", learnMoreUrl);
+      return;
     }
   }
 

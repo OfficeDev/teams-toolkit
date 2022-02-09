@@ -92,6 +92,10 @@ export enum TelemetryEvent {
   DebugNpmInstallStart = "debug-npm-install-start",
   DebugNpmInstall = "debug-npm-install",
 
+  AutomaticNpmInstallStart = "automatic-npm-install-start",
+  AutomaticNpmInstall = "automatic-npm-install",
+  ClickDisableAutomaticNpmInstall = "click-disable-automatic-npm-install",
+
   Survey = "survey",
   SurveyData = "survey-data",
 
@@ -117,9 +121,6 @@ export enum TelemetryEvent {
 
   ListCollaboratorStart = "list-collaborator-start",
   ListCollaborator = "list-collaborator",
-
-  ListAllCollaboratorsStart = "list-all-collaborators-start",
-  ListAllCollaborators = "list-all-collaborators",
 
   GrantPermissionStart = "grant-permission-start",
   GrantPermission = "grant-permission",

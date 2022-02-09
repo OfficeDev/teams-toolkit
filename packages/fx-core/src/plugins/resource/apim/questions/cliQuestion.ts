@@ -1,50 +1,9 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import {
-  LogProvider,
-  TextInputQuestion,
-  TelemetryReporter,
-  Inputs,
-} from "@microsoft/teamsfx-api";
+import { LogProvider, TextInputQuestion, TelemetryReporter, Inputs } from "@microsoft/teamsfx-api";
 import { QuestionConstants } from "../constants";
 import { NamingRules } from "../utils/namingRules";
 import { BaseQuestionService, IQuestionService } from "./question";
-
-export class ApimServiceNameQuestion extends BaseQuestionService implements IQuestionService {
-  constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
-    super(telemetryReporter, logger);
-  }
-
-  public getQuestion(): TextInputQuestion {
-    return {
-      type: "text",
-      name: QuestionConstants.CLI.ApimServiceName.questionName,
-      title: QuestionConstants.CLI.ApimServiceName.description,
-      validation: {
-        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
-          NamingRules.validate(input as string, NamingRules.apimServiceName),
-      },
-    };
-  }
-}
-
-export class ApimResourceGroupQuestion extends BaseQuestionService implements IQuestionService {
-  constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {
-    super(telemetryReporter, logger);
-  }
-
-  public getQuestion(): TextInputQuestion {
-    return {
-      type: "text",
-      name: QuestionConstants.CLI.ApimResourceGroup.questionName,
-      title: QuestionConstants.CLI.ApimResourceGroup.description,
-      validation: {
-        validFunc: (input: string, previousInputs?: Inputs): string | undefined =>
-          NamingRules.validate(input as string, NamingRules.resourceGroupName),
-      },
-    };
-  }
-}
 
 export class OpenApiDocumentQuestion extends BaseQuestionService implements IQuestionService {
   constructor(telemetryReporter?: TelemetryReporter, logger?: LogProvider) {

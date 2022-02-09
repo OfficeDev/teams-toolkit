@@ -2,8 +2,6 @@
 // Licensed under the MIT license.
 
 import {
-  AzureAccountProvider,
-  AzureSolutionSettings,
   Func,
   FxError,
   Inputs,
@@ -20,11 +18,11 @@ import {
   DeepReadonly,
   ProvisionInputs,
   ResourcePlugin,
-  ResourceProvisionOutput,
   ResourceTemplate,
 } from "@microsoft/teamsfx-api/build/v2";
 import { Inject, Service } from "typedi";
 import { FrontendPlugin } from "../..";
+import { AzureSolutionSettings } from "../../../../../../api/build/types";
 import {
   ResourcePlugins,
   ResourcePluginsV2,
@@ -35,10 +33,10 @@ import {
   executeUserTaskAdapter,
   updateResourceTemplateAdapter,
   generateResourceTemplateAdapter,
-  provisionResourceAdapter,
   scaffoldSourceCodeAdapter,
   provisionLocalResourceAdapter,
 } from "../../utils4v2";
+import { TabLanguage } from "../resources/templateInfo";
 
 @Service(ResourcePluginsV2.FrontendPlugin)
 export class FrontendPluginV2 implements ResourcePlugin {
@@ -48,8 +46,9 @@ export class FrontendPluginV2 implements ResourcePlugin {
   plugin!: FrontendPlugin;
 
   activate(projectSettings: ProjectSettings): boolean {
+    const activateInVS = projectSettings.programmingLanguage === TabLanguage.CSharp;
     const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-    return this.plugin.activate(solutionSettings);
+    return activateInVS || this.plugin.activate(solutionSettings);
   }
 
   async scaffoldSourceCode(ctx: Context, inputs: Inputs): Promise<Result<Void, FxError>> {
@@ -70,21 +69,12 @@ export class FrontendPluginV2 implements ResourcePlugin {
     return await generateResourceTemplateAdapter(ctx, inputs, this.plugin);
   }
 
-  async provisionResource(
-    ctx: Context,
-    inputs: ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
-    tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
-    return provisionResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
-  }
-
   async configureResource(
     ctx: Context,
     inputs: ProvisionInputs,
-    envInfo: Readonly<v2.EnvInfoV2>,
+    envInfo: v2.EnvInfoV2,
     tokenProvider: TokenProvider
-  ): Promise<Result<ResourceProvisionOutput, FxError>> {
+  ): Promise<Result<Void, FxError>> {
     return await configureResourceAdapter(ctx, inputs, envInfo, tokenProvider, this.plugin);
   }
 

@@ -1,13 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import {
-  AzureSolutionSettings,
-  FxError,
-  LogProvider,
-  PluginContext,
-  Result,
-} from "@microsoft/teamsfx-api";
+import { FxError, LogProvider, PluginContext, Result } from "@microsoft/teamsfx-api";
 import { AadResult, ResultFactory } from "./results";
 import {
   CheckGrantPermissionConfig,
@@ -26,8 +20,6 @@ import {
   UnknownPermissionName,
   UnknownPermissionRole,
   UnknownPermissionScope,
-  GetSkipAppConfigError,
-  InvalidSelectedPluginsError,
   GetConfigError,
   ConfigErrorMessages,
 } from "./errors";
@@ -56,7 +48,7 @@ import { Utils } from "./utils/common";
 import * as path from "path";
 import * as fs from "fs-extra";
 import { ArmTemplateResult } from "../../../common/armInterface";
-import { Bicep, ConstantString, ResourcePlugins } from "../../../common/constants";
+import { Bicep, ConstantString } from "../../../common/constants";
 import { getTemplatesFolder } from "../../../folder";
 import { AadOwner, ResourcePermission } from "../../../common/permissionInterface";
 import { IUserList } from "../appstudio/interfaces/IAppDefinition";
@@ -75,7 +67,7 @@ export class AadAppForTeamsImpl {
       ? Messages.EndLocalDebug.telemetry
       : Messages.EndProvision.telemetry;
 
-    await TokenProvider.init(ctx);
+    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
 
     // Move objectId etc. from input to output.
     const skip = Utils.skipAADProvision(ctx, isLocalDebug);
@@ -93,30 +85,29 @@ export class AadAppForTeamsImpl {
       if (!skip) {
         await DialogUtils.progress?.next(ProgressDetail.GetAadApp);
         config = await AadAppClient.getAadApp(
-          ctx,
           telemetryMessage,
           config.objectId,
-          isLocalDebug,
-          config.password
+          config.password,
+          ctx.graphTokenProvider,
+          isLocalDebug ? undefined : ctx.envInfo.envName
         );
         ctx.logProvider?.info(Messages.getLog(Messages.GetAadAppSuccess));
       }
     } else {
       await DialogUtils.progress?.next(ProgressDetail.ProvisionAadApp);
-      await AadAppClient.createAadApp(ctx, telemetryMessage, config);
+      await AadAppClient.createAadApp(telemetryMessage, config);
       config.password = undefined;
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppSuccess));
     }
 
     if (!config.password) {
       await DialogUtils.progress?.next(ProgressDetail.CreateAadAppSecret);
-      await AadAppClient.createAadAppSecret(ctx, telemetryMessage, config);
+      await AadAppClient.createAadAppSecret(telemetryMessage, config);
       ctx.logProvider?.info(Messages.getLog(Messages.CreateAadAppPasswordSuccess));
     }
 
     await DialogUtils.progress?.next(ProgressDetail.UpdatePermission);
     await AadAppClient.updateAadAppPermission(
-      ctx,
       telemetryMessage,
       config.objectId as string,
       permissions,
@@ -166,7 +157,7 @@ export class AadAppForTeamsImpl {
     const skip = Utils.skipAADProvision(ctx, isLocalDebug);
     DialogUtils.init(ctx.ui, ProgressTitle.PostProvision, ProgressTitle.PostProvisionSteps);
 
-    await TokenProvider.init(ctx);
+    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
     const config: PostProvisionConfig = new PostProvisionConfig(isLocalDebug);
     config.restoreConfigFromContext(ctx);
 
@@ -179,7 +170,6 @@ export class AadAppForTeamsImpl {
       config.clientId!
     );
     await AadAppClient.updateAadAppRedirectUri(
-      ctx,
       isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
       config.objectId as string,
       redirectUris,
@@ -189,7 +179,6 @@ export class AadAppForTeamsImpl {
 
     await DialogUtils.progress?.next(ProgressDetail.UpdateAppIdUri);
     await AadAppClient.updateAadAppIdUri(
-      ctx,
       isLocalDebug ? Messages.EndPostLocalDebug.telemetry : Messages.EndPostProvision.telemetry,
       config.objectId as string,
       config.applicationIdUri as string,
@@ -225,7 +214,7 @@ export class AadAppForTeamsImpl {
       return ResultFactory.Success();
     }
 
-    await TokenProvider.init(ctx);
+    await TokenProvider.init({ graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken });
 
     const permissions = AadAppForTeamsImpl.parsePermission(
       configs[0].permissionRequest as string,
@@ -236,7 +225,6 @@ export class AadAppForTeamsImpl {
     await DialogUtils.progress?.next(ProgressDetail.UpdatePermission);
     for (const config of configs) {
       await AadAppClient.updateAadAppPermission(
-        ctx,
         Messages.EndUpdatePermission.telemetry,
         config.objectId as string,
         permissions
@@ -277,7 +265,10 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartCheckPermission);
 
-    await TokenProvider.init(ctx, TokenAudience.Graph);
+    await TokenProvider.init(
+      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
+      TokenAudience.Graph
+    );
     const config = new CheckGrantPermissionConfig();
     await config.restoreConfigFromContext(ctx);
 
@@ -305,7 +296,10 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartListCollaborator);
 
-    await TokenProvider.init(ctx, TokenAudience.Graph);
+    await TokenProvider.init(
+      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
+      TokenAudience.Graph
+    );
 
     const objectId = ConfigUtils.getAadConfig(ctx, ConfigKeys.objectId, false);
     if (!objectId) {
@@ -333,7 +327,10 @@ export class AadAppForTeamsImpl {
     TelemetryUtils.init(ctx);
     Utils.addLogAndTelemetry(ctx.logProvider, Messages.StartGrantPermission);
 
-    await TokenProvider.init(ctx, TokenAudience.Graph);
+    await TokenProvider.init(
+      { graph: ctx.graphTokenProvider, appStudio: ctx.appStudioToken },
+      TokenAudience.Graph
+    );
     const config = new CheckGrantPermissionConfig(true);
     await config.restoreConfigFromContext(ctx);
 
@@ -357,7 +354,7 @@ export class AadAppForTeamsImpl {
     return ResultFactory.Success(result);
   }
 
-  private static getRedirectUris(
+  public static getRedirectUris(
     frontendEndpoint: string | undefined,
     botEndpoint: string | undefined,
     clientId: string
@@ -431,7 +428,7 @@ export class AadAppForTeamsImpl {
     return configs;
   }
 
-  private static parsePermission(
+  public static parsePermission(
     permissionRequest: string,
     logProvider?: LogProvider
   ): RequiredResourceAccess[] {

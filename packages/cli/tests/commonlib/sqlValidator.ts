@@ -33,6 +33,7 @@ export class SqlValidator {
   static databaseName?: string;
   static identity?: string;
   static accessToken?: string;
+  static databases: string[] = [];
 
   public static async init(ctx: any) {
     console.log("Start to init validator for sql.");
@@ -47,8 +48,15 @@ export class SqlValidator {
 
   public static async validateSql(count = 1) {
     const query = `select name as username from sys.database_principals where type not in ('A', 'G', 'R', 'X') and sid is not null and name = '${this.identity}';`;
-    const res = await this.doQuery(this.accessToken!, query);
-    chai.expect(res.length).to.equal(count);
+    for (let i = 0; i < this.databases.length; i++) {
+      const database = this.databases[i];
+      const res = await this.doQuery(this.accessToken!, query, database);
+      chai.expect(res.length).to.equal(count);
+    }
+  }
+
+  public static async validateDatabaseCount(count: number) {
+    chai.expect(this.databases.length).to.equal(count);
   }
 
   public static async validateResourceGroup(rg: string) {
@@ -63,6 +71,12 @@ export class SqlValidator {
     this.databaseName = ctx[sqlPluginName][databaseKey];
     this.identity = ctx[identityPluginName][identityKey];
     this.sqlName = this.sqlEndpoint!.substring(0, this.sqlEndpoint!.indexOf("."));
+    const keys = Object.keys(ctx[sqlPluginName]);
+    keys.forEach((key) => {
+      if (key.startsWith("databaseName")) {
+        this.databases.push(ctx[sqlPluginName][key]);
+      }
+    });
   }
 
   private static async addLocalFirewall() {
@@ -77,7 +91,7 @@ export class SqlValidator {
     await this.client!.firewallRules.createOrUpdate(this.rg!, this.sqlName!, localRule, model);
   }
 
-  private static async doQuery(token: string, cmd: string): Promise<any[]> {
+  private static async doQuery(token: string, cmd: string, database: string): Promise<any[]> {
     const config = {
       server: this.sqlEndpoint,
       authentication: {
@@ -95,7 +109,7 @@ export class SqlValidator {
           log: true,
         },
         rowCollectionOnDone: true,
-        database: this.databaseName,
+        database: database,
         encrypt: true,
         requestTimeout: 30000,
         connectTimeout: 30000,

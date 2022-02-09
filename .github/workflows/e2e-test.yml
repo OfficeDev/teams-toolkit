@@ -4,10 +4,10 @@ on:
   workflow_dispatch:
     inputs:
       cases:
-        description: 'specific cases to be excuted. Sample: ["./aad/a.tests.ts", "./bot/b.tests.ts"]'
+        description: 'specific cases to be excuted. Sample: ["./aad/a.tests.ts", "./bot/b.tests.ts"]. Set empty to run all cases'
         required: false
   schedule:
-    - cron: "0 4,7,10 * * *"
+    - cron: "0 5 * * *"
   pull_request:
     branches:
       - main
@@ -20,7 +20,52 @@ on:
       - edited
 
 jobs:
+  check-pr:
+    if: ${{  github.event_name == 'pull_request' }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup node
+        uses: actions/setup-node@v2.1.2
+        with:
+          node-version: 14
+
+      - name: Install parser cli
+        run: |
+          npm install --global conventional-commits-parser
+
+      - name: Check PR
+        id: check_title
+        run: |
+          declare -a types=("fix" "feat" "refactor")
+          type=`echo "${{ github.event.pull_request.title }}" |  conventional-commits-parser | jq -r '.[].type'`
+          if [[ " ${types[*]} " =~ " ${type} " ]]; then
+            if [[ "${{ github.event.pull_request.body }}" == *"E2E TEST:"* ]]; then
+              echo "::set-output name=passed::true"
+            else
+              echo "::set-output name=passed::false"
+            fi
+          else
+            echo "::set-output name=passed::true"
+          fi
+
+      - name: Search comment
+        if: ${{ steps.check_title.outputs.passed == 'false' }}
+        uses: peter-evans/find-comment@v1
+        id: comments
+        with:
+          issue-number: ${{ github.event.pull_request.number }}
+          body-includes: "E2E TEST:"
+
+      - name: Check if test is included in comments
+        if: ${{ steps.check_title.outputs.passed == 'false' }}
+        run: |
+          if [ -z "${{ steps.comments.outputs.comment-id }}" ]; then
+            echo "E2E TEST not found."
+            exit 1
+          fi
+
   setup:
+    if: ${{  github.event_name != 'pull_request' }}
     runs-on: ubuntu-latest
     outputs:
       cases: ${{ steps.schedule-cases.outputs.cases || steps.dispatch-cases.outputs.cases || steps.pr-cases.outputs.cases }}
@@ -174,76 +219,76 @@ jobs:
           version=$(node -p -e "require('./packages/cli/package.json').version")
           npx ts-node .github/scripts/testPlan.ts sync ./packages/cli/tests/e2e/report.json cli $version
 
-  teardown:
-    if: ${{ always() }}
-    needs: execute-case
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout
-        uses: actions/checkout@v2
-
-      - name: Setup node
-        uses: actions/setup-node@v2.1.2
-        with:
-          node-version: 14
-
   report:
-    if: ${{ failure() }}
+    if: ${{ always() && github.event_name == 'schedule' }}
     needs: execute-case
     runs-on: ubuntu-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v2
 
-      - name: List failed jobs
-        id: list-failed-jobs
+      - name: List jobs
+        id: list-jobs
         working-directory: packages/cli
         run: |
           result=`curl \
             -u :${{ secrets.GITHUB_TOKEN }}\
             https://api.github.com/repos/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}/attempts/${{ github.run_attempt }}/jobs?per_page=100`
 
-          failures=`echo $result | jq -r '.jobs[]| select(.name | contains("tests.ts")) | select(.conclusion=="failure").name'`
 
-          declare -A email_uid
-          description="<tr> <th>Case</th> <th>Author</th> </tr>"
+          cases=`echo $result | jq -r '.jobs[] | select(.name | contains("tests.ts")) | .name'`
+
+          description="<tr> <th>Case</th> <th>Status</th> <th>Author</th> </tr>"
+
           emails="vsciotadt@microsoft.com"
-          while IFS= read -r failure;
+          while IFS= read -r case;
           do
-            file="tests/e2e/$failure"
-            email=`cat $file | grep '@author' | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
-
-            if [ -z "$email" ]; then
-              description="$description <tr> <td>$file</td> <td>N/A</td> </tr> "
+            if [ -z "$case" ]; then
               continue
             fi
 
-            if [[ ! "$emails" == *"$email"* ]]; then
+            file="tests/e2e/$case"
+
+            email=""
+            if grep -q "@author" $file; then
+              email=`grep '@author' $file | grep -i -o '[A-Z0-9._%+-]\+@[A-Z0-9.-]\+\.[A-Z]\{2,4\}'`
+            fi
+
+            status=`echo $result | jq --arg case $case -r '.jobs[] | select(.name == $case ) | .conclusion'`
+
+            if [[ ! -z "$email" && ! "$emails" == *"$email"* && "$status" == "failure" ]]; then
               emails="$emails;$email"
             fi
-
-            if [ ! -v "email_uid[$email]" ]; then
-              resp=$(curl -u :${{ secrets.ADO_PAT }} "https://vssps.dev.azure.com/msazure/_apis/identities?searchFilter=General&filterValue=$email&queryMembership=None&api-version=6.0")
-              uid=$(echo $resp | jq '.value | .[] | .id' | xargs echo)
-              email_uid[$email]=$uid
+            
+            label=""
+            if [ "$status" == "success" ]; then
+              label="<span style=\\\"background-color: green;\\\">success</span>"
+            else
+              label="<span style=\\\"background-color: red;\\\">failure</span>"
             fi
 
-            description="$description <tr> <td>$file</td> <td><a href=\\\"#\\\" data-vss-mention=\\\"version:2.0,${email_uid[$email]}\\\">$email</a></td> </tr> "
-          done <<< $failures
+            author=""
+            if [ -z "$email" ]; then
+              author="N/A"
+            else
+              author="<a href=\\\"mailto:$email\\\"><span>$email</span></a>"
+            fi
+
+            description="$description <tr> <td style=\\\"text-align: left;\\\">$file</td> <td style=\\\"text-align: center;\\\">$label</td> <td style=\\\"text-align: center;\\\">$author</td> </tr> "
+          done <<< $cases
 
           echo "::set-output name=description::$description"
           echo "::set-output name=emails::$emails"
 
       - name: Send E-mail to the whole team
         uses: satak/webrequest-action@master
-        if: ${{  github.event_name == 'schedule' }}
         with:
           url: https://prod-30.eastus.logic.azure.com:443/workflows/9aa865da96054bd89749c2d4ce68df8e/triggers/manual/paths/invoke?api-version=2016-10-01&sp=%2Ftriggers%2Fmanual%2Frun&sv=1.0&sig=uIoB06NUHSnKoZeWjNDI9t4rrhbTBKxJNiBtDoMRSQs
           method: POST
           payload: |
             {
-              "to": "${{ steps.list-failed-jobs.outputs.emails }}",
-              "body": "<table class=\"w3-table w3-striped w3-bordered\">${{ steps.list-failed-jobs.outputs.description }}</table> <br /> The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}",
-              "subject": "[Failure] TeamsFx CLI E2E Test ${{ github.run-id }}",
+              "to": "${{ steps.list-jobs.outputs.emails }}",
+              "body": "<table class=\"w3-table w3-striped w3-bordered\">${{ steps.list-jobs.outputs.description }}</table> <br /> The detail can be found here: https://github.com/OfficeDev/TeamsFx/actions/runs/${{ github.run_id }}",
+              "subject": "TeamsFx E2E Test Report",
               "apiKey": "${{ secrets.MAIL_API_KEY }}"
             }

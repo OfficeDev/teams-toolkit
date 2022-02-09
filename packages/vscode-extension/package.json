@@ -778,6 +778,12 @@
             "type": "string",
             "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requries reload of VS Code)",
             "default": "${homeDir}/TeamsApps"
+          },
+          "fx-extension.automaticNpmInstall": {
+            "type": "boolean",
+            "title": "Automatic NPM Install",
+            "description": "Automatically execute npm install command for your Teams application.",
+            "default": false
           }
         }
       },
@@ -810,7 +816,7 @@
               },
               "devCert": {
                 "type": "boolean",
-                "description": "Ensure development certification is trusted."
+                "description": "Ensure development certificate is trusted."
               }
             },
             "additionalProperties": false,
@@ -1004,6 +1010,7 @@
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.8.5",
     "async-mutex": "^0.3.1",
+    "ajv": "^8.5.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jscodeshift": "^0.13.0",

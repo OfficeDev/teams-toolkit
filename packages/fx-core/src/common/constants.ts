@@ -61,3 +61,13 @@ export class FeatureFlagName {
   static readonly VSCallingCLI = "VS_CALLING_CLI";
   static readonly ConfigUnify = "TEAMSFX_CONFIG_UNIFY";
 }
+
+export class ManifestVariables {
+  static readonly DeveloperWebsiteUrl = "developerWebsiteUrl";
+  static readonly DeveloperPrivacyUrl = "developerPrivacyUrl";
+  static readonly DeveloperTermsOfUseUrl = "developerTermsOfUseUrl";
+  static readonly TabContentUrl = "tabContentUrl";
+  static readonly TabWebsiteUrl = "tabWebsiteUrl";
+  static readonly TabConfigurationUrl = "tabConfigurationUrl";
+  static readonly BotId = "botId";
+}

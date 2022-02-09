@@ -2,6 +2,7 @@
 // Licensed under the MIT license.
 
 import {
+  AzureSolutionSettings,
   err,
   FxError,
   ok,
@@ -17,8 +18,7 @@ import * as util from "util";
 import { PluginDisplayName } from "../../../../common/constants";
 import { getStrings } from "../../../../common/tools";
 import { executeConcurrently } from "../v2/executor";
-import { createSelectModulesToDeployQuestionNode } from "../../utils/questions";
-import { getModule } from "./utils";
+import { selectMultiPluginsQuestion } from "../../utils/questions";
 
 export async function getQuestionsForDeploy(
   ctx: v2.Context,
@@ -26,13 +26,13 @@ export async function getQuestionsForDeploy(
   envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
   tokenProvider: TokenProvider
 ): Promise<Result<QTreeNode | undefined, FxError>> {
-  const solutionSetting = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-  const root = createSelectModulesToDeployQuestionNode(solutionSetting.modules);
-  let i = 0;
-  for (const module of solutionSetting.modules) {
-    const pluginName = module.hostingPlugin;
+  const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  const pluginNames = solutionSetting ? solutionSetting.activeResourcePlugins : [];
+  if (pluginNames.length === 0) return ok(undefined);
+  const rootNode = new QTreeNode(selectMultiPluginsQuestion);
+  for (const pluginName of pluginNames) {
     if (pluginName) {
-      const plugin = Container.get<v3.ResourcePlugin>(pluginName);
+      const plugin = Container.get<v3.FeaturePlugin>(pluginName);
       if (plugin.deploy && plugin.getQuestionsForDeploy) {
         const res = await plugin.getQuestionsForDeploy(ctx, inputs, envInfo, tokenProvider);
         if (res.isErr()) {
@@ -41,31 +41,27 @@ export async function getQuestionsForDeploy(
         if (res.value) {
           const node = res.value;
           if (node && node.data) {
-            node.condition = { contains: i + "" };
-            root.addChild(node);
+            node.condition = { contains: pluginName };
+            rootNode.addChild(node);
           }
         }
       }
     }
-    ++i;
   }
-  return ok(root);
+  return ok(rootNode);
 }
 export async function deploy(
   ctx: v2.Context,
-  inputs: v3.SolutionDeployInputs,
+  inputs: v2.InputsWithProjectPath,
   envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
   tokenProvider: TokenProvider
 ): Promise<Result<Void, FxError>> {
-  const solutionSetting = ctx.projectSetting.solutionSettings as v3.TeamsFxSolutionSettings;
-  const plugins = [];
-  for (const moduleIndex of inputs.modules) {
-    const module = getModule(solutionSetting, moduleIndex);
-    if (module && module.hostingPlugin) {
-      const plugin = Container.get<v3.ResourcePlugin>(module.hostingPlugin);
-      plugins.push(plugin);
-    }
-  }
+  const solutionSetting = ctx.projectSetting.solutionSettings as AzureSolutionSettings | undefined;
+  const pluginNames = solutionSetting ? solutionSetting.activeResourcePlugins : [];
+  const plugins = pluginNames
+    .map((name) => Container.get<v3.FeaturePlugin>(name))
+    .filter((p) => p.deploy !== undefined);
+  if (plugins.length === 0) return ok(Void);
   const thunks = plugins.map((plugin) => {
     return {
       pluginName: `${plugin.name}`,

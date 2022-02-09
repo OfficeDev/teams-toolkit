@@ -6,19 +6,16 @@ import {
   Result,
   err,
   v2,
-  IComposeExtension,
-  IBot,
-  IConfigurableTab,
-  IStaticTab,
   TeamsAppManifest,
   PluginContext,
   ok,
   Json,
   TokenProvider,
   Void,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { Service } from "typedi";
-import { BuiltInResourcePluginNames } from "../../../solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import { convert2PluginContext } from "../../utils4v2";
 import { AppStudioResultFactory } from "../results";
 import { AppStudioError } from "../errors";
@@ -42,7 +39,7 @@ import {
 } from "../constants";
 import { TelemetryUtils, TelemetryEventName } from "../utils/telemetry";
 
-@Service(BuiltInResourcePluginNames.appStudio)
+@Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
   name = "fx-resource-appstudio";
   displayName = "App Studio";
@@ -80,15 +77,7 @@ export class AppStudioPluginV3 {
   async addCapabilities(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    capabilities: (
-      | { name: "staticTab"; snippet?: { local: IStaticTab; remote: IStaticTab } }
-      | { name: "configurableTab"; snippet?: { local: IConfigurableTab; remote: IConfigurableTab } }
-      | { name: "Bot"; snippet?: { local: IBot; remote: IBot } }
-      | {
-          name: "MessageExtension";
-          snippet?: { local: IComposeExtension; remote: IComposeExtension };
-        }
-    )[]
+    capabilities: v3.ManifestCapability[]
   ): Promise<Result<any, FxError>> {
     TelemetryUtils.init(ctx);
     TelemetryUtils.sendStartEvent(TelemetryEventName.addCapability);
@@ -202,6 +191,30 @@ export class AppStudioPluginV3 {
     inputs: v2.InputsWithProjectPath,
     localSettings: Json,
     tokenProvider: TokenProvider
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
+  }
+
+  async registerTeamsApp(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3
+  ): Promise<Result<string, FxError>> {
+    return ok("fake");
+  }
+
+  async updateTeamsApp(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3
+  ): Promise<Result<Void, FxError>> {
+    return ok(Void);
+  }
+
+  async publishTeamsApp(
+    ctx: v2.Context,
+    inputs: v2.InputsWithProjectPath,
+    envInfo: v3.EnvInfoV3
   ): Promise<Result<Void, FxError>> {
     return ok(Void);
   }

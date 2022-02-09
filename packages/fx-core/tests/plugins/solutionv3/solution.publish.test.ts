@@ -55,10 +55,10 @@ describe("SolutionV3 - publish", () => {
       platform: Platform.VSCode,
       projectPath: path.join(os.tmpdir(), randomAppName()),
     };
-    const envInfov3: v3.EnvInfoV3 = {
+    const envInfov3: v2.DeepReadonly<v3.EnvInfoV3> = {
       envName: "dev",
-      state: { solution: {} },
       config: {},
+      state: { solution: {} },
     };
     const res = await getQuestionsForPublish(
       ctx,

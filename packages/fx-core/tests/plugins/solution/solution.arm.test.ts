@@ -7,6 +7,7 @@ import {
   ok,
   SolutionContext,
   AzureSolutionSettings,
+  UserError,
 } from "@microsoft/teamsfx-api";
 import * as sinon from "sinon";
 import fs from "fs-extra";
@@ -23,6 +24,7 @@ import {
   generateArmTemplate,
   pollDeploymentStatus,
 } from "../../../src/plugins/solution/fx-solution/arm";
+import * as arm from "../../../src/plugins/solution/fx-solution/arm";
 import path from "path";
 import mockedEnv from "mocked-env";
 import { ResourceManagementModels, Deployments } from "@azure/arm-resources";
@@ -483,6 +485,117 @@ Mocked bot configuration orchestration content. Module path: './teamsFx/botConfi
       )
     ).equals(TestFileContent.botConfigurationModule);
   });
+
+  it("add tab capibility to bot to check config bicep update", async () => {
+    // Arrange
+    mockedCtx.projectSettings!.solutionSettings = {
+      hostType: HostTypeOptionAzure.id,
+      name: "azure",
+      activeResourcePlugins: [aadPlugin.name, botPlugin.name, identityPlugin.name],
+      capabilities: [BotOptionItem.id],
+    };
+    TestHelper.mockedFehostGenerateArmTemplates(mocker);
+    TestHelper.mockedAadGenerateArmTemplates(mocker);
+    TestHelper.mockedIdentityGenerateArmTemplates(mocker);
+    TestHelper.mockedBotGenerateArmTemplates(mocker);
+    TestHelper.mockedBotUpdateArmTemplates(mocker);
+    TestHelper.mockedFeHostUpdateArmTemplates(mocker);
+    TestHelper.mockedIdentityUpdateArmTemplates(mocker);
+
+    // Action
+    let result = await generateArmTemplate(mockedCtx, [aadPlugin, botPlugin, identityPlugin]);
+
+    // Assert
+    const projectArmTemplateFolder = path.join(
+      TestHelper.rootDir,
+      TestFilePath.armTemplateBaseFolder
+    );
+    expect(result.isOk()).to.be.true;
+    const projectMainBicep = await fs.readFile(
+      path.join(projectArmTemplateFolder, TestFilePath.mainFileName),
+      fileEncoding
+    );
+    expect(projectMainBicep.replace(/\r?\n/g, os.EOL)).equals(
+      `@secure()
+param provisionParameters object
+
+module provision './provision.bicep' = {
+  name: 'provisionResources'
+  params: {
+    provisionParameters: provisionParameters
+  }
+}
+output provisionOutput object = provision
+module teamsFxConfig './config.bicep' = {
+  name: 'addTeamsFxConfigurations'
+  params: {
+    provisionParameters: provisionParameters
+    provisionOutputs: provision
+  }
+}
+output teamsFxConfigurationOutput object = contains(reference(resourceId('Microsoft.Resources/deployments', teamsFxConfig.name), '2020-06-01'), 'outputs') ? teamsFxConfig : {}
+`.replace(/\r?\n/g, os.EOL)
+    );
+    const projectConfigBicep = await fs.readFile(
+      path.join(projectArmTemplateFolder, TestFilePath.configFileName),
+      fileEncoding
+    );
+    expect(projectConfigBicep.replace(/\r?\n/g, os.EOL)).equals(
+      `@secure()
+param provisionParameters object
+param provisionOutputs object
+Mocked bot configuration orchestration content. Module path: './teamsFx/botConfig.bicep'.`.replace(
+        /\r?\n/g,
+        os.EOL
+      )
+    );
+    let botConfigContent = await fs.readFile(
+      path.join(
+        projectArmTemplateFolder,
+        TestFilePath.configurationFolder,
+        TestFilePath.botConfigFileName
+      ),
+      fileEncoding
+    );
+    expect(botConfigContent.replace(/\r?\n/g, os.EOL)).equals(
+      TestFileContent.botConfigurationModule
+    );
+
+    // Add bot capability
+    (
+      mockedCtx.projectSettings!.solutionSettings as AzureSolutionSettings
+    ).activeResourcePlugins.push(fehostPlugin.name);
+    (mockedCtx.projectSettings!.solutionSettings as AzureSolutionSettings).capabilities.push(
+      TabOptionItem.id
+    );
+    result = await generateArmTemplate(mockedCtx, [fehostPlugin]);
+    expect(result.isOk()).to.be.true;
+    const projectMainBicepWithTab = await fs.readFile(
+      path.join(projectArmTemplateFolder, TestFilePath.mainFileName),
+      fileEncoding
+    );
+    expect(projectMainBicep.replace(/\r?\n/g, os.EOL)).equals(
+      projectMainBicepWithTab.replace(/\r?\n/g, os.EOL)
+    );
+    const projectConfigBicepWithTab = await fs.readFile(
+      path.join(projectArmTemplateFolder, TestFilePath.configFileName),
+      fileEncoding
+    );
+    expect(projectConfigBicepWithTab.replace(/\r?\n/g, os.EOL)).equals(
+      projectConfigBicep.replace(/\r?\n/g, os.EOL)
+    );
+    botConfigContent = await fs.readFile(
+      path.join(
+        projectArmTemplateFolder,
+        TestFilePath.configurationFolder,
+        TestFilePath.botConfigFileName
+      ),
+      fileEncoding
+    );
+    expect(botConfigContent.replace(/\r?\n/g, os.EOL)).equals(
+      TestFileContent.botConfigUpdateModule
+    );
+  });
 });
 
 describe("Deploy ARM Template to Azure", () => {
@@ -754,6 +867,34 @@ describe("Deploy ARM Template to Azure", () => {
     const error = (result as Err<void, FxError>).error;
     chai.assert.strictEqual(error.name, "FailedToDeployArmTemplatesToAzure");
     expect(error.message).to.be.a("string").that.contains(testErrorMsg);
+  });
+
+  it("should return error with notification message", async () => {
+    TestHelper.mockArmDeploymentDependencies(mockedCtx, mocker);
+
+    const envRestore = mockedEnv({
+      MOCKED_EXPAND_VAR_TEST: TestHelper.envVariable,
+    });
+
+    const thrownError = new Error("thrown error");
+    const fetchError = {
+      error: {
+        code: "fetchError",
+        message: "fetch error",
+      },
+    };
+    mocker.stub(Deployments.prototype, "createOrUpdate").throwsException(thrownError);
+    mocker.stub(arm, "wrapGetDeploymentError").resolves(ok(fetchError));
+
+    // Act
+    const result = await deployArmTemplates(mockedCtx);
+
+    // Assert
+    chai.assert.isTrue(result.isErr());
+    const returnedError = result._unsafeUnwrapErr() as UserError;
+    chai.assert.isNotNull(returnedError.notificationMessage);
+
+    envRestore();
   });
 });
 

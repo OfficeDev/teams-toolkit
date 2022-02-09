@@ -38,7 +38,6 @@ import {
 } from "../constants";
 import { AssertNotEmpty } from "../error";
 import { Factory } from "../factory";
-import { CliQuestionManager, VscQuestionManager } from "../managers/questionManager";
 import { ProgressBar } from "../utils/progressBar";
 
 @Service(BuiltInFeaturePluginNames.apim)

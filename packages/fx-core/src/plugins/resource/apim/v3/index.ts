@@ -138,8 +138,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     const azureResources = solutionSettings.azureResources;
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
-    if (!azureResources.includes(AzureResourceApim.id))
-      activeResourcePlugins.push(AzureResourceApim.id);
+    if (!azureResources.includes(AzureResourceApim.id)) azureResources.push(AzureResourceApim.id);
     return ok(armRes.value);
   }
   @hooks([

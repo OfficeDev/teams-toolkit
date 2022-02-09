@@ -420,13 +420,22 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
     namespace: "fx-solution-azure",
     method: "addResource",
   };
-  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter, VS_CODE_UI);
-  const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
-  const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
+  let excludeBackend = true;
+  try {
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    excludeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
+  } catch (error) {
+    VsCodeLogInstance.warning(`${error}`);
+  }
   const result = await runUserTask(func, TelemetryEvent.AddResource, true);
-  if (result.isOk() && !includeBackend) {
+  if (result.isOk() && !excludeBackend) {
     await globalStateUpdate("automaticNpmInstall", true);
-    automaticNpmInstallHandler(true, includeBackend, true);
+    automaticNpmInstallHandler(true, excludeBackend, true);
   }
   return result;
 }
@@ -437,14 +446,24 @@ export async function addCapabilityHandler(args: any[]): Promise<Result<null, Fx
     namespace: "fx-solution-azure",
     method: "addCapability",
   };
-  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter, VS_CODE_UI);
-  const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
-  const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
-  const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
+  let excludeFrontend = true,
+    excludeBot = true;
+  try {
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    excludeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+    excludeBot = ProjectSettingsHelper.includeBot(projectSettings);
+  } catch (error) {
+    VsCodeLogInstance.warning(`${error}`);
+  }
   const result = await runUserTask(func, TelemetryEvent.AddCap, true);
   if (result.isOk()) {
     await globalStateUpdate("automaticNpmInstall", true);
-    automaticNpmInstallHandler(includeFrontend, true, includeBot);
+    automaticNpmInstallHandler(excludeFrontend, true, excludeBot);
   }
   return result;
 }

@@ -74,9 +74,13 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
   } else if (method === "init" || method === "_init") {
     getQuestionRes = await core._getQuestionsForInit(inputs);
   } else if (
-    ["addFeature", "provisionResourcesV3", "deployArtifactsV3", "publishApplicationV3"].includes(
-      method || ""
-    )
+    [
+      "addFeature",
+      "provisionResourcesV3",
+      "deployArtifactsV3",
+      "publishApplicationV3",
+      "executeUserTaskV3",
+    ].includes(method || "")
   ) {
     const solutionV3 = ctx.solutionV3;
     const contextV2 = ctx.contextV2;
@@ -104,6 +108,15 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
       } else if (method === "publishApplicationV3") {
         getQuestionRes = await core._getQuestionsForPublish(
           inputs as v2.InputsWithProjectPath,
+          solutionV3,
+          contextV2,
+          ctx.envInfoV3 as v2.DeepReadonly<v3.EnvInfoV3>
+        );
+      } else if (method === "executeUserTaskV3") {
+        const func = ctx.arguments[0] as Func;
+        getQuestionRes = await core._getQuestionsForUserTaskV3(
+          func,
+          inputs,
           solutionV3,
           contextV2,
           ctx.envInfoV3 as v2.DeepReadonly<v3.EnvInfoV3>
@@ -147,7 +160,7 @@ export const QuestionModelMW: Middleware = async (ctx: CoreHookContext, next: Ne
             inputs,
             ctx.envInfoV2
           );
-        } else if (method === "executeUserTask") {
+        } else if (method === "executeUserTaskV2") {
           const func = ctx.arguments[0] as Func;
           getQuestionRes = await core._getQuestionsForUserTask(
             context,
@@ -222,6 +235,26 @@ export async function getQuestionsForAddFeature(
 ): Promise<Result<QTreeNode | undefined, FxError>> {
   if (solution.getQuestionsForAddFeature) {
     const res = await solution.getQuestionsForAddFeature(context, inputs);
+    return res;
+  }
+  return ok(undefined);
+}
+
+export async function getQuestionsForUserTaskV3(
+  func: Func,
+  inputs: Inputs,
+  solution: v3.ISolution,
+  context: v2.Context,
+  envInfo: v2.DeepReadonly<v3.EnvInfoV3>
+): Promise<Result<QTreeNode | undefined, FxError>> {
+  if (solution.getQuestionsForUserTask) {
+    const res = await solution.getQuestionsForUserTask(
+      context,
+      inputs,
+      func,
+      envInfo,
+      TOOLS.tokenProvider
+    );
     return res;
   }
   return ok(undefined);

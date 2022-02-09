@@ -2,8 +2,6 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
-
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
@@ -36,7 +34,6 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
 
     #region Util
     private readonly ILogger<TeamsUserCredential> _logger;
-    private readonly IMemoryCache _cache;
     #endregion
 
     /// <summary>
@@ -46,14 +43,12 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
     /// <param name="authenticationOptions">Authentication options filled by DI.</param>
     /// <param name="jsRuntime">JavaScript interop runtime.</param>
     /// <param name="logger">Logger of TeamsUserCredential Class.</param>
-    /// <param name="memoryCache">Memory cache used in Blazor server app.</param>
     /// <param name="identityClientAdapter">Global instance of adaptor to call MSAL.NET library</param>
     /// <exception cref="ExceptionCode.InvalidConfiguration">When client id, client secret, initiate login endpoint or OAuth authority is missing or invalid in config.</exception>
     public TeamsUserCredential(
         IOptions<AuthenticationOptions> authenticationOptions,
         IJSRuntime jsRuntime,
         ILogger<TeamsUserCredential> logger,
-        IMemoryCache memoryCache,
         IIdentityClientAdapter identityClientAdapter)
     {
         _logger = logger;
@@ -69,7 +64,6 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
         _identityClientAdapter = identityClientAdapter;
         _teamsSdkTask = new(() => ImportTeamsSdk(jsRuntime).AsTask());
         _jsRuntime = jsRuntime;
-        _cache = memoryCache;
 
         logger.LogInformation("Create teams user credential");
     }
@@ -210,30 +204,9 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
         }
         else
         {
-            var scopeString = string.Join(' ', scopes);
-            _logger.LogInformation($"Get access token with scopes: {scopeString}");
-            var cacheKey = Utils.GetCacheKey(ssoToken.Token, scopeString, _authenticationOptions.ClientId);
-            var cachedToken = GetTokenFromCache(cacheKey);
-
-            if (cachedToken != null)
-            {
-                if (!cachedToken.NearExpiration())
-                {
-                    _logger.LogTrace("Get access token from cache");
-                    return cachedToken.ToAzureAccessToken();
-                }
-                else
-                {
-                    _logger.LogTrace("Cached access token is expired");
-                }
-            }
-            else
-            {
-                _logger.LogTrace("No cached access token");
-            }
-
-            var accessToken = await GetAndCacheAccessTokenByOnBehalfOfFlow(ssoToken.Token, scopeString).ConfigureAwait(false);
-            return accessToken.ToAzureAccessToken();
+            _logger.LogInformation($"Get access token with scopes: {string.Join(' ', scopes)}");
+            var accessToken = await GetAccessTokenByOnBehalfOfFlow(ssoToken.Token, scopes).ConfigureAwait(false);
+            return accessToken;
         }
     }
 
@@ -356,22 +329,20 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
     /// Get access token from identity server (AAD).
     /// </summary>
     /// <param name="ssoToken">token returned from Teams SDK</param>
-    /// <param name="scopeString">required scopes</param>
+    /// <param name="scopes">required scopes</param>
     /// <returns></returns>
-    private async ValueTask<AccessToken> GetAndCacheAccessTokenByOnBehalfOfFlow(string ssoToken, string scopeString)
+    private async ValueTask<Azure.Core.AccessToken> GetAccessTokenByOnBehalfOfFlow(string ssoToken, IEnumerable<string> scopes)
     {
-        _logger.LogTrace($"Get access token from authentication server with scopes: {scopeString}");
+        _logger.LogTrace($"Get access token from authentication server with scopes: {string.Join(' ', scopes)}");
 
         try
         {
             _logger.LogDebug("Acquiring token via OBO flow.");
             var result = await _identityClientAdapter
-                .GetAccessToken(scopeString, ssoToken)
+                .GetAccessToken(ssoToken, scopes)
                 .ConfigureAwait(false);
 
-            var accessToken = new AccessToken(result.AccessToken, result.ExpiresOn);
-            var cacheKey = Utils.GetCacheKey(accessToken.Token, scopeString, _authenticationOptions.ClientId);
-            SetTokenToCache(cacheKey, accessToken);
+            var accessToken = new Azure.Core.AccessToken(result.AccessToken, result.ExpiresOn);
             return accessToken;
         }
         catch (MsalUiRequiredException) // Need user interaction
@@ -392,20 +363,5 @@ public class TeamsUserCredential : TokenCredential, IAsyncDisposable
             _logger.LogWarning(fullErrorMsg);
             throw new ExceptionWithCode(fullErrorMsg, ExceptionCode.InternalError);
         }
-    }
-
-    private AccessToken GetTokenFromCache(string cacheKey)
-    {
-        // Look for cache key.
-        if (_cache.TryGetValue(cacheKey, out AccessToken cacheToken))
-        {
-            return cacheToken;
-        }
-        return null;
-    }
-
-    private void SetTokenToCache(string cacheKey, AccessToken accessToken)
-    {
-        _cache.Set(cacheKey, accessToken);
     }
 }

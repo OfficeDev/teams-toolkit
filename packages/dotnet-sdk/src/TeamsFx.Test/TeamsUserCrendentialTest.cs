@@ -2,7 +2,6 @@
 // Licensed under the MIT License.
 
 using Azure.Core;
-using Microsoft.Extensions.Caching.Memory;
 using Microsoft.Extensions.Logging;
 using Microsoft.Extensions.Options;
 using Microsoft.Identity.Client;
@@ -21,7 +20,6 @@ public class TeamsUserCrendentialTest
 {
     private static Mock<IOptions<AuthenticationOptions>> authOptionsMock;
     private static Mock<IJSRuntime> jsRuntimeMock;
-    private static Mock<IMemoryCache> memoryCacheMock;
     private static Mock<IIdentityClientAdapter> identityClientAdapterMock;
 
     /// <summary>
@@ -64,7 +62,6 @@ public class TeamsUserCrendentialTest
         // Executes once for the test class. (Optional)
         jsRuntimeMock = new Mock<IJSRuntime>();
         authOptionsMock = new Mock<IOptions<AuthenticationOptions>>();
-        memoryCacheMock = new Mock<IMemoryCache>();
         identityClientAdapterMock = new Mock<IIdentityClientAdapter>();
         authOptionsMock.SetupGet(option => option.Value).Returns(
             new AuthenticationOptions()
@@ -82,7 +79,7 @@ public class TeamsUserCrendentialTest
     {
         var moduleMock = new Mock<IJSObjectReference>();
         var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
-        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, memoryCacheMock.Object, identityClientAdapterMock.Object);
+        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, identityClientAdapterMock.Object);
         jsRuntimeMock.Setup(r => r.InvokeAsync<IJSObjectReference>("import", It.IsAny<object[]>())).ReturnsAsync(() => moduleMock.Object);
         moduleMock.Setup(m => m.InvokeAsync<IJSVoidResult>("initialize", It.IsAny<object[]>())).ThrowsAsync(new JSException("timeout"));
 
@@ -106,7 +103,7 @@ public class TeamsUserCrendentialTest
     {
         var moduleMock = new Mock<IJSObjectReference>();
         var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
-        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, memoryCacheMock.Object, identityClientAdapterMock.Object);
+        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, identityClientAdapterMock.Object);
         jsRuntimeMock.Setup(r => r.InvokeAsync<IJSObjectReference>("import", It.IsAny<object[]>())).ReturnsAsync(() => moduleMock.Object);
         moduleMock.Setup(m => m.InvokeAsync<string>("getAuthToken", It.IsAny<object[]>())).ThrowsAsync(new JSException("test"));
 
@@ -130,7 +127,7 @@ public class TeamsUserCrendentialTest
     {
         var moduleMock = new Mock<IJSObjectReference>();
         var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
-        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, memoryCacheMock.Object, identityClientAdapterMock.Object);
+        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, identityClientAdapterMock.Object);
         jsRuntimeMock.Setup(r => r.InvokeAsync<IJSObjectReference>("import", It.IsAny<object[]>())).ReturnsAsync(() => moduleMock.Object);
         moduleMock.Setup(m => m.InvokeAsync<string>("getAuthToken", It.IsAny<object[]>())).ReturnsAsync("");
 
@@ -154,7 +151,7 @@ public class TeamsUserCrendentialTest
     {
         var moduleMock = new Mock<IJSObjectReference>();
         var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
-        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, memoryCacheMock.Object, identityClientAdapterMock.Object);
+        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, identityClientAdapterMock.Object);
         jsRuntimeMock.Setup(r => r.InvokeAsync<IJSObjectReference>("import", It.IsAny<object[]>())).ReturnsAsync(() => moduleMock.Object);
         moduleMock.Setup(m => m.InvokeAsync<string>("getAuthToken", It.IsAny<object[]>())).ReturnsAsync(invalidSsoToken);
 
@@ -178,7 +175,7 @@ public class TeamsUserCrendentialTest
     {
         var moduleMock = new Mock<IJSObjectReference>();
         var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
-        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, memoryCacheMock.Object, identityClientAdapterMock.Object);
+        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, identityClientAdapterMock.Object);
         jsRuntimeMock.Setup(r => r.InvokeAsync<IJSObjectReference>("import", It.IsAny<object[]>())).ReturnsAsync(() => moduleMock.Object);
         moduleMock.Setup(m => m.InvokeAsync<string>("getAuthToken", It.IsAny<object[]>())).ReturnsAsync(fakeSsoToken);
 
@@ -204,7 +201,7 @@ public class TeamsUserCrendentialTest
     {
         var moduleMock = new Mock<IJSObjectReference>();
         var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
-        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, memoryCacheMock.Object, identityClientAdapterMock.Object);
+        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, identityClientAdapterMock.Object);
         jsRuntimeMock.Setup(r => r.InvokeAsync<IJSObjectReference>("import", It.IsAny<object[]>())).ReturnsAsync(() => moduleMock.Object);
         moduleMock.Setup(m => m.InvokeAsync<string>("getAuthToken", It.IsAny<object[]>())).ReturnsAsync(fakeSsoToken);
 
@@ -223,131 +220,47 @@ public class TeamsUserCrendentialTest
     }
 
     [TestMethod]
-    public async Task TestGetTokenWithEmptyScopesFromMemoryCache()
+    public async Task TestGetTokenWithScopesSuccessfully()
     {
         var moduleMock = new Mock<IJSObjectReference>();
         var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
-        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, memoryCacheMock.Object, identityClientAdapterMock.Object)
+        var httpFactoryMock = new Mock<IHttpClientFactory>();
+        var identityClientAdapterMock = new Mock<IIdentityClientAdapter>();
+        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, identityClientAdapterMock.Object)
         {
-            _ssoToken = new Model.AccessToken(fakeSsoToken, fakeExpiration)
+            _ssoToken = new Model.AccessToken(fakeSsoToken, fakeExpiration),
+            _initialized = true,
         };
 
-        var token = await teamsCredential.GetTokenAsync(new TokenRequestContext(), new CancellationToken());
+        identityClientAdapterMock.Setup(adapter => adapter.GetAccessToken(It.IsAny<string>(), It.IsAny<IEnumerable<string>>())).ReturnsAsync(new AuthenticationResult(fakeAccessToken, false, "", fakeExpiration, fakeExpiration, "", null, "", null, new Guid()));
 
-        Assert.AreEqual(fakeSsoToken, token.Token);
+        var token = await teamsCredential.GetTokenAsync(new TokenRequestContext(new string[] { fakeScopes }), new CancellationToken());
+        Assert.AreEqual(fakeAccessToken, token.Token);
         Assert.AreEqual(fakeExpiration, token.ExpiresOn);
         loggerMock.Verify(
             x => x.Log(
                 LogLevel.Information,
                 It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((o, t) => string.Equals("Get SSO token", o.ToString(), StringComparison.InvariantCultureIgnoreCase)),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
-        loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Trace,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((o, t) => string.Equals("Get SSO token from memory cache", o.ToString(), StringComparison.InvariantCultureIgnoreCase)),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
-    }
-
-    [TestMethod]
-    public async Task TestGetTokenWithScopeFromMemoryCache()
-    {
-        var moduleMock = new Mock<IJSObjectReference>();
-        var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
-        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, memoryCacheMock.Object, identityClientAdapterMock.Object)
-        {
-            _ssoToken = new Model.AccessToken(fakeSsoToken, fakeExpiration)
-        };
-        object fakeAccessToken = new Model.AccessToken(this.fakeAccessToken, fakeExpiration);
-        var cacheKey = Utils.GetCacheKey(fakeSsoToken, fakeScopes, fakeClientId);
-        memoryCacheMock.Setup(cache => cache.TryGetValue(It.IsAny<object>(), out fakeAccessToken)).Returns(true);
-
-        var accessToken = await teamsCredential.GetTokenAsync(new TokenRequestContext(new string[] { fakeScopes }), new CancellationToken());
-
-        Assert.AreEqual(this.fakeAccessToken, accessToken.Token);
-        Assert.AreEqual(fakeExpiration, accessToken.ExpiresOn);
-        loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
                 It.Is<It.IsAnyType>((o, t) => string.Equals("Get access token with scopes: fake_scope", o.ToString(), StringComparison.InvariantCultureIgnoreCase)),
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()),
             Times.Once);
-        loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Trace,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((o, t) => string.Equals("Get access token from cache", o.ToString(), StringComparison.InvariantCultureIgnoreCase)),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
     }
 
     [TestMethod]
-    public async Task TestGetTokenWithScopeFromSimpleAuthServerSuccessfully()
-    {
-        var moduleMock = new Mock<IJSObjectReference>();
-        var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
-        var memoryCacheMock = new Mock<IMemoryCache>();
-        var identityClientAdapterMock = new Mock<IIdentityClientAdapter>();
-        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, memoryCacheMock.Object, identityClientAdapterMock.Object)
-        {
-            _ssoToken = new Model.AccessToken(fakeSsoToken, fakeExpiration),
-            _initialized = true,
-        };
-
-        var cacheEntry = Mock.Of<ICacheEntry>();
-        memoryCacheMock.Setup(cache => cache.CreateEntry(It.IsAny<object>())).Returns(cacheEntry);
-
-        var authResult = new AuthenticationResult(fakeAccessToken, false, "", fakeExpiration, fakeExpiration, "", null, "", null, new Guid());
-        identityClientAdapterMock.Setup(adapter => adapter.GetAccessToken(It.IsAny<string>(), It.IsAny<string>())).ReturnsAsync(authResult);
-
-        var accessToken = await teamsCredential.GetTokenAsync(new TokenRequestContext(new string[] { fakeScopes }), new CancellationToken());
-
-        Assert.AreEqual(fakeAccessToken, accessToken.Token);
-        Assert.AreEqual(fakeExpiration, accessToken.ExpiresOn);
-        loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Information,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((o, t) => string.Equals("Get access token with scopes: fake_scope", o.ToString(), StringComparison.InvariantCultureIgnoreCase)),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
-        loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Trace,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((o, t) => string.Equals("No cached access token", o.ToString(), StringComparison.InvariantCultureIgnoreCase)),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
-        memoryCacheMock.Verify(cache => cache.CreateEntry("accessToken-fake-oid-fake_client_id-fake-tid-fake_scope"), Times.Once);
-    }
-
-    [TestMethod]
-    public async Task TestGetTokenWithScopeFromSimpleAuthServerWithLoginError()
+    public async Task TestGetTokenWithScopesNeedUserConsent()
     {
         var moduleMock = new Mock<IJSObjectReference>();
         var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
         var httpFactoryMock = new Mock<IHttpClientFactory>();
-        var memoryCacheMock = new Mock<IMemoryCache>();
         var identityClientAdapterMock = new Mock<IIdentityClientAdapter>();
-        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, memoryCacheMock.Object, identityClientAdapterMock.Object)
+        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, identityClientAdapterMock.Object)
         {
             _ssoToken = new Model.AccessToken(fakeSsoToken, fakeExpiration),
             _initialized = true,
         };
 
-        var cacheEntry = Mock.Of<ICacheEntry>();
-        memoryCacheMock.Setup(cache => cache.CreateEntry(It.IsAny<object>())).Returns(cacheEntry);
-        identityClientAdapterMock.Setup(adapter => adapter.GetAccessToken(It.IsAny<string>(), It.IsAny<string>())).ThrowsAsync(new MsalUiRequiredException("code", "message"));
+        identityClientAdapterMock.Setup(adapter => adapter.GetAccessToken(It.IsAny<string>(), It.IsAny<IEnumerable<string>>())).ThrowsAsync(new MsalUiRequiredException("code", "message"));
 
         var ex = await Assert.ThrowsExceptionAsync<ExceptionWithCode>(
             async () => await teamsCredential.GetTokenAsync(new TokenRequestContext(new string[] { fakeScopes }), new CancellationToken()));
@@ -361,14 +274,6 @@ public class TeamsUserCrendentialTest
                 It.IsAny<Exception>(),
                 It.IsAny<Func<It.IsAnyType, Exception, string>>()),
             Times.Once);
-        loggerMock.Verify(
-            x => x.Log(
-                LogLevel.Trace,
-                It.IsAny<EventId>(),
-                It.Is<It.IsAnyType>((o, t) => string.Equals("No cached access token", o.ToString(), StringComparison.InvariantCultureIgnoreCase)),
-                It.IsAny<Exception>(),
-                It.IsAny<Func<It.IsAnyType, Exception, string>>()),
-            Times.Once);
     }
     #endregion
 
@@ -378,8 +283,7 @@ public class TeamsUserCrendentialTest
     {
         var moduleMock = new Mock<IJSObjectReference>();
         var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
-        var memoryCacheMock = new Mock<IMemoryCache>();
-        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, memoryCacheMock.Object, identityClientAdapterMock.Object);
+        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, identityClientAdapterMock.Object);
 
         jsRuntimeMock.Setup(r => r.InvokeAsync<IJSObjectReference>("import", It.IsAny<object[]>())).ReturnsAsync(() => moduleMock.Object);
         var authToken = $"{{\"code\": \"code\", \"codeVerifier\": \"codeVerifier\", \"redirectUri\": \"redirectUri\"}}";
@@ -406,7 +310,7 @@ public class TeamsUserCrendentialTest
     public void TestGetTokenException()
     {
         var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
-        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, memoryCacheMock.Object, identityClientAdapterMock.Object);
+        var teamsCredential = new TeamsUserCredential(authOptionsMock.Object, jsRuntimeMock.Object, loggerMock.Object, identityClientAdapterMock.Object);
         Assert.ThrowsException<NotImplementedException>(() => teamsCredential.GetToken(new TokenRequestContext(new string[] { fakeScopes }), new CancellationToken()));
     }
 }

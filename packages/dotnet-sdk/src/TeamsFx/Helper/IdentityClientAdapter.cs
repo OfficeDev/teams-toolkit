@@ -18,11 +18,11 @@ namespace Microsoft.TeamsFx.Helper
             _confidentialClientApplication = confidentialClientApplication;
         }
 
-        public async Task<AuthenticationResult> GetAccessToken(string scopes, string ssoToken)
+        public async Task<AuthenticationResult> GetAccessToken(string ssoToken, IEnumerable<string> scopes)
         {
             var userAssertion = new UserAssertion(ssoToken);
             return await _confidentialClientApplication
-                .AcquireTokenOnBehalfOf(scopes.Split(' '), userAssertion)
+                .AcquireTokenOnBehalfOf(scopes, userAssertion)
                 .ExecuteAsync()
                 .ConfigureAwait(false);
         }

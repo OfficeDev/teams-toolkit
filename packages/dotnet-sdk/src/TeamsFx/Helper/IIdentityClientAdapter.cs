@@ -13,9 +13,9 @@ namespace Microsoft.TeamsFx.Helper
         /// <summary>
         /// Use On-behalf-of flow to exchange access token.
         /// </summary>
-        /// <param name="scopes">required scopes</param>
         /// <param name="ssoToken">token from Teams client</param>
+        /// <param name="scopes">required scopes</param>
         /// <returns></returns>
-        Task<AuthenticationResult> GetAccessToken(string scopes, string ssoToken);
+        Task<AuthenticationResult> GetAccessToken(string ssoToken, IEnumerable<string> scopes);
     }
 }

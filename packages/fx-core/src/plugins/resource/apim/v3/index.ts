@@ -74,21 +74,6 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
     return ok(node);
   }
 
-  async getQuestionsForAddFeature(
-    ctx: v2.Context,
-    inputs: Inputs
-  ): Promise<Result<QTreeNode | undefined, FxError>> {
-    const questionManager = await Factory.buildQuestionManager(
-      inputs.platform,
-      { envName: "", state: { solution: {} }, config: {} },
-      undefined,
-      ctx.telemetryReporter,
-      ctx.logProvider
-    );
-    const node = await questionManager.addResource();
-    return ok(node);
-  }
-
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.apim } })])
   async scaffold(
     ctx: v3.ContextWithManifestProvider,
@@ -120,7 +105,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const solutionSettings = ctx.projectSetting.solutionSettings as
       | AzureSolutionSettings
       | undefined;
@@ -138,13 +123,13 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
         Modules: { apim: configModules },
       },
     };
-    return ok({ kind: "bicep", template: result });
+    return ok([{ kind: "bicep", template: result }]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.apim } })])
   async addFeature(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const scaffoldRes = await this.scaffold(ctx, inputs);
     if (scaffoldRes.isErr()) return err(scaffoldRes.error);
     const armRes = await this.generateResourceTemplate(ctx, inputs);
@@ -165,7 +150,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
   async afterOtherFeaturesAdded(
     ctx: v3.ContextWithManifestProvider,
     inputs: v3.OtherFeaturesAddedInputs
-  ): Promise<Result<v2.ResourceTemplate | undefined, FxError>> {
+  ): Promise<Result<v2.ResourceTemplate[], FxError>> {
     const solutionSettings = ctx.projectSetting.solutionSettings as
       | AzureSolutionSettings
       | undefined;
@@ -184,7 +169,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
         Modules: { apim: configModules },
       },
     };
-    return ok({ kind: "bicep", template: result });
+    return ok([{ kind: "bicep", template: result }]);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.apim } })])
   async provisionResource(
@@ -197,7 +182,6 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       PluginLifeCycleToProgressStep[PluginLifeCycle.Provision],
       ctx.userInteraction
     );
-    const solutionConfig = new SolutionConfig(envInfo.envName, envInfo.state.solution);
     const apimConfig = new ApimPluginConfig(envInfo.state[this.name], envInfo.envName);
 
     const apimManager = await Factory.buildApimManager(
@@ -219,7 +203,7 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       ProgressStep.Provision,
       ProgressMessages[ProgressStep.Provision].CreateApim
     );
-    await apimManager.provision(apimConfig, solutionConfig, appName);
+    await apimManager.provision(apimConfig);
 
     await this.progressBar.next(
       ProgressStep.Provision,
@@ -242,14 +226,6 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       envInfo.envName,
       envInfo.state[BuiltInFeaturePluginNames.aad]
     );
-
-    // const apimManager = await Factory.buildApimManager(
-    //   envInfo.envName,
-    //   envInfo.state.solution,
-    //   ctx.telemetryReporter,
-    //   tokenProvider.azureAccountProvider,
-    //   ctx.logProvider
-    // );
     const aadManager = await Factory.buildAadManager(
       tokenProvider.graphTokenProvider,
       ctx.telemetryReporter,
@@ -260,9 +236,6 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       ctx.telemetryReporter,
       ctx.logProvider
     );
-
-    // const appName = AssertNotEmpty("projectSettings.appName", ctx.projectSetting.appName);
-
     await this.progressBar.next(
       ProgressStep.PostProvision,
       ProgressMessages[ProgressStep.PostProvision].ConfigClientAad
@@ -273,8 +246,6 @@ export class ApimPluginV3 implements v3.FeaturePlugin {
       ProgressStep.PostProvision,
       ProgressMessages[ProgressStep.PostProvision].ConfigApim
     );
-    // await apimManager.postProvision(apimConfig, ctx, aadConfig, appName);
-
     await this.progressBar.next(
       ProgressStep.PostProvision,
       ProgressMessages[ProgressStep.PostProvision].ConfigAppAad

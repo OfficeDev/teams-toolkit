@@ -33,7 +33,7 @@ import {
   getSiteNameFromResourceId,
   getSubscriptionIdFromResourceId,
 } from "../../../../common/tools";
-import { TemplateInfo, generateTemplateInfos } from "./resources/templateInfo";
+import { generateTemplateInfos } from "./resources/templateInfo";
 import { Bicep } from "../../../../common/constants";
 import { getActivatedV2ResourcePlugins } from "../../../solution/fx-solution/ResourcePluginContainer";
 import { NamedArmResourcePluginAdaptor } from "../../../solution/fx-solution/v2/adaptor";

@@ -55,7 +55,6 @@ export class TestHelper {
     const solutionConfig = new Map([
       [DependentPluginInfo.subscriptionId, TestHelper.subscriptionId],
       [DependentPluginInfo.resourceGroupName, TestHelper.rgName],
-      [DependentPluginInfo.ProgrammingLanguage, TestHelper.blazorLanguage],
     ]);
 
     const pluginContext = {
@@ -68,6 +67,7 @@ export class TestHelper {
       projectSettings: {
         appName: TestHelper.appName,
         projectId: uuid(),
+        programmingLanguage: TestHelper.blazorLanguage,
         solutionSettings: {
           name: "",
           version: "",

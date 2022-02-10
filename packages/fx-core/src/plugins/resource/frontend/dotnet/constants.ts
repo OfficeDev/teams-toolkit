@@ -48,7 +48,6 @@ export class DependentPluginInfo {
   static readonly solutionPluginName = "solution";
   static readonly subscriptionId = "subscriptionId";
   static readonly resourceGroupName = "resourceGroupName";
-  static readonly ProgrammingLanguage = "programmingLanguage";
 }
 
 export class DotnetConfigInfo {

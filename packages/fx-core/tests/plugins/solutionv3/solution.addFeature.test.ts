@@ -26,6 +26,7 @@ import {
   AzureResourceSQL,
   AzureSolutionQuestionNames,
   BotOptionItem,
+  TabOptionItem,
 } from "../../../src/plugins/solution/fx-solution/question";
 import {
   addFeature,

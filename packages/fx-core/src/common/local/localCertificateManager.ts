@@ -32,7 +32,7 @@ const confirmMessage =
 
 const trustCertificateCancelError = returnUserError(
   new Error(
-    "User canceled.  For Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store."
+    "User canceled. For Teams to trust the self-signed SSL certificate used by the toolkit, a self-signed certificate must be added to your certificate store."
   ),
   CoreSource,
   "TrustCertificateCancelError",

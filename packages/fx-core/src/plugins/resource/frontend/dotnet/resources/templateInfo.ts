@@ -19,7 +19,10 @@ export class TemplateInfo {
     this.scenario = TemplateInfo.DefaultScenario;
   }
 
-  static readonly SupportedCapabilities = [Capability.tab, Capability.bot];
+  static readonly SupportedCapabilities = new Map<string, string>([
+    [Capability.tab, "IS_TAB"],
+    [Capability.bot, "IS_BOT"],
+  ]);
   static readonly DonetLanguage = "csharp";
   static readonly DefaultScenario = "default";
   static readonly BaseGroup = "blazor-base";
@@ -30,20 +33,17 @@ export function generateTemplateInfos(selectedCapabilities: string[], ctx: Plugi
   const projectName = ctx.projectSettings!.appName;
   const templateVariable: TemplateVariable = { BlazorAppServer: projectName };
   const templateInfoList: TemplateInfo[] = [];
+  const variables: string[] = [];
 
   selectedCapabilities.forEach((capability) => {
-    if (TemplateInfo.SupportedCapabilities.includes(capability)) {
+    if (TemplateInfo.SupportedCapabilities.has(capability)) {
       templateInfoList.push(new TemplateInfo(ctx, capability.toLowerCase(), templateVariable));
+      variables.push(TemplateInfo.SupportedCapabilities.get(capability)!);
     }
   });
 
-  // Generate templateInfo for base scenrio.
-  if (selectedCapabilities.includes(Capability.tab)) {
-    templateVariable.IS_TAB = "true";
-  }
-  if (selectedCapabilities.includes(Capability.bot)) {
-    templateVariable.IS_BOT = "true";
-  }
+  // Generate templateInfo for base scenrio. Add variables into templateVariable
+  variables.forEach((v) => (templateVariable[v] = "true"));
   const baseTemplateInfo = new TemplateInfo(ctx, TemplateInfo.BaseGroup, templateVariable);
   templateInfoList.push(baseTemplateInfo);
 

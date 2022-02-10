@@ -99,9 +99,10 @@ export class DotnetPluginImpl implements PluginImpl {
 
     const selectedCapabilities = (ctx.projectSettings?.solutionSettings as SolutionSettings)
       .capabilities;
-    generateTemplateInfos(selectedCapabilities, ctx).forEach(async (templateInfo: TemplateInfo) => {
+    const templateInfos = generateTemplateInfos(selectedCapabilities, ctx);
+    for (const templateInfo of templateInfos) {
       await scaffoldFromZipPackage(ctx.root, templateInfo);
-    });
+    }
 
     Logger.info(Messages.EndScaffold);
     return ok(undefined);

@@ -5,7 +5,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 using {{BlazorAppServer}};
 {{#IS_TAB}}
-using Microsoft.TeamsFx.SimpleAuth;
 using {{BlazorAppServer}}.Interop.TeamsSDK;
 {{/IS_TAB}}{{#IS_BOT}}
 using {{BlazorAppServer}}.Bots;
@@ -19,7 +18,6 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddRazorPages();
 builder.Services.AddServerSideBlazor();
 
-builder.Services.AddTeamsFxSimpleAuth(builder.Configuration);
 builder.Services.AddTeamsFx(builder.Configuration.GetSection("TeamsFx"));
 builder.Services.AddScoped<MicrosoftTeams>();
 

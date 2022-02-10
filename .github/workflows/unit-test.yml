@@ -13,8 +13,18 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v2
         with:
+          fetch-depth: 0
           ref: ${{ github.head_ref }}
           repository: ${{ github.event.pull_request.head.repo.full_name }}
+
+      - name: Merge Branches
+        run: |
+          git config --global user.email "bot@user.noreply.github.com"
+          git config --global user.name "bot"
+
+          git remote add ${{ github.event.pull_request.base.repo.owner.login }} ${{ github.event.pull_request.base.repo.git_url }}
+          git fetch ${{ github.event.pull_request.base.repo.owner.login }}
+          git merge ${{ github.event.pull_request.base.repo.owner.login }}/${{ github.event.pull_request.base.ref }}
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2

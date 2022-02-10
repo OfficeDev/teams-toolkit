@@ -5,7 +5,7 @@ using System.Text.Json.Serialization;
 
 namespace {{BlazorAppServer}}.Interop.TeamsSDK;
 
-class EnumDescriptionConverter<T> : JsonConverter<T> where T : struct, Enum
+internal class EnumDescriptionConverter<T> : JsonConverter<T> where T : struct, Enum
 {
     public override T Read(ref Utf8JsonReader reader, Type typeToConvert, JsonSerializerOptions options)
     {

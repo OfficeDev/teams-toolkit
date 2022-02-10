@@ -37,6 +37,7 @@ export class DotnetPathInfo {
   static readonly bicepTemplateFolder = (templateFolder: string) =>
     path.join(templateFolder, "plugins", "resource", "webapp", "bicep");
   static readonly TemplateFolderName = "dotnet";
+  static readonly projectFilename = (projectName: string): string => `${projectName}.csproj`;
 }
 
 export class DotnetCommands {

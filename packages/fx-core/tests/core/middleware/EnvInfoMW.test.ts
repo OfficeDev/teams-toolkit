@@ -178,7 +178,7 @@ describe("Middleware - EnvInfoWriterMW, EnvInfoLoaderMW", async () => {
         assert.isTrue(
           ctx.envInfoV2 &&
             ctx.envInfoV2.state &&
-            ctx.envInfoV2.state[pluginName]["secrets"][secretName] === secretText
+            ctx.envInfoV2.state[pluginName][secretName] === secretText
         );
       }
     }

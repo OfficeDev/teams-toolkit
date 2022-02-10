@@ -1,14 +1,16 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { DepsLogger } from "./depsLogger";
+import { DepsLogger, EmptyLogger } from "./depsLogger";
 import { DepsTelemetry } from "./depsTelemetry";
 import { DepsChecker, DepsInfo, DepsType } from "./depsChecker";
 import { CheckerFactory } from "./checkerFactory";
 import { DepsCheckerError } from "./depsError";
+import { NodeChecker } from "./internal/nodeChecker";
 
 export type DepsOptions = {
   fastFail?: boolean;
+  doctor?: boolean;
 };
 
 export type DependencyStatus = {
@@ -19,13 +21,14 @@ export type DependencyStatus = {
   details: {
     isLinuxSupported: boolean;
     supportedVersions: string[];
+    installVersion?: string;
     binFolders?: string[];
   };
   error?: DepsCheckerError;
 };
 
 export class DepsManager {
-  private static readonly _depsOrders = [
+  private static readonly depsOrders = [
     DepsType.AzureNode,
     DepsType.FunctionNode,
     DepsType.SpfxNode,
@@ -34,8 +37,9 @@ export class DepsManager {
     DepsType.Ngrok,
   ];
 
-  private readonly _logger;
-  private readonly _telemetry;
+  private readonly logger: DepsLogger;
+  private readonly emptyLogger: DepsLogger;
+  private readonly telemetry: DepsTelemetry;
 
   constructor(logger: DepsLogger, telemetry: DepsTelemetry) {
     if (!logger) {
@@ -45,8 +49,9 @@ export class DepsManager {
       throw Error("Logger is undefined.");
     }
 
-    this._logger = logger;
-    this._telemetry = telemetry;
+    this.logger = logger;
+    this.telemetry = telemetry;
+    this.emptyLogger = new EmptyLogger();
   }
 
   /**
@@ -58,17 +63,17 @@ export class DepsManager {
    */
   public async ensureDependencies(
     dependencies: DepsType[],
-    { fastFail = true }: DepsOptions
+    { fastFail = true, doctor = false }: DepsOptions
   ): Promise<DependencyStatus[]> {
     if (!dependencies || dependencies.length == 0) {
       return [];
     }
 
-    const orderedDeps: DepsType[] = this.sortBySequence(dependencies, DepsManager._depsOrders);
+    const orderedDeps: DepsType[] = this.sortBySequence(dependencies, DepsManager.depsOrders);
     const result: DependencyStatus[] = [];
     let shouldInstall = true;
     for (const type of orderedDeps) {
-      const status: DependencyStatus = await this.resolve(type, shouldInstall);
+      const status: DependencyStatus = await this.resolve(type, shouldInstall, doctor);
       result.push(status);
 
       if (fastFail && !status.isInstalled) {
@@ -89,16 +94,27 @@ export class DepsManager {
     return result;
   }
 
-  private async resolve(type: DepsType, shouldInstall: boolean): Promise<DependencyStatus> {
-    const checker: DepsChecker = CheckerFactory.createChecker(type, this._logger, this._telemetry);
+  private async resolve(
+    type: DepsType,
+    shouldInstall: boolean,
+    doctor = false
+  ): Promise<DependencyStatus> {
+    const checker: DepsChecker = CheckerFactory.createChecker(
+      type,
+      doctor ? this.emptyLogger : this.logger,
+      this.telemetry
+    );
+    const depsInfo: DepsInfo = await checker.getDepsInfo();
     let error = undefined;
 
-    if (shouldInstall) {
+    if (shouldInstall && !(await checker.isInstalled())) {
+      if (doctor && !(checker instanceof NodeChecker)) {
+        this.logger.appendLine(`Installing ${depsInfo.name} ...`);
+      }
       const result = await checker.resolve();
       error = result.isErr() ? result.error : undefined;
     }
 
-    const depsInfo: DepsInfo = await checker.getDepsInfo();
     return {
       name: depsInfo.name,
       type: type,
@@ -107,6 +123,7 @@ export class DepsManager {
       details: {
         isLinuxSupported: depsInfo.isLinuxSupported,
         supportedVersions: depsInfo.supportedVersions,
+        installVersion: depsInfo.installVersion,
         binFolders: depsInfo.binFolders,
       },
       error: error,

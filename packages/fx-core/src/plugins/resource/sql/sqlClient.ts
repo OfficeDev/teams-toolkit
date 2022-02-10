@@ -3,23 +3,24 @@
 import * as tedious from "tedious";
 import { Constants, HelpLinks } from "./constants";
 import { SqlConfig } from "./config";
-import { PluginContext } from "@microsoft/teamsfx-api";
+import { AzureAccountProvider } from "@microsoft/teamsfx-api";
 import { ErrorMessage } from "./errors";
 import { SqlResultFactory } from "./results";
 export class SqlClient {
   config: SqlConfig;
   token: string;
-  ctx: PluginContext;
 
-  private constructor(ctx: PluginContext, config: SqlConfig, token: string) {
-    this.ctx = ctx;
+  private constructor(config: SqlConfig, token: string) {
     this.config = config;
     this.token = token;
   }
 
-  static async create(ctx: PluginContext, config: SqlConfig): Promise<SqlClient> {
-    const token = await SqlClient.initToken(ctx, config);
-    return new SqlClient(ctx, config, token);
+  static async create(
+    azureAccountProvider: AzureAccountProvider,
+    config: SqlConfig
+  ): Promise<SqlClient> {
+    const token = await SqlClient.initToken(azureAccountProvider, config);
+    return new SqlClient(config, token);
   }
 
   async addDatabaseUser(database: string): Promise<void> {
@@ -70,8 +71,11 @@ export class SqlClient {
     }
   }
 
-  static async initToken(ctx: PluginContext, config: SqlConfig): Promise<string> {
-    const credential = await ctx.azureAccountProvider!.getIdentityCredentialAsync();
+  static async initToken(
+    azureAccountProvider: AzureAccountProvider,
+    config: SqlConfig
+  ): Promise<string> {
+    const credential = await azureAccountProvider.getIdentityCredentialAsync();
     const databaseNames = `(${config.databases.join(",")})`;
     if (!credential) {
       const link = HelpLinks.default;

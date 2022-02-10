@@ -35,7 +35,8 @@ export class LocalSettingsProvider {
     includeBackend: boolean,
     includeBotOrMessageExtension: boolean,
     migrateFromV1 = false,
-    includeSimpleAuth = false
+    includeSimpleAuth = false,
+    includeAAD = true
   ): LocalSettings {
     // initialize Teams app related config for local debug.
     const teamsAppLocalConfig = new ConfigMap();
@@ -46,7 +47,7 @@ export class LocalSettingsProvider {
       teamsApp: teamsAppLocalConfig,
     };
 
-    if (!migrateFromV1) {
+    if (!migrateFromV1 && includeAAD) {
       localSettings.auth = this.initAuth(includeSimpleAuth);
     }
 
@@ -73,7 +74,8 @@ export class LocalSettingsProvider {
     includeBackend: boolean,
     includeBotOrMessageExtension: boolean,
     migrateFromV1 = false,
-    includeSimpleAuth = false
+    includeSimpleAuth = false,
+    includeAAD = true
   ): Json {
     const localSettings: Json = {
       teamsApp: {
@@ -82,7 +84,7 @@ export class LocalSettingsProvider {
       },
     };
 
-    if (!migrateFromV1) {
+    if (!migrateFromV1 && includeAAD) {
       localSettings.auth = this.initAuth(includeSimpleAuth).toJSON();
     }
 
@@ -303,7 +305,6 @@ export class LocalSettingsProvider {
     const frontendLocalConfig = new ConfigMap();
     frontendLocalConfig.set(LocalSettingsFrontendKeys.Browser, "none");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.Https, true);
-    frontendLocalConfig.set(LocalSettingsFrontendKeys.TrustDevCert, true);
     frontendLocalConfig.set(LocalSettingsFrontendKeys.SslCertFile, "");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.SslKeyFile, "");
     frontendLocalConfig.set(LocalSettingsFrontendKeys.TabDomain, "");
@@ -327,11 +328,7 @@ export class LocalSettingsProvider {
     const botLocalConfig = new ConfigMap();
     const keys = Object.values(LocalSettingsBotKeys);
     for (const key of keys) {
-      if (key === LocalSettingsBotKeys.SkipNgrok) {
-        botLocalConfig.set(key, false);
-      } else {
-        botLocalConfig.set(key, "");
-      }
+      botLocalConfig.set(key, "");
     }
 
     return botLocalConfig;

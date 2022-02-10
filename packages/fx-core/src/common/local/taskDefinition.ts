@@ -19,65 +19,6 @@ export interface ITaskDefinition {
   env?: { [key: string]: string };
 }
 
-// This type of task executes npm script of each component.
-export class NpmTaskDefinition {
-  private static command(isWatchTask: boolean): string {
-    return isWatchTask ? "npm run watch:teamsfx" : "npm run dev:teamsfx";
-  }
-
-  private static nameSuffix(isWatchTask: boolean): string {
-    return isWatchTask ? "watch" : "dev";
-  }
-
-  static frontend(workspaceFolder: string, isWatchTask: boolean): ITaskDefinition {
-    return {
-      name: `frontend ${NpmTaskDefinition.nameSuffix(isWatchTask)}`,
-      command: NpmTaskDefinition.command(isWatchTask),
-      cwd: path.join(workspaceFolder, FolderName.Frontend),
-      execOptions: {
-        needShell: true,
-      },
-      isBackground: true,
-    };
-  }
-
-  static backend(
-    workspaceFolder: string,
-    isWatchTask: boolean,
-    funcBinFolders: string[] | undefined
-  ): ITaskDefinition {
-    return {
-      name: `backend ${NpmTaskDefinition.nameSuffix(isWatchTask)}`,
-      command: NpmTaskDefinition.command(isWatchTask),
-      cwd: path.join(workspaceFolder, FolderName.Function),
-      execOptions: {
-        needShell: true,
-      },
-      isBackground: true,
-      env: funcBinFolders
-        ? {
-            // put portable func at the end since func checker prefers global func
-            PATH: `${process.env.PATH ?? ""}${path.delimiter}${funcBinFolders.join(
-              path.delimiter
-            )}`,
-          }
-        : undefined,
-    };
-  }
-
-  static bot(workspaceFolder: string, isWatchTask: boolean): ITaskDefinition {
-    return {
-      name: `bot ${NpmTaskDefinition.nameSuffix(isWatchTask)}`,
-      command: NpmTaskDefinition.command(isWatchTask),
-      cwd: path.join(workspaceFolder, FolderName.Bot),
-      execOptions: {
-        needShell: true,
-      },
-      isBackground: true,
-    };
-  }
-}
-
 export class TaskDefinition {
   static frontendStart(workspaceFolder: string): ITaskDefinition {
     return {

@@ -6,9 +6,12 @@ on:
       - opened
       - edited
       - synchronize
+  schedule:
+    - cron: "0 8 * * *"
 
 jobs:
   pr-title:
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       # Please look up the latest version from
@@ -18,6 +21,7 @@ jobs:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
   check-format:
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -67,6 +71,7 @@ jobs:
           fi
 
   check-sensitive-content:
+    if: ${{ github.event_name == 'pull_request' }}
     runs-on: ubuntu-latest
     steps:
       - name: Checkout branch
@@ -91,4 +96,17 @@ jobs:
       - name: check content
         run: |
           touch diffFiles.txt
-          python .github/detect/sensitive-detect.py
+          python .github/detect/sensitive-detect.py diff
+  
+  schedule-check-sensitive-content:
+    if: ${{ github.event_name == 'schedule' && (github.ref == 'refs/heads/dev'|| github.ref == 'refs/heads/main') }}
+    runs-on: ubuntu-latest
+    steps:
+      - name: checkout branch
+        uses: actions/checkout@v2
+        with:
+          token: ${{ secrets.CD_PAT }}
+          ref: ${{ github.ref }}
+      - name: check content
+        run: |
+          python .github/detect/sensitive-detect.py repo

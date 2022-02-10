@@ -12,7 +12,8 @@ import {
   NoBuildPathError,
 } from "../resources/errors";
 import { Commands, Constants, FrontendPathInfo, TelemetryEvent } from "../constants";
-import { DeploySteps, ProgressHelper } from "../utils/progress-helper";
+import { ProgressHelper } from "../utils/progress-helper";
+import { DeployProgress } from "../resources/steps";
 import { Logger } from "../utils/logger";
 import { Messages } from "../resources/messages";
 import { Utils } from "../utils";
@@ -59,14 +60,14 @@ export class FrontendDeployment {
       return FrontendDeployment.skipBuild();
     }
 
-    const progressHandler = ProgressHelper.deployProgress;
+    const progressHandler = ProgressHelper.progressHandler;
 
-    await progressHandler?.next(DeploySteps.NPMInstall);
+    await progressHandler?.next(DeployProgress.steps.NPMInstall);
     await runWithErrorCatchAndThrow(new NpmInstallError(), async () => {
       await Utils.execute(Commands.InstallNodePackages, componentPath);
     });
 
-    await progressHandler?.next(DeploySteps.Build);
+    await progressHandler?.next(DeployProgress.steps.Build);
     await runWithErrorCatchAndThrow(new BuildError(), async () => {
       await Utils.execute(Commands.BuildFrontend, componentPath, {
         ...envs.customizedRemoteEnvs,
@@ -85,15 +86,15 @@ export class FrontendDeployment {
   ): Promise<void> {
     const needBuild = await FrontendDeployment.needBuild(componentPath, envName);
     if (!needBuild) {
-      await progress?.next(DeploySteps.NPMInstall);
-      await progress?.next(DeploySteps.Build);
+      await progress?.next(DeployProgress.steps.NPMInstall);
+      await progress?.next(DeployProgress.steps.Build);
       return;
     }
-    await progress?.next(DeploySteps.NPMInstall);
+    await progress?.next(DeployProgress.steps.NPMInstall);
     await runWithErrorCatchAndThrow(new v3error.NpmInstallError(), async () => {
       await Utils.execute(Commands.InstallNodePackages, componentPath);
     });
-    await progress?.next(DeploySteps.Build);
+    await progress?.next(DeployProgress.steps.Build);
     await runWithErrorCatchAndThrow(new v3error.BuildError(), async () => {
       await Utils.execute(Commands.BuildFrontend, componentPath, {
         ...envs.customizedRemoteEnvs,
@@ -107,9 +108,9 @@ export class FrontendDeployment {
   public static async skipBuild(): Promise<void> {
     Logger.info(Messages.SkipBuild);
 
-    const progressHandler = ProgressHelper.deployProgress;
-    await progressHandler?.next(DeploySteps.NPMInstall);
-    await progressHandler?.next(DeploySteps.Build);
+    const progressHandler = ProgressHelper.progressHandler;
+    await progressHandler?.next(DeployProgress.steps.NPMInstall);
+    await progressHandler?.next(DeployProgress.steps.Build);
   }
 
   public static async getBuiltPath(componentPath: string): Promise<string> {
@@ -130,21 +131,21 @@ export class FrontendDeployment {
       return FrontendDeployment.skipDeployment();
     }
 
-    const progressHandler = ProgressHelper.deployProgress;
+    const progressHandler = ProgressHelper.progressHandler;
 
-    await progressHandler?.next(DeploySteps.getSrcAndDest);
+    await progressHandler?.next(DeployProgress.steps.getSrcAndDest);
     const builtPath = await FrontendDeployment.getBuiltPath(componentPath);
     const container = await runWithErrorCatchAndThrow(
       new GetContainerError(),
       async () => await client.getContainer(Constants.AzureStorageWebContainer)
     );
 
-    await progressHandler?.next(DeploySteps.Clear);
+    await progressHandler?.next(DeployProgress.steps.Clear);
     await runWithErrorCatchAndThrow(new ClearStorageError(), async () => {
       await client.deleteAllBlobs(container);
     });
 
-    await progressHandler?.next(DeploySteps.Upload);
+    await progressHandler?.next(DeployProgress.steps.Upload);
     await runWithErrorCatchAndThrow(new UploadToStorageError(), async () => {
       await client.uploadFiles(container, builtPath);
     });
@@ -162,24 +163,24 @@ export class FrontendDeployment {
   ): Promise<void> {
     const needDeploy = await FrontendDeployment.needDeploy(componentPath, envName);
     if (!needDeploy) {
-      await progress?.next(DeploySteps.getSrcAndDest);
-      await progress?.next(DeploySteps.Clear);
-      await progress?.next(DeploySteps.Upload);
+      await progress?.next(DeployProgress.steps.getSrcAndDest);
+      await progress?.next(DeployProgress.steps.Clear);
+      await progress?.next(DeployProgress.steps.Upload);
       return;
     }
-    await progress?.next(DeploySteps.getSrcAndDest);
+    await progress?.next(DeployProgress.steps.getSrcAndDest);
     const builtPath = await FrontendDeployment.getBuiltPath(componentPath);
     const container = await runWithErrorCatchAndThrow(
       new v3error.GetContainerError(),
       async () => await client.getContainer(Constants.AzureStorageWebContainer)
     );
 
-    await progress?.next(DeploySteps.Clear);
+    await progress?.next(DeployProgress.steps.Clear);
     await runWithErrorCatchAndThrow(new v3error.ClearStorageError(), async () => {
       await client.deleteAllBlobs(container);
     });
 
-    await progress?.next(DeploySteps.Upload);
+    await progress?.next(DeployProgress.steps.Upload);
     await runWithErrorCatchAndThrow(new v3error.UploadToStorageError(), async () => {
       await client.uploadFiles(container, builtPath);
     });
@@ -192,10 +193,10 @@ export class FrontendDeployment {
     TelemetryHelper.sendGeneralEvent(TelemetryEvent.SkipDeploy);
     Logger.warning(Messages.SkipDeploy);
 
-    const progressHandler = ProgressHelper.deployProgress;
-    await progressHandler?.next(DeploySteps.getSrcAndDest);
-    await progressHandler?.next(DeploySteps.Clear);
-    await progressHandler?.next(DeploySteps.Upload);
+    const progressHandler = ProgressHelper.progressHandler;
+    await progressHandler?.next(DeployProgress.steps.getSrcAndDest);
+    await progressHandler?.next(DeployProgress.steps.Clear);
+    await progressHandler?.next(DeployProgress.steps.Upload);
   }
 
   private static async hasUpdatedContent(

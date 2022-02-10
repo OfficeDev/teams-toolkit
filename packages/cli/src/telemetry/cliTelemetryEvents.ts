@@ -53,6 +53,9 @@ export enum TelemetryEvent {
   PreviewSPFxOpenBrowserStart = "preview-spfx-open-browser-start",
   PreviewSPFxOpenBrowser = "preview-spfx-open-browser",
 
+  AutomaticNpmInstallStart = "automatic-npm-install-start",
+  AutomaticNpmInstall = "automatic-npm-install",
+
   ConfigGet = "config-get",
   ConfigSet = "config-set",
 

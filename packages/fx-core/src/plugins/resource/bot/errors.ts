@@ -14,6 +14,25 @@ export enum ErrorType {
   System,
 }
 
+function InferInnerError(target: PluginError, helpLinkMap: Map<string, string>): void {
+  if (!target.innerError) return;
+
+  const errorCode = target.innerError.response?.data?.error?.code;
+  const helpLink = helpLinkMap.get(errorCode);
+  if (helpLink) target.helpLink = helpLink;
+
+  const statusCode = target.innerError.response?.status;
+  if (!statusCode) return;
+  if (
+    statusCode >= Constants.statusCodeUserError &&
+    statusCode < Constants.statusCodeServerError
+  ) {
+    target.errorType = ErrorType.User;
+  } else {
+    target.errorType = ErrorType.System;
+  }
+}
+
 export class PluginError extends Error {
   public name: string;
   public details: string;
@@ -37,7 +56,6 @@ export class PluginError extends Error {
     this.errorType = type;
     this.innerError = innerError;
     this.helpLink = helpLink;
-    this.inferFromInnerError();
     Object.setPrototypeOf(this, PluginError.prototype);
   }
 
@@ -47,25 +65,6 @@ export class PluginError extends Error {
       msg += `Suggestions: ${this.suggestions.join(" ")}`;
     }
     return msg;
-  }
-
-  inferFromInnerError() {
-    if (!this.innerError) return;
-
-    const errorCode = this.innerError.response?.data?.error?.code;
-    const helpLink = GraphErrorCodes.get(errorCode);
-    if (helpLink) this.helpLink = helpLink;
-
-    const statusCode = this.innerError.response?.status;
-    if (!statusCode) return;
-    if (
-      statusCode >= Constants.statusCodeUserError &&
-      statusCode < Constants.statusCodeServerError
-    ) {
-      this.errorType = ErrorType.User;
-    } else {
-      this.errorType = ErrorType.System;
-    }
   }
 }
 
@@ -112,12 +111,14 @@ export class AADAppCheckingError extends PluginError {
 export class CreateAADAppError extends PluginError {
   constructor(innerError?: any) {
     super(ErrorType.User, CreateAppError.name, CreateAppError.message(), [], innerError);
+    InferInnerError(this, GraphErrorCodes);
   }
 }
 
 export class CreateAADSecretError extends PluginError {
   constructor(innerError?: any) {
     super(ErrorType.User, CreateSecretError.name, CreateSecretError.message(), [], innerError);
+    InferInnerError(this, GraphErrorCodes);
   }
 }
 

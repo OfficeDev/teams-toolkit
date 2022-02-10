@@ -66,6 +66,7 @@ export enum ConfigKey {
   teamsAppName = "teamsAppName",
   projectDir = "dir",
   buildPath = "buildPath",
+  runtime = "runtime",
 
   /* Config exported by Dotnet plugin */
   webAppName = "webAppName",
@@ -115,12 +116,19 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
   ): Promise<Result<v2.ResourceTemplate[], FxError>> {
+    const scaffoldResult = await this.scaffold(ctx, inputs);
+    if (scaffoldResult.isErr()) return err(scaffoldResult.error);
     const armResult = await this.generateResourceTemplate(ctx, inputs);
     if (armResult.isErr()) return err(armResult.error);
+
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-    const capabilities = solutionSettings.capabilities;
+    const capabilities = this.getCapabilities(inputs);
+    capabilities.forEach((cap) => {
+      if (!solutionSettings.capabilities.includes(cap)) {
+        solutionSettings.capabilities.push(cap);
+      }
+    });
     const activeResourcePlugins = solutionSettings.activeResourcePlugins;
-    if (!capabilities.includes(TabOptionItem.id)) capabilities.push(TabOptionItem.id);
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
     return ok(armResult.value);
   }
@@ -211,6 +219,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     return { kind: "bicep", template: result };
   }
 
+  // TODO: need to cover add capability scenario
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.frontend } })])
   async generateResourceTemplate(
     ctx: v3.ContextWithManifestProvider,
@@ -270,8 +279,12 @@ export class DotnetPlugin implements v3.FeaturePlugin {
       "webappConfiguration.template.bicep"
     );
 
+    const capabilities = this.getCapabilities(inputs);
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
-    const pluginCtx = { plugins: solutionSettings.activeResourcePlugins ?? [] };
+    const pluginCtx = {
+      plugins: solutionSettings.activeResourcePlugins ?? [],
+      capabilities: capabilities,
+    };
     const configModule = await generateBicepFromFile(configWebappTemplateFilePath, pluginCtx);
     const result: ArmTemplateResult = {
       Reference: WebappBicep.Reference,
@@ -313,7 +326,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
   ): Promise<Result<Void, FxError>> {
     ctx.logProvider.info(`[${this.name}] Start deploying`);
     const progress = ctx.userInteraction.createProgressBar("deploy", 2);
-    await progress.start("Start");
+    await progress?.start("Start");
 
     const config = this.buildConfig(envInfo);
 
@@ -331,8 +344,11 @@ export class DotnetPlugin implements v3.FeaturePlugin {
     const projectPath = this.checkAndGet(inputs.dir, ConfigKey.projectDir);
     const client = new WebSiteManagementClient(credential, subscriptionId);
 
-    // await Deploy.build(projectPath, runtime);
+    progress?.next("Building publish artifact.");
+    const runtime = this.checkAndGet(inputs.runtime, ConfigKey.runtime);
+    await Deploy.build(projectPath, runtime);
 
+    progress?.next("Uploading artifact to Azure Web App.");
     const folderToBeZipped = this.checkAndGet(inputs.buildPath, ConfigKey.buildPath);
     if (!(await fs.pathExists(folderToBeZipped))) {
       throw new Error(`Built path not found: ${folderToBeZipped}`);
@@ -344,6 +360,7 @@ export class DotnetPlugin implements v3.FeaturePlugin {
       path.resolve(projectPath, folderToBeZipped)
     );
 
+    progress?.end(true);
     ctx.logProvider.info(`[${this.name}] Successfully deployed`);
     return ok(Void);
   }

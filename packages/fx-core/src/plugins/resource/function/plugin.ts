@@ -611,7 +611,7 @@ export class FunctionPluginImpl {
     );
     const configFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      FunctionBicepFile.configuraitonTemplateFileName
+      FunctionBicepFile.configurationTemplateFileName
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const configModule = await generateBicepFromFile(configFuncTemplateFilePath, pluginCtx);
@@ -652,7 +652,7 @@ export class FunctionPluginImpl {
 
     const configFuncTemplateFilePath = path.join(
       bicepTemplateDirectory,
-      FunctionBicepFile.configuraitonTemplateFileName
+      FunctionBicepFile.configurationTemplateFileName
     );
     const pluginCtx = { plugins: plugins.map((obj) => obj.name) };
     const provisionOrchestration = await generateBicepFromFile(

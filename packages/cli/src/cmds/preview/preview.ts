@@ -625,7 +625,7 @@ export default class Preview extends YargsCommand {
           )
         : undefined;
 
-    const func = await depsChecker.getDepsStatus(DepsType.Dotnet);
+    const func = await depsChecker.getDepsStatus(DepsType.FuncCoreTools);
     const funcCommand = func.command;
     const backendStartTask = includeBackend
       ? this.prepareTask(

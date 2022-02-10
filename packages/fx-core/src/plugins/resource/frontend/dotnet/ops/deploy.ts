@@ -1,3 +1,6 @@
+// Copyright (c) Microsoft Corporation.
+// Licensed under the MIT license.
+
 import fs from "fs-extra";
 import * as path from "path";
 import AdmZip from "adm-zip";

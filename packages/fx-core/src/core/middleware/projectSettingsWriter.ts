@@ -41,9 +41,11 @@ export const ProjectSettingsWriterMW: Middleware = async (
     if (projectSettings === undefined) return;
     try {
       const confFolderPath = path.resolve(inputs.projectPath, `.${ConfigFolderName}`);
-      const solutionSettings = projectSettings.solutionSettings as AzureSolutionSettings;
-      if (!solutionSettings.activeResourcePlugins) solutionSettings.activeResourcePlugins = [];
-      if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
+      const solutionSettings = projectSettings.solutionSettings;
+      if (solutionSettings) {
+        if (!solutionSettings.activeResourcePlugins) solutionSettings.activeResourcePlugins = [];
+        if (!solutionSettings.azureResources) solutionSettings.azureResources = [];
+      }
       const confFolderPathNew = path.resolve(confFolderPath, InputConfigsFolderName);
       await fs.ensureDir(confFolderPathNew);
       const settingFile = path.resolve(confFolderPathNew, ProjectSettingsFileName);

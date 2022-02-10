@@ -39,7 +39,7 @@ import { ResourcePluginsV2 } from "../ResourcePluginContainer";
 import { PermissionRequestFileProvider } from "../../../../core/permissionRequest";
 import { Constants } from "../../../resource/appstudio/constants";
 import { isPureExistingApp } from "../../../../core/utils";
-import { BuiltInResourcePluginNames } from "../v3/constants";
+import { BuiltInFeaturePluginNames } from "../v3/constants";
 import { askForProvisionConsent, fillInAzureConfigs, getM365TenantId } from "../v3/provision";
 import { resourceGroupHelper } from "../utils/ResourceGroupHelper";
 import { solutionGlobalVars } from "../v3/solutionGlobalVars";
@@ -66,9 +66,9 @@ export async function provisionResource(
   const projectPath: string = inputs.projectPath;
 
   // check M365 tenant
-  if (!envInfo.state[BuiltInResourcePluginNames.appStudio])
-    envInfo.state[BuiltInResourcePluginNames.appStudio] = {};
-  const teamsAppResource = envInfo.state[BuiltInResourcePluginNames.appStudio];
+  if (!envInfo.state[BuiltInFeaturePluginNames.appStudio])
+    envInfo.state[BuiltInFeaturePluginNames.appStudio] = {};
+  const teamsAppResource = envInfo.state[BuiltInFeaturePluginNames.appStudio];
   if (!envInfo.state.solution) envInfo.state.solution = {};
   const solutionConfig = envInfo.state.solution;
   const tenantIdInConfig = teamsAppResource.tenantId;
@@ -95,7 +95,7 @@ export async function provisionResource(
       ctx.permissionRequestProvider = new PermissionRequestFileProvider(inputs.projectPath);
     }
     const result = await ensurePermissionRequest(
-      azureSolutionSettings,
+      azureSolutionSettings!,
       ctx.permissionRequestProvider
     );
     if (result.isErr()) {

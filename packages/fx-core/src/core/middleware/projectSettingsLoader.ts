@@ -20,9 +20,8 @@ import {
 import * as fs from "fs-extra";
 import * as path from "path";
 import * as uuid from "uuid";
-import { createV2Context, TOOLS } from "..";
+import { createV2Context, isV3 } from "..";
 import { CoreHookContext, FxCore } from "../..";
-import { readJson } from "../../common/fileUtils";
 import { PluginNames } from "../../plugins/solution/fx-solution/constants";
 import { LocalCrypto } from "../crypto";
 import {
@@ -90,11 +89,12 @@ export async function loadProjectSettings(
     const settingsFile = isMultiEnvEnabled
       ? path.resolve(confFolderPath, InputConfigsFolderName, ProjectSettingsFileName)
       : path.resolve(confFolderPath, "settings.json");
-    const projectSettings: ProjectSettings = await readJson(settingsFile);
+    const projectSettings: ProjectSettings = await fs.readJson(settingsFile);
     if (!projectSettings.projectId) {
       projectSettings.projectId = uuid.v4();
     }
     if (
+      !isV3() &&
       projectSettings.solutionSettings &&
       projectSettings.solutionSettings.activeResourcePlugins &&
       !projectSettings.solutionSettings.activeResourcePlugins.includes(PluginNames.APPST)
@@ -144,4 +144,13 @@ export function shouldIgnored(ctx: CoreHookContext): boolean {
   }
 
   return StaticPlatforms.includes(inputs.platform) || isCreate;
+}
+
+export function getProjectSettingsPath(projectPath: string) {
+  return path.resolve(
+    projectPath,
+    `.${ConfigFolderName}`,
+    InputConfigsFolderName,
+    ProjectSettingsFileName
+  );
 }

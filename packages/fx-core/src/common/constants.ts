@@ -60,3 +60,13 @@ export class FeatureFlagName {
   static readonly rootDirectory = "TEAMSFX_ROOT_DIRECTORY";
   static readonly VSCallingCLI = "VS_CALLING_CLI";
 }
+
+export class ManifestVariables {
+  static readonly DeveloperWebsiteUrl = "developerWebsiteUrl";
+  static readonly DeveloperPrivacyUrl = "developerPrivacyUrl";
+  static readonly DeveloperTermsOfUseUrl = "developerTermsOfUseUrl";
+  static readonly TabContentUrl = "tabContentUrl";
+  static readonly TabWebsiteUrl = "tabWebsiteUrl";
+  static readonly TabConfigurationUrl = "tabConfigurationUrl";
+  static readonly BotId = "botId";
+}

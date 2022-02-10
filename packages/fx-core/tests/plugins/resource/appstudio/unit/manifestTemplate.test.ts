@@ -13,7 +13,7 @@ import { LocalCrypto } from "../../../../../src/core/crypto";
 import { newEnvInfo } from "../../../../../src/core/tools";
 import { getAzureProjectRoot, MockUserInteraction } from "../helper";
 import { MockedLogProvider, MockedTelemetryReporter } from "../../../solution/util";
-import { BuiltInResourcePluginNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../../../../src/plugins/solution/fx-solution/v3/constants";
 
 describe("Load and Save manifest template", () => {
   const sandbox = sinon.createSandbox();
@@ -22,7 +22,7 @@ describe("Load and Save manifest template", () => {
   let inputs: v2.InputsWithProjectPath;
 
   beforeEach(async () => {
-    plugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    plugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     ctx = {
       cryptoProvider: new LocalCrypto(""),
       userInteraction: new MockUserInteraction(),

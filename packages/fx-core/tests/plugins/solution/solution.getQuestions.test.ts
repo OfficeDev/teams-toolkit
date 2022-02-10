@@ -46,7 +46,7 @@ import {
   getQuestionsForScaffolding,
   getQuestionsForUserTask,
 } from "../../../src/plugins/solution/fx-solution/v2/getQuestions";
-import { BuiltInResourcePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { MockGraphTokenProvider, MockSharepointTokenProvider } from "../../core/utils";
 import { MockedAppStudioProvider, MockedAzureAccountProvider, MockedV2Context } from "./util";
 
@@ -233,7 +233,7 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addCapability",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
       .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
       .callsFake(
@@ -282,7 +282,7 @@ describe("getQuestionsForScaffolding()", async () => {
       method: "addCapability",
       namespace: "fx-solution-azure",
     };
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     sandbox
       .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
       .callsFake(

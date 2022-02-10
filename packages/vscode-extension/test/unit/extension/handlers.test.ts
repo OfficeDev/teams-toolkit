@@ -491,7 +491,9 @@ suite("handlers", () => {
 
       chai.expect(showWarningMessage.callCount).to.be.equal(1);
     });
+  });
 
+  suite("manifest", () => {
     test("edit manifest template: local", async () => {
       sinon.restore();
       sinon.stub(ExtTelemetry, "sendTelemetryEvent");
@@ -529,5 +531,19 @@ suite("handlers", () => {
         )
       );
     });
+  });
+
+  test("downloadSample", async () => {
+    const inputs: Inputs = {
+      scratch: "no",
+      platform: Platform.VSCode,
+    };
+    sinon.stub(handlers, "core").value(new MockCore());
+    const createProject = sinon.spy(handlers.core, "createProject");
+
+    await handlers.downloadSample(inputs);
+
+    inputs.stage = Stage.create;
+    chai.assert.isTrue(createProject.calledOnceWith(inputs));
   });
 });

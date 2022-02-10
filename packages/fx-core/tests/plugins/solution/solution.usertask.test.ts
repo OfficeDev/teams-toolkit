@@ -64,7 +64,7 @@ import { createEnv } from "../../../src/plugins/solution/fx-solution/v2/createEn
 import { ScaffoldingContextAdapter } from "../../../src/plugins/solution/fx-solution/v2/adaptor";
 import { LocalCrypto } from "../../../src/core/crypto";
 import { appStudioPlugin, botPlugin } from "../../constants";
-import { BuiltInResourcePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
+import { BuiltInFeaturePluginNames } from "../../../src/plugins/solution/fx-solution/v3/constants";
 import { AppStudioPluginV3 } from "../../../src/plugins/resource/appstudio/v3";
 import { armV2 } from "../../../src/plugins/solution/fx-solution/arm";
 import { NamedArmResourcePlugin } from "../../../src/common/armInterface";
@@ -263,7 +263,7 @@ describe("V2 implementation", () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = { platform: Platform.VSCode };
     mockedInputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     mocker
       .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
       .callsFake(
@@ -316,7 +316,7 @@ describe("V2 implementation", () => {
     const mockedCtx = new MockedV2Context(projectSettings);
     const mockedInputs: Inputs = { platform: Platform.VSCode };
     mockedInputs[AzureSolutionQuestionNames.Capabilities] = [BotOptionItem.id];
-    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInResourcePluginNames.appStudio);
+    const appStudioPlugin = Container.get<AppStudioPluginV3>(BuiltInFeaturePluginNames.appStudio);
     mocker
       .stub<any, any>(appStudioPlugin, "capabilityExceedLimit")
       .callsFake(

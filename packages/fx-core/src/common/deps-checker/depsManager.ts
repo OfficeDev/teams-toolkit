@@ -109,7 +109,7 @@ export class DepsManager {
 
     if (shouldInstall && !(await checker.isInstalled())) {
       if (doctor && !(checker instanceof NodeChecker)) {
-        this.logger.appendLine(`Installing ${depsInfo.name}`);
+        this.logger.appendLine(`Installing ${depsInfo.name} ...`);
       }
       const result = await checker.resolve();
       error = result.isErr() ? result.error : undefined;

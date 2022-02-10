@@ -26,7 +26,7 @@ public class MsGraphAuthProviderTest
         // Executes once for the test class. (Optional)
         var loggerMock = new Mock<ILogger<TeamsUserCredential>>();
         var authOptionsMock = new Mock<IOptions<AuthenticationOptions>>();
-        teamsUserCredentialMock = new Mock<TeamsUserCredential>(authOptionsMock.Object, null, loggerMock.Object, null, null);
+        teamsUserCredentialMock = new Mock<TeamsUserCredential>(authOptionsMock.Object, null, loggerMock.Object, null);
         msGraphAuthProvider = new MsGraphAuthProvider(teamsUserCredentialMock.Object);
         fakeExpiration = DateTimeOffset.Now;
         fakeAccessToken = new AccessToken("token", fakeExpiration);

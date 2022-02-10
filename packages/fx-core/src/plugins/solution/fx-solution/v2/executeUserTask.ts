@@ -19,6 +19,7 @@ import {
   Json,
   UserError,
   ProjectSettings,
+  v3,
 } from "@microsoft/teamsfx-api";
 import { getStrings } from "../../../../common/tools";
 import { getAzureSolutionSettings, setActivatedResourcePluginsV2 } from "./utils";

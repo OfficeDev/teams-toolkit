@@ -12,6 +12,10 @@ export class Messages {
   static readonly StartUpdateArmTemplates = "Updating ARM templates.";
   static readonly EndUpdateArmTemplates = "Successfully updated ARM templates.";
 
+  static readonly getTemplateFrom = (url: string) => `Retrieving template from '${url}'.`;
+  static readonly FailedFetchTemplate =
+    "Failed to retrieve latest template from GitHub. Using local template instead.";
+
   static readonly Build = (projectPath: string) => `Building ${projectPath}.`;
   static readonly GenerateZip = (projectPath: string) => `Adding ${projectPath} to zip package.`;
   static readonly FailQueryPublishCred = "Failed to find publish credentials.";

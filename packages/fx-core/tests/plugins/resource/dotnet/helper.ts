@@ -9,7 +9,10 @@ import {
   TeamsAppManifest,
 } from "@microsoft/teamsfx-api";
 import { v4 as uuid } from "uuid";
-import { DependentPluginInfo } from "../../../../src/plugins/resource/frontend/dotnet/constants";
+import {
+  Capability,
+  DependentPluginInfo,
+} from "../../../../src/plugins/resource/frontend/dotnet/constants";
 import { newEnvInfo } from "../../../../src";
 import { LocalCrypto } from "../../../../src/core/crypto";
 import { DotnetPluginInfo as PluginInfo } from "../../../../src/plugins/resource/frontend/dotnet/constants";
@@ -52,6 +55,7 @@ export class TestHelper {
     const solutionConfig = new Map([
       [DependentPluginInfo.subscriptionId, TestHelper.subscriptionId],
       [DependentPluginInfo.resourceGroupName, TestHelper.rgName],
+      [DependentPluginInfo.ProgrammingLanguage, TestHelper.blazorLanguage],
     ]);
 
     const pluginContext = {
@@ -67,6 +71,7 @@ export class TestHelper {
         solutionSettings: {
           name: "",
           version: "",
+          capabilities: [Capability.tab, Capability.bot],
           activeResourcePlugins: [PluginInfo.pluginName],
         },
       },

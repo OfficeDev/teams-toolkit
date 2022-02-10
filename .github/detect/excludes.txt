@@ -3,8 +3,12 @@
 *.png
 *.gif
 *.svg
-*.sppkg
 *.ico
+*.woff
+*.ttf
+*.otf
+*.eot
+*.sppkg
 .git/*
 *.woff
 *.ttf

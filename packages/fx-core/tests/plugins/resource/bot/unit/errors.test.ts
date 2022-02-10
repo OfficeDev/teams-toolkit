@@ -71,7 +71,7 @@ describe("Test Errors", () => {
       chai.assert.isTrue(myError instanceof PluginError);
     });
 
-    it("[InferInnerError] expect errorType change to SystemError", () => {
+    it("[InferInnerError] expect errorType changes to SystemError", () => {
       // Arrange
       // Act
       const myError = new CreateAADAppError({
@@ -101,7 +101,7 @@ describe("Test Errors", () => {
       chai.assert.isTrue(myError instanceof PluginError);
     });
 
-    it("[InferInnerError] expect errorType change to SystemError", () => {
+    it("[InferInnerError] expect errorType changes to SystemError", () => {
       // Arrange
       // Act
       const myError = new CreateAADSecretError({

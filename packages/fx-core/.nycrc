@@ -1,20 +1,9 @@
 {
   "extends": "@istanbuljs/nyc-config-typescript",
   "all": true,
-  "include": [
-    "src/**/*.ts",
-    "src/**/*.js"
-  ],
-  "exclude": [
-      "src/common/deps-checker/**/*",
-      "src/plugins/resource/localdebug/legacyPlugin.ts"
-  ],
-  "reporter": [
-    "text",
-    "html",
-    "json-summary",
-    "cobertura"
-  ],
+  "include": ["src/**/*.ts", "src/**/*.js"],
+  "exclude": ["src/common/deps-checker/**/*", "src/plugins/resource/localdebug/legacyPlugin.ts"],
+  "reporter": ["text", "html", "json-summary", "cobertura"],
   "check-coverage": true,
-  "lines": 30
+  "lines": 73
 }

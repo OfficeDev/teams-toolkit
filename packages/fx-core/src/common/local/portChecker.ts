@@ -62,9 +62,12 @@ export async function getPortsInUse(
     const migrateFromV1 = ProjectSettingsHelper.isMigrateFromV1(projectSettings);
     if (!migrateFromV1) {
       ports.push(...frontendPorts);
-      ports.push(...simpleAuthPorts);
     } else {
       ports.push(...frontendPortsV1);
+    }
+    const includeSimpleAuth = ProjectSettingsHelper.includeSimpleAuth(projectSettings);
+    if (includeSimpleAuth) {
+      ports.push(...simpleAuthPorts);
     }
   }
 

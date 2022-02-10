@@ -2,7 +2,7 @@
   "name": "ms-teams-vscode-extension",
   "displayName": "Teams Toolkit (Preview)",
   "description": "Create, debug, and deploy Teams apps with Teams Toolkit",
-  "version": "3.2.0",
+  "version": "3.3.0",
   "publisher": "TeamsDevApp",
   "author": "Microsoft Corporation",
   "icon": "media/teams.png",
@@ -491,6 +491,11 @@
         "enablement": "never"
       },
       {
+        "command": "fx-extension.get-func-path",
+        "title": "Teams - Get Func Path for Environment Variable",
+        "enablement": "never"
+      },
+      {
         "command": "fx-extension.pre-debug-check",
         "title": "Teams - Pre Debug Check",
         "enablement": "never"
@@ -623,26 +628,11 @@
       {
         "type": "teamsfx",
         "required": [
-          "command",
-          "component"
+          "command"
         ],
         "properties": {
           "command": {
-            "type": "string",
-            "description": "The command to be executed on a teamsfx component.",
-            "enum": [
-              "dev",
-              "watch"
-            ]
-          },
-          "component": {
-            "type": "string",
-            "description": "The teamsfx component.",
-            "enum": [
-              "frontend",
-              "backend",
-              "bot"
-            ]
+            "type": "string"
           }
         }
       }
@@ -788,6 +778,12 @@
             "type": "string",
             "description": "Set the default root directory for creating new teams app project. By default, the root directory is ${homeDir}/TeamsApps. (requries reload of VS Code)",
             "default": "${homeDir}/TeamsApps"
+          },
+          "fx-extension.automaticNpmInstall": {
+            "type": "boolean",
+            "title": "Automatic NPM Install",
+            "description": "Automatically execute npm install command for your Teams application.",
+            "default": false
           }
         }
       },
@@ -813,6 +809,14 @@
               "bicep": {
                 "type": "boolean",
                 "description": "Ensure Bicep CLI is installed."
+              },
+              "ngrok": {
+                "type": "boolean",
+                "description": "Ensure Ngrok is installed."
+              },
+              "devCert": {
+                "type": "boolean",
+                "description": "Ensure development certificate is trusted."
               }
             },
             "additionalProperties": false,
@@ -820,7 +824,9 @@
               "node": true,
               "dotnetSdk": true,
               "funcCoreTools": true,
-              "bicep": true
+              "bicep": true,
+              "ngrok": true,
+              "devCert": true
             }
           }
         }
@@ -999,11 +1005,12 @@
     "@azure/ms-rest-nodeauth": "^3.0.7",
     "@azure/msal-node": "^1.0.0-beta.5",
     "@microsoft/fast-react-wrapper": "^0.1.20",
-    "@microsoft/teamsfx-api": "^0.13.0",
-    "@microsoft/teamsfx-core": "^1.2.1",
+    "@microsoft/teamsfx-api": "^0.14.0",
+    "@microsoft/teamsfx-core": "^1.3.0",
     "@npmcli/package-json": "^1.0.1",
     "@vscode/webview-ui-toolkit": "^0.8.5",
     "async-mutex": "^0.3.1",
+    "ajv": "^8.5.0",
     "dotenv": "^8.2.0",
     "express": "^4.17.1",
     "jscodeshift": "^0.13.0",

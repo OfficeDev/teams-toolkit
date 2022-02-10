@@ -16,6 +16,7 @@ import {
 import {
   AppPackageFolderName,
   AppStudioTokenProvider,
+  assembleError,
   AzureSolutionSettings,
   BuildFolderName,
   ConcurrentError,
@@ -116,7 +117,7 @@ import * as envTree from "./envTree";
 import { selectAndDebug } from "./debug/runIconHandler";
 import * as path from "path";
 import { exp } from "./exp/index";
-import { TreatmentVariables } from "./exp/treatmentVariables";
+import { TreatmentVariables, TreatmentVariableValue } from "./exp/treatmentVariables";
 import { StringContext } from "./utils/stringContext";
 import { CommandsWebviewProvider } from "./treeview/commandsWebviewProvider";
 import graphLogin from "./commonlib/graphLogin";
@@ -355,11 +356,11 @@ export async function createNewProjectHandler(args?: any[]): Promise<Result<any,
   const result = await runCommand(Stage.create);
   if (result.isOk()) {
     await ExtTelemetry.dispose();
-    // after calling dispose(), let reder process to while for a while instead of directly call "open folder"
+    // after calling dispose(), let reder process to wait for a while instead of directly call "open folder"
     // otherwise, the flush operation in dispose() will be interrupted due to shut down the render process.
     setTimeout(() => {
       commands.executeCommand("vscode.openFolder", result.value);
-    }, 1000);
+    }, 2000);
   }
   return result;
 }
@@ -419,13 +420,22 @@ export async function addResourceHandler(args?: any[]): Promise<Result<null, FxE
     namespace: "fx-solution-azure",
     method: "addResource",
   };
-  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter, VS_CODE_UI);
-  const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
-  const includeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
+  let excludeBackend = true;
+  try {
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    excludeBackend = ProjectSettingsHelper.includeBackend(projectSettings);
+  } catch (error) {
+    VsCodeLogInstance.warning(`${error}`);
+  }
   const result = await runUserTask(func, TelemetryEvent.AddResource, true);
-  if (result.isOk() && !includeBackend) {
+  if (result.isOk() && !excludeBackend) {
     await globalStateUpdate("automaticNpmInstall", true);
-    automaticNpmInstallHandler(true, includeBackend, true);
+    automaticNpmInstallHandler(true, excludeBackend, true);
   }
   return result;
 }
@@ -436,14 +446,24 @@ export async function addCapabilityHandler(args: any[]): Promise<Result<null, Fx
     namespace: "fx-solution-azure",
     method: "addCapability",
   };
-  const localEnvManager = new LocalEnvManager(VsCodeLogInstance, ExtTelemetry.reporter, VS_CODE_UI);
-  const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
-  const includeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
-  const includeBot = ProjectSettingsHelper.includeBot(projectSettings);
+  let excludeFrontend = true,
+    excludeBot = true;
+  try {
+    const localEnvManager = new LocalEnvManager(
+      VsCodeLogInstance,
+      ExtTelemetry.reporter,
+      VS_CODE_UI
+    );
+    const projectSettings = await localEnvManager.getProjectSettings(ext.workspaceUri.fsPath);
+    excludeFrontend = ProjectSettingsHelper.includeFrontend(projectSettings);
+    excludeBot = ProjectSettingsHelper.includeBot(projectSettings);
+  } catch (error) {
+    VsCodeLogInstance.warning(`${error}`);
+  }
   const result = await runUserTask(func, TelemetryEvent.AddCap, true);
   if (result.isOk()) {
     await globalStateUpdate("automaticNpmInstall", true);
-    automaticNpmInstallHandler(includeFrontend, true, includeBot);
+    automaticNpmInstallHandler(excludeFrontend, true, excludeBot);
   }
   return result;
 }
@@ -571,8 +591,10 @@ export async function runCommand(
 
     switch (stage) {
       case Stage.create: {
-        inputs["scratch"] = inputs["scratch"] ?? "yes";
-        inputs.projectId = inputs.projectId ?? uuid.v4();
+        if (TreatmentVariableValue.removeCreateFromSample) {
+          inputs["scratch"] = inputs["scratch"] ?? "yes";
+          inputs.projectId = inputs.projectId ?? uuid.v4();
+        }
         const tmpResult = await core.createProject(inputs);
         if (tmpResult.isErr()) {
           result = err(tmpResult.error);
@@ -608,6 +630,10 @@ export async function runCommand(
       }
       case Stage.debug: {
         inputs.ignoreEnvInfo = true;
+        inputs.checkerInfo = {
+          skipNgrok: !vscodeHelper.isNgrokCheckerEnabled(),
+          trustDevCert: vscodeHelper.isTrustDevCertEnabled(),
+        };
         result = await core.localDebug(inputs);
         break;
       }
@@ -727,7 +753,7 @@ function showWarningMessageWithProvisionButton(message: string): void {
     .showWarningMessage(message, StringResources.vsc.handlers.provisionResourcesButton)
     .then((result) => {
       if (result === StringResources.vsc.handlers.provisionResourcesButton) {
-        return runCommand(Stage.provision);
+        return Correlator.run(provisionHandler);
       }
     });
 }
@@ -920,6 +946,24 @@ export async function backendExtensionsInstallHandler(): Promise<string | undefi
       }
     }
   }
+}
+
+/**
+ * Get func binary path to be referenced by task definition.
+ * Usage like ${env:PATH}${command:...} so need to include delimiter as well
+ */
+export async function getFuncPathHandler(): Promise<string> {
+  try {
+    const vscodeDepsChecker = new VSCodeDepsChecker(vscodeLogger, vscodeTelemetry);
+    const funcStatus = await vscodeDepsChecker.getDepsStatus(DepsType.FuncCoreTools);
+    if (funcStatus?.details?.binFolders !== undefined) {
+      return `${path.delimiter}${funcStatus.details.binFolders.join(path.delimiter)}`;
+    }
+  } catch (error: any) {
+    showError(assembleError(error));
+  }
+
+  return "";
 }
 
 /**

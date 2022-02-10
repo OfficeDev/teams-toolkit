@@ -10,9 +10,11 @@ import { deleteFolder, randomAppName } from "./utils";
 import {
   ConfigFolderName,
   CryptoProvider,
+  EnvConfig,
   EnvConfigFileNameTemplate,
   EnvInfo,
   EnvNamePlaceholder,
+  ExistingTeamsAppType,
   FxError,
   InputConfigsFolderName,
   Json,
@@ -20,6 +22,7 @@ import {
   Result,
 } from "@microsoft/teamsfx-api";
 import { environmentManager, envPrefix } from "../../src/core/environment";
+import { ManifestVariables } from "../../src/common/constants";
 import * as tools from "../../src/common/tools";
 import mockedEnv from "mocked-env";
 import sinon from "sinon";
@@ -584,6 +587,114 @@ describe("APIs of Environment Manager", () => {
         path.resolve(configFolder, fileName)
       );
       assert.isFalse(isEnvConfig);
+    });
+  });
+
+  describe("Create New Environment Config", () => {
+    const appName = "test";
+    const basicConfig: EnvConfig = {
+      $schema: environmentManager.schema,
+      description: environmentManager.envConfigDescription,
+      manifest: {
+        appName: {
+          short: appName,
+          full: `Full name for ${appName}`,
+        },
+      },
+    };
+
+    const configForExistingApp = Object.assign({}, basicConfig, {
+      manifest: {
+        ...basicConfig.manifest,
+        [ManifestVariables.DeveloperWebsiteUrl]: "",
+        [ManifestVariables.DeveloperPrivacyUrl]: "",
+        [ManifestVariables.DeveloperTermsOfUseUrl]: "",
+      },
+    });
+
+    it("create new env config for normal project", () => {
+      const envConfig = environmentManager.newEnvConfigData(appName);
+      assert.deepEqual(envConfig, basicConfig);
+    });
+
+    it("create new env config for existing static tab project", () => {
+      const envConfig = environmentManager.newEnvConfigData(appName, {
+        isCreatedFromExistingApp: true,
+        newAppTypes: [ExistingTeamsAppType.StaticTab],
+      });
+      const expected = Object.assign({}, configForExistingApp, {
+        manifest: {
+          ...configForExistingApp.manifest,
+          [ManifestVariables.TabContentUrl]: "",
+          [ManifestVariables.TabWebsiteUrl]: "",
+        },
+      });
+
+      assert.deepEqual(envConfig, expected);
+    });
+
+    it("create new env config for existing configurable tab project", () => {
+      const envConfig = environmentManager.newEnvConfigData(appName, {
+        isCreatedFromExistingApp: true,
+        newAppTypes: [ExistingTeamsAppType.ConfigurableTab],
+      });
+      const expected = Object.assign({}, configForExistingApp, {
+        manifest: {
+          ...configForExistingApp.manifest,
+          [ManifestVariables.TabConfigurationUrl]: "",
+        },
+      });
+
+      assert.deepEqual(envConfig, expected);
+    });
+
+    it("create new env config for existing static & configurable tab project", () => {
+      const envConfig = environmentManager.newEnvConfigData(appName, {
+        isCreatedFromExistingApp: true,
+        newAppTypes: [ExistingTeamsAppType.StaticTab, ExistingTeamsAppType.ConfigurableTab],
+      });
+      const expected = Object.assign({}, configForExistingApp, {
+        manifest: {
+          ...configForExistingApp.manifest,
+          [ManifestVariables.TabContentUrl]: "",
+          [ManifestVariables.TabWebsiteUrl]: "",
+          [ManifestVariables.TabConfigurationUrl]: "",
+        },
+      });
+
+      assert.deepEqual(envConfig, expected);
+    });
+
+    it("create new env config for existing bot project", () => {
+      const envConfig = environmentManager.newEnvConfigData(appName, {
+        isCreatedFromExistingApp: true,
+        newAppTypes: [ExistingTeamsAppType.Bot],
+      });
+
+      const expected = Object.assign({}, configForExistingApp, {
+        manifest: {
+          ...configForExistingApp.manifest,
+          [ManifestVariables.BotId]: "",
+        },
+      });
+
+      assert.deepEqual(envConfig, expected);
+    });
+
+    it("create new env config for existing bot/ME project", () => {
+      const envConfig = environmentManager.newEnvConfigData(appName, {
+        isCreatedFromExistingApp: true,
+        newAppTypes: [ExistingTeamsAppType.Bot, ExistingTeamsAppType.MessageExtension],
+      });
+
+      const expected = Object.assign({}, configForExistingApp, {
+        manifest: {
+          ...configForExistingApp.manifest,
+          [ManifestVariables.BotId]: "",
+        },
+      });
+
+      assert.deepEqual(envConfig, expected);
     });
   });
 });

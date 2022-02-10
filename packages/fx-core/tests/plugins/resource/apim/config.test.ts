@@ -4,8 +4,8 @@ import "mocha";
 import chai from "chai";
 import {
   ApimPluginConfigKeys,
-  TeamsToolkitComponent,
   SolutionConfigKeys,
+  TeamsToolkitComponent,
 } from "../../../../src/plugins/resource/apim/constants";
 import { ApimPluginConfig, SolutionConfig } from "../../../../src/plugins/resource/apim/config";
 import {
@@ -29,7 +29,6 @@ describe("config", () => {
       config: { manifest: { appName: { short: "appname" } } },
       state: configContent,
     };
-
     const solutionConfig = new SolutionConfig(envInfo);
 
     it("Undefined property", () => {
@@ -48,8 +47,9 @@ describe("config", () => {
 
   describe("ApimPluginConfig", () => {
     const configContent = ConfigMap.fromJSON({
-      [ApimPluginConfigKeys.resourceGroupName]: "test-resource-group-name",
-      [ApimPluginConfigKeys.serviceName]: 1,
+      [ApimPluginConfigKeys.apiPrefix]: "prefix",
+      [ApimPluginConfigKeys.versionSetId]: "error><version?set",
+      [ApimPluginConfigKeys.apiDocumentPath]: 1,
     });
 
     if (!configContent) {
@@ -62,13 +62,13 @@ describe("config", () => {
     });
     it("Error type property", () => {
       chai
-        .expect(() => apimPluginConfig.serviceName)
+        .expect(() => apimPluginConfig.versionSetId)
         .to.throw(
-          "Project configuration 'serviceName' of 'fx-resource-apim' is invalid. The value can contain only letters, numbers and hyphens. The first character must be a letter and last character must be a letter or a number."
+          "Project configuration 'versionSetId' of 'fx-resource-apim' is invalid. The value cannot contain any characters in '*#&+:<>?'"
         );
     });
     it("Property with value", () => {
-      chai.expect(apimPluginConfig.resourceGroupName).to.equal("test-resource-group-name");
+      chai.expect(apimPluginConfig.apiPrefix).to.equal("prefix");
     });
     it("Check and get undefined property", () => {
       chai
@@ -78,12 +78,10 @@ describe("config", () => {
         );
     });
     it("Check and get error type property", () => {
-      chai.expect(apimPluginConfig.checkAndGet(ApimPluginConfigKeys.serviceName)).to.equal("1");
+      chai.expect(apimPluginConfig.checkAndGet(ApimPluginConfigKeys.apiDocumentPath)).to.equal("1");
     });
     it("Check and get property with value", () => {
-      chai
-        .expect(apimPluginConfig.checkAndGet(ApimPluginConfigKeys.resourceGroupName))
-        .to.equal("test-resource-group-name");
+      chai.expect(apimPluginConfig.checkAndGet(ApimPluginConfigKeys.apiPrefix)).to.equal("prefix");
     });
   });
 });

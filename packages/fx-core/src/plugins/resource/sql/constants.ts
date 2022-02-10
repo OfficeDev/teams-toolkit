@@ -6,8 +6,6 @@ export class Constants {
   public static readonly pluginFullName: string = "fx-resource-azure-sql";
 
   public static readonly firewall = {
-    azureIp: "0.0.0.0",
-    azureRule: "AllowAzure",
     localRule: "AllowLocal",
   };
 
@@ -64,8 +62,6 @@ export class Constants {
     confirmPassword: "sql-confirm-password",
     skipAddingUser: "sql-skip-adding-user",
   };
-
-  public static readonly resourceProvider: string = "Microsoft.Sql";
 }
 
 export class Telemetry {

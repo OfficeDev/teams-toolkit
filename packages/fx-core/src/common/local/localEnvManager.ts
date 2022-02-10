@@ -25,7 +25,7 @@ import { LocalCrypto } from "../../core/crypto";
 import { CoreSource, ReadFileError } from "../../core/error";
 import { DepsType } from "../deps-checker/depsChecker";
 import { ProjectSettingsHelper } from "./projectSettingsHelper";
-import { LocalCertificateManager } from "./localCertificateManager";
+import { LocalCertificate, LocalCertificateManager } from "./localCertificateManager";
 
 export class LocalEnvManager {
   private readonly logger: LogProvider | undefined;
@@ -128,10 +128,11 @@ export class LocalEnvManager {
     });
   }
 
-  public async resolveLocalCertificate(trustDevCert: boolean): Promise<boolean | undefined> {
-    const certManager = new LocalCertificateManager(this.ui, this.logger);
-    const localCert = await certManager.setupCertificate(trustDevCert);
-    return localCert.isTrusted;
+  public async resolveLocalCertificate(trustDevCert: boolean): Promise<LocalCertificate> {
+    // Do not print any log in LocalCertificateManager, use the error message returned instead.
+    const certManager = new LocalCertificateManager(this.ui);
+    const res = await certManager.setupCertificate(trustDevCert);
+    return res;
   }
 
   // Retry logic when reading project config files in case of read-write conflict

@@ -16,7 +16,6 @@ import { ErrorFactory, TeamsFxResult } from "./error-factory";
 import {
   ErrorType,
   FrontendPluginError,
-  NotImplemented,
   UnhandledErrorCode,
   UnhandledErrorMessage,
 } from "./resources/errors";
@@ -66,10 +65,6 @@ export class FrontendPlugin implements Plugin {
     return this.runWithErrorHandling(ctx, TelemetryEvent.Scaffold, () =>
       this.getImpl(ctx).scaffold(ctx)
     );
-  }
-
-  public async provision(ctx: PluginContext): Promise<TeamsFxResult> {
-    return ok(undefined);
   }
 
   public async postProvision(ctx: PluginContext): Promise<TeamsFxResult> {
@@ -136,7 +131,7 @@ export class FrontendPlugin implements Plugin {
       TelemetryHelper.sendSuccessEvent(stage, properties);
       return result;
     } catch (e) {
-      await ProgressHelper.endAllHandlers(false);
+      await ProgressHelper.endProgress(false);
 
       if (e instanceof FrontendPluginError) {
         const error =

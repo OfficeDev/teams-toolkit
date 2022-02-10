@@ -19,6 +19,7 @@ import {
   isDotnetCheckerEnabled,
   isFuncCoreToolsEnabled,
   isLinux,
+  isNgrokCheckerEnabled,
 } from "./cliUtils";
 
 export class CliDepsChecker {
@@ -30,8 +31,7 @@ export class CliDepsChecker {
     private logger: DepsLogger,
     private telemetry: DepsTelemetry,
     private hasBackend: boolean,
-    private hasBot: boolean,
-    private enableNgrok: boolean
+    private hasBot: boolean
   ) {
     this.depsManager = new DepsManager(logger, telemetry);
   }
@@ -133,7 +133,7 @@ export class CliDepsChecker {
       case DepsType.FuncCoreTools:
         return (await isFuncCoreToolsEnabled()) && this.hasBackend;
       case DepsType.Ngrok:
-        return this.hasBot && this.enableNgrok;
+        return this.hasBot && (await isNgrokCheckerEnabled());
       default:
         return false;
     }

@@ -108,6 +108,7 @@ export abstract class NodeChecker implements DepsChecker {
     return {
       name: NodeName,
       isLinuxSupported: true,
+      installVersion: (await getInstalledNodeVersion())?.version,
       supportedVersions: await this.getSupportedVersions(),
       details: new Map<string, string>(),
     };

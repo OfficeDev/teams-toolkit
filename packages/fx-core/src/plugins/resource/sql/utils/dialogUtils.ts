@@ -1,15 +1,13 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
-import { PluginContext, IProgressHandler } from "@microsoft/teamsfx-api";
+import { IProgressHandler, UserInteraction } from "@microsoft/teamsfx-api";
 
 export class DialogUtils {
   static progressBar: IProgressHandler | undefined;
-  static ctx: PluginContext;
 
-  public static init(ctx: PluginContext, progressTitle?: string, processStep?: number) {
-    DialogUtils.ctx = ctx;
+  public static init(ui?: UserInteraction, progressTitle?: string, processStep?: number) {
     if (progressTitle && processStep) {
-      DialogUtils.progressBar = ctx.ui?.createProgressBar(progressTitle, processStep);
+      DialogUtils.progressBar = ui?.createProgressBar(progressTitle, processStep);
     }
   }
 }
@@ -17,12 +15,6 @@ export class DialogUtils {
 export class ProgressTitle {
   static readonly Provision = "Provisioning SQL";
   static readonly PostProvision = "Configuring SQL";
-}
-
-export class ProvisionMessage {
-  static readonly checkProvider = "Check SQL resource provider";
-  static readonly provisionSQL = "Provision SQL server";
-  static readonly provisionDatabase = "Provision database";
 }
 
 export class ConfigureMessage {

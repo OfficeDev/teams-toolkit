@@ -38,11 +38,14 @@ import {
   OUTLINE_TEMPLATE,
 } from "../constants";
 import { TelemetryUtils, TelemetryEventName } from "../utils/telemetry";
+import { AppStudioPluginImpl } from "./plugin";
 
 @Service(BuiltInFeaturePluginNames.appStudio)
 export class AppStudioPluginV3 {
   name = "fx-resource-appstudio";
   displayName = "App Studio";
+
+  private appStudioPluginImpl = new AppStudioPluginImpl();
 
   /**
    * Generate initial manifest template file, for both local debug & remote
@@ -178,29 +181,13 @@ export class AppStudioPluginV3 {
     return await capabilityExceedLimit(pluginContext.root, capability);
   }
 
-  /**
-   *
-   * @param ctx
-   * @param inputs
-   * @param localSettings
-   * @param tokenProvider
-   * @returns
-   */
-  async configureLocalResource(
-    ctx: v2.Context,
-    inputs: v2.InputsWithProjectPath,
-    localSettings: Json,
-    tokenProvider: TokenProvider
-  ): Promise<Result<Void, FxError>> {
-    return ok(Void);
-  }
-
   async registerTeamsApp(
     ctx: v2.Context,
     inputs: v2.InputsWithProjectPath,
-    envInfo: v3.EnvInfoV3
+    envInfo: v3.EnvInfoV3,
+    tokenProvider: TokenProvider
   ): Promise<Result<string, FxError>> {
-    return ok("fake");
+    return await this.appStudioPluginImpl.createTeamsApp(ctx, inputs, envInfo, tokenProvider);
   }
 
   async updateTeamsApp(

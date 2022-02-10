@@ -8,7 +8,6 @@ import * as sinon from "sinon";
 import { FxError, PluginContext, Result } from "@microsoft/teamsfx-api";
 import AdmZip from "adm-zip";
 import chaiAsPromised from "chai-as-promised";
-import fs from "fs-extra";
 import * as fetch from "../../../../../src/common/template-utils/templatesUtils";
 
 import { FrontendPlugin } from "../../../../../src/plugins/resource/frontend";
@@ -28,8 +27,6 @@ describe("DotnetPlugin", () => {
     });
 
     afterEach(() => {
-      fs.emptyDirSync(pluginContext.root);
-      fs.rmdirSync(pluginContext.root);
       sinon.restore();
     });
 

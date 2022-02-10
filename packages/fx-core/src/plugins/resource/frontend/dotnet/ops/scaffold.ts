@@ -6,7 +6,7 @@ import {
   TemplateZipFallbackError,
   UnknownScaffoldError,
   UnzipTemplateError,
-} from "../resources/errors";
+} from "../../resources/errors";
 import { Constants, DotnetPathInfo as PathInfo } from "../constants";
 import { Logger } from "../../utils/logger";
 import { Messages } from "../resources/messages";

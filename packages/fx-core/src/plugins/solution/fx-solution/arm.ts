@@ -959,16 +959,13 @@ async function persistBicepTemplates(
   // Write bicep content to project folder
   if (bicepOrchestrationTemplate.needsGenerateTemplate()) {
     // Output parameter file
-    const envListResult = await environmentManager.listEnvConfigs(projectaPath);
+    const envListResult = await environmentManager.listRemoteEnvConfigs(projectaPath);
     if (envListResult.isErr()) {
       return err(envListResult.error);
     }
     const parameterEnvFolderPath = path.join(projectaPath, configsFolder);
     await fs.ensureDir(parameterEnvFolderPath);
     for (const env of envListResult.value) {
-      if (env === environmentManager.getLocalEnvName()) {
-        continue;
-      }
       const parameterFileName = parameterFileNameTemplate.replace(EnvNamePlaceholder, env);
       const parameterEnvFilePath = path.join(parameterEnvFolderPath, parameterFileName);
       let parameterFileContent = "";

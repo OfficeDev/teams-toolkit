@@ -1354,7 +1354,7 @@ export class FxCore implements v3.ICore {
       return ok(Void);
     }
 
-    const envConfigs = await environmentManager.listEnvConfigs(inputs.projectPath!);
+    const envConfigs = await environmentManager.listRemoteEnvConfigs(inputs.projectPath!);
 
     if (envConfigs.isErr()) {
       return envConfigs;

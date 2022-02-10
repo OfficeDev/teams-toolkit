@@ -490,7 +490,7 @@ async function askTargetEnvironment(): Promise<Result<string, FxError>> {
   if (!isValidProject(projectPath)) {
     return err(InvalidProjectError());
   }
-  const envProfilesResult = await environmentManager.listEnvConfigs(projectPath!);
+  const envProfilesResult = await environmentManager.listRemoteEnvConfigs(projectPath!);
   if (envProfilesResult.isErr()) {
     return err(envProfilesResult.error);
   }

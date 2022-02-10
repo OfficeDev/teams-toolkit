@@ -106,6 +106,8 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     VsCodeLogInstance.outputChannel.show();
     VsCodeLogInstance.info("LocalDebug Prerequisites Check");
     VsCodeLogInstance.outputChannel.appendLine(doctorConstant.Check);
+    // TODO: add total number
+    VsCodeLogInstance.outputChannel.appendLine(doctorConstant.CheckNumber);
 
     // node
     const depsManager = new DepsManager(vscodeLogger, vscodeTelemetry);
@@ -132,7 +134,10 @@ export async function checkAndInstall(): Promise<Result<any, FxError>> {
     const checkPromises = [];
 
     // backend extension
-    checkPromises.push(resolveBackendExtension(depsManager, projectSettings));
+    const backendExtensionPromise = resolveBackendExtension(depsManager, projectSettings);
+    if (backendExtensionPromise) {
+      checkPromises.push(backendExtensionPromise);
+    }
 
     // npm installs
     if (ProjectSettingsHelper.isSpfx(projectSettings)) {
@@ -321,6 +326,7 @@ async function checkDependencies(
       results.push({
         checker: dep.name,
         result: dep.isInstalled ? ResultStatus.success : ResultStatus.failed,
+        successMsg: `${dep.name} (installed at ${dep.details.binFolders?.[0]})`,
         error: handleDepsCheckerError(dep.error, dep),
       });
     }
@@ -338,24 +344,25 @@ async function checkDependencies(
 async function resolveBackendExtension(
   depsManager: DepsManager,
   projectSettings: ProjectSettings
-): Promise<CheckResult> {
-  let result = ResultStatus.success;
-  let error = undefined;
+): Promise<CheckResult | undefined> {
   try {
     if (ProjectSettingsHelper.includeBackend(projectSettings)) {
       const backendRoot = path.join(ext.workspaceUri.fsPath, FolderName.Function);
       const dotnet = (await depsManager.getStatus([DepsType.Dotnet]))[0];
       await installExtension(backendRoot, dotnet.command, new EmptyLogger());
+      return {
+        checker: Checker.AzureFunctionsExtension,
+        result: ResultStatus.success,
+      };
     }
   } catch (err: any) {
-    result = ResultStatus.failed;
-    error = handleDepsCheckerError(err);
+    return {
+      checker: Checker.AzureFunctionsExtension,
+      result: ResultStatus.failed,
+      error: handleDepsCheckerError(err),
+    };
   }
-  return {
-    checker: Checker.AzureFunctionsExtension,
-    result: result,
-    error: error,
-  };
+  return undefined;
 }
 
 async function resolveLocalCertificate(localEnvManager: LocalEnvManager): Promise<CheckResult> {
@@ -463,7 +470,7 @@ async function checkNpmInstall(
           }
         });
       } else {
-        VsCodeLogInstance.outputChannel.appendLine(`Executing NPM Install for ${displayName}`);
+        VsCodeLogInstance.outputChannel.appendLine(`Executing NPM Install for ${displayName} ...`);
         exitCode = await runTask(
           new vscode.Task(
             {
@@ -522,7 +529,7 @@ async function handleCheckResults(results: CheckResult[]): Promise<void> {
   }
 
   for (const result of successes) {
-    output.appendLine(`${doctorConstant.Tick} ${result.successMsg} `);
+    output.appendLine(`${doctorConstant.Tick} ${result.successMsg ?? result.checker} `);
   }
 
   for (const result of warnings) {
@@ -533,11 +540,16 @@ async function handleCheckResults(results: CheckResult[]): Promise<void> {
 
   for (const result of failures) {
     output.appendLine("");
-    output.appendLine(`${doctorConstant.Cross} ${result.failureMsg}`);
+    output.appendLine(`${doctorConstant.Cross} ${result.failureMsg ?? result.checker}`);
     outputCheckResultError(result, output);
   }
   output.appendLine("");
   output.appendLine(`${doctorConstant.LearnMore.split("@Link").join(defaultHelpLink)}`);
+
+  if (!shouldStop) {
+    output.appendLine("");
+    output.appendLine(`${doctorConstant.LaunchServices}`);
+  }
 
   if (shouldStop) {
     throw returnUserError(

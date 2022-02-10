@@ -31,7 +31,6 @@ import {
   AzureSolutionQuestionNames,
   BotOptionItem,
   MessageExtensionItem,
-  TabOptionItem,
 } from "../../../solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
 import {
@@ -212,10 +211,11 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
     const solutionSettings = ctx.projectSetting.solutionSettings as AzureSolutionSettings;
     const capabilities = solutionSettings.capabilities;
     const newCapabilitySet = new Set<string>();
-    capabilities.forEach((c) => newCapabilitySet.add(c));
+    capabilities.forEach((c: string) => newCapabilitySet.add(c));
+    const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     let templates: v2.ResourceTemplate[] = [];
-    if (!(capabilities.includes(TabOptionItem.id) || capabilities.includes(BotOptionItem.id))) {
-      // bot is added for first time, scaffold and generate resource template
+    if (!activeResourcePlugins.includes(this.name)) {
+      // bot plugin is added for first time, scaffold and generate resource template
       const scaffoldRes = await this.scaffold(ctx, inputs);
       if (scaffoldRes.isErr()) return err(scaffoldRes.error);
       const armRes = await this.generateResourceTemplate(ctx, inputs);
@@ -240,8 +240,6 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
     if (update.isErr()) return err(update.error);
 
     solutionSettings.capabilities = Array.from(newCapabilitySet);
-
-    const activeResourcePlugins = solutionSettings.activeResourcePlugins;
     if (!activeResourcePlugins.includes(this.name)) activeResourcePlugins.push(this.name);
     return ok(templates);
   }

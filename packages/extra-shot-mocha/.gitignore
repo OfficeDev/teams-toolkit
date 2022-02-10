@@ -1,0 +1,14 @@
+node_modules
+build
+coverage
+.nyc_output
+.npmrc
+.env
+.prettierrc.json
+.fx
+templates/plugins/resource/bot/**/*.zip
+templates/plugins/resource/frontend/**/*.zip
+templates/plugins/resource/function/**/*.zip
+tests/**/TeamsSPFxApp.zip
+mochawesome-report
+.vscode

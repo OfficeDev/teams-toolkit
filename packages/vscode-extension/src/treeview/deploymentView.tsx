@@ -89,12 +89,12 @@ export class DeploymentView extends React.Component<any, any> {
           command="fx-extension.openAppManagement"
         ></TreeItem>
         <TreeItem
-          label="CI/CD guide"
-          tooltip={StringResources.vsc.commandsTreeViewProvider.cicdGuideDescription}
+          label="Add CI/CD Workflows"
+          tooltip={StringResources.vsc.commandsTreeViewProvider.addCICDWorkflowsDescription}
           icon="codicon codicon-sync"
           customized={false}
           disable={false}
-          command="fx-extension.cicdGuide"
+          command="fx-extension.addCICDWorkflows"
         ></TreeItem>
       </div>
     );

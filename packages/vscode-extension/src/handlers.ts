@@ -565,12 +565,33 @@ export async function publishHandler(args?: any[]): Promise<Result<null, FxError
   return await runCommand(Stage.publish);
 }
 
-export async function cicdGuideHandler(args?: any[]): Promise<boolean> {
-  ExtTelemetry.sendTelemetryEvent(TelemetryEvent.CICDInsiderGuide, getTriggerFromProperty(args));
+export async function addCICDWorkflowsHandler(args?: any[]): Promise<Result<null, FxError>> {
+  ExtTelemetry.sendTelemetryEvent(
+    TelemetryEvent.AddCICDWorkflowsStart,
+    getTriggerFromProperty(args)
+  );
 
-  const cicdGuideLink = "https://aka.ms/teamsfx-cicd-insider-guide";
+  const selectedEnv = await askTargetEnvironment();
+  if (selectedEnv.isErr()) {
+    return err(selectedEnv.error);
+  }
 
-  return await env.openExternal(Uri.parse(cicdGuideLink));
+  const func: Func = {
+    namespace: "fx-solution-azure/fx-resource-cicd",
+    method: "addCICDWorkflows",
+    params: {
+      envName: selectedEnv.value,
+    },
+  };
+
+  const res = await runUserTask(func, TelemetryEvent.AddCICDWorkflows, false);
+  if (!res.isOk()) {
+    showError(res.error);
+    ExtTelemetry.sendTelemetryErrorEvent(TelemetryEvent.AddCICDWorkflows, res.error);
+    return err(res.error);
+  }
+
+  return ok(null);
 }
 
 export async function runCommand(

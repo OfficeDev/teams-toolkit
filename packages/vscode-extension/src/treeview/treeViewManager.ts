@@ -176,9 +176,9 @@ class TreeViewManager {
         { name: "developerPortal", custom: true }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.cicdGuideTitle,
-        StringResources.vsc.commandsTreeViewProvider.cicdGuideDescription,
-        "fx-extension.cicdGuide",
+        StringResources.vsc.commandsTreeViewProvider.addCICDWorkflowsTitle,
+        StringResources.vsc.commandsTreeViewProvider.addCICDWorkflowsDescription,
+        "fx-extension.addCICDWorkflows",
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,
@@ -297,9 +297,9 @@ class TreeViewManager {
         { name: "developerPortal", custom: true }
       ),
       new TreeViewCommand(
-        StringResources.vsc.commandsTreeViewProvider.cicdGuideTitle,
-        StringResources.vsc.commandsTreeViewProvider.cicdGuideDescription,
-        "fx-extension.cicdGuide",
+        StringResources.vsc.commandsTreeViewProvider.addCICDWorkflowsTitle,
+        StringResources.vsc.commandsTreeViewProvider.addCICDWorkflowsDescription,
+        "fx-extension.addCICDWorkflows",
         vscode.TreeItemCollapsibleState.None,
         undefined,
         undefined,

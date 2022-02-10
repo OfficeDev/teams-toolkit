@@ -54,19 +54,6 @@ export default class Deploy extends YargsCommand {
     return yargs.version(false);
   }
 
-  public override modifyArguments(args: { [argName: string]: any }) {
-    if (!("open-api-document" in args)) {
-      args["open-api-document"] = undefined;
-    }
-    if (!("api-prefix" in args)) {
-      args["api-prefix"] = undefined;
-    }
-    if (!("api-version" in args)) {
-      args["api-version"] = undefined;
-    }
-    return args;
-  }
-
   public async runCommand(args: {
     [argName: string]: string | string[] | undefined;
   }): Promise<Result<null, FxError>> {

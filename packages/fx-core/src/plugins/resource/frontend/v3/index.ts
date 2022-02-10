@@ -77,8 +77,7 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
     );
     await progress.start(Messages.ProgressStart);
     await progress.next(ScaffoldProgress.steps.Scaffold);
-    const template = inputs.template;
-    const language = template === "ReactTab_TS" ? "ts" : "js";
+    const language = ctx.projectSetting.programmingLanguage === "typescript" ? "ts" : "js";
     const componentPath = path.join(inputs.projectPath, FrontendPathInfo.WorkingDir);
     const hasFunction = solutionSettings
       ? solutionSettings.activeResourcePlugins.includes(BuiltInFeaturePluginNames.function)
@@ -104,7 +103,6 @@ export class NodeJSTabFrontendPlugin implements v3.FeaturePlugin {
         switch (action.name) {
           case ScaffoldActionName.FetchTemplatesUrlWithTag:
           case ScaffoldActionName.FetchTemplatesZipFromUrl:
-            // TelemetryHelper.sendScaffoldFallbackEvent(new TemplateManifestError(error.message));//TODO
             ctx.logProvider.info(Messages.FailedFetchTemplate);
             break;
           case ScaffoldActionName.FetchTemplateZipFromLocal:

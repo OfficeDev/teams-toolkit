@@ -5,6 +5,7 @@ import { hooks } from "@feathersjs/hooks/lib";
 import {
   AzureAccountProvider,
   AzureSolutionSettings,
+  EnvConfig,
   err,
   FxError,
   ok,
@@ -32,7 +33,6 @@ import {
   MessageExtensionItem,
 } from "../../../solution/fx-solution/question";
 import { BuiltInFeaturePluginNames } from "../../../solution/fx-solution/v3/constants";
-import { TeamsBotConfig } from "../configs/teamsBotConfig";
 import {
   AzureConstants,
   BotBicep,
@@ -43,12 +43,6 @@ import {
   ProgressBarConstants,
   TemplateProjectsConstants,
 } from "../constants";
-import {
-  CheckThrowSomethingMissing,
-  PackDirExistenceError,
-  PreconditionError,
-  SomethingMissingError,
-} from "../errors";
 import { LanguageStrategy } from "../languageStrategy";
 import { ProgressBarFactory } from "../progressBars";
 import { Messages } from "../resources/messages";
@@ -56,7 +50,6 @@ import fs from "fs-extra";
 import { CommonStrings, ConfigNames, PluginLocalDebug } from "../resources/strings";
 import { TokenCredentialsBase } from "@azure/ms-rest-nodeauth";
 import * as factory from "../clientFactory";
-import { BotAuthCredential } from "../botAuthCredential";
 import { ResourceNameFactory } from "../utils/resourceNameFactory";
 import { AADRegistration } from "../aadRegistration";
 import { IBotRegistration } from "../appStudio/interfaces/IBotRegistration";
@@ -66,19 +59,54 @@ import * as utils from "../utils/common";
 import * as appService from "@azure/arm-appservice";
 import { AzureOperations } from "../azureOps";
 import { getZipDeployEndpoint } from "../utils/zipDeploy";
+import {
+  ScaffoldAction,
+  ScaffoldActionName,
+  ScaffoldContext,
+  scaffoldFromTemplates,
+} from "../../../../common/template-utils/templatesActions";
+import { ProgrammingLanguage } from "../enums/programmingLanguage";
+import {
+  CheckThrowSomethingMissing,
+  PackDirectoryExistenceError,
+  PreconditionError,
+  TemplateZipFallbackError,
+  UnzipError,
+} from "./error";
 
 @Service(BuiltInFeaturePluginNames.bot)
 export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
   name = BuiltInFeaturePluginNames.bot;
   displayName = "NodeJS Bot";
-  public config: TeamsBotConfig = new TeamsBotConfig();
+  // public config: TeamsBotConfig = new TeamsBotConfig();
+
+  getProgrammingLanguage(ctx: v2.Context): ProgrammingLanguage {
+    const rawProgrammingLanguage = ctx.projectSetting.programmingLanguage;
+    if (
+      rawProgrammingLanguage &&
+      utils.existsInEnumValues(rawProgrammingLanguage, ProgrammingLanguage)
+    ) {
+      return rawProgrammingLanguage as ProgrammingLanguage;
+    }
+    return ProgrammingLanguage.JavaScript;
+  }
+  getLangKey(ctx: v2.Context): string {
+    const rawProgrammingLanguage = ctx.projectSetting.programmingLanguage;
+    if (
+      rawProgrammingLanguage &&
+      utils.existsInEnumValues(rawProgrammingLanguage, ProgrammingLanguage)
+    ) {
+      const programmingLanguage = rawProgrammingLanguage as ProgrammingLanguage;
+      return utils.convertToLangKey(programmingLanguage);
+    }
+    return "js";
+  }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
   async scaffold(
     ctx: v3.ContextWithManifestProvider,
     inputs: v2.InputsWithProjectPath
-  ): Promise<Result<Void | undefined, FxError>> {
-    await this.config.restoreConfigFromContextV3(ctx, inputs);
+  ): Promise<Result<Void, FxError>> {
     ctx.logProvider.info(Messages.ScaffoldingBot);
 
     const handler = await ProgressBarFactory.newProgressBar(
@@ -87,20 +115,41 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
       ctx
     );
     await handler?.start(ProgressBarConstants.SCAFFOLD_STEP_START);
-
-    // 1. Copy the corresponding template project into target directory.
-    // Get group name.
     const group_name = TemplateProjectsConstants.GROUP_NAME_BOT_MSGEXT;
-    if (!this.config.actRoles || this.config.actRoles.length === 0) {
-      throw new SomethingMissingError("act roles");
-    }
+    const lang = this.getLangKey(ctx);
+    const workingDir = path.join(inputs.projectPath, CommonStrings.BOT_WORKING_DIR_NAME);
 
     await handler?.next(ProgressBarConstants.SCAFFOLD_STEP_FETCH_ZIP);
-    await LanguageStrategy.getTemplateProject(group_name, this.config);
-
-    // this.config.saveConfigIntoContextV3(envInfo); // scaffold will not persist state in envInfo
+    await scaffoldFromTemplates({
+      group: group_name,
+      lang: lang,
+      scenario: TemplateProjectsConstants.DEFAULT_SCENARIO_NAME,
+      templatesFolderName: TemplateProjectsConstants.TEMPLATE_FOLDER_NAME,
+      dst: workingDir,
+      onActionEnd: async (action: ScaffoldAction, context: ScaffoldContext) => {
+        if (action.name === ScaffoldActionName.FetchTemplatesUrlWithTag) {
+          ctx.logProvider.info(Messages.SuccessfullyRetrievedTemplateZip(context.zipUrl ?? ""));
+        }
+      },
+      onActionError: async (action: ScaffoldAction, context: ScaffoldContext, error: Error) => {
+        ctx.logProvider.info(error.toString());
+        switch (action.name) {
+          case ScaffoldActionName.FetchTemplatesUrlWithTag:
+          case ScaffoldActionName.FetchTemplatesZipFromUrl:
+            ctx.logProvider.info(Messages.FallingBackToUseLocalTemplateZip);
+            break;
+          case ScaffoldActionName.FetchTemplateZipFromLocal:
+            throw new TemplateZipFallbackError();
+          case ScaffoldActionName.Unzip:
+            throw new UnzipError(context.dst);
+          default:
+            throw new Error(error.message);
+        }
+      },
+    });
     ctx.logProvider.info(Messages.SuccessfullyScaffoldedBot);
-    return ok(undefined);
+    handler?.end(true);
+    return ok(Void);
   }
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
   async generateResourceTemplate(
@@ -213,111 +262,58 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
     }
     return serviceClientCredentials;
   }
-  //for remote provision
+
   private async createOrGetBotAppRegistration(
     ctx: v2.Context,
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProvider
-  ): Promise<BotAuthCredential> {
+  ): Promise<Result<Void, FxError>> {
     const token = await tokenProvider.graphTokenProvider.getAccessToken();
     CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, token);
     CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, ctx.projectSetting.appName);
-
-    let botAuthCreds = new BotAuthCredential();
-
-    if (!this.config.scaffold.botAADCreated()) {
+    let botConfig = envInfo.state[this.name];
+    if (!botConfig) botConfig = {};
+    botConfig = botConfig as v3.AzureBot;
+    const botAADCreated = botConfig?.botId !== undefined && botConfig?.botPassword !== undefined;
+    if (!botAADCreated) {
+      const solutionConfig = envInfo?.state.solution as v3.AzureSolutionConfig;
+      const resourceNameSuffix = solutionConfig.resourceNameSuffix
+        ? solutionConfig.resourceNameSuffix
+        : utils.genUUID();
       const aadDisplayName = ResourceNameFactory.createCommonName(
-        this.config.resourceNameSuffix,
+        resourceNameSuffix,
         ctx.projectSetting.appName,
         MaxLengths.AAD_DISPLAY_NAME
       );
-      botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByGraph(
+      const botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByGraph(
         token!,
         aadDisplayName,
-        this.config.scaffold.objectId,
-        this.config.scaffold.botId
+        botConfig.objectId,
+        botConfig.botId
       );
-
-      this.config.scaffold.botId = botAuthCreds.clientId;
-      this.config.scaffold.botPassword = botAuthCreds.clientSecret;
-      this.config.scaffold.objectId = botAuthCreds.objectId;
-
-      this.config.saveConfigIntoContextV3(envInfo); // Checkpoint for aad app provision.
+      botConfig.botId = botAuthCreds.clientId;
+      botConfig.botPassword = botAuthCreds.clientSecret;
+      botConfig.objectId = botAuthCreds.objectId;
       ctx.logProvider.info(Messages.SuccessfullyCreatedBotAadApp);
-    } else {
-      botAuthCreds.clientId = this.config.scaffold.botId;
-      botAuthCreds.clientSecret = this.config.scaffold.botPassword;
-      botAuthCreds.objectId = this.config.scaffold.objectId;
-      ctx.logProvider.info(Messages.SuccessfullyGetExistingBotAadAppCredential);
     }
-    return botAuthCreds;
-  }
 
-  //for local provision
-  private async createNewBotRegistrationOnAppStudio(
-    ctx: v2.Context,
-    envInfo: v3.EnvInfoV3,
-    tokenProvider: TokenProvider
-  ) {
-    const token = await tokenProvider.graphTokenProvider.getAccessToken();
-    CheckThrowSomethingMissing(ConfigNames.GRAPH_TOKEN, token);
-    CheckThrowSomethingMissing(CommonStrings.SHORT_APP_NAME, ctx.projectSetting.appName);
-
-    // 1. Create a new AAD App Registraion with client secret.
-    const aadDisplayName = ResourceNameFactory.createCommonName(
-      this.config.resourceNameSuffix,
-      ctx.projectSetting.appName,
-      MaxLengths.AAD_DISPLAY_NAME
-    );
-
-    let botAuthCreds: BotAuthCredential = new BotAuthCredential();
-    if (
-      this.config.localDebug.botAADCreated()
-      // if user input AAD, the object id is not required
-      // && (await AppStudio.isAADAppExisting(appStudioToken!, this.config.localDebug.localObjectId!))
-    ) {
-      botAuthCreds.clientId = this.config.localDebug.localBotId;
-      botAuthCreds.clientSecret = this.config.localDebug.localBotPassword;
-      botAuthCreds.objectId = this.config.localDebug.localObjectId;
-      ctx.logProvider.debug(Messages.SuccessfullyGetExistingBotAadAppCredential);
-    } else {
+    if (envInfo.envName === "local") {
+      // 2. Register bot by app studio.
+      const botReg: IBotRegistration = {
+        botId: botConfig.botId,
+        name: ctx.projectSetting.appName + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
+        description: "",
+        iconUrl: "",
+        messagingEndpoint: "",
+        callingEndpoint: "",
+      };
       ctx.logProvider.info(Messages.ProvisioningBotRegistration);
-      botAuthCreds = await AADRegistration.registerAADAppAndGetSecretByGraph(
-        token!,
-        aadDisplayName,
-        this.config.localDebug.localObjectId,
-        this.config.localDebug.localBotId
-      );
+      const appStudioToken = await tokenProvider.appStudioToken.getAccessToken();
+      CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
+      await AppStudio.createBotRegistration(appStudioToken!, botReg);
       ctx.logProvider.info(Messages.SuccessfullyProvisionedBotRegistration);
     }
-
-    // 2. Register bot by app studio.
-    const botReg: IBotRegistration = {
-      botId: botAuthCreds.clientId,
-      name: ctx.projectSetting.appName + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
-      description: "",
-      iconUrl: "",
-      messagingEndpoint: "",
-      callingEndpoint: "",
-    };
-
-    ctx.logProvider.info(Messages.ProvisioningBotRegistration);
-    const appStudioToken = await tokenProvider.appStudioToken.getAccessToken();
-    CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-    await AppStudio.createBotRegistration(appStudioToken!, botReg);
-    ctx.logProvider.info(Messages.SuccessfullyProvisionedBotRegistration);
-
-    if (!this.config.localDebug.localBotId) {
-      this.config.localDebug.localBotId = botAuthCreds.clientId;
-    }
-
-    if (!this.config.localDebug.localBotPassword) {
-      this.config.localDebug.localBotPassword = botAuthCreds.clientSecret;
-    }
-
-    if (!this.config.localDebug.localObjectId) {
-      this.config.localDebug.localObjectId = botAuthCreds.objectId;
-    }
+    return ok(Void);
   }
 
   @hooks([CommonErrorHandlerMW({ telemetry: { component: BuiltInFeaturePluginNames.bot } })])
@@ -327,8 +323,6 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
     envInfo: v3.EnvInfoV3,
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
-    await this.config.restoreConfigFromContextV3(ctx, inputs, envInfo);
-
     if (envInfo.envName === "local") {
       const handler = await ProgressBarFactory.newProgressBar(
         ProgressBarConstants.LOCAL_DEBUG_TITLE,
@@ -339,14 +333,9 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
       await handler?.start(ProgressBarConstants.LOCAL_DEBUG_STEP_START);
 
       await handler?.next(ProgressBarConstants.LOCAL_DEBUG_STEP_BOT_REG);
-      await this.createNewBotRegistrationOnAppStudio(ctx, envInfo, tokenProvider);
+      await this.createOrGetBotAppRegistration(ctx, envInfo, tokenProvider);
     } else {
-      CheckThrowSomethingMissing(
-        ConfigNames.PROGRAMMING_LANGUAGE,
-        this.config.scaffold.programmingLanguage
-      );
       ctx.logProvider.info(Messages.ProvisioningBot);
-
       // Create and register progress bar for cleanup.
       const handler = await ProgressBarFactory.newProgressBar(
         ProgressBarConstants.PROVISION_TITLE,
@@ -359,9 +348,10 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
       const azureCredential = await this.getAzureAccountCredenial(
         tokenProvider.azureAccountProvider
       );
+      const solutionConfig = envInfo.state.solution as v3.AzureSolutionConfig;
       const rpClient = factory.createResourceProviderClient(
         azureCredential,
-        this.config.provision.subscriptionId!
+        solutionConfig.subscriptionId!
       );
       await factory.ensureResourceProvider(rpClient, AzureConstants.requiredResourceProviders);
 
@@ -369,21 +359,21 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
       await handler?.next(ProgressBarConstants.PROVISION_STEP_BOT_REG);
       await this.createOrGetBotAppRegistration(ctx, envInfo, tokenProvider);
     }
-    this.config.saveConfigIntoContextV3(envInfo);
-
     return ok(Void);
   }
+
   private async updateMessageEndpointOnAppStudio(
     appName: string,
     tokenProvider: TokenProvider,
+    botId: string,
     endpoint: string
   ) {
     const appStudioToken = await tokenProvider.appStudioToken.getAccessToken();
     CheckThrowSomethingMissing(ConfigNames.APPSTUDIO_TOKEN, appStudioToken);
-    CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, this.config.localDebug.localBotId);
+    CheckThrowSomethingMissing(ConfigNames.LOCAL_BOT_ID, botId);
 
     const botReg: IBotRegistration = {
-      botId: this.config.localDebug.localBotId,
+      botId: botId,
       name: appName + PluginLocalDebug.LOCAL_DEBUG_SUFFIX,
       description: "",
       iconUrl: "",
@@ -402,14 +392,14 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
     tokenProvider: TokenProvider
   ): Promise<Result<Void, FxError>> {
     if (envInfo.envName === "local") {
-      await this.config.restoreConfigFromContextV3(ctx, inputs, envInfo);
-      CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, this.config.localDebug.localEndpoint);
+      const botConfig = envInfo.state[this.name] as v3.AzureBot;
+      CheckThrowSomethingMissing(ConfigNames.LOCAL_ENDPOINT, botConfig.siteEndpoint);
       await this.updateMessageEndpointOnAppStudio(
         ctx.projectSetting.appName,
         tokenProvider,
-        `${this.config.localDebug.localEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
+        botConfig.botId,
+        `${botConfig.siteEndpoint}${CommonStrings.MESSAGE_ENDPOINT_SUFFIX}`
       );
-      this.config.saveConfigIntoContextV3(envInfo);
     }
     return ok(Void);
   }
@@ -421,46 +411,32 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
     envInfo: v2.DeepReadonly<v3.EnvInfoV3>,
     tokenProvider: AzureAccountProvider
   ): Promise<Result<Void, FxError>> {
-    await this.config.restoreConfigFromContextV3(ctx, inputs, envInfo as v3.EnvInfoV3);
-
     ctx.logProvider.info(Messages.PreDeployingBot);
 
     // Preconditions checking.
-    const packDirExisted = await fs.pathExists(this.config.scaffold.workingDir!);
-    if (!packDirExisted) {
-      throw new PackDirExistenceError();
-    }
-
-    CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, this.config.provision.siteEndpoint);
-    CheckThrowSomethingMissing(
-      ConfigNames.PROGRAMMING_LANGUAGE,
-      this.config.scaffold.programmingLanguage
-    );
-    CheckThrowSomethingMissing(
-      ConfigNames.BOT_SERVICE_RESOURCE_ID,
-      this.config.provision.botWebAppResourceId
-    );
-    CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, this.config.provision.subscriptionId);
-    CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, this.config.provision.resourceGroup);
-
-    this.config.saveConfigIntoContextV3(envInfo as v3.EnvInfoV3);
-
-    this.config.provision.subscriptionId = getSubscriptionIdFromResourceId(
-      this.config.provision.botWebAppResourceId!
-    );
-    this.config.provision.resourceGroup = getResourceGroupNameFromResourceId(
-      this.config.provision.botWebAppResourceId!
-    );
-    this.config.provision.siteName = getSiteNameFromResourceId(
-      this.config.provision.botWebAppResourceId!
-    );
-
-    ctx.logProvider.info(Messages.DeployingBot);
-
-    const workingDir = this.config.scaffold.workingDir;
+    const workingDir = path.join(inputs.projectPath, CommonStrings.BOT_WORKING_DIR_NAME);
     if (!workingDir) {
       throw new PreconditionError(Messages.WorkingDirIsMissing, []);
     }
+    const packDirExisted = await fs.pathExists(workingDir);
+    if (!packDirExisted) {
+      throw new PackDirectoryExistenceError();
+    }
+
+    const botConfig = envInfo.state[this.name] as v3.AzureBot;
+    const programmingLanguage = this.getProgrammingLanguage(ctx);
+    CheckThrowSomethingMissing(ConfigNames.SITE_ENDPOINT, botConfig.siteEndpoint);
+    CheckThrowSomethingMissing(ConfigNames.PROGRAMMING_LANGUAGE, programmingLanguage);
+    CheckThrowSomethingMissing(ConfigNames.BOT_SERVICE_RESOURCE_ID, botConfig.botWebAppResourceId);
+
+    const subscriptionId = getSubscriptionIdFromResourceId(botConfig.botWebAppResourceId);
+    const resourceGroup = getResourceGroupNameFromResourceId(botConfig.botWebAppResourceId);
+    const siteName = getSiteNameFromResourceId(botConfig.botWebAppResourceId);
+
+    CheckThrowSomethingMissing(ConfigNames.SUBSCRIPTION_ID, subscriptionId);
+    CheckThrowSomethingMissing(ConfigNames.RESOURCE_GROUP, resourceGroup);
+
+    ctx.logProvider.info(Messages.DeployingBot);
 
     const deployTimeCandidate = Date.now();
     const deployMgr = new DeployMgr(workingDir, envInfo.envName);
@@ -480,10 +456,11 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
     await handler?.start(ProgressBarConstants.DEPLOY_STEP_START);
 
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_NPM_INSTALL);
+    const unPackFlag = (envInfo.config as EnvConfig).bot?.unPackFlag as string;
     await LanguageStrategy.localBuild(
-      this.config.scaffold.programmingLanguage!,
+      programmingLanguage,
       workingDir,
-      this.config.deploy.unPackFlag === "true" ? true : false
+      unPackFlag === "false" ? false : true
     );
 
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_FOLDER);
@@ -494,12 +471,12 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
     // 2.2 Retrieve publishing credentials.
     const webSiteMgmtClient = new appService.WebSiteManagementClient(
       await this.getAzureAccountCredenial(tokenProvider),
-      this.config.provision.subscriptionId!
+      subscriptionId!
     );
     const listResponse = await AzureOperations.ListPublishingCredentials(
       webSiteMgmtClient,
-      this.config.provision.resourceGroup!,
-      this.config.provision.siteName!
+      resourceGroup!,
+      siteName!
     );
 
     const publishingUserName = listResponse.publishingUserName
@@ -518,7 +495,7 @@ export class NodeJSBotPluginV3 implements v3.FeaturePlugin {
       maxBodyLength: Infinity,
     };
 
-    const zipDeployEndpoint: string = getZipDeployEndpoint(this.config.provision.siteName!);
+    const zipDeployEndpoint: string = getZipDeployEndpoint(botConfig.siteName);
     await handler?.next(ProgressBarConstants.DEPLOY_STEP_ZIP_DEPLOY);
     await AzureOperations.ZipDeployPackage(zipDeployEndpoint, zipBuffer, config);
 

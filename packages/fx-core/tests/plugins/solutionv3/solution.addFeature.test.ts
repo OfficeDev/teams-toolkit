@@ -35,6 +35,8 @@ import {
   AzureResourceApim,
   AzureResourceFunction,
   AzureResourceKeyVault,
+  AzureSolutionQuestionNames,
+  BotOptionItem,
   AzureResourceSQL,
 } from "../../../src/plugins/solution/fx-solution/question";
 describe("SolutionV3 - addFeature", () => {
@@ -127,6 +129,39 @@ describe("SolutionV3 - addFeature", () => {
       hostType: "Azure",
       azureResources: [],
       activeResourcePlugins: [BuiltInFeaturePluginNames.frontend],
+    });
+    deleteFolder(projectPath);
+  });
+  it("addFeature: bot", async () => {
+    const projectSettings: ProjectSettings = {
+      appName: "my app",
+      projectId: uuid.v4(),
+      solutionSettings: {
+        name: TeamsFxAzureSolutionNameV3,
+        version: "3.0.0",
+        capabilities: [],
+        hostType: "Azure",
+        azureResources: [],
+        activeResourcePlugins: [],
+      },
+    };
+    const projectPath = path.join(os.tmpdir(), randomAppName());
+    const ctx = new MockedV2Context(projectSettings);
+    const inputs: v3.SolutionAddFeatureInputs = {
+      platform: Platform.VSCode,
+      projectPath: projectPath,
+      feature: BuiltInFeaturePluginNames.bot,
+      [AzureSolutionQuestionNames.Capabilities]: [BotOptionItem.id],
+    };
+    const res = await addFeature(ctx, inputs);
+    assert.isTrue(res.isOk());
+    assert.deepEqual(projectSettings.solutionSettings, {
+      name: TeamsFxAzureSolutionNameV3,
+      version: "3.0.0",
+      capabilities: [BotOptionItem.id],
+      hostType: "Azure",
+      azureResources: [],
+      activeResourcePlugins: [BuiltInFeaturePluginNames.bot],
     });
     deleteFolder(projectPath);
   });

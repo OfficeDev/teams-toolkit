@@ -29,7 +29,10 @@ export class TemplateInfo {
   static readonly version = templatesVersion;
 }
 
-export function generateTemplateInfos(selectedCapabilities: string[], ctx: PluginContext) {
+export function generateTemplateInfos(
+  selectedCapabilities: string[],
+  ctx: PluginContext
+): TemplateInfo[] {
   const projectName = ctx.projectSettings!.appName;
   const templateVariable: TemplateVariable = { BlazorAppServer: projectName };
   const templateInfoList: TemplateInfo[] = [];

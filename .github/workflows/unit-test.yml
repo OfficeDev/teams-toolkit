@@ -19,9 +19,9 @@ jobs:
 
       - name: Merge Branches
         run: |
-          git remote add ${{ github.event.pull_request.target.repo.owner.login }} ${{ github.event.pull_request.target.repo.git_url }}
-          git fetch ${{ github.event.pull_request.target.repo.owner.login }}
-          git merge ${{ github.event.pull_request.target.repo.owner.login }}/${{ github.event.pull_request.target.ref }}
+          git remote add ${{ github.event.pull_request.base.repo.owner.login }} ${{ github.event.pull_request.base.repo.git_url }}
+          git fetch ${{ github.event.pull_request.base.repo.owner.login }}
+          git merge ${{ github.event.pull_request.base.repo.owner.login }}/${{ github.event.pull_request.base.ref }}
 
       - name: Setup node
         uses: actions/setup-node@v2.1.2

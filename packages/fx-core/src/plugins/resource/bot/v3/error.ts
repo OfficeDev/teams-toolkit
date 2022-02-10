@@ -1,4 +1,4 @@
-import { UserError } from "../../../../../../api/build";
+import { UserError } from "@microsoft/teamsfx-api";
 import { Messages } from "../resources/messages";
 import { FxBotPluginResultFactory } from "../result";
 

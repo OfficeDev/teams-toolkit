@@ -1,7 +1,7 @@
 // Copyright (c) Microsoft Corporation.
 // Licensed under the MIT license.
 
-import { hooks } from "@feathersjs/hooks/lib";
+import { hooks } from "@feathersjs/hooks";
 import {
   AzureAccountProvider,
   AzureSolutionSettings,
